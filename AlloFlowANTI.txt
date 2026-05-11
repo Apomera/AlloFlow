@@ -3570,128 +3570,131 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/allo_data_module.js');
-    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/firestore_sync_module.js');
-    loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/safety_checker_module.js');
-    loadModule('Fluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/fluency_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/behavior_lens_module.js');
-    loadModule('ReportWriter', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/report_writer_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/symbol_studio_module.js');
-    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/allohaven_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/allo_data_module.js');
+    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/firestore_sync_module.js');
+    loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/safety_checker_module.js');
+    loadModule('Fluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/fluency_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/behavior_lens_module.js');
+    loadModule('ReportWriter', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/report_writer_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/symbol_studio_module.js');
+    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/allohaven_module.js');
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/voice_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/sel_hub/sel_hub_module.js');
-    loadModule('CommunityCatalog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/catalog_module.js');
-    loadModule('AccessibilityLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/accessibility_lab_module.js');
-    loadModule('AuditRemediator', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/audit_remediator_module.js');
-    loadModule('QuizModeStrategies', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/quiz_mode_strategies.js');
-    loadModule('QuizAIHelpers', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/quiz_ai_helpers.js');
-    loadModule('QuizLiveAggregators', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/quiz_live_aggregators.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/story_stage_module.js');
+    loadModule('Voice', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/voice_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/catalog_module.js');
+    loadModule('AccessibilityLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/accessibility_lab_module.js');
+    loadModule('AuditRemediator', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/audit_remediator_module.js');
+    loadModule('QuizModeStrategies', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/quiz_live_aggregators.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/ui_modals_module.js');
-    loadModule('UIFontLibrary', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/ui_font_library_module.js');
-    loadModule('VoiceConfig', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/voice_config_module.js');
-    loadModule('CanvasTips', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/canvas_tips_module.js');
-    loadModule('KokoroOfferModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_kokoro_offer_modal_module.js');
-    loadModule('ConfirmDialog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_confirm_dialog_module.js');
-    loadModule('HintsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_hints_modal_module.js');
-    loadModule('XPModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_xp_modal_module.js');
-    loadModule('StorybookExportModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_storybook_export_modal_module.js');
-    loadModule('InfoModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_info_modal_module.js');
-    loadModule('SessionModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_session_modal_module.js');
-    loadModule('SocraticChat', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_socratic_chat_module.js');
-    loadModule('GlobalLevelUpModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_global_level_up_module.js');
-    loadModule('HeaderBar', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_header_module.js');
-    loadModule('GuidedModeBanner', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_guided_mode_banner_module.js');
-    loadModule('StudentJoinPanel', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_student_join_panel_module.js');
-    loadModule('StudentSaveAdventurePanel', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_student_save_adventure_module.js');
-    loadModule('SidebarTabsNav', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_sidebar_tabs_nav_module.js');
-    loadModule('UDLGuideButton', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_udl_guide_button_module.js');
-    loadModule('TeacherHistoryTab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_teacher_history_tab_module.js');
-    loadModule('HistoryPanel', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_history_panel_module.js');
-    loadModule('LabelPositions', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/label_positions_module.js');
-    loadModule('UILanguageSelector', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/ui_language_selector_module.js');
-    loadModule('AudioBanks', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/audio_banks_module.js');
-    loadModule('PdfAuditView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_pdf_audit_module.js');
-    loadModule('ExportPreviewView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_export_preview_module.js');
-    loadModule('MiscModals', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_misc_modals_module.js');
-    loadModule('GeminiBridge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_gemini_bridge_module.js');
-    loadModule('MiscPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_misc_panels_module.js');
-    loadModule('SidebarPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_sidebar_panels_module.js');
-    loadModule('ModuleScopeExtras', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/module_scope_extras_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_outline_module.js');
-    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_brainstorm_module.js');
-    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_image_module.js');
-    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_analysis_module.js');
-    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_simplified_module.js');
-    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_math_module.js');
-    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_lesson_plan_module.js');
-    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_alignment_report_module.js');
-    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_word_sounds_preview_module.js');
-    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_gemini_bridge_module.js');
-    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_concept_sort_module.js');
-    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_persona_chat_module.js');
-    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_spotlight_tour_module.js');
-    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_project_settings_module.js');
-    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_launch_pad_module.js');
-    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/view_adventure_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/ui_modals_module.js');
+    loadModule('UIFontLibrary', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/ui_font_library_module.js');
+    loadModule('VoiceConfig', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/voice_config_module.js');
+    loadModule('CanvasTips', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/canvas_tips_module.js');
+    loadModule('KokoroOfferModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_kokoro_offer_modal_module.js');
+    loadModule('ConfirmDialog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_confirm_dialog_module.js');
+    loadModule('HintsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_hints_modal_module.js');
+    loadModule('XPModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_xp_modal_module.js');
+    loadModule('StorybookExportModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_storybook_export_modal_module.js');
+    loadModule('InfoModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_info_modal_module.js');
+    loadModule('SessionModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_session_modal_module.js');
+    loadModule('SocraticChat', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_socratic_chat_module.js');
+    loadModule('GlobalLevelUpModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_global_level_up_module.js');
+    loadModule('HeaderBar', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_header_module.js');
+    loadModule('GuidedModeBanner', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_guided_mode_banner_module.js');
+    loadModule('StudentJoinPanel', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_student_join_panel_module.js');
+    loadModule('StudentSaveAdventurePanel', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_student_save_adventure_module.js');
+    loadModule('SidebarTabsNav', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_sidebar_tabs_nav_module.js');
+    loadModule('UDLGuideButton', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_udl_guide_button_module.js');
+    loadModule('TeacherHistoryTab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_teacher_history_tab_module.js');
+    loadModule('HistoryPanel', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_history_panel_module.js');
+    loadModule('FabStack', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/view_fab_stack_module.js');
+    loadModule('StudyTimerModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/view_study_timer_modal_module.js');
+    loadModule('EducatorHubModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/view_educator_hub_modal_module.js');
+    loadModule('LabelPositions', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/label_positions_module.js');
+    loadModule('UILanguageSelector', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/ui_language_selector_module.js');
+    loadModule('AudioBanks', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/audio_banks_module.js');
+    loadModule('PdfAuditView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_pdf_audit_module.js');
+    loadModule('ExportPreviewView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_export_preview_module.js');
+    loadModule('MiscModals', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_misc_modals_module.js');
+    loadModule('GeminiBridge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_gemini_bridge_module.js');
+    loadModule('MiscPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_misc_panels_module.js');
+    loadModule('SidebarPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_sidebar_panels_module.js');
+    loadModule('ModuleScopeExtras', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/module_scope_extras_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_dbq_module.js');
+    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_timeline_module.js');
+    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_glossary_module.js');
+    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_outline_module.js');
+    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_brainstorm_module.js');
+    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_image_module.js');
+    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_analysis_module.js');
+    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_simplified_module.js');
+    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_math_module.js');
+    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_launch_pad_module.js');
+    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/view_adventure_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/export_handlers_module.js');
+    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -3702,7 +3705,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@3b025d1f/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7c979e96/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -22548,147 +22551,7 @@ Return ONLY valid JSON in this format:
         {isHelpMode ? <X size={16}/> : '?'}
       </button>
       )}
-      <div className={`fixed bottom-24 md:bottom-8 z-[10000] flex flex-col items-end gap-4 no-print transition-all duration-300 ${runTour ? 'right-[530px]' : 'right-6'}`}>
-          {isFabExpanded && (
-              <div
-                data-help-toggle="true"
-                className="flex flex-col gap-3 p-3 bg-white/90 backdrop-blur-md border border-slate-400 shadow-2xl rounded-full animate-in slide-in-from-bottom-4 fade-in duration-200 max-h-[75vh] overflow-y-auto custom-scrollbar"
-              >
-                  {!isTeacherMode && studentProjectSettings.allowSocraticTutor && (
-                      <button
-                        onClick={handleToggleShowSocraticChat}
-                        className={`px-4 py-3 rounded-full transition-all shadow-sm flex items-center gap-2 ${showSocraticChat ? 'bg-teal-700 text-white ring-2 ring-teal-400' : 'bg-teal-100 text-teal-700 hover:bg-teal-200 border border-teal-200'}`}
-                        title={t('socratic.title')}
-                        aria-label={t('socratic.title')}
-                        data-help-key="socratic_toggle"
-                      >
-                        <MessageCircleQuestion size={20} />
-                        <span className="text-sm font-bold">{t('socratic.ask_for_help')}</span>
-                      </button>
-                  )}
-                  {activeView === 'simplified' && generatedContent && (
-                      <>
-                          <div className="text-[11px] font-black text-slate-600 uppercase text-center tracking-widest pt-1">{t('simplified.mode_label')}</div>
-                          <button
-                            onClick={() => { setInteractionMode('read'); stopPlayback(); setSelectionMenu(null); setRevisionData(null); setIsCompareMode(false); setIsFluencyMode(false); }}
-                            className={`p-3 rounded-full transition-all shadow-sm ${interactionMode === 'read' && !isCompareMode && !isFluencyMode ? 'bg-indigo-100 text-indigo-600 ring-2 ring-indigo-500' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-                            title={t('simplified.tip_read')}
-                            aria-label={t('simplified.read_mode')}
-                            data-help-key="tool_read_mode"
-                          >
-                            <Volume2 size={20} />
-                          </button>
-                          <button
-                            onClick={() => { setInteractionMode('define'); stopPlayback(); setSelectionMenu(null); setRevisionData(null); setIsCompareMode(false); }}
-                            className={`p-3 rounded-full transition-all shadow-sm ${interactionMode === 'define' && !isCompareMode ? 'bg-yellow-100 text-yellow-800 ring-2 ring-yellow-500' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-                            title={t('simplified.tip_define')}
-                            aria-label={t('simplified.define_mode')}
-                            data-help-key="tool_define_mode"
-                          >
-                            <Search size={20} />
-                          </button>
-                          <button
-                            data-help-toggle="true"
-                            onClick={() => { setInteractionMode(prev => prev === 'explain' ? 'read' : 'explain'); stopPlayback(); setIsCompareMode(false); }}
-                            className={`p-3 rounded-full transition-all shadow-sm ${interactionMode === 'explain' && !isCompareMode ? 'bg-teal-100 text-teal-800 ring-2 ring-teal-500' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-                            title={t('simplified.tip_explain')}
-                            aria-label={t('simplified.explain_mode')}
-                            data-help-key="tool_explain_mode"
-                          >
-                            <HelpCircle size={20} />
-                          </button>
-                          <button
-                            onClick={handleSetIsSyntaxGameToTrue}
-                            className="p-3 rounded-full transition-all shadow-sm bg-orange-100 text-orange-800 hover:bg-orange-200 border border-orange-200"
-                            title={t('simplified.tip_scramble')}
-                            aria-label={t('games.syntax.title')}
-                            data-help-key="tool_syntax_game"
-                          >
-                            <Gamepad2 size={20} />
-                          </button>
-                          <div className="h-px w-full bg-slate-200 my-1"></div>
-                      </>
-                  )}
-                  <button
-                    onClick={handleToggleReadingRuler}
-                    className={`p-3 rounded-full transition-all shadow-sm ${readingRuler ? 'bg-indigo-100 text-indigo-600 ring-2 ring-indigo-500' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-                    title={t('a11y.toggle_ruler')}
-                    aria-label={t('a11y.toggle_ruler')}
-                    data-help-key="fab_ruler"
-                  >
-                    <ScanLine size={20} />
-                  </button>
-                  <button
-                    onClick={handleSetShowStudyTimerModalToTrue}
-                    className={`p-3 rounded-full transition-all shadow-sm ${isStudyTimerRunning ? 'bg-green-100 text-green-700 ring-2 ring-green-500' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-                    title={t('a11y.task_timer')}
-                    aria-label={t('a11y.task_timer')}
-                    data-help-key="fab_timer"
-                  >
-                    <Clock size={20} />
-                  </button>
-                  <button
-                    onClick={handleToggleFocusMode}
-                    className={`p-3 rounded-full transition-all shadow-sm ${focusMode ? 'bg-indigo-100 text-indigo-600 ring-2 ring-indigo-500' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-                    title={t('a11y.toggle_focus')}
-                    aria-label={t('a11y.toggle_focus')}
-                    data-help-key="fab_focus"
-                  >
-                    <Eye size={20} />
-                  </button>
-                  <button
-                    onClick={handleToggleVisualSupports}
-                    className={`p-3 rounded-full transition-all shadow-sm ${showVisualSupports ? 'bg-purple-100 text-purple-600 ring-2 ring-purple-500' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-                    title="Visual Supports"
-                    aria-label="Visual Supports"
-                  >
-                    <span style={{fontSize: 20, lineHeight: 1}}>🖼️</span>
-                  </button>
-                  {activeView === 'simplified' && (
-                  <button
-                    onClick={() => {
-                        setIsLineFocusMode(!isLineFocusMode);
-                        setFocusedParagraphIndex(null);
-                    }}
-                    className={`p-3 rounded-full transition-all shadow-sm ${isLineFocusMode ? 'bg-indigo-100 text-indigo-600 ring-2 ring-indigo-500' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-                    title={t('a11y.toggle_line_focus')}
-                    aria-label={t('a11y.toggle_line_focus')}
-                    data-help-key="fab_line_focus"
-                  >
-                    <AlignJustify size={20} />
-                  </button>
-                  )}
-                  {(isTeacherMode || studentProjectSettings.allowDictation) && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                        if (!SpeechRecognition) {
-                            addToast(t('roles.voice_not_supported'), "error");
-                            return;
-                        }
-                        setIsDictationMode(!isDictationMode);
-                    }}
-                    className={`p-3 rounded-full transition-all shadow-sm ${isDictationMode ? 'bg-red-700 text-white animate-pulse shadow-red-500/50' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-                    title={t('toolbar.dictation_toggle')}
-                    aria-label={isDictationMode ? t('toolbar.dictation_stop') : t('toolbar.dictation_start')}
-                    data-help-key="fab_dictation"
-                  >
-                    {isDictationMode ? <Mic size={20} /> : <MicOff size={20} />}
-                  </button>
-                  )}
-              </div>
-          )}
-          <button
-            onClick={handleToggleIsFabExpanded}
-            className="w-12 h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
-            aria-label={isFabExpanded ? t('toolbar.student_tools_close') : t('toolbar.student_tools_open')}
-            data-help-key="fab_toggle"
-          >
-            <Wrench size={24} />
-          </button>
-      </div>
+      <FabStack activeView={activeView} addToast={addToast} focusMode={focusMode} generatedContent={generatedContent} handleSetIsSyntaxGameToTrue={handleSetIsSyntaxGameToTrue} handleSetShowStudyTimerModalToTrue={handleSetShowStudyTimerModalToTrue} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsFabExpanded={handleToggleIsFabExpanded} handleToggleReadingRuler={handleToggleReadingRuler} handleToggleShowSocraticChat={handleToggleShowSocraticChat} handleToggleVisualSupports={handleToggleVisualSupports} interactionMode={interactionMode} isCompareMode={isCompareMode} isDictationMode={isDictationMode} isFabExpanded={isFabExpanded} isFluencyMode={isFluencyMode} isLineFocusMode={isLineFocusMode} isStudyTimerRunning={isStudyTimerRunning} isTeacherMode={isTeacherMode} readingRuler={readingRuler} runTour={runTour} setFocusedParagraphIndex={setFocusedParagraphIndex} setInteractionMode={setInteractionMode} setIsCompareMode={setIsCompareMode} setIsDictationMode={setIsDictationMode} setIsFluencyMode={setIsFluencyMode} setIsLineFocusMode={setIsLineFocusMode} setRevisionData={setRevisionData} setSelectionMenu={setSelectionMenu} showSocraticChat={showSocraticChat} showVisualSupports={showVisualSupports} stopPlayback={stopPlayback} studentProjectSettings={studentProjectSettings} t={t} />
       </>
       )}
       {activeView === 'dashboard' && isTeacherMode && (<ErrorBoundary fallbackMessage="The teacher dashboard encountered an error. Please close and reopen.">
@@ -23213,140 +23076,7 @@ Return ONLY valid JSON in this format:
           _isCanvasEnv, ai, setShowAIBackendModal,
           showAIBackendModal, t
         })}
-      {showStudyTimerModal && (
-        <div
-            ref={studyTimerRef}
-            role="dialog"
-            aria-modal="true"
-            className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
-            onClick={handleSetShowStudyTimerModalToFalse}
-        >
-            {showTimerConfetti && <div className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center"><ConfettiExplosion /></div>}
-            <div
-                className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200"
-                role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}
-            >
-                <button
-                    aria-label={t('common.close_study_timer')}
-                    data-help-key="timer_close_btn"
-                    onClick={handleSetShowStudyTimerModalToFalse}
-                    className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-                >
-                    <X size={20} />
-                </button>
-                <div className="flex items-center gap-2 mb-6 text-indigo-900">
-                    <div className="bg-indigo-100 p-2 rounded-full"><Clock size={20} className="text-indigo-600"/></div>
-                    <h3 className="font-black text-lg">{t('timer.title')}</h3>
-                </div>
-                <div className="mb-6">
-                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('timer.label_task')}</label>
-                    <input aria-label={t('common.enter_study_task_label')}
-                        data-help-key="timer_task_input"
-                        type="text"
-                        value={studyTaskLabel}
-                        onChange={(e) => setStudyTaskLabel(e.target.value)}
-                        disabled={isStudyTimerRunning}
-                        placeholder={t('timer.placeholder')}
-                        className="w-full text-sm p-3 border-2 border-indigo-600 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white"
-                    />
-                </div>
-                <div className="flex gap-2 mb-4 justify-center flex-wrap">
-                    {[5, 15, 25, 45].map(min => (
-                        <button
-                            data-help-key="timer_duration_btn"
-                            key={min}
-                            onClick={() => {
-                                setStudyDuration(min * 60);
-                                setStudyTimeLeft(min * 60);
-                                setCustomTimerMinutes('');
-                                setIsStudyTimerRunning(false);
-                            }}
-                            className="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold transition-colors border border-indigo-200"
-                        >
-                            {min}m
-                        </button>
-                    ))}
-                </div>
-                <div className="flex items-center gap-2 mb-4 justify-center">
-                    <input aria-label={t('common.enter_custom_timer_minutes')}
-                        type="number"
-                        min="1"
-                        max="180"
-                        value={customTimerMinutes}
-                        onChange={(e) => setCustomTimerMinutes(e.target.value)}
-                        placeholder={t('common.placeholder_custom_min')}
-                        disabled={isStudyTimerRunning}
-                        className="w-24 p-2 text-xs border border-indigo-600 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-center font-bold text-slate-700"
-                    />
-                    <button
-                        onClick={() => {
-                            const mins = parseInt(customTimerMinutes);
-                            if (mins > 0) {
-                                setStudyDuration(mins * 60);
-                                setStudyTimeLeft(mins * 60);
-                                setIsStudyTimerRunning(true);
-                            }
-                        }}
-                        disabled={!customTimerMinutes || isStudyTimerRunning}
-                        className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {t('timer.set_btn') || 'Set'}
-                    </button>
-                </div>
-                <div className="text-center mb-6 relative">
-                    <div className="text-5xl font-black text-slate-700 font-mono tracking-wider">
-                        {formatTime(studyTimeLeft)}
-                    </div>
-                    {studyDuration > 0 && (
-                        <div className="mt-3 mx-auto max-w-[200px]">
-                            <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-1000 ease-linear"
-                                    style={{ width: `${Math.max(0, Math.min(100, ((studyDuration - studyTimeLeft) / studyDuration) * 100))}%` }}
-                                />
-                            </div>
-                            <div className="text-[11px] text-slate-600 mt-1 font-medium">
-                                {Math.round(((studyDuration - studyTimeLeft) / studyDuration) * 100)}% complete
-                            </div>
-                        </div>
-                    )}
-                </div>
-                <div className="flex gap-3">
-                    <button
-                        aria-label={t('common.pause')}
-                        onClick={() => {
-                            if (isStudyTimerRunning) {
-                                setIsStudyTimerRunning(false);
-                            } else {
-                                if (studyTimeLeft === 0) {
-                                    setStudyTimeLeft(25 * 60);
-                                    setStudyDuration(25 * 60);
-                                }
-                                setIsStudyTimerRunning(true);
-                            }
-                        }}
-                        className={`flex-1 py-3 rounded-xl font-black text-white shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2 ${isStudyTimerRunning ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-700 hover:bg-green-800'}`}
-                    >
-                        {isStudyTimerRunning ? <Pause size={20} className="fill-current"/> : <Play size={20} className="fill-current"/>}
-                        {isStudyTimerRunning ? t('timer.pause') : t('timer.start')}
-                    </button>
-                    <button
-                        aria-label={t('common.refresh')}
-                        data-help-key="timer_reset_btn"
-                        onClick={() => {
-                            setIsStudyTimerRunning(false);
-                            setStudyTimeLeft(0);
-                            setStudyDuration(0);
-                        }}
-                        className="px-4 py-3 bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-red-500 rounded-xl font-bold transition-colors"
-                        title={t('timer.reset')}
-                    >
-                        <RefreshCw size={20}/>
-                    </button>
-                </div>
-            </div>
-        </div>
-      )}
+      {showStudyTimerModal && <StudyTimerModal ConfettiExplosion={ConfettiExplosion} customTimerMinutes={customTimerMinutes} formatTime={formatTime} handleSetShowStudyTimerModalToFalse={handleSetShowStudyTimerModalToFalse} isStudyTimerRunning={isStudyTimerRunning} setCustomTimerMinutes={setCustomTimerMinutes} setIsStudyTimerRunning={setIsStudyTimerRunning} setStudyDuration={setStudyDuration} setStudyTaskLabel={setStudyTaskLabel} setStudyTimeLeft={setStudyTimeLeft} showStudyTimerModal={showStudyTimerModal} showTimerConfetti={showTimerConfetti} studyDuration={studyDuration} studyTaskLabel={studyTaskLabel} studyTimeLeft={studyTimeLeft} studyTimerRef={studyTimerRef} t={t} />}
       {showVisualSupports && (() => {
         const vsBoards = (() => { try { return JSON.parse(localStorage.getItem('alloSymbolBoards') || '[]'); } catch(e) { return []; } })();
         const vsSchedules = (() => { try { return JSON.parse(localStorage.getItem('alloSchedules') || '[]'); } catch(e) { return []; } })();
@@ -23675,121 +23405,7 @@ Return ONLY valid JSON in this format:
             </div>
             );
         })()}
-        {showEducatorHub && (
-        <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowEducatorHub(false)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowEducatorHub(false); }}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" role="dialog" aria-modal="true" aria-label="Educator Tools" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">🛠️ {t('educator_hub.title') || 'Educator Tools'}</h2>
-                <p className="text-sm text-slate-600 mt-1">{t('educator_hub.subtitle') || 'Professional tools for educators and clinicians'}</p>
-              </div>
-              <button onClick={() => setShowEducatorHub(false)} className="text-slate-600 hover:text-slate-600 text-xl" aria-label="Close educator tools">✕</button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <button onClick={() => { setShowEducatorHub(false); setShowBehaviorLens(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1">🧠</span>
-                <div>
-                  <h3 className="font-bold text-indigo-800">{t('educator_hub.behavior_lens_title') || 'BehaviorLens'}</h3>
-                  <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.behavior_lens_desc') || 'FBA/BIP behavioral observation, ABC data collection, and 60+ clinical tools'}</p>
-                </div>
-              </button>
-              <button onClick={() => { setShowEducatorHub(false); setShowReportWriter(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1">📝</span>
-                <div>
-                  <h3 className="font-bold text-violet-800">{t('educator_hub.report_writer_title') || 'Report Writer'}</h3>
-                  <p className="text-xs text-violet-600 mt-1">{t('educator_hub.report_writer_desc') || 'AI-powered clinical report generation with fact-chunks, accuracy audit, and developmental norms'}</p>
-                </div>
-              </button>
-              <button onClick={() => { setShowEducatorHub(false); setIsSymbolStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1">🎨</span>
-                <div>
-                  <h3 className="font-bold text-purple-800">Symbol Studio</h3>
-                  <p className="text-xs text-purple-600 mt-1">AI-generated PCS-style icons for visual supports, AAC boards, and schedules — powered by image-to-image editing</p>
-                </div>
-              </button>
-              <button onClick={() => { setShowEducatorHub(false); openExportPreview('print'); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1">📄</span>
-                <div>
-                  <h3 className="font-bold text-emerald-800">Document Hub</h3>
-                  <p className="text-xs text-emerald-600 mt-1">Document builder with themes, WYSIWYG editing, accessibility audit, and multi-format export (PDF, HTML, worksheet, slides)</p>
-                </div>
-              </button>
-              <button onClick={() => {
-                  setShowEducatorHub(false);
-                  const input = document.createElement('input');
-                  input.type = 'file';
-                  input.accept = 'application/pdf,.pdf,image/*,.docx,.pptx';
-                  input.multiple = true;
-                  input.onchange = (e) => {
-                      const files = [...e.target.files];
-                      if (files.length === 0) return;
-                      const pdfFiles = files.filter(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
-                      if (pdfFiles.length === 1 && files.length === 1) {
-                          const file = pdfFiles[0];
-                          const reader = new FileReader();
-                          reader.onloadend = () => {
-                              const base64 = reader.result.split(',')[1];
-                              setPendingPdfBase64(base64);
-                              setPendingPdfFile(file);
-                              setPdfAuditResult({ _choosing: true, fileName: file.name, fileSize: file.size });
-                          };
-                          reader.readAsDataURL(file);
-                      } else if (pdfFiles.length > 1) {
-                          const batchFiles = [];
-                          let loaded = 0;
-                          pdfFiles.forEach(file => {
-                              const reader = new FileReader();
-                              reader.onloadend = () => {
-                                  batchFiles.push({ name: file.name, base64: reader.result.split(',')[1], size: file.size });
-                                  loaded++;
-                                  if (loaded === pdfFiles.length) {
-                                      setPdfBatchFiles(batchFiles);
-                                      setPdfBatchMode(true);
-                                      setPdfAuditResult({ _choosing: true, fileName: pdfFiles.length + ' files', fileSize: pdfFiles.reduce((s, f) => s + f.size, 0) });
-                                  }
-                              };
-                              reader.readAsDataURL(file);
-                          });
-                      } else {
-                          handleFileUpload(e);
-                      }
-                  };
-                  input.click();
-              }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1">♿</span>
-                <div>
-                  <h3 className="font-bold text-teal-800">PDF Accessibility</h3>
-                  <p className="text-xs text-teal-600 mt-1">Upload PDFs for WCAG accessibility audit & remediation with axe-core verification</p>
-                </div>
-              </button>
-              {pdfFixResult && !pdfFixLoading && !pdfAuditResult && (
-                <button
-                  onClick={() => { setPdfAuditResult({ _restored: true }); }}
-                  className="flex items-center justify-center gap-2 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 rounded-xl text-xs font-bold transition-all col-span-full md:col-span-2"
-                  title="Re-open the last PDF audit — view the diff, verification, and remediated HTML without re-running the pipeline"
-                >
-                  📊 {t('pdf_audit.view_last_audit') || 'View Last Audit'}
-                  {pdfFixResult._userEditedAt && <span className="opacity-70 text-[10px]">· edited</span>}
-                </button>
-              )}
-              <button onClick={() => { setShowEducatorHub(false); setIsCommunityCatalogOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1" role="img" aria-label="books">📚</span>
-                <div>
-                  <h3 className="font-bold text-amber-800">Community Catalog</h3>
-                  <p className="text-xs text-amber-700 mt-1">Browse open-licensed lessons from the AlloFlow community, or submit your own for review</p>
-                </div>
-              </button>
-              <button onClick={() => { setShowEducatorHub(false); setIsAccessibilityLabOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-rose-50 to-amber-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
-                <span className="text-3xl mt-1" role="img" aria-label="magnifying glass">🔍</span>
-                <div>
-                  <h3 className="font-bold text-rose-800">Accessibility Lab</h3>
-                  <p className="text-xs text-rose-700 mt-1">Verify the student experience: preview as student, keyboard-only tour, live WCAG audit (axe-core) with violations framed by student impact, screen-reader announcement preview, and disability simulators (low-vision, color-blindness, dyslexia, motor delay).</p>
-                </div>
-              </button>
-            </div>
-          </div>
-        </div>
-        )}
+        {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} showEducatorHub={showEducatorHub} t={t} />}
         {showLearningHub && (
         <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowLearningHub(false)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowLearningHub(false); }}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" role="dialog" aria-modal="true" aria-label="Learning Tools" onClick={(e) => e.stopPropagation()}>
@@ -24550,6 +24166,24 @@ function TeacherHistoryTab(props) {
 function HistoryPanel(props) {
     var Real = window.AlloModules && window.AlloModules.HistoryPanel && window.AlloModules.HistoryPanel.HistoryPanel;
     if (Real && Real !== HistoryPanel) return React.createElement(Real, props);
+    return null;
+}
+// ── FabStack extracted to view_fab_stack_module.js (CDN) ──
+function FabStack(props) {
+    var Real = window.AlloModules && window.AlloModules.FabStack && window.AlloModules.FabStack.FabStack;
+    if (Real && Real !== FabStack) return React.createElement(Real, props);
+    return null;
+}
+// ── StudyTimerModal extracted to view_study_timer_modal_module.js (CDN) ──
+function StudyTimerModal(props) {
+    var Real = window.AlloModules && window.AlloModules.StudyTimerModal && window.AlloModules.StudyTimerModal.StudyTimerModal;
+    if (Real && Real !== StudyTimerModal) return React.createElement(Real, props);
+    return null;
+}
+// ── EducatorHubModal extracted to view_educator_hub_modal_module.js (CDN) ──
+function EducatorHubModal(props) {
+    var Real = window.AlloModules && window.AlloModules.EducatorHubModal && window.AlloModules.EducatorHubModal.EducatorHubModal;
+    if (Real && Real !== EducatorHubModal) return React.createElement(Real, props);
     return null;
 }
 // ── CanvasTips extracted to canvas_tips_module.js (CDN) ──
