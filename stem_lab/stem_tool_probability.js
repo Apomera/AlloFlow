@@ -71,6 +71,7 @@ window.StemLab = window.StemLab || {
   // Module-level: persists across React renders without causing re-render
   var _autoRun = { interval: null };
   var _galtonAnim = { interval: null };
+  var _piAnim = { interval: null };
 
   window.StemLab.registerTool('probability', {
     icon: '\uD83C\uDFB2',
@@ -744,7 +745,7 @@ var d = (labToolData.probability) || {};
 
               [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', '\u2699\uFE0F Custom'], ['tree', '\uD83C\uDF33 Tree'], ['pi', '\uD83E\uDD67 Pi'], ['birthday', '\uD83C\uDF82 Birthday'], ['monty', '\uD83D\uDEAA Monty Hall'], ['galton', '\u2699\uFE0F Galton Board']].map(([m, label]) =>
 
-                React.createElement("button", { "aria-label": "Select mode: " + label, key: m, onClick: () => { if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; } if (_galtonAnim.interval) { clearInterval(_galtonAnim.interval); _galtonAnim.interval = null; } upd('mode', m); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); upd('_mbRemaining', null); upd('_piPoints', null); upd('_autoRunning', false); upd('galtonFalling', []); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
+                React.createElement("button", { "aria-label": "Select mode: " + label, key: m, onClick: () => { if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; } if (_galtonAnim.interval) { clearInterval(_galtonAnim.interval); _galtonAnim.interval = null; } if (_piAnim.interval) { clearInterval(_piAnim.interval); _piAnim.interval = null; } upd('mode', m); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); upd('_mbRemaining', null); upd('_piPoints', null); upd('_autoRunning', false); upd('galtonFalling', []); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
 
               )
 
@@ -1870,6 +1871,65 @@ var d = (labToolData.probability) || {};
               );
             })(),
 
+            // ── Outcome strip (last 20 results) ──
+            // Visible streaks and patterns are pedagogically important: students
+            // need to FEEL that "5 heads in a row" or "three Reds in a row" is
+            // normal random texture, not evidence of a biased system. The strip
+            // makes that pattern visible at a glance for coin/dice/spinner/sports/
+            // marble/custom modes. Skipped for pi (uses its own scatter plot),
+            // tree/birthday/monty/galton (have their own visuals).
+            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'pi' && (d.results || []).length > 0 && (function() {
+              var last20 = (d.results || []).slice(-20);
+              // Color resolver — maps an outcome label to a display color per mode.
+              function colorFor(label) {
+                if (d.mode === 'coin') return label === 'H' ? '#fbbf24' : '#94a3b8'; // gold heads / silver tails
+                if (d.mode === 'dice') return ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'][(label - 1) % 6];
+                if (d.mode === 'spinner') return { 'Red': '#ef4444', 'Blue': '#3b82f6', 'Green': '#22c55e', 'Yellow': '#eab308' }[label] || '#94a3b8';
+                if (d.mode === 'sports') {
+                  // Sports outcomes get a gradient across hues
+                  var idx = (activeSport.outcomes || []).indexOf(label);
+                  return ['#3b82f6', '#22c55e', '#ef4444', '#f97316', '#a855f7'][idx % 5] || '#94a3b8';
+                }
+                // custom + marbleBag — read color from customOutcomes
+                var co = (customOutcomes || []).find(function(o) { return o.label === label; });
+                return co ? co.color : '#94a3b8';
+              }
+              function labelText(label) {
+                if (d.mode === 'coin') return label;
+                if (d.mode === 'dice') return String(label);
+                return label.length > 2 ? label.charAt(0) : label;
+              }
+              return React.createElement('div', {
+                className: 'rounded-xl p-2 mb-3',
+                style: { background: isDark || isContrast ? 'rgba(139,92,246,0.06)' : '#faf5ff', border: '1px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.18)' : '#e9d5ff') },
+                'aria-label': 'Last 20 outcomes: ' + last20.join(', ')
+              },
+                React.createElement('div', { className: 'flex items-center gap-2 flex-wrap' },
+                  React.createElement('span', { className: 'text-[10px] font-bold uppercase tracking-wider', style: { color: isDark || isContrast ? '#c4b5fd' : '#7c3aed' } }, 'Last ' + last20.length + ':'),
+                  React.createElement('div', { className: 'flex flex-wrap items-center gap-0.5' },
+                    last20.map(function(r, idx) {
+                      return React.createElement('span', {
+                        key: 'strip-' + idx,
+                        title: String(r),
+                        style: {
+                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                          width: '20px', height: '20px',
+                          borderRadius: '4px',
+                          background: colorFor(r),
+                          color: '#fff',
+                          fontSize: '10px',
+                          fontWeight: 800,
+                          textShadow: '0 1px 1px rgba(0,0,0,0.4)',
+                          border: '1px solid rgba(0,0,0,0.15)'
+                        }
+                      }, labelText(r));
+                    })
+                  ),
+                  React.createElement('span', { className: 'text-[9px] italic ml-auto', style: { color: isDark || isContrast ? '#a78bfa' : '#9333ea' } }, 'streaks are normal random texture')
+                )
+              );
+            })(),
+
             // ── Auto-Run Controls ──
             d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && React.createElement("div", { className: "flex flex-wrap gap-2 mb-3 justify-center items-center" },
 
@@ -2304,7 +2364,45 @@ var d = (labToolData.probability) || {};
 
                     ),
 
-                    React.createElement("p", { className:"text-[11px] italic leading-relaxed text-center", style:{color:_muted} }, '~10k points needed for 2 decimal places of π')
+                    React.createElement("p", { className:"text-[11px] italic leading-relaxed text-center", style:{color:_muted} }, '~10k points needed for 2 decimal places of π'),
+
+                    // ── Slow Drop: animated dot deposition ──
+                    // Drops 100 points one at a time over ~10 seconds so students
+                    // can SEE the convergence happen. Standard +N buttons stay
+                    // fast for batch mode; this is the "show your work" mode.
+                    React.createElement("button", {
+                      onClick: function() {
+                        if (_piAnim.interval) {
+                          // Toggle off if already running
+                          clearInterval(_piAnim.interval); _piAnim.interval = null;
+                          return;
+                        }
+                        sfxProbClick();
+                        var dropped = 0;
+                        _piAnim.interval = setInterval(function() {
+                          // Re-read current toolData so we accumulate cleanly even
+                          // if user clicks +N during animation.
+                          var freshPts = (labToolData && labToolData.probability && labToolData.probability._piPoints) || [];
+                          var x = Math.random(), y = Math.random();
+                          var inside = (x * x + y * y) <= 1;
+                          var nextPts = freshPts.concat([{ x: x, y: y, inside: inside }]);
+                          if (nextPts.length > 1000) nextPts = nextPts.slice(-1000);
+                          upd('_piPoints', nextPts);
+                          // Also bump the standard trial counter so the existing
+                          // estimate / error / convergence panels stay in sync.
+                          upd('trials', (labToolData.probability.trials || 0) + 1);
+                          upd('results', ((labToolData.probability.results || []).concat([inside ? 'inside' : 'outside'])));
+                          dropped++;
+                          if (dropped >= 100) {
+                            clearInterval(_piAnim.interval); _piAnim.interval = null;
+                            sfxProbSuccess();
+                          }
+                        }, 100);
+                      },
+                      className: 'mt-2 w-full px-3 py-2 rounded-lg text-[11px] font-bold transition',
+                      style: { background: _piAnim.interval ? '#dc2626' : '#7c3aed', color: '#fff' },
+                      'aria-label': _piAnim.interval ? 'Stop slow-drop animation' : 'Slow-drop 100 points one at a time'
+                    }, _piAnim.interval ? '⏹ Stop animation' : '🔬 Slow-drop 100 (watch them land)')
 
                   )
 
