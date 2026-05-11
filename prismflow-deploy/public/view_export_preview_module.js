@@ -50,6 +50,7 @@ function ExportPreviewView(props) {
     generateCustomExportStyle,
     getExportPreviewHTML,
     getSkippedResources,
+    history,
     isAgentRunning,
     isGeneratingStyle,
     pdfFixResult,

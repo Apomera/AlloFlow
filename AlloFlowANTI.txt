@@ -23259,7 +23259,7 @@ Return ONLY valid JSON in this format:
           customExportCSS, deleteExportPreset, diffLibReady, executeExportFromPreview, expertCommandInput,
           exportAuditLoading, exportAuditResult, exportConfig, exportPresets, exportPreviewMode,
           exportPreviewRef, exportStylePrompt, exportTheme, generateCustomExportStyle, getExportPreviewHTML,
-          getSkippedResources, isAgentRunning, isGeneratingStyle, pdfFixResult, pptxLoaded,
+          getSkippedResources, history, isAgentRunning, isGeneratingStyle, pdfFixResult, pptxLoaded,
           processExpertCommand, runAxeAudit, saveExportPreset, selectedFont, setAgentActivityLog,
           setAgentLogFullView, setCustomExportCSS, setDiffViewOpen, setExpertCommandInput, setExportAuditLoading,
           setExportAuditResult, setExportConfigAndRefresh, setExportPreviewMode, setExportStylePrompt, setExportTheme,

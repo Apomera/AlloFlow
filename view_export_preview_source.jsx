@@ -15,7 +15,7 @@ function ExportPreviewView(props) {
     diffLibReady, executeExportFromPreview, expertCommandInput, exportAuditLoading,
     exportAuditResult, exportConfig, exportPresets, exportPreviewMode,
     exportPreviewRef, exportStylePrompt, exportTheme, generateCustomExportStyle,
-    getExportPreviewHTML, getSkippedResources, isAgentRunning, isGeneratingStyle,
+    getExportPreviewHTML, getSkippedResources, history, isAgentRunning, isGeneratingStyle,
     pdfFixResult, pptxLoaded, processExpertCommand, runAxeAudit,
     saveExportPreset, selectedFont, setAgentActivityLog, setAgentLogFullView,
     setCustomExportCSS, setDiffViewOpen, setExpertCommandInput, setExportAuditLoading,
