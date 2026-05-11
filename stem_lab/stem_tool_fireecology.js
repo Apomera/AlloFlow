@@ -1365,20 +1365,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     { check: function(z) { return z.id === 'hardwoodStand' && z.yield < 30; }, msg: 'The brown ash is not giving splints this year. Coppice in winter and the shoots will come.' }
   ];
 
+  // Difficulty presets. Affects hours-per-year budget, how often events
+  // fire (apprentice gets some quiet years), and how hard events hit.
+  var MOSAIC_DIFFICULTIES = {
+    apprentice: { id: 'apprentice', label: 'Apprentice', hoursPerYear: 40, eventSkipChance: 0.3, eventSeverity: 0.8, desc: '40 hours / year, kinder events. Good for a first run.' },
+    steward:    { id: 'steward',    label: 'Steward',    hoursPerYear: 32, eventSkipChance: 0,   eventSeverity: 1.0, desc: '32 hours / year, standard events. Default.' },
+    keeper:     { id: 'keeper',     label: 'Fire Keeper', hoursPerYear: 24, eventSkipChance: 0,   eventSeverity: 1.5, desc: '24 hours / year, harsher events. Tight constraint.' }
+  };
+
   function defaultMosaicState() {
+    var diff = MOSAIC_DIFFICULTIES.steward;
     return {
       phase: 'setup',          // 'setup' | 'year' | 'review' | 'debrief'
       year: 1,
       maxYears: 8,
-      hoursPerYear: 32,
-      hoursLeft: 32,
+      difficulty: diff.id,
+      hoursPerYear: diff.hoursPerYear,
+      hoursLeft: diff.hoursPerYear,
       zones: WABANAKI_ZONES.map(function(z) { return Object.assign({ id: z.id }, z.defaultState); }),
       currentSeason: 'fall',
       yearActions: [],         // actions logged during this year
       yearLog: [],             // multi-year history
       lastEvent: null,
       continuityWins: 0,
-      finalOutcome: null
+      finalOutcome: null,
+      // AI Land Reading state
+      aiReadResponse: null,
+      aiReadLoading: false,
+      aiReadHistory: [],
+      // UI state
+      deepDiveZone: null,
+      firstTipDismissed: false
     };
   }
 
@@ -3312,6 +3329,117 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             );
           }
 
+          // ── AI LAND READING ──
+          // Carefully framed: this is an AI fire-ecology educator that reads
+          // the observable land state. It is NOT an "Elder voice" and must
+          // never speak in first-person Wabanaki voice, attribute statements
+          // to named tribal individuals, invoke sacred or ceremonial claims,
+          // or use romanticized framing. The system prompt enforces these
+          // constraints; a visible disclaimer renders with every response.
+          function readLand() {
+            if (!callGemini || m.aiReadLoading) return;
+            var landSummary = m.zones.map(function(z) {
+              var def = getZoneDef(z.id);
+              var fr = def.fireReturn >= 50 ? 'almost never (riparian or mature forest)' : 'every ' + def.fireReturn + ' years';
+              return '- ' + def.name + ': fuel ' + Math.round(z.fuel) + ', health ' + Math.round(z.health) + ', yield ' + Math.round(z.yield) + ', ' + z.lastBurn + ' years since last burn (target fire-return: ' + fr + ')';
+            }).join('\n');
+
+            var prompt = [
+              'You are an AI fire ecology educator. You are NOT a Wabanaki person and you do NOT speak on behalf of any tribal nation, elder, or named individual.',
+              '',
+              'A student is stewarding a simulated Maine territory across 8 years. The territory has 5 zones, each with a different fire-return interval.',
+              '',
+              'Current land state (Year ' + m.year + ' of ' + m.maxYears + ', difficulty: ' + (MOSAIC_DIFFICULTIES[m.difficulty] || MOSAIC_DIFFICULTIES.steward).label + '):',
+              landSummary,
+              'Stewardship hours available this year: ' + m.hoursLeft + ' of ' + m.hoursPerYear,
+              'Continuity wins so far: ' + m.continuityWins,
+              '',
+              'Read this land state and give 3 to 4 sentences of practical coaching.',
+              '',
+              'HARD CONSTRAINTS (must follow all):',
+              '- NEVER speak in first-person Elder voice or claim to be a Wabanaki person.',
+              '- NEVER attribute statements to specific tribal individuals, elders, or named persons.',
+              '- NEVER invoke sacred, ceremonial, or spiritual claims you do not have authority over.',
+              '- NEVER use "noble savage" framing or romanticized language about Indigenous peoples.',
+              '- NEVER invent quotes or attributed sayings.',
+              '- DO frame as "documented Wabanaki fire stewardship practice" or "fire ecology research on Indigenous burning."',
+              '- DO acknowledge that the Wabanaki Confederacy is five distinct nations (Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki) with different languages and practices when relevant.',
+              '- DO stay grounded in observable land state and concrete techniques: cultural burn, pile burn, hand thinning, coppice, seed scatter, rest.',
+              '- Name 1 or 2 highest-priority moves and explain why, grounded in fire ecology and documented practice.',
+              '- Be direct, observational, useful. No flowery language.',
+              '',
+              'Respond in 3 to 4 sentences of plain prose. Do not use markdown. Do not use first-person plural ("we") or first-person singular ("I") for Wabanaki voice.'
+            ].join('\n');
+
+            setMosaic({ aiReadLoading: true, aiReadResponse: null });
+            try {
+              var p = callGemini(prompt);
+              if (p && typeof p.then === 'function') {
+                p.then(function(resp) {
+                  var text = '';
+                  if (typeof resp === 'string') text = resp;
+                  else if (resp && typeof resp.text === 'string') text = resp.text;
+                  else if (resp && resp.candidates) text = (resp.candidates[0] && resp.candidates[0].content && resp.candidates[0].content.parts && resp.candidates[0].content.parts[0] && resp.candidates[0].content.parts[0].text) || '';
+                  text = (text || 'The reader returned no text. Try again in a moment.').replace(/\*\*/g, '').replace(/^[\s\n]+|[\s\n]+$/g, '');
+                  setMosaic({
+                    aiReadResponse: text,
+                    aiReadLoading: false,
+                    aiReadHistory: (m.aiReadHistory || []).concat([{ year: m.year, text: text }])
+                  });
+                  if (announceToSR) announceToSR('AI Land Reading complete.');
+                }).catch(function() {
+                  setMosaic({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
+                });
+              } else {
+                setMosaic({ aiReadResponse: 'AI is not available in this context.', aiReadLoading: false });
+              }
+            } catch (e) {
+              setMosaic({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
+            }
+          }
+
+          function dismissAIRead() { setMosaic({ aiReadResponse: null }); }
+
+          // Render the AI Land Reading response panel (only when set)
+          function renderAIReadPanel() {
+            if (m.aiReadLoading) {
+              return h('div', {
+                role: 'status', 'aria-live': 'polite',
+                style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 }
+              }, '⏳ AI fire ecologist is reading your land...');
+            }
+            if (!m.aiReadResponse) return null;
+            return h('div', {
+              role: 'region', 'aria-label': 'AI Land Reading',
+              style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', border: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                h('span', { style: { fontSize: 20 } }, '🔍'),
+                h('strong', { style: { color: '#38bdf8', fontSize: 14 } }, 'AI Land Reading'),
+                h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 6 } },
+                  h('button', {
+                    onClick: readLand,
+                    'aria-label': 'Read again',
+                    style: { background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }
+                  }, '↻ Re-read'),
+                  h('button', {
+                    onClick: dismissAIRead,
+                    'aria-label': 'Dismiss reading',
+                    style: { background: 'transparent', border: '1px solid #475569', color: '#cbd5e1', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }
+                  }, '✕')
+                )
+              ),
+              h('p', { style: { margin: '0 0 10px 0', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.6 } }, m.aiReadResponse),
+              h('div', {
+                style: { fontSize: 11, color: '#64748b', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' }
+              },
+                'AI fire ecology educator trained on documented Wabanaki fire stewardship research. ',
+                h('strong', null, 'It is not a Wabanaki person and does not speak for any Wabanaki nation.'),
+                ' For authoritative voice, consult Wabanaki organizations directly: Maine Indian Basketmakers Alliance, Wabanaki Public Health and Wellness, the Penobscot Cultural and Historic Preservation Department, and the Passamaquoddy Cultural Heritage Museum.'
+              )
+            );
+          }
+
           // Open / close per-zone cultural deep-dive
           function openDeepDive(zoneId) {
             setMosaic({ deepDiveZone: zoneId });
@@ -3394,12 +3522,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
           function startCampaign() {
             var fresh = defaultMosaicState();
+            var diffId = m.difficulty || 'steward';
+            var diff = MOSAIC_DIFFICULTIES[diffId] || MOSAIC_DIFFICULTIES.steward;
             fresh.phase = 'year';
+            fresh.difficulty = diff.id;
+            fresh.hoursPerYear = diff.hoursPerYear;
+            fresh.hoursLeft = diff.hoursPerYear;
             setMosaic(fresh);
             playSound('ignite');
-            if (addToast) addToast('🧩 Wabanaki Mosaic begins. Year 1 of 8.', 'success');
-            awardStemXP('mosaic_start', 10, 'Mosaic begins');
-            if (announceToSR) announceToSR('Cultural Mosaic campaign started. Year 1 of 8. ' + fresh.hoursLeft + ' stewardship hours available.');
+            if (addToast) addToast('🧩 Wabanaki Mosaic begins. Year 1 of 8 on ' + diff.label + ' difficulty.', 'success');
+            awardStemXP('mosaic_start', 10, 'Mosaic begins (' + diff.label + ')');
+            if (announceToSR) announceToSR('Cultural Mosaic campaign started on ' + diff.label + '. Year 1 of 8. ' + fresh.hoursLeft + ' stewardship hours available.');
           }
 
           function resetCampaign() {
@@ -3469,9 +3602,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               return nz;
             });
 
-            // Trigger a random event (1 of 8) — 1 event per year
-            var ev = MOSAIC_EVENTS[Math.floor(Math.random() * MOSAIC_EVENTS.length)];
-            driftedZones.forEach(function(z) { ev.apply(z, driftedZones); });
+            // Trigger a random event (1 of 8) — 1 event per year, with
+            // difficulty-aware skip + severity scaling.
+            var diff = MOSAIC_DIFFICULTIES[m.difficulty || 'steward'] || MOSAIC_DIFFICULTIES.steward;
+            var ev;
+            if (Math.random() < (diff.eventSkipChance || 0)) {
+              ev = { id: 'quietYear', name: 'A Quiet Year', icon: '🌤️', desc: 'No major event. The seasons turned as expected and the community kept its rhythm.', apply: function() {} };
+            } else {
+              ev = MOSAIC_EVENTS[Math.floor(Math.random() * MOSAIC_EVENTS.length)];
+            }
+            // Wrap apply with severity scaling so harder difficulty hits harder.
+            var sev = diff.eventSeverity || 1;
+            driftedZones.forEach(function(z) {
+              var before = { fuel: z.fuel, health: z.health, yield: z.yield };
+              ev.apply(z, driftedZones);
+              if (sev !== 1) {
+                z.fuel   = clamp(before.fuel   + (z.fuel   - before.fuel)   * sev, 0, 100);
+                z.health = clamp(before.health + (z.health - before.health) * sev, 0, 100);
+                z.yield  = clamp(before.yield  + (z.yield  - before.yield)  * sev, 0, 100);
+              }
+            });
 
             // Continuity bonus: name each zone that hit its fire-return window (+/- 1 year)
             var continuityZones = [];
@@ -3608,11 +3758,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 })
               ),
 
+              // Difficulty picker
+              h('div', {
+                style: { background: '#0f172a', borderRadius: 10, padding: 12, marginBottom: 14, border: '1px solid #1e293b' }
+              },
+                h('div', { style: { fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, 'Difficulty'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
+                  Object.keys(MOSAIC_DIFFICULTIES).map(function(dkey) {
+                    var diff = MOSAIC_DIFFICULTIES[dkey];
+                    var picked = (m.difficulty || 'steward') === dkey;
+                    return h('button', {
+                      key: dkey,
+                      onClick: function() { setMosaic({ difficulty: dkey }); },
+                      'aria-label': 'Set difficulty: ' + diff.label,
+                      'aria-pressed': picked,
+                      style: {
+                        background: picked ? 'rgba(21,128,61,0.20)' : '#1e293b',
+                        border: '1px solid ' + (picked ? '#15803d' : '#334155'),
+                        color: picked ? '#86efac' : '#cbd5e1',
+                        borderRadius: 8, padding: '8px 12px', cursor: 'pointer',
+                        textAlign: 'left'
+                      }
+                    },
+                      h('div', { style: { fontWeight: 800, fontSize: 13 } }, diff.label),
+                      h('div', { style: { fontSize: 11, color: picked ? '#a7f3d0' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, diff.desc)
+                    );
+                  })
+                )
+              ),
+
               h('div', {
                 style: { background: '#0f172a', borderRadius: 10, padding: 12, marginBottom: 14, borderLeft: '3px solid #fbbf24', fontSize: 13, lineHeight: 1.55, color: '#fde68a' }
               },
                 h('strong', { style: { color: '#fbbf24' } }, 'How a year works: '),
-                'you have 32 stewardship hours per year. Each technique costs different hours. Pick zones, pick techniques, then end the year. A weather or community event fires, the land drifts naturally, and the next year begins. Hit each zone\'s fire-return window for a continuity bonus.'
+                'you have ' + (MOSAIC_DIFFICULTIES[m.difficulty || 'steward'] || MOSAIC_DIFFICULTIES.steward).hoursPerYear + ' stewardship hours per year. Each technique costs different hours. Pick zones, pick techniques, then end the year. A weather or community event fires, the land drifts naturally, and the next year begins. Hit each zone\'s fire-return window for a continuity bonus.'
               ),
 
               h('button', {
@@ -3917,7 +4096,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Continuity wins'),
                 h('div', { style: { fontSize: 20, fontWeight: 800, color: '#a855f7' } }, m.continuityWins)
               ),
-              h('div', { style: { marginLeft: 'auto' } },
+              h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+                callGemini ? h('button', {
+                  onClick: readLand,
+                  disabled: m.aiReadLoading,
+                  'aria-label': 'Ask AI fire ecologist to read your land state',
+                  title: 'AI fire ecology educator reads your current land state',
+                  style: {
+                    padding: '8px 12px', borderRadius: 10, border: '1px solid #38bdf8',
+                    cursor: m.aiReadLoading ? 'wait' : 'pointer',
+                    background: 'rgba(56,189,248,0.10)', color: '#38bdf8', fontWeight: 700, fontSize: 12,
+                    opacity: m.aiReadLoading ? 0.6 : 1
+                  }
+                }, m.aiReadLoading ? '⏳ Reading...' : '🔍 Read the land (AI)') : null,
                 h('button', {
                   onClick: endYear,
                   'aria-label': 'End this year',
@@ -3928,6 +4119,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 }, 'End Year →')
               )
             ),
+
+            // AI Land Reading response (below HUD when present)
+            renderAIReadPanel(),
 
             // Zones with action picker
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 10, marginBottom: 12 } },
