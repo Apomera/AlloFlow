@@ -3092,6 +3092,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           var setMosaic = function(patch) { updMulti({ mosaic: Object.assign({}, m, patch) }); };
           var T_GREEN = '#15803d', T_GREEN_HI = '#86efac';
 
+          // Map abstract yield to a concrete cultural artifact per zone.
+          // Numbers are illustrative scales, calibrated so a healthy zone at
+          // ~60 yield produces a believable annual harvest for a small community.
+          function zoneArtifact(z) {
+            var y = Math.max(0, Math.round(z.yield));
+            if (z.id === 'blueberryBarren') return { icon: '🫐', text: Math.round(y * 6) + ' lb blueberries' };
+            if (z.id === 'oakSavanna')      return { icon: '🌰', text: Math.round(y / 3) + ' bushels of acorns' };
+            if (z.id === 'mixedConifer')    return { icon: '🪵', text: Math.round(y / 4) + ' lb pine pitch and root' };
+            if (z.id === 'riparian')        return { icon: '🌾', text: Math.round(y / 2) + ' sweetgrass braids' };
+            if (z.id === 'hardwoodStand')   return { icon: '🧺', text: Math.round(y / 5) + ' ash splint baskets' };
+            return { icon: '🌿', text: '' };
+          }
+
+          // Simulate 8 years of pure neglect from the original default state.
+          // No actions, no events: just drift. Used at debrief to show the
+          // counterfactual ("what would have happened if you did nothing").
+          function computeDoNothingBaseline() {
+            var zs = WABANAKI_ZONES.map(function(zd) {
+              return Object.assign({ id: zd.id }, zd.defaultState);
+            });
+            for (var y = 0; y < m.maxYears; y++) {
+              zs = zs.map(function(z) {
+                var def = getZoneDef(z.id);
+                var nz = Object.assign({}, z);
+                nz.fuel = clamp(nz.fuel + 4, 0, 100);
+                nz.lastBurn = (nz.lastBurn || 0) + 1;
+                var pastDue = nz.lastBurn - def.fireReturn;
+                if (def.fireReturn < 50 && pastDue > 0) {
+                  nz.yield = clamp(nz.yield - 4 - Math.min(8, pastDue), 0, 100);
+                  nz.health = clamp(nz.health - 2.5, 0, 100);
+                } else {
+                  nz.yield = clamp(nz.yield - 1, 0, 100);
+                  nz.health = clamp(nz.health - 0.6, 0, 100);
+                }
+                return nz;
+              });
+            }
+            return zs;
+          }
+
+          // The single most overdue zone, used to coach a first-year student
+          // toward the highest-leverage action.
+          function getCoachingTip() {
+            var worst = null;
+            m.zones.forEach(function(z) {
+              var def = getZoneDef(z.id);
+              if (def.fireReturn >= 50) return;
+              var overdue = (z.lastBurn || 0) - def.fireReturn;
+              if (!worst || overdue > worst.overdue) worst = { zone: z, def: def, overdue: overdue };
+            });
+            return worst;
+          }
+
           function startCampaign() {
             var fresh = defaultMosaicState();
             fresh.phase = 'year';
@@ -3150,6 +3203,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
           // End the current year — fire event, recover, check continuity
           function endYear() {
+            // Snapshot pre-drift state so the review can show deltas
+            var preDrift = m.zones.map(function(z) { return Object.assign({}, z); });
+
             // Natural drift: fuel accumulates, health drifts, yield depends on years since burn
             var driftedZones = m.zones.map(function(z) {
               var nz = Object.assign({}, z);
@@ -3170,19 +3226,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             var ev = MOSAIC_EVENTS[Math.floor(Math.random() * MOSAIC_EVENTS.length)];
             driftedZones.forEach(function(z) { ev.apply(z, driftedZones); });
 
-            // Continuity bonus: any zone hitting its fire-return interval window (+/- 1 year)
-            var continuityHits = 0;
+            // Continuity bonus: name each zone that hit its fire-return window (+/- 1 year)
+            var continuityZones = [];
             driftedZones.forEach(function(z) {
               var def = getZoneDef(z.id);
-              if (def.fireReturn < 50 && Math.abs(z.lastBurn - def.fireReturn) <= 1) continuityHits++;
+              if (def.fireReturn < 50 && Math.abs(z.lastBurn - def.fireReturn) <= 1) {
+                continuityZones.push(def.name);
+              }
             });
+            var continuityHits = continuityZones.length;
 
             var avgHealth = Math.round(driftedZones.reduce(function(a, z) { return a + z.health; }, 0) / driftedZones.length);
             var totalYield = Math.round(driftedZones.reduce(function(a, z) { return a + z.yield; }, 0));
+
+            // Cultural-artifact harvest for the year
+            var harvest = driftedZones.map(function(z) {
+              var a = zoneArtifact(z);
+              return { id: z.id, icon: a.icon, text: a.text };
+            });
+
             var yearSnap = {
               year: m.year, event: ev.name, eventIcon: ev.icon,
               avgHealth: avgHealth, totalYield: totalYield,
-              continuityHits: continuityHits, actions: m.yearActions.slice()
+              continuityHits: continuityHits,
+              continuityZones: continuityZones,
+              actions: m.yearActions.slice(),
+              preDrift: preDrift,
+              postDrift: driftedZones.map(function(z) { return Object.assign({}, z); }),
+              harvest: harvest
             };
 
             setMosaic({
@@ -3194,7 +3265,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             });
 
             playSound(continuityHits > 0 ? 'badge' : 'pause');
-            if (announceToSR) announceToSR('Year ' + m.year + ' complete. Event: ' + ev.name + '. Avg health ' + avgHealth + ', total yield ' + totalYield + '.');
+            if (announceToSR) announceToSR('Year ' + m.year + ' complete. Event: ' + ev.name + '. Avg health ' + avgHealth + ', total yield ' + totalYield + (continuityHits > 0 ? '. Continuity wins: ' + continuityZones.join(', ') : '') + '.');
             if (m.year >= m.maxYears - 2 && continuityHits >= 2) checkBadge('mosaicMaster');
           }
 
@@ -3296,6 +3367,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           // ── DEBRIEF PHASE ──
           if (m.phase === 'debrief' && m.finalOutcome) {
             var o = m.finalOutcome;
+
+            // Counterfactual: what would have happened with 8 years of neglect?
+            var baseline = computeDoNothingBaseline();
+            var baselineHealth = Math.round(baseline.reduce(function(a, z) { return a + z.health; }, 0) / baseline.length);
+            var baselineYield = Math.round(baseline.reduce(function(a, z) { return a + z.yield; }, 0));
+
+            var actualHealth = Math.round(m.zones.reduce(function(a, z) { return a + z.health; }, 0) / m.zones.length);
+            var actualYield = Math.round(m.zones.reduce(function(a, z) { return a + z.yield; }, 0));
+
+            // Lifetime cultural harvest totals across all 8 years
+            var lifetimeHarvest = {};
+            (m.yearLog || []).forEach(function(snap) {
+              (snap.harvest || []).forEach(function(harv) {
+                if (!lifetimeHarvest[harv.id]) lifetimeHarvest[harv.id] = { icon: harv.icon, parts: [] };
+                lifetimeHarvest[harv.id].parts.push(harv.text);
+              });
+            });
+            // Sum text parts that start with a number
+            function sumHarvestText(parts) {
+              var total = 0; var unit = '';
+              parts.forEach(function(t) {
+                var m2 = t.match(/^(\d+)\s+(.+)$/);
+                if (m2) { total += parseInt(m2[1], 10); unit = m2[2]; }
+              });
+              return total + ' ' + unit;
+            }
+
             return h('div', null,
               h('div', {
                 style: {
@@ -3311,19 +3409,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10, marginBottom: 14 } },
                 h('div', { style: { background: '#0f172a', padding: 12, borderRadius: 10 } },
                   h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Avg ecological health'),
-                  h('div', { style: { fontSize: 24, fontWeight: 800, color: '#86efac' } },
-                    Math.round(m.zones.reduce(function(a, z) { return a + z.health; }, 0) / m.zones.length) + '/100')
+                  h('div', { style: { fontSize: 24, fontWeight: 800, color: '#86efac' } }, actualHealth + '/100')
                 ),
                 h('div', { style: { background: '#0f172a', padding: 12, borderRadius: 10 } },
                   h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Total cultural yield'),
-                  h('div', { style: { fontSize: 24, fontWeight: 800, color: '#fbbf24' } },
-                    Math.round(m.zones.reduce(function(a, z) { return a + z.yield; }, 0)))
+                  h('div', { style: { fontSize: 24, fontWeight: 800, color: '#fbbf24' } }, actualYield)
                 ),
                 h('div', { style: { background: '#0f172a', padding: 12, borderRadius: 10 } },
                   h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Continuity wins'),
                   h('div', { style: { fontSize: 24, fontWeight: 800, color: '#a855f7' } }, m.continuityWins)
                 )
               ),
+
+              // What would have happened if you did nothing?
+              h('div', {
+                style: {
+                  padding: 12, borderRadius: 12, marginBottom: 14,
+                  background: 'linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)',
+                  border: '1px solid rgba(248,113,113,0.4)'
+                }
+              },
+                h('strong', { style: { color: '#fecaca', fontSize: 14, display: 'block', marginBottom: 8 } }, '↔ What if you had done nothing?'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+                  h('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o.color } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: o.color, marginBottom: 4 } }, 'Your mosaic'),
+                    h('div', { style: { color: '#cbd5e1', fontSize: 13 } }, 'Health ' + actualHealth + ' / Yield ' + actualYield)
+                  ),
+                  h('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fca5a5', marginBottom: 4 } }, 'Neglected mosaic'),
+                    h('div', { style: { color: '#cbd5e1', fontSize: 13 } }, 'Health ' + baselineHealth + ' / Yield ' + baselineYield)
+                  )
+                ),
+                h('div', { style: { marginTop: 8, fontSize: 12, color: '#fde68a', lineHeight: 1.5, fontStyle: 'italic' } },
+                  actualHealth > baselineHealth + 8 || actualYield > baselineYield + 50
+                    ? 'Your stewardship pulled the mosaic substantially ahead of where neglect would have left it. That gap is the cultural infrastructure you built.'
+                    : (actualHealth > baselineHealth - 2
+                        ? 'You roughly matched the do-nothing baseline. Active stewardship without good timing can be no better than rest.'
+                        : 'Active stewardship without good timing can leave land worse off than rest. Stewardship is a craft, not just effort.')
+                )
+              ),
+
+              // Lifetime cultural harvest
+              Object.keys(lifetimeHarvest).length > 0 ? h('div', {
+                style: { background: 'rgba(251,191,36,0.08)', borderRadius: 10, padding: 12, marginBottom: 14, borderLeft: '3px solid #fbbf24' }
+              },
+                h('strong', { style: { color: '#fbbf24', fontSize: 13 } }, '🌾 Eight-year cultural harvest'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 6, marginTop: 8 } },
+                  Object.keys(lifetimeHarvest).map(function(zid) {
+                    var lh = lifetimeHarvest[zid];
+                    return h('div', { key: zid, style: { fontSize: 12.5, color: '#fde68a' } },
+                      h('span', { style: { fontSize: 16, marginRight: 6 } }, lh.icon),
+                      sumHarvestText(lh.parts)
+                    );
+                  })
+                )
+              ) : null,
+
               h('h4', { style: { color: '#e2e8f0', margin: '10px 0' } }, 'Final state by zone'),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
                 m.zones.map(function(z) {
@@ -3349,6 +3490,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 if (g.check(z) && elderMatches.length < 3 && !elderMatches.find(function(em){return em.msg === g.msg;})) elderMatches.push(g);
               });
             });
+            // Build delta rows: pre vs post values per zone
+            var deltaRows = (lastSnap.preDrift || []).map(function(pre) {
+              var post = (lastSnap.postDrift || []).find(function(p) { return p.id === pre.id; }) || pre;
+              var def = getZoneDef(pre.id);
+              return { def: def, pre: pre, post: post };
+            });
+            var continuityNames = lastSnap.continuityZones || [];
+
+            function deltaCell(label, before, after, goodIfDown) {
+              var d = Math.round(after - before);
+              var color, arrow;
+              if (Math.abs(d) < 1) { color = '#64748b'; arrow = '·'; }
+              else if ((d > 0 && !goodIfDown) || (d < 0 && goodIfDown)) { color = '#86efac'; arrow = d > 0 ? '▲' : '▼'; }
+              else { color = '#fca5a5'; arrow = d > 0 ? '▲' : '▼'; }
+              return h('div', { style: { background: '#1e293b', padding: '4px 6px', borderRadius: 6, textAlign: 'center', fontSize: 11 } },
+                h('div', { style: { color: '#94a3b8' } }, label),
+                h('div', { style: { color: color, fontWeight: 700 } }, Math.round(after) + ' ' + arrow + ' ' + (d > 0 ? '+' : '') + d)
+              );
+            }
+
             return h('div', null,
               h('div', { style: { padding: 14, borderRadius: 12, marginBottom: 12, background: '#0f172a', borderLeft: '3px solid #fbbf24' } },
                 h('div', { style: { fontSize: 22, marginBottom: 4 } }, ev.icon || '🌿'),
@@ -3369,6 +3530,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   h('div', { style: { fontSize: 20, fontWeight: 800, color: '#a855f7' } }, '+' + (lastSnap.continuityHits || 0))
                 )
               ),
+
+              // Named continuity wins (which zones hit their window)
+              continuityNames.length > 0 ? h('div', {
+                style: { padding: 10, borderRadius: 10, marginBottom: 12, background: 'rgba(168,85,247,0.10)', borderLeft: '3px solid #a855f7', fontSize: 13, color: '#e9d5ff' }
+              },
+                h('strong', { style: { color: '#a855f7' } }, '🎯 Hit the fire-return window: '),
+                continuityNames.join(', ')
+              ) : h('div', {
+                style: { padding: 10, borderRadius: 10, marginBottom: 12, background: 'rgba(100,116,139,0.10)', borderLeft: '3px solid #64748b', fontSize: 12.5, color: '#94a3b8', fontStyle: 'italic' }
+              }, 'No zone hit its fire-return window this year. The mosaic drifts when no habitat gets the right treatment on time.'),
+
+              // Per-zone delta rows
+              h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 10, marginBottom: 12 } },
+                h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 6, fontSize: 13 } }, 'What changed this year'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: '1fr', gap: 6 } },
+                  deltaRows.map(function(row) {
+                    return h('div', { key: row.def.id,
+                      style: { display: 'grid', gridTemplateColumns: '170px 1fr 1fr 1fr', gap: 6, alignItems: 'center' }
+                    },
+                      h('div', { style: { fontSize: 12, fontWeight: 700, color: row.def.color } }, row.def.icon + ' ' + row.def.name),
+                      deltaCell('Fuel', row.pre.fuel, row.post.fuel, true),
+                      deltaCell('Health', row.pre.health, row.post.health, false),
+                      deltaCell('Yield', row.pre.yield, row.post.yield, false)
+                    );
+                  })
+                )
+              ),
+
+              // Cultural artifact harvest
+              (lastSnap.harvest && lastSnap.harvest.length > 0) ? h('div', {
+                style: { background: 'rgba(251,191,36,0.08)', borderRadius: 10, padding: 10, marginBottom: 12, borderLeft: '3px solid #fbbf24' }
+              },
+                h('strong', { style: { color: '#fbbf24', fontSize: 13 } }, '🌾 This year the community gathered'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 6, marginTop: 6 } },
+                  lastSnap.harvest.map(function(harv) {
+                    return h('div', { key: harv.id, style: { fontSize: 12.5, color: '#fde68a' } },
+                      h('span', { style: { fontSize: 16, marginRight: 6 } }, harv.icon),
+                      harv.text
+                    );
+                  })
+                )
+              ) : null,
+
               elderMatches.length > 0 ? h('div', {
                 style: { padding: 12, borderRadius: 10, marginBottom: 12, background: 'rgba(168,85,247,0.08)', borderLeft: '3px solid #a855f7' }
               },
@@ -3390,7 +3594,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           }
 
           // ── YEAR PHASE (active stewardship) ──
+          var coachingTip = (m.year === 1 && !m.firstTipDismissed && m.yearActions.length === 0) ? getCoachingTip() : null;
           return h('div', null,
+            // Year-1 coaching tip (only on Year 1, until first action or dismissed)
+            coachingTip ? h('div', {
+              role: 'note',
+              style: {
+                padding: '10px 14px', borderRadius: 12, marginBottom: 12,
+                background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)',
+                border: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7',
+                color: '#e9d5ff', fontSize: 13, lineHeight: 1.55,
+                display: 'flex', alignItems: 'flex-start', gap: 10
+              }
+            },
+              h('span', { style: { fontSize: 20, flexShrink: 0 } }, '🪶'),
+              h('div', { style: { flex: 1 } },
+                h('strong', { style: { color: '#a855f7' } }, 'First-year tip: '),
+                'your ' + coachingTip.def.name.toLowerCase() + ' is ' +
+                (coachingTip.overdue > 0
+                  ? 'about ' + coachingTip.overdue + ' year' + (coachingTip.overdue === 1 ? '' : 's') + ' overdue for fire'
+                  : 'approaching its fire-return window') +
+                '. A cultural burn (8 hours) is the highest-leverage move you can make this year. You have ' + m.hoursPerYear + ' hours to spend; try one good burn plus one supporting action.'
+              ),
+              h('button', {
+                onClick: function() { setMosaic({ firstTipDismissed: true }); },
+                'aria-label': 'Dismiss tip',
+                style: { background: 'transparent', border: 'none', color: '#a855f7', cursor: 'pointer', fontSize: 16, padding: 0, marginLeft: 6 }
+              }, '✕')
+            ) : null,
+
             // HUD
             h('div', {
               style: {
