@@ -850,6 +850,15 @@
     if (phase === PHASES.OPENING_SPEECHES) {
       return h(OpeningSpeechesView, { ctx: ctx, modelUn: modelUn, updateMUN: updateMUN, isHost: isHost || isSolo, isSolo: isSolo, sessionState: sessionState });
     }
+    if (phase === PHASES.DRAFT) {
+      return h(DraftResolutionView, { ctx: ctx, modelUn: modelUn, updateMUN: updateMUN, isHost: isHost || isSolo, isSolo: isSolo, sessionState: sessionState });
+    }
+    if (phase === PHASES.VOTE) {
+      return h(VotingView, { ctx: ctx, modelUn: modelUn, updateMUN: updateMUN, isHost: isHost || isSolo, isSolo: isSolo, sessionState: sessionState });
+    }
+    if (phase === PHASES.DEBRIEF) {
+      return h(DebriefView, { ctx: ctx, modelUn: modelUn, updateMUN: updateMUN, isHost: isHost || isSolo, isSolo: isSolo, sessionState: sessionState });
+    }
 
     // Future phases — placeholder
     return h('div', { style: { padding: 20, textAlign: 'center', color: '#cbd5e1' } },
@@ -1373,6 +1382,159 @@
   }
 
   // ═══════════════════════════════════════════
+  // AI HELPER — Suggest a resolution clause in proper MUN format.
+  // Returns { text, type: 'preamble'|'operative', perspective } or null.
+  // ═══════════════════════════════════════════
+  function aiSuggestResolutionClause(ctx, fromCountry, agenda, committee, existingClauses) {
+    if (!ctx || typeof ctx.callGemini !== 'function' || !agenda) return Promise.resolve(null);
+    var stance = (fromCountry && fromCountry.defaultPositions && fromCountry.defaultPositions[agenda.id]) || 'standard diplomatic engagement';
+    var existingText = (existingClauses || []).slice(0, 8).map(function(c, i) {
+      return (i + 1) + '. ' + (c.text || '').slice(0, 200);
+    }).join('\n');
+    var prompt = [
+      'You are drafting a resolution clause for a Model UN ' + (committee ? committee.name : 'committee') + ' debate on "' + agenda.title + '".',
+      fromCountry ? ('Drafting from the perspective of ' + fromCountry.name + ' (stance: ' + stance + ').') : '',
+      '',
+      existingText ? 'Existing clauses already on the floor:\n' + existingText + '\n' : '',
+      'Propose ONE NEW clause in proper Model UN format. Choose either:',
+      '  - PREAMBULATORY (starts with an italicized -ing or -ed word like "Acknowledging,", "Recognizing,", "Recalling,", "Concerned by,")',
+      '  - OPERATIVE (starts with a numbered action verb like "Calls upon", "Urges", "Establishes", "Encourages", "Requests")',
+      '',
+      'Constraints:',
+      '- 25-70 words',
+      '- Must be substantive, not boilerplate',
+      '- Should ADD a new dimension, not restate existing clauses',
+      fromCountry ? ('- Reflect ' + fromCountry.name + '\'s diplomatic interests credibly') : '',
+      '',
+      'Return ONLY a JSON object:',
+      '{',
+      '  "text": "the full clause text",',
+      '  "type": "preamble" or "operative",',
+      '  "perspective": "1-sentence explanation of which countries this clause favors and why"',
+      '}'
+    ].join('\n');
+    return Promise.resolve(ctx.callGemini(prompt, true)).then(function(result) {
+      var raw = typeof result === 'string' ? result : (result && result.text ? result.text : String(result || ''));
+      raw = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      var s = raw.indexOf('{'); var e = raw.lastIndexOf('}');
+      if (s < 0 || e <= s) return null;
+      var parsed; try { parsed = JSON.parse(raw.substring(s, e + 1)); } catch (err) { return null; }
+      if (!parsed || typeof parsed.text !== 'string' || parsed.text.length < 15) return null;
+      var type = parsed.type === 'preamble' ? 'preamble' : 'operative';
+      return {
+        text: parsed.text.slice(0, 500),
+        type: type,
+        perspective: typeof parsed.perspective === 'string' ? parsed.perspective.slice(0, 200) : ''
+      };
+    }).catch(function() { return null; });
+  }
+
+  // ═══════════════════════════════════════════
+  // AI HELPER — How does an AI-played country vote on the resolution?
+  // Returns { vote: 'Y'|'N'|'A', reasoning } or a deterministic fallback.
+  // ═══════════════════════════════════════════
+  function aiVoteDelegate(ctx, country, agenda, clauses) {
+    // Fast path: if no AI, fall back to a deterministic stance-based vote.
+    function fallback() {
+      // Crude: count operative clauses with words that match country stance keywords.
+      // Default to abstention to keep the simulation tame.
+      return Promise.resolve({ vote: 'A', reasoning: '(AI unavailable — defaulted to abstention)' });
+    }
+    if (!ctx || typeof ctx.callGemini !== 'function' || !country || !agenda) return fallback();
+    var stance = (country.defaultPositions && country.defaultPositions[agenda.id]) || 'standard diplomatic engagement';
+    var clauseText = (clauses || []).map(function(c, i) {
+      return (i + 1) + '. [' + (c.type === 'preamble' ? 'PRE' : 'OP') + '] ' + (c.text || '').slice(0, 280);
+    }).join('\n');
+    var prompt = [
+      'You are the delegate from ' + country.name + ' voting on a Model UN resolution about "' + agenda.title + '".',
+      'Your country\'s default stance: ' + stance,
+      'Country alliances: ' + (country.alliances || []).join(', '),
+      '',
+      'Full draft resolution clauses:',
+      clauseText || '(no clauses)',
+      '',
+      'Cast your vote: Y (yes), N (no), or A (abstain). Be consistent with your country\'s national interest and stance.',
+      '',
+      'Return ONLY a JSON object:',
+      '{',
+      '  "vote": "Y" or "N" or "A",',
+      '  "reasoning": "1-2 sentence diplomatic explanation in first person plural"',
+      '}'
+    ].join('\n');
+    return Promise.resolve(ctx.callGemini(prompt, true)).then(function(result) {
+      var raw = typeof result === 'string' ? result : (result && result.text ? result.text : String(result || ''));
+      raw = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      var s = raw.indexOf('{'); var e = raw.lastIndexOf('}');
+      if (s < 0 || e <= s) return fallback();
+      var parsed; try { parsed = JSON.parse(raw.substring(s, e + 1)); } catch (err) { return fallback(); }
+      var vote = (parsed && parsed.vote || '').toString().toUpperCase().charAt(0);
+      if (vote !== 'Y' && vote !== 'N' && vote !== 'A') return fallback();
+      return {
+        vote: vote,
+        reasoning: typeof parsed.reasoning === 'string' ? parsed.reasoning.slice(0, 300) : ''
+      };
+    }).catch(function() { return fallback(); });
+  }
+
+  // ═══════════════════════════════════════════
+  // AI HELPER — Coach feedback for the student at debrief.
+  // Analyzes consistency between speeches + final vote + country position.
+  // ═══════════════════════════════════════════
+  function aiCoachFeedback(ctx, country, agenda, mySpeeches, myVote, classOutcome) {
+    if (!ctx || typeof ctx.callGemini !== 'function' || !country || !agenda) {
+      return Promise.resolve({
+        strengths: ['Participated as ' + (country ? country.name : 'a delegate') + ' through the full debate.'],
+        areas: ['No AI coach available — review your speeches against your country\'s stance manually.'],
+        consistencyScore: null
+      });
+    }
+    var stance = (country.defaultPositions && country.defaultPositions[agenda.id]) || 'standard diplomatic engagement';
+    var speechText = (mySpeeches || []).map(function(s, i) {
+      return 'Speech ' + (i + 1) + ': ' + (s.text || '').slice(0, 400);
+    }).join('\n\n') || '(no speeches given)';
+    var prompt = [
+      'You are a Model UN coach evaluating a student delegate.',
+      '',
+      'Student played: ' + country.name + ' on the agenda "' + agenda.title + '".',
+      'Country\'s default stance: ' + stance,
+      '',
+      'Student\'s speeches:',
+      speechText,
+      '',
+      'Student\'s final vote on the resolution: ' + (myVote || '(did not vote)'),
+      'Resolution outcome: ' + (classOutcome || 'unknown'),
+      '',
+      'Evaluate the student\'s performance with HONESTY (not just praise). Look for:',
+      '- Diplomatic consistency: did their statements match their country\'s stance?',
+      '- Did their vote align with their stated positions?',
+      '- Were arguments specific (cited national interest, alliances, real-world context) or generic?',
+      '- Did they engage with opposing views (concessions, counterproposals)?',
+      '',
+      'Return ONLY a JSON object:',
+      '{',
+      '  "consistencyScore": 0-100,',
+      '  "strengths": ["2-3 specific strength bullets, each one sentence"],',
+      '  "areas": ["1-3 specific growth bullets, each one sentence"],',
+      '  "verdict": "1-2 sentence overall coaching note"',
+      '}'
+    ].join('\n');
+    return Promise.resolve(ctx.callGemini(prompt, true)).then(function(result) {
+      var raw = typeof result === 'string' ? result : (result && result.text ? result.text : String(result || ''));
+      raw = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      var s = raw.indexOf('{'); var e = raw.lastIndexOf('}');
+      if (s < 0 || e <= s) return null;
+      var parsed; try { parsed = JSON.parse(raw.substring(s, e + 1)); } catch (err) { return null; }
+      if (!parsed) return null;
+      return {
+        consistencyScore: typeof parsed.consistencyScore === 'number' ? Math.max(0, Math.min(100, Math.round(parsed.consistencyScore))) : null,
+        strengths: Array.isArray(parsed.strengths) ? parsed.strengths.slice(0, 4).map(String) : [],
+        areas: Array.isArray(parsed.areas) ? parsed.areas.slice(0, 4).map(String) : [],
+        verdict: typeof parsed.verdict === 'string' ? parsed.verdict.slice(0, 400) : ''
+      };
+    }).catch(function() { return null; });
+  }
+
+  // ═══════════════════════════════════════════
   // OpeningSpeechesView — every delegate gives an opening speech.
   // Host clicks "Give floor → [delegate]" to advance through the speaker queue.
   // Human delegates type their speech; AI delegates auto-generate when called on.
@@ -1503,9 +1665,16 @@
         ),
         // Phase advance
         isHost && allSpoken && h('button', {
-          onClick: function() { updateMUN({ phase: PHASES.MOD_CAUCUS }); },
+          onClick: function() { updateMUN({ phase: PHASES.DRAFT }); },
           style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
-        }, 'Advance to Caucus → (v0.3)')
+        }, 'Advance to Resolution Drafting →'),
+        isHost && !allSpoken && h('button', {
+          onClick: function() {
+            if (typeof confirm === 'function' && !confirm('Skip to Resolution Drafting? Some delegates have not spoken yet.')) return;
+            updateMUN({ phase: PHASES.DRAFT });
+          },
+          style: { padding: '6px 10px', fontSize: 11, fontWeight: 600, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' }
+        }, 'Skip to Drafting →')
       ),
 
       // Current speaker spotlight
@@ -1712,6 +1881,765 @@
   }
 
   // ═══════════════════════════════════════════
+  // DraftResolutionView — collaborative clause building.
+  // Each delegate (human or AI-suggested) can propose ONE clause at a time.
+  // Host can mark clauses adopted or removed; voting happens after.
+  // ═══════════════════════════════════════════
+  function DraftResolutionView(props) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var ctx = props.ctx;
+    var modelUn = props.modelUn;
+    var updateMUN = props.updateMUN;
+    var isHost = props.isHost;
+    var isSolo = props.isSolo;
+    var sessionState = props.sessionState;
+
+    var committee = committeeById(modelUn.committeeId);
+    var agenda = agendaById(modelUn.agendaId);
+    var assigned = modelUn.assignedCountries || {};
+    var clauses = modelUn.clauses || {};
+    var orderedClauses = Object.keys(clauses).map(function(id) {
+      return Object.assign({ id: id }, clauses[id]);
+    }).sort(function(a, b) { return (a.at || 0) - (b.at || 0); });
+
+    var myUid = isSolo ? 'me' : (ctx.userId || null);
+    var myIso = myUid ? assigned[myUid] : null;
+    var myCountry = myIso ? countryById(myIso) : null;
+
+    var textTuple = useState('');
+    var text = textTuple[0];
+    var setText = textTuple[1];
+    var typeTuple = useState('operative');
+    var clauseType = typeTuple[0];
+    var setClauseType = typeTuple[1];
+    var aiLoadTuple = useState(false);
+    var aiLoading = aiLoadTuple[0];
+    var setAiLoading = aiLoadTuple[1];
+
+    function commitClause(authorIso, authorCountryName, txt, type, isAi) {
+      var clauseId = 'cl_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+      var newClause = {
+        text: txt.slice(0, 500),
+        type: type === 'preamble' ? 'preamble' : 'operative',
+        proposer: authorCountryName,
+        iso: authorIso,
+        status: 'open', // 'open' | 'adopted' | 'rejected'
+        isAi: !!isAi,
+        at: Date.now()
+      };
+      var next = Object.assign({}, clauses);
+      next[clauseId] = newClause;
+      // Cap at 20 (per plan's 1MB doc guard)
+      var keys = Object.keys(next).map(function(k) { return { k: k, at: next[k].at }; }).sort(function(a, b) { return a.at - b.at; });
+      if (keys.length > 20) {
+        var trimmed = {};
+        keys.slice(-20).forEach(function(x) { trimmed[x.k] = next[x.k]; });
+        next = trimmed;
+      }
+      updateMUN({ clauses: next });
+    }
+    function handleProposeAsHuman() {
+      var t = (text || '').trim();
+      if (t.length < 15) { ctx.addToast('Clause is too short — aim for 25-70 words'); return; }
+      if (!myCountry) { ctx.addToast('You are not assigned a country'); return; }
+      commitClause(myCountry.iso, myCountry.name, t, clauseType, false);
+      setText('');
+    }
+    function handleAIStarter() {
+      if (aiLoading) return;
+      setAiLoading(true);
+      aiSuggestResolutionClause(ctx, myCountry, agenda, committee, orderedClauses).then(function(r) {
+        setAiLoading(false);
+        if (r && r.text) {
+          setText(r.text);
+          setClauseType(r.type);
+          ctx.addToast('AI clause ready — edit before proposing');
+        } else {
+          ctx.addToast('AI clause generation failed. Try again or write your own.');
+        }
+      }).catch(function() {
+        setAiLoading(false);
+        ctx.addToast('AI clause generation failed.');
+      });
+    }
+    function handleAIPropose(forIso, forName) {
+      // Host action: AI delegate proposes a clause directly to the floor
+      var country = countryById(forIso);
+      if (!country) return;
+      setAiLoading(true);
+      aiSuggestResolutionClause(ctx, country, agenda, committee, orderedClauses).then(function(r) {
+        setAiLoading(false);
+        if (r && r.text) {
+          commitClause(country.iso, country.name, r.text, r.type, true);
+          ctx.addToast(country.flag + ' ' + country.name + ' proposed a clause');
+        } else {
+          ctx.addToast('AI proposal failed for ' + country.name);
+        }
+      }).catch(function() {
+        setAiLoading(false);
+        ctx.addToast('AI proposal failed');
+      });
+    }
+    function setClauseStatus(clauseId, status) {
+      var next = Object.assign({}, clauses);
+      if (next[clauseId]) {
+        next[clauseId] = Object.assign({}, next[clauseId], { status: status });
+        updateMUN({ clauses: next });
+      }
+    }
+    function removeClause(clauseId) {
+      var next = Object.assign({}, clauses);
+      delete next[clauseId];
+      updateMUN({ clauses: next });
+    }
+    function advanceToVote() {
+      var adopted = orderedClauses.filter(function(c) { return c.status === 'adopted'; });
+      if (adopted.length === 0) {
+        if (typeof confirm === 'function' && !confirm('No clauses adopted yet. Proceed to vote on the full draft anyway?')) return;
+      }
+      updateMUN({ phase: PHASES.VOTE, finalVotes: {} });
+    }
+
+    var allDelegates = Object.keys(assigned).map(function(uid) {
+      return { uid: uid, iso: assigned[uid], isAi: uid.indexOf('ai_') === 0, country: countryById(assigned[uid]) };
+    }).filter(function(d) { return d.country; });
+
+    return h('div', { style: { padding: 16, color: '#e2e8f0', maxWidth: 1000, margin: '0 auto' } },
+      // Header
+      h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 14, padding: 12, background: 'linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%)', borderRadius: 10 } },
+        h('div', { style: { fontSize: 32 } }, '📜'),
+        h('div', { style: { flex: 1 } },
+          h('div', { style: { fontSize: 11, color: '#c4b5fd', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' } },
+            (committee ? committee.name : '') + ' · RESOLUTION DRAFTING'
+          ),
+          h('div', { style: { fontSize: 17, fontWeight: 800, marginTop: 2 } }, agenda ? agenda.title : ''),
+          h('div', { style: { fontSize: 11, color: '#ddd6fe', marginTop: 4 } },
+            orderedClauses.length + ' clause' + (orderedClauses.length !== 1 ? 's' : '') + ' on the floor · ' +
+            orderedClauses.filter(function(c) { return c.status === 'adopted'; }).length + ' adopted'
+          )
+        ),
+        isHost && h('button', {
+          onClick: advanceToVote,
+          style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
+        }, 'Move to Vote →')
+      ),
+
+      // Two-column layout
+      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 } },
+
+        // ── LEFT: Propose a clause (delegate compose) ──
+        h('div', null,
+          h('div', { style: { fontSize: 10, color: '#c4b5fd', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
+            myCountry ? ('Propose a clause as ' + myCountry.flag + ' ' + myCountry.name) : 'Propose a clause'
+          ),
+          myCountry && h('div', { style: { padding: 10, background: 'rgba(124, 58, 237, 0.10)', border: '1px solid #7c3aed', borderRadius: 10 } },
+            // Clause type toggle
+            h('div', { style: { display: 'flex', gap: 6, marginBottom: 8 } },
+              [{ id: 'operative', label: 'Operative', hint: 'Calls upon / Urges / Establishes…' },
+               { id: 'preamble',  label: 'Preambulatory', hint: 'Recognizing / Recalling / Concerned by…' }
+              ].map(function(t) {
+                var picked = clauseType === t.id;
+                return h('button', {
+                  key: t.id, onClick: function() { setClauseType(t.id); },
+                  style: {
+                    flex: 1, padding: '6px 8px', fontSize: 11, fontWeight: 600,
+                    background: picked ? '#7c3aed' : 'rgba(255,255,255,0.04)',
+                    color: picked ? '#fff' : '#cbd5e1',
+                    border: '1px solid ' + (picked ? '#7c3aed' : '#475569'),
+                    borderRadius: 6, cursor: 'pointer'
+                  },
+                  title: t.hint
+                }, t.label);
+              })
+            ),
+            h('textarea', {
+              value: text,
+              onChange: function(e) { setText(e.target.value); },
+              placeholder: clauseType === 'operative'
+                ? 'e.g., Calls upon Member States to submit revised Nationally Determined Contributions consistent with the 1.5°C pathway by 2026;'
+                : 'e.g., Recognizing the disproportionate impact of climate change on small island developing states,',
+              rows: 5,
+              style: {
+                width: '100%', padding: 8, fontFamily: 'inherit', fontSize: 12, lineHeight: 1.6,
+                background: 'rgba(255,255,255,0.04)', color: '#e2e8f0',
+                border: '1px solid #475569', borderRadius: 6, resize: 'vertical', boxSizing: 'border-box'
+              }
+            }),
+            h('div', { style: { display: 'flex', gap: 6, marginTop: 8 } },
+              h('button', {
+                onClick: handleAIStarter,
+                disabled: aiLoading,
+                style: {
+                  padding: '6px 12px', fontSize: 11, fontWeight: 600,
+                  background: aiLoading ? '#475569' : '#a855f7', color: '#fff',
+                  border: 'none', borderRadius: 6, cursor: aiLoading ? 'not-allowed' : 'pointer'
+                }
+              }, aiLoading ? '⏳ Generating…' : '✨ AI starter'),
+              h('button', {
+                onClick: handleProposeAsHuman,
+                disabled: text.trim().length < 15,
+                style: {
+                  marginLeft: 'auto',
+                  padding: '6px 14px', fontSize: 12, fontWeight: 700,
+                  background: text.trim().length >= 15 ? '#10b981' : '#475569',
+                  color: '#fff', border: 'none', borderRadius: 6,
+                  cursor: text.trim().length >= 15 ? 'pointer' : 'not-allowed'
+                }
+              }, '📜 Propose clause')
+            )
+          ),
+          !myCountry && h('div', { style: { padding: 12, fontSize: 12, color: '#94a3b8', fontStyle: 'italic', background: 'rgba(255,255,255,0.03)', borderRadius: 8 } },
+            'You are not assigned a country in this committee. You can still watch the drafting.'
+          ),
+
+          // Host helper: AI delegate auto-propose
+          isHost && h('div', { style: { marginTop: 14 } },
+            h('div', { style: { fontSize: 10, color: '#c4b5fd', fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 } },
+              'Have an AI delegate propose'
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))', gap: 4 } },
+              allDelegates.filter(function(d) { return d.isAi; }).map(function(d) {
+                return h('button', {
+                  key: 'aip-' + d.uid,
+                  onClick: function() { handleAIPropose(d.iso, d.country.name); },
+                  disabled: aiLoading,
+                  title: d.country.name + ' (AI proposes a clause)',
+                  style: {
+                    padding: 4, fontSize: 10,
+                    background: 'rgba(167,139,250,0.10)',
+                    border: '1px solid #a855f7',
+                    borderRadius: 4, color: '#e9d5ff',
+                    cursor: aiLoading ? 'wait' : 'pointer'
+                  }
+                },
+                  h('div', { style: { fontSize: 16 } }, d.country.flag),
+                  h('div', { style: { fontSize: 9 } }, d.country.iso)
+                );
+              })
+            )
+          )
+        ),
+
+        // ── RIGHT: Clause list ──
+        h('div', null,
+          h('div', { style: { fontSize: 10, color: '#c4b5fd', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
+            'Clauses on the Floor'
+          ),
+          orderedClauses.length === 0
+            ? h('div', { style: { padding: 14, fontSize: 12, color: '#94a3b8', fontStyle: 'italic', textAlign: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 8 } },
+                'No clauses yet. Propose one from the left, or have an AI delegate draft the first one.'
+              )
+            : h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 600, overflowY: 'auto' } },
+                orderedClauses.map(function(c, idx) {
+                  var country = countryById(c.iso);
+                  return h(ClauseCard, {
+                    key: c.id,
+                    clause: c,
+                    index: idx + 1,
+                    country: country,
+                    canEdit: isHost,
+                    onAdopt: function() { setClauseStatus(c.id, c.status === 'adopted' ? 'open' : 'adopted'); },
+                    onReject: function() { setClauseStatus(c.id, c.status === 'rejected' ? 'open' : 'rejected'); },
+                    onRemove: function() {
+                      if (typeof confirm !== 'function' || confirm('Remove this clause?')) removeClause(c.id);
+                    }
+                  });
+                })
+              )
+        )
+      )
+    );
+  }
+
+  // Individual clause card with status badges + host actions
+  function ClauseCard(props) {
+    var React = window.React;
+    var h = React.createElement;
+    var c = props.clause;
+    var country = props.country;
+    var statusBg = c.status === 'adopted' ? '#10b981' : c.status === 'rejected' ? '#dc2626' : 'rgba(255,255,255,0.04)';
+    var statusBorder = c.status === 'adopted' ? '#10b981' : c.status === 'rejected' ? '#dc2626' : '#475569';
+    var statusOpacity = c.status === 'rejected' ? 0.55 : 1;
+    return h('div', {
+      style: {
+        padding: 10,
+        background: c.status === 'adopted' ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.03)',
+        border: '1px solid ' + statusBorder,
+        borderRadius: 8, opacity: statusOpacity
+      }
+    },
+      h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
+        h('span', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 600 } }, '#' + props.index),
+        country && h('span', { style: { fontSize: 16 } }, country.flag),
+        h('span', { style: { flex: 1, fontSize: 11, fontWeight: 700, color: '#cbd5e1' } },
+          c.proposer + (c.isAi ? ' 🤖' : '')
+        ),
+        h('span', {
+          style: {
+            fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4,
+            background: c.type === 'preamble' ? 'rgba(251,191,36,0.18)' : 'rgba(14,165,233,0.18)',
+            color: c.type === 'preamble' ? '#fbbf24' : '#7dd3fc',
+            textTransform: 'uppercase', letterSpacing: 0.5
+          }
+        }, c.type === 'preamble' ? 'Preamble' : 'Operative'),
+        c.status === 'adopted' && h('span', { style: { fontSize: 10, fontWeight: 700, color: '#10b981' } }, '✓ Adopted'),
+        c.status === 'rejected' && h('span', { style: { fontSize: 10, fontWeight: 700, color: '#dc2626' } }, '✗ Rejected')
+      ),
+      h('p', { style: { fontSize: 12, lineHeight: 1.6, color: '#e2e8f0', margin: 0, fontStyle: c.type === 'preamble' ? 'italic' : 'normal' } }, c.text),
+      props.canEdit && h('div', { style: { display: 'flex', gap: 4, marginTop: 8 } },
+        h('button', {
+          onClick: props.onAdopt,
+          style: {
+            padding: '3px 8px', fontSize: 10, fontWeight: 700,
+            background: c.status === 'adopted' ? '#10b981' : 'rgba(16,185,129,0.15)',
+            color: c.status === 'adopted' ? '#fff' : '#10b981',
+            border: '1px solid #10b981', borderRadius: 4, cursor: 'pointer'
+          }
+        }, c.status === 'adopted' ? '✓ Adopted' : 'Adopt'),
+        h('button', {
+          onClick: props.onReject,
+          style: {
+            padding: '3px 8px', fontSize: 10, fontWeight: 700,
+            background: c.status === 'rejected' ? '#dc2626' : 'rgba(220,38,38,0.15)',
+            color: c.status === 'rejected' ? '#fff' : '#fca5a5',
+            border: '1px solid #dc2626', borderRadius: 4, cursor: 'pointer'
+          }
+        }, c.status === 'rejected' ? '✗ Rejected' : 'Reject'),
+        h('button', {
+          onClick: props.onRemove,
+          style: {
+            marginLeft: 'auto',
+            padding: '3px 8px', fontSize: 10, fontWeight: 700,
+            background: 'transparent', color: '#94a3b8',
+            border: '1px solid #475569', borderRadius: 4, cursor: 'pointer'
+          }
+        }, '🗑 Remove')
+      )
+    );
+  }
+
+  // ═══════════════════════════════════════════
+  // VotingView — final vote on the resolution.
+  // Humans cast Y/N/A via a modal panel; AI delegates auto-vote in parallel.
+  // Host clicks "Reveal tally" → animated reveal of every delegate's vote.
+  // ═══════════════════════════════════════════
+  function VotingView(props) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var useEffect = React.useEffect;
+    var ctx = props.ctx;
+    var modelUn = props.modelUn;
+    var updateMUN = props.updateMUN;
+    var isHost = props.isHost;
+    var isSolo = props.isSolo;
+    var sessionState = props.sessionState;
+
+    var committee = committeeById(modelUn.committeeId);
+    var agenda = agendaById(modelUn.agendaId);
+    var assigned = modelUn.assignedCountries || {};
+    var clauses = modelUn.clauses || {};
+    var adoptedClauses = Object.keys(clauses).map(function(id) {
+      return Object.assign({ id: id }, clauses[id]);
+    }).filter(function(c) { return c.status === 'adopted'; }).sort(function(a, b) { return (a.at || 0) - (b.at || 0); });
+
+    var finalVotes = modelUn.finalVotes || {};
+    var revealMode = !!modelUn.voteRevealed;
+
+    var myUid = isSolo ? 'me' : (ctx.userId || null);
+    var myIso = myUid ? assigned[myUid] : null;
+    var myCountry = myIso ? countryById(myIso) : null;
+    var myVote = myCountry ? finalVotes[myCountry.iso] : null;
+
+    var aiInFlightTuple = useState({});
+    var aiInFlight = aiInFlightTuple[0];
+    var setAiInFlight = aiInFlightTuple[1];
+
+    function castVote(iso, vote, reasoning, isAi) {
+      var next = Object.assign({}, finalVotes);
+      next[iso] = { vote: vote, reasoning: reasoning || '', isAi: !!isAi, at: Date.now() };
+      updateMUN({ finalVotes: next });
+    }
+    function castMyVote(vote) {
+      if (!myCountry) return;
+      castVote(myCountry.iso, vote, '', false);
+    }
+    function triggerAllAIVotes() {
+      var pending = Object.keys(assigned).filter(function(uid) {
+        var iso = assigned[uid];
+        return uid.indexOf('ai_') === 0 && !finalVotes[iso] && !aiInFlight[iso];
+      });
+      if (pending.length === 0) return;
+      var newInFlight = Object.assign({}, aiInFlight);
+      pending.forEach(function(uid) { newInFlight[assigned[uid]] = true; });
+      setAiInFlight(newInFlight);
+      pending.forEach(function(uid) {
+        var iso = assigned[uid];
+        var country = countryById(iso);
+        if (!country) return;
+        aiVoteDelegate(ctx, country, agenda, adoptedClauses).then(function(r) {
+          if (r && r.vote) castVote(iso, r.vote, r.reasoning, true);
+          setAiInFlight(function(prev) { var n = Object.assign({}, prev); delete n[iso]; return n; });
+        }).catch(function() {
+          setAiInFlight(function(prev) { var n = Object.assign({}, prev); delete n[iso]; return n; });
+        });
+      });
+    }
+    function revealAndAdvance() {
+      // Reveal mode + compute outcome
+      var yCount = 0, nCount = 0, aCount = 0;
+      Object.keys(finalVotes).forEach(function(iso) {
+        var v = finalVotes[iso].vote;
+        if (v === 'Y') yCount++;
+        else if (v === 'N') nCount++;
+        else if (v === 'A') aCount++;
+      });
+      var passed = yCount > nCount; // simple majority of cast votes
+      var outcome = passed ? 'passed' : 'failed';
+      updateMUN({ voteRevealed: true, voteOutcome: outcome });
+    }
+    function advanceToDebrief() { updateMUN({ phase: PHASES.DEBRIEF }); }
+
+    // Tally
+    var allDelegates = Object.keys(assigned).map(function(uid) {
+      var iso = assigned[uid];
+      var country = countryById(iso);
+      return { uid: uid, iso: iso, country: country, isAi: uid.indexOf('ai_') === 0, vote: finalVotes[iso] };
+    }).filter(function(d) { return d.country; });
+    var voted = allDelegates.filter(function(d) { return !!d.vote; });
+    var unvoted = allDelegates.filter(function(d) { return !d.vote; });
+    var tally = { Y: 0, N: 0, A: 0 };
+    voted.forEach(function(d) { var v = d.vote.vote; if (tally[v] != null) tally[v]++; });
+    var allVoted = voted.length === allDelegates.length;
+
+    return h('div', { style: { padding: 16, color: '#e2e8f0', maxWidth: 1000, margin: '0 auto' } },
+      // Header
+      h('div', { style: { padding: 12, marginBottom: 14, background: 'linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%)', borderRadius: 10 } },
+        h('div', { style: { fontSize: 11, color: '#fecaca', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' } },
+          (committee ? committee.name : '') + ' · FINAL VOTE'
+        ),
+        h('div', { style: { fontSize: 17, fontWeight: 800, marginTop: 2 } }, agenda ? agenda.title : ''),
+        h('div', { style: { fontSize: 11, color: '#fecaca', marginTop: 4 } },
+          voted.length + ' / ' + allDelegates.length + ' delegates voted · ' + adoptedClauses.length + ' clause' + (adoptedClauses.length !== 1 ? 's' : '') + ' in the resolution'
+        )
+      ),
+
+      // Resolution summary (collapsible-feel)
+      adoptedClauses.length > 0 && h('div', { style: { padding: 10, marginBottom: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid #334155', borderRadius: 8 } },
+        h('div', { style: { fontSize: 10, color: '#7dd3fc', fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 } },
+          'The resolution before you'
+        ),
+        h('div', { style: { fontSize: 11, lineHeight: 1.6, color: '#cbd5e1' } },
+          adoptedClauses.map(function(c, i) {
+            return h('div', { key: c.id, style: { marginBottom: 4, fontStyle: c.type === 'preamble' ? 'italic' : 'normal' } },
+              h('span', { style: { color: '#94a3b8', marginRight: 4 } }, (i + 1) + '.'),
+              c.text
+            );
+          })
+        )
+      ),
+
+      // My vote panel
+      myCountry && !revealMode && h('div', {
+        style: { padding: 14, marginBottom: 14, background: 'rgba(16,185,129,0.10)', border: '2px solid #10b981', borderRadius: 10 }
+      },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
+          h('span', { style: { fontSize: 24 } }, myCountry.flag),
+          h('div', { style: { flex: 1 } },
+            h('div', { style: { fontSize: 10, color: '#10b981', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 } }, 'Cast your vote as'),
+            h('div', { style: { fontWeight: 800, fontSize: 14 } }, myCountry.name)
+          )
+        ),
+        myVote
+          ? h('div', { style: { fontSize: 13, fontWeight: 700, color: '#10b981' } },
+              'You voted: ' + (myVote.vote === 'Y' ? '✓ YES' : myVote.vote === 'N' ? '✗ NO' : '○ ABSTAIN'),
+              h('button', {
+                onClick: function() {
+                  var next = Object.assign({}, finalVotes);
+                  delete next[myCountry.iso];
+                  updateMUN({ finalVotes: next });
+                },
+                style: { marginLeft: 8, padding: '3px 8px', fontSize: 10, fontWeight: 600, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 4, cursor: 'pointer' }
+              }, '↻ Change vote')
+            )
+          : h('div', { style: { display: 'flex', gap: 8 } },
+              [{ vote: 'Y', label: '✓ YES', color: '#10b981' },
+               { vote: 'N', label: '✗ NO', color: '#dc2626' },
+               { vote: 'A', label: '○ ABSTAIN', color: '#94a3b8' }
+              ].map(function(opt) {
+                return h('button', {
+                  key: opt.vote, onClick: function() { castMyVote(opt.vote); },
+                  style: {
+                    flex: 1, padding: '8px 12px', fontSize: 13, fontWeight: 700,
+                    background: opt.color, color: '#fff', border: 'none',
+                    borderRadius: 8, cursor: 'pointer'
+                  }
+                }, opt.label);
+              })
+            )
+      ),
+
+      // Host controls
+      isHost && h('div', { style: { display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' } },
+        h('button', {
+          onClick: triggerAllAIVotes,
+          disabled: Object.keys(aiInFlight).length > 0,
+          style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: '#a855f7', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
+        }, '🤖 Cast all AI votes (' + unvoted.filter(function(d) { return d.isAi; }).length + ')'),
+        !revealMode && h('button', {
+          onClick: revealAndAdvance,
+          disabled: voted.length === 0,
+          style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: voted.length === 0 ? '#475569' : '#fbbf24', color: '#000', border: 'none', borderRadius: 8, cursor: voted.length === 0 ? 'not-allowed' : 'pointer' }
+        }, '🗳 Reveal tally'),
+        revealMode && h('button', {
+          onClick: advanceToDebrief,
+          style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
+        }, 'Continue to Debrief →')
+      ),
+
+      // Tally summary (always visible if any votes)
+      voted.length > 0 && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 14 } },
+        [{ v: 'Y', label: 'Yes', color: '#10b981' },
+         { v: 'N', label: 'No', color: '#dc2626' },
+         { v: 'A', label: 'Abstain', color: '#94a3b8' }
+        ].map(function(t) {
+          return h('div', { key: t.v, style: { padding: 10, background: t.color + '20', border: '1px solid ' + t.color, borderRadius: 8, textAlign: 'center' } },
+            h('div', { style: { fontSize: 11, color: t.color, fontWeight: 700, textTransform: 'uppercase' } }, t.label),
+            h('div', { style: { fontSize: 28, fontWeight: 900, marginTop: 4 } }, tally[t.v])
+          );
+        })
+      ),
+
+      // Outcome banner when revealed
+      revealMode && h('div', {
+        style: {
+          padding: 14, marginBottom: 14, textAlign: 'center',
+          background: modelUn.voteOutcome === 'passed' ? 'rgba(16,185,129,0.12)' : 'rgba(220,38,38,0.12)',
+          border: '2px solid ' + (modelUn.voteOutcome === 'passed' ? '#10b981' : '#dc2626'),
+          borderRadius: 10
+        }
+      },
+        h('div', { style: { fontSize: 24 } }, modelUn.voteOutcome === 'passed' ? '✅' : '❌'),
+        h('div', { style: { fontSize: 16, fontWeight: 800, marginTop: 4 } },
+          'Resolution ' + (modelUn.voteOutcome === 'passed' ? 'ADOPTED' : 'FAILED')
+        ),
+        h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } },
+          tally.Y + ' yes · ' + tally.N + ' no · ' + tally.A + ' abstain'
+        )
+      ),
+
+      // Roll-call grid
+      h('div', null,
+        h('div', { style: { fontSize: 10, color: '#7dd3fc', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
+          'Roll Call'
+        ),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 6 } },
+          allDelegates.map(function(d) {
+            var rev = revealMode;
+            var voteColor = d.vote
+              ? (d.vote.vote === 'Y' ? '#10b981' : d.vote.vote === 'N' ? '#dc2626' : '#94a3b8')
+              : '#475569';
+            return h('div', {
+              key: 'rc-' + d.uid,
+              style: {
+                padding: 8,
+                background: d.vote && rev ? voteColor + '15' : 'rgba(255,255,255,0.03)',
+                border: '1px solid ' + (d.vote ? voteColor : '#334155'),
+                borderRadius: 6
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                h('span', { style: { fontSize: 18 } }, d.country.flag),
+                h('div', { style: { flex: 1, fontSize: 11, fontWeight: 700 } }, d.country.iso),
+                d.vote && rev && h('span', { style: { fontSize: 14, fontWeight: 900, color: voteColor } },
+                  d.vote.vote === 'Y' ? '✓' : d.vote.vote === 'N' ? '✗' : '○'
+                ),
+                d.vote && !rev && h('span', { style: { fontSize: 10, color: '#94a3b8' } }, 'voted'),
+                !d.vote && h('span', { style: { fontSize: 10, color: '#475569', fontStyle: 'italic' } },
+                  aiInFlight[d.iso] ? '⏳' : 'pending'
+                )
+              ),
+              d.vote && rev && d.vote.reasoning && h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 4, lineHeight: 1.4, fontStyle: 'italic' } },
+                '"' + d.vote.reasoning + '"'
+              )
+            );
+          })
+        )
+      )
+    );
+  }
+
+  // ═══════════════════════════════════════════
+  // DebriefView — AI coach feedback + smart CTAs + reflection prompt.
+  // Mirrors Sage's Phase 8 debrief pattern: smart-CTA + reflection journal.
+  // ═══════════════════════════════════════════
+  function DebriefView(props) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var useEffect = React.useEffect;
+    var ctx = props.ctx;
+    var modelUn = props.modelUn;
+    var updateMUN = props.updateMUN;
+    var isHost = props.isHost;
+    var isSolo = props.isSolo;
+    var sessionState = props.sessionState;
+
+    var committee = committeeById(modelUn.committeeId);
+    var agenda = agendaById(modelUn.agendaId);
+    var assigned = modelUn.assignedCountries || {};
+    var speeches = modelUn.speeches || {};
+    var finalVotes = modelUn.finalVotes || {};
+
+    var myUid = isSolo ? 'me' : (ctx.userId || null);
+    var myIso = myUid ? assigned[myUid] : null;
+    var myCountry = myIso ? countryById(myIso) : null;
+    var mySpeeches = Object.keys(speeches).map(function(k) { return speeches[k]; }).filter(function(s) { return s.uid === myUid; });
+    var myVote = myCountry ? finalVotes[myCountry.iso] : null;
+    var classOutcome = modelUn.voteOutcome || 'unknown';
+
+    // AI feedback state
+    var fbTuple = useState(null);
+    var feedback = fbTuple[0];
+    var setFeedback = fbTuple[1];
+    var fbLoadTuple = useState(false);
+    var fbLoading = fbLoadTuple[0];
+    var setFbLoading = fbLoadTuple[1];
+
+    function generateFeedback() {
+      if (fbLoading || !myCountry) return;
+      setFbLoading(true);
+      aiCoachFeedback(ctx, myCountry, agenda, mySpeeches, myVote ? myVote.vote : null, classOutcome).then(function(r) {
+        setFbLoading(false);
+        if (r) setFeedback(r); else ctx.addToast('AI coach unavailable — feedback skipped.');
+      }).catch(function() {
+        setFbLoading(false);
+      });
+    }
+
+    function exitToLauncher() {
+      // End the session — for a teacher this lets them close out cleanly.
+      if (isHost && typeof ctx.sessionUpdate === 'function') {
+        ctx.sessionUpdate({ modelUn: Object.assign({}, modelUn, { status: 'ended', endedAt: new Date().toISOString() }) });
+      }
+      // For solo, just go back to setup
+      if (isSolo) {
+        updateMUN({ phase: PHASES.SETUP, committeeId: null, agendaId: null, assignedCountries: {}, speeches: {}, clauses: {}, finalVotes: {}, voteRevealed: false });
+      }
+    }
+
+    return h('div', { style: { padding: 16, color: '#e2e8f0', maxWidth: 900, margin: '0 auto' } },
+      // Header
+      h('div', { style: { padding: 14, marginBottom: 14, background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)', borderRadius: 10, textAlign: 'center' } },
+        h('div', { style: { fontSize: 42, marginBottom: 6 } }, modelUn.voteOutcome === 'passed' ? '🎉' : modelUn.voteOutcome === 'failed' ? '📋' : '🌐'),
+        h('div', { style: { fontSize: 11, color: '#a7f3d0', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' } }, 'Debrief'),
+        h('div', { style: { fontSize: 20, fontWeight: 800, marginTop: 4 } },
+          'Resolution ' + (modelUn.voteOutcome === 'passed' ? 'ADOPTED' : modelUn.voteOutcome === 'failed' ? 'FAILED' : 'CONCLUDED')
+        ),
+        h('div', { style: { fontSize: 12, color: '#d1fae5', marginTop: 6 } },
+          (committee ? committee.name : '') + ' · ' + (agenda ? agenda.title : '')
+        )
+      ),
+
+      // Personal coach panel
+      myCountry && h('div', { style: { padding: 14, marginBottom: 14, background: 'rgba(14,165,233,0.10)', border: '2px solid #0ea5e9', borderRadius: 10 } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
+          h('span', { style: { fontSize: 32 } }, myCountry.flag),
+          h('div', { style: { flex: 1 } },
+            h('div', { style: { fontSize: 10, color: '#7dd3fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 } }, 'Your performance as'),
+            h('div', { style: { fontSize: 16, fontWeight: 800 } }, myCountry.name)
+          ),
+          // Personal stats
+          h('div', { style: { textAlign: 'right' } },
+            h('div', { style: { fontSize: 18, fontWeight: 800, color: '#fbbf24' } }, mySpeeches.length + ' speech' + (mySpeeches.length !== 1 ? 'es' : '')),
+            h('div', { style: { fontSize: 11, color: '#cbd5e1' } },
+              myVote ? ('Final vote: ' + (myVote.vote === 'Y' ? '✓ Yes' : myVote.vote === 'N' ? '✗ No' : '○ Abstain')) : 'No vote cast'
+            )
+          )
+        ),
+
+        // AI coach feedback (lazy-load via button)
+        !feedback && !fbLoading && h('button', {
+          onClick: generateFeedback,
+          style: { width: '100%', padding: '10px 14px', fontSize: 13, fontWeight: 700, background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
+        }, '🧠 Get AI coach feedback'),
+
+        fbLoading && h('div', { style: { padding: 14, textAlign: 'center', fontSize: 12, color: '#7dd3fc', fontStyle: 'italic' } },
+          '⏳ Analyzing your speeches, votes, and consistency with your country\'s stance…'
+        ),
+
+        feedback && h('div', null,
+          // Consistency score
+          typeof feedback.consistencyScore === 'number' && h('div', { style: { padding: 10, marginBottom: 10, background: 'rgba(0,0,0,0.18)', borderRadius: 8 } },
+            h('div', { style: { fontSize: 10, color: '#7dd3fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Diplomatic Consistency'),
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+              h('div', { style: { flex: 1, height: 12, background: 'rgba(255,255,255,0.08)', borderRadius: 6, overflow: 'hidden' } },
+                h('div', {
+                  style: {
+                    width: feedback.consistencyScore + '%', height: '100%',
+                    background: feedback.consistencyScore >= 75 ? '#10b981' : feedback.consistencyScore >= 50 ? '#fbbf24' : '#dc2626'
+                  }
+                })
+              ),
+              h('div', { style: { fontSize: 18, fontWeight: 900 } }, feedback.consistencyScore + '%')
+            )
+          ),
+          feedback.verdict && h('div', { style: { padding: 10, marginBottom: 10, background: 'rgba(0,0,0,0.18)', borderRadius: 8, fontStyle: 'italic', fontSize: 12, color: '#cbd5e1' } },
+            '"' + feedback.verdict + '"'
+          ),
+          feedback.strengths && feedback.strengths.length > 0 && h('div', { style: { marginBottom: 10 } },
+            h('div', { style: { fontSize: 10, color: '#10b981', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, '✓ Strengths'),
+            h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, lineHeight: 1.6, color: '#d1fae5' } },
+              feedback.strengths.map(function(s, i) { return h('li', { key: i }, s); })
+            )
+          ),
+          feedback.areas && feedback.areas.length > 0 && h('div', null,
+            h('div', { style: { fontSize: 10, color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, '↗ Growth Areas'),
+            h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, lineHeight: 1.6, color: '#fef3c7' } },
+              feedback.areas.map(function(s, i) { return h('li', { key: i }, s); })
+            )
+          )
+        )
+      ),
+
+      // Final roll call
+      h('div', { style: { padding: 12, marginBottom: 14, background: 'rgba(255,255,255,0.03)', border: '1px solid #334155', borderRadius: 8 } },
+        h('div', { style: { fontSize: 10, color: '#7dd3fc', fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Final Roll Call'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 4 } },
+          Object.keys(assigned).map(function(uid) {
+            var iso = assigned[uid];
+            var country = countryById(iso);
+            if (!country) return null;
+            var v = finalVotes[iso];
+            var col = v ? (v.vote === 'Y' ? '#10b981' : v.vote === 'N' ? '#dc2626' : '#94a3b8') : '#475569';
+            return h('div', {
+              key: 'fc-' + uid,
+              style: {
+                padding: 4, fontSize: 10, background: col + '15', border: '1px solid ' + col, borderRadius: 4,
+                display: 'flex', alignItems: 'center', gap: 4
+              }
+            },
+              h('span', null, country.flag),
+              h('span', { style: { flex: 1, fontWeight: 700 } }, country.iso),
+              h('span', { style: { fontWeight: 900, color: col } }, v ? (v.vote === 'Y' ? '✓' : v.vote === 'N' ? '✗' : '○') : '—')
+            );
+          })
+        )
+      ),
+
+      // Exit
+      h('div', { style: { display: 'flex', justifyContent: 'center', gap: 8 } },
+        h('button', {
+          onClick: exitToLauncher,
+          style: { padding: '10px 18px', fontSize: 13, fontWeight: 700, background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
+        }, isSolo ? '🌐 Run another simulation' : '🌐 Close session')
+      )
+    );
+  }
+
+  // ═══════════════════════════════════════════
   // SpeechCard — one entry in the live speech feed.
   // ═══════════════════════════════════════════
   function SpeechCard(props) {
@@ -1750,7 +2678,7 @@
 
   // Hot-reload guard — re-attach the launcher card data if needed
   if (typeof console !== 'undefined') {
-    console.log('[arcade_mode_modelun] Plugin v0.2 loaded — ' + COUNTRIES.length + ' countries, ' + AGENDAS.length + ' agendas, ' + COMMITTEES.length + ' committees, opening speeches live.');
+    console.log('[arcade_mode_modelun] Plugin v0.3 loaded — ' + COUNTRIES.length + ' countries, ' + AGENDAS.length + ' agendas, ' + COMMITTEES.length + ' committees; full loop: speeches → drafting → voting → debrief.');
   }
 
 })();
