@@ -3394,6 +3394,217 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             };
           }
 
+          // ── AI CONSERVATION READING ──
+          // Same safe-framing approach as Fire Ecology's AI Land Reading.
+          // This is an AI conservation-biology educator, NOT a tribal voice
+          // and NOT speaking for any wildlife professional, nation, or
+          // organization. System prompt has hard constraints; visible
+          // disclaimer renders with every response.
+          function readEcosystem() {
+            if (!callGemini || conserve.aiReadLoading) return;
+            var summary = conserve.species.map(function(s) {
+              var def = getSpeciesDef(s.id);
+              return '- ' + def.name + ' (' + def.role + '): pop ' + Math.round(s.pop) + '/100 (target ' + def.targets.pop + '), habitat ' + Math.round(s.habitat) + '/100, public support ' + Math.round(s.support) + '/100';
+            }).join('\n');
+            var prompt = [
+              'You are an AI conservation biology educator. You are NOT a Wabanaki person, NOT a wildlife professional, and you do NOT speak for any Wabanaki nation, agency, organization, or named individual.',
+              '',
+              'A student is managing a simulated Maine ecosystem across 10 years. Six species, each with population, habitat suitability, and public support.',
+              '',
+              'Current state (Year ' + conserve.year + ' of ' + conserve.maxYears + ', difficulty: ' + (CONSERVATION_DIFFICULTIES[conserve.difficulty] || CONSERVATION_DIFFICULTIES.manager).label + '):',
+              summary,
+              'Field hours this year: ' + conserve.hoursLeft + ' of ' + conserve.hoursPerYear,
+              'Wolf reintroduced: ' + (conserve.wolfReintroduced ? 'yes' : 'no'),
+              '',
+              'Read this state and give 3 to 4 sentences of practical coaching grounded in real conservation biology.',
+              '',
+              'HARD CONSTRAINTS:',
+              '- NEVER claim to be Wabanaki, Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki, a wildlife biologist, agency staff, or any named individual.',
+              '- NEVER invoke sacred, ceremonial, or spiritual claims.',
+              '- NEVER attribute statements to specific tribal individuals, elders, or named persons.',
+              '- NEVER use "noble savage" framing or romanticized language about Indigenous peoples.',
+              '- NEVER invent quotes.',
+              '- DO frame as "conservation biology research" or "documented case studies" (Yellowstone wolves, Penobscot River dam removal, beaver re-establishment).',
+              '- DO acknowledge that Wabanaki nations have led some of Maine\'s most important conservation work (especially Atlantic salmon and brown ash) when relevant, without speaking for them.',
+              '- DO stay grounded in observable state and concrete techniques (reintroduction, stream restoration, dam removal, hunting quota, habitat protection, compensation fund, public education).',
+              '- Name 1 or 2 highest-priority moves and explain why, grounded in trophic-cascade or keystone-species ecology.',
+              '- Be direct, observational, useful. No flowery language.',
+              '',
+              'Respond in 3 to 4 sentences of plain prose. Do not use markdown.'
+            ].join('\n');
+            setConserve({ aiReadLoading: true, aiReadResponse: null });
+            try {
+              var p = callGemini(prompt);
+              if (p && typeof p.then === 'function') {
+                p.then(function(resp) {
+                  var text = '';
+                  if (typeof resp === 'string') text = resp;
+                  else if (resp && typeof resp.text === 'string') text = resp.text;
+                  else if (resp && resp.candidates) text = (resp.candidates[0] && resp.candidates[0].content && resp.candidates[0].content.parts && resp.candidates[0].content.parts[0] && resp.candidates[0].content.parts[0].text) || '';
+                  text = (text || 'The reader returned no text. Try again in a moment.').replace(/\*\*/g, '').replace(/^[\s\n]+|[\s\n]+$/g, '');
+                  setConserve({ aiReadResponse: text, aiReadLoading: false });
+                  if (announceToSR) announceToSR('AI Conservation Reading complete.');
+                }).catch(function() {
+                  setConserve({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
+                });
+              } else {
+                setConserve({ aiReadResponse: 'AI is not available in this context.', aiReadLoading: false });
+              }
+            } catch (e) {
+              setConserve({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
+            }
+          }
+
+          function dismissConservAIRead() { setConserve({ aiReadResponse: null }); }
+
+          function renderConservAIPanel() {
+            if (conserve.aiReadLoading) {
+              return h('div', { role: 'status', 'aria-live': 'polite',
+                style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 } },
+                '⏳ AI conservation biologist is reading your ecosystem...');
+            }
+            if (!conserve.aiReadResponse) return null;
+            return h('div', { role: 'region', 'aria-label': 'AI Conservation Reading',
+              style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', border: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                h('span', { style: { fontSize: 20 } }, '🔍'),
+                h('strong', { style: { color: '#38bdf8', fontSize: 14 } }, 'AI Conservation Reading'),
+                h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 6 } },
+                  h('button', { onClick: readEcosystem, 'aria-label': 'Read again',
+                    style: { background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '↻ Re-read'),
+                  h('button', { onClick: dismissConservAIRead, 'aria-label': 'Dismiss reading',
+                    style: { background: 'transparent', border: '1px solid #475569', color: '#cbd5e1', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✕')
+                )
+              ),
+              h('p', { style: { margin: '0 0 10px 0', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.6 } }, conserve.aiReadResponse),
+              h('div', { style: { fontSize: 11, color: '#64748b', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
+                'AI conservation biology educator. ',
+                h('strong', null, 'It is not a Wabanaki person, not a wildlife professional, and does not speak for any Wabanaki nation, agency, or organization.'),
+                ' For authoritative voices on Maine conservation work, consult Penobscot Cultural and Historic Preservation Department, Passamaquoddy Cultural Heritage Museum, Wabanaki Public Health and Wellness, Maine Indian Basketmakers Alliance, Maine Department of Inland Fisheries and Wildlife, and the Atlantic Salmon Federation.'
+              )
+            );
+          }
+
+          // ── FOOD-WEB VISUALIZATION ──
+          // Stylized food-web map: 6 species nodes arranged by trophic level,
+          // arrows showing the cascade rules. Each node colored by population
+          // health; each arrow brightened when its cascade rule is firing.
+          function renderFoodWeb() {
+            // Layout coordinates per species id
+            var pos = {
+              grayWolf:   { x: 300, y: 40 },
+              deer:       { x: 180, y: 130 },
+              moose:      { x: 420, y: 130 },
+              beaver:     { x: 300, y: 220 },
+              salmon:     { x: 180, y: 305 },
+              brookTrout: { x: 420, y: 305 }
+            };
+            var species = conserve.species;
+            var wolf = getSp(species, 'grayWolf'), deer = getSp(species, 'deer'), bea = getSp(species, 'beaver'), sal = getSp(species, 'salmon');
+            // Which cascade rules are currently firing?
+            var firing = {
+              wolfDeer: wolf.pop > 25,
+              deerHabitat: deer.pop > 75,
+              beaverFish: bea.pop > 55,
+              salmonTrout: sal.pop > 35
+            };
+            function arrowPath(from, to, curve) {
+              // Quadratic curve via a midpoint offset perpendicular to the line
+              var midX = (from.x + to.x) / 2;
+              var midY = (from.y + to.y) / 2;
+              var dx = to.x - from.x, dy = to.y - from.y;
+              var len = Math.sqrt(dx * dx + dy * dy);
+              var nx = -dy / len, ny = dx / len;
+              var cx = midX + nx * (curve || 0);
+              var cy = midY + ny * (curve || 0);
+              return 'M ' + from.x + ' ' + from.y + ' Q ' + cx + ' ' + cy + ' ' + to.x + ' ' + to.y;
+            }
+            function nodeFill(s, def) {
+              // intensity ~ population
+              var alpha = Math.max(0.35, Math.min(1, s.pop / 100));
+              return { color: def.color, alpha: alpha };
+            }
+            var w = 600, hgt = 360;
+            return h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 8, marginBottom: 12, border: '1px solid #1e293b' } },
+              h('div', { style: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, paddingLeft: 4, display: 'flex', alignItems: 'center', gap: 8 } },
+                h('span', null, 'Food web: cascade rules active in real time'),
+                h('span', { style: { marginLeft: 'auto', fontSize: 10, color: '#64748b', fontStyle: 'italic' } }, 'Click any species for deep-dive →')
+              ),
+              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8 }, 'aria-label': 'Food-web diagram of the 6 Maine species' },
+                h('rect', { x: 0, y: 0, width: w, height: hgt, fill: '#020617', rx: 6 }),
+                // Cascade arrows. Each one is rendered dim by default and
+                // brightened + colored when its rule fires this year.
+                // Wolf -> Deer (top-down suppression)
+                (function() {
+                  var p = arrowPath(pos.grayWolf, pos.deer, -10);
+                  var color = firing.wolfDeer ? '#ef4444' : '#475569';
+                  var width = firing.wolfDeer ? 3 : 1.5;
+                  return h('g', null,
+                    h('path', { d: p, stroke: color, strokeWidth: width, fill: 'none', strokeDasharray: firing.wolfDeer ? '' : '4 4', markerEnd: 'url(#arrow-' + (firing.wolfDeer ? 'red' : 'gray') + ')' }),
+                    firing.wolfDeer ? h('text', { x: 220, y: 75, fontSize: 9, fill: '#fca5a5', fontWeight: 700 }, 'suppresses') : null
+                  );
+                })(),
+                // Deer -> all (overbrowsing, drawn down to center)
+                (function() {
+                  var color = firing.deerHabitat ? '#f59e0b' : '#475569';
+                  var width = firing.deerHabitat ? 3 : 1;
+                  return h('g', null,
+                    h('path', { d: 'M 200 145 Q 130 200 200 290', stroke: color, strokeWidth: width, fill: 'none', strokeDasharray: firing.deerHabitat ? '' : '4 4' }),
+                    h('path', { d: 'M 200 145 Q 250 220 380 305', stroke: color, strokeWidth: width, fill: 'none', strokeDasharray: firing.deerHabitat ? '' : '4 4' }),
+                    firing.deerHabitat ? h('text', { x: 135, y: 215, fontSize: 9, fill: '#fbbf24', fontWeight: 700 }, 'overbrowsing') : null
+                  );
+                })(),
+                // Beaver -> Salmon
+                (function() {
+                  var p1 = arrowPath(pos.beaver, pos.salmon, 10);
+                  var p2 = arrowPath(pos.beaver, pos.brookTrout, -10);
+                  var color = firing.beaverFish ? '#38bdf8' : '#475569';
+                  var width = firing.beaverFish ? 3 : 1.5;
+                  return h('g', null,
+                    h('path', { d: p1, stroke: color, strokeWidth: width, fill: 'none', strokeDasharray: firing.beaverFish ? '' : '4 4', markerEnd: 'url(#arrow-' + (firing.beaverFish ? 'blue' : 'gray') + ')' }),
+                    h('path', { d: p2, stroke: color, strokeWidth: width, fill: 'none', strokeDasharray: firing.beaverFish ? '' : '4 4', markerEnd: 'url(#arrow-' + (firing.beaverFish ? 'blue' : 'gray') + ')' }),
+                    firing.beaverFish ? h('text', { x: 300, y: 275, fontSize: 9, fill: '#bae6fd', fontWeight: 700, textAnchor: 'middle' }, 'engineers habitat') : null
+                  );
+                })(),
+                // Salmon -> Brook Trout (marine nutrients)
+                (function() {
+                  var p = arrowPath(pos.salmon, pos.brookTrout, 8);
+                  var color = firing.salmonTrout ? '#06b6d4' : '#475569';
+                  var width = firing.salmonTrout ? 3 : 1.2;
+                  return h('g', null,
+                    h('path', { d: p, stroke: color, strokeWidth: width, fill: 'none', strokeDasharray: firing.salmonTrout ? '' : '4 4', markerEnd: 'url(#arrow-' + (firing.salmonTrout ? 'cyan' : 'gray') + ')' }),
+                    firing.salmonTrout ? h('text', { x: 300, y: 325, fontSize: 9, fill: '#a5f3fc', fontWeight: 700, textAnchor: 'middle' }, 'marine nutrients') : null
+                  );
+                })(),
+                // Arrow marker defs
+                h('defs', null,
+                  h('marker', { id: 'arrow-red', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#ef4444' })),
+                  h('marker', { id: 'arrow-blue', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#38bdf8' })),
+                  h('marker', { id: 'arrow-cyan', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#06b6d4' })),
+                  h('marker', { id: 'arrow-gray', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#475569' }))
+                ),
+                // Species nodes
+                species.map(function(s) {
+                  var p = pos[s.id]; if (!p) return null;
+                  var def = getSpeciesDef(s.id);
+                  var fill = nodeFill(s, def);
+                  return h('g', { key: s.id,
+                    onClick: function() { openConservDeepDive(s.id); },
+                    style: { cursor: 'pointer' },
+                    role: 'button', tabIndex: 0,
+                    'aria-label': 'Open deep-dive for ' + def.name
+                  },
+                    h('circle', { cx: p.x, cy: p.y, r: 32, fill: def.color, opacity: fill.alpha }),
+                    h('circle', { cx: p.x, cy: p.y, r: 32, fill: 'none', stroke: def.color, strokeWidth: 1.5 }),
+                    h('text', { x: p.x, y: p.y + 4, fontSize: 22, textAnchor: 'middle', style: { pointerEvents: 'none' } }, def.icon),
+                    h('text', { x: p.x, y: p.y + 50, fontSize: 11, textAnchor: 'middle', fontWeight: 700, fill: '#fff' }, def.name),
+                    h('text', { x: p.x, y: p.y + 62, fontSize: 9, textAnchor: 'middle', fill: '#94a3b8' }, 'pop ' + Math.round(s.pop))
+                  );
+                })
+              )
+            );
+          }
+
           // Per-species deep-dive panel
           function openConservDeepDive(id) { setConserve({ deepDiveSpecies: id }); }
           function closeConservDeepDive() { setConserve({ deepDiveSpecies: null }); }
@@ -3628,6 +3839,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 )
               ),
 
+              // Food-web visualization at the top
+              renderFoodWeb(),
+
               // Species preview cards
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 } },
                 MAINE_SPECIES.map(function(s) {
@@ -3679,6 +3893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             var baselineAvgPop = Math.round(baseline.reduce(function(a, s) { return a + s.pop; }, 0) / baseline.length);
             return h('div', { className: 'space-y-3' },
               conservDeepDive,
+              renderFoodWeb(),
               h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, ' + o.color + '24 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + o.color + '88', borderLeft: '4px solid ' + o.color } },
                 h('div', { style: { fontSize: 40, marginBottom: 6 } }, o.icon),
                 h('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
@@ -3755,6 +3970,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             var ev2 = conserve.lastEvent || {};
             return h('div', { className: 'space-y-3' },
               conservDeepDive,
+              renderFoodWeb(),
               h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderLeft: '3px solid #fbbf24' } },
                 h('div', { style: { fontSize: 22, marginBottom: 4 } }, ev2.icon || '🌿'),
                 h('strong', { style: { color: '#fbbf24', fontSize: 16 } }, 'Year ' + conserve.year + ' event: ' + (ev2.name || 'quiet')),
@@ -3831,11 +4047,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Difficulty'),
                 h('div', { style: { fontSize: 14, fontWeight: 700, color: '#38bdf8' } }, diff2 ? diff2.label : 'Manager')
               ),
-              h('div', { style: { marginLeft: 'auto' } },
+              h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+                callGemini ? h('button', { onClick: readEcosystem, disabled: conserve.aiReadLoading,
+                  'aria-label': 'Ask AI conservation biologist to read your ecosystem state',
+                  title: 'AI conservation educator reads your current state',
+                  style: { padding: '8px 12px', borderRadius: 10, border: '1px solid #38bdf8', cursor: conserve.aiReadLoading ? 'wait' : 'pointer', background: 'rgba(56,189,248,0.10)', color: '#38bdf8', fontWeight: 700, fontSize: 12, opacity: conserve.aiReadLoading ? 0.6 : 1 }
+                }, conserve.aiReadLoading ? '⏳ Reading...' : '🔍 Read the ecosystem (AI)') : null,
                 h('button', { onClick: endConserveYear, 'aria-label': 'End this year',
                   style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 13 } }, 'End Year →')
               )
             ),
+
+            // AI Reading response (below HUD when present)
+            renderConservAIPanel(),
+
+            // Food-web visualization
+            renderFoodWeb(),
 
             // Species cards with actions
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 10 } },
