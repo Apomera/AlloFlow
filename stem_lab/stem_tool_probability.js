@@ -70,6 +70,7 @@ window.StemLab = window.StemLab || {
 
   // Module-level: persists across React renders without causing re-render
   var _autoRun = { interval: null };
+  var _galtonAnim = { interval: null };
 
   window.StemLab.registerTool('probability', {
     icon: '\uD83C\uDFB2',
@@ -743,7 +744,7 @@ var d = (labToolData.probability) || {};
 
               [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', '\u2699\uFE0F Custom'], ['tree', '\uD83C\uDF33 Tree'], ['pi', '\uD83E\uDD67 Pi'], ['birthday', '\uD83C\uDF82 Birthday'], ['monty', '\uD83D\uDEAA Monty Hall'], ['galton', '\u2699\uFE0F Galton Board']].map(([m, label]) =>
 
-                React.createElement("button", { "aria-label": "Select mode: " + label, key: m, onClick: () => { if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; } upd('mode', m); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); upd('_mbRemaining', null); upd('_piPoints', null); upd('_autoRunning', false); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
+                React.createElement("button", { "aria-label": "Select mode: " + label, key: m, onClick: () => { if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; } if (_galtonAnim.interval) { clearInterval(_galtonAnim.interval); _galtonAnim.interval = null; } upd('mode', m); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); upd('_mbRemaining', null); upd('_piPoints', null); upd('_autoRunning', false); upd('galtonFalling', []); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
 
               )
 
@@ -1166,8 +1167,16 @@ var d = (labToolData.probability) || {};
                   nextStats.switchN = (nextStats.switchN || 0) + 1;
                   if (won) nextStats.switchWins = (nextStats.switchWins || 0) + 1;
                 }
+                // Per-strategy outcome strip — records ONLY manual plays, so
+                // the visual reflects what the student personally witnessed.
+                // (Autorun bulks aren't included; they'd flood the strip with
+                // outcomes the student didn't see.)
+                var nextStrip = Object.assign({ stay: [], switch: [] }, d.montyStrip || {});
+                nextStrip[action] = (nextStrip[action] || []).concat([won]);
+                if (nextStrip[action].length > 20) nextStrip[action] = nextStrip[action].slice(-20);
                 upd('monty', Object.assign({}, m, { stage: 'reveal', finalChoice: finalChoice, won: won }));
                 upd('montyStats', nextStats);
+                upd('montyStrip', nextStrip);
                 upd('totalTrials', (d.totalTrials || 0) + 1);
                 upd('experimentsUsed', Object.assign({}, d.experimentsUsed || {}, { monty: true }));
               }
@@ -1261,31 +1270,65 @@ var d = (labToolData.probability) || {};
                   ],
                   m.stage === 'reveal' && React.createElement('button', { onClick: newRound, className: 'px-5 py-2 rounded-lg font-bold bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-2 focus:ring-white focus:outline-none' }, '↻ Play another round')
                 ),
-                // Strategy stats — side by side comparison
-                (ms.stayN > 0 || ms.switchN > 0) && React.createElement('div', { className: 'rounded-lg p-3 bg-white/10 border border-white/20' },
-                  React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-indigo-100 mb-2 text-center' }, '📊 Strategy Win Rates'),
-                  React.createElement('div', { className: 'grid grid-cols-2 gap-3 text-center' },
-                    React.createElement('div', null,
-                      React.createElement('div', { className: 'text-xs font-bold text-slate-200' }, '🛡 Stay'),
-                      React.createElement('div', { className: 'text-2xl font-bold mt-1', style: { color: stayPct >= 50 ? '#fde047' : '#fff' } }, stayPct + '%'),
-                      React.createElement('div', { className: 'text-[10px] text-indigo-200' }, ms.stayWins + ' wins / ' + ms.stayN + ' trials'),
-                      React.createElement('div', { className: 'w-full h-2 rounded-full bg-black/30 overflow-hidden mt-1' },
-                        React.createElement('div', { className: 'h-full bg-slate-300', style: { width: stayPct + '%' } })
+                // Strategy stats — side by side comparison + outcome strip
+                (ms.stayN > 0 || ms.switchN > 0) && (function() {
+                  var strip = d.montyStrip || { stay: [], switch: [] };
+                  function renderStrip(outcomes, winColor) {
+                    // Pad to 20 slots: empty placeholders for unused positions
+                    var slots = [];
+                    for (var si = 0; si < 20; si++) {
+                      var actualIdx = outcomes.length - 20 + si;
+                      var hasValue = actualIdx >= 0;
+                      var won = hasValue ? outcomes[actualIdx] : null;
+                      slots.push(React.createElement('span', {
+                        key: 'slot-' + si,
+                        style: {
+                          display: 'inline-block', width: '11px', height: '11px',
+                          borderRadius: '2px', margin: '1px',
+                          background: hasValue ? (won ? winColor : '#7f1d1d') : 'rgba(255,255,255,0.08)',
+                          border: hasValue ? '1px solid rgba(0,0,0,0.25)' : '1px dashed rgba(255,255,255,0.18)',
+                          boxShadow: hasValue && won ? '0 0 4px ' + winColor + '80' : 'none'
+                        },
+                        title: hasValue ? (won ? 'Win' : 'Loss') : 'No play yet'
+                      }));
+                    }
+                    return slots;
+                  }
+                  return React.createElement('div', { className: 'rounded-lg p-3 bg-white/10 border border-white/20' },
+                    React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-indigo-100 mb-2 text-center' }, '📊 Strategy Win Rates'),
+                    React.createElement('div', { className: 'grid grid-cols-2 gap-3 text-center' },
+                      React.createElement('div', null,
+                        React.createElement('div', { className: 'text-xs font-bold text-slate-200' }, '🛡 Stay'),
+                        React.createElement('div', { className: 'text-2xl font-bold mt-1', style: { color: stayPct >= 50 ? '#fde047' : '#fff' } }, stayPct + '%'),
+                        React.createElement('div', { className: 'text-[10px] text-indigo-200' }, ms.stayWins + ' wins / ' + ms.stayN + ' trials'),
+                        React.createElement('div', { className: 'w-full h-2 rounded-full bg-black/30 overflow-hidden mt-1' },
+                          React.createElement('div', { className: 'h-full bg-slate-300', style: { width: stayPct + '%' } })
+                        ),
+                        // Outcome strip — last 20 manual plays of this strategy
+                        React.createElement('div', { className: 'mt-2', 'aria-label': 'Last 20 manual Stay plays — green wins, dark red losses' },
+                          renderStrip(strip.stay || [], '#22c55e')
+                        )
+                      ),
+                      React.createElement('div', null,
+                        React.createElement('div', { className: 'text-xs font-bold text-amber-200' }, '🔄 Switch'),
+                        React.createElement('div', { className: 'text-2xl font-bold mt-1', style: { color: switchPct >= 50 ? '#fde047' : '#fff' } }, switchPct + '%'),
+                        React.createElement('div', { className: 'text-[10px] text-amber-100' }, ms.switchWins + ' wins / ' + ms.switchN + ' trials'),
+                        React.createElement('div', { className: 'w-full h-2 rounded-full bg-black/30 overflow-hidden mt-1' },
+                          React.createElement('div', { className: 'h-full bg-amber-400', style: { width: switchPct + '%' } })
+                        ),
+                        React.createElement('div', { className: 'mt-2', 'aria-label': 'Last 20 manual Switch plays — green wins, dark red losses' },
+                          renderStrip(strip.switch || [], '#fbbf24')
+                        )
                       )
                     ),
-                    React.createElement('div', null,
-                      React.createElement('div', { className: 'text-xs font-bold text-amber-200' }, '🔄 Switch'),
-                      React.createElement('div', { className: 'text-2xl font-bold mt-1', style: { color: switchPct >= 50 ? '#fde047' : '#fff' } }, switchPct + '%'),
-                      React.createElement('div', { className: 'text-[10px] text-amber-100' }, ms.switchWins + ' wins / ' + ms.switchN + ' trials'),
-                      React.createElement('div', { className: 'w-full h-2 rounded-full bg-black/30 overflow-hidden mt-1' },
-                        React.createElement('div', { className: 'h-full bg-amber-400', style: { width: switchPct + '%' } })
-                      )
+                    ((strip.stay || []).length > 0 || (strip.switch || []).length > 0) && React.createElement('div', { className: 'text-[9px] text-center mt-2 italic text-indigo-200' },
+                      'Outcome strips show your last 20 manual plays — green = win, red = loss. Visible streaks tell you what randomness actually feels like.'
+                    ),
+                    (ms.stayN + ms.switchN) >= 30 && React.createElement('div', { className: 'text-[10px] text-center mt-2 italic text-indigo-100' },
+                      'Math says: Stay wins ≈ 1/3 (33%). Switch wins ≈ 2/3 (67%). With enough trials, the math wins out.'
                     )
-                  ),
-                  (ms.stayN + ms.switchN) >= 30 && React.createElement('div', { className: 'text-[10px] text-center mt-2 italic text-indigo-100' },
-                    'Math says: Stay wins ≈ 1/3 (33%). Switch wins ≈ 2/3 (67%). With enough trials, the math wins out.'
-                  )
-                ),
+                  );
+                })(),
                 // Auto-run row + reset
                 React.createElement('div', { className: 'flex flex-wrap gap-2 justify-center mt-3' },
                   [100, 500, 1000].map(function(n) {
@@ -1330,39 +1373,112 @@ var d = (labToolData.probability) || {};
               var theoryMean = GB_ROWS * 0.5;
               var theoryStdDev = Math.sqrt(GB_ROWS * 0.25);
 
-              // Simulate dropping a single ball: traverse rows, at each row
-              // randomly deflect ±1 (treat positive=right). Final bin = number
-              // of right-deflections.
-              function simulateBall() {
-                var rights = 0;
-                for (var r = 0; r < GB_ROWS; r++) if (Math.random() < 0.5) rights++;
-                return rights;
-              }
-              function dropN(n) {
-                sfxProbClick();
-                var next = bins.slice();
-                for (var i = 0; i < n; i++) next[simulateBall()]++;
-                upd('galtonBins', next);
-                upd('totalTrials', (d.totalTrials || 0) + n);
-                upd('experimentsUsed', Object.assign({}, d.experimentsUsed || {}, { galton: true }));
-                if (n >= 100) sfxProbSuccess();
-              }
-              function resetBoard() {
-                sfxProbClick();
-                var blank = []; for (var bi = 0; bi < GB_BINS; bi++) blank.push(0);
-                upd('galtonBins', blank);
-              }
-
-              // Render: a static SVG of the peg grid + histogram. We don't
-              // animate falling balls (would require requestAnimationFrame +
-              // ref-tracking, which fights React's render model). Instead, the
-              // histogram bars update on each drop — the math-emergence story.
+              // SVG geometry — declared early so it can be shared with the
+              // path-precompute helper below.
               var svgW = 360, svgH = 280;
               var pegAreaH = 160;
               var binAreaY = pegAreaH + 10;
               var binAreaH = svgH - binAreaY - 24;
               var colW = svgW / GB_BINS;
-              var maxBin = Math.max.apply(Math, bins.concat([1]));
+              var rowSpacing = (pegAreaH - 30) / Math.max(1, GB_ROWS - 1);
+              var pegSpacing = svgW / (GB_ROWS + 2);
+
+              // Precompute the screen-space path for an animated ball with the
+              // given deflection sequence. Returns an array of {x, y} points;
+              // pts[0] = top of board, pts[r+1] = after r deflections (i.e.,
+              // between peg-row r-1 and r). Final point = bin center.
+              function precomputePath(deflections) {
+                var pts = [{ x: svgW / 2, y: 6 }]; // start at top
+                var xOff = 0;
+                for (var r = 0; r < GB_ROWS; r++) {
+                  xOff += deflections[r] ? 0.5 : -0.5;
+                  var x = svgW / 2 + xOff * pegSpacing;
+                  var y = 20 + r * rowSpacing + rowSpacing * 0.5;
+                  pts.push({ x: x, y: y });
+                }
+                var finalBin = deflections.reduce(function(a, b) { return a + b; }, 0);
+                pts.push({ x: finalBin * colW + colW / 2, y: binAreaY + binAreaH - 4 });
+                return { pts: pts, bin: finalBin };
+              }
+
+              // Simulate dropping a single ball (instant — used in large-N mode).
+              function simulateBall() {
+                var rights = 0;
+                for (var r = 0; r < GB_ROWS; r++) if (Math.random() < 0.5) rights++;
+                return rights;
+              }
+              // Pacing: small drops animate, large drops are instant so the
+              // student can see the bell curve emerge without 1000-ball waits.
+              var ANIMATE_THRESHOLD = 10;
+              function dropN(n) {
+                sfxProbClick();
+                upd('totalTrials', (d.totalTrials || 0) + n);
+                upd('experimentsUsed', Object.assign({}, d.experimentsUsed || {}, { galton: true }));
+                if (n > ANIMATE_THRESHOLD) {
+                  // Instant mode for large drops — bell curve emerges without delay
+                  var next = bins.slice();
+                  for (var i = 0; i < n; i++) next[simulateBall()]++;
+                  upd('galtonBins', next);
+                  sfxProbSuccess();
+                  return;
+                }
+                // Animated mode — show the random walk through the peg grid.
+                // Each ball has a precomputed path; balls spawn staggered every
+                // other tick so multiple balls cascade visibly.
+                if (_galtonAnim.interval) clearInterval(_galtonAnim.interval);
+                var queue = [];
+                for (var i = 0; i < n; i++) {
+                  var defs = [];
+                  for (var r = 0; r < GB_ROWS; r++) defs.push(Math.random() < 0.5 ? 0 : 1);
+                  var p = precomputePath(defs);
+                  queue.push({ id: Date.now() + '-' + i, pts: p.pts, bin: p.bin, step: 0 });
+                }
+                var falling = []; var spawnIdx = 0; var tickCount = 0;
+                var workingBins = bins.slice();
+                _galtonAnim.interval = setInterval(function() {
+                  tickCount++;
+                  // Spawn next ball every 2 ticks (so balls visibly cascade)
+                  if (spawnIdx < queue.length && (tickCount % 2 === 0 || tickCount === 1)) {
+                    falling.push(queue[spawnIdx++]);
+                  }
+                  // Advance every active ball one step
+                  var still = [];
+                  for (var bi = 0; bi < falling.length; bi++) {
+                    var b = falling[bi];
+                    b.step++;
+                    if (b.step >= b.pts.length - 1) {
+                      // Landed — commit to bin
+                      workingBins[b.bin]++;
+                    } else {
+                      still.push(b);
+                    }
+                  }
+                  falling = still;
+                  // Commit state once per tick
+                  upd('galtonBins', workingBins.slice());
+                  upd('galtonFalling', falling.map(function(b) { return { id: b.id, x: b.pts[b.step].x, y: b.pts[b.step].y }; }));
+                  if (spawnIdx >= queue.length && falling.length === 0) {
+                    clearInterval(_galtonAnim.interval);
+                    _galtonAnim.interval = null;
+                    upd('galtonFalling', []);
+                    sfxProbSuccess();
+                  }
+                }, 100);
+              }
+              function resetBoard() {
+                sfxProbClick();
+                if (_galtonAnim.interval) { clearInterval(_galtonAnim.interval); _galtonAnim.interval = null; }
+                var blank = []; for (var bi = 0; bi < GB_BINS; bi++) blank.push(0);
+                upd('galtonBins', blank);
+                upd('galtonFalling', []);
+              }
+
+              // ── Binomial coefficients for theoretical bin probabilities ──
+              // C(12, k) for k = 0..12. Used to compute expected counts and
+              // color-code each bar by how closely it matches theory.
+              var BINOM_12 = [1, 12, 66, 220, 495, 792, 924, 792, 495, 220, 66, 12, 1];
+              var BINOM_TOTAL = 4096; // 2^12
+              function expectedCountFor(bin) { return totalDropped * BINOM_12[bin] / BINOM_TOTAL; }
 
               // Build peg-grid SVG elements
               var pegs = [];
@@ -1374,16 +1490,45 @@ var d = (labToolData.probability) || {};
                   pegs.push(React.createElement('circle', { key: 'peg-' + r + '-' + c, cx: pegX, cy: rowY, r: 2.5, fill: '#94a3b8' }));
                 }
               }
-              // Build histogram bars
+              // Maxbin computed from EITHER observed counts OR theoretical
+              // expected counts so the theoretical curve isn't clipped when
+              // empirical is sparse.
+              var maxObs = Math.max.apply(Math, bins.concat([1]));
+              var maxExp = 0;
+              if (totalDropped > 0) {
+                for (var bi = 0; bi < GB_BINS; bi++) maxExp = Math.max(maxExp, expectedCountFor(bi));
+              }
+              var maxBin = Math.max(maxObs, maxExp);
+
+              // Build histogram bars with theory-deviation coloring.
+              // Below 30 drops, use the original rainbow palette (deviation
+              // is too noisy to be meaningful). Above 30, color by how close
+              // each bar is to the binomial expected count.
               var bars = bins.map(function(count, idx) {
                 var barH = (count / maxBin) * binAreaH;
                 var barX = idx * colW + 2;
                 var barY = binAreaY + binAreaH - barH;
-                var hue = 270 - (Math.abs(idx - (GB_BINS - 1) / 2) / ((GB_BINS - 1) / 2)) * 100;
+                var fillColor;
+                if (totalDropped < 30) {
+                  // Rainbow (the original) — noise is the signal at low N
+                  var hue = 270 - (Math.abs(idx - (GB_BINS - 1) / 2) / ((GB_BINS - 1) / 2)) * 100;
+                  fillColor = 'hsl(' + hue + ', 70%, 55%)';
+                } else {
+                  // Color by ratio to expected
+                  var expected = expectedCountFor(idx);
+                  if (expected < 0.5) {
+                    fillColor = '#cbd5e1'; // tail bin with negligible expected mass
+                  } else {
+                    var ratio = count / expected;
+                    if (ratio >= 0.85 && ratio <= 1.15) fillColor = '#10b981';      // green — within 15%
+                    else if (ratio >= 0.6 && ratio <= 1.4) fillColor = '#f59e0b';   // amber — within 40%
+                    else fillColor = '#ef4444';                                     // red — significant deviation
+                  }
+                }
                 return React.createElement('g', { key: 'bar-' + idx },
                   React.createElement('rect', {
                     x: barX, y: barY, width: colW - 4, height: barH,
-                    fill: 'hsl(' + hue + ', 70%, 55%)',
+                    fill: fillColor,
                     rx: 2
                   }),
                   count > 0 && React.createElement('text', {
@@ -1391,6 +1536,19 @@ var d = (labToolData.probability) || {};
                     fill: '#475569', fontSize: 9, textAnchor: 'middle', fontWeight: 'bold'
                   }, count)
                 );
+              });
+
+              // Render falling balls (animation in-flight). Read from state.
+              var fallingNow = d.galtonFalling || [];
+              var fallingBalls = fallingNow.map(function(b) {
+                return React.createElement('circle', {
+                  key: 'fall-' + b.id,
+                  cx: b.x, cy: b.y, r: 4,
+                  fill: '#fbbf24',
+                  stroke: '#92400e',
+                  strokeWidth: 0.8,
+                  style: { filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))' }
+                });
               });
               // Theoretical normal curve overlay: for each bin, expected count
               // = totalDropped × C(n, k) / 2^n. We just sample the analytic
@@ -1436,6 +1594,9 @@ var d = (labToolData.probability) || {};
                       strokeWidth: 2,
                       strokeDasharray: '4 3'
                     }),
+                    // Falling balls (animation in flight) — rendered LAST so
+                    // they sit on top of pegs and bars.
+                    fallingBalls,
                     // Bin index labels
                     bins.map(function(_, idx) {
                       return React.createElement('text', {
