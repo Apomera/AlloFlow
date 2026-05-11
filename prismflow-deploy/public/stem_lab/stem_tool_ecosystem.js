@@ -3336,6 +3336,176 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             if (b && addToast) addToast('🏅 ' + b.label + ': ' + b.desc, 'success');
           }
 
+          // Translate abstract pop scores to tangible conservation units.
+          // Numbers are illustrative scales calibrated to plausible Maine
+          // population levels at the indicated index.
+          function speciesArtifact(s) {
+            var p = Math.max(0, Math.round(s.pop));
+            if (s.id === 'grayWolf')   return { icon: '🐺', text: p === 0 ? 'No breeding population' : (Math.max(2, Math.round(p / 5)) + ' wolves in roughly ' + Math.max(1, Math.round(p / 10)) + ' packs') };
+            if (s.id === 'beaver')     return { icon: '🦫', text: Math.round(p * 60) + ' acres of beaver-engineered wetland' };
+            if (s.id === 'moose')      return { icon: '🫎', text: Math.round(p * 850) + ' moose statewide' };
+            if (s.id === 'deer')       return { icon: '🦌', text: Math.round(p / 2.5) + ' deer per square mile (15 to 20 is healthy)' };
+            if (s.id === 'salmon')     return { icon: '🐟', text: (p < 5 ? 'Returns are below detection' : (Math.round(p * 35) + ' returning adult salmon per year')) };
+            if (s.id === 'brookTrout') return { icon: '🐠', text: Math.round(p * 12) + ' stream miles holding wild brook trout' };
+            return { icon: '🌿', text: '' };
+          }
+
+          // Run 10 years of pure neglect (no actions, no events) from the
+          // default starting state. Cascades still fire, so deer hyperabundance
+          // degrades habitats while wolves remain absent. Pedagogical hammer.
+          function computeConserveDoNothing() {
+            var sim = MAINE_SPECIES.map(function(s) { return Object.assign({ id: s.id }, s.defaultState); });
+            for (var y = 0; y < conserve.maxYears; y++) {
+              sim = sim.map(function(s) {
+                var nz = Object.assign({}, s);
+                if (nz.pop > 0 && nz.habitat > 50) nz.pop = clamp(nz.pop + 2, 0, 100);
+                else if (nz.pop > 0 && nz.habitat < 30) nz.pop = clamp(nz.pop - 3, 0, 100);
+                nz.support = clamp(nz.support + (nz.support < 50 ? 1 : -1), 0, 100);
+                return nz;
+              });
+              CASCADE_RULES.forEach(function(rule) {
+                if (rule.when(sim)) rule.apply(sim);
+              });
+            }
+            return sim;
+          }
+
+          // Pick the highest-leverage opening play for Year 1
+          function conserveCoachingTip() {
+            // The deer-without-wolves trap is the most common failure mode.
+            var deer = getSp(conserve.species, 'deer');
+            var wolf = getSp(conserve.species, 'grayWolf');
+            var salmon = getSp(conserve.species, 'salmon');
+            if (deer.pop >= 75 && wolf.pop === 0) {
+              return {
+                priority: 'Build toward wolf reintroduction AND raise deer quota',
+                text: 'Deer are hyperabundant (' + Math.round(deer.pop) + ' index) and wolves are absent. Without predators, deer degrade every habitat through browse pressure. Two parallel moves: raise the deer hunting quota for immediate relief, and start the long arc toward wolf reintroduction (Compensation fund + Public education to lift wolf support above 50, plus Habitat protection to lift wolf habitat above 60).'
+              };
+            }
+            if (salmon.pop < 25) {
+              return {
+                priority: 'Stream restoration for salmon and trout',
+                text: 'Atlantic salmon are critically low (' + Math.round(salmon.pop) + '). Stream restoration helps salmon, brook trout, and beaver in one move. Dam removal is a bigger lever but costs public support.'
+              };
+            }
+            return {
+              priority: 'Hold steady and read the land',
+              text: 'No single zone is in crisis. Use Year 1 to monitor and protect habitat; the cascade rules will compound your moves in later years.'
+            };
+          }
+
+          // Per-species deep-dive panel
+          function openConservDeepDive(id) { setConserve({ deepDiveSpecies: id }); }
+          function closeConservDeepDive() { setConserve({ deepDiveSpecies: null }); }
+
+          function renderConservDeepDive(id) {
+            var def = getSpeciesDef(id);
+            if (!def || !def.deepDive) return null;
+            var dd = def.deepDive;
+            // What techniques actually apply here?
+            var applicable = CONSERVATION_TECHNIQUES.filter(function(t) {
+              if (t.appliesTo === 'any' || t.appliesTo === 'all') return true;
+              return t.appliesTo.indexOf(id) >= 0;
+            });
+            return h('div', {
+              role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Cultural deep-dive: ' + def.name,
+              style: {
+                background: 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.85) 60%)',
+                border: '1px solid ' + def.color + '88', borderLeft: '4px solid ' + def.color,
+                borderRadius: 14, padding: 18, marginBottom: 16
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
+                h('span', { style: { fontSize: 36 } }, def.icon),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Species deep-dive'),
+                  h('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
+                  h('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
+                ),
+                h('button', { onClick: closeConservDeepDive,
+                  style: { background: 'rgba(15,23,42,0.6)', border: '1px solid #334155', color: '#cbd5e1', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '✕ Close')
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
+                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌿 Ecology'),
+                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
+                ),
+                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '📰 Case work'),
+                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
+                ),
+                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌍 Modern context'),
+                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
+                )
+              ),
+              applicable.length > 0 ? h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(21,128,61,0.10)', border: '1px solid rgba(21,128,61,0.4)', borderLeft: '3px solid #15803d', borderRadius: 10 } },
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🛠 What you can do for this species in the sim'),
+                applicable.map(function(t, i) {
+                  return h('div', { key: i, style: { margin: '4px 0', fontSize: 12.5, color: '#d1fae5', lineHeight: 1.5 } },
+                    h('strong', { style: { color: '#bbf7d0' } }, t.icon + ' ' + t.name), ' (' + t.hours + 'h): ', t.desc
+                  );
+                })
+              ) : null
+            );
+          }
+
+          // Multi-line year-by-year trend chart
+          function renderConservTrendChart(yearLog) {
+            if (!yearLog || yearLog.length === 0) return null;
+            var w = 600, hgt = 220, padL = 36, padR = 90, padT = 12, padB = 24;
+            var ix = w - padL - padR;
+            var iy = hgt - padT - padB;
+            var species = MAINE_SPECIES;
+            function ptsFor(spId) {
+              return yearLog.map(function(snap, i) {
+                var post = (snap.post || []).find(function(p) { return p.id === spId; });
+                var v = post ? post.pop : 0;
+                var x = padL + (yearLog.length === 1 ? ix / 2 : (i / (yearLog.length - 1)) * ix);
+                var y = padT + iy - (v / 100) * iy;
+                return { x: x, y: y, v: v };
+              });
+            }
+            function pathStr(pts) {
+              return pts.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x + ',' + p.y; }).join(' ');
+            }
+            return h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 12, marginBottom: 14, border: '1px solid #1e293b' } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: '#e2e8f0', marginBottom: 8 } }, '📈 Population trends across the campaign'),
+              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' }, 'aria-label': 'Population trend chart by species year-by-year' },
+                // gridlines
+                [0, 25, 50, 75, 100].map(function(g, gi) {
+                  var y = padT + iy - (g / 100) * iy;
+                  return h('g', { key: 'g' + gi },
+                    h('line', { x1: padL, y1: y, x2: padL + ix, y2: y, stroke: '#1e293b', strokeWidth: 1 }),
+                    h('text', { x: padL - 4, y: y + 3, fontSize: 9, fill: '#64748b', textAnchor: 'end' }, g)
+                  );
+                }),
+                // x labels
+                yearLog.map(function(snap, i) {
+                  var x = padL + (yearLog.length === 1 ? ix / 2 : (i / (yearLog.length - 1)) * ix);
+                  return h('text', { key: 'xl' + i, x: x, y: hgt - 8, fontSize: 9, fill: '#64748b', textAnchor: 'middle' }, 'Y' + snap.year);
+                }),
+                // species lines
+                species.map(function(sp) {
+                  var pts = ptsFor(sp.id);
+                  return h('g', { key: sp.id },
+                    h('path', { d: pathStr(pts), stroke: sp.color, strokeWidth: 2, fill: 'none', strokeLinejoin: 'round' }),
+                    pts.map(function(p, i) {
+                      return h('circle', { key: i, cx: p.x, cy: p.y, r: 2, fill: sp.color });
+                    })
+                  );
+                }),
+                // legend (right side)
+                species.map(function(sp, si) {
+                  return h('g', { key: 'leg' + sp.id },
+                    h('line', { x1: w - padR + 6, y1: padT + 8 + si * 16, x2: w - padR + 20, y2: padT + 8 + si * 16, stroke: sp.color, strokeWidth: 2.5 }),
+                    h('text', { x: w - padR + 24, y: padT + 12 + si * 16, fontSize: 10, fill: '#cbd5e1' }, sp.icon + ' ' + sp.name.split(' ')[0])
+                  );
+                })
+              )
+            );
+          }
+
           function endConserveYear() {
             // Pre-drift snapshot for delta display
             var pre = conserve.species.map(function(s) { return Object.assign({}, s); });
@@ -3436,9 +3606,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             }
           }
 
+          // Deep-dive panel renders at the top of every phase when active
+          var conservDeepDive = conserve.deepDiveSpecies ? renderConservDeepDive(conserve.deepDiveSpecies) : null;
+
           // ── SETUP PHASE ──
           if (conserve.phase === 'setup') {
             return h('div', { className: 'space-y-4' },
+              conservDeepDive,
               h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(56,189,248,0.06) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
                   h('span', { style: { fontSize: 36 } }, '🌲'),
@@ -3463,7 +3637,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                       h('strong', { style: { color: s.color } }, s.name)
                     ),
                     h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, s.role),
-                    h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } }, s.desc)
+                    h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 8 } }, s.desc),
+                    h('button', { onClick: function() { openConservDeepDive(s.id); },
+                      'aria-label': 'Open deep-dive for ' + s.name,
+                      style: { width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid ' + s.color + '88', background: s.color + '22', color: s.color, cursor: 'pointer', fontWeight: 700, fontSize: 11.5 }
+                    }, '📚 Species deep-dive →')
                   );
                 })
               ),
@@ -3496,31 +3674,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           // ── DEBRIEF PHASE ──
           if (conserve.phase === 'debrief' && conserve.finalOutcome) {
             var o = conserve.finalOutcome;
+            var baseline = computeConserveDoNothing();
+            var actualAvgPop = Math.round(conserve.species.reduce(function(a, s) { return a + s.pop; }, 0) / conserve.species.length);
+            var baselineAvgPop = Math.round(baseline.reduce(function(a, s) { return a + s.pop; }, 0) / baseline.length);
             return h('div', { className: 'space-y-3' },
+              conservDeepDive,
               h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, ' + o.color + '24 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + o.color + '88', borderLeft: '4px solid ' + o.color } },
                 h('div', { style: { fontSize: 40, marginBottom: 6 } }, o.icon),
                 h('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
                 h('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } }, o.desc)
               ),
+              // Year-by-year trend chart
+              renderConservTrendChart(conserve.yearLog),
+
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 } },
                 conserve.species.map(function(s) {
                   var def = getSpeciesDef(s.id);
                   var targets = def.targets;
                   var hit = s.pop >= targets.pop && s.habitat >= targets.habitat && s.support >= targets.support;
+                  var artifact = speciesArtifact(s);
                   return h('div', { key: s.id, style: { background: '#0f172a', borderLeft: '3px solid ' + def.color, borderRadius: 10, padding: 12, fontSize: 12 } },
-                    h('div', { style: { fontWeight: 700, color: def.color, marginBottom: 6 } }, def.icon + ' ' + def.name + (hit ? ' ✓' : '')),
-                    h('div', { style: { color: '#cbd5e1', lineHeight: 1.5 } },
+                    h('div', { style: { fontWeight: 700, color: def.color, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 } },
+                      h('span', null, def.icon + ' ' + def.name + (hit ? ' ✓' : '')),
+                      def.deepDive ? h('button', { onClick: function() { openConservDeepDive(s.id); }, 'aria-label': 'Deep-dive', title: 'Species deep-dive',
+                        style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '0 6px', fontSize: 11 } }, '📚') : null
+                    ),
+                    h('div', { style: { color: '#cbd5e1', lineHeight: 1.55 } },
                       'Population: ' + Math.round(s.pop) + ' / ' + targets.pop,
                       h('br'),
                       'Habitat: ' + Math.round(s.habitat) + ' / ' + targets.habitat,
                       h('br'),
                       'Public support: ' + Math.round(s.support) + ' / ' + targets.support
-                    )
+                    ),
+                    artifact.text ? h('div', { style: { marginTop: 6, padding: 6, background: '#1e293b', borderRadius: 6, fontSize: 11.5, color: '#fde68a' } },
+                      h('span', { style: { fontSize: 14, marginRight: 4 } }, artifact.icon), artifact.text
+                    ) : null
                   );
                 })
               ),
               h('div', { style: { padding: 10, background: '#0f172a', borderRadius: 8, fontSize: 12, color: '#cbd5e1' } },
                 h('strong', { style: { color: '#86efac' } }, 'Targets met: '), conserve.targetsMet + ' / 6'
+              ),
+
+              // Do-nothing baseline comparison
+              h('div', { style: { padding: 12, borderRadius: 12, background: 'linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)', border: '1px solid rgba(248,113,113,0.4)' } },
+                h('strong', { style: { color: '#fecaca', fontSize: 14, display: 'block', marginBottom: 8 } }, '↔ What if you had done nothing for 10 years?'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+                  h('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o.color } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: o.color, marginBottom: 4 } }, 'Your campaign'),
+                    h('div', { style: { color: '#cbd5e1', fontSize: 13 } }, 'Avg pop ' + actualAvgPop + ' · Targets met ' + conserve.targetsMet + '/6')
+                  ),
+                  h('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fca5a5', marginBottom: 4 } }, 'Pure neglect'),
+                    h('div', { style: { color: '#cbd5e1', fontSize: 13 } }, 'Avg pop ' + baselineAvgPop + ' · Deer hit ' + Math.round(getSp(baseline, 'deer').pop) + ' · Wolves ' + Math.round(getSp(baseline, 'grayWolf').pop))
+                  )
+                ),
+                h('div', { style: { marginTop: 8, fontSize: 12, color: '#fde68a', lineHeight: 1.5, fontStyle: 'italic' } },
+                  baselineAvgPop > actualAvgPop
+                    ? 'Pure neglect outperformed active management this run. Trophic cascade went poorly. Look at which interventions cost you ground.'
+                    : (actualAvgPop > baselineAvgPop + 12
+                        ? 'You moved the ecosystem substantially ahead of where neglect would have left it. The gap is the conservation infrastructure you built.'
+                        : 'You roughly held the line against drift. Conservation that matches the do-nothing baseline still counts: stasis is the holding ground for everything you build later.')
+                )
               ),
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                 h('button', { onClick: resetConserve, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#1e293b', color: '#cbd5e1', fontWeight: 700 } }, '↻ New campaign'),
@@ -3539,6 +3754,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             var lastSnap = conserve.yearLog[conserve.yearLog.length - 1] || {};
             var ev2 = conserve.lastEvent || {};
             return h('div', { className: 'space-y-3' },
+              conservDeepDive,
               h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderLeft: '3px solid #fbbf24' } },
                 h('div', { style: { fontSize: 22, marginBottom: 4 } }, ev2.icon || '🌿'),
                 h('strong', { style: { color: '#fbbf24', fontSize: 16 } }, 'Year ' + conserve.year + ' event: ' + (ev2.name || 'quiet')),
@@ -3588,7 +3804,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // ── YEAR PHASE ──
           var diff2 = CONSERVATION_DIFFICULTIES[conserve.difficulty || 'manager'];
+          var coachingTip = (conserve.year === 1 && !conserve.firstTipDismissed && conserve.yearActions.length === 0) ? conserveCoachingTip() : null;
           return h('div', { className: 'space-y-3' },
+            conservDeepDive,
+            coachingTip ? h('div', { role: 'note', style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)', border: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7', color: '#e9d5ff', fontSize: 13, lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 10 } },
+              h('span', { style: { fontSize: 20, flexShrink: 0 } }, '🪶'),
+              h('div', { style: { flex: 1 } },
+                h('strong', { style: { color: '#a855f7' } }, 'Year 1 priority: '),
+                h('span', { style: { color: '#fde68a' } }, coachingTip.priority),
+                h('div', { style: { marginTop: 4, color: '#e9d5ff' } }, coachingTip.text)
+              ),
+              h('button', { onClick: function() { setConserve({ firstTipDismissed: true }); }, 'aria-label': 'Dismiss tip',
+                style: { background: 'transparent', border: 'none', color: '#a855f7', cursor: 'pointer', fontSize: 16, padding: 0, marginLeft: 6 } }, '✕')
+            ) : null,
             // HUD
             h('div', { style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
               h('div', null,
@@ -3625,7 +3853,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                     h('div', { style: { flex: 1 } },
                       h('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
                       h('div', { style: { fontSize: 11, color: '#94a3b8' } }, def.role)
-                    )
+                    ),
+                    def.deepDive ? h('button', { onClick: function() { openConservDeepDive(s.id); }, 'aria-label': 'Deep-dive for ' + def.name, title: 'Species deep-dive',
+                      style: { background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 } }, '📚') : null
                   ),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
                     [['Pop', Math.round(s.pop), s.pop < 25 ? '#ef4444' : s.pop < 50 ? '#f59e0b' : '#22c55e', def.targets.pop],
