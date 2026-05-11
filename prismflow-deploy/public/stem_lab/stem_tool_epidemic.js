@@ -82,6 +82,7 @@ window.StemLab = window.StemLab || {
     { id: 'r0explorer',  icon: '\uD83C\uDF21\uFE0F', label: 'R\u2080 Explorer' },
     { id: 'vaccination', icon: '\uD83D\uDC89', label: 'Vaccination' },
     { id: 'interventions', icon: '\uD83D\uDE37', label: 'Interventions' },
+    { id: 'outbreak',    icon: '\uD83C\uDFE5', label: 'Outbreak Response' },
     { id: 'outbreakmap', icon: '\uD83D\uDDFA\uFE0F', label: 'Outbreak Map' },
     { id: 'contacttrace', icon: '\uD83D\uDD17', label: 'Contact Trace' },
     { id: 'history',     icon: '\uD83D\uDCDC', label: 'History' },
@@ -122,7 +123,13 @@ window.StemLab = window.StemLab || {
     { id: 'historian',     icon: '\uD83D\uDCDC', name: 'Plague Historian', desc: 'Explore all historical pandemics' },
     { id: 'scenarioSolver',icon: '\uD83C\uDFAD', name: 'Scenario Solver', desc: 'Complete an AI-generated outbreak scenario' },
     { id: 'quarantine',    icon: '\uD83D\uDEA7', name: 'Quarantine Chief', desc: 'Use quarantine zones on outbreak map' },
-    { id: 'hospitalMgr',   icon: '\uD83C\uDFE5', name: 'Hospital Manager', desc: 'Keep hospital capacity below 100%' }
+    { id: 'hospitalMgr',   icon: '\uD83C\uDFE5', name: 'Hospital Manager', desc: 'Keep hospital capacity below 100%' },
+    // Outbreak Response campaign badges
+    { id: 'flattener',     icon: '\uD83D\uDCC9', name: 'Curve Flattener',   desc: 'Keep peak infection below 10% in the Outbreak Response campaign' },
+    { id: 'trustBuilder',  icon: '\uD83E\uDD1D', name: 'Trust Builder',     desc: 'Hold average public trust above 70 across the campaign' },
+    { id: 'capacityKeeper',icon: '\uD83C\uDFE5', name: 'Capacity Keeper',   desc: 'Complete the campaign with zero weeks of hospital overload' },
+    { id: 'equityPHO',     icon: '\u2696\uFE0F', name: 'Equity PHO',        desc: 'Bring elderly vaccination above 80% without losing trust' },
+    { id: 'phoMastery',    icon: '\uD83C\uDFC6', name: 'PHO Mastery',       desc: 'Complete the Outbreak Response campaign on State Director difficulty with low total cases' }
   ];
 
   // ── Challenge Questions (3 tiers × 8 = 24) ──
@@ -623,6 +630,197 @@ window.StemLab = window.StemLab || {
   }
 
   // ═══════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════
+  // OUTBREAK RESPONSE: 26-WEEK PUBLIC HEALTH OFFICER CAMPAIGN
+  // Parallel to Fire Ecology's Cultural Mosaic and Ecosystem's
+  // Conservation Manager, but the core pedagogy is public health
+  // decision-making under uncertainty: differential demographic
+  // impact, trust dynamics, capacity constraints, and the feedback
+  // loops that make pandemic response so hard.
+  // ═══════════════════════════════════════════════════════
+
+  var DEMOGRAPHIC_GROUPS = [
+    {
+      id: 'schoolAge', name: 'School-age (5-17)', icon: '🎒', color: '#a855f7',
+      role: 'High contact, low severity',
+      desc: 'Highest transmission rate due to dense indoor contact in schools and after-school activities. Lowest severe-case rate per infection, but a major vector to working-age and elderly household members.',
+      defaultState: { infected: 2, recovered: 0, vaccinated: 0, trust: 70, contactRate: 0.32 },
+      cumulative: { cases: 0, deaths: 0 },
+      severityRate: 0.002
+    },
+    {
+      id: 'workingAge', name: 'Working-age (18-64)', icon: '💼', color: '#0ea5e9',
+      role: 'Medium contact, medium severity',
+      desc: 'Workplace, commute, and household exposure. Moderate severe-case rate, with sharp increase above 50. This is also your healthcare workforce.',
+      defaultState: { infected: 3, recovered: 0, vaccinated: 0, trust: 60, contactRate: 0.26 },
+      cumulative: { cases: 0, deaths: 0 },
+      severityRate: 0.012
+    },
+    {
+      id: 'elderly', name: 'Elderly (65+)', icon: '👴', color: '#dc2626',
+      role: 'Lower contact, very high severity',
+      desc: 'Lower exposure overall (fewer daily contacts) but dramatically higher severe-case and death rate per infection. Long-term care facilities are extreme-risk environments.',
+      defaultState: { infected: 1, recovered: 0, vaccinated: 0, trust: 75, contactRate: 0.14 },
+      cumulative: { cases: 0, deaths: 0 },
+      severityRate: 0.08
+    },
+    {
+      id: 'healthcare', name: 'Healthcare workers', icon: '🩺', color: '#16a34a',
+      role: 'Extreme exposure, capacity constraint',
+      desc: 'Cared-for-by population is roughly 1.3% of total but they are also part of the working-age group via family. Burnout reduces hospital capacity. Trust in this group is what keeps boosters and PPE compliance high.',
+      defaultState: { infected: 4, recovered: 0, vaccinated: 0, trust: 80, contactRate: 0.40 },
+      cumulative: { cases: 0, deaths: 0, burnout: 0 },
+      severityRate: 0.010
+    }
+  ];
+
+  var RESPONSE_INTERVENTIONS = [
+    {
+      id: 'testingSurge', name: 'Testing surge', icon: '🧪', hours: 4,
+      desc: 'Free testing sites, mailed test kits. Does not directly reduce spread but reveals true infection numbers and identifies isolation candidates.',
+      effects: { reveal: true, transmissionMult: 0.96 },
+      appliesTo: 'all'
+    },
+    {
+      id: 'maskAdvisory', name: 'Mask advisory (voluntary)', icon: '😷', hours: 2,
+      desc: 'Recommend masks indoors. Voluntary compliance. Modest transmission reduction. No trust cost.',
+      effects: { transmissionMult: 0.92 }, durationWeeks: 4,
+      appliesTo: 'all'
+    },
+    {
+      id: 'maskMandate', name: 'Mask mandate', icon: '🚫', hours: 5,
+      desc: 'Required masks in public indoor settings. Stronger transmission reduction. Costs public trust, especially in working-age.',
+      effects: { transmissionMult: 0.78, trust: -8 }, durationWeeks: 4,
+      appliesTo: 'all'
+    },
+    {
+      id: 'schoolClose', name: 'School closure', icon: '🏫', hours: 8,
+      desc: 'Close K-12 schools. Sharp reduction in school-age transmission. Costs trust across all groups. Disrupts working-age childcare.',
+      effects: { groupTransmissionMult: { schoolAge: 0.45 }, trust: -10 }, durationWeeks: 2,
+      appliesTo: 'all'
+    },
+    {
+      id: 'vaccinePush', name: 'Vaccine clinic', icon: '💉', hours: 6,
+      desc: 'Open clinics, mobile units. Vaccinates 5% of working-age and elderly per use. Builds trust in groups vaccinated.',
+      effects: { vaccinate: { workingAge: 0.05, elderly: 0.05 }, trust: 3 },
+      appliesTo: 'all'
+    },
+    {
+      id: 'targetedVacc', name: 'Targeted vaccination', icon: '🎯', hours: 4,
+      desc: 'Concentrated push on one demographic. Vaccinates 9% of chosen group. Builds trust where it lands.',
+      effects: { vaccinateTarget: 0.09, trustTarget: 6 },
+      appliesTo: 'group'
+    },
+    {
+      id: 'comms', name: 'Public communication', icon: '📣', hours: 3,
+      desc: 'Press conferences, social media, multilingual outreach. Builds public trust across all groups.',
+      effects: { trust: 7 },
+      appliesTo: 'all'
+    },
+    {
+      id: 'hospitalSurge', name: 'Hospital surge capacity', icon: '🏥', hours: 10,
+      desc: 'National Guard medics, field hospital tents, deferred elective surgery. Adds 30 beds for 4 weeks.',
+      effects: { hospitalBoost: 30 }, durationWeeks: 4,
+      appliesTo: 'all'
+    },
+    {
+      id: 'contactTrace', name: 'Contact tracing', icon: '🔗', hours: 6,
+      desc: 'Identify and notify contacts of confirmed cases. Effective when case counts are low; breaks down above ~50 active cases.',
+      effects: { transmissionMultIfLow: 0.82 }, durationWeeks: 2,
+      appliesTo: 'all'
+    },
+    {
+      id: 'rest', name: 'Hold steady', icon: '🍃', hours: 0,
+      desc: 'No active intervention this week. The disease drifts on its own dynamics; standing interventions continue.',
+      effects: {},
+      appliesTo: 'all'
+    }
+  ];
+
+  var OUTBREAK_EVENTS = [
+    { id: 'variantEmerges', name: 'New variant emerges', icon: '🧬', desc: 'A new variant with higher transmission appears. Transmission rate +25% for the next 4 weeks.', apply: function(state) { state.activeMods.push({ id: 'variantTransmission', weeks: 4, transmissionMult: 1.25 }); } },
+    { id: 'vaccineSupply', name: 'Vaccine supply shock', icon: '💉', desc: 'Federal vaccine supply is delayed. Vaccine clinic and targeted vaccination are unavailable for 2 weeks.', apply: function(state) { state.activeMods.push({ id: 'vaccineLockout', weeks: 2 }); } },
+    { id: 'healthcareBurnout', name: 'Healthcare burnout', icon: '😩', desc: 'Healthcare workers report severe fatigue and turnover. Hospital base capacity falls by 15 beds.', apply: function(state) { state.hospitalCapacityPenalty = (state.hospitalCapacityPenalty || 0) + 15; var hc = state.groups.find(function(g) { return g.id === 'healthcare'; }); if (hc) hc.cumulative.burnout = (hc.cumulative.burnout || 0) + 1; } },
+    { id: 'publicProtest', name: 'Public protest', icon: '😡', desc: 'Anti-mandate protest gathers media coverage. Trust falls across all groups, especially working-age.', apply: function(state) { state.groups.forEach(function(g) { g.trust = clamp(g.trust - (g.id === 'workingAge' ? 14 : 7), 0, 100); }); } },
+    { id: 'successStory', name: 'Recovery success story', icon: '🌟', desc: 'A widely-shared recovery story and vaccinated-family feature lift trust everywhere.', apply: function(state) { state.groups.forEach(function(g) { g.trust = clamp(g.trust + 9, 0, 100); }); } },
+    { id: 'equityGap', name: 'Equity gap revealed', icon: '📊', desc: 'Public data show severe-case rates concentrated in a community with low historic healthcare access. Public attention focuses there.', apply: function(state) { state.activeMods.push({ id: 'equityFocus', weeks: 4 }); var el = state.groups.find(function(g) { return g.id === 'elderly'; }); if (el) el.trust = clamp(el.trust - 5, 0, 100); } },
+    { id: 'schoolBoard', name: 'School board pushback', icon: '🏛️', desc: 'School board votes against the closure recommendation. School closure no longer available for 3 weeks.', apply: function(state) { state.activeMods.push({ id: 'schoolBoardBlock', weeks: 3 }); } },
+    { id: 'travelInflux', name: 'Travel-related cases', icon: '✈️', desc: 'A major holiday or travel event brings imported cases. Working-age infected +5.', apply: function(state) { var wa = state.groups.find(function(g) { return g.id === 'workingAge'; }); if (wa) wa.infected = clamp(wa.infected + 5, 0, 100); } },
+    { id: 'fundingBump', name: 'Federal funding bump', icon: '💵', desc: 'Emergency public health funding lands. Stewardship hours next week are +6.', apply: function(state) { state.activeMods.push({ id: 'fundingBoost', weeks: 1, extraHours: 6 }); } },
+    { id: 'longCareOutbreak', name: 'Long-term care outbreak', icon: '🏠', desc: 'A cluster outbreak in a long-term care facility. Elderly infected +6.', apply: function(state) { var el = state.groups.find(function(g) { return g.id === 'elderly'; }); if (el) el.infected = clamp(el.infected + 6, 0, 100); } }
+  ];
+
+  // Feedback rules: applied each week AFTER dynamics + event. These are the
+  // pandemic-response equivalent of trophic-cascade rules: they create
+  // non-obvious dependencies between groups and across time.
+  var FEEDBACK_RULES = [
+    { id: 'hospitalStrain', when: function(state) { return state.hospitalLoad > 80; }, apply: function(state) { state.groups.forEach(function(g) { g.trust = clamp(g.trust - 4, 0, 100); }); var hc = state.groups.find(function(g) { return g.id === 'healthcare'; }); if (hc) hc.cumulative.burnout = (hc.cumulative.burnout || 0) + 0.4; }, msg: 'Hospital overload visibly eroded public trust.' },
+    { id: 'lowTrustRefusal', when: function(state) { var wa = state.groups.find(function(g) { return g.id === 'workingAge'; }); return wa && wa.trust < 40; }, apply: function(state) { state.activeMods.push({ id: 'vaccineRefusal', weeks: 1, vaccineMult: 0.5 }); }, msg: 'Low working-age trust slowed vaccine uptake this week.' },
+    { id: 'schoolToFamily', when: function(state) { var s = state.groups.find(function(g) { return g.id === 'schoolAge'; }); return s && s.infected > 12; }, apply: function(state) { var wa = state.groups.find(function(g) { return g.id === 'workingAge'; }); if (wa) wa.infected = clamp(wa.infected + 2, 0, 100); }, msg: 'School-age infections spread to working-age households.' },
+    { id: 'workingToElderly', when: function(state) { var wa = state.groups.find(function(g) { return g.id === 'workingAge'; }); return wa && wa.infected > 10; }, apply: function(state) { var el = state.groups.find(function(g) { return g.id === 'elderly'; }); if (el) el.infected = clamp(el.infected + 1.5, 0, 100); }, msg: 'Working-age caregivers carried infections into the elderly population.' }
+  ];
+
+  var RESPONSE_DIFFICULTIES = {
+    apprentice: { id: 'apprentice', label: 'New PHO', hoursPerWeek: 16, eventSkip: 0.3, severity: 0.8, desc: '16 hrs/week, gentler events. For first runs.' },
+    pho:        { id: 'pho',        label: 'County PHO', hoursPerWeek: 12, eventSkip: 0,   severity: 1.0, desc: '12 hrs/week, standard events. Default.' },
+    state:      { id: 'state',      label: 'State Director', hoursPerWeek: 9,  eventSkip: 0,   severity: 1.4, desc: '9 hrs/week, harsher events. Real constraint.' }
+  };
+
+  function defaultOutbreakState() {
+    var diff = RESPONSE_DIFFICULTIES.pho;
+    return {
+      phase: 'setup',
+      week: 1,
+      maxWeeks: 26,
+      difficulty: diff.id,
+      hoursPerWeek: diff.hoursPerWeek,
+      hoursLeft: diff.hoursPerWeek,
+      groups: DEMOGRAPHIC_GROUPS.map(function(g) {
+        return {
+          id: g.id,
+          infected: g.defaultState.infected,
+          recovered: g.defaultState.recovered,
+          vaccinated: g.defaultState.vaccinated,
+          trust: g.defaultState.trust,
+          contactRate: g.defaultState.contactRate,
+          cumulative: Object.assign({}, g.cumulative)
+        };
+      }),
+      hospitalCapacity: 100,
+      hospitalCapacityPenalty: 0,
+      hospitalLoad: 0,
+      hospitalOverloadWeeks: 0,
+      activeMods: [],
+      weekActions: [],
+      weekLog: [],
+      lastEvent: null,
+      feedbacksFiredThisWeek: [],
+      finalOutcome: null,
+      deepDiveGroup: null,
+      firstTipDismissed: false,
+      seed: 'outbreak-' + (new Date()).getFullYear() + (new Date()).getMonth() + (new Date()).getDate() + '-' + Math.floor(Math.random() * 9999),
+      aiReadResponse: null,
+      aiReadLoading: false
+    };
+  }
+
+  function getGroupDef(id) {
+    for (var i = 0; i < DEMOGRAPHIC_GROUPS.length; i++) if (DEMOGRAPHIC_GROUPS[i].id === id) return DEMOGRAPHIC_GROUPS[i];
+    return null;
+  }
+
+  function outbreakRng(seed, week, purpose) {
+    var s = (seed || 'default') + ':' + week + ':' + purpose;
+    var h = 2166136261 >>> 0;
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = (h * 16777619) >>> 0; }
+    return function() {
+      h |= 0; h = (h + 0x6D2B79F5) | 0;
+      var t = Math.imul(h ^ (h >>> 15), 1 | h);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
   // Tool Registration
   // ═══════════════════════════════════════════════════════
 
@@ -1296,6 +1494,7 @@ window.StemLab = window.StemLab || {
             r0explorer:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDF21\uFE0F', title: 'R\u2080 \u2014 basic reproduction number', hint: 'Average secondary infections per primary case in a fully susceptible population. R\u2080 > 1 = outbreak; R\u2080 < 1 = dies out. Measles ~15, flu ~1.3, COVID ~2-3.' },
             vaccination:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDC89', title: 'Vaccination + herd immunity',          hint: 'Herd-immunity threshold = 1 - 1/R\u2080. Measles needs ~94% coverage; flu only ~25%. The math is what makes vaccination a public-health superlever.' },
             interventions: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDE37', title: 'Non-pharmaceutical interventions',     hint: 'Masks, distancing, school closures, contact tracing \u2014 each lowers R effective. Stack them: 50% reduction \u00d7 50% \u2192 75% total transmission cut.' },
+            outbreak:    { accent: '#15803d', soft: 'rgba(21,128,61,0.10)',  icon: '\uD83C\uDFE5', title: 'Outbreak Response \u2014 26-week PHO campaign', hint: 'You are a county Public Health Officer. Four demographic groups. 26 weeks of decisions. Feedback rules tie infections, hospital strain, public trust, and vaccine uptake together. Real pandemic response is about timing and tradeoffs, not formulas.' },
             outbreakmap:   { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',  icon: '\uD83D\uDDFA\uFE0F', title: 'Outbreak map \u2014 spatial spread', hint: 'Disease moves through networks (households, schools, transit, workplaces). Travel networks dominate at country scale; close-contact at household scale.' },
             contacttrace:  { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83D\uDD17', title: 'Contact tracing',                     hint: 'Identifies and isolates contacts of confirmed cases before they spread further. Most effective early when case count is low; breaks down when contacts > tracers.' },
             history:       { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.10)', icon: '\uD83D\uDCDC', title: 'Pandemic history',                    hint: '1918 flu, 2003 SARS, 2009 H1N1, 2014 Ebola, 2019 COVID. Each shaped modern public health \u2014 and surfaced new gaps to fix before the next.' },
@@ -1687,6 +1886,483 @@ window.StemLab = window.StemLab || {
               'The multiplicative NPI model: \u03B2_eff = \u03B2 \u220F_i(1-r_i) where r_i is each intervention\'s reduction. This assumes independence of mechanisms (respiratory vs. fomite vs. contact). In practice, diminishing returns occur when interventions target the same transmission route.'))
           )
         ),
+
+        // ═══════════════════════════════════════════
+        // OUTBREAK RESPONSE: 26-WEEK PHO CAMPAIGN
+        // ═══════════════════════════════════════════
+        tab === 'outbreak' && (function() {
+          var outbreak = d.outbreak || defaultOutbreakState();
+          function setOutbreak(patch) { upd({ outbreak: Object.assign({}, outbreak, patch) }); }
+          var T_GREEN = '#15803d', T_GREEN_HI = '#86efac';
+
+          function startOutbreak(opts) {
+            opts = opts || {};
+            var fresh = defaultOutbreakState();
+            var diffId = opts.difficulty || outbreak.difficulty || 'pho';
+            var diff = RESPONSE_DIFFICULTIES[diffId] || RESPONSE_DIFFICULTIES.pho;
+            fresh.phase = 'week';
+            fresh.difficulty = diff.id;
+            fresh.hoursPerWeek = diff.hoursPerWeek;
+            fresh.hoursLeft = diff.hoursPerWeek;
+            if (opts.seed) fresh.seed = opts.seed;
+            setOutbreak(fresh);
+            if (addToast) addToast('🏥 Outbreak Response begins. Week 1 of 26 on ' + diff.label + '.', 'success');
+            awardXP && awardXP('outbreak_start', 10, 'Outbreak campaign (' + diff.label + ')');
+            if (announceToSR) announceToSR('Outbreak Response campaign started on ' + diff.label + '. Week 1 of 26.');
+          }
+
+          function resetOutbreak() { setOutbreak(defaultOutbreakState()); }
+
+          function awardOutbreakBadge(id) {
+            if ((d.badges || {})[id]) return;
+            var nb = Object.assign({}, d.badges || {}); nb[id] = true; upd({ badges: nb });
+            var b = EPI_BADGES.find(function(x) { return x.id === id; });
+            if (b && addToast) addToast('🏅 ' + b.name + ': ' + b.desc, 'success');
+          }
+
+          function applyInterv(intervId, targetGroupId) {
+            var interv = RESPONSE_INTERVENTIONS.find(function(t) { return t.id === intervId; });
+            if (!interv) return;
+            if (outbreak.hoursLeft < interv.hours) { if (addToast) addToast('Not enough hours left this week.', 'warn'); return; }
+            // Vaccine lockout check
+            if ((intervId === 'vaccinePush' || intervId === 'targetedVacc') && outbreak.activeMods.some(function(m) { return m.id === 'vaccineLockout'; })) {
+              if (addToast) addToast('Vaccine supply is locked out this week.', 'warn');
+              return;
+            }
+            // School closure block
+            if (intervId === 'schoolClose' && outbreak.activeMods.some(function(m) { return m.id === 'schoolBoardBlock'; })) {
+              if (addToast) addToast('School board has blocked closure for now.', 'warn');
+              return;
+            }
+            // Apply effects
+            var newGroups = outbreak.groups.map(function(g) { return Object.assign({}, g, { cumulative: Object.assign({}, g.cumulative) }); });
+            var newMods = outbreak.activeMods.slice();
+
+            // Immediate effects
+            if (interv.effects.trust) {
+              newGroups.forEach(function(g) { g.trust = clamp(g.trust + interv.effects.trust, 0, 100); });
+            }
+            if (interv.effects.vaccinate) {
+              Object.keys(interv.effects.vaccinate).forEach(function(gid) {
+                var g = newGroups.find(function(x) { return x.id === gid; });
+                if (g) {
+                  var dose = interv.effects.vaccinate[gid];
+                  // Vaccine refusal mod halves uptake
+                  if (newMods.some(function(m) { return m.id === 'vaccineRefusal'; })) dose = dose * 0.5;
+                  g.vaccinated = clamp(g.vaccinated + dose * 100, 0, 100);
+                }
+              });
+            }
+            if (interv.effects.vaccinateTarget && targetGroupId) {
+              var tg = newGroups.find(function(x) { return x.id === targetGroupId; });
+              if (tg) {
+                var dose2 = interv.effects.vaccinateTarget;
+                if (newMods.some(function(m) { return m.id === 'vaccineRefusal'; })) dose2 = dose2 * 0.5;
+                tg.vaccinated = clamp(tg.vaccinated + dose2 * 100, 0, 100);
+                if (interv.effects.trustTarget) tg.trust = clamp(tg.trust + interv.effects.trustTarget, 0, 100);
+              }
+            }
+
+            // Standing-mod effects (transmission multipliers, hospital boost)
+            if (interv.effects.transmissionMult || interv.effects.transmissionMultIfLow || interv.effects.groupTransmissionMult || interv.effects.hospitalBoost) {
+              var modPayload = Object.assign({ id: intervId + '-' + outbreak.week, weeks: interv.durationWeeks || 1 }, interv.effects);
+              newMods.push(modPayload);
+            }
+
+            var actionLog = { intervention: interv.name, target: targetGroupId ? (getGroupDef(targetGroupId) ? getGroupDef(targetGroupId).name : targetGroupId) : 'All', hours: interv.hours };
+            setOutbreak({
+              groups: newGroups,
+              hoursLeft: outbreak.hoursLeft - interv.hours,
+              activeMods: newMods,
+              weekActions: outbreak.weekActions.concat([actionLog])
+            });
+            if (announceToSR) announceToSR(interv.name + ' applied. ' + (outbreak.hoursLeft - interv.hours) + ' hours left.');
+          }
+
+          function endOutbreakWeek() {
+            // 1. Snapshot pre-state for delta display
+            var pre = outbreak.groups.map(function(g) { return Object.assign({}, g, { cumulative: Object.assign({}, g.cumulative) }); });
+
+            // 2. Compute aggregate transmission multiplier from active mods
+            var transMult = 1.0;
+            var groupTransMults = {};
+            var hospitalBoost = 0;
+            var lowCases = outbreak.groups.reduce(function(a, g) { return a + g.infected; }, 0) < 35;
+            var newMods = [];
+            outbreak.activeMods.forEach(function(m) {
+              if (m.transmissionMult) transMult *= m.transmissionMult;
+              if (m.transmissionMultIfLow && lowCases) transMult *= m.transmissionMultIfLow;
+              if (m.groupTransmissionMult) Object.keys(m.groupTransmissionMult).forEach(function(gid) { groupTransMults[gid] = (groupTransMults[gid] || 1) * m.groupTransmissionMult[gid]; });
+              if (m.hospitalBoost) hospitalBoost += m.hospitalBoost;
+              // Variant transmission
+              if (m.id === 'variantTransmission' && m.transmissionMult) transMult *= m.transmissionMult;
+              var nm = Object.assign({}, m, { weeks: (m.weeks || 1) - 1 });
+              if (nm.weeks > 0) newMods.push(nm);
+            });
+
+            // 3. SIR-like weekly dynamics per group
+            var newGroups = outbreak.groups.map(function(g) {
+              var def = getGroupDef(g.id);
+              var ng = Object.assign({}, g, { cumulative: Object.assign({}, g.cumulative) });
+              var baseR = g.contactRate * transMult * (groupTransMults[g.id] || 1);
+              // Vaccinated fraction protects against new infection
+              var susceptiblePct = clamp(100 - ng.infected - ng.recovered - ng.vaccinated, 0, 100);
+              var newInf = baseR * (ng.infected / 100) * (susceptiblePct / 100) * 100;
+              // Recoveries: 35% of infected per week
+              var recoveries = ng.infected * 0.35;
+              // Deaths: severityRate of infections drive deaths over time
+              var deaths = ng.infected * def.severityRate;
+              ng.infected = clamp(ng.infected + newInf - recoveries - deaths, 0, 100);
+              ng.recovered = clamp(ng.recovered + recoveries, 0, 100);
+              ng.cumulative.cases = (ng.cumulative.cases || 0) + newInf;
+              ng.cumulative.deaths = (ng.cumulative.deaths || 0) + deaths;
+              return ng;
+            });
+
+            // 4. Pick event (seeded)
+            var diff = RESPONSE_DIFFICULTIES[outbreak.difficulty || 'pho'];
+            var skipRng = outbreakRng(outbreak.seed, outbreak.week, 'skip');
+            var pickRng = outbreakRng(outbreak.seed, outbreak.week, 'pick');
+            var ev;
+            if (skipRng() < (diff.eventSkip || 0)) {
+              ev = { id: 'quietWeek', name: 'A Quiet Week', icon: '🌤️', desc: 'No major event. The system stayed within its normal noise.', apply: function() {} };
+            } else {
+              ev = OUTBREAK_EVENTS[Math.floor(pickRng() * OUTBREAK_EVENTS.length)];
+            }
+            var eventState = { groups: newGroups, activeMods: newMods, hospitalCapacityPenalty: outbreak.hospitalCapacityPenalty || 0 };
+            ev.apply(eventState);
+            newGroups = eventState.groups;
+            newMods = eventState.activeMods;
+            var hospitalCapacityPenalty = eventState.hospitalCapacityPenalty || 0;
+
+            // 5. Compute hospital load
+            var totalSevere = newGroups.reduce(function(a, g) {
+              var def = getGroupDef(g.id);
+              return a + g.infected * def.severityRate * 100;
+            }, 0);
+            var effectiveCapacity = (outbreak.hospitalCapacity - hospitalCapacityPenalty) + hospitalBoost;
+            var hospitalLoad = effectiveCapacity > 0 ? Math.round((totalSevere / effectiveCapacity) * 100) : 100;
+
+            // 6. Feedback rules
+            var fbState = { groups: newGroups, activeMods: newMods, hospitalLoad: hospitalLoad };
+            var firedFeedbacks = [];
+            FEEDBACK_RULES.forEach(function(rule) {
+              if (rule.when(fbState)) { rule.apply(fbState); firedFeedbacks.push({ id: rule.id, msg: rule.msg }); }
+            });
+            newGroups = fbState.groups;
+            newMods = fbState.activeMods;
+
+            // 7. Track overload weeks
+            var overloadWeeks = outbreak.hospitalOverloadWeeks + (hospitalLoad > 100 ? 1 : 0);
+
+            var snap = {
+              week: outbreak.week, event: ev.name, eventIcon: ev.icon, eventDesc: ev.desc,
+              pre: pre, post: newGroups.map(function(g) { return Object.assign({}, g); }),
+              actions: outbreak.weekActions.slice(),
+              feedbacks: firedFeedbacks,
+              hospitalLoad: hospitalLoad
+            };
+
+            // Spot badges
+            var avgTrust = newGroups.reduce(function(a, g) { return a + g.trust; }, 0) / newGroups.length;
+            if (avgTrust >= 75) awardOutbreakBadge('trustBuilder');
+            var peakInf = Math.max.apply(null, newGroups.map(function(g) { return g.infected; }));
+            if (peakInf < 10) awardOutbreakBadge('flattener');
+            var eldVacc = (newGroups.find(function(g) { return g.id === 'elderly'; }) || {}).vaccinated || 0;
+            if (eldVacc >= 80 && avgTrust >= 65) awardOutbreakBadge('equityPHO');
+
+            setOutbreak({
+              phase: 'review',
+              groups: newGroups,
+              activeMods: newMods,
+              hospitalLoad: hospitalLoad,
+              hospitalCapacityPenalty: hospitalCapacityPenalty,
+              hospitalOverloadWeeks: overloadWeeks,
+              lastEvent: ev,
+              feedbacksFiredThisWeek: firedFeedbacks,
+              weekLog: outbreak.weekLog.concat([snap])
+            });
+            if (announceToSR) announceToSR('Week ' + outbreak.week + ' complete. Event: ' + ev.name + '. Hospital load ' + hospitalLoad + '%.');
+          }
+
+          function advanceFromOutbreakReview() {
+            if (outbreak.week >= outbreak.maxWeeks) {
+              // Final outcome
+              var totalDeaths = outbreak.groups.reduce(function(a, g) { return a + (g.cumulative.deaths || 0); }, 0);
+              var totalCases = outbreak.groups.reduce(function(a, g) { return a + (g.cumulative.cases || 0); }, 0);
+              var avgTrust = Math.round(outbreak.groups.reduce(function(a, g) { return a + g.trust; }, 0) / outbreak.groups.length);
+              var overloads = outbreak.hospitalOverloadWeeks;
+
+              var outcome;
+              if (totalDeaths < 15 && avgTrust > 65 && overloads === 0) outcome = { tier: 'mastery', label: 'Pandemic Response Mastery', color: '#16a34a', icon: '🏆', desc: 'Low deaths, high trust, zero hospital overload. This is what a well-run public health response looks like, and it required real tradeoffs along the way.' };
+              else if (totalDeaths < 35 && avgTrust > 50) outcome = { tier: 'solid', label: 'Solid Public Health Response', color: '#22c55e', icon: '🩺', desc: 'You kept the curve flattened most of the time and maintained public engagement. Real-world responses look like this on the good days.' };
+              else if (totalDeaths < 60) outcome = { tier: 'mixed', label: 'Mixed Outcomes', color: '#f59e0b', icon: '⚖️', desc: 'Significant illness, some hospital strain, eroded trust. The system held together but at real cost.' };
+              else outcome = { tier: 'catastrophic', label: 'System Strain', color: '#ef4444', icon: '⚠️', desc: 'High deaths or sustained hospital overload. This is the trajectory communities and health systems work to avoid.' };
+
+              if (outbreak.hospitalOverloadWeeks === 0) awardOutbreakBadge('capacityKeeper');
+              if (outbreak.difficulty === 'state' && (outcome.tier === 'mastery' || outcome.tier === 'solid')) awardOutbreakBadge('phoMastery');
+
+              setOutbreak({ phase: 'debrief', finalOutcome: outcome, totalDeaths: totalDeaths, totalCases: totalCases, avgTrust: avgTrust });
+              awardXP && awardXP('outbreak_complete', 50, outcome.label);
+            } else {
+              setOutbreak({ phase: 'week', week: outbreak.week + 1, hoursLeft: outbreak.hoursPerWeek + (outbreak.activeMods.some(function(m) { return m.id === 'fundingBoost'; }) ? 6 : 0), weekActions: [], lastEvent: null });
+              if (announceToSR) announceToSR('Week ' + (outbreak.week + 1) + ' begins.');
+            }
+          }
+
+          // ── SETUP ──
+          if (outbreak.phase === 'setup') {
+            return h('div', { className: 'space-y-4' },
+              h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(56,189,248,0.06) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
+                  h('span', { style: { fontSize: 36 } }, '🏥'),
+                  h('div', null,
+                    h('h3', { style: { margin: 0, color: T_GREEN_HI, fontSize: 22 } }, 'Outbreak Response: 26-week PHO campaign'),
+                    h('div', { style: { fontSize: 13, color: '#cbd5e1', marginTop: 2 } }, 'You are the County Public Health Officer.')
+                  )
+                ),
+                h('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } },
+                  'A novel respiratory pathogen is circulating in your county. You have 26 weeks of decisions. Four demographic groups respond differently. Feedback rules tie ',
+                  h('strong', null, 'infection, hospital strain, public trust, and vaccine uptake'),
+                  ' together. This is pandemic response as decision-making under uncertainty, not as a formula.'
+                )
+              ),
+
+              // Demographic group preview
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
+                DEMOGRAPHIC_GROUPS.map(function(g) {
+                  return h('div', { key: g.id, style: { background: '#0f172a', borderLeft: '3px solid ' + g.color, borderRadius: 10, padding: 12 } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                      h('span', { style: { fontSize: 22 } }, g.icon),
+                      h('strong', { style: { color: g.color } }, g.name)
+                    ),
+                    h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, g.role),
+                    h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } }, g.desc)
+                  );
+                })
+              ),
+
+              // Difficulty
+              h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 12, border: '1px solid #1e293b' } },
+                h('div', { style: { fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, 'Difficulty'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
+                  Object.keys(RESPONSE_DIFFICULTIES).map(function(dkey) {
+                    var df = RESPONSE_DIFFICULTIES[dkey];
+                    var picked = (outbreak.difficulty || 'pho') === dkey;
+                    return h('button', { key: dkey, onClick: function() { setOutbreak({ difficulty: dkey }); }, 'aria-pressed': picked,
+                      style: { background: picked ? 'rgba(21,128,61,0.20)' : '#1e293b', border: '1px solid ' + (picked ? '#15803d' : '#334155'), color: picked ? '#86efac' : '#cbd5e1', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', textAlign: 'left' } },
+                      h('div', { style: { fontWeight: 800, fontSize: 13 } }, df.label),
+                      h('div', { style: { fontSize: 11, color: picked ? '#a7f3d0' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, df.desc)
+                    );
+                  })
+                )
+              ),
+
+              h('button', { onClick: function() { startOutbreak(); },
+                style: { width: '100%', padding: '14px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + T_GREEN + ' 0%, #166534 100%)', color: '#fff', fontWeight: 800, fontSize: 16, boxShadow: '0 6px 14px rgba(21,128,61,0.35)' } }, '🏥 Begin 26-week Outbreak Response')
+            );
+          }
+
+          // ── DEBRIEF ──
+          if (outbreak.phase === 'debrief' && outbreak.finalOutcome) {
+            var o2 = outbreak.finalOutcome;
+            return h('div', { className: 'space-y-3' },
+              h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, ' + o2.color + '24 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + o2.color + '88', borderLeft: '4px solid ' + o2.color } },
+                h('div', { style: { fontSize: 40, marginBottom: 6 } }, o2.icon),
+                h('h3', { style: { margin: 0, color: o2.color, fontSize: 22 } }, o2.label),
+                h('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } }, o2.desc)
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
+                h('div', { style: { background: '#0f172a', padding: 12, borderRadius: 10 } },
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Cumulative deaths'),
+                  h('div', { style: { fontSize: 24, fontWeight: 800, color: '#ef4444' } }, Math.round(outbreak.totalDeaths))
+                ),
+                h('div', { style: { background: '#0f172a', padding: 12, borderRadius: 10 } },
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Average trust'),
+                  h('div', { style: { fontSize: 24, fontWeight: 800, color: '#86efac' } }, outbreak.avgTrust + '/100')
+                ),
+                h('div', { style: { background: '#0f172a', padding: 12, borderRadius: 10 } },
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Hospital overload weeks'),
+                  h('div', { style: { fontSize: 24, fontWeight: 800, color: outbreak.hospitalOverloadWeeks === 0 ? '#86efac' : '#fbbf24' } }, outbreak.hospitalOverloadWeeks)
+                )
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 8 } },
+                outbreak.groups.map(function(g) {
+                  var def = getGroupDef(g.id);
+                  return h('div', { key: g.id, style: { background: '#0f172a', borderLeft: '3px solid ' + def.color, padding: 10, borderRadius: 8, fontSize: 12 } },
+                    h('div', { style: { fontWeight: 700, color: def.color, marginBottom: 4 } }, def.icon + ' ' + def.name),
+                    h('div', { style: { color: '#cbd5e1', lineHeight: 1.5 } },
+                      'Cases: ' + Math.round(g.cumulative.cases || 0),
+                      h('br'),
+                      'Deaths: ' + Math.round(g.cumulative.deaths || 0),
+                      h('br'),
+                      'Vaccinated: ' + Math.round(g.vaccinated) + '%',
+                      h('br'),
+                      'Trust: ' + Math.round(g.trust) + '/100'
+                    )
+                  );
+                })
+              ),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                h('button', { onClick: resetOutbreak, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#1e293b', color: '#cbd5e1', fontWeight: 700 } }, '↻ New campaign'),
+                h('button', { onClick: function() { startOutbreak({ seed: outbreak.seed, difficulty: outbreak.difficulty }); }, style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8', cursor: 'pointer', background: 'rgba(56,189,248,0.15)', color: '#bae6fd', fontWeight: 700 } }, '🔁 Replay same conditions')
+              ),
+              h('div', { style: { padding: 8, background: '#0f172a', borderRadius: 8, fontSize: 11.5, color: '#94a3b8', fontFamily: 'ui-monospace, monospace' } },
+                h('span', { style: { color: '#64748b' } }, 'Campaign seed: '),
+                h('strong', { style: { color: '#cbd5e1' } }, outbreak.seed)
+              )
+            );
+          }
+
+          // ── REVIEW ──
+          if (outbreak.phase === 'review') {
+            var lastSnap2 = outbreak.weekLog[outbreak.weekLog.length - 1] || {};
+            var ev3 = outbreak.lastEvent || {};
+            return h('div', { className: 'space-y-3' },
+              h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderLeft: '3px solid #fbbf24' } },
+                h('div', { style: { fontSize: 22, marginBottom: 4 } }, ev3.icon || '🌿'),
+                h('strong', { style: { color: '#fbbf24', fontSize: 16 } }, 'Week ' + outbreak.week + ' event: ' + (ev3.name || 'quiet week')),
+                h('p', { style: { margin: '6px 0 0', color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, ev3.desc || '')
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8 } },
+                h('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8 } },
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Hospital load'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: lastSnap2.hospitalLoad > 100 ? '#ef4444' : lastSnap2.hospitalLoad > 80 ? '#f59e0b' : '#86efac' } }, (lastSnap2.hospitalLoad || 0) + '%')
+                ),
+                h('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8 } },
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Overload weeks total'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: outbreak.hospitalOverloadWeeks > 0 ? '#f59e0b' : '#86efac' } }, outbreak.hospitalOverloadWeeks)
+                )
+              ),
+              (lastSnap2.feedbacks && lastSnap2.feedbacks.length > 0) ? h('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderLeft: '3px solid #a855f7', fontSize: 13, color: '#e9d5ff' } },
+                h('strong', { style: { color: '#a855f7' } }, '🔄 Feedback rules this week'),
+                lastSnap2.feedbacks.map(function(f, fi) {
+                  return h('div', { key: fi, style: { margin: '6px 0 0', fontStyle: 'italic' } }, '· ' + f.msg);
+                })
+              ) : null,
+              // Per-group deltas
+              h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 10 } },
+                h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 6, fontSize: 13 } }, 'What changed this week'),
+                (lastSnap2.pre || []).map(function(preG) {
+                  var postG = (lastSnap2.post || []).find(function(p) { return p.id === preG.id; }) || preG;
+                  var def = getGroupDef(preG.id);
+                  function delta(label, before, after, goodIfDown) {
+                    var dlt = Math.round(after - before);
+                    var color = '#64748b'; var arrow = '·';
+                    if (Math.abs(dlt) >= 1) {
+                      if ((dlt > 0 && !goodIfDown) || (dlt < 0 && goodIfDown)) color = '#86efac';
+                      else color = '#fca5a5';
+                      arrow = dlt > 0 ? '▲' : '▼';
+                    }
+                    return h('span', { style: { color: color, fontSize: 11, fontWeight: 700, marginRight: 8 } }, label + ' ' + Math.round(after) + ' ' + arrow + ' ' + (dlt > 0 ? '+' : '') + dlt);
+                  }
+                  return h('div', { key: preG.id, style: { fontSize: 12, padding: '4px 0', borderTop: '1px solid #1e293b' } },
+                    h('strong', { style: { color: def.color, marginRight: 8 } }, def.icon + ' ' + def.name),
+                    delta('Inf', preG.infected, postG.infected, true),
+                    delta('Vacc', preG.vaccinated, postG.vaccinated, false),
+                    delta('Trust', preG.trust, postG.trust, false)
+                  );
+                })
+              ),
+              h('button', { onClick: advanceFromOutbreakReview,
+                style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + T_GREEN + ' 0%, #166534 100%)', color: '#fff', fontWeight: 700, fontSize: 14 } },
+                outbreak.week >= outbreak.maxWeeks ? 'See final outcome →' : 'Begin Week ' + (outbreak.week + 1) + ' →')
+            );
+          }
+
+          // ── WEEK ──
+          var totalInf = outbreak.groups.reduce(function(a, g) { return a + g.infected; }, 0);
+          var avgTrust = Math.round(outbreak.groups.reduce(function(a, g) { return a + g.trust; }, 0) / outbreak.groups.length);
+          return h('div', { className: 'space-y-3' },
+            // HUD
+            h('div', { style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
+              h('div', null,
+                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Week'),
+                h('div', { style: { fontSize: 20, fontWeight: 800, color: T_GREEN_HI } }, outbreak.week + ' / ' + outbreak.maxWeeks)
+              ),
+              h('div', null,
+                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Hours left'),
+                h('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, outbreak.hoursLeft + ' / ' + outbreak.hoursPerWeek)
+              ),
+              h('div', null,
+                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Avg trust'),
+                h('div', { style: { fontSize: 20, fontWeight: 800, color: avgTrust > 60 ? '#86efac' : avgTrust > 40 ? '#fbbf24' : '#ef4444' } }, avgTrust)
+              ),
+              h('div', null,
+                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Total infected (sum across groups)'),
+                h('div', { style: { fontSize: 20, fontWeight: 800, color: totalInf > 40 ? '#ef4444' : totalInf > 20 ? '#fbbf24' : '#86efac' } }, Math.round(totalInf))
+              ),
+              h('div', { style: { marginLeft: 'auto' } },
+                h('button', { onClick: endOutbreakWeek, 'aria-label': 'End this week',
+                  style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 13 } }, 'End Week →')
+              )
+            ),
+
+            // Active mods banner
+            (outbreak.activeMods && outbreak.activeMods.length > 0) ? h('div', { style: { padding: 8, borderRadius: 10, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8', fontSize: 12, color: '#bae6fd' } },
+              h('strong', null, '🛠 Active interventions or mods: '),
+              outbreak.activeMods.map(function(m) { return m.id + ' (' + m.weeks + 'w)'; }).join(', ')
+            ) : null,
+
+            // Group cards with interventions
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 10 } },
+              outbreak.groups.map(function(g) {
+                var def = getGroupDef(g.id);
+                return h('div', { key: g.id, style: { background: '#0f172a', borderRadius: 12, padding: 12, borderLeft: '3px solid ' + def.color } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
+                    h('span', { style: { fontSize: 22 } }, def.icon),
+                    h('div', { style: { flex: 1 } },
+                      h('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
+                      h('div', { style: { fontSize: 11, color: '#94a3b8' } }, def.role)
+                    )
+                  ),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
+                    [['Inf %', Math.round(g.infected), g.infected > 15 ? '#ef4444' : g.infected > 8 ? '#f59e0b' : '#86efac'],
+                     ['Vacc %', Math.round(g.vaccinated), g.vaccinated > 60 ? '#86efac' : g.vaccinated > 30 ? '#fbbf24' : '#fca5a5'],
+                     ['Trust', Math.round(g.trust), g.trust < 40 ? '#ef4444' : g.trust < 60 ? '#fbbf24' : '#86efac']
+                    ].map(function(st, si) {
+                      return h('div', { key: si, style: { background: '#1e293b', padding: 6, borderRadius: 6, textAlign: 'center' } },
+                        h('div', { style: { fontSize: 10, color: '#94a3b8' } }, st[0]),
+                        h('div', { style: { fontSize: 15, fontWeight: 800, color: st[2] } }, st[1])
+                      );
+                    })
+                  ),
+                  // Show targeted-vaccination button only on this group's card
+                  h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+                    (function() {
+                      var tt = RESPONSE_INTERVENTIONS.find(function(t) { return t.id === 'targetedVacc'; });
+                      var disabled = outbreak.hoursLeft < tt.hours || outbreak.activeMods.some(function(m) { return m.id === 'vaccineLockout'; });
+                      return h('button', { onClick: function() { applyInterv('targetedVacc', g.id); }, disabled: disabled, title: tt.desc,
+                        style: { padding: '4px 8px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', background: disabled ? '#1e293b' : '#15803d', color: disabled ? '#475569' : '#fff', opacity: disabled ? 0.5 : 1 } }, tt.icon + ' Targeted vaccinate (' + tt.hours + 'h)');
+                    })()
+                  )
+                );
+              })
+            ),
+
+            // Universal interventions row (not group-specific)
+            h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 12, borderLeft: '3px solid #38bdf8' } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: '#bae6fd', marginBottom: 8 } }, '🛠 County-wide interventions'),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                RESPONSE_INTERVENTIONS.filter(function(t) { return t.id !== 'targetedVacc'; }).map(function(t) {
+                  var disabled = outbreak.hoursLeft < t.hours;
+                  if (t.id === 'vaccinePush' && outbreak.activeMods.some(function(m) { return m.id === 'vaccineLockout'; })) disabled = true;
+                  if (t.id === 'schoolClose' && outbreak.activeMods.some(function(m) { return m.id === 'schoolBoardBlock'; })) disabled = true;
+                  return h('button', { key: t.id, onClick: function() { applyInterv(t.id); }, disabled: disabled, title: t.desc,
+                    style: { padding: '6px 10px', fontSize: 12, fontWeight: 700, borderRadius: 6, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', background: disabled ? '#1e293b' : '#15803d', color: disabled ? '#475569' : '#fff', opacity: disabled ? 0.5 : 1 } }, t.icon + ' ' + t.name + ' (' + t.hours + 'h)');
+                })
+              )
+            ),
+
+            // Action log
+            outbreak.weekActions.length > 0 ? h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 10, fontSize: 12, color: '#cbd5e1' } },
+              h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 4 } }, 'Week ' + outbreak.week + ' actions'),
+              outbreak.weekActions.map(function(a, ai) {
+                return h('div', { key: ai }, '· ' + a.intervention + ' → ' + a.target + ' (' + a.hours + 'h)');
+              })
+            ) : h('div', { style: { fontSize: 12, color: '#64748b', fontStyle: 'italic' } }, 'No interventions yet this week. Pick from the county-wide row or use Targeted vaccination on a demographic.')
+          );
+        })(),
 
         // ═══════════════════════════════════════════
         // OUTBREAK MAP TAB
