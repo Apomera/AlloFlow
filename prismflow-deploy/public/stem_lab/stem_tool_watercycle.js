@@ -74,7 +74,7 @@
 
   if(!window.StemLab||!window.StemLab.registerTool) return;
   window.StemLab.registerTool('waterCycle',{
-    icon:'\uD83C\uDF0A', label:'waterCycle', desc:'Interactive Water Cycle with Journey Mode',
+    icon:'\uD83C\uDF0A', label:'Water Cycle', desc:'Live water cycle canvas plus Journey Mode: ride one droplet through evaporation, condensation, precipitation, collection, transpiration, and infiltration with real choices along the way.',
     color:'sky', category:'science',
     questHooks: [
       { id: 'complete_journey', label: 'Complete a water droplet journey loop', icon: '\uD83D\uDCA7', check: function(d) { return (d.journeyLoops || 0) >= 1; }, progress: function(d) { return (d.journeyLoops || 0) >= 1 ? 'Complete!' : 'In journey'; } },
@@ -1799,6 +1799,19 @@ const d = labToolData.waterCycle;
                         className: "px-3 py-1.5 bg-slate-600 text-white text-[11px] font-bold rounded-lg hover:bg-slate-500 transition-all"
                       }, "\u23F9 End Journey (J)")
                     )
+              ),
+
+              !d.journeyActive && React.createElement("div", {
+                role: "note",
+                style: {
+                  padding: '8px 12px', borderRadius: 10,
+                  background: 'linear-gradient(135deg, rgba(14,165,233,0.14) 0%, rgba(14,165,233,0.04) 100%)',
+                  border: '1px solid rgba(14,165,233,0.5)', borderLeft: '3px solid #0ea5e9',
+                  color: '#0c4a6e', fontSize: 12.5, lineHeight: 1.55
+                }
+              },
+                React.createElement("strong", { style: { color: '#0369a1' } }, "Goal: "),
+                "ride one droplet from the ocean back to the ocean. You will start in the ocean, evaporate, drift into a cloud, fall as rain, then pick a path at the ground (river runoff, underground infiltration, or absorbed by a plant). Each path takes a different amount of time. Complete the loop to log a journey; 3 loops unlocks the Journey badge."
               ),
 
               // Journey status
