@@ -1345,6 +1345,18 @@ window.StemLab = window.StemLab || {
         // SIR TAB
         // ═══════════════════════════════════════════
         tab === 'sir' && h('div', { className: 'space-y-4' },
+          h('div', {
+            role: 'note',
+            style: {
+              padding: '10px 14px', borderRadius: 12,
+              background: 'linear-gradient(135deg, rgba(14,165,233,0.14) 0%, rgba(14,165,233,0.04) 100%)',
+              border: '1px solid rgba(14,165,233,0.5)', borderLeft: '3px solid #0ea5e9',
+              color: '#0c4a6e', fontSize: 13, lineHeight: 1.55
+            }
+          },
+            h('strong', { style: { color: '#0369a1' } }, 'Goal: '),
+            'find vaccination and behavior settings that keep the peak Infected curve below the hospital threshold, or that drive R-effective below 1 entirely. Pick a Disease Preset to load real R0 values; raise vaccination until the Herd Threshold readout flips to Achieved. The Effective R0 stat below the chart tells you whether the epidemic is still spreading or burning out.'
+          ),
           // Sliders
           h('div', { className: glassCard + ' space-y-3' },
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide' }, 'Parameters'),
@@ -2097,6 +2109,18 @@ window.StemLab = window.StemLab || {
         // CHALLENGE TAB
         // ═══════════════════════════════════════════
         tab === 'challenge' && h('div', { className: 'space-y-4' },
+          h('div', {
+            role: 'note',
+            style: {
+              padding: '10px 14px', borderRadius: 12,
+              background: 'linear-gradient(135deg, rgba(251,191,36,0.14) 0%, rgba(251,191,36,0.04) 100%)',
+              border: '1px solid rgba(251,191,36,0.6)', borderLeft: '3px solid #fbbf24',
+              color: '#78350f', fontSize: 13, lineHeight: 1.55
+            }
+          },
+            h('strong', { style: { color: '#b45309' } }, 'Goal: '),
+            'build a streak of correct answers under Easy, Medium, or Hard tier. Hint costs nothing but breaks the streak; Skip resets the streak. AI Next pulls a fresh AI-generated question if you have exhausted the built-in pool. Streak is your fluency indicator; points reward harder tiers.'
+          ),
           h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, '\uD83C\uDFAF Epidemiology Challenge'),
             h('div', { className: 'flex gap-2 mb-3' },
