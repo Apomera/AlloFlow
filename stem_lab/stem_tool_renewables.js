@@ -1412,6 +1412,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             if (seed.badges && d.badges === undefined) merge.badges = seed.badges;
             if (seed.modulesVisited && d.modulesVisited === undefined) merge.modulesVisited = seed.modulesVisited;
             if (seed.quizMastery && d.quizMastery === undefined) merge.quizMastery = seed.quizMastery;
+            if (seed.installerCo && d.installerCo === undefined) merge.installerCo = seed.installerCo;
             if (Object.keys(merge).length > 0) {
               Object.keys(merge).forEach(function (k) { upd(k, merge[k]); });
             }
@@ -1431,12 +1432,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             badges: d.badges || {},
             modulesVisited: d.modulesVisited || {},
             quizMastery: d.quizMastery || {},
+            installerCo: d.installerCo || null,
             _ts: Date.now()
           };
           window.__alloflowRenewablesLab = snapshot;
           try { localStorage.setItem('renewablesLab.state.v1', JSON.stringify(snapshot)); } catch (e) {}
         } catch (e) {}
-      }, [d.badges, d.modulesVisited, d.quizMastery]);
+      }, [d.badges, d.modulesVisited, d.quizMastery, d.installerCo]);
 
       // Hot-reload from project-JSON load mid-session.
       React.useEffect(function () {
@@ -1656,6 +1658,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         { id: 'compare',     icon: '📊',     label: 'Compare all sources',desc: 'Side-by-side table + capacity factor explainer.' },
         { id: 'mix',         icon: '🎛️', label: 'Energy Mix Designer',  desc: 'Slide each source. See CO₂, reliability, storage need.' },
         { id: 'homePayback', icon: '🏠',     label: 'Maine home solar calc',desc: 'Roof area + bill → kWh/yr, payback, CO₂ avoided.' },
+        { id: 'installerCo', icon: '☀️',     label: 'Solar Installer Co.', desc: '4-year campaign running a small Maine solar firm. Bid on contracts, pick suppliers, hire installers, manage cash flow. Workforce + business-scale view of clean energy.' },
         { id: 'heatPump',    icon: '♨️',  label: 'Heat Pumps Deep Dive',desc: 'ASHP / GSHP / HPWH, COP, myths, integration. Maine leads US.' },
         { id: 'plants',      icon: '🗺️', label: 'Plant Tour',           desc: '16 famous installations across all sources. Filter + browse.' },
         // Visual + applied practice
@@ -3154,6 +3157,608 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             '. A typical Maine commute (~30 mi/day) adds ~7–10 kWh/day to your home load — significant for solar sizing, and EVs unlock V2G later.'),
           footer()
         );
+      }
+
+      // ─────────────────────────────────────────
+      // SOLAR INSTALLER CO. — 4-year business sim
+      // ─────────────────────────────────────────
+      // Pedagogy: this is the missing scale across AlloFlow's STEM
+      // Lab. Students see solar as "consumer" (Maine Home Solar Calc)
+      // or "policy" (Climate Explorer) but rarely the business in the
+      // middle. This sim is "what does the solar-installer job
+      // actually look like from inside the firm?" Workforce + business-
+      // scale angle for clean energy careers (especially relevant for
+      // Maine's IBEW + EMCC cleantech pipeline).
+      //
+      // Mechanics:
+      // - Pick a service area (Portland metro / midcoast / rural N. Maine)
+      // - Each year: leads appear → you bid on subset → choose supplier
+      //   → adjust workforce → resolve bids → events fire → year-end P&L
+      // - Win: stay solvent 4 years AND grow to 100+ cumulative installs
+      // - Lose: cash < $0 two consecutive years → bankruptcy
+      //         custSat < 50 → reputation collapse, leads dry up
+      // ─────────────────────────────────────────
+
+      var INSTALLER_AREAS = [
+        { id: 'portland', icon: '🏙', name: 'Portland Metro',
+          desc: 'Dense urban + suburb. Lots of roofs, but more competing firms. Average household electric bill $145/mo.',
+          competition: 1.30,      // bid-win multiplier (higher = harder to win)
+          drive: 1.0,             // labor-time multiplier
+          billAvg: 145, leadVolume: 10, premiumPct: 0.20 },
+        { id: 'midcoast', icon: '⛵', name: 'Midcoast Maine',
+          desc: 'Mix of year-round homes + summer-only camps. Premium roofs (slate, complex). Tourist economy seasonality. Average bill $160/mo.',
+          competition: 1.10,
+          drive: 1.15,
+          billAvg: 160, leadVolume: 8, premiumPct: 0.45 },
+        { id: 'rural',   icon: '🌲', name: 'Rural Northern Maine',
+          desc: 'Low population density, long drives between jobs. Lower price ceiling but grid-resilience + winter demand high. Average bill $175/mo.',
+          competition: 0.85,
+          drive: 1.40,
+          billAvg: 175, leadVolume: 7, premiumPct: 0.15 }
+      ];
+
+      var INSTALLER_SUPPLIERS = [
+        { id: 'tier1', icon: '⭐', name: 'Tier-1 (Maxeon / REC)', costPerW: 2.20, warrantyYears: 25, claimRate: 0.02, satBoost: +5,
+          desc: 'Premium panels. Higher upfront cost, 25-yr power warranty, low warranty-claim rate. Customers notice the brand.' },
+        { id: 'tier2', icon: '💰', name: 'Tier-2 (mid-Chinese)', costPerW: 1.50, warrantyYears: 12, claimRate: 0.08, satBoost: -3,
+          desc: 'Lower cost panels. 12-yr warranty + higher claim rate. Margin advantage if quality holds; reputation risk if it does not.' }
+      ];
+
+      var INSTALLER_LEAD_TYPES = [
+        { id: 'resPriceSens',  icon: '🏠', label: 'Residential · price-sensitive',
+          kwAvg: 7, kwSpread: 2, bidSensitivity: 1.4, satMod: 0,
+          notes: 'Family of 4, wants quickest payback. Will switch to the lowest bid.' },
+        { id: 'resQuality',    icon: '🏡', label: 'Residential · quality-driven',
+          kwAvg: 10, kwSpread: 3, bidSensitivity: 0.8, satMod: +3,
+          notes: 'Bigger budget, wants tier-1 panels, expects clean install. Less price-sensitive.' },
+        { id: 'commSmall',     icon: '🏢', label: 'Small commercial',
+          kwAvg: 30, kwSpread: 10, bidSensitivity: 1.0, satMod: +1,
+          notes: 'Local business / nonprofit. Mid-range price sensitivity. Big single contract.' },
+        { id: 'commMunicipal', icon: '🏛', label: 'Municipal',
+          kwAvg: 60, kwSpread: 20, bidSensitivity: 1.2, satMod: +2,
+          notes: 'School / town hall / library. Procurement process; lowest-responsive-bid rules. Huge if you win it.' }
+      ];
+
+      var INSTALLER_EVENTS = [
+        { id: 'itcChange',     icon: '📋', headline: 'Federal ITC steps down', text: 'Congress passed a step-down: the 30% ITC drops to 26% starting next year. Customer demand softens; expect ~10% fewer leads next year.',     effect: { leadMult: 0.9 } },
+        { id: 'panelDelay',    icon: '🚢', headline: 'Supply-chain delay', text: 'Panels stuck at port for 6 weeks. Half this year\'s installs slip into next year. Cash hit but no permanent damage.',                            effect: { revMult: 0.5 } },
+        { id: 'badWinter',     icon: '❄', headline: 'Brutal winter slows installs',  text: 'Three feet of snow in March pushed installs back. Labor hours up 20%, no extra revenue.',                                            effect: { laborMult: 1.2 } },
+        { id: 'competitor',    icon: '⚔', headline: 'Competitor undercuts',  text: 'A big out-of-state firm entered your market with aggressive pricing. Win-rate drops 15% this year only.',                                    effect: { winMult: 0.85 } },
+        { id: 'referral',      icon: '🎉', headline: 'Customer-referral cascade', text: 'Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.',                          effect: { leadMult: 1.15, satBoost: +5 } },
+        { id: 'inflationCost', icon: '💸', headline: 'Inflation hits inventory', text: 'Panel + inverter prices up 8% mid-year. COGS rises until you sign new supplier contracts next year.',                                    effect: { cogsMult: 1.08 } },
+        { id: 'permitOk',      icon: '✅', headline: 'Permitting streamlined', text: 'State rolled out a one-page interconnection form. Permit costs drop $200 per install; labor 0.5 day shorter.',                              effect: { permitCut: 200, laborMult: 0.95 } },
+        { id: 'workerWin',     icon: '🏆', headline: 'IBEW apprentice grad', text: 'Three apprentices from EMCC finish their hours this quarter. You can hire any of them at the lower trainee rate.',                            effect: { laborMult: 0.93 } }
+      ];
+
+      function defaultInstallerState() {
+        return {
+          phase: 'setup',                // setup | year | yearEnd | debrief | bankrupt
+          areaId: null,
+          year: 0,                       // 0..3 inclusive (4-year campaign)
+          quarter: 0,
+          cash: 50000,                   // starting capital, $
+          installs: 0,                   // cumulative completed installs
+          custSat: 70,                   // 0..100
+          // Workforce
+          installers: 2,
+          inspectors: 1,
+          sales: 1,
+          // Current year tactical inputs
+          supplierId: 'tier1',
+          bidPricePerW: 3.50,            // $/W charged to customer
+          // Generated leads + bidded set this year
+          leads: [],                     // [{id, typeId, kw, compBid, won, picked, status}]
+          // History + event log
+          events: [],                    // {year, headline, text}
+          yearLog: [],                   // {year, revenue, cogs, labor, profit, installs, endingCash, custSat}
+          // Year tracking
+          consecNegYears: 0,
+          // Win/lose latched flag
+          finalOutcome: null             // null | 'win' | 'bankrupt' | 'collapse'
+        };
+      }
+
+      function renderInstallerCo() {
+        var inst = (d.installerCo && d.installerCo.phase) ? d.installerCo : null;
+
+        // Helper: clamp + format
+        function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+        function fmt$(n) { return '$' + Math.round(n).toLocaleString(); }
+        function pct(n) { return Math.round(n * 100) + '%'; }
+
+        function startInstaller(areaId) {
+          var st = defaultInstallerState();
+          st.areaId = areaId;
+          st.phase = 'year';
+          st.leads = generateLeads(st);
+          upd('installerCo', st);
+          rnAnnounce('Started Solar Installer Co. in ' + (INSTALLER_AREAS.find(function(a){return a.id===areaId;}).name));
+        }
+
+        function resetInstaller() {
+          upd('installerCo', defaultInstallerState());
+          rnAnnounce('Reset to area pick');
+        }
+
+        // Deterministic-ish lead generation from the year + areaId seed.
+        function generateLeads(st) {
+          var area = INSTALLER_AREAS.find(function(a){return a.id===st.areaId;}) || INSTALLER_AREAS[0];
+          var rngSeed = (st.year * 9973 + st.areaId.length * 47 + 13) % 2147483647;
+          function rng() { rngSeed = (rngSeed * 48271) % 2147483647; return rngSeed / 2147483647; }
+          var n = area.leadVolume + Math.floor((rng() * 3) - 1);  // ±1 lead
+          var leads = [];
+          for (var i = 0; i < n; i++) {
+            var typeRoll = rng();
+            var typeId = typeRoll < 0.5 ? 'resPriceSens'
+                       : typeRoll < 0.8 ? 'resQuality'
+                       : typeRoll < 0.95 ? 'commSmall'
+                       : 'commMunicipal';
+            var type = INSTALLER_LEAD_TYPES.find(function(t){return t.id===typeId;});
+            var kw = Math.round(type.kwAvg + (rng() - 0.5) * 2 * type.kwSpread);
+            kw = Math.max(3, kw);
+            // Competitor bid: $/W. Tighter band around $3.00 baseline.
+            var compBid = 2.80 + rng() * 0.80;       // $2.80–$3.60/W competitor
+            leads.push({
+              id: st.year + '-' + i,
+              typeId: typeId,
+              kw: kw,
+              compBid: parseFloat(compBid.toFixed(2)),
+              picked: false,
+              won: false,
+              status: 'open' // open | bid | won | lost | installed | warrantyClaim
+            });
+          }
+          return leads;
+        }
+
+        function togglePickLead(leadId) {
+          if (!inst || inst.phase !== 'year') return;
+          var bidCap = 2 + (inst.sales || 0);
+          var newLeads = inst.leads.map(function(l) {
+            if (l.id !== leadId) return l;
+            if (l.picked) return Object.assign({}, l, { picked: false });
+            var pickedCount = inst.leads.filter(function(x){return x.picked;}).length;
+            if (pickedCount >= bidCap) {
+              rnAnnounce('At sales-team bid limit. Hire more sales staff to bid on additional leads.');
+              return l;
+            }
+            return Object.assign({}, l, { picked: true });
+          });
+          upd('installerCo', Object.assign({}, inst, { leads: newLeads }));
+        }
+
+        function setBidPrice(v) {
+          upd('installerCo', Object.assign({}, inst, { bidPricePerW: v }));
+        }
+
+        function setSupplier(id) {
+          upd('installerCo', Object.assign({}, inst, { supplierId: id }));
+        }
+
+        function adjustWorkforce(role, delta) {
+          var st = Object.assign({}, inst);
+          var key = role;
+          var current = st[key] || 0;
+          var next = Math.max(0, current + delta);
+          // Hiring uses cash up front; firing returns nothing (severance assumed = 0 for sim simplicity)
+          var hireCost = role === 'installers' ? 5000 : role === 'inspectors' ? 4000 : 3000;
+          if (delta > 0) {
+            if (st.cash < hireCost) {
+              rnAnnounce('Not enough cash to hire another ' + role.slice(0, -1));
+              return;
+            }
+            st.cash -= hireCost;
+          }
+          st[key] = next;
+          upd('installerCo', st);
+        }
+
+        // Resolve the year: every picked lead is resolved against the
+        // competitor bid using a logistic-ish curve. Won leads become
+        // installs that pay revenue minus per-install costs. Labor
+        // costs are paid from the workforce headcount. Random events
+        // fire after the year resolves. Then year-end is shown.
+        function advanceYear() {
+          if (!inst || inst.phase !== 'year') return;
+          var st = Object.assign({}, inst);
+          var area = INSTALLER_AREAS.find(function(a){return a.id===st.areaId;}) || INSTALLER_AREAS[0];
+          var supplier = INSTALLER_SUPPLIERS.find(function(s){return s.id===st.supplierId;}) || INSTALLER_SUPPLIERS[0];
+
+          // Pre-event modifiers (default neutral)
+          var winMult = 1.0, revMult = 1.0, cogsMult = 1.0, laborMult = 1.0, leadMult = 1.0, permitCut = 0, satEventBoost = 0;
+
+          // Roll an event (75% chance per year after year 0)
+          var newEvent = null;
+          if (st.year >= 0 && Math.random() < 0.75) {
+            newEvent = INSTALLER_EVENTS[Math.floor(Math.random() * INSTALLER_EVENTS.length)];
+            if (newEvent.effect) {
+              if (newEvent.effect.winMult)   winMult *= newEvent.effect.winMult;
+              if (newEvent.effect.revMult)   revMult *= newEvent.effect.revMult;
+              if (newEvent.effect.cogsMult)  cogsMult *= newEvent.effect.cogsMult;
+              if (newEvent.effect.laborMult) laborMult *= newEvent.effect.laborMult;
+              if (newEvent.effect.leadMult)  leadMult *= newEvent.effect.leadMult;
+              if (newEvent.effect.permitCut) permitCut += newEvent.effect.permitCut;
+              if (newEvent.effect.satBoost)  satEventBoost += newEvent.effect.satBoost;
+            }
+          }
+
+          // Resolve picked leads
+          var revenue = 0, cogs = 0, perInstallCost = 0;
+          var newInstalls = 0;
+          var newLeads = st.leads.map(function(l) {
+            if (!l.picked) return Object.assign({}, l, { status: 'open' });
+            var type = INSTALLER_LEAD_TYPES.find(function(t){return t.id===l.typeId;}) || INSTALLER_LEAD_TYPES[0];
+            // Win probability: higher when our bid is below competitor's, weighted by
+            // customer price sensitivity + reputation (custSat) + area competition.
+            var bidDelta = (l.compBid - st.bidPricePerW) * type.bidSensitivity;
+            var repBonus = (st.custSat - 50) * 0.01;  // ±0.5 max
+            var raw = 0.5 + bidDelta * 0.7 + repBonus;
+            var winProb = clamp(raw / area.competition, 0.05, 0.95) * winMult;
+            var won = Math.random() < winProb;
+            if (won) {
+              newInstalls += 1;
+              var revPerInstall = st.bidPricePerW * 1000 * l.kw * revMult;          // $/W × W
+              var supplierCost  = supplier.costPerW * 1000 * l.kw * cogsMult;
+              var laborPerKw    = 180 * area.drive * laborMult;                      // $ labor per kW
+              var permits       = Math.max(0, 800 - permitCut);
+              var perInst       = supplierCost + laborPerKw * l.kw + permits;
+              revenue += revPerInstall;
+              cogs    += perInst;
+              return Object.assign({}, l, { picked: true, won: true, status: 'installed' });
+            }
+            return Object.assign({}, l, { picked: true, won: false, status: 'lost' });
+          });
+
+          // Labor headcount cost (annual salaries)
+          var laborSalaries = (st.installers * 50000) + (st.inspectors * 45000) + (st.sales * 40000);
+
+          // Warranty reserve — 2% (tier-1) or 8% (tier-2) of revenue set aside as cash cost
+          var warrantyReserve = revenue * supplier.claimRate;
+
+          // Customer satisfaction shift this year
+          var satFromSupplier = supplier.satBoost;
+          var satFromWorkforce = 0;
+          // Under-staffed if installers per install < threshold (10 installs / installer)
+          var installerLoad = st.installers > 0 ? (newInstalls / st.installers) : 999;
+          if (installerLoad > 12) satFromWorkforce -= 6;
+          else if (installerLoad < 4) satFromWorkforce += 2;
+          // Mean type-satisfaction modifier of WON jobs
+          var wonTypes = newLeads.filter(function(l){return l.won;}).map(function(l) {
+            var t = INSTALLER_LEAD_TYPES.find(function(t){return t.id===l.typeId;});
+            return t ? t.satMod : 0;
+          });
+          var satFromMix = wonTypes.length ? Math.round(wonTypes.reduce(function(a,b){return a+b;}, 0) / wonTypes.length) : 0;
+          var newSat = clamp(st.custSat + satFromSupplier + satFromWorkforce + satFromMix + satEventBoost, 0, 100);
+
+          var profit = revenue - cogs - laborSalaries - warrantyReserve;
+          var newCash = st.cash + profit;
+
+          // Update state
+          var yearLog = (st.yearLog || []).concat([{
+            year: st.year + 1,
+            revenue: revenue, cogs: cogs, labor: laborSalaries, warranty: warrantyReserve,
+            profit: profit, installs: newInstalls, endingCash: newCash, custSat: newSat,
+            event: newEvent ? newEvent.headline : null
+          }]);
+          var events = newEvent ? (st.events || []).concat([{ year: st.year + 1, headline: newEvent.icon + ' ' + newEvent.headline, text: newEvent.text }]) : (st.events || []);
+
+          // Consecutive negative-cash years (bankruptcy trigger)
+          var consec = newCash < 0 ? (st.consecNegYears || 0) + 1 : 0;
+
+          // Outcome check
+          var outcome = null;
+          if (consec >= 2) outcome = 'bankrupt';
+          else if (newSat < 50 && st.year >= 1) outcome = 'collapse';
+          else if (st.year + 1 >= 4) outcome = (st.installs + newInstalls >= 100) ? 'win' : 'shortfall';
+
+          // Apply leadMult to next year's lead volume by stashing on state (used in generateLeads)
+          var stNext = Object.assign({}, st, {
+            year: st.year + 1,
+            quarter: 0,
+            cash: newCash,
+            installs: st.installs + newInstalls,
+            custSat: newSat,
+            yearLog: yearLog,
+            events: events,
+            consecNegYears: consec,
+            phase: outcome ? 'debrief' : 'yearEnd',
+            finalOutcome: outcome
+          });
+          // Generate next year's leads (if continuing)
+          if (!outcome) {
+            stNext.leads = generateLeads(stNext);
+            // Apply leadMult to lead count for the immediate next year only
+            if (leadMult !== 1.0) {
+              var keep = Math.round(stNext.leads.length * leadMult);
+              stNext.leads = stNext.leads.slice(0, Math.max(2, keep));
+            }
+          }
+          upd('installerCo', stNext);
+        }
+
+        function continueToNextYear() {
+          if (!inst) return;
+          upd('installerCo', Object.assign({}, inst, { phase: 'year' }));
+        }
+
+        // ─────────────────────────────────────────
+        // SETUP PHASE — pick a service area
+        // ─────────────────────────────────────────
+        if (!inst || inst.phase === 'setup') {
+          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+            backBar('☀️ Solar Installer Co.'),
+            // ── Pre-game brief ──
+            h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.accentHi } }, '📜 How the sim works'),
+              h('p', { style: { margin: '0 0 8px', fontSize: 13, color: T.muted, lineHeight: 1.55 } },
+                'You are running a small solar installation firm in Maine. ',
+                h('strong', { style: { color: T.text } }, '4 years. 4 decisions per year. Survive AND grow to 100+ installs to win.')),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, marginBottom: 8 } },
+                h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🎯 Each year you decide'),
+                  h('ul', { style: { margin: '6px 0 0', paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                    h('li', null, 'Which leads to bid on'),
+                    h('li', null, 'Bid price per watt'),
+                    h('li', null, 'Tier-1 vs tier-2 panel supplier'),
+                    h('li', null, 'Hire / fire installers, inspectors, sales')
+                  )
+                ),
+                h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '⚠ Failure modes'),
+                  h('ul', { style: { margin: '6px 0 0', paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                    h('li', null, 'Cash < $0 for two years in a row → bankruptcy'),
+                    h('li', null, 'Customer satisfaction < 50 → reputation collapse, leads dry up'),
+                    h('li', null, 'Year 4 ends + fewer than 100 cumulative installs → short of target')
+                  )
+                )
+              ),
+              h('p', { style: { margin: 0, fontSize: 12, color: T.dim, lineHeight: 1.55, fontStyle: 'italic' } },
+                'Numbers are Maine-realistic: panel cost ~$1.50 to $2.20/W wholesale, installs sold at $3 to $4/W, typical firm does 50 to 200 installs/yr. Carries some randomness (events, win-rolls) so two runs are not identical.')
+            ),
+            // ── Area picker ──
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, '🗺 Pick your service area'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
+              INSTALLER_AREAS.map(function(area) {
+                return h('button', { key: area.id, 'data-rn-focusable': true,
+                  onClick: function() { startInstaller(area.id); },
+                  style: { textAlign: 'left', padding: 14, borderRadius: 12, background: T.card, border: '2px solid ' + T.border, cursor: 'pointer', color: T.text } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, area.icon),
+                    h('div', { style: { fontSize: 14, fontWeight: 800, color: T.accentHi } }, area.name)
+                  ),
+                  h('p', { style: { margin: '0 0 6px', fontSize: 12, color: T.muted, lineHeight: 1.55 } }, area.desc),
+                  h('div', { style: { fontSize: 11, color: T.dim, fontFamily: 'monospace' } },
+                    'Leads/yr ~' + area.leadVolume + ' · Competition ' + Math.round(area.competition * 100) + '% · Drive time ' + Math.round(area.drive * 100) + '%')
+                );
+              })
+            ),
+            footer()
+          );
+        }
+
+        // ─────────────────────────────────────────
+        // YEAR-END DEBRIEF (between years)
+        // ─────────────────────────────────────────
+        if (inst.phase === 'yearEnd') {
+          var lastYear = inst.yearLog[inst.yearLog.length - 1] || {};
+          var profitClr = lastYear.profit >= 0 ? T.accentHi : T.danger;
+          var lastEvent = inst.events[inst.events.length - 1];
+          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+            backBar('☀️ Solar Installer Co.'),
+            h('div', { style: { padding: 16, borderRadius: 12, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 10px', fontSize: 18, color: T.accentHi } }, '📊 End of Year ' + lastYear.year + ' / 4'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 } },
+                statBlock('Installs this yr', lastYear.installs + '', T.text),
+                statBlock('Revenue', fmt$(lastYear.revenue), T.accentHi),
+                statBlock('COGS', fmt$(-lastYear.cogs), T.warm),
+                statBlock('Labor', fmt$(-lastYear.labor), T.warm),
+                statBlock('Warranty reserve', fmt$(-lastYear.warranty), T.warm),
+                statBlock('Profit', (lastYear.profit >= 0 ? '+' : '') + fmt$(lastYear.profit), profitClr),
+                statBlock('Ending cash', fmt$(lastYear.endingCash), lastYear.endingCash >= 0 ? T.accentHi : T.danger),
+                statBlock('Customer sat', Math.round(lastYear.custSat) + '%', lastYear.custSat >= 70 ? T.accentHi : lastYear.custSat >= 50 ? T.warm : T.danger)
+              )
+            ),
+            lastEvent && lastEvent.year === lastYear.year && h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, 'Event this year'),
+              h('div', { style: { fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 4 } }, lastEvent.headline),
+              h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } }, lastEvent.text)
+            ),
+            h('button', { 'data-rn-focusable': true,
+              onClick: continueToNextYear,
+              style: { width: '100%', padding: '12px 18px', borderRadius: 10, border: 'none', background: T.accent, color: '#053920', fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
+              '▶ Continue to Year ' + (inst.year + 1)),
+            footer()
+          );
+        }
+
+        // ─────────────────────────────────────────
+        // FINAL DEBRIEF (win / bankrupt / collapse / shortfall)
+        // ─────────────────────────────────────────
+        if (inst.phase === 'debrief') {
+          var outcome = inst.finalOutcome || 'shortfall';
+          var outcomeMeta = outcome === 'win'        ? { color: T.accent,    title: '🏆 Successful firm · 4 years, ' + inst.installs + ' installs', body: 'You hit the 100+ install target without going bankrupt or losing reputation. Real-world equivalent: a small Maine firm running profitable, employing local labor, building grid-scale capacity one rooftop at a time.' }
+                            : outcome === 'bankrupt'   ? { color: T.danger,    title: '💸 Bankruptcy · cash hit $0 two years running', body: 'Two consecutive negative-cash years closed the firm. Common causes: under-bidding leads, over-hiring before revenue ramps, or eating warranty claims from a low-quality supplier. Try again with tighter bids or a smaller workforce.' }
+                            : outcome === 'collapse'   ? { color: T.warm,      title: '📉 Reputation collapse · customer satisfaction fell below 50', body: 'Word got around. Leads dried up. Often caused by tier-2 panels failing under warranty, or over-loaded installers cutting corners. The math: customer-sat compounds across years. Stay above 60 to compound positively.' }
+                            :                            { color: T.warm,      title: '📊 Survived 4 years · ' + inst.installs + ' installs (target 100)', body: 'You stayed solvent and kept your reputation, but did not reach 100 cumulative installs. The firm exists, but did not scale enough to call it a strong outcome. Try a bigger workforce or a higher-volume service area.' };
+          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+            backBar('☀️ Solar Installer Co.'),
+            h('div', { style: { padding: 18, borderRadius: 14, background: T.card, border: '2px solid ' + outcomeMeta.color, marginBottom: 14, textAlign: 'center' } },
+              h('h3', { style: { margin: '0 0 10px', fontSize: 22, color: outcomeMeta.color } }, outcomeMeta.title),
+              h('p', { style: { margin: '0 0 14px', fontSize: 13, color: T.muted, lineHeight: 1.6 } }, outcomeMeta.body),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 } },
+                statBlock('Years played', inst.year + '', T.text),
+                statBlock('Total installs', inst.installs + '', T.accentHi),
+                statBlock('Final cash', fmt$(inst.cash), inst.cash >= 0 ? T.accentHi : T.danger),
+                statBlock('Customer sat', Math.round(inst.custSat) + '%', T.accentHi)
+              )
+            ),
+            // Year-by-year history table
+            h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, '📋 Year-by-year'),
+              h('table', { style: { width: '100%', fontSize: 11, color: T.muted } },
+                h('thead', null,
+                  h('tr', null,
+                    ['Yr', 'Installs', 'Revenue', 'Profit', 'Cash end', 'Sat', 'Event'].map(function(c, i) {
+                      return h('th', { key: i, style: { textAlign: 'left', padding: '4px 6px', color: T.dim, fontWeight: 700, borderBottom: '1px solid ' + T.border } }, c);
+                    })
+                  )
+                ),
+                h('tbody', null,
+                  (inst.yearLog || []).map(function(yl, i) {
+                    return h('tr', { key: i },
+                      h('td', { style: { padding: '4px 6px' } }, yl.year),
+                      h('td', { style: { padding: '4px 6px' } }, yl.installs),
+                      h('td', { style: { padding: '4px 6px', color: T.text } }, fmt$(yl.revenue)),
+                      h('td', { style: { padding: '4px 6px', color: yl.profit >= 0 ? T.accentHi : T.danger } }, (yl.profit >= 0 ? '+' : '') + fmt$(yl.profit)),
+                      h('td', { style: { padding: '4px 6px', color: yl.endingCash >= 0 ? T.text : T.danger } }, fmt$(yl.endingCash)),
+                      h('td', { style: { padding: '4px 6px' } }, Math.round(yl.custSat) + '%'),
+                      h('td', { style: { padding: '4px 6px', fontSize: 10, color: T.dim } }, yl.event || '·')
+                    );
+                  })
+                )
+              )
+            ),
+            h('button', { 'data-rn-focusable': true,
+              onClick: resetInstaller,
+              style: { width: '100%', padding: '12px 18px', borderRadius: 10, border: 'none', background: T.accent, color: '#053920', fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
+              '🔁 Run a new campaign'),
+            footer()
+          );
+        }
+
+        // ─────────────────────────────────────────
+        // YEAR PHASE — main interactive screen
+        // ─────────────────────────────────────────
+        var area = INSTALLER_AREAS.find(function(a){return a.id===inst.areaId;}) || INSTALLER_AREAS[0];
+        var supplier = INSTALLER_SUPPLIERS.find(function(s){return s.id===inst.supplierId;}) || INSTALLER_SUPPLIERS[0];
+        var bidCap = 2 + (inst.sales || 0);
+        var pickedCount = (inst.leads || []).filter(function(l){return l.picked;}).length;
+        var custSatColor = inst.custSat >= 70 ? T.accentHi : inst.custSat >= 50 ? T.warm : T.danger;
+        var cashColor = inst.cash >= 25000 ? T.accentHi : inst.cash >= 0 ? T.warm : T.danger;
+
+        return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
+          backBar('☀️ Solar Installer Co. · ' + area.name),
+          // ── Top status strip ──
+          h('div', { style: { padding: 12, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8 } },
+            statBlock('Year', (inst.year + 1) + ' / 4', T.accentHi),
+            statBlock('Cash', fmt$(inst.cash), cashColor),
+            statBlock('Installs YTD', inst.installs + '', T.text),
+            statBlock('Customer sat', Math.round(inst.custSat) + '%', custSatColor),
+            statBlock('Workforce', inst.installers + 'I / ' + inst.inspectors + 'X / ' + inst.sales + 'S', T.text),
+            statBlock('Goal', '100+ by Yr 4', T.dim)
+          ),
+          // ── Lead pipeline ──
+          h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 6 } },
+              h('h3', { style: { margin: 0, fontSize: 14, color: T.accentHi } }, '📞 Incoming leads — pick which to bid on'),
+              h('div', { style: { fontSize: 12, color: T.muted, fontFamily: 'monospace' } }, 'Bids picked: ' + pickedCount + ' / ' + bidCap)
+            ),
+            h('p', { style: { margin: '0 0 10px', fontSize: 11, color: T.dim, lineHeight: 1.55 } },
+              'Your sales team has bandwidth for ' + bidCap + ' bids this year (2 + 1 per sales staff). Each lead shows roof size in kW, customer profile, and the competitor\'s bid — undercut to win, but watch your margin.'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 8 } },
+              (inst.leads || []).map(function(l) {
+                var type = INSTALLER_LEAD_TYPES.find(function(t){return t.id===l.typeId;}) || INSTALLER_LEAD_TYPES[0];
+                var isPicked = !!l.picked;
+                return h('button', { key: l.id, 'data-rn-focusable': true,
+                  onClick: function() { togglePickLead(l.id); },
+                  'aria-pressed': isPicked,
+                  style: { textAlign: 'left', padding: 10, borderRadius: 8, background: isPicked ? 'rgba(16,185,129,0.12)' : T.cardAlt, border: '2px solid ' + (isPicked ? T.accent : T.border), cursor: 'pointer', color: T.text } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
+                    h('span', { 'aria-hidden': 'true' }, type.icon),
+                    h('span', { style: { fontSize: 12, fontWeight: 800, color: T.accentHi } }, type.label),
+                    h('span', { style: { marginLeft: 'auto', fontSize: 11, color: T.dim, fontFamily: 'monospace' } }, l.kw + ' kW')
+                  ),
+                  h('div', { style: { fontSize: 11, color: T.muted, fontStyle: 'italic', lineHeight: 1.45, marginBottom: 4 } }, type.notes),
+                  h('div', { style: { fontSize: 11, color: T.dim, fontFamily: 'monospace' } },
+                    'Competitor bid: $' + l.compBid.toFixed(2) + '/W',
+                    h('span', { style: { color: isPicked ? T.accent : T.dim, marginLeft: 8 } }, isPicked ? '✓ BIDDING' : 'click to bid'))
+                );
+              })
+            )
+          ),
+          // ── Bid price + supplier ──
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10, marginBottom: 14 } },
+            // Bid price slider
+            h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border } },
+              h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '💵 Bid price'),
+              h('p', { style: { margin: '0 0 8px', fontSize: 11, color: T.dim, lineHeight: 1.5 } },
+                'Charge per watt. Competitors bid $2.80–$3.60/W. Low = more wins, lower margin. High = fewer wins, fatter margin.'),
+              h('input', { type: 'range', min: 2.50, max: 4.50, step: 0.05, value: inst.bidPricePerW,
+                onChange: function(e) { setBidPrice(parseFloat(e.target.value)); },
+                'aria-label': 'Bid price per watt',
+                style: { width: '100%' } }),
+              h('div', { style: { textAlign: 'center', fontFamily: 'monospace', fontSize: 16, fontWeight: 800, color: T.accentHi } }, '$' + inst.bidPricePerW.toFixed(2) + ' / W')
+            ),
+            // Supplier picker
+            h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border } },
+              h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🏭 Panel supplier'),
+              INSTALLER_SUPPLIERS.map(function(s) {
+                var picked = s.id === inst.supplierId;
+                return h('button', { key: s.id, 'data-rn-focusable': true,
+                  onClick: function() { setSupplier(s.id); },
+                  style: { display: 'block', width: '100%', textAlign: 'left', padding: 10, borderRadius: 8, marginTop: 6, background: picked ? 'rgba(16,185,129,0.12)' : T.cardAlt, border: '2px solid ' + (picked ? T.accent : T.border), cursor: 'pointer', color: T.text } },
+                  h('div', { style: { fontSize: 12, fontWeight: 800, color: T.accentHi, marginBottom: 2 } }, s.icon + ' ' + s.name),
+                  h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.45, marginBottom: 4 } }, s.desc),
+                  h('div', { style: { fontSize: 10, color: T.dim, fontFamily: 'monospace' } },
+                    '$' + s.costPerW.toFixed(2) + '/W · warranty ' + s.warrantyYears + 'yr · claim ' + Math.round(s.claimRate * 100) + '%')
+                );
+              })
+            )
+          ),
+          // ── Workforce ──
+          h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '👷 Workforce'),
+            h('p', { style: { margin: '0 0 8px', fontSize: 11, color: T.dim, lineHeight: 1.5 } },
+              'Installers do the work. Inspectors handle QA. Sales staff expands your bid bandwidth. Each annual headcount has a salary. Hiring costs $3K–$5K up front.'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
+              workforceCtrl('installers', '🔧 Installers', '$50K/yr salary. Aim for ~10 installs / installer per year.', inst.installers, adjustWorkforce),
+              workforceCtrl('inspectors', '🔍 Inspectors', '$45K/yr salary. 1 per 30 installs keeps QA tight.', inst.inspectors, adjustWorkforce),
+              workforceCtrl('sales', '📞 Sales', '$40K/yr salary. Each sales rep adds +1 to your bid-bandwidth cap.', inst.sales, adjustWorkforce)
+            )
+          ),
+          // ── Event log (if any) ──
+          (inst.events && inst.events.length > 0) && h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('div', { style: { fontSize: 11, fontWeight: 700, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, '📋 Recent events'),
+            inst.events.slice(-3).reverse().map(function(ev, i) {
+              return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: T.card, marginBottom: 4, fontSize: 11, color: T.muted, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.text } }, 'Yr ' + ev.year + ' · ' + ev.headline), ' — ', ev.text);
+            })
+          ),
+          // ── Advance Year button ──
+          pickedCount === 0
+            ? h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.warm, color: T.warm, textAlign: 'center', fontSize: 12 } },
+                '⚠ Pick at least one lead to bid on before advancing the year.')
+            : h('button', { 'data-rn-focusable': true,
+                onClick: advanceYear,
+                style: { width: '100%', padding: '14px 18px', borderRadius: 12, border: 'none', background: T.accent, color: '#053920', fontSize: 15, fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 14px rgba(16,185,129,0.3)' } },
+                '▶ Run Year ' + (inst.year + 1) + ' (resolve bids + roll event + end-of-year P&L)'),
+          footer()
+        );
+
+        // Helper: small stat block
+        function statBlock(label, value, color) {
+          return h('div', { style: { textAlign: 'center' } },
+            h('div', { style: { fontSize: 10, color: T.dim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' } }, label),
+            h('div', { style: { fontSize: 16, fontWeight: 800, color: color || T.text, fontFamily: 'monospace', marginTop: 2 } }, value)
+          );
+        }
+        function workforceCtrl(role, label, hint, current, adj) {
+          return h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+            h('div', { style: { fontSize: 12, fontWeight: 800, color: T.accentHi, marginBottom: 2 } }, label),
+            h('div', { style: { fontSize: 10, color: T.dim, lineHeight: 1.4, marginBottom: 8 } }, hint),
+            h('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
+              h('button', { 'data-rn-focusable': true,
+                onClick: function() { adj(role, -1); },
+                'aria-label': 'Fire one ' + role.slice(0, -1),
+                style: { width: 32, height: 32, borderRadius: 6, border: '1px solid ' + T.border, background: T.card, color: T.text, cursor: current > 0 ? 'pointer' : 'not-allowed', fontWeight: 800 }, disabled: current === 0 }, '−'),
+              h('div', { style: { flex: 1, textAlign: 'center', fontSize: 20, fontWeight: 800, color: T.text, fontFamily: 'monospace' } }, current),
+              h('button', { 'data-rn-focusable': true,
+                onClick: function() { adj(role, +1); },
+                'aria-label': 'Hire one ' + role.slice(0, -1),
+                style: { width: 32, height: 32, borderRadius: 6, border: '1px solid ' + T.border, background: T.card, color: T.text, cursor: 'pointer', fontWeight: 800 } }, '+')
+            )
+          );
+        }
       }
 
       // ─────────────────────────────────────────
@@ -4662,6 +5267,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         case 'compare':      viewBody = renderCompare(); break;
         case 'mix':          viewBody = renderMix(); break;
         case 'homePayback':  viewBody = renderHomePayback(); break;
+        case 'installerCo':  viewBody = renderInstallerCo(); break;
         case 'heatPump':     viewBody = renderHeatPump(); break;
         case 'plants':       viewBody = renderPlantTour(); break;
         case 'hydrogen':     viewBody = renderHydrogen(); break;
