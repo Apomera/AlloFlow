@@ -1399,6 +1399,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     keeper:     { id: 'keeper',     label: 'Fire Keeper', hoursPerYear: 24, eventSkipChance: 0,   eventSeverity: 1.5, desc: '24 hours / year, harsher events. Tight constraint.' }
   };
 
+  // Deterministic PRNG for replayable campaigns. Mulberry32 is simple and
+  // good enough for picking events. We key it on (seed + year + purpose)
+  // so an identical seed produces an identical event sequence year-by-year
+  // regardless of player order of operations.
+  function mosaicMulberry32(a) {
+    return function() {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function mosaicHash(s) {
+    var h = 2166136261 >>> 0;
+    for (var i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = (h * 16777619) >>> 0;
+    }
+    return h;
+  }
+  function newMosaicSeed() {
+    var d = new Date();
+    var pad = function(n) { return (n < 10 ? '0' : '') + n; };
+    var datePart = d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate());
+    var noise = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
+    return 'mosaic-' + datePart + '-' + noise;
+  }
+
   function defaultMosaicState() {
     var diff = MOSAIC_DIFFICULTIES.steward;
     var warmHours = Math.ceil(diff.hoursPerYear / 2);
@@ -1424,7 +1452,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       aiReadHistory: [],
       // UI state
       deepDiveZone: null,
-      firstTipDismissed: false
+      firstTipDismissed: false,
+      // Deterministic-replay state
+      seed: newMosaicSeed()
     };
   }
 
@@ -3559,9 +3589,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             );
           }
 
-          function startCampaign() {
+          function startCampaign(opts) {
+            opts = opts || {};
             var fresh = defaultMosaicState();
-            var diffId = m.difficulty || 'steward';
+            var diffId = (opts.difficulty || m.difficulty) || 'steward';
             var diff = MOSAIC_DIFFICULTIES[diffId] || MOSAIC_DIFFICULTIES.steward;
             var warmHours = Math.ceil(diff.hoursPerYear / 2);
             var coldHours = Math.floor(diff.hoursPerYear / 2);
@@ -3572,9 +3603,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             fresh.warmHoursBudget = warmHours;
             fresh.coldHoursBudget = coldHours;
             fresh.hoursLeft = warmHours;
+            if (opts.seed) fresh.seed = opts.seed;
             setMosaic(fresh);
             playSound('ignite');
-            if (addToast) addToast('🧩 Wabanaki Mosaic begins. Year 1 of 8 on ' + diff.label + ' difficulty. Warm Season (Sigwan-Nipon).', 'success');
+            if (addToast) addToast('🧩 Wabanaki Mosaic begins. Year 1 of 8 on ' + diff.label + ' difficulty. Warm Season (Sigwan-Nipon).' + (opts.seed ? ' (Replay)' : ''), 'success');
             awardStemXP('mosaic_start', 10, 'Mosaic begins (' + diff.label + ')');
             if (announceToSR) announceToSR('Cultural Mosaic started on ' + diff.label + '. Year 1 of 8, Warm Season Sigwan-Nipon. ' + warmHours + ' stewardship hours available in this phase.');
           }
@@ -3652,13 +3684,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             });
 
             // Trigger a random event (1 of 8) — 1 event per year, with
-            // difficulty-aware skip + severity scaling.
+            // difficulty-aware skip + severity scaling. The event sequence
+            // is seeded by (campaign seed + year) so identical seeds produce
+            // identical event sequences across replays.
             var diff = MOSAIC_DIFFICULTIES[m.difficulty || 'steward'] || MOSAIC_DIFFICULTIES.steward;
+            var seed = m.seed || 'mosaic-default';
+            var skipRng = mosaicMulberry32(mosaicHash(seed + ':skip:' + m.year));
+            var pickRng = mosaicMulberry32(mosaicHash(seed + ':pick:' + m.year));
             var ev;
-            if (Math.random() < (diff.eventSkipChance || 0)) {
+            if (skipRng() < (diff.eventSkipChance || 0)) {
               ev = { id: 'quietYear', name: 'A Quiet Year', icon: '🌤️', desc: 'No major event. The seasons turned as expected and the community kept its rhythm.', apply: function() {} };
             } else {
-              ev = MOSAIC_EVENTS[Math.floor(Math.random() * MOSAIC_EVENTS.length)];
+              ev = MOSAIC_EVENTS[Math.floor(pickRng() * MOSAIC_EVENTS.length)];
             }
             // Wrap apply with severity scaling so harder difficulty hits harder.
             var sev = diff.eventSeverity || 1;
@@ -3993,7 +4030,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   );
                 })
               ),
-              h('button', { onClick: resetCampaign, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#1e293b', color: '#cbd5e1', fontWeight: 700 } }, '↻ Start a new mosaic')
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 } },
+                h('button', { onClick: resetCampaign, 'aria-label': 'Start a new mosaic with fresh random conditions', style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#1e293b', color: '#cbd5e1', fontWeight: 700 } }, '↻ New mosaic, new conditions'),
+                h('button', {
+                  onClick: function() { startCampaign({ seed: m.seed, difficulty: m.difficulty }); },
+                  'aria-label': 'Replay the same starting conditions and event sequence with a different strategy',
+                  title: 'Same seed = same starting state + same yearly events. Try a different stewardship plan.',
+                  style: {
+                    padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8',
+                    cursor: 'pointer', background: 'rgba(56,189,248,0.15)', color: '#bae6fd', fontWeight: 700
+                  }
+                }, '🔁 Replay same conditions')
+              ),
+              // Seed display (so a class or a friend can run the same scenario)
+              h('div', {
+                style: { marginTop: 10, padding: 8, background: '#0f172a', borderRadius: 8, fontSize: 11.5, color: '#94a3b8', fontFamily: 'ui-monospace, monospace' }
+              },
+                h('span', { style: { color: '#64748b' } }, 'Campaign seed: '),
+                h('strong', { style: { color: '#cbd5e1' } }, m.seed || 'mosaic-default'),
+                h('div', { style: { marginTop: 4, fontSize: 11, color: '#64748b', fontFamily: 'system-ui, sans-serif', fontStyle: 'italic' } },
+                  'A teacher or classmate using the same seed on the same difficulty gets the same starting state and the same sequence of yearly events.'
+                )
+              )
             );
           }
 
