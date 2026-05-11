@@ -27,13 +27,21 @@
         registerTool: function(id, config) {
           config.id = id;
           config.ready = config.ready !== false;
+          // Normalize legacy field-name aliases so downstream `tool.label`/`tool.desc` reads
+          // always resolve. Some plugins use `title`/`name` (legacy) or `description` (legacy)
+          // instead of canonical `label`/`desc`. Defaults applied for fields whose absence
+          // would cause visible degradation (slate tile, ungrouped category).
+          if (!config.label) config.label = config.title || config.name || id;
+          if (!config.desc) config.desc = config.description || '';
+          if (!config.color) config.color = 'slate';
+          if (!config.category) config.category = 'general';
           this._registry[id] = config;
           if (this._order.indexOf(id) === -1) this._order.push(id);
           console.log('[StemLab] Registered tool: ' + id);
           // Populate STEM_TOOL_REGISTRY for lesson plan integration
           if (!window.STEM_TOOL_REGISTRY) window.STEM_TOOL_REGISTRY = [];
           var catMap = { science: ['Science'], math: ['Math'], engineering: ['Engineering'], art: ['Art'], coding: ['CS'] };
-          var entry = { id: id, name: config.label || id, subjects: catMap[config.category] || ['STEM'], tags: [config.category || 'stem', id] };
+          var entry = { id: id, name: config.label, subjects: catMap[config.category] || ['STEM'], tags: [config.category || 'stem', id] };
           var exists = false;
           for (var ri = 0; ri < window.STEM_TOOL_REGISTRY.length; ri++) {
             if (window.STEM_TOOL_REGISTRY[ri].id === id) { exists = true; break; }
@@ -3231,6 +3239,9 @@
               { id: 'oratory', icon: '\uD83D\uDDE3\uFE0F', label: 'Oratory & Speech Lab', desc: 'Practice public speaking with real-time pacing analysis, vocal warm-ups, and speech delivery coaching.', color: 'rose', ready: true },
               { id: 'singing', icon: '\uD83C\uDFB5', label: 'Voice & Singing Lab', desc: 'Vocal range exploration, pitch matching, breathing exercises, and the science of the singing voice.', color: 'violet', ready: true },
 
+              { id: '_cat_HistoryEng', icon: '', label: '\uD83D\uDCDC History & Engineering', desc: '', color: 'slate', category: true },
+              { id: 'printingPress', icon: '\uD83D\uDCDC', label: 'PrintingPress', desc: 'The Gutenberg-style screw press as a working simulation. Pull the bar, set your own type, see the impression. Plus the materials science (lead-tin-antimony alloy), economics (cost-per-book collapse), history (Reformation, scientific revolution), typography, and the people behind the press (including women printers history forgot). Built for interdisciplinary middle-school work.', color: 'amber', ready: true },
+
               { id: '_cat_Ecology', icon: '', label: '\uD83C\uDF0D Ecology & Migration', desc: '', color: 'slate', category: true },
               { id: 'birdLab', icon: '\uD83D\uDC26', label: 'BirdLab: I-Spy Ornithology', desc: 'Layered habitat I-Spy with animated birds whose movement signatures double as field marks. Field Marks Trainer, Beak & Feet Lab, Bird Calls, Maine Birds Spotlight, Migration, Citizen Science, Photo ID, and a Life List that persists across habitats. Pairs with Cornell Lab\u2019s Merlin Bird ID.', color: 'emerald', ready: true },
               { id: 'migration', icon: '\uD83E\uDD85', label: 'Animal Migration Lab', desc: 'Track real animal migration routes across continents. Explore navigation, climate triggers, and conservation challenges facing migratory species.', color: 'teal', ready: true },
@@ -4395,6 +4406,7 @@
             roadReady: true,
             bikeLab: true,
             birdLab: true,
+            printingPress: true,
             atcTower: true,
             throwlab: true,
             playlab: true,

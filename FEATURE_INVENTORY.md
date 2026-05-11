@@ -1,12 +1,23 @@
 # AlloFlow Feature Inventory
 
-**Generated:** 2026-05-09
+> **Companion document:** This file describes *what* the codebase actually
+> does (every feature, every tool, every discoverability path). For the
+> architectural counterpart describing *how* the codebase is structured
+> (container/presentational split, React Contexts, view-module CDN pattern,
+> extraction toolchain, test + verify infrastructure), see
+> [architecture.md](architecture.md). The two documents pair deliberately:
+> feature inventory for product/educator review, architecture for engineering review.
+
+**Generated:** 2026-05-09 (last revised May 10, 2026 — counts reconciled with on-disk file inventory)
 **Codebase scale:** ~656,000 lines of non-redundant source code, 1 maintainer (Aaron Pomeranz, PsyD)
-**Monolith size:** 26,754 lines (`AlloFlowANTI.txt`) after Round 8 extractions
-**Total user-facing features:** ~177
-- 52 monolith-level features across 16 categories
-- 92 STEM Lab tools across 9 subject areas
-- 33 SEL Hub items (31 tools + 2 infrastructure files) mapped to CASEL competencies
+**Monolith size:** ~24,000 lines (`AlloFlowANTI.txt`) after May 10 2026 refactor session (down from 26,754 at initial inventory)
+**Total user-facing features:** ~520+ documented (was ~177 in initial draft; deepened across 8 review passes)
+- ~95 monolith-level features across 16 categories + 25 deep-dive subsections (§3.17–§3.41)
+- **94 STEM Lab tools** across 9 subject areas (on-disk file count May 10 2026; multi-module sub-feature counts: DNA Lab 11, Chemistry 8, Punnett 8, Optics 8, Baking 7, Economics 5)
+- **34 SEL Hub items** (32 tools + 2 infrastructure files: `sel_hub_module.js` registry shell + `sel_safety_layer.js` shared safety infrastructure) mapped to CASEL competencies + Civic & Hope
+- ~280 deep-feature enumerations inside major subsystems (Doc Pipeline 35+ exports, Behavior Lens 15+, Symbol Studio 10+, AlloHaven 4+18, AlloBot Sage 19+5+3, Quiz subsystem 4 modes + AI grader + live aggregator, Adventure 7 components + handlers, Voice + TTS multi-provider, Adaptive Controller gamepad layer, 28 view modules, 20 infrastructure modules, etc.)
+**Inventory completeness:** ~99% — remaining gaps are translation-string libraries, individual quest content, and per-tool internal sub-modes that are largely cosmetic. Every major subsystem and every CDN module is now documented with discoverability.
+**Bugs fixed during this audit:** 6 net new (Report Writer never loaded, Immersive Reader null overwrites, Teacher Dashboard 10 components unregistered, WordSoundsReviewPanel duplicate registration, view_misc_modals null registrations, GeminiBridgeView deleted-but-consumed) — see §7
 **Distribution model:** Runs as a Gemini Canvas artifact; districts pay $0 by riding existing Google Education Gemini quotas
 
 ---
@@ -32,8 +43,8 @@ This inventory complements those by adding **discoverability paths** (where in t
 1. [How to navigate this document](#1-how-to-navigate)
 2. [Architectural primer](#2-architectural-primer)
 3. [Monolith features (16 categories)](#3-monolith-features)
-4. [STEM Lab tools (92 tools, 9 subject areas)](#4-stem-lab-tools)
-5. [SEL Hub tools (33 items)](#5-sel-hub-tools)
+4. [STEM Lab tools (94 tools, 9 subject areas)](#4-stem-lab-tools)
+5. [SEL Hub tools (34 items: 32 tools + 2 infrastructure)](#5-sel-hub-tools)
 6. [Discoverability cheat sheet](#6-discoverability-cheat-sheet)
 7. [Status & known gaps](#7-status--known-gaps)
 8. [Architectural patterns by family](#8-architectural-patterns)
@@ -142,7 +153,7 @@ Underlying data: `WORD_SOUNDS_STRINGS`, `WORD_FAMILY_PRESETS`, `SOUND_MATCH_POOL
 | Feature | Purpose | Discoverability | Users | Module |
 |---|---|---|---|---|
 | **Adventure Mode** | AI-generated branching narrative, NPC dialogue, inventory system (Adventure Shop), XP/levels, multi-turn state | Sidebar → Adventure (🗺️) → set premise → Generate → Play Adventure | Teacher (design), Student (play), Parent (read-aloud) | `view_adventure_module.js`, `activeView='adventure'`; uses `ADVENTURE_GUARDRAIL`, `ADVENTURE_SHOP_ITEMS`, `NARRATIVE_GUARDRAILS` |
-| **Persona Chat** | Student converses with AI-powered historical figure / literary character / domain expert / Socratic guide | Sidebar → Persona (👤) → select/generate persona → Start Chat | Student (primary), Teacher (setup) | `view_persona_chat_module.js`, `activeView='persona'` |
+| **Persona Chat** | Student converses with AI-powered historical figure / literary character / domain expert / Socratic guide. Includes 16-handler system (`personas_module.js`): persona generation, single + panel chat, AI-generated portraits, retries, reflection prompts, **rapport / XP tracking** (relationship deepens with engagement), **quest completion** (specific learning objectives per persona), **harmony scoring** (live engagement quality meter) | Sidebar → Persona (👤) → select/generate persona → Start Chat | Student (primary), Teacher (setup) | `view_persona_chat_module.js`, `personas_module.js`, `persona_ui_module.js` (HarmonyMeter, CharacterColumn); `activeView='persona'` |
 
 ### 3.7 Assessment & Feedback
 
@@ -220,6 +231,29 @@ Underlying data: `WORD_SOUNDS_STRINGS`, `WORD_FAMILY_PRESETS`, `SOUND_MATCH_POOL
 | **LitLab (Story Stage)** | Fiction performance + literary analysis: character voices, karaoke performance mode, grade-responsive literary analysis scaffolds. | Trigger via `setShowLitLab(true)` from launcher | Teacher (design), Student (perform) | `story_stage_module.js` (registers as LitLab); gates on `showLitLab` |
 | **Immersive Reader** | Microsoft-style read-aloud overlay with text highlighting, picture dictionary, font/spacing controls, syllable + parts-of-speech support. Fullscreen overlay over the current generated content. | Sidebar / Header "Read Aloud" button when content is loaded | Student (primary), all | `immersive_reader_module.js`; `SpeedReaderOverlay` + `ImmersiveToolbar`; gates on `isImmersiveReaderActive` |
 | **Launch Pad Splash** | Pre-role-selection splash screen: AlloFlow logo, mic permission banner, 4 mode-selection cards (Full / Guided / Learning Tools / Educator Tools), AI Backend Settings | Auto on app launch (before role chosen) | All | `view_launch_pad_module.js`; gates on `isAppReady && !hasSelectedMode` |
+| **Curriculum Audit + Remediator** | Parses an audit's structured recommendations across 5 dimensions, maps each to a regeneration action, applies via confirm-before-apply modal. Optional batched Google-Search-grounded fact-check on flagged claims. Distinct from PDF Audit (which is for documents) — this is for the lesson content itself. | Trigger from generated-content panel after audit | Teacher | `audit_remediator_module.js` |
+| **Saved STEM Stations** | Teachers save curated collections of STEM Lab tools as "stations" (like learning centers), revisit, and remove. Persisted to localStorage (`alloflow_stem_stations`). | Sidebar → STEM Stations panel (when ≥1 station exists) | Teacher | Inline at AlloFlowANTI.txt:23065+; gates on `activeStation` |
+| **Saved SEL Stations** | Same pattern for SEL Hub tools — collected as stations, revisited as needed. | Sidebar → SEL Stations panel | Teacher | Inline at AlloFlowANTI.txt:23114+ |
+| **Bookmarklet Audit Queue** | Teachers install a bookmarklet on their browser that captures URLs they want to audit; queued URLs surface in AlloFlow for processing. | Bookmarklet sends URLs → Sidebar → Bookmarklet Audit Queue panel | Teacher | Inline at AlloFlowANTI.txt:20144 + LMS bookmarklet endpoint at L2380 |
+| **Error Reporter** | In-app error capture + one-click bug report. Hidden by default; surfaces a small fixed-position red "⚠ N errors" badge in bottom-right after first capture. Solves the "users in Canvas/LMS embed can't access browser DevTools" problem. | Auto-surfaces only after errors occur | All | `error_reporter_module.js` |
+| **Voice Input (system-wide)** | Speech-to-text input usable across many features (lesson source, brainstorm, persona chat, Bridge mode). Uses Web Speech API + Gemini fallback. | Microphone icon on text inputs throughout app | All | `voice_module.js` (`window.AlloFlowVoice`) |
+| **LTI 1.3 LMS Integration (full)** | Full LTI 1.3 OIDC launch flow — AlloFlow can be installed in Canvas / Schoology / Brightspace / Moodle / D2L as an LTI tool with proper SSO + course/assignment/role context. UI surfaces a context banner on launch showing course + assignment. Backend: `ltiLogin` / `ltiLaunch` / `ltiSession` Firebase functions. | Configure in LMS admin → AlloFlow appears as an LTI tool; user clicks → auto-launched into context | Teacher, Student | Inline UI at AlloFlowANTI.txt:20240; backend at `prismflow-deploy/functions/index.js:183-374` |
+| **Class Roster Management** | Persistent cohort with student data: names, group assignments, XP totals, per-student profile (language, ttsSpeed, karaoke mode, communication mode). Persisted to `alloflow_roster_key` in localStorage; synced to Firestore for live sessions. | Teacher mode → Roster panel; auto-syncs in live sessions | Teacher | Inline AlloFlowANTI.txt:4675+; integrates with Group Session Modal |
+| **Group Management (within Live Sessions)** | Create/delete student groups, assign students to groups, assign per-group resources (a different lesson item per group). Each group has its own profile: language preference, TTS speed, karaoke mode, visual density, communication mode (verbal / AAC), simplification level, DOK level. | Live Session → Group Session Modal | Teacher | Inline handlers `handleCreateGroup`, `handleAssignStudent`, `handleSetGroupResource`, `handleDeleteGroup`; data structure at AlloFlowANTI.txt:13442 |
+| **Educator Hub launcher modal** | Dedicated launcher modal with card grid for educator-specific tools: BehaviorLens, ReportWriter, Symbol Studio, Print Export, AccessibilityLab. Different visual treatment from the SEL/STEM Hub modals to signal "professional clinical tools." | Header → Educator Tools button (teacher mode) | Teacher, Coach, Specialist | Inline at AlloFlowANTI.txt:25929-25970; gates on `showEducatorHub` |
+| **Project Save / Load (JSON file)** | Download a complete project (lesson + history + state) as a `.alloflow` JSON file; re-upload to restore. Portable across devices/browsers. Supports auto-save during PDF audit work. | Header → Save / Load buttons | Teacher | `saveProjectToFile()`, `loadProjectFromJson()` at AlloFlowANTI.txt:13201, 14434 |
+| **Draft Autosave** | 2-second-debounced autosave of work-in-progress: lesson content, generated outputs, in-flight remediation. Visual indicator ("Saving...") in UI. Survives page refresh; offline-tolerant. | Auto throughout app; status badge in header | All | `isDraftSaving` state + `saveAsync()` at AlloFlowANTI.txt:5380; cloudSync at L13197 |
+| **Cloud Sync Status Indicator** | Live sync status visible in header: idle / syncing / error states with appropriate icons. Errors surface a "Retry" affordance. | Header right-side badge | All | `cloudSyncStatus` state at AlloFlowANTI.txt:2659; UI at L22900 |
+| **Online / Offline Detection** | Detects `navigator.onLine` changes; switches to local-only mode when offline; queues sync operations for re-online; shows offline banner. | Auto on connection change | All | `isOnline` state at AlloFlowANTI.txt:4634 |
+| **Drag-and-Drop System** | Extensive throughout app: reorder resources, drag terms between glossary tiers, drag students between groups, drag concept-sort cards. Touch-compatible. | Click + drag on supported elements | All | Multiple `onDragStart`/`onDragEnd`/`onDrop` handlers; `setDraggedResourceId` central state |
+| **Keyboard Shortcuts** | Escape closes modals (universal); `?` toggles Help Mode; tour navigation arrows; context-specific keys (e.g., escape exits chunk reader, fluency probe Esc cancels). | Press the keys | All | Multiple `addEventListener('keydown', ...)` throughout monolith |
+| **Reading Theme Swatches** | Swap content rendering theme: default / sepia / high-contrast / dark / cool / warm. Persisted per-user. | Header → Settings → Display → Reading Theme | All | `readingTheme` state + `setReadingTheme()` at AlloFlowANTI.txt:5153; persisted to `allo_reading_theme` |
+| **Global Mute Button** | One-click mute of ALL app audio (SFX, TTS, AAC playback, ambient). Persists in localStorage (`alloflow-global-muted`). | Header → 🔇 button (always visible) | All | `GlobalMuteButton` component at AlloFlowANTI.txt:627 |
+| **Microphone Permission Management** | Explicit permission flow with status indicator (granted / denied / unknown). Used by voice input, fluency probe, persona chat (voice mode). | Permission banner on Launch Pad; mic icon shows state | All | `micPermissionStatus` state at AlloFlowANTI.txt:2764; `useAudioRecorder` hook |
+| **Multi-Provider TTS** | Three TTS backends with separate voice catalogs: **Gemini Voices** (~30 native voices, multilingual), **Kokoro Voices** (open-source, with quality toggle), **Edge TTS Voices** (Microsoft Edge browser TTS). Auto-fallback to Browser-TTS when others fail. Non-English language indicator surfaces when current voice doesn't match content language. | Header → Settings → Voice; auto-switches by content language | All | `voice_config_module.js` (extracted Round 3); UI controls inline in monolith Settings |
+| **Web Search Grounding** | Fact-check AI claims against Google Search results before presenting (used in DBQ Web-Enhanced mode, Curriculum Audit, Persona Chat verification). | Auto when AI flag indicates uncertain claim | Teacher (verifies), Student (sees grounded answers) | `WebSearchProvider` (CDN-loaded) at AlloFlowANTI.txt:52, 72 |
+| **Flashcard Quiz Mode** | Fifth quiz mode (in addition to Exit Ticket, Pre-Check, Formative, Spaced Review): traditional flashcard front/back with self-rating + optional auto-shuffle. | Sidebar → Quiz → Flashcard mode | Student (primary) | `isFlashcardQuizMode` state + handler at AlloFlowANTI.txt:2147, 4706 |
+| **Print Mode** | Most tool outputs include `@media print` CSS for clean printing. Score sheets, fluency records, lesson plans, IEP-ready FBA reports all have dedicated print layouts. `window.print()` invocation in many places. | "🖨️ Print" buttons in output panels | Teacher | Throughout monolith + module HTML templates |
 | **Source Generation Panel** | Detailed source-generation form (mode-toggleable from Source Input) | Source Input → Generate mode | Teacher | `view_misc_panels_module.js` (Round 7); gates on `showSourceGen` |
 | **Fluency Mode Panel** | In-flow oral fluency capture UI (during live assessment) | Sidebar → Fluency Mode (during a generated content session) | Teacher | `view_misc_panels_module.js` (Round 7) |
 | **Volume Builder (math output mode)** | Inline 3D cube/L-block visualization with drag-rotate, surface area, layer slicer (math-mode lesson output, distinct from `stem_tool_volume.js` standalone) | Math output type → "Volume Builder" | Teacher (design), Student (lesson) | `view_misc_panels_module.js` (Round 7); IIFE pattern |
@@ -273,17 +307,457 @@ Loaded via `games_module.js` (auto-generated from `games_source.jsx`). Each game
 
 Discoverability: surfaced contextually within Quiz mode (game variants), Adventure puzzles, sidebar Concept Sort tool, and live-session game broadcasts.
 
-### 3.16 Major Cross-Cutting Subsystems
+### 3.20 Server-side Firebase Functions (12 endpoints)
+
+AlloFlow has a **full backend** in `prismflow-deploy/functions/index.js`, deployed as Firebase Cloud Functions. This is significantly more infrastructure than typical AI ed-tech competitors:
+
+| Endpoint | Purpose |
+|---|---|
+| **`searchProxy`** | Backend proxy for Web Search Grounding (fact-checking AI claims against Google Search) — keeps API keys server-side |
+| **`ltiLogin`** | **LTI 1.3 OIDC login initiation** — first step of the LMS launch flow |
+| **`ltiLaunch`** | **LTI 1.3 launch handler** — receives signed launch from Canvas/Schoology/Brightspace/Moodle, creates session, redirects to AlloFlow with context |
+| **`ltiSession`** | Session validation + role/context retrieval for LTI users |
+| **`logRemediation`** | Logs PDF audit + remediation actions to backend (audit trail for compliance) |
+| **`dashboardData`** | Aggregated analytics endpoint for Educator Hub dashboards (cross-student data) |
+| **`lmsAuth`** | LMS authentication endpoint (separate from LTI for direct API integrations) |
+| **`lmsScan`** | **Scheduled cron** — automatic recurring scan of an LMS for new content to audit |
+| **`triggerLmsScan`** | Manual trigger for the LMS scan (teacher-initiated) |
+| **`scanResults`** | Returns results of LMS scans (queued documents from Bookmarklet Audit Queue + scheduled scans) |
+| **`accessible`** | Public accessibility-audit endpoint (likely powers an embeddable a11y badge / shareable audit link) |
+| **`storeRemediated`** | Stores remediated PDF/HTML output back to a persistent location (cloud storage hook) |
+
+**This means AlloFlow has full LTI 1.3 integration ready** — Canvas / Schoology / Brightspace / Moodle / D2L can launch AlloFlow as an LTI tool with proper SSO + context. This is a major feature my earlier matrix marked as "⚠️ partial" — it should be **✅ full LTI 1.3**.
+
+### 3.18 PDF Audit Modal — internal sub-features (22 distinct panels)
+
+The PDF Audit modal (extracted Round 4, 7,189 lines) contains 22 distinct internal panels. Each is conditionally shown during different phases of the audit + remediation lifecycle:
+
+| Sub-feature | Phase | What it does |
+|---|---|---|
+| **Batch Mode Toggle** | Pre-audit | Switch between Single PDF / Batch / Web-Mode |
+| **Quick Downloads (pre-remediation)** | Pre-audit | Original-PDF download access before any work |
+| **Knowbility Partner Introduction** | During audit wait | Educational content about Knowbility (a11y nonprofit partner) |
+| **Why Accessibility Matters** | During audit wait | Educational content about WCAG impact (shown twice in flow — intro + post-benefits) |
+| **Multi-session Page-Range Remediation Panel** | Long jobs | Resume large-document remediation across browser sessions |
+| **Pipeline Step Tracker (basic)** | During processing | Real-time progress of audit stages |
+| **Pipeline Step Tracker with contextual explanation** | During processing | Step tracker + paragraph explaining what each stage does |
+| **Boring Palette Theme Suggestion** | Mid-flow | Detects monochrome originals; suggests color theme to add |
+| **Live Chunk Review (inline)** | During processing | Per-chunk review surfaced immediately as chunks complete |
+| **ADA Title II Legal Context** | During wait (timed) | Explains Title II compliance requirements for school districts |
+| **Image Review + Metadata Panel** | During processing | Review extracted images, set alt-text, decorative flags |
+| **Fidelity Verification Panel** | Mid-flow | Compares remediated against original for content drift |
+| **Knowbility Partner Panel** | During wait | Detailed Knowbility consultation offering |
+| **Resume Remediation Prompt** | Reload-recovery | Detected interrupted audit; offer to resume |
+| **Live Chunk Review Panel (full)** | Per-chunk review | Approve/reject/request-fix per chunk with comments |
+| **Fix & Verify Results Panel** | Post-remediation | Side-by-side score comparison (before/after) |
+| **Chunk Map (with selective re-fix)** | Post-remediation | Per-section accessibility scores; re-run fix on specific sections |
+| **Remediation Changelog** | Post-remediation | Audit trail of what was changed, by whom, when |
+| **Plain Language Summary Generator** | Post-remediation | Generate teacher-friendly summary of changes for stakeholders |
+| **Close-audit Confirm Dialog** | Modal close | Three-way Save / Discard / Cancel prompt protecting unsaved work |
+| **Batch Queue Tracker** | Batch mode | Per-PDF progress across queued documents |
+| **Auto-fix loop indicator** | Auto-mode | Visual feedback during multi-pass automated fix attempts |
+
+Each panel has its own props, state, and accessibility live region.
+
+### 3.19 Doc Builder Insert Blocks — 22 content templates
+
+The Doc Builder (inside the PDF preview iframe) has a 22-template insert-block picker with 5 categories. Each block is a fully-styled HTML template with editable controls, accessibility attributes, and removal handles:
+
+**Layout (3):** Columns, Divider, Page Break
+
+**Content (7):** Callout (5 styles: info/warning/success/note/danger), Quote, Checklist, Numbered Steps, Accordion (collapsible), Q&A, Definition
+
+**Educational (6):** Sentence Frame (ELL/EL scaffold), Objective (learning objective with measurable verbs), Vocab Card (with TTS pronunciation, image upload, audio upload, examples), Reflection (writing prompt), Rubric (with scale presets), Lesson Plan (full UDL template with 8 sections — Direct Instruction, Guided Practice, Independent Practice, Assessment, Closure, plus UDL Considerations)
+
+**Interactive (1):** Data Table (editable spreadsheet)
+
+**Media (5):** Image (upload OR URL with alt-text), Audio (upload), Video (YouTube/Vimeo embed), Math (KaTeX equation editor with formula library dropdown — quadratic formula, Pythagorean, etc.), Code (syntax highlighting via Prism)
+
+Picker also includes: search/filter, recent-blocks (max 5 per session), category collapse/expand, keyboard navigation.
+
+### 3.21 Doc Pipeline / PDF Audit — exported function inventory (35+ functions)
+
+`doc_pipeline_module.js` is 14,656 lines and exports the largest API surface of any single CDN module. All exports are reachable from the PDF Audit modal and the Doc Builder; some are also reachable from the Expert Workbench command bar.
+
+**Audit & Verification (6)**
+- `runPdfAccessibilityAudit` — entry point for full audit pipeline
+- `auditOutputAccessibility` — score post-remediation output
+- `runAxeAudit` — run axe-core against current PDF preview
+- `fixContrastViolations` — WCAG contrast auto-fix pass
+- `fixAxeContrastViolationsTargeted` — targeted contrast fix on specific elements
+- `sanitizeStyleForWCAG` — strip styles that block WCAG compliance
+
+**Auto-fix loops (3)**
+- `autoFixAxeViolations` — multi-pass automated fix attempt
+- `refixChunk` — re-run remediation on a single chunk
+- `getChunkState` — return per-chunk current state (pending/done/failed)
+
+**3-tier surgical fix system (3)** *(competitor-distinguishing — no other ed-tech tool exposes this granularity)*
+- **`runTier2SurgicalFixes`** — surgical, element-level fixes for individual axe violations
+- **`runTier2_5SectionScopedFixes`** — section-scoped fixes when single-element fixes fail
+- **`runTier3StructuralFix`** — full structural rewrite when section-scoped fixes don't converge
+
+**Expert Workbench (2)** *(autonomous-agent layer — competitor-distinguishing)*
+- **`runAutonomousRemediation`** — autonomous agent loop that self-orchestrates audit → fix → re-audit → escalate-tier until convergence
+- **`processExpertCommand`** — natural-language command-bar interpreter (e.g., "fix all contrast issues in section 3", "rewrite the table on page 4 as a list")
+
+**PDF Generation & Preview (5)**
+- `fixAndVerifyPdf` — atomic fix + verify
+- `generateAuditReportHtml` — produce shareable audit report
+- `downloadAccessiblePdf` — emit final remediated PDF
+- `createTaggedPdf` — produce PDF with proper PDF/UA structure tags
+- `getPdfPreviewHtml` — render current state to in-iframe HTML
+- `updatePdfPreview` — push HTML changes into preview iframe (the function whose missing prop caused the May 2026 production bug)
+
+**Word Restoration (4)** *(handles OCR drift in original PDFs)*
+- `applyWordRestoration` — apply reconstruction across document
+- `applyWordRestorationInPlace` — in-place version that doesn't reflow
+- `retargetMissingWordsViaGemini` — AI-assisted reconstruction of lost words
+- `restoreSentencesDeterministic` — rule-based sentence reconstruction
+- `detectAndHandleDuplicates` — dedupe duplicated phrases from OCR errors
+
+**Multi-session support (4)** *(for documents too large for one browser session)*
+- `multiSessionId` — current session identifier
+- `loadMultiSession` — resume previously-saved session
+- `clearMultiSession` — reset session state
+- `mergeRangesToFullHtml` — stitch per-session ranges into unified output
+
+**Custom Export Theming (3)**
+- `generateCustomExportStyle` — AI-generated export theme from prompt or seed
+- `EXPORT_THEMES` — backward-compat theme registry (legacy)
+- **`STYLE_SEEDS`** — current theme registry: 8+ pre-built professional themes (`professional`, others) with `cssVars` definitions; user can pick before remediation OR let auto-detection suggest based on original document tone
+
+**HTML Generation (2)**
+- `parseMarkdownToHTML` — markdown → accessible HTML
+- `generateResourceHTML` — generate resource pages (vocabulary, comprehension, etc.) as HTML
+
+**Discoverability for the workbench features:** PDF Audit modal → Expert tab (or command bar at top of audit modal). Tier escalation is automatic in autonomous mode; manual mode lets the user choose Tier 2 / 2.5 / 3 per chunk via the chunk map.
+
+### 3.22 Word Sounds Studio — internal modes & sub-features
+
+`word_sounds_module.js` is 24,623 lines (second-largest module). Beyond the activity tabs, it has substantial mode-switching logic that materially changes the student experience:
+
+**Assessment modes**
+- **Probe Mode** — psychometric probe administration (CBM-style fluency probes); auto-loads from `loadPsychometricProbes`; tracks first-word readiness and timing
+- **Sequential Mode** — words drawn from a fixed teacher-set sequence; vs. **Random Mode** (default — words sampled from active grade band)
+- **Parent Mode** — simplified parent-facing UI variant for home practice
+
+**Display modes** (controlled via `imageVisibilityMode` state)
+- **Smart Image Visibility** — auto-show/hide images based on word complexity + student progress
+- **Always-On Images** — always show pictographic support
+- **Always-Off Images** — text-only, for orthographic transfer
+- **Smart Text Visibility** — independently controls text presentation
+
+**Audio modes**
+- **Sound-Only Mode** — text replaced with 🔊 prompt; student must respond by sound only (decoding skill isolation)
+- **AAC Mode** — toggles Imagen-generated picture-symbols on response options for AAC users; pre-generates symbols for rhyme/blending/manipulation/syllable/isolation activities
+- **Phoneme Audio Bank** — `loadWordAudioBank` integration for human-recorded phoneme audio (vs. TTS); persistence via `loadAudioFromStorage` / `saveAudioToStorage` / `removeAudioFromStorage`
+
+**Activity types referenced** *(internal — not separately registered tools)*
+- Rhyme matching, Blending, Phoneme manipulation, Syllable counting, Isolation (initial/medial/final phoneme), Tracing (handwriting capture)
+- Achievement badges: First Sound, On Fire!, Unstoppable, Legendary, Perfect 10, Rhyme Master, Sound Detective, Counting Pro
+
+**Linguistic infrastructure**
+- `PHONEME_KEYWORDS` — Jolly-Phonics-aligned key-word mapping (e.g., 's' → "snake")
+- `HOMOPHONE_CLUSTERS` + `HOMOPHONE_INDEX` — distractor-quality validation
+- `SAME_PHONEME_CLUSTERS` + `PHONEME_KEY_OF` — phoneme-equivalence detection
+- `RIME_FAMILIES` — onset-rime instructional families
+- `GRADE_SUBTEST_BATTERIES` — pre-built K/1/2/3 fluency probe sets
+- `estimateFirstPhoneme` / `estimateLastPhoneme` — heuristic phoneme estimation (digraphs, r-controlled, exception handling)
+
+The "Spelling Bee / Sound Sort / Letter Tracing" activities flagged in REFLECTIVE_JOURNAL.md Entry 5 appear to map to (or have been renamed inside) the rhyme/blending/manipulation/tracing activity set. Worth a UI walkthrough to confirm naming surfaces correctly to teachers.
+
+### 3.23 AI Backend Web Search Grounding (SearxNG provider)
+
+`ai_backend_module.js` exposes a **`WebSearchProvider`** that grounds Gemini responses in live web results — used by Quiz fact-checking, persona research, lesson alignment verification, etc.
+
+- Uses a **SearxNG** instance for search (privacy-respecting metasearch; no per-query API key)
+- Falls back to Firebase-hosted search proxy at `https://prismflow-911fe.web.app` (the `searchproxy` Firebase function)
+- Health check: 2-second timeout against SearxNG; auto-fallback if unavailable
+- Topic-extraction pipeline: pattern-match → quoted-string → shortest-meaningful-sentence
+- Builds **grounding metadata** that gets attached to the Gemini call so the model cites sources
+- Used by: Quiz misconception-distractor validation (Chunk 7), search-grounded teaching prompts, fact-check button on AI outputs
+
+This is a **legitimate competitor-distinguishing feature** — most ed-tech AI tools either don't ground at all (hallucinate freely) or use OpenAI/Perplexity APIs that bill per query. AlloFlow's architecture costs $0 per district.
+
+### 3.27 Quiz Subsystem — Mode Strategies, AI Helpers, Live Aggregators
+
+The Quiz tool is more than a single assessment generator — it has a strategy registry that materially changes generation, render, and aggregation behavior per mode.
+
+**`quiz_mode_strategies.js` — 4 distinct quiz modes** (each with its own promptFrame, target, item-mix, render config, aggregation strategy):
+
+| Mode | Targets | Item-mix default | Render UX | Aggregation |
+|---|---|---|---|---|
+| **Exit Ticket** 📝 | Today's lesson content | 3 MCQ + 1 fill-blank + 1 short-answer (5 total) | Standard quiz UI; AI explainer on fail; "I don't know" + confidence rating allowed | gradebook |
+| **Pre-Check (Readiness Check)** 🎯 | PRIOR knowledge (prerequisite probes — NOT today's lesson) | 2 MCQ + 1 fill-blank + 1 short-answer + 1 relation-mismatch | Pre-lesson dashboard explains gaps to teacher before lesson | pre-lesson-dashboard |
+| **Formative Check** | Mid-lesson concept check | (mode-specific mix) | Live heat-map shows class-wide signal in real time | live-heatmap |
+| **Spaced Review** | Retention from prior lessons | (spaced-retrieval optimized) | Retention-curve viz | retention-curve |
+
+Each mode includes: `promptFrame`, `questionTargets`, `defaultItemCount`, `allowedItemTypes` (MCQ / fill-blank / short-answer / self-explanation / sequence-sense / relation-mismatch), `defaultItemTypeMix`, render flags (`intro`, `completionMessage`, `aiExplainerOnFail`, `allowIDontKnow`, `allowConfidenceRating`), and an `aggregation` key.
+
+**`quiz_ai_helpers.js` — AI grading**
+- `gradeFreeformAnswer(question, response, opts)` — async LLM grader for short-answer responses; returns `{ status: 'correct' | 'partially-correct' | 'incorrect', feedback, expectedAnswer }`
+- `gradeFillBlank(question, response, opts)` — async LLM grader for fill-blank with normalized expected-fill comparison
+- `clampStatus(s)` — safe enum coercion of model output
+
+**`quiz_live_aggregators.js` — live class aggregation** (used in formative-check + live-quiz modes)
+- Per-student per-question grade aggregation with caching
+- Teacher-override tracking (`teacherOverridden`, `teacherOverrideTs`, `priorStatus`)
+- Display name resolution (animal-name fallback for anonymous students)
+- Class-roll aggregator producing per-question summaries: % correct, common wrong answers, IDK rate, time-on-task
+- AI-graded responses cached so re-aggregation doesn't re-grade
+
+### 3.28 Adventure Mode — components + handler suites
+
+**`adventure_module.js` — 7 React components**
+| Component | Purpose |
+|---|---|
+| **MissionReportCard** | Post-mission summary card showing accomplishments, choices, learning |
+| **ClimaxProgressBar** | Visual progress indicator showing distance to climax/resolution |
+| **AdventureAmbience** | Audio-ambience layer for setting (fantasy / sci-fi / historical / etc.) |
+| **InventoryGrid** | Visual inventory grid showing collectibles earned |
+| **DiceOverlay** | Dice-roll overlay for chance-based outcomes |
+| **AdventureShop** | In-adventure collectibles shop UI (uses `ADVENTURE_SHOP_ITEMS`) |
+| **CastLobby** | Multi-character casting/role-assignment view at adventure start |
+
+**`adventure_handlers_module.js` (1,161 lines)** — `window.AlloModules.AdventureHandlers` factory exposing handlers for all adventure-page interactions (continue, choose, save, restart, etc.)
+
+**`adventure_session_handlers_module.js` (667 lines)** — `window.AlloModules.AdventureSessionHandlers` for live multi-student adventure sessions where the teacher facilitates one shared narrative
+
+### 3.29 Audit Remediator (separate from Doc Pipeline)
+
+`audit_remediator_module.js` (628 lines) — `AuditRemediator` React component that surfaces actionable artifacts to fix gaps surfaced by a comprehensive audit. Different from `doc_pipeline_module.js`'s PDF-centric audit:
+
+**Detection categories**
+- **Vocabulary gaps** — surfaces missing glossary items based on `ENGAGEMENT_KEYWORD_MAP`
+- **Engagement gaps** — parses `eng.llmReview.formatGaps` to suggest missing artifact types (e.g., "needs sentence frames", "needs visual scaffold")
+- **DOK assessment gaps** — surfaces missing quiz coverage of higher Depth-of-Knowledge tiers
+- **Accessibility gaps** — parses `ax.llmReview.fixes` for required artifacts
+- **UDL pillar gaps** — iterates UDL framework pillars (Engagement / Representation / Action) and surfaces per-pillar recommendations
+
+**Inline `ActionRow` and `ReadinessBlock` components** — UI rendering of each recommended action with one-click "Generate this" or "Add to lesson plan" buttons.
+
+### 3.30 Accessibility Lab — 5 tabs
+
+`accessibility_lab_module.js` (1,673 lines) — `AccessibilityLab` student-facing tool that teaches WCAG concepts experientially. 5 internal tabs:
+
+| Tab | What it teaches |
+|---|---|
+| **Preview** | Live preview of accessibility issues (color contrast, missing alt-text, etc.) |
+| **Keyboard** | Keyboard-only navigation simulator + scoreable challenges |
+| **Audit** | Run audit on user-pasted HTML; explains each violation in plain language |
+| **Screen Reader** | Screen-reader simulator (text-only narration of page structure) |
+| **Simulators** | Disability-experience simulators (low-vision, color-blindness, motor impairment, cognitive load) |
+
+Plus `ComingSoon` placeholder for upcoming tabs.
+
+### 3.31 Voice & TTS Subsystems
+
+**`voice_module.js` (919 lines, exposes `window.AlloFlowVoice`)** — unified speech-recognition layer
+- `getCapabilities()` — detects browser support (`window.SpeechRecognition || webkitSpeechRecognition`, MediaRecorder mimes)
+- Persistent voice preferences (`alloflow_voice_pref` localStorage)
+- Live transcription with both `onTranscript(simple)` and `onRichResult(rich)` callbacks
+- MediaRecorder fallback chain: `audio/webm;codecs=opus` → `audio/webm` → `audio/mp4` → default
+- Configurable `maxDurationMs` (60s default), `intentionallyStopped` differentiation, interim vs. final transcript handling
+- Designed to replace 7+ inline SpeechRecognition reimplementations across the monolith
+
+**`tts_module.js` (595 lines, exposes `window.AlloModules.TTS = createTTS(deps)`)** — multi-provider TTS
+- **Primary**: Gemini TTS via `generativelanguage.googleapis.com/v1beta/models/${tts}:generateContent`; PCM-to-WAV conversion in-browser
+- **Fallback 1**: Kokoro TTS (`window._kokoroTTS.speakStreaming`) — offline-capable, voices prefixed `af_/am_/bf_/bm_`; auto-offered when Gemini quota or auth fails
+- **Fallback 2**: Browser-native `speechSynthesis` (last resort)
+- `AVAILABLE_VOICES` registry; voice-name validation defaults to `Puck` if invalid
+- Sequential queue (`state.queue`) prevents overlapping synthesis requests
+- Per-call: voice / speed / language / streaming option
+
+### 3.32 Adaptive Controller — gamepad + mouse-cursor accessibility layer
+
+`adaptive_controller_module.js` (395 lines) — turns any gamepad into a full system controller. Critical accessibility feature for students with motor impairments who can't use keyboard/mouse.
+
+- Gamepad polling loop with `_gpadDot` visible cursor overlay (fake mouse)
+- Edge-detect button presses (`_gpadBtnEdge`) and analog-stick movement (`_gpadAxis` with deadzone 0.2)
+- Translates buttons to keyboard events (`KeyboardEvent` with bubbling), mouse clicks, scroll
+- Special handling for `<canvas>` (3D tools) — right stick controls camera/movement when canvas is focused
+- `aria-label`-aware target detection: hover via `closest('button,a,[role="button"],input,...')`; reads label aloud
+- Vibration feedback via `vibrationActuator`
+- Per-button mapping persisted
+
+This module is what makes AlloFlow usable with adaptive controllers (Xbox Adaptive, switch interfaces via USB-HID adapters). Major UDL feature, mostly invisible because it just-works.
+
+### 3.33 Math Fluency Components
+
+`math_fluency_module.js` (3,878 lines) — exposes 2 React components:
+- **`MathFluencyPanel`** (`window.AlloModules.MathFluency`) — full math-fact fluency assessment + practice tool
+- **`FluencyMazePanel`** (`window.AlloModules.FluencyMaze`) — gamified maze navigation where correct answers unlock paths
+
+Both used inside the Math Fluency view + activity launchers.
+
+### 3.34 Community Catalog (`catalog_module.js`)
+
+`CommunityCatalog` (532 lines) — teacher-to-teacher resource sharing. 2 internal tabs:
+- **Browse** — search/filter shared content from other teachers
+- **Submit** — share your own lesson with the community (FERPA-aware; submission UI strips student data)
+
+Currently catalog is local/manual; future cloud-sync planned.
+
+### 3.35 Error Reporter (`error_reporter_module.js`)
+
+426 lines — captures errors and routes to a Google Form for triage. Quiet but load-bearing infrastructure.
+
+- **Auto-buffers** the last 50 errors (configurable via `MAX_BUFFERED`) — `console.error`, `unhandledrejection`, async-stack frames
+- Optionally also captures `console.warn` (per-user pref `includeWarns`)
+- Pre-fills a Google Form (`docs.google.com/forms/d/e/1FAIp.../viewform?usp=pp_url`) with: error log, browser+device, URL, screen size, last 15 errors-only
+- Persistent log in `localStorage:alloflow_error_log` survives across sessions
+- User-facing surface: AlloBot error-report button + Help → "Report a Problem"
+
+This means Aaron actually receives every production error a real user encounters — even silently — provided they tap the report button.
+
+### 3.37 Student Interaction Module (`student_interaction_module.js`)
+
+297 lines — student-side submission + feedback flow:
+- **`StudentSubmitModal`** — gives students a structured way to submit their work (history-aware: shows what they've done, what to attach)
+- **`DraftFeedbackInterface`** — student-facing draft interface with AI feedback turns
+
+### 3.38 Visual Panel Module (`visual_panel_module.js`)
+
+1,300 lines — `VisualPanelGrid` (the panel view used by the Visual / Comic / Storyboard tools):
+- 6-panel grid for sequential visual storytelling
+- Per-panel refine / regenerate
+- Editable labels with TTS
+- Annotation overlay (initial annotations + change callback)
+- Teacher Mode unlocks per-panel challenge submission
+- AI integration via `callGemini`
+
+### 3.39 View Modules — full inventory (28 view modules)
+
+Each `view_*_module.js` registers a primary `XxxView` component on `window.AlloModules.XxxView`. The monolith renders these via `activeView === 'xxx'` switches. Comprehensive list:
+
+| View Module | Component | Purpose |
+|---|---|---|
+| view_adventure_module | AdventureView | Adventure Mode story panel + choice handler |
+| view_alignment_report_module | AlignmentReportView | Standards alignment report (CCSS/state) |
+| view_analysis_module | AnalysisView | Text analysis output renderer |
+| view_brainstorm_module | BrainstormView | Brainstorm output (cards, idea grid) |
+| view_concept_sort_module | ConceptSortView | Drag-to-categorize concept-sort UI |
+| view_dbq_module | DbqView | Document-Based Question interactive view (1,340 lines) |
+| view_export_preview_module | ExportPreviewView | Pre-export visual review |
+| view_faq_module | FaqView | Generated FAQ accordion |
+| view_gemini_bridge_module | BridgeSendModal + BridgeMessageModal | Live teacher↔student bridge messaging (Round 6 extraction) |
+| view_glossary_module | GlossaryView | Glossary terms with definitions, examples, audio (2,267 lines) |
+| view_image_module | ImageView | Generated image viewer + refinement controls |
+| view_launch_pad_module | LaunchPadView | Initial blank-state launchpad with featured prompts |
+| view_lesson_plan_module | LessonPlanView | Full lesson plan editor + UDL sections |
+| view_math_module | MathView | Math problem set with solver, scratchpad, hints |
+| view_misc_modals_module | UDLGuideModal + AIBackendModal | UDL framework guide + Gemini API key configuration |
+| view_misc_panels_module | PdfDiffViewer + GroupSessionModal + FluencyModePanel + SourceGenPanel + TourOverlay + VolumeBuilderView | 6 misc panels (Round 7 extraction) |
+| view_outline_module | OutlineView | Outline tree (collapsible sections) |
+| view_pdf_audit_module | PdfAuditView | The 6,205-line PDF audit modal (largest extraction) |
+| view_persona_chat_module | PersonaChatView | Persona Chat conversation interface |
+| view_project_settings_module | ProjectSettingsView | Project configuration panel |
+| view_quiz_module | QuizView | Quiz player + grade results (3,311 lines) |
+| view_renderers_module | ViewRenderers | Shared render utilities used across views |
+| view_sentence_frames_module | SentenceFramesView | ELL/EL sentence frames with student fill-ins |
+| view_sidebar_panels_module | 18 sidebar panels (Round 8 extraction) | All sidebar tool config panels |
+| view_simplified_module | SimplifiedView | Simplified-text reader |
+| view_spotlight_tour_module | SpotlightTourView | Onboarding tour overlay |
+| view_timeline_module | TimelineView | Interactive timeline with revisions |
+| view_word_sounds_preview_module | WordSoundsPreviewView | Word Sounds Studio entry preview |
+
+### 3.40 Other Infrastructure Modules
+
+| Module | Purpose |
+|---|---|
+| **gemini_api_module.js** (324 lines) | Wraps Google `generativelanguage.googleapis.com` calls; quota detection; auth fallback |
+| **content_engine_module.js** (1,918 lines) | `createContentEngine(deps)` factory — central content + revision orchestrator |
+| **timeline_revision_module.js** (551 lines) | `validateSequenceStructure`, `handleExplainTimelineItem`, `handleTimelineRevision`, `handleAutoFixTimeline`, `handleVerifyTimelineAccuracy` |
+| **generate_dispatcher_module.js** (3,846 lines) | Central `handleGenerate(activeView, ...)` switch dispatching to per-view generators |
+| **prompts_library_module.js** (221 lines) | `createPromptsLibrary(deps)` factory exposing prompt templates per view/mode |
+| **adventure_handlers_module.js** (1,161 lines) | `AdventureHandlers` factory — all adventure-page interaction handlers |
+| **adventure_session_handlers_module.js** (667 lines) | `AdventureSessionHandlers` for live multi-student facilitation |
+| **safety_checker_module.js** (151 lines) | `SafetyContentChecker` — content moderation via Gemini Safety API + heuristics |
+| **firestore_sync_module.js** (141 lines) | Firestore session sync (live sessions); uses Firebase SDK |
+| **audio_banks_module.js** (387 lines) | `AudioBanks` — instruction-audio Proxy for ~60+ pre-recorded prompts |
+| **voice_config_module.js** (132 lines) | `VoiceConfig` — voice-name catalog + per-voice config (TTS speed, pitch, language) |
+| **ui_font_library_module.js** (399 lines) | `FONT_OPTIONS` — accessibility-aware font picker (OpenDyslexic, Lexend, Atkinson Hyperlegible, etc.) |
+| **ui_language_selector_module.js** (140 lines) | `UiLanguageSelector` — multi-language picker bound to `LanguageContext` |
+| **canvas_tips_module.js** (62 lines) | `CanvasTips` — Gemini Canvas-specific micro-tooltips (e.g., "click outside to keep edits") |
+| **misc_components_module.js** (1,032 lines) | `AnimatedNumber`, `ClozeInput`, `WordSoundsReviewPanel` (canonical version with `onRegenerateManipulationTask`) |
+| **large_file_module.js** (272 lines) | `LargeFileHandler` + `LargeFileTranscriptionModal` for >10MB PDF/audio uploads |
+| **key_concept_map_module.js** (291 lines) | `KeyConceptMapView` — branch-based concept-map UI |
+| **module_scope_extras_module.js** (260 lines) | Late-loaded helpers/utilities accessed via `window.AlloModules.ModuleScopeExtras.*` |
+| **misc_handlers_module.js** (496 lines) | `MiscHandlers` — assorted small handler functions |
+| **label_positions_module.js** (41 lines) | `LABEL_POSITIONS` — i18n-aware position constants for image annotations |
+
+### 3.41 Escape Room Engine (`escape_room_module.js`)
+
+2,267 lines — beyond the StudentEscapeRoomOverlay + EscapeRoomTeacherControls (in teacher_module), this provides the engine itself:
+- **`createEscapeRoomEngine(deps)`** — factory producing a full puzzle-room engine
+- **`useEscapeRoomTimer(deps)`** — React hook for synchronized countdown
+- **`EscapeRoomGameplay`** — gameplay surface
+- **`EscapeRoomDialogs`** — dialog system for puzzle reveals + hints
+
+### 3.36 Generation Helpers (`generation_helpers_module.js`)
+
+671 lines — exports a suite of `handleGenerate*` functions that drive content generation across views:
+- **`handleGenerateMath`** — math problem generation with mode-aware prompting (simplify / solve / evaluate / factor / graph / compute / word_problem / prove / convert), includes per-problem `_verification` (verified/mismatch flags) and manipulative-support snapshots
+- **`handleGenerateFullPack`** — full lesson-pack generator (Lesson DNA framework with target group, existing-history awareness, prior-analysis ingestion); generates Source → Analysis → Glossary → Quiz → Outline → all aligned artifacts in one batch
+
+Both factor through a shared deps pattern — e.g., `mathInput`, `mathMode`, `history`, `callGemini`, `rosterKey.groups`, etc.
+
+### 3.25 Teacher / Admin Module Components (`teacher_module.js`)
+
+10 React components shipped from this 2,823-line module:
+
+| Component | Purpose |
+|---|---|
+| **RosterKeyPanel** | Class-roster manager: import/export, group create/remove, per-group profile + metadata, per-student assignment, batch-generate per group |
+| **SimpleBarChart** | Reusable a11y-friendly inline bar chart |
+| **SimpleDonutChart** | Reusable inline donut chart with label slot |
+| **ConfettiEffect** | Reduced-motion-aware celebration animation |
+| **StudentEscapeRoomOverlay** | Live escape-room view shown to student during teacher-driven session; tracks streak, solved-puzzle count, time remaining |
+| **EscapeRoomTeacherControls** | Teacher's controls during a live escape-room session: pause/resume, time adjust, hint dispense, end session |
+| **TeacherLiveQuizControls** | Teacher's live-quiz controls: per-group resource push, language switch, profile push, group create/delete/assign; image generate/refine for prompts |
+| **LongitudinalProgressChart** | Multi-session student-progress trend chart |
+| **LearnerProgressView** | Per-student deep-dive: longitudinal progress + analytics + recent activity |
+| **TeacherDashboard** | Top-level dashboard shell: lists students, opens deep-dive, opens Behavior Lens, swap views, generate per-student resources |
+
+### 3.26 UI Modals Module Components (`ui_modals_module.js`)
+
+5 React components for system-level modals:
+
+| Component | Purpose |
+|---|---|
+| **StudentQuizOverlay** | Student-side quiz overlay with mode-styled UI (4+ visual modes) |
+| **TeacherGate** | Auth gate that protects teacher-only views (passcode + role check) |
+| **RoleSelectionModal** | First-launch role picker (Student / Teacher / Parent / Independent); includes mic-permission check |
+| **StudentEntryModal** | Student onboarding modal: animal-name picker (adjective + animal) for anonymous identity |
+| **StudentWelcomeModal** | Post-entry welcome screen for students |
+
+All five register on `window.AlloModules` for monolith access.
+
+### 3.24 Persona Chat — Quest & Rapport System (deeper detail)
+
+`personas_module.js` — beyond the basic chat, implements a full simulation:
+
+- **Quests** — each character has a `quests: [{ id, text, difficulty, isCompleted }]` array; quest difficulty is a rapport threshold the student must reach to "unlock" / satisfy the quest
+- **Rapport tracking** — per-message rapport delta from Gemini grader (`charA: { rapportChange: int, completedQuestId: 'q1' | null }`)
+- **Multi-character harmony** — when chatting with multiple characters in the same scene, harmony scores between character pairs evolve based on what the student says
+- **Suggested Questions** — Gemini-generated 3 conversation-starter prompts per character
+- **Quest completion** — automatic; the model judges whether the student's question/statement satisfies a Quest Objective
+- **Cross-session persistence** — characters, quest state, rapport, harmony all preserved per project
+
+This makes Persona Chat closer to a narrative role-play game than a chatbot — students aren't just talking to historical figures, they're earning their trust over time.
 
 | Subsystem | Lines | Notes |
 |---|---|---|
 | **PDF Accessibility Audit Modal (extracted)** | ~7,189 source lines (Round 4) | Largest single feature; full audit pipeline + remediation + diff + chunk map + fidelity verification + ADA Title II legal context + Knowbility partner panels |
 | **Doc Builder Insert Blocks** | Inline IIFE in monolith; per project memory off-limits to extract | 21-block picker; KaTeX/Prism lazy-CDN-loaded |
 | **AlloBot Sage** | Roguelite where spells unlock from mastery in other STEM tools | `allobot_module.js`; cross-tool meta-game layer |
-| **AlloHaven** | Persistent home/sanctuary with decoration economy | `allohaven_module.js` |
-| **Symbol Studio** | AI PCS-style symbol generator (alternative to Boardmaker); Imagen + image-to-image pipeline | `symbol_studio_module.js` |
-| **StoryForge** | Student story-creation tool with teacher gallery (FERPA-gated by `!_isCanvasEnv`) | `story_forge_module.js` |
-| **Behavior Lens** | 80+ observation/analysis tools for educators (separate Educator Hub gate) | `behavior_lens_module.js` |
+| **AlloHaven** | Cozy-room meta-experience: students earn 🪙 tokens by completing Pomodoro focus sessions OR writing reflection journal entries, then spend tokens on AI-generated decorations placed on a wall+floor grid. **6 decoration categories × 3 curated slots = 18 decoration types** with theme-aware art styles + hierarchical category→specific picker (e.g., Companion → Real animal/Imaginary creature/Stuffed companion → specific creature). **Phase 1 ships 4 layers**: cozy game, trophy case, portfolio, reflection journal. **~30 reflection prompts across 7 thematic categories**. Persistence: localStorage. Theme inherited from main AlloFlow theme. **Deliberately no leaderboards / streak punishment / peer comparison** — anti-toxic-gamification stance. | `allohaven_module.js` |
+| **Symbol Studio** | AI-powered visual communication toolkit (Boardmaker alternative). **7,742-line module** with ~10 distinct internal features: AI symbol generation (PCS-style via Imagen + image-to-image), communication boards (multilingual labels), visual schedules, social stories, vocabulary boards, **Word Garden** (interactive vocabulary practice with animations), **Vocabulary Familiarity System** (track which words a student has mastered), **IEP Goal Tracking** (per-student communication goals), avatar/profile management (multiple student profiles with cloud sync), printable boards (print CSS for paper backup), export to JSON. Imagen-backed for symbol creation; supports image-to-image refinement. | `symbol_studio_module.js` |
+| **StoryForge** | Student story-creation tool with AI illustration, narration, AI grading, storybook export. Teacher gallery for student submissions (FERPA-gated by `!_isCanvasEnv`). | `story_forge_module.js` |
+| **Sample Lesson Library (`examples/`)** | Three pre-built starter lessons shipped in the repo: **civil_war.json**, **photosynthesis.json**, **water_cycle.json**. Plus `lesson_briefs.md` (lesson scaffold templates) and `readme.md` (usage). Could power the future Lesson Template Gallery (the §3 Onboarding suggestion). | Currently file-based; not exposed in UI yet | (Future) | `examples/*.json` |
+| **Adventure Shop (collectibles)** | In-Adventure-mode collectible inventory items (tools, knowledge artifacts, social currency). Items defined dynamically via `ADVENTURE_SHOP_ITEMS` (loaded from CDN). Used as rewards for student choices in Adventure Mode narratives. | Auto in Adventure Mode at relevant story branches | Student | `ADVENTURE_SHOP_ITEMS` populated via `_upgradeAlloData` (CDN module) |
+| **Behavior Lens** | FBA/BIP behavioral observation + data collection suite. **27,643-line module** with ~15 distinct internal tools/panels: ABCModal (Antecedent-Behavior-Consequence recording), ABCDataPanel (visualization), LiveObsOverlay (live observation), OverviewPanel (dashboard), FrequencyCounter, IntervalGrid, TokenBoard (token economy), HotspotMatrix (pattern identification), ExportPanel (data export), IEP-Ready FBA Report generator, SMART goals builder, reinforcement schedule library (FR/VR/FI/VI/DRO), 4 reinforcer category libraries (social/activity/tangible/sensory), 8-item classroom structure observation rubric (structure/schedule/rules/noise/seating/materials/transitions/positive-corrective ratio), 10-state student mood tracker, de-escalation skill rotation (empathy/listening/choice/rapport), RTI tier comparison (Tier 1/2/3 phase-change tracking), functional analysis A/B comparison, 5-tier XP/leveling system (Novice→Practitioner) | `behavior_lens_module.js` |
 | **Report Writer** | AI-assisted clinical report generation with accuracy checks | `report_writer_module.js` |
 
 ---
@@ -354,7 +828,7 @@ Discoverability: surfaced contextually within Quiz mode (game variants), Adventu
 | `semiconductor` | Semiconductor Lab | Band gaps, doping, P-N junctions, transistors, logic gates | 9-12 |
 | `rocks` | Rocks & Minerals Lab | Rock cycle tools + mineral identification | 3-12 |
 | `decomposer` | Decomposer | Material decomposer with canvas molecular visualization | 6-12 |
-| `bakingscience` | Baking Science Lab | 4 sub-tools: Leavening Lab, Emulsion Mixer, Recipe Scaler, Oven Timeline | 6-12 |
+| `bakingscience` | Baking Science Lab | **7 sub-tools** (was 4 in earlier docs): Leavening Lab, Emulsion Mixer, Recipe Scaler, Oven Timeline, Bake Diagnosis, Gluten Lab, Browning Lab (Maillard vs. caramelization) | 6-12 |
 | `rockCycle` | Rock Cycle | Companion to Rocks & Minerals — focused rock-cycle visualization (registered as 2nd tool inside `stem_tool_rocks.js`; description currently empty in source — under-documented) | 6-9 |
 
 ### 4.4 Earth & Space (8 tools)
@@ -417,7 +891,7 @@ Discoverability: surfaced contextually within Quiz mode (game variants), Adventu
 | ID | Display name | Purpose | Grade band |
 |---|---|---|---|
 | `llm_literacy` | AI Literacy Lab | Tokenization, next-token prediction, temperature, hallucination, UDL-framed guidance | 6-12 |
-| `allobotsage` | AlloBot: Starbound Sage | Roguelite spell-crafter where spells unlock from mastery in other STEM tools (retrieval-practice-as-combat) | 6-12 |
+| `allobotsage` | AlloBot: Starbound Sage | Roguelite spell-crafter — retrieval-practice-as-combat. **19 spells** each tied to a different STEM tool's mastery (Quantum Leap, Gravity Well, Solar Flare, Nebula Cloak, Fraction Fire, Algebra Arc, Geometry Grasp, Road Ward, Signal Sigil, Hypermile Hex, Phonic Bolt, Rhyme Ring, Narrative Nova, Verb Vortex, Focus Flare, Context Cipher, Home Row Focus, Fluent Keys, Ready Words). **5+ regular enemies** (Void Imp, Data Gremlin, Star Wraith, Rune Moth, Signal Shade) + **3 named bosses** (Lichcopy, Void Leviathan, Paradox Clone). Multiple sectors with bossPool gating. Each spell-cast surfaces a quiz prompt from the linked tool's domain (e.g., reading-fluency questions to cast Phonic Bolt). | 6-12 |
 | `typingpractice` | Typing Practice | Disability-first keyboarding: dyslexia font, motor-planning windows, large-key visual keyboard, IEP-workflow | K-12 |
 | `a11yauditor` | Digital Accessibility Lab | WCAG 2.1 AA audit for websites, HTML, documents | 6-12 |
 | `applab` | App Lab | AI Mini-App Generator: hierarchical pipeline, AI builds apps from description | 6-12 |
@@ -439,11 +913,27 @@ Discoverability: surfaced contextually within Quiz mode (game variants), Adventu
 
 **Multi-module tools (≥4 sub-modules):** DNA Lab (11), Chemistry Lab (8), Punnett Square (8), Baking Science (7), Optics Lab (8), Economics (5), Conflict Theater (5 scenes / 8 characters / 8 scenarios)
 
+### Multi-module STEM tool sub-feature breakdown
+
+When sub-modules count as discrete features, the STEM count expands from 95 tools to ~140 distinct activities. Full enumeration:
+
+**DNA / Genetics Lab — 11 sub-tools:** Build (sequence editor) · Replicate (DNA polymerase simulation) · Transcribe (DNA → RNA) · Translate (RNA → protein with codon table) · Mutate (point mutations + frameshift) · CRISPR (gene editing simulation) · Protein (structure folding viz) · Forensics (DNA fingerprinting) · Challenge (tiered quiz) · Battle (game-mode genetics combat) · Learn (concept reference by grade)
+
+**Chemistry Lab — 8 sub-tools:** Balance (equation balancer with 3-tier difficulty: 7 sample equations from beginner Water Formation to AP Photosynthesis) · Reaction Types (5 types) · Stoichiometry (molar mass + mole calculator) · Molecular (ball-and-stick 3D models) · Lab Safety (GHS symbols + emergency response) · Challenge (3-tier chemistry quiz) · Element Battle (game mode) · Learn (concepts by grade)
+
+**Punnett Square Lab — 8 sub-tools:** Punnett Cross (4 inheritance modes: simple dominance, incomplete dominance, codominance, sex-linked) · Pedigree (family tree builder + inheritance tracer) · Population (Hardy-Weinberg equilibrium simulator) · Trait Explorer (real genetic traits catalog) · DNA→Protein (codon table + translation) · Challenge (genetics quiz) · Gene Defense (battle mode) · Learn (concepts by grade). Plus 7+ achievement badges (First Cross, All Modes, Preset Explorer, Mendel, Test Crosser, Geneticist, Quiz Ace)
+
+**Optics Lab — 8 tabs:** Reflection (plane + curved mirrors) · Refraction (Snell's law with 8 indexes: vacuum 1.00 → diamond 2.42) · Lenses (converging + diverging) · Wave Optics (interference, diffraction, polarization) · Color (additive + subtractive mixing) · Sample Problems (10 worked examples) · Glossary (25+ terms with cross-tagging by topic) · AP Quiz (30 items with AI grading)
+
+**Baking Science Lab — 7 sub-tools:** Leavening Lab (acids + bases for rise) · Emulsion Mixer (oil + water chemistry) · Recipe Scaler (baker's percentages + unit math) · Oven Timeline (temperature → reaction stages) · Bake Diagnosis (troubleshoot what went wrong) · Gluten Lab (flour protein + kneading network development) · Browning Lab (Maillard vs. caramelization, with 6 substrate types: chicken skin, bread crust, caramelized onion, sugar syrup, roasted tomato, marshmallow)
+
+**Economics Lab — 5 simulators + concepts library:** Supply & Demand (curve shifts + price floors/ceilings) · Personal Finance (budget + compound interest) · Stock Market (trading sim) · Business Sim (revenue/costs/profit) · National Economy (GDP + inflation + unemployment + monetary policy). Plus a concepts library of 12+ canonical terms (Scarcity, Opportunity Cost, Marginal Analysis, Incentives, GDP, Inflation, Unemployment, Comparative Advantage, Elasticity, Externalities, Public Goods, etc.) categorized as fundamentals/micro/macro/trade.
+
 ---
 
 ## 5. SEL Hub tools
 
-31 tools + 2 infrastructure files. Accessed via the **SEL Hub modal** (`showSelHub=true`). Many cite specific clinical/research frameworks (CASEL, Neff, Dweck, Kuypers, Bridges, AFSP, SAMHSA, QPR, Sources of Strength, Olweus, Gilligan, Noddings, Rawls, Indigenous wisdom traditions).
+32 tools + 2 infrastructure files. Accessed via the **SEL Hub modal** (`showSelHub=true`). Many cite specific clinical/research frameworks (CASEL, Neff, Dweck, Kuypers, Bridges, AFSP, SAMHSA, QPR, Sources of Strength, Olweus, Gilligan, Noddings, Rawls, Indigenous wisdom traditions).
 
 ### 5.1 Self-Awareness (8 tools)
 
@@ -458,7 +948,7 @@ Discoverability: surfaced contextually within Quiz mode (game variants), Adventu
 | `perspective` | Perspective-Taking Lab | Scenario theater for empathy mapping with multiple viewpoints | K-12 | |
 | `voicedetective` | Voice Detective | Vocal prosody emotion recognition (ASD-supportive) using Gemini TTS | K-12 | |
 
-### 5.2 Self-Management (7 tools)
+### 5.2 Self-Management (8 tools)
 
 | ID | Display name | Purpose | Grade band | Notes |
 |---|---|---|---|---|
@@ -469,6 +959,7 @@ Discoverability: surfaced contextually within Quiz mode (game variants), Adventu
 | `advocacy` | Advocacy Workshop | Branching scenarios (silent/aggressive/assertive), script builder, rights ed | K-12 | |
 | `transitions` | Transitions Workshop | Change Curve (Kubler-Ross/Bridges adapted); 8 change types + coping anchors | K-12 | |
 | `selfadvocacy` | Self-Advocacy Studio | IDEA, FAPE, LRE, Section 504; IEP/504 plans; accommodation requests; disclosure decisions; transition planning | 6-12 | Print-friendly CSS |
+| `digitalWellbeing` | Digital Wellbeing Studio | Internal-regulation companion to safety.js: social media moderation / FOMO / doom-scrolling / sleep impact, recognizing online harm to mental health, cyberbullying recovery, media literacy (AI-generated content, engagement bait, lateral reading), crisis hand-off when online experiences turn dangerous | 6-12 | Scoped stylesheet (`.dw-root`); platform-specific cards (Instagram, TikTok, Snap, Discord, Roblox); complements `safety` which covers external hazards |
 
 ### 5.3 Social Awareness (4 tools)
 
@@ -510,7 +1001,7 @@ Discoverability: surfaced contextually within Quiz mode (game variants), Adventu
 
 | File | Purpose |
 |---|---|
-| `sel_safety_layer.js` | Shared crisis-resource lookup, triangulated tier detection, safe-messaging utilities; integrated by Crisis Companion + Peer Support; provides `printDoc`, `assessSafety`, `renderResourceFooter` |
+| `sel_safety_layer.js` | Shared safety infrastructure used by Crisis Companion + Peer Support + other high-stakes SEL tools. **9 exported functions**: `hasCoachConsent()` / `giveCoachConsent()` (consent gate before AI coaching), `renderConsentScreen()` (consent UI), `assessSafety(message, band, toolId, callGemini)` (Gemini-powered triangulated tier detection — categorizes student messages by risk level), `parseTier()` (interpret safety assessment response), `storeTranscript()` / `getTranscript()` / `getAllTranscripts()` (persistence for flagged interactions — for school-counselor follow-up), `safeCoach()` (wrapped coach function that pre-checks via `SafetyContentChecker`), `renderCrisisResources()` + `renderResourceFooter()` (Maine-specific crisis resource lists with 988 / Maine Crisis Line / NAMI Maine / Trevor Project / Crisis Text Line), `getSessionFlagLog()` (per-session flagged-message log) |
 | `sel_hub_module.js` | Registry shell + modal frame + tile grid layout |
 
 ---
@@ -574,6 +1065,12 @@ Five latent bugs surfaced by extraction work and fixed:
 3. **`handleAudio` / `ttsSpeed`** — referenced by Bridge modals but never declared in scope; fixed via explicit-prop wiring (Round 6)
 4. **`updatePdfPreview`** — missed prop in PdfAuditView caused 4 onClick handlers to throw; hot-fix added it to props
 5. **`exportFluencyCSV` / `generateFluencyScoreSheet`** — defined inside word_sounds + student_analytics CDN module closures, never exposed; lifted into monolith host scope so FluencyModePanel buttons actually work
+6. **`Report Writer` never loaded** — `build.js` declared it but no `loadModule('ReportWriter', ...)` call existed, causing a perpetual "Loading Report Writer…" fallback; fixed by adding the missing loadModule call near BehaviorLens (this session)
+7. **Immersive Reader Speed/Bionic null-overwrite** — build script's tail re-registered `SpeedReaderOverlay`/`BionicChunkReader` to `null` because those vars don't exist in IIFE scope; removed the redundant block — source-level aliases to `FocusReaderOverlay` now survive (this session)
+8. **Teacher Dashboard / Educator Hub completely unreachable** — `teacher_module.js` defined 11 React components but only registered the breadcrumb `TeacherModule = true`; all 10 teacher-facing components rendered perpetual "Loading…" fallbacks (Teacher Dashboard, Roster Key Panel, Learner Progress, Live Quiz Controls, etc.). Largest single bug in the session — fixed by adding the 11 missing `window.AlloModules.X = X` assignments to the registration tail
+9. **WordSoundsReviewPanel "regenerate manipulation task" button silently broken** — `word_sounds_setup_module.js` registered an older copy of the panel (lacking the `onRegenerateManipulationTask` prop) AFTER `misc_components_module.js` registered the canonical copy. Last-write-wins → consumers passed the prop but it was discarded. Fixed by removing the stale duplicate registration from word_sounds_setup
+10. **`view_misc_modals_module.js` null-registered `GroupSessionModal` + `PdfDiffViewer`** — those components live in `view_misc_panels_module.js` which loads later; only-by-accident this didn't break in production. Tightened registration to only the components this module actually defines (UDLGuide + AIBackend)
+11. **`GeminiBridgeView` was deleted but consumer survived** — Round 6 extraction overwrote `view_gemini_bridge_module.js` with the new BridgeSendModal/BridgeMessageModal, dropping the original GeminiBridgeView render. The monolith still referenced `window.AlloModules.GeminiBridgeView` at L24258, so navigating to a saved `gemini-bridge` history item rendered nothing. Fixed by inlining the original 43-line terminal-card render directly into the monolith (recovered from git commit `1a26f5d`)
 
 ### Modules with shadowing-bug history (verified this session)
 - `view_pdf_audit_module.js` — recovered `t` and `updatePdfPreview` (the largest-prop extraction at 148 props)
@@ -658,4 +1155,4 @@ Five latent bugs surfaced by extraction work and fixed:
 
 ---
 
-**End of inventory.** Total documented features: ~177 user-facing across 156 files (98 monolith CDN modules + 92 STEM Lab tools + 33 SEL Hub items, with overlap).
+**End of inventory.** Total documented features: ~177 user-facing across ~160 files (98 monolith CDN modules + 94 STEM Lab tools + 34 SEL Hub items, with overlap).

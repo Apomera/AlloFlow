@@ -4,6 +4,13 @@
 cross-cutting state moved to React Contexts and 80+ self-contained CDN view
 modules host the rendered UI.*
 
+> **Companion document:** This file describes *how* the codebase is structured.
+> For the catalog of *what* the codebase actually does (520+ user-facing
+> features, every STEM tool, every SEL tool, discoverability paths), see
+> [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md). The two documents pair
+> deliberately: architecture for engineering review, feature inventory for
+> product / educator review.
+
 ## Overview
 
 AlloFlow is a single-page React application with a **container/presentational
@@ -32,8 +39,8 @@ AlloFlowANTI.txt / App.jsx          ← Container (~24K lines, all state)
 │   ├── view_history_panel_module.js  ← History sidebar (522 lines extracted)
 │   ├── view_kokoro_offer_modal.js    ← Modals, panels, toolbars
 │   ├── view_*_module.js              ← (~30 view modules total)
-│   ├── stem_lab_module.js            ← STEM Lab host + 90+ plugin tools
-│   ├── sel_hub_module.js             ← SEL Hub host + ~25 plugin tools
+│   ├── stem_lab_module.js            ← STEM Lab host + ~94 plugin tools
+│   ├── sel_hub_module.js             ← SEL Hub host + 32 plugin tools + 1 shared safety layer
 │   ├── behavior_lens_module.js       ← Clinical FBA/BIP suite
 │   ├── report_writer_module.js       ← Psychoeducational report wizard
 │   ├── symbol_studio_module.js       ← AI AAC boards
@@ -247,10 +254,14 @@ STEM Lab is a secondary plugin host: `stem_lab_module.js` registers as
 a CDN module, then each tool is a self-contained IIFE registered via
 `window.StemLab.registerTool(id, config)`.
 
-As of May 2026 there are ~90 STEM Lab tools across ~10 domains: math
+As of May 2026 there are ~94 STEM Lab tools across 9 subject areas: math
 fundamentals, advanced math, life science, earth science, physics,
-chemistry, computer science, music, art, and vocational labs (welding,
+chemistry, computer science, music + art, and vocational labs (welding,
 auto repair, road safety, first response, swim safety, etc).
+
+For the full per-tool catalog (display names, purposes, grade bands,
+notes), see [FEATURE_INVENTORY.md § 4](FEATURE_INVENTORY.md#4-stem-lab-tools).
+This section covers the plugin *pattern* only.
 
 ### Plugin file template
 
@@ -285,23 +296,28 @@ auto repair, road safety, first response, swim safety, etc).
 
 ## SEL Hub Plugin Architecture
 
-Same pattern as STEM Lab. `sel_hub_module.js` hosts ~25 tools across the
-CASEL 5 social-emotional competency framework. Each tool registers via
+Same pattern as STEM Lab. `sel_hub_module.js` hosts **32 tools + 1 shared
+safety layer** across the CASEL 5 social-emotional competency framework
+plus a "Civic & Hope" bucket. Each tool registers via
 `window.SelHub.registerTool(id, config)`.
 
-CASEL 5 mapping (representative subset):
+CASEL 5 + Civic & Hope coverage (May 2026):
 
-| Tool | Competency |
-|---|---|
-| `sel_tool_zones.js` | Self-Awareness |
-| `sel_tool_coping.js` | Self-Management |
-| `sel_tool_emotions.js` | Self-Awareness |
-| `sel_tool_mindfulness.js` | Self-Management |
-| `sel_tool_social.js` | Relationship Skills |
-| `sel_tool_decisions.js` | Responsible Decision-Making |
-| `sel_tool_perspective.js` | Social Awareness |
-| `sel_tool_conflict.js` | Relationship Skills |
-| `sel_tool_advocacy.js` | Relationship Skills |
+| Competency | Tools | Count |
+|---|---|---|
+| Self-Awareness | compassion, emotions, strengths, zones, growthmindset, journal, perspective, voicedetective | 8 |
+| Self-Management | coping, mindfulness, execfunction, goals, advocacy, transitions, selfadvocacy, digitalwellbeing | 8 |
+| Social Awareness | community, cultureexplorer, upstander, ethicalreasoning | 4 |
+| Relationship Skills | conflict, conflicttheater, friendship, social, sociallab, peersupport, teamwork, restorativecircle | 8 |
+| Responsible Decision-Making | decisions, safety, crisiscompanion | 3 |
+| Civic & Hope | civicaction | 1 |
+| **Total tools** | | **32** |
+| **Infrastructure** | `sel_safety_layer.js` (consent gates, AI safety tier detection, crisis resources, transcript persistence) | 1 file |
+
+For per-tool purposes, grade bands, clinical-framework citations, and
+discoverability paths, see
+[FEATURE_INVENTORY.md § 5](FEATURE_INVENTORY.md#5-sel-hub-tools). This
+section covers the plugin *pattern* only.
 
 ## Extraction Toolchain
 

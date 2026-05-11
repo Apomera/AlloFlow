@@ -144,6 +144,16 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'PhaseNHelpersModule',
+        filename: 'phase_n_misc_helpers_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'PhaseOHandlersModule',
+        filename: 'phase_o_misc_handlers_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'AdventureSessionHandlersModule',
         filename: 'adventure_session_handlers_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -756,6 +766,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_weldlab.js',
     'stem_lab/stem_tool_birdlab.js',
     'stem_lab/stem_tool_swimlab.js',
+    'stem_lab/stem_tool_printingpress.js',
     'sel_hub/sel_safety_layer.js',  // MUST load before any sel_tool_*.js
     'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
     'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_mindfulness.js',
