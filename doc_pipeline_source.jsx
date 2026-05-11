@@ -13662,27 +13662,72 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const categories = item.data.categories || [];
           const sortItems = item.data.items || [];
           const catColors = ['#dc2626','#2563eb','#059669','#d97706','#7c3aed','#be185d','#0891b2','#ca8a04'];
-          return `
-              <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
-                  ${enhancedHeader}
-                  <div style="display: flex; flex-wrap: wrap; gap: 20px;" role="list">
+          const hasAnyImage = sortItems.some(ci => ci.image);
+
+          const categoryCardsHtml = `
+              <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;" role="list" aria-label="Sorting categories">
+                  ${categories.map((cat, catIdx) => {
+                      const catColor = catColors[catIdx % catColors.length];
+                      return `
+                          <div role="listitem" style="flex: 1; min-width: 160px; border: 2px solid ${catColor}; border-radius: 12px; background: ${catColor}11; padding: 14px 12px; text-align: center; break-inside: avoid; page-break-inside: avoid;">
+                              <div style="font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.05em; color: ${catColor}; font-weight: bold; margin-bottom: 4px;">Category</div>
+                              <div style="font-size: 1.05em; font-weight: bold; color: #1e293b;">${cat.label}</div>
+                          </div>
+                      `;
+                  }).join('')}
+              </div>
+          `;
+
+          const instructionsHtml = `
+              <div style="background: #fefce8; border-left: 4px solid #eab308; padding: 12px 16px; border-radius: 4px; margin-bottom: 20px; font-size: 0.9em; color: #713f12; break-inside: avoid; page-break-inside: avoid;">
+                  <strong>How to use:</strong> Cut along the dashed lines to separate the strips. Mix them up and have students sort each strip into the matching category above.${hasAnyImage ? ' Strips with images give visual learners a non-text entry point.' : ''}
+              </div>
+          `;
+
+          const stripsHtml = `
+              <div role="list" aria-label="Sortable items">
+                  ${sortItems.map((ci, idx) => {
+                      const imageHtml = ci.image
+                          ? `<div style="flex-shrink: 0; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; background: #f8fafc; border-radius: 6px; overflow: hidden;"><img src="${ci.image}" alt="" style="max-width: 100%; max-height: 100%; object-fit: contain;"/></div>`
+                          : '';
+                      return `
+                          <div role="listitem" style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 2px dashed #94a3b8; border-radius: 8px; margin-bottom: 10px; background: white; break-inside: avoid; page-break-inside: avoid;">
+                              <div style="font-family: monospace; font-size: 0.75em; color: #94a3b8; min-width: 28px;" aria-hidden="true">✂ ${idx + 1}</div>
+                              ${imageHtml}
+                              <div style="flex: 1; font-size: 1em; line-height: 1.5; color: #1e293b;">${ci.content}</div>
+                          </div>
+                      `;
+                  }).join('')}
+              </div>
+          `;
+
+          const answerKeyHtml = `
+              <div style="margin-top: 28px; padding-top: 20px; border-top: 2px dashed #cbd5e1; break-inside: avoid; page-break-before: always;">
+                  <h3 style="margin: 0 0 12px 0; font-size: 1.05em; color: #334155;">Answer Key (teacher reference)</h3>
+                  <div style="display: flex; flex-wrap: wrap; gap: 12px;">
                       ${categories.map((cat, catIdx) => {
                           const catItems = sortItems.filter(i => i.categoryId === cat.id);
                           const catColor = catColors[catIdx % catColors.length];
                           return `
-                              <div role="listitem" style="flex: 1; min-width: 200px; border: 2px solid ${catColor}33; border-radius: 12px; overflow: hidden;">
-                                  <h3 style="margin:0;font-size:1em;background:${catColor};color:white; padding: 10px; font-weight: bold; text-align: center;">
-                                      ${cat.label}
-                                  </h3>
-                                  <div style="padding: 10px;">
-                                      <ul style="margin: 0; padding-left: 8px; color: #475569; list-style: none;">
-                                          ${catItems.map(ci => `<li style="margin-bottom: 5px;">&#9744; ${ci.content}</li>`).join('')}
-                                      </ul>
-                                  </div>
+                              <div style="flex: 1; min-width: 200px; border: 1px solid ${catColor}55; border-radius: 6px; overflow: hidden; break-inside: avoid; page-break-inside: avoid;">
+                                  <div style="background: ${catColor}; color: white; font-size: 0.9em; font-weight: bold; padding: 8px 12px;">${cat.label}</div>
+                                  <ul style="margin: 0; padding: 10px 12px 10px 28px; color: #475569; font-size: 0.9em;">
+                                      ${catItems.map(ci => `<li style="margin-bottom: 4px;">${ci.content}</li>`).join('')}
+                                  </ul>
                               </div>
                           `;
                       }).join('')}
                   </div>
+              </div>
+          `;
+
+          return `
+              <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+                  ${enhancedHeader}
+                  ${instructionsHtml}
+                  ${categoryCardsHtml}
+                  ${stripsHtml}
+                  ${answerKeyHtml}
               </div>
           `;
       } else if (item.type === 'dbq') {
