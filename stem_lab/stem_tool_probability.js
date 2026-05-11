@@ -741,7 +741,7 @@ var d = (labToolData.probability) || {};
 
             React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
 
-              [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', '\u2699\uFE0F Custom'], ['tree', '\uD83C\uDF33 Tree'], ['pi', '\uD83E\uDD67 Pi'], ['birthday', '\uD83C\uDF82 Birthday'], ['monty', '\uD83D\uDEAA Monty Hall']].map(([m, label]) =>
+              [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', '\u2699\uFE0F Custom'], ['tree', '\uD83C\uDF33 Tree'], ['pi', '\uD83E\uDD67 Pi'], ['birthday', '\uD83C\uDF82 Birthday'], ['monty', '\uD83D\uDEAA Monty Hall'], ['galton', '\u2699\uFE0F Galton Board']].map(([m, label]) =>
 
                 React.createElement("button", { "aria-label": "Select mode: " + label, key: m, onClick: () => { if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; } upd('mode', m); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); upd('_mbRemaining', null); upd('_piPoints', null); upd('_autoRunning', false); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
 
@@ -1304,6 +1304,188 @@ var d = (labToolData.probability) || {};
               );
             })(),
 
+            // ── Galton Board / Quincunx — binomial → normal emergence ──
+            // Balls drop through a peg grid. Each peg deflects them 50/50
+            // left or right. Bins at the bottom accumulate counts. As N grows,
+            // the histogram converges to a bell curve (Central Limit Theorem
+            // in its simplest form). Theoretical normal overlay shows the
+            // expected shape so students see the math vs the empirical fit.
+            d.mode === 'galton' && (function() {
+              var GB_ROWS = 12;           // peg rows
+              var GB_BINS = GB_ROWS + 1;  // bottom bins (always rows+1)
+              var bins = d.galtonBins || (function() {
+                var a = []; for (var bi = 0; bi < GB_BINS; bi++) a.push(0); return a;
+              })();
+              var totalDropped = bins.reduce(function(a, b) { return a + b; }, 0);
+              // Compute mean + std dev of bin distribution (treating each bin index as a value)
+              var mean = 0, stdDev = 0;
+              if (totalDropped > 0) {
+                for (var bi = 0; bi < bins.length; bi++) mean += bi * bins[bi];
+                mean /= totalDropped;
+                for (var bi = 0; bi < bins.length; bi++) stdDev += bins[bi] * (bi - mean) * (bi - mean);
+                stdDev = Math.sqrt(stdDev / totalDropped);
+              }
+              // Theoretical binomial mean = nRows × p = 12 × 0.5 = 6
+              // Theoretical std dev = sqrt(n × p × (1-p)) = sqrt(3) ≈ 1.732
+              var theoryMean = GB_ROWS * 0.5;
+              var theoryStdDev = Math.sqrt(GB_ROWS * 0.25);
+
+              // Simulate dropping a single ball: traverse rows, at each row
+              // randomly deflect ±1 (treat positive=right). Final bin = number
+              // of right-deflections.
+              function simulateBall() {
+                var rights = 0;
+                for (var r = 0; r < GB_ROWS; r++) if (Math.random() < 0.5) rights++;
+                return rights;
+              }
+              function dropN(n) {
+                sfxProbClick();
+                var next = bins.slice();
+                for (var i = 0; i < n; i++) next[simulateBall()]++;
+                upd('galtonBins', next);
+                upd('totalTrials', (d.totalTrials || 0) + n);
+                upd('experimentsUsed', Object.assign({}, d.experimentsUsed || {}, { galton: true }));
+                if (n >= 100) sfxProbSuccess();
+              }
+              function resetBoard() {
+                sfxProbClick();
+                var blank = []; for (var bi = 0; bi < GB_BINS; bi++) blank.push(0);
+                upd('galtonBins', blank);
+              }
+
+              // Render: a static SVG of the peg grid + histogram. We don't
+              // animate falling balls (would require requestAnimationFrame +
+              // ref-tracking, which fights React's render model). Instead, the
+              // histogram bars update on each drop — the math-emergence story.
+              var svgW = 360, svgH = 280;
+              var pegAreaH = 160;
+              var binAreaY = pegAreaH + 10;
+              var binAreaH = svgH - binAreaY - 24;
+              var colW = svgW / GB_BINS;
+              var maxBin = Math.max.apply(Math, bins.concat([1]));
+
+              // Build peg-grid SVG elements
+              var pegs = [];
+              for (var r = 0; r < GB_ROWS; r++) {
+                var pegsInRow = r + 1;
+                var rowY = 20 + (r * (pegAreaH - 30) / Math.max(1, GB_ROWS - 1));
+                for (var c = 0; c < pegsInRow; c++) {
+                  var pegX = svgW / 2 + (c - (pegsInRow - 1) / 2) * (svgW / (GB_ROWS + 2));
+                  pegs.push(React.createElement('circle', { key: 'peg-' + r + '-' + c, cx: pegX, cy: rowY, r: 2.5, fill: '#94a3b8' }));
+                }
+              }
+              // Build histogram bars
+              var bars = bins.map(function(count, idx) {
+                var barH = (count / maxBin) * binAreaH;
+                var barX = idx * colW + 2;
+                var barY = binAreaY + binAreaH - barH;
+                var hue = 270 - (Math.abs(idx - (GB_BINS - 1) / 2) / ((GB_BINS - 1) / 2)) * 100;
+                return React.createElement('g', { key: 'bar-' + idx },
+                  React.createElement('rect', {
+                    x: barX, y: barY, width: colW - 4, height: barH,
+                    fill: 'hsl(' + hue + ', 70%, 55%)',
+                    rx: 2
+                  }),
+                  count > 0 && React.createElement('text', {
+                    x: barX + (colW - 4) / 2, y: barY - 2,
+                    fill: '#475569', fontSize: 9, textAnchor: 'middle', fontWeight: 'bold'
+                  }, count)
+                );
+              });
+              // Theoretical normal curve overlay: for each bin, expected count
+              // = totalDropped × C(n, k) / 2^n. We just sample the analytic
+              // normal-approximation curve over a denser x range.
+              var theoryPath = '';
+              if (totalDropped >= 50) {
+                var pts = [];
+                for (var x = 0; x <= GB_BINS * 4; x++) {
+                  var bx = x / 4; // bin-coord
+                  var z = (bx - theoryMean) / theoryStdDev;
+                  var pdfVal = Math.exp(-0.5 * z * z) / (theoryStdDev * Math.sqrt(2 * Math.PI));
+                  // Scale to histogram space: peak pdf ≈ 1/(σ√(2π)). Multiply
+                  // by totalDropped to get expected count per unit bin.
+                  var expectedCount = pdfVal * totalDropped;
+                  var px = bx * colW + colW / 2;
+                  var py = binAreaY + binAreaH - (expectedCount / maxBin) * binAreaH;
+                  pts.push((x === 0 ? 'M' : 'L') + px + ',' + py);
+                }
+                theoryPath = pts.join(' ');
+              }
+
+              return React.createElement('div', { className: 'rounded-xl p-4 mb-4', style: { background: 'linear-gradient(135deg, #0c4a6e 0%, #155e75 100%)', color: 'white' } },
+                React.createElement('div', { className: 'text-center mb-3' },
+                  React.createElement('div', { className: 'text-lg font-bold' }, '⚙️ The Galton Board'),
+                  React.createElement('div', { className: 'text-[11px] text-cyan-100 mt-1 italic max-w-xl mx-auto' }, 'Drop balls through a peg grid. Each peg deflects 50/50 left or right. After enough balls, the histogram becomes a bell curve — the Central Limit Theorem in action.')
+                ),
+                // SVG board
+                React.createElement('div', { className: 'flex justify-center mb-3' },
+                  React.createElement('svg', {
+                    viewBox: '0 0 ' + svgW + ' ' + svgH,
+                    width: svgW, height: svgH,
+                    style: { background: 'rgba(255,255,255,0.05)', borderRadius: 8 },
+                    'aria-label': 'Galton board with ' + GB_ROWS + ' peg rows and ' + GB_BINS + ' histogram bins below'
+                  },
+                    pegs,
+                    // Divider line between pegs and bins
+                    React.createElement('line', { x1: 0, y1: binAreaY, x2: svgW, y2: binAreaY, stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1 }),
+                    bars,
+                    theoryPath && React.createElement('path', {
+                      d: theoryPath,
+                      fill: 'none',
+                      stroke: 'rgba(251,191,36,0.85)',
+                      strokeWidth: 2,
+                      strokeDasharray: '4 3'
+                    }),
+                    // Bin index labels
+                    bins.map(function(_, idx) {
+                      return React.createElement('text', {
+                        key: 'lbl-' + idx,
+                        x: idx * colW + colW / 2, y: svgH - 6,
+                        fill: 'rgba(255,255,255,0.5)', fontSize: 8, textAnchor: 'middle'
+                      }, idx);
+                    })
+                  )
+                ),
+                // Stats row — empirical vs theoretical
+                React.createElement('div', { className: 'grid grid-cols-2 gap-3 mb-3 px-2' },
+                  React.createElement('div', { className: 'rounded-lg p-2 bg-white/10 text-center' },
+                    React.createElement('div', { className: 'text-[10px] font-bold text-cyan-100 uppercase tracking-wider' }, 'Empirical (your drops)'),
+                    totalDropped === 0
+                      ? React.createElement('div', { className: 'text-[12px] text-cyan-200 italic mt-1' }, 'Drop balls to see…')
+                      : [
+                          React.createElement('div', { key: 'em-n', className: 'text-[11px] mt-1' }, totalDropped + ' ball' + (totalDropped !== 1 ? 's' : '') + ' dropped'),
+                          React.createElement('div', { key: 'em-m', className: 'text-[11px]' }, 'mean ≈ ' + mean.toFixed(2)),
+                          React.createElement('div', { key: 'em-sd', className: 'text-[11px]' }, 'std dev ≈ ' + stdDev.toFixed(2))
+                        ]
+                  ),
+                  React.createElement('div', { className: 'rounded-lg p-2 bg-amber-400/15 border border-amber-400/30 text-center' },
+                    React.createElement('div', { className: 'text-[10px] font-bold text-amber-200 uppercase tracking-wider' }, 'Theoretical (math)'),
+                    React.createElement('div', { className: 'text-[11px] mt-1 text-amber-100' }, 'Binomial(' + GB_ROWS + ', 0.5)'),
+                    React.createElement('div', { className: 'text-[11px] text-amber-100' }, 'mean = ' + theoryMean.toFixed(2)),
+                    React.createElement('div', { className: 'text-[11px] text-amber-100' }, 'std dev = ' + theoryStdDev.toFixed(2))
+                  )
+                ),
+                // Drop controls
+                React.createElement('div', { className: 'flex flex-wrap gap-2 justify-center' },
+                  [1, 10, 100, 1000].map(function(n) {
+                    return React.createElement('button', {
+                      key: 'drop-' + n,
+                      onClick: function() { dropN(n); },
+                      className: 'px-4 py-2 rounded-lg font-bold bg-cyan-500 text-white hover:bg-cyan-400 focus:ring-2 focus:ring-white focus:outline-none transition',
+                      'aria-label': 'Drop ' + n + ' ball' + (n > 1 ? 's' : '')
+                    }, '⚪ Drop ' + n);
+                  }),
+                  totalDropped > 0 && React.createElement('button', {
+                    onClick: resetBoard,
+                    className: 'px-3 py-2 rounded-lg text-[12px] font-bold bg-rose-500/30 hover:bg-rose-500/50 text-rose-100 focus:ring-2 focus:ring-white focus:outline-none'
+                  }, '↻ Reset')
+                ),
+                totalDropped >= 50 && React.createElement('div', { className: 'text-[10px] text-center mt-3 italic text-amber-100' },
+                  '⬆ Gold dashed line: theoretical normal curve. Your empirical bars should hug it more closely with more drops.'
+                )
+              );
+            })(),
+
             d.mode === 'birthday' && (function() {
 
               var _bn = d.birthdayN || 23;
@@ -1424,7 +1606,7 @@ var d = (labToolData.probability) || {};
 
             // Visual result display (hidden in tree mode)
 
-            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'pi' && d.mode !== 'monty' && React.createElement("div", { key: 'result-' + (d.animTick || 0), className: "flex items-center justify-center gap-6 mb-4 py-4 rounded-xl", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.08)' : 'linear-gradient(to bottom, #f5f3ff, #fff)', border: '2px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.25)' : '#ddd6fe'), animation: (d.animTick || 0) > 0 ? 'resultPop 0.35s ease-out' : 'none' } },
+            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'pi' && d.mode !== 'galton' && React.createElement("div", { key: 'result-' + (d.animTick || 0), className: "flex items-center justify-center gap-6 mb-4 py-4 rounded-xl", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.08)' : 'linear-gradient(to bottom, #f5f3ff, #fff)', border: '2px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.25)' : '#ddd6fe'), animation: (d.animTick || 0) > 0 ? 'resultPop 0.35s ease-out' : 'none' } },
 
               d.mode === 'coin' && React.createElement("div", { style: { animation: (d.animTick||0)>0?'coinFlip 0.42s cubic-bezier(0.25,0.46,0.45,0.94)':'none', transformOrigin:'center' } }, coinSvg(d.lastResult || 'H')),
 
@@ -1528,7 +1710,7 @@ var d = (labToolData.probability) || {};
             })(),
 
             // ── Auto-Run Controls ──
-            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && React.createElement("div", { className: "flex flex-wrap gap-2 mb-3 justify-center items-center" },
+            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && React.createElement("div", { className: "flex flex-wrap gap-2 mb-3 justify-center items-center" },
 
               React.createElement("button", { "aria-label": "Toggle auto-run simulation",
 
@@ -1582,7 +1764,7 @@ var d = (labToolData.probability) || {};
 
             // Trial buttons (hidden in tree mode)
 
-            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && React.createElement("div", { className: "flex gap-2 mb-4 justify-center flex-wrap" },
+            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && React.createElement("div", { className: "flex gap-2 mb-4 justify-center flex-wrap" },
 
               [1, 10, 50, 100, 500].map(n => React.createElement("button", { "aria-label": "Run " + n + " trials", key: n, onClick: () => runTrial(n), className: "px-4 py-2 bg-violet-100 text-violet-700 font-bold rounded-lg hover:bg-violet-200 transition-colors text-sm" }, "+" + n)),
 
@@ -1696,7 +1878,7 @@ var d = (labToolData.probability) || {};
 
             // Statistical analysis
 
-            d.trials >= 10 && d.mode !== 'birthday' && d.mode !== 'monty' && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: _statBg, border: '1px solid ' + _border } },
+            d.trials >= 10 && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: _statBg, border: '1px solid ' + _border } },
 
               React.createElement("p", { className: "text-[11px] font-bold uppercase tracking-wider mb-2", style: { color: _accent } }, "\uD83D\uDCCA Statistical Analysis"),
 
@@ -1766,7 +1948,7 @@ var d = (labToolData.probability) || {};
 
             // â”€â”€ Did You Know? â€” Pedagogical Insights â”€â”€
 
-            d.trials >= 10 && d.mode !== 'birthday' && d.mode !== 'monty' && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: isDark || isContrast ? 'rgba(251,191,36,0.06)' : '#fffbeb', border: '1px solid ' + (isDark || isContrast ? 'rgba(251,191,36,0.2)' : '#fde68a') } },
+            d.trials >= 10 && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: isDark || isContrast ? 'rgba(251,191,36,0.06)' : '#fffbeb', border: '1px solid ' + (isDark || isContrast ? 'rgba(251,191,36,0.2)' : '#fde68a') } },
 
               React.createElement("p", { className: "text-xs font-bold mb-1", style: { color: isDark || isContrast ? '#fbbf24' : '#b45309' } }, "\uD83D\uDCA1 Did You Know?"),
 
