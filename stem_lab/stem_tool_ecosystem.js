@@ -2298,6 +2298,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         // ═══ EXPLORE TAB ═══
         tab === 'explore' && h('div', { className: 'space-y-3' },
 
+          h('div', {
+            role: 'note',
+            style: {
+              padding: '10px 14px', borderRadius: 12, marginBottom: 4,
+              background: 'linear-gradient(135deg, rgba(22,163,74,0.14) 0%, rgba(22,163,74,0.04) 100%)',
+              border: '1px solid rgba(22,163,74,0.5)', borderLeft: '3px solid #16a34a',
+              color: '#bbf7d0', fontSize: 13, lineHeight: 1.55
+            }
+          },
+            h('strong', { style: { color: '#16a34a' } }, 'Goal: '),
+            'find the slider settings that produce stable predator-prey cycles instead of collapse. Watch the population graph for the lag pattern: prey peaks first, then predators peak about a quarter-cycle later. Trigger an event (drought, disease) and see how long the system takes to recover. If predators win, prey crashes; if prey wins, the biome hits carrying capacity (K) and starves.'
+          ),
+
           // Canvas container
           h('div', { className: 'relative rounded-xl overflow-hidden border-2 border-emerald-400', style: { height: 320 } },
             h('canvas', { 
@@ -2816,6 +2829,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         // ═══ SANDBOX TAB ═══
         tab === 'sandbox' && h('div', { className: 'space-y-3' },
 
+          h('div', {
+            role: 'note',
+            style: {
+              padding: '10px 14px', borderRadius: 12, marginBottom: 4,
+              background: 'linear-gradient(135deg, rgba(14,165,233,0.14) 0%, rgba(14,165,233,0.04) 100%)',
+              border: '1px solid rgba(14,165,233,0.5)', borderLeft: '3px solid #0ea5e9',
+              color: '#bae6fd', fontSize: 13, lineHeight: 1.55
+            }
+          },
+            h('strong', { style: { color: '#0ea5e9' } }, 'Goal: '),
+            'design experiments. Try the textbook Lotka-Volterra setup (1 predator + 1 prey, nothing else) and watch the cycle. Then break it: add a second predator (competitive exclusion), or remove the predator entirely (prey overshoots carrying capacity and crashes). Inject events to test resilience. Every entity placed is graded by Carrying Capacity (K) on the slider below.'
+          ),
+
           // Canvas container (same canvas, with sandbox interactivity)
           h('div', { className: 'relative rounded-xl overflow-hidden border-2 border-teal-400', style: { height: 320 } },
             h('canvas', { 
@@ -2995,6 +3021,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
         // ═══ QUIZ TAB ═══
         tab === 'quiz' && h('div', { className: 'space-y-3' },
+          h('details', {
+            open: quizTotal === 0,
+            style: {
+              padding: '10px 14px', borderRadius: 12,
+              background: 'linear-gradient(135deg, rgba(168,85,247,0.14) 0%, rgba(168,85,247,0.04) 100%)',
+              border: '1px solid rgba(168,85,247,0.5)', borderLeft: '3px solid #a855f7',
+              color: '#e9d5ff', fontSize: 13, lineHeight: 1.55
+            }
+          },
+            h('summary', { style: { fontWeight: 700, color: '#a855f7', cursor: 'pointer', fontSize: 14 } }, '📜 What this quiz covers'),
+            h('div', { style: { marginTop: 8, color: '#f3e8ff' } },
+              h('div', null, '12 multi-choice items on the core ecology concepts:'),
+              h('ul', { style: { margin: '6px 0 0 18px', padding: 0, lineHeight: 1.7 } },
+                h('li', null, 'Energy flow and the 10% rule across trophic levels'),
+                h('li', null, 'Predator-prey lag and the Lotka-Volterra cycle'),
+                h('li', null, 'Carrying capacity (K) and density-dependent limits'),
+                h('li', null, 'Keystone species, trophic cascades, and biomagnification'),
+                h('li', null, 'Succession (primary vs secondary) and disturbance recovery'),
+                h('li', null, 'Niche, competition, and competitive exclusion')
+              ),
+              h('div', { style: { marginTop: 8 } }, 'Each question links back to behavior you can produce in Explore or Sandbox. If a concept feels abstract, swap to Sandbox and rebuild the scenario.')
+            )
+          ),
           h('div', { className: 'bg-white dark:bg-slate-900 rounded-xl border border-slate-400 dark:border-slate-700 p-4 space-y-3' },
             h('div', { className: 'flex justify-between items-center' },
               h('span', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200' }, 'Question ' + ((quizIndex % QUIZ_QUESTIONS.length) + 1) + ' of ' + QUIZ_QUESTIONS.length),
