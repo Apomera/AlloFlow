@@ -1760,7 +1760,134 @@ var d = (labToolData.probability) || {};
 
                   '📚 P = 1 − (365 × 364 × … × (366−n)) ÷ 365ⁿ — ' + _bn + ' people = ' + Math.round(_bn*(_bn-1)/2) + ' unique pairs. More pairs = more chances!'
 
-                )
+                ),
+
+                // ── Visual room simulator ──
+                // Students see N silhouettes with random birthdays. Matching
+                // birthdays get the same color + a connecting outline so the
+                // pairing is impossible to miss. The math says it; this shows it.
+                (function() {
+                  var sample = d.birthdaySample;
+                  // Lazy-init / re-init when N changes or no sample exists
+                  var needsResample = !sample || sample.length !== _bn;
+                  if (needsResample) {
+                    var s = [];
+                    for (var bi = 0; bi < _bn; bi++) s.push(Math.floor(Math.random() * 365));
+                    sample = s;
+                    // Defer state-set so we don't loop inside render
+                    setTimeout(function() { upd('birthdaySample', s); }, 0);
+                  }
+                  // Find groups of matching birthdays
+                  var groups = {};
+                  sample.forEach(function(bday, idx) {
+                    if (!groups[bday]) groups[bday] = [];
+                    groups[bday].push(idx);
+                  });
+                  var matchGroups = Object.keys(groups).filter(function(k) { return groups[k].length >= 2; });
+                  var anyMatch = matchGroups.length > 0;
+                  // Color palette for match groups
+                  var matchColors = ['#dc2626', '#16a34a', '#7c3aed', '#ea580c', '#0891b2', '#db2777', '#65a30d', '#7e22ce'];
+                  function colorForBday(idx) {
+                    var bday = sample[idx];
+                    if (groups[bday].length < 2) return null;
+                    var gi = matchGroups.indexOf(String(bday));
+                    return matchColors[gi % matchColors.length];
+                  }
+                  // Convert day-of-year to month/day for display
+                  function dayLabel(day) {
+                    var d = new Date(2025, 0, day + 1); // arbitrary leap-free year
+                    return (d.getMonth() + 1) + '/' + d.getDate();
+                  }
+                  function resample() {
+                    sfxProbClick();
+                    var s = [];
+                    for (var bi = 0; bi < _bn; bi++) s.push(Math.floor(Math.random() * 365));
+                    upd('birthdaySample', s);
+                  }
+                  function runMany() {
+                    sfxProbClick();
+                    var matched = 0;
+                    for (var t = 0; t < 100; t++) {
+                      var seen = {};
+                      var hit = false;
+                      for (var bi = 0; bi < _bn; bi++) {
+                        var bd = Math.floor(Math.random() * 365);
+                        if (seen[bd]) { hit = true; break; }
+                        seen[bd] = 1;
+                      }
+                      if (hit) matched++;
+                    }
+                    var prev = d.birthdayBatch || { runs: 0, matches: 0 };
+                    upd('birthdayBatch', { runs: prev.runs + 100, matches: prev.matches + matched });
+                    if (matched > 0) sfxProbSuccess();
+                  }
+                  function resetBatch() {
+                    sfxProbClick();
+                    upd('birthdayBatch', { runs: 0, matches: 0 });
+                  }
+                  // Grid sizing — for up to 70 people, 10 columns is comfortable
+                  var cols = _bn <= 20 ? Math.min(_bn, 10) : 10;
+                  var batch = d.birthdayBatch || { runs: 0, matches: 0 };
+                  var batchPct = batch.runs > 0 ? Math.round(batch.matches / batch.runs * 100) : null;
+
+                  return React.createElement('div', { className: 'mt-3 rounded-xl p-3', style: { background: isDark||isContrast?'rgba(251,191,36,0.04)':'#fffbeb', border: '1px solid ' + (isDark||isContrast?'rgba(251,191,36,0.2)':'#fde68a') } },
+                    React.createElement('div', { className: 'flex items-center justify-between mb-2 flex-wrap gap-2' },
+                      React.createElement('span', { className: 'text-[11px] font-bold uppercase tracking-wider', style: { color: isDark||isContrast?'#fbbf24':'#b45309' } }, '🎂 Simulate the Room'),
+                      anyMatch
+                        ? React.createElement('span', { className: 'text-[11px] font-bold px-2 py-1 rounded-full', style: { background: '#16a34a', color: '#fff' } }, '✨ ' + matchGroups.length + ' match' + (matchGroups.length > 1 ? 'es' : '') + ' found!')
+                        : React.createElement('span', { className: 'text-[11px] font-bold px-2 py-1 rounded-full', style: { background: '#fbbf24', color: '#000' } }, 'No matches this time')
+                    ),
+                    // Avatar grid
+                    React.createElement('div', { className: 'mb-2', style: { display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', 1fr)', gap: '4px' } },
+                      sample.map(function(bday, idx) {
+                        var mColor = colorForBday(idx);
+                        var matched = mColor !== null;
+                        return React.createElement('div', {
+                          key: 'p-' + idx,
+                          className: 'flex flex-col items-center p-1 rounded-md text-[8px] font-mono transition',
+                          style: {
+                            background: matched ? mColor + '33' : (isDark||isContrast?'rgba(255,255,255,0.04)':'#fff'),
+                            border: matched ? '2px solid ' + mColor : '1px solid ' + (isDark||isContrast?'rgba(255,255,255,0.1)':'#fde68a'),
+                            boxShadow: matched ? '0 0 8px ' + mColor + '60' : 'none'
+                          },
+                          title: 'Person ' + (idx + 1) + ': born ' + dayLabel(bday) + (matched ? ' (MATCH)' : '')
+                        },
+                          React.createElement('div', { style: { fontSize: '20px', lineHeight: 1, filter: matched ? 'none' : 'grayscale(0.4)' } }, '🧑'),
+                          React.createElement('div', { style: { color: matched ? mColor : (isDark||isContrast?'#fde68a':'#92400e'), fontWeight: matched ? 800 : 600 } }, dayLabel(bday))
+                        );
+                      })
+                    ),
+                    // Action buttons
+                    React.createElement('div', { className: 'flex flex-wrap gap-2 items-center' },
+                      React.createElement('button', {
+                        onClick: resample,
+                        className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition',
+                        style: { background: '#f59e0b', color: '#fff' },
+                        'aria-label': 'Re-randomize all birthdays'
+                      }, '🎲 Resample'),
+                      React.createElement('button', {
+                        onClick: runMany,
+                        className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition',
+                        style: { background: '#16a34a', color: '#fff' },
+                        'aria-label': 'Run 100 simulations of this room size'
+                      }, '⚡ Run 100 rooms'),
+                      batch.runs > 0 && React.createElement('div', { className: 'flex-1 text-[11px]', style: { color: isDark||isContrast?'#fde68a':'#92400e' } },
+                        React.createElement('span', { className: 'font-bold' }, '📊 ' + batch.matches + ' / ' + batch.runs + ' rooms had a match'),
+                        React.createElement('span', { className: 'ml-2 font-mono font-bold', style: { color: '#16a34a' } }, '(' + batchPct + '%)'),
+                        React.createElement('span', { className: 'ml-1 italic' }, '— theory says ' + _bpct + '%')
+                      ),
+                      batch.runs > 0 && React.createElement('button', {
+                        onClick: resetBatch,
+                        className: 'px-2 py-1 rounded-md text-[10px] font-bold transition',
+                        style: { background: 'rgba(220,38,38,0.15)', color: '#dc2626' },
+                        'aria-label': 'Reset simulation counts'
+                      }, '↻')
+                    ),
+                    React.createElement('p', { className: 'text-[10px] italic mt-2 text-center', style: { color: isDark||isContrast?'#fcd34d':'#b45309' } },
+                      'Each 🧑 has a random birthday. Same color + glow = matching pair. Resample to see how often matches appear.'
+                    )
+                  );
+                })()
 
               );
 
