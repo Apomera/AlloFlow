@@ -49,6 +49,8 @@ npm run audit:a11y                # WCAG static scan (a11y-audit package)
 npm run audit:a11y:runtime        # WCAG runtime scan (axe-core via puppeteer)
 npm run verify:tile-catalog       # registerTool ids ↔ _allStemTools tile entries (BirdLab bug class, May 2026)
 npm run verify:window-icons       # lucide imports ↔ Object.assign(window) blocks (HeaderBar bug class, May 2026)
+npm run verify:iife-lazy          # top-level snapshots of window.AlloModules.X in IIFEs (QuickStart Fetch bug class, Apr 2026)
+npm run verify:dashes             # em / en dashes in outbound prose only (Aaron preference; informational)
 ```
 
 Auto-runs at `node build.js --mode=prod`: `verify:registry` only (the others are opt-in via `npm run verify`).

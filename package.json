@@ -31,6 +31,8 @@
     "verify:stem": "node dev-tools/check_stem_behavior.cjs",
     "verify:tile-catalog": "node dev-tools/check_stem_tile_catalog.cjs",
     "verify:window-icons": "node dev-tools/check_window_icons.cjs",
+    "verify:iife-lazy": "node dev-tools/check_iife_lazy_lookup.cjs",
+    "verify:dashes": "node dev-tools/check_em_en_dashes.cjs",
     "verify:security": "node dev-tools/check_secrets.cjs && node dev-tools/check_cors_strict.cjs && node dev-tools/check_xss_surface.cjs && node dev-tools/check_eval.cjs && node dev-tools/check_npm_audit.cjs && node dev-tools/check_lti_surface.cjs",
     "audit:a11y": "cd a11y-audit && node static-audit.js",
     "audit:a11y:runtime": "cd a11y-audit && node runtime-audit.js"

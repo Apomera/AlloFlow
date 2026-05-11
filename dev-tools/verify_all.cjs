@@ -181,6 +181,17 @@ const checks = [
     cmd: ['node', 'dev-tools/check_window_icons.cjs', '--quiet'],
     description: 'Every lucide import is assigned to window for CDN modules (HeaderBar bug class)',
   },
+  {
+    name: 'IIFE lazy lookup',
+    cmd: ['node', 'dev-tools/check_iife_lazy_lookup.cjs', '--quiet'],
+    description: 'Top-level snapshots of window.AlloModules.X in CDN IIFEs (QuickStart Fetch bug class)',
+  },
+  {
+    name: 'Em / en dashes (outbound prose)',
+    cmd: ['node', 'dev-tools/check_em_en_dashes.cjs', '--quiet'],
+    description: 'Em + en dashes in emails / letters / proposals (Aaron preference; informational)',
+    informational: true,
+  },
 ];
 
 if (RUN_RUNTIME) {
