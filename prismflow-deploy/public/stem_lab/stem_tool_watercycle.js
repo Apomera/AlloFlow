@@ -72,6 +72,140 @@
   // WCAG a11y CSS
   if (!document.getElementById('wc-a11y-css')) { var _s = document.createElement('style'); _s.id = 'wc-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }'; document.head.appendChild(_s); }
 
+  // ═══════════════════════════════════════════════════════
+  // WATERSHED STEWARD: 10-YEAR MAINE WATERSHED CAMPAIGN
+  // Parallel to Fire Ecology's Cultural Mosaic, Ecosystem's Conservation
+  // Manager, and Epidemic Lab's Outbreak Response. Pedagogical core is
+  // watershed-scale hydrology: how riparian buffers feed cold-water
+  // streams, how beaver wetlands attenuate floods and restore floodplains,
+  // how dam removal restores anadromous-fish connectivity, how
+  // agricultural and suburban land use drive water quality.
+  // ═══════════════════════════════════════════════════════
+
+  var MAINE_WATERSHED_COMPONENTS = [
+    {
+      id: 'headwaterStreams', name: 'Headwater Streams', icon: '🏔️', color: '#0ea5e9',
+      role: 'Cold-water indicator',
+      desc: 'High-elevation forested streams. Native brook trout, native eastern brook trout, water temperature below 20°C. The cleanest water in the watershed; everything downstream is shaped by what happens here.',
+      defaultState: { quality: 62, connectivity: 78, support: 60 }, targets: { quality: 78, connectivity: 80, support: 65 }
+    },
+    {
+      id: 'riverMainstem', name: 'River Mainstem', icon: '🌊', color: '#1d4ed8',
+      role: 'Migratory fish corridor',
+      desc: 'The big channel through the watershed. Historically the route for Atlantic salmon, alewife, sea-run brook trout, eels, sturgeon. In Maine, dam barriers block most of these runs; recent removals (Edwards Dam 1999, Fort Halifax 2008, Veazie 2012, Great Works 2013) reopened sections.',
+      defaultState: { quality: 48, connectivity: 25, support: 65 }, targets: { quality: 70, connectivity: 70, support: 70 }
+    },
+    {
+      id: 'floodplainWetlands', name: 'Floodplain Wetlands', icon: '🪷', color: '#16a34a',
+      role: 'Beaver-built flood storage',
+      desc: 'Beaver dam complexes and adjacent wet meadows. Slow flood pulses, recharge groundwater, filter nutrients, support amphibians, waterfowl, moose, otter. Beaver Dam Analogs (BDAs) mimic this work where beavers have not returned.',
+      defaultState: { quality: 55, connectivity: 60, support: 50 }, targets: { quality: 75, connectivity: 70, support: 65 }
+    },
+    {
+      id: 'forestBuffer', name: 'Forested Buffer Zones', icon: '🌲', color: '#15803d',
+      role: 'Riparian shade and filter',
+      desc: 'The strip of mature forest along stream banks. Shade keeps water cold, roots stabilize banks, leaf litter feeds aquatic insects, wood falls in to create habitat. A 50-foot intact buffer is the single most cost-effective stream protection.',
+      defaultState: { quality: 58, connectivity: 50, support: 60 }, targets: { quality: 75, connectivity: 70, support: 70 }
+    },
+    {
+      id: 'agriculturalWatershed', name: 'Agricultural Watershed', icon: '🚜', color: '#a16207',
+      role: 'Nutrient + sediment source',
+      desc: 'Dairy farms, hay fields, row crops, blueberry barrens. The dominant land use in central Maine watersheds. Manure runoff, fertilizer, sediment from tilled land all flow downstream. BMPs (Best Management Practices) can cut runoff by 50-80%.',
+      defaultState: { quality: 45, connectivity: 55, support: 55 }, targets: { quality: 65, connectivity: 60, support: 65 }
+    },
+    {
+      id: 'suburbanEdges', name: 'Suburban Edges', icon: '🏘️', color: '#7c3aed',
+      role: 'Stormwater + impervious surface',
+      desc: 'Subdivisions, parking lots, lawns. Impervious surfaces deliver pulses of warm polluted water to streams during storms. Lawn fertilizer and pet waste are the modern eutrophication inputs. Green stormwater infrastructure can offset the impact.',
+      defaultState: { quality: 50, connectivity: 60, support: 50 }, targets: { quality: 65, connectivity: 65, support: 65 }
+    }
+  ];
+
+  var STEWARD_TECHNIQUES = [
+    { id: 'bufferPlant', name: 'Riparian buffer planting', icon: '🌲', hours: 5, desc: 'Plant native trees and shrubs along stream banks. Slow buildup that pays off in shade, bank stability, and nutrient filtering for decades.', effects: { quality: 8, connectivity: 4 }, appliesTo: ['forestBuffer', 'headwaterStreams'] },
+    { id: 'beaverDamAnalog', name: 'Beaver Dam Analog', icon: '🦫', hours: 6, desc: 'Build a low-cost wood-and-stone structure that mimics beaver dam function. Encourages real beaver recolonization. Restores wet meadow conditions.', effects: { quality: 11, connectivity: 6 }, appliesTo: ['floodplainWetlands'] },
+    { id: 'damRemoval', name: 'Dam removal', icon: '🪨', hours: 15, desc: 'Remove or breach a barrier dam. Huge connectivity gain. Politically expensive: some landowners and recreational users will be upset.', effects: { connectivity: 28, quality: 8, support: -12 }, appliesTo: ['riverMainstem'] },
+    { id: 'fishPassage', name: 'Fish passage installation', icon: '🐟', hours: 10, desc: 'Build a fish ladder or nature-like bypass around a barrier. Cheaper than dam removal and politically easier, but less effective for some species.', effects: { connectivity: 14, quality: 2 }, appliesTo: ['riverMainstem'] },
+    { id: 'bmpOutreach', name: 'BMP outreach', icon: '🤝', hours: 4, desc: 'Work with farmers on Best Management Practices: cover crops, livestock fencing, manure storage, buffer easements. Real Maine programs.', effects: { quality: 7, support: 4 }, appliesTo: ['agriculturalWatershed'] },
+    { id: 'easement', name: 'Conservation easement', icon: '📜', hours: 12, desc: 'Pay a landowner to permanently protect a riparian or upland parcel. The single highest-impact and highest-cost intervention.', effects: { quality: 15, connectivity: 12, support: 3 }, appliesTo: 'any' },
+    { id: 'stormwater', name: 'Stormwater retrofit', icon: '🌧️', hours: 8, desc: 'Install rain gardens, swales, permeable pavement, or detention basins in developed areas. Slows and filters stormwater pulses.', effects: { quality: 13, connectivity: 3 }, appliesTo: ['suburbanEdges'] },
+    { id: 'citizenScience', name: 'Citizen science monitoring', icon: '🔬', hours: 3, desc: 'Train volunteer water-quality monitors. Slow but builds long-term community support and detects problems early.', effects: { quality: 2, support: 7 }, appliesTo: 'any' },
+    { id: 'publicEd', name: 'Public education + River Days', icon: '📣', hours: 3, desc: 'Watershed festivals, school programs, paddle events. Build community ownership of the watershed.', effects: { support: 9 }, appliesTo: 'any' },
+    { id: 'rest', name: 'Hold steady', icon: '🍃', hours: 0, desc: 'No active intervention this year. Some natural recovery; some drift.', effects: {}, appliesTo: 'any' }
+  ];
+
+  var STEWARD_EVENTS = [
+    { id: 'majorFlood', name: 'Major flood', icon: '🌊', desc: 'A 10-year flood scoured stream banks and washed sediment downstream. Buffers without good root systems lost ground.', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'forestBuffer' && c.quality < 65) c.quality = Math.max(0, c.quality - 7); if (c.id === 'floodplainWetlands') c.quality = Math.min(100, c.quality + 3); }); } },
+    { id: 'drought', name: 'Drought year', icon: '☀️', desc: 'Low summer flows raised stream temperatures and concentrated pollutants. Cold-water species took a hit.', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'headwaterStreams') c.quality = Math.max(0, c.quality - 8); if (c.id === 'riverMainstem') c.quality = Math.max(0, c.quality - 4); }); } },
+    { id: 'sewageRelease', name: 'Sewage discharge', icon: '⚠️', desc: 'A wastewater treatment plant bypass during a heavy storm released untreated discharge. Mainstem quality drops.', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'riverMainstem' || c.id === 'suburbanEdges') c.quality = Math.max(0, c.quality - 10); }); } },
+    { id: 'algalBloom', name: 'Cyanobacteria bloom', icon: '🟢', desc: 'A cyanobacteria bloom closed swim beaches and prompted advisories. Public support shifts toward stronger watershed protection.', apply: function(comps) { comps.forEach(function(c) { c.support = Math.min(100, c.support + 5); if (c.id === 'agriculturalWatershed') c.quality = Math.max(0, c.quality - 5); }); } },
+    { id: 'volunteerSurge', name: 'Volunteer surge', icon: '🙌', desc: 'A successful River Day brought 200+ volunteers. Citizen monitoring + cleanup boost across the board.', apply: function(comps) { comps.forEach(function(c) { c.support = Math.min(100, c.support + 7); c.quality = Math.min(100, c.quality + 2); }); } },
+    { id: 'farmSold', name: 'Farm sold for development', icon: '🚜', desc: 'A long-running family dairy operation sold to a residential developer. BMP gains on that land reset.', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'agriculturalWatershed') c.quality = Math.max(0, c.quality - 6); if (c.id === 'suburbanEdges') c.quality = Math.max(0, c.quality - 3); }); } },
+    { id: 'salmonReturn', name: 'Atlantic salmon detected', icon: '🐟', desc: 'Returning Atlantic salmon (or alewife runs) detected in the mainstem. Major morale boost and federal attention.', apply: function(comps, state) { if (state.connectivityBoosts >= 1) comps.forEach(function(c) { c.support = Math.min(100, c.support + 10); }); else comps.forEach(function(c) { c.support = Math.min(100, c.support + 4); }); } },
+    { id: 'beaverExpand', name: 'Beaver complex expands', icon: '🦫', desc: 'Beavers expanded their territory and built three new dam complexes in the floodplain.', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'floodplainWetlands') { c.quality = Math.min(100, c.quality + 9); c.connectivity = Math.min(100, c.connectivity + 5); } }); } },
+    { id: 'fundingBump', name: 'EPA / FEMA grant', icon: '💵', desc: 'A federal grant lands. Stewardship hours next year will be +5.', apply: function(comps, state) { state.fundingBonusNextYear = (state.fundingBonusNextYear || 0) + 5; } },
+    { id: 'erosionEvent', name: 'Major bank erosion', icon: '🏞️', desc: 'A bend in the river undercut a road shoulder. Public attention focuses on streambank stabilization.', apply: function(comps) { comps.forEach(function(c) { if (c.id === 'forestBuffer') c.support = Math.min(100, c.support + 8); }); } }
+  ];
+
+  // Hydrological cascade rules. These tie the watershed components together
+  // the way real watersheds work: buffers feed headwaters, beavers create
+  // floodplain function, low ag runoff cleans up the mainstem, removed
+  // barriers + good buffers bring fish runs back.
+  var STEWARD_FEEDBACK_RULES = [
+    { id: 'bufferFeedsHeadwaters', when: function(s) { return s.find(function(c) { return c.id === 'forestBuffer'; }).quality > 70; }, apply: function(s) { var h = s.find(function(c) { return c.id === 'headwaterStreams'; }); h.quality = Math.min(100, h.quality + 4); }, msg: 'Healthy forest buffers cooled and cleaned headwater streams.' },
+    { id: 'beaverHelpsFloodplain', when: function(s) { return s.find(function(c) { return c.id === 'floodplainWetlands'; }).quality > 60; }, apply: function(s) { var m = s.find(function(c) { return c.id === 'riverMainstem'; }); m.quality = Math.min(100, m.quality + 3); m.connectivity = Math.min(100, m.connectivity + 2); }, msg: 'Beaver-built wetlands attenuated flood pulses and improved mainstem water quality.' },
+    { id: 'agCleansUp', when: function(s) { return s.find(function(c) { return c.id === 'agriculturalWatershed'; }).quality > 60; }, apply: function(s) { var m = s.find(function(c) { return c.id === 'riverMainstem'; }); m.quality = Math.min(100, m.quality + 4); }, msg: 'Lower agricultural runoff cleaned up the river mainstem.' },
+    { id: 'runRestoration', when: function(s) { var m = s.find(function(c) { return c.id === 'riverMainstem'; }); var b = s.find(function(c) { return c.id === 'forestBuffer'; }); return m.connectivity > 60 && b.quality > 60; }, apply: function(s) { s.forEach(function(c) { c.support = Math.min(100, c.support + 2); }); }, msg: 'Connected, shaded river segments support documented anadromous fish returns.' }
+  ];
+
+  var STEWARD_DIFFICULTIES = {
+    volunteer:   { id: 'volunteer',   label: 'New Volunteer',         hoursPerYear: 24, eventSkip: 0.3, severity: 0.8, desc: '24 hours / year, gentler events. For first runs.' },
+    coordinator: { id: 'coordinator', label: 'Watershed Coordinator', hoursPerYear: 18, eventSkip: 0,   severity: 1.0, desc: '18 hours / year, standard events. Default.' },
+    director:    { id: 'director',    label: 'Watershed Director',    hoursPerYear: 14, eventSkip: 0,   severity: 1.4, desc: '14 hours / year, harsher events. Real constraint.' }
+  };
+
+  function defaultStewardState() {
+    var diff = STEWARD_DIFFICULTIES.coordinator;
+    return {
+      phase: 'setup',
+      year: 1,
+      maxYears: 10,
+      difficulty: diff.id,
+      hoursPerYear: diff.hoursPerYear,
+      hoursLeft: diff.hoursPerYear,
+      components: MAINE_WATERSHED_COMPONENTS.map(function(c) { return Object.assign({ id: c.id }, c.defaultState); }),
+      yearActions: [],
+      yearLog: [],
+      lastEvent: null,
+      cascadesFiredThisYear: [],
+      finalOutcome: null,
+      connectivityBoosts: 0,
+      fundingBonusNextYear: 0,
+      deepDiveComponent: null,
+      firstTipDismissed: false,
+      seed: 'steward-' + (new Date()).getFullYear() + (new Date()).getMonth() + (new Date()).getDate() + '-' + Math.floor(Math.random() * 9999)
+    };
+  }
+
+  function getWatershedComponent(id) {
+    for (var i = 0; i < MAINE_WATERSHED_COMPONENTS.length; i++) if (MAINE_WATERSHED_COMPONENTS[i].id === id) return MAINE_WATERSHED_COMPONENTS[i];
+    return null;
+  }
+
+  function stewardRng(seed, year, purpose) {
+    var s = (seed || 'default') + ':' + year + ':' + purpose;
+    var h = 2166136261 >>> 0;
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = (h * 16777619) >>> 0; }
+    return function() {
+      h |= 0; h = (h + 0x6D2B79F5) | 0;
+      var t = Math.imul(h ^ (h >>> 15), 1 | h);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function stewardClamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
   if(!window.StemLab||!window.StemLab.registerTool) return;
   window.StemLab.registerTool('waterCycle',{
     icon:'\uD83C\uDF0A', label:'Water Cycle', desc:'Live water cycle canvas plus Journey Mode: ride one droplet through evaporation, condensation, precipitation, collection, transpiration, and infiltration with real choices along the way.',
@@ -100,6 +234,386 @@
 const d = labToolData.waterCycle;
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, waterCycle: { ...prev.waterCycle, [key]: val } }));
+          const updMulti = (obj) => setLabToolData(prev => ({ ...prev, waterCycle: Object.assign({}, prev.waterCycle, obj) }));
+          const h = React.createElement;
+
+          // ═══ WATERSHED STEWARD CAMPAIGN ═══
+          var wcMode = d.wcMode || 'explorer';   // 'explorer' (existing) | 'steward' (new)
+          var steward = d.steward || defaultStewardState();
+          var T_BLUE = '#0ea5e9', T_BLUE_HI = '#7dd3fc';
+
+          function setSteward(patch) { updMulti({ steward: Object.assign({}, steward, patch) }); }
+          function switchMode(mode) { upd('wcMode', mode); }
+
+          function startStewardCampaign(opts) {
+            opts = opts || {};
+            var fresh = defaultStewardState();
+            var diffId = opts.difficulty || steward.difficulty || 'coordinator';
+            var diff = STEWARD_DIFFICULTIES[diffId] || STEWARD_DIFFICULTIES.coordinator;
+            fresh.phase = 'year';
+            fresh.difficulty = diff.id;
+            fresh.hoursPerYear = diff.hoursPerYear;
+            fresh.hoursLeft = diff.hoursPerYear;
+            if (opts.seed) fresh.seed = opts.seed;
+            setSteward(fresh);
+            if (addToast) addToast('💧 Watershed Steward begins. Year 1 of 10 on ' + diff.label + '.', 'success');
+            awardStemXP && awardStemXP('steward_start', 10, 'Watershed campaign begins');
+            if (typeof announceToSR === 'function') announceToSR('Watershed Steward started on ' + diff.label + '. Year 1 of 10. ' + diff.hoursPerYear + ' hours.');
+          }
+          function resetSteward() { setSteward(defaultStewardState()); }
+
+          function applyStewardTech(techId, componentId) {
+            var tech = STEWARD_TECHNIQUES.find(function(t) { return t.id === techId; });
+            if (!tech) return;
+            if (steward.hoursLeft < tech.hours) { if (addToast) addToast('Not enough stewardship hours left.', 'warn'); return; }
+            if (tech.appliesTo !== 'any' && componentId && tech.appliesTo.indexOf(componentId) < 0) {
+              if (addToast) addToast(tech.name + ' does not apply to that component.', 'info'); return;
+            }
+            var newComps = steward.components.map(function(c) {
+              if (componentId && c.id !== componentId && tech.appliesTo !== 'any') return c;
+              if (!componentId && tech.appliesTo !== 'any') return c;
+              var nc = Object.assign({}, c);
+              if (tech.effects.quality) nc.quality = stewardClamp(nc.quality + tech.effects.quality, 0, 100);
+              if (tech.effects.connectivity) nc.connectivity = stewardClamp(nc.connectivity + tech.effects.connectivity, 0, 100);
+              if (tech.effects.support !== undefined) nc.support = stewardClamp(nc.support + tech.effects.support, 0, 100);
+              return nc;
+            });
+            var actionLog = { tech: tech.name, target: componentId ? (getWatershedComponent(componentId) ? getWatershedComponent(componentId).name : componentId) : 'Watershed-wide', hours: tech.hours };
+            var patch = { components: newComps, hoursLeft: steward.hoursLeft - tech.hours, yearActions: steward.yearActions.concat([actionLog]) };
+            if (techId === 'damRemoval' || techId === 'fishPassage') patch.connectivityBoosts = (steward.connectivityBoosts || 0) + 1;
+            setSteward(patch);
+            if (typeof announceToSR === 'function') announceToSR(tech.name + ' applied. ' + (steward.hoursLeft - tech.hours) + ' hours left.');
+          }
+
+          function endStewardYear() {
+            var pre = steward.components.map(function(c) { return Object.assign({}, c); });
+
+            // Natural drift: components with high quality slowly grow, low quality slowly decay
+            var drifted = steward.components.map(function(c) {
+              var nc = Object.assign({}, c);
+              if (nc.quality > 70) nc.quality = stewardClamp(nc.quality + 1, 0, 100);
+              else if (nc.quality < 35) nc.quality = stewardClamp(nc.quality - 2, 0, 100);
+              nc.support = stewardClamp(nc.support + (nc.support < 50 ? 1 : -1), 0, 100);
+              return nc;
+            });
+
+            // Seeded event
+            var diff = STEWARD_DIFFICULTIES[steward.difficulty || 'coordinator'];
+            var skipRng = stewardRng(steward.seed, steward.year, 'skip');
+            var pickRng = stewardRng(steward.seed, steward.year, 'pick');
+            var ev;
+            if (skipRng() < (diff.eventSkip || 0)) {
+              ev = { id: 'quietYear', name: 'A Quiet Year', icon: '🌤️', desc: 'No major event. Routine fieldwork, steady progress.', apply: function() {} };
+            } else {
+              ev = STEWARD_EVENTS[Math.floor(pickRng() * STEWARD_EVENTS.length)];
+            }
+            var eventState = { fundingBonusNextYear: steward.fundingBonusNextYear || 0, connectivityBoosts: steward.connectivityBoosts || 0 };
+            ev.apply(drifted, eventState);
+            // Severity scaling
+            var sev = diff.severity || 1;
+            if (sev !== 1) {
+              for (var di = 0; di < drifted.length; di++) {
+                var sp = drifted[di]; var pr = pre[di];
+                sp.quality = stewardClamp(pr.quality + (sp.quality - pr.quality) * sev, 0, 100);
+                sp.connectivity = stewardClamp(pr.connectivity + (sp.connectivity - pr.connectivity) * sev, 0, 100);
+                sp.support = stewardClamp(pr.support + (sp.support - pr.support) * sev, 0, 100);
+              }
+            }
+
+            // Cascade rules
+            var fired = [];
+            STEWARD_FEEDBACK_RULES.forEach(function(rule) {
+              if (rule.when(drifted)) { rule.apply(drifted); fired.push({ id: rule.id, msg: rule.msg }); }
+            });
+
+            var snap = {
+              year: steward.year, event: ev.name, eventIcon: ev.icon, eventDesc: ev.desc,
+              pre: pre, post: drifted.map(function(c) { return Object.assign({}, c); }),
+              actions: steward.yearActions.slice(), cascades: fired
+            };
+
+            setSteward({
+              phase: 'review',
+              components: drifted,
+              lastEvent: ev,
+              cascadesFiredThisYear: fired,
+              yearLog: steward.yearLog.concat([snap]),
+              fundingBonusNextYear: eventState.fundingBonusNextYear || 0
+            });
+            if (typeof announceToSR === 'function') announceToSR('Year ' + steward.year + ' complete. Event: ' + ev.name + '.');
+          }
+
+          function advanceFromStewardReview() {
+            if (steward.year >= steward.maxYears) {
+              // Final outcome
+              var avgQ = Math.round(steward.components.reduce(function(a, c) { return a + c.quality; }, 0) / steward.components.length);
+              var componentsAt75 = steward.components.filter(function(c) { return c.quality >= 75; }).length;
+              var connectivityBoosts = steward.connectivityBoosts || 0;
+              var outcome;
+              if (componentsAt75 >= 4 && connectivityBoosts >= 1 && avgQ >= 70) outcome = { tier: 'recovery', label: 'Watershed Recovery', color: '#16a34a', icon: '🏆', desc: 'The watershed is healing across the board. Headwaters are cold and clean. The mainstem carries fish again. Beaver wetlands are doing the floodplain work. This is what watershed-scale recovery looks like when timing and community come together.' };
+              else if (componentsAt75 >= 3 && avgQ >= 62) outcome = { tier: 'recovering', label: 'Recovering Watershed', color: '#22c55e', icon: '🌊', desc: 'Most components are improving. A few still need work. The trajectory is good and the community is engaged.' };
+              else if (componentsAt75 >= 2 || avgQ >= 55) outcome = { tier: 'mixed', label: 'Mixed Recovery', color: '#f59e0b', icon: '🍃', desc: 'Some wins, some gaps. Real watershed work is rarely uniform; some pieces improved while others stalled.' };
+              else outcome = { tier: 'slipping', label: 'Slipping Watershed', color: '#ef4444', icon: '⚠️', desc: 'Average quality is low and few components reached recovery thresholds. This is how watersheds degrade quietly when stewardship cannot keep up with pressures.' };
+              setSteward({ phase: 'debrief', finalOutcome: outcome, componentsAt75: componentsAt75 });
+              awardStemXP && awardStemXP('steward_complete', 50, outcome.label);
+            } else {
+              setSteward({
+                phase: 'year', year: steward.year + 1,
+                hoursLeft: steward.hoursPerYear + (steward.fundingBonusNextYear || 0),
+                fundingBonusNextYear: 0,
+                yearActions: [], lastEvent: null
+              });
+              if (typeof announceToSR === 'function') announceToSR('Year ' + (steward.year + 1) + ' begins.');
+            }
+          }
+
+          function renderStewardCampaign() {
+            // ── SETUP ──
+            if (steward.phase === 'setup') {
+              return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                  h('button', { onClick: () => switchMode('explorer'),
+                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300' }, '← Water Cycle Explorer'),
+                  h('h3', { className: 'text-lg font-bold text-slate-800' }, '💧 Watershed Steward: Maine campaign')
+                ),
+                h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(14,165,233,0.18) 0%, rgba(21,128,61,0.06) 100%)', border: '1px solid ' + T_BLUE + '66', borderLeft: '4px solid ' + T_BLUE } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
+                    h('span', { style: { fontSize: 36 } }, '💧'),
+                    h('div', null,
+                      h('h3', { style: { margin: 0, color: T_BLUE_HI, fontSize: 22 } }, 'Watershed Steward: 10-year Maine campaign'),
+                      h('div', { style: { fontSize: 13, color: '#cbd5e1', marginTop: 2 } }, 'You are the Watershed Coordinator for a central Maine river system.')
+                    )
+                  ),
+                  h('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } },
+                    'Six watershed components, ten years, real Maine pressures: dam barriers, agricultural runoff, suburban stormwater, climate-driven floods and droughts. ',
+                    h('strong', null, 'Hydrological feedback rules tie them together.'),
+                    ' Healthy buffers cool headwater streams. Beaver wetlands attenuate floods and clean the mainstem. Low ag runoff lets the river breathe. Connected, shaded rivers bring back salmon and alewife runs.'
+                  )
+                ),
+
+                // Component preview cards
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
+                  MAINE_WATERSHED_COMPONENTS.map(function(c) {
+                    return h('div', { key: c.id, style: { background: '#0f172a', borderLeft: '3px solid ' + c.color, borderRadius: 10, padding: 12 } },
+                      h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                        h('span', { style: { fontSize: 22 } }, c.icon),
+                        h('strong', { style: { color: c.color } }, c.name)
+                      ),
+                      h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, c.role),
+                      h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } }, c.desc)
+                    );
+                  })
+                ),
+
+                // Difficulty
+                h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 12, border: '1px solid #1e293b' } },
+                  h('div', { style: { fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, 'Difficulty'),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
+                    Object.keys(STEWARD_DIFFICULTIES).map(function(dkey) {
+                      var df = STEWARD_DIFFICULTIES[dkey];
+                      var picked = (steward.difficulty || 'coordinator') === dkey;
+                      return h('button', { key: dkey, onClick: function() { setSteward({ difficulty: dkey }); }, 'aria-pressed': picked,
+                        style: { background: picked ? 'rgba(14,165,233,0.20)' : '#1e293b', border: '1px solid ' + (picked ? '#0ea5e9' : '#334155'), color: picked ? '#7dd3fc' : '#cbd5e1', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', textAlign: 'left' } },
+                        h('div', { style: { fontWeight: 800, fontSize: 13 } }, df.label),
+                        h('div', { style: { fontSize: 11, color: picked ? '#bae6fd' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, df.desc)
+                      );
+                    })
+                  )
+                ),
+
+                h('button', { onClick: function() { startStewardCampaign(); },
+                  style: { width: '100%', padding: '14px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + T_BLUE + ' 0%, #0369a1 100%)', color: '#fff', fontWeight: 800, fontSize: 16, boxShadow: '0 6px 14px rgba(14,165,233,0.35)' } }, '💧 Begin 10-year Watershed Campaign')
+              );
+            }
+
+            // ── DEBRIEF ──
+            if (steward.phase === 'debrief' && steward.finalOutcome) {
+              var o = steward.finalOutcome;
+              return h('div', { className: 'max-w-3xl mx-auto space-y-3' },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                  h('button', { onClick: () => switchMode('explorer'),
+                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300' }, '← Water Cycle Explorer'),
+                  h('h3', { className: 'text-lg font-bold text-slate-800' }, '💧 Watershed Steward: Debrief')
+                ),
+                h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, ' + o.color + '24 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + o.color + '88', borderLeft: '4px solid ' + o.color } },
+                  h('div', { style: { fontSize: 40, marginBottom: 6 } }, o.icon),
+                  h('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
+                  h('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } }, o.desc)
+                ),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8 } },
+                  steward.components.map(function(c) {
+                    var def = getWatershedComponent(c.id);
+                    var targetsHit = c.quality >= def.targets.quality && c.connectivity >= def.targets.connectivity && c.support >= def.targets.support;
+                    return h('div', { key: c.id, style: { background: '#0f172a', borderLeft: '3px solid ' + def.color, padding: 10, borderRadius: 8, fontSize: 12 } },
+                      h('div', { style: { fontWeight: 700, color: def.color, marginBottom: 4 } }, def.icon + ' ' + def.name + (targetsHit ? ' ✓' : '')),
+                      h('div', { style: { color: '#cbd5e1', lineHeight: 1.55 } },
+                        'Quality: ' + Math.round(c.quality) + '/' + def.targets.quality,
+                        h('br'),
+                        'Connectivity: ' + Math.round(c.connectivity) + '/' + def.targets.connectivity,
+                        h('br'),
+                        'Community support: ' + Math.round(c.support) + '/' + def.targets.support
+                      )
+                    );
+                  })
+                ),
+                h('div', { style: { padding: 10, background: '#0f172a', borderRadius: 8, fontSize: 12, color: '#cbd5e1' } },
+                  h('strong', { style: { color: '#7dd3fc' } }, 'Components at 75+ quality: '), steward.componentsAt75 + ' / 6 · ',
+                  h('strong', { style: { color: '#7dd3fc' } }, 'Connectivity boosts: '), (steward.connectivityBoosts || 0)
+                ),
+                h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                  h('button', { onClick: resetSteward, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#1e293b', color: '#cbd5e1', fontWeight: 700 } }, '↻ New campaign'),
+                  h('button', { onClick: function() { startStewardCampaign({ seed: steward.seed, difficulty: steward.difficulty }); },
+                    style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8', cursor: 'pointer', background: 'rgba(56,189,248,0.15)', color: '#bae6fd', fontWeight: 700 } }, '🔁 Replay same conditions')
+                ),
+                h('div', { style: { padding: 8, background: '#0f172a', borderRadius: 8, fontSize: 11.5, color: '#94a3b8', fontFamily: 'ui-monospace, monospace' } },
+                  h('span', { style: { color: '#64748b' } }, 'Campaign seed: '),
+                  h('strong', { style: { color: '#cbd5e1' } }, steward.seed)
+                )
+              );
+            }
+
+            // ── REVIEW ──
+            if (steward.phase === 'review') {
+              var lastSnap = steward.yearLog[steward.yearLog.length - 1] || {};
+              var ev = steward.lastEvent || {};
+              return h('div', { className: 'max-w-3xl mx-auto space-y-3' },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                  h('button', { onClick: () => switchMode('explorer'),
+                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300' }, '← Water Cycle Explorer'),
+                  h('h3', { className: 'text-lg font-bold text-slate-800' }, '💧 Year ' + steward.year + ' review')
+                ),
+                h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderLeft: '3px solid #fbbf24' } },
+                  h('div', { style: { fontSize: 22, marginBottom: 4 } }, ev.icon || '🌿'),
+                  h('strong', { style: { color: '#fbbf24', fontSize: 16 } }, 'Year ' + steward.year + ' event: ' + (ev.name || 'quiet year')),
+                  h('p', { style: { margin: '6px 0 0', color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, ev.desc || '')
+                ),
+                (lastSnap.cascades && lastSnap.cascades.length > 0) ? h('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8', fontSize: 13, color: '#bae6fd' } },
+                  h('strong', { style: { color: '#38bdf8' } }, '🔄 Hydrological feedback rules this year'),
+                  lastSnap.cascades.map(function(c, ci) { return h('div', { key: ci, style: { margin: '6px 0 0', fontStyle: 'italic' } }, '· ' + c.msg); })
+                ) : null,
+
+                // Per-component deltas
+                h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 10 } },
+                  h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 6, fontSize: 13 } }, 'What changed this year'),
+                  (lastSnap.pre || []).map(function(preC) {
+                    var postC = (lastSnap.post || []).find(function(p) { return p.id === preC.id; }) || preC;
+                    var def = getWatershedComponent(preC.id);
+                    function delta(label, before, after) {
+                      var dlt = Math.round(after - before);
+                      var color = '#64748b'; var arrow = '·';
+                      if (Math.abs(dlt) >= 1) { color = dlt > 0 ? '#86efac' : '#fca5a5'; arrow = dlt > 0 ? '▲' : '▼'; }
+                      return h('span', { style: { color: color, fontSize: 11, fontWeight: 700, marginRight: 8 } }, label + ' ' + Math.round(after) + ' ' + arrow + ' ' + (dlt > 0 ? '+' : '') + dlt);
+                    }
+                    return h('div', { key: preC.id, style: { fontSize: 12, padding: '4px 0', borderTop: '1px solid #1e293b' } },
+                      h('strong', { style: { color: def.color, marginRight: 8 } }, def.icon + ' ' + def.name),
+                      delta('Q', preC.quality, postC.quality),
+                      delta('Conn', preC.connectivity, postC.connectivity),
+                      delta('Sup', preC.support, postC.support)
+                    );
+                  })
+                ),
+
+                h('button', { onClick: advanceFromStewardReview,
+                  style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + T_BLUE + ' 0%, #0369a1 100%)', color: '#fff', fontWeight: 700, fontSize: 14 } },
+                  steward.year >= steward.maxYears ? 'See final outcome →' : 'Begin Year ' + (steward.year + 1) + ' →')
+              );
+            }
+
+            // ── YEAR ──
+            return h('div', { className: 'max-w-3xl mx-auto space-y-3' },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                h('button', { onClick: () => switchMode('explorer'),
+                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300' }, '← Water Cycle Explorer'),
+                h('h3', { className: 'text-lg font-bold text-slate-800' }, '💧 Watershed Steward · Year ' + steward.year)
+              ),
+              // HUD
+              h('div', { style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(14,165,233,0.18) 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + T_BLUE + '66', borderLeft: '4px solid ' + T_BLUE, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
+                h('div', null,
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Year'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: T_BLUE_HI } }, steward.year + ' / ' + steward.maxYears)
+                ),
+                h('div', null,
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Hours left'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, steward.hoursLeft + ' / ' + steward.hoursPerYear)
+                ),
+                h('div', null,
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Connectivity boosts'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: '#a855f7' } }, steward.connectivityBoosts || 0)
+                ),
+                h('div', { style: { marginLeft: 'auto' } },
+                  h('button', { onClick: endStewardYear, 'aria-label': 'End this year',
+                    style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 13 } }, 'End Year →')
+                )
+              ),
+
+              // Component cards with actions
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 10 } },
+                steward.components.map(function(c) {
+                  var def = getWatershedComponent(c.id);
+                  if (!def) return null;
+                  var applicable = STEWARD_TECHNIQUES.filter(function(t) {
+                    return t.appliesTo === 'any' || t.appliesTo.indexOf(c.id) >= 0;
+                  });
+                  return h('div', { key: c.id, style: { background: '#0f172a', borderRadius: 12, padding: 12, borderLeft: '3px solid ' + def.color } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
+                      h('span', { style: { fontSize: 22 } }, def.icon),
+                      h('div', { style: { flex: 1 } },
+                        h('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
+                        h('div', { style: { fontSize: 11, color: '#94a3b8' } }, def.role)
+                      )
+                    ),
+                    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
+                      [['Q', Math.round(c.quality), c.quality < 40 ? '#ef4444' : c.quality < 65 ? '#f59e0b' : '#22c55e', def.targets.quality],
+                       ['Conn', Math.round(c.connectivity), c.connectivity < 40 ? '#ef4444' : c.connectivity < 65 ? '#f59e0b' : '#22c55e', def.targets.connectivity],
+                       ['Sup', Math.round(c.support), c.support < 40 ? '#ef4444' : c.support < 60 ? '#f59e0b' : '#22c55e', def.targets.support]
+                      ].map(function(st, si) {
+                        return h('div', { key: si, style: { background: '#1e293b', padding: 6, borderRadius: 6, textAlign: 'center' } },
+                          h('div', { style: { fontSize: 10, color: '#94a3b8' } }, st[0]),
+                          h('div', { style: { fontSize: 15, fontWeight: 800, color: st[2] } }, st[1]),
+                          h('div', { style: { fontSize: 9, color: '#64748b' } }, 'goal ' + st[3])
+                        );
+                      })
+                    ),
+                    h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+                      applicable.filter(function(t) { return t.appliesTo !== 'any'; }).map(function(t) {
+                        var disabled = steward.hoursLeft < t.hours;
+                        return h('button', { key: t.id, onClick: function() { applyStewardTech(t.id, c.id); }, disabled: disabled, title: t.desc,
+                          style: { padding: '4px 8px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', background: disabled ? '#1e293b' : '#0ea5e9', color: disabled ? '#475569' : '#fff', opacity: disabled ? 0.5 : 1 } },
+                          t.icon + ' ' + t.name + ' (' + t.hours + 'h)');
+                      })
+                    )
+                  );
+                })
+              ),
+
+              // Watershed-wide interventions row
+              h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 12, borderLeft: '3px solid #38bdf8' } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#bae6fd', marginBottom: 8 } }, '🛠 Watershed-wide actions'),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                  STEWARD_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any'; }).map(function(t) {
+                    var disabled = steward.hoursLeft < t.hours;
+                    return h('button', { key: t.id, onClick: function() { applyStewardTech(t.id, null); }, disabled: disabled, title: t.desc,
+                      style: { padding: '6px 10px', fontSize: 12, fontWeight: 700, borderRadius: 6, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', background: disabled ? '#1e293b' : '#0ea5e9', color: disabled ? '#475569' : '#fff', opacity: disabled ? 0.5 : 1 } },
+                      t.icon + ' ' + t.name + ' (' + t.hours + 'h)');
+                  })
+                )
+              ),
+
+              // Action log
+              steward.yearActions.length > 0 ? h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 10, fontSize: 12, color: '#cbd5e1' } },
+                h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 4 } }, 'Year ' + steward.year + ' actions'),
+                steward.yearActions.map(function(a, ai) {
+                  return h('div', { key: ai }, '· ' + a.tech + ' → ' + a.target + ' (' + a.hours + 'h)');
+                })
+              ) : h('div', { style: { fontSize: 12, color: '#64748b', fontStyle: 'italic' } }, 'No actions yet this year. Pick a component, pick a technique.')
+            );
+          }
+
+          // If user has switched into Watershed Steward mode, render that
+          // instead of the existing Water Cycle Explorer.
+          if (wcMode === 'steward') {
+            return renderStewardCampaign();
+          }
 
           // ═══ GRADE BAND HELPER ═══
           var GRADE_BANDS = ['K-2', '3-5', '6-8', '9-12'];
@@ -1632,13 +2146,18 @@ const d = labToolData.waterCycle;
               onKeyDown: onWcKey
             },
 
-            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+            React.createElement("div", { className: "flex items-center gap-3 mb-3 flex-wrap" },
 
               React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\uD83C\uDF0A Water Cycle"),
 
-              React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[11px] font-bold rounded-full" }, "ANIMATED")
+              React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[11px] font-bold rounded-full" }, "ANIMATED"),
+
+              React.createElement("button", { onClick: () => switchMode('steward'),
+                className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-sky-500 to-emerald-500 text-white hover:from-sky-600 hover:to-emerald-600 shadow-md",
+                'aria-label': 'Switch to Watershed Steward 10-year campaign'
+              }, "\uD83D\uDCA7 Watershed Steward \u2192")
 
             ),
 
