@@ -1602,6 +1602,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         );
       }
 
+      // Goal banner — small green-tinted ribbon that names what the
+      // student is supposed to be doing with this sim. Placed under
+      // the sourceCard on each interactive view so it reads as the
+      // first orienting sentence before any sliders or charts.
+      function goalBanner(text) {
+        return h('div', {
+          role: 'note',
+          style: {
+            marginBottom: 14, padding: '8px 12px', borderRadius: 10,
+            background: 'linear-gradient(135deg, rgba(16,185,129,0.14) 0%, rgba(16,185,129,0.04) 100%)',
+            border: '1px solid ' + T.accent + '55',
+            borderLeft: '3px solid ' + T.accent,
+            color: T.text, fontSize: 12, lineHeight: 1.55,
+            display: 'flex', alignItems: 'flex-start', gap: 8
+          }
+        },
+          h('span', { 'aria-hidden': 'true', style: { fontSize: 14, flexShrink: 0 } }, '🎯'),
+          h('span', { style: { flex: 1 } }, text)
+        );
+      }
+
       // Reusable: footer disclaimer + cite
       function footer() {
         return h('div', { role: 'contentinfo', 'aria-label': 'Source attribution',
@@ -1901,6 +1922,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('☀️ Solar PV'),
           sourceCard('solarPv'),
+          goalBanner('Goal: maximize daily kWh per m² of roof. Try different tilt angles, irradiance levels, and panel efficiencies. The Maine Home Solar Calculator from the menu uses these same inputs to estimate real-world payback.'),
           // Mode tabs (calculator vs day curve)
           h('div', { role: 'tablist', 'aria-label': 'Solar PV interactive views',
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
@@ -1988,6 +2010,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🌬️ Wind'),
           sourceCard('wind'),
+          goalBanner('Goal: see how wind speed cubes (v³) drives turbine output. The Betz limit (Cp = 0.593) is a hard physics ceiling. Even a perfect blade cannot extract more than 59.3% of the wind\'s kinetic energy.'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'Why wind power scales with v³'),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
@@ -2045,6 +2068,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🌊 Hydropower'),
           sourceCard('hydro'),
+          goalBanner('Goal: feel how head (height) and flow (volume) both matter. Pelton turbines want high head + low flow; Kaplan turbines run on low head + high flow. Pick the right turbine for the site.'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'The hydro power formula'),
             h('div', { style: { padding: 10, borderRadius: 8, background: '#06281f', border: '1px solid ' + T.border, fontFamily: 'monospace', fontSize: 14, color: T.accentHi, textAlign: 'center', marginBottom: 8 } },
@@ -2113,6 +2137,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🌋 Geothermal'),
           sourceCard('geothermal'),
+          goalBanner('Goal: find the depth that gets you to flash-steam temperature (above 150°C). Below that, you fall back to binary cycle or ground-source heat pumps. Surface temp + thermal gradient + depth set the available energy.'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'Where does the heat come from?'),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
@@ -2178,6 +2203,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🔆 Solar Thermal (CSP)'),
           sourceCard('solarThermal'),
+          goalBanner('Goal: balance mirror area against salt-tank storage hours. More storage equals more dispatchable power AFTER the sun goes down. The defining advantage of CSP over PV is exactly this overnight delivery.'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'CSP vs PV — the big difference'),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
@@ -2215,6 +2241,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🌀 Wave & Tidal'),
           sourceCard('waveTidal'),
+          goalBanner('Goal: compare wave power (H² × period) to tidal power (v³, like wind but in 800× denser water). Tidal wins for predictability; wave wins for surface energy density. Both are still pre-commercial in most markets.'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'Wave vs tidal — different physics'),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
@@ -2252,6 +2279,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🌾 Biomass & Biogas'),
           sourceCard('biomass'),
+          goalBanner('Goal: see why combustion of sustainably-grown biomass is treated as carbon-neutral, and why anaerobic digestion (manure -> biogas) is often the better climate move. Compare the two pathways side by side.'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'Three pathways from organic matter to electricity'),
             BIO_PATHS.map(function(p) {
@@ -2290,6 +2318,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🔋 Storage — the answer to intermittency'),
           sourceCard('storage'),
+          goalBanner('Goal: pick a storage tech for your use case. Li-ion is fast and portable; pumped hydro is huge and cheap but geography-locked; hydrogen is the only seasonal-scale option. The right answer depends on whether you need hours, days, or months of storage.'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'The intermittency problem — and why storage solves it'),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
@@ -2357,6 +2386,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         var q = QUIZ[qIdx];
         return h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto', color: T.text } },
           backBar('📝 Quiz'),
+          // Pre-quiz brief — auto-opens on Q1 so first-timers see the
+          // scope, collapses by default once they have progressed.
+          h('details', {
+            open: qIdx === 0,
+            style: { marginBottom: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border }
+          },
+            h('summary', { style: { cursor: 'pointer', padding: '8px 12px', fontSize: 12, fontWeight: 700, color: T.accentHi, listStyle: 'none' } }, '📜 What this quiz covers (click to toggle)'),
+            h('div', { style: { padding: '0 12px 12px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+              h('p', { style: { margin: '0 0 6px' } }, QUIZ.length + ' questions spanning the 8 sources + storage + grid integration. ', 'Pass at 70% earns the Quiz Passed badge; 90% earns Quiz Ace.'),
+              h('ul', { style: { margin: 0, paddingLeft: 18 } },
+                h('li', null, h('strong', { style: { color: T.text } }, 'Solar PV:'), ' irradiance, efficiency, tilt, capacity factor.'),
+                h('li', null, h('strong', { style: { color: T.text } }, 'Wind:'), ' v³ law, Betz limit, capacity factor by class.'),
+                h('li', null, h('strong', { style: { color: T.text } }, 'Hydro:'), ' head + flow, turbine types, pumped storage.'),
+                h('li', null, h('strong', { style: { color: T.text } }, 'Geothermal:'), ' thermal gradient, flash vs binary vs GSHP.'),
+                h('li', null, h('strong', { style: { color: T.text } }, 'Wave / Tidal:'), ' wave power formula, tidal vs water density.'),
+                h('li', null, h('strong', { style: { color: T.text } }, 'Biomass:'), ' combustion, anaerobic digestion, carbon accounting.'),
+                h('li', null, h('strong', { style: { color: T.text } }, 'Storage + Grid:'), ' Li-ion vs flow vs pumped vs hydrogen, capacity factor, dispatchability.')
+              )
+            )
+          ),
           h('div', { style: { fontSize: 12, color: T.dim, marginBottom: 8 } },
             'Question ', h('strong', { style: { color: T.text } }, (qIdx + 1) + ' of ' + QUIZ.length),
             '  ·  Score: ', h('strong', { style: { color: T.accentHi } }, (quizState.score || 0))),
@@ -2522,6 +2571,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
                 'For each location, pick the best renewable energy source from 8 options. Vignettes mix Maine-specific (Aroostook wind, Bath tidal, paper-mill biomass) and global (Iceland geothermal, Mojave utility PV, North Sea offshore wind, PNW hydro). Coaching cites the resource match + the trade-offs against alternatives.')
             ),
+            goalBanner('Goal: "best" means lowest levelized cost of energy (LCOE) for THAT site, given its actual resource profile. The same source can be the right answer in one location and wrong in another. Different priorities (carbon, equity, reliability) can pick different winners; this game scores you against an engineering / resource-match rubric.'),
             h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
               h('div', { style: { fontSize: 11, color: T.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, 'The 8 renewable sources'),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
@@ -3275,6 +3325,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
               h('strong', { style: { color: T.accentHi } }, 'AI critiques your reasoning'),
               ' against an engineering rubric and the same ground-truth facts you read in the source modules.')
           ),
+          // Rubric framing — students should know what a "good answer"
+          // looks like before they write. Same pattern as the BehaviorLab
+          // Function Sleuth four-functions primer.
+          goalBanner('A strong answer (1) cites a real number from one of the source sims (kWh, capacity factor, dollars per kW), (2) names at least one trade-off (cost vs reliability, footprint vs output, dispatchability vs intermittency), and (3) considers feasibility for the specific scenario (climate, geography, grid context). The AI weighs all three.'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 10px', fontSize: 14, color: T.text } }, '📋 Pick a scenario'),
             h('div', { role: 'list',
