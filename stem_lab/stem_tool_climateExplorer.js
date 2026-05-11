@@ -68,6 +68,176 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
     document.body.appendChild(liveRegion);
   })();
 
+  // ═══════════════════════════════════════════════════════
+  // CLIMATE POLICY PATHWAYS: 40-YEAR MAINE CAMPAIGN
+  // Fifth and last environmental campaign sibling. Pedagogical core
+  // is inter-sector policy dependence and time-lagged feedback:
+  // electrified transport needs a clean grid, low equity blocks
+  // policy passage, working-lands carbon shapes adaptation, and so on.
+  // Time scale: 2025-2065 in 5-year increments (8 turns).
+  // ═══════════════════════════════════════════════════════
+
+  var POLICY_SECTORS = [
+    {
+      id: 'energyGrid', name: 'Energy Grid', icon: '⚡', color: '#fbbf24',
+      role: 'Generation mix + storage',
+      desc: 'Maine\'s electricity supply. Currently about 30% hydro, 20% wind, 6% solar, the rest natural gas + biomass + imported nuclear. Renewable share has to rise sharply for transportation and building electrification to be worth doing.',
+      defaultState: { decarb: 35, resilience: 50, support: 55 }, targets: { decarb: 85, resilience: 70, support: 70 },
+      deepDive: {
+        knowledge: 'Maine\'s electricity grid sits inside ISO-New England, the regional grid operator. Generation mix matters because every other sector that electrifies (transport, buildings, industry) inherits the grid\'s carbon intensity. A heat pump on a coal grid emits more carbon than a natural-gas furnace; on a clean grid it is roughly 4x cleaner than a furnace. Storage at grid scale is the single missing piece for high renewable penetration.',
+        casework: 'Maine\'s 2019 climate law set 80% renewable electricity by 2030 and 100% by 2050. The state has fought over the New England Clean Energy Connect transmission line (HQ hydropower import) since 2019. Offshore wind in the Gulf of Maine is in early planning; the federal Bureau of Ocean Energy Management identified lease areas in 2024. Wabanaki nations have led objections to several inland transmission lines through their territories.',
+        modernContext: 'The biggest near-term levers are utility-scale solar (Maine has been adding ~200 MW/year), distributed solar (now over 800 MW), grid-scale battery storage (early), and energy efficiency (cheapest carbon abatement). Long-term, offshore wind is potentially transformative. Transmission siting is the chronic bottleneck.'
+      }
+    },
+    {
+      id: 'transportation', name: 'Transportation', icon: '🚊', color: '#0ea5e9',
+      role: 'EV + transit + walkability',
+      desc: 'Maine\'s largest direct emissions source (about 50% of state CO₂ output). Long rural commutes, limited transit, near-zero passenger rail. EV adoption is climbing but still under 5% of registrations. The bigger lever may be reducing vehicle-miles-traveled through housing density and remote work.',
+      defaultState: { decarb: 25, resilience: 45, support: 50 }, targets: { decarb: 70, resilience: 60, support: 65 },
+      deepDive: {
+        knowledge: 'Transportation emissions break down roughly: 60% light-duty vehicles, 20% medium/heavy trucks, 10% aviation, 10% other. Maine\'s rural geography makes per-capita VMT (vehicle-miles traveled) higher than the national average. EVs cut tailpipe emissions to zero and reduce lifecycle emissions about 50% on Maine\'s current grid (more as the grid cleans). Transit and walkability cut emissions PER TRIP and reduce total VMT.',
+        casework: 'Massachusetts and California EV rebate programs moved registrations from below 1% to above 10% in under a decade. Maine\'s Efficiency Maine EV rebate program offers $500-$7,500 depending on income; uptake has been steady. Portland has been adding bus rapid transit and protected bike lanes; smaller cities lag. Federal IRA tax credits (up to $7,500 new, $4,000 used EV) plus state rebates can stack.',
+        modernContext: 'Rural EV adoption faces a charging-anxiety problem more than an economic one. Federal funding for highway-corridor fast charging (NEVI program) is now in deployment phase. Heavy-duty truck electrification is slower; hydrogen is being explored. School bus electrification is well-funded under the EPA Clean School Bus Program.'
+      }
+    },
+    {
+      id: 'buildings', name: 'Buildings', icon: '🏠', color: '#ec4899',
+      role: 'Heat pumps + retrofits + codes',
+      desc: 'Buildings account for about 30% of Maine emissions (heating dominant; Maine has the highest oil-heat share in the US). Heat pumps work in Maine winter and have been the state\'s defining decarbonization win. Retrofits of older housing stock are the hard, expensive work.',
+      defaultState: { decarb: 40, resilience: 55, support: 65 }, targets: { decarb: 75, resilience: 70, support: 75 },
+      deepDive: {
+        knowledge: 'Maine has 60-70% of homes heated by oil, the highest share in the country. Cold-climate heat pumps now work efficiently to -15°F, which covers most Maine winters. A heat pump delivers about 3 units of heat per unit of electricity (a furnace delivers about 0.85 of fossil-fuel energy). Even on a partially-fossil grid, heat pumps cut heating emissions about 50%. Building envelope upgrades (insulation, air sealing) are usually a bigger lifetime saving than the heat-pump unit itself.',
+        casework: 'Maine met its goal of 100,000 heat pumps installed in 2023, two years ahead of schedule. The state has set a new target of 275,000 by 2027. Efficiency Maine rebates ($1,200-$3,200 depending on income) plus federal tax credits make installation accessible. The state codes for new residential construction were updated in 2022 to require heat-pump-ready electrical service.',
+        modernContext: 'The big remaining problem is older housing stock with poor envelopes; heat pumps work but bills rise without insulation. The Maine Affordable Housing Coalition has connected energy upgrades to housing affordability work. Wabanaki Public Health and Wellness has run weatherization programs for tribal housing units. Commercial buildings lag residential.'
+      }
+    },
+    {
+      id: 'workingLands', name: 'Working Lands', icon: '🌲', color: '#16a34a',
+      role: 'Forests + ag soils + blue carbon',
+      desc: 'Maine is 89% forested, the most forested state by percentage. Working forests sequester roughly 6 million tons CO₂ annually. Agricultural soils, salt marshes, and seagrass beds are smaller but additive carbon sinks. This is one of Maine\'s climate advantages most states lack.',
+      defaultState: { decarb: 60, resilience: 65, support: 70 }, targets: { decarb: 80, resilience: 80, support: 80 },
+      deepDive: {
+        knowledge: 'A managed working forest stores carbon in standing trees, soil, and the long-lived wood products that come out of it. Carbon flux depends on harvest intensity, regeneration speed, and the fate of harvested wood (long-lived structural lumber retains carbon for decades; pulp/paper releases it in years). Salt marshes and eelgrass sequester carbon faster per acre than tropical forests; Maine has substantial coastline acreage in both. Agricultural soils gain carbon under cover-cropping, perennials, and reduced tillage.',
+        casework: 'The Maine Climate Action Plan (2020, updated 2024) targets a doubling of working-forest carbon storage by 2050 and 25% increase in coastal blue-carbon habitat. The Wabanaki Cultural Heritage Forest project has worked toward land-back as climate policy. The Northern Forest Center supports community-scale forest stewardship.',
+        modernContext: 'The dominant tension is between protected forest (high carbon, lower jobs) and working forest (slightly lower carbon, supports rural economy). Most Maine climate planners argue for high-quality working-forest management over either pure preservation or industrial-scale clearcutting. Salt marsh restoration has lagged but recent federal funding accelerated several projects.'
+      }
+    },
+    {
+      id: 'adaptation', name: 'Adaptation + Resilience', icon: '🌊', color: '#06b6d4',
+      role: 'Coastal + heat + flood + fire',
+      desc: 'Maine is already experiencing climate impacts: sea level rising about 4 mm/year along the coast, more intense rainstorms, warming Gulf of Maine waters that affected lobster, increased winter ticks driving moose decline. Adaptation is not optional; the question is who pays and who gets protected.',
+      defaultState: { decarb: 20, resilience: 30, support: 50 }, targets: { decarb: 35, resilience: 75, support: 70 },
+      deepDive: {
+        knowledge: 'Adaptation includes coastal protection (seawalls, managed retreat, salt-marsh restoration), urban heat (cooling centers, tree planting, building reflectivity), inland flooding (stormwater systems, floodplain restoration), wildfire (defensible space, prescribed burning), and infrastructure resilience (grid hardening, road elevation). Some adaptation reduces emissions too (urban trees, salt marshes); some does not (seawalls). Just-transition framing matters: who benefits from adaptation investment is a justice question.',
+        casework: 'The Gulf of Maine has warmed faster than 99% of the global ocean. Maine\'s lobster industry has shifted northward and inland landings have dropped. The 2018 and 2023 coastal storms damaged hundreds of working waterfronts. Maine has begun coastal-bluff retreat planning in towns like South Portland. Federal BRIC (Building Resilient Infrastructure and Communities) grants have funded several Maine projects.',
+        modernContext: 'The hardest adaptation questions are about managed retreat: when does the state stop subsidizing coastal property insurance? Maine\'s Coastal Hazards Office and the Casco Bay Estuary Partnership lead a lot of this work. Wabanaki coastal communities (Sipayik, Indian Township, Pleasant Point) face acute sea-level and erosion risks.'
+      }
+    },
+    {
+      id: 'climateJustice', name: 'Climate Justice', icon: '⚖️', color: '#a855f7',
+      role: 'Equity + just transition + sovereignty',
+      desc: 'Who bears the costs of climate change, who pays for solutions, and who is at the decision-making table. Frontline communities (low-income, BIPOC, Wabanaki, coastal, rural elderly) face the highest impacts and often the lowest capacity to respond. Without equity investment, climate support across all other sectors degrades over time.',
+      defaultState: { decarb: 25, resilience: 30, support: 50 }, targets: { decarb: 45, resilience: 60, support: 75 },
+      deepDive: {
+        knowledge: 'Climate justice asks who bears costs and who reaps benefits. Frontline communities face higher heat exposure (urban heat islands), more polluted air (highway corridors), more flooding (low-lying neighborhoods, coastal mobile-home parks), and less capacity to relocate or rebuild. Just transition asks the same question for workers in fossil-fuel industries: how are they supported as that industry shrinks. Indigenous climate justice involves both impact (Wabanaki coastal communities face acute sea-level risk) and authority (Indigenous communities lead some of the most innovative climate work in Maine).',
+        casework: 'The federal Justice40 Initiative (40% of federal climate spending to disadvantaged communities) has driven several Maine programs. The Maine Climate Council included a Equity Subcommittee in its 2020 planning process. Wabanaki Public Health and Wellness has run weatherization, heat-pump, and EV-charger installation specifically for Wabanaki households. The Sunrise Movement Maine has organized around climate-justice framing.',
+        modernContext: 'Without equity foundations, climate policy collapses politically: utility-scale solar in low-income neighborhoods that does not lower local energy bills, EV rebates that only reach wealthy households, retrofit programs that miss renters. The strongest climate-policy results have come from programs that ARE the justice work, not programs that "add" justice afterward.'
+      }
+    }
+  ];
+
+  var PATHWAY_TECHNIQUES = [
+    { id: 'renewBuildout', name: 'Utility-scale renewables', icon: '☀️', hours: 7, desc: 'Build utility-scale solar, wind, and grid-scale storage projects. The single largest decarbonization lever once siting is solved.', effects: { decarb: 12, resilience: 3 }, appliesTo: ['energyGrid'] },
+    { id: 'distSolar', name: 'Distributed solar program', icon: '🏘️', hours: 5, desc: 'Rooftop solar and community solar incentives. Lower-impact siting, more equitable benefit distribution, slower buildout per dollar.', effects: { decarb: 7, support: 5 }, appliesTo: ['energyGrid'] },
+    { id: 'gridMod', name: 'Grid modernization', icon: '🔌', hours: 6, desc: 'Transmission upgrades, demand response, EV-ready infrastructure. Multiplies the value of every other grid investment.', effects: { decarb: 4, resilience: 9 }, appliesTo: ['energyGrid'] },
+    { id: 'evRebate', name: 'EV + transit + walkability', icon: '🚲', hours: 6, desc: 'Combined incentives for EVs, transit service expansion, and walkable-community zoning reforms. The transportation lever stack.', effects: { decarb: 11, resilience: 3, support: 2 }, appliesTo: ['transportation'] },
+    { id: 'heatPump', name: 'Heat pump retrofit program', icon: '♨️', hours: 5, desc: 'Subsidized heat-pump installation with building-envelope retrofits. Maine\'s defining decarbonization win.', effects: { decarb: 13, resilience: 4 }, appliesTo: ['buildings'] },
+    { id: 'codeUpdate', name: 'Net-zero building code', icon: '📜', hours: 4, desc: 'Require new construction to be net-zero ready. No effect on existing stock but locks in low emissions for everything built going forward.', effects: { decarb: 6, support: -4 }, appliesTo: ['buildings'] },
+    { id: 'forestCarbon', name: 'Forest carbon protection', icon: '🌳', hours: 7, desc: 'Conservation easements, deferred-harvest payments, working-forest management programs. Maine\'s biggest unbuilt asset.', effects: { decarb: 10, resilience: 8 }, appliesTo: ['workingLands'] },
+    { id: 'agSoil', name: 'Agricultural soil + blue carbon', icon: '🌾', hours: 5, desc: 'Cover cropping, perennial systems, and salt-marsh restoration. Smaller per-acre carbon but huge co-benefits.', effects: { decarb: 6, resilience: 7 }, appliesTo: ['workingLands'] },
+    { id: 'coastalAdapt', name: 'Coastal adaptation', icon: '🌊', hours: 8, desc: 'Managed retreat planning, salt-marsh restoration, working-waterfront protection. Hard politics, urgent need.', effects: { resilience: 14, decarb: 2, support: -4 }, appliesTo: ['adaptation'] },
+    { id: 'wildfireMgmt', name: 'Wildfire + heat + flood prep', icon: '🚒', hours: 6, desc: 'Defensible space, cooling centers, prescribed burning, stormwater retrofits. The adaptation grab-bag.', effects: { resilience: 12 }, appliesTo: ['adaptation'] },
+    { id: 'equityInvest', name: 'Equity + just-transition fund', icon: '🤝', hours: 6, desc: 'Frontline community grants, fossil-fuel worker retraining, Wabanaki-led climate programs, weatherization in low-income housing.', effects: { decarb: 4, resilience: 8, support: 10 }, appliesTo: ['climateJustice'] },
+    { id: 'publicAssembly', name: 'Citizen assemblies + education', icon: '📣', hours: 4, desc: 'Public deliberation, climate-literacy programs, school curriculum. Slow but durable support-building.', effects: { support: 11 }, appliesTo: 'any' },
+    { id: 'rest', name: 'Hold steady', icon: '🍃', hours: 0, desc: 'No new investment this period. Some natural drift; some momentum from prior turns.', effects: {}, appliesTo: 'any' }
+  ];
+
+  var PATHWAY_EVENTS = [
+    { id: 'majorHurricane', name: 'Major hurricane / nor\'easter', icon: '🌀', desc: 'A 100-year coastal storm hits. Coastal adaptation pays off where present; resilience matters everywhere.', apply: function(sectors) { sectors.forEach(function(s) { if (s.id === 'adaptation' && s.resilience < 50) s.resilience = Math.max(0, s.resilience - 8); if (s.id === 'adaptation') s.support = Math.min(100, s.support + 6); }); } },
+    { id: 'droughtLowHydro', name: 'Drought + low hydropower', icon: '☀️', desc: 'A dry year reduces hydropower generation. Grid carbon intensity rises temporarily; renewable buildout looks more attractive.', apply: function(sectors) { sectors.forEach(function(s) { if (s.id === 'energyGrid' && s.decarb < 50) s.decarb = Math.max(0, s.decarb - 5); if (s.id === 'energyGrid') s.support = Math.min(100, s.support + 4); }); } },
+    { id: 'heatDome', name: 'Heat dome event', icon: '🌡️', desc: 'A multi-day heat dome event drives cooling demand and reveals heat-island gaps. Adaptation and equity both surface as urgent.', apply: function(sectors) { sectors.forEach(function(s) { if (s.id === 'adaptation') s.support = Math.min(100, s.support + 8); if (s.id === 'climateJustice') s.support = Math.min(100, s.support + 5); }); } },
+    { id: 'federalFunding', name: 'Federal climate funding bump', icon: '💵', desc: 'A federal infrastructure / climate package lands (IRA-style). Stewardship hours next year +6, support rises in working lands.', apply: function(sectors, state) { state.fundingBonusNextYear = (state.fundingBonusNextYear || 0) + 6; sectors.forEach(function(s) { if (s.id === 'workingLands') s.support = Math.min(100, s.support + 5); }); } },
+    { id: 'carbonTaxFight', name: 'Carbon-tax political fight', icon: '🏛️', desc: 'A carbon-tax proposal divides the public. Equity-investment-heavy approaches survive; equity-light proposals fail.', apply: function(sectors, state) { sectors.forEach(function(s) { if (s.id === 'climateJustice' && s.decarb < 30) s.support = Math.max(0, s.support - 10); else if (s.id === 'climateJustice') s.support = Math.min(100, s.support + 4); }); } },
+    { id: 'techBreakthrough', name: 'Storage breakthrough', icon: '🔋', desc: 'A grid-scale storage technology becomes commercially viable. Future renewable buildout becomes much more effective.', apply: function(sectors, state) { state.activeMods = (state.activeMods || []).concat([{ id: 'storageBoost', turns: 3, decarbMult: 1.15 }]); } },
+    { id: 'skepticGovernor', name: 'Climate-skeptic governor elected', icon: '😡', desc: 'A new administration rolls back several climate programs. Hours next year reduced by 4, support drops in most sectors.', apply: function(sectors, state) { state.fundingBonusNextYear = (state.fundingBonusNextYear || 0) - 4; sectors.forEach(function(s) { if (s.id !== 'workingLands' && s.id !== 'climateJustice') s.support = Math.max(0, s.support - 8); }); } },
+    { id: 'indigenousVictory', name: 'Indigenous-led coalition victory', icon: '🏆', desc: 'A Wabanaki-led coalition wins a major land-back, river-restoration, or treaty-recognition campaign. Working lands and justice both rise; broader political room opens.', apply: function(sectors) { sectors.forEach(function(s) { if (s.id === 'workingLands' || s.id === 'climateJustice') { s.support = Math.min(100, s.support + 10); s.decarb = Math.min(100, s.decarb + 3); } }); } },
+    { id: 'insuranceWithdraw', name: 'Insurance market exits coast', icon: '🏦', desc: 'Property insurers withdraw from coastal markets. Adaptation urgency spikes; political pressure for managed retreat builds.', apply: function(sectors) { sectors.forEach(function(s) { if (s.id === 'adaptation') s.support = Math.min(100, s.support + 12); if (s.id === 'climateJustice') s.support = Math.min(100, s.support + 5); }); } },
+    { id: 'youthMobilization', name: 'Youth climate mobilization', icon: '🪧', desc: 'A wave of youth-led climate organizing builds public support across the board.', apply: function(sectors) { sectors.forEach(function(s) { s.support = Math.min(100, s.support + 7); }); } }
+  ];
+
+  // Inter-sector feedback rules (the cascade equivalent).
+  var PATHWAY_FEEDBACK_RULES = [
+    { id: 'cleanGridUnlocks', when: function(s) { return s.find(function(x) { return x.id === 'energyGrid'; }).decarb > 70; }, apply: function(s) { var t = s.find(function(x) { return x.id === 'transportation'; }); t.decarb = Math.min(100, t.decarb + 5); var b = s.find(function(x) { return x.id === 'buildings'; }); b.decarb = Math.min(100, b.decarb + 5); }, msg: 'Clean grid unlocked accelerated decarbonization in transportation and buildings.' },
+    { id: 'lowJusticeDrags', when: function(s) { return s.find(function(x) { return x.id === 'climateJustice'; }).support < 40; }, apply: function(s) { s.forEach(function(sec) { sec.support = Math.max(0, sec.support - 4); }); }, msg: 'Low climate-justice progress dragged public support down across all sectors.' },
+    { id: 'forestsBoostAdaptation', when: function(s) { return s.find(function(x) { return x.id === 'workingLands'; }).resilience > 70; }, apply: function(s) { var a = s.find(function(x) { return x.id === 'adaptation'; }); a.resilience = Math.min(100, a.resilience + 5); }, msg: 'Healthy working forests provided flood and heat resilience downstream.' },
+    { id: 'adaptDeficitErodes', when: function(s) { return s.find(function(x) { return x.id === 'adaptation'; }).resilience < 35; }, apply: function(s) { s.forEach(function(sec) { sec.support = Math.max(0, sec.support - 5); }); }, msg: 'Low adaptation capacity meant disasters eroded public trust in climate policy generally.' }
+  ];
+
+  var PATHWAY_DIFFICULTIES = {
+    optimist:   { id: 'optimist',   label: 'Optimistic Pathway',  hoursPerYear: 24, eventSkip: 0.3, severity: 0.8, desc: '24 hrs / period, gentler events. Good for first runs.' },
+    realist:    { id: 'realist',    label: 'Realistic Pathway',   hoursPerYear: 18, eventSkip: 0,   severity: 1.0, desc: '18 hrs / period, standard events. Default.' },
+    constrained:{ id: 'constrained',label: 'Hard Constraint Pathway', hoursPerYear: 14, eventSkip: 0, severity: 1.4, desc: '14 hrs / period, harsher events. Real political reality.' }
+  };
+
+  function defaultPathwayState() {
+    var diff = PATHWAY_DIFFICULTIES.realist;
+    return {
+      phase: 'setup',
+      year: 1,
+      maxYears: 8,         // 2025-2065 in 5-year increments
+      difficulty: diff.id,
+      hoursPerYear: diff.hoursPerYear,
+      hoursLeft: diff.hoursPerYear,
+      sectors: POLICY_SECTORS.map(function(s) { return Object.assign({ id: s.id }, s.defaultState); }),
+      yearActions: [],
+      yearLog: [],
+      lastEvent: null,
+      cascadesFiredThisYear: [],
+      finalOutcome: null,
+      activeMods: [],
+      fundingBonusNextYear: 0,
+      deepDiveSector: null,
+      firstTipDismissed: false,
+      aiReadResponse: null,
+      aiReadLoading: false,
+      seed: 'pathway-' + (new Date()).getFullYear() + (new Date()).getMonth() + (new Date()).getDate() + '-' + Math.floor(Math.random() * 9999)
+    };
+  }
+
+  function getPolicySector(id) {
+    for (var i = 0; i < POLICY_SECTORS.length; i++) if (POLICY_SECTORS[i].id === id) return POLICY_SECTORS[i];
+    return null;
+  }
+
+  function pathwayRng(seed, year, purpose) {
+    var s = (seed || 'default') + ':' + year + ':' + purpose;
+    var h = 2166136261 >>> 0;
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = (h * 16777619) >>> 0; }
+    return function() {
+      h |= 0; h = (h + 0x6D2B79F5) | 0;
+      var t = Math.imul(h ^ (h >>> 15), 1 | h);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function pathwayClamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  function pathwayYearLabel(year) {
+    var startYear = 2025 + (year - 1) * 5;
+    return startYear + '-' + (startYear + 4);
+  }
+
   if (!window.StemLab || !window.StemLab.registerTool) return;
 
   window.StemLab.registerTool('climateExplorer', {
@@ -1118,7 +1288,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             { id: 'keeling', icon: '\uD83D\uDCC8', label: 'Keeling Curve' },
             { id: 'tipping', icon: '\u26A0\uFE0F', label: 'Tipping Points' },
             { id: 'justice', icon: '\u2696\uFE0F', label: 'Climate Justice' },
-            { id: 'solutions', icon: '\uD83D\uDCA1', label: 'Solutions' }
+            { id: 'solutions', icon: '\uD83D\uDCA1', label: 'Solutions' },
+            { id: 'pathways', icon: '\uD83D\uDDFA\uFE0F', label: 'Policy Pathways' }
           ].map(function(t) {
             var active = tab === t.id;
             return el('button', { key: t.id, onClick: function() { visitTab(t.id); },
@@ -1136,7 +1307,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             keeling:    { accent: '#06b6d4', soft: 'rgba(6,182,212,0.12)',  icon: '\uD83D\uDCC8', title: 'The Keeling Curve',     hint: 'Continuous CO\u2082 measurement at Mauna Loa since 1958 \u2014 the longest-running atmospheric record. Sawtooth pattern from N. Hemisphere photosynthesis.' },
             tipping:    { accent: '#ef4444', soft: 'rgba(239,68,68,0.12)',  icon: '\u26A0\uFE0F', title: 'Climate tipping points', hint: 'Thresholds where the system shifts state and stays there \u2014 Greenland melt, Amazon dieback, AMOC slowdown. Recent work suggests several may be closer than thought.' },
             justice:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.12)', icon: '\u2696\uFE0F',  title: 'Climate justice',       hint: 'The countries that emitted the least face the worst impacts. Climate is an equity issue first \u2014 vulnerability tracks income, geography, and historical responsibility.' },
-            solutions:  { accent: '#3b82f6', soft: 'rgba(59,130,246,0.12)', icon: '\uD83D\uDCA1', title: 'Solutions toolkit',     hint: 'Drawdown ranks 100 solutions by gigatons of CO\u2082 avoided. Refrigerants, food waste, and educating girls top the list \u2014 not what most people guess.' }
+            solutions:  { accent: '#3b82f6', soft: 'rgba(59,130,246,0.12)', icon: '\uD83D\uDCA1', title: 'Solutions toolkit',     hint: 'Drawdown ranks 100 solutions by gigatons of CO\u2082 avoided. Refrigerants, food waste, and educating girls top the list \u2014 not what most people guess.' },
+            pathways:   { accent: '#15803d', soft: 'rgba(21,128,61,0.12)', icon: '\uD83D\uDDFA\uFE0F', title: 'Climate Policy Pathways: 40-year Maine campaign', hint: 'You are the state\'s lead climate strategist. Six sectors (grid, transport, buildings, working lands, adaptation, justice). 2025 to 2065 in 5-year periods. Inter-sector feedback rules tie the whole system together.' }
           };
           var meta = TAB_META[tab] || TAB_META.carbon;
           return el('div', {
@@ -2502,7 +2674,608 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               el('div', { style: { color: '#94a3b8', fontSize: 12, lineHeight: 1.7, maxWidth: 500, margin: '0 auto' } },
                 'Solar is the cheapest energy in history. Electric vehicles outsell gas cars in many countries. Young people are leading the charge. The solutions exist \u2014 we just need to choose them. Every action, every conversation, every vote counts.')
             )
-          )
+          ),
+
+          // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+          // CLIMATE POLICY PATHWAYS: 40-YEAR MAINE CAMPAIGN
+          // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+          tab === 'pathways' && (function() {
+            var path = d.pathway || defaultPathwayState();
+            function setPath(patch) { upd('pathway', Object.assign({}, path, patch)); }
+            var T_GREEN = '#15803d', T_GREEN_HI = '#86efac';
+
+            function startPathway(opts) {
+              opts = opts || {};
+              var fresh = defaultPathwayState();
+              var diffId = opts.difficulty || path.difficulty || 'realist';
+              var diff = PATHWAY_DIFFICULTIES[diffId] || PATHWAY_DIFFICULTIES.realist;
+              fresh.phase = 'year';
+              fresh.difficulty = diff.id;
+              fresh.hoursPerYear = diff.hoursPerYear;
+              fresh.hoursLeft = diff.hoursPerYear;
+              if (opts.seed) fresh.seed = opts.seed;
+              setPath(fresh);
+              if (addToast) addToast('\ud83d\uddfa\ufe0f Climate Policy Pathways begins. 2025-2029 on ' + diff.label + '.', 'success');
+              if (typeof announceToSR === 'function') announceToSR('Climate Policy Pathways started on ' + diff.label + '. Period 2025-2029.');
+            }
+            function resetPathway() { setPath(defaultPathwayState()); }
+
+            function applyPathTech(techId, sectorId) {
+              var tech = PATHWAY_TECHNIQUES.find(function(t) { return t.id === techId; });
+              if (!tech) return;
+              if (path.hoursLeft < tech.hours) { if (addToast) addToast('Not enough hours left this period.', 'warn'); return; }
+              if (tech.appliesTo !== 'any' && sectorId && tech.appliesTo.indexOf(sectorId) < 0) {
+                if (addToast) addToast(tech.name + ' does not apply to that sector.', 'info'); return;
+              }
+              var storageMult = (path.activeMods || []).some(function(m) { return m.id === 'storageBoost'; }) ? 1.15 : 1.0;
+              var newSectors = path.sectors.map(function(s) {
+                if (sectorId && s.id !== sectorId && tech.appliesTo !== 'any') return s;
+                if (!sectorId && tech.appliesTo !== 'any') return s;
+                var ns = Object.assign({}, s);
+                if (tech.effects.decarb)     ns.decarb = pathwayClamp(ns.decarb + tech.effects.decarb * storageMult, 0, 100);
+                if (tech.effects.resilience) ns.resilience = pathwayClamp(ns.resilience + tech.effects.resilience, 0, 100);
+                if (tech.effects.support !== undefined) ns.support = pathwayClamp(ns.support + tech.effects.support, 0, 100);
+                return ns;
+              });
+              var actionLog = { tech: tech.name, target: sectorId ? (getPolicySector(sectorId) ? getPolicySector(sectorId).name : sectorId) : 'Cross-sector', hours: tech.hours };
+              setPath({ sectors: newSectors, hoursLeft: path.hoursLeft - tech.hours, yearActions: path.yearActions.concat([actionLog]) });
+              if (typeof announceToSR === 'function') announceToSR(tech.name + ' applied. ' + (path.hoursLeft - tech.hours) + ' hours left.');
+            }
+
+            function endPathwayPeriod() {
+              var pre = path.sectors.map(function(s) { return Object.assign({}, s); });
+              var drifted = path.sectors.map(function(s) {
+                var ns = Object.assign({}, s);
+                // Sectors above 70 build momentum; below 30 erode.
+                if (ns.decarb > 70) ns.decarb = pathwayClamp(ns.decarb + 2, 0, 100);
+                else if (ns.decarb < 30) ns.decarb = pathwayClamp(ns.decarb - 2, 0, 100);
+                ns.support = pathwayClamp(ns.support + (ns.support < 50 ? 1 : -1), 0, 100);
+                return ns;
+              });
+              // Event
+              var diff = PATHWAY_DIFFICULTIES[path.difficulty || 'realist'];
+              var skipRng = pathwayRng(path.seed, path.year, 'skip');
+              var pickRng = pathwayRng(path.seed, path.year, 'pick');
+              var ev;
+              if (skipRng() < (diff.eventSkip || 0)) {
+                ev = { id: 'quietYear', name: 'A Quiet Period', icon: '\ud83c\udf24\ufe0f', desc: 'No major political or climate event. Routine policy work continued.', apply: function() {} };
+              } else {
+                ev = PATHWAY_EVENTS[Math.floor(pickRng() * PATHWAY_EVENTS.length)];
+              }
+              var eventState = { fundingBonusNextYear: path.fundingBonusNextYear || 0, activeMods: (path.activeMods || []).slice() };
+              ev.apply(drifted, eventState);
+              // Severity scaling
+              var sev = diff.severity || 1;
+              if (sev !== 1) {
+                for (var di = 0; di < drifted.length; di++) {
+                  var sp = drifted[di]; var pr = pre[di];
+                  sp.decarb = pathwayClamp(pr.decarb + (sp.decarb - pr.decarb) * sev, 0, 100);
+                  sp.resilience = pathwayClamp(pr.resilience + (sp.resilience - pr.resilience) * sev, 0, 100);
+                  sp.support = pathwayClamp(pr.support + (sp.support - pr.support) * sev, 0, 100);
+                }
+              }
+              // Cascade rules
+              var fired = [];
+              PATHWAY_FEEDBACK_RULES.forEach(function(rule) {
+                if (rule.when(drifted)) { rule.apply(drifted); fired.push({ id: rule.id, msg: rule.msg }); }
+              });
+              // Decrement active mods
+              var newMods = (eventState.activeMods || []).map(function(m) { return Object.assign({}, m, { turns: (m.turns || 1) - 1 }); }).filter(function(m) { return m.turns > 0; });
+              var snap = {
+                year: path.year, event: ev.name, eventIcon: ev.icon, eventDesc: ev.desc,
+                pre: pre, post: drifted.map(function(s) { return Object.assign({}, s); }),
+                actions: path.yearActions.slice(), cascades: fired
+              };
+              setPath({
+                phase: 'review',
+                sectors: drifted,
+                lastEvent: ev,
+                cascadesFiredThisYear: fired,
+                yearLog: path.yearLog.concat([snap]),
+                activeMods: newMods,
+                fundingBonusNextYear: eventState.fundingBonusNextYear || 0
+              });
+              if (typeof announceToSR === 'function') announceToSR('Period ' + pathwayYearLabel(path.year) + ' complete. Event: ' + ev.name + '.');
+            }
+
+            function advanceFromPathwayReview() {
+              if (path.year >= path.maxYears) {
+                // Final outcome
+                var avgDecarb = Math.round(path.sectors.reduce(function(a, s) { return a + s.decarb; }, 0) / path.sectors.length);
+                var avgRes = Math.round(path.sectors.reduce(function(a, s) { return a + s.resilience; }, 0) / path.sectors.length);
+                var avgSup = Math.round(path.sectors.reduce(function(a, s) { return a + s.support; }, 0) / path.sectors.length);
+                var justice = path.sectors.find(function(s) { return s.id === 'climateJustice'; });
+                var outcome;
+                if (avgDecarb >= 75 && avgRes >= 65 && justice && justice.support >= 65) outcome = { tier: 'netzero', label: 'Net-zero Plus Equity', color: '#16a34a', icon: '\ud83c\udfc6', desc: 'You hit deep decarbonization across sectors, built resilience, and held equity at the center. This is what a successful climate transition looks like when the social contract holds.' };
+                else if (avgDecarb >= 60 && avgRes >= 55) outcome = { tier: 'uneven', label: 'Decarbonized but Uneven', color: '#22c55e', icon: '\ud83c\udf3f', desc: 'Significant decarbonization across the energy and transport sectors, but adaptation and justice lagged. The carbon curves are right; the political coalition is fragile.' };
+                else if (avgDecarb >= 40 || avgRes >= 50) outcome = { tier: 'partial', label: 'Partial Progress', color: '#f59e0b', icon: '\ud83c\udf43', desc: 'Some sectors moved. Others stalled. Public support eroded over time. This is the trajectory most real-world climate policies have run.' };
+                else outcome = { tier: 'failure', label: 'Climate Policy Failure', color: '#ef4444', icon: '\u26a0\ufe0f', desc: 'Decarbonization stalled. Adaptation gaps widened. Public support collapsed. This is the trajectory we work to avoid: climate impacts compounding without the social or technical infrastructure to respond.' };
+                setPath({ phase: 'debrief', finalOutcome: outcome, avgDecarb: avgDecarb, avgRes: avgRes, avgSup: avgSup });
+              } else {
+                setPath({
+                  phase: 'year', year: path.year + 1,
+                  hoursLeft: path.hoursPerYear + (path.fundingBonusNextYear || 0),
+                  fundingBonusNextYear: 0,
+                  yearActions: [], lastEvent: null
+                });
+                if (typeof announceToSR === 'function') announceToSR('Period ' + pathwayYearLabel(path.year + 1) + ' begins.');
+              }
+            }
+
+            // \u2500\u2500 Helpers (artifact, baseline, coaching, deep-dive, trend, AI) \u2500\u2500
+            function sectorArtifact(s) {
+              var pct = Math.round(s.decarb);
+              if (s.id === 'energyGrid')      return { icon: '\u26a1', text: pct + '% renewable electricity generation' };
+              if (s.id === 'transportation')  return { icon: '\ud83d\ude8a', text: Math.round(pct * 0.6) + '% of light-duty vehicle fleet electrified' };
+              if (s.id === 'buildings')       return { icon: '\u2668\ufe0f', text: Math.round(pct * 5500) + ' Maine homes on heat pumps' };
+              if (s.id === 'workingLands')    return { icon: '\ud83c\udf32', text: Math.round(pct * 60000) + ' acres protected for working-lands carbon' };
+              if (s.id === 'adaptation')      return { icon: '\ud83c\udf0a', text: Math.round(s.resilience * 0.8) + ' coastal communities with adaptation plans' };
+              if (s.id === 'climateJustice')  return { icon: '\u2696\ufe0f', text: Math.round(s.support * 1.3) + '% of climate funds reaching frontline communities' };
+              return { icon: '\ud83c\udf0d', text: '' };
+            }
+
+            function computePathwayDoNothing() {
+              var sim = POLICY_SECTORS.map(function(s) { return Object.assign({ id: s.id }, s.defaultState); });
+              for (var y = 0; y < path.maxYears; y++) {
+                sim = sim.map(function(s) {
+                  var ns = Object.assign({}, s);
+                  if (ns.decarb > 70) ns.decarb = pathwayClamp(ns.decarb + 2, 0, 100);
+                  else if (ns.decarb < 30) ns.decarb = pathwayClamp(ns.decarb - 2, 0, 100);
+                  ns.support = pathwayClamp(ns.support + (ns.support < 50 ? 1 : -1), 0, 100);
+                  return ns;
+                });
+                PATHWAY_FEEDBACK_RULES.forEach(function(rule) { if (rule.when(sim)) rule.apply(sim); });
+              }
+              return sim;
+            }
+
+            function pathwayCoachingTip() {
+              var justice = path.sectors.find(function(s) { return s.id === 'climateJustice'; });
+              var grid = path.sectors.find(function(s) { return s.id === 'energyGrid'; });
+              if (justice && justice.support < 55) {
+                return {
+                  priority: 'Build the equity foundation first',
+                  text: 'Climate Justice support is at ' + Math.round(justice.support) + '. The "Low climate-justice progress drags support" feedback rule will erode every other sector if you let this slip below 40. Equity Investment is your highest-leverage opening move; it works on both decarbonization and resilience while building support.'
+                };
+              }
+              if (grid && grid.decarb < 50) {
+                return {
+                  priority: 'Clean the grid before electrifying everything',
+                  text: 'Energy Grid decarbonization is at ' + Math.round(grid.decarb) + '. The "Clean grid unlocks accelerated decarbonization in transport and buildings" feedback rule fires above 70. Utility-scale renewables and grid modernization in the first 2 periods compound through the whole campaign.'
+                };
+              }
+              return {
+                priority: 'Spread your bets, watch for feedback rules',
+                text: 'Initial conditions are workable. Spread investment across 2-3 sectors in the first period to find which feedback rules fire first. Public education + citizen assemblies pays off slowly but durably.'
+              };
+            }
+
+            function openPathDeepDive(id) { setPath({ deepDiveSector: id }); }
+            function closePathDeepDive() { setPath({ deepDiveSector: null }); }
+
+            function renderPathDeepDive(id) {
+              var def = getPolicySector(id);
+              if (!def || !def.deepDive) return null;
+              var dd = def.deepDive;
+              var applicable = PATHWAY_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any' || t.appliesTo.indexOf(id) >= 0; });
+              return el('div', {
+                role: 'dialog', 'aria-modal': 'true',
+                style: { background: 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.85) 60%)', border: '1px solid ' + def.color + '88', borderLeft: '4px solid ' + def.color, borderRadius: 14, padding: 18, marginBottom: 16 }
+              },
+                el('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
+                  el('span', { style: { fontSize: 36 } }, def.icon),
+                  el('div', { style: { flex: 1 } },
+                    el('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Sector deep-dive'),
+                    el('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
+                    el('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
+                  ),
+                  el('button', { onClick: closePathDeepDive,
+                    style: { background: 'rgba(15,23,42,0.6)', border: '1px solid #334155', color: '#cbd5e1', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '\u2715 Close')
+                ),
+                el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
+                  el('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                    el('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83d\udd2c Policy mechanics'),
+                    el('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
+                  ),
+                  el('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                    el('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83d\udcf0 Case work'),
+                    el('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
+                  ),
+                  el('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                    el('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83c\udf0d Maine context'),
+                    el('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
+                  )
+                ),
+                applicable.length > 0 ? el('div', { style: { marginTop: 12, padding: 12, background: 'rgba(21,128,61,0.10)', border: '1px solid rgba(21,128,61,0.4)', borderLeft: '3px solid #15803d', borderRadius: 10 } },
+                  el('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83d\udee0 What you can do for this sector'),
+                  applicable.map(function(t, i) {
+                    return el('div', { key: i, style: { margin: '4px 0', fontSize: 12.5, color: '#d1fae5', lineHeight: 1.5 } },
+                      el('strong', { style: { color: '#bbf7d0' } }, t.icon + ' ' + t.name), ' (' + t.hours + 'h): ', t.desc
+                    );
+                  })
+                ) : null
+              );
+            }
+
+            function renderPathTrendChart(yearLog) {
+              if (!yearLog || yearLog.length === 0) return null;
+              var w = 600, hgt = 220, padL = 36, padR = 110, padT = 12, padB = 24;
+              var ix = w - padL - padR;
+              var iy = hgt - padT - padB;
+              function ptsFor(sid) {
+                return yearLog.map(function(snap, i) {
+                  var post = (snap.post || []).find(function(p) { return p.id === sid; });
+                  var v = post ? post.decarb : 0;
+                  var x = padL + (yearLog.length === 1 ? ix / 2 : (i / (yearLog.length - 1)) * ix);
+                  var y = padT + iy - (v / 100) * iy;
+                  return { x: x, y: y };
+                });
+              }
+              function pathStr(pts) { return pts.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x + ',' + p.y; }).join(' '); }
+              return el('div', { style: { background: '#0f172a', borderRadius: 12, padding: 12, marginBottom: 14, border: '1px solid #1e293b' } },
+                el('div', { style: { fontSize: 12, fontWeight: 700, color: '#e2e8f0', marginBottom: 8 } }, '\ud83d\udcc8 Sector decarbonization across the campaign'),
+                el('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' } },
+                  [0, 25, 50, 75, 100].map(function(g, gi) {
+                    var y = padT + iy - (g / 100) * iy;
+                    return el('g', { key: 'g' + gi },
+                      el('line', { x1: padL, y1: y, x2: padL + ix, y2: y, stroke: '#1e293b', strokeWidth: 1 }),
+                      el('text', { x: padL - 4, y: y + 3, fontSize: 9, fill: '#64748b', textAnchor: 'end' }, g)
+                    );
+                  }),
+                  yearLog.map(function(snap, i) {
+                    var x = padL + (yearLog.length === 1 ? ix / 2 : (i / (yearLog.length - 1)) * ix);
+                    return el('text', { key: 'xl' + i, x: x, y: hgt - 8, fontSize: 9, fill: '#64748b', textAnchor: 'middle' }, pathwayYearLabel(snap.year).slice(0, 4));
+                  }),
+                  POLICY_SECTORS.map(function(sd) {
+                    var pts = ptsFor(sd.id);
+                    return el('g', { key: sd.id },
+                      el('path', { d: pathStr(pts), stroke: sd.color, strokeWidth: 2, fill: 'none', strokeLinejoin: 'round' })
+                    );
+                  }),
+                  POLICY_SECTORS.map(function(sd, si) {
+                    return el('g', { key: 'leg' + sd.id },
+                      el('line', { x1: w - padR + 6, y1: padT + 8 + si * 16, x2: w - padR + 20, y2: padT + 8 + si * 16, stroke: sd.color, strokeWidth: 2.5 }),
+                      el('text', { x: w - padR + 24, y: padT + 12 + si * 16, fontSize: 10, fill: '#cbd5e1' }, sd.icon + ' ' + sd.name.split(' ')[0])
+                    );
+                  })
+                )
+              );
+            }
+
+            function readPathway() {
+              if (!callGemini || path.aiReadLoading) return;
+              var summary = path.sectors.map(function(s) {
+                var def = getPolicySector(s.id);
+                return '- ' + def.name + ' (' + def.role + '): decarbonization ' + Math.round(s.decarb) + '/' + def.targets.decarb + ', resilience ' + Math.round(s.resilience) + '/' + def.targets.resilience + ', public support ' + Math.round(s.support) + '/' + def.targets.support;
+              }).join('\n');
+              var prompt = [
+                'You are an AI climate policy educator. You are NOT a Wabanaki person, NOT a real climate strategist or policy maker, NOT an agency staff member, and you do NOT speak for any Wabanaki nation, agency, organization, or named individual.',
+                '',
+                'A student is managing a simulated Maine climate-policy campaign across 8 5-year periods from 2025 to 2065.',
+                '',
+                'Current state (Period ' + pathwayYearLabel(path.year) + ', difficulty: ' + (PATHWAY_DIFFICULTIES[path.difficulty] || PATHWAY_DIFFICULTIES.realist).label + '):',
+                summary,
+                'Hours this period: ' + path.hoursLeft + ' of ' + path.hoursPerYear,
+                '',
+                'Read this state and give 3 to 4 sentences of practical coaching grounded in climate-policy research and documented Maine work.',
+                '',
+                'HARD CONSTRAINTS:',
+                '- NEVER claim to be Wabanaki, a real climate strategist, agency staff, or named individual.',
+                '- NEVER invoke sacred, ceremonial, or spiritual claims.',
+                '- NEVER use "noble savage" framing or romanticized language about Indigenous peoples.',
+                '- NEVER invent quotes attributed to anyone.',
+                '- DO frame as "documented climate-policy research" or "Maine Climate Action Plan analysis" or "IRA / Justice40 program design".',
+                '- DO acknowledge Wabanaki-led climate work (Wabanaki Public Health and Wellness weatherization programs, Wabanaki Cultural Heritage Forest, Wabanaki-led transmission objections) without speaking for the nations.',
+                '- DO stay grounded in observable sector state and concrete techniques.',
+                '- Name 1 or 2 highest-priority moves and explain why, grounded in inter-sector feedback rules.',
+                '- Be direct, observational, useful. No flowery language.',
+                '',
+                'Respond in 3 to 4 sentences of plain prose. Do not use markdown.'
+              ].join('\n');
+              setPath({ aiReadLoading: true, aiReadResponse: null });
+              try {
+                var p2 = callGemini(prompt);
+                if (p2 && typeof p2.then === 'function') {
+                  p2.then(function(resp) {
+                    var text = '';
+                    if (typeof resp === 'string') text = resp;
+                    else if (resp && typeof resp.text === 'string') text = resp.text;
+                    else if (resp && resp.candidates) text = (resp.candidates[0] && resp.candidates[0].content && resp.candidates[0].content.parts && resp.candidates[0].content.parts[0] && resp.candidates[0].content.parts[0].text) || '';
+                    text = (text || 'The reader returned no text. Try again in a moment.').replace(/\*\*/g, '').replace(/^[\s\n]+|[\s\n]+$/g, '');
+                    setPath({ aiReadResponse: text, aiReadLoading: false });
+                    if (typeof announceToSR === 'function') announceToSR('AI Climate Policy Reading complete.');
+                  }).catch(function() {
+                    setPath({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
+                  });
+                } else {
+                  setPath({ aiReadResponse: 'AI is not available in this context.', aiReadLoading: false });
+                }
+              } catch (e) {
+                setPath({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
+              }
+            }
+            function dismissPathAIRead() { setPath({ aiReadResponse: null }); }
+
+            function renderPathAIPanel() {
+              if (path.aiReadLoading) {
+                return el('div', { role: 'status', 'aria-live': 'polite',
+                  style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 } },
+                  '\u23f3 AI climate-policy educator is reading your campaign state...');
+              }
+              if (!path.aiReadResponse) return null;
+              return el('div', { role: 'region', 'aria-label': 'AI Climate Policy Reading',
+                style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', border: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
+                el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                  el('span', { style: { fontSize: 20 } }, '\ud83d\udd0d'),
+                  el('strong', { style: { color: '#38bdf8', fontSize: 14 } }, 'AI Climate Policy Reading'),
+                  el('div', { style: { marginLeft: 'auto', display: 'flex', gap: 6 } },
+                    el('button', { onClick: readPathway,
+                      style: { background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\u21bb Re-read'),
+                    el('button', { onClick: dismissPathAIRead,
+                      style: { background: 'transparent', border: '1px solid #475569', color: '#cbd5e1', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\u2715')
+                  )
+                ),
+                el('p', { style: { margin: '0 0 10px 0', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.6 } }, path.aiReadResponse),
+                el('div', { style: { fontSize: 11, color: '#64748b', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
+                  'AI climate-policy educator. ',
+                  el('strong', null, 'It is not a Wabanaki person, not a real climate strategist or policy maker, and does not speak for any Wabanaki nation, agency, or organization.'),
+                  ' For authoritative voice on Maine climate policy: Penobscot Nation CHPD, Wabanaki Public Health and Wellness, Maine Climate Council, Maine Department of Environmental Protection, Sunrise Movement Maine, Maine Climate Action Now.'
+                )
+              );
+            }
+
+            var pathDeepDive = path.deepDiveSector ? renderPathDeepDive(path.deepDiveSector) : null;
+
+            // \u2500\u2500 SETUP \u2500\u2500
+            if (path.phase === 'setup') {
+              return el('div', { style: { maxWidth: 720, margin: '0 auto' } },
+                pathDeepDive,
+                el('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(56,189,248,0.06) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN, marginBottom: 14 } },
+                  el('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
+                    el('span', { style: { fontSize: 36 } }, '\ud83d\uddfa\ufe0f'),
+                    el('div', null,
+                      el('h3', { style: { margin: 0, color: T_GREEN_HI, fontSize: 22 } }, 'Climate Policy Pathways: 2025 to 2065'),
+                      el('div', { style: { fontSize: 13, color: '#cbd5e1', marginTop: 2 } }, 'You are Maine\'s lead climate strategist.')
+                    )
+                  ),
+                  el('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } },
+                    'Eight 5-year periods. Six policy sectors. ',
+                    el('strong', null, 'Inter-sector feedback rules'),
+                    ' tie the whole system together: clean grid unlocks decarbonization in transport and buildings; low climate justice drags support down everywhere; healthy working forests boost adaptation; adaptation deficit erodes public trust during disaster years.'
+                  )
+                ),
+                el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10, marginBottom: 14 } },
+                  POLICY_SECTORS.map(function(s) {
+                    return el('div', { key: s.id, style: { background: '#0f172a', borderLeft: '3px solid ' + s.color, borderRadius: 10, padding: 12 } },
+                      el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                        el('span', { style: { fontSize: 22 } }, s.icon),
+                        el('strong', { style: { color: s.color } }, s.name)
+                      ),
+                      el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, s.role),
+                      el('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 8 } }, s.desc),
+                      s.deepDive ? el('button', { onClick: function() { openPathDeepDive(s.id); }, 'aria-label': 'Deep-dive for ' + s.name,
+                        style: { width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid ' + s.color + '88', background: s.color + '22', color: s.color, cursor: 'pointer', fontWeight: 700, fontSize: 11.5 }
+                      }, '\ud83d\udcda Sector deep-dive \u2192') : null
+                    );
+                  })
+                ),
+                el('div', { style: { background: '#0f172a', borderRadius: 10, padding: 12, marginBottom: 14, border: '1px solid #1e293b' } },
+                  el('div', { style: { fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, 'Difficulty'),
+                  el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
+                    Object.keys(PATHWAY_DIFFICULTIES).map(function(dkey) {
+                      var df = PATHWAY_DIFFICULTIES[dkey];
+                      var picked = (path.difficulty || 'realist') === dkey;
+                      return el('button', { key: dkey, onClick: function() { setPath({ difficulty: dkey }); }, 'aria-pressed': picked,
+                        style: { background: picked ? 'rgba(21,128,61,0.20)' : '#1e293b', border: '1px solid ' + (picked ? '#15803d' : '#334155'), color: picked ? '#86efac' : '#cbd5e1', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', textAlign: 'left' } },
+                        el('div', { style: { fontWeight: 800, fontSize: 13 } }, df.label),
+                        el('div', { style: { fontSize: 11, color: picked ? '#a7f3d0' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, df.desc)
+                      );
+                    })
+                  )
+                ),
+                el('button', { onClick: function() { startPathway(); },
+                  style: { width: '100%', padding: '14px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + T_GREEN + ' 0%, #166534 100%)', color: '#fff', fontWeight: 800, fontSize: 16 } }, '\ud83d\uddfa\ufe0f Begin 40-year Climate Pathway')
+              );
+            }
+
+            // \u2500\u2500 DEBRIEF \u2500\u2500
+            if (path.phase === 'debrief' && path.finalOutcome) {
+              var o = path.finalOutcome;
+              var baseline = computePathwayDoNothing();
+              var actualAvgDecarb = path.avgDecarb;
+              var baselineAvgDecarb = Math.round(baseline.reduce(function(a, s) { return a + s.decarb; }, 0) / baseline.length);
+              return el('div', { style: { maxWidth: 720, margin: '0 auto' } },
+                pathDeepDive,
+                el('div', { style: { padding: 18, borderRadius: 14, marginBottom: 12, background: 'linear-gradient(135deg, ' + o.color + '24 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + o.color + '88', borderLeft: '4px solid ' + o.color } },
+                  el('div', { style: { fontSize: 40, marginBottom: 6 } }, o.icon),
+                  el('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
+                  el('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } }, o.desc)
+                ),
+                renderPathTrendChart(path.yearLog),
+                el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 8, marginBottom: 14 } },
+                  path.sectors.map(function(s) {
+                    var def = getPolicySector(s.id);
+                    var art = sectorArtifact(s);
+                    return el('div', { key: s.id, style: { background: '#0f172a', borderLeft: '3px solid ' + def.color, padding: 10, borderRadius: 8, fontSize: 12 } },
+                      el('div', { style: { fontWeight: 700, color: def.color, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 } },
+                        el('span', null, def.icon + ' ' + def.name),
+                        def.deepDive ? el('button', { onClick: function() { openPathDeepDive(s.id); },
+                          style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '0 6px', fontSize: 11 } }, '\ud83d\udcda') : null
+                      ),
+                      el('div', { style: { color: '#cbd5e1', lineHeight: 1.55 } },
+                        'Decarb: ' + Math.round(s.decarb) + '/' + def.targets.decarb,
+                        el('br'),
+                        'Resilience: ' + Math.round(s.resilience) + '/' + def.targets.resilience,
+                        el('br'),
+                        'Support: ' + Math.round(s.support) + '/' + def.targets.support
+                      ),
+                      art.text ? el('div', { style: { marginTop: 6, padding: 6, background: '#1e293b', borderRadius: 6, fontSize: 11.5, color: '#fde68a' } },
+                        el('span', { style: { fontSize: 14, marginRight: 4 } }, art.icon), art.text
+                      ) : null
+                    );
+                  })
+                ),
+                el('div', { style: { padding: 12, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)', border: '1px solid rgba(248,113,113,0.4)' } },
+                  el('strong', { style: { color: '#fecaca', fontSize: 14, display: 'block', marginBottom: 8 } }, '\u2194 What if you had done nothing for 40 years?'),
+                  el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+                    el('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o.color } },
+                      el('div', { style: { fontSize: 12, fontWeight: 700, color: o.color, marginBottom: 4 } }, 'Your pathway'),
+                      el('div', { style: { color: '#cbd5e1', fontSize: 13 } }, 'Avg decarb ' + actualAvgDecarb)
+                    ),
+                    el('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
+                      el('div', { style: { fontSize: 12, fontWeight: 700, color: '#fca5a5', marginBottom: 4 } }, 'Pure neglect'),
+                      el('div', { style: { color: '#cbd5e1', fontSize: 13 } }, 'Avg decarb ' + baselineAvgDecarb)
+                    )
+                  ),
+                  el('div', { style: { marginTop: 8, fontSize: 12, color: '#fde68a', lineHeight: 1.5, fontStyle: 'italic' } },
+                    actualAvgDecarb > baselineAvgDecarb + 15
+                      ? 'Your campaign moved Maine substantially ahead of where neglect would have left it. That gap is the cumulative effect of every period\'s policy choice compounded by feedback rules.'
+                      : (actualAvgDecarb > baselineAvgDecarb
+                          ? 'You moved the needle but feedback rules limited the gains. Look at WHICH feedback rules failed to fire (e.g., grid never cleared 70%, or justice support dropped below 40 and erosion locked in).'
+                          : 'Active policy under-performed the baseline. Common cause: spreading hours too thin across sectors instead of building the foundational feedback chain (clean grid \u2192 electrification, or equity support \u2192 political capacity for the rest).')
+                  )
+                ),
+                el('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 } },
+                  el('button', { onClick: resetPathway, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#1e293b', color: '#cbd5e1', fontWeight: 700 } }, '\u21bb New campaign'),
+                  el('button', { onClick: function() { startPathway({ seed: path.seed, difficulty: path.difficulty }); },
+                    style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8', cursor: 'pointer', background: 'rgba(56,189,248,0.15)', color: '#bae6fd', fontWeight: 700 } }, '\ud83d\udd01 Replay same conditions')
+                ),
+                el('div', { style: { padding: 8, background: '#0f172a', borderRadius: 8, fontSize: 11.5, color: '#94a3b8', fontFamily: 'ui-monospace, monospace' } },
+                  el('span', { style: { color: '#64748b' } }, 'Campaign seed: '),
+                  el('strong', { style: { color: '#cbd5e1' } }, path.seed)
+                )
+              );
+            }
+
+            // \u2500\u2500 REVIEW \u2500\u2500
+            if (path.phase === 'review') {
+              var lastSnap = path.yearLog[path.yearLog.length - 1] || {};
+              var ev = path.lastEvent || {};
+              return el('div', { style: { maxWidth: 720, margin: '0 auto' } },
+                pathDeepDive,
+                el('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderLeft: '3px solid #fbbf24', marginBottom: 12 } },
+                  el('div', { style: { fontSize: 22, marginBottom: 4 } }, ev.icon || '\ud83c\udf3f'),
+                  el('strong', { style: { color: '#fbbf24', fontSize: 16 } }, 'Period ' + pathwayYearLabel(path.year) + ' event: ' + (ev.name || 'quiet')),
+                  el('p', { style: { margin: '6px 0 0', color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, ev.desc || '')
+                ),
+                (lastSnap.cascades && lastSnap.cascades.length > 0) ? el('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8', fontSize: 13, color: '#bae6fd', marginBottom: 12 } },
+                  el('strong', { style: { color: '#38bdf8' } }, '\ud83d\udd04 Inter-sector feedback rules this period'),
+                  lastSnap.cascades.map(function(c, ci) { return el('div', { key: ci, style: { margin: '6px 0 0', fontStyle: 'italic' } }, '\u00b7 ' + c.msg); })
+                ) : null,
+                el('div', { style: { background: '#0f172a', borderRadius: 10, padding: 10, marginBottom: 12 } },
+                  el('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 6, fontSize: 13 } }, 'What changed this period'),
+                  (lastSnap.pre || []).map(function(preS) {
+                    var postS = (lastSnap.post || []).find(function(p) { return p.id === preS.id; }) || preS;
+                    var def = getPolicySector(preS.id);
+                    function delta(label, before, after) {
+                      var dlt = Math.round(after - before);
+                      var color = '#64748b'; var arrow = '\u00b7';
+                      if (Math.abs(dlt) >= 1) { color = dlt > 0 ? '#86efac' : '#fca5a5'; arrow = dlt > 0 ? '\u25b2' : '\u25bc'; }
+                      return el('span', { style: { color: color, fontSize: 11, fontWeight: 700, marginRight: 8 } }, label + ' ' + Math.round(after) + ' ' + arrow + ' ' + (dlt > 0 ? '+' : '') + dlt);
+                    }
+                    return el('div', { key: preS.id, style: { fontSize: 12, padding: '4px 0', borderTop: '1px solid #1e293b' } },
+                      el('strong', { style: { color: def.color, marginRight: 8 } }, def.icon + ' ' + def.name),
+                      delta('Dec', preS.decarb, postS.decarb),
+                      delta('Res', preS.resilience, postS.resilience),
+                      delta('Sup', preS.support, postS.support)
+                    );
+                  })
+                ),
+                el('button', { onClick: advanceFromPathwayReview,
+                  style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + T_GREEN + ' 0%, #166534 100%)', color: '#fff', fontWeight: 700, fontSize: 14 } },
+                  path.year >= path.maxYears ? 'See final outcome \u2192' : 'Begin period ' + pathwayYearLabel(path.year + 1) + ' \u2192')
+              );
+            }
+
+            // \u2500\u2500 YEAR (5-YEAR PERIOD) \u2500\u2500
+            var coachingTip = (path.year === 1 && !path.firstTipDismissed && path.yearActions.length === 0) ? pathwayCoachingTip() : null;
+            return el('div', { style: { maxWidth: 720, margin: '0 auto' } },
+              pathDeepDive,
+              coachingTip ? el('div', { role: 'note', style: { padding: '10px 14px', borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)', border: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7', color: '#e9d5ff', fontSize: 13, lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 10 } },
+                el('span', { style: { fontSize: 20, flexShrink: 0 } }, '\ud83e\udeb6'),
+                el('div', { style: { flex: 1 } },
+                  el('strong', { style: { color: '#a855f7' } }, 'Period 1 priority: '),
+                  el('span', { style: { color: '#fde68a' } }, coachingTip.priority),
+                  el('div', { style: { marginTop: 4, color: '#e9d5ff' } }, coachingTip.text)
+                ),
+                el('button', { onClick: function() { setPath({ firstTipDismissed: true }); }, 'aria-label': 'Dismiss tip',
+                  style: { background: 'transparent', border: 'none', color: '#a855f7', cursor: 'pointer', fontSize: 16, padding: 0, marginLeft: 6 } }, '\u2715')
+              ) : null,
+              renderPathAIPanel(),
+              // HUD
+              el('div', { style: { padding: '10px 14px', borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
+                el('div', null,
+                  el('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Period'),
+                  el('div', { style: { fontSize: 18, fontWeight: 800, color: T_GREEN_HI } }, pathwayYearLabel(path.year))
+                ),
+                el('div', null,
+                  el('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Hours'),
+                  el('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, path.hoursLeft + ' / ' + path.hoursPerYear)
+                ),
+                el('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+                  callGemini ? el('button', { onClick: readPathway, disabled: path.aiReadLoading,
+                    style: { padding: '8px 12px', borderRadius: 10, border: '1px solid #38bdf8', cursor: path.aiReadLoading ? 'wait' : 'pointer', background: 'rgba(56,189,248,0.10)', color: '#38bdf8', fontWeight: 700, fontSize: 12, opacity: path.aiReadLoading ? 0.6 : 1 }
+                  }, path.aiReadLoading ? '\u23f3 Reading...' : '\ud83d\udd0d Read the pathway (AI)') : null,
+                  el('button', { onClick: endPathwayPeriod,
+                    style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 13 } }, 'End period \u2192')
+                )
+              ),
+              // Sector cards with actions
+              el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 10, marginBottom: 12 } },
+                path.sectors.map(function(s) {
+                  var def = getPolicySector(s.id);
+                  if (!def) return null;
+                  var applicable = PATHWAY_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any' || t.appliesTo.indexOf(s.id) >= 0; });
+                  return el('div', { key: s.id, style: { background: '#0f172a', borderRadius: 12, padding: 12, borderLeft: '3px solid ' + def.color } },
+                    el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
+                      el('span', { style: { fontSize: 22 } }, def.icon),
+                      el('div', { style: { flex: 1 } },
+                        el('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
+                        el('div', { style: { fontSize: 11, color: '#94a3b8' } }, def.role)
+                      ),
+                      def.deepDive ? el('button', { onClick: function() { openPathDeepDive(s.id); },
+                        style: { background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 } }, '\ud83d\udcda') : null
+                    ),
+                    el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
+                      [['Dec', Math.round(s.decarb), s.decarb < 30 ? '#ef4444' : s.decarb < 60 ? '#f59e0b' : '#22c55e', def.targets.decarb],
+                       ['Res', Math.round(s.resilience), s.resilience < 40 ? '#ef4444' : s.resilience < 65 ? '#f59e0b' : '#22c55e', def.targets.resilience],
+                       ['Sup', Math.round(s.support), s.support < 40 ? '#ef4444' : s.support < 60 ? '#f59e0b' : '#22c55e', def.targets.support]
+                      ].map(function(st, si) {
+                        return el('div', { key: si, style: { background: '#1e293b', padding: 6, borderRadius: 6, textAlign: 'center' } },
+                          el('div', { style: { fontSize: 10, color: '#94a3b8' } }, st[0]),
+                          el('div', { style: { fontSize: 15, fontWeight: 800, color: st[2] } }, st[1]),
+                          el('div', { style: { fontSize: 9, color: '#64748b' } }, 'goal ' + st[3])
+                        );
+                      })
+                    ),
+                    el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+                      applicable.filter(function(t) { return t.appliesTo !== 'any'; }).map(function(t) {
+                        var disabled = path.hoursLeft < t.hours;
+                        return el('button', { key: t.id, onClick: function() { applyPathTech(t.id, s.id); }, disabled: disabled, title: t.desc,
+                          style: { padding: '4px 8px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', background: disabled ? '#1e293b' : '#15803d', color: disabled ? '#475569' : '#fff', opacity: disabled ? 0.5 : 1 } },
+                          t.icon + ' ' + t.name + ' (' + t.hours + 'h)');
+                      })
+                    )
+                  );
+                })
+              ),
+              el('div', { style: { background: '#0f172a', borderRadius: 12, padding: 12, marginBottom: 12, borderLeft: '3px solid #38bdf8' } },
+                el('div', { style: { fontSize: 12, fontWeight: 700, color: '#bae6fd', marginBottom: 8 } }, '\ud83d\udee0 Cross-sector actions'),
+                el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                  PATHWAY_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any'; }).map(function(t) {
+                    var disabled = path.hoursLeft < t.hours;
+                    return el('button', { key: t.id, onClick: function() { applyPathTech(t.id, null); }, disabled: disabled, title: t.desc,
+                      style: { padding: '6px 10px', fontSize: 12, fontWeight: 700, borderRadius: 6, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', background: disabled ? '#1e293b' : '#15803d', color: disabled ? '#475569' : '#fff', opacity: disabled ? 0.5 : 1 } },
+                      t.icon + ' ' + t.name + ' (' + t.hours + 'h)');
+                  })
+                )
+              ),
+              path.yearActions.length > 0 ? el('div', { style: { background: '#0f172a', borderRadius: 10, padding: 10, fontSize: 12, color: '#cbd5e1' } },
+                el('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 4 } }, 'Period actions'),
+                path.yearActions.map(function(a, ai) { return el('div', { key: ai }, '\u00b7 ' + a.tech + ' \u2192 ' + a.target + ' (' + a.hours + 'h)'); })
+              ) : el('div', { style: { fontSize: 12, color: '#64748b', fontStyle: 'italic' } }, 'No actions yet this period. Pick a sector, pick a technique.')
+            );
+          })()
         )
       );
     }
