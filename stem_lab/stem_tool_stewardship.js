@@ -197,6 +197,163 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         });
       }
 
+      // ── Printable Campaign Report mode ──
+      // When hub.viewingReport is set to a campaign id, the hub renders a
+      // clean printable summary of that completed campaign (instead of the
+      // main hub view). The report is designed for browser print preview
+      // and EL-style "exhibitions of learning" portfolios.
+      function viewReport(id) { setHub({ viewingReport: id }); }
+      function closeReport() { setHub({ viewingReport: null }); }
+      function printReport() { try { window.print(); } catch (e) { /* print not available */ } }
+
+      function renderCampaignReport(campaignId) {
+        var c = CAMPAIGNS.find(function(x) { return x.id === campaignId; });
+        if (!c) return null;
+        var slot = (labToolData[c.toolDataKey]) || {};
+        var state = slot[c.stateField] || {};
+        var outcome = state.finalOutcome || null;
+        var yearLog = state.yearLog || state.weekLog || [];
+        var entities = state.zones || state.species || state.groups || state.components || state.sectors || [];
+
+        // Pull the entity definitions from the campaign-specific arrays
+        // (these were duplicated in each tool file, so the hub does not
+        // import them directly; we render with whatever the state holds).
+        var entityFieldMap = {
+          mosaic: { name: 'Zone', metricLabel: 'Health' },
+          conserve: { name: 'Species', metricLabel: 'Population' },
+          outbreak: { name: 'Demographic', metricLabel: 'Vaccinated' },
+          steward: { name: 'Component', metricLabel: 'Quality' },
+          pathway: { name: 'Sector', metricLabel: 'Decarbonization' }
+        };
+        var fm = entityFieldMap[campaignId] || { name: 'Entity', metricLabel: 'Score' };
+
+        function primaryMetric(entity) {
+          if (campaignId === 'mosaic') return entity.health;
+          if (campaignId === 'conserve') return entity.pop;
+          if (campaignId === 'outbreak') return entity.vaccinated;
+          if (campaignId === 'steward') return entity.quality;
+          if (campaignId === 'pathway') return entity.decarb;
+          return 0;
+        }
+
+        // Collect the year-by-year event log highlights
+        var eventHighlights = yearLog.map(function(snap) {
+          return {
+            label: snap.year ? ('Year/Period ' + snap.year) : 'Period',
+            event: (snap.event || snap.eventName || 'quiet'),
+            cascades: snap.cascades || snap.feedbacks || snap.cascadesFired || []
+          };
+        });
+
+        return h('div', {
+          id: 'stewardship-campaign-report',
+          style: {
+            maxWidth: 720, margin: '0 auto', padding: 24,
+            background: '#fff', color: '#0f172a',
+            borderRadius: 14, border: '1px solid #cbd5e1'
+          }
+        },
+          // Print-only CSS: hide everything except this report
+          h('style', null,
+            '@media print { body * { visibility: hidden !important; } ' +
+            '#stewardship-campaign-report, #stewardship-campaign-report * { visibility: visible !important; } ' +
+            '#stewardship-campaign-report { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; } ' +
+            '.no-print { display: none !important; } }'
+          ),
+
+          // Header
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, paddingBottom: 14, borderBottom: '2px solid ' + c.color } },
+            h('span', { style: { fontSize: 40 } }, c.icon),
+            h('div', { style: { flex: 1 } },
+              h('div', { style: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } }, 'Maine Stewardship Campaign Report'),
+              h('h2', { style: { margin: '4px 0 0', color: c.color, fontSize: 24, fontWeight: 900 } }, c.label),
+              h('div', { style: { fontSize: 12, color: '#475569', marginTop: 4 } }, c.scale + ' · ' + c.mechanic)
+            ),
+            h('div', { className: 'no-print', style: { display: 'flex', gap: 6 } },
+              h('button', { onClick: printReport, 'aria-label': 'Print this report',
+                style: { padding: '6px 14px', borderRadius: 8, border: '1px solid #15803d', background: '#15803d', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 12 } }, '🖨 Print'),
+              h('button', { onClick: closeReport, 'aria-label': 'Close report',
+                style: { padding: '6px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', cursor: 'pointer', fontWeight: 700, fontSize: 12 } }, '← Back')
+            )
+          ),
+
+          // Final outcome
+          outcome ? h('div', {
+            style: { padding: 14, borderRadius: 10, marginBottom: 16, background: (outcome.color || '#86efac') + '18', border: '1px solid ' + (outcome.color || '#86efac') + '66' }
+          },
+            h('div', { style: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, 'Final outcome'),
+            h('div', { style: { fontSize: 18, fontWeight: 800, color: outcome.color || '#0f172a' } }, (outcome.icon || '🏆') + ' ' + (outcome.label || 'Complete')),
+            h('p', { style: { margin: '6px 0 0', color: '#334155', fontSize: 13, lineHeight: 1.55 } }, outcome.desc || '')
+          ) : null,
+
+          // Campaign metadata
+          h('div', {
+            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 16, padding: 12, background: '#f1f5f9', borderRadius: 8 }
+          },
+            h('div', null,
+              h('div', { style: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Difficulty'),
+              h('div', { style: { fontSize: 14, fontWeight: 700, color: '#0f172a' } }, state.difficulty || 'Standard')
+            ),
+            h('div', null,
+              h('div', { style: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Periods played'),
+              h('div', { style: { fontSize: 14, fontWeight: 700, color: '#0f172a' } }, yearLog.length + ' of ' + (state.maxYears || state.maxWeeks || c.defaultMaxYears))
+            ),
+            h('div', null,
+              h('div', { style: { fontSize: 10, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Campaign seed'),
+              h('div', { style: { fontSize: 11, fontWeight: 700, fontFamily: 'ui-monospace, monospace', color: '#0f172a' } }, state.seed || 'unsaved')
+            )
+          ),
+
+          // Final entity state
+          entities.length > 0 ? h('div', { style: { marginBottom: 16 } },
+            h('div', { style: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Final ' + fm.name + ' State'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8 } },
+              entities.map(function(e) {
+                var pm = primaryMetric(e);
+                return h('div', { key: e.id, style: { padding: 8, background: '#f8fafc', borderRadius: 6, border: '1px solid #e2e8f0' } },
+                  h('div', { style: { fontSize: 12, fontWeight: 700, color: '#0f172a' } }, e.id),
+                  h('div', { style: { fontSize: 11, color: '#475569', marginTop: 2 } }, fm.metricLabel + ': ' + Math.round(pm || 0))
+                );
+              })
+            )
+          ) : null,
+
+          // Event log highlights
+          eventHighlights.length > 0 ? h('div', { style: { marginBottom: 16 } },
+            h('div', { style: { fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Campaign Log'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+              eventHighlights.map(function(eh, i) {
+                return h('div', { key: i, style: { padding: '6px 10px', background: '#f8fafc', borderLeft: '3px solid ' + c.color, borderRadius: 4, fontSize: 12, color: '#334155' } },
+                  h('strong', null, eh.label + ': '),
+                  eh.event,
+                  eh.cascades && eh.cascades.length > 0 ? h('div', { style: { marginTop: 2, fontSize: 11, color: '#64748b', fontStyle: 'italic' } },
+                    '↳ ' + eh.cascades.map(function(c) { return c.msg; }).join(' · ')
+                  ) : null
+                );
+              })
+            )
+          ) : null,
+
+          // Signature line
+          h('div', {
+            style: { marginTop: 24, paddingTop: 16, borderTop: '1px dashed #cbd5e1', display: 'flex', gap: 32, fontSize: 11, color: '#475569' }
+          },
+            h('div', { style: { flex: 1 } },
+              h('div', { style: { borderTop: '1px solid #0f172a', paddingTop: 4 } }, 'Student name'),
+              h('div', { style: { marginTop: 16, borderTop: '1px solid #0f172a', paddingTop: 4 } }, 'Date')
+            ),
+            h('div', { style: { flex: 1 } },
+              h('div', { style: { borderTop: '1px solid #0f172a', paddingTop: 4 } }, 'Reflection (one thing you learned)'),
+              h('div', { style: { marginTop: 16, borderTop: '1px solid #0f172a', paddingTop: 4 } }, 'Teacher signature')
+            )
+          ),
+
+          h('div', { style: { marginTop: 18, fontSize: 10, color: '#94a3b8', textAlign: 'center', fontStyle: 'italic' } },
+            'Generated by Maine Stewardship Campaigns · AlloFlow · Campaign data is a teaching simplification grounded in documented Maine practice.'
+          )
+        );
+      }
+
       // Compute state snapshots for each campaign
       var snapshots = CAMPAIGNS.map(function(c) {
         return { campaign: c, state: readCampaignState(labToolData, c) };
@@ -223,6 +380,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         if (announceToSR) announceToSR('Opening ' + c.label);
         // Navigate into the host tool
         setTimeout(function() { setStemLabTool(c.hostTool); }, 50);
+      }
+
+      // If the user is viewing a campaign report, render that instead of the main hub
+      if (hub.viewingReport) {
+        return renderCampaignReport(hub.viewingReport);
       }
 
       return h('div', {
@@ -371,16 +533,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 isTopTier(outcome) ? h('div', { style: { fontSize: 10, color: '#a855f7', marginTop: 2, fontWeight: 700 } }, '🌟 Top-tier outcome') : null
               ) : null,
 
-              h('button', {
-                onClick: function() { launchCampaign(c); },
-                'aria-label': 'Launch ' + c.label,
-                style: {
-                  marginTop: 'auto',
-                  padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                  background: 'linear-gradient(135deg, ' + c.color + ' 0%, ' + c.color + 'cc 100%)',
-                  color: '#fff', fontWeight: 800, fontSize: 13
-                }
-              }, s.status === 'inProgress' ? 'Continue →' : (s.status === 'complete' ? 'Replay →' : 'Launch →'))
+              h('div', { style: { marginTop: 'auto', display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                h('button', {
+                  onClick: function() { launchCampaign(c); },
+                  'aria-label': 'Launch ' + c.label,
+                  style: {
+                    flex: 1, minWidth: 100,
+                    padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                    background: 'linear-gradient(135deg, ' + c.color + ' 0%, ' + c.color + 'cc 100%)',
+                    color: '#fff', fontWeight: 800, fontSize: 13
+                  }
+                }, s.status === 'inProgress' ? 'Continue →' : (s.status === 'complete' ? 'Replay →' : 'Launch →')),
+                s.status === 'complete' ? h('button', {
+                  onClick: function() { viewReport(c.id); },
+                  'aria-label': 'View printable report for ' + c.label,
+                  title: 'View printable campaign report',
+                  style: {
+                    padding: '10px 12px', borderRadius: 10, border: '1px solid ' + c.color + '88', cursor: 'pointer',
+                    background: 'rgba(15,23,42,0.5)', color: c.color, fontWeight: 700, fontSize: 12
+                  }
+                }, '🖨 Report') : null
+              )
             );
           })
         ),
