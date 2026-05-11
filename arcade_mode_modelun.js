@@ -520,6 +520,62 @@
         'Calls upon all nuclear-weapon states to refrain from arsenal modernization beyond current stockpile size;',
         'Urges convening of a Conference on a Middle East Zone Free of Weapons of Mass Destruction.'
       ]
+    },
+    { id: 'food_security', title: 'Global Food Security', emoji: '🌾',
+      background: 'Approximately 783 million people face hunger globally. Climate change, conflict, and supply-chain disruptions compound the crisis. The World Food Programme reports record demand against falling donor support.',
+      keyQuestions: [
+        'How are emergency food-aid contributions allocated and triggered?',
+        'What role do agricultural subsidies in wealthy nations play in distorting global markets?',
+        'How is climate-resilient agriculture funded for smallholder farmers?',
+        'What protections exist for food-systems workers and indigenous food sovereignty?'
+      ],
+      sampleClauses: [
+        'Calls upon Member States to scale annual contributions to the World Food Programme by 30%;',
+        'Establishes a Climate-Resilient Agriculture Trust Fund prioritizing smallholder farmers in least-developed countries;',
+        'Urges removal of trade-distorting agricultural subsidies inconsistent with WTO commitments by 2030.'
+      ]
+    },
+    { id: 'cybersecurity', title: 'Cybersecurity & Sovereignty in Cyberspace', emoji: '🔐',
+      background: 'State and non-state cyberattacks on critical infrastructure (hospitals, power grids, election systems) are accelerating. Existing international law applies in cyberspace, but operational norms remain contested. Recent ransomware incidents have caused billions in damages.',
+      keyQuestions: [
+        'What state behavior in cyberspace constitutes an armed attack triggering self-defense rights?',
+        'How is critical infrastructure protected through international cooperation?',
+        'What responsibility do states bear for non-state actors operating from their territory?',
+        'How are vulnerabilities disclosed responsibly between researchers and vendors?'
+      ],
+      sampleClauses: [
+        'Reaffirms that existing international law, including the UN Charter, applies in cyberspace;',
+        'Establishes a UN Cybersecurity Incident Response Coordination Center for cross-border attacks on critical infrastructure;',
+        'Calls upon Member States to refrain from cyber operations targeting election systems and civilian infrastructure.'
+      ]
+    },
+    { id: 'migration_compact', title: 'Global Migration Compact Implementation', emoji: '🌍',
+      background: 'The Global Compact for Safe, Orderly and Regular Migration (2018) set 23 objectives for managed mobility. Implementation varies widely; receiving and origin countries continue to disagree on responsibility-sharing. Climate displacement is reshaping migration flows.',
+      keyQuestions: [
+        'How are remittance flows (~$650B annually) protected and made cheaper?',
+        'What pathways exist for skilled vs unskilled labor migration?',
+        'How is climate displacement integrated with existing migration frameworks?',
+        'What protections apply to migrant children and unaccompanied minors?'
+      ],
+      sampleClauses: [
+        'Reaffirms commitments under the Global Compact for Safe, Orderly and Regular Migration;',
+        'Calls upon Member States to reduce average remittance transfer costs below 3% by 2030 per SDG 10.c;',
+        'Establishes a Climate Mobility Coordination Mechanism to integrate climate displacement with existing migration governance.'
+      ]
+    },
+    { id: 'womens_rights', title: 'Women, Peace & Security Agenda', emoji: '⚖️',
+      background: 'UN Security Council Resolution 1325 (2000) and follow-ons recognize the disproportionate impact of conflict on women + the underrepresentation of women in peace processes. Progress is uneven; gender-based violence in conflict zones persists.',
+      keyQuestions: [
+        'What targets ensure meaningful participation of women in peace negotiations?',
+        'How is conflict-related sexual violence accountability strengthened?',
+        'What economic recovery measures specifically support women in post-conflict reconstruction?',
+        'How is access to reproductive healthcare protected during humanitarian crises?'
+      ],
+      sampleClauses: [
+        'Reaffirms commitments under UN Security Council Resolution 1325 and its follow-on resolutions;',
+        'Calls upon Member States to establish national action plans with measurable participation targets for women in peace processes;',
+        'Urges that humanitarian response plans include comprehensive sexual and reproductive health services as a core component.'
+      ]
     }
   ];
 
@@ -564,14 +620,58 @@
     SETUP:           'setup',
     ASSIGNMENT:      'assignment',
     BRIEFING:        'briefing',
-    OPENING_SPEECHES:'opening_speeches', // future
-    MOD_CAUCUS:      'mod_caucus',       // future
+    OPENING_SPEECHES:'opening_speeches',
+    MOD_CAUCUS:      'mod_caucus',
     UNMOD_CAUCUS:    'unmod_caucus',     // future
-    DRAFT:           'draft',            // future
-    AMEND:           'amend',            // future
-    VOTE:            'vote',             // future
-    DEBRIEF:         'debrief'           // future
+    DRAFT:           'draft',
+    AMEND:           'amend',            // (handled inline via AmendmentModal)
+    VOTE:            'vote',
+    DEBRIEF:         'debrief'
   };
+
+  // ═══════════════════════════════════════════
+  // GLOSSARY — MUN procedural + agenda vocabulary
+  // Each entry: { term, definition, phaseTags: ['setup', 'speeches', ...] }
+  // Surfaced via the HelpPanel modal, opened by the "?" button in each phase header.
+  // UDL move: just-in-time vocabulary support without cluttering the UI.
+  // ═══════════════════════════════════════════
+  var GLOSSARY = [
+    // Procedural terms
+    { term: 'Delegate', def: 'A person representing a country in the committee. You speak and vote on behalf of your assigned country, not your personal beliefs.', phases: ['setup', 'briefing', 'speeches', 'caucus', 'draft', 'vote'] },
+    { term: 'Chair / Dais', def: 'The student or teacher running the committee. The Chair recognizes speakers, manages time, calls votes, and rules on motions.', phases: ['setup', 'briefing', 'speeches', 'caucus', 'draft', 'vote'] },
+    { term: 'Recognition', def: 'When the Chair gives a delegate the floor — i.e., permission to speak. You can\'t speak until you are recognized.', phases: ['speeches', 'caucus'] },
+    { term: 'Yielding the floor', def: 'When a speaker finishes early, they can yield remaining time to (a) another delegate, (b) questions, or (c) back to the Chair.', phases: ['speeches', 'caucus'] },
+    { term: 'Roll Call', def: 'The opening procedure where the Chair confirms each delegation\'s presence and voting status (Present / Present and Voting).', phases: ['briefing', 'vote'] },
+    // Speech / debate terms
+    { term: 'Opening Speech', def: 'Your first formal speech: a 1-2 minute statement of your country\'s position on the agenda. Covers history, interests, and proposals.', phases: ['speeches'] },
+    { term: 'Moderated Caucus', def: 'A focused mini-debate on a specific sub-topic. The Chair calls on speakers in turn; each gets a short fixed time (30-60s typical).', phases: ['speeches', 'caucus'] },
+    { term: 'Unmoderated Caucus', def: 'Informal time when delegates leave their seats to talk freely — for coalition-building and clause-drafting. (Not yet implemented in this sim.)', phases: ['speeches', 'caucus'] },
+    { term: 'Motion', def: 'A formal proposal to do something procedural — e.g., "I move for a moderated caucus on climate finance, 8 minutes, 30 seconds speaking time."', phases: ['speeches', 'caucus', 'draft'] },
+    { term: 'Point of Order', def: 'A formal interruption to flag a procedural error or improper conduct. Always recognized by the Chair.', phases: ['speeches', 'caucus', 'vote'] },
+    // Resolution / clause terms
+    { term: 'Resolution', def: 'The formal document the committee tries to pass. Composed of preambulatory clauses (context/justification) + operative clauses (actions).', phases: ['draft', 'vote'] },
+    { term: 'Preambulatory Clause', def: 'A clause that provides context, history, or moral framing. Begins with -ing or -ed words like "Recognizing," "Recalling," "Concerned by," "Acknowledging,".', phases: ['draft', 'vote'] },
+    { term: 'Operative Clause', def: 'A numbered clause that calls for specific action. Begins with verbs like "Calls upon," "Urges," "Establishes," "Requests," "Encourages,".', phases: ['draft', 'vote'] },
+    { term: 'Amendment', def: 'A change to a clause already on the floor. Three kinds: STRIKE (delete), ADD (insert), or MODIFY (rewrite). Voted on separately.', phases: ['draft', 'vote'] },
+    { term: 'Sponsor', def: 'A delegation that publicly endorses a draft resolution. Sponsors typically support all clauses; signatories support its consideration but may vote no.', phases: ['draft'] },
+    // Voting terms
+    { term: 'Vote: Yes / Aye / Y', def: 'You support the resolution as currently written. A simple majority of cast votes (Y > N) passes most resolutions.', phases: ['vote'] },
+    { term: 'Vote: No / Nay / N', def: 'You oppose the resolution. Even a single P5 No can block a Security Council resolution (veto).', phases: ['vote'] },
+    { term: 'Vote: Abstain / A', def: 'You don\'t want to take sides. Abstentions don\'t count toward Yes or No tallies — they reduce the threshold neither way.', phases: ['vote'] },
+    { term: 'Roll Call Vote', def: 'A vote where each delegate is called by name and states their vote publicly. Slower but more transparent than a simple vote.', phases: ['vote'] },
+    // Agenda-specific
+    { term: 'NPT', def: 'Nuclear Non-Proliferation Treaty (1968). 191 members. Three pillars: non-proliferation, disarmament, peaceful use. Five recognized nuclear-weapon states (P5).', phases: ['briefing'] },
+    { term: 'UNCLOS', def: 'United Nations Convention on the Law of the Sea (1982). The legal framework for all maritime activities — territorial waters, EEZs, freedom of navigation.', phases: ['briefing'] },
+    { term: 'P5 / Permanent Five', def: 'The five permanent members of the UN Security Council: United States, China, Russia, United Kingdom, France. Each has veto power.', phases: ['briefing', 'vote'] },
+    { term: 'Loss & Damage', def: 'Climate-finance term for compensation/support to climate-vulnerable countries for unavoidable harms (rising seas, displacement). COP27 established a fund.', phases: ['briefing'] },
+    { term: 'Non-refoulement', def: 'Principle of international refugee law: states may not return refugees to a country where they would face persecution. Foundational to the 1951 Convention.', phases: ['briefing'] },
+    { term: 'JETP', def: 'Just Energy Transition Partnership. Multi-billion-dollar deals between G7 countries and coal-dependent developing economies (South Africa, Indonesia, Vietnam) to fund coal phase-out.', phases: ['briefing'] }
+  ];
+
+  // Filter glossary by phase tag
+  function glossaryForPhase(phaseKey) {
+    return GLOSSARY.filter(function(t) { return t.phases.indexOf(phaseKey) !== -1; });
+  }
 
   // ═══════════════════════════════════════════
   // Register the plugin with AlloHaven Arcade.
@@ -1243,6 +1343,7 @@
   function BriefingView(props) {
     var React = window.React;
     var h = React.createElement;
+    var useState = React.useState;
     var ctx = props.ctx;
     var modelUn = props.modelUn;
     var updateMUN = props.updateMUN;
@@ -1258,9 +1359,19 @@
     var myIso = assigned[myUid];
     var myCountry = myIso ? countryById(myIso) : null;
 
-    return h('div', { style: { padding: 18, color: '#e2e8f0', maxWidth: 900, margin: '0 auto' } },
-      // Top banner
-      h('div', { style: { marginBottom: 16, padding: 14, background: 'linear-gradient(135deg, #0c4a6e 0%, #155e75 100%)', borderRadius: 12 } },
+    var helpTuple = useState(false);
+    var helpOpen = helpTuple[0];
+    var setHelpOpen = helpTuple[1];
+
+    return h('div', { style: { padding: 18, color: '#e2e8f0', maxWidth: 900, margin: '0 auto', position: 'relative' } },
+      helpOpen && h(HelpPanel, { phaseKey: 'briefing', onClose: function() { setHelpOpen(false); } }),
+      // Top banner with help button
+      h('div', { style: { marginBottom: 16, padding: 14, background: 'linear-gradient(135deg, #0c4a6e 0%, #155e75 100%)', borderRadius: 12, position: 'relative' } },
+        h('button', {
+          onClick: function() { setHelpOpen(true); },
+          'aria-label': 'Open vocabulary help panel',
+          style: { position: 'absolute', top: 10, right: 10, padding: '4px 10px', fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, cursor: 'pointer' }
+        }, '? Help'),
         h('div', { style: { fontSize: 11, color: '#7dd3fc', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' } }, committee ? committee.name : ''),
         h('h2', { style: { fontSize: 22, fontWeight: 800, marginTop: 4, display: 'flex', alignItems: 'center', gap: 8 } },
           agenda && h('span', null, agenda.emoji),
@@ -1804,7 +1915,13 @@
     // Phase advance — when all delegates have spoken
     var allSpoken = queue.length === 0;
 
+    // Help panel state
+    var helpTuple = useState(false);
+    var helpOpen = helpTuple[0];
+    var setHelpOpen = helpTuple[1];
+
     return h('div', { style: { padding: 16, color: '#e2e8f0', maxWidth: 1000, margin: '0 auto' } },
+      helpOpen && h(HelpPanel, { phaseKey: 'speeches', onClose: function() { setHelpOpen(false); } }),
       // Header
       h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 14, padding: 12, background: 'linear-gradient(135deg, #0c4a6e 0%, #155e75 100%)', borderRadius: 10 } },
         h('div', { style: { fontSize: 32 } }, agenda ? agenda.emoji : '🌐'),
@@ -1817,6 +1934,11 @@
             orderedSpeeches.length + ' speech' + (orderedSpeeches.length !== 1 ? 'es' : '') + ' given · ' + queue.length + ' delegate' + (queue.length !== 1 ? 's' : '') + ' remaining'
           )
         ),
+        h('button', {
+          onClick: function() { setHelpOpen(true); },
+          'aria-label': 'Open vocabulary help panel',
+          style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, cursor: 'pointer' }
+        }, '? Help'),
         // Phase advance
         isHost && allSpoken && h('button', {
           onClick: function() { updateMUN({ phase: PHASES.DRAFT }); },
@@ -2213,7 +2335,13 @@
       return { uid: uid, iso: assigned[uid], isAi: uid.indexOf('ai_') === 0, country: countryById(assigned[uid]) };
     }).filter(function(d) { return d.country; });
 
+    // Help panel state for draft phase
+    var helpDraftTuple = useState(false);
+    var draftHelpOpen = helpDraftTuple[0];
+    var setDraftHelpOpen = helpDraftTuple[1];
+
     return h('div', { style: { padding: 16, color: '#e2e8f0', maxWidth: 1000, margin: '0 auto' } },
+      draftHelpOpen && h(HelpPanel, { phaseKey: 'draft', onClose: function() { setDraftHelpOpen(false); } }),
       // Header
       h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 14, padding: 12, background: 'linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%)', borderRadius: 10 } },
         h('div', { style: { fontSize: 32 } }, '📜'),
@@ -2227,6 +2355,11 @@
             orderedClauses.filter(function(c) { return c.status === 'adopted'; }).length + ' adopted'
           )
         ),
+        h('button', {
+          onClick: function() { setDraftHelpOpen(true); },
+          'aria-label': 'Open vocabulary help panel',
+          style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, cursor: 'pointer' }
+        }, '? Help'),
         isHost && h('button', {
           onClick: advanceToVote,
           style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
@@ -2855,9 +2988,20 @@
     voted.forEach(function(d) { var v = d.vote.vote; if (tally[v] != null) tally[v]++; });
     var allVoted = voted.length === allDelegates.length;
 
+    // Help panel state for vote phase
+    var voteHelpTuple = useState(false);
+    var voteHelpOpen = voteHelpTuple[0];
+    var setVoteHelpOpen = voteHelpTuple[1];
+
     return h('div', { style: { padding: 16, color: '#e2e8f0', maxWidth: 1000, margin: '0 auto' } },
+      voteHelpOpen && h(HelpPanel, { phaseKey: 'vote', onClose: function() { setVoteHelpOpen(false); } }),
       // Header
-      h('div', { style: { padding: 12, marginBottom: 14, background: 'linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%)', borderRadius: 10 } },
+      h('div', { style: { padding: 12, marginBottom: 14, background: 'linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%)', borderRadius: 10, position: 'relative' } },
+        h('button', {
+          onClick: function() { setVoteHelpOpen(true); },
+          'aria-label': 'Open vocabulary help panel',
+          style: { position: 'absolute', top: 10, right: 10, padding: '4px 10px', fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, cursor: 'pointer' }
+        }, '? Help'),
         h('div', { style: { fontSize: 11, color: '#fecaca', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' } },
           (committee ? committee.name : '') + ' · FINAL VOTE'
         ),
@@ -3462,6 +3606,68 @@
   }
 
   // ═══════════════════════════════════════════
+  // HelpPanel — modal overlay listing glossary terms relevant to the current
+  // phase. Triggered by the "?" button in each phase header. UDL: just-in-time
+  // vocabulary support without cluttering the main UI.
+  // ═══════════════════════════════════════════
+  function HelpPanel(props) {
+    var React = window.React;
+    var h = React.createElement;
+    var phaseKey = props.phaseKey || 'briefing';
+    var onClose = props.onClose;
+    var terms = glossaryForPhase(phaseKey);
+    return h('div', {
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-labelledby': 'mun-help-title',
+      style: {
+        position: 'fixed', inset: 0,
+        background: 'rgba(0,0,0,0.75)', zIndex: 1000,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 20, overflow: 'auto'
+      },
+      onClick: function(e) { if (e.target === e.currentTarget) onClose(); }
+    },
+      h('div', {
+        style: {
+          maxWidth: 600, width: '100%', maxHeight: '85vh', overflowY: 'auto',
+          background: '#0f172a', border: '2px solid #38bdf8', borderRadius: 12, color: '#e2e8f0'
+        }
+      },
+        h('div', { style: { padding: 14, display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid #334155', position: 'sticky', top: 0, background: '#0f172a', zIndex: 1 } },
+          h('span', { style: { fontSize: 26 } }, '📖'),
+          h('div', { style: { flex: 1 } },
+            h('div', { id: 'mun-help-title', style: { fontSize: 15, fontWeight: 800 } }, 'Vocabulary & Procedure Help'),
+            h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } },
+              terms.length + ' term' + (terms.length !== 1 ? 's' : '') + ' relevant to this phase'
+            )
+          ),
+          h('button', {
+            onClick: onClose,
+            'aria-label': 'Close help panel',
+            style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer', fontSize: 14 }
+          }, '✕')
+        ),
+        h('div', { style: { padding: 14 } },
+          terms.length === 0
+            ? h('p', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, 'No specific terms for this phase yet.')
+            : h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+                terms.map(function(t, i) {
+                  return h('div', {
+                    key: 'term-' + i,
+                    style: { padding: 10, background: 'rgba(56, 189, 248, 0.06)', border: '1px solid rgba(56, 189, 248, 0.2)', borderRadius: 8 }
+                  },
+                    h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7dd3fc', marginBottom: 4 } }, t.term),
+                    h('p', { style: { fontSize: 12, lineHeight: 1.6, color: '#cbd5e1', margin: 0 } }, t.def)
+                  );
+                })
+              )
+        )
+      )
+    );
+  }
+
+  // ═══════════════════════════════════════════
   // NewsDeskBanner — renders an AI-generated breaking-news event above the
   // current phase content. Host can trigger via button; everyone in session
   // sees the same banner (it lives in session.modelUn.news).
@@ -3564,7 +3770,7 @@
 
   // Hot-reload guard — re-attach the launcher card data if needed
   if (typeof console !== 'undefined') {
-    console.log('[arcade_mode_modelun] Plugin v0.6 loaded — ' + COUNTRIES.length + ' countries, ' + AGENDAS.length + ' agendas, ' + COMMITTEES.length + ' committees; full loop + Moderated Caucus + AI news desk + 7 achievement hooks + amendments.');
+    console.log('[arcade_mode_modelun] Plugin v0.7 loaded — ' + COUNTRIES.length + ' countries, ' + AGENDAS.length + ' agendas, ' + COMMITTEES.length + ' committees, ' + GLOSSARY.length + ' glossary terms.');
   }
 
 })();
