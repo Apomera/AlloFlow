@@ -876,6 +876,9 @@
     if (phase === PHASES.OPENING_SPEECHES) {
       return h(OpeningSpeechesView, { ctx: ctx, modelUn: modelUn, updateMUN: updateMUN, isHost: isHost || isSolo, isSolo: isSolo, sessionState: sessionState });
     }
+    if (phase === PHASES.MOD_CAUCUS) {
+      return h(ModCaucusView, { ctx: ctx, modelUn: modelUn, updateMUN: updateMUN, isHost: isHost || isSolo, isSolo: isSolo, sessionState: sessionState });
+    }
     if (phase === PHASES.DRAFT) {
       return h(DraftResolutionView, { ctx: ctx, modelUn: modelUn, updateMUN: updateMUN, isHost: isHost || isSolo, isSolo: isSolo, sessionState: sessionState });
     }
@@ -1353,7 +1356,7 @@
   // Uses jsonMode=true with the proven Sage/SpaceExplorer parsing pattern:
   // strip code fences, extract by outer braces, validate shape, silent fallback.
   // ═══════════════════════════════════════════
-  function aiGenerateDelegateSpeech(ctx, country, agenda, committee, recentSpeeches) {
+  function aiGenerateDelegateSpeech(ctx, country, agenda, committee, recentSpeeches, caucusTopic) {
     if (!ctx || typeof ctx.callGemini !== 'function' || !country || !agenda) {
       return Promise.resolve(null);
     }
@@ -1364,8 +1367,10 @@
         return '- ' + s.country + ': ' + (s.text || '').slice(0, 200) + (s.text && s.text.length > 200 ? '…' : '');
       }).join('\n');
     }
+    var isCaucus = !!caucusTopic;
     var prompt = [
       'You are the delegate from ' + country.name + ' speaking on "' + agenda.title + '" in the ' + (committee ? committee.name : 'committee') + '.',
+      isCaucus ? ('Current MODERATED CAUCUS sub-topic: "' + caucusTopic + '"') : '',
       '',
       'Your country profile:',
       '- Government: ' + country.gov,
@@ -1376,16 +1381,13 @@
       'Your country\'s default stance on this agenda: ' + stance,
       '',
       recentSpeeches && recentSpeeches.length > 0 ? 'Recent speeches in the chamber:\n' + historyText + '\n' : '',
-      'Give a 2-3 paragraph OPENING SPEECH in diplomatic Model UN style. Include:',
-      '  1. One specific argument grounded in your country\'s national interest',
-      '  2. One acknowledgment of an opposing view (diplomatic concession)',
-      '  3. One concrete proposal or call to action',
-      '',
-      'Speak in first person plural ("We", "Our delegation", "The delegate of ' + country.name + '"). 120-180 words total.',
+      isCaucus
+        ? 'Give a FOCUSED MODERATED CAUCUS speech in diplomatic Model UN style. Address ONLY the caucus sub-topic. 50-80 words total. One concrete point, one specific proposal. Speak in first person plural.'
+        : 'Give a 2-3 paragraph OPENING SPEECH in diplomatic Model UN style. Include:\n  1. One specific argument grounded in your country\'s national interest\n  2. One acknowledgment of an opposing view (diplomatic concession)\n  3. One concrete proposal or call to action\n\nSpeak in first person plural ("We", "Our delegation", "The delegate of ' + country.name + '"). 120-180 words total.',
       '',
       'Return ONLY a JSON object in this exact shape:',
       '{',
-      '  "text": "the full speech body (120-180 words)",',
+      '  "text": "the full speech body",',
       '  "keyPoints": ["one-line argument", "one-line concession", "one-line proposal"]',
       '}',
       '',
@@ -1826,7 +1828,28 @@
             updateMUN({ phase: PHASES.DRAFT });
           },
           style: { padding: '6px 10px', fontSize: 11, fontWeight: 600, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' }
-        }, 'Skip to Drafting →')
+        }, 'Skip to Drafting →'),
+        isHost && h('button', {
+          onClick: function() {
+            // Motion for a moderated caucus — prompt for sub-topic
+            if (typeof prompt !== 'function') {
+              ctx.addToast('Motion modal unavailable in this browser');
+              return;
+            }
+            var topic = prompt('Motion for moderated caucus.\n\nSub-topic to discuss?', 'Climate finance specifics');
+            if (!topic || topic.trim().length < 3) return;
+            var durStr = prompt('Total caucus time in minutes?', '8');
+            var dur = parseInt(durStr, 10) || 8;
+            updateMUN({
+              phase: PHASES.MOD_CAUCUS,
+              caucusTopic: topic.trim().slice(0, 200),
+              caucusStartedAt: new Date().toISOString(),
+              caucusDurationMin: dur,
+              caucusSpeeches: {}
+            });
+          },
+          style: { padding: '6px 10px', fontSize: 11, fontWeight: 600, background: 'rgba(251,191,36,0.18)', color: '#fbbf24', border: '1px solid #fbbf24', borderRadius: 6, cursor: 'pointer' }
+        }, '⚖️ Motion for Caucus')
       ),
 
       // ── News Desk banner (active when modelUn.news is set) ──
@@ -1955,6 +1978,8 @@
     var agenda = props.agenda;
     var committee = props.committee;
     var recentSpeeches = props.recentSpeeches;
+    var caucusTopic = props.caucusTopic || null;
+    var shortForm = !!props.shortForm;
     var onSubmit = props.onSubmit;
 
     var textTuple = useState('');
@@ -1967,7 +1992,7 @@
     function getStarter() {
       if (loading || !country || !agenda) return;
       setLoading(true);
-      aiGenerateDelegateSpeech(ctx, country, agenda, committee, recentSpeeches).then(function(r) {
+      aiGenerateDelegateSpeech(ctx, country, agenda, committee, recentSpeeches, caucusTopic).then(function(r) {
         setLoading(false);
         if (r && r.text) {
           setText(r.text);
@@ -1987,18 +2012,23 @@
     }
     function handleSubmit() {
       var t = (text || '').trim();
-      if (t.length < 30) { ctx.addToast('Speech is too short — aim for 100+ words'); return; }
+      var minLen = shortForm ? 15 : 30;
+      if (t.length < minLen) { ctx.addToast(shortForm ? 'Caucus speech is too short' : 'Speech is too short — aim for 100+ words'); return; }
       onSubmit(t);
       setText('');
     }
 
     var wordCount = (text || '').trim().split(/\s+/).filter(function(w) { return w.length; }).length;
-    var wcColor = wordCount >= 100 && wordCount <= 200 ? '#10b981' : wordCount > 0 ? '#fbbf24' : '#94a3b8';
+    var targetLow = shortForm ? 30 : 100;
+    var targetHigh = shortForm ? 100 : 200;
+    var wcColor = (wordCount >= targetLow && wordCount <= targetHigh) ? '#10b981' : wordCount > 0 ? '#fbbf24' : '#94a3b8';
 
     return h('div', { style: { background: 'rgba(0,0,0,0.18)', padding: 10, borderRadius: 8, marginTop: 8 } },
       h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
         h('span', { style: { fontSize: 10, color: '#fcd34d', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } },
-          'You have the floor — compose your opening speech (120-180 words)'
+          shortForm
+            ? ('You have the floor — focused caucus speech (50-80 words on "' + (caucusTopic || 'sub-topic') + '")')
+            : 'You have the floor — compose your opening speech (120-180 words)'
         ),
         h('button', {
           onClick: getStarter,
@@ -2014,8 +2044,10 @@
       h('textarea', {
         value: text,
         onChange: function(e) { setText(e.target.value); },
-        placeholder: 'Mr./Madam Chair, distinguished delegates… (speak in first person plural; ground your argument in your country\'s national interest)',
-        rows: 6,
+        placeholder: shortForm
+          ? ('Focused point on "' + (caucusTopic || 'sub-topic') + '" — one specific argument + one proposal')
+          : 'Mr./Madam Chair, distinguished delegates… (speak in first person plural; ground your argument in your country\'s national interest)',
+        rows: shortForm ? 3 : 6,
         style: {
           width: '100%', padding: 8, fontFamily: 'inherit', fontSize: 12, lineHeight: 1.6,
           background: 'rgba(255,255,255,0.04)', color: '#e2e8f0',
@@ -2026,17 +2058,17 @@
       }),
       h('div', { style: { display: 'flex', alignItems: 'center', marginTop: 6 } },
         h('span', { style: { fontSize: 10, color: wcColor, fontWeight: 600 } },
-          wordCount + ' word' + (wordCount !== 1 ? 's' : '') + (wordCount > 0 && (wordCount < 100 || wordCount > 200) ? ' (target 120-180)' : '')
+          wordCount + ' word' + (wordCount !== 1 ? 's' : '') + (wordCount > 0 && (wordCount < targetLow || wordCount > targetHigh) ? (' (target ' + (shortForm ? '50-80' : '120-180') + ')') : '')
         ),
         h('button', {
           onClick: handleSubmit,
-          disabled: text.trim().length < 30,
+          disabled: text.trim().length < (shortForm ? 15 : 30),
           style: {
             marginLeft: 'auto',
             padding: '6px 14px', fontSize: 12, fontWeight: 700,
-            background: text.trim().length >= 30 ? '#10b981' : '#475569',
+            background: text.trim().length >= (shortForm ? 15 : 30) ? '#10b981' : '#475569',
             color: '#fff', border: 'none', borderRadius: 8,
-            cursor: text.trim().length >= 30 ? 'pointer' : 'not-allowed'
+            cursor: text.trim().length >= (shortForm ? 15 : 30) ? 'pointer' : 'not-allowed'
           }
         }, '🎤 Deliver speech')
       )
@@ -3149,6 +3181,250 @@
   }
 
   // ═══════════════════════════════════════════
+  // ModCaucusView — moderated caucus on a chair-set sub-topic.
+  // Each delegate can speak ~once; AI delegates auto-speak when called on.
+  // Speeches stored in modelUn.caucusSpeeches (separate from opening speeches
+  // so the opening-floor history stays clean).
+  // ═══════════════════════════════════════════
+  function ModCaucusView(props) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var ctx = props.ctx;
+    var modelUn = props.modelUn;
+    var updateMUN = props.updateMUN;
+    var isHost = props.isHost;
+    var isSolo = props.isSolo;
+    var sessionState = props.sessionState;
+
+    var committee = committeeById(modelUn.committeeId);
+    var agenda = agendaById(modelUn.agendaId);
+    var assigned = modelUn.assignedCountries || {};
+    var subTopic = modelUn.caucusTopic || '(untitled)';
+    var caucusSpeeches = modelUn.caucusSpeeches || {};
+    var orderedSpeeches = Object.keys(caucusSpeeches).map(function(id) {
+      return Object.assign({ id: id }, caucusSpeeches[id]);
+    }).sort(function(a, b) { return (a.at || 0) - (b.at || 0); });
+
+    var currentSpeakerUid = modelUn.caucusSpeakerUid || null;
+    var currentSpeakerCountry = currentSpeakerUid ? countryById(assigned[currentSpeakerUid]) : null;
+
+    var myUid = isSolo ? 'me' : (ctx.userId || null);
+    var myIso = myUid ? assigned[myUid] : null;
+    var myCountry = myIso ? countryById(myIso) : null;
+    var iAmCurrentSpeaker = !!currentSpeakerUid && currentSpeakerUid === myUid;
+
+    var aiInFlightTuple = useState({});
+    var aiInFlight = aiInFlightTuple[0];
+    var setAiInFlight = aiInFlightTuple[1];
+
+    function giveFloorTo(uid) {
+      if (!isHost && !isSolo) return;
+      var iso = assigned[uid];
+      if (!iso) return;
+      updateMUN({ caucusSpeakerUid: uid });
+      if (uid.indexOf('ai_') === 0) triggerAiSpeech(uid, iso);
+    }
+    function triggerAiSpeech(uid, iso) {
+      if (aiInFlight[uid]) return;
+      var country = countryById(iso);
+      if (!country) return;
+      setAiInFlight(function(prev) { var n = Object.assign({}, prev); n[uid] = true; return n; });
+      // Pass caucusTopic to the AI prompt for sub-topic focus
+      aiGenerateDelegateSpeech(ctx, country, agenda, committee, orderedSpeeches, subTopic).then(function(result) {
+        setAiInFlight(function(prev) { var n = Object.assign({}, prev); delete n[uid]; return n; });
+        if (!result) {
+          ctx.addToast('AI caucus speech failed for ' + country.name);
+          return;
+        }
+        commitCaucusSpeech(uid, iso, result.text, result.keyPoints || [], true);
+      }).catch(function() {
+        setAiInFlight(function(prev) { var n = Object.assign({}, prev); delete n[uid]; return n; });
+      });
+    }
+    function commitCaucusSpeech(uid, iso, text, keyPoints, isAi) {
+      var country = countryById(iso);
+      var speechId = 'cs_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+      var newSpeech = {
+        uid: uid,
+        country: country ? country.name : iso,
+        iso: iso,
+        flag: country ? country.flag : '🌐',
+        text: (text || '').slice(0, 1000),
+        keyPoints: keyPoints || [],
+        isAi: !!isAi,
+        at: Date.now()
+      };
+      var nextSpeeches = Object.assign({}, caucusSpeeches);
+      nextSpeeches[speechId] = newSpeech;
+      var keys = Object.keys(nextSpeeches).map(function(k) { return { k: k, at: nextSpeeches[k].at }; }).sort(function(a, b) { return a.at - b.at; });
+      if (keys.length > 40) {
+        var trimmed = {};
+        keys.slice(-40).forEach(function(x) { trimmed[x.k] = nextSpeeches[x.k]; });
+        nextSpeeches = trimmed;
+      }
+      updateMUN({ caucusSpeeches: nextSpeeches, caucusSpeakerUid: null });
+      // Bump speech stat (caucus speeches also count)
+      if (!isAi) {
+        bumpStat('totalSpeeches');
+      }
+    }
+    function skipSpeaker() {
+      updateMUN({ caucusSpeakerUid: null });
+    }
+    function endCaucus(target) {
+      // target: 'opening' | 'draft'
+      updateMUN({ phase: target === 'draft' ? PHASES.DRAFT : PHASES.OPENING_SPEECHES, caucusSpeakerUid: null });
+    }
+
+    // Speaker eligibility — in a moderated caucus, delegates can be recognized
+    // multiple times, but UX-wise we'll suggest those who haven't spoken yet.
+    var spokenUids = {};
+    orderedSpeeches.forEach(function(s) { spokenUids[s.uid] = true; });
+    var eligibleDelegates = Object.keys(assigned).map(function(uid) {
+      return { uid: uid, iso: assigned[uid], isAi: uid.indexOf('ai_') === 0, spoken: !!spokenUids[uid] };
+    }).sort(function(a, b) {
+      // Unspoken delegates first; AI last among unspoken so humans get priority
+      if (a.spoken !== b.spoken) return a.spoken ? 1 : -1;
+      if (a.isAi !== b.isAi) return a.isAi ? 1 : -1;
+      return 0;
+    });
+
+    return h('div', { style: { padding: 16, color: '#e2e8f0', maxWidth: 1000, margin: '0 auto' } },
+      // Header — distinctive caucus banner
+      h('div', { style: { padding: 14, marginBottom: 14, background: 'linear-gradient(135deg, #78350f 0%, #b45309 100%)', borderRadius: 10 } },
+        h('div', { style: { fontSize: 10, color: '#fde68a', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' } },
+          (committee ? committee.name : '') + ' · MODERATED CAUCUS'
+        ),
+        h('div', { style: { fontSize: 17, fontWeight: 800, marginTop: 4, display: 'flex', alignItems: 'center', gap: 8 } },
+          h('span', null, '⚖️'),
+          h('span', null, 'Sub-topic: ', h('em', null, subTopic))
+        ),
+        h('div', { style: { fontSize: 11, color: '#fef3c7', marginTop: 4 } },
+          orderedSpeeches.length + ' caucus speech' + (orderedSpeeches.length !== 1 ? 'es' : '') + ' delivered · ' + (modelUn.caucusDurationMin || 8) + ' min budget'
+        ),
+        isHost && h('div', { style: { display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' } },
+          h('button', {
+            onClick: function() { endCaucus('opening'); },
+            style: { padding: '6px 12px', fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.18)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, cursor: 'pointer' }
+          }, '↩ End caucus → Opening floor'),
+          h('button', {
+            onClick: function() { endCaucus('draft'); },
+            style: { padding: '6px 12px', fontSize: 11, fontWeight: 700, background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }
+          }, '📜 End caucus → Drafting')
+        )
+      ),
+
+      // News banner (if active)
+      h(NewsDeskBanner, {
+        ctx: ctx, modelUn: modelUn, updateMUN: updateMUN, isHost: isHost,
+        agenda: agenda, committee: committee, recentSpeeches: orderedSpeeches
+      }),
+
+      // Current speaker spotlight
+      currentSpeakerUid && currentSpeakerCountry && h('div', {
+        style: { marginBottom: 14, padding: 14, background: 'rgba(251, 191, 36, 0.10)', border: '2px solid #fbbf24', borderRadius: 10 }
+      },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+          h('span', { style: { fontSize: 32 } }, currentSpeakerCountry.flag),
+          h('div', { style: { flex: 1 } },
+            h('div', { style: { fontSize: 10, color: '#fcd34d', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' } }, '🎤 Now Speaking on "' + subTopic + '"'),
+            h('div', { style: { fontSize: 16, fontWeight: 800 } }, currentSpeakerCountry.name),
+            currentSpeakerUid.indexOf('ai_') === 0 && h('div', { style: { fontSize: 10, color: '#a855f7' } },
+              aiInFlight[currentSpeakerUid] ? '🤖 AI delegate composing…' : '🤖 AI delegate'
+            )
+          ),
+          (isHost || isSolo) && h('button', {
+            onClick: skipSpeaker,
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 600, background: 'rgba(239,68,68,0.18)', color: '#fca5a5', border: '1px solid #ef4444', borderRadius: 6, cursor: 'pointer' }
+          }, 'Skip')
+        ),
+        // Human speaker compose
+        iAmCurrentSpeaker && currentSpeakerUid.indexOf('ai_') !== 0 && h(SpeechComposeBox, {
+          ctx: ctx,
+          country: myCountry,
+          agenda: agenda,
+          committee: committee,
+          recentSpeeches: orderedSpeeches,
+          caucusTopic: subTopic,
+          shortForm: true,
+          onSubmit: function(text) { commitCaucusSpeech(myUid, myIso, text, [], false); }
+        }),
+        // Watching speaker
+        !iAmCurrentSpeaker && currentSpeakerUid.indexOf('ai_') !== 0 && h('p', { style: { fontSize: 12, color: '#cbd5e1', fontStyle: 'italic' } },
+          (sessionState && sessionState.roster && sessionState.roster[currentSpeakerUid] ? sessionState.roster[currentSpeakerUid].name : 'Delegate') + ' is composing…'
+        ),
+        // AI in flight / manual trigger
+        currentSpeakerUid.indexOf('ai_') === 0 && aiInFlight[currentSpeakerUid] && h('div', { style: { padding: 8, fontSize: 12, color: '#a855f7', fontStyle: 'italic' } },
+          '🤖 Generating focused caucus speech…'
+        ),
+        currentSpeakerUid.indexOf('ai_') === 0 && !aiInFlight[currentSpeakerUid] && (isHost || isSolo) && h('button', {
+          onClick: function() { triggerAiSpeech(currentSpeakerUid, assigned[currentSpeakerUid]); },
+          style: { padding: '6px 12px', fontSize: 12, fontWeight: 700, background: '#a855f7', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
+        }, '🤖 Generate AI speech')
+      ),
+
+      // Two-column layout: queue (left) + feed (right)
+      h('div', { style: { display: 'grid', gridTemplateColumns: '300px 1fr', gap: 14 } },
+        // Speaker queue
+        h('div', null,
+          h('div', { style: { fontSize: 10, color: '#fbbf24', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
+            'Recognition Queue'
+          ),
+          eligibleDelegates.map(function(q) {
+            var country = countryById(q.iso);
+            if (!country) return null;
+            var roster = (sessionState && sessionState.roster) || {};
+            var rosterEntry = q.isAi ? null : (roster[q.uid] || (isSolo && q.uid === 'me' ? { name: ctx.studentNickname || 'You' } : null));
+            var canRecognize = (isHost || isSolo) && !currentSpeakerUid;
+            return h('button', {
+              key: 'cq-' + q.uid,
+              onClick: canRecognize ? function() { giveFloorTo(q.uid); } : null,
+              disabled: !canRecognize,
+              style: {
+                width: '100%', textAlign: 'left', padding: 8, marginBottom: 6,
+                background: q.isAi ? 'rgba(167,139,250,0.06)' : 'rgba(255,255,255,0.04)',
+                border: '1px solid ' + (q.isAi ? '#7c3aed' : '#475569'),
+                borderRadius: 8, color: '#e2e8f0',
+                cursor: canRecognize ? 'pointer' : 'default',
+                opacity: q.spoken ? 0.5 : (currentSpeakerUid ? 0.55 : 1)
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                h('span', { style: { fontSize: 18 } }, country.flag),
+                h('div', { style: { flex: 1, fontSize: 12, fontWeight: 600 } }, country.name),
+                q.spoken && h('span', { style: { fontSize: 10, color: '#94a3b8' } }, '✓ spoke'),
+                !q.spoken && canRecognize && h('span', { style: { fontSize: 10, color: '#fcd34d' } }, 'Give floor →')
+              ),
+              h('div', { style: { fontSize: 10, marginTop: 2, color: q.isAi ? '#a855f7' : '#10b981' } },
+                q.isAi ? '🤖 AI delegate' : ('👤 ' + (rosterEntry ? rosterEntry.name : q.uid))
+              )
+            );
+          })
+        ),
+
+        // Speech feed
+        h('div', null,
+          h('div', { style: { fontSize: 10, color: '#fbbf24', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
+            'Caucus Speeches on "' + subTopic + '"'
+          ),
+          orderedSpeeches.length === 0
+            ? h('div', { style: { padding: 18, fontSize: 12, color: '#94a3b8', fontStyle: 'italic', textAlign: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 8 } },
+                isHost || isSolo
+                  ? 'Recognize a delegate from the queue to begin.'
+                  : 'Waiting for the Chair to recognize the first speaker…'
+              )
+            : h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+                orderedSpeeches.slice().reverse().map(function(sp) {
+                  return h(SpeechCard, { key: sp.id, speech: sp, myCountry: myCountry });
+                })
+              )
+        )
+      )
+    );
+  }
+
+  // ═══════════════════════════════════════════
   // SpeechCard — one entry in the live speech feed.
   // ═══════════════════════════════════════════
   function SpeechCard(props) {
@@ -3288,7 +3564,7 @@
 
   // Hot-reload guard — re-attach the launcher card data if needed
   if (typeof console !== 'undefined') {
-    console.log('[arcade_mode_modelun] Plugin v0.5 loaded — ' + COUNTRIES.length + ' countries, ' + AGENDAS.length + ' agendas, ' + COMMITTEES.length + ' committees; full loop + AI news desk + 7 achievement hooks + amendments (strike/add/modify).');
+    console.log('[arcade_mode_modelun] Plugin v0.6 loaded — ' + COUNTRIES.length + ' countries, ' + AGENDAS.length + ' agendas, ' + COMMITTEES.length + ' committees; full loop + Moderated Caucus + AI news desk + 7 achievement hooks + amendments.');
   }
 
 })();
