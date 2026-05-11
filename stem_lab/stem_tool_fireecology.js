@@ -1335,40 +1335,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
   var MOSAIC_TECHNIQUES = [
     {
-      id: 'culturalBurn', name: 'Cultural Burn', icon: '🔥', hours: 8, season: 'fall',
-      desc: 'Low-intensity ground fire at the right moisture window. The single most effective stewardship tool.',
+      id: 'culturalBurn', name: 'Cultural Burn', icon: '🔥', hours: 8, season: 'cold',
+      desc: 'Low-intensity ground fire at the right fall moisture window. The single most effective stewardship tool. Cold-season work.',
       effects: { fuel: -16, health: 6, yield: 12 },
-      resetsBurn: true,
-      offSeasonMult: 0.5
+      resetsBurn: true
     },
     {
-      id: 'pileBurn', name: 'Pile Burn', icon: '🪵', hours: 5, season: 'winter',
-      desc: 'Concentrate slash into piles and burn during snow cover. Low-risk way to remove fuel without scorching the soil.',
-      effects: { fuel: -10, health: 2, yield: 2 },
-      offSeasonMult: 0.7
+      id: 'pileBurn', name: 'Pile Burn', icon: '🪵', hours: 5, season: 'cold',
+      desc: 'Concentrate slash into piles and burn during snow cover. Low-risk way to remove fuel without scorching the soil. Cold-season work.',
+      effects: { fuel: -10, health: 2, yield: 2 }
     },
     {
       id: 'handThin', name: 'Hand Thinning', icon: '🪓', hours: 12, season: 'any',
-      desc: 'Selective cutting of small-diameter competitors. No fire risk but labor-intensive.',
+      desc: 'Selective cutting of small-diameter competitors. No fire risk but labor-intensive. Works in either season.',
       effects: { fuel: -11, health: 4, yield: 3 }
     },
     {
-      id: 'coppice', name: 'Coppice + Pollard', icon: '🌱', hours: 10, season: 'winter',
-      desc: 'Cut select trees at the base; new shoots regrow straight and supple, ideal for ash splints and pole material.',
+      id: 'coppice', name: 'Coppice + Pollard', icon: '🌱', hours: 10, season: 'cold',
+      desc: 'Cut select trees at the base in winter; new shoots regrow straight and supple, ideal for ash splints and pole material. Cold-season work.',
       effects: { fuel: -3, health: 1, yield: 18 },
-      zoneRestrict: ['hardwoodStand', 'mixedConifer'],
-      offSeasonMult: 0.8
+      zoneRestrict: ['hardwoodStand', 'mixedConifer', 'whitePineGrove']
     },
     {
-      id: 'seedScatter', name: 'Seed Scatter', icon: '🌾', hours: 4, season: 'fall',
-      desc: 'Broadcast cultural plant seeds after a recent burn. Lowbush blueberry, big bluestem, sweetgrass establish on bare mineral soil.',
+      id: 'seedScatter', name: 'Seed Scatter', icon: '🌾', hours: 4, season: 'any',
+      desc: 'Broadcast cultural plant seeds on a recently burned zone. Lowbush blueberry, big bluestem, sweetgrass establish on bare mineral soil.',
       effects: { fuel: 0, health: 8, yield: 12 },
-      requires: 'recentBurn',
-      offSeasonMult: 0.5
+      requires: 'recentBurn'
     },
     {
       id: 'rest', name: 'Rest the Land', icon: '🍃', hours: 0, season: 'any',
-      desc: 'Sometimes the most important move is no move. Fuels accumulate slightly; ecology heals.',
+      desc: 'Sometimes the most important move is no move. Fuels accumulate slightly; ecology heals. Either season.',
       effects: { fuel: 3, health: 3, yield: -1 }
     }
   ];
@@ -1405,16 +1401,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
   function defaultMosaicState() {
     var diff = MOSAIC_DIFFICULTIES.steward;
+    var warmHours = Math.ceil(diff.hoursPerYear / 2);
     return {
       phase: 'setup',          // 'setup' | 'year' | 'review' | 'debrief'
+      subPhase: 'warm',        // 'warm' (Sigwan-Nipon) | 'cold' (Toqaq-Pun)
       year: 1,
       maxYears: 8,
       difficulty: diff.id,
       hoursPerYear: diff.hoursPerYear,
-      hoursLeft: diff.hoursPerYear,
+      hoursLeft: warmHours,
+      warmHoursBudget: warmHours,
+      coldHoursBudget: Math.floor(diff.hoursPerYear / 2),
       zones: WABANAKI_ZONES.map(function(z) { return Object.assign({ id: z.id }, z.defaultState); }),
-      currentSeason: 'fall',
-      yearActions: [],         // actions logged during this year
+      yearActions: [],         // actions logged during this year (across both phases)
       yearLog: [],             // multi-year history
       lastEvent: null,
       continuityWins: 0,
@@ -3564,15 +3563,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             var fresh = defaultMosaicState();
             var diffId = m.difficulty || 'steward';
             var diff = MOSAIC_DIFFICULTIES[diffId] || MOSAIC_DIFFICULTIES.steward;
+            var warmHours = Math.ceil(diff.hoursPerYear / 2);
+            var coldHours = Math.floor(diff.hoursPerYear / 2);
             fresh.phase = 'year';
+            fresh.subPhase = 'warm';
             fresh.difficulty = diff.id;
             fresh.hoursPerYear = diff.hoursPerYear;
-            fresh.hoursLeft = diff.hoursPerYear;
+            fresh.warmHoursBudget = warmHours;
+            fresh.coldHoursBudget = coldHours;
+            fresh.hoursLeft = warmHours;
             setMosaic(fresh);
             playSound('ignite');
-            if (addToast) addToast('🧩 Wabanaki Mosaic begins. Year 1 of 8 on ' + diff.label + ' difficulty.', 'success');
+            if (addToast) addToast('🧩 Wabanaki Mosaic begins. Year 1 of 8 on ' + diff.label + ' difficulty. Warm Season (Sigwan-Nipon).', 'success');
             awardStemXP('mosaic_start', 10, 'Mosaic begins (' + diff.label + ')');
-            if (announceToSR) announceToSR('Cultural Mosaic campaign started on ' + diff.label + '. Year 1 of 8. ' + fresh.hoursLeft + ' stewardship hours available.');
+            if (announceToSR) announceToSR('Cultural Mosaic started on ' + diff.label + '. Year 1 of 8, Warm Season Sigwan-Nipon. ' + warmHours + ' stewardship hours available in this phase.');
           }
 
           function resetCampaign() {
@@ -3598,10 +3602,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               if (addToast) addToast('Seed scatter only works on a zone burned within the past year.', 'info');
               return;
             }
+            // Hard season gate: cold-season techniques are simply unavailable in warm phase.
+            // (Buttons should already be disabled, but defend against keyboard / a11y paths.)
+            if (tech.season !== 'any' && tech.season !== m.subPhase) {
+              if (addToast) addToast(tech.name + ' is a ' + (tech.season === 'cold' ? 'Cold Season (Toqaq-Pun)' : 'Warm Season (Sigwan-Nipon)') + ' technique.', 'info');
+              return;
+            }
             var lateSpringYear = m.lastEvent && m.lastEvent.id === 'lateSpring';
-            var seasonMult = (tech.season === 'any' || tech.season === m.currentSeason) ? 1 : (tech.offSeasonMult || 0.6);
             var yearMult = lateSpringYear ? 0.8 : 1;
-            var totalMult = seasonMult * yearMult;
+            var totalMult = yearMult;
             var newZones = m.zones.map(function(z) {
               if (z.id !== zoneId) return z;
               var nz = Object.assign({}, z);
@@ -3706,6 +3715,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             if (m.year >= m.maxYears - 2 && continuityHits >= 2) checkBadge('mosaicMaster');
           }
 
+          // End the current sub-phase: warm → cold (refill cold-half hours);
+          // cold → review (triggers endYear's natural drift + event)
+          function endPhase() {
+            if (m.subPhase === 'warm') {
+              setMosaic({ subPhase: 'cold', hoursLeft: m.coldHoursBudget });
+              playSound('pause');
+              if (addToast) addToast('Warm Season (Sigwan-Nipon) ends. Cold Season (Toqaq-Pun) begins. ' + m.coldHoursBudget + ' hours.', 'info');
+              if (announceToSR) announceToSR('Cold Season Toqaq-Pun begins. Cultural burn, pile burn, and coppice are now available. ' + m.coldHoursBudget + ' hours.');
+            } else {
+              endYear();
+            }
+          }
+
           function advanceFromReview() {
             if (m.year >= m.maxYears) {
               // Final scoring
@@ -3725,7 +3747,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               awardStemXP('mosaic_complete', 50, outcome.label);
               if (outcome.tier === 'excellent' || outcome.tier === 'good') checkBadge('mosaicMaster');
             } else {
-              setMosaic({ phase: 'year', year: m.year + 1, hoursLeft: m.hoursPerYear, yearActions: [], lastEvent: null });
+              setMosaic({
+                phase: 'year', subPhase: 'warm', year: m.year + 1,
+                hoursLeft: m.warmHoursBudget,
+                yearActions: [], lastEvent: null
+              });
+              if (announceToSR) announceToSR('Year ' + (m.year + 1) + ' begins, Warm Season Sigwan-Nipon. ' + m.warmHoursBudget + ' hours.');
             }
           }
 
@@ -3831,7 +3858,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 style: { background: '#0f172a', borderRadius: 10, padding: 12, marginBottom: 14, borderLeft: '3px solid #fbbf24', fontSize: 13, lineHeight: 1.55, color: '#fde68a' }
               },
                 h('strong', { style: { color: '#fbbf24' } }, 'How a year works: '),
-                'you have ' + (MOSAIC_DIFFICULTIES[m.difficulty || 'steward'] || MOSAIC_DIFFICULTIES.steward).hoursPerYear + ' stewardship hours per year. Each technique costs different hours. Pick zones, pick techniques, then end the year. A weather or community event fires, the land drifts naturally, and the next year begins. Hit each zone\'s fire-return window for a continuity bonus.'
+                'each year splits into a ',
+                h('strong', { style: { color: '#fb923c' } }, '☼ Warm Season (Sigwan-Nipon)'),
+                ' and a ',
+                h('strong', { style: { color: '#60a5fa' } }, '❄ Cold Season (Toqaq-Pun)'),
+                '. You get ' + (MOSAIC_DIFFICULTIES[m.difficulty || 'steward'] || MOSAIC_DIFFICULTIES.steward).hoursPerYear + ' total stewardship hours per year, split half-and-half across the two phases. Cultural burn, pile burn, and coppice only happen in the Cold Season. Hand thinning, rest, and seed scatter (post-burn) work in either. Both phases of one year, then a weather or community event fires and the land drifts to the next year.'
               ),
 
               h('button', {
@@ -4116,49 +4147,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             ) : null,
 
             // HUD
-            h('div', {
-              style: {
-                padding: '10px 14px', borderRadius: 12, marginBottom: 12,
-                background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(15,23,42,0) 100%)',
-                border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN,
-                display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap'
-              }
-            },
-              h('div', null,
-                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Year'),
-                h('div', { style: { fontSize: 20, fontWeight: 800, color: T_GREEN_HI } }, m.year + ' / ' + m.maxYears)
-              ),
-              h('div', null,
-                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Stewardship hours'),
-                h('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, m.hoursLeft + ' / ' + m.hoursPerYear)
-              ),
-              h('div', null,
-                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Continuity wins'),
-                h('div', { style: { fontSize: 20, fontWeight: 800, color: '#a855f7' } }, m.continuityWins)
-              ),
-              h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
-                callGemini ? h('button', {
-                  onClick: readLand,
-                  disabled: m.aiReadLoading,
-                  'aria-label': 'Ask AI fire ecologist to read your land state',
-                  title: 'AI fire ecology educator reads your current land state',
-                  style: {
-                    padding: '8px 12px', borderRadius: 10, border: '1px solid #38bdf8',
-                    cursor: m.aiReadLoading ? 'wait' : 'pointer',
-                    background: 'rgba(56,189,248,0.10)', color: '#38bdf8', fontWeight: 700, fontSize: 12,
-                    opacity: m.aiReadLoading ? 0.6 : 1
-                  }
-                }, m.aiReadLoading ? '⏳ Reading...' : '🔍 Read the land (AI)') : null,
-                h('button', {
-                  onClick: endYear,
-                  'aria-label': 'End this year',
-                  style: {
-                    padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                    background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 13
-                  }
-                }, 'End Year →')
-              )
-            ),
+            (function() {
+              var isWarm = m.subPhase === 'warm';
+              var phaseAccent = isWarm ? '#a16207' : '#1d4ed8';
+              var phaseSoft = isWarm ? 'rgba(161,98,7,0.18)' : 'rgba(29,78,216,0.18)';
+              var phaseLabel = isWarm ? '☼ Warm Season' : '❄ Cold Season';
+              var phaseSubLabel = isWarm ? 'Sigwan-Nipon (spring + summer)' : 'Toqaq-Pun (fall + winter)';
+              var endLabel = isWarm ? 'End Warm Season →' : 'End Cold Season + Run Year →';
+              return h('div', {
+                style: {
+                  padding: '10px 14px', borderRadius: 12, marginBottom: 12,
+                  background: 'linear-gradient(135deg, ' + phaseSoft + ' 0%, rgba(15,23,42,0) 100%)',
+                  border: '1px solid ' + phaseAccent + '66', borderLeft: '4px solid ' + phaseAccent,
+                  display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap'
+                }
+              },
+                h('div', null,
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Year'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: T_GREEN_HI } }, m.year + ' / ' + m.maxYears)
+                ),
+                h('div', null,
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Season'),
+                  h('div', { style: { fontSize: 16, fontWeight: 800, color: phaseAccent } }, phaseLabel),
+                  h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, phaseSubLabel)
+                ),
+                h('div', null,
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Hours this phase'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, m.hoursLeft + ' / ' + (isWarm ? m.warmHoursBudget : m.coldHoursBudget))
+                ),
+                h('div', null,
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Continuity wins'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: '#a855f7' } }, m.continuityWins)
+                ),
+                h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+                  callGemini ? h('button', {
+                    onClick: readLand,
+                    disabled: m.aiReadLoading,
+                    'aria-label': 'Ask AI fire ecologist to read your land state',
+                    title: 'AI fire ecology educator reads your current land state',
+                    style: {
+                      padding: '8px 12px', borderRadius: 10, border: '1px solid #38bdf8',
+                      cursor: m.aiReadLoading ? 'wait' : 'pointer',
+                      background: 'rgba(56,189,248,0.10)', color: '#38bdf8', fontWeight: 700, fontSize: 12,
+                      opacity: m.aiReadLoading ? 0.6 : 1
+                    }
+                  }, m.aiReadLoading ? '⏳ Reading...' : '🔍 Read the land (AI)') : null,
+                  h('button', {
+                    onClick: endPhase,
+                    'aria-label': isWarm ? 'End Warm Season and begin Cold Season' : 'End Cold Season and resolve the year',
+                    style: {
+                      padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                      background: isWarm ? '#15803d' : '#dc2626', color: '#fff', fontWeight: 700, fontSize: 13
+                    }
+                  }, endLabel)
+                )
+              );
+            })(),
 
             // AI Land Reading response (below HUD when present)
             renderAIReadPanel(),
@@ -4205,22 +4249,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                       );
                     })
                   ),
-                  // Action picker per zone
+                  // Action picker per zone — gated by current sub-phase
                   h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
                     MOSAIC_TECHNIQUES.map(function(t) {
-                      var disabled = m.hoursLeft < t.hours || (t.zoneRestrict && t.zoneRestrict.indexOf(z.id) < 0) || (t.requires === 'recentBurn' && z.lastBurn > 1);
-                      var seasonOk = (t.season === 'any' || t.season === m.currentSeason);
+                      var seasonOk = (t.season === 'any' || t.season === m.subPhase);
+                      var disabled = !seasonOk || m.hoursLeft < t.hours || (t.zoneRestrict && t.zoneRestrict.indexOf(z.id) < 0) || (t.requires === 'recentBurn' && z.lastBurn > 1);
+                      var seasonTag = t.season === 'any' ? '' : (t.season === 'cold' ? ' ❄' : ' ☼');
                       return h('button', { key: t.id,
                         onClick: function() { applyTechnique(t.id, z.id); },
                         disabled: disabled,
-                        title: t.desc + (seasonOk ? '' : ' [off-season: reduced effect]'),
+                        title: t.desc + (seasonOk ? '' : ' (only available in ' + (t.season === 'cold' ? 'Cold Season — Toqaq-Pun' : 'Warm Season — Sigwan-Nipon') + ')'),
                         style: {
                           padding: '4px 8px', fontSize: 11, fontWeight: 700,
                           borderRadius: 6, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
-                          background: disabled ? '#1e293b' : (seasonOk ? '#15803d' : '#a16207'),
+                          background: disabled ? '#1e293b' : (t.season === 'cold' ? '#1d4ed8' : (t.season === 'warm' ? '#a16207' : '#15803d')),
                           color: disabled ? '#475569' : '#fff', opacity: disabled ? 0.5 : 1
                         }
-                      }, t.icon + ' ' + t.name + ' (' + t.hours + 'h)');
+                      }, t.icon + ' ' + t.name + ' (' + t.hours + 'h)' + seasonTag);
                     })
                   )
                 );
