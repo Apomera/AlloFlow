@@ -847,16 +847,19 @@
     if (phase === PHASES.BRIEFING) {
       return h(BriefingView, { ctx: ctx, modelUn: modelUn, updateMUN: updateMUN, isHost: isHost || isSolo, isSolo: isSolo, sessionState: sessionState });
     }
+    if (phase === PHASES.OPENING_SPEECHES) {
+      return h(OpeningSpeechesView, { ctx: ctx, modelUn: modelUn, updateMUN: updateMUN, isHost: isHost || isSolo, isSolo: isSolo, sessionState: sessionState });
+    }
 
     // Future phases — placeholder
     return h('div', { style: { padding: 20, textAlign: 'center', color: '#cbd5e1' } },
       h('div', { style: { fontSize: 40, marginBottom: 8 } }, '🚧'),
       h('div', { style: { fontWeight: 700, marginBottom: 6 } }, 'Phase "' + phase + '" coming soon'),
-      h('p', { style: { fontSize: 12, color: '#94a3b8' } }, 'Debate, voting, and debrief phases ship in the next update. For now, briefing is the end of v0.1.'),
-      isHost && h('button', {
-        onClick: function() { updateMUN({ phase: PHASES.BRIEFING }); },
+      h('p', { style: { fontSize: 12, color: '#94a3b8' } }, 'Caucus, voting, and debrief phases ship in the next update. For now, opening speeches are the end of v0.2.'),
+      (isHost || isSolo) && h('button', {
+        onClick: function() { updateMUN({ phase: PHASES.OPENING_SPEECHES }); },
         style: { marginTop: 12, padding: '8px 16px', background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700 }
-      }, '← Back to Briefing')
+      }, '← Back to Opening Speeches')
     );
   }
 
@@ -1300,9 +1303,9 @@
           style: { padding: '8px 14px', fontSize: 12, fontWeight: 600, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 8, cursor: 'pointer' }
         }, '← Back to Assignment'),
         h('button', {
-          onClick: function() { updateMUN({ phase: PHASES.OPENING_SPEECHES }); },
+          onClick: function() { updateMUN({ phase: PHASES.OPENING_SPEECHES, currentSpeakerUid: null, speechCount: 0 }); },
           style: { padding: '8px 18px', fontSize: 13, fontWeight: 700, background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
-        }, 'Begin Opening Speeches → (v0.2)')
+        }, 'Begin Opening Speeches →')
       ),
       !isHost && h('p', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', textAlign: 'center', marginTop: 12 } },
         'Waiting for the Chair to open the debate…'
@@ -1310,9 +1313,444 @@
     );
   }
 
+  // ═══════════════════════════════════════════
+  // AI HELPER — Generate a delegate speech in-character.
+  // Uses jsonMode=true with the proven Sage/SpaceExplorer parsing pattern:
+  // strip code fences, extract by outer braces, validate shape, silent fallback.
+  // ═══════════════════════════════════════════
+  function aiGenerateDelegateSpeech(ctx, country, agenda, committee, recentSpeeches) {
+    if (!ctx || typeof ctx.callGemini !== 'function' || !country || !agenda) {
+      return Promise.resolve(null);
+    }
+    var stance = (country.defaultPositions && country.defaultPositions[agenda.id]) || 'standard diplomatic engagement';
+    var historyText = '';
+    if (recentSpeeches && recentSpeeches.length > 0) {
+      historyText = recentSpeeches.slice(-3).map(function(s) {
+        return '- ' + s.country + ': ' + (s.text || '').slice(0, 200) + (s.text && s.text.length > 200 ? '…' : '');
+      }).join('\n');
+    }
+    var prompt = [
+      'You are the delegate from ' + country.name + ' speaking on "' + agenda.title + '" in the ' + (committee ? committee.name : 'committee') + '.',
+      '',
+      'Your country profile:',
+      '- Government: ' + country.gov,
+      '- Region: ' + country.region,
+      '- Alliances: ' + (country.alliances || []).join(', '),
+      '- Current events: ' + country.currentEvents,
+      '',
+      'Your country\'s default stance on this agenda: ' + stance,
+      '',
+      recentSpeeches && recentSpeeches.length > 0 ? 'Recent speeches in the chamber:\n' + historyText + '\n' : '',
+      'Give a 2-3 paragraph OPENING SPEECH in diplomatic Model UN style. Include:',
+      '  1. One specific argument grounded in your country\'s national interest',
+      '  2. One acknowledgment of an opposing view (diplomatic concession)',
+      '  3. One concrete proposal or call to action',
+      '',
+      'Speak in first person plural ("We", "Our delegation", "The delegate of ' + country.name + '"). 120-180 words total.',
+      '',
+      'Return ONLY a JSON object in this exact shape:',
+      '{',
+      '  "text": "the full speech body (120-180 words)",',
+      '  "keyPoints": ["one-line argument", "one-line concession", "one-line proposal"]',
+      '}',
+      '',
+      'No markdown, no code fences. JSON only.'
+    ].join('\n');
+
+    return Promise.resolve(ctx.callGemini(prompt, true)).then(function(result) {
+      var raw = typeof result === 'string' ? result : (result && result.text ? result.text : String(result || ''));
+      raw = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      var s = raw.indexOf('{'); var e = raw.lastIndexOf('}');
+      if (s < 0 || e <= s) return null;
+      var sliced = raw.substring(s, e + 1);
+      var parsed; try { parsed = JSON.parse(sliced); } catch (err) { return null; }
+      if (!parsed || typeof parsed.text !== 'string' || parsed.text.length < 30) return null;
+      return {
+        text: parsed.text.slice(0, 1500), // cap length per session-doc budget
+        keyPoints: Array.isArray(parsed.keyPoints) ? parsed.keyPoints.slice(0, 5).map(String) : []
+      };
+    }).catch(function() { return null; });
+  }
+
+  // ═══════════════════════════════════════════
+  // OpeningSpeechesView — every delegate gives an opening speech.
+  // Host clicks "Give floor → [delegate]" to advance through the speaker queue.
+  // Human delegates type their speech; AI delegates auto-generate when called on.
+  // All speeches stream to a shared live feed (session-synced).
+  // ═══════════════════════════════════════════
+  function OpeningSpeechesView(props) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var useEffect = React.useEffect;
+    var useRef = React.useRef;
+    var ctx = props.ctx;
+    var modelUn = props.modelUn;
+    var updateMUN = props.updateMUN;
+    var isHost = props.isHost;
+    var isSolo = props.isSolo;
+    var sessionState = props.sessionState;
+
+    var committee = committeeById(modelUn.committeeId);
+    var agenda = agendaById(modelUn.agendaId);
+    var assigned = modelUn.assignedCountries || {};
+    var speeches = modelUn.speeches || {};
+    // Stable speech order — sort by `at` timestamp
+    var orderedSpeeches = Object.keys(speeches).map(function(id) {
+      return Object.assign({ id: id }, speeches[id]);
+    }).sort(function(a, b) { return (a.at || 0) - (b.at || 0); });
+    // Cap displayed speeches at 50 (per plan's 1MB doc budget guard)
+    if (orderedSpeeches.length > 50) orderedSpeeches = orderedSpeeches.slice(-50);
+
+    var currentSpeakerUid = modelUn.currentSpeakerUid || null;
+    var currentSpeakerCountry = currentSpeakerUid ? countryById(assigned[currentSpeakerUid]) : null;
+
+    // Identify "me" — student's UID or 'me' for solo
+    var myUid = isSolo ? 'me' : (ctx.userId || null);
+    var myIso = myUid ? assigned[myUid] : null;
+    var myCountry = myIso ? countryById(myIso) : null;
+    var iAmCurrentSpeaker = !!currentSpeakerUid && currentSpeakerUid === myUid;
+
+    // Track AI-generation in-flight to prevent double-fires
+    var aiGenTuple = useState({});
+    var aiInFlight = aiGenTuple[0];
+    var setAiInFlight = aiGenTuple[1];
+
+    // Host action: give the floor to a delegate
+    function giveFloorTo(uid) {
+      if (!isHost && !isSolo) return;
+      var iso = assigned[uid];
+      if (!iso) { ctx.addToast('That seat is empty'); return; }
+      updateMUN({ currentSpeakerUid: uid, speakerStartedAt: new Date().toISOString() });
+      // If AI, kick off generation immediately
+      if (uid.indexOf('ai_') === 0) {
+        triggerAiSpeech(uid, iso);
+      }
+    }
+    function triggerAiSpeech(uid, iso) {
+      if (aiInFlight[uid]) return;
+      var country = countryById(iso);
+      if (!country) return;
+      setAiInFlight(function(prev) { var n = Object.assign({}, prev); n[uid] = true; return n; });
+      // Build the recent-speeches history list
+      var recent = orderedSpeeches.map(function(s) { return s; });
+      aiGenerateDelegateSpeech(ctx, country, agenda, committee, recent).then(function(result) {
+        setAiInFlight(function(prev) { var n = Object.assign({}, prev); delete n[uid]; return n; });
+        if (!result) {
+          ctx.addToast('AI speech generation failed for ' + country.name + '. Skip or retry.');
+          return;
+        }
+        commitSpeech(uid, iso, result.text, result.keyPoints || [], true);
+      }).catch(function() {
+        setAiInFlight(function(prev) { var n = Object.assign({}, prev); delete n[uid]; return n; });
+      });
+    }
+    function commitSpeech(uid, iso, text, keyPoints, isAi) {
+      var country = countryById(iso);
+      var speechId = 'sp_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+      var newSpeech = {
+        uid: uid,
+        country: country ? country.name : iso,
+        iso: iso,
+        flag: country ? country.flag : '🌐',
+        text: (text || '').slice(0, 1500),
+        keyPoints: keyPoints || [],
+        isAi: !!isAi,
+        at: Date.now()
+      };
+      var nextSpeeches = Object.assign({}, speeches);
+      nextSpeeches[speechId] = newSpeech;
+      // Cap at 50 most recent
+      var keys = Object.keys(nextSpeeches).map(function(k) { return { k: k, at: nextSpeeches[k].at }; }).sort(function(a, b) { return a.at - b.at; });
+      if (keys.length > 50) {
+        var trimmed = {};
+        keys.slice(-50).forEach(function(x) { trimmed[x.k] = nextSpeeches[x.k]; });
+        nextSpeeches = trimmed;
+      }
+      updateMUN({
+        speeches: nextSpeeches,
+        currentSpeakerUid: null,
+        speakerStartedAt: null,
+        speechCount: (modelUn.speechCount || 0) + 1
+      });
+    }
+    function skipSpeaker() {
+      updateMUN({ currentSpeakerUid: null, speakerStartedAt: null });
+    }
+
+    // Speaker queue — every assigned UID that hasn't spoken yet
+    var spokenUids = {};
+    orderedSpeeches.forEach(function(s) { spokenUids[s.uid] = true; });
+    var queue = Object.keys(assigned).filter(function(uid) { return !spokenUids[uid]; }).map(function(uid) {
+      return { uid: uid, iso: assigned[uid], isAi: uid.indexOf('ai_') === 0 };
+    });
+
+    // Phase advance — when all delegates have spoken
+    var allSpoken = queue.length === 0;
+
+    return h('div', { style: { padding: 16, color: '#e2e8f0', maxWidth: 1000, margin: '0 auto' } },
+      // Header
+      h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 14, padding: 12, background: 'linear-gradient(135deg, #0c4a6e 0%, #155e75 100%)', borderRadius: 10 } },
+        h('div', { style: { fontSize: 32 } }, agenda ? agenda.emoji : '🌐'),
+        h('div', { style: { flex: 1 } },
+          h('div', { style: { fontSize: 11, color: '#7dd3fc', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' } },
+            (committee ? committee.name : '') + ' · OPENING SPEECHES'
+          ),
+          h('div', { style: { fontSize: 17, fontWeight: 800, marginTop: 2 } }, agenda ? agenda.title : ''),
+          h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } },
+            orderedSpeeches.length + ' speech' + (orderedSpeeches.length !== 1 ? 'es' : '') + ' given · ' + queue.length + ' delegate' + (queue.length !== 1 ? 's' : '') + ' remaining'
+          )
+        ),
+        // Phase advance
+        isHost && allSpoken && h('button', {
+          onClick: function() { updateMUN({ phase: PHASES.MOD_CAUCUS }); },
+          style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
+        }, 'Advance to Caucus → (v0.3)')
+      ),
+
+      // Current speaker spotlight
+      currentSpeakerUid && currentSpeakerCountry && h('div', {
+        style: { marginBottom: 14, padding: 14, background: 'rgba(251, 191, 36, 0.10)', border: '2px solid #fbbf24', borderRadius: 10 }
+      },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+          h('span', { style: { fontSize: 32 } }, currentSpeakerCountry.flag),
+          h('div', { style: { flex: 1 } },
+            h('div', { style: { fontSize: 10, color: '#fcd34d', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' } }, '🎤 Now Speaking'),
+            h('div', { style: { fontSize: 16, fontWeight: 800 } }, currentSpeakerCountry.name),
+            currentSpeakerUid.indexOf('ai_') === 0 && h('div', { style: { fontSize: 10, color: '#a855f7' } },
+              aiInFlight[currentSpeakerUid] ? '🤖 AI delegate composing speech…' : '🤖 AI delegate'
+            )
+          ),
+          (isHost || isSolo) && h('button', {
+            onClick: skipSpeaker,
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 600, background: 'rgba(239,68,68,0.18)', color: '#fca5a5', border: '1px solid #ef4444', borderRadius: 6, cursor: 'pointer' }
+          }, 'Skip')
+        ),
+
+        // Human speaker → compose box
+        iAmCurrentSpeaker && currentSpeakerUid.indexOf('ai_') !== 0 && h(SpeechComposeBox, {
+          ctx: ctx,
+          country: myCountry,
+          agenda: agenda,
+          committee: committee,
+          recentSpeeches: orderedSpeeches,
+          onSubmit: function(text) { commitSpeech(myUid, myIso, text, [], false); }
+        }),
+
+        // Watching speaker (host or other students)
+        !iAmCurrentSpeaker && currentSpeakerUid.indexOf('ai_') !== 0 && h('p', { style: { fontSize: 12, color: '#cbd5e1', fontStyle: 'italic' } },
+          (sessionState && sessionState.roster && sessionState.roster[currentSpeakerUid] ? sessionState.roster[currentSpeakerUid].name : 'Delegate') + ' is composing their speech…'
+        ),
+
+        // AI in flight
+        currentSpeakerUid.indexOf('ai_') === 0 && aiInFlight[currentSpeakerUid] && h('div', { style: { padding: 8, fontSize: 12, color: '#a855f7', fontStyle: 'italic' } },
+          '🤖 Generating speech in character… (this takes 3-6 seconds)'
+        ),
+        currentSpeakerUid.indexOf('ai_') === 0 && !aiInFlight[currentSpeakerUid] && (isHost || isSolo) && h('button', {
+          onClick: function() { triggerAiSpeech(currentSpeakerUid, assigned[currentSpeakerUid]); },
+          style: { padding: '6px 12px', fontSize: 12, fontWeight: 700, background: '#a855f7', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
+        }, '🤖 Generate AI speech')
+      ),
+
+      // Two-column layout: queue (left) + feed (right)
+      h('div', { style: { display: 'grid', gridTemplateColumns: '300px 1fr', gap: 14 } },
+
+        // ── Speaker queue (host visible) ──
+        h('div', null,
+          h('div', { style: { fontSize: 10, color: '#7dd3fc', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
+            'Speaker Queue (' + queue.length + ')'
+          ),
+          allSpoken && h('div', { style: { padding: 14, fontSize: 12, color: '#10b981', fontStyle: 'italic', textAlign: 'center', background: 'rgba(16,185,129,0.08)', borderRadius: 8 } },
+            '✓ All delegates have spoken'
+          ),
+          queue.map(function(q) {
+            var country = countryById(q.iso);
+            if (!country) return null;
+            var roster = (sessionState && sessionState.roster) || {};
+            var rosterEntry = q.isAi ? null : (roster[q.uid] || (isSolo && q.uid === 'me' ? { name: ctx.studentNickname || 'You' } : null));
+            var canRecognize = (isHost || isSolo) && !currentSpeakerUid;
+            return h('button', {
+              key: 'q-' + q.uid,
+              onClick: canRecognize ? function() { giveFloorTo(q.uid); } : null,
+              disabled: !canRecognize,
+              style: {
+                width: '100%', textAlign: 'left', padding: 8, marginBottom: 6,
+                background: q.isAi ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.04)',
+                border: '1px solid ' + (q.isAi ? '#7c3aed' : '#334155'),
+                borderRadius: 8, color: '#e2e8f0',
+                cursor: canRecognize ? 'pointer' : 'default',
+                opacity: currentSpeakerUid ? 0.55 : 1
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                h('span', { style: { fontSize: 18 } }, country.flag),
+                h('div', { style: { flex: 1, fontSize: 12, fontWeight: 600 } }, country.name),
+                canRecognize && h('span', { style: { fontSize: 10, color: '#7dd3fc' } }, 'Give floor →')
+              ),
+              h('div', { style: { fontSize: 10, marginTop: 2, color: q.isAi ? '#a855f7' : '#10b981' } },
+                q.isAi ? '🤖 AI delegate' : ('👤 ' + (rosterEntry ? rosterEntry.name : q.uid))
+              )
+            );
+          })
+        ),
+
+        // ── Speech feed ──
+        h('div', null,
+          h('div', { style: { fontSize: 10, color: '#7dd3fc', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
+            'Live Speech Feed'
+          ),
+          orderedSpeeches.length === 0
+            ? h('div', { style: { padding: 18, fontSize: 12, color: '#94a3b8', fontStyle: 'italic', textAlign: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 8 } },
+                isHost || isSolo
+                  ? 'Recognize a delegate from the queue to begin opening speeches.'
+                  : 'Waiting for the Chair to recognize the first speaker…'
+              )
+            : h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+                orderedSpeeches.slice().reverse().map(function(sp) {
+                  return h(SpeechCard, { key: sp.id, speech: sp, myCountry: myCountry });
+                })
+              )
+        )
+      )
+    );
+  }
+
+  // ═══════════════════════════════════════════
+  // SpeechComposeBox — student's compose UI when they have the floor.
+  // Optional "✨ AI starter" button generates a draft to edit (not paste-replace).
+  // ═══════════════════════════════════════════
+  function SpeechComposeBox(props) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var ctx = props.ctx;
+    var country = props.country;
+    var agenda = props.agenda;
+    var committee = props.committee;
+    var recentSpeeches = props.recentSpeeches;
+    var onSubmit = props.onSubmit;
+
+    var textTuple = useState('');
+    var text = textTuple[0];
+    var setText = textTuple[1];
+    var loadingTuple = useState(false);
+    var loading = loadingTuple[0];
+    var setLoading = loadingTuple[1];
+
+    function getStarter() {
+      if (loading || !country || !agenda) return;
+      setLoading(true);
+      aiGenerateDelegateSpeech(ctx, country, agenda, committee, recentSpeeches).then(function(r) {
+        setLoading(false);
+        if (r && r.text) {
+          setText(r.text);
+          ctx.addToast('AI starter ready — edit before submitting');
+        } else {
+          ctx.addToast('AI starter failed. Try again or write your own.');
+        }
+      }).catch(function() {
+        setLoading(false);
+        ctx.addToast('AI starter failed. Try again or write your own.');
+      });
+    }
+    function handleSubmit() {
+      var t = (text || '').trim();
+      if (t.length < 30) { ctx.addToast('Speech is too short — aim for 100+ words'); return; }
+      onSubmit(t);
+      setText('');
+    }
+
+    var wordCount = (text || '').trim().split(/\s+/).filter(function(w) { return w.length; }).length;
+    var wcColor = wordCount >= 100 && wordCount <= 200 ? '#10b981' : wordCount > 0 ? '#fbbf24' : '#94a3b8';
+
+    return h('div', { style: { background: 'rgba(0,0,0,0.18)', padding: 10, borderRadius: 8, marginTop: 8 } },
+      h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+        h('span', { style: { fontSize: 10, color: '#fcd34d', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } },
+          'You have the floor — compose your opening speech (120-180 words)'
+        ),
+        h('button', {
+          onClick: getStarter,
+          disabled: loading,
+          style: {
+            marginLeft: 'auto',
+            padding: '4px 10px', fontSize: 11, fontWeight: 600,
+            background: loading ? '#475569' : '#7c3aed', color: '#fff',
+            border: 'none', borderRadius: 6, cursor: loading ? 'not-allowed' : 'pointer'
+          }
+        }, loading ? '⏳ Generating…' : '✨ AI starter')
+      ),
+      h('textarea', {
+        value: text,
+        onChange: function(e) { setText(e.target.value); },
+        placeholder: 'Mr./Madam Chair, distinguished delegates… (speak in first person plural; ground your argument in your country\'s national interest)',
+        rows: 6,
+        style: {
+          width: '100%', padding: 8, fontFamily: 'inherit', fontSize: 12, lineHeight: 1.6,
+          background: 'rgba(255,255,255,0.04)', color: '#e2e8f0',
+          border: '1px solid #475569', borderRadius: 6, resize: 'vertical',
+          boxSizing: 'border-box'
+        },
+        'aria-label': 'Compose your opening speech'
+      }),
+      h('div', { style: { display: 'flex', alignItems: 'center', marginTop: 6 } },
+        h('span', { style: { fontSize: 10, color: wcColor, fontWeight: 600 } },
+          wordCount + ' word' + (wordCount !== 1 ? 's' : '') + (wordCount > 0 && (wordCount < 100 || wordCount > 200) ? ' (target 120-180)' : '')
+        ),
+        h('button', {
+          onClick: handleSubmit,
+          disabled: text.trim().length < 30,
+          style: {
+            marginLeft: 'auto',
+            padding: '6px 14px', fontSize: 12, fontWeight: 700,
+            background: text.trim().length >= 30 ? '#10b981' : '#475569',
+            color: '#fff', border: 'none', borderRadius: 8,
+            cursor: text.trim().length >= 30 ? 'pointer' : 'not-allowed'
+          }
+        }, '🎤 Deliver speech')
+      )
+    );
+  }
+
+  // ═══════════════════════════════════════════
+  // SpeechCard — one entry in the live speech feed.
+  // ═══════════════════════════════════════════
+  function SpeechCard(props) {
+    var React = window.React;
+    var h = React.createElement;
+    var sp = props.speech;
+    var myCountry = props.myCountry;
+    var isMine = myCountry && sp.iso === myCountry.iso;
+    return h('div', {
+      style: {
+        padding: 12,
+        background: isMine ? 'rgba(16,185,129,0.10)' : 'rgba(255,255,255,0.04)',
+        border: '1px solid ' + (isMine ? '#10b981' : '#334155'),
+        borderRadius: 10
+      }
+    },
+      h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
+        h('span', { style: { fontSize: 22 } }, sp.flag),
+        h('div', { style: { flex: 1 } },
+          h('div', { style: { fontWeight: 700, fontSize: 13 } }, sp.country),
+          h('div', { style: { fontSize: 10, color: sp.isAi ? '#a855f7' : '#10b981', marginTop: 2 } },
+            sp.isAi ? '🤖 AI delegate' : '👤 Delegate',
+            isMine && ' · your speech'
+          )
+        )
+      ),
+      h('p', { style: { fontSize: 12, lineHeight: 1.7, color: '#cbd5e1', margin: 0 } }, sp.text),
+      sp.keyPoints && sp.keyPoints.length > 0 && h('div', { style: { marginTop: 8, paddingTop: 8, borderTop: '1px dashed rgba(255,255,255,0.12)' } },
+        h('div', { style: { fontSize: 9, color: '#7dd3fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Key Points'),
+        h('ul', { style: { margin: 0, paddingLeft: 16, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+          sp.keyPoints.map(function(kp, i) { return h('li', { key: i }, kp); })
+        )
+      )
+    );
+  }
+
   // Hot-reload guard — re-attach the launcher card data if needed
   if (typeof console !== 'undefined') {
-    console.log('[arcade_mode_modelun] Plugin v0.1 loaded — ' + COUNTRIES.length + ' countries, ' + AGENDAS.length + ' agendas, ' + COMMITTEES.length + ' committees.');
+    console.log('[arcade_mode_modelun] Plugin v0.2 loaded — ' + COUNTRIES.length + ' countries, ' + AGENDAS.length + ' agendas, ' + COMMITTEES.length + ' committees, opening speeches live.');
   }
 
 })();
