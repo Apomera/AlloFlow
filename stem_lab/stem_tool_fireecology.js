@@ -1232,7 +1232,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       desc: 'Open scrubland on glacial outwash. Frequent fire keeps heath low and clears competing shrubs. Wabanaki burned for thousands of years to maintain the blueberry crop.',
       cultivars: 'Lowbush blueberry, sweet fern, bracken fern',
       culturalUse: 'Summer harvest, dried winter stores, trade good',
-      defaultState: { fuel: 38, health: 62, yield: 35, lastBurn: 4 }
+      defaultState: { fuel: 38, health: 62, yield: 35, lastBurn: 4 },
+      deepDive: {
+        bilingual: 'Sata · low-bush blueberry',
+        knowledge: 'Lowbush blueberry is a fire-dependent shrub. It spreads underground through rhizomes and only fruits prolifically on plants that are 2 years past a burn. Hot wildfires sterilize the soil and kill the rhizomes; gentle cool burns release the seeds and prune the canes for next year. A barren that goes 5+ years without fire turns into scrubland and the harvest fails.',
+        preparation: 'Sun-dried into raisins; smoked into cakes; mixed with cornmeal for travel food; sometimes mashed with dried fish. A major caloric input for winter, especially before potatoes arrived.',
+        modernContext: 'Maine\'s commercial wild-blueberry industry runs on the same 2-year burn cycle that Wabanaki communities developed over centuries. The "fields" of Washington County are Indigenous fire culture, retitled. Climate change is shortening the safe-burn window each year.',
+        teaching: 'A barren without fire does not stop being a barren. It stops being a barren that feeds anyone. The fire is the harvest.'
+      }
     },
     {
       id: 'oakSavanna', name: 'White Oak Savanna', icon: '🌳', color: '#a16207',
@@ -1240,7 +1247,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       desc: 'Open oak grassland. Ground fire every few years kills competing maple and birch saplings while mature oaks survive on their thick fire-resistant bark.',
       cultivars: 'White oak, big bluestem, butterfly weed',
       culturalUse: 'Acorn flour, deer browse habitat, basket withes',
-      defaultState: { fuel: 48, health: 68, yield: 48, lastBurn: 6 }
+      defaultState: { fuel: 48, health: 68, yield: 48, lastBurn: 6 },
+      deepDive: {
+        bilingual: 'Anaskimnesi · white oak',
+        knowledge: 'White oak acorns are preferred over red oak because they have less tannin and can be leached in days instead of weeks. White oaks evolved with frequent fire: their thick bark insulates the cambium while ground fire kills the young maples and beeches that would otherwise shade them out. An oak savanna without fire becomes a closed maple-beech forest in a single human lifetime.',
+        preparation: 'Acorns shelled, ground into meal, soaked in running water (often in a basket weighted in a stream) for several days to leach tannins, then baked into breads or porridge. Deer browse in the open savanna was as important as the acorns themselves.',
+        modernContext: 'Most New England oak savannas converted to closed-canopy forest after Indigenous burning was suppressed. Restoration ecologists are reintroducing prescribed fire on a 3 to 5 year cycle to bring back the open structure, with mixed success.',
+        teaching: 'When the canopy closes, the deer move on, the acorn crop fails, and the meadow plants disappear. The savanna is not a forest with gaps. It is its own thing.'
+      }
     },
     {
       id: 'mixedConifer', name: 'Pine-Spruce Stand', icon: '🌲', color: '#15803d',
@@ -1248,15 +1262,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       desc: 'Higher-elevation pine and spruce. Burns rarely; mostly self-maintaining. Hand thinning is the main intervention. A small understory burn maybe once a generation.',
       cultivars: 'Eastern white pine, red spruce, partridgeberry',
       culturalUse: 'Pine pitch for sealing, spruce roots for canoe binding, lumber',
-      defaultState: { fuel: 28, health: 78, yield: 32, lastBurn: 18 }
+      defaultState: { fuel: 28, health: 78, yield: 32, lastBurn: 18 },
+      deepDive: {
+        bilingual: 'Kuwes · white pine · Skog · spruce',
+        knowledge: 'Eastern white pine is fire-tolerant once mature: thick bark, self-pruning of lower branches, and tall crowns above most ground fires. Red spruce is fire-sensitive but its moist understory rarely carries fire. Stand-replacing fire here is a once-a-century event, not a stewardship tool. The right interventions are selective hand-thinning and patience.',
+        preparation: 'Pine pitch (resin) was collected from wounds in the trunk and rendered with animal fat into a waterproof sealant used on canoes, watertight baskets, and roof seams. Spruce roots were dug, split into long flexible cords, and used as thread to sew birchbark canoe seams that the pitch then sealed.',
+        modernContext: 'White pine remains central to Maine identity and economy. Modern threats are spruce-fir budworm outbreaks (made worse by fire suppression and even-aged management) and white pine blister rust. Climate change is pushing red spruce upslope.',
+        teaching: 'Some land is not waiting for fire. This stand keeps itself if you let it. Stewardship here is to walk through it, take what is dying, and leave the rest.'
+      }
     },
     {
       id: 'riparian', name: 'Riparian Corridor', icon: '🌿', color: '#0ea5e9',
       fireReturn: 99, idealFuel: 18, idealYield: 75,
       desc: 'Stream banks and beaver wetlands. Almost never burned, moisture keeps fire out, and stream health depends on shaded canopy. Beavers do the work here.',
-      cultivars: 'Silver maple, sweetgrass (kaisawanohse), fiddlehead fern',
+      cultivars: 'Silver maple, sweetgrass, fiddlehead fern',
       culturalUse: 'Sweetgrass braids for ceremony and baskets, fiddleheads, beaver wetlands',
-      defaultState: { fuel: 16, health: 86, yield: 58, lastBurn: 99 }
+      defaultState: { fuel: 16, health: 86, yield: 58, lastBurn: 99 },
+      deepDive: {
+        bilingual: 'Welimanal · sweetgrass · Qapit · beaver',
+        knowledge: 'Sweetgrass (Hierochloe odorata) grows on the moist edge of streams and marshes, in low-fertility soil where competition is weak. It needs open, moist ground. It does not need fire and does not tolerate hot fire. Beavers are the actual stewards of this zone: their dams raise the water table, slow flooding, create the moist meadow conditions sweetgrass needs, and create firebreaks during dry years.',
+        preparation: 'Sweetgrass is cut just before maturity, braided while wet, dried in shade. Burned as smudge for purification (a scent like vanilla and fresh hay) and woven into baskets, often as the binding band along the rim. Fiddleheads (ostrich fern) gathered in May for spring food.',
+        modernContext: 'Sweetgrass populations are declining across Maine due to wetland development, agricultural drainage, and contamination. Maine Indian Basketmakers Alliance and others coordinate restoration plantings. Beaver populations were nearly extirpated by the fur trade; their recovery is slowly restoring this zone.',
+        teaching: 'You cannot make a riparian corridor with fire. You can only protect it from fire. The beaver does the work. Your job is to leave the beaver alone.'
+      }
     },
     {
       id: 'hardwoodStand', name: 'Mixed Hardwood', icon: '🍁', color: '#dc2626',
@@ -1264,7 +1292,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       desc: 'Mature beech, birch, brown ash, sugar maple. Burns once a generation, very low intensity. Most stewardship is coppicing brown ash for the splints that define Wabanaki basketry.',
       cultivars: 'Brown ash, sugar maple, paper birch',
       culturalUse: 'Ash splint baskets (defining Wabanaki craft), maple sap, birchbark canoes',
-      defaultState: { fuel: 34, health: 74, yield: 42, lastBurn: 38 }
+      defaultState: { fuel: 34, health: 74, yield: 42, lastBurn: 38 },
+      deepDive: {
+        bilingual: 'Wikp · brown ash · Senomozi · sugar maple',
+        knowledge: 'Brown ash (Fraxinus nigra) is central to Wabanaki life. Each annual growth ring is a discrete layer; when the trunk is pounded with the back of an axe, those rings split into long flexible splints that can be woven into baskets. A single basketmaker may search for years to find the right ash tree (straight, slow-grown, sound). The tree itself takes 50 to 80 years to reach basket size.',
+        preparation: 'Tree felled in winter, hauled out by sled, debarked, pounded section by section to release the splints. Splints scraped smooth with a draw knife, dyed (often with butternut, beet, or commercial dye), and woven. A finished basket may take 30 to 60 hours of work after the splints are made.',
+        modernContext: 'Emerald ash borer, an invasive beetle, is killing brown ash across the East. Wabanaki communities are racing to save seed and preserve mature trees. The Maine Indian Basketmakers Alliance leads both the craft revival and the ecological conservation. Without brown ash, a defining Wabanaki art form ends.',
+        teaching: 'The basket is not the tree. The basket is one generation of the tree taught to a person, then taught to another person, then taught to another. We are inside that line. The beetle does not know what it is breaking.'
+      }
     }
   ];
 
@@ -3176,7 +3211,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   var strokeColor = pastDue ? '#ef4444' : (nearWindow ? '#fbbf24' : 'rgba(255,255,255,0.15)');
                   var strokeWidth = (pastDue || nearWindow) ? 2.5 : 1;
                   var statusIcon = pastDue ? '🔥' : (nearWindow ? '🎯' : (fuelHot ? '⚠️' : ''));
-                  return h('g', { key: z.id },
+                  return h('g', {
+                    key: z.id,
+                    onClick: function() { openDeepDive(z.id); },
+                    style: { cursor: 'pointer' },
+                    role: 'button',
+                    'aria-label': 'Open cultural deep-dive for ' + def.name,
+                    tabIndex: 0,
+                    onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDeepDive(z.id); } }
+                  },
                     h('rect', { x: rect.x, y: rect.y, width: rect.w, height: rect.h, fill: def.color, opacity: intensity, rx: 6 }),
                     h('rect', { x: rect.x, y: rect.y, width: rect.w, height: rect.h, fill: 'none', stroke: strokeColor, strokeWidth: strokeWidth, rx: 6 }),
                     h('text', { x: rect.labelX, y: rect.y + 16, fontSize: 11, fontWeight: 700, fill: '#fff', style: { pointerEvents: 'none' } }, def.name),
@@ -3210,7 +3253,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('span', null, h('span', { style: { color: '#ef4444' } }, '🔥'), ' past due'),
                 h('span', null, h('span', { style: { color: '#fbbf24' } }, '🎯'), ' in window'),
                 h('span', null, h('span', { style: { color: '#facc15' } }, '⚠️'), ' fuel high'),
-                h('span', null, h('span', { style: { color: '#38bdf8' } }, '〰'), ' stream / riparian')
+                h('span', null, h('span', { style: { color: '#38bdf8' } }, '〰'), ' stream / riparian'),
+                h('span', { style: { marginLeft: 'auto', fontStyle: 'italic', color: '#94a3b8' } }, 'Click any zone for cultural deep-dive →')
               )
             );
           }
@@ -3264,6 +3308,86 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               h('div', { style: { display: 'flex', gap: 16, fontSize: 11, color: '#cbd5e1', marginTop: 6 } },
                 h('span', null, h('span', { style: { color: '#86efac' } }, '━ '), 'Avg health (0 to 100)'),
                 h('span', null, h('span', { style: { color: '#fbbf24' } }, '┄ '), 'Total yield (rescaled to 0 to 500)')
+              )
+            );
+          }
+
+          // Open / close per-zone cultural deep-dive
+          function openDeepDive(zoneId) {
+            setMosaic({ deepDiveZone: zoneId });
+            if (announceToSR) {
+              var def = getZoneDef(zoneId);
+              if (def) announceToSR('Cultural deep-dive opened: ' + def.name + '. Press escape or click close to return.');
+            }
+          }
+          function closeDeepDive() { setMosaic({ deepDiveZone: null }); }
+
+          function renderDeepDivePanel(zoneId) {
+            var def = getZoneDef(zoneId);
+            if (!def || !def.deepDive) return null;
+            var dd = def.deepDive;
+            return h('div', {
+              role: 'dialog',
+              'aria-modal': 'true',
+              'aria-label': 'Cultural deep-dive: ' + def.name,
+              style: {
+                background: 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.85) 60%)',
+                border: '1px solid ' + def.color + '88',
+                borderLeft: '4px solid ' + def.color,
+                borderRadius: 14,
+                padding: 18,
+                marginBottom: 16
+              }
+            },
+              // Header
+              h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
+                h('span', { style: { fontSize: 36 }, 'aria-hidden': 'true' }, def.icon),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Cultural deep-dive'),
+                  h('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
+                  h('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, dd.bilingual)
+                ),
+                h('button', {
+                  onClick: closeDeepDive,
+                  'aria-label': 'Close deep-dive',
+                  style: {
+                    background: 'rgba(15,23,42,0.6)', border: '1px solid #334155',
+                    color: '#cbd5e1', cursor: 'pointer',
+                    borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13
+                  }
+                }, '✕ Close')
+              ),
+
+              // Sections grid
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 } },
+                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌿 Ecological knowledge'),
+                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
+                ),
+                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🧺 Traditional use and preparation'),
+                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.preparation)
+                ),
+                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌍 Modern context'),
+                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
+                )
+              ),
+
+              // Teaching pull-quote
+              h('div', {
+                style: {
+                  background: 'rgba(168,85,247,0.10)',
+                  border: '1px solid rgba(168,85,247,0.4)',
+                  borderLeft: '3px solid #a855f7',
+                  borderRadius: 10, padding: 14, marginTop: 12
+                }
+              },
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: '#a855f7', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '✨ A Wabanaki teaching'),
+                h('p', { style: { margin: 0, color: '#e9d5ff', fontSize: 14, lineHeight: 1.6, fontStyle: 'italic' } }, '“' + dd.teaching + '”'),
+                h('div', { style: { marginTop: 6, fontSize: 11, color: '#94a3b8' } },
+                  'Paraphrased from documented Wabanaki stewardship practice. The Wabanaki Confederacy includes Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, and Abenaki nations, each with its own distinct language; the bilingual term above is one representative form.'
+                )
               )
             );
           }
@@ -3415,9 +3539,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             }
           }
 
+          // Render deep-dive at the very top of any phase when active
+          var deepDivePanel = m.deepDiveZone ? renderDeepDivePanel(m.deepDiveZone) : null;
+
           // ── SETUP PHASE ──
           if (m.phase === 'setup') {
             return h('div', null,
+              deepDivePanel,
               h('div', {
                 style: {
                   padding: 18, borderRadius: 14,
@@ -3461,11 +3589,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                       h('span', { style: { fontSize: 22 } }, z.icon),
                       h('strong', { style: { color: z.color } }, z.name)
                     ),
+                    z.deepDive ? h('div', { style: { color: z.color, fontSize: 11, fontStyle: 'italic', marginBottom: 4 } }, z.deepDive.bilingual) : null,
                     h('div', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 4 } },
                       'Fire return: ' + (z.fireReturn >= 50 ? 'almost never' : 'every ' + z.fireReturn + ' years')
                     ),
                     h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, marginBottom: 4 } }, z.desc),
-                    h('div', { style: { color: '#fbbf24', fontSize: 11.5 } }, '✨ ' + z.culturalUse)
+                    h('div', { style: { color: '#fbbf24', fontSize: 11.5, marginBottom: 8 } }, '✨ ' + z.culturalUse),
+                    z.deepDive ? h('button', {
+                      onClick: function() { openDeepDive(z.id); },
+                      'aria-label': 'Learn more about ' + z.name,
+                      style: {
+                        width: '100%', padding: '6px 10px', borderRadius: 8,
+                        border: '1px solid ' + z.color + '88', background: z.color + '22',
+                        color: z.color, cursor: 'pointer', fontWeight: 700, fontSize: 11.5
+                      }
+                    }, '📚 Cultural deep-dive →') : null
                   );
                 })
               ),
@@ -3522,6 +3660,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             }
 
             return h('div', null,
+              deepDivePanel,
               h('div', {
                 style: {
                   padding: 18, borderRadius: 14, marginBottom: 14,
@@ -3640,6 +3779,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             }
 
             return h('div', null,
+              deepDivePanel,
               renderTerritoryMap(m.zones, { title: 'End of Year ' + m.year }),
               h('div', { style: { padding: 14, borderRadius: 12, marginBottom: 12, background: '#0f172a', borderLeft: '3px solid #fbbf24' } },
                 h('div', { style: { fontSize: 22, marginBottom: 4 } }, ev.icon || '🌿'),
@@ -3726,6 +3866,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           // ── YEAR PHASE (active stewardship) ──
           var coachingTip = (m.year === 1 && !m.firstTipDismissed && m.yearActions.length === 0) ? getCoachingTip() : null;
           return h('div', null,
+            deepDivePanel,
             // Territory map (current state)
             renderTerritoryMap(m.zones, { title: 'Year ' + m.year + ' of ' + m.maxYears + ': current state' }),
             // Year-1 coaching tip (only on Year 1, until first action or dismissed)
@@ -3807,7 +3948,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     h('div', { style: { flex: 1 } },
                       h('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
                       h('div', { style: { fontSize: 11, color: statusColor, fontWeight: 700 } }, statusText + ' • last burn ' + z.lastBurn + 'y')
-                    )
+                    ),
+                    def.deepDive ? h('button', {
+                      onClick: function() { openDeepDive(z.id); },
+                      'aria-label': 'Cultural deep-dive for ' + def.name,
+                      title: 'Cultural deep-dive',
+                      style: {
+                        background: 'transparent', border: '1px solid ' + def.color + '66',
+                        color: def.color, cursor: 'pointer', borderRadius: 6,
+                        padding: '2px 8px', fontSize: 11, fontWeight: 700
+                      }
+                    }, '📚') : null
                   ),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
                     [['Fuel', Math.round(z.fuel), z.fuel > 55 ? '#ef4444' : z.fuel > 35 ? '#f59e0b' : '#22c55e'],
