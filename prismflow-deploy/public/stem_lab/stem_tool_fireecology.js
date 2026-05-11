@@ -266,7 +266,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     { id: 'quizMaster', icon: '\uD83C\uDFC6', label: 'Fire Quiz Master', desc: 'Answer 8 quiz questions correctly' },
     { id: 'aiScholar', icon: '\uD83E\uDD16', label: 'AI Fire Scholar', desc: 'Use the AI tutor 3 times' },
     { id: 'suppressionLesson', icon: '\u26A0\uFE0F', label: 'Suppression Lesson', desc: 'Witness the consequences of 50 years of fire suppression' },
-    { id: 'mosaicMaster', icon: '\uD83D\uDFE9', label: 'Mosaic Master', desc: 'Create a healthy mosaic burn pattern' },
+    { id: 'mosaicMaster', icon: '\uD83E\uDDE9', label: 'Mosaic Master', desc: 'Steward the Wabanaki cultural mosaic with 4+ continuity wins across 8 years' },
     { id: 'carbonTracker', icon: '\u2601\uFE0F', label: 'Carbon Tracker', desc: 'Compare carbon outcomes of cultural burning vs. wildfire' },
     { id: 'seedSprouter', icon: '\uD83C\uDF3E', label: 'Seed Sprouter', desc: 'Trigger fire-dependent seed germination' },
     { id: 'waterProtector', icon: '\uD83D\uDCA7', label: 'Water Protector', desc: 'Learn how cultural burning protects watersheds' },
@@ -1218,6 +1218,138 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
   };
 
   // ═══════════════════════════════════════════
+  // CULTURAL MOSAIC: WABANAKI STEWARDSHIP SIM
+  // 5 zones in a Wabanaki Maine territory, each with a different
+  // cultural fire-return interval and a different cultural use.
+  // The point is NOT "burn everything every 5 years" but tending
+  // a mosaic where each zone gets the right treatment.
+  // ═══════════════════════════════════════════
+
+  var WABANAKI_ZONES = [
+    {
+      id: 'blueberryBarren', name: 'Blueberry Barren', icon: '🫐', color: '#7c3aed',
+      fireReturn: 2, idealFuel: 25, idealYield: 70,
+      desc: 'Open scrubland on glacial outwash. Frequent fire keeps heath low and clears competing shrubs. Wabanaki burned for thousands of years to maintain the blueberry crop.',
+      cultivars: 'Lowbush blueberry, sweet fern, bracken fern',
+      culturalUse: 'Summer harvest, dried winter stores, trade good',
+      defaultState: { fuel: 38, health: 62, yield: 35, lastBurn: 4 }
+    },
+    {
+      id: 'oakSavanna', name: 'White Oak Savanna', icon: '🌳', color: '#a16207',
+      fireReturn: 5, idealFuel: 30, idealYield: 65,
+      desc: 'Open oak grassland. Ground fire every few years kills competing maple and birch saplings while mature oaks survive on their thick fire-resistant bark.',
+      cultivars: 'White oak, big bluestem, butterfly weed',
+      culturalUse: 'Acorn flour, deer browse habitat, basket withes',
+      defaultState: { fuel: 48, health: 68, yield: 48, lastBurn: 6 }
+    },
+    {
+      id: 'mixedConifer', name: 'Pine-Spruce Stand', icon: '🌲', color: '#15803d',
+      fireReturn: 30, idealFuel: 35, idealYield: 50,
+      desc: 'Higher-elevation pine and spruce. Burns rarely; mostly self-maintaining. Hand thinning is the main intervention. A small understory burn maybe once a generation.',
+      cultivars: 'Eastern white pine, red spruce, partridgeberry',
+      culturalUse: 'Pine pitch for sealing, spruce roots for canoe binding, lumber',
+      defaultState: { fuel: 28, health: 78, yield: 32, lastBurn: 18 }
+    },
+    {
+      id: 'riparian', name: 'Riparian Corridor', icon: '🌿', color: '#0ea5e9',
+      fireReturn: 99, idealFuel: 18, idealYield: 75,
+      desc: 'Stream banks and beaver wetlands. Almost never burned, moisture keeps fire out, and stream health depends on shaded canopy. Beavers do the work here.',
+      cultivars: 'Silver maple, sweetgrass (kaisawanohse), fiddlehead fern',
+      culturalUse: 'Sweetgrass braids for ceremony and baskets, fiddleheads, beaver wetlands',
+      defaultState: { fuel: 16, health: 86, yield: 58, lastBurn: 99 }
+    },
+    {
+      id: 'hardwoodStand', name: 'Mixed Hardwood', icon: '🍁', color: '#dc2626',
+      fireReturn: 60, idealFuel: 32, idealYield: 60,
+      desc: 'Mature beech, birch, brown ash, sugar maple. Burns once a generation, very low intensity. Most stewardship is coppicing brown ash for the splints that define Wabanaki basketry.',
+      cultivars: 'Brown ash, sugar maple, paper birch',
+      culturalUse: 'Ash splint baskets (defining Wabanaki craft), maple sap, birchbark canoes',
+      defaultState: { fuel: 34, health: 74, yield: 42, lastBurn: 38 }
+    }
+  ];
+
+  var MOSAIC_TECHNIQUES = [
+    {
+      id: 'culturalBurn', name: 'Cultural Burn', icon: '🔥', hours: 8, season: 'fall',
+      desc: 'Low-intensity ground fire at the right moisture window. The single most effective stewardship tool.',
+      effects: { fuel: -16, health: 6, yield: 12 },
+      resetsBurn: true,
+      offSeasonMult: 0.5
+    },
+    {
+      id: 'pileBurn', name: 'Pile Burn', icon: '🪵', hours: 5, season: 'winter',
+      desc: 'Concentrate slash into piles and burn during snow cover. Low-risk way to remove fuel without scorching the soil.',
+      effects: { fuel: -10, health: 2, yield: 2 },
+      offSeasonMult: 0.7
+    },
+    {
+      id: 'handThin', name: 'Hand Thinning', icon: '🪓', hours: 12, season: 'any',
+      desc: 'Selective cutting of small-diameter competitors. No fire risk but labor-intensive.',
+      effects: { fuel: -11, health: 4, yield: 3 }
+    },
+    {
+      id: 'coppice', name: 'Coppice + Pollard', icon: '🌱', hours: 10, season: 'winter',
+      desc: 'Cut select trees at the base; new shoots regrow straight and supple, ideal for ash splints and pole material.',
+      effects: { fuel: -3, health: 1, yield: 18 },
+      zoneRestrict: ['hardwoodStand', 'mixedConifer'],
+      offSeasonMult: 0.8
+    },
+    {
+      id: 'seedScatter', name: 'Seed Scatter', icon: '🌾', hours: 4, season: 'fall',
+      desc: 'Broadcast cultural plant seeds after a recent burn. Lowbush blueberry, big bluestem, sweetgrass establish on bare mineral soil.',
+      effects: { fuel: 0, health: 8, yield: 12 },
+      requires: 'recentBurn',
+      offSeasonMult: 0.5
+    },
+    {
+      id: 'rest', name: 'Rest the Land', icon: '🍃', hours: 0, season: 'any',
+      desc: 'Sometimes the most important move is no move. Fuels accumulate slightly; ecology heals.',
+      effects: { fuel: 3, health: 3, yield: -1 }
+    }
+  ];
+
+  var MOSAIC_EVENTS = [
+    { id: 'drought',     name: 'Drought Year',        icon: '☀️', desc: 'A dry summer raises fuel risk and reduces berry yield. Cultural burn windows are tighter than usual.', apply: function(z) { z.yield = Math.max(0, z.yield - 5); z.fuel = Math.min(100, z.fuel + 4); } },
+    { id: 'wetSummer',   name: 'Wet Summer',           icon: '⛈️', desc: 'A wet, cool summer boosts riparian and blueberry yields but suppresses fire windows.', apply: function(z) { if (z.id === 'blueberryBarren' || z.id === 'riparian') z.yield = Math.min(100, z.yield + 7); } },
+    { id: 'beaverComplex', name: 'Beaver Complex Expands', icon: '🦫', desc: 'Beavers expand their dam complex. The riparian zone bumps up, and the adjacent mixed hardwood gets a moisture boost.', apply: function(z) { if (z.id === 'riparian') { z.yield = Math.min(100, z.yield + 10); z.health = Math.min(100, z.health + 4); } if (z.id === 'hardwoodStand') z.health = Math.min(100, z.health + 2); } },
+    { id: 'browsePressure', name: 'Deer + Moose Browse',  icon: '🦌', desc: 'Heavy browse pressure on young shoots. Oak savanna and barren yields drop unless the canopy was opened recently.', apply: function(z) { if (z.id === 'blueberryBarren' || z.id === 'oakSavanna') z.yield = Math.max(0, z.yield - 6); } },
+    { id: 'ceremonyYear', name: 'Ceremony Year',         icon: '✨', desc: 'A major ceremony requires sweetgrass and ash splints. Riparian and hardwood zones must be ready; if they are, the whole community celebrates.', apply: function(z, all) { var rip = all.find(function(zz){return zz.id==='riparian';}); var hw = all.find(function(zz){return zz.id==='hardwoodStand';}); if (rip && hw && rip.yield >= 50 && hw.yield >= 50) z.health = Math.min(100, z.health + 3); else if (z.id === 'riparian' || z.id === 'hardwoodStand') z.health = Math.max(0, z.health - 2); } },
+    { id: 'barkBeetle',  name: 'Bark Beetle Outbreak', icon: '🐛', desc: 'A bark beetle pulse hits the pine-spruce stand. Health drops and fuel rises as dead trees fall.', apply: function(z) { if (z.id === 'mixedConifer') { z.health = Math.max(0, z.health - 10); z.fuel = Math.min(100, z.fuel + 6); } } },
+    { id: 'treaty',      name: 'Treaty Council',       icon: '🤝', desc: 'A council across Wabanaki nations shares stewardship knowledge. Yields and continuity scores improve everywhere this year.', apply: function(z) { z.yield = Math.min(100, z.yield + 3); } },
+    { id: 'lateSpring',  name: 'Late Spring',          icon: '❄️', desc: 'Snow lingers into May. All techniques this year are 20 percent less effective.', apply: function(z) { /* effect is applied at action-resolution time via yearMult */ } }
+  ];
+
+  // Elder guidance fires based on current state. Each guidance is a soft nudge,
+  // not a directive: the elder names what they are seeing on the land.
+  var MOSAIC_ELDER = [
+    { check: function(z) { return z.id === 'blueberryBarren' && z.fuel > 60; }, msg: 'The barren is choked. Without a burn the heath swallows the blueberries, and the harvest fails.' },
+    { check: function(z) { return z.id === 'blueberryBarren' && (z.lastBurn || 99) > 4; }, msg: 'It has been too long since the barren was burned. Even good rain will not replace good fire.' },
+    { check: function(z) { return z.id === 'oakSavanna' && z.fuel > 55; }, msg: 'The savanna is filling in with maple and birch. The young oaks cannot push through that shade.' },
+    { check: function(z) { return z.id === 'riparian' && z.fuel > 35; }, msg: 'Something is not right by the water. Sweetgrass needs open, moist ground, not crowded brush.' },
+    { check: function(z) { return z.id === 'mixedConifer' && z.health < 55; }, msg: 'The pines are tired. Thin a little, then let them rest. Fire here is rare and patient.' },
+    { check: function(z) { return z.id === 'hardwoodStand' && z.yield < 30; }, msg: 'The brown ash is not giving splints this year. Coppice in winter and the shoots will come.' }
+  ];
+
+  function defaultMosaicState() {
+    return {
+      phase: 'setup',          // 'setup' | 'year' | 'review' | 'debrief'
+      year: 1,
+      maxYears: 8,
+      hoursPerYear: 32,
+      hoursLeft: 32,
+      zones: WABANAKI_ZONES.map(function(z) { return Object.assign({ id: z.id }, z.defaultState); }),
+      currentSeason: 'fall',
+      yearActions: [],         // actions logged during this year
+      yearLog: [],             // multi-year history
+      lastEvent: null,
+      continuityWins: 0,
+      finalOutcome: null
+    };
+  }
+
+  function getZoneDef(id) { return WABANAKI_ZONES.find(function(z) { return z.id === id; }); }
+
+  // ═══════════════════════════════════════════
   // MAIN TOOL REGISTRATION
   // ═══════════════════════════════════════════
 
@@ -1357,6 +1489,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         var gameOver = d.gameOver || false;
         var gameHistory = d.gameHistory || [];
 
+        // Cultural Mosaic state
+        var mosaic = d.mosaic || defaultMosaicState();
+
         var band = getGradeBand(ctx);
 
         // ── Badge checker ──
@@ -1395,6 +1530,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           { id: 'indigenous', icon: '\uD83C\uDF0D', label: 'Indigenous Knowledge' },
           { id: 'ecosystems', icon: '\uD83C\uDF32', label: 'Fire Ecosystems' },
           { id: 'simulator', icon: '\uD83C\uDFAE', label: 'Forest Simulator' },
+          { id: 'mosaic', icon: '\uD83E\uDDE9', label: 'Cultural Mosaic' },
           { id: 'burnPlan', icon: '\uD83D\uDCCB', label: 'Burn Planner' },
           { id: 'science', icon: '\uD83D\uDD2C', label: 'Fire Science' },
           { id: 'smokeSeeds', icon: '\uD83C\uDF3A', label: 'Smoke & Seeds' },
@@ -1411,6 +1547,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             indigenous: { accent: '#fb923c', soft: 'rgba(251,146,60,0.10)', icon: '\uD83C\uDF0D', title: 'Indigenous fire knowledge',                hint: 'Cultural burning predates colonization by 65,000+ years across Australia, North America, and Africa. Western fire science is finally reading what Indigenous practitioners always knew.' },
             ecosystems: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83C\uDF32', title: 'Fire-adapted ecosystems',               hint: 'Some ecosystems NEED fire to function \u2014 longleaf pine, sequoia, chaparral, prairie. Cones that only open in heat (serotiny). Suppress fire and the ecosystem dies.' },
             simulator:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFAE', title: 'Forest simulator',                       hint: 'Cellular-automaton fire spread \u2014 each cell tracks fuel load + moisture + slope. Watch how a single ignition becomes a megafire when fuels accumulate.' },
+            mosaic:     { accent: '#15803d', soft: 'rgba(21,128,61,0.10)',  icon: '\uD83E\uDDE9', title: 'Cultural mosaic \u2014 Wabanaki stewardship',  hint: 'A real Indigenous approach is patchwork, not uniform. Each habitat has its own fire-return interval: blueberry barren every 2 years, riparian almost never. Steward 5 zones over 8 years.' },
             burnPlan:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDCCB', title: 'Burn planner \u2014 cultural burn safety', hint: 'Indigenous + modern burn planners read temperature, humidity, wind, and fuel moisture together. Score \u2265 85 = GO; 60\u201385 = CAUTION; <60 = NO-GO.' },
             science:    { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',  icon: '\uD83D\uDD2C', title: 'Fire science \u2014 the chemistry',       hint: 'The fire triangle: fuel + oxygen + heat. Combustion is exothermic oxidation. Flashover = the moment ambient air reaches ignition temperature \u2014 catastrophic.' },
             smokeSeeds: { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDF3A', title: 'Smoke + seeds',                          hint: 'Many plants need smoke chemicals (karrikins) to germinate. Fire-followers (whispering bells, fire poppies) bloom only in burned ground; seed banks wait decades.' },
@@ -2947,6 +3084,413 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         }
 
         // ══════════════════════════════════════
+        // TAB: CULTURAL MOSAIC — WABANAKI STEWARDSHIP
+        // ══════════════════════════════════════
+
+        function renderMosaicTab() {
+          var m = mosaic;
+          var setMosaic = function(patch) { updMulti({ mosaic: Object.assign({}, m, patch) }); };
+          var T_GREEN = '#15803d', T_GREEN_HI = '#86efac';
+
+          function startCampaign() {
+            var fresh = defaultMosaicState();
+            fresh.phase = 'year';
+            setMosaic(fresh);
+            playSound('ignite');
+            if (addToast) addToast('🧩 Wabanaki Mosaic begins. Year 1 of 8.', 'success');
+            awardStemXP('mosaic_start', 10, 'Mosaic begins');
+            if (announceToSR) announceToSR('Cultural Mosaic campaign started. Year 1 of 8. ' + fresh.hoursLeft + ' stewardship hours available.');
+          }
+
+          function resetCampaign() {
+            setMosaic(defaultMosaicState());
+            if (addToast) addToast('Mosaic reset.', 'info');
+          }
+
+          // Apply a technique to a zone
+          function applyTechnique(techId, zoneId) {
+            var tech = MOSAIC_TECHNIQUES.find(function(t2) { return t2.id === techId; });
+            var zone = m.zones.find(function(z) { return z.id === zoneId; });
+            var zDef = getZoneDef(zoneId);
+            if (!tech || !zone || !zDef) return;
+            if (m.hoursLeft < tech.hours) {
+              if (addToast) addToast('Not enough stewardship hours left this year.', 'warn');
+              return;
+            }
+            if (tech.zoneRestrict && tech.zoneRestrict.indexOf(zoneId) < 0) {
+              if (addToast) addToast(tech.name + ' does not apply to ' + zDef.name + '.', 'info');
+              return;
+            }
+            if (tech.requires === 'recentBurn' && (zone.lastBurn || 99) > 1) {
+              if (addToast) addToast('Seed scatter only works on a zone burned within the past year.', 'info');
+              return;
+            }
+            var lateSpringYear = m.lastEvent && m.lastEvent.id === 'lateSpring';
+            var seasonMult = (tech.season === 'any' || tech.season === m.currentSeason) ? 1 : (tech.offSeasonMult || 0.6);
+            var yearMult = lateSpringYear ? 0.8 : 1;
+            var totalMult = seasonMult * yearMult;
+            var newZones = m.zones.map(function(z) {
+              if (z.id !== zoneId) return z;
+              var nz = Object.assign({}, z);
+              nz.fuel = clamp(nz.fuel + tech.effects.fuel * totalMult, 0, 100);
+              nz.health = clamp(nz.health + tech.effects.health * totalMult, 0, 100);
+              nz.yield = clamp(nz.yield + tech.effects.yield * totalMult, 0, 100);
+              if (tech.resetsBurn) nz.lastBurn = 0;
+              return nz;
+            });
+            var newAction = { tech: tech.name, zone: zDef.name, hours: tech.hours, mult: totalMult };
+            setMosaic({
+              zones: newZones,
+              hoursLeft: m.hoursLeft - tech.hours,
+              yearActions: m.yearActions.concat([newAction])
+            });
+            playSound(techId === 'culturalBurn' || techId === 'pileBurn' ? 'ignite' : 'quizCorrect');
+            if (announceToSR) announceToSR(tech.name + ' applied to ' + zDef.name + '. ' + (m.hoursLeft - tech.hours) + ' hours left.');
+          }
+
+          // End the current year — fire event, recover, check continuity
+          function endYear() {
+            // Natural drift: fuel accumulates, health drifts, yield depends on years since burn
+            var driftedZones = m.zones.map(function(z) {
+              var nz = Object.assign({}, z);
+              var def = getZoneDef(z.id);
+              nz.fuel = clamp(nz.fuel + 4, 0, 100);
+              nz.lastBurn = (nz.lastBurn || 0) + 1;
+              // Yield drift: if you have not burned within the fire-return interval, yield erodes
+              var pastDue = nz.lastBurn - def.fireReturn;
+              if (def.fireReturn < 50 && pastDue > 0) {
+                nz.yield = clamp(nz.yield - 4 - Math.min(8, pastDue), 0, 100);
+              } else {
+                nz.yield = clamp(nz.yield - 1, 0, 100);
+              }
+              return nz;
+            });
+
+            // Trigger a random event (1 of 8) — 1 event per year
+            var ev = MOSAIC_EVENTS[Math.floor(Math.random() * MOSAIC_EVENTS.length)];
+            driftedZones.forEach(function(z) { ev.apply(z, driftedZones); });
+
+            // Continuity bonus: any zone hitting its fire-return interval window (+/- 1 year)
+            var continuityHits = 0;
+            driftedZones.forEach(function(z) {
+              var def = getZoneDef(z.id);
+              if (def.fireReturn < 50 && Math.abs(z.lastBurn - def.fireReturn) <= 1) continuityHits++;
+            });
+
+            var avgHealth = Math.round(driftedZones.reduce(function(a, z) { return a + z.health; }, 0) / driftedZones.length);
+            var totalYield = Math.round(driftedZones.reduce(function(a, z) { return a + z.yield; }, 0));
+            var yearSnap = {
+              year: m.year, event: ev.name, eventIcon: ev.icon,
+              avgHealth: avgHealth, totalYield: totalYield,
+              continuityHits: continuityHits, actions: m.yearActions.slice()
+            };
+
+            setMosaic({
+              phase: 'review',
+              zones: driftedZones,
+              lastEvent: ev,
+              continuityWins: m.continuityWins + continuityHits,
+              yearLog: m.yearLog.concat([yearSnap])
+            });
+
+            playSound(continuityHits > 0 ? 'badge' : 'pause');
+            if (announceToSR) announceToSR('Year ' + m.year + ' complete. Event: ' + ev.name + '. Avg health ' + avgHealth + ', total yield ' + totalYield + '.');
+            if (m.year >= m.maxYears - 2 && continuityHits >= 2) checkBadge('mosaicMaster');
+          }
+
+          function advanceFromReview() {
+            if (m.year >= m.maxYears) {
+              // Final scoring
+              var avgHealth = Math.round(m.zones.reduce(function(a, z) { return a + z.health; }, 0) / m.zones.length);
+              var totalYield = Math.round(m.zones.reduce(function(a, z) { return a + z.yield; }, 0));
+              var outcome;
+              if (avgHealth >= 78 && totalYield >= 350 && m.continuityWins >= 4) {
+                outcome = { tier: 'excellent', label: 'Wabanaki Stewardship Mastery', color: '#16a34a', icon: '🏆', desc: 'The mosaic thrives. Berry harvests are abundant, ash splints supply every basketmaker, sweetgrass braids fill every ceremony. The land remembers good fire.' };
+              } else if (avgHealth >= 70 && totalYield >= 280) {
+                outcome = { tier: 'good', label: 'Skilled Mosaic Steward', color: '#22c55e', icon: '🌿', desc: 'You held the mosaic together. Some zones thrived, others held steady. The community has what it needs.' };
+              } else if (avgHealth >= 60) {
+                outcome = { tier: 'struggling', label: 'Mosaic Apprentice', color: '#f59e0b', icon: '🍃', desc: 'You kept the land alive but it is fraying. Some zones missed their fire-return windows; harvests were thin in places.' };
+              } else {
+                outcome = { tier: 'critical', label: 'Ecology Slipping', color: '#ef4444', icon: '⚠️', desc: 'The mosaic is unraveling. Without consistent stewardship the habitats are blending together and the cultural species are losing ground.' };
+              }
+              setMosaic({ phase: 'debrief', finalOutcome: outcome });
+              awardStemXP('mosaic_complete', 50, outcome.label);
+              if (outcome.tier === 'excellent' || outcome.tier === 'good') checkBadge('mosaicMaster');
+            } else {
+              setMosaic({ phase: 'year', year: m.year + 1, hoursLeft: m.hoursPerYear, yearActions: [], lastEvent: null });
+            }
+          }
+
+          // ── SETUP PHASE ──
+          if (m.phase === 'setup') {
+            return h('div', null,
+              h('div', {
+                style: {
+                  padding: 18, borderRadius: 14,
+                  background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(124,58,237,0.08) 100%)',
+                  border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN,
+                  marginBottom: 14
+                }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
+                  h('span', { style: { fontSize: 36 }, 'aria-hidden': 'true' }, '🧩'),
+                  h('div', null,
+                    h('h3', { style: { margin: 0, color: T_GREEN_HI, fontSize: 22 } }, 'Wabanaki Cultural Mosaic'),
+                    h('div', { style: { fontSize: 13, color: '#cbd5e1', marginTop: 2 } }, 'Steward a real Maine territory across 8 years.')
+                  )
+                ),
+                h('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } },
+                  'Your land is divided into 5 zones, each with its own habitat, its own cultural use, and its own fire-return interval. ',
+                  h('strong', null, 'A blueberry barren needs fire every 2 years; a riparian corridor needs fire almost never.'),
+                  ' Real Indigenous stewardship is patchwork, not uniform.'
+                ),
+                h('p', { style: { margin: '8px 0 0', color: '#94a3b8', fontSize: 12.5, lineHeight: 1.55, fontStyle: 'italic' } },
+                  'This sim is built on documented Wabanaki practice (Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki). Where details are simplified for an 8-year window, the underlying logic is faithful.'
+                )
+              ),
+
+              // Zone preview cards
+              h('h4', { style: { margin: '14px 0 8px', color: '#e2e8f0', fontSize: 16 } }, 'Your Territory'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10, marginBottom: 14 } },
+                WABANAKI_ZONES.map(function(z) {
+                  return h('div', { key: z.id,
+                    style: {
+                      background: '#0f172a', borderLeft: '3px solid ' + z.color,
+                      borderRadius: 10, padding: 12, fontSize: 13
+                    }
+                  },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                      h('span', { style: { fontSize: 22 } }, z.icon),
+                      h('strong', { style: { color: z.color } }, z.name)
+                    ),
+                    h('div', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 4 } },
+                      'Fire return: ' + (z.fireReturn >= 50 ? 'almost never' : 'every ' + z.fireReturn + ' years')
+                    ),
+                    h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, marginBottom: 4 } }, z.desc),
+                    h('div', { style: { color: '#fbbf24', fontSize: 11.5 } }, '✨ ' + z.culturalUse)
+                  );
+                })
+              ),
+
+              h('div', {
+                style: { background: '#0f172a', borderRadius: 10, padding: 12, marginBottom: 14, borderLeft: '3px solid #fbbf24', fontSize: 13, lineHeight: 1.55, color: '#fde68a' }
+              },
+                h('strong', { style: { color: '#fbbf24' } }, 'How a year works: '),
+                'you have 32 stewardship hours per year. Each technique costs different hours. Pick zones, pick techniques, then end the year. A weather or community event fires, the land drifts naturally, and the next year begins. Hit each zone\'s fire-return window for a continuity bonus.'
+              ),
+
+              h('button', {
+                onClick: startCampaign,
+                'aria-label': 'Begin Wabanaki Mosaic',
+                style: {
+                  width: '100%', padding: '14px 20px', borderRadius: 12,
+                  border: 'none', cursor: 'pointer',
+                  background: 'linear-gradient(135deg, ' + T_GREEN + ' 0%, #166534 100%)',
+                  color: '#fff', fontWeight: 800, fontSize: 16,
+                  boxShadow: '0 6px 14px rgba(21,128,61,0.35)'
+                }
+              }, '🧩 Begin 8-year Stewardship')
+            );
+          }
+
+          // ── DEBRIEF PHASE ──
+          if (m.phase === 'debrief' && m.finalOutcome) {
+            var o = m.finalOutcome;
+            return h('div', null,
+              h('div', {
+                style: {
+                  padding: 18, borderRadius: 14, marginBottom: 14,
+                  background: 'linear-gradient(135deg, ' + o.color + '24 0%, rgba(15,23,42,0) 100%)',
+                  border: '1px solid ' + o.color + '88', borderLeft: '4px solid ' + o.color
+                }
+              },
+                h('div', { style: { fontSize: 40, marginBottom: 6 } }, o.icon),
+                h('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
+                h('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } }, o.desc)
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10, marginBottom: 14 } },
+                h('div', { style: { background: '#0f172a', padding: 12, borderRadius: 10 } },
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Avg ecological health'),
+                  h('div', { style: { fontSize: 24, fontWeight: 800, color: '#86efac' } },
+                    Math.round(m.zones.reduce(function(a, z) { return a + z.health; }, 0) / m.zones.length) + '/100')
+                ),
+                h('div', { style: { background: '#0f172a', padding: 12, borderRadius: 10 } },
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Total cultural yield'),
+                  h('div', { style: { fontSize: 24, fontWeight: 800, color: '#fbbf24' } },
+                    Math.round(m.zones.reduce(function(a, z) { return a + z.yield; }, 0)))
+                ),
+                h('div', { style: { background: '#0f172a', padding: 12, borderRadius: 10 } },
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Continuity wins'),
+                  h('div', { style: { fontSize: 24, fontWeight: 800, color: '#a855f7' } }, m.continuityWins)
+                )
+              ),
+              h('h4', { style: { color: '#e2e8f0', margin: '10px 0' } }, 'Final state by zone'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
+                m.zones.map(function(z) {
+                  var def = getZoneDef(z.id);
+                  return h('div', { key: z.id, style: { background: '#0f172a', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + def.color, fontSize: 12 } },
+                    h('div', { style: { fontWeight: 700, color: def.color, marginBottom: 4 } }, def.icon + ' ' + def.name),
+                    h('div', { style: { color: '#cbd5e1' } }, 'Health: ' + Math.round(z.health) + ' • Yield: ' + Math.round(z.yield) + ' • Last burn: ' + z.lastBurn + 'y')
+                  );
+                })
+              ),
+              h('button', { onClick: resetCampaign, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#1e293b', color: '#cbd5e1', fontWeight: 700 } }, '↻ Start a new mosaic')
+            );
+          }
+
+          // ── REVIEW PHASE (end-of-year) ──
+          if (m.phase === 'review') {
+            var lastSnap = m.yearLog[m.yearLog.length - 1] || {};
+            var ev = m.lastEvent || {};
+            // Find Elder Guidance entries matching at least one current zone state
+            var elderMatches = [];
+            m.zones.forEach(function(z) {
+              MOSAIC_ELDER.forEach(function(g) {
+                if (g.check(z) && elderMatches.length < 3 && !elderMatches.find(function(em){return em.msg === g.msg;})) elderMatches.push(g);
+              });
+            });
+            return h('div', null,
+              h('div', { style: { padding: 14, borderRadius: 12, marginBottom: 12, background: '#0f172a', borderLeft: '3px solid #fbbf24' } },
+                h('div', { style: { fontSize: 22, marginBottom: 4 } }, ev.icon || '🌿'),
+                h('strong', { style: { color: '#fbbf24', fontSize: 16 } }, 'Year ' + m.year + ' event: ' + (ev.name || 'quiet year')),
+                h('p', { style: { margin: '6px 0 0', color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, ev.desc || '')
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8, marginBottom: 12 } },
+                h('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8 } },
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Avg health'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: '#86efac' } }, (lastSnap.avgHealth || 0) + '/100')
+                ),
+                h('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8 } },
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Total yield'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, lastSnap.totalYield || 0)
+                ),
+                h('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8 } },
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Continuity this year'),
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: '#a855f7' } }, '+' + (lastSnap.continuityHits || 0))
+                )
+              ),
+              elderMatches.length > 0 ? h('div', {
+                style: { padding: 12, borderRadius: 10, marginBottom: 12, background: 'rgba(168,85,247,0.08)', borderLeft: '3px solid #a855f7' }
+              },
+                h('strong', { style: { color: '#a855f7', fontSize: 13 } }, '✨ Elder Guidance'),
+                elderMatches.map(function(g, i) {
+                  return h('div', { key: i, style: { margin: '6px 0 0', color: '#e9d5ff', fontSize: 13, lineHeight: 1.5, fontStyle: 'italic' } }, '“' + g.msg + '”');
+                })
+              ) : null,
+              h('button', {
+                onClick: advanceFromReview,
+                style: {
+                  width: '100%', padding: '12px 20px', borderRadius: 10,
+                  border: 'none', cursor: 'pointer',
+                  background: 'linear-gradient(135deg, ' + T_GREEN + ' 0%, #166534 100%)',
+                  color: '#fff', fontWeight: 700, fontSize: 14
+                }
+              }, m.year >= m.maxYears ? 'See final outcome →' : ('Begin Year ' + (m.year + 1) + ' →'))
+            );
+          }
+
+          // ── YEAR PHASE (active stewardship) ──
+          return h('div', null,
+            // HUD
+            h('div', {
+              style: {
+                padding: '10px 14px', borderRadius: 12, marginBottom: 12,
+                background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(15,23,42,0) 100%)',
+                border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN,
+                display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap'
+              }
+            },
+              h('div', null,
+                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Year'),
+                h('div', { style: { fontSize: 20, fontWeight: 800, color: T_GREEN_HI } }, m.year + ' / ' + m.maxYears)
+              ),
+              h('div', null,
+                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Stewardship hours'),
+                h('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, m.hoursLeft + ' / ' + m.hoursPerYear)
+              ),
+              h('div', null,
+                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Continuity wins'),
+                h('div', { style: { fontSize: 20, fontWeight: 800, color: '#a855f7' } }, m.continuityWins)
+              ),
+              h('div', { style: { marginLeft: 'auto' } },
+                h('button', {
+                  onClick: endYear,
+                  'aria-label': 'End this year',
+                  style: {
+                    padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                    background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 13
+                  }
+                }, 'End Year →')
+              )
+            ),
+
+            // Zones with action picker
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 10, marginBottom: 12 } },
+              m.zones.map(function(z) {
+                var def = getZoneDef(z.id);
+                var pastDue = (def.fireReturn < 50 && z.lastBurn > def.fireReturn);
+                var nearWindow = (def.fireReturn < 50 && Math.abs(z.lastBurn - def.fireReturn) <= 1);
+                var statusColor = pastDue ? '#ef4444' : (nearWindow ? '#fbbf24' : '#86efac');
+                var statusText = pastDue ? 'PAST DUE for burn' : (nearWindow ? 'In fire-return window' : 'Stable');
+                return h('div', { key: z.id,
+                  style: {
+                    background: '#0f172a', borderRadius: 12, padding: 12,
+                    borderLeft: '3px solid ' + def.color
+                  }
+                },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
+                    h('span', { style: { fontSize: 22 } }, def.icon),
+                    h('div', { style: { flex: 1 } },
+                      h('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
+                      h('div', { style: { fontSize: 11, color: statusColor, fontWeight: 700 } }, statusText + ' • last burn ' + z.lastBurn + 'y')
+                    )
+                  ),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
+                    [['Fuel', Math.round(z.fuel), z.fuel > 55 ? '#ef4444' : z.fuel > 35 ? '#f59e0b' : '#22c55e'],
+                     ['Health', Math.round(z.health), z.health < 50 ? '#ef4444' : z.health < 70 ? '#f59e0b' : '#22c55e'],
+                     ['Yield', Math.round(z.yield), z.yield < 40 ? '#ef4444' : z.yield < 60 ? '#f59e0b' : '#22c55e']
+                    ].map(function(s, si) {
+                      return h('div', { key: si, style: { background: '#1e293b', padding: 6, borderRadius: 6, textAlign: 'center' } },
+                        h('div', { style: { fontSize: 10, color: '#94a3b8' } }, s[0]),
+                        h('div', { style: { fontSize: 15, fontWeight: 800, color: s[2] } }, s[1])
+                      );
+                    })
+                  ),
+                  // Action picker per zone
+                  h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+                    MOSAIC_TECHNIQUES.map(function(t) {
+                      var disabled = m.hoursLeft < t.hours || (t.zoneRestrict && t.zoneRestrict.indexOf(z.id) < 0) || (t.requires === 'recentBurn' && z.lastBurn > 1);
+                      var seasonOk = (t.season === 'any' || t.season === m.currentSeason);
+                      return h('button', { key: t.id,
+                        onClick: function() { applyTechnique(t.id, z.id); },
+                        disabled: disabled,
+                        title: t.desc + (seasonOk ? '' : ' [off-season: reduced effect]'),
+                        style: {
+                          padding: '4px 8px', fontSize: 11, fontWeight: 700,
+                          borderRadius: 6, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
+                          background: disabled ? '#1e293b' : (seasonOk ? '#15803d' : '#a16207'),
+                          color: disabled ? '#475569' : '#fff', opacity: disabled ? 0.5 : 1
+                        }
+                      }, t.icon + ' ' + t.name + ' (' + t.hours + 'h)');
+                    })
+                  )
+                );
+              })
+            ),
+
+            // Year action log
+            m.yearActions.length > 0 ? h('div', {
+              style: { background: '#0f172a', borderRadius: 10, padding: 10, fontSize: 12, color: '#cbd5e1' }
+            },
+              h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 4 } }, 'Year ' + m.year + ' actions'),
+              m.yearActions.map(function(a, ai) {
+                return h('div', { key: ai }, '• ' + a.tech + ' → ' + a.zone + ' (' + a.hours + 'h)' + (a.mult < 1 ? ' [off-season ×' + a.mult.toFixed(2) + ']' : ''));
+              })
+            ) : h('div', { style: { fontSize: 12, color: '#64748b', fontStyle: 'italic' } }, 'No actions yet this year. Pick a zone, pick a technique.')
+          );
+        }
+
+        // ══════════════════════════════════════
         // TAB: BEAVERS & FIRE
         // ══════════════════════════════════════
 
@@ -3711,6 +4255,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           tab === 'caseStudies' ? renderCaseStudiesTab() :
           tab === 'carbon' ? renderCarbonTab() :
           tab === 'beavers' ? renderBeaverTab() :
+          tab === 'mosaic' ? renderMosaicTab() :
           tab === 'game' ? renderGameTab() :
           tab === 'quiz' ? renderQuizTab() : null,
 
