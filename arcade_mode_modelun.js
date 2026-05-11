@@ -1561,6 +1561,54 @@
   }
 
   // ═══════════════════════════════════════════
+  // AI HELPER — Suggest an amendment to an existing clause.
+  // Three amendment types in real MUN: STRIKE (delete), ADD (insert), MODIFY (rewrite).
+  // Returns { type: 'strike'|'add'|'modify', text, rationale } or null.
+  // ═══════════════════════════════════════════
+  function aiSuggestAmendment(ctx, fromCountry, agenda, originalClause) {
+    if (!ctx || typeof ctx.callGemini !== 'function' || !originalClause) return Promise.resolve(null);
+    var stance = (fromCountry && fromCountry.defaultPositions && fromCountry.defaultPositions[agenda.id]) || 'standard diplomatic engagement';
+    var prompt = [
+      'You are proposing an AMENDMENT to a Model UN resolution clause.',
+      fromCountry ? ('You are the delegate from ' + fromCountry.name + '. Your stance: ' + stance) : '',
+      'Agenda: ' + agenda.title,
+      '',
+      'Original clause (' + (originalClause.type === 'preamble' ? 'preambulatory' : 'operative') + '):',
+      '"' + originalClause.text + '"',
+      '',
+      'Propose ONE amendment that meaningfully changes the clause to better reflect your country\'s interests OR address a gap. Choose one type:',
+      '  - "strike": delete a specific phrase (specify the phrase to remove)',
+      '  - "add": insert a new phrase or sub-clause (specify the addition)',
+      '  - "modify": rewrite the whole clause with a small but real change',
+      '',
+      'Constraints:',
+      '  - Amendments must be SUBSTANTIVE (not just wording polish)',
+      '  - Must be diplomatically credible for ' + (fromCountry ? fromCountry.name : 'a delegate'),
+      '',
+      'Return ONLY a JSON object:',
+      '{',
+      '  "type": "strike" or "add" or "modify",',
+      '  "text": "the amendment text (the phrase to strike, the addition to make, or the new full clause)",',
+      '  "rationale": "1 sentence diplomatic justification"',
+      '}'
+    ].join('\n');
+    return Promise.resolve(ctx.callGemini(prompt, true)).then(function(result) {
+      var raw = typeof result === 'string' ? result : (result && result.text ? result.text : String(result || ''));
+      raw = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      var s = raw.indexOf('{'); var e = raw.lastIndexOf('}');
+      if (s < 0 || e <= s) return null;
+      var parsed; try { parsed = JSON.parse(raw.substring(s, e + 1)); } catch (err) { return null; }
+      if (!parsed || typeof parsed.text !== 'string' || parsed.text.length < 5) return null;
+      var t = parsed.type === 'strike' ? 'strike' : parsed.type === 'add' ? 'add' : 'modify';
+      return {
+        type: t,
+        text: parsed.text.slice(0, 500),
+        rationale: typeof parsed.rationale === 'string' ? parsed.rationale.slice(0, 200) : ''
+      };
+    }).catch(function() { return null; });
+  }
+
+  // ═══════════════════════════════════════════
   // AI HELPER — Generate a breaking-news event the chair can broadcast.
   // Returns { headline, body, affectedIsos: [iso...] } or null.
   // Pedagogically: real diplomacy shifts under news; this tests adaptability.
@@ -2032,6 +2080,10 @@
     var aiLoadTuple = useState(false);
     var aiLoading = aiLoadTuple[0];
     var setAiLoading = aiLoadTuple[1];
+    // Amendment modal state — open clauseId or null
+    var amOpenTuple = useState(null);
+    var amOpenId = amOpenTuple[0];
+    var setAmOpenId = amOpenTuple[1];
 
     function commitClause(authorIso, authorCountryName, txt, type, isAi) {
       var clauseId = 'cl_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
@@ -2271,6 +2323,7 @@
                     canEdit: isHost,
                     onAdopt: function() { setClauseStatus(c.id, c.status === 'adopted' ? 'open' : 'adopted'); },
                     onReject: function() { setClauseStatus(c.id, c.status === 'rejected' ? 'open' : 'rejected'); },
+                    onOpenAmendments: function() { setAmOpenId(c.id); },
                     onRemove: function() {
                       if (typeof confirm !== 'function' || confirm('Remove this clause?')) removeClause(c.id);
                     }
@@ -2278,7 +2331,20 @@
                 })
               )
         )
-      )
+      ),
+
+      // Amendment modal — overlay when a clause is opened for amending
+      amOpenId && clauses[amOpenId] && h(AmendmentModal, {
+        ctx: ctx,
+        modelUn: modelUn,
+        updateMUN: updateMUN,
+        clauseId: amOpenId,
+        clause: clauses[amOpenId],
+        myCountry: myCountry,
+        isHost: isHost,
+        agenda: agenda,
+        onClose: function() { setAmOpenId(null); }
+      })
     );
   }
 
@@ -2317,7 +2383,37 @@
         c.status === 'rejected' && h('span', { style: { fontSize: 10, fontWeight: 700, color: '#dc2626' } }, '✗ Rejected')
       ),
       h('p', { style: { fontSize: 12, lineHeight: 1.6, color: '#e2e8f0', margin: 0, fontStyle: c.type === 'preamble' ? 'italic' : 'normal' } }, c.text),
-      props.canEdit && h('div', { style: { display: 'flex', gap: 4, marginTop: 8 } },
+
+      // ── Adopted amendments rendered inline (live changes visible) ──
+      c.amendments && Object.keys(c.amendments).length > 0 && h('div', { style: { marginTop: 6, paddingTop: 6, borderTop: '1px dashed rgba(255,255,255,0.15)' } },
+        h('div', { style: { fontSize: 9, color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
+          'Amendments (' + Object.keys(c.amendments).length + ')'
+        ),
+        Object.keys(c.amendments).map(function(amId) {
+          var am = c.amendments[amId];
+          var amColor = am.status === 'adopted' ? '#10b981' : am.status === 'rejected' ? '#dc2626' : '#fbbf24';
+          var amIcon = am.type === 'strike' ? '➖' : am.type === 'add' ? '➕' : '✏️';
+          return h('div', {
+            key: amId,
+            style: {
+              fontSize: 10, lineHeight: 1.5, marginTop: 2, padding: '4px 6px',
+              borderLeft: '2px solid ' + amColor,
+              background: am.status === 'adopted' ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.02)',
+              borderRadius: 3, opacity: am.status === 'rejected' ? 0.5 : 1
+            }
+          },
+            h('span', { style: { color: amColor, fontWeight: 700, marginRight: 4 } },
+              amIcon + ' ' + am.type.toUpperCase() + ' by ' + (am.proposer || '?') + (am.isAi ? ' 🤖' : '')
+            ),
+            am.status === 'adopted' && h('span', { style: { color: '#10b981', fontSize: 9, fontWeight: 700, marginRight: 4 } }, '✓'),
+            am.status === 'rejected' && h('span', { style: { color: '#dc2626', fontSize: 9, fontWeight: 700, marginRight: 4 } }, '✗'),
+            h('span', { style: { color: '#cbd5e1' } }, '"' + am.text + '"'),
+            am.rationale && h('div', { style: { color: '#94a3b8', fontStyle: 'italic', marginTop: 2 } }, am.rationale)
+          );
+        })
+      ),
+
+      props.canEdit && h('div', { style: { display: 'flex', gap: 4, marginTop: 8, flexWrap: 'wrap' } },
         h('button', {
           onClick: props.onAdopt,
           style: {
@@ -2337,6 +2433,15 @@
           }
         }, c.status === 'rejected' ? '✗ Rejected' : 'Reject'),
         h('button', {
+          onClick: props.onOpenAmendments,
+          style: {
+            padding: '3px 8px', fontSize: 10, fontWeight: 700,
+            background: 'rgba(251,191,36,0.18)', color: '#fbbf24',
+            border: '1px solid #fbbf24', borderRadius: 4, cursor: 'pointer'
+          },
+          'aria-label': 'Open amendments for this clause'
+        }, '✏️ Amend'),
+        h('button', {
           onClick: props.onRemove,
           style: {
             marginLeft: 'auto',
@@ -2345,6 +2450,269 @@
             border: '1px solid #475569', borderRadius: 4, cursor: 'pointer'
           }
         }, '🗑 Remove')
+      )
+    );
+  }
+
+  // ═══════════════════════════════════════════
+  // AmendmentModal — overlay for proposing + reviewing amendments to a clause.
+  // Students propose; host adopts/rejects.
+  // ═══════════════════════════════════════════
+  function AmendmentModal(props) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var ctx = props.ctx;
+    var modelUn = props.modelUn;
+    var updateMUN = props.updateMUN;
+    var clauseId = props.clauseId;
+    var clause = props.clause;
+    var myCountry = props.myCountry;
+    var isHost = props.isHost;
+    var agenda = props.agenda;
+    var onClose = props.onClose;
+
+    var typeTuple = useState('modify');
+    var amType = typeTuple[0];
+    var setAmType = typeTuple[1];
+    var textTuple = useState('');
+    var text = textTuple[0];
+    var setText = textTuple[1];
+    var rationaleTuple = useState('');
+    var rationale = rationaleTuple[0];
+    var setRationale = rationaleTuple[1];
+    var loadingTuple = useState(false);
+    var loading = loadingTuple[0];
+    var setLoading = loadingTuple[1];
+
+    var amendments = (clause && clause.amendments) || {};
+    var orderedAmendments = Object.keys(amendments).map(function(id) {
+      return Object.assign({ id: id }, amendments[id]);
+    }).sort(function(a, b) { return (a.at || 0) - (b.at || 0); });
+
+    function writeAmendmentsBack(nextAmendments) {
+      var nextClauses = Object.assign({}, modelUn.clauses || {});
+      nextClauses[clauseId] = Object.assign({}, clause, { amendments: nextAmendments });
+      updateMUN({ clauses: nextClauses });
+    }
+    function commitAmendment(proposer, iso, txt, rat, type, isAi) {
+      var amId = 'am_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+      var next = Object.assign({}, amendments);
+      next[amId] = {
+        proposer: proposer,
+        iso: iso,
+        type: type,
+        text: txt.slice(0, 500),
+        rationale: (rat || '').slice(0, 200),
+        status: 'open',
+        isAi: !!isAi,
+        at: Date.now()
+      };
+      writeAmendmentsBack(next);
+    }
+    function setAmendmentStatus(amId, status) {
+      var next = Object.assign({}, amendments);
+      if (next[amId]) {
+        next[amId] = Object.assign({}, next[amId], { status: status });
+        writeAmendmentsBack(next);
+      }
+    }
+    function handleSubmit() {
+      var t = (text || '').trim();
+      if (t.length < 5) { ctx.addToast('Amendment text is too short'); return; }
+      if (!myCountry) { ctx.addToast('You are not assigned a country'); return; }
+      commitAmendment(myCountry.name, myCountry.iso, t, rationale, amType, false);
+      setText(''); setRationale('');
+      if (typeof ctx.addToast === 'function') ctx.addToast('Amendment proposed');
+    }
+    function handleAIStarter() {
+      if (loading) return;
+      setLoading(true);
+      aiSuggestAmendment(ctx, myCountry, agenda, clause).then(function(r) {
+        setLoading(false);
+        if (r) {
+          setAmType(r.type);
+          setText(r.text);
+          setRationale(r.rationale || '');
+        } else {
+          ctx.addToast('AI amendment suggestion failed.');
+        }
+      }).catch(function() { setLoading(false); });
+    }
+
+    return h('div', {
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-labelledby': 'amend-title',
+      style: {
+        position: 'fixed', inset: 0,
+        background: 'rgba(0,0,0,0.7)', zIndex: 1000,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 20, overflow: 'auto'
+      },
+      onClick: function(e) { if (e.target === e.currentTarget) onClose(); }
+    },
+      h('div', {
+        style: {
+          maxWidth: 640, width: '100%', maxHeight: '90vh', overflowY: 'auto',
+          background: '#0f172a', border: '2px solid #fbbf24', borderRadius: 12, color: '#e2e8f0'
+        }
+      },
+        // Header
+        h('div', { style: { padding: 14, display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid #334155' } },
+          h('span', { style: { fontSize: 28 } }, '✏️'),
+          h('div', { style: { flex: 1 } },
+            h('div', { id: 'amend-title', style: { fontSize: 16, fontWeight: 800 } }, 'Amend Clause'),
+            h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } },
+              'Proposed by ' + (clause && clause.proposer)
+            )
+          ),
+          h('button', {
+            onClick: onClose,
+            'aria-label': 'Close amendments panel',
+            style: { padding: '4px 8px', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' }
+          }, '✕')
+        ),
+        // Original clause
+        h('div', { style: { padding: 12, background: 'rgba(255,255,255,0.03)', margin: 14, borderRadius: 8, border: '1px solid #334155' } },
+          h('div', { style: { fontSize: 9, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Original Clause'),
+          h('p', { style: { fontSize: 12, lineHeight: 1.6, color: '#cbd5e1', margin: 0, fontStyle: clause && clause.type === 'preamble' ? 'italic' : 'normal' } },
+            clause && clause.text
+          )
+        ),
+        // Propose new amendment (if user has country)
+        myCountry && h('div', { style: { padding: 14 } },
+          h('div', { style: { fontSize: 11, color: '#fbbf24', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
+            'Propose an amendment as ' + myCountry.flag + ' ' + myCountry.name
+          ),
+          h('div', { style: { display: 'flex', gap: 6, marginBottom: 8 } },
+            [{ id: 'strike', label: '➖ Strike', hint: 'Delete a specific phrase' },
+             { id: 'add',    label: '➕ Add',    hint: 'Insert a new phrase' },
+             { id: 'modify', label: '✏️ Modify', hint: 'Rewrite the clause' }
+            ].map(function(t) {
+              var picked = amType === t.id;
+              return h('button', {
+                key: t.id, onClick: function() { setAmType(t.id); },
+                title: t.hint,
+                style: {
+                  flex: 1, padding: '6px 8px', fontSize: 11, fontWeight: 700,
+                  background: picked ? '#fbbf24' : 'rgba(255,255,255,0.04)',
+                  color: picked ? '#000' : '#cbd5e1',
+                  border: '1px solid ' + (picked ? '#fbbf24' : '#475569'),
+                  borderRadius: 6, cursor: 'pointer'
+                }
+              }, t.label);
+            })
+          ),
+          h('textarea', {
+            value: text,
+            onChange: function(e) { setText(e.target.value); },
+            placeholder: amType === 'strike'
+              ? 'Phrase to delete from the clause (paste it)…'
+              : amType === 'add'
+                ? 'New phrase or sub-clause to insert…'
+                : 'Rewritten clause text…',
+            rows: 4,
+            style: {
+              width: '100%', padding: 8, fontFamily: 'inherit', fontSize: 12, lineHeight: 1.6,
+              background: 'rgba(255,255,255,0.04)', color: '#e2e8f0',
+              border: '1px solid #475569', borderRadius: 6, resize: 'vertical', boxSizing: 'border-box',
+              marginBottom: 6
+            }
+          }),
+          h('input', {
+            type: 'text', value: rationale,
+            onChange: function(e) { setRationale(e.target.value); },
+            placeholder: 'Diplomatic rationale (1 sentence, optional)',
+            style: {
+              width: '100%', padding: 6, fontSize: 11, fontFamily: 'inherit',
+              background: 'rgba(255,255,255,0.04)', color: '#e2e8f0',
+              border: '1px solid #475569', borderRadius: 6, boxSizing: 'border-box',
+              marginBottom: 8
+            }
+          }),
+          h('div', { style: { display: 'flex', gap: 6 } },
+            h('button', {
+              onClick: handleAIStarter,
+              disabled: loading,
+              style: {
+                padding: '6px 10px', fontSize: 11, fontWeight: 600,
+                background: loading ? '#475569' : '#a855f7', color: '#fff',
+                border: 'none', borderRadius: 6, cursor: loading ? 'not-allowed' : 'pointer'
+              }
+            }, loading ? '⏳ Generating…' : '✨ AI suggest'),
+            h('button', {
+              onClick: handleSubmit,
+              disabled: text.trim().length < 5,
+              style: {
+                marginLeft: 'auto',
+                padding: '6px 14px', fontSize: 12, fontWeight: 700,
+                background: text.trim().length >= 5 ? '#10b981' : '#475569',
+                color: '#fff', border: 'none', borderRadius: 6,
+                cursor: text.trim().length >= 5 ? 'pointer' : 'not-allowed'
+              }
+            }, '✏️ Propose amendment')
+          )
+        ),
+        // Existing amendments
+        orderedAmendments.length > 0 && h('div', { style: { padding: '0 14px 14px' } },
+          h('div', { style: { fontSize: 11, color: '#7dd3fc', fontWeight: 700, marginTop: 14, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 } },
+            'Amendments on the floor (' + orderedAmendments.length + ')'
+          ),
+          orderedAmendments.map(function(am) {
+            var amCountry = countryById(am.iso);
+            var amColor = am.status === 'adopted' ? '#10b981' : am.status === 'rejected' ? '#dc2626' : '#fbbf24';
+            return h('div', {
+              key: am.id,
+              style: {
+                marginBottom: 8, padding: 10,
+                background: am.status === 'adopted' ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.03)',
+                border: '1px solid ' + amColor,
+                borderRadius: 8,
+                opacity: am.status === 'rejected' ? 0.55 : 1
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
+                amCountry && h('span', { style: { fontSize: 16 } }, amCountry.flag),
+                h('span', { style: { fontSize: 11, fontWeight: 700 } }, (am.proposer || '?') + (am.isAi ? ' 🤖' : '')),
+                h('span', {
+                  style: {
+                    fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4,
+                    background: 'rgba(251,191,36,0.18)', color: '#fbbf24',
+                    textTransform: 'uppercase', letterSpacing: 0.5, marginLeft: 'auto'
+                  }
+                }, am.type),
+                am.status === 'adopted' && h('span', { style: { fontSize: 10, fontWeight: 700, color: '#10b981' } }, '✓ Adopted'),
+                am.status === 'rejected' && h('span', { style: { fontSize: 10, fontWeight: 700, color: '#dc2626' } }, '✗ Rejected')
+              ),
+              h('p', { style: { fontSize: 12, lineHeight: 1.6, color: '#e2e8f0', margin: 0 } }, '"' + am.text + '"'),
+              am.rationale && h('p', { style: { fontSize: 10, lineHeight: 1.5, color: '#94a3b8', margin: '4px 0 0 0', fontStyle: 'italic' } }, am.rationale),
+              isHost && h('div', { style: { display: 'flex', gap: 4, marginTop: 6 } },
+                h('button', {
+                  onClick: function() { setAmendmentStatus(am.id, am.status === 'adopted' ? 'open' : 'adopted'); },
+                  style: {
+                    padding: '3px 8px', fontSize: 10, fontWeight: 700,
+                    background: am.status === 'adopted' ? '#10b981' : 'rgba(16,185,129,0.15)',
+                    color: am.status === 'adopted' ? '#fff' : '#10b981',
+                    border: '1px solid #10b981', borderRadius: 4, cursor: 'pointer'
+                  }
+                }, am.status === 'adopted' ? '✓ Adopted' : 'Adopt'),
+                h('button', {
+                  onClick: function() { setAmendmentStatus(am.id, am.status === 'rejected' ? 'open' : 'rejected'); },
+                  style: {
+                    padding: '3px 8px', fontSize: 10, fontWeight: 700,
+                    background: am.status === 'rejected' ? '#dc2626' : 'rgba(220,38,38,0.15)',
+                    color: am.status === 'rejected' ? '#fff' : '#fca5a5',
+                    border: '1px solid #dc2626', borderRadius: 4, cursor: 'pointer'
+                  }
+                }, am.status === 'rejected' ? '✗ Rejected' : 'Reject')
+              )
+            );
+          })
+        ),
+        orderedAmendments.length === 0 && h('div', { style: { padding: '0 14px 14px', fontSize: 11, color: '#94a3b8', fontStyle: 'italic', textAlign: 'center' } },
+          'No amendments yet. Propose the first one above.'
+        )
       )
     );
   }
@@ -2920,7 +3288,7 @@
 
   // Hot-reload guard — re-attach the launcher card data if needed
   if (typeof console !== 'undefined') {
-    console.log('[arcade_mode_modelun] Plugin v0.4 loaded — ' + COUNTRIES.length + ' countries, ' + AGENDAS.length + ' agendas, ' + COMMITTEES.length + ' committees; full loop + AI news desk + 7 achievement hooks.');
+    console.log('[arcade_mode_modelun] Plugin v0.5 loaded — ' + COUNTRIES.length + ' countries, ' + AGENDAS.length + ' agendas, ' + COMMITTEES.length + ' committees; full loop + AI news desk + 7 achievement hooks + amendments (strike/add/modify).');
   }
 
 })();
