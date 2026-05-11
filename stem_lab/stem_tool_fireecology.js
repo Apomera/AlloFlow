@@ -3145,6 +3145,129 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             return worst;
           }
 
+          // Stylized aerial map of the territory. Top: pine-spruce highlands.
+          // Middle: blueberry barren (south slope) + oak savanna (east-facing).
+          // Bottom: mixed hardwood with the riparian corridor along a stream.
+          function renderTerritoryMap(zones, opts) {
+            opts = opts || {};
+            var layout = {
+              mixedConifer:    { x: 4,   y: 4,   w: 592, h: 72,  iconX: 300, iconY: 48,  labelX: 12 },
+              blueberryBarren: { x: 4,   y: 82,  w: 290, h: 92,  iconX: 145, iconY: 132, labelX: 12 },
+              oakSavanna:      { x: 300, y: 82,  w: 296, h: 92,  iconX: 448, iconY: 132, labelX: 308 },
+              hardwoodStand:   { x: 4,   y: 180, w: 376, h: 116, iconX: 188, iconY: 244, labelX: 12 },
+              riparian:        { x: 386, y: 180, w: 210, h: 116, iconX: 488, iconY: 244, labelX: 394 }
+            };
+            return h('div', {
+              style: { background: '#0f172a', borderRadius: 12, padding: 8, marginBottom: 12, border: '1px solid #1e293b' }
+            },
+              h('div', { style: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, paddingLeft: 4 } }, opts.title || 'Your Territory'),
+              h('svg', { viewBox: '0 0 600 300', style: { width: '100%', height: 'auto', maxHeight: 300, display: 'block', borderRadius: 8 }, 'aria-label': 'Aerial map of the Wabanaki territory showing the 5 stewardship zones' },
+                // dark base
+                h('rect', { x: 0, y: 0, width: 600, height: 300, fill: '#020617', rx: 6 }),
+                // each zone tile
+                zones.map(function(z) {
+                  var def = getZoneDef(z.id);
+                  var rect = layout[z.id];
+                  if (!rect) return null;
+                  var intensity = Math.max(0.32, Math.min(1, z.health / 100));
+                  var pastDue = (def.fireReturn < 50 && z.lastBurn > def.fireReturn);
+                  var nearWindow = (def.fireReturn < 50 && Math.abs(z.lastBurn - def.fireReturn) <= 1);
+                  var fuelHot = z.fuel > 60;
+                  var strokeColor = pastDue ? '#ef4444' : (nearWindow ? '#fbbf24' : 'rgba(255,255,255,0.15)');
+                  var strokeWidth = (pastDue || nearWindow) ? 2.5 : 1;
+                  var statusIcon = pastDue ? '🔥' : (nearWindow ? '🎯' : (fuelHot ? '⚠️' : ''));
+                  return h('g', { key: z.id },
+                    h('rect', { x: rect.x, y: rect.y, width: rect.w, height: rect.h, fill: def.color, opacity: intensity, rx: 6 }),
+                    h('rect', { x: rect.x, y: rect.y, width: rect.w, height: rect.h, fill: 'none', stroke: strokeColor, strokeWidth: strokeWidth, rx: 6 }),
+                    h('text', { x: rect.labelX, y: rect.y + 16, fontSize: 11, fontWeight: 700, fill: '#fff', style: { pointerEvents: 'none' } }, def.name),
+                    h('text', { x: rect.iconX, y: rect.iconY, fontSize: 30, textAnchor: 'middle', style: { pointerEvents: 'none' } }, def.icon),
+                    // health bar at bottom of tile
+                    h('rect', { x: rect.x + 8, y: rect.y + rect.h - 10, width: (rect.w - 16), height: 4, fill: 'rgba(255,255,255,0.08)', rx: 2 }),
+                    h('rect', { x: rect.x + 8, y: rect.y + rect.h - 10, width: (rect.w - 16) * (z.health / 100), height: 4, fill: z.health > 70 ? '#86efac' : (z.health > 50 ? '#fbbf24' : '#fca5a5'), rx: 2 }),
+                    // status overlay top-right
+                    statusIcon ? h('text', { x: rect.x + rect.w - 18, y: rect.y + 22, fontSize: 16, textAnchor: 'middle', style: { pointerEvents: 'none' } }, statusIcon) : null,
+                    // last-burn tag for fire-dependent zones
+                    def.fireReturn < 50 ? h('text', { x: rect.x + rect.w - 8, y: rect.y + rect.h - 16, fontSize: 9, fontWeight: 600, textAnchor: 'end', fill: 'rgba(255,255,255,0.7)', style: { pointerEvents: 'none' } }, z.lastBurn + 'y') : null
+                  );
+                }),
+                // Stream overlay: a stylized river curving from the top-right
+                // down through the riparian zone
+                h('path', {
+                  d: 'M 580 80 Q 540 130 555 170 Q 575 210 525 240 Q 470 270 460 296',
+                  stroke: '#38bdf8', strokeWidth: 6, fill: 'none', opacity: 0.55,
+                  strokeLinecap: 'round',
+                  style: { pointerEvents: 'none' }
+                }),
+                h('path', {
+                  d: 'M 580 80 Q 540 130 555 170 Q 575 210 525 240 Q 470 270 460 296',
+                  stroke: '#bae6fd', strokeWidth: 2, fill: 'none', opacity: 0.7,
+                  strokeLinecap: 'round',
+                  style: { pointerEvents: 'none' }
+                })
+              ),
+              // Map legend
+              h('div', { style: { fontSize: 10.5, color: '#64748b', marginTop: 6, paddingLeft: 4, display: 'flex', gap: 14, flexWrap: 'wrap' } },
+                h('span', null, h('span', { style: { color: '#ef4444' } }, '🔥'), ' past due'),
+                h('span', null, h('span', { style: { color: '#fbbf24' } }, '🎯'), ' in window'),
+                h('span', null, h('span', { style: { color: '#facc15' } }, '⚠️'), ' fuel high'),
+                h('span', null, h('span', { style: { color: '#38bdf8' } }, '〰'), ' stream / riparian')
+              )
+            );
+          }
+
+          // Tiny SVG line chart for the debrief: avg health and total yield
+          // year by year across the campaign.
+          function renderTrendChart(yearLog) {
+            if (!yearLog || yearLog.length === 0) return null;
+            var w = 600, hgt = 160, padL = 36, padR = 12, padT = 12, padB = 24;
+            var ix = w - padL - padR;
+            var iy = hgt - padT - padB;
+            var maxYield = 500; // 5 zones × 100 max
+            // Health: 0..100 mapped to plot. Yield: 0..maxYield mapped to plot.
+            var pts = yearLog.map(function(s, i) {
+              var x = padL + (yearLog.length === 1 ? ix / 2 : (i / (yearLog.length - 1)) * ix);
+              var hY = padT + iy - (s.avgHealth / 100) * iy;
+              var yY = padT + iy - (s.totalYield / maxYield) * iy;
+              return { x: x, hY: hY, yY: yY, year: s.year, health: s.avgHealth, yield: s.totalYield };
+            });
+            function path(key) {
+              return pts.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x + ',' + p[key]; }).join(' ');
+            }
+            return h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 12, marginBottom: 14, border: '1px solid #1e293b' } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: '#e2e8f0', marginBottom: 8 } }, '📈 Eight-year trend'),
+              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' }, 'aria-label': 'Trend chart of ecological health and total cultural yield year by year' },
+                // gridlines
+                [0, 25, 50, 75, 100].map(function(g, gi) {
+                  var y = padT + iy - (g / 100) * iy;
+                  return h('g', { key: 'g' + gi },
+                    h('line', { x1: padL, y1: y, x2: padL + ix, y2: y, stroke: '#1e293b', strokeWidth: 1 }),
+                    h('text', { x: padL - 4, y: y + 3, fontSize: 9, fill: '#64748b', textAnchor: 'end' }, g)
+                  );
+                }),
+                // x axis labels
+                pts.map(function(p, i) {
+                  return h('text', { key: 'xl' + i, x: p.x, y: hgt - 8, fontSize: 9, fill: '#64748b', textAnchor: 'middle' }, 'Y' + p.year);
+                }),
+                // health line
+                h('path', { d: path('hY'), stroke: '#86efac', strokeWidth: 2, fill: 'none', strokeLinejoin: 'round' }),
+                // yield line (rescaled to the same 0..100 plot, label denotes raw value)
+                h('path', { d: path('yY'), stroke: '#fbbf24', strokeWidth: 2, fill: 'none', strokeLinejoin: 'round', strokeDasharray: '4 3' }),
+                // health points
+                pts.map(function(p, i) {
+                  return h('circle', { key: 'hp' + i, cx: p.x, cy: p.hY, r: 3, fill: '#86efac' });
+                }),
+                // yield points
+                pts.map(function(p, i) {
+                  return h('circle', { key: 'yp' + i, cx: p.x, cy: p.yY, r: 3, fill: '#fbbf24' });
+                })
+              ),
+              h('div', { style: { display: 'flex', gap: 16, fontSize: 11, color: '#cbd5e1', marginTop: 6 } },
+                h('span', null, h('span', { style: { color: '#86efac' } }, '━ '), 'Avg health (0 to 100)'),
+                h('span', null, h('span', { style: { color: '#fbbf24' } }, '┄ '), 'Total yield (rescaled to 0 to 500)')
+              )
+            );
+          }
+
           function startCampaign() {
             var fresh = defaultMosaicState();
             fresh.phase = 'year';
@@ -3322,6 +3445,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
               // Zone preview cards
               h('h4', { style: { margin: '14px 0 8px', color: '#e2e8f0', fontSize: 16 } }, 'Your Territory'),
+              renderTerritoryMap(
+                WABANAKI_ZONES.map(function(z) { return Object.assign({ id: z.id }, z.defaultState); }),
+                { title: 'Starting state of your land' }
+              ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10, marginBottom: 14 } },
                 WABANAKI_ZONES.map(function(z) {
                   return h('div', { key: z.id,
@@ -3406,6 +3533,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
                 h('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } }, o.desc)
               ),
+              renderTerritoryMap(m.zones, { title: 'Final state of your mosaic' }),
+              renderTrendChart(m.yearLog),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10, marginBottom: 14 } },
                 h('div', { style: { background: '#0f172a', padding: 12, borderRadius: 10 } },
                   h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Avg ecological health'),
@@ -3511,6 +3640,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             }
 
             return h('div', null,
+              renderTerritoryMap(m.zones, { title: 'End of Year ' + m.year }),
               h('div', { style: { padding: 14, borderRadius: 12, marginBottom: 12, background: '#0f172a', borderLeft: '3px solid #fbbf24' } },
                 h('div', { style: { fontSize: 22, marginBottom: 4 } }, ev.icon || '🌿'),
                 h('strong', { style: { color: '#fbbf24', fontSize: 16 } }, 'Year ' + m.year + ' event: ' + (ev.name || 'quiet year')),
@@ -3596,6 +3726,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           // ── YEAR PHASE (active stewardship) ──
           var coachingTip = (m.year === 1 && !m.firstTipDismissed && m.yearActions.length === 0) ? getCoachingTip() : null;
           return h('div', null,
+            // Territory map (current state)
+            renderTerritoryMap(m.zones, { title: 'Year ' + m.year + ' of ' + m.maxYears + ': current state' }),
             // Year-1 coaching tip (only on Year 1, until first action or dismissed)
             coachingTip ? h('div', {
               role: 'note',
