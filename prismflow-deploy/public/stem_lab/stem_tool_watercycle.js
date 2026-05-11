@@ -87,37 +87,67 @@
       id: 'headwaterStreams', name: 'Headwater Streams', icon: '🏔️', color: '#0ea5e9',
       role: 'Cold-water indicator',
       desc: 'High-elevation forested streams. Native brook trout, native eastern brook trout, water temperature below 20°C. The cleanest water in the watershed; everything downstream is shaped by what happens here.',
-      defaultState: { quality: 62, connectivity: 78, support: 60 }, targets: { quality: 78, connectivity: 80, support: 65 }
+      defaultState: { quality: 62, connectivity: 78, support: 60 }, targets: { quality: 78, connectivity: 80, support: 65 },
+      deepDive: {
+        knowledge: 'Headwater streams are first-order channels: small enough to step across, fed by springs and seeps, almost always shaded by mature forest. They make up roughly 60 to 80 percent of the total stream-mile length in a typical Maine watershed but receive a fraction of the regulatory attention. Native brook trout require water below about 20°C, dissolved oxygen above 7 mg/L, and woody debris for cover. Every degree of warming pushes their range north and uphill.',
+        casework: 'The Eastern Brook Trout Joint Venture maps the status of native populations across the species range. Maine retains an unusually large portion of historic native brook trout habitat compared to the rest of the Northeast. Most successful headwater protection has come from upper-watershed conservation easements and replacement of undersized culverts that act as warm-water bottlenecks.',
+        modernContext: 'Climate change is the central long-term threat to Maine headwater streams. Several Maine Audubon and Wabanaki community projects have led culvert replacement and shade-tree planting campaigns. The 2023 Maine Climate Action Plan named cold-water-fishery protection as a priority but funding has lagged.'
+      }
     },
     {
       id: 'riverMainstem', name: 'River Mainstem', icon: '🌊', color: '#1d4ed8',
       role: 'Migratory fish corridor',
       desc: 'The big channel through the watershed. Historically the route for Atlantic salmon, alewife, sea-run brook trout, eels, sturgeon. In Maine, dam barriers block most of these runs; recent removals (Edwards Dam 1999, Fort Halifax 2008, Veazie 2012, Great Works 2013) reopened sections.',
-      defaultState: { quality: 48, connectivity: 25, support: 65 }, targets: { quality: 70, connectivity: 70, support: 70 }
+      defaultState: { quality: 48, connectivity: 25, support: 65 }, targets: { quality: 70, connectivity: 70, support: 70 },
+      deepDive: {
+        knowledge: 'Anadromous fish (born in fresh water, mature at sea, return upstream to spawn) include Atlantic salmon, alewife, blueback herring, American shad, sea lamprey, and sea-run brook trout. Each species has different barrier-passage tolerance: alewife can use modest fish ladders; Atlantic salmon need near-full passage; sturgeon need almost-complete connectivity. Dam barriers degrade water quality upstream too: stagnant impoundments warm, accumulate sediment, and lose dissolved oxygen.',
+        casework: 'The Penobscot River Restoration Project (Penobscot Nation, NGOs, hydro companies) removed Veazie Dam in 2012 and Great Works Dam in 2013 while preserving most generation through upgrades elsewhere. River herring returns increased over 1000-fold in the first decade post-removal. The Kennebec saw Edwards Dam come down in 1999 and Fort Halifax in 2008. The Sebasticook tributary alone now hosts the largest river-herring run on the East Coast.',
+        modernContext: 'The Penobscot Nation has led the legal, political, and ecological work on its ancestral river. Ongoing dam-removal campaigns target the Mattaceunk, Milford, and lower Kennebec dams. NOAA and the Atlantic Salmon Federation track returns annually; numbers are recovering but still well below historic.'
+      }
     },
     {
       id: 'floodplainWetlands', name: 'Floodplain Wetlands', icon: '🪷', color: '#16a34a',
       role: 'Beaver-built flood storage',
       desc: 'Beaver dam complexes and adjacent wet meadows. Slow flood pulses, recharge groundwater, filter nutrients, support amphibians, waterfowl, moose, otter. Beaver Dam Analogs (BDAs) mimic this work where beavers have not returned.',
-      defaultState: { quality: 55, connectivity: 60, support: 50 }, targets: { quality: 75, connectivity: 70, support: 65 }
+      defaultState: { quality: 55, connectivity: 60, support: 50 }, targets: { quality: 75, connectivity: 70, support: 65 },
+      deepDive: {
+        knowledge: 'Beaver-built wetlands are the textbook example of ecosystem engineering. A single beaver complex can create up to 10 acres of wet meadow that stores flood water, recharges groundwater, traps sediment, filters nutrients, and supports moose, waterfowl, river otter, brook trout, and amphibians. Wetland complexes also act as firebreaks during dry years. North American beaver populations were estimated at 60 to 400 million pre-contact; the European fur trade crashed them to under 100,000 by 1900.',
+        casework: 'Beaver populations have recovered to perhaps 10 to 15 million across North America but remain far below historic in most Northeast watersheds. Beaver Dam Analog (BDA) restoration mimics beaver work with imported wood, rock, and posts; it is increasingly used where beavers have not naturally recolonized. The Methow Beaver Project in Washington and similar Maine pilots have shown that BDAs can trigger natural beaver return within 2 to 4 years.',
+        modernContext: 'Beavers face conflict with road managers and downstream landowners over flooding. Lethal trapping continues in Maine. Beaver Deceiver flow-control devices are the non-lethal alternative; Wabanaki communities have led some of the strongest beaver-protection advocacy in the region. Climate-resilience planners increasingly cite beavers as low-cost natural infrastructure.'
+      }
     },
     {
       id: 'forestBuffer', name: 'Forested Buffer Zones', icon: '🌲', color: '#15803d',
       role: 'Riparian shade and filter',
       desc: 'The strip of mature forest along stream banks. Shade keeps water cold, roots stabilize banks, leaf litter feeds aquatic insects, wood falls in to create habitat. A 50-foot intact buffer is the single most cost-effective stream protection.',
-      defaultState: { quality: 58, connectivity: 50, support: 60 }, targets: { quality: 75, connectivity: 70, support: 70 }
+      defaultState: { quality: 58, connectivity: 50, support: 60 }, targets: { quality: 75, connectivity: 70, support: 70 },
+      deepDive: {
+        knowledge: 'Riparian buffers do five distinct jobs at once: shade keeps water cold for trout and salmon parr, root systems stabilize banks against erosion, leaf litter is the primary food source for stream insects (which feed fish), woody debris falls in to create pools and cover, and the buffer filters runoff from adjacent agricultural and developed land. The pioneering research by Allan and others established that even a 30-foot intact buffer captures most of the runoff-quality benefit, and a 100-foot buffer provides the full hydrological function.',
+        casework: 'Maine\'s Shoreland Zoning Act (1971) regulates the first 75 feet around great ponds and 250 feet around rivers, but enforcement is uneven and exemptions for development are routine. Land trust easements have been more effective than regulation in many Maine watersheds. The Maine Coast Heritage Trust and Atlantic Salmon Federation have funded buffer-replanting on hundreds of farm streams; cover-cropping plus tree-row plantings cut runoff measurably within 3 to 5 years.',
+        modernContext: 'Buffer policy in Maine remains fragmented across jurisdictions. The strongest buffer protections often come from voluntary landowner agreements rather than zoning. Climate-driven storm events make buffers MORE important (they hold the streambank during high flows), so the federal Infrastructure Investment and Jobs Act has lifted buffer-restoration funding.'
+      }
     },
     {
       id: 'agriculturalWatershed', name: 'Agricultural Watershed', icon: '🚜', color: '#a16207',
       role: 'Nutrient + sediment source',
       desc: 'Dairy farms, hay fields, row crops, blueberry barrens. The dominant land use in central Maine watersheds. Manure runoff, fertilizer, sediment from tilled land all flow downstream. BMPs (Best Management Practices) can cut runoff by 50-80%.',
-      defaultState: { quality: 45, connectivity: 55, support: 55 }, targets: { quality: 65, connectivity: 60, support: 65 }
+      defaultState: { quality: 45, connectivity: 55, support: 55 }, targets: { quality: 65, connectivity: 60, support: 65 },
+      deepDive: {
+        knowledge: 'Agricultural land delivers three primary watershed insults: sediment from tilled or overgrazed land, nutrients (nitrogen and phosphorus) from manure and fertilizer, and pathogens from livestock waste. Best Management Practices include cover cropping, contour farming, livestock fencing from streams, manure storage upgrades, riparian buffer easements, and reduced-till or no-till cropping. Documented BMP implementations cut watershed nutrient export by 50 to 80 percent on participating farms.',
+        casework: 'Maine has roughly 7,500 farms covering about 1.3 million acres. The Maine Soil and Water Conservation Districts operate the state-side BMP outreach; USDA NRCS provides federal cost-share. Dairy farms in the Sebasticook and Kennebec watersheds have implemented manure-handling and buffer projects with measurable downstream quality improvement; comparable work in the St. John watershed has helped Aroostook potato production.',
+        modernContext: 'Farm consolidation pressures BMP adoption (the smallest farms have the thinnest margins to invest in capital improvements). PFAS contamination from historic biosolid spreading has surfaced as a major Maine farm-water issue post-2022, with state-led testing and remediation programs. The Maine Farmland Trust links farmland protection to watershed protection.'
+      }
     },
     {
       id: 'suburbanEdges', name: 'Suburban Edges', icon: '🏘️', color: '#7c3aed',
       role: 'Stormwater + impervious surface',
       desc: 'Subdivisions, parking lots, lawns. Impervious surfaces deliver pulses of warm polluted water to streams during storms. Lawn fertilizer and pet waste are the modern eutrophication inputs. Green stormwater infrastructure can offset the impact.',
-      defaultState: { quality: 50, connectivity: 60, support: 50 }, targets: { quality: 65, connectivity: 65, support: 65 }
+      defaultState: { quality: 50, connectivity: 60, support: 50 }, targets: { quality: 65, connectivity: 65, support: 65 },
+      deepDive: {
+        knowledge: 'Impervious surface (roads, roofs, parking lots, driveways) shapes urban and suburban hydrology more than any other variable. Above 10 percent watershed-wide impervious cover, stream biology measurably degrades; above 25 percent, most native fish populations are gone. Stormwater pulses are warm, fast, and pollutant-laden: lawn fertilizer, dog waste, vehicle drip, road salt, sediment from construction. Conventional drainage (curb, gutter, pipe) delivers all of it directly to streams.',
+        casework: 'Portland, ME has documented stream impairment along the Capisic Brook and Stroudwater drainages tied directly to impervious cover. Green Stormwater Infrastructure (rain gardens, swales, permeable pavement, detention basins, green roofs) can offset 50 to 80 percent of the conventional pulse. The Maine Stormwater BMP Manual is the regulatory reference; municipal stormwater (MS4) permits require larger towns to implement.',
+        modernContext: 'Most suburban watershed work in Maine happens at municipal scale through MS4 permits, town stormwater ordinances, and watershed-association advocacy. Climate-resilience funding under the Infrastructure Investment and Jobs Act has dramatically increased available capital for retrofit. The biggest challenge is older developments built before stormwater regulation that have no easy retrofit path.'
+      }
     }
   ];
 
@@ -367,10 +397,251 @@ const d = labToolData.waterCycle;
             }
           }
 
+          // ── Watershed artifact translations ──
+          // Numbers calibrated to a plausible mid-Maine watershed of about
+          // 600 stream miles, 12,000 acres of forested buffer potential,
+          // 3,500 acres of floodplain wetland potential, 75 dams in the
+          // historic record, ~150 farms.
+          function watershedArtifact(c) {
+            var q = Math.max(0, Math.round(c.quality));
+            var k = Math.max(0, Math.round(c.connectivity));
+            if (c.id === 'headwaterStreams')      return { icon: '🐠', text: Math.round(q * 4) + ' stream miles with wild brook trout' };
+            if (c.id === 'riverMainstem')         return { icon: '🐟', text: Math.round(k * 0.6) + ' mainstem miles with fish passage to the sea' };
+            if (c.id === 'floodplainWetlands')    return { icon: '🦫', text: Math.round(q * 35) + ' acres of beaver-engineered wetland' };
+            if (c.id === 'forestBuffer')          return { icon: '🌲', text: Math.round(q * 120) + ' acres of mature riparian buffer' };
+            if (c.id === 'agriculturalWatershed') return { icon: '🚜', text: Math.round(q * 1.5) + ' farms enrolled in BMP programs' };
+            if (c.id === 'suburbanEdges')         return { icon: '🏘️', text: Math.round(q * 0.4) + ' impervious-acre equivalents retrofitted' };
+            return { icon: '💧', text: '' };
+          }
+
+          // ── Do-nothing baseline: 10 years of drift with no actions or events ──
+          function computeStewardDoNothing() {
+            var sim = MAINE_WATERSHED_COMPONENTS.map(function(c) { return Object.assign({ id: c.id }, c.defaultState); });
+            for (var y = 0; y < steward.maxYears; y++) {
+              sim = sim.map(function(c) {
+                var nc = Object.assign({}, c);
+                if (nc.quality > 70) nc.quality = stewardClamp(nc.quality + 1, 0, 100);
+                else if (nc.quality < 35) nc.quality = stewardClamp(nc.quality - 2, 0, 100);
+                nc.support = stewardClamp(nc.support + (nc.support < 50 ? 1 : -1), 0, 100);
+                return nc;
+              });
+              STEWARD_FEEDBACK_RULES.forEach(function(rule) {
+                if (rule.when(sim)) rule.apply(sim);
+              });
+            }
+            return sim;
+          }
+
+          // ── Year-1 coaching tip ──
+          function stewardCoachingTip() {
+            var ag = steward.components.find(function(c) { return c.id === 'agriculturalWatershed'; });
+            var mainstem = steward.components.find(function(c) { return c.id === 'riverMainstem'; });
+            var buffer = steward.components.find(function(c) { return c.id === 'forestBuffer'; });
+            if (ag && ag.quality < 50) {
+              return {
+                priority: 'Open with BMP outreach to farms',
+                text: 'Agricultural runoff is the dominant pressure on this watershed (current quality ' + Math.round(ag.quality) + '). BMP outreach is cheap (4h) and triggers the feedback rule that cleans up the mainstem. Pair it with riparian buffer planting on adjacent stream miles for compounding effect over the campaign.'
+              };
+            }
+            if (mainstem && mainstem.connectivity < 35) {
+              return {
+                priority: 'Plan the connectivity arc',
+                text: 'River mainstem connectivity is critically low (' + Math.round(mainstem.connectivity) + '). Dam removal is the highest-impact move available but it costs 15 hours and 12 support. Most successful Maine projects (Edwards 1999, Veazie 2012) started with 2 to 3 years of public education and fish-passage installations before attempting full removal.'
+              };
+            }
+            return {
+              priority: 'Hold and read the watershed',
+              text: 'Initial conditions look workable. Use Year 1 for citizen-science monitoring and education to build community support before spending it on contested actions like dam removal.'
+            };
+          }
+
+          // ── Per-component deep-dive ──
+          function openStewardDeepDive(id) { setSteward({ deepDiveComponent: id }); }
+          function closeStewardDeepDive() { setSteward({ deepDiveComponent: null }); }
+
+          function renderStewardDeepDive(id) {
+            var def = getWatershedComponent(id);
+            if (!def || !def.deepDive) return null;
+            var dd = def.deepDive;
+            var applicable = STEWARD_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any' || t.appliesTo.indexOf(id) >= 0; });
+            return h('div', {
+              role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Watershed deep-dive: ' + def.name,
+              style: { background: 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.85) 60%)', border: '1px solid ' + def.color + '88', borderLeft: '4px solid ' + def.color, borderRadius: 14, padding: 18, marginBottom: 16 }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
+                h('span', { style: { fontSize: 36 } }, def.icon),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Watershed deep-dive'),
+                  h('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
+                  h('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
+                ),
+                h('button', { onClick: closeStewardDeepDive,
+                  style: { background: 'rgba(15,23,42,0.6)', border: '1px solid #334155', color: '#cbd5e1', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '✕ Close')
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
+                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '💧 Hydrology'),
+                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
+                ),
+                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '📰 Case work'),
+                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
+                ),
+                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌍 Maine context'),
+                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
+                )
+              ),
+              applicable.length > 0 ? h('div', { style: { marginTop: 12, padding: 12, background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.4)', borderLeft: '3px solid #0ea5e9', borderRadius: 10 } },
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: '#7dd3fc', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🛠 What you can do for this component'),
+                applicable.map(function(t, i) {
+                  return h('div', { key: i, style: { margin: '4px 0', fontSize: 12.5, color: '#bae6fd', lineHeight: 1.5 } },
+                    h('strong', { style: { color: '#e0f2fe' } }, t.icon + ' ' + t.name), ' (' + t.hours + 'h): ', t.desc
+                  );
+                })
+              ) : null
+            );
+          }
+
+          // ── Multi-line week-by-week trend chart ──
+          function renderStewardTrendChart(yearLog) {
+            if (!yearLog || yearLog.length === 0) return null;
+            var w = 600, hgt = 220, padL = 36, padR = 110, padT = 12, padB = 24;
+            var ix = w - padL - padR;
+            var iy = hgt - padT - padB;
+            var components = MAINE_WATERSHED_COMPONENTS;
+            function ptsFor(cid) {
+              return yearLog.map(function(snap, i) {
+                var post = (snap.post || []).find(function(p) { return p.id === cid; });
+                var v = post ? post.quality : 0;
+                var x = padL + (yearLog.length === 1 ? ix / 2 : (i / (yearLog.length - 1)) * ix);
+                var y = padT + iy - (v / 100) * iy;
+                return { x: x, y: y, v: v };
+              });
+            }
+            function pathStr(pts) { return pts.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x + ',' + p.y; }).join(' '); }
+            return h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 12, marginBottom: 14, border: '1px solid #1e293b' } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: '#e2e8f0', marginBottom: 8 } }, '📈 Component quality across the 10-year campaign'),
+              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' }, 'aria-label': 'Year-by-year quality trend chart by watershed component' },
+                [0, 25, 50, 75, 100].map(function(g, gi) {
+                  var y = padT + iy - (g / 100) * iy;
+                  return h('g', { key: 'g' + gi },
+                    h('line', { x1: padL, y1: y, x2: padL + ix, y2: y, stroke: '#1e293b', strokeWidth: 1 }),
+                    h('text', { x: padL - 4, y: y + 3, fontSize: 9, fill: '#64748b', textAnchor: 'end' }, g)
+                  );
+                }),
+                yearLog.map(function(snap, i) {
+                  var x = padL + (yearLog.length === 1 ? ix / 2 : (i / (yearLog.length - 1)) * ix);
+                  return h('text', { key: 'xl' + i, x: x, y: hgt - 8, fontSize: 9, fill: '#64748b', textAnchor: 'middle' }, 'Y' + snap.year);
+                }),
+                components.map(function(comp) {
+                  var pts = ptsFor(comp.id);
+                  return h('g', { key: comp.id },
+                    h('path', { d: pathStr(pts), stroke: comp.color, strokeWidth: 2, fill: 'none', strokeLinejoin: 'round' })
+                  );
+                }),
+                components.map(function(comp, ci) {
+                  return h('g', { key: 'leg' + comp.id },
+                    h('line', { x1: w - padR + 6, y1: padT + 8 + ci * 16, x2: w - padR + 20, y2: padT + 8 + ci * 16, stroke: comp.color, strokeWidth: 2.5 }),
+                    h('text', { x: w - padR + 24, y: padT + 12 + ci * 16, fontSize: 10, fill: '#cbd5e1' }, comp.icon + ' ' + comp.name.split(' ')[0])
+                  );
+                })
+              )
+            );
+          }
+
+          // ── AI Watershed Reading: safe-framing AI educator ──
+          function readWatershed() {
+            if (!callGemini || steward.aiReadLoading) return;
+            var summary = steward.components.map(function(c) {
+              var def = getWatershedComponent(c.id);
+              return '- ' + def.name + ' (' + def.role + '): quality ' + Math.round(c.quality) + '/' + def.targets.quality + ', connectivity ' + Math.round(c.connectivity) + '/' + def.targets.connectivity + ', community support ' + Math.round(c.support) + '/' + def.targets.support;
+            }).join('\n');
+            var prompt = [
+              'You are an AI watershed-science educator. You are NOT a Wabanaki person, NOT a real watershed coordinator, NOT a hydrologist, NOT an agency staff member, and you do NOT speak for any Wabanaki nation, agency, watershed organization, or named individual.',
+              '',
+              'A student is managing a simulated central Maine watershed across 10 years. Six components.',
+              '',
+              'Current state (Year ' + steward.year + ' of ' + steward.maxYears + ', difficulty: ' + (STEWARD_DIFFICULTIES[steward.difficulty] || STEWARD_DIFFICULTIES.coordinator).label + '):',
+              summary,
+              'Stewardship hours this year: ' + steward.hoursLeft + ' of ' + steward.hoursPerYear,
+              'Connectivity boosts so far: ' + (steward.connectivityBoosts || 0),
+              '',
+              'Read this state and give 3 to 4 sentences of practical coaching grounded in watershed-science research and documented Maine projects.',
+              '',
+              'HARD CONSTRAINTS:',
+              '- NEVER claim to be Wabanaki, Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki, a watershed coordinator, hydrologist, agency staff, or any named individual.',
+              '- NEVER invoke sacred, ceremonial, or spiritual claims.',
+              '- NEVER use "noble savage" framing or romanticized language about Indigenous peoples.',
+              '- NEVER invent quotes attributed to anyone.',
+              '- DO frame as "documented watershed-science research" or "Maine restoration project case studies" (Edwards Dam 1999, Penobscot River Restoration Project, Beaver Dam Analog research, Eastern Brook Trout Joint Venture, Maine Soil and Water Conservation Districts).',
+              '- DO acknowledge that the Penobscot Nation led the Penobscot River Restoration Project when relevant, and that Wabanaki nations have shaped Maine watershed policy, without speaking for them.',
+              '- DO stay grounded in observable component state and concrete techniques: buffer planting, beaver dam analog, dam removal, fish passage, BMP outreach, conservation easement, stormwater retrofit.',
+              '- Name 1 or 2 highest-priority moves and explain why, grounded in hydrology and feedback rules.',
+              '- Be direct, observational, useful. No flowery language.',
+              '',
+              'Respond in 3 to 4 sentences of plain prose. Do not use markdown.'
+            ].join('\n');
+            setSteward({ aiReadLoading: true, aiReadResponse: null });
+            try {
+              var p = callGemini(prompt);
+              if (p && typeof p.then === 'function') {
+                p.then(function(resp) {
+                  var text = '';
+                  if (typeof resp === 'string') text = resp;
+                  else if (resp && typeof resp.text === 'string') text = resp.text;
+                  else if (resp && resp.candidates) text = (resp.candidates[0] && resp.candidates[0].content && resp.candidates[0].content.parts && resp.candidates[0].content.parts[0] && resp.candidates[0].content.parts[0].text) || '';
+                  text = (text || 'The reader returned no text. Try again in a moment.').replace(/\*\*/g, '').replace(/^[\s\n]+|[\s\n]+$/g, '');
+                  setSteward({ aiReadResponse: text, aiReadLoading: false });
+                  if (typeof announceToSR === 'function') announceToSR('AI Watershed Reading complete.');
+                }).catch(function() {
+                  setSteward({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
+                });
+              } else {
+                setSteward({ aiReadResponse: 'AI is not available in this context.', aiReadLoading: false });
+              }
+            } catch (e) {
+              setSteward({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
+            }
+          }
+          function dismissStewardAIRead() { setSteward({ aiReadResponse: null }); }
+
+          function renderStewardAIPanel() {
+            if (steward.aiReadLoading) {
+              return h('div', { role: 'status', 'aria-live': 'polite',
+                style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 } },
+                '⏳ AI watershed educator is reading your watershed data...');
+            }
+            if (!steward.aiReadResponse) return null;
+            return h('div', { role: 'region', 'aria-label': 'AI Watershed Reading',
+              style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', border: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                h('span', { style: { fontSize: 20 } }, '🔍'),
+                h('strong', { style: { color: '#38bdf8', fontSize: 14 } }, 'AI Watershed Reading'),
+                h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 6 } },
+                  h('button', { onClick: readWatershed,
+                    style: { background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '↻ Re-read'),
+                  h('button', { onClick: dismissStewardAIRead,
+                    style: { background: 'transparent', border: '1px solid #475569', color: '#cbd5e1', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✕')
+                )
+              ),
+              h('p', { style: { margin: '0 0 10px 0', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.6 } }, steward.aiReadResponse),
+              h('div', { style: { fontSize: 11, color: '#64748b', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
+                'AI watershed-science educator. ',
+                h('strong', null, 'It is not a Wabanaki person, not a real watershed coordinator or hydrologist, and does not speak for any Wabanaki nation, agency, or organization.'),
+                ' For authoritative voices on Maine watershed work, consult Penobscot Nation Cultural and Historic Preservation Department, Wabanaki Public Health and Wellness, Atlantic Salmon Federation, Maine Coast Heritage Trust, Maine Audubon, Maine Soil and Water Conservation Districts, and the Maine Department of Environmental Protection.'
+              )
+            );
+          }
+
           function renderStewardCampaign() {
+            // Deep-dive panel renders at the top of every phase when active
+            var stewardDeepDive = steward.deepDiveComponent ? renderStewardDeepDive(steward.deepDiveComponent) : null;
+
             // ── SETUP ──
             if (steward.phase === 'setup') {
               return h('div', { className: 'max-w-3xl mx-auto space-y-4' },
+                stewardDeepDive,
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                   h('button', { onClick: () => switchMode('explorer'),
                     className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300' }, '← Water Cycle Explorer'),
@@ -400,7 +671,11 @@ const d = labToolData.waterCycle;
                         h('strong', { style: { color: c.color } }, c.name)
                       ),
                       h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, c.role),
-                      h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } }, c.desc)
+                      h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 8 } }, c.desc),
+                      c.deepDive ? h('button', { onClick: function() { openStewardDeepDive(c.id); },
+                        'aria-label': 'Open deep-dive for ' + c.name,
+                        style: { width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid ' + c.color + '88', background: c.color + '22', color: c.color, cursor: 'pointer', fontWeight: 700, fontSize: 11.5 }
+                      }, '📚 Watershed deep-dive →') : null
                     );
                   })
                 ),
@@ -429,7 +704,13 @@ const d = labToolData.waterCycle;
             // ── DEBRIEF ──
             if (steward.phase === 'debrief' && steward.finalOutcome) {
               var o = steward.finalOutcome;
+              var baseline = computeStewardDoNothing();
+              var actualAvgQ = Math.round(steward.components.reduce(function(a, c) { return a + c.quality; }, 0) / steward.components.length);
+              var baselineAvgQ = Math.round(baseline.reduce(function(a, c) { return a + c.quality; }, 0) / baseline.length);
+              var actualAvgConn = Math.round(steward.components.reduce(function(a, c) { return a + c.connectivity; }, 0) / steward.components.length);
+              var baselineAvgConn = Math.round(baseline.reduce(function(a, c) { return a + c.connectivity; }, 0) / baseline.length);
               return h('div', { className: 'max-w-3xl mx-auto space-y-3' },
+                stewardDeepDive,
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                   h('button', { onClick: () => switchMode('explorer'),
                     className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300' }, '← Water Cycle Explorer'),
@@ -440,21 +721,55 @@ const d = labToolData.waterCycle;
                   h('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
                   h('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } }, o.desc)
                 ),
-                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8 } },
+
+                // Year-by-year trend chart
+                renderStewardTrendChart(steward.yearLog),
+
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 8 } },
                   steward.components.map(function(c) {
                     var def = getWatershedComponent(c.id);
                     var targetsHit = c.quality >= def.targets.quality && c.connectivity >= def.targets.connectivity && c.support >= def.targets.support;
+                    var art = watershedArtifact(c);
                     return h('div', { key: c.id, style: { background: '#0f172a', borderLeft: '3px solid ' + def.color, padding: 10, borderRadius: 8, fontSize: 12 } },
-                      h('div', { style: { fontWeight: 700, color: def.color, marginBottom: 4 } }, def.icon + ' ' + def.name + (targetsHit ? ' ✓' : '')),
+                      h('div', { style: { fontWeight: 700, color: def.color, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 } },
+                        h('span', null, def.icon + ' ' + def.name + (targetsHit ? ' ✓' : '')),
+                        def.deepDive ? h('button', { onClick: function() { openStewardDeepDive(c.id); }, 'aria-label': 'Deep-dive',
+                          style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '0 6px', fontSize: 11 } }, '📚') : null
+                      ),
                       h('div', { style: { color: '#cbd5e1', lineHeight: 1.55 } },
                         'Quality: ' + Math.round(c.quality) + '/' + def.targets.quality,
                         h('br'),
                         'Connectivity: ' + Math.round(c.connectivity) + '/' + def.targets.connectivity,
                         h('br'),
                         'Community support: ' + Math.round(c.support) + '/' + def.targets.support
-                      )
+                      ),
+                      art.text ? h('div', { style: { marginTop: 6, padding: 6, background: '#1e293b', borderRadius: 6, fontSize: 11.5, color: '#fde68a' } },
+                        h('span', { style: { fontSize: 14, marginRight: 4 } }, art.icon), art.text
+                      ) : null
                     );
                   })
+                ),
+
+                // Do-nothing baseline
+                h('div', { style: { padding: 12, borderRadius: 12, background: 'linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)', border: '1px solid rgba(248,113,113,0.4)' } },
+                  h('strong', { style: { color: '#fecaca', fontSize: 14, display: 'block', marginBottom: 8 } }, '↔ What if you had done nothing for 10 years?'),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+                    h('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o.color } },
+                      h('div', { style: { fontSize: 12, fontWeight: 700, color: o.color, marginBottom: 4 } }, 'Your campaign'),
+                      h('div', { style: { color: '#cbd5e1', fontSize: 13 } }, 'Avg quality ' + actualAvgQ + ' · Avg connectivity ' + actualAvgConn)
+                    ),
+                    h('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
+                      h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fca5a5', marginBottom: 4 } }, 'Pure neglect'),
+                      h('div', { style: { color: '#cbd5e1', fontSize: 13 } }, 'Avg quality ' + baselineAvgQ + ' · Avg connectivity ' + baselineAvgConn)
+                    )
+                  ),
+                  h('div', { style: { marginTop: 8, fontSize: 12, color: '#fde68a', lineHeight: 1.5, fontStyle: 'italic' } },
+                    actualAvgQ > baselineAvgQ + 8 || actualAvgConn > baselineAvgConn + 8
+                      ? 'Your stewardship pulled the watershed substantially ahead of where neglect would have left it. That gap is the riparian, beaver, BMP, and connectivity infrastructure you built.'
+                      : (actualAvgQ > baselineAvgQ - 2
+                          ? 'You roughly held the line against drift. Sometimes stewardship that matches the do-nothing baseline still counts: stasis is the holding ground for everything you build later.'
+                          : 'Active stewardship cost more than it returned this run. Look at WHICH techniques you used and whether the community had the trust to make them stick.')
+                  )
                 ),
                 h('div', { style: { padding: 10, background: '#0f172a', borderRadius: 8, fontSize: 12, color: '#cbd5e1' } },
                   h('strong', { style: { color: '#7dd3fc' } }, 'Components at 75+ quality: '), steward.componentsAt75 + ' / 6 · ',
@@ -477,6 +792,7 @@ const d = labToolData.waterCycle;
               var lastSnap = steward.yearLog[steward.yearLog.length - 1] || {};
               var ev = steward.lastEvent || {};
               return h('div', { className: 'max-w-3xl mx-auto space-y-3' },
+                stewardDeepDive,
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                   h('button', { onClick: () => switchMode('explorer'),
                     className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300' }, '← Water Cycle Explorer'),
@@ -520,12 +836,26 @@ const d = labToolData.waterCycle;
             }
 
             // ── YEAR ──
+            var coachingTip = (steward.year === 1 && !steward.firstTipDismissed && steward.yearActions.length === 0) ? stewardCoachingTip() : null;
             return h('div', { className: 'max-w-3xl mx-auto space-y-3' },
+              stewardDeepDive,
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                 h('button', { onClick: () => switchMode('explorer'),
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-700 hover:bg-sky-200 border border-sky-300' }, '← Water Cycle Explorer'),
                 h('h3', { className: 'text-lg font-bold text-slate-800' }, '💧 Watershed Steward · Year ' + steward.year)
               ),
+              coachingTip ? h('div', { role: 'note', style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)', border: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7', color: '#e9d5ff', fontSize: 13, lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 10 } },
+                h('span', { style: { fontSize: 20, flexShrink: 0 } }, '🪶'),
+                h('div', { style: { flex: 1 } },
+                  h('strong', { style: { color: '#a855f7' } }, 'Year 1 priority: '),
+                  h('span', { style: { color: '#fde68a' } }, coachingTip.priority),
+                  h('div', { style: { marginTop: 4, color: '#e9d5ff' } }, coachingTip.text)
+                ),
+                h('button', { onClick: function() { setSteward({ firstTipDismissed: true }); }, 'aria-label': 'Dismiss tip',
+                  style: { background: 'transparent', border: 'none', color: '#a855f7', cursor: 'pointer', fontSize: 16, padding: 0, marginLeft: 6 } }, '✕')
+              ) : null,
+              // AI panel renders here when active
+              renderStewardAIPanel(),
               // HUD
               h('div', { style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(14,165,233,0.18) 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + T_BLUE + '66', borderLeft: '4px solid ' + T_BLUE, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
                 h('div', null,
@@ -540,7 +870,12 @@ const d = labToolData.waterCycle;
                   h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Connectivity boosts'),
                   h('div', { style: { fontSize: 20, fontWeight: 800, color: '#a855f7' } }, steward.connectivityBoosts || 0)
                 ),
-                h('div', { style: { marginLeft: 'auto' } },
+                h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+                  callGemini ? h('button', { onClick: readWatershed, disabled: steward.aiReadLoading,
+                    'aria-label': 'Ask AI watershed educator to read your watershed data',
+                    title: 'AI watershed-science educator reads your current state',
+                    style: { padding: '8px 12px', borderRadius: 10, border: '1px solid #38bdf8', cursor: steward.aiReadLoading ? 'wait' : 'pointer', background: 'rgba(56,189,248,0.10)', color: '#38bdf8', fontWeight: 700, fontSize: 12, opacity: steward.aiReadLoading ? 0.6 : 1 }
+                  }, steward.aiReadLoading ? '⏳ Reading...' : '🔍 Read the watershed (AI)') : null,
                   h('button', { onClick: endStewardYear, 'aria-label': 'End this year',
                     style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 13 } }, 'End Year →')
                 )
@@ -560,7 +895,9 @@ const d = labToolData.waterCycle;
                       h('div', { style: { flex: 1 } },
                         h('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
                         h('div', { style: { fontSize: 11, color: '#94a3b8' } }, def.role)
-                      )
+                      ),
+                      def.deepDive ? h('button', { onClick: function() { openStewardDeepDive(c.id); }, 'aria-label': 'Deep-dive for ' + def.name, title: 'Watershed deep-dive',
+                        style: { background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 } }, '📚') : null
                     ),
                     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
                       [['Q', Math.round(c.quality), c.quality < 40 ? '#ef4444' : c.quality < 65 ? '#f59e0b' : '#22c55e', def.targets.quality],
