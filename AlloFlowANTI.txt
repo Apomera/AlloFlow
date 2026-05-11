@@ -3570,127 +3570,128 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/allo_data_module.js');
-    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/firestore_sync_module.js');
-    loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/safety_checker_module.js');
-    loadModule('Fluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/fluency_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/behavior_lens_module.js');
-    loadModule('ReportWriter', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/report_writer_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/symbol_studio_module.js');
-    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/allohaven_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/allo_data_module.js');
+    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/firestore_sync_module.js');
+    loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/safety_checker_module.js');
+    loadModule('Fluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/fluency_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/behavior_lens_module.js');
+    loadModule('ReportWriter', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/report_writer_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/symbol_studio_module.js');
+    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/allohaven_module.js');
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/voice_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/sel_hub/sel_hub_module.js');
-    loadModule('CommunityCatalog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/catalog_module.js');
-    loadModule('AccessibilityLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/accessibility_lab_module.js');
-    loadModule('AuditRemediator', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/audit_remediator_module.js');
-    loadModule('QuizModeStrategies', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/quiz_mode_strategies.js');
-    loadModule('QuizAIHelpers', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/quiz_ai_helpers.js');
-    loadModule('QuizLiveAggregators', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/quiz_live_aggregators.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/story_stage_module.js');
+    loadModule('Voice', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/voice_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/catalog_module.js');
+    loadModule('AccessibilityLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/accessibility_lab_module.js');
+    loadModule('AuditRemediator', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/audit_remediator_module.js');
+    loadModule('QuizModeStrategies', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/quiz_live_aggregators.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/ui_modals_module.js');
-    loadModule('UIFontLibrary', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/ui_font_library_module.js');
-    loadModule('VoiceConfig', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/voice_config_module.js');
-    loadModule('CanvasTips', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/canvas_tips_module.js');
-    loadModule('KokoroOfferModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_kokoro_offer_modal_module.js');
-    loadModule('ConfirmDialog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_confirm_dialog_module.js');
-    loadModule('HintsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_hints_modal_module.js');
-    loadModule('XPModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_xp_modal_module.js');
-    loadModule('StorybookExportModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_storybook_export_modal_module.js');
-    loadModule('InfoModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_info_modal_module.js');
-    loadModule('SessionModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_session_modal_module.js');
-    loadModule('SocraticChat', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_socratic_chat_module.js');
-    loadModule('GlobalLevelUpModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_global_level_up_module.js');
-    loadModule('HeaderBar', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_header_module.js');
-    loadModule('GuidedModeBanner', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_guided_mode_banner_module.js');
-    loadModule('StudentJoinPanel', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_student_join_panel_module.js');
-    loadModule('StudentSaveAdventurePanel', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_student_save_adventure_module.js');
-    loadModule('SidebarTabsNav', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_sidebar_tabs_nav_module.js');
-    loadModule('UDLGuideButton', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_udl_guide_button_module.js');
-    loadModule('TeacherHistoryTab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_teacher_history_tab_module.js');
-    loadModule('LabelPositions', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/label_positions_module.js');
-    loadModule('UILanguageSelector', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/ui_language_selector_module.js');
-    loadModule('AudioBanks', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/audio_banks_module.js');
-    loadModule('PdfAuditView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_pdf_audit_module.js');
-    loadModule('ExportPreviewView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_export_preview_module.js');
-    loadModule('MiscModals', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_misc_modals_module.js');
-    loadModule('GeminiBridge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_gemini_bridge_module.js');
-    loadModule('MiscPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_misc_panels_module.js');
-    loadModule('SidebarPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_sidebar_panels_module.js');
-    loadModule('ModuleScopeExtras', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/module_scope_extras_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_outline_module.js');
-    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_brainstorm_module.js');
-    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_image_module.js');
-    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_analysis_module.js');
-    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_simplified_module.js');
-    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_math_module.js');
-    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_lesson_plan_module.js');
-    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_alignment_report_module.js');
-    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_word_sounds_preview_module.js');
-    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_gemini_bridge_module.js');
-    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_concept_sort_module.js');
-    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_persona_chat_module.js');
-    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_spotlight_tour_module.js');
-    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_project_settings_module.js');
-    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_launch_pad_module.js');
-    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/view_adventure_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/ui_modals_module.js');
+    loadModule('UIFontLibrary', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/ui_font_library_module.js');
+    loadModule('VoiceConfig', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/voice_config_module.js');
+    loadModule('CanvasTips', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/canvas_tips_module.js');
+    loadModule('KokoroOfferModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_kokoro_offer_modal_module.js');
+    loadModule('ConfirmDialog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_confirm_dialog_module.js');
+    loadModule('HintsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_hints_modal_module.js');
+    loadModule('XPModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_xp_modal_module.js');
+    loadModule('StorybookExportModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_storybook_export_modal_module.js');
+    loadModule('InfoModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_info_modal_module.js');
+    loadModule('SessionModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_session_modal_module.js');
+    loadModule('SocraticChat', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_socratic_chat_module.js');
+    loadModule('GlobalLevelUpModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_global_level_up_module.js');
+    loadModule('HeaderBar', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_header_module.js');
+    loadModule('GuidedModeBanner', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_guided_mode_banner_module.js');
+    loadModule('StudentJoinPanel', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_student_join_panel_module.js');
+    loadModule('StudentSaveAdventurePanel', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_student_save_adventure_module.js');
+    loadModule('SidebarTabsNav', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_sidebar_tabs_nav_module.js');
+    loadModule('UDLGuideButton', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_udl_guide_button_module.js');
+    loadModule('TeacherHistoryTab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_teacher_history_tab_module.js');
+    loadModule('HistoryPanel', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/view_history_panel_module.js');
+    loadModule('LabelPositions', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/label_positions_module.js');
+    loadModule('UILanguageSelector', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/ui_language_selector_module.js');
+    loadModule('AudioBanks', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/audio_banks_module.js');
+    loadModule('PdfAuditView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_pdf_audit_module.js');
+    loadModule('ExportPreviewView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_export_preview_module.js');
+    loadModule('MiscModals', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_misc_modals_module.js');
+    loadModule('GeminiBridge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_gemini_bridge_module.js');
+    loadModule('MiscPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_misc_panels_module.js');
+    loadModule('SidebarPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_sidebar_panels_module.js');
+    loadModule('ModuleScopeExtras', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/module_scope_extras_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_dbq_module.js');
+    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_timeline_module.js');
+    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_glossary_module.js');
+    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_outline_module.js');
+    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_brainstorm_module.js');
+    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_image_module.js');
+    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_analysis_module.js');
+    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_simplified_module.js');
+    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_math_module.js');
+    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_launch_pad_module.js');
+    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/view_adventure_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/export_handlers_module.js');
+    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -3701,7 +3702,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@272f5dd0/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b8640029/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -21272,528 +21273,7 @@ Return ONLY valid JSON in this format:
             )}
             {!isTeacherMode && <StudentSaveAdventurePanel activeSessionCode={activeSessionCode} globalPoints={globalPoints} handleResumeAdventure={handleResumeAdventure} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleStartAdventure={handleStartAdventure} hasSavedAdventure={hasSavedAdventure} initiateSaveStudentProject={initiateSaveStudentProject} isResumingAdventure={isResumingAdventure} isSaveActionPulsing={isSaveActionPulsing} projectFileInputRef={projectFileInputRef} sessionData={sessionData} studentProjectSettings={studentProjectSettings} t={t} />}
             {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && <TeacherHistoryTab handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setBridgeSendOpen={setBridgeSendOpen} setIsRosterKeyOpen={setIsRosterKeyOpen} t={t} />}
-            {(!isTeacherMode || activeSidebarTab === 'history') && (
-            <div id="tour-history-panel" data-help-key="history_panel" className={`bg-indigo-900 text-indigo-100 rounded-3xl p-4 shadow-xl shadow-indigo-900/50 flex flex-col shrink-0 transition-all duration-300 ${isHistoryMaximized ? 'fixed inset-4 z-[190] h-auto' : (!isTeacherMode ? 'h-full' : 'flex-grow min-h-[500px]')}`}>
-                <div className="flex flex-col gap-3 mb-3 shrink-0">
-                    <div className="flex justify-between items-center">
-                        <div className="flex flex-col">
-                            <h3 className="font-bold text-sm flex items-center gap-2">
-                                <History size={16}/> {isTeacherMode ? t('sidebar.resource_pack_history') : t('sidebar.my_resources')}
-                            </h3>
-                        <div className="flex items-center gap-1.5 mt-1 text-[11px] font-medium opacity-80">
-                            {isStorageDisabled ? (
-                                <span className="text-red-400 flex items-center gap-1">
-                                    <AlertCircle size={10} /> {t('status.storage_disabled')}
-                                </span>
-                            ) : isCloudSyncEnabled ? (
-                                <>
-                                        {cloudSyncStatus === 'syncing' && (
-                                            <span className="text-indigo-300 flex items-center gap-1">
-                                                <RefreshCw size={10} className="animate-spin" /> {t('status.syncing')}
-                                            </span>
-                                        )}
-                                        {cloudSyncStatus === 'error' && (
-                                            <span className="text-red-400 flex items-center gap-1">
-                                                <AlertCircle size={10} /> {t('status.sync_error')}
-                                            </span>
-                                        )}
-                                        {(cloudSyncStatus === 'saved' || cloudSyncStatus === 'idle') && (
-                                            <span className="text-green-300 flex items-center gap-1">
-                                                <Cloud size={10} /> {t('status.cloud_saved')}
-                                            </span>
-                                        )}
-                                    </>
-                                ) : (
-                                    pendingSync ? (
-                                        <span className="text-orange-300 flex items-center gap-1">
-                                            <CloudOff size={10} /> {t('status.unsaved')}
-                                        </span>
-                                    ) : lastSaved ? (
-                                        <span className="text-green-300 flex items-center gap-1">
-                                            <Cloud size={10} /> {t('status.autosaved', { time: lastSaved.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) })}
-                                        </span>
-                                    ) : (
-                                        <span className="text-indigo-300 flex items-center gap-1">
-                                            <RefreshCw size={10} className="animate-spin" /> {t('status.syncing')}
-                                        </span>
-                                    )
-                                )}
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <input aria-label={t('common.upload_file')}
-                                type="file"
-                                ref={projectFileInputRef}
-                                onChange={handleLoadProject}
-                                className="hidden"
-                                accept=".json"
-                            />
-                            <button
-                                onClick={() => projectFileInputRef.current.click()}
-                                className="p-1.5 rounded hover:bg-indigo-700 text-indigo-200 transition-colors"
-                                title={t('history.load_project')}
-                                aria-label={t('history.load_project')}
-                                data-help-key="history_load_project"
-                            >
-                                <Upload size={14} />
-                            </button>
-                            {isTeacherMode && (
-                                <button
-                                    onClick={initiateSaveTeacherProject}
-                                    disabled={history.length === 0}
-                                    className={`p-1.5 rounded hover:bg-indigo-700 text-indigo-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isSaveActionPulsing ? 'pulse-history shadow-indigo-500/50' : ''}`}
-                                    title={t('history.save_teacher')}
-                                    aria-label={t('history.save_teacher')}
-                                    data-help-key="history_save_teacher"
-                                >
-                                    <Save size={14} />
-                                </button>
-                            )}
-                            <button
-                                onClick={initiateSaveStudentProject}
-                                disabled={history.length === 0}
-                                className={`p-1.5 rounded hover:bg-indigo-700 text-indigo-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isSaveActionPulsing ? 'pulse-history shadow-indigo-500/50' : ''}`}
-                                title={isTeacherMode ? t('history.save_student') : t('history.save_work')}
-                                aria-label={isTeacherMode ? t('history.save_student') : t('history.save_work')}
-                                data-help-key="history_save_student"
-                            >
-                                {isTeacherMode ? <Lock size={14} /> : <Save size={14} />}
-                            </button>
-                            {isTeacherMode && (
-                                <button
-                                    onClick={handleSetIsProjectSettingsOpenToTrue}
-                                    className="p-1.5 rounded hover:bg-indigo-700 text-indigo-200 transition-colors"
-                                    title={t('history.settings')}
-                                    aria-label={t('history.settings')}
-                                    data-help-key="history_settings"
-                                >
-                                    <Settings size={14} />
-                                </button>
-                            )}
-                            <button
-                                onClick={handleToggleIsHistoryMaximized}
-                                className="p-1.5 rounded hover:bg-indigo-700 text-indigo-200 transition-colors"
-                                title={isHistoryMaximized ? t('history.minimize') : t('history.maximize')}
-                                aria-label={isHistoryMaximized ? t('history.minimize') : t('history.maximize')}
-                                data-help-key="history_max_toggle"
-                            >
-                                {isHistoryMaximized ? <Minimize size={14} /> : <Maximize size={14} />}
-                            </button>
-                            {(isTeacherMode || history.length > 0) && (
-                                <button
-                                    onClick={handleClearHistory}
-                                    data-help-key="history_clear_button"
-                                    className="p-1.5 rounded hover:bg-indigo-700 text-indigo-200 transition-colors"
-                                    title={t('history.clear')}
-                                    aria-label={t('history.clear')}
-                                >
-                                    <Trash2 size={14} />
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                    {isTeacherMode && !isIndependentMode && (
-                        <div className="bg-indigo-950/50 p-2 rounded-lg border border-indigo-700/50 flex items-center gap-2">
-                            <FolderOpen size={14} className="text-indigo-600 shrink-0" />
-                            <select
-                                value={activeUnitId}
-                                data-help-key="history_filter_unit_select"
-                                onChange={(e) => setActiveUnitId(e.target.value)}
-                                className="flex-grow text-xs bg-indigo-900 border border-indigo-700 text-indigo-100 rounded focus:ring-1 focus:ring-indigo-500 outline-none py-1 px-2"
-                                aria-label={t('common.filter_by_unit_aria')}
-                            >
-                                <option value="all">{t('history.filter_all')}</option>
-                                <option value="uncategorized">{t('history.uncategorized')}</option>
-                                {units.map(u => (
-                                    <option key={u.id} value={u.id}>{u.name}</option>
-                                ))}
-                            </select>
-                            <button
-                                data-help-key="history_create_unit_btn"
-                                onClick={handleSetIsUnitModalOpenToTrue}
-                                className="p-1 rounded bg-indigo-700 hover:bg-indigo-600 text-white transition-colors"
-                                title={t('history.create_unit_tooltip')}
-                                aria-label={t('history.create_unit_tooltip')}
-                            >
-                                <FolderPlus size={14}/>
-                            </button>
-                            {activeUnitId !== 'all' && activeUnitId !== 'uncategorized' && (
-                                <button
-                                    data-help-key="history_delete_unit_btn"
-                                    onClick={handleDeleteUnit}
-                                    className="p-1 rounded hover:bg-red-900/50 text-red-400 hover:text-red-300 transition-colors"
-                                    title={t('history.delete_unit_tooltip')}
-                                    aria-label={t('history.delete_unit_tooltip')}
-                                >
-                                    <Trash2 size={14}/>
-                                </button>
-                            )}
-                        </div>
-                    )}
-                    {isUnitModalOpen && (
-                        <div className="bg-indigo-800 p-2 rounded-lg border border-indigo-600 animate-in slide-in-from-top-2">
-                            <label className="block text-[11px] font-bold text-indigo-200 mb-1">{t('history.new_unit_label')}</label>
-                            <div className="flex gap-2">
-                                <input aria-label={t('common.enter_new_unit_name')}
-                                    type="text"
-                                    value={newUnitName}
-                                    data-help-key="history_unit_name_input"
-                                    onChange={(e) => setNewUnitName(e.target.value)}
-                                    placeholder={t('history.new_unit_placeholder')}
-                                    className="flex-grow text-xs border border-indigo-600 bg-indigo-900 text-white rounded p-1 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400"
-                                    autoFocus
-                                    onKeyDown={(e) => e.key === 'Enter' && handleCreateUnit()}
-                                />
-                                <button data-help-key="history_save_unit_btn" onClick={handleCreateUnit} className="text-xs bg-indigo-600 text-white px-2 rounded hover:bg-indigo-500 border border-indigo-500">{t('common.save')}</button>
-                                <button data-help-key="history_cancel_unit_btn" onClick={handleSetIsUnitModalOpenToFalse} className="text-xs text-indigo-300 hover:text-white px-1">{t('common.cancel')}</button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-                {/* ── Saved STEM Stations ── */}
-                {(() => {
-                    const stations = JSON.parse(localStorage.getItem('alloflow_stem_stations') || '[]');
-                    if (stations.length === 0) return null;
-                    return (
-                        <div className="mb-3">
-                            <div className="flex items-center justify-between mb-2">
-                                <h4 className="text-[11px] font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
-                                    📌 STEM Stations
-                                    <span className="bg-emerald-500/30 text-emerald-200 text-[11px] px-1.5 py-0.5 rounded-full">{stations.length}</span>
-                                </h4>
-                            </div>
-                            <div className="space-y-1.5">
-                                {stations.map((st) => (
-                                    <div
-                                        key={st.id}
-                                        onClick={() => {
-                                            setActiveStation(st);
-                                            setShowStemLab(true);
-                                            setStemLabTab && setStemLabTab('explore');
-                                        }}
-                                        className="group flex items-center gap-2 p-2 rounded-lg bg-emerald-900/40 border border-emerald-700/50 hover:bg-emerald-800/60 cursor-pointer transition-all"
-                                    >
-                                        <div className="p-1.5 rounded-md bg-emerald-800 text-emerald-300 shrink-0">
-                                            🔬
-                                        </div>
-                                        <div className="min-w-0 flex-grow">
-                                            <div className="text-xs font-bold text-emerald-100 truncate">{st.name}</div>
-                                            <div className="text-[11px] text-emerald-400">{st.tools.length} tool{st.tools.length !== 1 ? 's' : ''}</div>
-                                        </div>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                const updated = stations.filter(s => s.id !== st.id);
-                                                localStorage.setItem('alloflow_stem_stations', JSON.stringify(updated));
-                                                if (activeStation && activeStation.id === st.id) setActiveStation(null);
-                                                addToast && addToast('Station removed');
-                                            }}
-                                            className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 text-red-400 hover:text-red-300 p-1 transition-opacity"
-                                            aria-label="Delete station"
-                                        >
-                                            <X size={12} />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    );
-                })()}
-                {/* ── Saved SEL Stations ── */}
-                {(() => {
-                    const stations = JSON.parse(localStorage.getItem('alloflow_sel_stations') || '[]');
-                    if (stations.length === 0) return null;
-                    return (
-                        <div className="mb-3">
-                            <div className="flex items-center justify-between mb-2">
-                                <h4 className="text-[11px] font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
-                                    📌 SEL Stations
-                                    <span className="bg-pink-500/30 text-pink-200 text-[11px] px-1.5 py-0.5 rounded-full">{stations.length}</span>
-                                </h4>
-                            </div>
-                            <div className="space-y-1.5">
-                                {stations.map((st) => (
-                                    <div
-                                        key={st.id}
-                                        onClick={() => {
-                                            setActiveSelStation(st);
-                                            setShowSelHub(true);
-                                            setSelHubTab && setSelHubTab('explore');
-                                        }}
-                                        className="group flex items-center gap-2 p-2 rounded-lg bg-pink-900/40 border border-pink-700/50 hover:bg-pink-800/60 cursor-pointer transition-all"
-                                    >
-                                        <div className="p-1.5 rounded-md bg-pink-800 text-pink-300 shrink-0">
-                                            💖
-                                        </div>
-                                        <div className="min-w-0 flex-grow">
-                                            <div className="text-xs font-bold text-pink-100 truncate">{st.name}</div>
-                                            <div className="text-[11px] text-pink-400">{(st.tools || []).length} tool{(st.tools || []).length !== 1 ? 's' : ''}{(st.quests || []).length > 0 ? ` · ${st.quests.length} quest${st.quests.length !== 1 ? 's' : ''}` : ''}</div>
-                                        </div>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                const updated = stations.filter(s => s.id !== st.id);
-                                                localStorage.setItem('alloflow_sel_stations', JSON.stringify(updated));
-                                                if (activeSelStation && activeSelStation.id === st.id) setActiveSelStation(null);
-                                                addToast && addToast('SEL Station removed');
-                                            }}
-                                            className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 text-red-400 hover:text-red-300 p-1 transition-opacity"
-                                            aria-label={`Delete SEL Station ${st.name}`}
-                                        >
-                                            <X size={12} />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    );
-                })()}
-
-                <div className="space-y-2 overflow-y-auto pr-1 custom-scrollbar flex-grow pb-10">
-                    {getFilteredHistory().length === 0 && (
-                        <div className="text-center p-4 text-indigo-600 text-xs italic">
-                            {history.length === 0 ? t('history.empty_general') : t('history.empty_unit')}
-                        </div>
-                    )}
-                    {getFilteredHistory().map((item, idx) => (
-                        <div
-                            key={item.id}
-                            draggable={editingId === null}
-                            onDragStart={(e) => handleDragStart(e, idx)}
-                            onDragEnter={(e) => handleDragEnter(e, idx)}
-                            onDragOver={(e) => e.preventDefault()}
-                            onDragEnd={handleDragEnd}
-                            onClick={() => {
-                                if (isSyncMode) {
-                                    addToast(t('session.teacher_control_warning'), "info");
-                                    return;
-                                }
-                                handleRestoreView(item);
-                            }}
-                            className={`group flex flex-col p-2 rounded-lg transition-all border ${generatedContent && generatedContent.id === item.id ? 'bg-white text-indigo-900 border-white' : 'bg-indigo-800/50 border-indigo-700 hover:bg-indigo-800 text-indigo-100'} ${isSyncMode ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
-                        >
-                            <div className="flex items-center gap-2 w-full">
-                                <div
-                                    className="cursor-grab active:cursor-grabbing text-indigo-600 opacity-40 group-hover:opacity-100 group-focus-within:opacity-100 hover:text-white transition-all p-1"
-                                    data-help-key="history_item_drag"
-                                    title={t('common.drag_to_reorder')}
-                                >
-                                    <GripVertical size={14} />
-                                </div>
-                                <div className="text-[11px] font-bold opacity-50 w-3.5 text-center group-hover:hidden">
-                                    {idx + 1}
-                                </div>
-                                <div className={`p-1.5 rounded-md shrink-0 ${generatedContent && generatedContent.id === item.id ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-900 text-indigo-300'}`}>
-                                    {getIconForType(item.type)}
-                                </div>
-                                <div className="min-w-0 flex-grow">
-                                    {editingId === item.id ? (
-                                        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); }}} className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                                            <input aria-label={t('common.enter_edit_title')}
-                                                type="text"
-                                                value={editTitle}
-                                                onChange={(e) => setEditTitle(e.target.value)}
-                                                className="w-full text-xs text-indigo-900 p-1 rounded border border-indigo-300 focus:ring-2 focus:ring-indigo-500 outline-none"
-                                                autoFocus
-                                            />
-                                            <button onClick={(e) => handleSaveEdit(e)} className="p-1 text-green-600 hover:bg-green-100 rounded" aria-label={t('common.save')}><Save size={12}/></button>
-                                            <button onClick={(e) => handleCancelEdit(e)} className="p-1 text-red-500 hover:bg-red-100 rounded" aria-label={t('common.cancel')}><X size={12}/></button>
-                                        </div>
-                                    ) : (
-                                        <div className="flex justify-between items-center w-full gap-2">
-                                            <div className="truncate">
-                                                <div
-                                                    className="text-xs font-bold truncate capitalize"
-                                                    title={(isTeacherMode && !isIndependentMode) ? String(item.title || getDefaultTitle(item.type)) : sanitizeString(item.title || getDefaultTitle(item.type))}
-                                                >
-                                                    {(isTeacherMode && !isIndependentMode)
-                                                        ? String(item.title || getDefaultTitle(item.type))
-                                                        : sanitizeString(item.title || getDefaultTitle(item.type))
-                                                    }
-                                                </div>
-                                                <div className="text-[11px] truncate opacity-70 flex items-center gap-1">
-                                                    {item.unitId && units.find(u => u.id === item.unitId) && (
-                                                        <span className="bg-indigo-900 px-1 rounded text-indigo-300 border border-indigo-700 flex items-center gap-0.5">
-                                                            <Folder size={8}/> {units.find(u => u.id === item.unitId).name}
-                                                        </span>
-                                                    )}
-                                                    <span>{(isTeacherMode && !isIndependentMode) ? String(item.meta || "") : sanitizeString(item.meta)}</span>
-                                                </div>
-                                                {item.type === 'word-sounds' && item.configSummary && (
-                                                    <div className="text-[11px] text-indigo-400 mt-0.5 truncate flex items-center gap-1" title={item.configSummary}>
-                                                        <span className="px-1 bg-violet-900/50 rounded border border-violet-700/50">📋 {item.configSummary}</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            {isTeacherMode && (
-                                            <button
-                                                aria-label={t('common.edit')}
-                                                data-help-key="history_rename_btn"
-                                                onClick={(e) => handleStartEdit(e, item)}
-                                                className={`p-1 rounded hover:bg-indigo-100 hover:text-indigo-700 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity ${generatedContent && generatedContent.id === item.id ? 'text-indigo-600' : 'text-indigo-600'}`}
-                                                title={t('actions.rename')}
-                                            >
-                                                <Pencil size={10} />
-                                            </button>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            {isTeacherMode && (
-                            <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); }}} className="flex items-center justify-between mt-2 pt-2 border-t border-indigo-800/30" onClick={e => e.stopPropagation()}>
-                                <div className="flex items-center gap-1 relative">
-                                    <button
-                                        aria-label={t('common.collapse')}
-                                        data-help-key="history_move_up_btn"
-                                        onClick={(e) => moveItem(e, idx, 'up')}
-                                        disabled={idx === 0}
-                                        className="p-1 rounded hover:bg-indigo-700 disabled:opacity-30 transition-colors text-indigo-300 focus:ring-2 focus:ring-indigo-400 outline-none"
-                                        title={t('actions.move_up')}
-                                    >
-                                        <ChevronUp size={12} />
-                                    </button>
-                                    <button
-                                        aria-label={t('common.expand')}
-                                        data-help-key="history_move_down_btn"
-                                        onClick={(e) => moveItem(e, idx, 'down')}
-                                        disabled={idx === history.length - 1}
-                                        className="p-1 rounded hover:bg-indigo-700 disabled:opacity-30 transition-colors text-indigo-300 focus:ring-2 focus:ring-indigo-400 outline-none"
-                                        title={t('actions.move_down')}
-                                    >
-                                        <ChevronDown size={12} />
-                                    </button>
-                                    <div className="relative">
-                                        <button
-                                            data-help-key="history_move_to_unit_btn"
-                                            onClick={() => setMovingItemId(movingItemId === item.id ? null : item.id)}
-                                            className={`p-1 rounded hover:bg-indigo-700 text-indigo-300 transition-colors ${item.unitId ? 'text-yellow-400' : ''}`}
-                                            title={t('history.tooltips.move_to_unit')}
-                                        >
-                                            <FolderInput size={12} />
-                                        </button>
-                                        {movingItemId === item.id && (
-                                            <div className="absolute left-0 top-6 z-[100] bg-white shadow-xl border border-indigo-200 rounded-lg p-1 w-40 animate-in fade-in zoom-in-95 origin-top-left">
-                                                <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider px-2 py-1">{t('history.move_to_label')}</div>
-                                                <div className="flex flex-col gap-0.5 max-h-32 overflow-y-auto custom-scrollbar">
-                                                    <button
-                                                        onClick={() => handleMoveToUnit(item.id, 'uncategorized')}
-                                                        className={`text-[11px] text-left px-2 py-1.5 rounded hover:bg-indigo-50 text-slate-700 w-full truncate ${!item.unitId ? 'bg-indigo-50 font-bold text-indigo-700' : ''}`}
-                                                    >
-                                                        {t('history.uncategorized')}
-                                                    </button>
-                                                    {units.map(u => (
-                                                        <button
-                                                            key={u.id}
-                                                            onClick={() => handleMoveToUnit(item.id, u.id)}
-                                                            className={`text-[11px] text-left px-2 py-1.5 rounded hover:bg-indigo-50 text-slate-700 w-full truncate ${item.unitId === u.id ? 'bg-indigo-50 font-bold text-indigo-700' : ''}`}
-                                                        >
-                                                            {u.name}
-                                                        </button>
-                                                    ))}
-                                                    {units.length === 0 && (
-                                                        <div className="text-[11px] text-slate-600 px-2 py-1 italic">{t('history.no_units')}</div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )}
-                                        {movingItemId === item.id && (
-                                            <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[90]" onClick={handleSetMovingItemIdToNull}></div>
-                                        )}
-                                    </div>
-                                </div>
-                                {item.type === 'word-sounds' && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            const words = item.data || [];
-                                            const config = item.lessonPlanConfig || {};
-                                            const lines = [
-                                                'Date,Resource,Word,Activity,TotalWords',
-                                                ...words.map(w => {
-                                                    const word = w.targetWord || w.word || w.displayWord || '';
-                                                    return `${new Date(item.timestamp).toLocaleDateString()},${item.title || 'Word Sounds'},${word},,${words.length}`;
-                                                })
-                                            ];
-                                            if (item.configSummary) {
-                                                lines.unshift('# Config: ' + item.configSummary);
-                                            }
-                                            const csv = lines.join('\n');
-                                            const blob = new Blob([csv], { type: 'text/csv' });
-                                            const url = URL.createObjectURL(blob);
-                                            const a = document.createElement('a');
-                                            a.href = url;
-                                            a.download = `word-sounds-${new Date(item.timestamp).toISOString().split('T')[0]}.csv`;
-                                            a.click();
-                                            URL.revokeObjectURL(url);
-                                            addToast && addToast('CSV downloaded for RTI progress monitoring', 'success');
-                                        }}
-                                        className="p-1 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/30 rounded transition-colors flex items-center gap-1 text-[11px]"
-                                        title={t('common.export_csv_for_rti')}
-                                    >
-                                        <Download size={12} /> CSV
-                                    </button>
-                                )}
-                                <button
-                                    aria-label="Share to AlloFlow community catalog"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        try {
-                                            localStorage.setItem('alloflow_pending_submission', JSON.stringify({
-                                                title: item.title || '',
-                                                source_type: item.type || '',
-                                                payload: { id: item.id, type: item.type, title: item.title, timestamp: item.timestamp, data: item.data, meta: item.meta }
-                                            }));
-                                            setIsCommunityCatalogOpen(true);
-                                        } catch (err) {
-                                            addToast && addToast('Could not open submission form: ' + (err && err.message), 'error');
-                                        }
-                                    }}
-                                    className="p-1 text-indigo-300 hover:text-emerald-300 hover:bg-indigo-900/50 rounded transition-colors flex items-center gap-1 text-[11px]"
-                                    title="Share this lesson to the AlloFlow community catalog (opens the in-canvas Submit form prefilled)"
-                                >
-                                    <Share2 size={12} /> Share
-                                </button>
-                                <button
-                                    aria-label={t('common.delete')}
-                                    onClick={(e) => handleDeleteHistoryItem(e, item.id)}
-                                    className="p-1 text-indigo-300 hover:text-red-300 hover:bg-indigo-900/50 rounded transition-colors flex items-center gap-1 text-[11px]"
-                                    title={t('history.tooltips.remove_item')}
-                                    data-help-key="resource_delete_button"
-                                >
-                                    <Trash2 size={12} /> {t('actions.remove')}
-                                </button>
-                            </div>
-                            )}
-                            {(isParentMode || isIndependentMode) && !isTeacherMode && (
-                            <div className="flex items-center justify-end mt-2 pt-2 border-t border-indigo-800/30" onClick={e => e.stopPropagation()}>
-                                <button
-                                    aria-label="Share to AlloFlow community catalog"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        try {
-                                            localStorage.setItem('alloflow_pending_submission', JSON.stringify({
-                                                title: item.title || '',
-                                                source_type: item.type || '',
-                                                payload: { id: item.id, type: item.type, title: item.title, timestamp: item.timestamp, data: item.data, meta: item.meta }
-                                            }));
-                                            setIsCommunityCatalogOpen(true);
-                                        } catch (err) {
-                                            addToast && addToast('Could not open submission form: ' + (err && err.message), 'error');
-                                        }
-                                    }}
-                                    className="p-1 text-indigo-300 hover:text-emerald-300 hover:bg-indigo-900/50 rounded transition-colors flex items-center gap-1 text-[11px]"
-                                    title="Share this lesson to the AlloFlow community catalog (opens the in-canvas Submit form prefilled)"
-                                >
-                                    <Share2 size={12} /> Share
-                                </button>
-                            </div>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            </div>
-            )}
+            {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} units={units} />}
         </aside>
         {!isFullscreen && !isZenMode && (
             <div
@@ -25064,6 +24544,12 @@ function UDLGuideButton(props) {
 function TeacherHistoryTab(props) {
     var Real = window.AlloModules && window.AlloModules.TeacherHistoryTab && window.AlloModules.TeacherHistoryTab.TeacherHistoryTab;
     if (Real && Real !== TeacherHistoryTab) return React.createElement(Real, props);
+    return null;
+}
+// ── HistoryPanel extracted to view_history_panel_module.js (CDN) ──
+function HistoryPanel(props) {
+    var Real = window.AlloModules && window.AlloModules.HistoryPanel && window.AlloModules.HistoryPanel.HistoryPanel;
+    if (Real && Real !== HistoryPanel) return React.createElement(Real, props);
     return null;
 }
 // ── CanvasTips extracted to canvas_tips_module.js (CDN) ──
