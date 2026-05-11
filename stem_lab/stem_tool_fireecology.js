@@ -1287,6 +1287,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       }
     },
     {
+      id: 'whitePineGrove', name: 'White Pine Grove', icon: '🌲', color: '#0891b2',
+      fireReturn: 25, idealFuel: 30, idealYield: 55,
+      desc: 'A grove of eastern white pine on sandy soil. Tolerates surface fire once mature. Gentle burns every 20 to 30 years keep the understory open and the crowns healthy. Center of canoe-making and pitch economy.',
+      cultivars: 'Eastern white pine, princess pine, partridgeberry',
+      culturalUse: 'Birchbark and white-pine canoes, pine pitch, ceremonial wood',
+      defaultState: { fuel: 36, health: 72, yield: 38, lastBurn: 22 },
+      deepDive: {
+        bilingual: 'Kuwes · white pine · Pasekona · canoe',
+        knowledge: 'Eastern white pine (Pinus strobus) is fire-tolerant once mature. Thick bark protects the cambium, lower branches self-prune, and the crown is usually above ground-fire reach. Cool surface fires every 20 to 30 years remove competing balsam fir and red maple, keep the grove open, and stimulate cone release. Without occasional fire, the grove transitions to closed mixed forest and white pine fails to regenerate.',
+        preparation: 'White pine was the preferred lumber for canoe ribs and gunwales and the trunks were sometimes used for dugout canoes on lakes. Pine pitch (resin) was rendered with bear or moose fat into a sticky waterproofing applied to birchbark canoe seams. Princess pine ground cover was gathered for ceremonial smudge.',
+        modernContext: 'White pine is the Maine state tree and central to Maine identity. It was the masting tree the British Royal Navy claimed in the 1700s, which fueled Wabanaki and colonial resistance. Today modern threats include white pine blister rust (an introduced fungus) and the southward push of red oak under climate change.',
+        teaching: 'A pine grove is a slow place. The work is to walk through it, to take what is dying, to listen for which trees the next canoe lives inside. The fire comes once a generation. The patience is daily.'
+      }
+    },
+    {
+      id: 'intervaleMeadow', name: 'Intervale Meadow', icon: '🌽', color: '#f59e0b',
+      fireReturn: 3, idealFuel: 22, idealYield: 78,
+      desc: 'Rich river-floodplain land along the Penobscot, Kennebec, and Saco intervales. Wabanaki villages grew corn, beans, and squash here using fire to clear and frost-protect the fields. The most productive land in the territory.',
+      cultivars: 'Corn (white flint), beans, squash, sunflower, tobacco',
+      culturalUse: 'Three Sisters agriculture, seed sovereignty, village food economy',
+      defaultState: { fuel: 30, health: 80, yield: 60, lastBurn: 3 },
+      deepDive: {
+        bilingual: 'Olawagik · intervale · Skamonal · corn · Malsanikuk · squash',
+        knowledge: 'Intervale soil is alluvial, deposited by annual river flooding. It is loose, fertile, and warm: corn matures here in Maine\'s short season where it cannot on upland clay. Wabanaki farmers burned the previous year\'s stubble each spring to clear weeds, add a small ash amendment, and warm the soil. The Three Sisters (corn, beans, squash) were planted together: corn for the stalk, beans to fix nitrogen, squash to shade the soil and deter pests.',
+        preparation: 'White flint corn dried on the ear, ground into samp or meal, boiled into porridge or baked as bread. Beans dried and stored. Squash baked, dried into rings, stored for winter. Fields were chosen on the south-facing intervale and rotated; long-term village sites moved every several decades as soil and firewood demanded.',
+        modernContext: 'Maine intervales were the first land taken for English settlement because they were already cleared and productive. Many "first homestead" sites in Maine are former Wabanaki cornfields. Seed sovereignty work today (such as preserving Wabanaki white flint corn varieties through organizations like Wabanaki Public Health and Wellness) is reconnecting communities to this agricultural inheritance.',
+        teaching: 'When the colonists arrived and asked where to plant, they were shown the intervales. They were already fields. The forest you see along the river now is a forest that grew over a farm.'
+      }
+    },
+    {
       id: 'hardwoodStand', name: 'Mixed Hardwood', icon: '🍁', color: '#dc2626',
       fireReturn: 60, idealFuel: 32, idealYield: 60,
       desc: 'Mature beech, birch, brown ash, sugar maple. Burns once a generation, very low intensity. Most stewardship is coppicing brown ash for the splints that define Wabanaki basketry.',
@@ -3152,6 +3182,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             if (z.id === 'blueberryBarren') return { icon: '🫐', text: Math.round(y * 6) + ' lb blueberries' };
             if (z.id === 'oakSavanna')      return { icon: '🌰', text: Math.round(y / 3) + ' bushels of acorns' };
             if (z.id === 'mixedConifer')    return { icon: '🪵', text: Math.round(y / 4) + ' lb pine pitch and root' };
+            if (z.id === 'whitePineGrove')  return { icon: '🛶', text: Math.round(y / 12) + ' canoes ribbed-and-gunwaled' };
+            if (z.id === 'intervaleMeadow') return { icon: '🌽', text: Math.round(y * 4) + ' lb of corn, beans, and squash' };
             if (z.id === 'riparian')        return { icon: '🌾', text: Math.round(y / 2) + ' sweetgrass braids' };
             if (z.id === 'hardwoodStand')   return { icon: '🧺', text: Math.round(y / 5) + ' ash splint baskets' };
             return { icon: '🌿', text: '' };
@@ -3197,17 +3229,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             return worst;
           }
 
-          // Stylized aerial map of the territory. Top: pine-spruce highlands.
-          // Middle: blueberry barren (south slope) + oak savanna (east-facing).
-          // Bottom: mixed hardwood with the riparian corridor along a stream.
+          // Stylized aerial map of the territory. Top band: highlands
+          // (mixed conifer + white pine grove). Mid band: blueberry barren
+          // (south slope) + oak savanna (east-facing). Lower band: intervale
+          // meadow along the river + mixed hardwood. Bottom band: riparian
+          // corridor along the stream.
           function renderTerritoryMap(zones, opts) {
             opts = opts || {};
             var layout = {
-              mixedConifer:    { x: 4,   y: 4,   w: 592, h: 72,  iconX: 300, iconY: 48,  labelX: 12 },
-              blueberryBarren: { x: 4,   y: 82,  w: 290, h: 92,  iconX: 145, iconY: 132, labelX: 12 },
-              oakSavanna:      { x: 300, y: 82,  w: 296, h: 92,  iconX: 448, iconY: 132, labelX: 308 },
-              hardwoodStand:   { x: 4,   y: 180, w: 376, h: 116, iconX: 188, iconY: 244, labelX: 12 },
-              riparian:        { x: 386, y: 180, w: 210, h: 116, iconX: 488, iconY: 244, labelX: 394 }
+              // Top band: highlands. mixedConifer left, whitePineGrove right.
+              mixedConifer:    { x: 4,   y: 4,   w: 360, h: 64,  iconX: 184, iconY: 44,  labelX: 12 },
+              whitePineGrove:  { x: 370, y: 4,   w: 226, h: 64,  iconX: 482, iconY: 44,  labelX: 378 },
+              // Mid band: blueberry barren left, oak savanna right.
+              blueberryBarren: { x: 4,   y: 74,  w: 290, h: 80,  iconX: 148, iconY: 122, labelX: 12 },
+              oakSavanna:      { x: 300, y: 74,  w: 296, h: 80,  iconX: 448, iconY: 122, labelX: 308 },
+              // Lower band: intervale meadow (left, on the river) + mixed hardwood.
+              intervaleMeadow: { x: 4,   y: 160, w: 240, h: 76,  iconX: 124, iconY: 204, labelX: 12 },
+              hardwoodStand:   { x: 250, y: 160, w: 346, h: 76,  iconX: 422, iconY: 204, labelX: 258 },
+              // Bottom band: riparian corridor full-width
+              riparian:        { x: 4,   y: 242, w: 592, h: 54,  iconX: 300, iconY: 274, labelX: 12 }
             };
             return h('div', {
               style: { background: '#0f172a', borderRadius: 12, padding: 8, marginBottom: 12, border: '1px solid #1e293b' }
@@ -3250,17 +3290,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     def.fireReturn < 50 ? h('text', { x: rect.x + rect.w - 8, y: rect.y + rect.h - 16, fontSize: 9, fontWeight: 600, textAnchor: 'end', fill: 'rgba(255,255,255,0.7)', style: { pointerEvents: 'none' } }, z.lastBurn + 'y') : null
                   );
                 }),
-                // Stream overlay: a stylized river curving from the top-right
-                // down through the riparian zone
+                // Stream overlay: stylized river curves from the top-right
+                // down past the intervale into the riparian band along the bottom.
                 h('path', {
-                  d: 'M 580 80 Q 540 130 555 170 Q 575 210 525 240 Q 470 270 460 296',
+                  d: 'M 580 70 Q 540 110 555 150 Q 545 180 250 240 Q 120 270 20 270',
                   stroke: '#38bdf8', strokeWidth: 6, fill: 'none', opacity: 0.55,
                   strokeLinecap: 'round',
                   style: { pointerEvents: 'none' }
                 }),
                 h('path', {
-                  d: 'M 580 80 Q 540 130 555 170 Q 575 210 525 240 Q 470 270 460 296',
-                  stroke: '#bae6fd', strokeWidth: 2, fill: 'none', opacity: 0.7,
+                  d: 'M 580 70 Q 540 110 555 150 Q 545 180 250 240 Q 120 270 20 270',
+                  stroke: '#bae6fd', strokeWidth: 2, fill: 'none', opacity: 0.75,
                   strokeLinecap: 'round',
                   style: { pointerEvents: 'none' }
                 })
@@ -3283,7 +3323,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             var w = 600, hgt = 160, padL = 36, padR = 12, padT = 12, padB = 24;
             var ix = w - padL - padR;
             var iy = hgt - padT - padB;
-            var maxYield = 500; // 5 zones × 100 max
+            var maxYield = 700; // 7 zones × 100 max
             // Health: 0..100 mapped to plot. Yield: 0..maxYield mapped to plot.
             var pts = yearLog.map(function(s, i) {
               var x = padL + (yearLog.length === 1 ? ix / 2 : (i / (yearLog.length - 1)) * ix);
@@ -3672,9 +3712,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               var avgHealth = Math.round(m.zones.reduce(function(a, z) { return a + z.health; }, 0) / m.zones.length);
               var totalYield = Math.round(m.zones.reduce(function(a, z) { return a + z.yield; }, 0));
               var outcome;
-              if (avgHealth >= 78 && totalYield >= 350 && m.continuityWins >= 4) {
-                outcome = { tier: 'excellent', label: 'Wabanaki Stewardship Mastery', color: '#16a34a', icon: '🏆', desc: 'The mosaic thrives. Berry harvests are abundant, ash splints supply every basketmaker, sweetgrass braids fill every ceremony. The land remembers good fire.' };
-              } else if (avgHealth >= 70 && totalYield >= 280) {
+              if (avgHealth >= 78 && totalYield >= 490 && m.continuityWins >= 6) {
+                outcome = { tier: 'excellent', label: 'Wabanaki Stewardship Mastery', color: '#16a34a', icon: '🏆', desc: 'The mosaic thrives. Berry harvests are abundant, intervale corn fills the longhouse, ash splints supply every basketmaker, canoes leave the pine grove finished and tight, sweetgrass braids fill every ceremony. The land remembers good fire.' };
+              } else if (avgHealth >= 70 && totalYield >= 390) {
                 outcome = { tier: 'good', label: 'Skilled Mosaic Steward', color: '#22c55e', icon: '🌿', desc: 'You held the mosaic together. Some zones thrived, others held steady. The community has what it needs.' };
               } else if (avgHealth >= 60) {
                 outcome = { tier: 'struggling', label: 'Mosaic Apprentice', color: '#f59e0b', icon: '🍃', desc: 'You kept the land alive but it is fraying. Some zones missed their fire-return windows; harvests were thin in places.' };
