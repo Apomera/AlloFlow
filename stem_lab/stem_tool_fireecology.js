@@ -267,6 +267,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     { id: 'aiScholar', icon: '\uD83E\uDD16', label: 'AI Fire Scholar', desc: 'Use the AI tutor 3 times' },
     { id: 'suppressionLesson', icon: '\u26A0\uFE0F', label: 'Suppression Lesson', desc: 'Witness the consequences of 50 years of fire suppression' },
     { id: 'mosaicMaster', icon: '\uD83E\uDDE9', label: 'Mosaic Master', desc: 'Steward the Wabanaki cultural mosaic with 4+ continuity wins across 8 years' },
+    { id: 'berryKeeper', icon: '\uD83E\uDED0', label: 'Berry Keeper', desc: 'Bring the blueberry barren to 80+ yield in a single year' },
+    { id: 'ashKeeper', icon: '\uD83E\uDDFA', label: 'Ash Keeper', desc: 'Bring the mixed hardwood stand to 70+ yield (enough ash splints for a full season of basketry)' },
+    { id: 'sweetgrassKeeper', icon: '\uD83C\uDF3E', label: 'Sweetgrass Keeper', desc: 'Hold the riparian corridor at 75+ yield (sweetgrass braids for every ceremony)' },
+    { id: 'pineKeeper', icon: '\uD83D\uDEF6', label: 'Pine Keeper', desc: 'Bring the white pine grove to 65+ yield (canoes finished, pitch rendered)' },
+    { id: 'cornKeeper', icon: '\uD83C\uDF3D', label: 'Three Sisters Keeper', desc: 'Bring the intervale meadow to 85+ yield (a full corn-bean-squash harvest)' },
     { id: 'carbonTracker', icon: '\u2601\uFE0F', label: 'Carbon Tracker', desc: 'Compare carbon outcomes of cultural burning vs. wildfire' },
     { id: 'seedSprouter', icon: '\uD83C\uDF3E', label: 'Seed Sprouter', desc: 'Trigger fire-dependent seed germination' },
     { id: 'waterProtector', icon: '\uD83D\uDCA7', label: 'Water Protector', desc: 'Learn how cultural burning protects watersheds' },
@@ -3509,6 +3514,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             );
           }
 
+          // ── WABANAKI VOCABULARY GLOSSARY ──
+          // Surfaces all bilingual terms in one place. Open / close with the
+          // glossary button on the setup phase header.
+          var WABANAKI_GLOSSARY = [
+            { group: 'Seasons (across the campaign year)', items: [
+              { term: 'Sigwan',   en: 'spring',   note: 'First part of the Warm Season phase in the sim.' },
+              { term: 'Nipon',    en: 'summer',   note: 'Second part of the Warm Season phase.' },
+              { term: 'Toqaq',    en: 'fall',     note: 'First part of the Cold Season phase. Primary cultural-burn window.' },
+              { term: 'Pun',      en: 'winter',   note: 'Second part of the Cold Season phase. Pile-burn and coppice window.' }
+            ] },
+            { group: 'Blueberry Barren', items: [
+              { term: 'Sata', en: 'lowbush blueberry', note: 'Fire-dependent rhizomatous shrub. Burned every 2 to 3 years.' }
+            ] },
+            { group: 'White Oak Savanna', items: [
+              { term: 'Anaskimnesi', en: 'white oak', note: 'Less tannic than red oak; preferred acorn source.' }
+            ] },
+            { group: 'Pine-Spruce Stand and White Pine Grove', items: [
+              { term: 'Kuwes',    en: 'white pine',  note: 'Maine state tree. Pitch and canoe wood.' },
+              { term: 'Skog',     en: 'spruce',      note: 'Red spruce dominates higher elevations.' },
+              { term: 'Pasekona', en: 'canoe',       note: 'White pine and birchbark canoe traditions are central to Wabanaki travel.' }
+            ] },
+            { group: 'Riparian Corridor', items: [
+              { term: 'Welimanal', en: 'sweetgrass',  note: 'Smudge for ceremony; binding band on baskets.' },
+              { term: 'Qapit',     en: 'beaver',      note: 'Engineer of the riparian zone; raises water tables and creates firebreaks.' }
+            ] },
+            { group: 'Mixed Hardwood', items: [
+              { term: 'Wikp',     en: 'brown ash',    note: 'The basketry tree. Annual growth rings split into splints when the trunk is pounded.' },
+              { term: 'Senomozi', en: 'sugar maple',  note: 'Spring sap run for syrup.' }
+            ] },
+            { group: 'Intervale Meadow', items: [
+              { term: 'Olawagik',   en: 'intervale',   note: 'Alluvial river-floodplain land. Warm, loose, fertile.' },
+              { term: 'Skamonal',   en: 'corn',        note: 'White flint corn was the Wabanaki staple; dried and ground.' },
+              { term: 'Malsanikuk', en: 'squash',      note: 'One of the Three Sisters with corn and beans.' }
+            ] }
+          ];
+
+          function openGlossary() { setMosaic({ glossaryOpen: true }); }
+          function closeGlossary() { setMosaic({ glossaryOpen: false }); }
+
+          function renderGlossaryPanel() {
+            return h('div', {
+              role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Wabanaki vocabulary glossary',
+              style: {
+                background: 'linear-gradient(135deg, rgba(168,85,247,0.10) 0%, rgba(15,23,42,0.85) 60%)',
+                border: '1px solid rgba(168,85,247,0.5)',
+                borderLeft: '4px solid #a855f7',
+                borderRadius: 14, padding: 18, marginBottom: 16
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
+                h('span', { style: { fontSize: 30 } }, '📖'),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontSize: 11, color: '#a855f7', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Vocabulary'),
+                  h('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, 'Wabanaki vocabulary in this sim')
+                ),
+                h('button', {
+                  onClick: closeGlossary,
+                  'aria-label': 'Close glossary',
+                  style: {
+                    background: 'rgba(15,23,42,0.6)', border: '1px solid #334155',
+                    color: '#cbd5e1', cursor: 'pointer',
+                    borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13
+                  }
+                }, '✕ Close')
+              ),
+
+              h('p', { style: { fontSize: 12.5, color: '#e9d5ff', lineHeight: 1.55, marginBottom: 14 } },
+                'The bilingual terms across this sim. The Wabanaki Confederacy is five distinct nations (Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki), each with its own language. Spellings vary by orthography and dialect; the forms here are representative, not authoritative. For language teaching consult the language program of each nation, the University of Maine Wabanaki Center, or community resources directly.'
+              ),
+
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 } },
+                WABANAKI_GLOSSARY.map(function(grp, gi) {
+                  return h('div', { key: gi, style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12, border: '1px solid rgba(168,85,247,0.18)' } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#c4b5fd', letterSpacing: 0.3, marginBottom: 8 } }, grp.group),
+                    grp.items.map(function(it, ii) {
+                      return h('div', { key: ii, style: { marginBottom: 8, fontSize: 13, lineHeight: 1.5, color: '#e2e8f0' } },
+                        h('div', null,
+                          h('strong', { style: { color: '#a855f7', fontFamily: 'ui-monospace, monospace' } }, it.term),
+                          h('span', { style: { color: '#cbd5e1' } }, ' · ' + it.en)
+                        ),
+                        h('div', { style: { fontSize: 11.5, color: '#94a3b8', fontStyle: 'italic', marginTop: 2 } }, it.note)
+                      );
+                    })
+                  );
+                })
+              )
+            );
+          }
+
           // Open / close per-zone cultural deep-dive
           function openDeepDive(zoneId) {
             setMosaic({ deepDiveZone: zoneId });
@@ -3750,6 +3844,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             playSound(continuityHits > 0 ? 'badge' : 'pause');
             if (announceToSR) announceToSR('Year ' + m.year + ' complete. Event: ' + ev.name + '. Avg health ' + avgHealth + ', total yield ' + totalYield + (continuityHits > 0 ? '. Continuity wins: ' + continuityZones.join(', ') : '') + '.');
             if (m.year >= m.maxYears - 2 && continuityHits >= 2) checkBadge('mosaicMaster');
+
+            // Zone-specific keeper badges: fire when a zone crosses its threshold this year
+            driftedZones.forEach(function(z) {
+              if (z.id === 'blueberryBarren' && z.yield >= 80) checkBadge('berryKeeper');
+              if (z.id === 'hardwoodStand' && z.yield >= 70) checkBadge('ashKeeper');
+              if (z.id === 'riparian' && z.yield >= 75) checkBadge('sweetgrassKeeper');
+              if (z.id === 'whitePineGrove' && z.yield >= 65) checkBadge('pineKeeper');
+              if (z.id === 'intervaleMeadow' && z.yield >= 85) checkBadge('cornKeeper');
+            });
           }
 
           // End the current sub-phase: warm → cold (refill cold-half hours);
@@ -3793,13 +3896,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             }
           }
 
-          // Render deep-dive at the very top of any phase when active
+          // Render deep-dive / glossary at the very top of any phase when active
           var deepDivePanel = m.deepDiveZone ? renderDeepDivePanel(m.deepDiveZone) : null;
+          var glossaryPanel = m.glossaryOpen ? renderGlossaryPanel() : null;
 
           // ── SETUP PHASE ──
           if (m.phase === 'setup') {
             return h('div', null,
               deepDivePanel,
+              glossaryPanel,
               h('div', {
                 style: {
                   padding: 18, borderRadius: 14,
@@ -3822,6 +3927,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 ),
                 h('p', { style: { margin: '8px 0 0', color: '#94a3b8', fontSize: 12.5, lineHeight: 1.55, fontStyle: 'italic' } },
                   'This sim is built on documented Wabanaki practice (Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki). Where details are simplified for an 8-year window, the underlying logic is faithful.'
+                ),
+                h('div', { style: { marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                  h('button', {
+                    onClick: openGlossary,
+                    'aria-label': 'Open Wabanaki vocabulary glossary',
+                    style: {
+                      background: 'rgba(168,85,247,0.18)', border: '1px solid #a855f7',
+                      color: '#e9d5ff', cursor: 'pointer',
+                      borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 12
+                    }
+                  }, '📖 Wabanaki vocabulary')
                 )
               ),
 
@@ -3912,7 +4028,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                   color: '#fff', fontWeight: 800, fontSize: 16,
                   boxShadow: '0 6px 14px rgba(21,128,61,0.35)'
                 }
-              }, '🧩 Begin 8-year Stewardship')
+              }, '🧩 Begin 8-year Stewardship'),
+
+              // Notes for educators (collapsed by default)
+              h('details', {
+                style: {
+                  marginTop: 16, padding: '10px 14px', borderRadius: 12,
+                  background: '#0f172a', border: '1px solid #1e293b'
+                }
+              },
+                h('summary', {
+                  style: { fontSize: 12, fontWeight: 700, color: '#94a3b8', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 0.5 }
+                }, '📝 Notes for educators'),
+                h('div', { style: { marginTop: 10, fontSize: 13, lineHeight: 1.6, color: '#cbd5e1' } },
+                  h('p', { style: { margin: '0 0 8px' } },
+                    'This sim is a teaching tool. Wabanaki fire stewardship is a living practice held by living people, not a historical artifact. The simulation is intentionally a simplification across an 8-year window; real stewardship operates on multi-generational time horizons, ties into ceremony, language, and treaty relationships, and is led by Wabanaki nations themselves.'
+                  ),
+                  h('p', { style: { margin: '0 0 8px' } },
+                    h('strong', { style: { color: '#fbbf24' } }, 'For pairing with classroom work, consider these resources:'),
+                  ),
+                  h('ul', { style: { margin: '0 0 8px 18px', padding: 0 } },
+                    h('li', null, 'Wabanaki Public Health and Wellness (wabanakipublichealth.org) for community-led programming.'),
+                    h('li', null, 'Maine Indian Basketmakers Alliance (maineindianbaskets.org) for brown-ash crisis and craft revitalization.'),
+                    h('li', null, 'University of Maine Wabanaki Center (umaine.edu/nativeamericanprograms) for academic resources.'),
+                    h('li', null, 'Each nation\'s cultural offices: Penobscot Cultural and Historic Preservation Department; Passamaquoddy Cultural Heritage Museum; Maliseet, Mi\'kmaq, and Abenaki community resources.')
+                  ),
+                  h('p', { style: { margin: '0 0 8px' } },
+                    h('strong', { style: { color: '#fbbf24' } }, 'Discussion prompts after the campaign:')
+                  ),
+                  h('ul', { style: { margin: '0 0 0 18px', padding: 0 } },
+                    h('li', null, 'Where in your local landscape do you see evidence of past or ongoing Indigenous fire stewardship?'),
+                    h('li', null, 'How did the seasonal split (Sigwan-Nipon and Toqaq-Pun) change which moves felt high-leverage?'),
+                    h('li', null, 'Which zone did you find hardest to keep healthy, and what does that suggest about the cultural infrastructure (food, basketry, canoe-building, ceremony) it supports?'),
+                    h('li', null, 'How is the loss of brown ash to emerald ash borer a parallel to other ongoing cultural-ecological emergencies you know about?')
+                  )
+                )
+              )
             );
           }
 
@@ -3948,6 +4099,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             return h('div', null,
               deepDivePanel,
+              glossaryPanel,
               h('div', {
                 style: {
                   padding: 18, borderRadius: 14, marginBottom: 14,
@@ -4088,6 +4240,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
             return h('div', null,
               deepDivePanel,
+              glossaryPanel,
               renderTerritoryMap(m.zones, { title: 'End of Year ' + m.year }),
               h('div', { style: { padding: 14, borderRadius: 12, marginBottom: 12, background: '#0f172a', borderLeft: '3px solid #fbbf24' } },
                 h('div', { style: { fontSize: 22, marginBottom: 4 } }, ev.icon || '🌿'),
@@ -4175,6 +4328,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           var coachingTip = (m.year === 1 && !m.firstTipDismissed && m.yearActions.length === 0) ? getCoachingTip() : null;
           return h('div', null,
             deepDivePanel,
+            glossaryPanel,
             // Territory map (current state)
             renderTerritoryMap(m.zones, { title: 'Year ' + m.year + ' of ' + m.maxYears + ': current state' }),
             // Year-1 coaching tip (only on Year 1, until first action or dismissed)
