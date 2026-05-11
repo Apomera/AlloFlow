@@ -584,6 +584,32 @@
       timeCost: 15,
       partnerRequired: false,
       ready: true,
+      // Achievement quest hooks — surfaced wherever AlloHaven lists arcade quests.
+      // Each hook checks the module-level stats mirror (set by bumpStat in
+      // commitSpeech, commitClause, castVote, and reveal-tally).
+      questHooks: [
+        { id: 'first_speech',     label: 'Deliver your first opening speech',  icon: '🎤',
+          check: function() { return !!window.__alloHavenModelUNStats.firstSpeechDelivered; },
+          progress: function() { return window.__alloHavenModelUNStats.firstSpeechDelivered ? 'Done!' : 'Not yet'; } },
+        { id: 'first_clause',     label: 'Propose your first resolution clause', icon: '📜',
+          check: function() { return !!window.__alloHavenModelUNStats.firstClauseProposed; },
+          progress: function() { return window.__alloHavenModelUNStats.firstClauseProposed ? 'Done!' : 'Not yet'; } },
+        { id: 'first_vote',       label: 'Cast a vote on a resolution',        icon: '🗳',
+          check: function() { return !!window.__alloHavenModelUNStats.voteCast; },
+          progress: function() { return window.__alloHavenModelUNStats.voteCast ? 'Done!' : 'Not yet'; } },
+        { id: 'ai_scaffold',      label: 'Use the AI starter to scaffold a speech (UDL)', icon: '✨',
+          check: function() { return !!window.__alloHavenModelUNStats.aiStarterUsed; },
+          progress: function() { return window.__alloHavenModelUNStats.aiStarterUsed ? 'Done!' : 'Not yet'; } },
+        { id: 'resolution_passed', label: 'Be part of a passed resolution',     icon: '✅',
+          check: function() { return (window.__alloHavenModelUNStats.resolutionsPassed || 0) >= 1; },
+          progress: function() { return (window.__alloHavenModelUNStats.resolutionsPassed || 0) + ' passed'; } },
+        { id: 'three_speeches',   label: 'Deliver 3 speeches total',           icon: '🎙',
+          check: function() { return (window.__alloHavenModelUNStats.totalSpeeches || 0) >= 3; },
+          progress: function() { return (window.__alloHavenModelUNStats.totalSpeeches || 0) + '/3'; } },
+        { id: 'three_clauses',    label: 'Propose 3 clauses total',            icon: '📚',
+          check: function() { return (window.__alloHavenModelUNStats.totalClauses || 0) >= 3; },
+          progress: function() { return (window.__alloHavenModelUNStats.totalClauses || 0) + '/3'; } }
+      ],
       render: function (ctx) {
         var React = ctx.React || window.React;
         var session = ctx.session;
@@ -1535,6 +1561,76 @@
   }
 
   // ═══════════════════════════════════════════
+  // AI HELPER — Generate a breaking-news event the chair can broadcast.
+  // Returns { headline, body, affectedIsos: [iso...] } or null.
+  // Pedagogically: real diplomacy shifts under news; this tests adaptability.
+  // ═══════════════════════════════════════════
+  function aiBreakingNews(ctx, agenda, recentSpeeches, committee) {
+    if (!ctx || typeof ctx.callGemini !== 'function' || !agenda) return Promise.resolve(null);
+    var historyText = (recentSpeeches || []).slice(-5).map(function(s) {
+      return '- ' + s.country + ': ' + (s.text || '').slice(0, 120);
+    }).join('\n');
+    var prompt = [
+      'You are generating a BREAKING NEWS event for an ongoing Model UN debate.',
+      '',
+      'Committee: ' + (committee ? committee.name : 'UN committee'),
+      'Agenda: ' + agenda.title,
+      'Background: ' + agenda.background,
+      '',
+      historyText ? 'Recent speeches in the chamber:\n' + historyText + '\n' : '',
+      'Generate a realistic, time-stamped news event that:',
+      '  1. Is plausible (could appear in real wire reporting)',
+      '  2. Changes the calculus of the debate in some way',
+      '  3. Names 2-4 countries most directly affected (use ISO 3-letter codes)',
+      '',
+      'Tone: clipped wire-service style. No commentary. ~40 words for the body.',
+      '',
+      'Return ONLY a JSON object:',
+      '{',
+      '  "headline": "ALL CAPS HEADLINE (60 chars max, no period at end)",',
+      '  "body": "Wire-service style report, 2-3 sentences",',
+      '  "affectedIsos": ["USA", "BRA", ...]',
+      '}'
+    ].join('\n');
+    return Promise.resolve(ctx.callGemini(prompt, true)).then(function(result) {
+      var raw = typeof result === 'string' ? result : (result && result.text ? result.text : String(result || ''));
+      raw = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      var s = raw.indexOf('{'); var e = raw.lastIndexOf('}');
+      if (s < 0 || e <= s) return null;
+      var parsed; try { parsed = JSON.parse(raw.substring(s, e + 1)); } catch (err) { return null; }
+      if (!parsed || typeof parsed.headline !== 'string' || typeof parsed.body !== 'string') return null;
+      return {
+        headline: parsed.headline.slice(0, 120).toUpperCase(),
+        body: parsed.body.slice(0, 400),
+        affectedIsos: Array.isArray(parsed.affectedIsos) ? parsed.affectedIsos.slice(0, 6).map(String) : [],
+        at: Date.now()
+      };
+    }).catch(function() { return null; });
+  }
+
+  // ═══════════════════════════════════════════
+  // Helper for the achievement system: read the user's per-mode achievement flags
+  // from window.__alloHavenModelUNStats (a module-level mirror of the user's stats).
+  // Updates are fire-and-forget; achievements UI can render anywhere.
+  // ═══════════════════════════════════════════
+  if (!window.__alloHavenModelUNStats) {
+    window.__alloHavenModelUNStats = {
+      firstSpeechDelivered: false,
+      firstClauseProposed: false,
+      voteCast: false,
+      aiStarterUsed: false,
+      resolutionsPassed: 0,
+      totalSpeeches: 0,
+      totalClauses: 0
+    };
+  }
+  function bumpStat(key, by) {
+    var s = window.__alloHavenModelUNStats;
+    if (typeof s[key] === 'number') s[key] = (s[key] || 0) + (by || 1);
+    else s[key] = true;
+  }
+
+  // ═══════════════════════════════════════════
   // OpeningSpeechesView — every delegate gives an opening speech.
   // Host clicks "Give floor → [delegate]" to advance through the speaker queue.
   // Human delegates type their speech; AI delegates auto-generate when called on.
@@ -1635,6 +1731,14 @@
         speakerStartedAt: null,
         speechCount: (modelUn.speechCount || 0) + 1
       });
+      // Achievement triggers (local stats — host-side, but also fires for solo)
+      if (!isAi) {
+        bumpStat('totalSpeeches');
+        if (!window.__alloHavenModelUNStats.firstSpeechDelivered) {
+          bumpStat('firstSpeechDelivered');
+          if (typeof ctx.addToast === 'function') ctx.addToast('🏅 Achievement: First Speech Delivered');
+        }
+      }
     }
     function skipSpeaker() {
       updateMUN({ currentSpeakerUid: null, speakerStartedAt: null });
@@ -1676,6 +1780,12 @@
           style: { padding: '6px 10px', fontSize: 11, fontWeight: 600, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' }
         }, 'Skip to Drafting →')
       ),
+
+      // ── News Desk banner (active when modelUn.news is set) ──
+      h(NewsDeskBanner, {
+        ctx: ctx, modelUn: modelUn, updateMUN: updateMUN, isHost: isHost,
+        agenda: agenda, committee: committee, recentSpeeches: orderedSpeeches
+      }),
 
       // Current speaker spotlight
       currentSpeakerUid && currentSpeakerCountry && h('div', {
@@ -1813,6 +1923,11 @@
         setLoading(false);
         if (r && r.text) {
           setText(r.text);
+          // Achievement (UDL scaffold usage)
+          if (!window.__alloHavenModelUNStats.aiStarterUsed) {
+            bumpStat('aiStarterUsed');
+            if (typeof ctx.addToast === 'function') ctx.addToast('🏅 Achievement: AI Scaffold Used (UDL!)');
+          }
           ctx.addToast('AI starter ready — edit before submitting');
         } else {
           ctx.addToast('AI starter failed. Try again or write your own.');
@@ -1939,6 +2054,14 @@
         next = trimmed;
       }
       updateMUN({ clauses: next });
+      // Achievement triggers
+      if (!isAi) {
+        bumpStat('totalClauses');
+        if (!window.__alloHavenModelUNStats.firstClauseProposed) {
+          bumpStat('firstClauseProposed');
+          if (typeof ctx.addToast === 'function') ctx.addToast('🏅 Achievement: First Clause Proposed');
+        }
+      }
     }
     function handleProposeAsHuman() {
       var t = (text || '').trim();
@@ -2025,6 +2148,12 @@
           style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, 'Move to Vote →')
       ),
+
+      // ── News Desk banner ──
+      h(NewsDeskBanner, {
+        ctx: ctx, modelUn: modelUn, updateMUN: updateMUN, isHost: isHost,
+        agenda: agenda, committee: committee, recentSpeeches: []
+      }),
 
       // Two-column layout
       h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 } },
@@ -2261,6 +2390,11 @@
       var next = Object.assign({}, finalVotes);
       next[iso] = { vote: vote, reasoning: reasoning || '', isAi: !!isAi, at: Date.now() };
       updateMUN({ finalVotes: next });
+      // Achievement: voteCast
+      if (!isAi && !window.__alloHavenModelUNStats.voteCast) {
+        bumpStat('voteCast');
+        if (typeof ctx.addToast === 'function') ctx.addToast('🏅 Achievement: Vote Cast');
+      }
     }
     function castMyVote(vote) {
       if (!myCountry) return;
@@ -2299,6 +2433,13 @@
       var passed = yCount > nCount; // simple majority of cast votes
       var outcome = passed ? 'passed' : 'failed';
       updateMUN({ voteRevealed: true, voteOutcome: outcome });
+      // Achievement: resolution passed (counted only when you participated)
+      if (passed) {
+        bumpStat('resolutionsPassed');
+        if (window.__alloHavenModelUNStats.resolutionsPassed === 1 && typeof ctx.addToast === 'function') {
+          ctx.addToast('🏅 Achievement: First Resolution Passed');
+        }
+      }
     }
     function advanceToDebrief() { updateMUN({ phase: PHASES.DEBRIEF }); }
 
@@ -2676,9 +2817,110 @@
     );
   }
 
+  // ═══════════════════════════════════════════
+  // NewsDeskBanner — renders an AI-generated breaking-news event above the
+  // current phase content. Host can trigger via button; everyone in session
+  // sees the same banner (it lives in session.modelUn.news).
+  // ═══════════════════════════════════════════
+  function NewsDeskBanner(props) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var ctx = props.ctx;
+    var modelUn = props.modelUn;
+    var updateMUN = props.updateMUN;
+    var isHost = props.isHost;
+    var agenda = props.agenda;
+    var committee = props.committee;
+    var recentSpeeches = props.recentSpeeches || [];
+
+    var news = modelUn.news;
+    var loadingTuple = useState(false);
+    var loading = loadingTuple[0];
+    var setLoading = loadingTuple[1];
+
+    function generateNews() {
+      if (loading) return;
+      setLoading(true);
+      aiBreakingNews(ctx, agenda, recentSpeeches, committee).then(function(r) {
+        setLoading(false);
+        if (r) {
+          updateMUN({ news: r });
+          if (typeof ctx.addToast === 'function') ctx.addToast('📰 Breaking news broadcast to all delegates');
+        } else {
+          if (typeof ctx.addToast === 'function') ctx.addToast('News generation failed. Try again.');
+        }
+      }).catch(function() {
+        setLoading(false);
+      });
+    }
+    function dismissNews() {
+      updateMUN({ news: null });
+    }
+
+    // No active news — host sees a small "📰 Breaking News" trigger button
+    if (!news) {
+      if (!isHost) return null;
+      return h('button', {
+        onClick: generateNews,
+        disabled: loading,
+        style: {
+          padding: '6px 12px', fontSize: 11, fontWeight: 700,
+          background: loading ? '#475569' : 'rgba(220,38,38,0.18)',
+          color: loading ? '#94a3b8' : '#fca5a5',
+          border: '1px dashed #dc2626', borderRadius: 6,
+          cursor: loading ? 'wait' : 'pointer',
+          marginBottom: 10
+        },
+        'aria-label': 'Broadcast a breaking news event to all delegates'
+      }, loading ? '⏳ Generating breaking news…' : '📰 Inject breaking news (AI)');
+    }
+
+    // Active news — visible to everyone
+    var affectedFlags = (news.affectedIsos || []).map(function(iso) {
+      var c = countryById(iso); return c ? c.flag + ' ' + c.iso : iso;
+    }).join(' · ');
+
+    return h('div', {
+      style: {
+        marginBottom: 12,
+        padding: 12,
+        background: 'linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%)',
+        border: '2px solid #ef4444',
+        borderRadius: 10,
+        color: '#fef2f2'
+      },
+      role: 'alert',
+      'aria-live': 'polite'
+    },
+      h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
+        h('span', { style: { fontSize: 24 } }, '📰'),
+        h('div', { style: { flex: 1 } },
+          h('div', { style: { fontSize: 9, color: '#fca5a5', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase' } },
+            'Breaking · UN News Desk'
+          ),
+          h('div', { style: { fontSize: 15, fontWeight: 900, marginTop: 2, lineHeight: 1.3 } }, news.headline),
+          h('p', { style: { fontSize: 12, lineHeight: 1.6, margin: '6px 0 0 0', color: '#fee2e2' } }, news.body),
+          affectedFlags && h('div', { style: { fontSize: 10, color: '#fecaca', marginTop: 6, fontStyle: 'italic' } },
+            'Most directly affected: ' + affectedFlags
+          )
+        ),
+        isHost && h('button', {
+          onClick: dismissNews,
+          'aria-label': 'Dismiss news',
+          style: {
+            padding: '4px 8px', fontSize: 11, fontWeight: 700,
+            background: 'rgba(255,255,255,0.12)', color: '#fee2e2',
+            border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, cursor: 'pointer'
+          }
+        }, '✕ Dismiss')
+      )
+    );
+  }
+
   // Hot-reload guard — re-attach the launcher card data if needed
   if (typeof console !== 'undefined') {
-    console.log('[arcade_mode_modelun] Plugin v0.3 loaded — ' + COUNTRIES.length + ' countries, ' + AGENDAS.length + ' agendas, ' + COMMITTEES.length + ' committees; full loop: speeches → drafting → voting → debrief.');
+    console.log('[arcade_mode_modelun] Plugin v0.4 loaded — ' + COUNTRIES.length + ' countries, ' + AGENDAS.length + ' agendas, ' + COMMITTEES.length + ' committees; full loop + AI news desk + 7 achievement hooks.');
   }
 
 })();
