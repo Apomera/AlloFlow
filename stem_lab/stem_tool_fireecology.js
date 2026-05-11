@@ -1793,6 +1793,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               )
             ),
 
+            h('div', {
+              role: 'note',
+              style: {
+                background: 'linear-gradient(135deg, rgba(251,146,60,0.14) 0%, rgba(251,146,60,0.04) 100%)',
+                borderRadius: 12, padding: '10px 14px', marginBottom: 16,
+                borderLeft: '3px solid #fb923c',
+                color: '#fed7aa', fontSize: 13, lineHeight: 1.55
+              }
+            },
+              h('strong', { style: { color: '#fb923c' } }, 'Goal: '),
+              'keep biodiversity above 70 and fuel load below 30 across 50+ years without triggering a catastrophic wildfire. Cultural burn every decade or two; suppression looks safe at first but stockpiles fuel until one bad year erases everything.'
+            ),
+
             // Canvas visualization
             renderCanvas(),
 
@@ -2014,6 +2027,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               )
             ),
 
+            h('div', {
+              role: 'note',
+              style: {
+                background: 'linear-gradient(135deg, rgba(251,191,36,0.14) 0%, rgba(251,191,36,0.04) 100%)',
+                borderRadius: 12, padding: '10px 14px', marginBottom: 16,
+                borderLeft: '3px solid #fbbf24',
+                color: '#fde68a', fontSize: 13, lineHeight: 1.55
+              }
+            },
+              h('strong', { style: { color: '#fbbf24' } }, 'Goal: '),
+              'land all four sliders inside their ideal range to score 85+ (GO). Score 60 to 84 prints CAUTION; under 60 prints NO-GO.',
+              h('div', { style: { marginTop: 6, fontSize: 12.5, color: '#fef3c7', lineHeight: 1.55 } },
+                h('div', null, 'Ideal Temperature: 50 to 70 ' + '\u00B0F'),
+                h('div', null, 'Ideal Humidity: 30 to 55 percent'),
+                h('div', null, 'Ideal Wind: 3 to 12 mph'),
+                h('div', null, 'Ideal Fuel Moisture: 12 to 25 percent')
+              )
+            ),
+
             h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 16, marginBottom: 16 } },
               slider('Temperature', burnTemp, 30, 100, 1, '\u00B0F', 'burnTemp', '#ef4444'),
               slider('Relative Humidity', burnHumidity, 10, 90, 1, '%', 'burnHumidity', '#3b82f6'),
@@ -2178,6 +2210,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           }
 
           return h('div', null,
+            // Pre-game brief
+            h('details', {
+              style: {
+                background: 'linear-gradient(135deg, rgba(16,185,129,0.14) 0%, rgba(16,185,129,0.04) 100%)',
+                borderRadius: 12, padding: '10px 14px', marginBottom: 14,
+                borderLeft: '3px solid #10b981',
+                color: '#a7f3d0', fontSize: 13, lineHeight: 1.55
+              },
+              open: quizTotal === 0
+            },
+              h('summary', {
+                style: { fontWeight: 700, color: '#10b981', cursor: 'pointer', fontSize: 14 }
+              }, '📜 What this quiz covers'),
+              h('div', { style: { marginTop: 8, color: '#d1fae5' } },
+                h('div', null, '32 multi-choice items across six themes:'),
+                h('ul', { style: { margin: '6px 0 0 18px', padding: 0, lineHeight: 1.7 } },
+                  h('li', null, 'Indigenous fire stewardship (timelines, nations, practices)'),
+                  h('li', null, 'Fire-adapted ecosystem mechanics (serotiny, smoke-cued germination)'),
+                  h('li', null, 'Combustion chemistry (fire triangle, flashover, fuel moisture)'),
+                  h('li', null, 'Watershed and soil response (hydrophobic soils, debris flows)'),
+                  h('li', null, 'Suppression policy failures and their case studies'),
+                  h('li', null, 'Beavers, prescribed burning, and modern restoration tools')
+                ),
+                h('div', { style: { marginTop: 8 } }, 'Streak counters track consecutive correct answers. The quiz loops, so you can keep going for mastery.')
+              )
+            ),
             // Score header
             h('div', { style: { display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' } },
               h('div', { style: { background: '#0f172a', borderRadius: 8, padding: '10px 16px', flex: 1, minWidth: 100 } },
