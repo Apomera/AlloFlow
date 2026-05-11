@@ -56,11 +56,30 @@ function HeaderBar(props) {
   const WifiOff = window.WifiOff || noop;
   const Zap = window.Zap || noop;
   const ZapOff = window.ZapOff || noop;
+
+  // Phase 2 migration (May 10 2026): consume cross-cutting state via the
+  // contexts added in Phase 1. 20 props lifted from the prop drilling
+  // interface (1 ActiveView + 3 Role + 16 Theme). The Provider tree wraps
+  // the entire AlloFlowContent return so this useContext call always finds
+  // a value; the `|| {}` fallback covers the rare CDN-loaded-before-Provider
+  // race condition.
+  const _activeViewCtx = React.useContext(window.AlloActiveViewContext) || {};
+  const _roleCtx = React.useContext(window.AlloRoleContext) || {};
+  const _themeCtx = React.useContext(window.AlloThemeContext) || {};
+  const { activeView } = _activeViewCtx;
+  const { isTeacherMode, isIndependentMode, setIsTeacherMode } = _roleCtx;
+  const {
+    theme, colorOverlay, readingTheme, focusMode, disableAnimations,
+    baseFontSize, lineHeight, letterSpacing, selectedFont,
+    setReadingTheme, setBaseFontSize, setLineHeight, setLetterSpacing, setSelectedFont,
+    toggleTheme, toggleOverlay,
+  } = _themeCtx;
+
   const {
     APP_CONFIG, AnimatedNumber, EDGE_TTS_VOICES, FONT_OPTIONS, GEMINI_VOICES,
     GlobalMuteButton, KOKORO_VOICES, UiLanguageSelector, _isCanvasEnv, activeSessionCode,
-    activeView, addToast, ai, appId, baseFontSize, colorOverlay, currentLevelXP,
-    customExportCSS, disableAnimations, dismissHelpOnboarding, focusMode,
+    addToast, ai, appId, currentLevelXP,
+    customExportCSS, dismissHelpOnboarding,
     focusNarrationEnabled, generatedContent, globalLevel, globalProgress, globalXPNext,
     handleCloudToggleClick, handleExportIMS, handleExportQTI, handleRestoreView,
     handleSetActiveViewToDashboard, handleSetIsJoinPopoverOpenToFalse,
@@ -71,21 +90,21 @@ function HeaderBar(props) {
     handleToggleDisableAnimations, handleToggleFocusMode, handleToggleIsBotVisible,
     handleToggleIsHelpMode, handleToggleIsJoinPopoverOpen, handleToggleShowExportMenu,
     hasConnectedRef, hintHistory, isBotVisible, isCloudSyncEnabled, isExtracting,
-    isGeneratingSource, isHelpMode, isIndependentMode, isJoinPopoverOpen, isProcessing,
-    isStudentLinkMode, isTeacherMode, isZenMode, joinAppIdInput, joinClassSession,
-    joinCodeInput, languageToTTSCode, latestLessonPlan, letterSpacing,
-    leveledTextLanguage, lineHeight, openExportPreview, pptxLoaded, readingTheme,
-    resetFontSize, safeRemoveItem, selectedFont, selectedVoice, sessionData,
-    sessionUnsubscribeRef, setActiveSessionCode, setBaseFontSize, setHistory,
-    setIsGateOpen, setIsTeacherMode, setJoinAppIdInput, setJoinCodeInput,
-    setLetterSpacing, setLineHeight, setPendingRole, setReadingTheme, setRunTour,
-    setSelectedFont, setSelectedVoice, setSessionData, setShowAIBackendModal,
+    isGeneratingSource, isHelpMode, isJoinPopoverOpen, isProcessing,
+    isStudentLinkMode, isZenMode, joinAppIdInput, joinClassSession,
+    joinCodeInput, languageToTTSCode, latestLessonPlan,
+    leveledTextLanguage, openExportPreview, pptxLoaded,
+    resetFontSize, safeRemoveItem, selectedVoice, sessionData,
+    sessionUnsubscribeRef, setActiveSessionCode, setHistory,
+    setIsGateOpen, setJoinAppIdInput, setJoinCodeInput,
+    setPendingRole, setRunTour,
+    setSelectedVoice, setSessionData, setShowAIBackendModal,
     setShowClassAnalytics, setShowEducatorHub, setShowExportMenu, setShowReadThisPage,
     setShowSessionModal, setShowTextSettings, setShowVoiceSettings, setShowWizard,
     setSliderFontSize, setSpotlightMessage, setTourStep, setVoiceSpeed, setVoiceVolume,
     showExportMenu, showHelpOnboarding, showReadThisPage, showTextSettings,
-    showVoiceSettings, sliderFontSize, startClassSession, t, theme, toggleOverlay,
-    toggleTheme, voiceSpeed, voiceVolume,
+    showVoiceSettings, sliderFontSize, startClassSession, t,
+    voiceSpeed, voiceVolume,
   } = props;
 
   return (
