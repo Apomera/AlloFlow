@@ -251,7 +251,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     { id: 'eventSurvivor',     icon: '\u26A1',       label: 'Event Survivor',      desc: 'Trigger 3 different events' },
     { id: 'sandboxBuilder',    icon: '\uD83E\uDDF1', label: 'Sandbox Builder',     desc: 'Place 10 entities in sandbox mode' },
     { id: 'speedDemon',        icon: '\uD83D\uDE80', label: 'Speed Demon',         desc: 'Run simulation at 3x speed for 30 seconds' },
-    { id: 'carryCapExplorer',  icon: '\uD83C\uDF31', label: 'Capacity Explorer',   desc: 'Change carrying capacity 3 times' }
+    { id: 'carryCapExplorer',  icon: '\uD83C\uDF31', label: 'Capacity Explorer',   desc: 'Change carrying capacity 3 times' },
+    // Conservation Manager badges
+    { id: 'wolfReintroducer',  icon: '\uD83D\uDC3A', label: 'Wolf Reintroducer',   desc: 'Successfully reintroduce wolves to Maine in the Conservation Manager' },
+    { id: 'beaverEngineer',    icon: '\uD83E\uDDAB', label: 'Beaver Engineer',     desc: 'Bring beaver population above 75 in the Conservation Manager' },
+    { id: 'salmonChampion',    icon: '\uD83D\uDC1F', label: 'Salmon Champion',     desc: 'Bring Atlantic salmon population above 50 in the Conservation Manager' },
+    { id: 'troutDefender',     icon: '\uD83D\uDC20', label: 'Brook Trout Defender', desc: 'Bring brook trout population above 70 in the Conservation Manager' },
+    { id: 'cascadeMaster',     icon: '\uD83D\uDD04', label: 'Cascade Master',      desc: 'Trigger a full trophic cascade (wolves up, deer down, habitat recovers) in the Conservation Manager' },
+    { id: 'directorRank',      icon: '\uD83C\uDFC6', label: 'Conservation Director', desc: 'Complete a 10-year Conservation Manager campaign on Director difficulty' }
   ];
 
   // ── Quiz questions ──
@@ -292,6 +299,239 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       check: function(h) { for(var i=0;i<h.length;i++){if(h[i].pred===0&&h[i].prey>40) return true;} return false; } }
   ];
 
+
+  // ═══════════════════════════════════════════
+  // CONSERVATION MANAGER: 10-YEAR ACADIA / MAINE CAMPAIGN
+  // Parallel to Fire Ecology's Wabanaki Cultural Mosaic, but the core
+  // pedagogy is trophic cascade and keystone-species dynamics. Six
+  // species each with population, habitat, and public support; actions
+  // on one species ripple through the food web via cascade rules.
+  // Sources: Maine IFW species reports, USFWS recovery plans, NEFSC
+  // diadromous fish data, beaver re-establishment literature.
+  // ═══════════════════════════════════════════
+
+  var MAINE_SPECIES = [
+    {
+      id: 'grayWolf', name: 'Gray Wolf', icon: '🐺', color: '#64748b',
+      role: 'Apex predator (extirpated)',
+      desc: 'Locally extirpated in Maine for over a century. Reintroduction is the most dramatic conservation move possible: documented in Yellowstone to trigger a full trophic cascade by suppressing deer browse, letting forest understory recover and even reshaping stream channels.',
+      defaultState: { pop: 0, habitat: 60, support: 35 },
+      targets: { pop: 50, habitat: 70, support: 60 },
+      deepDive: {
+        knowledge: 'Wolves were extirpated from Maine by the 1890s through bounties and habitat loss. They have no surviving relict population in the Northeast. The closest wild population is in the western Great Lakes. Eastern timber wolves (Canis lycaon) and gray wolves (Canis lupus) overlap genetically and ecologically in the region.',
+        casework: 'The Yellowstone reintroduction (1995-1996) is the most studied case of trophic cascade in North American ecology. Wolf return reduced overpopulated elk herds, allowed willows and aspens to regrow along streams, recovered beaver populations, and even shifted river channel morphology. Eastern reintroduction faces different conditions: more roads, more livestock, more fragmented habitat, and a public that has not lived alongside wolves for 5+ generations.',
+        modernContext: 'Maine has no active state reintroduction plan. The US Fish and Wildlife Service classifies the gray wolf as endangered in the Lower 48 outside the western Great Lakes. Public opinion in northern Maine is divided: many hunters and livestock owners are opposed; many conservation organizations support recovery. Wabanaki nations have varied positions; some see wolf return as cultural and ecological restoration.'
+      }
+    },
+    {
+      id: 'beaver', name: 'American Beaver', icon: '🦫', color: '#92400e',
+      role: 'Keystone ecosystem engineer',
+      desc: 'The defining engineer of New England wetlands. Their dams raise water tables, slow flooding, create wet meadows, and create firebreaks. Recovering from near-extinction in the 1800s fur trade.',
+      defaultState: { pop: 45, habitat: 65, support: 55 },
+      targets: { pop: 75, habitat: 75, support: 70 },
+      deepDive: {
+        knowledge: 'Beavers (Castor canadensis) are the textbook keystone species. A single beaver complex can create up to 10 acres of wetland habitat that supports moose, waterfowl, otters, brook trout, salmon parr, amphibians, and dozens of other species. The wetlands also slow flood pulses, recharge groundwater, and act as natural firebreaks during dry years.',
+        casework: 'Beaver populations crashed from an estimated 60-400 million pre-contact to under 100,000 by 1900 across North America, driven by the European fur trade. Recovery since the 1930s has been one of the great wildlife stories on the continent, but recovery is uneven: many watersheds in the Northeast still have far fewer dams than historical records show. Beaver Dam Analog (BDA) restoration mimics the work of beavers to jump-start riparian recovery.',
+        modernContext: 'In Maine, beavers face conflict with landowners and road managers over flooding. Lethal trapping continues; Beaver Deceiver flow-control devices are the modern non-lethal alternative. Wabanaki communities have led some of the strongest beaver-protection advocacy in the region.'
+      }
+    },
+    {
+      id: 'moose', name: 'Moose', icon: '🫎', color: '#854d0e',
+      role: 'Megaherbivore',
+      desc: 'Maine\'s iconic megaherbivore and a key prey species for any returning wolf population. Numbers have declined sharply since 2014 due to winter ticks, an outbreak driven by milder winters under climate change.',
+      defaultState: { pop: 55, habitat: 70, support: 80 },
+      targets: { pop: 70, habitat: 75, support: 75 },
+      deepDive: {
+        knowledge: 'Moose (Alces alces americana) are heat-stressed above about 23°C. Maine sits at the southern edge of their range. Calf mortality has reached 70-80% in some recent years due to winter tick infestations of 30,000 to 90,000 ticks per individual.',
+        casework: 'Maine IFW has managed moose by lottery hunt since 1980. The Department\'s recent population estimates have dropped from over 70,000 in the early 2010s to roughly 60,000-65,000 now, with parts of the western mountains losing 50% or more. Reducing the hunt quota helps slightly but cannot offset the climate-driven tick load.',
+        modernContext: 'Moose are central to Maine identity, tourism economy, and Wabanaki subsistence rights. Hunting permits and tribal allocations are negotiated annually. The long-term moose outlook in Maine is uncertain regardless of management; only a colder, longer winter (which we are losing) reliably suppresses winter ticks.'
+      }
+    },
+    {
+      id: 'deer', name: 'White-tailed Deer', icon: '🦌', color: '#a16207',
+      role: 'Hyperabundant browser',
+      desc: 'Hyperabundant in much of southern New England since predators were removed. Heavy browse pressure prevents oak and pine regeneration. In Maine the picture is mixed: dense in the south and along the coast, sparse in the deep north woods.',
+      defaultState: { pop: 80, habitat: 80, support: 70 },
+      targets: { pop: 55, habitat: 75, support: 70 },
+      deepDive: {
+        knowledge: 'White-tailed deer (Odocoileus virginianus) populations rebounded after near-extirpation in the late 1800s, then exploded in the absence of large predators and with edge-habitat suburbanization. In the absence of wolves and cougars, hunting is the only meaningful population control across most of the eastern US.',
+        casework: 'Forest ecologists across New England have documented "deer browse lines" where oak regeneration is suppressed below about 1.5 meters, leading to long-term canopy turnover into less-preferred species (American beech, striped maple). Lyme disease risk also scales with deer density via the tick lifecycle.',
+        modernContext: 'In Maine, hunting limits are set annually. In coastal towns where hunting is restricted, deer densities have reached 40 to 80 per square mile, far above the ecological carrying capacity of about 15. Public pressure to reduce deer is rising as forest impacts and tick-borne disease climb.'
+      }
+    },
+    {
+      id: 'salmon', name: 'Atlantic Salmon', icon: '🐟', color: '#ec4899',
+      role: 'Anadromous keystone',
+      desc: 'Critically endangered in the Gulf of Maine. The Penobscot River is the only Maine river with consistent returning runs. Dam removal has been the key conservation lever; in 2012 and 2013 the Veazie and Great Works dams came down through the Penobscot River Restoration Project.',
+      defaultState: { pop: 15, habitat: 35, support: 75 },
+      targets: { pop: 50, habitat: 65, support: 80 },
+      deepDive: {
+        knowledge: 'Atlantic salmon (Salmo salar) are anadromous: born in fresh water, mature at sea, return upstream to spawn. They are extraordinarily sensitive to dam barriers, warm water, and pollution. Maine\'s historic salmon runs are estimated at hundreds of thousands of returning adults per year pre-industrial; current returns are roughly 1,000 to 2,000 annually system-wide.',
+        casework: 'The Penobscot River Restoration Project (Penobscot Nation, conservation NGOs, hydro companies) removed two major dams and bypassed a third while preserving most generation capacity through upgrades elsewhere. River herring returns increased over 1000-fold in the first decade post-removal. Atlantic salmon are recovering more slowly because they need both passage and a recovering ocean food web.',
+        modernContext: 'The Penobscot Nation has led the legal, political, and ecological fight for salmon recovery on its ancestral river. Salmon are central to Wabanaki cultural identity and Wabanaki Public Health and Wellness food sovereignty work. The Kennebec, Saco, and other rivers have ongoing dam-removal campaigns.'
+      }
+    },
+    {
+      id: 'brookTrout', name: 'Brook Trout', icon: '🐠', color: '#0ea5e9',
+      role: 'Cold-water indicator',
+      desc: 'Maine state fish. Native to cold, clean streams. The Northeast holds the largest remaining wild brook trout populations in the continental United States. Climate warming and habitat fragmentation are the central threats.',
+      defaultState: { pop: 50, habitat: 50, support: 65 },
+      targets: { pop: 70, habitat: 70, support: 75 },
+      deepDive: {
+        knowledge: 'Brook trout (Salvelinus fontinalis) need water under about 20°C and high dissolved oxygen. They are functionally allergic to warm water. Hatchery stocking of brown and rainbow trout, both warmer-tolerant non-natives, has displaced wild brookies from many lower-elevation streams.',
+        casework: 'The Eastern Brook Trout Joint Venture maps stream populations by status. Maine retains an unusually large portion of historic native brook trout range. Stream restoration (shade canopy, woody debris, undersized culvert replacement) is the main lever; beaver dams help indirectly by creating cold deep pools.',
+        modernContext: 'Wabanaki communities and Maine Audubon have led stream-shade-tree planting and undersized-culvert replacement campaigns. Climate change is the long-term threat: every degree of warming pushes the southern range edge north and erases lower-elevation populations.'
+      }
+    }
+  ];
+
+  var CONSERVATION_TECHNIQUES = [
+    {
+      id: 'habitatProtect', name: 'Habitat Protection', icon: '🌲', hours: 6,
+      desc: 'Easements, land-trust acquisition, or regulatory designation. Boosts habitat suitability anywhere.',
+      effects: { habitat: 9, support: 1 },
+      appliesTo: 'any'
+    },
+    {
+      id: 'reintroduce', name: 'Reintroduction', icon: '🚛', hours: 18,
+      desc: 'Capture, transport, and release a founding population. Requires habitat suitability above 60 and public support above 50.',
+      effects: { pop: 45, support: -5 },
+      appliesTo: ['grayWolf'],
+      requires: 'reintroducible',
+      oneTime: true
+    },
+    {
+      id: 'quotaReduce', name: 'Lower hunting quota', icon: '🚫', hours: 4,
+      desc: 'Reduce the legal harvest to grow population. Costs public support among hunting communities.',
+      effects: { pop: 9, support: -6 },
+      appliesTo: ['moose', 'deer']
+    },
+    {
+      id: 'quotaIncrease', name: 'Raise hunting quota', icon: '🏹', hours: 4,
+      desc: 'Raise the legal harvest. Reduces population. Boosts public support among hunters.',
+      effects: { pop: -11, support: 6 },
+      appliesTo: ['moose', 'deer']
+    },
+    {
+      id: 'streamRestore', name: 'Stream restoration', icon: '🌊', hours: 8,
+      desc: 'Remove barriers, add wood, restore riparian shade. Helps anadromous fish and cold-water species.',
+      effects: { habitat: 13, pop: 4 },
+      appliesTo: ['salmon', 'brookTrout', 'beaver']
+    },
+    {
+      id: 'damRemoval', name: 'Dam removal', icon: '🪨', hours: 14,
+      desc: 'Remove or breach a barrier dam. Big habitat win for salmon and beaver. Politically expensive.',
+      effects: { habitat: 22, pop: 6, support: -8 },
+      appliesTo: ['salmon']
+    },
+    {
+      id: 'publicEd', name: 'Public education', icon: '📚', hours: 5,
+      desc: 'Schools, public talks, media. Boosts public support on the targeted species.',
+      effects: { support: 11 },
+      appliesTo: 'any'
+    },
+    {
+      id: 'compensate', name: 'Compensation fund', icon: '💰', hours: 6,
+      desc: 'Pay livestock owners for predator-related losses. Builds public support for apex predators.',
+      effects: { support: 14 },
+      appliesTo: ['grayWolf']
+    },
+    {
+      id: 'monitor', name: 'Monitor + document', icon: '📋', hours: 3,
+      desc: 'Field surveys, camera traps, eDNA. Tiny direct effects, but builds the case for future funding.',
+      effects: { habitat: 1, support: 3 },
+      appliesTo: 'any'
+    },
+    {
+      id: 'hold', name: 'Hold steady', icon: '🍃', hours: 0,
+      desc: 'No active intervention this year. Some species recover naturally; others continue to drift.',
+      effects: {},
+      appliesTo: 'any'
+    }
+  ];
+
+  var CONSERVATION_EVENTS = [
+    { id: 'harshWinter',    name: 'Harsh Winter',          icon: '❄️', desc: 'A brutal winter slammed moose and deer populations.',  apply: function(species) { species.forEach(function(s) { if (s.id === 'moose') s.pop = clamp(s.pop - 12, 0, 100); if (s.id === 'deer') s.pop = clamp(s.pop - 7, 0, 100); }); } },
+    { id: 'mildWinter',     name: 'Mild Winter',           icon: '🌤️', desc: 'A warm winter favored winter ticks. Moose calves suffered.', apply: function(species) { species.forEach(function(s) { if (s.id === 'moose') s.pop = clamp(s.pop - 8, 0, 100); }); } },
+    { id: 'drought',        name: 'Drought Year',          icon: '☀️', desc: 'Low flows raised stream temperatures. Brook trout and salmon both took losses.', apply: function(species) { species.forEach(function(s) { if (s.id === 'brookTrout') { s.habitat = clamp(s.habitat - 9, 0, 100); s.pop = clamp(s.pop - 6, 0, 100); } if (s.id === 'salmon') s.pop = clamp(s.pop - 5, 0, 100); }); } },
+    { id: 'majorFlood',     name: 'Major Flood',           icon: '🌊', desc: 'Spring flooding cleared spawning gravels for salmon but blew out beaver dams.', apply: function(species) { species.forEach(function(s) { if (s.id === 'salmon') s.habitat = clamp(s.habitat + 8, 0, 100); if (s.id === 'beaver') s.habitat = clamp(s.habitat - 6, 0, 100); }); } },
+    { id: 'disease',        name: 'Disease Outbreak',      icon: '🦠', desc: 'A local pathogen pulse hit a wildlife population hard this year.', apply: function(species) { var pick = species[Math.floor(species.length * 0.5)]; pick.pop = clamp(pick.pop - 14, 0, 100); pick._diseaseHit = true; } },
+    { id: 'tribalPartner',  name: 'Tribal Co-Management',   icon: '🤝', desc: 'A formal co-management agreement with Wabanaki nations boosted habitat protection and public support across the board.', apply: function(species) { species.forEach(function(s) { s.support = clamp(s.support + 6, 0, 100); if (s.id === 'salmon' || s.id === 'brookTrout') s.habitat = clamp(s.habitat + 4, 0, 100); }); } },
+    { id: 'publicBacklash', name: 'Public Backlash',       icon: '😡', desc: 'A high-profile incident (livestock loss, dog attack, news cycle) cost wolf support.', apply: function(species) { species.forEach(function(s) { if (s.id === 'grayWolf') s.support = clamp(s.support - 14, 0, 100); }); } },
+    { id: 'successStory',   name: 'Conservation Success Story', icon: '🌟', desc: 'A documentary, photo, or news feature shifted public mood positively across all species.', apply: function(species) { species.forEach(function(s) { s.support = clamp(s.support + 7, 0, 100); }); } },
+    { id: 'climateWarming', name: 'Climate Warming Pulse', icon: '🌡️', desc: 'A multi-year warming pulse pushed cold-water species toward their thermal limits.', apply: function(species) { species.forEach(function(s) { if (s.id === 'brookTrout') s.pop = clamp(s.pop - 6, 0, 100); if (s.id === 'salmon') s.pop = clamp(s.pop - 4, 0, 100); if (s.id === 'moose') s.habitat = clamp(s.habitat - 4, 0, 100); }); } },
+    { id: 'budgetShift',    name: 'Political Budget Shift', icon: '🏛️', desc: 'A state budget shake-up reduced field funding. Stewardship hours next year will not change here (you got lucky this round), but support sagged.', apply: function(species) { species.forEach(function(s) { s.support = clamp(s.support - 4, 0, 100); }); } }
+  ];
+
+  // Cascade rules: applied AFTER drift + event each year. Each rule reads
+  // the post-event state and applies cross-species effects, so a wolf
+  // recovery actually suppresses deer, deer hyperabundance degrades all
+  // habitats, beavers help salmon and trout, etc.
+  var CASCADE_RULES = [
+    { id: 'wolfSuppressesDeer', when: function(s) { return getSp(s, 'grayWolf').pop > 25; }, apply: function(s) { var d = getSp(s, 'deer'); d.pop = clamp(d.pop - 8, 0, 100); }, msg: 'Wolves suppressed deer browse pressure.' },
+    { id: 'deerHyperBrowse',    when: function(s) { return getSp(s, 'deer').pop > 75; }, apply: function(s) { s.forEach(function(sp) { sp.habitat = clamp(sp.habitat - 2, 0, 100); }); }, msg: 'Deer overbrowsing degraded forest habitat across the board.' },
+    { id: 'beaverHelpsFish',    when: function(s) { return getSp(s, 'beaver').pop > 55; }, apply: function(s) { var bt = getSp(s, 'brookTrout'); var sa = getSp(s, 'salmon'); bt.habitat = clamp(bt.habitat + 4, 0, 100); sa.habitat = clamp(sa.habitat + 3, 0, 100); }, msg: 'Beaver wetlands raised water tables and shaded streams.' },
+    { id: 'salmonFeedsTrout',   when: function(s) { return getSp(s, 'salmon').pop > 35; }, apply: function(s) { var bt = getSp(s, 'brookTrout'); bt.pop = clamp(bt.pop + 3, 0, 100); }, msg: 'Salmon-derived marine nutrients fed brook trout populations.' }
+  ];
+
+  function getSp(species, id) {
+    for (var i = 0; i < species.length; i++) if (species[i].id === id) return species[i];
+    return { id: id, pop: 0, habitat: 0, support: 0 };
+  }
+
+  // Difficulty: hours per year, event severity, harshness
+  var CONSERVATION_DIFFICULTIES = {
+    apprentice: { id: 'apprentice', label: 'Apprentice', hoursPerYear: 32, eventSkip: 0.3, severity: 0.8, desc: '32 hours / year, gentler events. Good for first runs.' },
+    manager:    { id: 'manager',    label: 'Manager',    hoursPerYear: 24, eventSkip: 0,   severity: 1.0, desc: '24 hours / year, standard events. Default.' },
+    director:   { id: 'director',   label: 'Director',   hoursPerYear: 18, eventSkip: 0,   severity: 1.4, desc: '18 hours / year, harsher events. Tight constraint.' }
+  };
+
+  function defaultConserveState() {
+    var diff = CONSERVATION_DIFFICULTIES.manager;
+    return {
+      phase: 'setup',
+      year: 1,
+      maxYears: 10,
+      difficulty: diff.id,
+      hoursPerYear: diff.hoursPerYear,
+      hoursLeft: diff.hoursPerYear,
+      species: MAINE_SPECIES.map(function(s) { return Object.assign({ id: s.id }, s.defaultState); }),
+      yearActions: [],
+      yearLog: [],
+      lastEvent: null,
+      cascadeFiredThisYear: [],
+      finalOutcome: null,
+      wolfReintroduced: false,
+      damRemovals: 0,
+      // UI state
+      deepDiveSpecies: null,
+      firstTipDismissed: false,
+      // Deterministic replay
+      seed: 'conserve-' + (new Date()).getFullYear() + (new Date()).getMonth() + (new Date()).getDate() + '-' + Math.floor(Math.random() * 9999),
+      // AI
+      aiReadResponse: null,
+      aiReadLoading: false
+    };
+  }
+
+  function getSpeciesDef(id) {
+    for (var i = 0; i < MAINE_SPECIES.length; i++) if (MAINE_SPECIES[i].id === id) return MAINE_SPECIES[i];
+    return null;
+  }
+
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  function conserveRng(seed, year, purpose) {
+    var s = (seed || 'default') + ':' + year + ':' + purpose;
+    var h = 2166136261 >>> 0;
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = (h * 16777619) >>> 0; }
+    return function() {
+      h |= 0; h = (h + 0x6D2B79F5) | 0;
+      var t = Math.imul(h ^ (h >>> 15), 1 | h);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
 
   // REGISTER TOOL
   // ═══════════════════════════════════════════
@@ -2241,10 +2481,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
         // ── Mode tabs (4 tabs now) ──
         h('div', { className: 'flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1', role: 'tablist', 'aria-label': 'Ecosystem Explorer sections' },
-          ['explore', 'sandbox', 'quiz', 'badges'].map(function(t2) {
+          ['explore', 'sandbox', 'conserve', 'quiz', 'badges'].map(function(t2) {
             var tabLabel = '';
             if (t2 === 'explore') tabLabel = '\uD83C\uDF3F Explore';
             else if (t2 === 'sandbox') tabLabel = '\uD83E\uDDEA Sandbox';
+            else if (t2 === 'conserve') tabLabel = '\uD83C\uDF32 Conservation';
             else if (t2 === 'quiz') tabLabel = '\u2753 Quiz';
             else tabLabel = '\uD83C\uDFC5 Badges (' + badgeCount + '/' + BADGES.length + ')';
             return h('button', { key: t2,
@@ -2272,6 +2513,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           var TAB_META = {
             explore: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '\uD83C\uDF3F', title: 'Explore the food web',          hint: 'Click any species to see what it eats and what eats it. Trophic-level cascades become obvious \u2014 remove a top predator and watch the system reorganize.' },
             sandbox: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83E\uDDEA', title: 'Sandbox \u2014 your ecosystem', hint: 'Drop in producers, consumers, and predators; watch population dynamics emerge. Lotka-Volterra cycles appear when you have one predator + one prey + nothing else.' },
+            conserve: { accent: '#15803d', soft: 'rgba(21,128,61,0.10)', icon: '\uD83C\uDF32', title: 'Conservation Manager \u2014 Maine campaign', hint: 'Steward a real Maine ecosystem across 10 years. Six species (wolf, beaver, moose, deer, salmon, brook trout) with population, habitat, and public-support metrics. Trophic-cascade rules tie them together.' },
             quiz:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\u2753', title: 'Quiz \u2014 concepts in context',     hint: 'Multi-choice items on energy flow (10% rule), keystone species, biomagnification, succession. Each question links back to the explore + sandbox modes.' },
             badges:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFC5', title: 'Badges \u2014 what you have learned', hint: 'Achievements track which ecological concepts you have demonstrated, not just visited. Trophic-cascade badge requires you to actually trigger one in the sandbox.' }
           };
@@ -3019,6 +3261,412 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           )
         ),
 
+        // ═══ CONSERVATION MANAGER TAB ═══
+        tab === 'conserve' && (function() {
+          var conserve = d.conserve || defaultConserveState();
+          function setConserve(patch) { upd('conserve', Object.assign({}, conserve, patch)); }
+          var T_GREEN = '#15803d', T_GREEN_HI = '#86efac';
+
+          function startConserve(opts) {
+            opts = opts || {};
+            var fresh = defaultConserveState();
+            var diffId = opts.difficulty || conserve.difficulty || 'manager';
+            var diff = CONSERVATION_DIFFICULTIES[diffId] || CONSERVATION_DIFFICULTIES.manager;
+            fresh.phase = 'year';
+            fresh.difficulty = diff.id;
+            fresh.hoursPerYear = diff.hoursPerYear;
+            fresh.hoursLeft = diff.hoursPerYear;
+            if (opts.seed) fresh.seed = opts.seed;
+            setConserve(fresh);
+            if (addToast) addToast('🌲 Conservation Manager begins. Year 1 of 10 on ' + diff.label + '.', 'success');
+            awardXP && awardXP('conserve_start', 10, 'Conservation begins (' + diff.label + ')');
+            if (announceToSR) announceToSR('Conservation Manager started on ' + diff.label + '. Year 1 of 10. ' + diff.hoursPerYear + ' stewardship hours.');
+          }
+
+          function resetConserve() { setConserve(defaultConserveState()); if (addToast) addToast('Conservation campaign reset.', 'info'); }
+
+          function applyTech(techId, speciesId) {
+            var tech = null;
+            for (var i = 0; i < CONSERVATION_TECHNIQUES.length; i++) if (CONSERVATION_TECHNIQUES[i].id === techId) tech = CONSERVATION_TECHNIQUES[i];
+            if (!tech) return;
+            if (conserve.hoursLeft < tech.hours) { if (addToast) addToast('Not enough field-season hours left.', 'warn'); return; }
+
+            // Eligibility checks
+            if (tech.appliesTo !== 'any' && tech.appliesTo !== 'all') {
+              var ok = false;
+              for (var ai = 0; ai < tech.appliesTo.length; ai++) if (tech.appliesTo[ai] === speciesId) ok = true;
+              if (!ok) { if (addToast) addToast(tech.name + ' does not apply to that species.', 'info'); return; }
+            }
+            if (tech.requires === 'reintroducible' && speciesId === 'grayWolf') {
+              var wolf = getSp(conserve.species, 'grayWolf');
+              if (wolf.habitat < 60 || wolf.support < 50) {
+                if (addToast) addToast('Wolf reintroduction requires habitat 60+ AND support 50+.', 'warn');
+                return;
+              }
+              if (conserve.wolfReintroduced) { if (addToast) addToast('Wolves have already been reintroduced.', 'info'); return; }
+            }
+
+            // Apply effects
+            var newSpecies = conserve.species.map(function(s) {
+              if (s.id !== speciesId && tech.appliesTo !== 'all') return s;
+              var nz = Object.assign({}, s);
+              if (tech.effects.pop)     nz.pop     = clamp(nz.pop + tech.effects.pop, 0, 100);
+              if (tech.effects.habitat) nz.habitat = clamp(nz.habitat + tech.effects.habitat, 0, 100);
+              if (tech.effects.support !== undefined) nz.support = clamp(nz.support + tech.effects.support, 0, 100);
+              return nz;
+            });
+
+            var newAction = { tech: tech.name, species: getSpeciesDef(speciesId) ? getSpeciesDef(speciesId).name : speciesId, hours: tech.hours };
+            var patch = {
+              species: newSpecies,
+              hoursLeft: conserve.hoursLeft - tech.hours,
+              yearActions: conserve.yearActions.concat([newAction])
+            };
+            if (techId === 'reintroduce' && speciesId === 'grayWolf') patch.wolfReintroduced = true;
+            if (techId === 'damRemoval') patch.damRemovals = (conserve.damRemovals || 0) + 1;
+            setConserve(patch);
+            if (techId === 'reintroduce' && speciesId === 'grayWolf') checkConsBadge('wolfReintroducer');
+            if (announceToSR) announceToSR(tech.name + ' applied. ' + (conserve.hoursLeft - tech.hours) + ' hours left.');
+          }
+
+          function checkConsBadge(id) {
+            if (badges[id]) return;
+            var nb = Object.assign({}, badges); nb[id] = true; upd('badges', nb);
+            var b = null; for (var i = 0; i < BADGES.length; i++) if (BADGES[i].id === id) b = BADGES[i];
+            if (b && addToast) addToast('🏅 ' + b.label + ': ' + b.desc, 'success');
+          }
+
+          function endConserveYear() {
+            // Pre-drift snapshot for delta display
+            var pre = conserve.species.map(function(s) { return Object.assign({}, s); });
+
+            // Natural drift
+            var drifted = conserve.species.map(function(s) {
+              var def = getSpeciesDef(s.id);
+              var nz = Object.assign({}, s);
+              // Each species drifts based on whether it is at carrying capacity
+              if (nz.pop > 0 && nz.habitat > 50) nz.pop = clamp(nz.pop + 2, 0, 100);
+              else if (nz.pop > 0 && nz.habitat < 30) nz.pop = clamp(nz.pop - 3, 0, 100);
+              nz.support = clamp(nz.support + (nz.support < 50 ? 1 : -1), 0, 100);
+              return nz;
+            });
+
+            // Seeded event
+            var diff = CONSERVATION_DIFFICULTIES[conserve.difficulty || 'manager'] || CONSERVATION_DIFFICULTIES.manager;
+            var skipRng = conserveRng(conserve.seed, conserve.year, 'skip');
+            var pickRng = conserveRng(conserve.seed, conserve.year, 'pick');
+            var ev;
+            if (skipRng() < (diff.eventSkip || 0)) {
+              ev = { id: 'quietYear', name: 'A Quiet Year', icon: '🌤️', desc: 'No major event. Routine fieldwork, steady progress.', apply: function() {} };
+            } else {
+              ev = CONSERVATION_EVENTS[Math.floor(pickRng() * CONSERVATION_EVENTS.length)];
+            }
+            // Snapshot post-drift state before event so severity can scale event delta
+            var postDrift = drifted.map(function(s) { return Object.assign({}, s); });
+            // Apply event once on the full array (so cross-species events work)
+            ev.apply(drifted);
+            // Severity scaling: stretch or shrink the event's delta on top of post-drift
+            var sev = diff.severity || 1;
+            if (sev !== 1) {
+              for (var di = 0; di < drifted.length; di++) {
+                var sp = drifted[di]; var base = postDrift[di];
+                sp.pop     = clamp(base.pop     + (sp.pop     - base.pop)     * sev, 0, 100);
+                sp.habitat = clamp(base.habitat + (sp.habitat - base.habitat) * sev, 0, 100);
+                sp.support = clamp(base.support + (sp.support - base.support) * sev, 0, 100);
+              }
+            }
+
+            // Apply cascade rules
+            var cascadesFired = [];
+            CASCADE_RULES.forEach(function(rule) {
+              if (rule.when(drifted)) {
+                rule.apply(drifted);
+                cascadesFired.push({ id: rule.id, msg: rule.msg });
+              }
+            });
+
+            // Cascade Master badge: wolf established + deer suppressed
+            if (getSp(drifted, 'grayWolf').pop > 35 && getSp(drifted, 'deer').pop < 60) checkConsBadge('cascadeMaster');
+            // Per-species threshold badges
+            if (getSp(drifted, 'beaver').pop > 75) checkConsBadge('beaverEngineer');
+            if (getSp(drifted, 'salmon').pop > 50) checkConsBadge('salmonChampion');
+            if (getSp(drifted, 'brookTrout').pop > 70) checkConsBadge('troutDefender');
+
+            var snap = {
+              year: conserve.year, event: ev.name, eventIcon: ev.icon, eventDesc: ev.desc,
+              pre: pre, post: drifted.map(function(s) { return Object.assign({}, s); }),
+              actions: conserve.yearActions.slice(),
+              cascades: cascadesFired
+            };
+
+            setConserve({
+              phase: 'review',
+              species: drifted,
+              lastEvent: ev,
+              cascadeFiredThisYear: cascadesFired,
+              yearLog: conserve.yearLog.concat([snap])
+            });
+            if (announceToSR) announceToSR('Year ' + conserve.year + ' complete. Event: ' + ev.name + '.');
+          }
+
+          function advanceConserveFromReview() {
+            if (conserve.year >= conserve.maxYears) {
+              // Compute final outcome
+              var sp = conserve.species;
+              var defs = MAINE_SPECIES;
+              var targetsMet = 0;
+              defs.forEach(function(def) {
+                var s = getSp(sp, def.id);
+                var hit = (s.pop >= def.targets.pop) && (s.habitat >= def.targets.habitat) && (s.support >= def.targets.support);
+                if (hit) targetsMet++;
+              });
+              var avgPop = Math.round(sp.reduce(function(a, s) { return a + s.pop; }, 0) / sp.length);
+              var avgHab = Math.round(sp.reduce(function(a, s) { return a + s.habitat; }, 0) / sp.length);
+              var outcome;
+              if (targetsMet >= 5 && avgPop >= 55) outcome = { tier: 'mastery', label: 'Conservation Mastery', color: '#16a34a', icon: '🏆', desc: 'You held the whole web together. Wolves are back. Beavers are reshaping streams. Salmon are running. Brook trout hold the headwaters. This is what landscape-scale recovery looks like.' };
+              else if (targetsMet >= 3 && avgPop >= 45) outcome = { tier: 'skilled', label: 'Skilled Conservation Manager', color: '#22c55e', icon: '🌲', desc: 'You met most of the recovery targets. Some species are thriving, others are still climbing. The trajectory is good.' };
+              else if (avgPop >= 35) outcome = { tier: 'mixed', label: 'Mixed Results', color: '#f59e0b', icon: '🍃', desc: 'A few species made meaningful gains. Others stalled or slipped. Conservation is rarely clean.' };
+              else outcome = { tier: 'losing', label: 'Losing Ground', color: '#ef4444', icon: '⚠️', desc: 'The ecosystem is slipping. Populations are low, habitat is degraded, public support is fragile. This is how species disappear quietly.' };
+              if (conserve.difficulty === 'director' && (outcome.tier === 'mastery' || outcome.tier === 'skilled')) checkConsBadge('directorRank');
+              setConserve({ phase: 'debrief', finalOutcome: outcome, targetsMet: targetsMet });
+              awardXP && awardXP('conserve_complete', 50, outcome.label);
+            } else {
+              setConserve({ phase: 'year', year: conserve.year + 1, hoursLeft: conserve.hoursPerYear, yearActions: [], lastEvent: null });
+              if (announceToSR) announceToSR('Year ' + (conserve.year + 1) + ' begins. ' + conserve.hoursPerYear + ' hours.');
+            }
+          }
+
+          // ── SETUP PHASE ──
+          if (conserve.phase === 'setup') {
+            return h('div', { className: 'space-y-4' },
+              h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(56,189,248,0.06) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
+                  h('span', { style: { fontSize: 36 } }, '🌲'),
+                  h('div', null,
+                    h('h3', { style: { margin: 0, color: T_GREEN_HI, fontSize: 22 } }, 'Conservation Manager: Maine'),
+                    h('div', { style: { fontSize: 13, color: '#cbd5e1', marginTop: 2 } }, 'Steward six species across 10 years of fieldwork.')
+                  )
+                ),
+                h('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } },
+                  'You are the lead manager for a real Maine ecosystem. Six species. Ten years. The catch: ',
+                  h('strong', null, 'these species are connected.'),
+                  ' Wolves suppress deer. Deer overbrowse degrades forests. Beavers engineer wetlands that help salmon and brook trout. Salmon-derived nutrients feed trout. This is trophic cascade in motion, not just predator-prey curves.'
+                )
+              ),
+
+              // Species preview cards
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 } },
+                MAINE_SPECIES.map(function(s) {
+                  return h('div', { key: s.id, style: { background: '#0f172a', borderLeft: '3px solid ' + s.color, borderRadius: 10, padding: 12 } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                      h('span', { style: { fontSize: 22 } }, s.icon),
+                      h('strong', { style: { color: s.color } }, s.name)
+                    ),
+                    h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, s.role),
+                    h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } }, s.desc)
+                  );
+                })
+              ),
+
+              // Difficulty
+              h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 12, border: '1px solid #1e293b' } },
+                h('div', { style: { fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, 'Difficulty'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
+                  Object.keys(CONSERVATION_DIFFICULTIES).map(function(dkey) {
+                    var df = CONSERVATION_DIFFICULTIES[dkey];
+                    var picked = (conserve.difficulty || 'manager') === dkey;
+                    return h('button', { key: dkey,
+                      onClick: function() { setConserve({ difficulty: dkey }); },
+                      'aria-pressed': picked,
+                      style: { background: picked ? 'rgba(21,128,61,0.20)' : '#1e293b', border: '1px solid ' + (picked ? '#15803d' : '#334155'), color: picked ? '#86efac' : '#cbd5e1', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', textAlign: 'left' }
+                    },
+                      h('div', { style: { fontWeight: 800, fontSize: 13 } }, df.label),
+                      h('div', { style: { fontSize: 11, color: picked ? '#a7f3d0' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, df.desc)
+                    );
+                  })
+                )
+              ),
+
+              h('button', { onClick: function() { startConserve(); },
+                style: { width: '100%', padding: '14px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + T_GREEN + ' 0%, #166534 100%)', color: '#fff', fontWeight: 800, fontSize: 16, boxShadow: '0 6px 14px rgba(21,128,61,0.35)' }
+              }, '🌲 Begin 10-year Conservation Campaign')
+            );
+          }
+
+          // ── DEBRIEF PHASE ──
+          if (conserve.phase === 'debrief' && conserve.finalOutcome) {
+            var o = conserve.finalOutcome;
+            return h('div', { className: 'space-y-3' },
+              h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, ' + o.color + '24 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + o.color + '88', borderLeft: '4px solid ' + o.color } },
+                h('div', { style: { fontSize: 40, marginBottom: 6 } }, o.icon),
+                h('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
+                h('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } }, o.desc)
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 } },
+                conserve.species.map(function(s) {
+                  var def = getSpeciesDef(s.id);
+                  var targets = def.targets;
+                  var hit = s.pop >= targets.pop && s.habitat >= targets.habitat && s.support >= targets.support;
+                  return h('div', { key: s.id, style: { background: '#0f172a', borderLeft: '3px solid ' + def.color, borderRadius: 10, padding: 12, fontSize: 12 } },
+                    h('div', { style: { fontWeight: 700, color: def.color, marginBottom: 6 } }, def.icon + ' ' + def.name + (hit ? ' ✓' : '')),
+                    h('div', { style: { color: '#cbd5e1', lineHeight: 1.5 } },
+                      'Population: ' + Math.round(s.pop) + ' / ' + targets.pop,
+                      h('br'),
+                      'Habitat: ' + Math.round(s.habitat) + ' / ' + targets.habitat,
+                      h('br'),
+                      'Public support: ' + Math.round(s.support) + ' / ' + targets.support
+                    )
+                  );
+                })
+              ),
+              h('div', { style: { padding: 10, background: '#0f172a', borderRadius: 8, fontSize: 12, color: '#cbd5e1' } },
+                h('strong', { style: { color: '#86efac' } }, 'Targets met: '), conserve.targetsMet + ' / 6'
+              ),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                h('button', { onClick: resetConserve, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#1e293b', color: '#cbd5e1', fontWeight: 700 } }, '↻ New campaign'),
+                h('button', { onClick: function() { startConserve({ seed: conserve.seed, difficulty: conserve.difficulty }); },
+                  style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8', cursor: 'pointer', background: 'rgba(56,189,248,0.15)', color: '#bae6fd', fontWeight: 700 } }, '🔁 Replay same conditions')
+              ),
+              h('div', { style: { marginTop: 8, padding: 8, background: '#0f172a', borderRadius: 8, fontSize: 11.5, color: '#94a3b8', fontFamily: 'ui-monospace, monospace' } },
+                h('span', { style: { color: '#64748b' } }, 'Campaign seed: '),
+                h('strong', { style: { color: '#cbd5e1' } }, conserve.seed)
+              )
+            );
+          }
+
+          // ── REVIEW PHASE ──
+          if (conserve.phase === 'review') {
+            var lastSnap = conserve.yearLog[conserve.yearLog.length - 1] || {};
+            var ev2 = conserve.lastEvent || {};
+            return h('div', { className: 'space-y-3' },
+              h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderLeft: '3px solid #fbbf24' } },
+                h('div', { style: { fontSize: 22, marginBottom: 4 } }, ev2.icon || '🌿'),
+                h('strong', { style: { color: '#fbbf24', fontSize: 16 } }, 'Year ' + conserve.year + ' event: ' + (ev2.name || 'quiet')),
+                h('p', { style: { margin: '6px 0 0', color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, ev2.desc || '')
+              ),
+
+              // Cascade rules that fired
+              (lastSnap.cascades && lastSnap.cascades.length > 0) ? h('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8', fontSize: 13, color: '#bae6fd' } },
+                h('strong', { style: { color: '#38bdf8' } }, '🔄 Trophic cascade this year'),
+                lastSnap.cascades.map(function(c, ci) {
+                  return h('div', { key: ci, style: { margin: '6px 0 0', fontStyle: 'italic' } }, '· ' + c.msg);
+                })
+              ) : null,
+
+              // Per-species deltas
+              h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 10 } },
+                h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 6, fontSize: 13 } }, 'What changed this year'),
+                (lastSnap.pre || []).map(function(preS) {
+                  var postS = (lastSnap.post || []).find(function(p) { return p.id === preS.id; }) || preS;
+                  var def = getSpeciesDef(preS.id);
+                  function delta(label, before, after, goodIfDown) {
+                    var dlt = Math.round(after - before);
+                    var color = '#64748b'; var arrow = '·';
+                    if (Math.abs(dlt) >= 1) {
+                      if ((dlt > 0 && !goodIfDown) || (dlt < 0 && goodIfDown)) color = '#86efac';
+                      else color = '#fca5a5';
+                      arrow = dlt > 0 ? '▲' : '▼';
+                    }
+                    return h('span', { style: { color: color, fontSize: 11, fontWeight: 700, marginRight: 8 } }, label + ' ' + Math.round(after) + ' ' + arrow + ' ' + (dlt > 0 ? '+' : '') + dlt);
+                  }
+                  // Deer is "good if down" since the conservation target is lower
+                  var popGoodIfDown = (preS.id === 'deer');
+                  return h('div', { key: preS.id, style: { fontSize: 12, padding: '4px 0', borderTop: '1px solid #1e293b' } },
+                    h('strong', { style: { color: def.color, marginRight: 8 } }, def.icon + ' ' + def.name),
+                    delta('Pop', preS.pop, postS.pop, popGoodIfDown),
+                    delta('Hab', preS.habitat, postS.habitat, false),
+                    delta('Sup', preS.support, postS.support, false)
+                  );
+                })
+              ),
+
+              h('button', { onClick: advanceConserveFromReview,
+                style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + T_GREEN + ' 0%, #166534 100%)', color: '#fff', fontWeight: 700, fontSize: 14 }
+              }, conserve.year >= conserve.maxYears ? 'See final outcome →' : 'Begin Year ' + (conserve.year + 1) + ' →')
+            );
+          }
+
+          // ── YEAR PHASE ──
+          var diff2 = CONSERVATION_DIFFICULTIES[conserve.difficulty || 'manager'];
+          return h('div', { className: 'space-y-3' },
+            // HUD
+            h('div', { style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
+              h('div', null,
+                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Year'),
+                h('div', { style: { fontSize: 20, fontWeight: 800, color: T_GREEN_HI } }, conserve.year + ' / ' + conserve.maxYears)
+              ),
+              h('div', null,
+                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Field hours'),
+                h('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, conserve.hoursLeft + ' / ' + conserve.hoursPerYear)
+              ),
+              h('div', null,
+                h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Difficulty'),
+                h('div', { style: { fontSize: 14, fontWeight: 700, color: '#38bdf8' } }, diff2 ? diff2.label : 'Manager')
+              ),
+              h('div', { style: { marginLeft: 'auto' } },
+                h('button', { onClick: endConserveYear, 'aria-label': 'End this year',
+                  style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 13 } }, 'End Year →')
+              )
+            ),
+
+            // Species cards with actions
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 10 } },
+              conserve.species.map(function(s) {
+                var def = getSpeciesDef(s.id);
+                if (!def) return null;
+                // What techniques apply to this species?
+                var applicable = CONSERVATION_TECHNIQUES.filter(function(t) {
+                  if (t.appliesTo === 'any' || t.appliesTo === 'all') return true;
+                  return t.appliesTo.indexOf(s.id) >= 0;
+                });
+                return h('div', { key: s.id, style: { background: '#0f172a', borderRadius: 12, padding: 12, borderLeft: '3px solid ' + def.color } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
+                    h('span', { style: { fontSize: 22 } }, def.icon),
+                    h('div', { style: { flex: 1 } },
+                      h('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
+                      h('div', { style: { fontSize: 11, color: '#94a3b8' } }, def.role)
+                    )
+                  ),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
+                    [['Pop', Math.round(s.pop), s.pop < 25 ? '#ef4444' : s.pop < 50 ? '#f59e0b' : '#22c55e', def.targets.pop],
+                     ['Hab', Math.round(s.habitat), s.habitat < 40 ? '#ef4444' : s.habitat < 60 ? '#f59e0b' : '#22c55e', def.targets.habitat],
+                     ['Sup', Math.round(s.support), s.support < 40 ? '#ef4444' : s.support < 60 ? '#f59e0b' : '#22c55e', def.targets.support]
+                    ].map(function(st, si) {
+                      return h('div', { key: si, style: { background: '#1e293b', padding: 6, borderRadius: 6, textAlign: 'center' } },
+                        h('div', { style: { fontSize: 10, color: '#94a3b8' } }, st[0]),
+                        h('div', { style: { fontSize: 15, fontWeight: 800, color: st[2] } }, st[1]),
+                        h('div', { style: { fontSize: 9, color: '#64748b' } }, 'goal ' + st[3])
+                      );
+                    })
+                  ),
+                  h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+                    applicable.map(function(t) {
+                      var disabled = conserve.hoursLeft < t.hours;
+                      if (t.requires === 'reintroducible' && s.id === 'grayWolf') {
+                        if (s.habitat < 60 || s.support < 50 || conserve.wolfReintroduced) disabled = true;
+                      }
+                      return h('button', { key: t.id,
+                        onClick: function() { applyTech(t.id, s.id); },
+                        disabled: disabled,
+                        title: t.desc,
+                        style: { padding: '4px 8px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', background: disabled ? '#1e293b' : '#15803d', color: disabled ? '#475569' : '#fff', opacity: disabled ? 0.5 : 1 }
+                      }, t.icon + ' ' + t.name + ' (' + t.hours + 'h)');
+                    })
+                  )
+                );
+              })
+            ),
+
+            // Year action log
+            conserve.yearActions.length > 0 ? h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 10, fontSize: 12, color: '#cbd5e1' } },
+              h('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 4 } }, 'Year ' + conserve.year + ' actions'),
+              conserve.yearActions.map(function(a, ai) {
+                return h('div', { key: ai }, '· ' + a.tech + ' → ' + a.species + ' (' + a.hours + 'h)');
+              })
+            ) : h('div', { style: { fontSize: 12, color: '#64748b', fontStyle: 'italic' } }, 'No actions yet this year. Pick a species, pick a technique.')
+          );
+        })(),
+
         // ═══ QUIZ TAB ═══
         tab === 'quiz' && h('div', { className: 'space-y-3' },
           h('details', {
@@ -3142,6 +3790,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         h('div', { className: 'text-[11px] text-slate-600 text-center space-x-3' },
           h('span', null, 'E Explore'),
           h('span', null, 'S Sandbox'),
+          h('span', null, 'C Conservation'),
           h('span', null, 'Q Quiz'),
           h('span', null, 'B Badges'),
           h('span', null, 'R Simulate'),
