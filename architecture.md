@@ -1,194 +1,275 @@
 # AlloFlow Architecture
 
+*Last meaningful update: May 10, 2026. Reflects the post-Phase-2 state where
+cross-cutting state moved to React Contexts and 80+ self-contained CDN view
+modules host the rendered UI.*
+
 ## Overview
 
-AlloFlow uses a **Hub-and-Spoke** architecture. A single monolithic orchestrator (`App.jsx` / `AlloFlowANTI.txt`) handles all core UI, state, routing, and AI interaction. Heavy feature modules load dynamically as JavaScript spoke files at runtime, keeping initial payload small enough to run on school Chromebooks.
+AlloFlow is a single-page React application with a **container/presentational
+split at scale**. One large container component (`AlloFlowContent` inside
+`AlloFlowANTI.txt`) owns all application state. Over 80 self-contained CDN
+view modules accept state via props or React Context and render the actual
+UI. Heavy feature modules load dynamically at runtime, keeping the initial
+payload small enough to run on school Chromebooks.
 
 ```
-AlloFlowANTI.txt / App.jsx          ← Core orchestrator (~67K lines)
+AlloFlowANTI.txt / App.jsx          ← Container (~24K lines, all state)
 │
-│── ai_backend_module.js             ← Firebase shim & AI providers (loaded before React)
+├── 4 React Contexts                  ← Cross-cutting state to descendants
+│   ├── LanguageContext               ← Translation function t() + i18n
+│   ├── ActiveViewContext             ← activeView + setter
+│   ├── RoleContext                   ← isTeacherMode / isIndependentMode / isParentMode
+│   └── ThemeContext                  ← theme, font, readingTheme, colorOverlay
 │
-│── word_sounds_module.js            ← Phonemic awareness studio
-│── word_sounds_setup_module.js      ← Word Sounds probe configuration
+├── 3 useReducer slices               ← State updates flow through action types
+│   ├── uiState (UI chrome modals + toggles)
+│   ├── csState (concept-sort game)
+│   └── adventureState (adventure mode)
 │
-│── stem_lab_module.js               ← STEM Lab host + 19 inline tools
-│   ├── stem_tool_dna.js
-│   ├── stem_tool_physics.js
-│   ├── stem_tool_cyberdefense.js
-│   └── stem_tool_*.js               ← (55 extracted plugins, ~60 tools total)
+├── 80+ CDN view + helper modules     ← Loaded dynamically via loadModule()
+│   ├── view_header_module.js         ← Header bar (Phase 2 context consumer)
+│   ├── view_history_panel_module.js  ← History sidebar (522 lines extracted)
+│   ├── view_kokoro_offer_modal.js    ← Modals, panels, toolbars
+│   ├── view_*_module.js              ← (~30 view modules total)
+│   ├── stem_lab_module.js            ← STEM Lab host + 90+ plugin tools
+│   ├── sel_hub_module.js             ← SEL Hub host + ~25 plugin tools
+│   ├── behavior_lens_module.js       ← Clinical FBA/BIP suite
+│   ├── report_writer_module.js       ← Psychoeducational report wizard
+│   ├── symbol_studio_module.js       ← AI AAC boards
+│   ├── allobot_module.js             ← Animated mascot
+│   ├── adventure_module.js           ← Adventure UI
+│   ├── games_module.js               ← Memory, Matching, Bingo, etc.
+│   ├── doc_pipeline_module.js        ← Document builder pipeline
+│   └── (~40 more)
 │
-│── sel_hub_module.js                ← SEL Hub host (CASEL 5 competencies)
-│   ├── sel_tool_zones.js
-│   ├── sel_tool_coping.js
-│   ├── sel_tool_emotions.js
-│   ├── sel_tool_mindfulness.js
-│   ├── sel_tool_social.js
-│   ├── sel_tool_decisions.js
-│   ├── sel_tool_perspective.js
-│   ├── sel_tool_conflict.js
-│   └── sel_tool_advocacy.js         ← (9 SEL tools)
-│
-│── behavior_lens_module.js          ← Clinical FBA/BIP suite
-│── report_writer_module.js          ← Psychoeducational report wizard
-│── symbol_studio_module.js          ← AAC & visual communication
-│── student_analytics_module.js      ← RTI probes & dashboards
-│── math_fluency_module.js           ← CBM math fluency probes
-│
-│── games_module.js                  ← Games bundle (Memory, Matching, Timeline, Bingo, etc.)
-│── story_forge_module.js            ← Scaffolded creative writing + AI illustration
-│── adventure_module.js              ← Adventure UI (inventory, dice, shop, cast lobby)
-│
-│── teacher_module.js                ← Teacher analytics dashboard & live quiz controls
-│── quickstart_module.js             ← Onboarding wizard
-│── allobot_module.js                ← Animated mascot agent
-│── visual_panel_module.js           ← Visual story planning grid
-│── student_interaction_module.js    ← Student submission & draft feedback
-│
-│── help_strings.js                  ← Contextual help content
-│── ui_strings.js                    ← i18n strings (18 languages)
-└── audio_bank.json                  ← Pre-recorded phoneme audio
+├── tests/ + vitest                   ← 5 unit-test files, 126 assertions
+├── dev-tools/ (14+ static checks)    ← npm run verify
+└── audio_bank.json                   ← Pre-recorded phoneme audio
 ```
 
----
+## How the codebase got here
 
-## Core Orchestrator
+This codebase has been progressively refactored from a ~60K-line monolith
+(April 2026) to the current ~24K-line container. The shape evolved through
+four overlapping phases:
 
-`AlloFlowANTI.txt` is the source-of-truth file; `prismflow-deploy/src/App.jsx` is the compiled counterpart kept in sync. Both files are approximately 67,000 lines and contain all core React component logic, state management, AI pipeline orchestration, gamification engine, and accessibility layers.
+1. **Helper extraction** (early): isolate pure utility code into modules
+   like `pure_helpers_module.js`, `math_helpers_module.js`, etc. Tested in
+   `tests/`.
+2. **Handler extraction** (middle): lift handler functions to modules
+   (e.g., `generate_dispatcher_module.js`, `phase_k_helpers_module.js`).
+   Monolith handlers became 4-line delegation shims.
+3. **View extraction** (recent): lift JSX render blocks to per-module
+   `view_*_module.js` files. ~30 view modules now exist. The monolith
+   shim is typically a single line that invokes `<ViewModule {...props} />`
+   if the CDN module loaded, else returns null.
+4. **State centralization → context migration** (current): the 190+
+   `useState` hooks in `AlloFlowContent` are migrating toward typed
+   contexts. As of May 10 2026, four contexts and three reducers are in
+   place. Phase 2 (per-module context consumption) is starting with
+   HeaderBar as the proof.
+
+## Core Container
+
+`AlloFlowANTI.txt` is the source of truth. `prismflow-deploy/src/App.jsx`
+is the compiled counterpart, kept in sync by `build.js`. Both files contain:
+
+- All React component logic for `AlloFlowContent`
+- The 190+ useState declarations + the 3 useReducer slices
+- ~200 handler functions (most delegate to CDN handler modules)
+- The big JSX render tree (~4,000 lines)
+- The 4 Context providers wrapping the rendered tree
 
 **Rules:**
-- Do NOT split the core file into standard React components. AlloFlow must remain deployable as a single unified bundle for offline School Box instances.
-- Do NOT use `grep` / ripgrep on this file — it contains emoji (non-ASCII bytes) that cause ripgrep to return zero results silently. Use PowerShell `Select-String` or the IDE's built-in search instead.
+- Edit `AlloFlowANTI.txt`, never edit `App.jsx` directly. `build.js`
+  regenerates `App.jsx` on every deploy.
+- Some tools may not read the file cleanly because it contains emoji
+  bytes. Prefer PowerShell `Select-String`, Python with UTF-8 explicit
+  encoding, or the IDE search.
 
-### Navigating the file
+### Where to find things
 
-The file is organized using `// @section SECTION_NAME` markers.
+Approximate locations as of May 2026 (line numbers shift, use `Select-String`
+to confirm):
 
-```powershell
-# List all sections
-Select-String -Path AlloFlowANTI.txt -Pattern "// @section "
+| Region | Approx Line | What's there |
+|---|---|---|
+| Imports, top-level consts | 1-500 | React, Firebase, lucide imports, config, version |
+| Helper consts + small lifters | 500-2200 | safeGetItem, sanitizeHtml, AlloBot wrapper, game wrappers |
+| Lucide icon imports | 17-31 | All ~120 lucide icons used by CDN modules |
+| `Object.assign(window, {...})` icon bridges | 3456 + 3473 | Exposes lucide icons to CDN modules via `window.X` |
+| `LanguageContext` declaration | ~1242 | `export const LanguageContext = React.createContext()` |
+| `ActiveViewContext` / `RoleContext` / `ThemeContext` declarations | ~1247-1259 | Phase 1 contexts |
+| `uiChromeReducer` + `UI_INITIAL_STATE` | 2225-2260 | Modal/chrome state |
+| `adventureReducer` | ~2261 | Adventure state with action-routed setter |
+| `AlloFlowContent` component start | ~2338 | The container |
+| State declarations | ~2400-5500 | All useState/useReducer hooks |
+| Handlers + effects | ~5500-20000 | Everything else in the component body |
+| JSX return statement | ~20085 | Start of rendered tree |
+| Context provider wrap | ~20096 | `<ActiveViewContext.Provider value={...}>` etc. |
+| Header bar shim invocation | ~20579 | `{!isZenMode && <HeaderBar {...props} />}` |
+| HistoryPanel shim invocation | ~21280 | The history sidebar (mode-conditional) |
+| Modal stack | ~20300-21500 | All the conditional `{showXModal && <XModal />}` shims |
+| ActiveView router | ~22000-22800 | 30+ branches dispatching to view modules |
+| `AlloFlowContent` closing brace | ~23857 | End of container |
+| `AlloFlowErrorBoundary` class | ~23856 | Production error boundary wrapper |
 
-# Jump to a specific section
-Select-String -Path AlloFlowANTI.txt -Pattern "@section STEM"
+## State Management
+
+`AlloFlowContent` exposes cross-cutting state to its descendants through
+four typed React Contexts and three useReducer slices.
+
+### React Contexts
+
+| Context | Provides | Source line |
+|---|---|---|
+| `LanguageContext` | `{ t, isTranslating, ...i18n methods }` | ~1242 |
+| `ActiveViewContext` | `{ activeView, setActiveView }` | ~1247 |
+| `RoleContext` | `{ isTeacherMode, isIndependentMode, isParentMode, setIsTeacherMode }` | ~1252 |
+| `ThemeContext` | `{ theme, colorOverlay, readingTheme, focusMode, disableAnimations, baseFontSize, lineHeight, letterSpacing, selectedFont, +setters, toggleTheme, toggleOverlay }` | ~1257 |
+
+Each Context object is also attached to `window.AlloXContext` so CDN
+view modules can consume them. The Providers wrap the entire return JSX
+of `AlloFlowContent`, so all descendant CDN modules are inside the
+Provider tree at render time.
+
+### useReducer slices
+
+| Reducer | Initial state | Action types | Why a reducer |
+|---|---|---|---|
+| `uiChromeReducer` | `UI_INITIAL_STATE` (line ~2225) | `UI_SET`, `UI_RESET` | Was 60+ separate useState calls; collapsed into one shape with field-name actions |
+| `csReducer` | `CS_INITIAL_STATE` | `CS_SET` | Concept-sort game state |
+| `adventureReducer` | `ADVENTURE_INITIAL` (inline at useReducer call site) | `ADVENTURE_SET` (functional-updater payload) | Single chokepoint for adventure state changes; backwards-compatible setter wrapper preserves the useState API |
+
+### Phase 2 context-consumer pattern (HeaderBar exemplar)
+
+When a CDN view module needs cross-cutting state, it consumes via context
+instead of accepting it as props. The pattern (from `view_header_source.jsx`):
+
+```jsx
+function HeaderBar(props) {
+  // ...icon destructuring from window.X globals...
+
+  // Phase 2: consume contexts directly rather than accepting via props.
+  // The `|| {}` fallback covers the rare CDN-loaded-before-Provider race.
+  const _activeViewCtx = React.useContext(window.AlloActiveViewContext) || {};
+  const _roleCtx       = React.useContext(window.AlloRoleContext) || {};
+  const _themeCtx      = React.useContext(window.AlloThemeContext) || {};
+  const { activeView } = _activeViewCtx;
+  const { isTeacherMode, isIndependentMode, setIsTeacherMode } = _roleCtx;
+  const { theme, colorOverlay, readingTheme, /* ...13 more theme fields... */ } = _themeCtx;
+
+  // Remaining props (the things genuinely owned by the call site)
+  const { addToast, generatedContent, /* ...96 more props... */ } = props;
+
+  return ( /* ... JSX ... */ );
+}
 ```
 
-#### `@section` Marker Index
+Result: HeaderBar's prop interface dropped from 119 to 98 (a 17% reduction).
+The same pattern applies to any future module that wants to consume
+ActiveView/Role/Theme state without prop drilling.
 
-> **Note:** Line numbers are approximate and shift as the file is edited. Use `Select-String` to find current positions.
+## View Module Pattern
 
-| Marker | Approx. Line | What It Covers |
-|--------|-------------|----------------|
-| `@section GLOBAL_MUTE` | ~175 | GlobalMuteButton |
-| `@section LARGE_FILE_HANDLER` | ~199 | LargeFileHandler + modal |
-| `@section SAFETY_CHECKER` | ~547 | SafetyContentChecker |
-| `@section WORD_SOUNDS_STRINGS` | ~649 | i18n strings block |
-| `@section PHONEME_DATA` | ~829 | Audio banks, IPA maps, word families |
-| `@section VISUAL_PANEL` | ~1309 | VisualPanelGrid (comics) |
-| `@section WORD_SOUNDS_GENERATOR` | ~2542 | Main Word Sounds component |
-| `@section WORD_SOUNDS_REVIEW` | ~3356 | Session review panel |
-| `@section STUDENT_ANALYTICS` | ~4260 | RTI probes & analytics |
-| `@section STUDENT_SUBMIT` | ~9867 | Student submission modal |
-| `@section SPEECH_BUBBLE` | ~10112 | Allobot speech bubble |
-| `@section ALLOBOT` | ~10335 | Embodied tour agent |
-| `@section MISSION_REPORT` | ~12527 | Quest summary card |
-| `@section STUDENT_QUIZ` | ~12634 | Live quiz overlay |
-| `@section DRAFT_FEEDBACK` | ~12959 | Draft feedback UI |
-| `@section TEACHER_GATE` | ~13160 | Teacher verification |
-| `@section ADVENTURE_SYSTEMS` | ~13459 | Ambience, effects, climax |
-| `@section INTERACTIVE_GAMES` | ~14398 | Confetti, Memory, Matching, etc. |
-| `@section ADVENTURE_UI` | ~17835 | Inventory, dice, shop |
-| `@section CHARTS` | ~18699 | Charts & progress tracking |
-| `@section ESCAPE_ROOM` | ~18830 | Escape Room student overlay |
-| `@section ESCAPE_ROOM_TEACHER` | ~19451 | Escape Room teacher controls |
-| `@section LIVE_QUIZ` | ~19619 | Live quiz broadcast |
-| `@section LEARNER_PROGRESS` | ~20446 | Learning journey view |
-| `@section TEACHER_DASHBOARD` | ~20940 | Main teacher dashboard |
-| `@section QUICKSTART_WIZARD` | ~22095 | Onboarding wizard |
-| `@section IMMERSIVE_READER` | ~23185 | Speed reader tools |
-| `@section CAST_LOBBY` | ~23326 | Multi-device casting |
-| `@section BILINGUAL_RENDERER` | ~32038 | Bilingual field display |
+The largest class of CDN modules is the "view module": a JSX render block
+extracted from `AlloFlowContent`'s return statement, compiled to a CDN file,
+loaded at runtime, and invoked via a 1-line shim in the monolith.
 
-#### `#region` Blocks
+### Anatomy of a view module
 
-Coarser section boundaries from the original structure:
+Every view module has three files at the repo root:
 
-| Region | Start | End |
-|--------|-------|-----|
-| CONFIGURATION & SETUP | L66 | L546 |
-| LOCALIZATION STRINGS | L8832 | L8893 |
-| HELPERS & UTILITIES | L8894 | L9696 |
-| CONTEXTS & PROVIDERS | L9697 | L9737 |
-| UI COMPONENTS | L9738 | L24060 |
-| MAIN APPLICATION | L24061 | L67672 |
-| APP EXPORT | L67673 | L67699 |
+| File | Purpose | Author |
+|---|---|---|
+| `view_X_source.jsx` | JSX source with a `function X(props) { return ( /* JSX */ ); }` declaration. Imports nothing. Reads icons from `window.X` globals. | Human |
+| `_build_view_X_module.js` | Esbuild compile script. Runs `npx esbuild` with `--jsx=transform`, wraps the output in an IIFE, registers on `window.AlloModules.X` | Generated, ~50 lines |
+| `view_X_module.js` | Compiled CDN module. ~30-200 lines depending on the source size. **Never edit by hand**. | Auto-generated |
 
-#### `@tool` Markers in stem_lab_module.js
+### Module IIFE template
 
-Each inline STEM tool IIFE is marked with `// @tool TOOL_ID`:
+```js
+(function() {
+  'use strict';
+  if (window.AlloModules && window.AlloModules.MyView) {
+    console.log('[CDN] MyView already loaded, skipping');
+    return;
+  }
+  var React = window.React;
+  if (!React) { console.error('[MyView] React not found on window'); return; }
 
-| Category | Tool IDs |
-|----------|----------|
-| Math Fundamentals | `volume`, `numberline`, `areamodel`, `fractionViz`, `base10` |
-| Advanced Math | `coordinate`, `protractor`, `multtable`, `funcGrapher` |
-| Life & Earth Science | `cell`, `solarSystem`, `galaxy`, `rocks`, `ecosystem` |
-| Physics & Chemistry | `wave`, `circuit`, `chemBalance`, `physics`, `dataPlot` |
-| Arts & Music | `musicSynth` |
+  // ... compiled component definition ...
 
----
+  window.AlloModules = window.AlloModules || {};
+  window.AlloModules.MyView = { MyView: MyView };
+  console.log('[CDN] MyView loaded');
+})();
+```
 
-## Spoke Modules
+### Monolith-side shim
 
-Spoke modules are dynamically loaded at runtime via `loadModule()`. Each registers itself on `window.AlloModules` (or `window.StemLab` for STEM tools). If the CDN fetch fails, the orchestrator falls back to an inline stub so the app remains functional offline.
+In `AlloFlowANTI.txt`, the component is referenced via a thin shim
+declared outside `AlloFlowContent`:
 
-| Module | Purpose | Gate |
-|--------|---------|------|
-| `ai_backend_module.js` | Firebase shim factory, WebSearchProvider, AIProvider — loaded before React bundle | Public |
-| `word_sounds_module.js` | Phonemic awareness studio — 8 activity types, ORF fluency coach | Public |
-| `word_sounds_setup_module.js` | WordSoundsGenerator probe configuration | Public |
-| `stem_lab_module.js` | STEM Lab host — ~60 tools across 10+ domains (55 extracted plugins + 19 inline) | Public |
-| `sel_hub_module.js` | Social-Emotional Learning hub — 9 tools organized by CASEL 5 competencies | Public |
-| `games_module.js` | Games bundle — Memory, Matching, Timeline, ConceptSort, Venn, Crossword, SyntaxScramble, Bingo, WordScramble | Public |
-| `story_forge_module.js` | StoryForge — scaffolded creative writing with AI illustration, narration, grading, storybook export | Public |
-| `adventure_module.js` | Adventure UI — MissionReportCard, ClimaxProgressBar, InventoryGrid, DiceOverlay, AdventureShop, CastLobby | Public |
-| `visual_panel_module.js` | Visual Panel Grid — visual story planning and annotation | Public |
-| `allobot_module.js` | Animated mascot — SpeechBubble, LandingDust, JetpackParticles, ReactionBubble, BotConfettiBurst | Public |
-| `quickstart_module.js` | QuickStart Wizard — onboarding for new users | Public |
-| `student_interaction_module.js` | StudentSubmitModal, DraftFeedbackInterface | Public |
-| `behavior_lens_module.js` | FBA/BIP clinical suite — ABC data, IOA, scatterplot, preference assessments | TeacherGate |
-| `report_writer_module.js` | 10-step psychoeducational report wizard, 15+ assessment presets | TeacherGate |
-| `symbol_studio_module.js` | AI PCS-style AAC boards, visual schedules, social stories | TeacherGate |
-| `student_analytics_module.js` | RTI Tier 1/2/3 probes, dashboards, CSV export | TeacherGate |
-| `math_fluency_module.js` | K–8 grade-normed CBM math fluency probes | TeacherGate |
-| `teacher_module.js` | Teacher analytics dashboard — roster management, live quiz controls, learner progress charts | TeacherGate |
+```js
+// ── MyView extracted to view_my_view_module.js (CDN) ──
+function MyView(props) {
+  var Real = window.AlloModules && window.AlloModules.MyView && window.AlloModules.MyView.MyView;
+  if (Real && Real !== MyView) return React.createElement(Real, props);
+  return null;
+}
+```
 
-**TeacherGate** is a runtime verification step that restricts clinical/assessment tools to educator accounts.
+And rendered inside `AlloFlowContent`'s JSX:
 
----
+```jsx
+{someCondition && <MyView prop1={state1} prop2={state2} /* ... */ />}
+```
+
+### Module registry
+
+`build.js` keeps a `MODULES` array listing every CDN module's name and
+filename. The build step writes the pinned-hash URL into the compiled
+`App.jsx`. As of May 2026 there are 90+ registered modules.
+
+### `loadModule()` flow
+
+At app startup, `AlloFlowContent` calls `loadModule(name, url)` for each
+CDN module. The function injects a `<script>` tag and waits for the IIFE
+to register on `window.AlloModules.X`. If the CDN fetch fails, the shim
+falls back to its default (return null), keeping the app functional
+offline.
 
 ## STEM Lab Plugin Architecture
 
-STEM Lab uses a secondary plugin pattern — each tool is a self-contained IIFE that calls `window.StemLab.registerTool(id, config)` on load. There are ~60 tools total: 55 as extracted `stem_tool_*.js` plugin files and 19 defined inline in `stem_lab_module.js` (with some overlap). The host renders whichever tool is active and passes it a shared `ctx` object containing React, tool state, and helpers.
+STEM Lab is a secondary plugin host: `stem_lab_module.js` registers as
+a CDN module, then each tool is a self-contained IIFE registered via
+`window.StemLab.registerTool(id, config)`.
+
+As of May 2026 there are ~90 STEM Lab tools across ~10 domains: math
+fundamentals, advanced math, life science, earth science, physics,
+chemistry, computer science, music, art, and vocational labs (welding,
+auto repair, road safety, first response, swim safety, etc).
 
 ### Plugin file template
 
 ```js
 /**
  * stem_tool_yourname.js — [Tool Name]
- * [One-line description]
  * Registered tool ID: "yourToolId"
  */
 (function () {
   'use strict';
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
-
   window.StemLab.registerTool('yourToolId', {
     name: 'Your Tool Name',
     icon: '🔬',
-    category: 'science', // math | science | tech | creative | social
+    category: 'science',
     render: function (ctx) {
       var React = ctx.React;
       var el = React.createElement;
-      // Your render logic using ctx.toolData and ctx.setToolData
+      // render logic using ctx.toolData, ctx.setToolData
     }
   });
 })();
@@ -196,31 +277,22 @@ STEM Lab uses a secondary plugin pattern — each tool is a self-contained IIFE 
 
 ### Adding a new STEM tool
 
-1. Create `stem_lab/stem_tool_yourname.js` following the template above.
-2. Add the file to the `toolModules` array in **both** `AlloFlowANTI.txt` and `prismflow-deploy/src/App.jsx`:
-   ```js
-   var toolModules = [
-     // ... existing tools ...
-     'stem_lab/stem_tool_yourname.js'
-   ];
-   ```
-3. After merging, update the CDN commit hash (see [Pinned Dependency Injection](#pinned-dependency-injection)).
-
-### Finding existing STEM tools
-
-```powershell
-# List all registered tool IDs
-Select-String -Path stem_lab/stem_lab_module.js -Pattern "@tool "
-```
-
----
+1. Create `stem_lab/stem_tool_yourname.js` following the template.
+2. Register the file in the `toolModules` array in both `AlloFlowANTI.txt`
+   and `prismflow-deploy/src/App.jsx`. (build.js handles deploy syncing.)
+3. Add the tile entry in `stem_lab_module.js` so the new tool appears in
+   the launcher catalog.
 
 ## SEL Hub Plugin Architecture
 
-SEL Hub follows the same plugin pattern as STEM Lab. Each tool is a self-contained IIFE that calls `window.SelHub.registerTool(id, config)` on load. The host (`sel_hub_module.js`) organizes tools by the CASEL 5 social-emotional competency framework.
+Same pattern as STEM Lab. `sel_hub_module.js` hosts ~25 tools across the
+CASEL 5 social-emotional competency framework. Each tool registers via
+`window.SelHub.registerTool(id, config)`.
 
-| Tool | Competency Area |
-|------|----------------|
+CASEL 5 mapping (representative subset):
+
+| Tool | Competency |
+|---|---|
 | `sel_tool_zones.js` | Self-Awareness |
 | `sel_tool_coping.js` | Self-Management |
 | `sel_tool_emotions.js` | Self-Awareness |
@@ -231,53 +303,145 @@ SEL Hub follows the same plugin pattern as STEM Lab. Each tool is a self-contain
 | `sel_tool_conflict.js` | Relationship Skills |
 | `sel_tool_advocacy.js` | Relationship Skills |
 
-### Adding a new SEL tool
+## Extraction Toolchain
 
-1. Create `sel_hub/sel_tool_yourname.js` following the same IIFE pattern as STEM tools, but registering on `window.SelHub`.
-2. Add the file to the `selToolModules` array in **both** `AlloFlowANTI.txt` and `prismflow-deploy/src/App.jsx`.
-3. After merging, update the CDN commit hash (see [Pinned Dependency Injection](#pinned-dependency-injection)).
+The view extraction work is supported by three Node scripts at the repo
+root. Each reads the monolith without modifying it.
 
----
+| Script | Purpose | Output |
+|---|---|---|
+| `_jsx_render_tree.cjs` | Parses `AlloFlowContent`'s return statement via `@babel/parser`, emits a structural map with line ranges. Used to pick extraction seams. | Tree of JSX elements with line ranges, eg. `[20675-21492] (818 lines) <header>` |
+| `_jsx_dep_enumerator.cjs` | For a given line range, classifies every referenced identifier as STATE / SETTER / HANDLER / REF / HELPER / IMPORT / UNKNOWN. | Categorized deps list + a ready-to-paste destructure block |
+| `_jsx_phantom_ref_check.cjs` | Verifies every JSX-referenced identifier in a range resolves to a definition somewhere in the source. Exits 1 on any phantom. | Pass / fail report. Catches latent ReferenceErrors before extraction. |
+
+### What the toolchain has surfaced
+
+During the May 10 2026 refactor, the phantom-ref check uncovered four
+classes of pre-existing latent bug that were never caught at runtime
+because the affected code paths were rare-button clicks:
+
+1. **22 missing window-global icons.** Several lucide icons were imported
+   at the top of `AlloFlowANTI.txt` but never exposed on the `window.*`
+   bridge. CDN modules referencing them rendered noop placeholders.
+   Fixed by expanding `Object.assign(window, {...})` at lines 3456 and 3473.
+2. **`setShowBatchConfig`** undefined in the `TeacherHistoryTab` "Differentiate by
+   Group" button. Defaulted to noop in the extracted module; flagged for
+   source-side cleanup.
+3. **`activeSelStation` + `setActiveSelStation`** undefined in the
+   `HistoryPanel` "Delete SEL Station" button. Same fix.
+4. **`setPdfBatchFiles`** undefined in the `EducatorHubModal` PDF batch
+   flow. Same fix.
+
+The principle behind all four: when JSX lives inline in a 20K-line
+container, JavaScript only resolves an identifier when that code path
+actually executes. Extracting the JSX forces every identifier to be
+enumerated and statically verified, surfacing bugs that runtime testing
+would only reveal under unusual clicks.
+
+## Test + Verify Infrastructure
+
+### Unit tests (`tests/`)
+
+Five vitest files cover the most-used helper modules:
+
+| File | Module under test | Tests |
+|---|---|---|
+| `tests/glossary_helpers.test.js` | `glossary_helpers_module.js` | ~22 |
+| `tests/math_helpers.test.js` | `math_helpers_module.js` | ~18 |
+| `tests/pure_helpers.test.js` | `pure_helpers_module.js` | ~30 |
+| `tests/text_pipeline_helpers.test.js` | `text_pipeline_helpers_module.js` | ~28 |
+| `tests/utils_pure.test.js` | `utils_pure_module.js` | ~28 |
+
+Configuration: `vitest.config.js` uses jsdom. Each test loads the target
+module's IIFE against a shared `window` via `tests/setup.js`'s
+`loadAlloModule()` helper, then asserts against `window.AlloModules.X`.
+
+Run with `npm test` (or `npm run test:watch` for watch mode).
+
+### Static + structural checks (`dev-tools/`)
+
+Fourteen verifier scripts orchestrated by `dev-tools/verify_all.cjs`:
+
+- `verify_module_registry.cjs` — every `window.AlloModules.X` consumer
+  has a matching producer
+- `check_translation_keys.cjs` — every `t('key')` and `HELP_STRINGS.key`
+  resolves
+- `check_tool_registry.cjs` — STEM Lab + SEL Hub `registerTool` shapes
+  valid
+- `check_source_pair_drift.js` — `AlloFlowANTI.txt` and
+  `prismflow-deploy/src/AlloFlowANTI.txt` byte-match
+- `check_pipeline_integrity.js` — Document Builder `_docPipeline.X` UI
+  calls match exports
+- `check_build_smoke.cjs` — `App.jsx` builds and bundles cleanly
+- `check_deploy_mirror.cjs` — root files match `prismflow-deploy/public/`
+  mirrors
+- ...and 7 more: CORS, XSS, secret scan, npm audit, eval, plugin
+  defensive guards, etc.
+
+Run all (fast) with `npm run verify`. Add `--runtime` or `--all` for slower
+runtime checks. Many of these checks fail-fast in a git pre-commit hook.
+
+## Build + Deploy Pipeline
+
+### `build.js`
+
+Single source of truth: `build.js --mode=prod` (or `--mode=dev`) reads
+`AlloFlowANTI.txt`, swaps every `loadModule(...)` URL for a pinned CDN
+hash (prod) or local path (dev), and writes
+`prismflow-deploy/src/App.jsx`. Auto-copies module files to
+`prismflow-deploy/public/`.
+
+### `deploy.sh` (turbo-all)
+
+The full deploy is a 9-step orchestrator at the repo root:
+
+1. **Source commit** (only if files are pre-staged)
+2. **Push source to origin**
+3. **Run build.js** (regenerate `App.jsx` with pinned hashes)
+4. **npm run build** (CRA build to `prismflow-deploy/build/`)
+5. **Firebase deploy** (static hosting)
+6. **Post-deploy commit** (update CDN hash refs in `AlloFlowANTI.txt` to
+   point at the just-pushed commit)
+7. **Push post-deploy commit to origin**
+8. **Mirror to Codeberg backup** (push to `Pomera/AlloFlow-backup`)
+9. **Push tags to backup**
+
+Critical gotcha: step 1 only commits **pre-staged** files. With multiple
+concurrent agents working on the codebase, you must explicitly
+`git add <your-files>` before running `./deploy.sh`. The "Hash: @XXX"
+banner that deploy.sh prints can be misleading when multiple deploys
+race — verify your specific commit landed via `git log --oneline -5`.
 
 ## Pinned Dependency Injection
 
-AlloFlow does **not** use floating `@latest` or `@main` CDN tags. Every spoke module URL is pinned to an exact commit hash via jsDelivr CDN. This ensures deterministic, reproducible offline execution — a CDN file at a pinned hash never changes.
+CDN URLs are pinned to exact commit hashes via jsdelivr, never `@main`
+or `@latest`. This makes builds deterministic and offline-reproducible.
+The `build.js` rewrite step inserts the current commit hash.
 
 ```js
-// Correct — pinned to exact commit
+// Correct: pinned to exact commit
 loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1b2c3d/stem_lab/stem_lab_module.js');
 
-// Wrong — floating tag, breaks offline determinism
-loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/stem_lab/stem_lab_module.js');
+// The `@main` placeholder is reserved for newly-added modules between
+// the source commit and the rewrite; it must never end up in a tagged release.
 ```
 
-### Updating hashes after a merge
-
-1. Note the merge commit hash (7 characters, e.g., `a1b2c3d`).
-2. In `AlloFlowANTI.txt`, search for `pluginCdnBase` and all `loadModule(` calls; replace the old hash.
-3. Apply the same changes to `prismflow-deploy/src/App.jsx`.
-4. Commit both files together with a message like `Post-deploy: update CDN hash refs`.
-
----
+After every merge, `build.js` runs during the deploy and rewrites every
+`@hash` to point at the new commit. The post-deploy commit (step 6) is
+the record of which hash was deployed when.
 
 ## Deployment Targets
 
-AlloFlow supports three deployment targets, all from the same codebase.
+The same codebase ships to three places.
 
-### 1. Gemini Canvas (default)
+### 1. Gemini Canvas
 
-The app runs as a Canvas artifact inside Google Gemini. The Canvas runtime injects a `__firebase_config` global that the app reads at startup.
-
-**Critical:** Detect Canvas vs. Firebase using `typeof __firebase_config`, never `typeof process`. CRA removes the `process` global at build time, so a `process`-based guard silently breaks production.
-
-```js
-// Correct
-const firebaseConfig = typeof __firebase_config !== 'undefined'
-  ? JSON.parse(__firebase_config)
-  : { apiKey: process.env.REACT_APP_API_KEY || '', ... };
-```
-
-In Canvas mode, `apiKey` is intentionally empty (`""`). Canvas's proxy intercepts outbound requests and injects the key server-side.
+Runs as a Canvas artifact inside Google Gemini. Canvas injects a
+`__firebase_config` global at startup. The app detects Canvas via
+`typeof __firebase_config !== 'undefined'` (never `typeof process`, see
+below). In Canvas mode, the Gemini API key is intentionally empty
+because Canvas's proxy intercepts outbound `?key=` requests and injects
+the key server-side.
 
 ### 2. Firebase Hosting (cloud)
 
@@ -288,25 +452,26 @@ npm run build
 firebase deploy
 ```
 
-Firebase hosts only static files. No student data is written to Google servers.
+Or invoke the full `./deploy.sh` from the repo root. Firebase hosts only
+static files; no student data crosses the network.
 
 ### 3. School Box (local Docker)
 
 ```bash
 git clone https://github.com/apomera/AlloFlow.git
 docker-compose up -d
-# Access at http://localhost:3000
 ```
 
-Services: Ollama (LLM inference), PocketBase (local DB), Piper/Edge TTS (offline speech), SearXNG (local search), Nginx (reverse proxy + SSL).
+Services: Ollama (LLM inference), PocketBase (local DB), Piper / Edge
+TTS (offline speech), SearXNG (local search), Nginx (reverse proxy +
+SSL). Status of the School Box image as of May 2026: under active
+development, not yet operational.
 
----
+## Canvas Mode + API Key Configuration
 
-## Canvas Mode & API Key Configuration
+### Environment detection (`_isCanvasEnv`)
 
-### Environment Detection (`_isCanvasEnv`)
-
-The app detects Canvas mode (Google AI Studio) at startup via an IIFE at ~line 897:
+A guarded IIFE detects Canvas:
 
 ```js
 const _isCanvasEnv = (() => {
@@ -322,146 +487,153 @@ const _isCanvasEnv = (() => {
 })();
 ```
 
-### CRITICAL: CRA `process.env` vs `process` Global
+### Critical: `process.env` versus `process` global
 
-> **NEVER use `typeof process !== 'undefined'` as a guard in this codebase.**
-> CRA's webpack replaces `process.env.REACT_APP_*` with literal strings at build time,
-> but does **NOT** polyfill the `process` global itself. In the browser at runtime,
-> `typeof process === 'undefined'` — any `typeof process` guard will fail and skip
-> the guarded code.
+> **Never use `typeof process !== 'undefined'` as a guard in this codebase.**
+> CRA's webpack replaces `process.env.REACT_APP_*` with literal strings
+> at build time but does not polyfill the `process` global. In the browser
+> at runtime, `typeof process === 'undefined'`. Any `typeof process` guard
+> will fail and silently skip the guarded code.
 >
-> **Use `typeof __firebase_config !== 'undefined'` to detect Canvas vs Firebase deploy.**
->
-> This bug caused a production outage on 2026-03-07 (`auth/invalid-api-key`) when
-> `typeof process` guards were added around `firebaseConfig`, `appId`, and `apiKey`.
+> Use `typeof __firebase_config !== 'undefined'` to detect Canvas vs
+> Firebase. This bug caused a production outage on 2026-03-07
+> (`auth/invalid-api-key`).
 
-### API Key Injection Flow
+### API key injection table
 
-| Context | `__firebase_config` defined? | `apiKey` value | Who provides the real key? |
-|---------|------------------------------|---------------|---------------------------|
-| **Canvas mode** | Yes (injected by Canvas) | `""` (empty) | Canvas proxy intercepts `key=` in the URL and injects it |
-| **Firebase deploy** | No | `process.env.REACT_APP_GEMINI_API_KEY` | `.env` file at build time |
-
-The Gemini key assignment at ~line 92:
-
-```js
-const apiKey = typeof __firebase_config !== 'undefined'
-  ? ""
-  : (process.env.REACT_APP_GEMINI_API_KEY || '');
-```
-
-### TDZ Warning: `let`-Declared Cache Variables
-
-> **Do NOT use `typeof` guards for `let`/`const` variables in the same bundled scope.**
-> In CRA's bundled output, all module-level `let`/`const` declarations share one scope.
-> `typeof myLetVar` will throw `ReferenceError` (TDZ) if `myLetVar` hasn't been
-> initialized yet — unlike `var` or true globals. Use `try/catch` instead.
-
-### Model Selection
-
-| Slot | Canvas Mode | Firebase Deploy |
-|------|-------------|-----------------|
-| `default` | `gemini-3-flash-preview` | `gemini-3-flash-preview` |
-| `fallback` | `gemini-3-flash-preview` | `gemini-3-flash-preview` |
-| `flash` | `gemini-3-flash-preview` | `gemini-3-flash-preview` |
-| `tts` | `gemini-3-flash-preview` | `gemini-2.5-flash-preview-tts` |
-| `vision` | `gemini-3-flash-preview` | `gemini-3-flash-preview` |
-| `image` | `gemini-2.5-flash-image` | `gemini-3.1-flash-image-preview` |
-| `safety` | `gemini-2.5-flash-lite` | `gemini-2.5-flash-lite` |
-| `quality` | `gemini-2.5-pro` | `gemini-3.1-pro-preview` |
-
-### Troubleshooting Canvas Gemini Failures
-
-If `callGemini` or TTS fails in Canvas with `401` or `Failed to fetch`:
-
-1. **The code is correct** — `apiKey=""` is by design; Canvas's proxy should inject the key.
-2. The issue is Canvas's request interception not working. Possible causes:
-   - Canvas session expired or needs a refresh
-   - Canvas's proxy service has intermittent downtime
-   - The model requested is not available in Canvas's allowed list
-3. **TTS 401 is the same root cause** — if Canvas can't proxy `generateContent`, it also can't proxy `generateContent` for TTS.
-4. The app degrades gracefully: TTS failures are caught and logged; `callGemini` surfaces user-friendly errors.
-
-### Troubleshooting Canvas "Something Went Wrong (13)" Share Error
-
-**Root cause:** Error 13 is a **server-side session/state error**, NOT a content filter. Google's backend caches the processing state of each Canvas artifact. If an artifact's backend state becomes corrupted (network hiccup, server crash during processing, stale session), ALL subsequent share attempts on that artifact will fail with error 13 — even if the content is identical to a working artifact.
-
-**What does NOT cause error 13:**
-- File size (larger files share fine)
-- Specific code patterns or keywords
-- Inline HTML templates or CDN URLs
-- Non-ASCII characters, emoji, or JavaScript syntax
-
-**How to fix it:**
-1. **Create a new Canvas artifact** — paste the same content into a fresh Canvas app. This gets a new backend session. This is the proven fix.
-2. If that doesn't work: clear browser cache/cookies, try incognito, or a different browser.
-
-**How to avoid wasted debugging time:**
-- If error 13 appears, try a fresh artifact FIRST before investigating code content.
-- Keep a known-good shareable artifact URL as backup.
-
-**Lesson learned (March 30, 2026):** Several hours were spent diffing file content, testing CDN hash changes, and considering modularization — when the fix was simply creating a new Canvas app. The identical file shared successfully from a fresh artifact.
-
----
+| Context | `__firebase_config` defined? | `apiKey` value | Who provides the real key |
+|---|---|---|---|
+| Canvas | Yes (injected by Canvas) | `""` (empty) | Canvas proxy intercepts `key=` and injects |
+| Firebase | No | `process.env.REACT_APP_GEMINI_API_KEY` | `.env` at build time |
 
 ## Accessibility Architecture
 
-All interactive elements — including all 55 STEM tools and every game mode — must be fully operable without a mouse (Tab/Enter/Arrow key navigation). ARIA labels are required on every interactive element.
+Every interactive element (including all STEM tools and games) is keyboard
+operable (Tab / Enter / Arrow). ARIA labels are required everywhere.
 
-TTS runs entirely in-browser via two engines:
-- **Kokoro** — English, 30+ neural voices
-- **Piper** — 40+ languages, runs via WebAssembly
+TTS is in-browser, never cloud:
+- **Kokoro** (English, 30+ neural voices)
+- **Piper** (40+ languages, WebAssembly)
 
-Neither engine makes cloud API calls. Audio never leaves the device.
-
----
+Audio never leaves the device.
 
 ## Privacy Architecture
 
 | Layer | Implementation |
-|-------|---------------|
-| **Zero PII required** | The app never prompts for student names or IDs |
-| **On-device storage** | All session data lives in `localStorage` — no cloud writes |
-| **TeacherGate** | Clinical tools and answer keys isolated behind educator verification |
-| **Fact-Chunk Pipeline** | PII-scrubbing layer applied before report generation to prevent AI hallucination of sensitive data |
-| **Air-Gap option** | School Box deployment operates with no external API calls |
-
----
+|---|---|
+| Zero PII required | App never prompts for student names or IDs |
+| On-device storage | All session data in `localStorage`; no cloud writes |
+| TeacherGate | Clinical tools and answer keys gated behind educator verification |
+| Fact-Chunk pipeline | PII-scrubbing layer applied before report generation to prevent AI hallucination of sensitive data |
+| Air-gap option | School Box deployment operates with no external API calls |
 
 ## Development Notes
 
 ### Service worker and QUIC caching
 
-During local development, stale assets can be served by the browser even after a rebuild. Two common causes:
+During local dev, stale assets are sometimes served. Two common causes:
 
-1. **Service worker cache** — Chrome's service worker may serve old bundles. Fix: Open DevTools → Application → Service Workers → click "Unregister", then hard-reload (`Shift+F5`).
-2. **QUIC protocol** — Chrome's QUIC implementation can cause persistent asset caching. Fix: navigate to `chrome://flags/#enable-quic` → set to **Disabled** → Relaunch.
+1. **Service worker cache**. DevTools, Application, Service Workers, Unregister, then hard reload.
+2. **QUIC protocol**. `chrome://flags/#enable-quic` set to Disabled, then relaunch.
 
-### File Encoding Characteristics
+### File encoding
 
-| Property | AlloFlowANTI.txt | stem_lab_module.js |
-|----------|------------------|-------------------|
-| Size | ~4.3 MB / ~67.9K lines | ~1.8 MB / ~23.6K lines |
+| Property | `AlloFlowANTI.txt` | `stem_lab_module.js` |
+|---|---|---|
+| Approx size | 1.2 MB / ~24K lines (down from 4.3 MB / 67K in April) | varies |
 | Line endings | CRLF (pure) | CRLF (pure) |
 | BOM | None | None |
-| Non-ASCII | ~6,282 bytes (emoji) | ~13,935 bytes (emoji) |
-| Control bytes | 0 | 0 |
+| Non-ASCII | ~6 KB of emoji | ~14 KB of emoji |
 
-### Tool Reliability for Large Files
+### Tool reliability
 
-> **Do NOT use ripgrep (`grep_search` / `rg`) on AlloFlowANTI.txt or stem_lab_module.js.**
-> These files contain non-ASCII bytes (emoji) that cause ripgrep to silently return zero results.
-
-| Tool | Reliability | Notes |
-|------|-------------|-------|
-| PowerShell `Select-String` | High | Handles emoji correctly, best for `@section`/`@tool` search |
-| Python scripts (file-based) | High | Use `encoding='utf-8', errors='replace'` |
-| IDE `Ctrl+F` / `Cmd+F` | High | Best for interactive navigation with `@section` markers |
-| `view_file` (IDE) | High | Direct file reading |
-| ripgrep / `grep_search` | Unreliable | Fails on 4.3MB files with non-ASCII bytes |
-| Python `-c` one-liners | Unreliable | Shell escaping issues on Windows |
+Ripgrep silently returns zero results on these large emoji-bearing files;
+use PowerShell `Select-String`, Python with `encoding='utf-8'`, or IDE
+search.
 
 ### Console log policy
 
-- **Never** leave `console.log` statements that could output PII, student names, clinical scores, or ABA metrics.
-- AlloBot internal traces use a `_debug` flag gated behind `process.env.NODE_ENV === 'development'`.
+Never leave `console.log` statements that could output PII, student
+names, clinical scores, or ABA metrics. AlloBot internal traces use a
+`_debug` flag gated behind `process.env.NODE_ENV === 'development'`.
+
+## Maintainability Roadmap
+
+What's still on the table for future structural work.
+
+### Phase 2 expansion
+
+The HeaderBar context-consumer pattern is the template. The next
+candidates to migrate (similar to HeaderBar but smaller):
+
+| Module | Current props | Estimated post-migration props |
+|---|---|---|
+| HistoryPanel | 85 | ~70 |
+| SessionModal | 19 | ~12 |
+| StudentSaveAdventurePanel | 14 | ~10 |
+| InfoModal | 9 | ~6 |
+
+Each migration is ~15-20 min including verify + deploy.
+
+### Activeview router refactor
+
+The `<ErrorBoundary>` block at ~22000-22800 contains 30+ branches of
+`{activeView === 'X' && React.createElement(window.AlloModules.XView, {props})}`.
+Each branch has its own 20-30 prop bag. The refactor: lift each props bag
+into a named const above the JSX. Mechanical, low per-branch risk, large
+total touch surface. Estimated 2-3 hours done per-branch with deploys
+between.
+
+### State migrations remaining
+
+- `studentProjectSettings` is a useState object; could be a reducer slice
+- Math fluency state is ~10 separate useStates; could be a reducer cluster
+- Adventure climax state is nested inside `adventureState` and may benefit
+  from sub-reducer composition
+
+### Test coverage gaps
+
+The 126 existing vitest assertions cover helper module logic. Not covered:
+- React state propagation across context boundaries
+- View module rendering against jsdom
+- The build pipeline itself (verify_all.cjs checks structure, not behavior)
+
+A future direction: a small set of jsdom + react-testing-library tests
+that mount the Context Providers and verify a representative CDN view
+module renders correctly.
+
+## Appendix: Repo Layout
+
+```
+.
+├── AlloFlowANTI.txt              ← Container source of truth
+├── architecture.md               ← This file
+├── build.js                      ← Source → App.jsx compiler
+├── deploy.sh                     ← Turbo-all deploy
+├── _build_*_module.js            ← Per-module esbuild scripts (~30)
+├── _jsx_render_tree.cjs          ← Extraction toolchain
+├── _jsx_dep_enumerator.cjs       ← Extraction toolchain
+├── _jsx_phantom_ref_check.cjs    ← Extraction toolchain
+├── view_*_source.jsx             ← View module sources (~30 files)
+├── view_*_module.js              ← Compiled view modules (~30 files)
+├── *_module.js                   ← Other CDN modules (~50 files)
+├── stem_lab/
+│   ├── stem_lab_module.js        ← STEM Lab host
+│   └── stem_tool_*.js            ← ~90 plugin tools
+├── sel_hub/
+│   ├── sel_hub_module.js         ← SEL Hub host
+│   └── sel_tool_*.js             ← ~25 plugin tools
+├── tests/
+│   ├── setup.js                  ← vitest fixture
+│   └── *.test.js                 ← 5 helper module test files
+├── dev-tools/
+│   ├── verify_all.cjs            ← Orchestrator (14+ checks)
+│   ├── verify_*.cjs              ← Individual verifiers
+│   └── check_*.cjs               ← Individual checks
+├── prismflow-deploy/             ← Firebase deploy package
+│   ├── src/App.jsx               ← Auto-generated from AlloFlowANTI.txt
+│   ├── src/AlloFlowANTI.txt      ← Mirror, kept in sync
+│   ├── public/*_module.js        ← Mirror of root modules
+│   └── functions/                ← Firebase Functions
+└── vitest.config.js              ← Test runner config
+```
