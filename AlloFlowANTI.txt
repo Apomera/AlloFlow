@@ -3843,6 +3843,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'arcade_mode_boss_encounter.js',
         'arcade_mode_realm_builder.js',
         'arcade_mode_concept_atlas.js',
+        'arcade_mode_modelun.js',
       ];
       var waitForRegistry = function(cb) {
         if (window.StemLab && window.StemLab.registerTool) { cb(); return; }
