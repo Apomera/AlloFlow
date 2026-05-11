@@ -2793,6 +2793,7 @@
               },
               {
                 id: 'fractionViz',
+                aliases: ['fractions'],
                 icon: '🍕',
                 label: t('stem.assessment.fraction_lab'),
                 desc: 'Compare fractions side-by-side (Compare tab) or practice with interactive challenges (Challenge tab).',
@@ -2945,6 +2946,11 @@
               {
                 id: 'climateExplorer', icon: '\uD83C\uDF0D', label: 'Climate Explorer',
                 desc: 'Carbon calculator, renewables impact simulator, climate justice map, and solutions spotlight. Understand your footprint, design clean energy futures, and discover real-world innovations.',
+                color: 'emerald', ready: true
+              },
+              {
+                id: 'stewardshipHub', icon: '\uD83C\uDF0D', label: 'Maine Stewardship Campaigns',
+                desc: 'Cross-campaign launcher: pick from five environmental stewardship sims (Cultural Mosaic, Conservation Manager, Outbreak Response, Watershed Steward, Climate Policy Pathways) and track mastery across all five.',
                 color: 'emerald', ready: true
               },
               {
