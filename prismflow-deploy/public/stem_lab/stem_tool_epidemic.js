@@ -646,7 +646,12 @@ window.StemLab = window.StemLab || {
       desc: 'Highest transmission rate due to dense indoor contact in schools and after-school activities. Lowest severe-case rate per infection, but a major vector to working-age and elderly household members.',
       defaultState: { infected: 2, recovered: 0, vaccinated: 0, trust: 70, contactRate: 0.32 },
       cumulative: { cases: 0, deaths: 0 },
-      severityRate: 0.002
+      severityRate: 0.002,
+      deepDive: {
+        knowledge: 'Children have the highest daily contact rates of any demographic. They spend 6 to 7 hours indoors with 20+ peers in poorly-ventilated classrooms, then carry pathogens home to families. Severe disease rates are low, but transmission to higher-severity groups is high. Schools are also where early outbreak signal often appears first.',
+        casework: 'The 2009 H1N1 pandemic disproportionately affected children and young adults. Early COVID-19 school closures (March 2020) bought time for vaccine development but produced significant learning loss, especially for low-income students. Taiwan and Japan implemented narrow targeted closures with rigorous testing; the US default of district-wide closures lasted longer with weaker testing infrastructure.',
+        modernContext: 'Maine schools have variable mask and testing policies post-COVID. School nurses are often the first public health signal: a sudden rise in sick calls often precedes a confirmed outbreak by 7 to 10 days. Free school-based vaccination clinics consistently outperform pharmacy-based vaccination for this age group.'
+      }
     },
     {
       id: 'workingAge', name: 'Working-age (18-64)', icon: '💼', color: '#0ea5e9',
@@ -654,7 +659,12 @@ window.StemLab = window.StemLab || {
       desc: 'Workplace, commute, and household exposure. Moderate severe-case rate, with sharp increase above 50. This is also your healthcare workforce.',
       defaultState: { infected: 3, recovered: 0, vaccinated: 0, trust: 60, contactRate: 0.26 },
       cumulative: { cases: 0, deaths: 0 },
-      severityRate: 0.012
+      severityRate: 0.012,
+      deepDive: {
+        knowledge: 'The 18-64 cohort carries the largest absolute case and death burden in most pandemics because it is the largest population segment. Severity rises sharply after 50. Workplace, commute, and household exposure all stack. Pre-existing conditions (obesity, diabetes, cardiovascular disease) substantially raise severity risk in this cohort.',
+        casework: 'The 1918 influenza pandemic was distinctive for high mortality in 20-40 year olds due to immune overreaction (cytokine storm). COVID-19 created a long-covid disability burden estimated at 3 to 7 million working-age Americans, with persistent effects on employment, healthcare utilization, and household income. This group also holds essential-worker positions that drove early COVID exposure inequity.',
+        modernContext: 'This cohort makes the household decisions about vaccines, masks, school attendance, and work-from-home. Their trust signals drive uptake across the whole system. Maine working-age trust in public health varies sharply by region, education, and political identity; rural counties consistently track lower than urban.'
+      }
     },
     {
       id: 'elderly', name: 'Elderly (65+)', icon: '👴', color: '#dc2626',
@@ -662,15 +672,25 @@ window.StemLab = window.StemLab || {
       desc: 'Lower exposure overall (fewer daily contacts) but dramatically higher severe-case and death rate per infection. Long-term care facilities are extreme-risk environments.',
       defaultState: { infected: 1, recovered: 0, vaccinated: 0, trust: 75, contactRate: 0.14 },
       cumulative: { cases: 0, deaths: 0 },
-      severityRate: 0.08
+      severityRate: 0.08,
+      deepDive: {
+        knowledge: 'Adults 65 and older experience the highest severity per infection of any demographic. COVID-19 mortality risk for adults 80+ was roughly 70 times that of adults 18-29. Daily contact rate is much lower (fewer commute, work, school exposures) but household and caregiver contacts dominate. Long-term care facilities concentrate risk dramatically.',
+        casework: 'The first US COVID-19 cluster outbreak was at a Kirkland, Washington long-term care facility in February 2020. By the end of 2020, approximately 30% of US COVID deaths had occurred in long-term care facilities, despite those facilities housing less than 1% of the population. The same facilities had documented infection-control gaps for years before the pandemic.',
+        modernContext: 'Maine has the oldest median age in the US (45+, vs national 39). Large rural elderly populations live in counties with fewer hospital beds per capita and longer transport times to tertiary care. Wabanaki elders carry irreplaceable language and cultural knowledge; loss of elders during the pandemic was felt as cultural emergency.'
+      }
     },
     {
       id: 'healthcare', name: 'Healthcare workers', icon: '🩺', color: '#16a34a',
       role: 'Extreme exposure, capacity constraint',
-      desc: 'Cared-for-by population is roughly 1.3% of total but they are also part of the working-age group via family. Burnout reduces hospital capacity. Trust in this group is what keeps boosters and PPE compliance high.',
+      desc: 'Healthcare workforce is roughly 1.3% of total population but they are also part of the working-age group via family. Burnout reduces hospital capacity. Trust in this group is what keeps boosters and PPE compliance high.',
       defaultState: { infected: 4, recovered: 0, vaccinated: 0, trust: 80, contactRate: 0.40 },
       cumulative: { cases: 0, deaths: 0, burnout: 0 },
-      severityRate: 0.010
+      severityRate: 0.010,
+      deepDive: {
+        knowledge: 'Healthcare workers face extreme occupational exposure plus the same household exposure as working-age. Burnout rates were 35 to 50 percent in many specialties even before the pandemic; the past 5 years have made it worse. PPE supply, hospital surge planning, and replacement-staff arrangements are all tested simultaneously during any pandemic response.',
+        casework: 'Approximately 3,600 US healthcare workers died of COVID-19 in the first year per the Lost on the Frontline tracking project (KHN and The Guardian). Travel nurse rates surged from baseline $40-60/hour to $200-500/hour during peak surges. ICU staffing ratios shifted from 1:2 to 1:4 or worse in many hospitals; care quality measurably degraded.',
+        modernContext: 'Maine has a chronic healthcare workforce shortage that is particularly acute in rural counties. Eastern Maine Medical Center, Maine Medical Center, and rural critical-access hospitals all rely on cross-coverage agreements that break under simultaneous strain. Wabanaki Public Health and Wellness has built community health worker programs that proved unusually resilient during recent surges.'
+      }
     }
   ];
 
@@ -1920,6 +1940,253 @@ window.StemLab = window.StemLab || {
             if (b && addToast) addToast('🏅 ' + b.name + ': ' + b.desc, 'success');
           }
 
+          // Translate the abstract per-group state to tangible public-health
+          // units for a Maine county of roughly 150,000 people.
+          // schoolAge   ~21K (14% of pop)
+          // workingAge  ~90K (60% of pop)
+          // elderly     ~37K (25% of pop)
+          // healthcare  ~2K (1.3% of pop)
+          var GROUP_POPULATIONS = { schoolAge: 21000, workingAge: 90000, elderly: 37000, healthcare: 2000 };
+          function groupArtifact(g) {
+            var pop = GROUP_POPULATIONS[g.id] || 10000;
+            var cases = Math.round((g.cumulative.cases || 0) * pop / 100);
+            var deaths = Math.round((g.cumulative.deaths || 0) * pop / 100);
+            var doses = Math.round((g.vaccinated || 0) * pop / 100);
+            return { cases: cases, deaths: deaths, doses: doses };
+          }
+
+          // Week-1 coaching tip
+          function outbreakCoachingTip() {
+            var elderly = outbreak.groups.find(function(g) { return g.id === 'elderly'; });
+            var working = outbreak.groups.find(function(g) { return g.id === 'workingAge'; });
+            if (working && working.trust < 65) {
+              return {
+                priority: 'Build trust before you need to spend it',
+                text: 'Working-age trust is already at ' + Math.round(working.trust) + '. Trust capital is what makes mandates and vaccine pushes work later in the campaign; if it sags below 40, vaccine refusal kicks in. Public communication and Targeted vaccination on elderly are good Week 1 moves. Mask mandates and school closures will cost you trust later, so spend on trust-building first.'
+              };
+            }
+            if (elderly && elderly.vaccinated < 30) {
+              return {
+                priority: 'Vaccinate elderly while supply is steady',
+                text: 'Elderly vaccination is at ' + Math.round(elderly.vaccinated) + '%. Their severity rate is 40x school-age and 7x working-age, so each vaccinated elderly person is the highest-leverage shot you can deliver. Targeted vaccination on elderly is the textbook opening move.'
+              };
+            }
+            return {
+              priority: 'Hold steady and watch the curve',
+              text: 'Initial conditions look stable. Use Week 1 to read the system: which group infections climb fastest under your specific contact rates and seed events. Active intervention before you have signal can burn trust unnecessarily.'
+            };
+          }
+
+          // Per-group deep-dive
+          function openOutbreakDeepDive(id) { setOutbreak({ deepDiveGroup: id }); }
+          function closeOutbreakDeepDive() { setOutbreak({ deepDiveGroup: null }); }
+
+          function renderOutbreakDeepDive(id) {
+            var def = getGroupDef(id);
+            if (!def || !def.deepDive) return null;
+            var dd = def.deepDive;
+            return h('div', {
+              role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Demographic deep-dive: ' + def.name,
+              style: {
+                background: 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.85) 60%)',
+                border: '1px solid ' + def.color + '88', borderLeft: '4px solid ' + def.color,
+                borderRadius: 14, padding: 18, marginBottom: 16
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
+                h('span', { style: { fontSize: 36 } }, def.icon),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Demographic deep-dive'),
+                  h('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
+                  h('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
+                ),
+                h('button', { onClick: closeOutbreakDeepDive,
+                  style: { background: 'rgba(15,23,42,0.6)', border: '1px solid #334155', color: '#cbd5e1', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '✕ Close')
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
+                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '📊 Epidemiology'),
+                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
+                ),
+                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '📰 Case work'),
+                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
+                ),
+                h('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '🌍 Maine context'),
+                  h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
+                )
+              )
+            );
+          }
+
+          // Do-nothing baseline: 26 weeks of pure SIR-like drift with no
+          // interventions and no events. Shows what would happen if a PHO
+          // simply did nothing.
+          function computeOutbreakDoNothing() {
+            var sim = DEMOGRAPHIC_GROUPS.map(function(g) {
+              return Object.assign({ id: g.id, cumulative: Object.assign({}, g.cumulative) }, g.defaultState);
+            });
+            for (var w = 0; w < outbreak.maxWeeks; w++) {
+              sim = sim.map(function(g) {
+                var def = getGroupDef(g.id);
+                var ng = Object.assign({}, g, { cumulative: Object.assign({}, g.cumulative) });
+                var susceptiblePct = clamp(100 - ng.infected - ng.recovered - ng.vaccinated, 0, 100);
+                var newInf = ng.contactRate * (ng.infected / 100) * (susceptiblePct / 100) * 100;
+                var recoveries = ng.infected * 0.35;
+                var deaths = ng.infected * def.severityRate;
+                ng.infected = clamp(ng.infected + newInf - recoveries - deaths, 0, 100);
+                ng.recovered = clamp(ng.recovered + recoveries, 0, 100);
+                ng.cumulative.cases = (ng.cumulative.cases || 0) + newInf;
+                ng.cumulative.deaths = (ng.cumulative.deaths || 0) + deaths;
+                return ng;
+              });
+              // Same cross-group bridge dynamics as the active campaign
+              var s = sim.find(function(g) { return g.id === 'schoolAge'; });
+              var wa = sim.find(function(g) { return g.id === 'workingAge'; });
+              var el = sim.find(function(g) { return g.id === 'elderly'; });
+              if (s && s.infected > 12 && wa) wa.infected = clamp(wa.infected + 2, 0, 100);
+              if (wa && wa.infected > 10 && el) el.infected = clamp(el.infected + 1.5, 0, 100);
+            }
+            return sim;
+          }
+
+          // Multi-line week-by-week chart
+          function renderOutbreakTrendChart(weekLog) {
+            if (!weekLog || weekLog.length === 0) return null;
+            var w = 600, hgt = 220, padL = 36, padR = 110, padT = 12, padB = 24;
+            var ix = w - padL - padR;
+            var iy = hgt - padT - padB;
+            var groups = DEMOGRAPHIC_GROUPS;
+            function ptsFor(gid) {
+              return weekLog.map(function(snap, i) {
+                var post = (snap.post || []).find(function(p) { return p.id === gid; });
+                var v = post ? post.infected : 0;
+                var x = padL + (weekLog.length === 1 ? ix / 2 : (i / (weekLog.length - 1)) * ix);
+                var y = padT + iy - (v / 100) * iy;
+                return { x: x, y: y, v: v };
+              });
+            }
+            function pathStr(pts) { return pts.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x + ',' + p.y; }).join(' '); }
+            return h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 12, marginBottom: 14, border: '1px solid #1e293b' } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: '#e2e8f0', marginBottom: 8 } }, '📈 Infection % by demographic across all weeks'),
+              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' }, 'aria-label': 'Week-by-week infection trend chart by demographic group' },
+                [0, 25, 50, 75, 100].map(function(g, gi) {
+                  var y = padT + iy - (g / 100) * iy;
+                  return h('g', { key: 'g' + gi },
+                    h('line', { x1: padL, y1: y, x2: padL + ix, y2: y, stroke: '#1e293b', strokeWidth: 1 }),
+                    h('text', { x: padL - 4, y: y + 3, fontSize: 9, fill: '#64748b', textAnchor: 'end' }, g)
+                  );
+                }),
+                weekLog.map(function(snap, i) {
+                  if (i % 4 !== 0 && i !== weekLog.length - 1) return null;
+                  var x = padL + (weekLog.length === 1 ? ix / 2 : (i / (weekLog.length - 1)) * ix);
+                  return h('text', { key: 'xl' + i, x: x, y: hgt - 8, fontSize: 9, fill: '#64748b', textAnchor: 'middle' }, 'W' + snap.week);
+                }),
+                groups.map(function(gd) {
+                  var pts = ptsFor(gd.id);
+                  return h('g', { key: gd.id },
+                    h('path', { d: pathStr(pts), stroke: gd.color, strokeWidth: 2, fill: 'none', strokeLinejoin: 'round' })
+                  );
+                }),
+                groups.map(function(gd, gi) {
+                  return h('g', { key: 'leg' + gd.id },
+                    h('line', { x1: w - padR + 6, y1: padT + 8 + gi * 16, x2: w - padR + 20, y2: padT + 8 + gi * 16, stroke: gd.color, strokeWidth: 2.5 }),
+                    h('text', { x: w - padR + 24, y: padT + 12 + gi * 16, fontSize: 10, fill: '#cbd5e1' }, gd.icon + ' ' + gd.name.split(' ')[0])
+                  );
+                })
+              )
+            );
+          }
+
+          // AI Public Health Reading. Same safe framing as the other tools:
+          // an AI public health educator, NOT a tribal voice, NOT a real
+          // PHO, NOT speaking for any nation, agency, or named individual.
+          function readOutbreak() {
+            if (!callGemini || outbreak.aiReadLoading) return;
+            var summary = outbreak.groups.map(function(g) {
+              var def = getGroupDef(g.id);
+              return '- ' + def.name + ': infected ' + Math.round(g.infected) + '%, vaccinated ' + Math.round(g.vaccinated) + '%, trust ' + Math.round(g.trust) + '/100, cumulative cases ' + Math.round(g.cumulative.cases) + '%, deaths ' + Math.round(g.cumulative.deaths * 100) / 100 + '%';
+            }).join('\n');
+            var prompt = [
+              'You are an AI public health educator. You are NOT a Wabanaki person, NOT a real public health officer, NOT a healthcare professional, and you do NOT speak for any Wabanaki nation, health agency, organization, or named individual.',
+              '',
+              'A student is managing a simulated 26-week pandemic response in a Maine county. Four demographic groups.',
+              '',
+              'Current state (Week ' + outbreak.week + ' of ' + outbreak.maxWeeks + ', difficulty: ' + (RESPONSE_DIFFICULTIES[outbreak.difficulty] || RESPONSE_DIFFICULTIES.pho).label + '):',
+              summary,
+              'Hospital load: ' + outbreak.hospitalLoad + '% (overload weeks so far: ' + outbreak.hospitalOverloadWeeks + ')',
+              'Hours available this week: ' + outbreak.hoursLeft + ' of ' + outbreak.hoursPerWeek,
+              '',
+              'Read this state and give 3 to 4 sentences of practical coaching grounded in real public health research.',
+              '',
+              'HARD CONSTRAINTS:',
+              '- NEVER claim to be Wabanaki, Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki, or any specific tribal nation.',
+              '- NEVER claim to be a real public health officer, CDC employee, agency staff, doctor, or named individual.',
+              '- NEVER invoke sacred, ceremonial, or spiritual claims.',
+              '- NEVER use "noble savage" framing or romanticized language about Indigenous peoples.',
+              '- NEVER invent quotes attributed to anyone.',
+              '- DO frame as "documented public health research" or "evidence from COVID-19, H1N1, and earlier pandemics".',
+              '- DO acknowledge that Wabanaki nations and community health programs (e.g., Wabanaki Public Health and Wellness) ran some of the most effective pandemic responses in Maine, without speaking for them.',
+              '- DO stay grounded in observable state and concrete interventions: testing, masking, school closure, vaccination, communication, hospital capacity, contact tracing.',
+              '- Name 1 or 2 highest-priority moves and explain why, grounded in pandemic-response evidence.',
+              '- Be direct, observational, useful. No flowery language.',
+              '',
+              'Respond in 3 to 4 sentences of plain prose. Do not use markdown.'
+            ].join('\n');
+            setOutbreak({ aiReadLoading: true, aiReadResponse: null });
+            try {
+              var p = callGemini(prompt);
+              if (p && typeof p.then === 'function') {
+                p.then(function(resp) {
+                  var text = '';
+                  if (typeof resp === 'string') text = resp;
+                  else if (resp && typeof resp.text === 'string') text = resp.text;
+                  else if (resp && resp.candidates) text = (resp.candidates[0] && resp.candidates[0].content && resp.candidates[0].content.parts && resp.candidates[0].content.parts[0] && resp.candidates[0].content.parts[0].text) || '';
+                  text = (text || 'The reader returned no text. Try again in a moment.').replace(/\*\*/g, '').replace(/^[\s\n]+|[\s\n]+$/g, '');
+                  setOutbreak({ aiReadResponse: text, aiReadLoading: false });
+                  if (announceToSR) announceToSR('AI Public Health Reading complete.');
+                }).catch(function() {
+                  setOutbreak({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
+                });
+              } else {
+                setOutbreak({ aiReadResponse: 'AI is not available in this context.', aiReadLoading: false });
+              }
+            } catch (e) {
+              setOutbreak({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
+            }
+          }
+
+          function dismissOutbreakAIRead() { setOutbreak({ aiReadResponse: null }); }
+
+          function renderOutbreakAIPanel() {
+            if (outbreak.aiReadLoading) {
+              return h('div', { role: 'status', 'aria-live': 'polite',
+                style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 } },
+                '⏳ AI public health educator is reading your county data...');
+            }
+            if (!outbreak.aiReadResponse) return null;
+            return h('div', { role: 'region', 'aria-label': 'AI Public Health Reading',
+              style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', border: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                h('span', { style: { fontSize: 20 } }, '🔍'),
+                h('strong', { style: { color: '#38bdf8', fontSize: 14 } }, 'AI Public Health Reading'),
+                h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 6 } },
+                  h('button', { onClick: readOutbreak,
+                    style: { background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '↻ Re-read'),
+                  h('button', { onClick: dismissOutbreakAIRead,
+                    style: { background: 'transparent', border: '1px solid #475569', color: '#cbd5e1', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✕')
+                )
+              ),
+              h('p', { style: { margin: '0 0 10px 0', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.6 } }, outbreak.aiReadResponse),
+              h('div', { style: { fontSize: 11, color: '#64748b', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
+                'AI public health educator. ',
+                h('strong', null, 'It is not a real Public Health Officer, not a Wabanaki person, and does not speak for any Wabanaki nation, public health agency, or named individual.'),
+                ' For authoritative public health voices, consult Maine CDC, Wabanaki Public Health and Wellness, the US CDC, and your local public health department directly.'
+              )
+            );
+          }
+
           function applyInterv(intervId, targetGroupId) {
             var interv = RESPONSE_INTERVENTIONS.find(function(t) { return t.id === intervId; });
             if (!interv) return;
@@ -2110,9 +2377,13 @@ window.StemLab = window.StemLab || {
             }
           }
 
+          // Deep-dive panel renders at the top of every phase when active
+          var outbreakDeepDive = outbreak.deepDiveGroup ? renderOutbreakDeepDive(outbreak.deepDiveGroup) : null;
+
           // ── SETUP ──
           if (outbreak.phase === 'setup') {
             return h('div', { className: 'space-y-4' },
+              outbreakDeepDive,
               h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(56,189,248,0.06) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
                   h('span', { style: { fontSize: 36 } }, '🏥'),
@@ -2137,7 +2408,11 @@ window.StemLab = window.StemLab || {
                       h('strong', { style: { color: g.color } }, g.name)
                     ),
                     h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, g.role),
-                    h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } }, g.desc)
+                    h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 8 } }, g.desc),
+                    g.deepDive ? h('button', { onClick: function() { openOutbreakDeepDive(g.id); },
+                      'aria-label': 'Open deep-dive for ' + g.name,
+                      style: { width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid ' + g.color + '88', background: g.color + '22', color: g.color, cursor: 'pointer', fontWeight: 700, fontSize: 11.5 }
+                    }, '📚 Demographic deep-dive →') : null
                   );
                 })
               ),
@@ -2166,7 +2441,15 @@ window.StemLab = window.StemLab || {
           // ── DEBRIEF ──
           if (outbreak.phase === 'debrief' && outbreak.finalOutcome) {
             var o2 = outbreak.finalOutcome;
+            // Compute baseline + aggregate artifacts for the county
+            var baseline = computeOutbreakDoNothing();
+            var countyTotalPop = Object.values(GROUP_POPULATIONS).reduce(function(a, b) { return a + b; }, 0);
+            var actualTotalCases = outbreak.groups.reduce(function(a, g) { return a + (g.cumulative.cases || 0) * (GROUP_POPULATIONS[g.id] || 0) / 100; }, 0);
+            var baselineTotalCases = baseline.reduce(function(a, g) { return a + (g.cumulative.cases || 0) * (GROUP_POPULATIONS[g.id] || 0) / 100; }, 0);
+            var actualTotalDeaths = outbreak.groups.reduce(function(a, g) { return a + (g.cumulative.deaths || 0) * (GROUP_POPULATIONS[g.id] || 0) / 100; }, 0);
+            var baselineTotalDeaths = baseline.reduce(function(a, g) { return a + (g.cumulative.deaths || 0) * (GROUP_POPULATIONS[g.id] || 0) / 100; }, 0);
             return h('div', { className: 'space-y-3' },
+              outbreakDeepDive,
               h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, ' + o2.color + '24 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + o2.color + '88', borderLeft: '4px solid ' + o2.color } },
                 h('div', { style: { fontSize: 40, marginBottom: 6 } }, o2.icon),
                 h('h3', { style: { margin: 0, color: o2.color, fontSize: 22 } }, o2.label),
@@ -2186,23 +2469,59 @@ window.StemLab = window.StemLab || {
                   h('div', { style: { fontSize: 24, fontWeight: 800, color: outbreak.hospitalOverloadWeeks === 0 ? '#86efac' : '#fbbf24' } }, outbreak.hospitalOverloadWeeks)
                 )
               ),
+              // Week-by-week trend chart
+              renderOutbreakTrendChart(outbreak.weekLog),
+
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 8 } },
                 outbreak.groups.map(function(g) {
                   var def = getGroupDef(g.id);
+                  var art = groupArtifact(g);
                   return h('div', { key: g.id, style: { background: '#0f172a', borderLeft: '3px solid ' + def.color, padding: 10, borderRadius: 8, fontSize: 12 } },
-                    h('div', { style: { fontWeight: 700, color: def.color, marginBottom: 4 } }, def.icon + ' ' + def.name),
+                    h('div', { style: { fontWeight: 700, color: def.color, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 } },
+                      h('span', null, def.icon + ' ' + def.name),
+                      def.deepDive ? h('button', { onClick: function() { openOutbreakDeepDive(g.id); }, 'aria-label': 'Deep-dive',
+                        style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '0 6px', fontSize: 11 } }, '📚') : null
+                    ),
                     h('div', { style: { color: '#cbd5e1', lineHeight: 1.5 } },
-                      'Cases: ' + Math.round(g.cumulative.cases || 0),
-                      h('br'),
-                      'Deaths: ' + Math.round(g.cumulative.deaths || 0),
+                      'Cases: ' + Math.round(g.cumulative.cases || 0) + '%',
                       h('br'),
                       'Vaccinated: ' + Math.round(g.vaccinated) + '%',
                       h('br'),
                       'Trust: ' + Math.round(g.trust) + '/100'
+                    ),
+                    h('div', { style: { marginTop: 6, padding: 6, background: '#1e293b', borderRadius: 6, fontSize: 11.5, color: '#fde68a', lineHeight: 1.5 } },
+                      '👥 ' + art.cases.toLocaleString() + ' people sick',
+                      h('br'),
+                      '⚱️ ' + art.deaths.toLocaleString() + ' lives lost',
+                      h('br'),
+                      '💉 ' + art.doses.toLocaleString() + ' doses delivered'
                     )
                   );
                 })
               ),
+
+              // Do-nothing baseline
+              h('div', { style: { padding: 12, borderRadius: 12, background: 'linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)', border: '1px solid rgba(248,113,113,0.4)' } },
+                h('strong', { style: { color: '#fecaca', fontSize: 14, display: 'block', marginBottom: 8 } }, '↔ What if a PHO had done nothing for 26 weeks?'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+                  h('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o2.color } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: o2.color, marginBottom: 4 } }, 'Your campaign'),
+                    h('div', { style: { color: '#cbd5e1', fontSize: 13 } }, Math.round(actualTotalCases).toLocaleString() + ' sick · ' + Math.round(actualTotalDeaths).toLocaleString() + ' lost · ' + outbreak.hospitalOverloadWeeks + ' overload weeks')
+                  ),
+                  h('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fca5a5', marginBottom: 4 } }, 'Pure neglect'),
+                    h('div', { style: { color: '#cbd5e1', fontSize: 13 } }, Math.round(baselineTotalCases).toLocaleString() + ' sick · ' + Math.round(baselineTotalDeaths).toLocaleString() + ' lost · projected continuous overload')
+                  )
+                ),
+                h('div', { style: { marginTop: 8, fontSize: 12, color: '#fde68a', lineHeight: 1.5, fontStyle: 'italic' } },
+                  baselineTotalDeaths > actualTotalDeaths + 200
+                    ? 'Your interventions prevented an estimated ' + Math.round(baselineTotalDeaths - actualTotalDeaths).toLocaleString() + ' deaths in this county. That is the difference between active public health response and laissez-faire.'
+                    : (actualTotalDeaths > baselineTotalDeaths
+                        ? 'Active management ended up worse than the do-nothing baseline this run. That happens when interventions burn trust faster than they cut transmission. Look at WHICH weeks you intervened, and whether trust was high enough to make those interventions stick.'
+                        : 'Your response roughly matched the no-action baseline. Sometimes a county would have fared similarly without intervention; sometimes that means your interventions canceled each other out via trust erosion.')
+                )
+              ),
+
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                 h('button', { onClick: resetOutbreak, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#1e293b', color: '#cbd5e1', fontWeight: 700 } }, '↻ New campaign'),
                 h('button', { onClick: function() { startOutbreak({ seed: outbreak.seed, difficulty: outbreak.difficulty }); }, style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8', cursor: 'pointer', background: 'rgba(56,189,248,0.15)', color: '#bae6fd', fontWeight: 700 } }, '🔁 Replay same conditions')
@@ -2219,6 +2538,7 @@ window.StemLab = window.StemLab || {
             var lastSnap2 = outbreak.weekLog[outbreak.weekLog.length - 1] || {};
             var ev3 = outbreak.lastEvent || {};
             return h('div', { className: 'space-y-3' },
+              outbreakDeepDive,
               h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderLeft: '3px solid #fbbf24' } },
                 h('div', { style: { fontSize: 22, marginBottom: 4 } }, ev3.icon || '🌿'),
                 h('strong', { style: { color: '#fbbf24', fontSize: 16 } }, 'Week ' + outbreak.week + ' event: ' + (ev3.name || 'quiet week')),
@@ -2273,7 +2593,19 @@ window.StemLab = window.StemLab || {
           // ── WEEK ──
           var totalInf = outbreak.groups.reduce(function(a, g) { return a + g.infected; }, 0);
           var avgTrust = Math.round(outbreak.groups.reduce(function(a, g) { return a + g.trust; }, 0) / outbreak.groups.length);
+          var coachingTip = (outbreak.week === 1 && !outbreak.firstTipDismissed && outbreak.weekActions.length === 0) ? outbreakCoachingTip() : null;
           return h('div', { className: 'space-y-3' },
+            outbreakDeepDive,
+            coachingTip ? h('div', { role: 'note', style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)', border: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7', color: '#e9d5ff', fontSize: 13, lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 10 } },
+              h('span', { style: { fontSize: 20, flexShrink: 0 } }, '🪶'),
+              h('div', { style: { flex: 1 } },
+                h('strong', { style: { color: '#a855f7' } }, 'Week 1 priority: '),
+                h('span', { style: { color: '#fde68a' } }, coachingTip.priority),
+                h('div', { style: { marginTop: 4, color: '#e9d5ff' } }, coachingTip.text)
+              ),
+              h('button', { onClick: function() { setOutbreak({ firstTipDismissed: true }); }, 'aria-label': 'Dismiss tip',
+                style: { background: 'transparent', border: 'none', color: '#a855f7', cursor: 'pointer', fontSize: 16, padding: 0, marginLeft: 6 } }, '✕')
+            ) : null,
             // HUD
             h('div', { style: { padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
               h('div', null,
@@ -2292,11 +2624,19 @@ window.StemLab = window.StemLab || {
                 h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Total infected (sum across groups)'),
                 h('div', { style: { fontSize: 20, fontWeight: 800, color: totalInf > 40 ? '#ef4444' : totalInf > 20 ? '#fbbf24' : '#86efac' } }, Math.round(totalInf))
               ),
-              h('div', { style: { marginLeft: 'auto' } },
+              h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+                callGemini ? h('button', { onClick: readOutbreak, disabled: outbreak.aiReadLoading,
+                  'aria-label': 'Ask AI public health educator to read your county data',
+                  title: 'AI public health educator reads your current state',
+                  style: { padding: '8px 12px', borderRadius: 10, border: '1px solid #38bdf8', cursor: outbreak.aiReadLoading ? 'wait' : 'pointer', background: 'rgba(56,189,248,0.10)', color: '#38bdf8', fontWeight: 700, fontSize: 12, opacity: outbreak.aiReadLoading ? 0.6 : 1 }
+                }, outbreak.aiReadLoading ? '⏳ Reading...' : '🔍 Read the county (AI)') : null,
                 h('button', { onClick: endOutbreakWeek, 'aria-label': 'End this week',
                   style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 13 } }, 'End Week →')
               )
             ),
+
+            // AI Public Health Reading panel
+            renderOutbreakAIPanel(),
 
             // Active mods banner
             (outbreak.activeMods && outbreak.activeMods.length > 0) ? h('div', { style: { padding: 8, borderRadius: 10, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8', fontSize: 12, color: '#bae6fd' } },
@@ -2314,7 +2654,9 @@ window.StemLab = window.StemLab || {
                     h('div', { style: { flex: 1 } },
                       h('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
                       h('div', { style: { fontSize: 11, color: '#94a3b8' } }, def.role)
-                    )
+                    ),
+                    def.deepDive ? h('button', { onClick: function() { openOutbreakDeepDive(g.id); }, 'aria-label': 'Deep-dive for ' + def.name, title: 'Demographic deep-dive',
+                      style: { background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 } }, '📚') : null
                   ),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
                     [['Inf %', Math.round(g.infected), g.infected > 15 ? '#ef4444' : g.infected > 8 ? '#f59e0b' : '#86efac'],
