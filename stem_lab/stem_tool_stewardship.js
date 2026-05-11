@@ -123,6 +123,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
     return t === 'excellent' || t === 'mastery' || t === 'recovery' || t === 'netzero';
   }
 
+  // ── Cross-campaign synthesis patterns ──
+  // Each pattern is a structural insight that shows up across multiple
+  // campaigns. When the student has completed 2+ campaigns the panel
+  // surfaces the patterns where at least one pair of completed campaigns
+  // both participate.
+  var SYNTHESIS_PATTERNS = [
+    {
+      id: 'loadBearingSupport',
+      title: 'The "support" metric is load-bearing in every campaign',
+      campaigns: ['conserve', 'outbreak', 'steward', 'pathway'],
+      insight: 'Public support is not a flavor metric. In Conservation Manager, wolf support gates reintroduction. In Outbreak Response, working-age trust below 40 triggers vaccine refusal. In Watershed Steward, low support stalls dam removal. In Climate Pathways, the entire policy pathway collapses if climate-justice support drops below 40. In every campaign with a population, the social contract is structural to the science.'
+    },
+    {
+      id: 'foundationalEquity',
+      title: 'Equity / community is the foundation, not the topping',
+      campaigns: ['mosaic', 'conserve', 'outbreak', 'pathway'],
+      insight: 'Cultural Mosaic centers Wabanaki stewardship as the primary practice, not as a bolt-on. Conservation Manager makes public support load-bearing for any intervention. Outbreak Response\'s equity-PHO badge requires elderly vaccination AND maintained trust. Climate Pathways has an entire policy sector dedicated to Climate Justice with a feedback rule that drags every other sector down if you neglect it. Equity is upstream of effectiveness, not a moral add-on.'
+    },
+    {
+      id: 'keystoneCascades',
+      title: 'Keystone entities trigger cascade effects across the system',
+      campaigns: ['conserve', 'steward', 'pathway'],
+      insight: 'Wolves suppress deer which lets forests recover (Conservation Manager). Beaver wetlands raise water tables which cool streams which feed brook trout (Watershed Steward). Clean grid unlocks transportation and building electrification (Climate Pathways). One healthy keystone entity changes the math everywhere downstream. Identifying YOUR keystone is the first move in each campaign.'
+    },
+    {
+      id: 'doNothingNotNeutral',
+      title: 'Do-nothing is not neutral; it has a trajectory',
+      campaigns: ['mosaic', 'conserve', 'outbreak', 'steward', 'pathway'],
+      insight: 'Every campaign\'s do-nothing baseline shows a system drift. Mosaic land degrades. Deer hyperabundance ruins habitats. Pandemics burn through populations. Watersheds slip into ag-runoff dominance. Climate sectors decarbonize partially via market forces alone but adaptation and equity collapse. The choice is never "act vs do nothing"; it is "actively steward vs passively allow whatever direction the system already wants to go."'
+    },
+    {
+      id: 'timeLagsMatter',
+      title: 'Time lags determine which early moves matter most',
+      campaigns: ['mosaic', 'conserve', 'pathway'],
+      insight: 'Cultural Mosaic\'s coppice work pays off in basket splints years later. Conservation Manager\'s wolf reintroduction requires 2 to 4 years of habitat protection and support building first. Climate Pathways\' clean grid feedback rule only fires when grid decarb crosses 70, which can take 3 to 4 periods to set up. The campaigns reward strategists who play the long game.'
+    },
+    {
+      id: 'wabanakiSafeFraming',
+      title: 'AI features carry the same hard-constrained framing',
+      campaigns: ['mosaic', 'conserve', 'outbreak', 'steward', 'pathway'],
+      insight: 'The AI Reading feature in every campaign is built with the same hard constraints: never claim to be a Wabanaki person, never claim to be a real practitioner (PHO / wildlife biologist / watershed coordinator / climate strategist), never invent quotes, never invoke sacred or ceremonial claims, never romanticize. The visible disclaimer in every campaign points to Wabanaki-led organizations and agencies for authoritative voice. This is not a code-reuse pattern; it is a deliberate stance about who has authority to speak about real people and real practice.'
+    }
+  ];
+
   // ── Tool registration ──
   window.StemLab.registerTool('stewardshipHub', {
     icon: '🌍',
@@ -247,6 +291,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             })
           )
         ),
+
+        // Cross-campaign synthesis (appears at 2+ completions)
+        (function() {
+          if (completedCount < 2) return null;
+          var completedIds = snapshots.filter(function(s) { return s.state.status === 'complete'; }).map(function(s) { return s.campaign.id; });
+          // Show patterns where at least 2 of the player's completed campaigns participate
+          var applicable = SYNTHESIS_PATTERNS.filter(function(p) {
+            var hits = p.campaigns.filter(function(cid) { return completedIds.indexOf(cid) >= 0; });
+            return hits.length >= 2;
+          });
+          if (applicable.length === 0) return null;
+          return h('div', {
+            style: {
+              marginBottom: 16, padding: 16, borderRadius: 12,
+              background: 'linear-gradient(135deg, rgba(168,85,247,0.14) 0%, rgba(56,189,248,0.04) 100%)',
+              border: '1px solid rgba(168,85,247,0.4)', borderLeft: '4px solid #a855f7'
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
+              h('span', { style: { fontSize: 24 } }, '🧠'),
+              h('div', null,
+                h('h3', { style: { margin: 0, color: '#c4b5fd', fontSize: 16, fontWeight: 800 } }, 'Cross-Campaign Synthesis'),
+                h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, 'Patterns that show up across the campaigns you have completed (' + completedCount + ' / 5). These are the structural insights the five campaigns are designed to teach together.')
+              )
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr', gap: 10 } },
+              applicable.map(function(p) {
+                var hitIds = p.campaigns.filter(function(cid) { return completedIds.indexOf(cid) >= 0; });
+                var hitNames = hitIds.map(function(cid) {
+                  var c = CAMPAIGNS.find(function(x) { return x.id === cid; });
+                  return c ? c.icon + ' ' + c.label : cid;
+                });
+                return h('div', { key: p.id,
+                  style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(168,85,247,0.2)' }
+                },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 800, color: '#e9d5ff', marginBottom: 6 } }, p.title),
+                  h('p', { style: { margin: '0 0 8px', color: '#e2e8f0', fontSize: 12.5, lineHeight: 1.55 } }, p.insight),
+                  h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } },
+                    'Visible in your completed runs: ' + hitNames.join(' · ')
+                  )
+                );
+              })
+            )
+          );
+        })(),
 
         // Campaign tiles
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 12 } },
