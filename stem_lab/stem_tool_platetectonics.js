@@ -1227,6 +1227,19 @@ var d = labToolData.plateTectonics || {};
 
             simTab === 'sim' && React.createElement("div", { className: "space-y-4" },
 
+              React.createElement("div", {
+                role: "note",
+                style: {
+                  padding: '10px 14px', borderRadius: 12,
+                  background: 'linear-gradient(135deg, rgba(220,38,38,0.14) 0%, rgba(220,38,38,0.04) 100%)',
+                  border: '1px solid rgba(220,38,38,0.5)', borderLeft: '3px solid #dc2626',
+                  color: '#7f1d1d', fontSize: 13, lineHeight: 1.55
+                }
+              },
+                React.createElement("strong", { style: { color: '#b91c1c' } }, "Goal: "),
+                "drag plates toward each other (convergent), apart (divergent), or sideways past each other (transform), and watch which boundary produces volcanoes, trenches, mid-ocean ridges, or earthquakes. Convection currents show why plates move; toggle them off (C key) to focus on surface features."
+              ),
+
               React.createElement("div", { className: "rounded-2xl overflow-hidden border-2 border-red-200 shadow-lg" },
 
                 React.createElement("canvas", {
@@ -1349,6 +1362,19 @@ var d = labToolData.plateTectonics || {};
             // â•â•â• TAB 2: EARTHQUAKE LAB â•â•â•
 
             simTab === 'earthquake' && React.createElement("div", { className: "space-y-4" },
+
+              React.createElement("div", {
+                role: "note",
+                style: {
+                  padding: '10px 14px', borderRadius: 12,
+                  background: 'linear-gradient(135deg, rgba(245,158,11,0.14) 0%, rgba(245,158,11,0.04) 100%)',
+                  border: '1px solid rgba(245,158,11,0.5)', borderLeft: '3px solid #f59e0b',
+                  color: '#78350f', fontSize: 13, lineHeight: 1.55
+                }
+              },
+                React.createElement("strong", { style: { color: '#b45309' } }, "Goal: "),
+                "feel the Richter scale. It is logarithmic: each whole number is 10x more shaking and about 32x more energy. A 7.0 is not twice a 3.5, it is over 100,000x more energy. Slide through magnitudes and watch the damage tier flip from green to amber to red. P-waves arrive first, S-waves second, surface waves do most of the damage."
+              ),
 
               React.createElement("div", { className: "p-5 rounded-2xl border-2 border-red-200", style: { background: _gCard } },
 
