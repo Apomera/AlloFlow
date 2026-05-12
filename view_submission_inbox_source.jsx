@@ -23,6 +23,12 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   const [queue, setQueue] = useState([]);
   const [decryptingAll, setDecryptingAll] = useState(false);
   const [expandedRow, setExpandedRow] = useState(null);
+  // Phase 3 (May 11 2026): per-row rubric state + AI grading results.
+  // rubrics[idx] = { rubric: string, context: string, exemplar: string }
+  // grades[idx]  = { [responseKey]: { score, status, feedback } }
+  const [rubrics, setRubrics] = useState({});
+  const [grades, setGrades] = useState({});
+  const [gradingRow, setGradingRow] = useState(null);
   const keyInputRef = useRef(null);
   const subInputRef = useRef(null);
 
@@ -147,6 +153,108 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
         background: s.bg, color: s.color, fontSize: '0.72rem', fontWeight: 700
       }
     }, s.label);
+  };
+
+  // ── Phase 3: AI grading helpers ───────────────────────────
+  const updateRubric = (idx, patch) => {
+    setRubrics(prev => ({ ...prev, [idx]: { ...(prev[idx] || { rubric: '', context: '', exemplar: '' }), ...patch } }));
+  };
+  const gradeRow = async (idx) => {
+    const row = queue[idx];
+    if (!row || row.status !== 'decrypted' || !row.payload) return;
+    const r = rubrics[idx] || {};
+    const rubricText = (r.rubric || '').trim();
+    if (!rubricText) {
+      addToast && addToast('Please describe what a good response should include before grading.', 'warn');
+      return;
+    }
+    const QH = window.AlloModules && window.AlloModules.QuizAIHelpers;
+    if (!QH || typeof QH.gradeFreeformAnswerWithCalibration !== 'function') {
+      addToast && addToast('Grader module not loaded yet. Try again in a moment.', 'error');
+      return;
+    }
+    const callGemini = window.callGemini;
+    if (typeof callGemini !== 'function') {
+      addToast && addToast('Gemini API not ready. Open a regular AlloFlow window first so the API key loads.', 'error');
+      return;
+    }
+    const calibrationSamples = (r.exemplar && r.exemplar.trim())
+      ? [{ studentResponse: r.exemplar.trim(), teacherScore: 95, teacherFeedback: 'Teacher-provided exemplar — full credit anchor.' }]
+      : [];
+    const responseEntries = Object.entries(row.payload.responses || {}).filter(([k, v]) => v && String(v).trim());
+    if (responseEntries.length === 0) {
+      addToast && addToast('No responses to grade in this submission.', 'warn');
+      return;
+    }
+    setGradingRow(idx);
+    setGrades(prev => ({ ...prev, [idx]: { ...(prev[idx] || {}) } }));
+    let ok = 0, fail = 0;
+    for (let i = 0; i < responseEntries.length; i++) {
+      const [key, value] = responseEntries[i];
+      try {
+        const result = await QH.gradeFreeformAnswerWithCalibration({
+          rubric: rubricText,
+          context: r.context || row.payload.docTitle || '',
+          studentResponse: String(value),
+          calibrationSamples: calibrationSamples,
+          callGemini: callGemini,
+        });
+        setGrades(prev => ({
+          ...prev,
+          [idx]: { ...(prev[idx] || {}), [key]: result }
+        }));
+        if (result.status !== 'error') ok++; else fail++;
+      } catch (err) {
+        setGrades(prev => ({
+          ...prev,
+          [idx]: { ...(prev[idx] || {}), [key]: { status: 'error', feedback: err.message || 'Grader failed', score: 0 } }
+        }));
+        fail++;
+      }
+    }
+    setGradingRow(null);
+    addToast && addToast(
+      'Graded ' + ok + ' response' + (ok === 1 ? '' : 's') + (fail > 0 ? ', ' + fail + ' failed' : ''),
+      fail > 0 ? 'warn' : 'success'
+    );
+  };
+  const saveRowToGradebook = (idx) => {
+    const row = queue[idx];
+    if (!row || row.status !== 'decrypted' || !row.payload) return;
+    const rowGrades = grades[idx] || {};
+    if (Object.keys(rowGrades).length === 0) {
+      addToast && addToast('Grade the responses first.', 'warn');
+      return;
+    }
+    try {
+      const existing = JSON.parse(localStorage.getItem('alloflow_offline_grades') || '{}');
+      const nickname = row.payload.nickname || 'unknown';
+      const docTitle = row.payload.docTitle || 'untitled';
+      const className = (classKeyMeta && classKeyMeta.className) || '';
+      const submissionKey = nickname + '|' + docTitle + '|' + (row.payload.timestamp || '');
+      existing[submissionKey] = {
+        nickname: nickname,
+        docTitle: docTitle,
+        className: className,
+        submittedAt: row.payload.timestamp,
+        gradedAt: new Date().toISOString(),
+        source: 'offline-html',
+        responses: row.payload.responses,
+        grades: rowGrades,
+        rubric: (rubrics[idx] && rubrics[idx].rubric) || '',
+      };
+      localStorage.setItem('alloflow_offline_grades', JSON.stringify(existing));
+      addToast && addToast('Saved ' + nickname + '\'s submission to local gradebook.', 'success');
+    } catch (err) {
+      addToast && addToast('Could not save: ' + err.message, 'error');
+    }
+  };
+  const scoreColor = (score) => {
+    if (typeof score !== 'number') return { bg: '#f1f5f9', color: '#475569' };
+    if (score >= 85) return { bg: '#dcfce7', color: '#166534' };
+    if (score >= 65) return { bg: '#fef3c7', color: '#92400e' };
+    if (score >= 40) return { bg: '#fed7aa', color: '#9a3412' };
+    return { bg: '#fee2e2', color: '#991b1b' };
   };
 
   const rosterBadge = (status) => {
@@ -320,10 +428,66 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                           ),
                           Object.keys(row.payload.responses || {}).length === 0
                             ? /*#__PURE__*/React.createElement('div', { style: { fontStyle: 'italic', color: '#94a3b8', fontSize: '0.85rem' } }, 'No responses captured.')
-                            : Object.entries(row.payload.responses).map(([k, v], i) => /*#__PURE__*/React.createElement('div', { key: i, style: { marginBottom: 6, fontSize: '0.85rem' } },
-                                /*#__PURE__*/React.createElement('code', { style: { fontSize: '0.75rem', color: '#94a3b8', marginRight: 6 } }, k.length > 40 ? k.slice(0, 40) + '…' : k),
-                                /*#__PURE__*/React.createElement('span', { style: { color: '#1e293b' } }, String(v).slice(0, 200))
-                              ))
+                            : Object.entries(row.payload.responses).map(([k, v], i) => {
+                                const g = (grades[idx] || {})[k];
+                                const sc = g ? scoreColor(g.score) : null;
+                                return /*#__PURE__*/React.createElement('div', { key: i, style: { marginBottom: 8, padding: '6px 8px', borderRadius: 6, background: g ? 'white' : 'transparent', border: g ? '1px solid #e2e8f0' : 'none' } },
+                                  /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', marginBottom: g ? 4 : 0 } },
+                                    /*#__PURE__*/React.createElement('code', { style: { fontSize: '0.72rem', color: '#94a3b8', marginRight: 6 } }, k.length > 40 ? k.slice(0, 40) + '…' : k),
+                                    /*#__PURE__*/React.createElement('span', { style: { color: '#1e293b' } }, String(v).slice(0, 300))
+                                  ),
+                                  g && /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, fontSize: '0.78rem' } },
+                                    /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700 } }, (typeof g.score === 'number' ? g.score : '–') + '/100'),
+                                    /*#__PURE__*/React.createElement('span', { style: { color: '#475569', fontStyle: 'italic' } }, g.feedback || '')
+                                  )
+                                );
+                              }),
+                          // Rubric / Grade-with-AI section
+                          Object.keys(row.payload.responses || {}).length > 0 && /*#__PURE__*/React.createElement('div', { style: { marginTop: 14, paddingTop: 12, borderTop: '1px dashed #cbd5e1' } },
+                            /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#475569', fontSize: '0.8rem', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } },
+                              '🎯 AI Grade with rubric'
+                            ),
+                            /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.78rem', color: '#475569', fontWeight: 600, marginBottom: 4 } }, 'Rubric (what full credit looks like) *'),
+                            /*#__PURE__*/React.createElement('textarea', {
+                              value: (rubrics[idx] && rubrics[idx].rubric) || '',
+                              onChange: e => updateRubric(idx, { rubric: e.target.value }),
+                              placeholder: 'e.g., "Explains the main idea in their own words, cites at least one detail from the text, uses complete sentences."',
+                              rows: 3,
+                              style: { width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: '0.85rem', fontFamily: 'inherit', resize: 'vertical', marginBottom: 8 }
+                            }),
+                            /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.78rem', color: '#475569', fontWeight: 600, marginBottom: 4 } }, 'Assignment context (optional)'),
+                            /*#__PURE__*/React.createElement('input', {
+                              type: 'text',
+                              value: (rubrics[idx] && rubrics[idx].context) || '',
+                              onChange: e => updateRubric(idx, { context: e.target.value }),
+                              placeholder: 'e.g., "Reading response to chapter 3"',
+                              style: { width: '100%', padding: '6px 8px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: '0.85rem', marginBottom: 8 }
+                            }),
+                            /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.78rem', color: '#475569', fontWeight: 600, marginBottom: 4 } }, 'Exemplar full-credit response (optional, used as calibration anchor)'),
+                            /*#__PURE__*/React.createElement('textarea', {
+                              value: (rubrics[idx] && rubrics[idx].exemplar) || '',
+                              onChange: e => updateRubric(idx, { exemplar: e.target.value }),
+                              placeholder: 'Paste an example of a 95/100 response so the AI matches your scoring.',
+                              rows: 2,
+                              style: { width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: '0.85rem', fontFamily: 'inherit', resize: 'vertical', marginBottom: 8 }
+                            }),
+                            /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
+                              /*#__PURE__*/React.createElement('button', {
+                                type: 'button',
+                                onClick: () => gradeRow(idx),
+                                disabled: gradingRow === idx,
+                                style: { padding: '8px 16px', background: '#7c3aed', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: gradingRow === idx ? 'wait' : 'pointer', opacity: gradingRow === idx ? 0.6 : 1 }
+                              }, gradingRow === idx ? 'Grading…' : '🎯 Grade responses'),
+                              Object.keys(grades[idx] || {}).length > 0 && /*#__PURE__*/React.createElement('button', {
+                                type: 'button',
+                                onClick: () => saveRowToGradebook(idx),
+                                style: { padding: '8px 16px', background: '#16a34a', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }
+                              }, '💾 Save to gradebook'),
+                              Object.keys(grades[idx] || {}).length > 0 && /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.78rem', color: '#64748b' } },
+                                'Avg: ' + Math.round(Object.values(grades[idx]).reduce((s, g) => s + (g.score || 0), 0) / Object.values(grades[idx]).length) + '/100'
+                              )
+                            )
+                          )
                         )
                       )
                     )
@@ -337,19 +501,14 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
       /*#__PURE__*/React.createElement('div', { style: { padding: '14px 22px', borderTop: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 } },
         /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.8rem', color: '#64748b' } },
           (counts.decrypted || 0) > 0
-            ? '🚀 Phase 3 (AI rubric grading + gradebook) coming soon. For now you can review decrypted responses inline.'
+            ? 'Click "View" on a row to grade it with an AI rubric and save the result to your local gradebook.'
             : 'Decrypt the queue to see student responses.'
         ),
         /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 8 } },
           /*#__PURE__*/React.createElement('button', {
             type: 'button', onClick: onClose,
             style: { padding: '8px 18px', background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }
-          }, 'Close'),
-          (counts.decrypted || 0) > 0 && /*#__PURE__*/React.createElement('button', {
-            type: 'button', disabled: true,
-            title: 'Phase 3: route decrypted submissions to AI rubric grading',
-            style: { padding: '8px 18px', background: '#cbd5e1', color: '#64748b', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'not-allowed', fontSize: '0.9rem' }
-          }, 'Send to gradebook (soon)')
+          }, 'Close')
         )
       )
     )

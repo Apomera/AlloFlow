@@ -150,9 +150,79 @@
     }
   }
 
+  /**
+   * Grade a freeform response with optional calibration samples (Phase 3 of the
+   * offline-HTML submission system, May 11 2026). Same return shape as
+   * gradeFreeformAnswer plus a numeric `score` (0-100) interpolated from the
+   * teacher's calibration examples when provided.
+   *
+   * @param {Object} args
+   *   @param {string} args.rubric           Free-text rubric describing what full credit looks like.
+   *   @param {string} args.studentResponse  Student's text. Required.
+   *   @param {string} [args.context]        Optional doc title / assignment context.
+   *   @param {Array<{studentResponse:string, teacherScore:number, teacherFeedback?:string}>} [args.calibrationSamples]
+   *       Up to 5 teacher-scored exemplars used as few-shot anchors.
+   *   @param {string} [args.gradeLevel]     For age-appropriate feedback tone.
+   *   @param {Function} args.callGemini     Required.
+   * @returns {Promise<{status, feedback, score}>}
+   */
+  async function gradeFreeformAnswerWithCalibration(args) {
+    if (!args || typeof args.callGemini !== 'function') {
+      return { status: 'error', feedback: 'Grader unavailable: callGemini not provided.', score: 0 };
+    }
+    if (!args.studentResponse || !String(args.studentResponse).trim()) {
+      return { status: 'incorrect', feedback: 'No response provided yet.', score: 0 };
+    }
+    var rubric = String(args.rubric || 'Demonstrates understanding of the topic and explains reasoning.').slice(0, 800);
+    var resp = String(args.studentResponse || '').slice(0, 1500);
+    var context = String(args.context || '').slice(0, 200);
+    var grade = args.gradeLevel || 'middle school';
+    var calibration = Array.isArray(args.calibrationSamples) ? args.calibrationSamples.slice(0, 5) : [];
+
+    var calibrationBlock = '';
+    if (calibration.length > 0) {
+      calibrationBlock = '\nCALIBRATION SAMPLES (teacher-scored exemplars — match this scoring direction):\n';
+      calibration.forEach(function(s, i) {
+        var score = (typeof s.teacherScore === 'number' && s.teacherScore >= 0 && s.teacherScore <= 100) ? s.teacherScore : 50;
+        calibrationBlock += (i + 1) + '. SCORE ' + score + '/100 — "' + String(s.studentResponse || '').slice(0, 200) + '"';
+        if (s.teacherFeedback) calibrationBlock += ' (teacher note: ' + String(s.teacherFeedback).slice(0, 120) + ')';
+        calibrationBlock += '\n';
+      });
+    }
+
+    var prompt = 'You are a fair, encouraging teacher grading a free-response answer. Match the calibration direction if provided; otherwise grade against the rubric directly. Be lenient on spelling/grammar; strict on whether the response addresses what the rubric asks.\n\n'
+      + (context ? 'ASSIGNMENT CONTEXT: "' + context + '"\n' : '')
+      + 'RUBRIC: "' + rubric + '"\n'
+      + 'STUDENT RESPONSE: "' + resp + '"\n'
+      + calibrationBlock
+      + '\nGrade Level: ' + grade + '\n\n'
+      + 'Return ONLY a single valid JSON object with this exact shape:\n'
+      + '{\n'
+      + '  "status": "correct" | "partially-correct" | "incorrect" | "unclear",\n'
+      + '  "score": <number 0-100 ' + (calibration.length > 0 ? 'aligned with the calibration samples above' : 'where 100=fully meets rubric, 70=partial, 40=tangential, 0=missing/off-topic') + '>,\n'
+      + '  "feedback": "ONE encouraging sentence (15-30 words). Affirm what is right; name what is missing; never give the full answer."\n'
+      + '}\n\nNo markdown, no fences, no extra prose.';
+    try {
+      var raw = await args.callGemini(prompt, true);
+      var parsed = safeParseJson(raw);
+      if (!parsed) return { status: 'error', feedback: 'Could not parse grader response. Try again.', score: 0 };
+      var score = (typeof parsed.score === 'number' && parsed.score >= 0 && parsed.score <= 100)
+        ? Math.round(parsed.score)
+        : (parsed.status === 'correct' ? 90 : parsed.status === 'partially-correct' ? 65 : parsed.status === 'incorrect' ? 25 : 0);
+      return {
+        status: clampStatus(parsed.status),
+        feedback: typeof parsed.feedback === 'string' ? parsed.feedback : '',
+        score: score,
+      };
+    } catch (err) {
+      return { status: 'error', feedback: (err && err.message) ? err.message : 'Grader call failed.', score: 0 };
+    }
+  }
+
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.QuizAIHelpers = {
     gradeFreeformAnswer: gradeFreeformAnswer,
+    gradeFreeformAnswerWithCalibration: gradeFreeformAnswerWithCalibration,
     gradeFillBlank: gradeFillBlank,
   };
   console.log('[CDN] QuizAIHelpers loaded');
