@@ -197,6 +197,222 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         });
       }
 
+      // ── Campaign Comparison: pair-specific reflection prompts ──
+      // 10 unique pairs from 5 campaigns. Each prompt is hand-written
+      // to draw out the specific structural insight that pair surfaces.
+      var PAIR_REFLECTIONS = {
+        'mosaic+conserve': {
+          title: 'Stewardship as multi-generational practice',
+          text: 'Cultural Mosaic and Conservation Manager are both multi-year stewardship campaigns where the moves you make in year 2 only pay off in year 7. Mosaic\'s coppice plantings, Conservation Manager\'s wolf-support building. The discipline is the same: invest in slow infrastructure before you need it. What other domains in your life reward this kind of patience?'
+        },
+        'mosaic+outbreak': {
+          title: 'Time scales of stewardship',
+          text: 'Cultural Mosaic operates on 8 years; Outbreak Response on 26 weeks. The shorter time scale of pandemic response means your trust capital regenerates more slowly than your fire-return cycles do. Notice how the same kind of decision (a controversial intervention) carries different weight depending on how long the system has to recover. Real Maine planners juggle both time horizons in parallel.'
+        },
+        'mosaic+steward': {
+          title: 'Actively tending land and water',
+          text: 'Both campaigns are about active stewardship of physical Maine landscape: fire on the barrens, water in the streams. Both involve Wabanaki-led work as the historical and ongoing foundation. Both reward you for matching technique to season and to specific zones. Mosaic\'s riparian zone (sweetgrass, beaver) is literally the same physical place as Watershed Steward\'s floodplain wetlands.'
+        },
+        'mosaic+pathway': {
+          title: 'Indigenous-led work as primary, not bolt-on',
+          text: 'Both Cultural Mosaic and Climate Pathways center Indigenous-led work as foundational. Mosaic IS Wabanaki practice; Pathway\'s Climate Justice sector has the largest feedback-rule reach (low support there drags every other sector down). What pattern do you notice about how systems perform when Indigenous leadership is centered versus appended?'
+        },
+        'conserve+outbreak': {
+          title: 'Trust and support as gating mechanisms',
+          text: 'Conservation Manager\'s wolf reintroduction requires habitat 60+ AND public support 50+. Outbreak Response\'s vaccine uptake collapses when working-age trust drops below 40. In both cases, technical feasibility is downstream of social acceptance. The technical move you most want to make is often the one you most have to earn.'
+        },
+        'conserve+steward': {
+          title: 'Keystone entities reshape entire systems',
+          text: 'Wolves in Conservation Manager and beavers in Watershed Steward are both keystone species. A small change in their population produces large changes everywhere downstream. The lesson: in any complex system, identify your keystone first. Most of your effort should go into the entity whose effect ripples furthest.'
+        },
+        'conserve+pathway': {
+          title: 'Cascades at the species and sector scale',
+          text: 'Conservation Manager\'s trophic cascades (wolf-deer-forest) and Climate Pathway\'s sector cascades (clean-grid-transport-buildings) are structurally identical: high state in one entity unlocks accelerated change in another. The math is the same; only the units differ. This is what makes systems thinking transferable across domains.'
+        },
+        'outbreak+steward': {
+          title: 'Constrained-hours public-resource management',
+          text: 'Both Outbreak Response and Watershed Steward run a constrained hours budget per period. Both involve weighing politically expensive moves (mandates, dam removal) against trust-building moves (communication, citizen science). Both expose the same painful truth: the right intervention at the wrong time costs more than it gains.'
+        },
+        'outbreak+pathway': {
+          title: 'Equity as foundation, not topping',
+          text: 'Outbreak Response\'s equity-PHO badge requires elderly vaccination above 80 WITH maintained trust. Climate Pathway\'s Justice sector has the biggest feedback-rule reach across all five campaigns. In both, equity is a structural input to system performance, not a moral overlay. Watch what happens to ANY policy in either campaign when equity drops below 40.'
+        },
+        'steward+pathway': {
+          title: 'Land-use decisions compound over decades',
+          text: 'Watershed restoration on a 10-year scale and climate policy on a 40-year scale share the same fundamental pattern: land-use decisions compound. Riparian buffer plantings show up as cold-water trout populations 8 years later. Forest carbon protection shows up as adaptation co-benefits two decades later. The decisions feel small at the moment of action and only become visible at scale years later.'
+        }
+      };
+
+      function pairKey(a, b) {
+        var order = ['mosaic', 'conserve', 'outbreak', 'steward', 'pathway'];
+        var ia = order.indexOf(a), ib = order.indexOf(b);
+        if (ia < 0 || ib < 0 || ia === ib) return null;
+        return ia < ib ? a + '+' + b : b + '+' + a;
+      }
+
+      function startComparison() { setHub({ comparing: { mode: 'selecting', a: null, b: null } }); }
+      function closeComparison() { setHub({ comparing: null }); }
+      function pickComparisonCampaign(id) {
+        var cmp = hub.comparing || { mode: 'selecting', a: null, b: null };
+        if (!cmp.a) {
+          setHub({ comparing: { mode: 'selecting', a: id, b: null } });
+        } else if (cmp.a === id) {
+          // Deselect
+          setHub({ comparing: { mode: 'selecting', a: null, b: null } });
+        } else {
+          setHub({ comparing: { mode: 'viewing', a: cmp.a, b: id } });
+        }
+      }
+
+      function renderComparison() {
+        var cmp = hub.comparing;
+        if (!cmp) return null;
+        var completedSnaps = snapshots.filter(function(s) { return s.state.status === 'complete'; });
+
+        // ── Selection phase ──
+        if (cmp.mode === 'selecting') {
+          return h('div', { style: { maxWidth: 800, margin: '0 auto', padding: 16 } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
+              h('button', { onClick: closeComparison, 'aria-label': 'Cancel comparison',
+                style: { background: 'transparent', border: '1px solid #334155', color: '#cbd5e1', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, '← Back to hub'),
+              h('h2', { style: { margin: 0, color: '#a855f7', fontSize: 20 } }, '🔀 Compare two campaigns')
+            ),
+            h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.55 } },
+              cmp.a
+                ? 'Selected: ' + (CAMPAIGNS.find(function(c) { return c.id === cmp.a; }) || {}).label + '. Pick a second completed campaign to compare against.'
+                : 'Pick any two of your completed campaigns. The hub will show them side-by-side with a pair-specific reflection prompt.'
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8 } },
+              completedSnaps.map(function(snap) {
+                var c = snap.campaign;
+                var picked = cmp.a === c.id;
+                return h('button', { key: c.id, onClick: function() { pickComparisonCampaign(c.id); },
+                  style: { padding: 12, borderRadius: 10, border: '2px solid ' + (picked ? c.color : '#334155'), background: picked ? c.color + '22' : '#0f172a', cursor: 'pointer', textAlign: 'left' } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                    h('span', { style: { fontSize: 22 } }, c.icon),
+                    h('div', { style: { flex: 1 } },
+                      h('div', { style: { fontWeight: 800, color: c.color, fontSize: 13 } }, c.label),
+                      h('div', { style: { fontSize: 11, color: '#94a3b8' } }, c.scale)
+                    ),
+                    picked ? h('span', { style: { fontSize: 16, color: c.color } }, '✓') : null
+                  )
+                );
+              })
+            ),
+            completedSnaps.length < 2 ? h('p', { style: { marginTop: 12, fontSize: 12, color: '#fbbf24', fontStyle: 'italic' } },
+              'You need at least 2 completed campaigns to compare. Currently you have ' + completedSnaps.length + '.'
+            ) : null
+          );
+        }
+
+        // ── Viewing phase ──
+        if (cmp.mode === 'viewing' && cmp.a && cmp.b) {
+          var snapA = snapshots.find(function(s) { return s.campaign.id === cmp.a; });
+          var snapB = snapshots.find(function(s) { return s.campaign.id === cmp.b; });
+          if (!snapA || !snapB) { closeComparison(); return null; }
+          var cA = snapA.campaign, cB = snapB.campaign;
+          var sA = snapA.state, sB = snapB.state;
+          var key = pairKey(cA.id, cB.id);
+          var reflection = key ? PAIR_REFLECTIONS[key] : null;
+
+          // Pull yearLog feedback-rule frequency for each
+          var slotA = (labToolData[cA.toolDataKey]) || {};
+          var slotB = (labToolData[cB.toolDataKey]) || {};
+          var stateA = slotA[cA.stateField] || {};
+          var stateB = slotB[cB.stateField] || {};
+          var logA = stateA.yearLog || stateA.weekLog || [];
+          var logB = stateB.yearLog || stateB.weekLog || [];
+
+          function tallyRules(log) {
+            var counts = {};
+            log.forEach(function(snap) {
+              var cs = snap.cascades || snap.feedbacks || snap.cascadesFired || [];
+              cs.forEach(function(c) {
+                var k = c.id || c.msg || 'unknown';
+                counts[k] = (counts[k] || 0) + 1;
+              });
+            });
+            return counts;
+          }
+          var rulesA = tallyRules(logA);
+          var rulesB = tallyRules(logB);
+
+          function ruleList(counts, color) {
+            var keys = Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; });
+            if (keys.length === 0) return h('div', { style: { fontSize: 12, color: '#64748b', fontStyle: 'italic' } }, 'No feedback rules fired (or no log captured).');
+            return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+              keys.map(function(k) {
+                return h('div', { key: k, style: { fontSize: 12, color: '#cbd5e1' } },
+                  h('span', { style: { color: color, fontWeight: 700, marginRight: 6 } }, '· ' + counts[k] + 'x'),
+                  k
+                );
+              })
+            );
+          }
+
+          function outcomeChip(c, outcome) {
+            if (!outcome) return h('div', { style: { fontSize: 12, color: '#94a3b8' } }, 'No outcome');
+            return h('div', { style: { padding: 10, borderRadius: 8, background: (outcome.color || '#86efac') + '15', borderLeft: '3px solid ' + (outcome.color || '#86efac') } },
+              h('div', { style: { fontSize: 13, fontWeight: 700, color: outcome.color || '#86efac' } }, (outcome.icon || '🏆') + ' ' + (outcome.label || 'Complete')),
+              h('p', { style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, outcome.desc || '')
+            );
+          }
+
+          return h('div', { style: { maxWidth: 900, margin: '0 auto', padding: 16 } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
+              h('button', { onClick: closeComparison, 'aria-label': 'Back to hub',
+                style: { background: 'transparent', border: '1px solid #334155', color: '#cbd5e1', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, '← Back'),
+              h('h2', { style: { margin: 0, color: '#a855f7', fontSize: 20 } }, '🔀 Campaign Comparison'),
+              h('button', { onClick: function() { setHub({ comparing: { mode: 'selecting', a: null, b: null } }); },
+                style: { marginLeft: 'auto', background: 'transparent', border: '1px solid #475569', color: '#cbd5e1', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12 } }, 'Pick different pair')
+            ),
+
+            // Pair-specific reflection
+            reflection ? h('div', {
+              style: {
+                padding: 14, borderRadius: 12, marginBottom: 14,
+                background: 'linear-gradient(135deg, rgba(168,85,247,0.14) 0%, rgba(56,189,248,0.04) 100%)',
+                border: '1px solid rgba(168,85,247,0.4)', borderLeft: '4px solid #a855f7'
+              }
+            },
+              h('div', { style: { fontSize: 11, color: '#a855f7', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, 'Pair reflection'),
+              h('h3', { style: { margin: '0 0 6px', color: '#e9d5ff', fontSize: 16, fontWeight: 800 } }, reflection.title),
+              h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.65 } }, reflection.text)
+            ) : null,
+
+            // Side-by-side outcome and state cards
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 } },
+              [{ c: cA, s: sA, log: logA, rules: rulesA }, { c: cB, s: sB, log: logB, rules: rulesB }].map(function(side) {
+                return h('div', { key: side.c.id,
+                  style: { background: '#0f172a', borderRadius: 12, padding: 14, borderLeft: '3px solid ' + side.c.color }
+                },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
+                    h('span', { style: { fontSize: 24 } }, side.c.icon),
+                    h('div', { style: { flex: 1 } },
+                      h('div', { style: { fontWeight: 800, color: side.c.color, fontSize: 14 } }, side.c.label),
+                      h('div', { style: { fontSize: 11, color: '#94a3b8' } }, side.c.scale)
+                    )
+                  ),
+                  outcomeChip(side.c, side.s.outcome),
+                  h('div', { style: { marginTop: 10, padding: 8, background: '#1e293b', borderRadius: 6, fontSize: 11, color: '#cbd5e1' } },
+                    h('div', null, 'Difficulty: ' + (side.s.difficulty || 'Standard')),
+                    h('div', null, 'Periods played: ' + side.log.length),
+                    h('div', { style: { color: side.s.outcome && isTopTier(side.s.outcome) ? '#a855f7' : '#64748b', fontWeight: 700, marginTop: 4 } }, side.s.outcome && isTopTier(side.s.outcome) ? '🌟 Top-tier outcome' : '')
+                  ),
+                  h('div', { style: { marginTop: 10 } },
+                    h('div', { style: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, 'Feedback rules fired'),
+                    ruleList(side.rules, side.c.color)
+                  )
+                );
+              })
+            )
+          );
+        }
+
+        closeComparison();
+        return null;
+      }
+
       // ── First-time onboarding tutorial ──
       // Five-step walkthrough that introduces the universal campaign
       // pattern before students pick a campaign. Auto-shows on first
@@ -488,6 +704,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         setTimeout(function() { setStemLabTool(c.hostTool); }, 50);
       }
 
+      // If the user is comparing two campaigns, render that
+      if (hub.comparing) {
+        return renderComparison();
+      }
+
       // If the user is viewing a campaign report, render that instead of the main hub
       if (hub.viewingReport) {
         return renderCampaignReport(hub.viewingReport);
@@ -591,12 +812,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               border: '1px solid rgba(168,85,247,0.4)', borderLeft: '4px solid #a855f7'
             }
           },
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' } },
               h('span', { style: { fontSize: 24 } }, '🧠'),
-              h('div', null,
+              h('div', { style: { flex: 1, minWidth: 240 } },
                 h('h3', { style: { margin: 0, color: '#c4b5fd', fontSize: 16, fontWeight: 800 } }, 'Cross-Campaign Synthesis'),
                 h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, 'Patterns that show up across the campaigns you have completed (' + completedCount + ' / 5). These are the structural insights the five campaigns are designed to teach together.')
-              )
+              ),
+              h('button', { onClick: startComparison, 'aria-label': 'Compare two of your completed campaigns side by side',
+                style: { background: 'rgba(168,85,247,0.18)', border: '1px solid #a855f7', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', color: '#e9d5ff', fontSize: 12, fontWeight: 700 } }, '🔀 Compare two campaigns')
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr', gap: 10 } },
               applicable.map(function(p) {
