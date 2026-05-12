@@ -594,7 +594,7 @@ const ConfettiEffect = ({ isActive }) => {
   );
 };
 // @section ESCAPE_ROOM — Escape Room student overlay
-const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionCode, targetAppId, t, playSound, isTeacherMode, setIsEscapeTimerRunning }) => {
+const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionCode, targetAppId, t, playSound, setIsEscapeTimerRunning }) => {
   const escapeState = sessionData?.escapeRoomState;
   const [selectedPuzzle, setSelectedPuzzle] = useState(null);
   const [userInput, setUserInput] = useState('');
@@ -2230,7 +2230,7 @@ const LearnerProgressView = React.memo(({
     studentProgressLog = [], pointHistory = [], wordSoundsBadges = {},
     gameCompletions = [], fluencyAssessments = [], labelChallengeResults = [],
     wordSoundsScore = { streak: 0 },
-    isParentMode = false, isIndependentMode = false, t, onClose,
+    isParentMode = false, isIndependentMode = false, isTeacherMode = false, t, onClose,
     rosterKey, setRosterKey, onShareWithTeacher
 }) => {
     const [showDiagnostics, setShowDiagnostics] = useState(() => isIndependentMode);
@@ -4052,3 +4052,20 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
     </div>
   );
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CDN module registrations — wire each component on window.AlloModules so the
+// shims in AlloFlowANTI.txt can find them. Without these the shims fall back
+// to a "Loading…" placeholder forever.
+// ─────────────────────────────────────────────────────────────────────────────
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.RosterKeyPanel             = RosterKeyPanel;
+window.AlloModules.SimpleBarChart             = SimpleBarChart;
+window.AlloModules.SimpleDonutChart           = SimpleDonutChart;
+window.AlloModules.ConfettiEffect             = ConfettiEffect;
+window.AlloModules.StudentEscapeRoomOverlay   = StudentEscapeRoomOverlay;
+window.AlloModules.EscapeRoomTeacherControls  = EscapeRoomTeacherControls;
+window.AlloModules.TeacherLiveQuizControls    = TeacherLiveQuizControls;
+window.AlloModules.LongitudinalProgressChart  = LongitudinalProgressChart;
+window.AlloModules.LearnerProgressView        = LearnerProgressView;
+window.AlloModules.TeacherDashboard           = TeacherDashboard;

@@ -12576,6 +12576,65 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           }
           const hasAnyImages = item.data.some(gItem => gItem.image);
           const hasAnyTranslations = item.data.some(gItem => gItem.translations && Object.keys(gItem.translations).length > 0);
+          // Glossary display modes (May 11 2026):
+          //   'table'       — default, term + def in tabular rows (existing)
+          //   'flash-cards' — fold-and-cut cards for print, click-to-flip for digital
+          //   'language-cards' — same as flash-cards but emphasizes translations
+          //     (renders translations on the flip side instead of definitions)
+          const glossaryMode = cfg.glossaryDisplayMode || 'table';
+          if (glossaryMode === 'flash-cards' || glossaryMode === 'language-cards') {
+              const showTranslations = glossaryMode === 'language-cards' && hasAnyTranslations;
+              const cardsHtml = `
+                  <div role="list" aria-label="Glossary flash cards" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px;">
+                      ${item.data.map((gItem, idx) => {
+                          const translationsHtml = (gItem.translations && Object.keys(gItem.translations).length > 0)
+                              ? Object.entries(gItem.translations).map(([k, v]) => `<div style="margin-top:4px;font-size:0.85em;"><strong>${k}:</strong> ${v}</div>`).join('')
+                              : '';
+                          const imageHtml = gItem.image
+                              ? `<img loading="lazy" src="${gItem.image}" alt="${gItem.term}" style="max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; margin-bottom: 8px;"/>`
+                              : '';
+                          // For language-cards mode, the "back" emphasizes translations; the def is collapsed beneath.
+                          const backContent = showTranslations
+                              ? `<div style="font-size:0.95em;color:#1e293b;font-weight:600;">${translationsHtml || `<span style="font-style:italic;color:#94a3b8;">(no translations)</span>`}</div><div style="margin-top:8px;font-size:0.8em;color:#64748b;line-height:1.4;">${gItem.def}</div>`
+                              : `<div style="font-size:0.95em;line-height:1.5;color:#1e293b;">${gItem.def}</div>${translationsHtml ? `<div style="margin-top:8px;color:#64748b;">${translationsHtml}</div>` : ''}`;
+                          return `
+                              <div role="listitem" class="alloflow-glossary-card" data-card-idx="${idx}" style="border:2px dashed #94a3b8; border-radius:12px; overflow:hidden; background:white; break-inside:avoid; page-break-inside:avoid;">
+                                  <div class="alloflow-glossary-card-front" style="padding:16px 14px; text-align:center; min-height:110px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                                      ${imageHtml}
+                                      <strong style="font-size:1.15em; color:#1e293b; line-height:1.3;">${gItem.term}</strong>
+                                      ${gItem.term_en && gItem.term_en !== gItem.term ? `<div style="font-size:0.8em; color:#64748b; margin-top:4px;">(${gItem.term_en})</div>` : ''}
+                                  </div>
+                                  <div class="alloflow-glossary-card-fold" aria-hidden="true" style="border-top:2px dashed #cbd5e1; padding:3px 0; text-align:center; font-family:monospace; font-size:0.65em; color:#94a3b8; letter-spacing:0.1em; background:#f8fafc;">▼ fold here / click to flip ▼</div>
+                                  <div class="alloflow-glossary-card-back" style="padding:14px; background:#f8fafc; min-height:90px;">
+                                      ${backContent}
+                                  </div>
+                              </div>
+                          `;
+                      }).join('')}
+                  </div>
+              `;
+              // Teacher tip for paper use; on digital, JS hides the back side until clicked.
+              const instructionsHtml = isWorksheet
+                  ? `<div style="background:#fefce8; border-left:4px solid #eab308; padding:12px 16px; border-radius:4px; margin-bottom:16px; font-size:0.9em; color:#713f12; break-inside:avoid;">
+                       <strong>How to use:</strong> Cut around each card's dashed border. Fold along the middle dashed line so the term shows on one side and the ${showTranslations ? 'translation' : 'definition'} on the other.${hasAnyImages ? ' Cards with images give visual learners an extra cue.' : ''}
+                     </div>`
+                  : `<div style="background:#eff6ff; border-left:4px solid #2563eb; padding:10px 14px; border-radius:4px; margin-bottom:14px; font-size:0.88em; color:#1e40af;">
+                       💡 Click any card to flip and reveal the ${showTranslations ? 'translation' : 'definition'}. Use the controls below to flip all at once.
+                     </div>
+                     <div style="display:flex; gap:8px; margin-bottom:12px;">
+                       <button type="button" class="alloflow-glossary-show-all" style="padding:6px 14px; background:#dbeafe; color:#1e40af; border:1px solid #93c5fd; border-radius:6px; font-size:0.85em; font-weight:600; cursor:pointer;">Show all</button>
+                       <button type="button" class="alloflow-glossary-hide-all" style="padding:6px 14px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85em; font-weight:600; cursor:pointer;">Hide all</button>
+                       <button type="button" class="alloflow-glossary-shuffle" style="padding:6px 14px; background:#fef3c7; color:#92400e; border:1px solid #fcd34d; border-radius:6px; font-size:0.85em; font-weight:600; cursor:pointer;">🔀 Shuffle</button>
+                     </div>`;
+              return `
+                  <div class="section" id="${item.id}" style="border-left:4px solid #059669;border-radius:12px;">
+                      ${enhancedHeader}
+                      ${instructionsHtml}
+                      ${cardsHtml}
+                      ${wordSearchHtml}
+                  </div>
+              `;
+          }
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid #059669;border-radius:12px;">
                   ${enhancedHeader}
@@ -13668,6 +13727,60 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       } else if (item.type === 'timeline') {
           const rawItems = Array.isArray(item.data) ? item.data : (item.data?.items || []);
           const progression = (!Array.isArray(item.data) && item.data?.progressionLabel) || '';
+          const timelineMode = cfg.timelineDisplayMode || 'list';
+          if (timelineMode === 'cuttable-strips' && rawItems.length > 1) {
+              // Cuttable chronology strips: shuffled event cards students arrange
+              // in order. Answer key on a fresh page so teacher can withhold it.
+              // Indices stamped onto each strip so kids can reference them
+              // ("strip #3 goes after strip #1") and so teachers can call them out.
+              const stripsHtml = `
+                  <div role="list" aria-label="Timeline events to sequence" style="margin-top:8px;">
+                      ${rawItems.map((te, idx) => `
+                          <div role="listitem" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px dashed #94a3b8;border-radius:8px;margin-bottom:10px;background:white;break-inside:avoid;page-break-inside:avoid;">
+                              <div style="font-family:monospace;font-size:0.75em;color:#94a3b8;min-width:28px;" aria-hidden="true">✂ ${idx + 1}</div>
+                              ${te.image ? `<img src="${te.image}" alt="" style="width:60px;height:60px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;flex-shrink:0;" />` : ''}
+                              <div style="flex:1;font-size:1em;line-height:1.5;color:#1e293b;">
+                                  ${te.event}
+                                  ${te.event_en ? `<div style="color:#64748b;font-size:0.85em;margin-top:4px;font-style:italic;">${te.event_en}</div>` : ''}
+                              </div>
+                              <div style="border:1px solid #cbd5e1;border-radius:6px;padding:6px 10px;font-size:0.75em;color:#94a3b8;text-align:center;min-width:80px;background:#f8fafc;">date:<br/><span style="display:inline-block;border-bottom:1.5px solid #475569;height:1.2em;min-width:60px;margin-top:2px;"></span></div>
+                          </div>
+                      `).join('')}
+                  </div>
+              `;
+              // Sort chronologically for the answer key. We'd ideally parse dates,
+              // but timeline event dates can be free-form text ("late 1800s",
+              // "circa 1492 CE"), so we preserve the AI's original order as
+              // canonical — the AI generates timelines in chronological order
+              // by default.
+              const answerKeyHtml = `
+                  <div style="margin-top:28px;padding-top:20px;border-top:2px dashed #cbd5e1;break-inside:avoid;page-break-before:always;">
+                      <h3 style="margin:0 0 12px 0;font-size:1.05em;color:#334155;">Answer Key (teacher reference) — chronological order</h3>
+                      <ol style="margin:0;padding-left:28px;line-height:1.7;color:#475569;">
+                          ${rawItems.map((te) => `
+                              <li style="margin-bottom:8px;break-inside:avoid;">
+                                  <strong style="color:#4338ca;">${te.date}</strong> — ${te.event}
+                                  ${te.event_en ? ` <em style="color:#94a3b8;font-size:0.9em;">(${te.event_en})</em>` : ''}
+                              </li>
+                          `).join('')}
+                      </ol>
+                  </div>
+              `;
+              const instructionsHtml = `
+                  <div style="background:#fefce8;border-left:4px solid #eab308;padding:12px 16px;border-radius:4px;margin-bottom:20px;font-size:0.9em;color:#713f12;break-inside:avoid;page-break-inside:avoid;">
+                      <strong>How to use:</strong> Cut along the dashed lines to separate each event. Mix them up and have students arrange them in chronological order. Each strip has a blank line where students can fill in the date once they figure out the sequence.
+                  </div>
+              `;
+              return `
+                  <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+                      ${enhancedHeader}
+                      ${progression ? `<div style="display:inline-block;background:#4338ca;color:white;padding:4px 12px;border-radius:999px;font-size:0.85em;font-weight:700;margin-bottom:12px;">${progression}</div>` : ''}
+                      ${instructionsHtml}
+                      ${stripsHtml}
+                      ${answerKeyHtml}
+                  </div>
+              `;
+          }
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
@@ -14787,6 +14900,59 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         }, 400);
                     });
                 });
+                // ── Glossary flash-card interactions (May 11 2026) ──
+                // Hide each card's back by default, reveal on click. Master
+                // Show all / Hide all / Shuffle act on the grid. Print uses
+                // @media print to force backs visible so paper output still
+                // shows both sides for fold-and-cut use.
+                (function() {
+                    var cards = document.querySelectorAll('.alloflow-glossary-card');
+                    if (cards.length === 0) return;
+                    var BACK_HIDDEN_CLASS = 'alloflow-glossary-back-hidden';
+                    var styleEl = document.createElement('style');
+                    styleEl.textContent =
+                        '.' + BACK_HIDDEN_CLASS + ' .alloflow-glossary-card-back { display: none; }' +
+                        '.alloflow-glossary-card { cursor: pointer; transition: box-shadow 0.15s; }' +
+                        '.alloflow-glossary-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }' +
+                        '@media print {' +
+                        '  .' + BACK_HIDDEN_CLASS + ' .alloflow-glossary-card-back { display: block !important; }' +
+                        '  .alloflow-glossary-show-all, .alloflow-glossary-hide-all, .alloflow-glossary-shuffle { display: none !important; }' +
+                        '}';
+                    document.head.appendChild(styleEl);
+                    cards.forEach(function(c) {
+                        c.classList.add(BACK_HIDDEN_CLASS);
+                        c.setAttribute('tabindex', '0');
+                        c.setAttribute('role', 'button');
+                        c.setAttribute('aria-pressed', 'false');
+                        var toggle = function() {
+                            var hidden = c.classList.toggle(BACK_HIDDEN_CLASS);
+                            c.setAttribute('aria-pressed', hidden ? 'false' : 'true');
+                        };
+                        c.addEventListener('click', toggle);
+                        c.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+                        });
+                    });
+                    var showBtn = document.querySelector('.alloflow-glossary-show-all');
+                    var hideBtn = document.querySelector('.alloflow-glossary-hide-all');
+                    var shufBtn = document.querySelector('.alloflow-glossary-shuffle');
+                    if (showBtn) showBtn.addEventListener('click', function() {
+                        cards.forEach(function(c) { c.classList.remove(BACK_HIDDEN_CLASS); c.setAttribute('aria-pressed', 'true'); });
+                    });
+                    if (hideBtn) hideBtn.addEventListener('click', function() {
+                        cards.forEach(function(c) { c.classList.add(BACK_HIDDEN_CLASS); c.setAttribute('aria-pressed', 'false'); });
+                    });
+                    if (shufBtn) shufBtn.addEventListener('click', function() {
+                        var grid = cards[0].parentNode;
+                        var nodes = Array.prototype.slice.call(grid.children);
+                        for (var i = nodes.length - 1; i > 0; i--) {
+                            var j = Math.floor(Math.random() * (i + 1));
+                            grid.insertBefore(nodes[i], nodes[j]);
+                            var tmp = nodes[i]; nodes[i] = nodes[j]; nodes[j] = tmp;
+                        }
+                        cards.forEach(function(c) { c.classList.add(BACK_HIDDEN_CLASS); c.setAttribute('aria-pressed', 'false'); });
+                    });
+                })();
                 ${_submissionSaveHandler}
             });
         </script>

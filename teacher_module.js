@@ -137,6 +137,45 @@ function alloRestoreFocus() {
     _alloFocusTrigger = null;
   }
 }
+var _alloFocusTrigger = null;
+function alloSaveFocus() {
+  _alloFocusTrigger = document.activeElement;
+}
+function alloRestoreFocus() {
+  if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === "function") {
+    try {
+      _alloFocusTrigger.focus();
+    } catch (e) {
+    }
+    _alloFocusTrigger = null;
+  }
+}
+var _alloFocusTrigger = null;
+function alloSaveFocus() {
+  _alloFocusTrigger = document.activeElement;
+}
+function alloRestoreFocus() {
+  if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === "function") {
+    try {
+      _alloFocusTrigger.focus();
+    } catch (e) {
+    }
+    _alloFocusTrigger = null;
+  }
+}
+var _alloFocusTrigger = null;
+function alloSaveFocus() {
+  _alloFocusTrigger = document.activeElement;
+}
+function alloRestoreFocus() {
+  if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === "function") {
+    try {
+      _alloFocusTrigger.focus();
+    } catch (e) {
+    }
+    _alloFocusTrigger = null;
+  }
+}
 const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, onApplyGroup, onSyncToSession, onBatchGenerate, activeSessionCode, t, isParentMode, isIndependentMode }) => {
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupColor, setNewGroupColor] = useState("#4F46E5");
@@ -628,7 +667,7 @@ const ConfettiEffect = ({ isActive }) => {
     }
   )));
 };
-const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionCode, targetAppId, t, playSound, isTeacherMode: isTeacherMode2, setIsEscapeTimerRunning }) => {
+const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionCode, targetAppId, t, playSound, setIsEscapeTimerRunning }) => {
   const escapeState = sessionData?.escapeRoomState;
   const [selectedPuzzle, setSelectedPuzzle] = useState(null);
   const [userInput, setUserInput] = useState("");
@@ -1756,6 +1795,7 @@ const LearnerProgressView = React.memo(({
   wordSoundsScore = { streak: 0 },
   isParentMode = false,
   isIndependentMode = false,
+  isTeacherMode = false,
   t,
   onClose,
   rosterKey,
@@ -2893,6 +2933,17 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
     ))))
   );
 });
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.RosterKeyPanel = RosterKeyPanel;
+window.AlloModules.SimpleBarChart = SimpleBarChart;
+window.AlloModules.SimpleDonutChart = SimpleDonutChart;
+window.AlloModules.ConfettiEffect = ConfettiEffect;
+window.AlloModules.StudentEscapeRoomOverlay = StudentEscapeRoomOverlay;
+window.AlloModules.EscapeRoomTeacherControls = EscapeRoomTeacherControls;
+window.AlloModules.TeacherLiveQuizControls = TeacherLiveQuizControls;
+window.AlloModules.LongitudinalProgressChart = LongitudinalProgressChart;
+window.AlloModules.LearnerProgressView = LearnerProgressView;
+window.AlloModules.TeacherDashboard = TeacherDashboard;
 window.AlloModules.TeacherModule = true;
   console.log('[TeacherModule] 11 components registered:', ["RosterKeyPanel","SimpleBarChart","SimpleDonutChart","LongitudinalProgressChart","ConfettiEffect","StudentEscapeRoomOverlay","EscapeRoomTeacherControls","TeacherLiveQuizControls","calculateAnalyticsMetrics","LearnerProgressView","TeacherDashboard"]);
 })();

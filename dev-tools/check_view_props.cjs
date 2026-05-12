@@ -35,6 +35,12 @@ const MONOLITH = path.join(ROOT, 'AlloFlowANTI.txt');
 const args = process.argv.slice(2);
 const SINGLE_VIEW = (args.find(a => a.startsWith('--view=')) || '').split('=')[1] || null;
 const VERBOSE = args.includes('--verbose');
+// Default scope: view_*_source.jsx only (live components that the monolith
+// passes a giant props bundle to via React.createElement). Pass --all-sources
+// to also scan factory-style modules (doc_pipeline, content_engine, etc.) and
+// half-extracted handler modules — those findings are usually latent bugs in
+// dead/unwired extraction state, useful when auditing but noisy in CI.
+const ALL_SOURCES = args.includes('--all-sources');
 
 // Names that look like props but are actually globals / browser APIs / React.
 // Conservative: if a view actually shadows one of these with a real React state
@@ -140,6 +146,27 @@ function analyzeView(filePath) {
     }
   }
 
+  // Pre-pass within a single function body: collect every TOP-LEVEL `const`/`let`
+  // declared anywhere in the function (not inside nested functions/methods) so
+  // that closures defined earlier in the body — e.g., a useEffect at line 980
+  // referencing `audioRef` declared at line 993 — still see the binding. This
+  // mirrors JS's "declared in scope, inaccessible until init" semantics.
+  function hoistLetConst(scope, node) {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) { node.forEach(n => hoistLetConst(scope, n)); return; }
+    if (node.type === 'FunctionDeclaration' || node.type === 'FunctionExpression' ||
+        node.type === 'ArrowFunctionExpression' || node.type === 'ClassDeclaration' ||
+        node.type === 'ClassExpression') return;
+    if (node.type === 'VariableDeclaration' && (node.kind === 'let' || node.kind === 'const')) {
+      for (const d of node.declarations) declare(scope, d.id);
+    }
+    for (const k of Object.keys(node)) {
+      if (k === 'loc' || k === 'start' || k === 'end' || k === 'range') continue;
+      const v = node[k];
+      if (v && typeof v === 'object') hoistLetConst(scope, v);
+    }
+  }
+
   const free = new Set();
   function walk(node, scope, parent) {
     if (!node || typeof node !== 'object') return;
@@ -150,6 +177,18 @@ function analyzeView(filePath) {
       if (node.id && node.type === 'FunctionExpression') s.names.add(node.id.name);
       if (node.params) for (const p of node.params) declare(s, p);
       hoist(s, node.body);
+      hoistLetConst(s, node.body);
+      walk(node.body, s, node);
+      return;
+    }
+    // ClassMethod / ClassPrivateMethod / ObjectMethod also introduce a
+    // function scope. Without this, params like `componentDidCatch(error, errorInfo)`
+    // leak as free references when the method body references them.
+    if (node.type === 'ClassMethod' || node.type === 'ClassPrivateMethod' || node.type === 'ObjectMethod') {
+      const s = newScope(scope);
+      if (node.params) for (const p of node.params) declare(s, p);
+      hoist(s, node.body);
+      hoistLetConst(s, node.body);
       walk(node.body, s, node);
       return;
     }
@@ -193,6 +232,11 @@ function analyzeView(filePath) {
         else if ((parent.type === 'FunctionDeclaration' || parent.type === 'FunctionExpression' || parent.type === 'ClassDeclaration') && parent.id === node) isRef = false;
         else if (parent.type === 'ImportSpecifier') isRef = false;
         else if (parent.type === 'LabeledStatement' && parent.label === node) isRef = false;
+        // `typeof X` is safe — returns 'undefined' instead of throwing on
+        // unbound names. This is the documented project pattern for
+        // "defensive prop access" (e.g., ui_language_selector_source.jsx:39
+        // uses `typeof setConfirmDialog !== 'undefined' ? setConfirmDialog : window.setConfirmDialog`).
+        else if (parent.type === 'UnaryExpression' && parent.operator === 'typeof' && parent.argument === node) isRef = false;
       }
       if (isRef && !resolve(scope, node.name)) free.add(node.name);
       return;
@@ -230,9 +274,16 @@ const monolithHookNames = findUseHookNames(monolithSrc);
 // is a "monolith identifier" that a view module might be missing as a prop.
 const monolithNames = new Set([...monolithStateNames, ...monolithHookNames]);
 
+// Default scope: view_*_source.jsx — the React.createElement-via-props
+// pattern that this detector is most accurate on. --all-sources expands
+// to every *_source.jsx (factory modules, handler modules, etc.) for
+// auditing latent bugs in half-extracted state.
+const fileFilter = ALL_SOURCES
+  ? (f => /_source\.jsx$/.test(f))
+  : (f => /^view_.*_source\.jsx$/.test(f));
 const viewFiles = SINGLE_VIEW
   ? [path.join(ROOT, SINGLE_VIEW)]
-  : fs.readdirSync(ROOT).filter(f => /^view_.*_source\.jsx$/.test(f)).map(f => path.join(ROOT, f));
+  : fs.readdirSync(ROOT).filter(fileFilter).map(f => path.join(ROOT, f));
 
 console.log('\nView modules to check: ' + viewFiles.length);
 

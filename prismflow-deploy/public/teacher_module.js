@@ -88,6 +88,7 @@
   var Layers = _icons.Layers || function() { return null; };
   var Layout = _icons.Layout || function() { return null; };
   var Lightbulb = _icons.Lightbulb || function() { return null; };
+  var Lock = _icons.Lock || function() { return null; };
   var MapIcon = _icons.MapIcon || function() { return null; };
   var MonitorPlay = _icons.MonitorPlay || function() { return null; };
   var Play = _icons.Play || function() { return null; };
@@ -110,6 +111,58 @@
   // TEACHER COMPONENTS (JSX pre-transformed by esbuild)
   // ═══════════════════════════════════════════════════════════════
 
+var _alloFocusTrigger = null;
+function alloSaveFocus() {
+  _alloFocusTrigger = document.activeElement;
+}
+function alloRestoreFocus() {
+  if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === "function") {
+    try {
+      _alloFocusTrigger.focus();
+    } catch (e) {
+    }
+    _alloFocusTrigger = null;
+  }
+}
+var _alloFocusTrigger = null;
+function alloSaveFocus() {
+  _alloFocusTrigger = document.activeElement;
+}
+function alloRestoreFocus() {
+  if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === "function") {
+    try {
+      _alloFocusTrigger.focus();
+    } catch (e) {
+    }
+    _alloFocusTrigger = null;
+  }
+}
+var _alloFocusTrigger = null;
+function alloSaveFocus() {
+  _alloFocusTrigger = document.activeElement;
+}
+function alloRestoreFocus() {
+  if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === "function") {
+    try {
+      _alloFocusTrigger.focus();
+    } catch (e) {
+    }
+    _alloFocusTrigger = null;
+  }
+}
+var _alloFocusTrigger = null;
+function alloSaveFocus() {
+  _alloFocusTrigger = document.activeElement;
+}
+function alloRestoreFocus() {
+  if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === "function") {
+    try {
+      _alloFocusTrigger.focus();
+    } catch (e) {
+    }
+    _alloFocusTrigger = null;
+  }
+}
 var _alloFocusTrigger = null;
 function alloSaveFocus() {
   _alloFocusTrigger = document.activeElement;
@@ -184,6 +237,57 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+  const handleSetupOfflineSubmissions = async () => {
+    const SC = window.AlloModules && window.AlloModules.SubmissionCrypto;
+    if (!SC || typeof SC.generateClassKeypair !== "function") {
+      alert("Submission crypto module not loaded yet. Please refresh and try again.");
+      return;
+    }
+    if (rosterKey?.submissionKey?.publicJwk) {
+      const confirmReplace = confirm(
+        "This class already has offline submissions set up.\n\nGenerating a new key will INVALIDATE the old one \u2014 any student files saved with the old key will no longer be decryptable.\n\nContinue anyway?"
+      );
+      if (!confirmReplace) return;
+    }
+    try {
+      const { publicJwk, privateJwk } = await SC.generateClassKeypair();
+      const classId = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : "class-" + Date.now();
+      const createdAt = (/* @__PURE__ */ new Date()).toISOString();
+      const keyFile = {
+        schemaVersion: 1,
+        kind: "alloflow-class-key",
+        className: rosterKey?.className || "",
+        classId,
+        createdAt,
+        privateJwk
+      };
+      const blob = new Blob([JSON.stringify(keyFile, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const safeClass = (rosterKey?.className || "class").replace(/[^a-zA-Z0-9]/g, "_").slice(0, 40);
+      a.href = url;
+      a.download = "class-key_" + safeClass + "_" + createdAt.slice(0, 10) + ".alloflow";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+        if (a.parentNode) a.parentNode.removeChild(a);
+      }, 200);
+      setRosterKey((prev) => ({
+        ...prev || { groups: {}, students: {} },
+        className: prev?.className || "",
+        groups: prev?.groups || {},
+        students: prev?.students || {},
+        submissionKey: { publicJwk, classId, createdAt }
+      }));
+      alert(
+        '\u{1F510} Offline submissions are set up for this class.\n\nIMPORTANT: Save the downloaded "class-key" file in a safe place (your class Google Drive folder is recommended). Without it, you cannot open student submissions.\n\nAlloFlow does not keep a copy of this file. If you lose it, the encrypted submissions cannot be recovered.'
+      );
+    } catch (err) {
+      console.error("handleSetupOfflineSubmissions failed:", err);
+      alert("Could not set up submissions: " + (err && err.message ? err.message : "unknown error"));
+    }
   };
   const handleAddGroup = () => {
     if (!newGroupName.trim()) return;
@@ -287,7 +391,17 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       className: "flex-1 px-2 py-1 rounded-lg border border-slate-400 text-slate-700 text-xs focus:ring-2 focus:ring-indigo-400 focus:outline-none"
     }
   ));
-  return /* @__PURE__ */ React.createElement("div", { ref: panelRef, role: "dialog", "aria-modal": "true", className: "fixed inset-0 z-[260] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border-2 border-indigo-100 animate-in zoom-in-95 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between p-5 border-b border-slate-100" }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "roster_panel_header" }, /* @__PURE__ */ React.createElement("h2", { className: "text-lg font-black text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ClipboardList, { size: 20, className: "text-indigo-500" }), " ", isParentMode ? "Family Learning Profiles" : isIndependentMode ? "My Learning Profile" : t("roster.title") || "Class Roster & Progress Tracking"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, isParentMode ? "Manage family member profiles and track learning progress" : isIndependentMode ? "Manage your learning profile and track your progress" : t("roster.subtitle") || "Organize student groups with differentiated profiles for instruction")), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "p-2 rounded-full hover:bg-slate-100 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20, className: "text-slate-600" }))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 px-5 py-3 border-b border-slate-50 bg-slate-50/50" }, /* @__PURE__ */ React.createElement("button", { onClick: () => fileInputRef.current?.click(), className: "px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Upload, { size: 14 }), " ", t("roster.import") || "Import JSON"), /* @__PURE__ */ React.createElement("button", { onClick: handleExport, disabled: !rosterKey, className: "px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors flex items-center gap-1.5 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " ", t("roster.export") || "Export JSON"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowBatchConfig(true), disabled: !rosterKey || Object.keys(rosterKey?.groups || {}).length === 0, className: "px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors flex items-center gap-1.5 disabled:opacity-40 border border-amber-600" }, /* @__PURE__ */ React.createElement(Layers, { size: 14 }), " ", t("roster.batch_generate") || "Differentiate by Group"), activeSessionCode && /* @__PURE__ */ React.createElement("button", { onClick: onSyncToSession, disabled: !rosterKey || groupIds.length === 0, className: "px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors flex items-center gap-1.5 disabled:opacity-40 ml-auto" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14 }), " ", t("roster.sync_session") || "Sync to Live Session"), /* @__PURE__ */ React.createElement("input", { ref: fileInputRef, type: "file", accept: ".json", onChange: handleImport, className: "hidden", "aria-label": t("roster.import") || "Import roster JSON" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("roster.class_name") || "Class Name", ":"), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: panelRef, role: "dialog", "aria-modal": "true", className: "fixed inset-0 z-[260] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border-2 border-indigo-100 animate-in zoom-in-95 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between p-5 border-b border-slate-100" }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "roster_panel_header" }, /* @__PURE__ */ React.createElement("h2", { className: "text-lg font-black text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ClipboardList, { size: 20, className: "text-indigo-500" }), " ", isParentMode ? "Family Learning Profiles" : isIndependentMode ? "My Learning Profile" : t("roster.title") || "Class Roster & Progress Tracking"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, isParentMode ? "Manage family member profiles and track learning progress" : isIndependentMode ? "Manage your learning profile and track your progress" : t("roster.subtitle") || "Organize student groups with differentiated profiles for instruction")), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "p-2 rounded-full hover:bg-slate-100 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20, className: "text-slate-600" }))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 px-5 py-3 border-b border-slate-50 bg-slate-50/50" }, /* @__PURE__ */ React.createElement("button", { onClick: () => fileInputRef.current?.click(), className: "px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Upload, { size: 14 }), " ", t("roster.import") || "Import JSON"), /* @__PURE__ */ React.createElement("button", { onClick: handleExport, disabled: !rosterKey, className: "px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors flex items-center gap-1.5 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " ", t("roster.export") || "Export JSON"), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: handleSetupOfflineSubmissions,
+      disabled: !rosterKey,
+      title: rosterKey?.submissionKey?.publicJwk ? "Offline submissions are active for this class. Click to regenerate (invalidates the existing key)." : "Generate a class keypair so students can save HTML worksheets back to you.",
+      className: `px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 disabled:opacity-40 ${rosterKey?.submissionKey?.publicJwk ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`
+    },
+    /* @__PURE__ */ React.createElement(Lock, { size: 14 }),
+    rosterKey?.submissionKey?.publicJwk ? t("roster.submissions_active") || "Submissions On" : t("roster.setup_submissions") || "Set up offline submissions"
+  ), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowBatchConfig(true), disabled: !rosterKey || Object.keys(rosterKey?.groups || {}).length === 0, className: "px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors flex items-center gap-1.5 disabled:opacity-40 border border-amber-200" }, /* @__PURE__ */ React.createElement(Layers, { size: 14 }), " ", t("roster.batch_generate") || "Differentiate by Group"), activeSessionCode && /* @__PURE__ */ React.createElement("button", { onClick: onSyncToSession, disabled: !rosterKey || groupIds.length === 0, className: "px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors flex items-center gap-1.5 disabled:opacity-40 ml-auto" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14 }), " ", t("roster.sync_session") || "Sync to Live Session"), /* @__PURE__ */ React.createElement("input", { ref: fileInputRef, type: "file", accept: ".json", onChange: handleImport, className: "hidden", "aria-label": t("roster.import") || "Import roster JSON" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("roster.class_name") || "Class Name", ":"), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -403,7 +517,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       placeholder: t("roster.display_name_placeholder") || "Real name (for your reference only)...",
       "aria-label": t("roster.display_name_placeholder") || "Student real name",
       onKeyDown: (e) => e.key === "Enter" && handleAddStudent(),
-      className: "px-3 py-1.5 rounded-lg border border-indigo-600 bg-indigo-50/50 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+      className: "px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50/50 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none"
     }
   )), /* @__PURE__ */ React.createElement(
     "select",
@@ -553,7 +667,7 @@ const ConfettiEffect = ({ isActive }) => {
     }
   )));
 };
-const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionCode, targetAppId, t, playSound }) => {
+const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionCode, targetAppId, t, playSound, setIsEscapeTimerRunning }) => {
   const escapeState = sessionData?.escapeRoomState;
   const [selectedPuzzle, setSelectedPuzzle] = useState(null);
   const [userInput, setUserInput] = useState("");
@@ -1681,6 +1795,7 @@ const LearnerProgressView = React.memo(({
   wordSoundsScore = { streak: 0 },
   isParentMode = false,
   isIndependentMode = false,
+  isTeacherMode = false,
   t,
   onClose,
   rosterKey,
@@ -2505,7 +2620,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       {
         key,
         onClick: () => setStudentFilter(key),
-        className: "text-xs font-bold px-3 py-1.5 rounded-full transition-all border " + (studentFilter === key ? "bg-indigo-600 text-white border-indigo-600 shadow-sm" : "bg-white text-slate-600 border-slate-200 hover:border-indigo-600 hover:bg-indigo-50")
+        className: "text-xs font-bold px-3 py-1.5 rounded-full transition-all border " + (studentFilter === key ? "bg-indigo-600 text-white border-indigo-600 shadow-sm" : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50")
       },
       label,
       " (",
@@ -2522,7 +2637,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
             setDashboardView("detail");
           },
           "data-help-key": "dashboard_review_btn",
-          className: "text-indigo-600 hover:text-indigo-800 font-bold text-xs px-3 py-1 rounded-lg hover:bg-indigo-50 border border-transparent hover:border-indigo-600 transition-all"
+          className: "text-indigo-600 hover:text-indigo-800 font-bold text-xs px-3 py-1 rounded-lg hover:bg-indigo-50 border border-transparent hover:border-indigo-200 transition-all"
         },
         t("dashboard.table.review_work")
       )));
@@ -2818,6 +2933,17 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
     ))))
   );
 });
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.RosterKeyPanel = RosterKeyPanel;
+window.AlloModules.SimpleBarChart = SimpleBarChart;
+window.AlloModules.SimpleDonutChart = SimpleDonutChart;
+window.AlloModules.ConfettiEffect = ConfettiEffect;
+window.AlloModules.StudentEscapeRoomOverlay = StudentEscapeRoomOverlay;
+window.AlloModules.EscapeRoomTeacherControls = EscapeRoomTeacherControls;
+window.AlloModules.TeacherLiveQuizControls = TeacherLiveQuizControls;
+window.AlloModules.LongitudinalProgressChart = LongitudinalProgressChart;
+window.AlloModules.LearnerProgressView = LearnerProgressView;
+window.AlloModules.TeacherDashboard = TeacherDashboard;
 window.AlloModules.TeacherModule = true;
   console.log('[TeacherModule] 11 components registered:', ["RosterKeyPanel","SimpleBarChart","SimpleDonutChart","LongitudinalProgressChart","ConfettiEffect","StudentEscapeRoomOverlay","EscapeRoomTeacherControls","TeacherLiveQuizControls","calculateAnalyticsMetrics","LearnerProgressView","TeacherDashboard"]);
 })();

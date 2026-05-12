@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -12578,6 +12578,65 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           }
           const hasAnyImages = item.data.some(gItem => gItem.image);
           const hasAnyTranslations = item.data.some(gItem => gItem.translations && Object.keys(gItem.translations).length > 0);
+          // Glossary display modes (May 11 2026):
+          //   'table'       — default, term + def in tabular rows (existing)
+          //   'flash-cards' — fold-and-cut cards for print, click-to-flip for digital
+          //   'language-cards' — same as flash-cards but emphasizes translations
+          //     (renders translations on the flip side instead of definitions)
+          const glossaryMode = cfg.glossaryDisplayMode || 'table';
+          if (glossaryMode === 'flash-cards' || glossaryMode === 'language-cards') {
+              const showTranslations = glossaryMode === 'language-cards' && hasAnyTranslations;
+              const cardsHtml = `
+                  <div role="list" aria-label="Glossary flash cards" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px;">
+                      ${item.data.map((gItem, idx) => {
+                          const translationsHtml = (gItem.translations && Object.keys(gItem.translations).length > 0)
+                              ? Object.entries(gItem.translations).map(([k, v]) => `<div style="margin-top:4px;font-size:0.85em;"><strong>${k}:</strong> ${v}</div>`).join('')
+                              : '';
+                          const imageHtml = gItem.image
+                              ? `<img loading="lazy" src="${gItem.image}" alt="${gItem.term}" style="max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; margin-bottom: 8px;"/>`
+                              : '';
+                          // For language-cards mode, the "back" emphasizes translations; the def is collapsed beneath.
+                          const backContent = showTranslations
+                              ? `<div style="font-size:0.95em;color:#1e293b;font-weight:600;">${translationsHtml || `<span style="font-style:italic;color:#94a3b8;">(no translations)</span>`}</div><div style="margin-top:8px;font-size:0.8em;color:#64748b;line-height:1.4;">${gItem.def}</div>`
+                              : `<div style="font-size:0.95em;line-height:1.5;color:#1e293b;">${gItem.def}</div>${translationsHtml ? `<div style="margin-top:8px;color:#64748b;">${translationsHtml}</div>` : ''}`;
+                          return `
+                              <div role="listitem" class="alloflow-glossary-card" data-card-idx="${idx}" style="border:2px dashed #94a3b8; border-radius:12px; overflow:hidden; background:white; break-inside:avoid; page-break-inside:avoid;">
+                                  <div class="alloflow-glossary-card-front" style="padding:16px 14px; text-align:center; min-height:110px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                                      ${imageHtml}
+                                      <strong style="font-size:1.15em; color:#1e293b; line-height:1.3;">${gItem.term}</strong>
+                                      ${gItem.term_en && gItem.term_en !== gItem.term ? `<div style="font-size:0.8em; color:#64748b; margin-top:4px;">(${gItem.term_en})</div>` : ''}
+                                  </div>
+                                  <div class="alloflow-glossary-card-fold" aria-hidden="true" style="border-top:2px dashed #cbd5e1; padding:3px 0; text-align:center; font-family:monospace; font-size:0.65em; color:#94a3b8; letter-spacing:0.1em; background:#f8fafc;">▼ fold here / click to flip ▼</div>
+                                  <div class="alloflow-glossary-card-back" style="padding:14px; background:#f8fafc; min-height:90px;">
+                                      ${backContent}
+                                  </div>
+                              </div>
+                          `;
+                      }).join('')}
+                  </div>
+              `;
+              // Teacher tip for paper use; on digital, JS hides the back side until clicked.
+              const instructionsHtml = isWorksheet
+                  ? `<div style="background:#fefce8; border-left:4px solid #eab308; padding:12px 16px; border-radius:4px; margin-bottom:16px; font-size:0.9em; color:#713f12; break-inside:avoid;">
+                       <strong>How to use:</strong> Cut around each card's dashed border. Fold along the middle dashed line so the term shows on one side and the ${showTranslations ? 'translation' : 'definition'} on the other.${hasAnyImages ? ' Cards with images give visual learners an extra cue.' : ''}
+                     </div>`
+                  : `<div style="background:#eff6ff; border-left:4px solid #2563eb; padding:10px 14px; border-radius:4px; margin-bottom:14px; font-size:0.88em; color:#1e40af;">
+                       💡 Click any card to flip and reveal the ${showTranslations ? 'translation' : 'definition'}. Use the controls below to flip all at once.
+                     </div>
+                     <div style="display:flex; gap:8px; margin-bottom:12px;">
+                       <button type="button" class="alloflow-glossary-show-all" style="padding:6px 14px; background:#dbeafe; color:#1e40af; border:1px solid #93c5fd; border-radius:6px; font-size:0.85em; font-weight:600; cursor:pointer;">Show all</button>
+                       <button type="button" class="alloflow-glossary-hide-all" style="padding:6px 14px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85em; font-weight:600; cursor:pointer;">Hide all</button>
+                       <button type="button" class="alloflow-glossary-shuffle" style="padding:6px 14px; background:#fef3c7; color:#92400e; border:1px solid #fcd34d; border-radius:6px; font-size:0.85em; font-weight:600; cursor:pointer;">🔀 Shuffle</button>
+                     </div>`;
+              return `
+                  <div class="section" id="${item.id}" style="border-left:4px solid #059669;border-radius:12px;">
+                      ${enhancedHeader}
+                      ${instructionsHtml}
+                      ${cardsHtml}
+                      ${wordSearchHtml}
+                  </div>
+              `;
+          }
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid #059669;border-radius:12px;">
                   ${enhancedHeader}
@@ -14849,6 +14908,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     downloadBatchResults: _wrapAsync(downloadBatchResults),
   };
 };
+
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.createDocPipeline = createDocPipeline;
+window.AlloModules.DocPipelineModule = true;
+console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;

@@ -8841,6 +8841,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     includeAudioLeveled: false,
     fontSize: 16,
     useAppFont: false,
+    // Display-mode toggles (May 11 2026):
+    //   glossaryDisplayMode: 'table' | 'flash-cards' | 'language-cards'
+    //   timelineDisplayMode: 'list' | 'cuttable-strips'
+    //   conceptSortInteractive: true (drag-to-sort JS in interactive mode) | false
+    glossaryDisplayMode: 'table',
+    timelineDisplayMode: 'list',
+    conceptSortInteractive: true,
   });
   const exportPreviewRef = useRef(null);
   const [a11yInspectMode, setA11yInspectMode] = useState(false);
