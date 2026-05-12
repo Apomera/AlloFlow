@@ -291,6 +291,25 @@
     );
   };
 
+  // Conditional, honest disclosure about what actually happens with the
+  // conversation. The old "this space is monitored for your safety" copy
+  // (formerly hardcoded in 5 tools) was misleading in solo mode: no adult
+  // sees the chat, conversation only lives in localStorage. This helper
+  // tells the truth in both modes.
+  //   Solo mode (no activeSessionCode): conversation is local, safety
+  //     keyword-check still runs, real concerns go to a trusted adult.
+  //   Live session (activeSessionCode set): teacher can see submitted work,
+  //     safety keyword-check still runs, real concerns go to a trusted adult.
+  window.SelHub.renderSafetyDisclosure = function(h, band, activeSessionCode) {
+    var live = !!(activeSessionCode && String(activeSessionCode).trim());
+    var body = live
+      ? 'Your teacher is hosting a live session. Anything you save or submit here can be seen by them. We also run safety checks for crisis words and show resources if something serious comes up. For real safety concerns, please talk to a trusted adult.'
+      : 'This conversation stays on your device. We run safety checks for crisis words and show resources if something serious comes up. For real safety concerns, please talk to a trusted adult.';
+    return h('p', {
+      style: { fontSize: '11px', color: '#64748b', margin: '4px 0 0', lineHeight: 1.5 }
+    }, body);
+  };
+
   // Always-on resource strip for tools that touch sensitive content.
   // Quieter than renderCrisisResources (no role="alert" / aria-live) so screen
   // readers don't announce on every render. Use as a persistent footer.

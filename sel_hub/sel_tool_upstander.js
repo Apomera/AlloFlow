@@ -3121,7 +3121,8 @@ window.SelHub = window.SelHub || {
             h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
               h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(37,99,235,0.3))' } }, '\uD83E\uDD16'),
               h('h3', { style: { fontSize: '18px', fontWeight: 800, color: BD, margin: '0 0 4px' } }, 'Safe Space'),
-              h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Talk about a bullying experience \u2014 from any role. This space is monitored for your safety.'),
+              h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Talk about a bullying experience from any role.'),
+              window.SelHub && window.SelHub.renderSafetyDisclosure && window.SelHub.renderSafetyDisclosure(h, band, ctx.activeSessionCode),
               h('p', { style: { fontSize: '11px', color: '#dc2626', margin: '6px 0 0', fontWeight: 600 } }, '\u26A0\uFE0F If you are in danger, please talk to a trusted adult or call 988.')
             ),
             // Show crisis resources if last message was flagged Tier 3
@@ -3966,7 +3967,7 @@ window.SelHub = window.SelHub || {
       }
 
       var content = rolesContent || movesContent || pracContent || cycleContent || pledgeContent || coachContent || refContent;
-      return h('div', { className: 'us-root', style: { display: 'flex', flexDirection: 'column', height: '100%' } }, tabBar, h('div', { style: { flex: 1, overflow: 'auto' } }, content));
+      return h('div', { className: 'us-root', style: { display: 'flex', flexDirection: 'column', height: '100%' } }, (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('upstander', h) : null), tabBar, h('div', { style: { flex: 1, overflow: 'auto' } }, content));
     }
   });
 })();

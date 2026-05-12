@@ -121,6 +121,10 @@
       var onSafetyFlag    = props.onSafetyFlag || null; // connects to main app's handleAiSafetyFlag
       var studentCodename = props.studentCodename || 'student';
       var selectedVoice   = props.selectedVoice || null;
+      // Drives renderSafetyDisclosure: tells AI-coach intros whether the
+      // conversation is truly private (solo) or visible to a hosting
+      // teacher (live session). No surveillance happens in solo mode.
+      var activeSessionCode = props.activeSessionCode || null;
       var t               = props.t || function(k) { return k; };
 
       // Lucide icons from parent
@@ -504,17 +508,22 @@
         { id: 'zones',       icon: '\uD83D\uDEA6', label: 'Emotion Zones', desc: 'Identify your zone (blue, green, yellow, red) and explore strategies to self-regulate.', color: 'emerald', recommendedRange: 'K-12' },
         { id: 'emotions',    icon: '\uD83D\uDE0A', label: 'Emotion Explorer',    desc: 'Build emotional vocabulary — identify, name, and rate the intensity of feelings.', color: 'blue', recommendedRange: 'K-8' },
         { id: 'strengths',   icon: '\u2B50',       label: 'Strengths Finder',    desc: 'Discover and reflect on personal strengths, talents, and growth areas.', color: 'amber', recommendedRange: 'K-12' },
+        { id: 'viaStrengths', icon: '\uD83C\uDF1F', label: 'VIA Strengths',     desc: 'A simplified self-sort of the 24 VIA Character Strengths (Peterson and Seligman, 2004), with 6 virtues and identification of signature strengths. For the authoritative free survey, go to viacharacter.org. Reflective practice, not psychometric.', color: 'amber', recommendedRange: '5-12' },
+        { id: 'wheelOfLife', icon: '\uD83D\uDEDE', label: 'Wheel of Life',      desc: 'Spider chart of 8 life domains, each rated 1 to 10. A self-portrait of where life is full and where it is thin right now. From the coaching tradition (Meyer 1960s; Co-Active Coaching). Heuristic; not a validated psychometric.', color: 'amber', recommendedRange: '5-12' },
 
         // Self-Regulation (was Self-Management; split to give arousal/emotion tools their own home)
         { id: '_cat_SelfRegulation', icon: '\uD83C\uDFAF', label: 'Self-Regulation', desc: '', color: 'slate', category: true },
         { id: 'coping',      icon: '\uD83E\uDDE8', label: 'Coping Toolkit',      desc: 'Explore and practice coping strategies — breathing, grounding, movement, and more.', color: 'teal', recommendedRange: 'K-12' },
         { id: 'windowOfTolerance', icon: '\uD83E\uDE9F', label: 'Window of Tolerance', desc: 'Trauma-informed self-awareness visual. Three arousal zones (hyperarousal, window, hypoarousal). Map your personal signs of each zone, your triggers, and the practices that bring you back. Based on Siegel (1999); standard in trauma-informed schools.', color: 'teal', recommendedRange: '5-12' },
         { id: 'stressBucket', icon: '\uD83E\uDEA3', label: 'Stress Bucket',        desc: 'A capacity visual. Stressors pour in; coping practices drain out. See whether your inflow and outflow are balanced. CBT-tradition tool (Brabban and Turkington 2002), used across NHS IAPT and Mind UK. Honest about structural stressors.', color: 'teal', recommendedRange: '5-12' },
+        { id: 'tipp',        icon: '\uD83C\uDD98', label: 'TIPP',                desc: 'Four DBT crisis-survival skills (Temperature, Intense exercise, Paced breathing, Paired muscle relaxation) for ACUTE distress. Down-regulates the body in 30 seconds to 10 minutes before you try to think your way out. Foundational DBT Distress Tolerance skill (Linehan).', color: 'red', recommendedRange: '5-12' },
         // Inner Work (contemplative + reflective practice)
         { id: '_cat_InnerWork', icon: '\uD83E\uDDD8', label: 'Inner Work', desc: '', color: 'slate', category: true },
         { id: 'mindfulness', icon: '\uD83E\uDDD8', label: 'Mindfulness Corner',  desc: 'Guided breathing exercises, body scans, and mindfulness activities.', color: 'purple', recommendedRange: 'K-12' },
         { id: 'quietQuestions', icon: '\uD83C\uDF12', label: 'Quiet Questions',  desc: 'Weekly inner inquiry practice. Sit with one open-ended question for a full week. 20 rotating queries across attention, longing, difficulty, connection, and becoming. Inspired by Quaker query tradition; secular and non-prescriptive.', color: 'purple', recommendedRange: '5-12' },
         { id: 'orientations', icon: '\uD83E\uDDED', label: 'Orientations',      desc: 'Ways of Living, Compared. Eight philosophical traditions (Daoism, Zen, Stoicism, Existentialism, Confucian ethics, Ubuntu, Indigenous relationality, Care Ethics) compared on big life questions. Non-prescriptive; each tradition has an honest "what it cannot do well" panel.', color: 'purple', recommendedRange: '6-12' },
+        { id: 'thoughtRecord', icon: '\uD83D\uDCD3', label: 'CBT Thought Record', desc: 'The 7-column thought record from Cognitive Behavioral Therapy. Walk through a hard moment: situation, emotion, automatic thought, evidence for and against, balanced thought, emotion re-rating. Saves entries over time. From Beck, Burns, Padesky.', color: 'purple', recommendedRange: '5-12' },
+        { id: 'costBenefit', icon: '\u2696\uFE0F', label: 'Cost-Benefit Grid',  desc: 'A 2x2 decision-making grid from Dialectical Behavior Therapy. Short-term and long-term pros and cons of a decision, side by side. Useful when emotion is pushing for one option. From Linehan.', color: 'purple', recommendedRange: '5-12' },
         // Care of Self (self-compassion, relational self-care)
         { id: '_cat_CareOfSelf', icon: '\uD83E\uDD7A', label: 'Care of Self', desc: '', color: 'slate', category: true },
         { id: 'careConstellations', icon: '\uD83C\uDF0C', label: 'Care Constellations', desc: 'A relational map of who cares for you and who you care for. Refuses the individualist or consumerist "self-care" frame. Includes a substantive philosophical view on Care of Self vs Self-Care (Foucault, Greek epimeleia heautou, Audre Lorde, eudaimonic vs hedonic).', color: 'rose', recommendedRange: '5-12' },
@@ -528,6 +537,7 @@
         { id: 'onePageProfile', icon: '\uD83D\uDCC4', label: 'One-Page Profile', desc: 'Portable, printable profile that fits on one page. Three sections: what people like and admire about me, what is important to me, how best to support me. Person-centered planning artifact for IEP meetings, transitions, substitutes, or Crew. Based on Helen Sanderson Associates format.', color: 'indigo', recommendedRange: '3-12' },
         { id: 'maps',        icon: '\uD83D\uDDFA\uFE0F', label: 'MAPS',         desc: 'Making Action Plans. Eight prompts in sequence (My Story, Dream, Nightmare, Who I Am, Gifts, Needs, Action Plan, First Steps). Person-centered visual from Pearpoint, O\'Brien, and Forest at Inclusion Press; widely used for transition planning.', color: 'indigo', recommendedRange: '5-12' },
         { id: 'path',        icon: '\uD83E\uDDED', label: 'PATH',                desc: 'Planning Alternative Tomorrows with Hope. Futures-planning visual: eight stages from your long-horizon North Star backward to first steps in two weeks. Pearpoint, O\'Brien, and Forest at Inclusion Press; pairs with MAPS.', color: 'indigo', recommendedRange: '5-12' },
+        { id: 'valuesCommittedAction', icon: '\uD83E\uDDED', label: 'Values & Action', desc: 'Sort what matters, name your top values, and turn each into a small concrete action this week. From Acceptance and Commitment Therapy (Hayes); adolescent DNA-V framing. The ACT distinction between values (directions) and goals (destinations).', color: 'indigo', recommendedRange: '5-12' },
 
         // ── Social Awareness ──
         { id: '_cat_SocialAwareness', icon: '\uD83E\uDD1D', label: 'Social Awareness', desc: '', color: 'slate', category: true },
@@ -539,6 +549,7 @@
         { id: 'conflict',    icon: '\u2696\uFE0F', label: 'Conflict Resolution', desc: 'Practice resolving conflicts with role-play scenarios and I-statements.', color: 'orange', recommendedRange: '2-12' },
         { id: 'social',      icon: '\uD83D\uDDE3\uFE0F', label: 'Social Skills Lab',  desc: 'Practice conversation skills, active listening, body language, and cooperation.', color: 'sky', recommendedRange: 'K-8' },
         { id: 'teamwork',    icon: '\uD83E\uDD1C\uD83E\uDD1B', label: 'Teamwork Builder', desc: 'Collaborative challenges and team role exploration.', color: 'lime', recommendedRange: 'K-12' },
+        { id: 'dearMan',     icon: '\uD83D\uDDE3\uFE0F', label: 'DEAR MAN',          desc: 'Build a script for a hard ask in seven steps: Describe, Express, Assert, Reinforce, Mindful, Appear confident, Negotiate. From DBT Interpersonal Effectiveness (Linehan); the most-used assertive-communication script in school counseling. Pairs with Self-Advocacy.', color: 'blue', recommendedRange: '5-12' },
 
         // ── Responsible Decision-Making ──
         { id: '_cat_DecisionMaking', icon: '\u2696\uFE0F', label: 'Responsible Decision-Making', desc: '', color: 'slate', category: true },
@@ -1187,12 +1198,12 @@
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%' } },
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 24 } }, tool.icon),
                   h('span', { style: { fontSize: 14, fontWeight: 700, color: _t.text, flex: 1 } }, tool.label),
-                  // Usage indicator: "New" pill on tools never opened, dot count on used.
+                  // Usage indicator: dot count / star for tools already visited.
                   // Hidden from SR (already in aria-label of the card if needed).
                   isRegistered && (function () {
                     var u = selToolUsage[tool.id];
                     if (!u || !u.count) {
-                      return h('span', { 'aria-hidden': 'true', style: { fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 8, background: cardColor, color: '#fff', letterSpacing: '0.05em' } }, 'NEW');
+                      return null;
                     }
                     if (u.count >= 5) {
                       return h('span', { 'aria-hidden': 'true', title: u.count + ' visits', style: { fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 8, background: cardColor + '22', color: cardColor } }, '★');
@@ -1275,6 +1286,7 @@
           onSafetyFlag: onSafetyFlag,
           studentCodename: studentCodename,
           selectedVoice: selectedVoice,
+          activeSessionCode: activeSessionCode,
 
           // ── Icons ──
           icons: {

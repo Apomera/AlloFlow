@@ -583,7 +583,8 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83E\uDD16'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: SKY_DARK, margin: '0 0 4px' } }, 'AI Support'),
-            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Talk about what you\u2019re going through. This space is monitored for your safety.')
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Talk about what you\u2019re going through.'),
+            window.SelHub && window.SelHub.renderSafetyDisclosure && window.SelHub.renderSafetyDisclosure(h, band, ctx.activeSessionCode)
           ),
           // Context summary
           (changeContext || phaseContext) && h('div', { style: { background: SKY_LIGHT, borderRadius: '10px', padding: '8px 12px', marginBottom: '12px', fontSize: '11px', color: SKY_DARK } },
@@ -697,6 +698,7 @@ window.SelHub = window.SelHub || {
       // ── Final render ──
       var content = identifyContent || curveContent || storiesContent || anchorsContent || planContent || coachContent;
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('transitions', h) : null),
         tabBar,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content),
         window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
