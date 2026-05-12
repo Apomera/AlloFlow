@@ -1663,10 +1663,47 @@ function QuizPanel(props) {
     InfoTooltip, dokLevel, expandedTools, generatedContent,
     handleGenerate, hasSourceOrAnalysis, history, imageStyle, isProcessing,
     mcqVisualMode, quizCustomInstructions, quizMcqCount, quizMode,
-    quizReflectionCount, setDokLevel, setImageStyle, setMcqVisualMode,
+    quizReflectionCount, quizItemTypeMix, setDokLevel, setImageStyle, setMcqVisualMode,
     setQuizCustomInstructions, setQuizMcqCount, setQuizMode, setQuizReflectionCount,
-    t
+    setQuizItemTypeMix, t
   } = props;
+  // Item Mix accordion state + mode-driven defaults (May 12 2026 — ported from
+  // module.js drift; original commit 88289f23 "feat: add Item Mix accordion to
+  // quiz panel for question type control" landed only in module.js).
+  const [itemMixOpen, setItemMixOpen] = useState(false);
+  const _modeStrategy = window.AlloModules && window.AlloModules.QuizModeStrategies
+    ? window.AlloModules.QuizModeStrategies.getStrategy(quizMode)
+    : null;
+  const allowedTypes = _modeStrategy && _modeStrategy.generation && _modeStrategy.generation.allowedItemTypes
+    ? _modeStrategy.generation.allowedItemTypes
+    : ['mcq'];
+  const defaultMix = _modeStrategy && _modeStrategy.generation && _modeStrategy.generation.defaultItemTypeMix
+    ? _modeStrategy.generation.defaultItemTypeMix
+    : { mcq: quizMcqCount };
+  // Extra item types the teacher can control (everything except mcq + reflection,
+  // which have their own dedicated controls above).
+  const EXTRA_TYPES = [
+    { key: 'fill-blank', label: 'Fill-in-Blank', emoji: '✏️', desc: 'Sentence with a blank to complete' },
+    { key: 'short-answer', label: 'Short Answer', emoji: '💬', desc: 'Free-text 1-2 sentence response' },
+    { key: 'self-explanation', label: 'Self-Explanation', emoji: '🧠', desc: 'Explain concept in own words' },
+    { key: 'sequence-sense', label: 'Sequence Sense', emoji: '🔢', desc: 'Order steps or events correctly' },
+    { key: 'relation-mismatch', label: 'Odd One Out', emoji: '🔗', desc: 'Identify the mismatched item' },
+  ];
+  const visibleTypes = EXTRA_TYPES.filter(et => allowedTypes.indexOf(et.key) !== -1);
+  // Teacher's effective mix: override if set, else fall back to mode defaults.
+  const effectiveMix = quizItemTypeMix || defaultMix;
+  const handleMixChange = (key, value) => {
+    const newMix = Object.assign({}, effectiveMix);
+    if (value <= 0) { delete newMix[key]; } else { newMix[key] = value; }
+    // Always preserve MCQ from the main slider so item-mix edits never drop
+    // the teacher's MCQ count.
+    newMix.mcq = quizMcqCount;
+    setQuizItemTypeMix && setQuizItemTypeMix(newMix);
+  };
+  const handleResetMix = () => {
+    setQuizItemTypeMix && setQuizItemTypeMix(null);
+  };
+  const extraTotal = visibleTypes.reduce((sum, et) => sum + ((effectiveMix[et.key]) || 0), 0);
   if (!expandedTools || !expandedTools.includes('quiz')) return null;
   return (
                  <div className="animate-in slide-in-from-top-2 duration-200">
@@ -1733,6 +1770,63 @@ function QuizPanel(props) {
                                  </div>
                              )}
                      </div>
+                     {/* Item Mix accordion — teacher controls how many of each non-MCQ
+                         question type get generated. Lives between the main quiz
+                         settings and the Mode selector so MCQ count + Reflections
+                         (above) and Mode (below) bracket the per-type controls. */}
+                     {visibleTypes.length > 0 && (
+                       <div className="border-t border-slate-200">
+                         <button
+                           type="button"
+                           onClick={() => setItemMixOpen(!itemMixOpen)}
+                           aria-expanded={itemMixOpen}
+                           data-help-key="quiz_item_mix_toggle"
+                           className="w-full px-3 py-2 flex items-center justify-between text-xs font-bold text-slate-600 hover:text-indigo-700 hover:bg-indigo-50/50 transition-colors"
+                         >
+                           <span className="flex items-center gap-1.5">
+                             <Settings2 size={12} />
+                             Item Mix
+                             {extraTotal > 0 && (
+                               <span className="ml-1 text-[10px] font-medium bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full">+{extraTotal} extra</span>
+                             )}
+                           </span>
+                           <ChevronDown size={14} className={'transition-transform duration-200' + (itemMixOpen ? ' rotate-180' : '')} />
+                         </button>
+                         {itemMixOpen && (
+                           <div className="px-3 pb-3 pt-1 space-y-2 animate-in slide-in-from-top-1 duration-150 bg-slate-50/50">
+                             <p className="text-[11px] text-slate-500 leading-snug">Control how many of each question type are generated. MCQ and Reflections are set above.</p>
+                             {visibleTypes.map(et => {
+                               const count = effectiveMix[et.key] || 0;
+                               return (
+                                 <div key={et.key} className="flex items-center gap-2">
+                                   <span className="text-sm flex-shrink-0 w-5 text-center" aria-hidden="true">{et.emoji}</span>
+                                   <div className="flex-1 min-w-0">
+                                     <span className="text-xs font-semibold text-slate-700">{et.label}</span>
+                                     <span className="text-[10px] text-slate-400 ml-1">{et.desc}</span>
+                                   </div>
+                                   <input
+                                     type="number"
+                                     min="0"
+                                     max="5"
+                                     value={count}
+                                     onChange={(e) => handleMixChange(et.key, parseInt(e.target.value) || 0)}
+                                     aria-label={et.label + ' count'}
+                                     className="w-12 text-center text-sm border border-slate-300 rounded-md p-1 focus:ring-indigo-200 focus:border-indigo-300 bg-white"
+                                   />
+                                 </div>
+                               );
+                             })}
+                             {quizItemTypeMix && (
+                               <button
+                                 type="button"
+                                 onClick={handleResetMix}
+                                 className="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium mt-1 transition-colors"
+                               >↩ Reset to mode defaults</button>
+                             )}
+                           </div>
+                         )}
+                       </div>
+                     )}
                      <div className="px-3 pt-2 pb-1 flex items-center gap-2">
                        <label htmlFor="quiz-mode-select" className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0">Mode:</label>
                        <select

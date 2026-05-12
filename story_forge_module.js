@@ -102,26 +102,23 @@ const escapeHtml = (str) => {
 const useAudioRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
-  const sharedResultPromiseRef = useRef(null); // Phase 3v.MR — shared-path result promise
+  const sharedResultPromiseRef = useRef(null);
   const chunksRef = useRef([]);
   const startRecording = async () => {
-    // Phase 3v.MR — shared module path with inline fallback. The shared
-    // controller exposes result as a Promise that resolves on stop().
-    // We store the promise on a ref so stopRecording can await it.
-    if (window.AlloFlowVoice && typeof window.AlloFlowVoice.recordAudioBlob === 'function') {
+    if (window.AlloFlowVoice && typeof window.AlloFlowVoice.recordAudioBlob === "function") {
       const ctrl = window.AlloFlowVoice.recordAudioBlob({
         // No maxDurationMs — caller drives stop. The shared default
         // (60s) would change behavior for callers that expect arbitrary
         // length recording. Use a generous 10-minute cap as a safety net.
-        maxDurationMs: 10 * 60 * 1000,
-        preferredMimeType: 'audio/webm;codecs=opus',
+        maxDurationMs: 10 * 60 * 1e3,
+        preferredMimeType: "audio/webm;codecs=opus",
         onError: (err) => {
-          console.warn('Microphone access denied:', err);
+          console.warn("Microphone access denied:", err);
           setIsRecording(false);
         }
       });
       if (!ctrl.supported) {
-        console.warn('MediaRecorder not supported');
+        console.warn("MediaRecorder not supported");
         return;
       }
       mediaRecorderRef.current = ctrl;
@@ -129,7 +126,6 @@ const useAudioRecorder = () => {
       setIsRecording(true);
       return;
     }
-    // Inline fallback (pre-3v.MR behavior, identical)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
@@ -147,26 +143,26 @@ const useAudioRecorder = () => {
   const stopRecording = () => {
     return new Promise((resolve) => {
       if (!mediaRecorderRef.current) return resolve(null);
-      // Shared-module path: controller has isRecording() + .result Promise
-      if (sharedResultPromiseRef.current && typeof mediaRecorderRef.current.isRecording === 'function') {
+      if (sharedResultPromiseRef.current && typeof mediaRecorderRef.current.isRecording === "function") {
         const ctrl = mediaRecorderRef.current;
         const promise = sharedResultPromiseRef.current;
-        try { ctrl.stop(); } catch (e) { /* ignore */ }
+        try {
+          ctrl.stop();
+        } catch (e) {
+        }
         promise.then(async (rec) => {
-          if (!rec || !rec.base64) { setIsRecording(false); return resolve(null); }
+          if (!rec || !rec.base64) {
+            setIsRecording(false);
+            return resolve(null);
+          }
           const dataUri = rec.base64;
-          const bare = dataUri.split(',')[1] || dataUri;
-          const mimeType = rec.mimeType || 'audio/webm';
-          // Reconstruct a Blob URL via fetch() so callers that revoke
-          // it later (or pipe it into <audio src=blob:...>) get the
-          // same blob-URL flavor the legacy path produced.
+          const bare = dataUri.split(",")[1] || dataUri;
+          const mimeType = rec.mimeType || "audio/webm";
           let url;
           try {
             const blob = await fetch(dataUri).then((r) => r.blob());
             url = URL.createObjectURL(blob);
           } catch (e) {
-            // If fetch on a data URI fails for any reason, the data URI
-            // itself works as <audio src> in modern browsers.
             url = dataUri;
           }
           setIsRecording(false);
@@ -177,7 +173,6 @@ const useAudioRecorder = () => {
         });
         return;
       }
-      // Inline-fallback path
       mediaRecorderRef.current.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: "audio/webm" });
         const url = URL.createObjectURL(blob);
@@ -200,30 +195,20 @@ const useDictation = (onTranscript, lang) => {
   const isDictatingRef = useRef(false);
   const recognitionRef = useRef(null);
   const startDictation = () => {
-    // Phase 3v.M — shared module path with inline fallback. The shared
-    // path uses restartOnEnd:true so the recursive restart (legacy
-    // line: recognitionRef.current.start() in onend) is handled inside
-    // the controller. The onRichResult callback forwards only final
-    // text via onTranscript, matching the original useDictation
-    // contract that callers rely on.
-    if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === 'function') {
-      // Note: NOT using restartOnEnd:true here — that would restart even
-      // after user-initiated stop. We replicate the legacy manual-restart
-      // pattern: on natural end (browser silence timeout) we re-start
-      // ourselves only if the user hasn't called stopDictation; on user
-      // stop we let the controller stay stopped.
+    if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === "function") {
       let ctrlRef = null;
       const handleEnd = () => {
         if (ctrlRef && recognitionRef.current === ctrlRef && isDictatingRef.current) {
-          try { ctrlRef.start(); }
-          catch (e) {
+          try {
+            ctrlRef.start();
+          } catch (e) {
             isDictatingRef.current = false;
             setIsDictating(false);
           }
         }
       };
       const ctrl = window.AlloFlowVoice.initWebSpeechCapture({
-        lang: lang || 'en-US',
+        lang: lang || "en-US",
         continuous: true,
         interimResults: true,
         onRichResult: ({ final }) => {
@@ -244,7 +229,6 @@ const useDictation = (onTranscript, lang) => {
       }
       return;
     }
-    // Inline fallback (pre-3v.M behavior, identical)
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) return;
     const recognition = new SR();
@@ -283,13 +267,16 @@ const useDictation = (onTranscript, lang) => {
   const stopDictation = () => {
     isDictatingRef.current = false;
     if (recognitionRef.current) {
-      // The shared-module controller handles its own end cleanup;
-      // the inline-fallback rec needs the legacy onend-clearing trick
-      // to prevent the restart-on-end recursion from re-entering.
-      if (recognitionRef.current.onend !== undefined) {
-        try { recognitionRef.current.onend = null; } catch (e) { /* shared ctrl: noop */ }
+      if (recognitionRef.current.onend !== void 0) {
+        try {
+          recognitionRef.current.onend = null;
+        } catch (e) {
+        }
       }
-      try { recognitionRef.current.stop(); } catch (e) { /* ignore */ }
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+      }
       recognitionRef.current = null;
     }
     setIsDictating(false);
@@ -2428,7 +2415,7 @@ show();
     {
       key,
       onClick: () => setGenre(key),
-      className: `p-3 rounded-xl border-2 text-center text-xs font-bold transition-all ${genre === key ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-indigo-600"}`
+      className: `p-3 rounded-xl border-2 text-center text-xs font-bold transition-all ${genre === key ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-indigo-300"}`
     },
     g.emoji,
     /* @__PURE__ */ React.createElement("br", null),
@@ -2469,7 +2456,7 @@ show();
     {
       key: style,
       onClick: () => setArtStyle(style),
-      className: `p-3 rounded-xl border-2 text-center text-xs font-bold capitalize transition-all ${artStyle === style ? "border-purple-500 bg-purple-50 text-purple-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-purple-600"}`
+      className: `p-3 rounded-xl border-2 text-center text-xs font-bold capitalize transition-all ${artStyle === style ? "border-purple-500 bg-purple-50 text-purple-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-purple-300"}`
     },
     style === "storybook" ? "\u{1F4DA}" : style === "pixel" ? "\u{1F47E}" : style === "cinematic" ? "\u{1F3AC}" : style === "anime" ? "\u2728" : "\u{1F58D}\uFE0F",
     /* @__PURE__ */ React.createElement("br", null),
@@ -2478,7 +2465,7 @@ show();
     "button",
     {
       onClick: () => setArtStyle("custom"),
-      className: `p-3 rounded-xl border-2 text-center text-xs font-bold transition-all ${artStyle === "custom" ? "border-purple-500 bg-purple-50 text-purple-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-purple-600"}`
+      className: `p-3 rounded-xl border-2 text-center text-xs font-bold transition-all ${artStyle === "custom" ? "border-purple-500 bg-purple-50 text-purple-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-purple-300"}`
     },
     "\u{1F3A8}",
     /* @__PURE__ */ React.createElement("br", null),
@@ -2498,7 +2485,7 @@ show();
     {
       key: l.code,
       onClick: () => setLanguage(l.code),
-      className: `p-2.5 rounded-xl border-2 text-center text-xs font-bold transition-all ${language === l.code ? "border-teal-500 bg-teal-50 text-teal-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-teal-600"}`
+      className: `p-2.5 rounded-xl border-2 text-center text-xs font-bold transition-all ${language === l.code ? "border-teal-500 bg-teal-50 text-teal-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-teal-300"}`
     },
     l.label
   ))), language === "other" && /* @__PURE__ */ React.createElement(
@@ -2525,7 +2512,7 @@ show();
     {
       key: si,
       onClick: () => setStoryPrompt(starter),
-      className: `w-full text-left text-xs p-2.5 rounded-lg border transition-all ${storyPrompt === starter ? "bg-amber-100 border-amber-400 text-amber-800 font-bold" : "bg-white border-slate-200 text-slate-600 hover:border-amber-600 hover:bg-amber-50"}`
+      className: `w-full text-left text-xs p-2.5 rounded-lg border transition-all ${storyPrompt === starter ? "bg-amber-100 border-amber-400 text-amber-800 font-bold" : "bg-white border-slate-200 text-slate-600 hover:border-amber-300 hover:bg-amber-50"}`
     },
     '"',
     starter,
@@ -2643,7 +2630,7 @@ show();
     "button",
     {
       onClick: () => toggleDictation(idx),
-      className: `text-[11px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors ${dictation.isDictating && dictatingParagraphIdx === idx ? "bg-red-100 border-red-600 text-red-600 animate-pulse" : "bg-blue-50 border-blue-200/50 text-blue-500 hover:bg-blue-100 hover:text-blue-700"}`,
+      className: `text-[11px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors ${dictation.isDictating && dictatingParagraphIdx === idx ? "bg-red-100 border-red-300 text-red-600 animate-pulse" : "bg-blue-50 border-blue-200/50 text-blue-500 hover:bg-blue-100 hover:text-blue-700"}`,
       "aria-label": dictation.isDictating && dictatingParagraphIdx === idx ? "Stop dictation" : "Start dictation"
     },
     /* @__PURE__ */ React.createElement(Mic, { size: 10 }),
@@ -2748,7 +2735,7 @@ show();
   ), onCallGeminiVision && /* @__PURE__ */ React.createElement("div", { className: `px-4 py-1.5 border-t flex items-center gap-2 flex-wrap ${layoutMode === "dark" ? "bg-slate-900 border-slate-700" : "bg-white border-slate-100"}` }, /* @__PURE__ */ React.createElement(
     "label",
     {
-      className: `inline-flex items-center gap-1.5 px-3 py-1.5 border-2 border-dashed rounded-lg text-xs font-bold cursor-pointer transition-all ${hwLoading && hwTargetParagraph === idx ? "opacity-50 pointer-events-none" : ""} ${layoutMode === "dark" ? "border-cyan-700 text-cyan-400 hover:bg-cyan-900/30" : "border-violet-600 text-violet-600 hover:bg-violet-50 hover:border-violet-400"}`,
+      className: `inline-flex items-center gap-1.5 px-3 py-1.5 border-2 border-dashed rounded-lg text-xs font-bold cursor-pointer transition-all ${hwLoading && hwTargetParagraph === idx ? "opacity-50 pointer-events-none" : ""} ${layoutMode === "dark" ? "border-cyan-700 text-cyan-400 hover:bg-cyan-900/30" : "border-violet-300 text-violet-600 hover:bg-violet-50 hover:border-violet-400"}`,
       "aria-label": `Snap or upload handwriting for paragraph ${idx + 1}`
     },
     /* @__PURE__ */ React.createElement(
@@ -2771,7 +2758,7 @@ show();
       onClick: () => setHwPenmanshipOn(!hwPenmanshipOn),
       "aria-label": `${hwPenmanshipOn ? "Disable" : "Enable"} penmanship feedback`,
       "aria-pressed": hwPenmanshipOn,
-      className: `inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ${hwPenmanshipOn ? layoutMode === "dark" ? "bg-cyan-900 border-cyan-600 text-cyan-300" : "bg-violet-100 border-violet-600 text-violet-700" : layoutMode === "dark" ? "bg-slate-800 border-slate-600 text-slate-300 hover:border-cyan-600" : "bg-slate-50 border-slate-200 text-slate-500 hover:border-violet-600 hover:text-violet-500"}`
+      className: `inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ${hwPenmanshipOn ? layoutMode === "dark" ? "bg-cyan-900 border-cyan-600 text-cyan-300" : "bg-violet-100 border-violet-300 text-violet-700" : layoutMode === "dark" ? "bg-slate-800 border-slate-600 text-slate-300 hover:border-cyan-600" : "bg-slate-50 border-slate-200 text-slate-500 hover:border-violet-300 hover:text-violet-500"}`
     },
     "\u270F\uFE0F Penmanship Tips ",
     hwPenmanshipOn ? "ON" : "OFF"
