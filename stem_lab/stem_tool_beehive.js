@@ -9623,23 +9623,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   })()
                 ),
                 h('div', { className: 'grid grid-cols-4 gap-1.5' },
-                  h('button', { onClick: function() { smokeHive(); }, title: 'Puff cool smoke at the entrance. Masks alarm pheromone and triggers bees to gorge on honey — calms them before any inspection.',
-                    className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-stone-800/40 text-stone-300' : 'bg-stone-100 text-stone-700') + urgentCls('smoke') }, '💨 Smoke'),
-                  h('button', { onClick: function() { upd('showInspect', true); triggerBeekeeperAction('inspect', 'Opening the hive for an inspection.', '🔍'); },
-                    title: 'Open the hive inspector — 9 biology layers (roles, lifecycle, waggle dance, thermoregulation, pheromones, anatomy, native bees, bloom calendar, honey chemistry).',
-                    className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-indigo-900/30 text-indigo-300' : 'bg-indigo-50 text-indigo-700') + urgentCls('inspect') }, '🔬 Inspect'),
-                  h('button', { onClick: treatVarroa, title: 'Choose an Integrated Pest Management (IPM) treatment — oxalic acid, formic, thymol, sugar dust, or drone brood removal. Each has season-specific efficacy.',
-                    className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-red-900/30 text-red-300' : 'bg-red-50 text-red-700') + urgentCls('treat') }, '🧪 Treat'),
-                  h('button', { onClick: addSuper, title: 'Add a honey super (extra box) on top. Gives bees comb-building room and prevents swarming in peak nectar flow.',
-                    className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-50 text-blue-700') + urgentCls('super') }, '📦 Super'),
-                  h('button', { onClick: harvestHoney, title: 'Extract honey — only the surplus above the 15-lb reserve. Identifies the varietal (which flowers dominated this batch).',
-                    className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-50 text-amber-700') + urgentCls('harvest') }, '🍯 Harvest'),
-                  h('button', { onClick: feedBees, title: 'Supplement with 1:1 sugar syrup (spring) or 2:1 (autumn/winter). Use when honey stores drop below ~15 lbs or nectar dearth hits.',
-                    className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') + urgentCls('feed') }, '🥣 Feed'),
-                  h('button', { onClick: requeenColony, title: 'Install a new queen. Used when the old queen\'s laying drops, when temperament needs fixing, or after a swarm.',
-                    className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-purple-900/30 text-purple-300' : 'bg-purple-50 text-purple-700') + urgentCls('requeen') }, '👑 Requeen'),
-                  h('button', { onClick: function() { upd('showBadges', true); }, title: 'View your beekeeping badges. Each one rewards a real-world skill (Mite Manager, Honey Master, Winter Survivor, etc.).',
-                    className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-50 text-amber-700') }, '🏅 Badges'))
+                  // Two-line action buttons: top line = icon + name, bottom line
+                  // = predicted outcome at current state. Makes every click a
+                  // transparent decision instead of a leap of faith.
+                  (function() {
+                    function actionBtn(opts) {
+                      return h('button', {
+                        onClick: opts.onClick,
+                        title: opts.title,
+                        className: 'p-2 rounded-lg text-xs flex flex-col items-center gap-0.5 ' + opts.cls + (opts.urgent || '')
+                      },
+                        h('div', { className: 'font-bold' }, opts.label),
+                        h('div', { className: 'text-[9px] opacity-70 leading-tight' }, opts.preview)
+                      );
+                    }
+                    var harvestable = honey >= 15 ? (Math.round((honey - 15) * 10) / 10) : 0;
+                    return [
+                      actionBtn({
+                        onClick: function() { smokeHive(); },
+                        title: 'Puff cool smoke at the entrance. Masks alarm pheromone and triggers bees to gorge on honey — calms them before any inspection.',
+                        cls: (dk ? 'bg-stone-800/40 text-stone-300' : 'bg-stone-100 text-stone-700'),
+                        urgent: urgentCls('smoke'), label: '💨 Smoke', preview: '+2 morale'
+                      }),
+                      actionBtn({
+                        onClick: function() { upd('showInspect', true); triggerBeekeeperAction('inspect', 'Opening the hive for an inspection.', '🔍'); },
+                        title: 'Open the hive inspector — 9 biology layers (roles, lifecycle, waggle dance, thermoregulation, pheromones, anatomy, native bees, bloom calendar, honey chemistry).',
+                        cls: (dk ? 'bg-indigo-900/30 text-indigo-300' : 'bg-indigo-50 text-indigo-700'),
+                        urgent: urgentCls('inspect'), label: '🔬 Inspect',
+                        preview: (((d.layersViewed || []).length) + ' / 9 layers seen')
+                      }),
+                      actionBtn({
+                        onClick: treatVarroa,
+                        title: 'Choose an Integrated Pest Management (IPM) treatment — oxalic acid, formic, thymol, sugar dust, or drone brood removal. Each has season-specific efficacy.',
+                        cls: (dk ? 'bg-red-900/30 text-red-300' : 'bg-red-50 text-red-700'),
+                        urgent: urgentCls('treat'), label: '🧪 Treat', preview: 'mites: ' + varroaLevel + '%'
+                      }),
+                      actionBtn({
+                        onClick: addSuper,
+                        title: 'Add a honey super (extra box) on top. Gives bees comb-building room and prevents swarming in peak nectar flow.',
+                        cls: (dk ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-50 text-blue-700'),
+                        urgent: urgentCls('super'), label: '📦 Super', preview: '+10 morale, +2 wax'
+                      }),
+                      actionBtn({
+                        onClick: harvestHoney,
+                        title: 'Extract honey — only the surplus above the 15-lb reserve. Identifies the varietal (which flowers dominated this batch).',
+                        cls: (dk ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-50 text-amber-700'),
+                        urgent: urgentCls('harvest'), label: '🍯 Harvest',
+                        preview: harvestable > 0 ? harvestable + ' lbs ready' : 'need 15+ lbs'
+                      }),
+                      actionBtn({
+                        onClick: feedBees,
+                        title: 'Supplement with 1:1 sugar syrup (spring) or 2:1 (autumn/winter). Use when honey stores drop below ~15 lbs or nectar dearth hits.',
+                        cls: (dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700'),
+                        urgent: urgentCls('feed'), label: '🥣 Feed', preview: '+5 honey, +5 morale'
+                      }),
+                      actionBtn({
+                        onClick: requeenColony,
+                        title: 'Install a new queen. Used when the old queen\'s laying drops, when temperament needs fixing, or after a swarm.',
+                        cls: (dk ? 'bg-purple-900/30 text-purple-300' : 'bg-purple-50 text-purple-700'),
+                        urgent: urgentCls('requeen'), label: '👑 Requeen',
+                        preview: 'queen: ' + queenHealth + '% → 100%'
+                      }),
+                      actionBtn({
+                        onClick: function() { upd('showBadges', true); },
+                        title: 'View your beekeeping badges. Each one rewards a real-world skill (Mite Manager, Honey Master, Winter Survivor, etc.).',
+                        cls: (dk ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-50 text-amber-700'),
+                        urgent: '', label: '🏅 Badges',
+                        preview: badgeCount + ' / ' + BADGE_DEFS.length + ' earned'
+                      })
+                    ];
+                  })()
+                )
               );
             })()
           );
