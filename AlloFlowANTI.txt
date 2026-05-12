@@ -2411,7 +2411,7 @@ const AlloFlowContent = () => {
   const [uiState, uiDispatch] = useReducer(uiChromeReducer, UI_INITIAL_STATE);
   const { isTeacherToolbarExpanded, showStudyTimerModal, showTimerConfetti, showSubmitModal, showExportMenu, showHealthCheckPanel, isProfileModalOpen, isUnitModalOpen, showFluencyConfetti, selectionMenu, showInfoModal, infoModalTab, toasts, showXPModal, showSaveModal, showSessionModal, showGroupModal, isJoinPanelExpanded, showHintsModal, isTranslateModalOpen } = uiState;
   const setIsTeacherToolbarExpanded = (v) => uiDispatch({ type: 'UI_SET', field: 'isTeacherToolbarExpanded', value: v });
-  const setShowStudyTimerModal = (v) => uiDispatch({ type: 'UI_SET', field: 'showStudyTimerModal', value: v });
+  const setShowStudyTimerModal = (v) => { if (v && window.__alloLazyStudyTimerModal) { try { window.__alloLazyStudyTimerModal(); } catch(_) {} } uiDispatch({ type: 'UI_SET', field: 'showStudyTimerModal', value: v }); };
   const setShowTimerConfetti = (v) => uiDispatch({ type: 'UI_SET', field: 'showTimerConfetti', value: v });
   const setShowSubmitModal = (v) => uiDispatch({ type: 'UI_SET', field: 'showSubmitModal', value: v });
   const setShowExportMenu = (v) => uiDispatch({ type: 'UI_SET', field: 'showExportMenu', value: v });
@@ -2420,15 +2420,15 @@ const AlloFlowContent = () => {
   const setIsUnitModalOpen = (v) => uiDispatch({ type: 'UI_SET', field: 'isUnitModalOpen', value: v });
   const setShowFluencyConfetti = (v) => uiDispatch({ type: 'UI_SET', field: 'showFluencyConfetti', value: v });
   const setSelectionMenu = (v) => uiDispatch({ type: 'UI_SET', field: 'selectionMenu', value: v });
-  const setShowInfoModal = (v) => uiDispatch({ type: 'UI_SET', field: 'showInfoModal', value: v });
+  const setShowInfoModal = (v) => { if (v && window.__alloLazyInfoModal) { try { window.__alloLazyInfoModal(); } catch(_) {} } uiDispatch({ type: 'UI_SET', field: 'showInfoModal', value: v }); };
   const setInfoModalTab = (v) => uiDispatch({ type: 'UI_SET', field: 'infoModalTab', value: v });
   const setToasts = (v) => uiDispatch({ type: 'UI_SET', field: 'toasts', value: v });
-  const setShowXPModal = (v) => uiDispatch({ type: 'UI_SET', field: 'showXPModal', value: v });
+  const setShowXPModal = (v) => { if (v && window.__alloLazyXPModal) { try { window.__alloLazyXPModal(); } catch(_) {} } uiDispatch({ type: 'UI_SET', field: 'showXPModal', value: v }); };
   const setShowSaveModal = (v) => uiDispatch({ type: 'UI_SET', field: 'showSaveModal', value: v });
-  const setShowSessionModal = (v) => uiDispatch({ type: 'UI_SET', field: 'showSessionModal', value: v });
+  const setShowSessionModal = (v) => { if (v && window.__alloLazySessionModal) { try { window.__alloLazySessionModal(); } catch(_) {} } uiDispatch({ type: 'UI_SET', field: 'showSessionModal', value: v }); };
   const setShowGroupModal = (v) => uiDispatch({ type: 'UI_SET', field: 'showGroupModal', value: v });
   const setIsJoinPanelExpanded = (v) => uiDispatch({ type: 'UI_SET', field: 'isJoinPanelExpanded', value: v });
-  const setShowHintsModal = (v) => uiDispatch({ type: 'UI_SET', field: 'showHintsModal', value: v });
+  const setShowHintsModal = (v) => { if (v && window.__alloLazyHintsModal) { try { window.__alloLazyHintsModal(); } catch(_) {} } uiDispatch({ type: 'UI_SET', field: 'showHintsModal', value: v }); };
   const setIsTranslateModalOpen = (v) => uiDispatch({ type: 'UI_SET', field: 'isTranslateModalOpen', value: v });
   const [studentProgressLog, setStudentProgressLog] = useState([]);
   const [isStorageDisabled, setIsStorageDisabled] = useState(false);
@@ -2662,7 +2662,7 @@ const AlloFlowContent = () => {
   const setAdventureDifficulty = (v) => advDispatch({ type: 'ADV_SET', field: 'adventureDifficulty', value: v });
   const setIsResumingAdventure = (v) => advDispatch({ type: 'ADV_SET', field: 'isResumingAdventure', value: v });
   const setAdventureEffects = (v) => advDispatch({ type: 'ADV_SET', field: 'adventureEffects', value: v });
-  const setShowStorybookExportModal = (v) => advDispatch({ type: 'ADV_SET', field: 'showStorybookExportModal', value: v });
+  const setShowStorybookExportModal = (v) => { if (v && window.__alloLazyStorybookExportModal) { try { window.__alloLazyStorybookExportModal(); } catch(_) {} } advDispatch({ type: 'ADV_SET', field: 'showStorybookExportModal', value: v }); };
   const setAdventureInputMode = (v) => advDispatch({ type: 'ADV_SET', field: 'adventureInputMode', value: v });
   const setAdventureLanguageMode = (v) => advDispatch({ type: 'ADV_SET', field: 'adventureLanguageMode', value: v });
   const setAdventureTextInput = (v) => advDispatch({ type: 'ADV_SET', field: 'adventureTextInput', value: v });
@@ -3740,15 +3740,21 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('UIFontLibrary', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/ui_font_library_module.js');
     loadModule('VoiceConfig', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/voice_config_module.js');
     loadModule('CanvasTips', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/canvas_tips_module.js');
-    loadModule('KokoroOfferModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_kokoro_offer_modal_module.js');
+    // ── Lazy-loaded modal modules (May 12 2026) ──
+    // Each modal is gated by a wrapped setter that fires its ensure-loader on
+    // first true. Until that happens the script is not fetched, cutting ~9
+    // requests off cold boot. The embedded loadModule(...) call still matches
+    // build.js's URL rewriter regex, so hashes auto-update on deploy.
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_kokoro_offer_modal_module.js'); }; })();
+    // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
     loadModule('ConfirmDialog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_confirm_dialog_module.js');
-    loadModule('HintsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_hints_modal_module.js');
-    loadModule('XPModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_xp_modal_module.js');
-    loadModule('StorybookExportModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_storybook_export_modal_module.js');
-    loadModule('InfoModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_info_modal_module.js');
-    loadModule('SessionModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_session_modal_module.js');
-    loadModule('SocraticChat', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_socratic_chat_module.js');
-    loadModule('GlobalLevelUpModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_global_level_up_module.js');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_hints_modal_module.js'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_xp_modal_module.js'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_storybook_export_modal_module.js'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_info_modal_module.js'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_session_modal_module.js'); }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_socratic_chat_module.js'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_global_level_up_module.js'); }; })();
     loadModule('HeaderBar', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_header_module.js');
     loadModule('GuidedModeBanner', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_guided_mode_banner_module.js');
     loadModule('StudentJoinPanel', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_student_join_panel_module.js');
@@ -3758,7 +3764,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('TeacherHistoryTab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_teacher_history_tab_module.js');
     loadModule('HistoryPanel', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_history_panel_module.js');
     loadModule('FabStack', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_fab_stack_module.js');
-    loadModule('StudyTimerModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_study_timer_modal_module.js');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_study_timer_modal_module.js'); }; })();
     loadModule('EducatorHubModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_educator_hub_modal_module.js');
     loadModule('VisualSupportsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_visual_supports_modal_module.js');
     loadModule('LearningHubModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@2c5586f8/view_learning_hub_modal_module.js');
@@ -4065,7 +4071,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [kokoroLoadState, setKokoroLoadState] = useState(
     !_isCanvasEnv ? { loading: true, stage: 'Preparing voice engine...', pct: 0 } : null
   );
-  const [showKokoroOfferModal, setShowKokoroOfferModal] = useState(false);
+  const [showKokoroOfferModal, _setShowKokoroOfferModalRaw] = useState(false);
+  const setShowKokoroOfferModal = React.useCallback((v) => { if (v && window.__alloLazyKokoroOfferModal) { try { window.__alloLazyKokoroOfferModal(); } catch(_) {} } _setShowKokoroOfferModalRaw(v); }, []);
   React.useEffect(() => {
     if (!_isCanvasEnv) return;
     const poll = setInterval(() => {
@@ -4217,7 +4224,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   React.useEffect(() => { try { localStorage.setItem('alloflow_timeline_image_style', timelineImageStyle); } catch (e) {} }, [timelineImageStyle]);
   const [isRevisingTimeline, setIsRevisingTimeline] = useState(false);
   const [dismissedVerifications, setDismissedVerifications] = useState(() => new Set());
-  const [showSocraticChat, setShowSocraticChat] = useState(false);
+  const [showSocraticChat, _setShowSocraticChatRaw] = useState(false);
+  const setShowSocraticChat = React.useCallback((v) => { if (v && window.__alloLazySocraticChat) { try { window.__alloLazySocraticChat(); } catch(_) {} } _setShowSocraticChatRaw(v); }, []);
   const [isSocraticThinking, setIsSocraticThinking] = useState(false);
   const [socraticInput, setSocraticInput] = useState('');
   const [socraticMessages, setSocraticMessages] = useState([
@@ -4832,7 +4840,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     const s = seconds % 60;
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
-  const [showGlobalLevelUp, setShowGlobalLevelUp] = useState(false);
+  const [showGlobalLevelUp, _setShowGlobalLevelUpRaw] = useState(false);
+  const setShowGlobalLevelUp = React.useCallback((v) => { if (v && window.__alloLazyGlobalLevelUpModal) { try { window.__alloLazyGlobalLevelUpModal(); } catch(_) {} } _setShowGlobalLevelUpRaw(v); }, []);
   const prevGlobalLevelRef = useRef(globalLevel);
   const [lastSaved, setLastSaved] = useState(null);
   const [lastJsonFileSave, setLastJsonFileSave] = useState(Date.now());
