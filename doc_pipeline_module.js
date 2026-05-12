@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -3640,7 +3640,7 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
           batchDocStyle = { ...batchDocStyle, ...JSON.parse(sc) };
           log('Extracted brand colors from original PDF');
         }
-      } catch(e) {}
+      } catch(e) { warnLog && warnLog('[batchDocStyle] PDF brand-color extraction failed; falling back to defaults:', e); }
     }
 
     // ── Boring-palette detection: if the source document has minimal color variation,
@@ -15254,6 +15254,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     downloadBatchResults: _wrapAsync(downloadBatchResults),
   };
 };
+
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.createDocPipeline = createDocPipeline;
+window.AlloModules.DocPipelineModule = true;
+console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;

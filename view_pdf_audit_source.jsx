@@ -5091,7 +5091,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       // callTTS returns a blob URL; wrap in <audio> + await ended.
                       // Without this the URL is discarded and the sim runs silent.
                       let url = null;
-                      try { url = await callTTS(announcements[i].text); } catch(e) {}
+                      try { url = await callTTS(announcements[i].text); } catch(e) { warnLog && warnLog('[pdf-audit announcement] callTTS failed for item ' + i + ':', e); }
                       if (stopRequested) { if (url) { try { URL.revokeObjectURL(url); } catch(_) {} } break; }
                       if (url) {
                         await new Promise(resolve => {

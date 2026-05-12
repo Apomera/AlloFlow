@@ -3675,6 +3675,7 @@ Return ONLY JSON:
             try {
               url = await callTTS(announcements[i].text);
             } catch (e) {
+              warnLog && warnLog("[pdf-audit announcement] callTTS failed for item " + i + ":", e);
             }
             if (stopRequested) {
               if (url) {

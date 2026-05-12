@@ -112,7 +112,69 @@ risk because there's no rebuild path.
 Adjacent files (`adventure_handlers`, `adventure_session_handlers`) have
 build scripts already, so Option A is the more consistent path.
 
+## Nested-body drift in JSX-compiled modules — May 12 2026 investigation
+
+The auditor's new nested-body detection (added when resolving
+generate_dispatcher's 1,477-line drift) surfaces flagged functions in
+story_forge, games, immersive_reader, teacher, and view_sidebar_panels.
+Investigation showed these are NOT the same shape as generate_dispatcher
+and **cannot be resolved by wholesale body-copy**:
+
+- Generate_dispatcher's build script just wraps source.jsx in an IIFE.
+  Source-to-module is a 1-to-1 byte copy (plus header/tail). So
+  `cp module.js source.jsx` after stripping the wrapper produced an
+  identical rebuild.
+- JSX-compiled build scripts (games, immersive_reader, teacher,
+  story_forge, view_sidebar_panels, etc.) run source.jsx through
+  **esbuild** first, transforming JSX → React.createElement calls.
+  The module.js has fundamentally different byte content than the
+  source.jsx, even when "in sync". Wholesale copy would put
+  React.createElement calls into source.jsx where JSX belongs — and
+  the next rebuild would re-transform that into uglier React.createElement
+  wrappers around the existing calls.
+- Mixed-direction drift (source > module AND module > source in the
+  same module) is also more common here, requiring per-function
+  decisions on which side is canonical.
+
+**Decision: per-function manual review is the right approach.** For
+each flagged function:
+1. Read source.jsx version (JSX) and module.js version (compiled).
+2. Decide which version represents the intended behavior.
+3. If module is canonical: port the relevant JSX equivalent to source,
+   then rebuild.
+4. If source is canonical: just rebuild — module catches up.
+
+Specific findings (May 12 2026, post-MAX-fix audit):
+- `story_forge`: 4 fn drift, mixed direction. aiScoreNum + beatColor
+  source-bigger (rebuild). stopRecording + startRecording module-bigger
+  (port).
+- `games`: 3 fn drift, all module-bigger (`scrambleWord` is a
+  preamble false positive after MAX — verify; `useHint` + `GameReviewScreen`
+  may be real).
+- `immersive_reader`: 3 fn module-bigger.
+- `teacher`: 2 fn drift, mixed direction (`metricBar` source-bigger;
+  `alloRestoreFocus` + `alloSaveFocus` module-bigger).
+- `view_sidebar_panels`: 3 fn drift, mixed direction + 3 module-only
+  decls (`_lazyIcon`, `handleMixChange`, `handleResetMix`).
+
+These are deferred to follow-up sessions, one module at a time, with
+careful manual review per drifting function.
+
 ## Audit-tool follow-up (optional)
+
+The audit's body-byte calculation is heuristic (regex-based, not AST).
+Known limitations now documented in `audit_pair_drift.js` source:
+1. Icon-shim lines (`var X = _icons.X || function(){...}`) don't
+   match the function regex, so they get rolled into the previous
+   function's span, inflating its "body".
+2. MAX(occurrences) handles the build-script preamble duplicate-decl
+   case (a function declared twice in module: once in IIFE preamble
+   as a small utility, once as the compiled full body).
+
+A future ship could replace the regex pass with @babel/parser AST
+walks for accurate per-function byte counts. Until then, the auditor
+biases toward false-positive drift, not false-negative — operators
+just verify each flagged item.
 
 The auditor flags any non-zero line delta even when `src-only == 0 &&
 mod-only == 0`. For esbuild-compiled view modules, this generates

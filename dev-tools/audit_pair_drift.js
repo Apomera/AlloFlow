@@ -73,6 +73,22 @@ function extractDeclarations(src) {
 // the next top-level declaration (or EOF), with comments + whitespace
 // stripped so reformatting doesn't register as drift.
 function extractDeclarationBodies(src) {
+  // Heuristic body-byte extraction. Known limitations:
+  //   1. No AST — uses "span to next top-level decl" which OVER-counts when
+  //      icon-shim lines like `var ArrowDown = _icons.X || function(){...}`
+  //      appear between functions (they don't match the regex so the previous
+  //      function's span absorbs them). The boundary-based fix I tried turned
+  //      out to UNDER-count when nested const declarations exist inside fn
+  //      bodies (very common). The right fix is @babel/parser; tracked as a
+  //      follow-up in PAIR_DRIFT_TRIAGE.md.
+  //   2. MAX(occurrences) — build scripts (games, immersive_reader) inject
+  //      "Local utilities" copies of helpers into the IIFE preamble + the
+  //      compiled JSX body, so a name appears twice in module.js. MAX picks
+  //      the larger span, treating the preamble copy as noise.
+  //
+  // Bias: both limitations skew toward FALSE POSITIVES (audit cries drift
+  // when there isn't really any), not false negatives. Acceptable for a
+  // triage tool — operator just verifies each flagged item.
   const decls = [];
   const funcDecl = /^\s*(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(/gm;
   const assignFn = /^\s*(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?(?:[A-Za-z_$][\w$]*\s*=>|\([^)]*\)\s*=>|function\s*\(|React\.memo\(|memo\()/gm;
@@ -92,9 +108,10 @@ function extractDeclarationBodies(src) {
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/\/\/[^\n]*/g, '')
       .replace(/\s+/g, '');
-    // If the same name appears multiple times (rare — usually accidental dup
-    // declarations or re-bindings), sum the spans so we don't miss drift.
-    bodies.set(decls[i].name, (bodies.get(decls[i].name) || 0) + slice.length);
+    // MAX(occurrences) — see notes above. Picks the larger span when a name
+    // appears more than once (build-script preamble duplicates).
+    const existing = bodies.get(decls[i].name) || 0;
+    if (slice.length > existing) bodies.set(decls[i].name, slice.length);
   }
   return bodies;
 }

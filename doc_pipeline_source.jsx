@@ -3638,7 +3638,7 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
           batchDocStyle = { ...batchDocStyle, ...JSON.parse(sc) };
           log('Extracted brand colors from original PDF');
         }
-      } catch(e) {}
+      } catch(e) { warnLog && warnLog('[batchDocStyle] PDF brand-color extraction failed; falling back to defaults:', e); }
     }
 
     // ── Boring-palette detection: if the source document has minimal color variation,
