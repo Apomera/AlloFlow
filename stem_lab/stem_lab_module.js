@@ -266,6 +266,18 @@
       var [_xpPopupTick, _setXpPopupTick] = React.useState(0);
       // XP badge pulse state
       var [_xpBadgePulse, _setXpBadgePulse] = React.useState(false);
+      // Plugin-load progress tick — bumped by the allo-plugins-changed event the
+      // lazy-loader fires after each stem_tool_*.js script finishes registering.
+      // Forces the tile grid to re-render as plugins stream in on first hub-open.
+      var [_pluginProgressTick, _setPluginProgressTick] = React.useState(0);
+      React.useEffect(function() {
+        var handler = function(e) {
+          if (e && e.detail && e.detail.label !== 'Stem') return;
+          _setPluginProgressTick(function(t) { return t + 1; });
+        };
+        window.addEventListener('allo-plugins-changed', handler);
+        return function() { window.removeEventListener('allo-plugins-changed', handler); };
+      }, []);
 
       // Life Skills Lab Global State
       var [stemState, setStemState] = React.useState({});
@@ -4373,7 +4385,11 @@
         // have inline render code above. Bridges hub-scope variables into
         // the plugin's ctx object format.
         // ════════════════════════════════════════════════════════════════════
-        stemLabTab === 'explore' && stemLabTool && window.StemLab && window.StemLab.isRegistered(stemLabTool) && (function _pluginFallback() {
+        // Outer guard previously required isRegistered(stemLabTool), which made
+        // the inner "plugin not yet loaded" skeleton (below) dead code. With
+        // lazy-loaded plugin scripts (May 11 2026), a user can click a tile
+        // before its plugin has registered; the skeleton handles that window.
+        stemLabTab === 'explore' && stemLabTool && window.StemLab && (function _pluginFallback() {
           // Only render if no inline IIFE already handled this tool.
           // We detect this by checking a known marker: inline tools set state
           // immediately via their IIFE returns. If the tool is in the registry

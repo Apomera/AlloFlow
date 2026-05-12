@@ -166,6 +166,20 @@
       var selXp  = _selXp[0];
       var setSelXp = _selXp[1];
 
+      // Plugin-load progress tick — bumped by the allo-plugins-changed event the
+      // lazy-loader fires after each sel_tool_*.js script finishes registering.
+      // Forces the tile grid to re-render as plugins stream in on first hub-open.
+      var _pluginProgress = React.useState(0);
+      var _setPluginProgressTick = _pluginProgress[1];
+      React.useEffect(function() {
+        var handler = function(e) {
+          if (e && e.detail && e.detail.label !== 'Sel') return;
+          _setPluginProgressTick(function(t) { return t + 1; });
+        };
+        window.addEventListener('allo-plugins-changed', handler);
+        return function() { window.removeEventListener('allo-plugins-changed', handler); };
+      }, []);
+
       function awardSelXP(amount) {
         var pts = amount || 5;
         setSelXp(function(prev) { return prev + pts; });
@@ -510,6 +524,7 @@
         { id: 'strengths',   icon: '\u2B50',       label: 'Strengths Finder',    desc: 'Discover and reflect on personal strengths, talents, and growth areas.', color: 'amber', recommendedRange: 'K-12' },
         { id: 'viaStrengths', icon: '\uD83C\uDF1F', label: 'VIA Strengths',     desc: 'A simplified self-sort of the 24 VIA Character Strengths (Peterson and Seligman, 2004), with 6 virtues and identification of signature strengths. For the authoritative free survey, go to viacharacter.org. Reflective practice, not psychometric.', color: 'amber', recommendedRange: '5-12' },
         { id: 'wheelOfLife', icon: '\uD83D\uDEDE', label: 'Wheel of Life',      desc: 'Spider chart of 8 life domains, each rated 1 to 10. A self-portrait of where life is full and where it is thin right now. From the coaching tradition (Meyer 1960s; Co-Active Coaching). Heuristic; not a validated psychometric.', color: 'amber', recommendedRange: '5-12' },
+        { id: 'perma',       icon: '\uD83C\uDF3B', label: 'PERMA Wellbeing',    desc: 'Self-check on the five (six) domains of human flourishing: Positive emotion, Engagement, Relationships, Meaning, Accomplishment, Health. 24 items, bar-chart result, per-domain reflection. From Seligman; pairs with VIA Strengths.', color: 'amber', recommendedRange: '5-12' },
 
         // Self-Regulation (was Self-Management; split to give arousal/emotion tools their own home)
         { id: '_cat_SelfRegulation', icon: '\uD83C\uDFAF', label: 'Self-Regulation', desc: '', color: 'slate', category: true },
@@ -517,6 +532,10 @@
         { id: 'windowOfTolerance', icon: '\uD83E\uDE9F', label: 'Window of Tolerance', desc: 'Trauma-informed self-awareness visual. Three arousal zones (hyperarousal, window, hypoarousal). Map your personal signs of each zone, your triggers, and the practices that bring you back. Based on Siegel (1999); standard in trauma-informed schools.', color: 'teal', recommendedRange: '5-12' },
         { id: 'stressBucket', icon: '\uD83E\uDEA3', label: 'Stress Bucket',        desc: 'A capacity visual. Stressors pour in; coping practices drain out. See whether your inflow and outflow are balanced. CBT-tradition tool (Brabban and Turkington 2002), used across NHS IAPT and Mind UK. Honest about structural stressors.', color: 'teal', recommendedRange: '5-12' },
         { id: 'tipp',        icon: '\uD83C\uDD98', label: 'TIPP',                desc: 'Four DBT crisis-survival skills (Temperature, Intense exercise, Paced breathing, Paired muscle relaxation) for ACUTE distress. Down-regulates the body in 30 seconds to 10 minutes before you try to think your way out. Foundational DBT Distress Tolerance skill (Linehan).', color: 'red', recommendedRange: '5-12' },
+        { id: 'anxietyToolkit', icon: '\uD83E\uDEE7', label: 'Anxiety Toolkit', desc: 'CBT-based skills for working with anxiety: psychoeducation, the worry tree (productive vs unproductive worry), scheduled worry time, decatastrophizing, grounding skills, and a personal patterns inventory. From Beck Institute, AACAP, ADAA. Pairs with Window of Tolerance and Stress Bucket.', color: 'cyan', recommendedRange: '5-12' },
+        { id: 'sleep',       icon: '\uD83D\uDE34', label: 'Sleep & Rest',        desc: 'Adolescent sleep is a public-health crisis. AAP-recommended 8-10 hours is rarely met. Psychoeducation, self-check, 8 common barriers + what works for each, and a sleep diary. From AAP, CDC, NSF, Carskadon research.', color: 'indigo', recommendedRange: '5-12' },
+        { id: 'sensoryRegulation', icon: '\uD83C\uDF08', label: 'Sensory Regulation', desc: 'Neurodiversity-affirming tool for understanding your own sensory processing across the 8 sensory systems. Build a personal profile, plan a sensory diet, identify school accommodations. Identity-first language; built on Ayres / Dunn / autistic-led scholarship.', color: 'orange', recommendedRange: '3-12' },
+        { id: 'behavioralActivation', icon: '\uD83D\uDCC5', label: 'Behavioral Activation', desc: 'Plan small activities, do them, rate them for mastery (felt competent) and pleasure (enjoyed). Mood follows action more than action follows mood. One of the most evidence-supported treatments for low mood and depression. From Lewinsohn, Jacobson, Martell.', color: 'emerald', recommendedRange: '5-12' },
         // Inner Work (contemplative + reflective practice)
         { id: '_cat_InnerWork', icon: '\uD83E\uDDD8', label: 'Inner Work', desc: '', color: 'slate', category: true },
         { id: 'mindfulness', icon: '\uD83E\uDDD8', label: 'Mindfulness Corner',  desc: 'Guided breathing exercises, body scans, and mindfulness activities.', color: 'purple', recommendedRange: 'K-12' },
@@ -524,12 +543,17 @@
         { id: 'orientations', icon: '\uD83E\uDDED', label: 'Orientations',      desc: 'Ways of Living, Compared. Eight philosophical traditions (Daoism, Zen, Stoicism, Existentialism, Confucian ethics, Ubuntu, Indigenous relationality, Care Ethics) compared on big life questions. Non-prescriptive; each tradition has an honest "what it cannot do well" panel.', color: 'purple', recommendedRange: '6-12' },
         { id: 'thoughtRecord', icon: '\uD83D\uDCD3', label: 'CBT Thought Record', desc: 'The 7-column thought record from Cognitive Behavioral Therapy. Walk through a hard moment: situation, emotion, automatic thought, evidence for and against, balanced thought, emotion re-rating. Saves entries over time. From Beck, Burns, Padesky.', color: 'purple', recommendedRange: '5-12' },
         { id: 'costBenefit', icon: '\u2696\uFE0F', label: 'Cost-Benefit Grid',  desc: 'A 2x2 decision-making grid from Dialectical Behavior Therapy. Short-term and long-term pros and cons of a decision, side by side. Useful when emotion is pushing for one option. From Linehan.', color: 'purple', recommendedRange: '5-12' },
+        { id: 'sfbt',        icon: '\uD83D\uDD2D', label: 'Solution-Focused',   desc: 'Solution-Focused Brief Therapy: the Miracle Question, Scaling, Exception-finding, and Compliments. Looks forward instead of backward, asks what is already working. The most-used technique in US school counseling. From de Shazer and Berg.', color: 'purple', recommendedRange: '5-12' },
         // Care of Self (self-compassion, relational self-care)
         { id: '_cat_CareOfSelf', icon: '\uD83E\uDD7A', label: 'Care of Self', desc: '', color: 'slate', category: true },
         { id: 'careConstellations', icon: '\uD83C\uDF0C', label: 'Care Constellations', desc: 'A relational map of who cares for you and who you care for. Refuses the individualist or consumerist "self-care" frame. Includes a substantive philosophical view on Care of Self vs Self-Care (Foucault, Greek epimeleia heautou, Audre Lorde, eudaimonic vs hedonic).', color: 'rose', recommendedRange: '5-12' },
         { id: 'ecomap',      icon: '\uD83D\uDD78\uFE0F', label: 'Ecomap',              desc: 'Person-in-environment relationship map. You at the center; the 12 major life systems around you. Each connection rated for strength, stress, and energy direction. Standard social-work tool since Hartman (1978); used in IEPs, family assessment, and personal life inventory.', color: 'rose', recommendedRange: '5-12' },
         { id: 'circlesOfSupport', icon: '\uD83C\uDFAF', label: 'Circles of Support', desc: 'Four concentric rings of relationship: Intimacy, Friendship, Participation, Exchange (paid). Makes visible who is actually close, including when paid people fill the inner rings. From Forest and Snow at Inclusion Press.', color: 'rose', recommendedRange: '3-12' },
         { id: 'genogram',    icon: '\uD83C\uDF33', label: 'Genogram',            desc: 'Three-generation family map using standard family-systems symbols. For personal self-understanding only (NOT clinical assessment). Based on Bowen family systems theory and McGoldrick-Gerson-Petry notation. Includes prominent safe-framing guidance.', color: 'rose', recommendedRange: '5-12' },
+        { id: 'griefLoss',   icon: '\uD83D\uDD6F\uFE0F', label: 'Grief & Loss',         desc: 'A guided self-companion for grief. Death of a person or pet, family changes, friend losses, identity losses, ambiguous loss \u2014 all count. Walk through Worden\'s four tasks of mourning, write a letter, plan rituals. Strong safety framing pointing to Crisis Companion / 988 for severe or complicated grief.', color: 'rose', recommendedRange: '5-12' },
+        { id: 'traumaPsychoed', icon: '\uD83C\uDF3F', label: 'Understanding Trauma', desc: 'Psychoeducation only (NOT a screener). What trauma is and is not, neurobiology in plain English, common responses reframed as adaptations, SAMHSA\'s 6 principles, evidence-based treatments. For students and educators. Includes prominent safety framing about why screening without follow-up is unsafe.', color: 'emerald', recommendedRange: '6-12' },
+        { id: 'bodyStory',   icon: '\uD83E\uDEC2', label: 'Body Story',           desc: 'Body-acceptance and embodiment tool. NOT weight-focused, NOT diet-adjacent, NOT a screener. Built on Tylka body appreciation, intuitive eating principles, and media literacy. Inclusive of all bodies, all genders, all sizes. Strong NEDA referral framing for eating disorders.', color: 'rose', recommendedRange: '6-12' },
+        { id: 'sourcesOfStrength', icon: '\uD83C\uDF1F', label: 'Sources of Strength', desc: 'Map your 8 protective factors. The strongest evidence-based upstream youth suicide prevention framework (Wyman et al.). Builds protective factors BEFORE crisis hits. Complements Crisis Companion on the protective side.', color: 'amber', recommendedRange: '6-12' },
         // Self-Direction (agency, goal-setting, executive function)
         { id: '_cat_SelfDirection', icon: '\uD83E\uDDED', label: 'Self-Direction', desc: '', color: 'slate', category: true },
         { id: 'goals',       icon: '\uD83D\uDCCB', label: 'Goal Setter',         desc: 'Set SMART goals, track progress, and celebrate milestones.', color: 'indigo', recommendedRange: '3-12' },
@@ -538,6 +562,7 @@
         { id: 'maps',        icon: '\uD83D\uDDFA\uFE0F', label: 'MAPS',         desc: 'Making Action Plans. Eight prompts in sequence (My Story, Dream, Nightmare, Who I Am, Gifts, Needs, Action Plan, First Steps). Person-centered visual from Pearpoint, O\'Brien, and Forest at Inclusion Press; widely used for transition planning.', color: 'indigo', recommendedRange: '5-12' },
         { id: 'path',        icon: '\uD83E\uDDED', label: 'PATH',                desc: 'Planning Alternative Tomorrows with Hope. Futures-planning visual: eight stages from your long-horizon North Star backward to first steps in two weeks. Pearpoint, O\'Brien, and Forest at Inclusion Press; pairs with MAPS.', color: 'indigo', recommendedRange: '5-12' },
         { id: 'valuesCommittedAction', icon: '\uD83E\uDDED', label: 'Values & Action', desc: 'Sort what matters, name your top values, and turn each into a small concrete action this week. From Acceptance and Commitment Therapy (Hayes); adolescent DNA-V framing. The ACT distinction between values (directions) and goals (destinations).', color: 'indigo', recommendedRange: '5-12' },
+        { id: 'careerCompass', icon: '\uD83E\uDDED', label: 'Career Compass', desc: 'Explore careers through your interests. 36-item RIASEC self-check gives a top-three Holland code; browse careers, the 16 federal Career Clusters, and concrete next steps (shadow days, info interviews, CTE, apprenticeships). Built on Holland\'s framework; points to the authoritative O*NET Interest Profiler at mynextmove.org.', color: 'indigo', recommendedRange: '5-12' },
 
         // ── Social Awareness ──
         { id: '_cat_SocialAwareness', icon: '\uD83E\uDD1D', label: 'Social Awareness', desc: '', color: 'slate', category: true },
@@ -550,6 +575,8 @@
         { id: 'social',      icon: '\uD83D\uDDE3\uFE0F', label: 'Social Skills Lab',  desc: 'Practice conversation skills, active listening, body language, and cooperation.', color: 'sky', recommendedRange: 'K-8' },
         { id: 'teamwork',    icon: '\uD83E\uDD1C\uD83E\uDD1B', label: 'Teamwork Builder', desc: 'Collaborative challenges and team role exploration.', color: 'lime', recommendedRange: 'K-12' },
         { id: 'dearMan',     icon: '\uD83D\uDDE3\uFE0F', label: 'DEAR MAN',          desc: 'Build a script for a hard ask in seven steps: Describe, Express, Assert, Reinforce, Mindful, Appear confident, Negotiate. From DBT Interpersonal Effectiveness (Linehan); the most-used assertive-communication script in school counseling. Pairs with Self-Advocacy.', color: 'blue', recommendedRange: '5-12' },
+        { id: 'motivationalInterviewing', icon: '\uD83D\uDC42', label: 'Motivational Interviewing', desc: 'A conversation framework for helping someone (or yourself) think through a change. Learn OARS skills (Open questions, Affirmations, Reflections, Summaries), the three rulers, and Change Talk. From Miller and Rollnick; foundation of school counseling and peer-support work.', color: 'blue', recommendedRange: '6-12' },
+        { id: 'crewProtocols', icon: '\uD83E\uDE91', label: 'Crew Protocols', desc: 'A library of structured group formats for Crew time, advisory, or homeroom: community builders, openings, closings, restorative circles, reflection protocols, celebration formats, and hard-conversation guides. Plus a roll-up of all Crew prompts from across the SEL Hub. Built on EL Education Crew, Restorative Practices, Tribes, Responsive Classroom.', color: 'sky', recommendedRange: '3-12' },
 
         // ── Responsible Decision-Making ──
         { id: '_cat_DecisionMaking', icon: '\u2696\uFE0F', label: 'Responsible Decision-Making', desc: '', color: 'slate', category: true },
@@ -1212,6 +1239,23 @@
                   })()
                 ),
                 h('p', { style: { margin: 0, fontSize: 11, color: _t.textMuted, lineHeight: 1.4 } }, tool.desc),
+                // Evidence-tradition pill (sourced from sel_standards_alignment.js)
+                (function() {
+                  if (!window.SelHubStandards || !window.SelHubStandards.alignments) return null;
+                  var align = window.SelHubStandards.alignments[tool.id];
+                  if (!align) return null;
+                  var tag = null;
+                  if (align.other && align.other.length > 0) {
+                    tag = align.other[0].framework;
+                  } else if (align.casel && align.casel.length > 0) {
+                    tag = 'CASEL';
+                  }
+                  if (!tag) return null;
+                  return h('span', {
+                    'aria-label': 'Evidence tradition: ' + tag,
+                    style: { display: 'inline-block', fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: cardColor + '22', color: cardColor, letterSpacing: 0.3, textTransform: 'uppercase', marginTop: 4, alignSelf: 'flex-start' }
+                  }, tag);
+                })(),
                 tool.recommendedRange && h('span', {
                   style: { fontSize: 10, color: cardColor, fontWeight: 600, marginTop: 4 }
                 }, 'Grades ' + tool.recommendedRange),
