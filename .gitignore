@@ -2,16 +2,6 @@ node_modules
 
 .git-token*
 
-# Large media: Cloudflare Pages caps individual files at 25 MiB. Keep raw
-# audio/video out of the repo (use compressed .mp3/.webm exports if needed
-# in the website, or host original files on GitHub Releases / S3).
-*.m4a
-*.mp4
-*.mov
-*.wav
-# Exception: Kitchen Table audio is small (~3 MB) and referenced by index.html.
-!Kitchen_Table_Scripts_and_Gamified_Learning.m4a
-
 # Archive: temp/debug/backup files moved here during cleanup
 _archive/
 
@@ -35,9 +25,16 @@ api key.txt
 prismflow-deploy/public/cse-config.json
 cse-config.json
 
-# Large media files (too large for GitHub)
+# Large media files (too large for GitHub and for Cloudflare Pages 25 MiB cap)
 *.m4a
 *.mp4
+*.mov
+*.wav
+# Exception: Kitchen Table audio is small (~3 MB) and embedded in index.html.
+!Kitchen_Table_Scripts_and_Gamified_Learning.m4a
+# TTS model files: Kokoro + Piper voices load from external CDNs at runtime
+# (HuggingFace), not from this repo. Any local copies are dev-only.
+*.onnx
 word_audio_bank_part*.json
 audio_bank.json
 Sample audiobank.txt
