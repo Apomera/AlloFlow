@@ -102,6 +102,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       '.printingpress-medallion {',
       '  animation: printingpress-medallion-pop 0.5s ease-out;',
       '}',
+      // Onomatopoeia bubble — drifts up while fading out. Used for the
+      // transient *creak* / *thunk* / *hiss* labels above the press
+      // during the impression cycle. Pure atmosphere.
+      '@keyframes printingpress-onomatopoeia {',
+      '  0%   { transform: translateY(0) rotate(-3deg) scale(0.9); opacity: 0; }',
+      '  15%  { transform: translateY(-6px) rotate(-2deg) scale(1.05); opacity: 0.95; }',
+      '  70%  { transform: translateY(-26px) rotate(2deg) scale(1); opacity: 0.7; }',
+      '  100% { transform: translateY(-44px) rotate(4deg) scale(0.85); opacity: 0; }',
+      '}',
+      '.printingpress-onomatopoeia {',
+      '  animation: printingpress-onomatopoeia 1.4s ease-out forwards;',
+      '  pointer-events: none;',
+      '}',
       // Tile hover/focus glow — subtle accent ring on hover and a stronger
       // keyboard-focus ring (gold) so keyboard navigation is unambiguous.
       // Transitions in/out smoothly.
@@ -1170,8 +1183,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     'radial-gradient(ellipse at 86% 20%, rgba(180,140,80,0.04) 0%, transparent 10%), ' +
                     'radial-gradient(ellipse at 10% 80%, rgba(180,140,80,0.05) 0%, transparent 13%), ' +
                     T.cardAlt,
-                  border: '2px solid ' + (tourActive ? T.accent : T.border), borderRadius: 12, padding: 12, textAlign: 'center', transition: 'border-color 0.3s ease'
+                  border: '2px solid ' + (tourActive ? T.accent : T.border), borderRadius: 12, padding: 12, textAlign: 'center', transition: 'border-color 0.3s ease',
+                  position: 'relative'
                 } },
+              // Transient onomatopoeia overlay. Re-mounted via key whenever
+              // pressState changes so the CSS keyframe replays. Pure
+              // atmosphere; aria-hidden so screen readers don't get spam.
+              (function() {
+                var labels = {
+                  inking: { txt: '*tap tap*', color: '#a87a3a' },
+                  papered: { txt: '*flap*', color: T.parchment },
+                  pressing: { txt: '*CHUNK*', color: T.accentHi },
+                  printed: { txt: '*hiss...*', color: T.muted }
+                };
+                var lab = labels[pressState];
+                if (!lab) return null;
+                return h('div', {
+                  key: 'onomato-' + pressState,
+                  className: 'printingpress-onomatopoeia',
+                  'aria-hidden': 'true',
+                  style: {
+                    position: 'absolute',
+                    top: '32%', right: '14%',
+                    color: lab.color,
+                    fontFamily: 'Georgia, "Times New Roman", serif',
+                    fontStyle: 'italic',
+                    fontWeight: 700,
+                    fontSize: pressState === 'pressing' ? 22 : 16,
+                    textShadow: '0 2px 6px rgba(0,0,0,0.7)',
+                    zIndex: 4,
+                    letterSpacing: '0.04em'
+                  }
+                }, lab.txt);
+              })(),
               h('svg', {
                 width: '100%', viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: 520, display: 'block', margin: '0 auto', background: '#2a1f15', borderRadius: 8 },
                 role: 'img',
@@ -3827,6 +3871,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               'The right framing: Gutenberg solved a specific problem for a specific writing system at a specific moment, and that solution scaled fast. He did not invent the human idea of duplicating texts. Crediting him as "the" inventor of printing erases hundreds of years of innovation in other parts of the world. The honest sentence is "Gutenberg developed the system that made movable-type printing economically viable for European alphabets."')
           ),
 
+          // ── What was happening on Wabanaki land in 1500 ──
+          // For the Maine local-history thread to be honest, name what was
+          // here before the colonial press arrived. Wabanaki Confederacy +
+          // oral knowledge traditions + wampum as durable information.
+          // Treats indigenous knowledge systems as parallel-and-prior, not
+          // absent, to European print.
+          sectionHeader('🪶', 'And on Wabanaki land in 1500'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.warn, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+              'The Falmouth Gazette (1785) was the first newspaper printed in what would become Maine. But the land had a sophisticated information culture for thousands of years before colonial printers arrived. Naming this honestly is part of the local-history thread.'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+              [
+                { topic: 'Who was here',
+                  detail: 'The Wabanaki Confederacy: Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, and Abenaki nations. Together they had occupied what is now Maine, the Maritimes, and northern New England for at least 10,000 years.' },
+                { topic: 'How knowledge transmitted',
+                  detail: 'Oral traditions backed by trained memory keepers. Stories, treaty histories, place-names, plant knowledge, navigation, and seasonal cycles were carried by individuals who specialized in remembering. Oral does not mean unreliable; specialist memorizers were checked against each other and against material artifacts.' },
+                { topic: 'Wampum belts as durable information',
+                  detail: 'Wampum belts (shell beads strung in patterns) recorded treaties, alliances, and historical events. A wampum keeper could read a belt the way a European could read a manuscript. Some surviving wampum belts are 400+ years old and still legible to trained readers. Maine museums and tribal cultural centers hold examples.' },
+                { topic: 'Birchbark scrolls',
+                  detail: 'Mi\'kmaq and other Wabanaki nations used inscribed birchbark for some communications, especially religious and historical material. Some scrolls survive in museum collections; the inscription technique predates colonial contact.' },
+                { topic: 'When print arrived',
+                  detail: 'Colonial missionary presses began printing in Wabanaki languages in the 1600s. The Eliot Indian Bible (1663, Massachusett-language) is the most famous example, set in Cambridge MA by John Eliot with native-language consultants. Print-in-Wabanaki-languages and oral-tradition-in-Wabanaki-languages coexisted for centuries; both continue today.' }
+              ].map(function(row, i) {
+                return h('div', { key: i, style: { background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '3px solid ' + T.warn, borderRadius: 6, padding: 10 } },
+                  h('div', { style: { fontSize: 12, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif', marginBottom: 4 } }, row.topic),
+                  h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.55 } }, row.detail)
+                );
+              })
+            ),
+            h('p', { style: { margin: '12px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'For Maine students: the Abbe Museum (Bar Harbor), the Maine Indian Basketmakers Alliance, and tribal cultural centers in Indian Township and Pleasant Point are working sources today. The Penobscot Nation Library (Indian Island) holds materials many state archives do not. Treat these as living institutions, not just historical references.')
+          ),
+
           sectionHeader('📊', 'Books printed in Europe by century'),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 16, marginBottom: 14 } },
             h('p', { style: { margin: '0 0 12px', fontSize: 13, color: T.muted, lineHeight: 1.55 } },
@@ -3848,6 +3925,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 );
               })
             )
+          ),
+
+          // ── First books printed, 1455-1493 ──
+          // Many people know the Gutenberg Bible was first; few know what
+          // came right after. Lists the variety: Bibles, dictionaries,
+          // illustrated books, the first books in English / Italian /
+          // German, ending with the most spectacular early illustrated book.
+          sectionHeader('📖', 'First books printed, 1455 → 1493'),
+          h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+            'The Gutenberg Bible was first. But the next 38 years produced an extraordinary variety of "firsts" as printers tried out what the new technology could do beyond the Bible.'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              [
+                { year: '1455', title: 'Gutenberg Bible', where: 'Mainz', firstFor: 'First substantial printed book in Europe. ~180 copies; 49 survive.' },
+                { year: '1457', title: 'Mainz Psalter', where: 'Mainz (Fust & Schöffer)', firstFor: 'First multicolor printing (red and blue initials). First book with a printed colophon naming the printers.' },
+                { year: '1460', title: 'Catholicon', where: 'Mainz (probably Gutenberg)', firstFor: 'First printed dictionary. A 13th-century Latin grammar reference set in a small typeface to fit the bulk into one volume.' },
+                { year: '1461', title: 'Der Edelstein', where: 'Bamberg (Albrecht Pfister)', firstFor: 'First illustrated printed book. Aesop-style fables with woodcut illustrations alongside the text.' },
+                { year: '1463', title: 'Cicero, De Oratore', where: 'Subiaco, Italy (Sweynheym & Pannartz)', firstFor: 'First book printed in Italy. Mainz emigrés set up a press in a Benedictine monastery outside Rome.' },
+                { year: '1466', title: 'Mentelin Bible', where: 'Strasbourg (Johann Mentelin)', firstFor: 'First Bible printed in German vernacular, 50+ years before Luther\'s translation. Religiously controversial but legal.' },
+                { year: '1470', title: 'Augustine, De Civitate Dei', where: 'Subiaco', firstFor: 'First printed edition of a major Latin classical text. Helped establish printed classical scholarship.' },
+                { year: '1474', title: 'Recuyell of the Historyes of Troye', where: 'Bruges (William Caxton)', firstFor: 'First book printed in English. Caxton would set up the first English press at Westminster two years later.' },
+                { year: '1477', title: 'Dante, Divine Comedy', where: 'Foligno (Johann Numeister)', firstFor: 'First printed Italian-language book of literature. The vernacular Renaissance enters print.' },
+                { year: '1486', title: 'Mainz Mainzer Pilgerfahrt', where: 'Mainz', firstFor: 'First printed travel guide. A pilgrim\'s account of the journey to Jerusalem with maps and illustrations.' },
+                { year: '1493', title: 'Nuremberg Chronicle', where: 'Nuremberg (Anton Koberger)', firstFor: 'Most spectacular early illustrated book. ~1,800 woodcut illustrations of cities, biblical scenes, and historical figures. The "coffee table book" of the 15th century.' }
+              ].map(function(b, i) {
+                return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '60px 1fr', gap: 12, alignItems: 'flex-start', paddingBottom: i === 10 ? 0 : 8, borderBottom: i === 10 ? 'none' : '1px dashed ' + T.border } },
+                  h('div', { style: { fontSize: 14, fontWeight: 800, color: T.accentHi, fontFamily: 'Georgia, serif', fontVariantNumeric: 'tabular-nums', textAlign: 'right' } }, b.year),
+                  h('div', null,
+                    h('div', { style: { fontSize: 12, color: T.text, fontFamily: 'Georgia, serif', marginBottom: 2 } },
+                      h('strong', null, b.title),
+                      h('span', { style: { color: T.dim, fontWeight: 400 } }, ' · ' + b.where)
+                    ),
+                    h('div', { style: { fontSize: 11, color: T.muted, fontStyle: 'italic', lineHeight: 1.5 } }, b.firstFor)
+                  )
+                );
+              })
+            ),
+            h('p', { style: { margin: '14px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'Within 40 years of the Gutenberg Bible, every major category of book we still print had at least one printed exemplar: scripture, scholarship, classics, dictionaries, vernacular literature, illustrated books, reference, travel writing, popular illustration. The press did not just produce more books; it discovered what books could be.')
           ),
 
           // ── Interactive timeline of major print events 1377-1830 ──
@@ -4264,6 +4380,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               'Figures are best-effort estimates from bibliographic and archival scholarship; "survival" includes any copy, fragment, or facsimile that can be examined today. The point is order-of-magnitude, not the second decimal. The takeaway: each new medium re-opens the durability question, and the answer is usually "depends on whether anyone bothers to preserve it."')
           ),
 
+          // ── Where the surviving Gutenberg Bibles live ──
+          // The durability comparison's abstract 27% becomes a concrete
+          // list of specific institutions. Pairs the statistical claim
+          // with named places students can visit, request, or read about.
+          sectionHeader('🏛️', 'Where the surviving Gutenberg Bibles live today'),
+          h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+            'About 180 Gutenberg Bibles were printed in 1454-1455. Approximately 49 survive today in some form (complete or substantial fragment). Most are in research libraries; some are owned by universities; a handful are in private collections. The list below catalogues the publicly held copies you can see or request to view.'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+              [
+                { region: 'United States', count: 11,
+                  examples: 'Library of Congress (Washington DC), Morgan Library (NYC, has 3), Harvard Houghton Library, Yale Beinecke Library, Princeton University Library, Columbia University, NYPL, University of Texas Austin Ransom Center, Indiana University Lilly Library' },
+                { region: 'United Kingdom', count: 8,
+                  examples: 'British Library (London, has 2), Cambridge University Library, Bodleian Library (Oxford), John Rylands Library (Manchester), Eton College, Lambeth Palace Library' },
+                { region: 'Germany', count: 13,
+                  examples: 'Gutenberg Museum (Mainz, has 2), Staatsbibliothek Berlin, Bayerische Staatsbibliothek (Munich), Niedersächsische Landesbibliothek (Göttingen, on UNESCO Memory of the World Register), Württembergische Landesbibliothek, others' },
+                { region: 'Rest of Europe', count: 14,
+                  examples: 'Bibliothèque nationale de France (Paris), Vatican Apostolic Library (Rome), Austrian National Library (Vienna), Russian State Library (Moscow), Royal Library of Belgium, Royal Library of Denmark, Spanish National Library' },
+                { region: 'Asia', count: 1,
+                  examples: 'Keio University Library (Tokyo) — the only copy in private institutional hands outside the West, acquired at auction in 1987 for $5.4M' },
+                { region: 'Private + uncatalogued', count: '~2',
+                  examples: 'A few copies are known to be in private hands; their locations are not publicly disclosed. Occasional pages or fragments appear at auction' }
+              ].map(function(row, i) {
+                return h('div', { key: i, style: { background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '3px solid ' + T.accent, borderRadius: 6, padding: 10 } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6, flexWrap: 'wrap', gap: 4 } },
+                    h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif' } }, row.region),
+                    h('div', { style: { fontSize: 13, fontWeight: 800, color: T.warn, fontFamily: 'Georgia, serif', fontVariantNumeric: 'tabular-nums' } }, '~' + row.count + ' copies')
+                  ),
+                  h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.55 } }, row.examples)
+                );
+              })
+            ),
+            h('p', { style: { margin: '12px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'Most research libraries that hold a Gutenberg Bible will let qualified scholars (and sometimes interested students with an appointment) view it. The British Library and Library of Congress have full digital facsimiles online for free, page by page. Closest to King Middle: Harvard\'s Houghton Library and the Morgan Library in NYC are a Northeast Corridor trip away.')
+          ),
+
           // ── Crew reflection prompt ──
           // Pulls the durability comparison from abstract into personal.
           // Designed for EL Education Crew (advisory) discussions or as a
@@ -4540,6 +4692,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             ),
             h('p', { style: { margin: '12px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
               'The 1450 press was wood and your two arms. The 2026 desktop printer is plastic, electronics, and a USB cable. Both put ink on paper. The shape of the work moved off your back and into a kilowatt.')
+          ),
+
+          // ── ETAOIN SHRDLU keyboard story ──
+          // Connects the letter-frequency heatmap in Set Type to the
+          // Linotype milestone in the innovations timeline. Closes the
+          // 1450→1886 loop by showing how letter frequency reorganized
+          // the keyboard itself.
+          sectionHeader('⌨️', 'ETAOIN SHRDLU: when letter frequency redesigned the keyboard'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+              'The 1450 type case was organized by frequency: the most-used letters (E, T, A, O, I, N) sat in the easiest compartments to reach. When the Linotype arrived in 1886, designers had a fresh chance to lay out a keyboard from scratch. They did not pick alphabetical. They picked frequency.'),
+            // Visual: the actual lowercase Linotype keyboard layout
+            h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 8, padding: 12, marginBottom: 12 } },
+              h('div', { style: { fontSize: 10, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: 8, textAlign: 'center', fontFamily: 'Georgia, serif' } }, 'Linotype keyboard, lowercase section'),
+              // Render the actual Linotype keyboard layout (left half, lowercase letters)
+              // Row 1 (top): e t a o i n   s h r d l u
+              // Row 2:        c m f w y p   v b g k q j
+              // Row 3:        x z (and rare/punct)
+              // The 12 most-frequent English letters are the top row.
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontFamily: 'ui-monospace, Consolas, monospace', alignItems: 'center' } },
+                ['etaoin shrdlu', 'cmfwyp vbgkqj', 'xz       .,'].map(function(row, rowIdx) {
+                  return h('div', { key: rowIdx, style: { display: 'flex', gap: 4 } },
+                    row.split('').map(function(ch, ci) {
+                      if (ch === ' ') return h('div', { key: ci, style: { width: 28 } });
+                      var isTopRow = (rowIdx === 0);
+                      return h('div', { key: ci,
+                        style: {
+                          width: 28, height: 32,
+                          background: isTopRow ? T.accent : T.bg,
+                          color: isTopRow ? T.ink : T.text,
+                          border: '1px solid ' + (isTopRow ? T.accentHi : T.border),
+                          borderRadius: 4,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 14, fontWeight: 700, fontFamily: 'Georgia, serif',
+                          boxShadow: isTopRow ? '0 1px 2px rgba(0,0,0,0.4)' : 'none'
+                        } }, ch);
+                    })
+                  );
+                })
+              ),
+              h('div', { style: { fontSize: 10, color: T.dim, textAlign: 'center', marginTop: 8, fontStyle: 'italic' } },
+                'The gold top row is "ETAOIN SHRDLU" — the 12 most-frequent English letters, in frequency order.')
+            ),
+            h('p', { style: { margin: '0 0 10px', fontSize: 12, color: T.muted, lineHeight: 1.65 } },
+              'A skilled Linotype operator did not "type" the way you do on QWERTY. They worked the keyboard with a left-hand right-hand split, hitting the most common letters from the top row, just like a compositor used to reach for E first in the case.'),
+            h('p', { style: { margin: '0 0 10px', fontSize: 12, color: T.muted, lineHeight: 1.65 } },
+              'The phrase "etaoin shrdlu" became newspaper slang. When a Linotype operator made a mistake mid-line, the standard recovery was to run a finger down the first two columns to fill out the line, then throw away the slug. Sometimes the operator forgot to throw it away, and "etaoin shrdlu" appeared mysteriously in the next morning\'s paper. The New York Times collected dozens of these accidents in the 1960s.'),
+            h('p', { style: { margin: 0, fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'QWERTY (designed for typewriters in 1873) was not frequency-ordered; it was designed to slow typists down so the keys would not jam. ETAOIN SHRDLU represents a counterfactual: if the dominant keyboard had descended from Linotype rather than typewriter, your laptop today would feel completely different under your fingers.')
           ),
 
           // ── Where the press lives now ──
@@ -4948,6 +5149,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           calloutBox('info', 'Movable type as the first discrete-symbol information system',
             'Computer scientists sometimes argue that movable type was the world\'s first true discrete information system. Each sort is a discrete symbol. Each character position is addressable. The forme is a 2D array of symbols. Print is a copy operation. The same conceptual structure shows up 500 years later in ASCII, Unicode, and digital text. Marshall McLuhan made this case explicitly in "The Gutenberg Galaxy" (1962).'),
 
+          // ── Crew reflection: what does your font say about you? ──
+          // Closes the typography module by pulling 600 years of history
+          // into the student's own daily choices.
+          sectionHeader('🤔', 'Reflection: what does your font say about you?'),
+          h('div', { style: { background: T.parchment, color: T.ink, border: '2px solid ' + T.accent, borderRadius: 12, padding: 18, marginBottom: 14, position: 'relative' } },
+            h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 8, left: 12, color: T.accent, fontSize: 14 } }, '❦'),
+            h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 8, right: 12, color: T.accent, fontSize: 14 } }, '❦'),
+            h('div', { 'aria-hidden': 'true', style: { position: 'absolute', bottom: 8, left: 12, color: T.accent, fontSize: 14 } }, '❦'),
+            h('div', { 'aria-hidden': 'true', style: { position: 'absolute', bottom: 8, right: 12, color: T.accent, fontSize: 14 } }, '❦'),
+            h('p', { style: { margin: '0 0 10px', fontSize: 13, lineHeight: 1.65, color: '#3a2a1a', fontFamily: 'Georgia, serif' } },
+              'A 1500 printer chose Blackletter for a Bible to signal sacred weight, Garamond for a Renaissance philosopher to signal humanist clarity, italic for a pocket book to fit more text per page. Every typeface choice was a claim about what the text was for.'),
+            h('p', { style: { margin: '0 0 10px', fontSize: 13, lineHeight: 1.65, color: '#3a2a1a', fontFamily: 'Georgia, serif' } },
+              'You make the same kind of claim every time you open a document and pick a font. Most students never think about this. Pause and think about it now:'),
+            h('ol', { style: { margin: '8px 0 0 22px', padding: 0, fontSize: 13, color: '#3a2a1a', fontFamily: 'Georgia, serif', lineHeight: 1.7 } },
+              h('li', { style: { marginBottom: 6 } }, h('strong', null, 'What font do you actually use'), ' for your school papers, your texts, your slides? If you say "the default," whose default is that?'),
+              h('li', { style: { marginBottom: 6 } }, h('strong', null, 'If you had to pick a font that represents you'), ' (your personality, your sense of humor, the way you carry yourself), which would you pick? Why?'),
+              h('li', { style: { marginBottom: 6 } }, h('strong', null, 'Which font signals "I am being serious"'), ' in your school context? Which signals "I am being playful?" Where did you learn that?'),
+              h('li', { style: { marginBottom: 0 } }, h('strong', null, 'Comic Sans is widely mocked online.'), ' It is also one of the most readable fonts for people with dyslexia. Does that change how you think about it?')
+            )
+          ),
+
           sectionHeader('🎭', 'Scenarios'),
           scenarioCard('typographyToday', 0, {
             prompt: 'A student asks why the abbreviation "lb" is used for "pound." What does typography history have to do with the answer?',
@@ -4997,6 +5219,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         var pplScore = pplScoreRaw[0], setPplScore = pplScoreRaw[1];
         var pplAttemptedRaw = useState(0);
         var pplAttempted = pplAttemptedRaw[0], setPplAttempted = pplAttemptedRaw[1];
+        // "Find your historical printer match" quiz state. 4 questions,
+        // 4 archetypes. Each answer scores +1 toward one archetype.
+        var matchAnswersRaw = useState([null, null, null, null]);
+        var matchAnswers = matchAnswersRaw[0], setMatchAnswers = matchAnswersRaw[1];
         // Period-archetype silhouette functions. Each is a small SVG portrait
         // (head + shoulders) styled to evoke the figure's era and role.
         // Stylized, not photorealistic — many of these figures (especially
@@ -5492,6 +5718,123 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             )
           ),
 
+          // ── Find your historical printer match ──
+          // 4-question personality quiz mapping the student to one of four
+          // printer archetypes. Fun interactive layer that pulls the named
+          // printers from passive reading into active self-identification.
+          sectionHeader('🎯', 'Find your historical printer match'),
+          (function() {
+            // Each question's answers are ordered to align with archetypes:
+            // [0] Gutenberg (perfectionist) [1] Aldus (popularizer)
+            // [2] Estienne (scholar) [3] Franklin (activist)
+            var QUESTIONS = [
+              {
+                q: 'When you are working on something, what feels best?',
+                opts: [
+                  'Getting every detail exactly right',
+                  'Making it small enough to share widely',
+                  'Cross-referencing and looking things up',
+                  'Using it to change someone\'s mind'
+                ]
+              },
+              {
+                q: 'Which of these would frustrate you most?',
+                opts: [
+                  'Settling for "good enough"',
+                  'Making something only the elite can afford',
+                  'Publishing something that turns out to be wrong',
+                  'Working hard on something with no impact'
+                ]
+              },
+              {
+                q: 'Which project would you be proudest of?',
+                opts: [
+                  'A technically perfect magnum opus, like the Gutenberg Bible',
+                  'A pocket paperback that fits in everyone\'s hand',
+                  'A reference work scholars still cite in 500 years',
+                  'A pamphlet that starts a revolution'
+                ]
+              },
+              {
+                q: 'Pick a motto:',
+                opts: [
+                  'Make haste slowly',
+                  'A book for every reader',
+                  'Get it right or do not publish',
+                  'Speak truth to power'
+                ]
+              }
+            ];
+            var ARCHETYPES = [
+              { name: 'Johannes Gutenberg', tone: 'perfectionist craftsman',
+                desc: 'You care about getting things exactly right. You would have been the person who tested 27 alloy ratios before committing to one. You measure twice and cut once. Your weakness: sometimes you forget that "good enough and shipped" beats "perfect and abandoned."',
+                modern: 'Your modern parallels: typeface designer, watchmaker, surgeon, mathematician.' },
+              { name: 'Aldus Manutius', tone: 'popularizer',
+                desc: 'You care about making things accessible. You would have invented the paperback because you were sick of seeing classics locked up in expensive folios. You think reach matters at least as much as quality. Your weakness: sometimes you simplify what should stay complex.',
+                modern: 'Your modern parallels: pop-science writer, app designer, podcast host, museum educator.' },
+              { name: 'Robert Estienne', tone: 'scholar-printer',
+                desc: 'You care about accuracy and citation. You would have invented Bible verse numbers because you got tired of saying "the bit near the end of Matthew." Your reference works become the standard everyone else cites. Your weakness: you can lose readers in the apparatus.',
+                modern: 'Your modern parallels: librarian, encyclopedist, fact-checker, research scientist, footnote-loving historian.' },
+              { name: 'Benjamin Franklin', tone: 'publisher-activist',
+                desc: 'You care about impact on the world. You would have run a newspaper, a postal service, and a revolution at the same time. You believe a well-aimed pamphlet beats a brilliant treatise. Your weakness: you sometimes choose persuasion over precision.',
+                modern: 'Your modern parallels: journalist, op-ed writer, organizer, documentary filmmaker, public intellectual.' }
+            ];
+            var allAnswered = matchAnswers.every(function(a) { return a !== null; });
+            // Tally scores per archetype index
+            var scores = [0, 0, 0, 0];
+            matchAnswers.forEach(function(a) { if (a !== null) scores[a]++; });
+            // Find winner(s). If tied, prefer the lowest-index one (still meaningful).
+            var maxScore = Math.max.apply(null, scores);
+            var winnerIdx = scores.indexOf(maxScore);
+            var tied = scores.filter(function(s) { return s === maxScore; }).length > 1;
+            var winner = ARCHETYPES[winnerIdx];
+            function pick(qIdx, optIdx) {
+              var next = matchAnswers.slice();
+              next[qIdx] = optIdx;
+              setMatchAnswers(next);
+            }
+            function reset() { setMatchAnswers([null, null, null, null]); }
+            return h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+              !allAnswered && h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+                'A quick 4-question quiz. Pick the answer that feels truest to you, even if more than one fits. At the end you will see which 1450-1750 printer you most resemble — and what modern roles that maps to.'),
+              QUESTIONS.map(function(q, qi) {
+                return h('div', { key: qi, style: { marginBottom: 14 } },
+                  h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif', marginBottom: 8 } },
+                    (qi + 1) + '. ' + q.q),
+                  h('div', { className: 'printingpress-no-print', style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+                    q.opts.map(function(opt, oi) {
+                      var isPicked = (matchAnswers[qi] === oi);
+                      return h('button', { key: oi,
+                        onClick: function() { pick(qi, oi); },
+                        'aria-pressed': isPicked ? 'true' : 'false',
+                        style: btn({
+                          padding: '10px 14px', textAlign: 'left', fontSize: 12,
+                          background: isPicked ? 'rgba(201,161,74,0.18)' : T.cardAlt,
+                          color: isPicked ? T.accentHi : T.text,
+                          borderColor: isPicked ? T.accent : T.border,
+                          fontWeight: isPicked ? 700 : 400
+                        })
+                      }, opt);
+                    })
+                  )
+                );
+              }),
+              allAnswered && h('div', { 'aria-live': 'polite',
+                style: { marginTop: 6, padding: 16, background: 'rgba(245,215,126,0.08)', border: '2px solid ' + T.accentHi, borderRadius: 10 } },
+                h('div', { style: { fontSize: 10, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: 6, fontFamily: 'Georgia, serif' } }, 'Your match'),
+                h('h4', { style: { margin: '0 0 4px', fontSize: 18, color: T.accentHi, fontFamily: 'Georgia, serif' } }, winner.name),
+                h('div', { style: { fontSize: 12, color: T.warn, fontStyle: 'italic', marginBottom: 10 } }, 'the ' + winner.tone),
+                h('p', { style: { margin: '0 0 10px', fontSize: 12, color: T.text, lineHeight: 1.65 } }, winner.desc),
+                h('p', { style: { margin: '0 0 10px', fontSize: 12, color: T.muted, lineHeight: 1.65 } }, winner.modern),
+                tied && h('p', { style: { margin: '0 0 10px', fontSize: 11, color: T.dim, fontStyle: 'italic' } },
+                  '(You tied between multiple archetypes; shown is one of them. You contain multitudes.)'),
+                h('button', { className: 'printingpress-no-print',
+                  onClick: reset,
+                  style: btn({ padding: '8px 14px', fontSize: 12 }) }, '↻ Take it again')
+              )
+            );
+          })(),
+
           sectionHeader('🧠', 'Mini-quiz'),
           miniQuizBlock('people', [
             { q: 'Who sued Gutenberg, won, and ended up with most of the printing equipment?', opts: ['Schöffer', 'Fust (his financier)', 'The Catholic Church', 'A rival printer'], ans: 1, explain: 'Johann Fust lent Gutenberg the capital to set up the press; when Gutenberg could not repay on schedule, Fust sued and took possession. The early printed books bear Fust and Schöffer\'s names, not Gutenberg\'s.' },
@@ -5817,6 +6160,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           h('p', { style: { margin: '0 0 14px', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.5 } },
             'When you design your own broadside below, the dolphin-and-anchor on the colophon (bottom of the page) is your tribute to Aldus. Your own version, with your own symbols, would have been someone\u2019s job for life in 1500.'),
+
+          // ── Famous broadsides hall of fame ──
+          // Four historically significant broadsides with what made each
+          // one effective. Gives students concrete reference points for
+          // their own broadside design.
+          sectionHeader('\u{1F3C6}', 'Four broadsides that changed things'),
+          h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+            'Studied broadsides that shifted public opinion or made law. Notice the design pattern: each one has a single clear message, plain language, and a specific audience.'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 14 } },
+            [
+              { title: 'The 95 Theses', when: 'October 31, 1517', who: 'Martin Luther, posted in Wittenberg',
+                what: 'Ninety-five numbered arguments against the sale of indulgences. Allegedly posted on the door of All Saints Church. Printed almost immediately as a broadside and reprinted across Germany within weeks.',
+                effective: 'Numbered list = scannable. Plain Latin (then quickly translated to German). Concrete grievance everyone understood. One sheet of paper started the Reformation.',
+                color: '#a83232' },
+              { title: 'Common Sense', when: 'January 10, 1776', who: 'Thomas Paine, Philadelphia',
+                what: 'Distributed as a 46-page pamphlet but also as broadside excerpts pinned in taverns. About 150,000 copies sold in colonies of about 2.5 million people. Per capita, one of the best-selling political works in American history.',
+                effective: 'Plain English, not Latin or fancy rhetoric. Specific, practical arguments. Took monarchy as a target. Cheap (less than a shilling). Built the case for independence in language working people read aloud to each other.',
+                color: '#5a7aa8' },
+              { title: 'Dunlap Declaration broadside', when: 'July 4, 1776 (night)', who: 'John Dunlap, Philadelphia',
+                what: 'About 200 broadside copies of the Declaration of Independence, printed overnight in Dunlap\u2019s shop on Market Street. Distributed by horseback to colonial legislatures and military commanders. The first time most Americans heard the text was reading-aloud from one of these sheets.',
+                effective: 'Speed. The Continental Congress voted on the 4th; the text was distributed by the 6th. About 26 of the 200 broadsides survive today; they routinely sell at auction for tens of millions of dollars.',
+                color: '#c9a14a' },
+              { title: 'Emancipation Proclamation', when: 'January 1, 1863', who: 'Abraham Lincoln; printed widely',
+                what: 'Distributed as a broadside in Union-held territories and behind Confederate lines to inform enslaved people that as of January 1, they were "thenceforward and forever free." Reproductions and souvenir broadsides circulated for decades after.',
+                effective: 'Plain language declaration with the legal force of a presidential proclamation. Designed to be read aloud by anyone who could read, in front of people who could not. Combined legal weight with accessible delivery.',
+                color: T.ok }
+            ].map(function(b, i) {
+              return h('div', { key: i, style: { background: T.card, border: '1px solid ' + T.border, borderTop: '4px solid ' + b.color, borderRadius: 10, padding: 14 } },
+                h('h4', { style: { margin: '0 0 4px', fontSize: 14, color: T.accentHi, fontFamily: 'Georgia, serif' } }, b.title),
+                h('div', { style: { fontSize: 10, color: T.warn, fontStyle: 'italic', marginBottom: 2 } }, b.when),
+                h('div', { style: { fontSize: 10, color: T.dim, fontStyle: 'italic', marginBottom: 10 } }, b.who),
+                h('p', { style: { margin: '0 0 8px', fontSize: 11, color: T.text, lineHeight: 1.55 } }, b.what),
+                h('div', { style: { background: T.cardAlt, borderLeft: '3px solid ' + b.color, borderRadius: 4, padding: 8, fontSize: 11, color: T.muted, lineHeight: 1.5, fontStyle: 'italic' } },
+                  h('strong', { style: { color: b.color, fontStyle: 'normal' } }, 'Why it worked: '), b.effective)
+              );
+            })
+          ),
+          h('p', { style: { margin: '0 0 14px', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+            'Notice the shared pattern: clear single message, plain language, specific audience, one sheet of paper that someone in 1450-1865 could hand to someone else and say "read this." Aim for that when you compose yours below.'),
 
           // ── Design your own mark ──
           // Mini-tool: pick a symbol + motto + finish. Renders a colophon
@@ -7373,6 +7755,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 14, lineHeight: 1.55 } },
             'Type any printing-press question. The AI grounds its answer in the same sources cited throughout this lab. ',
             h('strong', null, 'Educational only.')),
+
+          // ── How to ask better questions ──
+          // Quick prompt-engineering coaching. The AI gives richer answers
+          // to richer questions; teaching this skill in-context is more
+          // useful than treating the AI as a black box.
+          h('details', { style: { background: T.cardAlt, border: '1px dashed ' + T.accent, borderRadius: 8, padding: '10px 14px', marginBottom: 14 } },
+            h('summary', { style: { cursor: 'pointer', fontSize: 13, color: T.accentHi, fontWeight: 700, fontFamily: 'Georgia, serif' } },
+              '💡 How to get a richer answer (click to expand)'),
+            h('div', { style: { marginTop: 12, fontSize: 12, color: T.muted, lineHeight: 1.65 } },
+              h('p', { style: { margin: '0 0 10px' } },
+                'A short, broad question gets a short, broad answer. A specific question with a frame gets a thoughtful one. Three patterns that work well:'),
+              h('div', { style: { display: 'grid', gap: 10 } },
+                [
+                  { weak: 'When was the press invented?',
+                    strong: 'How did the printer\'s apprenticeship system shape the spread of the Reformation between 1517 and 1530?',
+                    why: 'Specific date range + specific causal claim + specific subject. The AI can answer with concrete cities, people, and evidence instead of a one-line date.' },
+                  { weak: 'Was Gutenberg important?',
+                    strong: 'Compare what Gutenberg invented to what Bi Sheng invented in 1040. Which contribution had bigger downstream effects, and why?',
+                    why: 'Forces a comparison instead of a value judgment. Asks for a "why." Lets the AI synthesize rather than recite.' },
+                  { weak: 'Tell me about printing.',
+                    strong: 'I just read the section on the Mainz Diocesan War. What other historical accidents (war, plague, migration) accidentally spread important technologies?',
+                    why: 'Anchors the question in something you just learned. Asks for analogies across history. Good prompts often build on each other.' }
+                ].map(function(p, i) {
+                  return h('div', { key: i, style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 6, padding: 10 } },
+                    h('div', { style: { fontSize: 10, color: T.danger, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 4 } }, 'Weaker'),
+                    h('div', { style: { fontSize: 12, color: T.text, fontStyle: 'italic', marginBottom: 8 } }, '"' + p.weak + '"'),
+                    h('div', { style: { fontSize: 10, color: T.ok, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 4 } }, 'Stronger'),
+                    h('div', { style: { fontSize: 12, color: T.accentHi, fontStyle: 'italic', marginBottom: 6, fontFamily: 'Georgia, serif' } }, '"' + p.strong + '"'),
+                    h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic' } },
+                      h('strong', { style: { color: T.muted, fontStyle: 'normal' } }, 'Why it works: '), p.why)
+                  );
+                })
+              ),
+              h('p', { style: { margin: '10px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic' } },
+                'This is a real skill called "prompt engineering" that adults are now paid to do. Practice it here, and you have a skill that transfers everywhere you talk to an AI for the rest of your life.')
+            )
+          ),
+
           // Starter prompts
           h('div', { className: 'printingpress-no-print', style: { marginBottom: 14 } },
             h('div', { style: { fontSize: 11, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, fontWeight: 700 } }, 'Or click a starter question:'),

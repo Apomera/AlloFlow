@@ -1594,6 +1594,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
 
 
+          // ── Clear the canvas before redrawing ──
+          // Without this, the sky-fill (top half) + ground-fill (wavy top
+          // around y=0.48ch) leave an uncovered strip near the horizon when
+          // the wavy ground line dips below the sky fill, OR when the
+          // canvas's CSS-displayed size diverges from its bitmap size and
+          // the cached cw/ch no longer fully covers the visible area.
+          // Either way, ghost sprites from previous frames leak through as
+          // a horizontal band of distortion. Explicit clearRect kills it.
+          ctxC.clearRect(0, 0, cw, ch);
+
           // ── Sky gradient (biome-aware) ──
           var skyGrad = ctxC.createLinearGradient(0, 0, 0, ch * 0.5);
           var bSky = bC.skyDay;
@@ -2059,8 +2069,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           ctxC.arcTo(8, 8, 8 + hudW, 8, 6);
           ctxC.fill();
 
+          // HUD text on the rgba(15,23,42,0.75) background needs strong
+          // contrast against any biome's sky color (sometimes light blue).
+          // slate-400 (#94a3b8) gave only ~3:1 over a daytime sky; slate-200
+          // (#e2e8f0) gives ~12:1 over the dark HUD bg and stays legible
+          // even when the gradient over a lit sky thins it out.
           ctxC.font = '10px sans-serif';
-          ctxC.fillStyle = '#94a3b8';
+          ctxC.fillStyle = '#e2e8f0';
           ctxC.fillText('\uD83D\uDC07 Prey: ' + hudPreyAlive, 14, 24);
           ctxC.fillText('\uD83E\uDD8A Predators: ' + hudPredAlive, 14, 38);
 
@@ -2076,7 +2091,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           ctxC.fillRect(barX, 30, barW * Math.min(1, hudPredAlive / 25), 6);
 
           // Day/night indicator
-          ctxC.fillStyle = '#94a3b8';
+          ctxC.fillStyle = '#e2e8f0';
           ctxC.fillText(isDayR ? '\u2600 Day' : '\uD83C\uDF19 Night', 14, 52);
 
           // ── Sandbox tool indicator in HUD ──
@@ -2593,7 +2608,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             // Start/stop ambient on pause/resume — first button triggers on click above
             !simPaused && !_ecoAmbient && (function() { startEcoAmbient(true, 30); return null; })(),
             h('div', { className: 'flex items-center gap-2 flex-1' },
-              h('span', { className: 'text-[11px] font-semibold text-slate-200 dark:text-slate-200' }, 'Speed:'),
+              h('span', { className: 'text-[11px] font-semibold text-slate-700 dark:text-slate-200' }, 'Speed:'),
               h('input', {
                 type: 'range', min: 1, max: 6, step: 1, value: simSpeed,
                 'aria-label': 'Simulation speed',
@@ -2642,7 +2657,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 var timeLabel = timeAgo < 60 ? timeAgo + 's ago' : Math.round(timeAgo / 60) + 'm ago';
                 return h('div', {
                   key: 'eh' + idx,
-                  className: 'flex items-center gap-2 text-[11px] text-slate-200 dark:text-slate-200'
+                  className: 'flex items-center gap-2 text-[11px] text-slate-700 dark:text-slate-200'
                 },
                   h('span', null, eventIcons[ev.name] || '\u26A1'),
                   h('span', { className: 'font-semibold' }, ev.name),
@@ -2859,7 +2874,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               'Model predator\u2013prey dynamics using the Lotka\u2013Volterra equations. Adjust starting populations and interaction rates to observe oscillations, extinction events, and equilibrium states.'
             ),
             callTTS && h('button', { 'aria-label': 'Read aloud',
-              className: 'p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-300',
+              className: 'p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300',
               onClick: function() { speakText('Model predator-prey dynamics using the Lotka-Volterra equations. Adjust starting populations and interaction rates to observe oscillations, extinction events, and equilibrium states.'); },
               title: 'Read aloud'
             }, '\uD83D\uDD0A')
@@ -3022,9 +3037,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   h('div', { className: 'flex items-center gap-1 mb-1' },
                     h('span', { className: 'text-sm' }, ch.emoji),
                     h('span', { className: 'text-[11px] font-bold ' + (done ? 'text-green-700 dark:text-green-300' : 'text-slate-700 dark:text-slate-200') }, ch.name),
-                    done && h('span', { className: 'text-[11px] text-green-500 font-bold ml-auto' }, '\u2714')
+                    done && h('span', { className: 'text-[11px] text-green-700 dark:text-green-400 font-bold ml-auto' }, '\u2714')
                   ),
-                  h('p', { className: 'text-[11px] text-slate-200 dark:text-slate-200 mb-1' }, ch.desc),
+                  h('p', { className: 'text-[11px] text-slate-700 dark:text-slate-200 mb-1' }, ch.desc),
                   h('p', { className: 'text-[11px] font-bold ' + (done ? 'text-green-600' : 'text-amber-600') },
                     done ? '\u2714 Completed!' : '\u2B50 +' + ch.reward + ' RP')
                 );
@@ -3151,7 +3166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               }
             }, simPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
             h('div', { className: 'flex items-center gap-2 flex-1' },
-              h('span', { className: 'text-[11px] font-semibold text-slate-200 dark:text-slate-200' }, 'Speed:'),
+              h('span', { className: 'text-[11px] font-semibold text-slate-700 dark:text-slate-200' }, 'Speed:'),
               h('input', {
                 type: 'range', min: 1, max: 6, step: 1, value: simSpeed,
                 'aria-label': 'Sandbox simulation speed',
@@ -4236,7 +4251,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('div', null,
                   h('p', { className: 'text-[11px] font-bold ' + (earned ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-200') }, b.label),
                   h('p', { className: 'text-[11px] text-slate-600' }, b.desc),
-                  earned && h('span', { className: 'text-[11px] text-emerald-500 font-bold' }, '\u2714 EARNED')
+                  earned && h('span', { className: 'text-[11px] text-emerald-700 dark:text-emerald-400 font-bold' }, '\u2714 EARNED')
                 )
               );
             })
@@ -4277,7 +4292,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             ),
             h('div', { className: 'flex gap-2' },
               tutorialStep > 0 && h('button', { 'aria-label': 'Back',
-                className: 'px-4 py-2 rounded-lg text-xs font-bold text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700',
+                className: 'px-4 py-2 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700',
                 onClick: function() { upd('tutorialStep', tutorialStep - 1); }
               }, '\u2190 Back'),
               h('button', { className: 'flex-1 py-2 rounded-xl text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-600 shadow-md',
