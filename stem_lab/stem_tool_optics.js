@@ -778,6 +778,44 @@
             className: 'opticslab-wavefront',
             style: { animationDuration: '1.4s', transformOrigin: cx + 'px ' + cy + 'px' }
           }));
+          // ── Wave crests: perpendicular tick marks that ride each ray ──
+          // The number of crests per cycle equals 1/(wavelength_relative). In
+          // the denser medium light moves slower (v = c/n) but frequency is
+          // conserved, so λ = v/f shrinks by 1/n. We render more ticks per
+          // cycle on the refracted ray so students see the wavelength visibly
+          // compress when light enters glass. The ticks use offsetRotate: 90deg
+          // so each rides the path perpendicular to its tangent.
+          function addCrests(pathStr, n_medium, n_baseCrests, color, dur, keyPrefix) {
+            var nCrests = Math.max(3, Math.round(n_baseCrests * n_medium));
+            for (var k = 0; k < nCrests; k++) {
+              // Wrap the line in a <g> for reliable CSS Motion Path support —
+              // some browsers don't honor offset-path on bare SVG primitives.
+              photons.push(h('g', {
+                key: keyPrefix + k,
+                style: {
+                  offsetPath: 'path("' + pathStr + '")',
+                  WebkitOffsetPath: 'path("' + pathStr + '")',
+                  offsetRotate: '90deg',
+                  WebkitOffsetRotate: '90deg',
+                  animationDuration: dur + 's',
+                  animationDelay: ((-k * dur) / nCrests).toFixed(2) + 's'
+                },
+                className: 'opticslab-photon'
+              },
+                h('line', {
+                  x1: -5, y1: 0, x2: 5, y2: 0,
+                  stroke: color, strokeWidth: 1.4, opacity: 0.55
+                })
+              ));
+            }
+          }
+          addCrests(incPath, n1, 4, '#fde047', '1.8', 'crestIn');
+          addCrests(reflPath, n1, 4, '#34d399', '1.8', 'crestRef');
+          if (!isTIR && theta2 != null) {
+            var refPath = 'M ' + cx + ' ' + cy + ' L ' + refrX.toFixed(1) + ' ' + refrY.toFixed(1);
+            var refDur = (1.8 * Math.max(0.5, Math.min(2.2, n2 / n1))).toFixed(2);
+            addCrests(refPath, n2, 4, '#22d3ee', refDur, 'crestRfr');
+          }
           return photons;
         })(),
         // Critical angle indicator (when n1 > n2)
@@ -787,6 +825,11 @@
       ),
       h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } },
         '🟡 incident  •  🟢 reflected (always present)  •  🔵 refracted  •  ⚡ red banner = total internal reflection'
+      ),
+      h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 2 } },
+        'Tip: count the wavelength tick marks on each ray. The refracted ray has more ticks per beat in dense media — that\'s ',
+        h('em', null, 'λ = v/f'),
+        ' compressing because v drops while f stays constant.'
       )
     );
   }
