@@ -357,28 +357,53 @@
         h('text', { x: sx(objX), y: sy(hObj) - 6, fill: '#fbbf24', fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, 'Object'),
         // Three principal rays for curved mirrors (or single law-of-reflection for plane)
         (function() {
+          // Helper to push a photon dot along a path (CSS Motion Path)
+          function makePhoton(key, pathStr, color, delay) {
+            return h('circle', {
+              key: key, r: 3.2, fill: color,
+              stroke: '#fff', strokeWidth: 0.5,
+              style: {
+                offsetPath: 'path("' + pathStr + '")',
+                WebkitOffsetPath: 'path("' + pathStr + '")',
+                filter: 'drop-shadow(0 0 4px ' + color + ')',
+                animationDuration: '2.6s',
+                animationDelay: (delay || 0) + 's'
+              },
+              className: 'opticslab-photon',
+              cx: 0, cy: 0
+            });
+          }
           if (mt === 'plane') {
-            // Plane mirror: single ray from object tip to mirror at random angle, reflected
+            // Plane mirror: incidence + reflection ray
+            var planePath = 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(0) + ' L ' + sx(-objX) + ' ' + sy(hObj);
             return [
               h('line', { key: 'r1', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(0), stroke: '#10b981', strokeWidth: 1.5, strokeDasharray: '0' }),
               h('line', { key: 'r2', x1: sx(0), y1: sy(0), x2: sx(-objX), y2: sy(hObj), stroke: '#10b981', strokeWidth: 1.5, strokeDasharray: '4 3', opacity: 0.7 }),
               // Virtual image (behind mirror, dotted)
-              h('line', { key: 'rv', x1: sx(objX), y1: sy(hObj), x2: sx(-objX), y2: sy(hObj), stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.5 })
+              h('line', { key: 'rv', x1: sx(objX), y1: sy(hObj), x2: sx(-objX), y2: sy(hObj), stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.5 }),
+              makePhoton('pp1', planePath, '#10b981', 0)
             ];
           }
           // Curved mirror — 3 principal rays from object tip
           var children = [];
+          var photonPaths = [];
           var imgY = (hImg == null) ? 0 : hImg;
           var imgIsValid = imgX != null && _isNum(imgX) && _isNum(imgY);
           // Ray 1: parallel to axis from object tip → hits mirror at (0, hObj) → reflects through F
           children.push(h('line', { key: 'r1a', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(hObj), stroke: '#10b981', strokeWidth: 1.5 }));
           if (imgIsValid && d_i > 0) {
             children.push(h('line', { key: 'r1b', x1: sx(0), y1: sy(hObj), x2: sx(imgX), y2: sy(imgY), stroke: '#10b981', strokeWidth: 1.5 }));
+            photonPaths.push({ color: '#10b981',
+              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(hObj) + ' L ' + sx(imgX) + ' ' + sy(imgY) });
           } else if (imgIsValid && d_i < 0) {
             // Virtual: reflect away from F, dotted extension behind mirror to virtual image
             // The reflected ray, when extended backward, passes through the virtual image
-            children.push(h('line', { key: 'r1b', x1: sx(0), y1: sy(hObj), x2: sx(cmMax), y2: sy(hObj + (cmMax / Math.abs(f)) * hObj), stroke: '#10b981', strokeWidth: 1.5 }));
+            var divergedRightX = cmMax;
+            var divergedRightY = hObj + (cmMax / Math.abs(f)) * hObj;
+            children.push(h('line', { key: 'r1b', x1: sx(0), y1: sy(hObj), x2: sx(divergedRightX), y2: sy(divergedRightY), stroke: '#10b981', strokeWidth: 1.5 }));
             children.push(h('line', { key: 'r1c', x1: sx(0), y1: sy(hObj), x2: sx(imgX), y2: sy(imgY), stroke: '#10b981', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.6 }));
+            photonPaths.push({ color: '#10b981',
+              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(hObj) + ' L ' + sx(divergedRightX) + ' ' + sy(divergedRightY) });
           }
           // Ray 2: through F → reflects parallel
           if (mt === 'concave' && d_o > Math.abs(f)) {
@@ -388,6 +413,8 @@
             var yAtMirror = hObj + slope2 * (0 - objX);
             children.push(h('line', { key: 'r2a', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(yAtMirror), stroke: '#06b6d4', strokeWidth: 1.5 }));
             children.push(h('line', { key: 'r2b', x1: sx(0), y1: sy(yAtMirror), x2: sx(cmMax), y2: sy(yAtMirror), stroke: '#06b6d4', strokeWidth: 1.5 }));
+            photonPaths.push({ color: '#06b6d4',
+              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(yAtMirror) + ' L ' + sx(cmMax) + ' ' + sy(yAtMirror) });
           }
           // Ray 3: through C (center of curvature, at -2f) → reflects back along itself
           if (mt === 'concave') {
@@ -395,6 +422,8 @@
             var yAtMir3 = hObj + slope3 * (0 - objX);
             children.push(h('line', { key: 'r3a', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(yAtMir3), stroke: '#a855f7', strokeWidth: 1.5 }));
             children.push(h('line', { key: 'r3b', x1: sx(0), y1: sy(yAtMir3), x2: sx(objX), y2: sy(hObj), stroke: '#a855f7', strokeWidth: 1.5, strokeDasharray: '0' }));
+            photonPaths.push({ color: '#a855f7',
+              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(yAtMir3) + ' L ' + sx(objX) + ' ' + sy(hObj) });
           }
           // Image arrow
           if (imgIsValid) {
@@ -410,6 +439,10 @@
             }));
             children.push(h('text', { key: 'imglab', x: sx(imgX), y: imgY > 0 ? sy(imgY) - 8 : sy(imgY) + 14, fill: stroke, fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, d_i > 0 ? 'Image (real)' : 'Image (virtual)'));
           }
+          // Add photon dots along each principal ray, staggered in time
+          photonPaths.forEach(function(pp, ppi) {
+            children.push(makePhoton('rphot' + ppi, pp.path, pp.color, -ppi * 0.8));
+          });
           return children;
         })(),
         // X axis label
@@ -4781,6 +4814,27 @@
       rayElements.push(h('line', { key: 'out' + idx,
         x1: hitX, y1: hitY, x2: outEndX, y2: outEndY,
         stroke: wl.color, strokeWidth: 1.6, opacity: 0.95 }));
+      // Animated colored photon flowing entry → exit point → into the spectrum.
+      // Each wavelength gets its own dot at its native color — the rainbow
+      // literally forms in real-time as students watch.
+      var prismPath = 'M ' + entryX.toFixed(1) + ' ' + entryY.toFixed(1) +
+                      ' L ' + hitX.toFixed(1) + ' ' + hitY.toFixed(1) +
+                      ' L ' + outEndX.toFixed(1) + ' ' + outEndY.toFixed(1);
+      // Stagger by wavelength so red leads, violet follows — light-show feel
+      var photonDelay = (-idx * 0.18).toFixed(2);
+      rayElements.push(h('circle', {
+        key: 'photon' + idx, r: 3, fill: wl.color,
+        stroke: '#fff', strokeWidth: 0.4,
+        style: {
+          offsetPath: 'path("' + prismPath + '")',
+          WebkitOffsetPath: 'path("' + prismPath + '")',
+          filter: 'drop-shadow(0 0 4px ' + wl.color + ')',
+          animationDuration: '3.2s',
+          animationDelay: photonDelay + 's'
+        },
+        className: 'opticslab-photon',
+        cx: 0, cy: 0
+      }));
     });
     // Incoming white-light ray (one bright white line going to the entry point)
     var inLen = 120;
