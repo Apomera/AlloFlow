@@ -869,6 +869,26 @@ window.SelHub = window.SelHub || {
       var rhAttempt         = d.rhAttempt || '';
       var rhFeedback        = d.rhFeedback || '';
       var rhLoading         = !!d.rhLoading;
+      // Generative Scenarios state (inside Practice tab) — AI builds a fresh
+      // 4-choice scenario that matches the hand-crafted ones' format.
+      var genShown          = !!d.genShown;
+      var genSetting        = d.genSetting || '';
+      var genRelation       = d.genRelation || '';
+      var genHarmType       = d.genHarmType || '';
+      var genFocus          = d.genFocus || '';
+      var genScenario       = d.genScenario || null;
+      var genChoice         = d.genChoice != null ? d.genChoice : null;
+      var genLoading        = !!d.genLoading;
+      var genError          = d.genError || '';
+      // Generative Role Play state (inside Practice tab) — AI plays a peer in
+      // a short back-and-forth so the student practices what they would say.
+      var rpShown           = !!d.rpShown;
+      var rpRole            = d.rpRole || '';        // '' | 'bully' | 'target' | 'bystander'
+      var rpHistory         = d.rpHistory || [];     // [{ speaker, text }]
+      var rpInput           = d.rpInput || '';
+      var rpLoading         = !!d.rpLoading;
+      var rpEnded           = !!d.rpEnded;
+      var rpReflection      = d.rpReflection || '';
       // Role reflection state (inside Three Roles tab)
       var roleReflect       = d.roleReflect || {};
       var roleReflectOpen   = !!d.roleReflectOpen;
@@ -3307,7 +3327,526 @@ window.SelHub = window.SelHub || {
                 cursor: pracChoice == null ? 'not-allowed' : 'pointer', fontSize: 13
               }
             }, pracIdx < scenList.length - 1 ? 'Lock in answer →' : 'Finish practice')
-          )
+          ),
+
+          // ── Generative Scenarios — AI builds a 4-choice scenario from the
+          // student's chosen setting + relationship + harm. Renders in the
+          // same 4-choice rated/feedback shape as the hand-crafted ones.
+          h('div', { style: { marginTop: 24 } },
+            h('button', {
+              onClick: function() { upd('genShown', !genShown); if (soundOn) sfxClick(); },
+              'aria-expanded': genShown ? 'true' : 'false',
+              style: {
+                width: '100%', padding: '14px 16px', textAlign: 'left',
+                border: '2px solid ' + (genShown ? '#a855f7' : '#d8b4fe'),
+                background: genShown ? '#faf5ff' : '#fdf4ff',
+                borderRadius: 14, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 12,
+                font: 'inherit', color: 'inherit'
+              }
+            },
+              h('span', { 'aria-hidden': 'true', style: {
+                width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                background: 'linear-gradient(135deg, #a855f7 0%, #6b21a8 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 22, color: '#fff',
+                boxShadow: '0 4px 10px rgba(168, 85, 247, 0.25)'
+              } }, '🎲'),
+              h('div', { style: { flex: 1, minWidth: 0 } },
+                h('div', { style: { fontWeight: 800, fontSize: 15, color: '#6b21a8', marginBottom: 2 } },
+                  'Generate a scenario for your situation'),
+                h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.4 } },
+                  'Pick a setting and what kind of harm. AI writes a fresh scenario in the same format. Useful when the 9 above do not match your real life.')
+              ),
+              h('span', { 'aria-hidden': 'true', style: { color: '#a855f7', fontSize: 18 } }, genShown ? '▾' : '▸')
+            ),
+            genShown && h('div', { style: { marginTop: 12, padding: 18, background: '#fff', border: '1px solid #d8b4fe', borderRadius: 14 } },
+              !genScenario && h('div', null,
+                h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.55, color: '#475569' } },
+                  'Fill in any 2 or 3 fields. The AI uses what you give it and improvises the rest. Output is always 4 rated choices, just like the hand-written ones above.'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
+                  h('div', null,
+                    h('label', { htmlFor: 'us-gen-setting', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Setting'),
+                    h('select', { id: 'us-gen-setting', value: genSetting,
+                      onChange: function(e) { upd('genSetting', e.target.value); },
+                      style: { width: '100%', padding: 8, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', background: '#fff' }
+                    },
+                      h('option', { value: '' }, '— pick one —'),
+                      h('option', { value: 'cafeteria or lunch table' }, 'Cafeteria / lunch'),
+                      h('option', { value: 'hallway between classes' }, 'Hallway'),
+                      h('option', { value: 'classroom during class' }, 'Classroom'),
+                      h('option', { value: 'gym class or PE' }, 'Gym / PE'),
+                      h('option', { value: 'school bus or carpool' }, 'Bus / carpool'),
+                      h('option', { value: 'recess or playground' }, 'Recess / playground'),
+                      h('option', { value: 'locker area' }, 'Lockers'),
+                      h('option', { value: 'bathroom' }, 'Bathroom'),
+                      h('option', { value: 'sports practice or team' }, 'Sports / team'),
+                      h('option', { value: 'party or social event after school' }, 'Party / after school')
+                    )
+                  ),
+                  h('div', null,
+                    h('label', { htmlFor: 'us-gen-rel', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Who is involved'),
+                    h('select', { id: 'us-gen-rel', value: genRelation,
+                      onChange: function(e) { upd('genRelation', e.target.value); },
+                      style: { width: '100%', padding: 8, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', background: '#fff' }
+                    },
+                      h('option', { value: '' }, '— pick one —'),
+                      h('option', { value: 'a close friend of mine' }, 'A close friend'),
+                      h('option', { value: 'my friend group as a whole' }, 'My friend group'),
+                      h('option', { value: 'a classmate I do not know well' }, 'A classmate'),
+                      h('option', { value: 'someone with more social power than me' }, 'Someone higher status'),
+                      h('option', { value: 'someone with less social power than me' }, 'Someone lower status'),
+                      h('option', { value: 'a sibling or family member' }, 'Sibling / family'),
+                      h('option', { value: 'a teammate' }, 'Teammate'),
+                      h('option', { value: 'a new student or outsider' }, 'New student / outsider')
+                    )
+                  ),
+                  h('div', null,
+                    h('label', { htmlFor: 'us-gen-harm', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Kind of harm'),
+                    h('select', { id: 'us-gen-harm', value: genHarmType,
+                      onChange: function(e) { upd('genHarmType', e.target.value); },
+                      style: { width: '100%', padding: 8, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', background: '#fff' }
+                    },
+                      h('option', { value: '' }, '— pick one —'),
+                      h('option', { value: 'social exclusion or freeze-out' }, 'Social exclusion / freeze-out'),
+                      h('option', { value: 'public mocking or teasing' }, 'Public mocking / teasing'),
+                      h('option', { value: 'rumor spreading' }, 'Rumor spreading'),
+                      h('option', { value: 'physical intimidation (shoving, blocking)' }, 'Physical intimidation'),
+                      h('option', { value: 'mean comments about how someone looks or dresses' }, 'Appearance-based meanness'),
+                      h('option', { value: 'making fun of someone’s family or home situation' }, 'Family / home put-downs'),
+                      h('option', { value: 'pressure to join in on hurting someone' }, 'Pressure to join in'),
+                      h('option', { value: 'jokes punching down on someone with less power' }, 'Punching-down humor'),
+                      h('option', { value: 'manipulating a friendship as a weapon' }, 'Friendship manipulation')
+                    )
+                  )
+                ),
+                h('label', { htmlFor: 'us-gen-focus', style: { display: 'block', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Optional: anything specific about your situation'),
+                h('textarea', { id: 'us-gen-focus', value: genFocus,
+                  onChange: function(e) { upd('genFocus', e.target.value); },
+                  placeholder: 'e.g. "this is between two friends I have known since elementary school" — or leave blank',
+                  rows: 2,
+                  style: { width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 10 }
+                }),
+                h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                  h('button', {
+                    disabled: genLoading || !callGemini || (!genSetting && !genRelation && !genHarmType && !genFocus.trim()),
+                    'aria-busy': genLoading ? 'true' : 'false',
+                    onClick: function() {
+                      if (!callGemini) return;
+                      if (!genSetting && !genRelation && !genHarmType && !genFocus.trim()) return;
+                      upd({ genLoading: true, genError: '', genScenario: null, genChoice: null });
+                      var bandLabel = band === 'k2' ? 'K-2 (early elementary)' : band === 'g35' ? '3-5 (upper elementary)' : band === 'g68' ? '6-8 (middle school)' : band === 'g912' ? '9-12 (high school)' : 'middle school';
+                      var ctxLines = [];
+                      if (genSetting) ctxLines.push('- Setting: ' + genSetting);
+                      if (genRelation) ctxLines.push('- Who is involved: ' + genRelation);
+                      if (genHarmType) ctxLines.push('- Kind of harm: ' + genHarmType);
+                      if (genFocus.trim()) ctxLines.push('- Student notes: ' + genFocus.trim().replace(/"/g, '\\"'));
+                      var prompt =
+                        'You are a thoughtful SEL scenario writer for a bullying-awareness tool. ' +
+                        'Build ONE practice scenario as a STRICT JSON object (no markdown, no fences, no preamble — JSON ONLY). Shape:\n' +
+                        '{"icon":"single emoji","title":"under 6 words","setup":"3-5 sentence present-tense paragraph with concrete details","choices":[' +
+                        '{"label":"a response a student could choose","rating":1,"feedback":"1-2 sentences explaining why this lands badly. No \\"good job\\" filler. No lecture."},' +
+                        '{"label":"...","rating":3,"feedback":"..."},' +
+                        '{"label":"...","rating":2,"feedback":"..."},' +
+                        '{"label":"...","rating":3,"feedback":"..."}' +
+                        ']}\n\n' +
+                        'REQUIREMENTS:\n' +
+                        '- Exactly 4 choices. Mix the order — do NOT put the strongest first.\n' +
+                        '- Among the four ratings: at least one is 1 (risky/harmful or passive), at least one is 3 (strong upstander), at least one is 2 (mixed — partial intent but problems).\n' +
+                        '- Setup must avoid identity-based slurs, explicit violence, and sexual content.\n' +
+                        '- Tone: peer-mentor, warm, real. No emojis in feedback. No moralizing.\n' +
+                        '- Target audience: ' + bandLabel + '. Match vocabulary and social dynamics to that band.\n\n' +
+                        'STUDENT CONTEXT (fill in gaps with realistic peer-life details):\n' +
+                        ctxLines.join('\n') + '\n\n' +
+                        'Return ONLY the JSON object.';
+                      callGemini(prompt, true).then(function(r) {
+                        try {
+                          var clean = (r || '').replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim().replace(/^[^{]*/, '').replace(/[^}]*$/, '');
+                          var parsed = JSON.parse(clean);
+                          // Validate shape — bail to error rather than render half-broken scenario.
+                          if (!parsed || !parsed.setup || !Array.isArray(parsed.choices) || parsed.choices.length !== 4) {
+                            throw new Error('shape mismatch');
+                          }
+                          var ratings = parsed.choices.map(function(c) { return c && c.rating; });
+                          var hasOne = ratings.indexOf(1) !== -1, hasThree = ratings.indexOf(3) !== -1;
+                          if (!hasOne || !hasThree) throw new Error('missing rating distribution');
+                          // Stamp an id so progress tracking works against pracDone.
+                          parsed.id = 'gen-' + Date.now();
+                          if (!parsed.icon) parsed.icon = '🎭';
+                          if (!parsed.title) parsed.title = 'Your scenario';
+                          upd({ genLoading: false, genScenario: parsed, genChoice: null, genError: '' });
+                          if (soundOn) sfxBrave();
+                          tryAwardBadge('generated', 10);
+                          if (announceToSR) announceToSR('Scenario ready');
+                        } catch (e) {
+                          upd({ genLoading: false, genError: 'The AI returned something I could not read. Try again or change one of the fields.' });
+                        }
+                      }).catch(function() {
+                        upd({ genLoading: false, genError: 'The AI is not reachable right now. Try again in a moment.' });
+                      });
+                    },
+                    style: {
+                      padding: '10px 16px',
+                      background: (genLoading || !callGemini || (!genSetting && !genRelation && !genHarmType && !genFocus.trim())) ? '#cbd5e1' : '#7c3aed',
+                      color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
+                      cursor: (genLoading || !callGemini || (!genSetting && !genRelation && !genHarmType && !genFocus.trim())) ? 'not-allowed' : 'pointer',
+                      fontSize: 13
+                    }
+                  }, genLoading ? 'Writing scenario…' : (callGemini ? 'Generate scenario' : 'AI not available'))
+                ),
+                !callGemini && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#6b21a8' } },
+                  'AI features need a connection. Try the 9 hand-written scenarios above while offline.'),
+                genError && h('div', { 'aria-live': 'polite', style: {
+                  marginTop: 10, padding: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, fontSize: 13, color: '#991b1b'
+                } }, genError)
+              ),
+              // ── Render the generated scenario in the same 4-choice UI shape ──
+              genScenario && h('div', null,
+                h('div', { className: 'us-card', style: { background: '#fff', borderRadius: 14, padding: 18, border: '1px dashed #c084fc', marginBottom: 14, background: '#faf5ff' } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
+                    h('span', { 'aria-hidden': 'true', style: {
+                      width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                      background: 'linear-gradient(135deg, #a78bfa 0%, #6b21a8 100%)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 24, color: '#fff'
+                    } }, genScenario.icon || '🎭'),
+                    h('div', { style: { flex: 1 } },
+                      h('h4', { style: { margin: 0, fontSize: 16, fontWeight: 800, color: '#6b21a8' } }, genScenario.title || 'Your scenario'),
+                      h('div', { style: { fontSize: 11, color: '#6b21a8', fontStyle: 'italic', marginTop: 2 } }, 'AI-generated practice')
+                    )
+                  ),
+                  h('p', { 'aria-live': 'polite', style: { margin: '0 0 14px', fontSize: 14, lineHeight: 1.6, color: '#1f2937' } }, genScenario.setup),
+                  h('div', { role: 'radiogroup', 'aria-label': 'What would you do?', style: { display: 'grid', gap: 8 } },
+                    (genScenario.choices || []).map(function(c, idx) {
+                      var picked = genChoice === idx;
+                      return h('button', {
+                        key: 'gen-c-' + idx, role: 'radio', 'aria-checked': picked ? 'true' : 'false',
+                        onClick: function() { upd('genChoice', idx); if (soundOn) sfxClick(); },
+                        style: {
+                          padding: '12px 14px', textAlign: 'left',
+                          background: picked ? '#eff6ff' : '#fff',
+                          border: '2px solid ' + (picked ? BLUE : '#cbd5e1'),
+                          borderRadius: 10, fontSize: 14, fontWeight: picked ? 700 : 500,
+                          color: '#0f172a', cursor: 'pointer',
+                          display: 'flex', alignItems: 'flex-start', gap: 10
+                        }
+                      },
+                        h('span', { 'aria-hidden': 'true', style: {
+                          width: 22, height: 22, borderRadius: '50%', flexShrink: 0, marginTop: 1,
+                          border: '2px solid ' + (picked ? BLUE : '#cbd5e1'),
+                          background: picked ? BLUE : '#fff',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#fff', fontSize: 13, fontWeight: 800, lineHeight: 1
+                        } }, picked ? '✓' : ''),
+                        h('span', { style: { flex: 1, lineHeight: 1.5 } }, c.label)
+                      );
+                    })
+                  ),
+                  genChoice != null && genScenario.choices && genScenario.choices[genChoice] && h('div', { 'aria-live': 'polite', className: 'us-pop', style: {
+                    marginTop: 12, padding: 12, borderRadius: 10,
+                    background: genScenario.choices[genChoice].rating >= 3 ? '#f0fdf4' : (genScenario.choices[genChoice].rating === 2 ? '#fefce8' : '#fef2f2'),
+                    border: '1px solid ' + (genScenario.choices[genChoice].rating >= 3 ? '#bbf7d0' : (genScenario.choices[genChoice].rating === 2 ? '#fde68a' : '#fecaca'))
+                  } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5,
+                      color: genScenario.choices[genChoice].rating >= 3 ? '#166534' : (genScenario.choices[genChoice].rating === 2 ? '#854d0e' : '#991b1b') } },
+                      genScenario.choices[genChoice].rating >= 3 ? 'Strong response' : (genScenario.choices[genChoice].rating === 2 ? 'Partial — worth thinking about' : 'Risky — think this through')),
+                    h('p', { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: '#0f172a' } }, genScenario.choices[genChoice].feedback)
+                  )
+                ),
+                h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                  h('button', {
+                    onClick: function() { upd({ genScenario: null, genChoice: null, genError: '' }); },
+                    style: { padding: '8px 14px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                  }, 'Generate another'),
+                  h('button', {
+                    onClick: function() { upd({ genShown: false, genScenario: null, genChoice: null, genError: '' }); },
+                    style: { padding: '8px 14px', background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
+                  }, 'Done')
+                ),
+                h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#6b21a8', fontStyle: 'italic' } },
+                  'AI-generated. Treat the feedback as one perspective, not the final word.')
+              )
+            )
+          ),
+
+          // ── Generative Role Play — AI plays a peer character in a short
+          // multi-turn exchange. Student practices what they would actually say.
+          // Strict character guardrails: no slurs, no explicit violence, max ~5 turns.
+          (function renderRolePlay() {
+            var rpRoles = {
+              bully: {
+                label: 'AI plays someone being cruel (you intervene)',
+                icon: '🛡️',
+                desc: 'A peer is putting someone else down in front of you. Practice what you would actually say to interrupt without making it worse.',
+                charDesc: 'a middle/high school student who is being verbally mean to a classmate in a casual social setting. You are NOT physically threatening. Your meanness shows up as mocking remarks, exclusion language, and dismissive jokes — the kind of social cruelty that happens in real schools every day. You believe you are joking, not bullying.',
+                opener: 'Oh come on, look at them — they’re sitting alone again. Probably their choice though, right? Like, who would even want to sit with them?'
+              },
+              target: {
+                label: 'AI plays someone who just got bullied (you support them)',
+                icon: '🤝',
+                desc: 'A peer was just targeted and is sitting near you. Practice offering support without saying the wrong thing.',
+                charDesc: 'a middle/high school student who was just publicly humiliated by a group and is sitting near the student. You are NOT in crisis. You are quiet, withdrawn, slightly tearful, embarrassed. You may deflect support at first ("I’m fine," "it’s whatever") because that is what a real teenager does. Open up only if the student’s words feel safe and non-pitying.',
+                opener: 'I’m fine. It’s whatever. I don’t even care.'
+              },
+              bystander: {
+                label: 'AI plays a friend going along with it (you push back)',
+                icon: '🪞',
+                desc: 'A friend of yours is laughing along while someone gets mocked. Practice naming what you see without losing the friendship.',
+                charDesc: 'a peer who is friends with the student. You were just laughing along at a joke that was clearly at someone’s expense. You are NOT the leader of the bullying — you went along to fit in. You are defensive when called on it: you minimize ("it was just a joke"), deflect ("everyone laughed"), and may briefly get annoyed at the student for "making it a thing." Soften only if the student stays calm and specific.',
+                opener: 'Oh my god, did you SEE that? That was so funny. Why aren’t you laughing?'
+              }
+            };
+            var charCfg = rpRole && rpRoles[rpRole];
+            return h('div', { style: { marginTop: 16 } },
+              h('button', {
+                onClick: function() { upd('rpShown', !rpShown); if (soundOn) sfxClick(); },
+                'aria-expanded': rpShown ? 'true' : 'false',
+                style: {
+                  width: '100%', padding: '14px 16px', textAlign: 'left',
+                  border: '2px solid ' + (rpShown ? '#a855f7' : '#d8b4fe'),
+                  background: rpShown ? '#faf5ff' : '#fdf4ff',
+                  borderRadius: 14, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  font: 'inherit', color: 'inherit'
+                }
+              },
+                h('span', { 'aria-hidden': 'true', style: {
+                  width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                  background: 'linear-gradient(135deg, #a855f7 0%, #6b21a8 100%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 22, color: '#fff',
+                  boxShadow: '0 4px 10px rgba(168, 85, 247, 0.25)'
+                } }, '🎭'),
+                h('div', { style: { flex: 1, minWidth: 0 } },
+                  h('div', { style: { fontWeight: 800, fontSize: 15, color: '#6b21a8', marginBottom: 2 } },
+                    'Practice the conversation (role-play)'),
+                  h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.4 } },
+                    'AI plays a peer. You practice what you would actually say. Up to ~5 turns. You can break character anytime for coaching.')
+                ),
+                h('span', { 'aria-hidden': 'true', style: { color: '#a855f7', fontSize: 18 } }, rpShown ? '▾' : '▸')
+              ),
+              rpShown && h('div', { style: { marginTop: 12, padding: 18, background: '#fff', border: '1px solid #d8b4fe', borderRadius: 14 } },
+                // STEP 1: pick a role to practice
+                !rpRole && h('div', null,
+                  h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.55, color: '#475569' } },
+                    h('strong', { style: { color: '#6b21a8' } }, 'Pick what you want to practice. '),
+                    'The AI will play the OTHER person. You play yourself. Keep responses short and real — the way you would actually talk.'),
+                  h('div', { style: { display: 'grid', gap: 8 } },
+                    ['bully', 'target', 'bystander'].map(function(roleKey) {
+                      var cfg = rpRoles[roleKey];
+                      return h('button', {
+                        key: roleKey,
+                        onClick: function() {
+                          if (!callGemini) return;
+                          upd({ rpRole: roleKey, rpHistory: [{ speaker: 'ai', text: cfg.opener }], rpInput: '', rpEnded: false, rpReflection: '' });
+                          if (soundOn) sfxClick();
+                          if (announceToSR) announceToSR('Role-play started. ' + cfg.label);
+                        },
+                        disabled: !callGemini,
+                        style: {
+                          padding: '12px 14px', textAlign: 'left',
+                          background: '#fff', border: '2px solid #cbd5e1', borderRadius: 10,
+                          fontSize: 14, color: '#0f172a', cursor: callGemini ? 'pointer' : 'not-allowed',
+                          display: 'flex', alignItems: 'flex-start', gap: 10
+                        }
+                      },
+                        h('span', { 'aria-hidden': 'true', style: { fontSize: 22, marginTop: 2 } }, cfg.icon),
+                        h('div', { style: { flex: 1 } },
+                          h('div', { style: { fontWeight: 700, marginBottom: 4 } }, cfg.label),
+                          h('div', { style: { fontSize: 12, color: '#64748b', lineHeight: 1.45 } }, cfg.desc)
+                        )
+                      );
+                    })
+                  ),
+                  !callGemini && h('p', { style: { margin: '12px 0 0', fontSize: 11, color: '#6b21a8' } },
+                    'AI features need a connection. Try the hand-written scenarios above while offline.')
+                ),
+                // STEP 2: conversation in progress
+                rpRole && charCfg && h('div', null,
+                  h('div', { style: {
+                    padding: '8px 12px', marginBottom: 12, background: '#f3e8ff', borderRadius: 8,
+                    fontSize: 12, color: '#6b21a8', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap'
+                  } },
+                    h('span', { style: { fontWeight: 700 } }, charCfg.icon + ' ' + charCfg.label),
+                    h('button', {
+                      onClick: function() { upd({ rpRole: '', rpHistory: [], rpInput: '', rpEnded: false, rpReflection: '' }); if (soundOn) sfxClick(); },
+                      style: { padding: '4px 10px', background: '#fff', color: '#6b21a8', border: '1px solid #d8b4fe', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+                    }, '← Different role')
+                  ),
+                  // Conversation log
+                  h('div', { 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12, maxHeight: '40vh', overflowY: 'auto', padding: 4 } },
+                    rpHistory.map(function(turn, ti) {
+                      var isStudent = turn.speaker === 'student';
+                      var isCoach = turn.speaker === 'coach';
+                      return h('div', {
+                        key: 'rp-t-' + ti,
+                        style: {
+                          alignSelf: isStudent ? 'flex-end' : 'flex-start',
+                          maxWidth: '85%',
+                          padding: '10px 13px',
+                          borderRadius: 12,
+                          fontSize: 14, lineHeight: 1.5, whiteSpace: 'pre-wrap',
+                          background: isStudent ? '#dbeafe' : (isCoach ? '#fef3c7' : '#f1f5f9'),
+                          border: '1px solid ' + (isStudent ? '#93c5fd' : (isCoach ? '#fcd34d' : '#cbd5e1')),
+                          color: '#0f172a'
+                        }
+                      },
+                        h('div', { style: { fontSize: 10, fontWeight: 700, color: isStudent ? '#1d4ed8' : (isCoach ? '#92400e' : '#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
+                          isStudent ? 'You' : (isCoach ? '🪶 Coach (out of character)' : '🎭 ' + (rpRole === 'bully' ? 'Mean peer' : rpRole === 'target' ? 'Peer who was hurt' : 'Friend going along'))),
+                        h('div', null, turn.text)
+                      );
+                    })
+                  ),
+                  // Input area + send + coach + end
+                  !rpEnded && h('div', null,
+                    h('textarea', { id: 'us-rp-input', value: rpInput,
+                      onChange: function(e) { upd('rpInput', e.target.value); },
+                      placeholder: 'What would you actually say next? Keep it short — the way you would really talk.',
+                      rows: 2,
+                      disabled: rpLoading,
+                      style: { width: '100%', padding: 10, fontSize: 13, border: '1px solid #cbd5e1', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 8 }
+                    }),
+                    h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                      // Send turn → AI responds in character
+                      h('button', {
+                        disabled: rpLoading || !rpInput.trim() || !callGemini,
+                        'aria-busy': rpLoading ? 'true' : 'false',
+                        onClick: function() {
+                          if (!callGemini || !rpInput.trim()) return;
+                          var studentTurn = rpInput.trim();
+                          var newHist = rpHistory.concat([{ speaker: 'student', text: studentTurn }]);
+                          upd({ rpHistory: newHist, rpInput: '', rpLoading: true });
+                          var historyText = newHist.map(function(t) {
+                            if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
+                            if (t.speaker === 'coach') return 'COACH (out of character): ' + t.text;
+                            return 'PEER (' + rpRole + '): "' + t.text.replace(/"/g, '\\"') + '"';
+                          }).join('\n');
+                          var turnN = newHist.filter(function(t) { return t.speaker === 'student'; }).length;
+                          var bandLabel = band === 'k2' ? 'K-2' : band === 'g35' ? '3-5' : band === 'g68' ? '6-8' : band === 'g912' ? '9-12' : 'middle school';
+                          var prompt =
+                            'You are role-playing for an SEL bullying-rehearsal tool. The student practices what to say in real life.\n\n' +
+                            'YOUR CHARACTER: ' + charCfg.charDesc + '\n' +
+                            'AUDIENCE: ' + bandLabel + ' grade band. Use age-appropriate vocabulary.\n\n' +
+                            'STRICT RULES:\n' +
+                            '- Stay in character. Reply with 1-3 sentences max, like a real student would talk.\n' +
+                            '- NO slurs of any kind. NO explicit threats or violence. Stay at the "social meanness" level.\n' +
+                            '- Do NOT narrate, moralize, or break character. Just speak as the character.\n' +
+                            '- Do not include quotation marks around your reply — just the words.\n' +
+                            '- This is turn ' + turnN + ' of the conversation. By turn 4-5, if the student is responding well, you can soften, withdraw, or acknowledge. If they are struggling, stay consistent.\n\n' +
+                            'CONVERSATION SO FAR:\n' + historyText + '\n\n' +
+                            'Respond as the character in 1-3 sentences. Just the line.';
+                          callGemini(prompt, false).then(function(r) {
+                            var reply = (r || '').trim().replace(/^"|"$/g, '');
+                            upd({ rpHistory: newHist.concat([{ speaker: 'ai', text: reply || '...' }]), rpLoading: false });
+                            if (announceToSR) announceToSR('Peer responded');
+                          }).catch(function() {
+                            upd({ rpHistory: newHist.concat([{ speaker: 'ai', text: '(AI not reachable — try again in a moment)' }]), rpLoading: false });
+                          });
+                        },
+                        style: {
+                          padding: '10px 16px',
+                          background: (rpLoading || !rpInput.trim() || !callGemini) ? '#cbd5e1' : '#7c3aed',
+                          color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
+                          cursor: (rpLoading || !rpInput.trim() || !callGemini) ? 'not-allowed' : 'pointer',
+                          fontSize: 13
+                        }
+                      }, rpLoading ? 'Thinking…' : 'Send →'),
+                      // Break character → coach
+                      h('button', {
+                        disabled: rpLoading || !callGemini || rpHistory.length === 0,
+                        onClick: function() {
+                          if (!callGemini) return;
+                          upd({ rpLoading: true });
+                          var historyText = rpHistory.map(function(t) {
+                            if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
+                            if (t.speaker === 'coach') return 'COACH: ' + t.text;
+                            return 'PEER: "' + t.text.replace(/"/g, '\\"') + '"';
+                          }).join('\n');
+                          var prompt =
+                            'You are a kind, grounded peer-mentor coach watching a role-play between a student and an AI peer. ' +
+                            'OUT OF CHARACTER NOW. Briefly tell the student two things, under 80 words total:\n' +
+                            '1) What is going on socially in this moment — what the peer is doing and what they probably need.\n' +
+                            '2) One concrete thing the student could try saying next. Give an example phrasing.\n\n' +
+                            'No moralizing. No "good job" filler. Warm, peer-mentor tone. Plain English.\n\n' +
+                            'CHARACTER: ' + charCfg.charDesc + '\n' +
+                            'CONVERSATION:\n' + historyText;
+                          callGemini(prompt, false).then(function(r) {
+                            var coachText = (r || 'Take a breath and notice what just happened. What would you say if it were lower-stakes?').trim();
+                            upd({ rpHistory: rpHistory.concat([{ speaker: 'coach', text: coachText }]), rpLoading: false });
+                            if (announceToSR) announceToSR('Coach feedback ready');
+                          }).catch(function() {
+                            upd({ rpLoading: false });
+                          });
+                        },
+                        style: {
+                          padding: '10px 14px',
+                          background: '#fff', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 8, fontWeight: 600,
+                          cursor: (rpLoading || !callGemini || rpHistory.length === 0) ? 'not-allowed' : 'pointer',
+                          fontSize: 13
+                        }
+                      }, '🪶 Break character — coach me'),
+                      // End and reflect
+                      rpHistory.filter(function(t) { return t.speaker === 'student'; }).length >= 2 && h('button', {
+                        disabled: rpLoading || !callGemini,
+                        onClick: function() {
+                          if (!callGemini) return;
+                          upd({ rpLoading: true });
+                          var historyText = rpHistory.map(function(t) {
+                            if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
+                            if (t.speaker === 'coach') return 'COACH: ' + t.text;
+                            return 'PEER: "' + t.text.replace(/"/g, '\\"') + '"';
+                          }).join('\n');
+                          var prompt =
+                            'You are a kind peer-mentor coach reflecting back on a brief role-play. ' +
+                            'In 2-3 sentences (under 70 words), name:\n' +
+                            '1) One specific thing the student did well in their responses.\n' +
+                            '2) One thing they could try differently next time.\n\n' +
+                            'Be real and specific. No empty praise. No "great job!" filler. Refer to actual words they used when you can.\n\n' +
+                            'CHARACTER played by AI: ' + charCfg.charDesc + '\n' +
+                            'CONVERSATION:\n' + historyText;
+                          callGemini(prompt, false).then(function(r) {
+                            var reflectText = (r || 'You showed up to the practice. That matters. Next time, try one sentence shorter — short and direct usually lands better than long.').trim();
+                            upd({ rpEnded: true, rpReflection: reflectText, rpLoading: false });
+                            if (soundOn) sfxBrave();
+                            tryAwardBadge('roleplayed', 20);
+                            if (announceToSR) announceToSR('Reflection ready');
+                          }).catch(function() {
+                            upd({ rpEnded: true, rpReflection: 'Practice complete. Next time, try one short, direct sentence — usually lands better than a long one.', rpLoading: false });
+                          });
+                        },
+                        style: {
+                          padding: '10px 14px',
+                          background: '#fff', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600,
+                          cursor: (rpLoading || !callGemini) ? 'not-allowed' : 'pointer',
+                          fontSize: 13
+                        }
+                      }, 'End & reflect')
+                    )
+                  ),
+                  // STEP 3: end-of-practice reflection
+                  rpEnded && rpReflection && h('div', { className: 'us-pop', style: {
+                    marginTop: 8, padding: 14, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10
+                  } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#166534', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } },
+                      'How that went'),
+                    h('p', { style: { margin: '0 0 12px', fontSize: 14, lineHeight: 1.55, color: '#0f172a', whiteSpace: 'pre-wrap' } }, rpReflection),
+                    h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                      h('button', {
+                        onClick: function() { upd({ rpRole: '', rpHistory: [], rpInput: '', rpEnded: false, rpReflection: '' }); if (soundOn) sfxClick(); },
+                        style: { padding: '8px 14px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                      }, 'Practice again'),
+                      h('button', {
+                        onClick: function() { upd({ rpShown: false, rpRole: '', rpHistory: [], rpInput: '', rpEnded: false, rpReflection: '' }); },
+                        style: { padding: '8px 14px', background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
+                      }, 'Done')
+                    )
+                  ),
+                  rpRole && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#6b21a8', fontStyle: 'italic' } },
+                    'AI-generated peer responses. No real student is being depicted. Treat coach feedback as one perspective.')
+                )
+              )
+            );
+          })()
         );
       }
 
