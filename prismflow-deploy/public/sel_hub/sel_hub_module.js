@@ -120,6 +120,7 @@
       var callGeminiVision = props.callGeminiVision;
       var onSafetyFlag    = props.onSafetyFlag || null; // connects to main app's handleAiSafetyFlag
       var studentCodename = props.studentCodename || 'student';
+      var selectedVoice   = props.selectedVoice || null;
       var t               = props.t || function(k) { return k; };
 
       // Lucide icons from parent
@@ -507,6 +508,8 @@
         // Self-Regulation (was Self-Management; split to give arousal/emotion tools their own home)
         { id: '_cat_SelfRegulation', icon: '\uD83C\uDFAF', label: 'Self-Regulation', desc: '', color: 'slate', category: true },
         { id: 'coping',      icon: '\uD83E\uDDE8', label: 'Coping Toolkit',      desc: 'Explore and practice coping strategies — breathing, grounding, movement, and more.', color: 'teal', recommendedRange: 'K-12' },
+        { id: 'windowOfTolerance', icon: '\uD83E\uDE9F', label: 'Window of Tolerance', desc: 'Trauma-informed self-awareness visual. Three arousal zones (hyperarousal, window, hypoarousal). Map your personal signs of each zone, your triggers, and the practices that bring you back. Based on Siegel (1999); standard in trauma-informed schools.', color: 'teal', recommendedRange: '5-12' },
+        { id: 'stressBucket', icon: '\uD83E\uDEA3', label: 'Stress Bucket',        desc: 'A capacity visual. Stressors pour in; coping practices drain out. See whether your inflow and outflow are balanced. CBT-tradition tool (Brabban and Turkington 2002), used across NHS IAPT and Mind UK. Honest about structural stressors.', color: 'teal', recommendedRange: '5-12' },
         // Inner Work (contemplative + reflective practice)
         { id: '_cat_InnerWork', icon: '\uD83E\uDDD8', label: 'Inner Work', desc: '', color: 'slate', category: true },
         { id: 'mindfulness', icon: '\uD83E\uDDD8', label: 'Mindfulness Corner',  desc: 'Guided breathing exercises, body scans, and mindfulness activities.', color: 'purple', recommendedRange: 'K-12' },
@@ -515,10 +518,16 @@
         // Care of Self (self-compassion, relational self-care)
         { id: '_cat_CareOfSelf', icon: '\uD83E\uDD7A', label: 'Care of Self', desc: '', color: 'slate', category: true },
         { id: 'careConstellations', icon: '\uD83C\uDF0C', label: 'Care Constellations', desc: 'A relational map of who cares for you and who you care for. Refuses the individualist or consumerist "self-care" frame. Includes a substantive philosophical view on Care of Self vs Self-Care (Foucault, Greek epimeleia heautou, Audre Lorde, eudaimonic vs hedonic).', color: 'rose', recommendedRange: '5-12' },
+        { id: 'ecomap',      icon: '\uD83D\uDD78\uFE0F', label: 'Ecomap',              desc: 'Person-in-environment relationship map. You at the center; the 12 major life systems around you. Each connection rated for strength, stress, and energy direction. Standard social-work tool since Hartman (1978); used in IEPs, family assessment, and personal life inventory.', color: 'rose', recommendedRange: '5-12' },
+        { id: 'circlesOfSupport', icon: '\uD83C\uDFAF', label: 'Circles of Support', desc: 'Four concentric rings of relationship: Intimacy, Friendship, Participation, Exchange (paid). Makes visible who is actually close, including when paid people fill the inner rings. From Forest and Snow at Inclusion Press.', color: 'rose', recommendedRange: '3-12' },
+        { id: 'genogram',    icon: '\uD83C\uDF33', label: 'Genogram',            desc: 'Three-generation family map using standard family-systems symbols. For personal self-understanding only (NOT clinical assessment). Based on Bowen family systems theory and McGoldrick-Gerson-Petry notation. Includes prominent safe-framing guidance.', color: 'rose', recommendedRange: '5-12' },
         // Self-Direction (agency, goal-setting, executive function)
         { id: '_cat_SelfDirection', icon: '\uD83E\uDDED', label: 'Self-Direction', desc: '', color: 'slate', category: true },
         { id: 'goals',       icon: '\uD83D\uDCCB', label: 'Goal Setter',         desc: 'Set SMART goals, track progress, and celebrate milestones.', color: 'indigo', recommendedRange: '3-12' },
         { id: 'howlTracker', icon: '\uD83E\uDDED', label: 'HOWL Tracker',        desc: 'Habits of Work and Learning self-assessment for Crew time. Weekly check-ins, quarterly goals, trend chart, Crew conversation prompts. Aligned with EL Education\'s HOWL framework.', color: 'indigo', recommendedRange: '3-12' },
+        { id: 'onePageProfile', icon: '\uD83D\uDCC4', label: 'One-Page Profile', desc: 'Portable, printable profile that fits on one page. Three sections: what people like and admire about me, what is important to me, how best to support me. Person-centered planning artifact for IEP meetings, transitions, substitutes, or Crew. Based on Helen Sanderson Associates format.', color: 'indigo', recommendedRange: '3-12' },
+        { id: 'maps',        icon: '\uD83D\uDDFA\uFE0F', label: 'MAPS',         desc: 'Making Action Plans. Eight prompts in sequence (My Story, Dream, Nightmare, Who I Am, Gifts, Needs, Action Plan, First Steps). Person-centered visual from Pearpoint, O\'Brien, and Forest at Inclusion Press; widely used for transition planning.', color: 'indigo', recommendedRange: '5-12' },
+        { id: 'path',        icon: '\uD83E\uDDED', label: 'PATH',                desc: 'Planning Alternative Tomorrows with Hope. Futures-planning visual: eight stages from your long-horizon North Star backward to first steps in two weeks. Pearpoint, O\'Brien, and Forest at Inclusion Press; pairs with MAPS.', color: 'indigo', recommendedRange: '5-12' },
 
         // ── Social Awareness ──
         { id: '_cat_SocialAwareness', icon: '\uD83E\uDD1D', label: 'Social Awareness', desc: '', color: 'slate', category: true },
@@ -1265,6 +1274,7 @@
           callGeminiVision: typeof callGeminiVision === 'function' ? callGeminiVision : null,
           onSafetyFlag: onSafetyFlag,
           studentCodename: studentCodename,
+          selectedVoice: selectedVoice,
 
           // ── Icons ──
           icons: {

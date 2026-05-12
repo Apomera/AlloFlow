@@ -2103,7 +2103,7 @@ window.SelHub = window.SelHub || {
                       toolId: 'coping',
                       band: band,
                       callGemini: callGemini,
-                      codename: ctx.codename || 'student',
+                      codename: ctx.studentCodename || 'student',
                       conversationHistory: [],
                       onSafetyFlag: onSafetyFlag
                     });

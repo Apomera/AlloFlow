@@ -224,6 +224,7 @@
         labToolData,
         setLabToolData,
         gradeLevel,
+        sourceTopic,
         callGemini,
         callTTS,
         callImagen,
@@ -4537,9 +4538,31 @@
             setCanvasNarrateEnabled: typeof setCanvasNarrateEnabled === 'function' ? setCanvasNarrateEnabled : function() {},
             celebrate: typeof stemCelebrate === 'function' ? stemCelebrate : function() {},
             callGemini: typeof callGemini === 'function' ? callGemini : null,
+            // Callback-style AI helper. cyberdefense's AI coach was written to a
+            // callback API before the host standardized on promise-based callGemini.
+            // Adapter keeps both surfaces working.
+            aiChat: typeof callGemini === 'function' ? function(prompt, cb) {
+              try {
+                callGemini(prompt).then(function(resp) { try { cb && cb(resp); } catch(_) {} })
+                  .catch(function() { try { cb && cb(null); } catch(_) {} });
+              } catch (_) { try { cb && cb(null); } catch(_) {} }
+            } : null,
             sourceText: typeof inputText === 'string' ? inputText : (typeof sourceText === 'string' ? sourceText : ''),
             inputText: typeof inputText === 'string' ? inputText : '',
+            sourceTopic: typeof sourceTopic === 'string' ? sourceTopic : '',
             gradeLevel: typeof gradeLevel === 'string' ? gradeLevel : '',
+            // Coarse-grained grade banding for tools that target tiers rather than
+            // single grades (firstresponse, swimlab, etc. expect 'k2'|'g35'|'g68'|'g912').
+            gradeBand: (function() {
+              var g = (typeof gradeLevel === 'string' ? gradeLevel : '').toLowerCase();
+              if (g.indexOf('kindergarten') === 0 || /\b(1st|2nd)\b/.test(g)) return 'k2';
+              if (/\b(3rd|4th|5th)\b/.test(g)) return 'g35';
+              if (/\b(6th|7th|8th)\b/.test(g)) return 'g68';
+              if (/\b(9th|10th|11th|12th)\b/.test(g) || g.indexOf('college') !== -1 || g.indexOf('graduate') !== -1) return 'g912';
+              return 'g68';
+            })(),
+            // Coordinate grid range (passed from host useState — defaults to ±10).
+            gridRange: typeof gridRange !== 'undefined' && gridRange ? gridRange : { min: -10, max: 10 },
             t: typeof t === 'function' ? t : function(k) { return k; },
             icons: { ArrowLeft: ArrowLeft, Calculator: Calculator, Sparkles: Sparkles, X: X, GripVertical: GripVertical },
             _codingCanvasRef: typeof _codingCanvasRef !== 'undefined' ? _codingCanvasRef : null,
