@@ -10449,6 +10449,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 role: 'status'
               }, sentence);
             })(),
+            // ── Workforce by Role (seasonal distribution) ──
+            // Bee roles are age-based AND season-modulated. Showing the
+            // shifting distribution as a stacked bar teaches a key concept:
+            // a hive isn\'t static — same workers, different jobs, by season.
+            // Winter is special — most workers cluster (no flying below ~50°F).
+            (function() {
+              // Season-shifted role percentages (sum to 100 within each row)
+              var ROLES_BY_SEASON = [
+                // Spring: rebuilding, brood-heavy, fewer foragers
+                { nurse: 35, builder: 20, forager: 25, guard: 5, scout: 5, fanner: 5, undertaker: 5, clusterer: 0 },
+                // Summer: peak production, foragers + fanners up, nurses down
+                { nurse: 20, builder: 15, forager: 45, guard: 5, scout: 5, fanner: 5, undertaker: 5, clusterer: 0 },
+                // Autumn: winterizing — fewer builders, fewer brood-tenders, more cleanup
+                { nurse: 20, builder: 10, forager: 40, guard: 5, scout: 5, fanner: 10, undertaker: 10, clusterer: 0 },
+                // Winter: cluster mode — flying impossible, most workers thermoregulate
+                { nurse: 5,  builder: 0,  forager: 0,  guard: 5, scout: 0, fanner: 0,  undertaker: 0,  clusterer: 90 }
+              ];
+              var dist = ROLES_BY_SEASON[season] || ROLES_BY_SEASON[0];
+              var roleDefs = [
+                { id: 'nurse',      label: 'Nurses',      color: '#f472b6', emoji: '🍼', note: 'Feed larvae royal jelly + bee bread (ages 3–10 days)' },
+                { id: 'builder',    label: 'Builders',    color: '#fbbf24', emoji: '🛠️', note: 'Secrete wax + draw comb (ages 11–17 days)' },
+                { id: 'forager',    label: 'Foragers',    color: '#84cc16', emoji: '🌸', note: 'Bring back nectar + pollen + water (ages 21+ days)' },
+                { id: 'guard',      label: 'Guards',      color: '#ef4444', emoji: '🛡️', note: 'Sentries at the entrance, recognize sister vs intruder' },
+                { id: 'scout',      label: 'Scouts',      color: '#a78bfa', emoji: '🧭', note: 'Find new forage + new nest sites (waggle dance)' },
+                { id: 'fanner',     label: 'Fanners',     color: '#22d3ee', emoji: '💨', note: 'Beat wings at 230 Hz to cool + evaporate honey moisture' },
+                { id: 'undertaker', label: 'Undertakers', color: '#94a3b8', emoji: '⚰️', note: 'Carry dead bees out of the hive (colony hygiene)' },
+                { id: 'clusterer',  label: 'Clusterers',  color: '#cbd5e1', emoji: '❄️', note: 'Vibrate flight muscles to keep the queen at 95°F all winter' }
+              ];
+              // Total to use is workers (not the per-role estimate). Build segments only for non-zero roles.
+              var segments = roleDefs.filter(function(r) { return (dist[r.id] || 0) > 0; });
+              if (segments.length === 0) return null;
+              return h('div', { className: 'mb-3', role: 'region', 'aria-label': 'Workforce role distribution for ' + seasonNames[season] },
+                h('div', { className: 'flex items-center justify-between mb-1' },
+                  h('div', { className: 'text-[11px] font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '👷 Workforce by role'),
+                  h('div', { className: 'text-[10px] italic ' + (dk ? 'text-slate-300' : 'text-slate-500') }, season === 3 ? 'Winter — no flying, mostly clustering' : 'Age-based + season-shifted')
+                ),
+                // Stacked bar
+                h('div', {
+                  className: 'flex h-3 rounded-full overflow-hidden border ' + (dk ? 'border-slate-700' : 'border-slate-300'),
+                  'aria-hidden': 'true'
+                },
+                  segments.map(function(r) {
+                    var pct = dist[r.id];
+                    return h('div', {
+                      key: r.id,
+                      title: r.emoji + ' ' + r.label + ': ' + Math.round(workers * pct / 100).toLocaleString() + ' (' + pct + '%) — ' + r.note,
+                      style: { width: pct + '%', background: r.color },
+                      className: 'transition-all'
+                    });
+                  })
+                ),
+                // Compact legend chips — clickable for the per-role pop tooltip via title
+                h('div', { className: 'flex flex-wrap gap-1 mt-1.5' },
+                  segments.map(function(r) {
+                    var pct = dist[r.id];
+                    var count = Math.round(workers * pct / 100);
+                    return h('span', {
+                      key: r.id,
+                      title: r.note,
+                      className: 'text-[10px] px-1.5 py-0.5 rounded inline-flex items-center gap-1 cursor-help ' + (dk ? 'bg-slate-800/60 text-slate-200' : 'bg-white text-slate-700'),
+                      style: { borderLeft: '3px solid ' + r.color }
+                    },
+                      h('span', { 'aria-hidden': 'true' }, r.emoji),
+                      h('span', { className: 'font-bold' }, r.label),
+                      h('span', { className: dk ? 'text-slate-300' : 'text-slate-500' }, count.toLocaleString() + ' (' + pct + '%)')
+                    );
+                  })
+                )
+              );
+            })(),
             h('div', { className: 'grid grid-cols-4 gap-2 text-center mb-3' },
               h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-amber-500', style: { fontFamily: 'monospace' } }, fmtPop(workers)), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, '👷 Workers')),
               h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-pink-500', style: { fontFamily: 'monospace' } }, fmtPop(brood)), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, '🥚 Brood')),
