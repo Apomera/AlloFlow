@@ -4539,20 +4539,31 @@
             setToolSnapshots: _safeSetToolSnapshots,
             // Wrap addToast so every plugin toast also announces to screen readers.
             // This gives all 57 STEM tools SR announcements without modifying each plugin.
-            addToast: function(msg, type) {
+            // _deferSafe wrap: addToast + the inner announceToSR both touch parent
+            // React state (toast list + a11y live-region useState). Plugins that
+            // toast during their initial render (e.g. funcgrapher canvasNarrate
+            // chain) trigger "Cannot update component while rendering" without it.
+            addToast: _deferSafe(function(msg, type) {
               if (addToast) addToast(msg, type);
               // Strip emoji from message for cleaner SR output
               if (typeof announceToSR === 'function' && msg) {
                 var srMsg = msg.replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27BF]|[\uFE00-\uFE0F]|[\u200D]/gu, '').trim();
                 if (srMsg) announceToSR(srMsg);
               }
-            },
-            awardXP: typeof awardStemXP === 'function' ? awardStemXP : function() {},
+            }),
+            // _deferSafe wrap: awardStemXP calls setStemXP (parent useState).
+            awardXP: typeof awardStemXP === 'function' ? _deferSafe(awardStemXP) : function() {},
             getXP: typeof getStemXP === 'function' ? getStemXP : function() { return 0; },
-            announceToSR: typeof announceToSR === 'function' ? announceToSR : function() {},
-            canvasNarrate: typeof canvasNarrate === 'function' ? canvasNarrate : function() {},
+            // _deferSafe wrap: announceToSR calls setA11yAnnouncement (parent useState)
+            // and canvasNarrate calls announceToSR. Without these wraps, plugins
+            // that call canvasNarrate('init', ...) during their first render \u2014 like
+            // funcgrapher at stem_tool_funcgrapher.js:123 \u2014 produce the React
+            // "Cannot update component while rendering" warning every modal open.
+            announceToSR: typeof announceToSR === 'function' ? _deferSafe(announceToSR) : function() {},
+            canvasNarrate: typeof canvasNarrate === 'function' ? _deferSafe(canvasNarrate) : function() {},
             setCanvasNarrateEnabled: typeof setCanvasNarrateEnabled === 'function' ? setCanvasNarrateEnabled : function() {},
-            celebrate: typeof stemCelebrate === 'function' ? stemCelebrate : function() {},
+            // _deferSafe wrap: stemCelebrate sets parent confetti/celebration state.
+            celebrate: typeof stemCelebrate === 'function' ? _deferSafe(stemCelebrate) : function() {},
             callGemini: typeof callGemini === 'function' ? callGemini : null,
             // Callback-style AI helper. cyberdefense's AI coach was written to a
             // callback API before the host standardized on promise-based callGemini.
