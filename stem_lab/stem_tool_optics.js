@@ -411,6 +411,32 @@
           var photonPaths = [];
           var imgY = (hImg == null) ? 0 : hImg;
           var imgIsValid = imgX != null && _isNum(imgX) && _isNum(imgY);
+          // ── Light cones for concave-mirror real images ──
+          // Same visual logic as the lens: the object's tip emits light that
+          // fills the mirror aperture and (after reflection) reconverges at
+          // the image tip. For mirrors the image is on the SAME side as the
+          // object, so the two cones overlap in space — physically accurate:
+          // outgoing and reflected light occupy the same region.
+          if (mt === 'concave' && imgIsValid && d_i > 0) {
+            children.push(h('polygon', {
+              key: 'cone-in',
+              points: [
+                sx(objX), sy(hObj),
+                sx(0), sy(10),
+                sx(0), sy(-10)
+              ].join(' '),
+              fill: 'rgba(251,191,36,0.08)', stroke: 'rgba(251,191,36,0.15)', strokeWidth: 0.5
+            }));
+            children.push(h('polygon', {
+              key: 'cone-out',
+              points: [
+                sx(0), sy(10),
+                sx(0), sy(-10),
+                sx(imgX), sy(imgY)
+              ].join(' '),
+              fill: 'rgba(239,68,68,0.08)', stroke: 'rgba(239,68,68,0.15)', strokeWidth: 0.5
+            }));
+          }
           // Ray 1: parallel to axis from object tip → hits mirror at (0, hObj) → reflects through F
           children.push(h('line', { key: 'r1a', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(hObj), stroke: '#10b981', strokeWidth: 1.5 }));
           if (imgIsValid && d_i > 0) {
@@ -451,6 +477,16 @@
           if (imgIsValid) {
             var stroke = (d_i > 0) ? '#ef4444' : '#fca5a5';
             var dash = (d_i > 0) ? '0' : '3 3';
+            // Focus halo at real-image convergence point (same pattern as lens).
+            if (d_i > 0) {
+              children.push(h('circle', {
+                key: 'mimgfocus',
+                cx: sx(imgX), cy: sy(imgY), r: 5,
+                fill: 'none', stroke: '#ef4444', strokeWidth: 1.2,
+                className: 'opticslab-wavefront',
+                style: { animationDuration: '1.6s', transformOrigin: sx(imgX) + 'px ' + sy(imgY) + 'px' }
+              }));
+            }
             children.push(h('line', { key: 'img', x1: sx(imgX), y1: sy(0), x2: sx(imgX), y2: sy(imgY), stroke: stroke, strokeWidth: 3, strokeDasharray: dash, opacity: (d_i > 0) ? 1 : 0.7 }));
             var arrowY = imgY > 0 ? sy(imgY) - 2 : sy(imgY) + 2;
             var arrowOff = imgY > 0 ? 4 : -4;
@@ -1039,6 +1075,34 @@
           if (d_i == null || lens.error) return children;
           var imgY = m * hObj;
           var isVirtual = d_i < 0;
+          // ── Light cones: visualize the bundles of light traveling through
+          // the optical system. For a real image (converging lens, d_o > f),
+          // we draw two semi-transparent triangles to show:
+          //   (1) light from the OBJECT'S TIP fanning out to fill the lens, and
+          //   (2) light from the lens converging to the IMAGE'S TIP.
+          // The intersection at the lens is exactly where Snell-bent rays
+          // change direction. Students see "every point on the object emits
+          // light that fills the lens and converges to one image point."
+          if (lt === 'converging' && d_i > 0 && _isNum(imgY)) {
+            children.push(h('polygon', {
+              key: 'cone-in',
+              points: [
+                sx(objX), sy(hObj),
+                sx(0), sy(10),
+                sx(0), sy(-10)
+              ].join(' '),
+              fill: 'rgba(251,191,36,0.08)', stroke: 'rgba(251,191,36,0.15)', strokeWidth: 0.5
+            }));
+            children.push(h('polygon', {
+              key: 'cone-out',
+              points: [
+                sx(0), sy(10),
+                sx(0), sy(-10),
+                sx(imgX), sy(imgY)
+              ].join(' '),
+              fill: 'rgba(239,68,68,0.08)', stroke: 'rgba(239,68,68,0.15)', strokeWidth: 0.5
+            }));
+          }
           // Collect ray-path strings so we can attach traveling photon dots that
           // animate along each ray (CSS Motion Path). This gives students a
           // visceral sense of light actually moving through the system.
@@ -1111,6 +1175,18 @@
             var stroke = isVirtual ? '#fca5a5' : '#ef4444';
             var dash = isVirtual ? '3 3' : '0';
             var op = isVirtual ? 0.7 : 1;
+            // Real images get a subtle pulsing focus halo at the convergence
+            // point — it's the visual cue that light actually converges here
+            // (vs. virtual images, which are only "perceived" extensions).
+            if (!isVirtual) {
+              children.push(h('circle', {
+                key: 'imgfocus',
+                cx: sx(imgX), cy: sy(imgY), r: 5,
+                fill: 'none', stroke: '#ef4444', strokeWidth: 1.2,
+                className: 'opticslab-wavefront',
+                style: { animationDuration: '1.6s', transformOrigin: sx(imgX) + 'px ' + sy(imgY) + 'px' }
+              }));
+            }
             children.push(h('line', { key: 'img', x1: sx(imgX), y1: sy(0), x2: sx(imgX), y2: sy(imgY), stroke: stroke, strokeWidth: 3, strokeDasharray: dash, opacity: op }));
             var arrowOff = imgY > 0 ? 4 : -4;
             var arrowY = imgY > 0 ? sy(imgY) - 2 : sy(imgY) + 2;
