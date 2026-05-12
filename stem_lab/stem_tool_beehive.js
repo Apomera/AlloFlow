@@ -7334,7 +7334,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         // ── Keyboard shortcuts (ref-based to read latest state) ──
         var _keyState = React.useRef({});
-        _keyState.current = { colonySurvived: colonySurvived, quizOpen: quizOpen, showInspect: showInspect, showBadges: showBadges, soundOn: soundOn, viewMode: viewMode };
+        _keyState.current = { colonySurvived: colonySurvived, quizOpen: quizOpen, showInspect: showInspect, showBadges: showBadges, soundOn: soundOn, viewMode: viewMode, autoAdvance: !!d.autoAdvance };
         React.useEffect(function() {
           function onKey(e) {
             // Don't capture when typing in inputs
@@ -7345,6 +7345,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (ks.quizOpen) return; // Don't capture shortcuts during quiz
             var key = e.key.toLowerCase();
             if (key === 'n') { e.preventDefault(); if (ks.colonySurvived) advanceDay(); }
+            else if (key === ' ') { e.preventDefault(); upd('autoAdvance', !ks.autoAdvance); }
             else if (key === 't') { e.preventDefault(); treatVarroa(); }
             else if (key === 's') { e.preventDefault(); addSuper(); }
             else if (key === 'h') { e.preventDefault(); harvestHoney(); }
@@ -7366,6 +7367,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           }
           document.addEventListener('keydown', onKey);
           return function() { document.removeEventListener('keydown', onKey); };
+        }, []);
+
+        // ── Auto-advance loop (▶ play / ⏸ pause time) ──
+        // Driven by d.autoAdvance (bool) + d.autoSpeed (1=slow/2s, 2=med/1s, 3=fast/0.4s).
+        // Uses a ref so the interval reads the latest survival/view/mode flags
+        // without retriggering the effect on every render. Auto-stops if the
+        // colony dies, the user leaves beekeeper view, or a modal opens — so it
+        // never quietly progresses past a teachable moment the student wanted
+        // to read.
+        var _autoRef = React.useRef({});
+        _autoRef.current = {
+          autoAdvance: !!d.autoAdvance,
+          autoSpeed: d.autoSpeed || 2,
+          colonySurvived: colonySurvived,
+          viewMode: viewMode,
+          showInspect: showInspect,
+          quizOpen: quizOpen,
+          showBadges: showBadges,
+          showTreatModal: !!d.showTreatModal,
+          activeEvent: !!activeEvent,
+          advanceDay: advanceDay,
+          stopAuto: function() { upd('autoAdvance', false); }
+        };
+        React.useEffect(function() {
+          // Tick interval is 250ms; per-day cadence is gated by lastAt + period.
+          var lastAt = 0;
+          var iv = setInterval(function() {
+            var s = _autoRef.current;
+            if (!s.autoAdvance) return;
+            // Pause conditions: dead colony, wrong view, modal open, event banner
+            if (!s.colonySurvived || s.viewMode !== 'beekeeper' ||
+                s.showInspect || s.quizOpen || s.showBadges ||
+                s.showTreatModal || s.activeEvent) return;
+            // Speed → ms-per-day: 1=slow (2.0s), 2=med (1.0s), 3=fast (0.4s)
+            var period = s.autoSpeed === 1 ? 2000 : s.autoSpeed === 3 ? 400 : 1000;
+            var now = Date.now();
+            if (now - lastAt < period) return;
+            lastAt = now;
+            s.advanceDay();
+          }, 200);
+          return function() { clearInterval(iv); };
         }, []);
 
         // ═══════════════════════════════════════════════════════════════
@@ -9428,10 +9470,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     )
                   )
                 ),
-                h('div', { className: 'flex gap-2' },
+                h('div', { className: 'flex gap-2 items-stretch' },
                   h('button', { onClick: advanceDay, title: 'Simulate one day — colony state updates with consumption, foraging, mite growth, and seasonal effects.', className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white ' + (dk ? 'bg-amber-600' : 'bg-amber-500') }, '⏩ Next Day'),
                   h('button', { onClick: function() { advanceDays(5); }, title: 'Fast-forward 5 days (skip the routine, jump to the next decision).', className: 'px-3 py-2.5 rounded-xl text-xs ' + (dk ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-700') }, '+5'),
-                  h('button', { onClick: function() { advanceDays(30); }, title: 'Fast-forward a month — useful in winter when nothing\'s happening above ground.', className: 'px-3 py-2.5 rounded-xl text-xs ' + (dk ? 'bg-amber-900/30 text-amber-400' : 'bg-amber-50 text-amber-600') }, '+30')),
+                  h('button', { onClick: function() { advanceDays(30); }, title: 'Fast-forward a month — useful in winter when nothing\'s happening above ground.', className: 'px-3 py-2.5 rounded-xl text-xs ' + (dk ? 'bg-amber-900/30 text-amber-400' : 'bg-amber-50 text-amber-600') }, '+30'),
+                  // Auto-advance play/pause + speed selector. Pauses automatically
+                  // whenever a modal/event opens so the student isn't fighting the clock.
+                  (function() {
+                    var auto = !!d.autoAdvance;
+                    var spd = d.autoSpeed || 2;
+                    return h('div', { className: 'flex items-center gap-1 px-2 py-0.5 rounded-xl ' + (dk ? 'bg-slate-800/60 border border-slate-700' : 'bg-white border border-slate-200'), role: 'group', 'aria-label': 'Auto-advance controls' },
+                      h('button', {
+                        onClick: function() { upd('autoAdvance', !auto); },
+                        title: auto ? 'Pause auto-advance (Spacebar). Resume any time.' : 'Auto-advance — let days roll forward on their own at the chosen speed. Pauses automatically when modals open.',
+                        'aria-pressed': auto ? 'true' : 'false',
+                        'aria-label': auto ? 'Pause auto-advance' : 'Start auto-advance',
+                        className: 'px-2 py-1.5 rounded-lg text-xs font-bold ' + (auto ? (dk ? 'bg-emerald-700 text-white' : 'bg-emerald-500 text-white') : (dk ? 'bg-slate-700 text-slate-200' : 'bg-slate-100 text-slate-700'))
+                      }, auto ? '⏸ Auto' : '▶ Auto'),
+                      // Speed pills — only shown when auto is on, so they don't clutter the bar otherwise.
+                      auto && h('div', { className: 'flex items-center gap-0.5' },
+                        [1, 2, 3].map(function(sp) {
+                          var label = sp === 1 ? '🐢' : sp === 2 ? '🐝' : '⚡';
+                          var labelText = sp === 1 ? 'Slow (2s/day)' : sp === 2 ? 'Normal (1s/day)' : 'Fast (0.4s/day)';
+                          var active = spd === sp;
+                          return h('button', {
+                            key: sp,
+                            onClick: function() { upd('autoSpeed', sp); },
+                            title: labelText,
+                            'aria-pressed': active ? 'true' : 'false',
+                            'aria-label': labelText,
+                            className: 'px-1.5 py-1 rounded text-[11px] ' + (active ? (dk ? 'bg-emerald-900/60 text-emerald-200 ring-1 ring-emerald-500' : 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-400') : (dk ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-500 hover:bg-slate-100'))
+                          }, label);
+                        })
+                      )
+                    );
+                  })()
+                ),
                 h('div', { className: 'grid grid-cols-4 gap-1.5' },
                   h('button', { onClick: function() { smokeHive(); }, title: 'Puff cool smoke at the entrance. Masks alarm pheromone and triggers bees to gorge on honey — calms them before any inspection.',
                     className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-stone-800/40 text-stone-300' : 'bg-stone-100 text-stone-700') + urgentCls('smoke') }, '💨 Smoke'),
@@ -10359,14 +10433,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             )
           ),
 
-          // Seasonal goals (beekeeper only)
-          viewMode === 'beekeeper' && colonySurvived && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-indigo-900/20 border-indigo-700/40' : 'bg-indigo-50 border-indigo-200') },
-            h('div', { className: 'flex items-center gap-2 mb-1' },
-              h('span', null, SEASON_GOALS[season].emoji),
-              h('span', { className: 'text-xs font-bold ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, SEASON_GOALS[season].season + ' Goals'),
-              h('span', { className: 'text-[11px] ml-auto ' + (dk ? 'text-indigo-400' : 'text-indigo-500') }, '🎯 ' + actionPoints + '/3 actions left today')),
-            h('div', { className: 'flex flex-wrap gap-1' },
-              SEASON_GOALS[season].goals.map(function(g, i) { return h('span', { key: i, className: 'text-[11px] px-2 py-0.5 rounded border ' + (dk ? 'bg-slate-800 border-indigo-700/30 text-indigo-300' : 'bg-white border-indigo-100 text-indigo-700') }, g); }))),
+          // Seasonal goals — live checklist with ✓ / ⏳ markers
+          // Each goal is a predicate on current state so students can see at a
+          // glance which season-targets they\'ve hit and which are still open.
+          viewMode === 'beekeeper' && colonySurvived && (function() {
+            var goalPreds = [
+              // Spring
+              [
+                { label: SEASON_GOALS[0].goals[0], met: workers >= 20000 },
+                { label: SEASON_GOALS[0].goals[1], met: varroaLevel < 15 },
+                { label: SEASON_GOALS[0].goals[2], met: honey >= 30 }
+              ],
+              // Summer
+              [
+                { label: SEASON_GOALS[1].goals[0], met: (d.totalHarvested || 0) > 0 || (d.lifetimeHarvest || 0) > 0 },
+                { label: SEASON_GOALS[1].goals[1], met: wax >= 15 || (d.supersAdded || 0) > 0 },
+                { label: SEASON_GOALS[1].goals[2], met: (typeof gardenBonus !== 'undefined' && gardenBonus > 0) }
+              ],
+              // Autumn
+              [
+                { label: SEASON_GOALS[2].goals[0], met: honey >= 40 },
+                { label: SEASON_GOALS[2].goals[1], met: varroaLevel < 10 || (d.varroaTreats || 0) > 0 },
+                { label: SEASON_GOALS[2].goals[2], met: queenHealth >= 70 }
+              ],
+              // Winter
+              [
+                { label: SEASON_GOALS[3].goals[0], met: workers >= 10000 },
+                { label: SEASON_GOALS[3].goals[1], met: honey >= 10 },
+                { label: SEASON_GOALS[3].goals[2], met: habitat >= 60 || ((d.conservationActions || []).length > 0) }
+              ]
+            ];
+            var seasonGoalsList = goalPreds[season] || goalPreds[0];
+            var goalsHit = seasonGoalsList.filter(function(g) { return g.met; }).length;
+            return h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-indigo-900/20 border-indigo-700/40' : 'bg-indigo-50 border-indigo-200'),
+              role: 'region', 'aria-label': SEASON_GOALS[season].season + ' goals: ' + goalsHit + ' of ' + seasonGoalsList.length + ' complete' },
+              h('div', { className: 'flex items-center gap-2 mb-2' },
+                h('span', { 'aria-hidden': 'true' }, SEASON_GOALS[season].emoji),
+                h('span', { className: 'text-xs font-bold ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, SEASON_GOALS[season].season + ' Goals'),
+                h('span', {
+                  className: 'text-[11px] font-bold px-2 py-0.5 rounded-full ' + (goalsHit === seasonGoalsList.length ? (dk ? 'bg-emerald-900/50 text-emerald-300' : 'bg-emerald-100 text-emerald-700') : (dk ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-700'))
+                }, goalsHit + ' / ' + seasonGoalsList.length + (goalsHit === seasonGoalsList.length ? ' ✓ complete' : '')),
+                h('span', { className: 'text-[11px] ml-auto ' + (dk ? 'text-indigo-400' : 'text-indigo-500') }, '🎯 ' + actionPoints + '/3 actions today')
+              ),
+              h('ul', { className: 'space-y-1', role: 'list' },
+                seasonGoalsList.map(function(g, i) {
+                  return h('li', { key: i,
+                    className: 'flex items-start gap-2 text-[11px] leading-snug ' +
+                      (g.met ? (dk ? 'text-emerald-300' : 'text-emerald-700') : (dk ? 'text-slate-300' : 'text-slate-700')) },
+                    h('span', { 'aria-hidden': 'true', className: g.met ? '' : 'opacity-60', style: { width: 14, display: 'inline-block', textAlign: 'center' } }, g.met ? '✓' : '⏳'),
+                    h('span', null, g.label),
+                    h('span', { className: 'sr-only' }, g.met ? ' (complete)' : ' (in progress)')
+                  );
+                })
+              )
+            );
+          })(),
 
           // Habitat & Pesticide meters (beekeeper only)
           viewMode === 'beekeeper' && colonySurvived && h('div', { className: 'grid grid-cols-2 gap-2' },
