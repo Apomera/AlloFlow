@@ -24,7 +24,7 @@ backlog: each "Real reverse drift" entry is one focused follow-up commit.
 
 | Module | Status | Δ lines | src-only | mod-only | Classification | Action |
 |---|---|---|---|---|---|---|
-| `generate_dispatcher` | REVERSED | +1483 | 0 | **20** | **Real reverse drift** | Port 20 extra fn from module → source |
+| `generate_dispatcher` | REVERSED → MINOR | +1483 → +7 | 0 | 0 | **Resolved May 12 2026** — full body port (1477 lines): 793-line audit-pipeline prefix + ~684 lines of handleGenerate body edits | None |
 | `quickstart` | REVERSED | +246 → +233 | 0 | 0 | **Resolved May 12 2026** — 2 fn ported (fetchAndCleanUrl, isGoogleRedirect); residual delta is IIFE-wrapper noise (matches build-transform pattern) | None |
 | `export` | REVERSED | +436 | 0 | 0 | Build-transform noise | None |
 | `gemini_api` | REVERSED | +58 | 0 | 0 | Build-transform noise | None |
@@ -40,21 +40,43 @@ backlog: each "Real reverse drift" entry is one focused follow-up commit.
 | `immersive_reader` | (recompiled, audit should clear next run) | — | 0 | 0 | Build-transform noise | None |
 | `games` | (recompiled, audit should clear next run) | — | 0 | 0 | Build-transform noise | None |
 
-## Real reverse drift — backlog (1 item remaining)
+## Real reverse drift — backlog (0 items remaining)
 
-### 1. `generate_dispatcher` — 20 extra functions in compiled
+### 1. `generate_dispatcher` — ✅ Resolved May 12 2026
 
-Highest-priority cleanup. `module.js` has 20 functions that don't exist
-in `generate_dispatcher_source.jsx`. Likely hand-additions made directly
-to the compiled file (often happens when someone debugs in DevTools and
-ports the fix to the deployed file but forgets the source).
+The audit reported "20 functions in module but not source" — accurate
+but understated. The full drift was actually **1,477 lines**: a
+793-line audit-pipeline prefix block (`COMMON_LONGER_WORDS`,
+`computeReadinessScore`, `computeCognitiveLoad`, `computeContent*`,
+`harvestExistingAuditSignals`, etc. — 14 top-level functions + 6
+nested helpers + supporting constants) PLUS ~684 lines of edits
+sprinkled inside the 2000+ line `handleGenerate` body (Plan S quiz
+mode logic, etc.).
 
-**To port:**
-1. Run `node dev-tools/audit_pair_drift.js | grep -A 30 "generate_dispatcher"` (or extend the tool to dump the actual diff)
-2. Identify the 20 functions present only in module
-3. Add each to `generate_dispatcher_source.jsx` in the matching location
-4. Recompile via `_build_generate_dispatcher_module.js`
-5. Confirm `audit_pair_drift` reports clean (or only build-noise) for this row
+**Why the audit understated it:** `audit_pair_drift.js` counts
+*top-level declarations*. The handleGenerate body edits are nested
+inside an existing top-level function, so they don't change the
+declaration count.
+
+**Root cause (matches `feedback_edit_source_not_compiled.md`):**
+edits were made directly to `generate_dispatcher_module.js` instead
+of `generate_dispatcher_source.jsx`. Most recent example was commit
+`ec14da8c` on May 9 ("Fix: add missing computeContentAccessibility +
+UDL JSON retry") — 126 lines added to module, 0 to source. The build
+script (`_build_generate_dispatcher_module.js`) does work; running it
+would have wiped all 1,477 lines of drift.
+
+**Fix:** wholesale body-copy. Source.jsx was overwritten with the
+exact contents of module.js between the IIFE header (L1-3) and tail
+(L3843-3846). The rebuild produces a module.js that is content-identical
+to the pre-port file (verified by md5 with line endings normalized).
+No code was lost; source.jsx is now the canonical truth, and future
+edits go to source.jsx → rebuild → module.js.
+
+**Auditor learning:** to catch this class of drift in the future,
+extend `audit_pair_drift.js` to compare body byte counts of named
+functions, not just top-level declaration sets. Documented as a
+follow-up in this doc's "Audit-tool follow-up" section.
 
 ### 2. `quickstart` — ✅ Resolved May 12 2026
 
