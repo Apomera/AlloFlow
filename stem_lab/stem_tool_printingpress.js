@@ -73,15 +73,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       '}',
       // Pulse-glow ring used to highlight an active simulation during a
       // Guided Tour. Subtle gold halo that breathes once per ~1.6s.
+      // Combined with a warm "candle glow" layered shadow that doesn't pulse
+      // — gives the simulation a "lit from within" feel matching the
+      // 1450 print shop atmosphere (presses were worked by candle/lamplight).
       '@keyframes printingpress-pulse-glow {',
-      '  0%, 100% { box-shadow: 0 0 0 0 rgba(245,215,126,0.45), 0 0 12px rgba(201,161,74,0.3); }',
-      '  50%      { box-shadow: 0 0 0 6px rgba(245,215,126,0.15), 0 0 22px rgba(201,161,74,0.55); }',
+      '  0%, 100% { box-shadow: 0 0 0 0 rgba(245,215,126,0.45), 0 0 12px rgba(201,161,74,0.3), inset 0 0 40px rgba(245,180,80,0.08); }',
+      '  50%      { box-shadow: 0 0 0 6px rgba(245,215,126,0.15), 0 0 28px rgba(201,161,74,0.55), inset 0 0 50px rgba(245,180,80,0.14); }',
       '}',
       '.printingpress-tour-active {',
       '  animation: printingpress-pulse-glow 1.6s ease-in-out infinite;',
       '}',
+      // Candle flame flicker — subtle non-uniform scale + slight skew so
+      // the flame breathes naturally. Reduced-motion users get a static
+      // flame (no animation), still legible.
+      '@keyframes printingpress-candle-flicker {',
+      '  0%   { transform: scale(1, 1) skewX(0deg); opacity: 0.85; }',
+      '  30%  { transform: scale(1.05, 0.95) skewX(2deg); opacity: 0.95; }',
+      '  60%  { transform: scale(0.95, 1.05) skewX(-2deg); opacity: 0.8; }',
+      '  100% { transform: scale(1, 1) skewX(0deg); opacity: 0.85; }',
+      '}',
+      // Medallion entrance pulse — brief scale-up + glow when the value
+      // changes. Used on the speedup-factor seal when the slider updates.
+      '@keyframes printingpress-medallion-pop {',
+      '  0%   { transform: scale(1); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }',
+      '  30%  { transform: scale(1.06); filter: drop-shadow(0 4px 12px rgba(245,215,126,0.45)); }',
+      '  100% { transform: scale(1); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }',
+      '}',
+      '.printingpress-medallion {',
+      '  animation: printingpress-medallion-pop 0.5s ease-out;',
+      '}',
+      // Tile hover/focus glow — subtle accent ring on hover and a stronger
+      // keyboard-focus ring (gold) so keyboard navigation is unambiguous.
+      // Transitions in/out smoothly.
+      '.printingpress-tile {',
+      '  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;',
+      '}',
+      '.printingpress-tile:hover {',
+      '  transform: translateY(-2px);',
+      '  box-shadow: 0 6px 16px rgba(0,0,0,0.35), 0 0 0 1px rgba(245,215,126,0.35);',
+      '}',
+      '.printingpress-tile:focus-visible {',
+      '  outline: none;',
+      '  box-shadow: 0 0 0 3px rgba(245,215,126,0.55), 0 6px 16px rgba(0,0,0,0.4);',
+      '}',
       '@media (prefers-reduced-motion: reduce) {',
-      '  .printingpress-tile { animation: none !important; opacity: 1 !important; transform: none !important; }',
+      '  .printingpress-tile { animation: none !important; opacity: 1 !important; transform: none !important; transition: none !important; }',
+      '  .printingpress-tile:hover { transform: none !important; }',
       '  .printingpress-tour-active { animation: none !important; box-shadow: 0 0 0 4px rgba(245,215,126,0.25) !important; }',
       '}'
     ].join('\n');
@@ -259,16 +296,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       }
 
       function keyPointBlock(intro, points) {
+        // List bullets replaced with small gold fleurons via CSS markers.
+        // Each list item gets a custom marker (diamond) instead of the
+        // default disc, in the gold accent palette. Period-appropriate and
+        // visually ties keyPointBlock to the rest of the tool's ornamental
+        // language (fleurons on section headers, on the broadside borders,
+        // on the colophon).
         return h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 16, marginBottom: 14 } },
           intro && h('p', { style: { margin: '0 0 10px', color: T.text, lineHeight: 1.55, fontSize: 14 } }, intro),
-          h('ul', { style: { margin: 0, paddingLeft: 18, color: T.muted, fontSize: 13, lineHeight: 1.7 } },
+          h('ul', { style: { margin: 0, paddingLeft: 0, listStyle: 'none', color: T.muted, fontSize: 13, lineHeight: 1.7 } },
             points.map(function(p, i) {
-              return h('li', { key: i }, typeof p === 'string' ? p : (
-                h(React.Fragment, null,
-                  h('strong', { style: { color: T.text } }, p.k + ': '),
-                  p.v
+              return h('li', { key: i,
+                style: { position: 'relative', paddingLeft: 18, marginBottom: 4 } },
+                // Inline fleuron marker — small gold diamond as the bullet
+                h('span', { 'aria-hidden': 'true', style: {
+                  position: 'absolute', left: 4, top: '0.5em',
+                  width: 6, height: 6, transform: 'rotate(45deg)',
+                  background: T.accent, opacity: 0.75
+                } }),
+                typeof p === 'string' ? p : (
+                  h(React.Fragment, null,
+                    h('strong', { style: { color: T.text } }, p.k + ': '),
+                    p.v
+                  )
                 )
-              ));
+              );
             })
           )
         );
@@ -503,7 +555,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         people:          [{ id: 'beforeAfter', hook: 'See where each of these people fits on the timeline of print history.' },
                           { id: 'pressMechanism', hook: 'See the press these people built and ran.' }],
         broadside:       [{ id: 'setType', hook: 'Want to know how every word on a real broadside was set? Try it.' },
-                          { id: 'beforeAfter', hook: 'See real broadsides from history — Common Sense, ballads, notices.' }]
+                          { id: 'beforeAfter', hook: 'See real broadsides from history — Common Sense, ballads, notices.' }],
+        sameFears:       [{ id: 'beforeAfter', hook: 'See the real-world events the critics feared — Reformation, religious wars, scientific revolution.' },
+                          { id: 'economics', hook: 'The economics of mass print — the same cost-collapse argument we now have about AI.' }]
       };
       function crossLinkFooter(currentModId) {
         var links = CROSS_LINKS[currentModId];
@@ -603,19 +657,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           desc: 'Gutenberg, Fust the financier who sued him, Schöffer the apprentice who improved it, Aldus Manutius and pocket books, and the women printers history forgot.', ready: true },
         { id: 'broadside', icon: '📰', label: 'Build a Broadside', section: 'modules',
           desc: 'Compose a single-page printable: a poem, a manifesto, an announcement. Choose your type, set your layout, print as PDF.', ready: true },
+        { id: 'sameFears', icon: '🪶', label: 'The Same Fears', section: 'modules',
+          desc: 'Every new information technology arrives with the same warnings. The 1450 print critics and the 2026 internet/AI critics often share an argument. Some critics were right. Some were wrong. The grown-up question is: how do you tell which is which in your own time?', ready: true },
         { id: 'cumulative', icon: '🎯', label: 'Cumulative Quiz', section: 'practice',
-          desc: '12 questions across the modules. Missed answers link you back to the module you need to review.', ready: true },
+          desc: '13 questions across all 9 modules. Missed answers link you back to the module you need to review.', ready: true },
         { id: 'askPrinter', icon: '🤖', label: 'Ask the Printer (AI)', section: 'practice',
           desc: 'Ask any printing-press question; the AI returns a sourced answer. Educational only.', ready: true },
         { id: 'resources', icon: '📚', label: 'Resources', section: 'resources',
           desc: 'Every org cited in this tool, plus museum and primary-source links.', ready: true }
       ];
 
+      // Section accent colors. Each section gets a distinct hue so the menu
+      // reads as a 4-part curriculum at a glance. Hues are all warm/earthy
+      // (period palette) so nothing jars against the brass/wood/parchment
+      // vocabulary. The `stripe` field paints a 3px left-border accent on
+      // each section header. The `accent` field stays gold for headlines.
       var MENU_SECTIONS = [
-        { id: 'start',     label: 'Start here',       emoji: '⭐', blurb: 'The interactive tiles. Pull the press bar, set your own type. The demo gold.', accent: T.accent, emphasized: true },
-        { id: 'modules',   label: 'Modules',          emoji: '📖', blurb: 'The history, materials, economics, and people. Take in any order.', accent: T.accent },
-        { id: 'practice',  label: 'Practice and ask', emoji: '🎯', blurb: 'Test what you know, or ask the AI printer.', accent: T.accent },
-        { id: 'resources', label: 'Resources',        emoji: '📚', blurb: 'Museums, scholarship, and where to see a working press today.', accent: T.accent }
+        { id: 'start',     label: 'Start here',       emoji: '⭐', blurb: 'The interactive tiles. Pull the press bar, set your own type. The demo gold.', accent: T.accent, stripe: '#c44536', emphasized: true },
+        { id: 'modules',   label: 'Modules',          emoji: '📖', blurb: 'The history, materials, economics, and people. Take in any order.', accent: T.accent, stripe: '#c9a14a' },
+        { id: 'practice',  label: 'Practice and ask', emoji: '🎯', blurb: 'Test what you know, or ask the AI printer.', accent: T.accent, stripe: '#7fb069' },
+        { id: 'resources', label: 'Resources',        emoji: '📚', blurb: 'Museums, scholarship, and where to see a working press today.', accent: T.accent, stripe: '#b87333' }
       ];
 
       var MODULE_LABELS = {
@@ -626,12 +687,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         beforeAfter: 'Before & After',
         typographyToday: 'Typography Today',
         people: 'The People Behind the Press',
-        broadside: 'Build a Broadside'
+        broadside: 'Build a Broadside',
+        sameFears: 'The Same Fears'
       };
 
       function renderMenu() {
         var visitedCount = Object.keys(modulesVisited).length;
-        var totalModules = 8;
+        var totalModules = 9;
         // Tile counter for staggered entrance: each successive tile gets a
         // ~50ms incremental delay so they cascade in instead of all at once.
         // Reset per render so the cascade plays again if the user navigates
@@ -642,6 +704,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           var borderColor = visited ? T.ok : (emphasized ? T.accent : T.border);
           var myDelay = tileIdx * 50;
           tileIdx++;
+          // Per-section tint — find this tile's section and use a faint
+          // radial gradient in its stripe color at the corner of the tile.
+          // Subtle (~6% opacity) so tiles still read as a unified set, but
+          // each section's identity carries down to its individual cards.
+          var tileSection = MENU_SECTIONS.find(function(s) { return s.id === tile.section; });
+          var stripe = tileSection ? (tileSection.stripe || T.accent) : T.accent;
+          var stripeRgb = stripe === '#c44536' ? '196,69,54' :
+                          stripe === '#c9a14a' ? '201,161,74' :
+                          stripe === '#7fb069' ? '127,176,105' :
+                          stripe === '#b87333' ? '184,115,51' : '201,161,74';
+          var tintBg = 'radial-gradient(ellipse at 100% 0%, rgba(' + stripeRgb + ',0.10) 0%, transparent 50%), ' + (emphasized ? T.cardAlt : T.card);
           return h('button', { key: tile.id, role: 'listitem',
             className: 'printingpress-tile',
             'aria-label': tile.label + (visited ? ' (visited)' : '') + (emphasized ? ' — start here' : ''),
@@ -653,7 +726,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             style: btn({
               display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
               padding: 14, minHeight: 110,
-              background: emphasized ? T.cardAlt : T.card,
+              background: tintBg,
               borderColor: borderColor,
               borderWidth: emphasized ? 2 : 1,
               borderStyle: 'solid',
@@ -775,12 +848,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 border: sec.emphasized ? '1px solid ' + sec.accent : 'none'
               }
             },
-              h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: sec.blurb ? 4 : 8, flexWrap: 'wrap' } },
-                h('h3', { style: { margin: 0, fontSize: 15, color: sec.emphasized ? sec.accent : T.accentHi, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800, fontFamily: 'Georgia, serif' } },
-                  h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, sec.emoji),
-                  sec.label)
+              // Section header with per-section accent stripe on the left.
+              // Stripe color is distinct per section (red for Start Here,
+               // gold for Modules, green for Practice, copper for Resources).
+              // The stripe is 3px wide and runs the full height of the header
+              // block. Subtle but signals "different category" at a glance.
+              h('div', { style: { display: 'flex', gap: 10, marginBottom: sec.blurb ? 4 : 8 } },
+                h('div', { 'aria-hidden': 'true', style: { width: 3, alignSelf: 'stretch', background: sec.stripe || sec.accent, borderRadius: 2, flexShrink: 0 } }),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
+                    h('h3', { style: { margin: 0, fontSize: 15, color: sec.emphasized ? sec.accent : T.accentHi, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800, fontFamily: 'Georgia, serif' } },
+                      h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, sec.emoji),
+                      sec.label)
+                  ),
+                  sec.blurb && h('p', { style: { margin: '4px 0 10px', fontSize: 12, color: T.muted, lineHeight: 1.5 } }, sec.blurb)
+                )
               ),
-              sec.blurb && h('p', { style: { margin: '0 0 10px', fontSize: 12, color: T.muted, lineHeight: 1.5 } }, sec.blurb),
               h('div', { role: 'list',
                 style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
                 sectionTiles.map(function(tile) { return renderTile(tile, !!sec.emphasized); })
@@ -888,10 +971,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             announce('Step 5: Bar pulled, screw turning, platen down. Pressure applied to the type forme.');
           } else if (pressState === 'pressed') {
             setPressState('revealed');
-            setCount(count + 1);
-            if (count + 1 === 1) awardBadge('first_impression', 'First Impression');
-            if (count + 1 >= 5) awardBadge('journeyman', 'Journeyman Printer');
-            announce('Step 6: Impression complete. ' + (count + 1) + ' total. The paper bears the printed text.');
+            var nextCount = count + 1;
+            setCount(nextCount);
+            // Milestone celebrations at meaningful production thresholds.
+            // The 1st is "First Impression," 5 is "Journeyman" (the
+            // apprenticeship benchmark), 25 was a typical morning's
+            // output for a Gutenberg-era crew, 50 is half a day. Each
+            // hits a different badge so the student sees a progression
+            // that mirrors the actual print shop's career structure.
+            if (nextCount === 1) awardBadge('first_impression', 'First Impression');
+            if (nextCount === 5) awardBadge('journeyman', 'Journeyman Printer');
+            if (nextCount === 25) awardBadge('morning_crew', 'Morning Crew (25 impressions)');
+            if (nextCount === 50) awardBadge('half_day_run', 'Half-Day Run (50 impressions)');
+            if (nextCount === 100) awardBadge('master_printer_run', 'Master Printer (100 impressions)');
+            announce('Step 6: Impression complete. ' + nextCount + ' total. The paper bears the printed text.');
           } else if (pressState === 'revealed') {
             setPressState('clean');
             announce('Press reset. Ready for the next impression.');
@@ -974,7 +1067,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr', gap: 12, marginBottom: 18 } },
             h('div', {
                 className: tourActive ? 'printingpress-tour-active' : '',
-                style: { background: T.cardAlt, border: '2px solid ' + (tourActive ? T.accent : T.border), borderRadius: 12, padding: 12, textAlign: 'center', transition: 'border-color 0.3s ease' } },
+                style: {
+                  // Workshop-floor texture: faint flagstone pattern made
+                  // from layered radial gradients. Subtle ambient "the press
+                  // sits on a stone floor" feel without competing with the
+                  // simulation. ~6% opacity per stone, never dominant.
+                  background:
+                    'radial-gradient(ellipse at 18% 30%, rgba(180,140,80,0.06) 0%, transparent 12%), ' +
+                    'radial-gradient(ellipse at 72% 45%, rgba(180,140,80,0.05) 0%, transparent 14%), ' +
+                    'radial-gradient(ellipse at 40% 75%, rgba(180,140,80,0.06) 0%, transparent 11%), ' +
+                    'radial-gradient(ellipse at 86% 20%, rgba(180,140,80,0.04) 0%, transparent 10%), ' +
+                    'radial-gradient(ellipse at 10% 80%, rgba(180,140,80,0.05) 0%, transparent 13%), ' +
+                    T.cardAlt,
+                  border: '2px solid ' + (tourActive ? T.accent : T.border), borderRadius: 12, padding: 12, textAlign: 'center', transition: 'border-color 0.3s ease'
+                } },
               h('svg', {
                 width: '100%', viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: 520, display: 'block', margin: '0 auto', background: '#2a1f15', borderRadius: 8 },
                 role: 'img',
@@ -1027,6 +1133,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     h('rect', { x: 0, y: 8, width: 220, height: 0.4, fill: '#a87a3a', opacity: 0.4 }),
                     // A small knot
                     h('ellipse', { cx: 60, cy: 14, rx: 3, ry: 1.5, fill: '#3d2914', opacity: 0.4 })
+                  ),
+                  // Brass/iron screw-shaft gradient — horizontal so the
+                  // metal cylinder reads as 3D (dark edges, bright center
+                  // highlight). Mirrors how light catches a real polished
+                  // metal shaft. Color stops simulate iron with a brass
+                  // patina (period-accurate: screws were usually iron in
+                  // 1450, sometimes brass-tipped for cosmetic reasons).
+                  h('linearGradient', { id: 'pp-screw-metal', x1: 0, y1: 0, x2: 1, y2: 0 },
+                    h('stop', { offset: '0%',  stopColor: '#2a2a2a' }),
+                    h('stop', { offset: '20%', stopColor: '#5a5a5a' }),
+                    h('stop', { offset: '50%', stopColor: '#8a8a8a' }),
+                    h('stop', { offset: '80%', stopColor: '#5a5a5a' }),
+                    h('stop', { offset: '100%', stopColor: '#2a2a2a' })
+                  ),
+                  // Brass gradient for the nut (which historically was often
+                  // brass for both cosmetic and machinability reasons)
+                  h('radialGradient', { id: 'pp-nut-brass', cx: '35%', cy: '30%' },
+                    h('stop', { offset: '0%',  stopColor: '#fef3c7' }),
+                    h('stop', { offset: '40%', stopColor: '#c9a14a' }),
+                    h('stop', { offset: '100%', stopColor: '#7c4f1f' })
+                  ),
+                  // Polished-wood radial for the bar handle ball caps —
+                  // simulates a turned wooden knob with a highlight at the
+                  // upper-left (like a real spherical wooden ball under
+                  // workshop light). Reuses the wood palette so the bar
+                  // material reads consistently across all parts.
+                  h('radialGradient', { id: 'pp-handle-ball', cx: '30%', cy: '30%' },
+                    h('stop', { offset: '0%',  stopColor: '#8b5a2f' }),
+                    h('stop', { offset: '40%', stopColor: '#5a3a1f' }),
+                    h('stop', { offset: '100%', stopColor: '#2a1c0e' })
+                  ),
+                  // Pressed-paper grain filter — applied to the printed text
+                  // on the paper to simulate the irregular absorption of ink
+                  // into hand-pressed letterpress paper. Subtle: low-base
+                  // turbulence + displacement gives the type a slightly
+                  // rough edge instead of perfectly crisp digital lines.
+                  // The result is a "real impression" feel rather than a
+                  // computer-rendered letterform.
+                  h('filter', { id: 'pp-paper-grain', x: '-5%', y: '-10%', width: '110%', height: '120%' },
+                    h('feTurbulence', { type: 'fractalNoise', baseFrequency: '0.9', numOctaves: '1', seed: '3', result: 'noise' }),
+                    h('feDisplacementMap', { in: 'SourceGraphic', in2: 'noise', scale: '0.5' })
+                  ),
+                  // Candle-glow radial — warm halo around the flame
+                  h('radialGradient', { id: 'pp-candle-glow', cx: '50%', cy: '50%', r: '50%' },
+                    h('stop', { offset: '0%',  stopColor: '#fef3c7', stopOpacity: 0.6 }),
+                    h('stop', { offset: '50%', stopColor: '#fbbf24', stopOpacity: 0.2 }),
+                    h('stop', { offset: '100%', stopColor: '#fbbf24', stopOpacity: 0 })
                   )
                 ),
                 // ── Wooden frame ── (now using wood-grain patterns for richness)
@@ -1034,10 +1187,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 h('rect', { x: 395, y: 30, width: 25, height: 280, fill: 'url(#pp-woodgrain)', stroke: '#3d2914', strokeWidth: 2 }),
                 h('rect', { x: 60, y: 30, width: 360, height: 20, fill: 'url(#pp-woodgrain-horizontal)', stroke: '#3d2914', strokeWidth: 2 }),
                 h('rect', { x: 60, y: 295, width: 360, height: 15, fill: 'url(#pp-woodgrain-horizontal)', stroke: '#3d2914', strokeWidth: 2 }),
+                // Sawdust + ink-spatter on the floor in front of the press —
+                // tiny tan dots scattered along the bottom edge. Adds the
+                // lived-in workshop feel of a press that has been worked
+                // for years. Subtle enough not to distract.
+                h('g', { 'aria-hidden': 'true' },
+                  h('circle', { cx: 92, cy: 322, r: 0.8, fill: '#a87a3a', opacity: 0.6 }),
+                  h('circle', { cx: 108, cy: 326, r: 0.5, fill: '#8b5a2f', opacity: 0.55 }),
+                  h('circle', { cx: 125, cy: 324, r: 0.6, fill: '#a87a3a', opacity: 0.5 }),
+                  h('circle', { cx: 142, cy: 327, r: 0.4, fill: '#8b5a2f', opacity: 0.55 }),
+                  h('circle', { cx: 175, cy: 323, r: 0.7, fill: '#a87a3a', opacity: 0.55 }),
+                  h('circle', { cx: 210, cy: 326, r: 0.5, fill: '#8b5a2f', opacity: 0.6 }),
+                  h('circle', { cx: 248, cy: 324, r: 0.6, fill: '#a87a3a', opacity: 0.55 }),
+                  h('circle', { cx: 285, cy: 326, r: 0.5, fill: '#8b5a2f', opacity: 0.5 }),
+                  h('circle', { cx: 312, cy: 323, r: 0.8, fill: '#a87a3a', opacity: 0.6 }),
+                  h('circle', { cx: 348, cy: 327, r: 0.5, fill: '#8b5a2f', opacity: 0.55 }),
+                  h('circle', { cx: 378, cy: 324, r: 0.6, fill: '#a87a3a', opacity: 0.55 }),
+                  // A few ink flecks too
+                  h('circle', { cx: 130, cy: 328, r: 0.4, fill: T.ink, opacity: 0.4 }),
+                  h('circle', { cx: 290, cy: 328, r: 0.5, fill: T.ink, opacity: 0.45 })
+                ),
 
                 // ── Screw + nut ──
-                // Smooth height transition gives the descending screw shaft a real "lowering" feel
-                h('rect', { x: 220, y: 50, width: 40, height: screwY - 50, fill: '#4a4a4a', stroke: '#2a2a2a', strokeWidth: 1, style: { transition: 'height 0.7s ease-in-out' } }),
+                // Smooth height transition gives the descending screw shaft
+                // a real "lowering" feel. Horizontal metal gradient reads as
+                // a 3D cylinder rather than a flat rectangle.
+                h('rect', { x: 220, y: 50, width: 40, height: screwY - 50, fill: 'url(#pp-screw-metal)', stroke: '#2a2a2a', strokeWidth: 1, style: { transition: 'height 0.7s ease-in-out' } }),
                 // Screw threads (decorative)
                 (function() {
                   var threads = [];
@@ -1051,16 +1226,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   }
                   return h('g', null, threads);
                 })(),
-                // Screw "nut" (where the bar enters) — also smoothly transitions
-                h('circle', { cx: 240, cy: screwY, r: 26, fill: '#6a6a6a', stroke: '#2a2a2a', strokeWidth: 2, style: { transition: 'cy 0.7s ease-in-out' } }),
-                h('circle', { cx: 240, cy: screwY, r: 18, fill: '#4a4a4a', stroke: '#2a2a2a', strokeWidth: 1, style: { transition: 'cy 0.7s ease-in-out' } }),
+                // Screw "nut" (where the bar enters) — brass radial gradient
+                // gives the boss a polished, slightly raised appearance. The
+                // inner darker disk is the bar socket where the wooden lever
+                // inserts.
+                h('circle', { cx: 240, cy: screwY, r: 26, fill: 'url(#pp-nut-brass)', stroke: '#7c4f1f', strokeWidth: 2, style: { transition: 'cy 0.7s ease-in-out' } }),
+                h('circle', { cx: 240, cy: screwY, r: 18, fill: '#5a4036', stroke: '#3d2914', strokeWidth: 1, style: { transition: 'cy 0.7s ease-in-out' } }),
 
-                // ── The bar (handle to turn the screw) — animated rotation
+                // ── The bar (handle to turn the screw) — animated rotation.
+                // Ball caps use a polished-wood radial gradient so they
+                // read as turned wooden knobs (lit from upper-left) rather
+                // than flat black circles.
                 h('g', { transform: 'translate(240, ' + screwY + ') rotate(' + screwRot + ')',
                   style: { transition: 'transform 0.7s ease-in-out', transformOrigin: '240px ' + screwY + 'px' } },
                   h('rect', { x: -80, y: -6, width: 160, height: 12, rx: 6, fill: T.wood, stroke: '#3d2914', strokeWidth: 1.5 }),
-                  h('circle', { cx: -75, cy: 0, r: 9, fill: '#3d2914' }),  // handle ball
-                  h('circle', { cx: 75, cy: 0, r: 9, fill: '#3d2914' })
+                  h('circle', { cx: -75, cy: 0, r: 9, fill: 'url(#pp-handle-ball)', stroke: '#1a1410', strokeWidth: 0.8 }),
+                  h('circle', { cx: 75, cy: 0, r: 9, fill: 'url(#pp-handle-ball)', stroke: '#1a1410', strokeWidth: 0.8 })
                 ),
 
                 // ── Platen (heavy flat block that comes down) — smooth descent.
@@ -1090,10 +1271,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   // A small smear along the bottom edge
                   h('ellipse', { cx: 240, cy: 278, rx: 8, ry: 0.6, fill: T.ink, opacity: 0.35 })
                 ),
-                // Type forme on the bed
+                // Ink-mist puff at the moment of impression — visible when
+                // the platen is fully down. Three small ink puffs near the
+                // edges of the type forme, slightly above the bed, simulating
+                // the fine spray of ink dispersed by sudden pressure. Soft
+                // dark wisps fading outward.
+                pressState === 'pressed' && h('g', { 'aria-hidden': 'true' },
+                  h('ellipse', { cx: 150, cy: 245, rx: 8, ry: 3, fill: T.ink, opacity: 0.25 }),
+                  h('ellipse', { cx: 240, cy: 240, rx: 12, ry: 3.5, fill: T.ink, opacity: 0.2 }),
+                  h('ellipse', { cx: 330, cy: 245, rx: 8, ry: 3, fill: T.ink, opacity: 0.25 }),
+                  // Tiny dots radiating outward
+                  h('circle', { cx: 142, cy: 240, r: 0.8, fill: T.ink, opacity: 0.5 }),
+                  h('circle', { cx: 338, cy: 240, r: 0.8, fill: T.ink, opacity: 0.5 }),
+                  h('circle', { cx: 256, cy: 234, r: 0.6, fill: T.ink, opacity: 0.4 }),
+                  h('circle', { cx: 224, cy: 234, r: 0.6, fill: T.ink, opacity: 0.4 })
+                ),
+                // Dust + paper-fiber particles falling from the platen edges
+                // when the press has just released (revealed state). Subtle
+                // suggestion that the impression dislodged some material as
+                // the platen lifted. Small tan/cream specks at varied
+                // vertical positions, simulating motion-blurred descent.
+                pressState === 'revealed' && h('g', { 'aria-hidden': 'true' },
+                  h('circle', { cx: 145, cy: 215, r: 0.5, fill: '#e8d4b0', opacity: 0.6 }),
+                  h('circle', { cx: 142, cy: 222, r: 0.4, fill: '#a87a3a', opacity: 0.5 }),
+                  h('circle', { cx: 148, cy: 228, r: 0.5, fill: '#e8d4b0', opacity: 0.4 }),
+                  h('circle', { cx: 336, cy: 218, r: 0.5, fill: '#e8d4b0', opacity: 0.55 }),
+                  h('circle', { cx: 339, cy: 226, r: 0.4, fill: '#a87a3a', opacity: 0.5 }),
+                  h('circle', { cx: 332, cy: 233, r: 0.45, fill: '#e8d4b0', opacity: 0.4 }),
+                  h('circle', { cx: 215, cy: 210, r: 0.5, fill: '#e8d4b0', opacity: 0.45 }),
+                  h('circle', { cx: 268, cy: 213, r: 0.4, fill: '#a87a3a', opacity: 0.4 })
+                ),
+                // Type forme on the bed. Smooth fill transition gives the
+                // inking step (state: 'inking') a visible "filling up" feel
+                // as the ink balls dab the type. SVG `fill` doesn't animate
+                // natively in all browsers, so we use a CSS `transition`
+                // with `fill` listed — works in Chrome and Firefox, and
+                // gracefully no-ops elsewhere (still functional, just no
+                // animation). Brown→black transition is what a real type
+                // forme looks like as it goes from clean metal to inked.
                 h('rect', { x: 140, y: 252, width: 200, height: 22,
                   fill: typeFilled ? T.ink : '#8a7a5a',
-                  stroke: '#1a1410', strokeWidth: 1 }),
+                  stroke: '#1a1410', strokeWidth: 1,
+                  style: { transition: 'fill 0.8s ease-in-out' } }),
                 // User-customizable phrase rendered on the type forme
                 // (mirror-reversed via scaleX(-1) transform). Default is
                 // "FIAT LUX" (Genesis 1:3, "Let there be light") — historically
@@ -1110,11 +1329,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 }, safePhrase),
 
                 // ── Paper (when laid) ──
+                // Smooth y-transition gives the paper a "sliding into
+                // position" feel when the user advances from 'inked' →
+                // 'papered' (the journeyman laying paper on the tympan).
+                // Drop shadow underneath so the paper reads as a sheet
+                // sitting on the bed rather than a flat fill.
                 paperShown && h('rect', {
                   x: 138, y: paperPrinted ? 252 : 240,
                   width: 204, height: 26,
                   fill: T.parchment,
-                  stroke: '#8a7a5a', strokeWidth: 1
+                  stroke: '#8a7a5a', strokeWidth: 1,
+                  style: { transition: 'y 0.5s ease-out', filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,0.3))' }
                 }),
                 // Printed text on the paper — readable now (the type was
                 // mirrored, so the impression flips and reads correctly).
@@ -1137,7 +1362,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   textAnchor: 'middle',
                   fill: T.ink,
                   fontSize: safePhrase.length > 10 ? 11 : 14, fontWeight: 700, fontFamily: 'Georgia, "Times New Roman", serif',
-                  letterSpacing: '0.1em'
+                  letterSpacing: '0.1em',
+                  // Paper-grain filter softens the letter edges so the
+                  // printed phrase reads as hand-pressed, not digital crisp
+                  filter: 'url(#pp-paper-grain)'
                 }, safePhrase),
                 // Tiny ink dots scattered on the paper — real impressions
                 // pick up flecks of ink from the surrounding type bed.
@@ -1161,13 +1389,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   h('line', { x1: 385, y1: 290, x2: 392, y2: 245, stroke: T.wood, strokeWidth: 5, strokeLinecap: 'round' }),
                   h('circle', { cx: 392, cy: 245, r: 12, fill: '#3d2914', stroke: '#1a1410', strokeWidth: 1 })
                 ),
-                // ── Ink balls — active inking (dab and lift) ──
+                // ── Ink balls — active inking (dab and lift) + floating ink droplets ──
                 pressState === 'inking' && (function() {
                   // Two leather-and-wool ink balls dab in and out
                   var leftX = 150 + Math.sin(inkAnim * Math.PI * 4) * 8;
                   var rightX = 330 - Math.sin(inkAnim * Math.PI * 4) * 8;
                   var ballY = 248 + Math.abs(Math.sin(inkAnim * Math.PI * 8)) * 12;
+                  // Floating ink droplets — small dark dots that drift upward
+                  // and fade out during the inking animation. Positions are
+                  // deterministic from inkAnim so React doesn't rerender them
+                  // randomly on each frame. Each droplet has its own phase
+                  // offset so they don't all move in lockstep.
+                  var droplets = [];
+                  for (var di = 0; di < 6; di++) {
+                    var phase = (inkAnim + di * 0.17) % 1;
+                    var dx = 160 + di * 32 + Math.sin((inkAnim + di) * Math.PI * 2) * 4;
+                    var dy = 246 - phase * 22;  // rises ~22px over animation
+                    var opacity = (1 - phase) * 0.55;  // fades as it rises
+                    droplets.push(h('circle', {
+                      key: 'drop' + di,
+                      cx: dx, cy: dy, r: 0.9 + (di % 3) * 0.3,
+                      fill: T.ink, opacity: opacity
+                    }));
+                  }
                   return h('g', null,
+                    // Floating ink droplets behind ink balls
+                    h('g', { 'aria-hidden': 'true' }, droplets),
                     // Left ink ball
                     h('circle', { cx: leftX, cy: ballY, r: 14, fill: '#3d2914', stroke: '#1a1410', strokeWidth: 1 }),
                     h('line', { x1: leftX, y1: ballY, x2: leftX - 12, y2: ballY - 28, stroke: T.wood, strokeWidth: 5, strokeLinecap: 'round' }),
@@ -1208,6 +1455,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                         fill: T.accentHi, fontSize: 9, fontWeight: 700, fontFamily: 'Georgia, serif' }, L.name)
                     );
                   })
+                ),
+                // ── Workshop candle ──
+                // Small lit beeswax candle in the upper-right corner of the
+                // SVG, just outside the frame area. Atmospheric: a 1450
+                // print shop was lit by candles and oil lamps. Flame
+                // animation via CSS keyframe ensures the flame flickers
+                // subtly without re-rendering React state. Reduced-motion
+                // users see a static flame.
+                h('g', { 'aria-hidden': 'true', transform: 'translate(450, 130)' },
+                  // Brass candleholder dish
+                  h('ellipse', { cx: 0, cy: 24, rx: 14, ry: 3, fill: '#7c4f1f', stroke: '#3d2914', strokeWidth: 0.6 }),
+                  h('rect', { x: -5, y: 20, width: 10, height: 4, fill: '#a87a3a', stroke: '#5a3a1f', strokeWidth: 0.4, rx: 1 }),
+                  // Wax candle body
+                  h('rect', { x: -3, y: 4, width: 6, height: 16, fill: '#fef3c7', stroke: '#c9a14a', strokeWidth: 0.5, rx: 0.5 }),
+                  // Wick
+                  h('line', { x1: 0, y1: 4, x2: 0, y2: 1, stroke: '#1a1410', strokeWidth: 0.7 }),
+                  // Flame — outer (warm) + inner (hot)
+                  h('ellipse', { cx: 0, cy: -2, rx: 2.5, ry: 4.5, fill: '#fbbf24', opacity: 0.85,
+                    style: { animation: 'printingpress-candle-flicker 1.8s ease-in-out infinite', transformOrigin: '0 2px' } }),
+                  h('ellipse', { cx: 0, cy: -1, rx: 1.2, ry: 2.8, fill: '#fef3c7',
+                    style: { animation: 'printingpress-candle-flicker 1.4s ease-in-out infinite reverse', transformOrigin: '0 2px' } }),
+                  // Soft glow halo around the flame
+                  h('circle', { cx: 0, cy: -2, r: 12, fill: 'url(#pp-candle-glow)', opacity: 0.5 })
                 ),
                 // ── State label ──
                 h('text', { x: W / 2, y: 22, fill: T.accentHi, fontSize: 13, fontWeight: 700, textAnchor: 'middle', fontFamily: 'Georgia, serif' },
@@ -1459,14 +1729,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             'Click a sort below to pick it up, then click a slot to drop it. Click a filled slot to remove it.'),
 
           sectionHeader('🗃️', 'Type case (available sorts)'),
+          // Period note about real type case organization. In a 1450 shop
+          // every letter had a specific compartment — vowels and common
+          // consonants near the center for fast reach, rare letters at the
+          // edges. The standard layout was memorized through years of
+          // apprenticeship. We don't enforce position here (the simulation
+          // is about composing, not memorizing), but the note teaches the
+          // craft knowledge embedded in the physical case.
+          h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic', marginBottom: 10, padding: '8px 12px', background: T.cardAlt, borderRadius: 6, border: '1px dashed ' + T.border, lineHeight: 1.5 } },
+            h('strong', { style: { color: T.muted, fontStyle: 'normal' } }, 'In a real 1450 case: '),
+            'every letter had a fixed compartment. Vowels (a, e, i, o, u) and common consonants (n, r, s, t) sat near the center for fastest reach. Rare letters (q, x, z) lived at the edges. A skilled compositor knew the case by feel — picking sorts without looking.'),
           // Type case: layered horizontal-grain wood texture using CSS
           // gradients (no SVG needed since this is a div). Repeating linear
           // gradients give the wood a planked-and-grained feel; the inset
           // shadow at the top-left + bottom-right adds depth like a real
           // wooden box hollow filled with metal sorts.
+          // Type case wood-grain refined to match the press timber palette
+          // exactly. Layered gradients: vertical grain streaks at varied
+          // widths (mimicking the SVG `pp-woodgrain` pattern on the press
+          // frame) + a diagonal sheen for polished wood under workshop
+          // light. Inset shadows give the case the hollowed-out depth of
+          // a real wooden type tray.
           h('div', { style: {
               display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14, padding: 12,
-              background: 'repeating-linear-gradient(180deg, #3d2914 0px, #4a3018 1px, #3d2914 3px, #382414 5px, #3d2914 8px), linear-gradient(135deg, #4a3018 0%, #2a1c0e 100%)',
+              background:
+                // Horizontal compartment-divider rule near the middle — real
+                // type cases had a horizontal shelf line halfway down, which
+                // separated the "upper" case row from the "lower" case row.
+                // 90deg gradient places it visually about 60% down the box.
+                'linear-gradient(180deg, transparent 0%, transparent 55%, rgba(139,90,47,0.4) 55.5%, rgba(139,90,47,0.4) 56.5%, transparent 57%, transparent 100%), ' +
+                // Subtle highlight streak
+                'repeating-linear-gradient(180deg, transparent 0px, transparent 4px, rgba(139,90,47,0.18) 4px, rgba(139,90,47,0.18) 4.3px, transparent 4.3px, transparent 12px), ' +
+                // Primary vertical grain (multiple line widths for organic feel)
+                'repeating-linear-gradient(180deg, transparent 0px, transparent 6px, rgba(61,41,20,0.45) 6px, rgba(61,41,20,0.45) 6.8px, transparent 6.8px, transparent 14px), ' +
+                'repeating-linear-gradient(180deg, transparent 0px, transparent 9px, rgba(61,41,20,0.25) 9px, rgba(61,41,20,0.25) 9.4px, transparent 9.4px, transparent 18px), ' +
+                // Diagonal polished-wood sheen
+                'linear-gradient(135deg, #5a3a1f 0%, #3d2914 50%, #2a1c0e 100%)',
               border: '2px solid ' + T.wood, borderRadius: 8,
               boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5), inset 0 -2px 4px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3)'
             } },
@@ -1534,8 +1832,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 } }, '⇒'),
                 h('div', { style: { fontSize: 9, color: T.dim, fontStyle: 'italic', marginTop: 2 } }, 'press')
               ),
-              // RIGHT: paper (readable when printed)
-              h('div', null,
+              // RIGHT: paper (readable when printed). 3D flip animation —
+              // during the 'pressing' state, the paper container rotates on
+              // the X axis to suggest the impression being struck. The
+              // perspective container gives the flip apparent depth.
+              h('div', { style: { perspective: '600px' } },
                 h('div', { style: { fontSize: 10, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', marginBottom: 4, fontWeight: 700 } }, 'Paper (readable)'),
                 h('div', { style: {
                   background: pressState === 'printed' ? T.parchment : '#3a2a1a',
@@ -1546,8 +1847,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 22, letterSpacing: '0.1em',
                   textAlign: 'center',
                   opacity: pressState === 'pressing' ? 0.5 : 1,
-                  transition: 'all 0.5s ease-in-out',
-                  minHeight: 22
+                  // X-axis rotation during the press: paper flips edge-on
+                  // mid-press, then settles back to 0° when the impression
+                  // is complete. Pure CSS animation, no extra state needed.
+                  transform: pressState === 'pressing' ? 'rotateX(180deg)' : 'rotateX(0deg)',
+                  transformOrigin: 'center center',
+                  backfaceVisibility: 'hidden',
+                  transition: 'transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.5s ease, color 0.5s ease, border-color 0.5s ease',
+                  minHeight: 22,
+                  boxShadow: pressState === 'printed' ? '0 1px 3px rgba(0,0,0,0.3)' : 'none'
                 } },
                   pressState === 'printed' ? st.slots.join('').replace(/ƒ/g, 'fi').replace(/ /g, '   ') : (pressState === 'pressing' ? '…' : '(blank)'))
               )
@@ -1816,6 +2124,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     h('line', { x1: 130, y1: 28, x2: 122, y2: 36, stroke: T.dim, strokeWidth: 1, opacity: 0.5 }),
                     // Steel punch rod
                     h('rect', { x: 90, y: 42, width: 20, height: 38, fill: '#8a8a8a', stroke: '#2a2a2a', strokeWidth: 1 }),
+                    // Subtle age/wear spots on the punch — small darker
+                    // ovals scattered on the steel. A real working punch
+                    // was struck hundreds of times and showed surface wear,
+                    // pitting, and a slightly oxidized patina. These dots
+                    // sell the "this is well-used craft hardware."
+                    h('ellipse', { cx: 95, cy: 50, rx: 1.5, ry: 1, fill: '#4a4a4a', opacity: 0.6 }),
+                    h('ellipse', { cx: 105, cy: 56, rx: 1, ry: 0.6, fill: '#5a5a5a', opacity: 0.55 }),
+                    h('ellipse', { cx: 98, cy: 64, rx: 1.2, ry: 0.8, fill: '#4a4a4a', opacity: 0.6 }),
+                    h('ellipse', { cx: 103, cy: 73, rx: 1, ry: 0.7, fill: '#5a5a5a', opacity: 0.5 }),
                     // Letter "A" carved at the bottom (mirror-reversed, so it appears as backwards A)
                     h('text', { x: 100, y: 72, textAnchor: 'middle', fill: '#1a1410', fontSize: 14, fontWeight: 800, fontFamily: 'Georgia, serif', transform: 'translate(200 0) scale(-1 1)' }, 'A'),
                     // Caption
@@ -1826,11 +2143,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               { step: '2. Matrix', icon: '⬜', desc: 'The steel punch is hammered into a softer copper bar, leaving a clean letter-shaped impression. This copper bar is the "matrix." One matrix can be used to cast thousands of identical type sorts.',
                 svg: function() {
                   return h('svg', { width: '100%', height: 90, viewBox: '0 0 200 90', 'aria-hidden': 'true' },
-                    // Copper bar (matrix)
-                    h('rect', { x: 30, y: 40, width: 140, height: 40, fill: '#b87333', stroke: '#7c4f1f', strokeWidth: 1.5 }),
-                    h('rect', { x: 30, y: 40, width: 140, height: 4, fill: '#d4914f' }),  // top highlight
+                    // Copper sheen gradient — locally defined since defs
+                    // here are scoped to the inner step SVG. Vertical
+                    // gradient: dark-edge copper top, bright polished
+                    // center band, dark-edge copper bottom. Reads as a
+                    // polished metal bar lit from above.
+                    h('defs', null,
+                      h('linearGradient', { id: 'pp-matrix-copper', x1: 0, y1: 0, x2: 0, y2: 1 },
+                        h('stop', { offset: '0%',  stopColor: '#8a4f1f' }),
+                        h('stop', { offset: '25%', stopColor: '#d4914f' }),
+                        h('stop', { offset: '50%', stopColor: '#e8a460' }),
+                        h('stop', { offset: '75%', stopColor: '#b87333' }),
+                        h('stop', { offset: '100%', stopColor: '#5c2f0e' })
+                      )
+                    ),
+                    // Copper bar (matrix) — polished sheen
+                    h('rect', { x: 30, y: 40, width: 140, height: 40, fill: 'url(#pp-matrix-copper)', stroke: '#7c4f1f', strokeWidth: 1.5 }),
+                    // Bright thin highlight band along the upper edge
+                    h('rect', { x: 32, y: 42, width: 136, height: 1.5, fill: '#fef3c7', opacity: 0.6 }),
                     // Letter impression carved into the copper (recessed, dark)
-                    h('text', { x: 100, y: 70, textAnchor: 'middle', fill: '#5c2f0e', fontSize: 24, fontWeight: 800, fontFamily: 'Georgia, serif', transform: 'translate(200 0) scale(-1 1)' }, 'A'),
+                    h('text', { x: 100, y: 70, textAnchor: 'middle', fill: '#3a1808', fontSize: 24, fontWeight: 800, fontFamily: 'Georgia, serif', transform: 'translate(200 0) scale(-1 1)', style: { filter: 'drop-shadow(0 1px 0 rgba(254,243,199,0.4))' } }, 'A'),
                     // Punch above (small, lifted away after striking)
                     h('rect', { x: 92, y: 14, width: 16, height: 22, fill: '#8a8a8a', stroke: '#2a2a2a', strokeWidth: 0.8 }),
                     h('text', { x: 100, y: 32, textAnchor: 'middle', fill: '#1a1410', fontSize: 8, fontWeight: 800, fontFamily: 'Georgia, serif', transform: 'translate(200 0) scale(-1 1)' }, 'A'),
@@ -2095,9 +2427,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             // the editorial weight of the cost-collapse argument.
             h('div', { style: { marginTop: 14, padding: 14, background: 'rgba(201,161,74,0.08)', borderRadius: 10, border: '1px solid ' + T.accent, textAlign: 'center', position: 'relative' } },
               h('div', { style: { fontSize: 11, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10, fontWeight: 700, fontFamily: 'Georgia, serif' } }, 'Speedup factor'),
-              h('div', { style: { display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 10 } },
+              // Wrapper div carries the medallion-pop animation class. We
+              // also use a `key` derived from `speedup` so React re-mounts
+              // the element when the value changes, retriggering the animation.
+              // Without the key change, the className stays the same string
+              // and the keyframe wouldn't replay on slider movement.
+              h('div', { key: 'medallion-' + speedup,
+                className: 'printingpress-medallion',
+                style: { display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: 10 } },
                 h('svg', { width: 110, height: 110, viewBox: '0 0 110 110', 'aria-hidden': 'true',
-                  style: { display: 'block', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' } },
+                  style: { display: 'block' } },
                   // Outer dotted ring (notarial-stamp style)
                   h('circle', { cx: 55, cy: 55, r: 52, fill: 'none', stroke: T.accent, strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.7 }),
                   // Outer thick ring
@@ -2285,7 +2624,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           { year: 1776, title: 'Common Sense', who: 'Thomas Paine, Philadelphia',
             why: '~150,000 copies in a colonial population of ~2.5 million. Per capita, one of the best-selling political pamphlets in American history. The American Revolution was a print event as much as a military one.' },
           // ── Maine local-history pegs (King Middle / Portland audience) ──
+          // `local: true` flag tags these for distinct rendering on the
+          // timeline (slightly larger marker, evergreen color) so the
+          // Portland connection visually stands out from the global events.
           { year: 1785, title: 'Falmouth Gazette and Weekly Advertiser', who: 'Thomas Wait + Benjamin Titcomb, Falmouth (now Portland), MA',
+            local: true,
             why: 'The first newspaper in what would become Maine — published in Falmouth, the town that would be renamed Portland in 1786. Maine was still part of Massachusetts; the Falmouth Gazette helped build the political case for separate statehood, achieved 35 years later in 1820. King Middle stands less than two miles from where this press operated.',
             url: 'https://www.maine.gov/portal/government/state_history.html' },
           { year: 1827, title: 'Cherokee Phoenix (Cherokee syllabary in print)', who: 'Sequoyah + Elias Boudinot',
@@ -2294,6 +2637,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           { year: 1830, title: 'Steam-powered cylinder press', who: 'Friedrich Koenig (earlier 1814 with The Times of London)',
             why: 'By 1830 the steam press had taken over major newspapers. Production jumped from ~250 impressions per day (Gutenberg-era) to ~1,000 per HOUR. The penny press became economically viable and mass-market journalism began.' },
           { year: 1851, title: 'Uncle Tom\'s Cabin', who: 'Harriet Beecher Stowe, Brunswick, Maine',
+            local: true,
             why: 'Stowe wrote it in Brunswick, Maine, while her husband taught at Bowdoin College. Serialized in The National Era, then 300,000 copies in its first US year as a book — the most-printed novel of the 19th century. Lincoln allegedly told Stowe she was "the little woman who started this great war." A Maine kitchen produced one of the most consequential books in American history.',
             url: 'https://www.bowdoin.edu/sites/harriet-beecher-stowe-house/' }
         ];
@@ -2349,33 +2693,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 return h('div', { key: 'lab' + y,
                   style: { position: 'absolute', left: yearToPct(y) + '%', top: 44, fontSize: 10, color: T.dim, transform: 'translateX(-50%)', fontFamily: 'ui-monospace, monospace' } }, y);
               }),
-              // Event markers
+              // Event markers. Maine-local events get distinguished
+              // rendering: slightly larger (26px vs 22px), evergreen ring
+              // and a tiny "ME" label so the local connection reads as
+              // intentional rather than incidental.
               PRINT_EVENTS.map(function(ev, i) {
                 var isSelected = selectedEvent === i;
+                var isLocal = !!ev.local;
+                var size = isLocal ? 26 : 22;
+                var ringColor = isSelected ? T.danger : (isLocal ? T.ok : T.accent);
+                var fillColor = isSelected ? T.danger : (isLocal ? '#bbf7d0' : T.accentHi);
                 return h('button', { key: i,
                   className: 'printingpress-no-print',
                   onClick: function() { setSelectedEvent(isSelected ? null : i); announce(ev.year + ' ' + ev.title); },
-                  'aria-label': ev.year + ' · ' + ev.title + ' · click for details',
+                  'aria-label': ev.year + ' · ' + ev.title + (isLocal ? ' · Maine-local event' : '') + ' · click for details',
                   'aria-expanded': isSelected,
                   style: {
                     position: 'absolute',
                     left: yearToPct(ev.year) + '%',
-                    top: 22,
+                    top: isLocal ? 19 : 22,
                     transform: 'translateX(-50%)',
-                    width: 22, height: 22,
+                    width: size, height: size,
                     borderRadius: '50%',
-                    border: '2px solid ' + (isSelected ? T.danger : T.accent),
-                    background: isSelected ? T.danger : T.accentHi,
-                    color: T.ink,
+                    border: '2px solid ' + ringColor,
+                    background: fillColor,
+                    color: isLocal ? '#1f3d28' : T.ink,
                     cursor: 'pointer',
-                    fontSize: 11, fontWeight: 800,
+                    fontSize: isLocal ? 9 : 11, fontWeight: 800,
                     padding: 0,
-                    boxShadow: isSelected ? '0 0 0 4px rgba(196,69,54,0.35), 0 2px 6px rgba(0,0,0,0.4)' : '0 2px 4px rgba(0,0,0,0.4)',
+                    boxShadow: isSelected ? '0 0 0 4px rgba(196,69,54,0.35), 0 2px 6px rgba(0,0,0,0.4)' :
+                              (isLocal ? '0 0 0 2px rgba(127,176,105,0.25), 0 2px 5px rgba(0,0,0,0.45)' :
+                                         '0 2px 4px rgba(0,0,0,0.4)'),
                     transition: 'all 0.2s ease',
                     fontFamily: 'Georgia, serif',
-                    zIndex: isSelected ? 10 : 1
+                    zIndex: isSelected ? 10 : (isLocal ? 3 : 1)
                   }
-                }, '·');
+                }, isLocal ? 'ME' : '·');
               })
             ),
             // Detail card for selected event — parchment-styled with corner
@@ -2887,9 +3240,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                       h('circle', { cx: 3.5, cy: 0, r: 0.6, fill: T.accent })
                     )
                   ),
-                  // The silhouette itself, positioned inside the oval
+                  // The silhouette itself, positioned inside the oval.
+                  // Wrapped in a container that overlays a faint diagonal
+                  // cross-hatch pattern via repeating-linear-gradients —
+                  // mimics the appearance of a Renaissance wood engraving
+                  // (light cross-hatching for shading). The overlay sits
+                  // on top of the silhouette and gives the portrait an
+                  // "engraved on the page" period quality without obscuring
+                  // any facial detail. pointer-events: none so it stays
+                  // decorative-only.
                   h('div', { style: { position: 'relative', textAlign: 'center', paddingTop: 6 } },
-                    silhouette ? silhouette() : null
+                    silhouette ? silhouette() : null,
+                    h('div', { 'aria-hidden': 'true', style: {
+                      position: 'absolute', top: 6, left: 0, right: 0, bottom: 0,
+                      background: 'repeating-linear-gradient(45deg, transparent 0px, transparent 3px, rgba(26,20,16,0.07) 3px, rgba(26,20,16,0.07) 3.5px), repeating-linear-gradient(135deg, transparent 0px, transparent 4px, rgba(26,20,16,0.05) 4px, rgba(26,20,16,0.05) 4.5px)',
+                      pointerEvents: 'none',
+                      mixBlendMode: 'multiply',
+                      borderRadius: '50%'
+                    } })
                   )
                 ),
                 // Bio on the right
@@ -3044,6 +3412,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               fleurons
             );
           }
+          if (style === 'floral') {
+            // Floral: scrolling vine pattern with small leaf clusters along
+            // all four edges. Period-popular ornament — many 16th-17th
+            // century broadsides used vegetal corner blocks. Vines built
+            // from chained bezier curves; leaves are small ellipses.
+            var vines = [];
+            // Top edge vine (left to right)
+            for (var v = 0; v < 8; v++) {
+              var vx = 40 + v * 42;
+              vines.push(h('path', { key: 'tv' + v, d: 'M ' + vx + ' 22 Q ' + (vx + 10) + ' 14 ' + (vx + 21) + ' 22 Q ' + (vx + 31) + ' 30 ' + (vx + 42) + ' 22', stroke: T.ink, strokeWidth: 1, fill: 'none' }));
+              vines.push(h('ellipse', { key: 'tl' + v, cx: vx + 10, cy: 15, rx: 3, ry: 1.5, fill: T.ink, transform: 'rotate(-30 ' + (vx + 10) + ' 15)' }));
+              vines.push(h('ellipse', { key: 'tl2' + v, cx: vx + 31, cy: 29, rx: 3, ry: 1.5, fill: T.ink, transform: 'rotate(30 ' + (vx + 31) + ' 29)' }));
+            }
+            // Bottom edge vine
+            for (var b = 0; b < 8; b++) {
+              var bx = 40 + b * 42;
+              vines.push(h('path', { key: 'bv' + b, d: 'M ' + bx + ' 578 Q ' + (bx + 10) + ' 586 ' + (bx + 21) + ' 578 Q ' + (bx + 31) + ' 570 ' + (bx + 42) + ' 578', stroke: T.ink, strokeWidth: 1, fill: 'none' }));
+              vines.push(h('ellipse', { key: 'bl' + b, cx: bx + 10, cy: 585, rx: 3, ry: 1.5, fill: T.ink, transform: 'rotate(30 ' + (bx + 10) + ' 585)' }));
+              vines.push(h('ellipse', { key: 'bl2' + b, cx: bx + 31, cy: 571, rx: 3, ry: 1.5, fill: T.ink, transform: 'rotate(-30 ' + (bx + 31) + ' 571)' }));
+            }
+            // Side vines (vertical)
+            for (var s = 0; s < 12; s++) {
+              var sy = 50 + s * 42;
+              vines.push(h('path', { key: 'lv' + s, d: 'M 22 ' + sy + ' Q 14 ' + (sy + 10) + ' 22 ' + (sy + 21) + ' Q 30 ' + (sy + 31) + ' 22 ' + (sy + 42), stroke: T.ink, strokeWidth: 1, fill: 'none' }));
+              vines.push(h('ellipse', { key: 'lll' + s, cx: 15, cy: sy + 10, rx: 1.5, ry: 3, fill: T.ink, transform: 'rotate(-30 15 ' + (sy + 10) + ')' }));
+              vines.push(h('path', { key: 'rv' + s, d: 'M 378 ' + sy + ' Q 386 ' + (sy + 10) + ' 378 ' + (sy + 21) + ' Q 370 ' + (sy + 31) + ' 378 ' + (sy + 42), stroke: T.ink, strokeWidth: 1, fill: 'none' }));
+              vines.push(h('ellipse', { key: 'rll' + s, cx: 385, cy: sy + 10, rx: 1.5, ry: 3, fill: T.ink, transform: 'rotate(30 385 ' + (sy + 10) + ')' }));
+            }
+            return h('svg', { 'aria-hidden': 'true', style: Object.assign({}, common, { display: 'block' }), viewBox: '0 0 400 600', preserveAspectRatio: 'none' },
+              h('rect', { x: 36, y: 36, width: 328, height: 528, fill: 'none', stroke: T.ink, strokeWidth: 0.8 }),
+              vines
+            );
+          }
+          if (style === 'script') {
+            // Scripted: thick-thin scribal flourish with corner curlicues.
+            // Mimics the ornate calligraphic borders used on title pages
+            // and decrees from the 16th-17th centuries. Built from cubic
+            // beziers and tear-drop terminals.
+            return h('svg', { 'aria-hidden': 'true', style: Object.assign({}, common, { display: 'block' }), viewBox: '0 0 400 600', preserveAspectRatio: 'none' },
+              // Outer thick rule
+              h('rect', { x: 10, y: 10, width: 380, height: 580, fill: 'none', stroke: T.ink, strokeWidth: 2.5 }),
+              // Inner hairline
+              h('rect', { x: 18, y: 18, width: 364, height: 564, fill: 'none', stroke: T.ink, strokeWidth: 0.5 }),
+              // Corner curlicues — calligraphic spirals
+              [[28, 28, 1, 1], [372, 28, -1, 1], [28, 572, 1, -1], [372, 572, -1, -1]].map(function(c, i) {
+                var x = c[0], y = c[1], sx = c[2], sy = c[3];
+                return h('g', { key: i, transform: 'translate(' + x + ',' + y + ') scale(' + sx + ',' + sy + ')' },
+                  // Outer flourish curl
+                  h('path', { d: 'M 0 0 Q 20 -6 26 8 Q 30 18 16 22 Q 6 24 4 14 Q 4 10 10 10 Q 14 12 12 16', fill: 'none', stroke: T.ink, strokeWidth: 1.4, strokeLinecap: 'round' }),
+                  // Tear-drop terminal
+                  h('ellipse', { cx: 12, cy: 16, rx: 1.5, ry: 1, fill: T.ink, transform: 'rotate(45 12 16)' }),
+                  // Small accent dot
+                  h('circle', { cx: 24, cy: 4, r: 1.2, fill: T.ink })
+                );
+              }),
+              // Midpoint top/bottom flourishes
+              h('path', { d: 'M 180 14 Q 200 4 220 14', fill: 'none', stroke: T.ink, strokeWidth: 1.2, strokeLinecap: 'round' }),
+              h('circle', { cx: 200, cy: 8, r: 1.3, fill: T.ink }),
+              h('path', { d: 'M 180 586 Q 200 596 220 586', fill: 'none', stroke: T.ink, strokeWidth: 1.2, strokeLinecap: 'round' }),
+              h('circle', { cx: 200, cy: 592, r: 1.3, fill: T.ink }),
+              // Midpoint side flourishes
+              h('path', { d: 'M 14 280 Q 4 300 14 320', fill: 'none', stroke: T.ink, strokeWidth: 1.2, strokeLinecap: 'round' }),
+              h('path', { d: 'M 386 280 Q 396 300 386 320', fill: 'none', stroke: T.ink, strokeWidth: 1.2, strokeLinecap: 'round' })
+            );
+          }
           return null;
         }
 
@@ -3051,7 +3484,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           { id: 'none', label: 'None' },
           { id: 'simple', label: 'Double rule' },
           { id: 'classical', label: 'Classical (corner fleurons)' },
-          { id: 'ornate', label: 'Ornate (full fleuron chain)' }
+          { id: 'ornate', label: 'Ornate (full fleuron chain)' },
+          { id: 'floral', label: 'Floral vine' },
+          { id: 'script', label: 'Scribal flourish' }
         ];
 
         return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
@@ -3059,7 +3494,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           dropCapPara('A "broadside" was a single-sheet print, often political, advertising, or poetic. Compose your own. Pick a template, customize the text, choose a font, and print it. (Yes, the 🖨️ Print button at the top really prints.)'),
 
           // ── Editor ──
-          h('div', { className: 'printingpress-no-print', style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 16, marginBottom: 14 } },
+          // Composer controls use a darker variant of the parchment palette
+          // so the editor visually echoes the preview below. Faint radial
+          // foxing in the corners (same treatment as the preview, dimmer).
+          // The brass border ties the composer to the broader brass/wood
+          // material vocabulary of the rest of the tool.
+          h('div', { className: 'printingpress-no-print', style: {
+              background: 'radial-gradient(ellipse at 8% 12%, rgba(201,161,74,0.06) 0%, transparent 35%), radial-gradient(ellipse at 92% 88%, rgba(201,161,74,0.06) 0%, transparent 35%), ' + T.card,
+              border: '1px solid ' + T.accent,
+              borderRadius: 12, padding: 16, marginBottom: 14,
+              boxShadow: 'inset 0 0 18px rgba(201,161,74,0.05)'
+            } },
             sectionHeader('📝', 'Composer'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 } },
               TEMPLATES.map(function(tpl, i) {
@@ -3118,26 +3563,109 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           // SVG-based grain pattern at very low opacity. This is pure CSS so
           // it prints cleanly via the @media print rule (no big background
           // images to worry about).
+          // Broadside preview wrapped in a div that provides a page-curl
+          // shadow underneath. The inner div is the actual sheet; the outer
+          // div casts a layered shadow that simulates the paper being slightly
+          // curled at the corners — a real printed sheet doesn't sit flat on
+          // a desk. Drop-shadow stack: subtle ground shadow + sharper top-edge
+          // shadow for the "lifted" feel.
+          h('div', { style: {
+              position: 'relative',
+              marginBottom: 4,
+              filter: 'drop-shadow(0 12px 18px rgba(0,0,0,0.4)) drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+            } },
           h('div', { style: {
               position: 'relative',
               background: 'radial-gradient(ellipse at 8% 12%, rgba(180,140,80,0.18) 0%, transparent 30%), radial-gradient(ellipse at 92% 88%, rgba(180,140,80,0.18) 0%, transparent 30%), radial-gradient(ellipse at 92% 12%, rgba(180,140,80,0.10) 0%, transparent 25%), radial-gradient(ellipse at 8% 88%, rgba(180,140,80,0.10) 0%, transparent 25%), ' + T.parchment,
               color: T.ink, padding: 36, border: '2px solid ' + T.border, borderRadius: 6, minHeight: 480, fontFamily: font, overflow: 'hidden',
-              boxShadow: 'inset 0 0 30px rgba(120,90,40,0.08)'
+              boxShadow: 'inset 0 0 30px rgba(120,90,40,0.08)',
+              // Page-curl: clip-path with subtle corner bends for a hint of
+              // physical paper. Modest values so the broadside still reads
+              // as a rectangular page, just with slight imperfection.
+              clipPath: 'polygon(0% 1%, 1% 0%, 99% 0%, 100% 1%, 100% 99%, 99% 100%, 1% 100%, 0% 99%)'
             } },
             // Border decoration overlay (behind text)
             renderBorder(borderStyle),
-            // Content (positioned above border via z-index inheritance)
+            // Faint vertical fold-mark down the center of the broadside —
+            // real broadsides were often folded into halves or quarters for
+            // distribution by hand or by post. The subtle crease (gradient
+            // shadow + thin highlight on either side) suggests the sheet
+            // was once folded and reopened.
+            h('div', { 'aria-hidden': 'true', style: {
+              position: 'absolute',
+              top: 0, bottom: 0,
+              left: '50%',
+              width: 3,
+              transform: 'translateX(-50%)',
+              background: 'linear-gradient(90deg, rgba(180,140,80,0.15) 0%, rgba(120,90,40,0.18) 50%, rgba(180,140,80,0.15) 100%)',
+              pointerEvents: 'none',
+              opacity: 0.7
+            } }),
+            // Content (positioned above border via z-index inheritance).
+            // Title rendered with an illuminated drop-cap on the first
+            // letter — the medieval-into-Renaissance convention for
+            // formal printed pieces. The first character gets a small
+            // ornamented "block" (gold-bordered, slightly darker ground)
+            // sized proportionally to titleSize. Falls back to a normal
+            // title when there's no titleLine (placeholder text).
             h('div', { style: { position: 'relative', zIndex: 1 } },
-              h('div', { style: { fontSize: titleSize, fontWeight: 800, textAlign: 'center', marginBottom: 16, lineHeight: 1.1, borderBottom: '3px double ' + T.ink, paddingBottom: 12, fontFamily: font } },
-                titleLine || '(your title)'),
+              h('div', { style: { fontSize: titleSize, fontWeight: 800, textAlign: 'center', marginBottom: 16, lineHeight: 1.1, borderBottom: '3px double ' + T.ink, paddingBottom: 12, fontFamily: font, position: 'relative' } },
+                // Illuminated first letter when there's a real title (>= 2 chars)
+                titleLine && titleLine.length >= 2 ? h(React.Fragment, null,
+                  h('span', { style: {
+                    display: 'inline-block',
+                    fontSize: Math.round(titleSize * 1.15),
+                    background: 'linear-gradient(180deg, #d4914f 0%, #7c4f1f 100%)',
+                    color: '#fef3c7',
+                    padding: '2px 10px 0',
+                    border: '2px solid #7c4f1f',
+                    borderRadius: 3,
+                    marginRight: 6,
+                    textShadow: '1px 1px 0 rgba(0,0,0,0.25)',
+                    fontFamily: font,
+                    verticalAlign: 'baseline',
+                    lineHeight: 1
+                  } }, titleLine.charAt(0)),
+                  titleLine.slice(1)
+                ) : (titleLine || '(your title)')),
               bodyLines.map(function(line, i) {
                 return h('div', { key: i, style: { fontSize: Math.max(14, titleSize / 3), lineHeight: 1.5, textAlign: 'center', marginBottom: 6, fontFamily: font } },
                   line || h('span', { style: { color: 'transparent' } }, '·'));
               }),
-              h('div', { style: { marginTop: 24, fontSize: 10, textAlign: 'center', color: '#5c4630', fontStyle: 'italic', borderTop: '1px solid ' + T.border, paddingTop: 8 } },
-                'Composed in PrintingPress · ' + new Date().toLocaleDateString())
+              // Footer with stationer's mark + composition stamp. Echoes the
+              // period convention of printers ending a broadside with their
+              // colophon. Tiny dolphin-and-anchor mark to the left (Aldine
+              // tribute reused from the disclaimer), composition date to the
+              // right, separated by a thin rule.
+              h('div', { style: { marginTop: 24, paddingTop: 8, borderTop: '1px solid ' + T.border, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 } },
+                // Tiny dolphin-and-anchor — same mark as the disclaimer
+                h('svg', { width: 18, height: 22, viewBox: '0 0 38 46', 'aria-hidden': 'true',
+                  style: { display: 'block', opacity: 0.6 } },
+                  h('line', { x1: 19, y1: 6, x2: 19, y2: 38, stroke: '#7c2d12', strokeWidth: 2, strokeLinecap: 'round' }),
+                  h('line', { x1: 11, y1: 12, x2: 27, y2: 12, stroke: '#7c2d12', strokeWidth: 1.5, strokeLinecap: 'round' }),
+                  h('circle', { cx: 19, cy: 5, r: 2.5, fill: 'none', stroke: '#7c2d12', strokeWidth: 1.2 }),
+                  h('path', { d: 'M 19 38 Q 8 38 7 30 Q 9 34 13 35', fill: 'none', stroke: '#7c2d12', strokeWidth: 1.5, strokeLinecap: 'round' }),
+                  h('path', { d: 'M 19 38 Q 30 38 31 30 Q 29 34 25 35', fill: 'none', stroke: '#7c2d12', strokeWidth: 1.5, strokeLinecap: 'round' }),
+                  h('path', { d: 'M 11 18 Q 6 22 11 28 Q 19 31 26 26 Q 31 22 26 17 Q 21 14 19 18',
+                    fill: 'none', stroke: '#7c2d12', strokeWidth: 1.4, strokeLinecap: 'round' }),
+                  h('circle', { cx: 13, cy: 20, r: 0.8, fill: '#7c2d12' })
+                ),
+                h('div', { style: { fontSize: 10, color: '#5c4630', fontStyle: 'italic', fontFamily: 'Georgia, serif' } },
+                  'Composed in PrintingPress · ', new Date().toLocaleDateString()),
+                // Hand-drawn printer's signature — period convention. Most
+                // 16th-17th century broadsides ended with the printer's name
+                // in script as a sort of seal. We render a stylized SVG
+                // signature flourish (looks like a quick scribed signature)
+                // so the broadside reads as "signed by the printer."
+                h('svg', { width: 60, height: 18, viewBox: '0 0 60 18', 'aria-hidden': 'true',
+                  style: { opacity: 0.6 } },
+                  h('path', { d: 'M 2 12 Q 8 4 14 10 Q 18 14 22 8 Q 26 4 30 10 Q 34 16 38 8 Q 44 4 50 12 Q 54 16 58 14',
+                    stroke: '#7c2d12', strokeWidth: 1.2, fill: 'none', strokeLinecap: 'round' }),
+                  h('circle', { cx: 58, cy: 14, r: 1.2, fill: '#7c2d12' })
+                )
+              )
             )
-          ),
+          )),  // close inner sheet div, then outer drop-shadow wrapper
 
           sectionHeader('💡', 'About broadsides'),
           keyPointBlock(
@@ -3169,7 +3697,174 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       }
 
       // ═════════════════════════════════════════════════════════════════════
-      // CUMULATIVE QUIZ — 12 questions across all 8 modules
+      // MODULE 9 — THE SAME FEARS
+      // Print's moral panic and its parallels to the internet/AI moment.
+      // The "tech panic" framing is sometimes dismissed and sometimes
+      // valid. This module is honest about both. Print critics in 1450
+      // raised concerns about memory atrophy, dangerous ideas spreading
+      // faster than they could be contained, job displacement, anonymous
+      // authorship, information overload, and class destabilization.
+      // Every one of those concerns is alive today, applied to internet,
+      // social media, and AI. Some critics were right. Some were wrong.
+      // The module teaches students to reason about both.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderSameFears() {
+        // PARALLEL_GRID: each row is a 1450 concern + its 2026 echo.
+        // Color column is for visual variety on the comparison table.
+        var PARALLEL_GRID = [
+          { fear1450: 'Will atrophy memory.', voice1450: 'Echoing Plato on writing — now applied to easy book access.',
+            fear2026: 'Smartphones rot attention spans.', voice2026: 'Common parent + clinician argument 2010-present.' },
+          { fear1450: 'Spreads heretical / dangerous ideas faster than authorities can respond.', voice1450: 'Catholic Church — Index Librorum Prohibitorum (1559) listed forbidden books.',
+            fear2026: 'Social media spreads extremism / misinformation faster than moderation.', voice2026: 'Surgeon General + regulators 2020-present.' },
+          { fear1450: 'Cheap mass production destroys quality.', voice1450: 'Manuscript-tradition scholars worried printed books would be sloppy, error-ridden.',
+            fear2026: 'AI generates content with no quality control.', voice2026: 'Journalists, scholars, fact-checkers, 2023-present.' },
+          { fear1450: 'Scribes and copyists lose their work.', voice1450: 'Guild scribes in Florence, Paris, Cologne 1470-1500.',
+            fear2026: 'AI takes coding, writing, art, translation jobs.', voice2026: 'Labor economists + working professionals 2023-present.' },
+          { fear1450: 'Too many books to read — information overload.', voice1450: 'Erasmus + Conrad Gessner explicitly used the phrase (1545).',
+            fear2026: 'Information overload, doom-scrolling fatigue.', voice2026: 'Attention researchers + every tired adult 2010-present.' },
+          { fear1450: 'Anonymous printers — no accountability for what is printed.', voice1450: 'Henri Estienne and others called for printer\'s marks (colophons).',
+            fear2026: 'Anonymous social media accounts spread harm without consequence.', voice2026: 'Platform policy debates 2015-present.' },
+          { fear1450: 'Subversive pamphlets cause political instability.', voice1450: 'Most European monarchs — censorship laws across Europe 1480-1700.',
+            fear2026: 'Online radicalization, foreign election interference.', voice2026: 'Election security researchers 2016-present.' },
+          { fear1450: 'Common people read dangerous ideas they cannot interpret.', voice1450: 'Clergy of most denominations — vernacular Bible reading was contested for centuries.',
+            fear2026: 'People share AI-generated misinformation they cannot evaluate.', voice2026: 'Media literacy advocates 2020-present.' }
+        ];
+        // QUESTIONS — designed for Crew-style discussion, not single-right-answer.
+        var DISCUSSION = [
+          { q: 'What does it mean that we keep having the same argument every 500 years?',
+            hint: 'Possible angles: human nature does not change; new tech always disrupts existing institutions; the arguments are templates we reach for whenever something powerful arrives.' },
+          { q: 'Print took ~150 years to settle into stable institutions (editorial standards, copyright, libraries, peer review). How long do internet and AI need?',
+            hint: 'No clean answer. Worth noticing: the internet is ~30 years old, social media is ~20, generative AI is ~3. We are early in a 150-year settling.' },
+          { q: 'Is there a difference between "real moral concern" and "moral panic"? How do you tell them apart in your own time?',
+            hint: 'Real concerns usually: cite specific harms with evidence, propose specific interventions, distinguish populations affected. Moral panics usually: invoke vague civilizational decline, target whole technologies rather than uses, assume the worst about new generations.' },
+          { q: 'Some 1450 critics were right (print DID cause religious violence; print DID enable mass propaganda). Some were wrong (memory did not collapse; the social order did not end). What does this teach us about evaluating today\'s critics?',
+            hint: 'Probably right: some workers WILL be displaced; some institutions WILL be disrupted. Probably wrong: humanity will not lose the ability to think. The hard work is sorting which is which.' },
+          { q: 'Print eventually expanded human capability massively. Are there technologies where the fears WERE right and society should have moved differently?',
+            hint: 'Open question worth real discussion. Some candidates students might raise: leaded gasoline, asbestos, certain social-media features. The honest answer is that "should have" requires hindsight that critics did not have.' }
+        ];
+        return h('div', { style: { padding: 20, maxWidth: 860, margin: '0 auto', color: T.text } },
+          backBar('🪶 The Same Fears'),
+          dropCapPara('Every new information technology arrives with the same warnings. It will rot our brains. It will spread dangerous ideas. It will take our jobs. It will destabilize society. The printing press got these warnings in 1450. The internet got them in 1995. AI is getting them now. Some critics were right. Some were wrong. The grown-up question is not whether the critics had a point, but which points are which.'),
+
+          sectionHeader('📚', 'How print supported the transfer of knowledge and ideas'),
+          keyPointBlock(
+            'Before getting to the fears, what was print actually doing? It changed knowledge transfer in four big ways:',
+            [
+              { k: 'Standardization', v: 'A printed astronomical table or anatomical diagram was identical in 500 copies. For the first time, scholars in different cities could refer to "Figure 7" and know they meant the same thing. The peer-review tradition descends from this.' },
+              { k: 'Speed', v: 'Luther\'s 95 Theses spread across Europe in weeks. Wycliffe had made similar arguments 130 years earlier in manuscript culture, and his movement was locally suppressed before reaching mass audiences. Print broke the suppression timeline.' },
+              { k: 'Permanence', v: 'A manuscript copy could disappear. A 500-copy print run was harder to erase. The Cherokee Phoenix (1828) survives because of print; many oral cultures lost similar repositories. Print is a kind of memory insurance.' },
+              { k: 'Networks', v: 'Coffeehouses became reading rooms. Scientific journals (Philosophical Transactions, 1665) created cross-city research networks. The "Republic of Letters" was a print-enabled invention. The modern internet is structurally similar — different medium, same idea of distributed scholarship.' }
+            ]
+          ),
+
+          sectionHeader('⚠️', 'What critics feared in 1450'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('p', { style: { margin: '0 0 12px', fontSize: 13, color: T.muted, lineHeight: 1.55 } },
+              'These are not invented or exaggerated. Each was a genuine, documented concern voiced by someone in the 1450-1600 period. The voice attribution names the actual source where the concern was raised.'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+              PARALLEL_GRID.map(function(row, i) {
+                return h('div', { key: i, style: { background: T.cardAlt, borderRadius: 8, padding: 12, border: '1px solid ' + T.border } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, '1450 fear'),
+                  h('div', { style: { fontSize: 13, color: T.text, lineHeight: 1.5, marginBottom: 4, fontWeight: 600 } }, '"' + row.fear1450 + '"'),
+                  h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.45 } }, row.voice1450)
+                );
+              })
+            )
+          ),
+
+          sectionHeader('🔄', '1450 then, 2026 now — the same arguments side by side'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('p', { style: { margin: '0 0 12px', fontSize: 13, color: T.muted, lineHeight: 1.55 } },
+              'Map the 1450 concern to its 2026 echo. The technology changed; the argument template did not. Read each row across, then ask yourself: same fear, or different?'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              PARALLEL_GRID.map(function(row, i) {
+                return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 10, alignItems: 'stretch' } },
+                  // 1450 side
+                  h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '3px solid ' + T.warn, borderRadius: 6, padding: 10 } },
+                    h('div', { style: { fontSize: 10, fontWeight: 700, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, '1450'),
+                    h('div', { style: { fontSize: 12, color: T.text, lineHeight: 1.45 } }, row.fear1450)
+                  ),
+                  // Arrow
+                  h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', color: T.accent, fontSize: 18, fontFamily: 'Georgia, serif' } }, '⇌'),
+                  // 2026 side
+                  h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '3px solid #60a5fa', borderRadius: 6, padding: 10 } },
+                    h('div', { style: { fontSize: 10, fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, '2026'),
+                    h('div', { style: { fontSize: 12, color: T.text, lineHeight: 1.45 } }, row.fear2026)
+                  )
+                );
+              })
+            )
+          ),
+
+          calloutBox('info', 'Some critics were right. Some were wrong.',
+            'Print DID enable mass propaganda. Print DID contribute to the religious wars (5-10 million European dead, 1517-1648). Cheap books often WERE sloppy. Scribal labor DID disappear. The information-overload critique was real and never fully solved. But: memory did not atrophy (it just shifted from raw recall to library navigation). The social order did not collapse (it restructured around new institutions). Common people reading "dangerous ideas" did not produce chaos (it produced the modern democratic public). The honest history is that critics were partly right and partly wrong, and we cannot tell which from inside our own moment.'),
+
+          sectionHeader('💬', 'Thought-provoking questions (designed for Crew or class discussion)'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            DISCUSSION.map(function(d, i) {
+              return h('div', { key: i, style: { marginBottom: i === DISCUSSION.length - 1 ? 0 : 14, paddingBottom: i === DISCUSSION.length - 1 ? 0 : 14, borderBottom: i === DISCUSSION.length - 1 ? 'none' : '1px dashed ' + T.border } },
+                h('div', { style: { display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 4 } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 14, color: T.accentHi, fontWeight: 800, fontFamily: 'Georgia, serif', flexShrink: 0 } }, (i + 1) + '.'),
+                  h('div', { style: { fontSize: 14, color: T.text, fontWeight: 600, lineHeight: 1.5 } }, d.q)),
+                h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55, paddingLeft: 22, fontStyle: 'italic' } },
+                  h('strong', { style: { color: T.dim, fontStyle: 'normal' } }, 'Discussion hint: '),
+                  d.hint)
+              );
+            })
+          ),
+
+          calloutBox('warn', 'The grown-up frame for technology debates',
+            'Treat "this new technology is uniquely bad" and "this new technology is uniquely good" as equally suspicious. The honest position is usually: most fears will turn out smaller than imagined, some fears will turn out larger than imagined, the technology will both enable and constrain in ways nobody predicted, and 150 years from now your great-great-grandkids will be having the same argument about something else.'),
+
+          sectionHeader('🎭', 'Scenarios'),
+          scenarioCard('sameFears', 0, {
+            prompt: 'A 1500 scholar argues that printed books are inferior to manuscript copies because printers cut corners on accuracy. A 2026 scholar argues the same thing about AI-generated text. What do these two arguments share, and what makes them different?',
+            choices: [
+              'Identical arguments; both are wrong.',
+              'Identical arguments; both are right.',
+              'Structurally the same argument: cheap mass production lowers per-unit quality. Both have real validity (cheap books WERE often sloppy; AI text often IS unreliable). Both also miss: the mass-produced version eventually develops its own quality-control institutions (errata, second editions for print; verification, fact-checking, attribution norms for AI). The honest answer is the argument is partially right — and the response is institutional, not regulatory or prohibitionist.',
+              'Totally different arguments because print and AI are different technologies.'
+            ],
+            correct: 2,
+            explain: 'Both arguments share the structure: cheap mass production lowers quality. Both have partial validity. The real lesson is what print history teaches: cheap-output technologies develop quality-control institutions over time. Editorial standards for print took ~100 years to mature. AI is in year 3. Patience and institution-building are the response, not prohibition.'
+          }),
+          scenarioCard('sameFears', 1, {
+            prompt: 'You are a school administrator in 1525. A worried parent says reading the vernacular Bible at home will lead her child into heresy and the family into trouble with the Church. Your job is not to take a side, but to think clearly. What is the strongest framing of her concern, and what is the strongest counterargument?',
+            choices: [
+              'She is wrong because everyone should read.',
+              'She is right because the Church\'s authority comes first.',
+              'Her strongest framing: the institutional structure that protected her family from theological error has just been bypassed; the cost of unsupervised access can be very high (heresy executions, social ostracism). The strongest counterargument: protected access also bypasses agency, and a generation taught to read theology themselves builds the muscle of independent reasoning. Both are real. The 1525 family had to make this call without knowing how it would turn out.',
+              'Modern values say she is wrong; we should impose them.'
+            ],
+            correct: 2,
+            explain: 'The honest answer respects that 1525 people did not have our hindsight. The Reformation produced both intellectual flourishing AND massive religious violence. A parent worried about her family\'s safety was not wrong to be worried. The deeper teaching: respect historical actors as people making real decisions under uncertainty, not as villains or heroes by modern lights.'
+          }),
+
+          sectionHeader('🧠', 'Mini-quiz'),
+          miniQuizBlock('sameFears', [
+            { q: 'The Catholic Church\'s "Index Librorum Prohibitorum" (1559) was:', opts: ['A library catalog', 'A list of forbidden books that the Church prohibited the faithful from reading', 'A pricing index for books', 'A printer\'s union directory'], ans: 1, explain: 'A standing list of books the Catholic Church forbade. It existed in various forms from 1559 until 1966. It is the most direct historical analogue to modern content-moderation lists.' },
+            { q: 'Conrad Gessner used the phrase "confusing and harmful abundance of books" in 1545. What modern phrase echoes this concern most directly?', opts: ['"Spam folder"', '"Information overload"', '"Library science"', '"Algorithmic curation"'], ans: 1, explain: 'Gessner literally articulated information overload in 1545 — within a century of Gutenberg. The condition is not new; it is intrinsic to mass information production.' },
+            { q: 'Approximately how many Europeans died in the religious wars (1517-1648) that print partly enabled?', opts: ['About 100,000', 'About 1 million', 'About 5-10 million', 'About 100 million'], ans: 2, explain: '5-10 million by most historical estimates. Print critics who warned that mass-distributed religious dissent would cause violence were not wrong about that. They were wrong about whether the violence would be the end of the story — Europe eventually restructured into religious pluralism.' },
+            { q: 'Which of these is the most honest reading of "1450 critics vs print"?', opts: ['Critics were silly and obviously wrong', 'Critics were prophets and obviously right', 'Critics were partly right and partly wrong, and the response to genuine concerns was institutional development (editorial standards, copyright, libraries), not banning print', 'Critics did not exist'], ans: 2, explain: 'The honest reading is partial validity. The grown-up response was institutional, not prohibitionist. This is also probably the right frame for current internet and AI debates.' }
+          ]),
+
+          sourcesBlock([
+            { label: 'Adrian Johns, "The Nature of the Book: Print and Knowledge in the Making" (1998)', note: 'Foundational scholarly account of how printed accuracy and authority were socially constructed.' },
+            { label: 'Tom Standage, "Writing on the Wall: Social Media in the First 2,000 Years" (2013)', note: 'Explicit historical parallels between print and modern social media.' },
+            { label: 'Index Librorum Prohibitorum (Catholic Church, 1559-1966)', url: 'https://en.wikipedia.org/wiki/Index_Librorum_Prohibitorum', note: 'Primary historical artifact of institutional content moderation.' },
+            { label: 'Andrew Pettegree, "The Invention of News" (2014)', note: 'On the moral panic surrounding early newsprint.' },
+            { label: 'Ann M. Blair, "Too Much to Know: Managing Scholarly Information Before the Modern Age" (2010)', note: 'Documents the information-overload arguments from 1500-1700.' },
+            { label: 'Naomi Baron, "Words Onscreen" (2015)', note: 'Modern reading-vs-attention debates with historical context.' },
+            { label: 'Plato, "Phaedrus" (~370 BCE)', note: 'The original "writing will atrophy memory" argument that print critics inherited.' }
+          ]),
+          h(TeacherNotes, TEACHER_NOTES.sameFears),
+          crossLinkFooter('sameFears'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // CUMULATIVE QUIZ — 13 questions across all 9 modules
       // ═════════════════════════════════════════════════════════════════════
       var CUMULATIVE_QUESTIONS = [
         { module: 'pressMechanism', q: 'The screw press achieves its mechanical advantage through:', opts: ['A complicated system of gears', 'A wrapped inclined plane (the screw thread); MA = 2π × bar length ÷ thread pitch, often 100:1 or more', 'Pure muscle power', 'Hydraulic pressure'], ans: 1, explain: 'A screw is mathematically an inclined plane wrapped around a cylinder. Mechanical advantage scales with bar length and inversely with thread pitch — a Gutenberg-era press could turn 30 lb of arm pull into hundreds of pounds of platen force.' },
@@ -3183,7 +3878,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         { module: 'beforeAfter', q: 'Why did the Reformation succeed where earlier reform movements (Wycliffe, Hus) failed?', opts: ['Luther was more persuasive', 'Print spread the message faster than authorities could suppress it', 'The Catholic Church was weaker', 'Random chance'], ans: 1, explain: 'Wycliffe and Hus made very similar theological arguments a century earlier in manuscript culture and were locally suppressed. Print made suppression impossible — by the time authorities reacted, the message was already in dozens of cities.' },
         { module: 'typographyToday', q: 'The term "leading" (line spacing) comes from:', opts: ['The lead actor', 'Strips of LEAD inserted between lines of metal type to add vertical spacing', 'Leading the eye', 'Lead-in copy'], ans: 1, explain: 'Lead strips of varying thickness physically inserted between rows of type. CSS line-height is the digital descendant.' },
         { module: 'people', q: 'Who sued Gutenberg, won, and ended up with most of the printing equipment?', opts: ['Schöffer', 'Johann Fust (his financier)', 'The Catholic Church', 'A rival printer'], ans: 1, explain: 'Fust lent Gutenberg the capital and sued when Gutenberg could not repay on schedule. Subsequent books bore Fust and Schöffer\'s names, not Gutenberg\'s.' },
-        { module: 'broadside', q: 'About how many copies of Thomas Paine\'s "Common Sense" sold in the American colonies in 1776?', opts: ['About 1,000', 'About 10,000', 'About 150,000', 'About 1 million'], ans: 2, explain: '~150,000 copies in a colonial population of ~2.5 million. Per capita, one of the best-selling political pamphlets in American history. The Revolution was a print event as much as a military one.' }
+        { module: 'broadside', q: 'About how many copies of Thomas Paine\'s "Common Sense" sold in the American colonies in 1776?', opts: ['About 1,000', 'About 10,000', 'About 150,000', 'About 1 million'], ans: 2, explain: '~150,000 copies in a colonial population of ~2.5 million. Per capita, one of the best-selling political pamphlets in American history. The Revolution was a print event as much as a military one.' },
+        { module: 'sameFears', q: 'The honest reading of 1450 critics worried about the printing press is:', opts: ['They were silly and obviously wrong about everything', 'They were prophets and obviously right about everything', 'They were partly right (print did cause religious violence, mass propaganda, information overload) and partly wrong (memory did not collapse, the social order did not end); the response was institutional development, not banning print', 'They did not really exist'], ans: 2, explain: 'Partial validity is the honest historical reading. The grown-up response was institutional (editorial standards, copyright, peer review, libraries) rather than prohibitionist. This is probably also the right frame for evaluating modern critics of the internet and AI — some concerns are real, some are panic, and institutional development is usually the productive path forward.' }
       ];
 
       function renderCumulative() {
@@ -3273,6 +3969,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     ? 'You have traveled the press — its mechanism, its materials, its economics, its impact. The history of how knowledge spreads now lives in your head.'
                     : 'Below 80% on the cumulative quiz means there are concepts worth revisiting. The cards below show exactly what you missed and where to review.'),
                 h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginTop: earned ? 16 : 0 } },
+                  // Print certificate — only on mastery. Opens a new window
+                  // with a printable HTML certificate styled like a period
+                  // diploma. The new window auto-triggers print on load,
+                  // so the student gets the print dialog immediately.
+                  // Document content is plain HTML (not React) so it
+                  // doesn't need to load the AlloFlow runtime to print.
+                  earned && h('button', {
+                    onClick: function() {
+                      try {
+                        var cert = window.open('', '_blank', 'width=800,height=600');
+                        if (!cert) { addToast('Pop-up blocked. Allow pop-ups to print the certificate.', 'warn'); return; }
+                        var date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                        var html = '<!DOCTYPE html><html><head><title>Certificate of Mastery — PrintingPress</title>' +
+                          '<style>' +
+                          '@page { size: letter landscape; margin: 0.5in; }' +
+                          'body { font-family: Georgia, "Times New Roman", serif; background: #f5e8c8; color: #1a1410; margin: 0; padding: 40px; min-height: 100vh; box-sizing: border-box; }' +
+                          '.cert { background: radial-gradient(ellipse at 8% 12%, rgba(180,140,80,0.18) 0%, transparent 30%), radial-gradient(ellipse at 92% 88%, rgba(180,140,80,0.18) 0%, transparent 30%), #f5e8c8; padding: 60px; border: 4px double #7c2d12; box-shadow: inset 0 0 60px rgba(120,90,40,0.1); text-align: center; max-width: 900px; margin: 0 auto; position: relative; }' +
+                          '.fleuron { display: inline-block; width: 20px; height: 20px; }' +
+                          'h1 { font-size: 18px; letter-spacing: 0.3em; text-transform: uppercase; color: #7c2d12; margin: 0 0 8px; font-weight: 400; }' +
+                          'h2 { font-size: 48px; margin: 12px 0; font-weight: 800; letter-spacing: 0.04em; color: #1a1410; }' +
+                          '.subtitle { font-size: 14px; font-style: italic; color: #5c4630; margin-bottom: 28px; }' +
+                          '.body { font-size: 16px; line-height: 1.8; color: #1a1410; max-width: 700px; margin: 0 auto 28px; }' +
+                          '.score { font-size: 28px; font-weight: 800; color: #7c2d12; letter-spacing: 0.05em; margin: 16px 0; }' +
+                          '.rule { width: 280px; height: 6px; border-top: 1px solid #7c2d12; border-bottom: 1px solid #7c2d12; margin: 8px auto; }' +
+                          '.dolphin { width: 50px; height: 60px; }' +
+                          '.date-line { font-size: 13px; color: #5c4630; margin-top: 36px; letter-spacing: 0.08em; text-transform: uppercase; }' +
+                          '.motto { font-style: italic; color: #c9a14a; letter-spacing: 0.05em; margin-top: 12px; font-size: 14px; }' +
+                          '</style></head><body><div class="cert">' +
+                          '<svg class="dolphin" viewBox="0 0 38 46" xmlns="http://www.w3.org/2000/svg" style="margin: 0 auto; display: block;">' +
+                          '<line x1="19" y1="6" x2="19" y2="38" stroke="#7c2d12" stroke-width="2" stroke-linecap="round"/>' +
+                          '<line x1="11" y1="12" x2="27" y2="12" stroke="#7c2d12" stroke-width="1.5" stroke-linecap="round"/>' +
+                          '<circle cx="19" cy="5" r="2.5" fill="none" stroke="#7c2d12" stroke-width="1.2"/>' +
+                          '<path d="M 19 38 Q 8 38 7 30 Q 9 34 13 35" fill="none" stroke="#7c2d12" stroke-width="1.5" stroke-linecap="round"/>' +
+                          '<path d="M 19 38 Q 30 38 31 30 Q 29 34 25 35" fill="none" stroke="#7c2d12" stroke-width="1.5" stroke-linecap="round"/>' +
+                          '<path d="M 11 18 Q 6 22 11 28 Q 19 31 26 26 Q 31 22 26 17 Q 21 14 19 18" fill="none" stroke="#c9a14a" stroke-width="1.4" stroke-linecap="round"/>' +
+                          '<circle cx="13" cy="20" r="0.8" fill="#c9a14a"/></svg>' +
+                          '<h1>Certificate of Mastery</h1>' +
+                          '<div class="rule"></div>' +
+                          '<h2>Master Printer</h2>' +
+                          '<p class="subtitle">Awarded to the bearer for completing the PrintingPress curriculum</p>' +
+                          '<p class="body">This certifies the bearer has traveled the press: its mechanism, its materials, its economics, and its impact across six centuries of human knowledge. The skills here rehearsed — typesetting mirror-reversed, calculating mechanical advantage, designing alloys, recognizing the moment when an idea changed the world — now live in their head.</p>' +
+                          '<div class="score">Score: ' + st.score + ' / ' + CUMULATIVE_QUESTIONS.length + ' (' + pct + '%)</div>' +
+                          '<div class="rule"></div>' +
+                          '<p class="motto">festina lente — make haste slowly</p>' +
+                          '<p class="date-line">Conferred · ' + date + '</p>' +
+                          '</div><script>window.onload = function() { setTimeout(function() { window.print(); }, 300); };</script></body></html>';
+                        cert.document.write(html);
+                        cert.document.close();
+                      } catch (e) {
+                        addToast('Could not open certificate window: ' + (e && e.message), 'warn');
+                      }
+                    },
+                    style: btn({ padding: '8px 14px', fontSize: 13,
+                      background: '#7c2d12', color: T.parchment,
+                      border: '1px solid #5c2f0e', fontWeight: 700 })
+                  }, '🪶 Print Certificate'),
                   h('button', { onClick: function() {
                     upd('bigQuizState', { idx: 0, score: 0, answered: false, lastChoice: null, picks: {} });
                   }, style: btn({ padding: '8px 14px', fontSize: 13,
@@ -3567,6 +4319,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               )
             );
           }),
+          // Citation hint — for teachers who use this tool as a classroom
+          // resource. Provides a clean attribution format they can adapt
+          // for handouts, lesson plans, or student bibliographies.
+          h('div', { style: { marginTop: 16, padding: 14, background: T.card, border: '1px dashed ' + T.accent, borderRadius: 10 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 13, color: T.accentHi, fontFamily: 'Georgia, serif', textTransform: 'uppercase', letterSpacing: '0.06em' } }, '📝 Cite this tool'),
+            h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.5 } },
+              'For lesson plans, student bibliographies, or teaching portfolios:'),
+            h('div', { style: { fontSize: 12, fontFamily: 'ui-monospace, "SF Mono", Consolas, monospace', color: T.text, background: T.cardAlt, padding: 10, borderRadius: 6, border: '1px solid ' + T.border, lineHeight: 1.6 } },
+              'PrintingPress: an interactive printing-press history and simulation tool. AlloFlow STEM Lab (Pomeranz, A., ', new Date().getFullYear(), '). Retrieved ', new Date().toLocaleDateString(), ' from prismflow-911fe.web.app.'
+            )
+          ),
           disclaimerFooter()
         );
       }
@@ -3685,6 +4448,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { wrong: 'Mass political pamphleteering started in the 20th century.', right: 'The English Civil War (1640s), the American Revolution (1770s), and the French Revolution (1790s) were all driven by mass print. Pamphlets shaped events that shaped countries.' }
           ],
           extension: 'Have students design and print an actual broadside about a real issue at their school or in their community. Distribute. Observe what catches attention vs what gets ignored. Debrief on what makes a broadside work.'
+        },
+        sameFears: {
+          standards: ['CCSS.ELA-Literacy.RH.6-8.2', 'C3 Framework D2.His.14.6-8', 'CASEL — Self-Awareness, Responsible Decision-Making', 'NCSS Theme 8 — Science, Technology, and Society'],
+          discussion: [
+            'Pick one 1450 fear about print and one 2026 fear about AI or social media. Are they the same fear in different clothes, or genuinely different concerns? Defend your answer.',
+            'Print eventually developed quality-control institutions (editorial standards, copyright, peer review, libraries) that took ~150 years to mature. What equivalents do you think the internet and AI need, and how would we know they have arrived?',
+            'When a parent or grandparent expresses concern about a new technology, how should you weigh their concern? Is the right frame "they don\'t understand," "they\'re right and we should listen," or something more careful?',
+            'The module argues that "this new technology is uniquely bad" and "this new technology is uniquely good" are equally suspicious framings. Is there an actual technology you think breaks that rule (in either direction)?',
+            'The Reformation killed 5-10 million Europeans. Print critics who feared mass-distributed religious dissent would cause violence were not wrong about that — they were wrong about whether the violence was the end of the story. Does this change how you think about modern critics who fear technology-enabled harms?'
+          ],
+          misconceptions: [
+            { wrong: '"Moral panic" means the fear is silly and we should ignore it.', right: 'Moral panic is a specific pattern (vague civilizational decline, scapegoats a whole technology, assumes the worst about the next generation). But moral panics can be ABOUT real things. The label describes the shape of the argument, not whether the underlying concern has any validity.' },
+            { wrong: 'Print critics were uniformly wrong and we should laugh at them.', right: 'Several were right — print DID cause religious wars, propaganda, and information overload. The honest reading is partial validity, with the response being institutional development rather than banning the technology.' },
+            { wrong: 'Today\'s tech critics are uniformly wrong and we should laugh at them.', right: 'Same as above — some will be right, some wrong, and we cannot tell which from inside our own moment. Treat both "uniquely bad" and "uniquely good" framings as equally suspicious.' }
+          ],
+          extension: 'Have students interview a parent or grandparent about a technology they were worried about (TV, video games, smartphones, internet). Compare to the 1450 fears in this module. Where do the worries map? Where do they not? Write a 1-page essay arguing whether the worry was right, wrong, or partially both — with specific evidence.'
         }
       };
 
@@ -3707,6 +4486,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       else if (view === 'typographyToday') content = h(_ViewWrapper, { key: 'typographyToday', _render: renderTypographyToday });
       else if (view === 'people')          content = h(_ViewWrapper, { key: 'people',          _render: renderPeople });
       else if (view === 'broadside')       content = h(_ViewWrapper, { key: 'broadside',       _render: renderBroadside });
+      else if (view === 'sameFears')       content = h(_ViewWrapper, { key: 'sameFears',       _render: renderSameFears });
       else if (view === 'cumulative')      content = h(_ViewWrapper, { key: 'cumulative',      _render: renderCumulative });
       else if (view === 'askPrinter')      content = h(_ViewWrapper, { key: 'askPrinter',      _render: renderAskPrinter });
       else if (view === 'resources')       content = h(_ViewWrapper, { key: 'resources',       _render: renderResources });
