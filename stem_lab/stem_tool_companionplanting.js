@@ -2872,10 +2872,22 @@ var d = (labToolData.companionPlanting) || {};
             cgUpd({ grid: newGrid });
           }
 
+          // Trigger a visual action-burst on the garden canvas.
+          // Safe no-op if the canvas is not mounted yet.
+          function cgFireActionBurst(kind) {
+            try {
+              var el = window.__cgCanvasEl;
+              if (el) { el._actionBurst = { kind: kind, t0: performance.now() }; }
+            } catch (e) { /* silent */ }
+          }
+
           // ── CG: water action ──
           function cgWater() {
             cgUpd({ moisture: Math.min(100, cgMoisture + 25) });
             if (awardStemXP) awardStemXP(3);
+            cgFireActionBurst("water");
+            if (stemBeep) { try { stemBeep("water"); } catch (e) {} }
+            if (addToast) addToast("💧 Watered the garden! +25% moisture · +3 XP", "success");
           }
 
           // ── CG: weed action ──
@@ -2886,6 +2898,9 @@ var d = (labToolData.companionPlanting) || {};
             });
             cgUpd({ grid: newGrid });
             if (awardStemXP) awardStemXP(3);
+            cgFireActionBurst("weed");
+            if (stemBeep) { try { stemBeep("weed"); } catch (e) {} }
+            if (addToast) addToast("🌿 Weeded! Pests reduced on all plants · +3 XP", "success");
           }
 
           // ── CG: compost action (enhanced: adds NPK + OM) ──
@@ -2897,6 +2912,8 @@ var d = (labToolData.companionPlanting) || {};
               organicMatter: Math.min(10, cgOrganicMatter + 0.3)
             });
             if (awardStemXP) awardStemXP(3);
+            cgFireActionBurst("compost");
+            if (stemBeep) { try { stemBeep("compost"); } catch (e) {} }
             if (addToast) addToast('\u267B\uFE0F Compost added: +15N +8P +5K +0.3% OM', 'success');
           }
 
@@ -3947,7 +3964,11 @@ var d = (labToolData.companionPlanting) || {};
                   }
                 },
                 ref: function(cvEl) {
-                  if (!cvEl || cvEl._cgCanvasInit) return;
+                  if (!cvEl) return;
+                  // Always expose the most recent canvas to action handlers
+                  // (cgWater/cgWeed/cgCompost are called from buttons outside the canvas)
+                  window.__cgCanvasEl = cvEl;
+                  if (cvEl._cgCanvasInit) return;
                   cvEl._cgCanvasInit = true;
                   var gctx = cvEl.getContext('2d');
                   var W = cvEl.width = cvEl.offsetWidth * 2;
@@ -4518,6 +4539,42 @@ var d = (labToolData.companionPlanting) || {};
                         gctx.lineTo(pos.x, pos.y + iTH / 2); // bottom
                         gctx.lineTo(pos.x - iTW / 2, pos.y);   // left
                         gctx.closePath(); gctx.fill();
+                        // ── Soil tile texture: deterministic pebbles + speckles ──
+                        // 5 pebbles + 7 grain-speckles per tile, positioned by tile
+                        // index so they stay stable across frames. Skipped on tiles
+                        // that have a plant (plant draws on top).
+                        if (!hasPlant) {
+                          for (var sp = 0; sp < 5; sp++) {
+                            var spAng = (ci4 * 2.1 + sp * 1.7) % (Math.PI * 2);
+                            var spDist = 6 + ((ci4 * 11 + sp * 7) % 22);
+                            var spX = pos.x + Math.cos(spAng) * spDist;
+                            var spY = pos.y + Math.sin(spAng) * spDist * (iTH / iTW);
+                            // Keep pebbles inside the diamond
+                            var spDiam = Math.abs(spX - pos.x) / (iTW / 2) + Math.abs(spY - pos.y) / (iTH / 2);
+                            if (spDiam > 0.78) continue;
+                            var spShade = (ci4 + sp) % 3;
+                            gctx.fillStyle = ['rgba(90,60,30,0.55)', 'rgba(140,110,80,0.5)', 'rgba(70,45,25,0.6)'][spShade];
+                            gctx.beginPath();
+                            gctx.ellipse(spX, spY, 1.4 + (sp % 2) * 0.6, 0.9, 0, 0, Math.PI * 2);
+                            gctx.fill();
+                            gctx.fillStyle = 'rgba(255,240,200,0.18)';
+                            gctx.beginPath();
+                            gctx.ellipse(spX - 0.5, spY - 0.4, 0.7, 0.4, 0, 0, Math.PI * 2);
+                            gctx.fill();
+                          }
+                          for (var sk = 0; sk < 7; sk++) {
+                            var skAng = (ci4 * 3.3 + sk * 2.7 + 1.2) % (Math.PI * 2);
+                            var skDist = 4 + ((ci4 * 13 + sk * 9 + 5) % 28);
+                            var skX = pos.x + Math.cos(skAng) * skDist;
+                            var skY = pos.y + Math.sin(skAng) * skDist * (iTH / iTW);
+                            var skDiam = Math.abs(skX - pos.x) / (iTW / 2) + Math.abs(skY - pos.y) / (iTH / 2);
+                            if (skDiam > 0.82) continue;
+                            gctx.fillStyle = (sk % 2 === 0) ? 'rgba(50,30,15,0.4)' : 'rgba(60,40,20,0.35)';
+                            gctx.beginPath();
+                            gctx.arc(skX, skY, 0.7, 0, Math.PI * 2);
+                            gctx.fill();
+                          }
+                        }
                         // Tile border + hover highlight
                         gctx.strokeStyle = isHovered ? 'rgba(251,191,36,0.6)' : hasPlant ? 'rgba(80,50,20,0.4)' : 'rgba(80,50,20,0.2)';
                         gctx.lineWidth = isHovered ? 2 : 1; gctx.stroke();
@@ -5419,6 +5476,171 @@ var d = (labToolData.companionPlanting) || {};
                         }
                       } else {
                         cvEl._plantBurst = null;
+                      }
+                    }
+
+                    // ── Hover preview while a plant is selected (plan phase) ──
+                    // Empty tile + selected plant → ghost silhouette + green "Plant here" badge.
+                    // Occupied tile + selected plant → red "Already planted" badge.
+                    // UDL: lets the student preview placement before committing the action.
+                    if (cgPhase === 'plan' && cgSelectedPlant && hoverCell2 >= 0 && hoverCell2 < 16) {
+                      var pvCell = grid2[hoverCell2];
+                      var pvPos = isoToScreen(Math.floor(hoverCell2 / 4), hoverCell2 % 4);
+                      var pvOccupied = !!(pvCell && pvCell.plantId);
+                      var pvVis = PLANT_VISUALS[cgSelectedPlant] || defVis;
+                      var pvSelected = CG_PLANTS[cgSelectedPlant];
+                      // Gentle breathing pulse so the student sees this is a live preview
+                      var pvPulse = 0.55 + 0.25 * Math.sin(t * 5);
+
+                      if (!pvOccupied) {
+                        // Ghost plant silhouette (transparent, no fruit detail — keeps it simple)
+                        gctx.globalAlpha = 0.45 * pvPulse;
+                        // Stem
+                        gctx.strokeStyle = pvVis.stemColor;
+                        gctx.lineWidth = 2;
+                        gctx.beginPath();
+                        gctx.moveTo(pvPos.x, pvPos.y);
+                        gctx.lineTo(pvPos.x, pvPos.y - 22);
+                        gctx.stroke();
+                        // Leaves: 2 small ovals
+                        gctx.fillStyle = pvVis.leafColor;
+                        gctx.beginPath();
+                        gctx.ellipse(pvPos.x - 5, pvPos.y - 14, 6, 3.5, -0.4, 0, Math.PI * 2);
+                        gctx.fill();
+                        gctx.beginPath();
+                        gctx.ellipse(pvPos.x + 5, pvPos.y - 18, 6, 3.5, 0.4, 0, Math.PI * 2);
+                        gctx.fill();
+                        // Tiny crown / fruit hint
+                        gctx.fillStyle = pvVis.fruitColor || pvVis.flowerColor || pvVis.leafColor;
+                        gctx.beginPath();
+                        gctx.arc(pvPos.x, pvPos.y - 24, 4, 0, Math.PI * 2);
+                        gctx.fill();
+                        gctx.globalAlpha = 1;
+
+                        // Green "Plant here" badge above the tile
+                        var pvLabel = (pvSelected && pvSelected.emoji ? pvSelected.emoji + ' ' : '') + 'Plant here';
+                        gctx.font = 'bold 13px system-ui, sans-serif';
+                        var pvLW = gctx.measureText(pvLabel).width + 16;
+                        var pvBadgeY = pvPos.y - iTH * 0.5 - 14;
+                        gctx.fillStyle = 'rgba(22,101,52,0.92)';
+                        if (gctx.roundRect) {
+                          gctx.beginPath();
+                          gctx.roundRect(pvPos.x - pvLW / 2, pvBadgeY - 10, pvLW, 20, 10);
+                          gctx.fill();
+                        } else {
+                          gctx.fillRect(pvPos.x - pvLW / 2, pvBadgeY - 10, pvLW, 20);
+                        }
+                        gctx.fillStyle = '#dcfce7';
+                        gctx.textAlign = 'center';
+                        gctx.textBaseline = 'middle';
+                        gctx.fillText(pvLabel, pvPos.x, pvBadgeY);
+                        gctx.textAlign = 'start';
+                        gctx.textBaseline = 'alphabetic';
+                      } else {
+                        // Red "Already planted" badge
+                        var pvOccLabel = '⛔ Already planted';
+                        gctx.font = 'bold 12px system-ui, sans-serif';
+                        var pvOccLW = gctx.measureText(pvOccLabel).width + 14;
+                        var pvOccBadgeY = pvPos.y - iTH * 0.5 - 14;
+                        gctx.fillStyle = 'rgba(127,29,29,0.92)';
+                        if (gctx.roundRect) {
+                          gctx.beginPath();
+                          gctx.roundRect(pvPos.x - pvOccLW / 2, pvOccBadgeY - 10, pvOccLW, 20, 10);
+                          gctx.fill();
+                        } else {
+                          gctx.fillRect(pvPos.x - pvOccLW / 2, pvOccBadgeY - 10, pvOccLW, 20);
+                        }
+                        gctx.fillStyle = '#fecaca';
+                        gctx.textAlign = 'center';
+                        gctx.textBaseline = 'middle';
+                        gctx.fillText(pvOccLabel, pvPos.x, pvOccBadgeY);
+                        gctx.textAlign = 'start';
+                        gctx.textBaseline = 'alphabetic';
+                      }
+                    }
+
+                    // ── Action burst (water / weed / compost feedback) ──
+                    // Triggered by cgWater/cgWeed/cgCompost via window.__cgCanvasEl._actionBurst.
+                    // Each action gets its own color palette and particle behavior, but they
+                    // share the same 1.4s expanding-rings-and-particles pattern.
+                    if (cvEl._actionBurst) {
+                      var abDur = 1.4;
+                      var abElapsed = (performance.now() - cvEl._actionBurst.t0) / 1000;
+                      if (abElapsed < abDur) {
+                        var abT = abElapsed / abDur;
+                        var abKind = cvEl._actionBurst.kind || 'water';
+                        // Garden center as the origin
+                        var abCenter = isoToScreen(1.5, 1.5);
+                        // Palette per action
+                        var abPalette = {
+                          water:   { ring1: 'rgba(56,189,248,', ring2: 'rgba(186,230,253,', dot1: 'rgba(14,165,233,', dot2: 'rgba(125,211,252,', labelBg: 'rgba(7,89,133,0.85)', labelFg: '#e0f2fe', text: '💧 Watered!' },
+                          weed:    { ring1: 'rgba(74,222,128,', ring2: 'rgba(254,202,202,', dot1: 'rgba(34,197,94,',  dot2: 'rgba(248,113,113,', labelBg: 'rgba(20,83,45,0.85)',  labelFg: '#dcfce7', text: '🌿 Weeded!' },
+                          compost: { ring1: 'rgba(180,140,90,', ring2: 'rgba(202,138,4,',  dot1: 'rgba(120,80,40,',   dot2: 'rgba(252,211,77,',  labelBg: 'rgba(69,26,3,0.85)',  labelFg: '#fef3c7', text: '♻️ Composted!' }
+                        }[abKind] || { ring1: 'rgba(255,255,255,', ring2: 'rgba(255,255,255,', dot1: 'rgba(255,255,255,', dot2: 'rgba(255,255,255,', labelBg: 'rgba(0,0,0,0.7)', labelFg: '#fff', text: 'Action!' };
+                        // 2 expanding rings (large, scaled across whole garden footprint)
+                        for (var abr = 0; abr < 2; abr++) {
+                          var abrStart = abr * 0.14;
+                          if (abT < abrStart) continue;
+                          var abrT = (abT - abrStart) / (1 - abrStart);
+                          if (abrT > 1) continue;
+                          var abrR = 30 + abrT * 180;
+                          var abrA = (1 - abrT) * 0.6;
+                          gctx.strokeStyle = (abr === 0 ? abPalette.ring1 : abPalette.ring2) + abrA + ')';
+                          gctx.lineWidth = 3 * (1 - abrT) + 0.6;
+                          gctx.beginPath();
+                          gctx.ellipse(abCenter.x, abCenter.y, abrR, abrR * 0.5, 0, 0, Math.PI * 2);
+                          gctx.stroke();
+                        }
+                        // 16 particles flying outward (or raining down for water)
+                        var abP = 16;
+                        for (var abp = 0; abp < abP; abp++) {
+                          var abpAng = (abp / abP) * Math.PI * 2 + abp * 0.31;
+                          var abpDist = abT * 130;
+                          var abpX = abCenter.x + Math.cos(abpAng) * abpDist;
+                          var abpY;
+                          if (abKind === 'water') {
+                            // Water droplets arc inward + downward (rain pattern)
+                            abpY = abCenter.y - 80 + Math.sin(abpAng) * 40 + abT * 95;
+                          } else if (abKind === 'compost') {
+                            // Compost crumbs fall + spread
+                            abpY = abCenter.y + Math.sin(abpAng) * abpDist * 0.45 + abT * 30;
+                          } else {
+                            // Weed particles fly up + out
+                            abpY = abCenter.y + Math.sin(abpAng) * abpDist * 0.5 - abT * 35;
+                          }
+                          var abpA = (1 - abT) * 0.85;
+                          gctx.fillStyle = (abp % 2 === 0 ? abPalette.dot1 : abPalette.dot2) + abpA + ')';
+                          var abpR = (abKind === 'water' ? 2.5 : 1.8) + (1 - abT) * 1.4;
+                          gctx.beginPath();
+                          gctx.arc(abpX, abpY, abpR, 0, Math.PI * 2);
+                          gctx.fill();
+                        }
+                        // Floating action label
+                        if (abT < 0.78) {
+                          var albT = abT / 0.78;
+                          var albY = abCenter.y - 70 - albT * 36;
+                          var albA = albT < 0.18 ? albT / 0.18 : (1 - (albT - 0.18) / 0.82);
+                          gctx.globalAlpha = Math.max(0, albA);
+                          gctx.font = 'bold 24px system-ui, sans-serif';
+                          var albW = gctx.measureText(abPalette.text).width + 28;
+                          gctx.fillStyle = abPalette.labelBg;
+                          if (gctx.roundRect) {
+                            gctx.beginPath();
+                            gctx.roundRect(abCenter.x - albW / 2, albY - 20, albW, 32, 16);
+                            gctx.fill();
+                          } else {
+                            gctx.fillRect(abCenter.x - albW / 2, albY - 20, albW, 32);
+                          }
+                          gctx.fillStyle = abPalette.labelFg;
+                          gctx.textAlign = 'center';
+                          gctx.textBaseline = 'middle';
+                          gctx.fillText(abPalette.text, abCenter.x, albY - 4);
+                          gctx.globalAlpha = 1;
+                          gctx.textAlign = 'start';
+                          gctx.textBaseline = 'alphabetic';
+                        }
+                      } else {
+                        cvEl._actionBurst = null;
                       }
                     }
 
