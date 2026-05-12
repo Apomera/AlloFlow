@@ -78,6 +78,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   }, [gradebookRefresh, isOpen]);
   const keyInputRef = useRef(null);
   const subInputRef = useRef(null);
+  const presetImportRef = useRef(null);
 
   const tx = t || ((k, fallback) => fallback || k);
 
@@ -189,6 +190,80 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
     writePresets(next);
     addToast && addToast('Deleted preset "' + name + '".', 'info');
   };
+  // Export ALL presets as a JSON file teachers can share or back up.
+  const exportPresets = () => {
+    const presetCount = Object.keys(rubricPresets).length;
+    if (presetCount === 0) {
+      addToast && addToast('No presets to export yet.', 'warn');
+      return;
+    }
+    const payload = {
+      kind: 'alloflow-rubric-presets',
+      schemaVersion: 1,
+      exportedAt: new Date().toISOString(),
+      presets: rubricPresets,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const dateStr = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = 'alloflow_rubric_presets_' + dateStr + '.json';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); if (a.parentNode) a.parentNode.removeChild(a); }, 200);
+    addToast && addToast('Exported ' + presetCount + ' preset' + (presetCount === 1 ? '' : 's') + '.', 'success');
+  };
+  // Import presets from a JSON file. Merges into the existing library;
+  // duplicates (same slug key) prompt the teacher to confirm overwrite.
+  const importPresets = async (e) => {
+    const file = e.target?.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      if (!parsed || parsed.kind !== 'alloflow-rubric-presets' || !parsed.presets) {
+        addToast && addToast('Not a valid AlloFlow presets file.', 'error');
+        return;
+      }
+      const incoming = parsed.presets;
+      const conflicts = Object.keys(incoming).filter(k => rubricPresets[k]);
+      let overwriteAll = false;
+      if (conflicts.length > 0) {
+        overwriteAll = confirm(
+          conflicts.length + ' preset' + (conflicts.length === 1 ? '' : 's') + ' already exist with the same name: ' +
+          conflicts.slice(0, 5).map(k => '"' + incoming[k].name + '"').join(', ') +
+          (conflicts.length > 5 ? ', …' : '') +
+          '.\n\nClick OK to overwrite, Cancel to skip existing presets.'
+        );
+      }
+      const next = { ...rubricPresets };
+      let added = 0, skipped = 0, overwritten = 0;
+      Object.entries(incoming).forEach(([k, p]) => {
+        if (next[k]) {
+          if (overwriteAll) {
+            next[k] = { ...p, lastUsed: new Date().toISOString() };
+            overwritten++;
+          } else {
+            skipped++;
+          }
+        } else {
+          next[k] = { ...p, lastUsed: p.lastUsed || new Date().toISOString() };
+          added++;
+        }
+      });
+      writePresets(next);
+      addToast && addToast(
+        added + ' added' +
+        (overwritten > 0 ? ', ' + overwritten + ' overwritten' : '') +
+        (skipped > 0 ? ', ' + skipped + ' skipped' : ''),
+        'success'
+      );
+    } catch (err) {
+      addToast && addToast('Could not import: ' + err.message, 'error');
+    }
+    if (e.target) e.target.value = '';
+  };
 
   const clearSavedSession = () => {
     try { localStorage.removeItem('alloflow_inbox_session'); } catch (e) {}
@@ -293,11 +368,55 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   const clearQueue = () => { setQueue([]); setExpandedRow(null); };
 
   const rosterStudents = (rosterKey && rosterKey.students) || {};
-  const rosterStudentKeys = Object.keys(rosterStudents).map(s => s.toLowerCase());
+  const rosterStudentNames = Object.keys(rosterStudents);
+  // Normalize a name for fuzzy comparison: lowercase, strip punctuation
+  // + collapse internal whitespace. Handles capitalization, "Test Kid"
+  // vs "TestKid", "test-kid", trailing whitespace, etc.
+  const _normalizeNickname = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  // Returns one of:
+  //   { kind: 'exact', name }       — exact match in roster
+  //   { kind: 'fuzzy', name }       — normalized match (e.g. "TestKid" ↔ "Test Kid")
+  //   { kind: 'unknown' }           — no match found
+  // Roster matching is intentionally narrow — fuzzy only matches when the
+  // normalized forms are identical. Levenshtein/typo tolerance is out of
+  // scope for v1 (too easy to silently mis-attribute).
+  const rosterMatch = React.useMemo(() => {
+    const normalizedRoster = {};
+    rosterStudentNames.forEach(n => { normalizedRoster[_normalizeNickname(n)] = n; });
+    return (nickname) => {
+      if (!nickname || nickname === '?') return { kind: 'unknown' };
+      const raw = String(nickname);
+      if (rosterStudents[raw]) return { kind: 'exact', name: raw };
+      const exactCi = rosterStudentNames.find(n => n.toLowerCase() === raw.toLowerCase());
+      if (exactCi) return { kind: 'exact', name: exactCi };
+      const norm = _normalizeNickname(raw);
+      if (norm && normalizedRoster[norm]) return { kind: 'fuzzy', name: normalizedRoster[norm] };
+      return { kind: 'unknown' };
+    };
+  }, [rosterKey]);
+  // Back-compat shim so existing callers still get 'known' | 'unknown'.
   const rosterStatus = (nickname) => {
-    if (!nickname || nickname === '?') return 'unknown';
-    return rosterStudentKeys.indexOf(String(nickname).toLowerCase()) >= 0 ? 'known' : 'unknown';
+    const m = rosterMatch(nickname);
+    return (m.kind === 'exact' || m.kind === 'fuzzy') ? 'known' : 'unknown';
   };
+  // Re-grade detection (Phase 3 v2.5, May 12 2026): when a decrypted row's
+  // nickname+docTitle already has an entry in the gradebook, surface a
+  // badge so the teacher knows this submission was already graded
+  // (typically a student resubmitting). The gradebook key encodes
+  // timestamp, so distinct submissions stay separate — this just informs
+  // the teacher.
+  const previousGradesFor = React.useMemo(() => {
+    const byKey = {};
+    gradebookEntries.forEach(e => {
+      const k = (e.nickname || '').toLowerCase() + '|' + (e.docTitle || '').toLowerCase();
+      if (!byKey[k]) byKey[k] = [];
+      byKey[k].push(e);
+    });
+    return (nickname, docTitle) => {
+      if (!nickname || !docTitle) return [];
+      return byKey[(nickname || '').toLowerCase() + '|' + (docTitle || '').toLowerCase()] || [];
+    };
+  }, [gradebookEntries]);
 
   const counts = queue.reduce((acc, r) => {
     acc[r.status] = (acc[r.status] || 0) + 1;
@@ -627,18 +746,35 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
     return { bg: '#fee2e2', color: '#991b1b' };
   };
 
-  const rosterBadge = (status) => {
-    const styles = {
-      known: { bg: '#dcfce7', color: '#166534', label: '✓ Roster match' },
-      unknown: { bg: '#fef3c7', color: '#92400e', label: '⚠ Unknown name' }
-    };
-    const s = styles[status];
+  // rosterBadge accepts either a legacy 'known'|'unknown' string OR the
+  // {kind, name} object returned by rosterMatch — fuzzy matches surface
+  // the real roster name so a "TestKid" submission shows "✓ Test Kid".
+  const rosterBadge = (input) => {
+    let kind, name;
+    if (typeof input === 'string') {
+      kind = input;
+      name = null;
+    } else if (input && typeof input === 'object') {
+      kind = input.kind === 'exact' || input.kind === 'fuzzy' ? input.kind : 'unknown';
+      name = input.name;
+    } else {
+      kind = 'unknown';
+    }
+    let bg, color, label, title;
+    if (kind === 'exact') {
+      bg = '#dcfce7'; color = '#166534'; label = '✓ Roster match'; title = 'Exact roster match';
+    } else if (kind === 'fuzzy') {
+      bg = '#dcfce7'; color = '#166534'; label = '✓ ' + name; title = 'Matched roster student "' + name + '" by normalized name (capitalization/punctuation ignored)';
+    } else {
+      bg = '#fef3c7'; color = '#92400e'; label = '⚠ Unknown name'; title = 'No roster student matched this nickname';
+    }
     return /*#__PURE__*/React.createElement('span', {
+      title: title,
       style: {
         display: 'inline-block', padding: '2px 8px', borderRadius: 999,
-        background: s.bg, color: s.color, fontSize: '0.7rem', fontWeight: 600
+        background: bg, color: color, fontSize: '0.7rem', fontWeight: 600
       }
-    }, s.label);
+    }, label);
   };
 
   // ── Render ──────────────────────────────────────────────────
@@ -821,6 +957,20 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                     cursor: (!presetNameInput.trim() || (!globalRubric.rubric.trim() && anchors.length === 0)) ? 'not-allowed' : 'pointer'
                   }
                 }, '💾 Save'),
+                /*#__PURE__*/React.createElement('button', {
+                  type: 'button', onClick: () => presetImportRef.current?.click(),
+                  title: 'Import presets from a JSON file (e.g. shared by another teacher).',
+                  style: { padding: '5px 10px', background: 'white', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontWeight: 600, fontSize: '0.74rem', cursor: 'pointer' }
+                }, '⬆ Import'),
+                /*#__PURE__*/React.createElement('input', {
+                  ref: presetImportRef, type: 'file', accept: '.json,application/json',
+                  onChange: importPresets, style: { display: 'none' }, 'aria-label': 'Import presets JSON'
+                }),
+                Object.keys(rubricPresets).length > 0 && /*#__PURE__*/React.createElement('button', {
+                  type: 'button', onClick: exportPresets,
+                  title: 'Export all your presets as a JSON file you can share or back up.',
+                  style: { padding: '5px 10px', background: 'white', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontWeight: 600, fontSize: '0.74rem', cursor: 'pointer' }
+                }, '⬇ Export'),
                 Object.keys(rubricPresets).length > 0 && /*#__PURE__*/React.createElement('div', { style: { position: 'relative' } },
                   /*#__PURE__*/React.createElement('button', {
                     type: 'button', onClick: () => setPresetsMenuOpen(!presetsMenuOpen),
@@ -1121,7 +1271,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                     /*#__PURE__*/React.createElement('tr', { style: { borderBottom: '1px solid #f1f5f9' } },
                       /*#__PURE__*/React.createElement('td', { style: { padding: '10px 12px' } },
                         /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#1e293b' } }, row.nickname),
-                        row.nickname !== '?' && rosterBadge(rosterStatus(row.nickname))
+                        row.nickname !== '?' && rosterBadge(rosterMatch(row.nickname))
                       ),
                       /*#__PURE__*/React.createElement('td', { style: { padding: '10px 12px', color: '#475569' } },
                         /*#__PURE__*/React.createElement('div', null, row.docTitle || row.fileName),
@@ -1129,7 +1279,19 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                       ),
                       /*#__PURE__*/React.createElement('td', { style: { padding: '10px 12px' } },
                         statusBadge(row.status),
-                        row.status === 'error' && /*#__PURE__*/React.createElement('div', { style: { marginTop: 4, fontSize: '0.75rem', color: '#991b1b' } }, row.error)
+                        row.status === 'error' && /*#__PURE__*/React.createElement('div', { style: { marginTop: 4, fontSize: '0.75rem', color: '#991b1b' } }, row.error),
+                        row.status === 'decrypted' && row.payload && (() => {
+                          const prior = previousGradesFor(row.payload.nickname, row.payload.docTitle);
+                          // Filter out matches whose timestamp is the same as this submission
+                          // (that's just our own save, not a re-submit).
+                          const others = prior.filter(p => p.submittedAt !== row.payload.timestamp);
+                          if (others.length === 0) return null;
+                          const lastDate = others.map(p => p.gradedAt).filter(Boolean).sort().pop();
+                          return /*#__PURE__*/React.createElement('div', {
+                            style: { marginTop: 4, display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: '#fef3c7', color: '#92400e', fontSize: '0.7rem', fontWeight: 600 },
+                            title: 'This student already has ' + others.length + ' graded submission' + (others.length === 1 ? '' : 's') + ' for this document in the gradebook. Most recent: ' + (lastDate ? new Date(lastDate).toLocaleString() : 'unknown')
+                          }, '🔁 Previously graded' + (others.length > 1 ? ' (' + others.length + 'x)' : '') + (lastDate ? ' ' + new Date(lastDate).toLocaleDateString() : ''));
+                        })()
                       ),
                       /*#__PURE__*/React.createElement('td', { style: { padding: '10px 12px', textAlign: 'right' } },
                         row.status === 'decrypted' && /*#__PURE__*/React.createElement('button', {

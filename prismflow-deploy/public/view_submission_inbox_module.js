@@ -56,6 +56,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   }, [gradebookRefresh, isOpen]);
   const keyInputRef = useRef(null);
   const subInputRef = useRef(null);
+  const presetImportRef = useRef(null);
   const tx = t || ((k, fallback) => fallback || k);
   React.useEffect(() => {
     if (!isOpen || sessionLoadedRef.current) return;
@@ -157,6 +158,75 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
     delete next[key];
     writePresets(next);
     addToast && addToast('Deleted preset "' + name + '".', "info");
+  };
+  const exportPresets = () => {
+    const presetCount = Object.keys(rubricPresets).length;
+    if (presetCount === 0) {
+      addToast && addToast("No presets to export yet.", "warn");
+      return;
+    }
+    const payload = {
+      kind: "alloflow-rubric-presets",
+      schemaVersion: 1,
+      exportedAt: (/* @__PURE__ */ new Date()).toISOString(),
+      presets: rubricPresets
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const dateStr = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+    a.href = url;
+    a.download = "alloflow_rubric_presets_" + dateStr + ".json";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      if (a.parentNode) a.parentNode.removeChild(a);
+    }, 200);
+    addToast && addToast("Exported " + presetCount + " preset" + (presetCount === 1 ? "" : "s") + ".", "success");
+  };
+  const importPresets = async (e) => {
+    const file = e.target?.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      if (!parsed || parsed.kind !== "alloflow-rubric-presets" || !parsed.presets) {
+        addToast && addToast("Not a valid AlloFlow presets file.", "error");
+        return;
+      }
+      const incoming = parsed.presets;
+      const conflicts = Object.keys(incoming).filter((k) => rubricPresets[k]);
+      let overwriteAll = false;
+      if (conflicts.length > 0) {
+        overwriteAll = confirm(
+          conflicts.length + " preset" + (conflicts.length === 1 ? "" : "s") + " already exist with the same name: " + conflicts.slice(0, 5).map((k) => '"' + incoming[k].name + '"').join(", ") + (conflicts.length > 5 ? ", \u2026" : "") + ".\n\nClick OK to overwrite, Cancel to skip existing presets."
+        );
+      }
+      const next = { ...rubricPresets };
+      let added = 0, skipped = 0, overwritten = 0;
+      Object.entries(incoming).forEach(([k, p]) => {
+        if (next[k]) {
+          if (overwriteAll) {
+            next[k] = { ...p, lastUsed: (/* @__PURE__ */ new Date()).toISOString() };
+            overwritten++;
+          } else {
+            skipped++;
+          }
+        } else {
+          next[k] = { ...p, lastUsed: p.lastUsed || (/* @__PURE__ */ new Date()).toISOString() };
+          added++;
+        }
+      });
+      writePresets(next);
+      addToast && addToast(
+        added + " added" + (overwritten > 0 ? ", " + overwritten + " overwritten" : "") + (skipped > 0 ? ", " + skipped + " skipped" : ""),
+        "success"
+      );
+    } catch (err) {
+      addToast && addToast("Could not import: " + err.message, "error");
+    }
+    if (e.target) e.target.value = "";
   };
   const clearSavedSession = () => {
     try {
@@ -263,11 +333,40 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
     setExpandedRow(null);
   };
   const rosterStudents = rosterKey && rosterKey.students || {};
-  const rosterStudentKeys = Object.keys(rosterStudents).map((s) => s.toLowerCase());
+  const rosterStudentNames = Object.keys(rosterStudents);
+  const _normalizeNickname = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const rosterMatch = React.useMemo(() => {
+    const normalizedRoster = {};
+    rosterStudentNames.forEach((n) => {
+      normalizedRoster[_normalizeNickname(n)] = n;
+    });
+    return (nickname) => {
+      if (!nickname || nickname === "?") return { kind: "unknown" };
+      const raw = String(nickname);
+      if (rosterStudents[raw]) return { kind: "exact", name: raw };
+      const exactCi = rosterStudentNames.find((n) => n.toLowerCase() === raw.toLowerCase());
+      if (exactCi) return { kind: "exact", name: exactCi };
+      const norm = _normalizeNickname(raw);
+      if (norm && normalizedRoster[norm]) return { kind: "fuzzy", name: normalizedRoster[norm] };
+      return { kind: "unknown" };
+    };
+  }, [rosterKey]);
   const rosterStatus = (nickname) => {
-    if (!nickname || nickname === "?") return "unknown";
-    return rosterStudentKeys.indexOf(String(nickname).toLowerCase()) >= 0 ? "known" : "unknown";
+    const m = rosterMatch(nickname);
+    return m.kind === "exact" || m.kind === "fuzzy" ? "known" : "unknown";
   };
+  const previousGradesFor = React.useMemo(() => {
+    const byKey = {};
+    gradebookEntries.forEach((e) => {
+      const k = (e.nickname || "").toLowerCase() + "|" + (e.docTitle || "").toLowerCase();
+      if (!byKey[k]) byKey[k] = [];
+      byKey[k].push(e);
+    });
+    return (nickname, docTitle) => {
+      if (!nickname || !docTitle) return [];
+      return byKey[(nickname || "").toLowerCase() + "|" + (docTitle || "").toLowerCase()] || [];
+    };
+  }, [gradebookEntries]);
   const counts = queue.reduce((acc, r) => {
     acc[r.status] = (acc[r.status] || 0) + 1;
     return acc;
@@ -577,23 +676,46 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
     if (score >= 40) return { bg: "#fed7aa", color: "#9a3412" };
     return { bg: "#fee2e2", color: "#991b1b" };
   };
-  const rosterBadge = (status) => {
-    const styles = {
-      known: { bg: "#dcfce7", color: "#166534", label: "\u2713 Roster match" },
-      unknown: { bg: "#fef3c7", color: "#92400e", label: "\u26A0 Unknown name" }
-    };
-    const s = styles[status];
+  const rosterBadge = (input) => {
+    let kind, name;
+    if (typeof input === "string") {
+      kind = input;
+      name = null;
+    } else if (input && typeof input === "object") {
+      kind = input.kind === "exact" || input.kind === "fuzzy" ? input.kind : "unknown";
+      name = input.name;
+    } else {
+      kind = "unknown";
+    }
+    let bg, color, label, title;
+    if (kind === "exact") {
+      bg = "#dcfce7";
+      color = "#166534";
+      label = "\u2713 Roster match";
+      title = "Exact roster match";
+    } else if (kind === "fuzzy") {
+      bg = "#dcfce7";
+      color = "#166534";
+      label = "\u2713 " + name;
+      title = 'Matched roster student "' + name + '" by normalized name (capitalization/punctuation ignored)';
+    } else {
+      bg = "#fef3c7";
+      color = "#92400e";
+      label = "\u26A0 Unknown name";
+      title = "No roster student matched this nickname";
+    }
     return /* @__PURE__ */ React.createElement("span", {
+      title,
       style: {
         display: "inline-block",
         padding: "2px 8px",
         borderRadius: 999,
-        background: s.bg,
-        color: s.color,
+        background: bg,
+        color,
         fontSize: "0.7rem",
         fontWeight: 600
       }
-    }, s.label);
+    }, label);
   };
   return /* @__PURE__ */ React.createElement(
     "div",
@@ -860,6 +982,26 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                     cursor: !presetNameInput.trim() || !globalRubric.rubric.trim() && anchors.length === 0 ? "not-allowed" : "pointer"
                   }
                 }, "\u{1F4BE} Save"),
+                /* @__PURE__ */ React.createElement("button", {
+                  type: "button",
+                  onClick: () => presetImportRef.current?.click(),
+                  title: "Import presets from a JSON file (e.g. shared by another teacher).",
+                  style: { padding: "5px 10px", background: "white", color: "#3730a3", border: "1px solid #c7d2fe", borderRadius: 6, fontWeight: 600, fontSize: "0.74rem", cursor: "pointer" }
+                }, "\u2B06 Import"),
+                /* @__PURE__ */ React.createElement("input", {
+                  ref: presetImportRef,
+                  type: "file",
+                  accept: ".json,application/json",
+                  onChange: importPresets,
+                  style: { display: "none" },
+                  "aria-label": "Import presets JSON"
+                }),
+                Object.keys(rubricPresets).length > 0 && /* @__PURE__ */ React.createElement("button", {
+                  type: "button",
+                  onClick: exportPresets,
+                  title: "Export all your presets as a JSON file you can share or back up.",
+                  style: { padding: "5px 10px", background: "white", color: "#3730a3", border: "1px solid #c7d2fe", borderRadius: 6, fontWeight: 600, fontSize: "0.74rem", cursor: "pointer" }
+                }, "\u2B07 Export"),
                 Object.keys(rubricPresets).length > 0 && /* @__PURE__ */ React.createElement(
                   "div",
                   { style: { position: "relative" } },
@@ -1277,7 +1419,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                     "td",
                     { style: { padding: "10px 12px" } },
                     /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 700, color: "#1e293b" } }, row.nickname),
-                    row.nickname !== "?" && rosterBadge(rosterStatus(row.nickname))
+                    row.nickname !== "?" && rosterBadge(rosterMatch(row.nickname))
                   ),
                   /* @__PURE__ */ React.createElement(
                     "td",
@@ -1289,7 +1431,17 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                     "td",
                     { style: { padding: "10px 12px" } },
                     statusBadge(row.status),
-                    row.status === "error" && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 4, fontSize: "0.75rem", color: "#991b1b" } }, row.error)
+                    row.status === "error" && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 4, fontSize: "0.75rem", color: "#991b1b" } }, row.error),
+                    row.status === "decrypted" && row.payload && (() => {
+                      const prior = previousGradesFor(row.payload.nickname, row.payload.docTitle);
+                      const others = prior.filter((p) => p.submittedAt !== row.payload.timestamp);
+                      if (others.length === 0) return null;
+                      const lastDate = others.map((p) => p.gradedAt).filter(Boolean).sort().pop();
+                      return /* @__PURE__ */ React.createElement("div", {
+                        style: { marginTop: 4, display: "inline-block", padding: "2px 8px", borderRadius: 999, background: "#fef3c7", color: "#92400e", fontSize: "0.7rem", fontWeight: 600 },
+                        title: "This student already has " + others.length + " graded submission" + (others.length === 1 ? "" : "s") + " for this document in the gradebook. Most recent: " + (lastDate ? new Date(lastDate).toLocaleString() : "unknown")
+                      }, "\u{1F501} Previously graded" + (others.length > 1 ? " (" + others.length + "x)" : "") + (lastDate ? " " + new Date(lastDate).toLocaleDateString() : ""));
+                    })()
                   ),
                   /* @__PURE__ */ React.createElement(
                     "td",
