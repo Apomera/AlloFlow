@@ -291,6 +291,68 @@
     );
   };
 
+  // Fast synchronous safety check for use in Rehearse / role-play tabs
+  // where the student types directly to a multi-turn AI. Unlike safeCoach
+  // (which is async + makes an extra LLM call for nuanced assessment),
+  // this is a pure regex check via SafetyContentChecker so it can gate
+  // the AI's response without latency.
+  //
+  // Returns: { action: 'block' | 'nudge' | 'continue', severity, flag }
+  //   - 'block' → caller should NOT send the message to the AI. Append a
+  //     coach-style break-character response and surface crisis resources.
+  //   - 'nudge' → AI turn can proceed. Caller may append a soft "if this
+  //     is close to real, talk to a trusted adult" reminder after.
+  //   - 'continue' → no safety signal. Proceed normally.
+  //
+  // Also fires onSafetyFlag (writes to localStorage via the same pipeline
+  // as safeCoach), so the flag is visible to a hosting teacher in live
+  // sessions.
+  window.SelHub.safeRehearseCheck = function(message, opts) {
+    opts = opts || {};
+    var result = { action: 'continue', severity: 'none', flag: null };
+    if (!message || typeof message !== 'string') return result;
+    var checker = (window.__alloShared && window.__alloShared.SafetyContentChecker)
+      || window.SafetyContentChecker || null;
+    if (!checker || !checker.check) return result;
+    var flags = checker.check(message);
+    if (!flags || flags.length === 0) return result;
+    // Find the most severe flag.
+    var rank = { low: 1, medium: 2, high: 3, critical: 4 };
+    var top = flags.reduce(function(acc, f) {
+      return (rank[f.severity] || 0) > (rank[acc.severity] || 0) ? f : acc;
+    }, flags[0]);
+    result.flag = top;
+    result.severity = top.severity;
+    // Fire the flag through the same pipeline as safeCoach / adventure /
+    // socratic. In solo mode this writes to localStorage only; in live
+    // session the teacher dashboard can see it.
+    if (opts.onSafetyFlag) {
+      try {
+        opts.onSafetyFlag(Object.assign({}, top, {
+          source: 'sel_rehearse_' + (opts.toolId || 'unknown'),
+          context: message.substring(0, 100),
+          aiGenerated: false
+        }));
+      } catch (_) { /* swallow */ }
+    }
+    // Map severity to action.
+    if (top.severity === 'critical') {
+      result.action = 'block';
+    } else if (top.severity === 'high') {
+      result.action = 'nudge';
+    } else {
+      result.action = 'continue';
+    }
+    return result;
+  };
+
+  // Coach-style break-character response shown in the chat when
+  // safeRehearseCheck returns 'block'. Single source of truth so the
+  // 5 Rehearse tabs all show the same trustworthy text.
+  window.SelHub.rehearseBreakCharacterText = function(severity) {
+    return 'Hey, I want to pause the rehearsal for a second. What you just typed sounds heavy, and your wellbeing matters more than the practice. If any of this is real for you right now, please reach out to a trusted adult (a parent, teacher, school counselor) or one of the crisis lines below. You are not alone in this.';
+  };
+
   // Conditional, honest disclosure about what actually happens with the
   // conversation. The old "this space is monitored for your safety" copy
   // (formerly hardcoded in 5 tools) was misleading in solo mode: no adult

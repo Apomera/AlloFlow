@@ -957,7 +957,7 @@ window.SelHub = window.SelHub || {
         { id: 'practice', icon: '\uD83C\uDFAD',  label: 'Practice' },
         { id: 'cycle',    icon: '\uD83D\uDD17',  label: 'Break the Cycle' },
         { id: 'pledge',   icon: '\u270D\uFE0F', label: 'My Pledge' },
-        { id: 'coach',    icon: '\uD83E\uDD16',  label: 'Safe Space' },
+        { id: 'coach',    icon: '\uD83E\uDD16',  label: 'Talk it through' },
         { id: 'reference',icon: '\uD83D\uDCDA',  label: 'Reference' },
       ];
 
@@ -3070,7 +3070,7 @@ window.SelHub = window.SelHub || {
         );
       }
 
-      // ── Safe Space Coach ──
+      // ── Talk-it-through Coach ──
       var coachContent = null;
       if (activeTab === 'coach') {
         // ── Safety Layer: require informed consent before coach access ──
@@ -3111,7 +3111,7 @@ window.SelHub = window.SelHub || {
             sendFn().then(function(result) {
               var newHist = hist.concat([{ role: 'coach', text: result.response }]);
               upd({ coachHist: newHist, coachLoad: false, _lastTier: result.tier });
-              if (awardXP) awardXP(5, 'Used the Safe Space');
+              if (awardXP) awardXP(5, 'Talked it through with the coach');
             }).catch(function() {
               upd({ coachHist: hist.concat([{ role: 'coach', text: 'I\u2019m having trouble connecting. But your courage in talking about this is real. You don\u2019t have to carry it alone.' }]), coachLoad: false });
             });
@@ -3120,14 +3120,14 @@ window.SelHub = window.SelHub || {
           coachContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
             h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
               h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(37,99,235,0.3))' } }, '\uD83E\uDD16'),
-              h('h3', { style: { fontSize: '18px', fontWeight: 800, color: BD, margin: '0 0 4px' } }, 'Safe Space'),
+              h('h3', { style: { fontSize: '18px', fontWeight: 800, color: BD, margin: '0 0 4px' } }, 'Talk it through'),
               h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Talk about a bullying experience from any role.'),
               window.SelHub && window.SelHub.renderSafetyDisclosure && window.SelHub.renderSafetyDisclosure(h, band, ctx.activeSessionCode),
               h('p', { style: { fontSize: '11px', color: '#dc2626', margin: '6px 0 0', fontWeight: 600 } }, '\u26A0\uFE0F If you are in danger, please talk to a trusted adult or call 988.')
             ),
             // Show crisis resources if last message was flagged Tier 3
             (d._lastTier >= 3 && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
-            coachHist.length > 0 && h('div', { role: 'log', 'aria-label': 'Safe space conversation', 'aria-live': 'polite', 'aria-busy': coachLoad ? 'true' : 'false',
+            coachHist.length > 0 && h('div', { role: 'log', 'aria-label': 'Coach conversation', 'aria-live': 'polite', 'aria-busy': coachLoad ? 'true' : 'false',
               style: {
                 maxHeight: 320, overflowY: 'auto', marginBottom: 12,
                 padding: 14, borderRadius: 14,
@@ -3789,6 +3789,14 @@ window.SelHub = window.SelHub || {
                   // Conversation log
                   h('div', { 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12, maxHeight: '40vh', overflowY: 'auto', padding: 4 } },
                     rpHistory.map(function(turn, ti) {
+                      // _crisis is a marker — render the always-on crisis-resources
+                      // block in line so the student sees 988 / text line / trusted-adult
+                      // links right next to the coach's break-character message.
+                      if (turn.speaker === '_crisis') {
+                        return h('div', { key: 'rp-t-' + ti, style: { alignSelf: 'stretch' } },
+                          window.SelHub && window.SelHub.renderCrisisResources && window.SelHub.renderCrisisResources(h, band)
+                        );
+                      }
                       var isStudent = turn.speaker === 'student';
                       var isCoach = turn.speaker === 'coach';
                       return h('div', {
@@ -3827,6 +3835,25 @@ window.SelHub = window.SelHub || {
                         onClick: function() {
                           if (!callGemini || !rpInput.trim()) return;
                           var studentTurn = rpInput.trim();
+                          // ── Safety pre-check ──
+                          // Critical content (self-harm, harm to others) halts the
+                          // rehearsal and surfaces crisis resources instead of
+                          // continuing in character. High-severity content (bullying
+                          // language, concerning content) lets the rehearsal continue
+                          // but appends a soft "talk to a trusted adult" reminder.
+                          var safety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                            ? window.SelHub.safeRehearseCheck(studentTurn, { toolId: 'upstander', onSafetyFlag: ctx.onSafetyFlag })
+                            : { action: 'continue' };
+                          if (safety.action === 'block') {
+                            var blockedHist = rpHistory.concat([
+                              { speaker: 'student', text: studentTurn },
+                              { speaker: 'coach', text: window.SelHub.rehearseBreakCharacterText(safety.severity) },
+                              { speaker: '_crisis', text: '' }
+                            ]);
+                            upd({ rpHistory: blockedHist, rpInput: '', rpLoading: false });
+                            if (announceToSR) announceToSR('Rehearsal paused. Safety resources shown.');
+                            return;
+                          }
                           var newHist = rpHistory.concat([{ speaker: 'student', text: studentTurn }]);
                           upd({ rpHistory: newHist, rpInput: '', rpLoading: true });
                           var historyText = newHist.map(function(t) {
@@ -3851,7 +3878,11 @@ window.SelHub = window.SelHub || {
                             'Respond as the character in 1-3 sentences. Just the line.';
                           callGemini(prompt, false).then(function(r) {
                             var reply = (r || '').trim().replace(/^"|"$/g, '');
-                            upd({ rpHistory: newHist.concat([{ speaker: 'ai', text: reply || '...' }]), rpLoading: false });
+                            var afterTurn = newHist.concat([{ speaker: 'ai', text: reply || '...' }]);
+                            if (safety.action === 'nudge') {
+                              afterTurn = afterTurn.concat([{ speaker: 'coach', text: 'Quick check-in: if any of what you just typed is hitting close to real life, talking to a trusted adult is always an option.' }]);
+                            }
+                            upd({ rpHistory: afterTurn, rpLoading: false });
                             if (announceToSR) announceToSR('Peer responded');
                           }).catch(function() {
                             upd({ rpHistory: newHist.concat([{ speaker: 'ai', text: '(AI not reachable — try again in a moment)' }]), rpLoading: false });
@@ -3958,7 +3989,11 @@ window.SelHub = window.SelHub || {
                     )
                   ),
                   rpRole && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#6b21a8', fontStyle: 'italic' } },
-                    'AI-generated peer responses. No real student is being depicted. Treat coach feedback as one perspective.')
+                    'AI-generated peer responses. No real student is being depicted. Treat coach feedback as one perspective.'),
+                  // Always-on help strip — visible in both solo and live-session
+                  // modes. The Rehearse layer makes safety-keyword checks but
+                  // the real safety net is a trusted adult, not the AI.
+                  rpRole && window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
                 )
               )
             );

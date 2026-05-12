@@ -1088,6 +1088,7 @@ window.SelHub = window.SelHub || {
           )
         ),
 
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('restorativeCircle', h) : null),
         // ── Tab Navigation ──
         h('div', { role: 'tablist', 'aria-label': 'Restorative Circle tabs', className: 'flex flex-wrap gap-1 bg-amber-50 rounded-xl p-1 border border-amber-200' },
           ['home', 'circle', 'scripts', 'harm-repair', 'scenarios', 'rehearse', 'agreements', 'talking-piece', 'roots', 'questions', 'roles', 'empathy-map', 'compare', 'badges'].map(function(t) {
@@ -1651,6 +1652,11 @@ window.SelHub = window.SelHub || {
               // Conversation log
               h('div', { 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '40vh', overflowY: 'auto', padding: 4 } },
                 rcRpHistory.map(function(turn, ti) {
+                  if (turn.speaker === '_crisis') {
+                    return h('div', { key: 'rc-rp-' + ti, style: { alignSelf: 'stretch' } },
+                      window.SelHub && window.SelHub.renderCrisisResources && window.SelHub.renderCrisisResources(h, gradeBand)
+                    );
+                  }
                   var isStudent = turn.speaker === 'student';
                   var isCoach = turn.speaker === 'coach';
                   return h('div', {
@@ -1690,6 +1696,21 @@ window.SelHub = window.SelHub || {
                     onClick: function() {
                       if (!callGemini || !rcRpInput.trim()) return;
                       var studentTurn = rcRpInput.trim();
+                      // Safety pre-check (see sel_safety_layer.js:safeRehearseCheck).
+                      var safety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                        ? window.SelHub.safeRehearseCheck(studentTurn, { toolId: 'restorativecircle', onSafetyFlag: ctx.onSafetyFlag })
+                        : { action: 'continue' };
+                      if (safety.action === 'block') {
+                        updMulti({
+                          rcRpHistory: rcRpHistory.concat([
+                            { speaker: 'student', text: studentTurn },
+                            { speaker: 'coach', text: window.SelHub.rehearseBreakCharacterText(safety.severity) },
+                            { speaker: '_crisis', text: '' }
+                          ]),
+                          rcRpInput: '', rcRpLoading: false
+                        });
+                        return;
+                      }
                       var newHist = rcRpHistory.concat([{ speaker: 'student', text: studentTurn }]);
                       updMulti({ rcRpHistory: newHist, rcRpInput: '', rcRpLoading: true });
                       var historyText = newHist.map(function(t) {
@@ -1713,7 +1734,11 @@ window.SelHub = window.SelHub || {
                         'Respond as the character in 1-3 sentences. Just the line.';
                       callGemini(prompt, false).then(function(r) {
                         var reply = (r || '').trim().replace(/^"|"$/g, '');
-                        updMulti({ rcRpHistory: newHist.concat([{ speaker: 'ai', text: reply || '...' }]), rcRpLoading: false });
+                        var afterTurn = newHist.concat([{ speaker: 'ai', text: reply || '...' }]);
+                        if (safety.action === 'nudge') {
+                          afterTurn = afterTurn.concat([{ speaker: 'coach', text: 'Quick check-in: if any of what you just typed is close to real life, talking to a trusted adult is always an option.' }]);
+                        }
+                        updMulti({ rcRpHistory: afterTurn, rcRpLoading: false });
                         if (announceToSR) announceToSR('Response received');
                       }).catch(function() {
                         updMulti({ rcRpHistory: newHist.concat([{ speaker: 'ai', text: '(AI not reachable — try again in a moment)' }]), rcRpLoading: false });
@@ -1808,7 +1833,9 @@ window.SelHub = window.SelHub || {
                 )
               ),
               rcRpRole && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#92400e', fontStyle: 'italic' } },
-                'AI-generated responses. No real student is depicted. Treat coach feedback as one perspective.')
+                'AI-generated responses. No real student is depicted. Treat coach feedback as one perspective.'),
+              // Always-on help strip — the real safety net is a trusted adult.
+              rcRpRole && window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, gradeBand)
             )
           );
         })(),

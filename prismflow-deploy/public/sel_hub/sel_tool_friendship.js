@@ -728,6 +728,21 @@ window.SelHub = window.SelHub || {
         function fSendTurn() {
           if (!callGemini || !fRpInput.trim() || !fCfg) return;
           var st = fRpInput.trim();
+          // Safety pre-check (see sel_safety_layer.js:safeRehearseCheck).
+          var safety = (window.SelHub && window.SelHub.safeRehearseCheck)
+            ? window.SelHub.safeRehearseCheck(st, { toolId: 'friendship', onSafetyFlag: onSafetyFlag })
+            : { action: 'continue' };
+          if (safety.action === 'block') {
+            upd({
+              fRpHistory: fRpHistory.concat([
+                { speaker: 'student', text: st },
+                { speaker: 'coach', text: window.SelHub.rehearseBreakCharacterText(safety.severity) },
+                { speaker: '_crisis', text: '' }
+              ]),
+              fRpInput: '', fRpLoading: false
+            });
+            return;
+          }
           var newHist = fRpHistory.concat([{ speaker: 'student', text: st }]);
           upd({ fRpHistory: newHist, fRpInput: '', fRpLoading: true });
           var sceneTxt = (fRpHistory[0] && fRpHistory[0].scene) || fCfg.fallbackScene;
@@ -751,7 +766,11 @@ window.SelHub = window.SelHub || {
             'Respond as the character in 1-3 sentences. Just the line.';
           callGemini(prompt, false).then(function(r) {
             var reply = (r || '').trim().replace(/^"|"$/g, '');
-            upd({ fRpHistory: newHist.concat([{ speaker: 'ai', text: reply || '...' }]), fRpLoading: false });
+            var afterTurn = newHist.concat([{ speaker: 'ai', text: reply || '...' }]);
+            if (safety.action === 'nudge') {
+              afterTurn = afterTurn.concat([{ speaker: 'coach', text: 'Quick check-in: if any of what you just typed is close to real life, talking to a trusted adult is always an option.' }]);
+            }
+            upd({ fRpHistory: afterTurn, fRpLoading: false });
           }).catch(function() {
             upd({ fRpHistory: newHist.concat([{ speaker: 'ai', text: '(AI not reachable — try again in a moment)' }]), fRpLoading: false });
           });
@@ -850,6 +869,11 @@ window.SelHub = window.SelHub || {
             ),
             h('div', { 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '40vh', overflowY: 'auto', padding: 4 } },
               fRpHistory.map(function(turn, ti) {
+                if (turn.speaker === '_crisis') {
+                  return h('div', { key: 'f-rp-' + ti, style: { alignSelf: 'stretch' } },
+                    window.SelHub && window.SelHub.renderCrisisResources && window.SelHub.renderCrisisResources(h, band)
+                  );
+                }
                 var isStudent = turn.speaker === 'student';
                 var isCoach = turn.speaker === 'coach';
                 return h('div', {

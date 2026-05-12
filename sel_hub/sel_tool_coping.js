@@ -1927,6 +1927,24 @@ window.SelHub = window.SelHub || {
         function cpSendTurn() {
           if (!callGemini || !cpRpInput.trim() || !trigCfg) return;
           var studentTurn = cpRpInput.trim();
+          // Safety pre-check (see sel_safety_layer.js:safeRehearseCheck).
+          // Coping is the highest-content-risk Rehearse — students simulate
+          // distress moments and may type real feelings. Block + show crisis
+          // resources for critical content; nudge for high-severity.
+          var safety = (window.SelHub && window.SelHub.safeRehearseCheck)
+            ? window.SelHub.safeRehearseCheck(studentTurn, { toolId: 'coping', onSafetyFlag: onSafetyFlag })
+            : { action: 'continue' };
+          if (safety.action === 'block') {
+            upd({
+              cpRpHistory: cpRpHistory.concat([
+                { speaker: 'student', text: studentTurn },
+                { speaker: 'coach', text: window.SelHub.rehearseBreakCharacterText(safety.severity) },
+                { speaker: '_crisis', text: '' }
+              ]),
+              cpRpInput: '', cpRpLoading: false
+            });
+            return;
+          }
           var newHist = cpRpHistory.concat([{ speaker: 'student', text: studentTurn }]);
           upd({ cpRpHistory: newHist, cpRpInput: '', cpRpLoading: true });
           var scene = (cpRpHistory[0] && cpRpHistory[0].scene) || trigCfg.fallbackScene;
@@ -1953,7 +1971,11 @@ window.SelHub = window.SelHub || {
             'Respond as the trigger in 1-2 sentences. Just the line.';
           callGemini(prompt, false).then(function(r) {
             var reply = (r || '').trim().replace(/^"|"$/g, '');
-            upd({ cpRpHistory: newHist.concat([{ speaker: 'ai', text: reply || '...' }]), cpRpLoading: false });
+            var afterTurn = newHist.concat([{ speaker: 'ai', text: reply || '...' }]);
+            if (safety.action === 'nudge') {
+              afterTurn = afterTurn.concat([{ speaker: 'coach', text: 'Quick check-in: if any of what you just typed is close to real life, talking to a trusted adult is always an option.' }]);
+            }
+            upd({ cpRpHistory: afterTurn, cpRpLoading: false });
           }).catch(function() {
             upd({ cpRpHistory: newHist.concat([{ speaker: 'ai', text: '(AI not reachable — take a real breath. Try again in a moment.)' }]), cpRpLoading: false });
           });
@@ -2067,6 +2089,11 @@ window.SelHub = window.SelHub || {
             // Chat
             h('div', { 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '40vh', overflowY: 'auto', padding: 4 } },
               cpRpHistory.map(function(turn, ti) {
+                if (turn.speaker === '_crisis') {
+                  return h('div', { key: 'cp-rp-' + ti, style: { alignSelf: 'stretch' } },
+                    window.SelHub && window.SelHub.renderCrisisResources && window.SelHub.renderCrisisResources(h, band)
+                  );
+                }
                 var isStudent = turn.speaker === 'student';
                 var isCoach = turn.speaker === 'coach';
                 return h('div', {
@@ -2139,7 +2166,10 @@ window.SelHub = window.SelHub || {
               )
             ),
             h('p', { style: { margin: '10px 0 0', fontSize: 11, color: '#fdba74', fontStyle: 'italic' } },
-              'AI-generated trigger simulation. If anything brings up something real that needs support, talk to a trusted adult — coping rehearsal is practice, not therapy.')
+              'AI-generated trigger simulation. If anything brings up something real that needs support, talk to a trusted adult — coping rehearsal is practice, not therapy.'),
+            // Always-on help strip. Coping is the highest-content-risk Rehearse;
+            // resources stay visible throughout the practice.
+            window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
           )
         );
       }

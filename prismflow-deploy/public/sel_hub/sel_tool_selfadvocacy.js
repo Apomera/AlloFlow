@@ -2656,6 +2656,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
         var sendRpTurn = function() {
           if (!callGemini || !pRpInput.trim() || !selected) return;
           var studentTurn = pRpInput.trim();
+          // Safety pre-check (see sel_safety_layer.js:safeRehearseCheck).
+          var safety = (window.SelHub && window.SelHub.safeRehearseCheck)
+            ? window.SelHub.safeRehearseCheck(studentTurn, { toolId: 'selfadvocacy', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+            : { action: 'continue' };
+          if (safety.action === 'block') {
+            upd({
+              pRpHistory: pRpHistory.concat([
+                { speaker: 'student', text: studentTurn },
+                { speaker: 'coach', text: window.SelHub.rehearseBreakCharacterText(safety.severity) },
+                { speaker: '_crisis', text: '' }
+              ]),
+              pRpInput: '', pRpLoading: false
+            });
+            return;
+          }
           var newHist = pRpHistory.concat([{ speaker: 'student', text: studentTurn }]);
           upd({ pRpHistory: newHist, pRpInput: '', pRpLoading: true });
           var historyText = newHist.map(function(t) {
@@ -2681,7 +2696,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
             .then(function(r) {
               var reply = (typeof r === 'string') ? r : (r && r.text ? r.text : String(r));
               reply = (reply || '').trim().replace(/^"|"$/g, '');
-              upd({ pRpHistory: newHist.concat([{ speaker: 'ai', text: reply || '...' }]), pRpLoading: false });
+              var afterTurn = newHist.concat([{ speaker: 'ai', text: reply || '...' }]);
+              if (safety.action === 'nudge') {
+                afterTurn = afterTurn.concat([{ speaker: 'coach', text: 'Quick check-in: if any of what you just typed is close to real life, talking to a trusted adult is always an option.' }]);
+              }
+              upd({ pRpHistory: afterTurn, pRpLoading: false });
             })
             .catch(function() {
               upd({ pRpHistory: newHist.concat([{ speaker: 'ai', text: '(AI not reachable — try again in a moment)' }]), pRpLoading: false });
@@ -2843,6 +2862,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
                 // Chat history
                 h('div', { 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '40vh', overflowY: 'auto', padding: 4 } },
                   pRpHistory.map(function(turn, ti) {
+                    if (turn.speaker === '_crisis') {
+                      return h('div', { key: 'sa-rp-' + ti, style: { alignSelf: 'stretch' } },
+                        window.SelHub && window.SelHub.renderCrisisResources && window.SelHub.renderCrisisResources(h, band)
+                      );
+                    }
                     var isStudent = turn.speaker === 'student';
                     var isCoach = turn.speaker === 'coach';
                     return h('div', {
@@ -2909,7 +2933,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
                     }, 'Done')
                   )
                 ),
-                h('p', { className: 'text-[11px] italic text-fuchsia-300/70 mt-1' }, 'AI-generated. The other person is a simulation, not a script. Take what is useful.')
+                h('p', { className: 'text-[11px] italic text-fuchsia-300/70 mt-1' }, 'AI-generated. The other person is a simulation, not a script. Take what is useful.'),
+                // Always-on help strip — the real safety net is a trusted adult.
+                window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, viewBand === 'high' ? 'high' : 'middle')
               )
             )
           ),
@@ -4545,6 +4571,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
             if (main && main.focus) { try { main.focus(); } catch(err) {} }
           }
         }, 'Skip to main content'),
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('selfAdvocacy', h) : null),
         renderTabs(),
         h('main', {
           id: 'selfadv-main-content',
