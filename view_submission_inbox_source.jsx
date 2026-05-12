@@ -29,6 +29,17 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   const [rubrics, setRubrics] = useState({});
   const [grades, setGrades] = useState({});
   const [gradingRow, setGradingRow] = useState(null);
+  // Multi-anchor few-shot calibration (May 11 2026, Phase 3 v2):
+  // Each anchor is a teacher-scored exemplar of a student response that
+  // the AI uses as a calibration sample when grading every other response.
+  // Anchors are global across the inbox session (not per-row) so
+  // teachers can build up a calibration set by anchoring real student
+  // responses they've graded, then have the AI extend the scoring to
+  // everything else.
+  // shape: [{ studentResponse, teacherScore (0-100), teacherFeedback?, fromSubmissionIdx?, fromResponseKey? }]
+  const [anchors, setAnchors] = useState([]);
+  const [anchorsPanelOpen, setAnchorsPanelOpen] = useState(false);
+  const [pendingAnchor, setPendingAnchor] = useState(null);  // {submissionIdx, responseKey, responseText}
   const keyInputRef = useRef(null);
   const subInputRef = useRef(null);
 
@@ -178,16 +189,60 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
       addToast && addToast('Gemini API not ready. Open a regular AlloFlow window first so the API key loads.', 'error');
       return;
     }
-    const calibrationSamples = (r.exemplar && r.exemplar.trim())
-      ? [{ studentResponse: r.exemplar.trim(), teacherScore: 95, teacherFeedback: 'Teacher-provided exemplar — full credit anchor.' }]
-      : [];
-    const responseEntries = Object.entries(row.payload.responses || {}).filter(([k, v]) => v && String(v).trim());
+    // Build calibration set: combine global anchors (multi-anchor few-shot)
+    // with the per-row exemplar if one was provided. Cap at 5 to keep the
+    // prompt under control.
+    const calibrationSamples = [];
+    if (Array.isArray(anchors) && anchors.length > 0) {
+      anchors.forEach(a => {
+        calibrationSamples.push({
+          studentResponse: a.studentResponse,
+          teacherScore: a.teacherScore,
+          teacherFeedback: a.teacherFeedback || ''
+        });
+      });
+    }
+    if (r.exemplar && r.exemplar.trim() && calibrationSamples.length < 5) {
+      calibrationSamples.push({
+        studentResponse: r.exemplar.trim(),
+        teacherScore: 95,
+        teacherFeedback: 'Teacher-provided exemplar — full credit anchor.'
+      });
+    }
+    const cappedSamples = calibrationSamples.slice(0, 5);
+
+    // Skip responses that are already anchored — they have teacher scores
+    // already, no need to ask AI.
+    const anchoredKeys = new Set();
+    anchors.forEach(a => {
+      if (a.fromSubmissionIdx === idx && a.fromResponseKey) anchoredKeys.add(a.fromResponseKey);
+    });
+    const responseEntries = Object.entries(row.payload.responses || {})
+      .filter(([k, v]) => v && String(v).trim() && !anchoredKeys.has(k));
     if (responseEntries.length === 0) {
-      addToast && addToast('No responses to grade in this submission.', 'warn');
+      addToast && addToast(
+        anchoredKeys.size > 0
+          ? 'All responses on this submission are already anchored.'
+          : 'No responses to grade in this submission.',
+        'warn'
+      );
       return;
     }
     setGradingRow(idx);
-    setGrades(prev => ({ ...prev, [idx]: { ...(prev[idx] || {}) } }));
+    // Pre-populate anchored responses' grades so they show in the row
+    setGrades(prev => {
+      const rowGrades = { ...(prev[idx] || {}) };
+      anchors.forEach(a => {
+        if (a.fromSubmissionIdx === idx && a.fromResponseKey) {
+          rowGrades[a.fromResponseKey] = {
+            score: a.teacherScore,
+            status: 'correct',
+            feedback: '📌 Teacher-anchored: ' + (a.teacherFeedback || '(no note)')
+          };
+        }
+      });
+      return { ...prev, [idx]: rowGrades };
+    });
     let ok = 0, fail = 0;
     for (let i = 0; i < responseEntries.length; i++) {
       const [key, value] = responseEntries[i];
@@ -196,7 +251,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
           rubric: rubricText,
           context: r.context || row.payload.docTitle || '',
           studentResponse: String(value),
-          calibrationSamples: calibrationSamples,
+          calibrationSamples: cappedSamples,
           callGemini: callGemini,
         });
         setGrades(prev => ({
@@ -218,6 +273,40 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
       fail > 0 ? 'warn' : 'success'
     );
   };
+  // ── Anchor management (Phase 3 v2: multi-anchor few-shot) ──────
+  const openAnchorForm = (submissionIdx, responseKey, responseText) => {
+    setPendingAnchor({ submissionIdx, responseKey, responseText, score: 95, feedback: '' });
+  };
+  const cancelPendingAnchor = () => setPendingAnchor(null);
+  const confirmPendingAnchor = () => {
+    if (!pendingAnchor) return;
+    const score = Math.max(0, Math.min(100, parseInt(pendingAnchor.score, 10) || 0));
+    setAnchors(prev => [...prev, {
+      studentResponse: pendingAnchor.responseText,
+      teacherScore: score,
+      teacherFeedback: pendingAnchor.feedback || '',
+      fromSubmissionIdx: pendingAnchor.submissionIdx,
+      fromResponseKey: pendingAnchor.responseKey,
+    }]);
+    setPendingAnchor(null);
+    addToast && addToast('Anchor added (' + score + '/100). It will calibrate every future grading run.', 'success');
+  };
+  const removeAnchor = (i) => {
+    setAnchors(prev => prev.filter((_, idx) => idx !== i));
+  };
+  const clearAnchors = () => {
+    if (anchors.length === 0) return;
+    setAnchors([]);
+    addToast && addToast('Cleared ' + anchors.length + ' calibration anchor' + (anchors.length === 1 ? '' : 's') + '.', 'info');
+  };
+  const isResponseAnchored = (submissionIdx, responseKey) => {
+    return anchors.some(a => a.fromSubmissionIdx === submissionIdx && a.fromResponseKey === responseKey);
+  };
+  const getAnchorScore = (submissionIdx, responseKey) => {
+    const a = anchors.find(a2 => a2.fromSubmissionIdx === submissionIdx && a2.fromResponseKey === responseKey);
+    return a ? a.teacherScore : null;
+  };
+
   const saveRowToGradebook = (idx) => {
     const row = queue[idx];
     if (!row || row.status !== 'decrypted' || !row.payload) return;
@@ -284,7 +373,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
       style: {
         background: 'white', borderRadius: 16, boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
         width: '100%', maxWidth: 980, maxHeight: '90vh', display: 'flex', flexDirection: 'column',
-        border: '2px solid #c7d2fe', overflow: 'hidden'
+        border: '2px solid #c7d2fe', overflow: 'hidden', position: 'relative'
       }
     },
       // Header
@@ -363,6 +452,56 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
           })
         ),
 
+        // Calibration anchors panel — visible whenever the queue has decrypted rows
+        (counts.decrypted || 0) > 0 && /*#__PURE__*/React.createElement('div', { style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: anchorsPanelOpen ? '12px 16px' : '8px 14px', marginBottom: 14 } },
+          /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
+            /*#__PURE__*/React.createElement('button', {
+              type: 'button',
+              onClick: () => setAnchorsPanelOpen(!anchorsPanelOpen),
+              style: { display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 700, color: '#92400e', fontSize: '0.9rem' }
+            },
+              '📌 Calibration anchors (' + anchors.length + ')',
+              /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.75rem', fontWeight: 600, color: '#b45309' } }, anchorsPanelOpen ? '▾' : '▸')
+            ),
+            /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.78rem', color: '#92400e' } },
+              anchors.length === 0
+                ? 'Tap 📌 on any decrypted response to teach the AI your scoring direction.'
+                : 'Each AI grading run will use these ' + anchors.length + ' anchor' + (anchors.length === 1 ? '' : 's') + ' as few-shot examples.'
+            )
+          ),
+          anchorsPanelOpen && /*#__PURE__*/React.createElement('div', { style: { marginTop: 10, paddingTop: 10, borderTop: '1px solid #fde68a' } },
+            anchors.length === 0
+              ? /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', color: '#92400e', fontStyle: 'italic' } },
+                  'No anchors yet. Anchors are individual student responses you score by hand; the AI uses them as calibration examples when grading every other response. 3-5 anchors that span the score range usually gives the best results.'
+                )
+              : /*#__PURE__*/React.createElement('div', null,
+                  anchors.map((a, i) => /*#__PURE__*/React.createElement('div', { key: i, style: { display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 10px', background: 'white', borderRadius: 6, marginBottom: 6, border: '1px solid #fde68a' } },
+                    /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', minWidth: 48, padding: '2px 8px', borderRadius: 999, background: scoreColor(a.teacherScore).bg, color: scoreColor(a.teacherScore).color, fontWeight: 700, fontSize: '0.8rem', textAlign: 'center', flexShrink: 0 } }, a.teacherScore + '/100'),
+                    /*#__PURE__*/React.createElement('div', { style: { flex: 1, minWidth: 0 } },
+                      /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', color: '#1e293b' } }, String(a.studentResponse).slice(0, 180) + (a.studentResponse.length > 180 ? '…' : '')),
+                      a.teacherFeedback && /*#__PURE__*/React.createElement('div', { style: { marginTop: 4, fontSize: '0.75rem', color: '#64748b', fontStyle: 'italic' } }, '"' + a.teacherFeedback + '"')
+                    ),
+                    /*#__PURE__*/React.createElement('button', {
+                      type: 'button',
+                      onClick: () => removeAnchor(i),
+                      title: 'Remove this anchor',
+                      style: { padding: '2px 8px', background: 'transparent', color: '#94a3b8', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: '0.75rem', cursor: 'pointer', flexShrink: 0 }
+                    }, '✗')
+                  )),
+                  /*#__PURE__*/React.createElement('div', { style: { marginTop: 8, fontSize: '0.78rem', color: '#92400e' } },
+                    /*#__PURE__*/React.createElement('button', {
+                      type: 'button',
+                      onClick: clearAnchors,
+                      style: { padding: '4px 10px', background: 'transparent', color: '#92400e', border: '1px solid #fde68a', borderRadius: 6, fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', marginRight: 8 }
+                    }, 'Clear all'),
+                    /*#__PURE__*/React.createElement('span', { style: { color: '#b45309' } },
+                      'Tip: anchor responses spanning the full score range (e.g. one 95, one 70, one 40) for the most accurate AI calibration.'
+                    )
+                  )
+                )
+          )
+        ),
+
         // Step 3: decrypt action
         privateJwk && queue.length > 0 && /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 10, alignItems: 'center', marginBottom: 14 } },
           /*#__PURE__*/React.createElement('button', {
@@ -431,10 +570,26 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                             : Object.entries(row.payload.responses).map(([k, v], i) => {
                                 const g = (grades[idx] || {})[k];
                                 const sc = g ? scoreColor(g.score) : null;
-                                return /*#__PURE__*/React.createElement('div', { key: i, style: { marginBottom: 8, padding: '6px 8px', borderRadius: 6, background: g ? 'white' : 'transparent', border: g ? '1px solid #e2e8f0' : 'none' } },
-                                  /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', marginBottom: g ? 4 : 0 } },
-                                    /*#__PURE__*/React.createElement('code', { style: { fontSize: '0.72rem', color: '#94a3b8', marginRight: 6 } }, k.length > 40 ? k.slice(0, 40) + '…' : k),
-                                    /*#__PURE__*/React.createElement('span', { style: { color: '#1e293b' } }, String(v).slice(0, 300))
+                                const isAnchored = isResponseAnchored(idx, k);
+                                const anchorScore = getAnchorScore(idx, k);
+                                return /*#__PURE__*/React.createElement('div', { key: i, style: { marginBottom: 8, padding: '6px 8px', borderRadius: 6, background: isAnchored ? '#fef3c7' : (g ? 'white' : 'transparent'), border: isAnchored ? '1.5px solid #f59e0b' : (g ? '1px solid #e2e8f0' : 'none') } },
+                                  /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: '0.85rem', marginBottom: g || isAnchored ? 4 : 0 } },
+                                    /*#__PURE__*/React.createElement('div', { style: { flex: 1, minWidth: 0 } },
+                                      /*#__PURE__*/React.createElement('code', { style: { fontSize: '0.72rem', color: '#94a3b8', marginRight: 6 } }, k.length > 40 ? k.slice(0, 40) + '…' : k),
+                                      /*#__PURE__*/React.createElement('span', { style: { color: '#1e293b' } }, String(v).slice(0, 300))
+                                    ),
+                                    String(v).trim() && (
+                                      isAnchored
+                                        ? /*#__PURE__*/React.createElement('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 999, background: '#fde68a', color: '#92400e', fontWeight: 700, fontSize: '0.72rem', flexShrink: 0 } },
+                                            '📌 Anchor ' + anchorScore + '/100'
+                                          )
+                                        : /*#__PURE__*/React.createElement('button', {
+                                            type: 'button',
+                                            onClick: () => openAnchorForm(idx, k, String(v)),
+                                            title: 'Mark this response as a calibration anchor. The AI will use it as an example to match your scoring.',
+                                            style: { padding: '2px 8px', background: '#fffbeb', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 999, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }
+                                          }, '📌 Anchor')
+                                    )
                                   ),
                                   g && /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, fontSize: '0.78rem' } },
                                     /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700 } }, (typeof g.score === 'number' ? g.score : '–') + '/100'),
@@ -463,7 +618,14 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                               placeholder: 'e.g., "Reading response to chapter 3"',
                               style: { width: '100%', padding: '6px 8px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: '0.85rem', marginBottom: 8 }
                             }),
-                            /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.78rem', color: '#475569', fontWeight: 600, marginBottom: 4 } }, 'Exemplar full-credit response (optional, used as calibration anchor)'),
+                            /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.78rem', color: '#475569', fontWeight: 600, marginBottom: 4 } },
+                              'Quick exemplar (optional) ',
+                              /*#__PURE__*/React.createElement('span', { style: { fontWeight: 400, color: '#94a3b8', fontSize: '0.75rem' } },
+                                anchors.length > 0
+                                  ? '— ' + anchors.length + ' calibration anchor' + (anchors.length === 1 ? '' : 's') + ' active (📌 panel above). Anchors apply across all submissions; this exemplar adds one more locally.'
+                                  : '— or tap 📌 on a real student response above to anchor it (multi-anchor calibration).'
+                              )
+                            ),
                             /*#__PURE__*/React.createElement('textarea', {
                               value: (rubrics[idx] && rubrics[idx].exemplar) || '',
                               onChange: e => updateRubric(idx, { exemplar: e.target.value }),
@@ -509,6 +671,56 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
             type: 'button', onClick: onClose,
             style: { padding: '8px 18px', background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }
           }, 'Close')
+        )
+      ),
+
+      // Pending anchor inline form (nested overlay)
+      pendingAnchor && /*#__PURE__*/React.createElement('div', {
+        role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Score this response as a calibration anchor',
+        style: { position: 'absolute', inset: 0, background: 'rgba(15,23,42,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, zIndex: 10 }
+      },
+        /*#__PURE__*/React.createElement('div', { style: { background: 'white', borderRadius: 14, boxShadow: '0 12px 40px rgba(0,0,0,0.25)', maxWidth: 540, width: '100%', padding: '20px 24px', border: '2px solid #fde68a' } },
+          /*#__PURE__*/React.createElement('h3', { style: { margin: '0 0 8px 0', fontSize: '1.05rem', fontWeight: 800, color: '#92400e' } }, '📌 Anchor this response'),
+          /*#__PURE__*/React.createElement('p', { style: { margin: '0 0 12px 0', fontSize: '0.85rem', color: '#64748b' } },
+            'Give this response a score. The AI will use it as a calibration example when grading every other response.'
+          ),
+          /*#__PURE__*/React.createElement('div', { style: { background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '10px 12px', marginBottom: 14, fontSize: '0.85rem', color: '#1e293b', maxHeight: 120, overflowY: 'auto' } },
+            /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', fontWeight: 700, marginBottom: 4 } }, 'Student response'),
+            pendingAnchor.responseText
+          ),
+          /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: 4 } }, 'Score (0-100)'),
+          /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 } },
+            /*#__PURE__*/React.createElement('input', {
+              type: 'range', min: 0, max: 100, step: 5,
+              value: pendingAnchor.score,
+              onChange: e => setPendingAnchor({ ...pendingAnchor, score: e.target.value }),
+              style: { flex: 1 }
+            }),
+            /*#__PURE__*/React.createElement('input', {
+              type: 'number', min: 0, max: 100,
+              value: pendingAnchor.score,
+              onChange: e => setPendingAnchor({ ...pendingAnchor, score: e.target.value }),
+              style: { width: 70, padding: '4px 8px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: '0.9rem', textAlign: 'center' }
+            })
+          ),
+          /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: 4 } }, 'Note (optional — tells the AI why this got that score)'),
+          /*#__PURE__*/React.createElement('textarea', {
+            value: pendingAnchor.feedback,
+            onChange: e => setPendingAnchor({ ...pendingAnchor, feedback: e.target.value }),
+            placeholder: 'e.g., "Clear evidence + reasoning, but missed the counter-argument."',
+            rows: 2,
+            style: { width: '100%', padding: 8, border: '1px solid #cbd5e1', borderRadius: 6, fontSize: '0.85rem', fontFamily: 'inherit', resize: 'vertical', marginBottom: 16 }
+          }),
+          /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 8, justifyContent: 'flex-end' } },
+            /*#__PURE__*/React.createElement('button', {
+              type: 'button', onClick: cancelPendingAnchor,
+              style: { padding: '8px 16px', background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.88rem' }
+            }, 'Cancel'),
+            /*#__PURE__*/React.createElement('button', {
+              type: 'button', onClick: confirmPendingAnchor,
+              style: { padding: '8px 16px', background: '#f59e0b', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: '0.88rem' }
+            }, '📌 Add anchor')
+          )
         )
       )
     )
