@@ -4144,7 +4144,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       // ── Start / stop driving ──
       var startDriving = useCallback(function(scenarioId, vehicleId) {
-        var scn = SCENARIOS.find(function(s) { return s.id === scenarioId; }) || SCENARIOS[0];
+        // Shallow-clone so the Free Explore override block below (and any
+        // other runtime mutations) don't leak into the SCENARIOS master
+        // array. Previously `scn.time = fes.time` would mutate the source
+        // entry, so a Free Explore session with `time: 'day'` would leave
+        // SCENARIOS['night'].time stuck at 'day' for the rest of the
+        // session — making the Night Driving scenario render as daytime
+        // even though its definition calls for night.
+        var _scnBase = SCENARIOS.find(function(s) { return s.id === scenarioId; }) || SCENARIOS[0];
+        var scn = Object.assign({}, _scnBase);
         var veh = VEHICLES.find(function(v) { return v.id === vehicleId; }) || VEHICLES[0];
         mapRef.current = buildMap(scn.id);
         trafficRef.current = spawnTraffic(scn);
