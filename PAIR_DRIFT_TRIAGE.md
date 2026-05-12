@@ -25,7 +25,7 @@ backlog: each "Real reverse drift" entry is one focused follow-up commit.
 | Module | Status | Δ lines | src-only | mod-only | Classification | Action |
 |---|---|---|---|---|---|---|
 | `generate_dispatcher` | REVERSED | +1483 | 0 | **20** | **Real reverse drift** | Port 20 extra fn from module → source |
-| `quickstart` | REVERSED | +246 | 0 | **2** | **Real reverse drift** | Port 2 extra fn from module → source |
+| `quickstart` | REVERSED | +246 → +233 | 0 | 0 | **Resolved May 12 2026** — 2 fn ported (fetchAndCleanUrl, isGoogleRedirect); residual delta is IIFE-wrapper noise (matches build-transform pattern) | None |
 | `export` | REVERSED | +436 | 0 | 0 | Build-transform noise | None |
 | `gemini_api` | REVERSED | +58 | 0 | 0 | Build-transform noise | None |
 | `personas` | REVERSED | +203 | 0 | 0 | Build-transform noise | None |
@@ -40,7 +40,7 @@ backlog: each "Real reverse drift" entry is one focused follow-up commit.
 | `immersive_reader` | (recompiled, audit should clear next run) | — | 0 | 0 | Build-transform noise | None |
 | `games` | (recompiled, audit should clear next run) | — | 0 | 0 | Build-transform noise | None |
 
-## Real reverse drift — backlog (2 items)
+## Real reverse drift — backlog (1 item remaining)
 
 ### 1. `generate_dispatcher` — 20 extra functions in compiled
 
@@ -56,10 +56,15 @@ ports the fix to the deployed file but forgets the source).
 4. Recompile via `_build_generate_dispatcher_module.js`
 5. Confirm `audit_pair_drift` reports clean (or only build-noise) for this row
 
-### 2. `quickstart` — 2 extra functions in compiled
+### 2. `quickstart` — ✅ Resolved May 12 2026
 
-Same shape as above but smaller. Two functions exist only in
-`quickstart_module.js`. Easy follow-up.
+Ported `fetchAndCleanUrl` and `isGoogleRedirect` shims into
+`quickstart_source.jsx` (as top-of-file `var` declarations with a sync
+note). Also corrected the misleading "Auto-generated" header comment in
+`quickstart_module.js` — there's no actual `_build_quickstart_module.js`,
+so the comment was misdirecting future agents. Declaration counts now
+match (18 ↔ 18, src-only=0, mod-only=0). Residual +233 line delta is
+IIFE wrapper boilerplate (matches the build-transform noise pattern).
 
 ## `view_pdf_audit` — 1 + 1 declaration mismatch
 

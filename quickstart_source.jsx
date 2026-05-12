@@ -1,3 +1,20 @@
+// ── Lazy URL-fetch shims (mirrored in quickstart_module.js header).
+// These wrap window.AlloModules.UtilsPure.fetchAndCleanUrl / isGoogleRedirect
+// in a function body so the lookup happens at call time rather than at
+// IIFE-load time. Fixed the original QuickStart Fetch bug class
+// (April 26 2026, feedback_iife_lazy_lookup.md) where eager snapshotting
+// captured the fallback before UtilsPure had loaded.
+// Keep these in sync with quickstart_module.js until a build script exists.
+var fetchAndCleanUrl = function() {
+  var u = window.AlloModules && window.AlloModules.UtilsPure;
+  var fn = (u && u.fetchAndCleanUrl) || (window.__alloUtils && window.__alloUtils.fetchAndCleanUrl);
+  return fn ? fn.apply(this, arguments) : Promise.resolve(null);
+};
+var isGoogleRedirect = function() {
+  var u = window.AlloModules && window.AlloModules.UtilsPure;
+  var fn = (u && u.isGoogleRedirect) || (window.__alloUtils && window.__alloUtils.isGoogleRedirect);
+  return fn ? fn.apply(this, arguments) : false;
+};
 const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLookupStandards, onCallGemini, onWebSearch, addToast, isParentMode, isIndependentMode, isHelpMode, setIsHelpMode }) => {
   const [step, setStep] = useState(1);
   const { t } = useContext(LanguageContext);
