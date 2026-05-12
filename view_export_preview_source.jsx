@@ -401,6 +401,68 @@ function ExportPreviewView(props) {
                   </div>
                 </div>
 
+                {/* Display Modes — switches the rendered layout for specific resource types */}
+                <div>
+                  <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Display modes</div>
+
+                  {/* Glossary display: table / flash cards / language cards */}
+                  <div className={`mb-2 ${exportConfig.includeGlossary ? '' : 'opacity-50'}`}>
+                    <div className="text-[11px] font-semibold text-slate-700 mb-1 px-1">Glossary</div>
+                    <div className="space-y-0.5">
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
+                        <input type="radio" name="glossaryDisplayMode" checked={(exportConfig.glossaryDisplayMode || 'table') === 'table'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: 'table' }))} disabled={!exportConfig.includeGlossary} />
+                        Table (default)
+                      </label>
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
+                        <input type="radio" name="glossaryDisplayMode" checked={exportConfig.glossaryDisplayMode === 'flash-cards'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: 'flash-cards' }))} disabled={!exportConfig.includeGlossary} />
+                        🃏 Flash cards (fold-and-cut for paper, flip for digital)
+                      </label>
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
+                        <input type="radio" name="glossaryDisplayMode" checked={exportConfig.glossaryDisplayMode === 'language-cards'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: 'language-cards' }))} disabled={!exportConfig.includeGlossary} />
+                        🌐 Language cards (emphasizes translations)
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Timeline display: list / cuttable strips */}
+                  <div className="mb-2">
+                    <div className="text-[11px] font-semibold text-slate-700 mb-1 px-1">Timeline</div>
+                    <div className="space-y-0.5">
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
+                        <input type="radio" name="timelineDisplayMode" checked={(exportConfig.timelineDisplayMode || 'list') === 'list'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, timelineDisplayMode: 'list' }))} />
+                        List (default)
+                      </label>
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
+                        <input type="radio" name="timelineDisplayMode" checked={exportConfig.timelineDisplayMode === 'cuttable-strips'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, timelineDisplayMode: 'cuttable-strips' }))} />
+                        ✂ Cuttable chronology strips
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Brainstorm display: grid / mind-map */}
+                  <div className={`mb-2 ${exportConfig.includeBrainstorm ? '' : 'opacity-50'}`}>
+                    <div className="text-[11px] font-semibold text-slate-700 mb-1 px-1">Brainstorm</div>
+                    <div className="space-y-0.5">
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
+                        <input type="radio" name="brainstormDisplayMode" checked={(exportConfig.brainstormDisplayMode || 'grid') === 'grid'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, brainstormDisplayMode: 'grid' }))} disabled={!exportConfig.includeBrainstorm} />
+                        Card grid (default)
+                      </label>
+                      <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
+                        <input type="radio" name="brainstormDisplayMode" checked={exportConfig.brainstormDisplayMode === 'mindmap'} onChange={() => setExportConfigAndRefresh(p => ({ ...p, brainstormDisplayMode: 'mindmap' }))} disabled={!exportConfig.includeBrainstorm} />
+                        🌟 Mind-map graphic organizer
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Concept-sort interactive */}
+                  <div>
+                    <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
+                      <input type="checkbox" checked={exportConfig.conceptSortInteractive !== false} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, conceptSortInteractive: e.target.checked }))} className="rounded" />
+                      🧩 Concept sort: drag-to-sort on digital
+                    </label>
+                  </div>
+                </div>
+
                 {/* Audio Embedding */}
                 <div className={exportPreviewMode !== 'html' ? 'opacity-50' : ''}>
                   <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">🔊 Audio</div>

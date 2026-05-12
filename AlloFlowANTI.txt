@@ -8845,9 +8845,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     //   glossaryDisplayMode: 'table' | 'flash-cards' | 'language-cards'
     //   timelineDisplayMode: 'list' | 'cuttable-strips'
     //   conceptSortInteractive: true (drag-to-sort JS in interactive mode) | false
+    //   brainstormDisplayMode: 'grid' (default cards) | 'mindmap' (central topic + spokes)
     glossaryDisplayMode: 'table',
     timelineDisplayMode: 'list',
     conceptSortInteractive: true,
+    brainstormDisplayMode: 'grid',
   });
   const exportPreviewRef = useRef(null);
   const [a11yInspectMode, setA11yInspectMode] = useState(false);

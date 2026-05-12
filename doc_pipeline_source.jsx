@@ -13516,6 +13516,60 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           `;
       } else if (item.type === 'brainstorm') {
           if (!isTeacher) return '';
+          const brainstormMode = cfg.brainstormDisplayMode || 'grid';
+          if (brainstormMode === 'mindmap' && Array.isArray(item.data) && item.data.length > 0) {
+              // Mind-map graphic organizer: central topic bubble + radiating
+              // spoke bubbles for each idea. CSS-only layout (no SVG connectors
+              // in v1). In worksheet mode, spokes are empty for students to
+              // fill; in interactive mode, spoke clicks expand to show details.
+              const centerLabel = (sourceTopic || pageTitle || 'Topic').slice(0, 60);
+              const spokeColors = ['#dc2626','#2563eb','#059669','#d97706','#7c3aed','#be185d','#0891b2','#ca8a04'];
+              const spokesHtml = item.data.map((idea, idx) => {
+                  const color = spokeColors[idx % spokeColors.length];
+                  if (isWorksheet) {
+                      return `
+                          <div class="alloflow-mindmap-spoke" role="listitem" style="border:2px solid ${color}; border-radius:50%; background:${color}11; min-height:120px; aspect-ratio:1.4 / 1; display:flex; align-items:center; justify-content:center; padding:14px; text-align:center; break-inside:avoid; page-break-inside:avoid;">
+                              <div>
+                                  <div style="font-size:0.7em; text-transform:uppercase; letter-spacing:0.05em; color:${color}; font-weight:bold;">Idea ${idx + 1}</div>
+                                  <div style="margin-top:6px; border-bottom:1.5px solid ${color}99; min-height:1.6em; min-width:120px;"></div>
+                              </div>
+                          </div>
+                      `;
+                  }
+                  return `
+                      <div class="alloflow-mindmap-spoke" role="listitem" data-spoke-idx="${idx}" tabindex="0" style="border:2px solid ${color}; border-radius:18px; background:${color}11; padding:14px; cursor:pointer; transition:box-shadow 0.15s; break-inside:avoid; page-break-inside:avoid;">
+                          <div style="font-size:0.7em; text-transform:uppercase; letter-spacing:0.05em; color:${color}; font-weight:bold; margin-bottom:4px;">Idea ${idx + 1}</div>
+                          <div style="font-weight:bold; color:#1e293b; line-height:1.3;">${idea.title || ''}</div>
+                          <div class="alloflow-mindmap-detail" style="display:none; margin-top:10px; padding-top:10px; border-top:1px dashed ${color}55; font-size:0.9em; color:#475569; text-align:left;">
+                              ${idea.description ? `<p style="margin:0 0 6px 0;"><strong>Activity:</strong> ${idea.description}</p>` : ''}
+                              ${idea.connection ? `<p style="margin:0 0 6px 0; font-style:italic;"><strong>Connection:</strong> ${idea.connection}</p>` : ''}
+                              ${idea.guide ? `<div style="margin-top:8px; padding-top:8px; border-top:1px dashed ${color}44; font-size:0.9em;"><strong>Step-by-Step Guide:</strong><br/>${parseMarkdownToHTML(idea.guide)}</div>` : ''}
+                          </div>
+                      </div>
+                  `;
+              }).join('');
+              const interactiveHint = isWorksheet
+                  ? `<div style="background:#fefce8; border-left:4px solid #eab308; padding:12px 16px; border-radius:4px; margin-bottom:20px; font-size:0.9em; color:#713f12; break-inside:avoid;">
+                       <strong>How to use:</strong> The central bubble names the topic. Fill in each surrounding bubble with one idea, activity, or connection you can think of. The colored borders are just for reference — write your own thoughts.
+                     </div>`
+                  : `<div style="background:#eff6ff; border-left:4px solid #2563eb; padding:10px 14px; border-radius:4px; margin-bottom:14px; font-size:0.88em; color:#1e40af;">
+                       💡 Click any bubble to expand or collapse its details.
+                     </div>`;
+              return `
+                  <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+                      ${enhancedHeader}
+                      ${interactiveHint}
+                      <div style="display:flex; justify-content:center; margin-bottom:24px; break-inside:avoid;">
+                          <div style="background:linear-gradient(135deg, #6366f1, #8b5cf6); color:white; padding:22px 32px; border-radius:50%; font-weight:bold; font-size:1.15em; text-align:center; min-width:160px; box-shadow:0 4px 12px rgba(99,102,241,0.3);">
+                              ${centerLabel}
+                          </div>
+                      </div>
+                      <div class="alloflow-mindmap-spokes" role="list" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px;">
+                          ${spokesHtml}
+                      </div>
+                  </div>
+              `;
+          }
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
@@ -13717,7 +13771,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                   </div>
                               ` : `
                                   <!-- Student Worksheet View -->
-                                  <div style="margin-left: 25px; min-height: 150px; border: 1px solid #cbd5e1; border-radius: 8px; background: white;"></div>
+                                  ${isWorksheet
+                                      ? `<div style="margin-left:25px; border:1px solid #cbd5e1; border-radius:8px; background:white; padding:14px 16px;">
+                                            ${ruledLines(4, 'Show your work:')}
+                                            <div style="margin-top:14px; display:flex; align-items:center; gap:10px;">
+                                                <span style="font-size:0.8em; text-transform:uppercase; font-weight:bold; color:#475569;">Answer:</span>
+                                                ${fillableBlank(180)}
+                                            </div>
+                                         </div>`
+                                      : `<div style="margin-left: 25px; min-height: 150px; border: 1px solid #cbd5e1; border-radius: 8px; background: white;"></div>`}
                               `}
                           </div>
                       `).join('')}
@@ -13909,7 +13971,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       </div>
                   `).join('')}
                   ${item.data.synthesisPrompt ? `<div style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:8px;padding:20px;margin-bottom:20px;break-inside:avoid;"><strong style="font-size:1.1em;color:#166534;">📝 Synthesis Essay Prompt:</strong><p style="margin-top:8px;font-size:1em;line-height:1.7;color:#1e293b;">${item.data.synthesisPrompt}</p>${isWorksheet ? `<div style="margin-top:16px;">${ruledLines(12, 'Your essay:')}</div>` : ''}</div>` : ''}
-                  ${rubric.length > 0 ? `<div style="margin-top:20px;"><strong>Rubric:</strong><table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:0.85em;"><tr><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f1f5f9;text-align:left;">Criteria</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fef2f2;text-align:center;">1</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fefce8;text-align:center;">2</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f0fdf4;text-align:center;">3</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#eff6ff;text-align:center;">4</th></tr>${rubric.map(r => `<tr><td style="border:1px solid #e2e8f0;padding:8px;font-weight:bold;">${r.criteria}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['1'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['2'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['3'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['4'] || ''}</td></tr>`).join('')}</table></div>` : ''}
+                  ${rubric.length > 0 ? `<div class="alloflow-dbq-rubric-wrap" style="margin-top:20px;break-inside:avoid;"><strong>Rubric:</strong><style>.alloflow-dbq-rubric-wrap table{word-break:break-word;}@media (max-width:600px){.alloflow-dbq-rubric-wrap table{font-size:0.7em;}.alloflow-dbq-rubric-wrap th,.alloflow-dbq-rubric-wrap td{padding:4px !important;}}@media print{.alloflow-dbq-rubric-wrap table{font-size:0.72em;}.alloflow-dbq-rubric-wrap th,.alloflow-dbq-rubric-wrap td{padding:5px 6px !important;}}</style><table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:0.85em;table-layout:fixed;"><tr><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f1f5f9;text-align:left;width:22%;">Criteria</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fef2f2;text-align:center;">⭐ 1</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fefce8;text-align:center;">⭐⭐ 2</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f0fdf4;text-align:center;">⭐⭐⭐ 3</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#eff6ff;text-align:center;">⭐⭐⭐⭐ 4</th></tr>${rubric.map(r => `<tr><td style="border:1px solid #e2e8f0;padding:8px;font-weight:bold;">${r.criteria}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['1'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['2'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['3'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['4'] || ''}</td></tr>`).join('')}</table></div>` : ''}
                   ${item.data.teacherNotes ? `<div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;margin-top:16px;font-size:0.85em;color:#6b21a8;"><strong>Teacher Notes:</strong> ${item.data.teacherNotes}</div>` : ''}
               </div>
           `;
@@ -14132,12 +14194,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               if (!comp || !comp.overall || comp.overall.dimensionsEvaluated === 0) return '';
               const o = comp.overall;
               const score = typeof o.score === 'number' ? o.score : 0;
-              let bgColor, ringColor, textColor;
-              if (o.blockingIssues && o.blockingIssues.length > 0) { bgColor = '#fef2f2'; ringColor = '#dc2626'; textColor = '#991b1b'; }
-              else if (score >= 90) { bgColor = '#ecfdf5'; ringColor = '#059669'; textColor = '#065f46'; }
-              else if (score >= 70) { bgColor = '#f7fee7'; ringColor = '#65a30d'; textColor = '#365314'; }
-              else if (score >= 50) { bgColor = '#fffbeb'; ringColor = '#d97706'; textColor = '#92400e'; }
-              else { bgColor = '#fef2f2'; ringColor = '#dc2626'; textColor = '#991b1b'; }
+              let bgColor, ringColor, textColor, tierLetter;
+              if (o.blockingIssues && o.blockingIssues.length > 0) { bgColor = '#fef2f2'; ringColor = '#dc2626'; textColor = '#991b1b'; tierLetter = '⚠'; }
+              else if (score >= 90) { bgColor = '#ecfdf5'; ringColor = '#059669'; textColor = '#065f46'; tierLetter = 'A'; }
+              else if (score >= 70) { bgColor = '#f7fee7'; ringColor = '#65a30d'; textColor = '#365314'; tierLetter = 'B'; }
+              else if (score >= 50) { bgColor = '#fffbeb'; ringColor = '#d97706'; textColor = '#92400e'; tierLetter = 'C'; }
+              else { bgColor = '#fef2f2'; ringColor = '#dc2626'; textColor = '#991b1b'; tierLetter = 'D'; }
               const statusBadge = (status) => {
                   const bg = status === 'Aligned' ? '#dcfce7' : status === 'Not Aligned' ? '#fee2e2' : '#fef3c7';
                   const fg = status === 'Aligned' ? '#166534' : status === 'Not Aligned' ? '#991b1b' : '#92400e';
@@ -14155,7 +14217,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               const banner = `
                   <div style="background:${bgColor}; border:2px solid ${ringColor}; border-radius:12px; padding:16px; margin-bottom:20px; page-break-inside: avoid;">
                       <div style="display:flex; align-items:center; gap:20px;">
-                          <div style="flex-shrink:0; width:84px; height:84px; border-radius:50%; border:6px solid ${ringColor}; display:flex; align-items:center; justify-content:center; font-size:1.6em; font-weight:900; color:${textColor};">${score}</div>
+                          <div style="flex-shrink:0; width:84px; height:84px; border-radius:50%; border:6px solid ${ringColor}; display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:900; color:${textColor};" aria-label="Tier ${tierLetter}, score ${score}"><div style="font-size:1.55em; line-height:1;">${score}</div><div style="font-size:0.65em; letter-spacing:0.05em; opacity:0.8; margin-top:1px;">TIER ${tierLetter}</div></div>
                           <div style="flex:1; min-width:0;">
                               <div style="font-size:0.7em; font-weight:bold; text-transform:uppercase; letter-spacing:0.05em; color:${textColor}; opacity:0.7; margin-bottom:4px;">Curriculum Readiness Score</div>
                               <div style="font-size:1.1em; font-weight:900; color:${textColor}; margin-bottom:8px;">${o.label || ''}</div>
@@ -14852,6 +14914,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                             q.style.borderLeft = '';
                             q.style.paddingLeft = '';
                             q.removeAttribute('aria-invalid');
+                            var existing = q.querySelector('.alloflow-quiz-glyph');
+                            if (existing) existing.remove();
                         });
                         resultsEl.textContent = '';
                     };
@@ -14859,6 +14923,21 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         let correct = 0;
                         let wrong = 0;
                         let skipped = 0;
+                        // Glyph fallback so meaning reads without color (WCAG 1.4.1).
+                        // We use a small absolute-positioned badge on each question.
+                        var _setQuizGlyph = function(q, kind) {
+                            var existing = q.querySelector('.alloflow-quiz-glyph');
+                            if (existing) existing.remove();
+                            if (!kind) return;
+                            var glyph = document.createElement('span');
+                            glyph.className = 'alloflow-quiz-glyph';
+                            glyph.setAttribute('aria-hidden', 'true');
+                            glyph.style.cssText = 'display:inline-block;margin-right:8px;font-weight:bold;font-size:1.1em;';
+                            if (kind === 'correct') { glyph.textContent = '✓'; glyph.style.color = '#16a34a'; }
+                            else if (kind === 'wrong') { glyph.textContent = '✗'; glyph.style.color = '#dc2626'; }
+                            else if (kind === 'skipped') { glyph.textContent = '○'; glyph.style.color = '#94a3b8'; }
+                            q.insertBefore(glyph, q.firstChild);
+                        };
                         questions.forEach((q) => {
                             const target = parseInt(q.getAttribute('data-correct'), 10);
                             const checked = q.querySelector('input[type="radio"]:checked');
@@ -14867,14 +14946,17 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                             if (!checked) {
                                 q.style.borderLeft = '4px solid #94a3b8';
                                 q.removeAttribute('aria-invalid');
+                                _setQuizGlyph(q, 'skipped');
                                 skipped++;
                             } else if (parseInt(checked.value, 10) === target) {
                                 q.style.borderLeft = '4px solid #16a34a';
                                 q.removeAttribute('aria-invalid');
+                                _setQuizGlyph(q, 'correct');
                                 correct++;
                             } else {
                                 q.style.borderLeft = '4px solid #dc2626';
                                 q.setAttribute('aria-invalid', 'true');
+                                _setQuizGlyph(q, 'wrong');
                                 wrong++;
                             }
                         });
@@ -15087,6 +15169,26 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                             pool.forEach(function(s) { stripsContainer.appendChild(s); });
                             clearSelection();
                             resultsEl.textContent = '';
+                        });
+                    });
+                })();
+                // ── Brainstorm mind-map spoke expand/collapse (May 11 2026) ──
+                (function() {
+                    var spokes = document.querySelectorAll('.alloflow-mindmap-spoke[data-spoke-idx]');
+                    if (spokes.length === 0) return;
+                    spokes.forEach(function(s) {
+                        var detail = s.querySelector('.alloflow-mindmap-detail');
+                        if (!detail) return;
+                        s.setAttribute('role', 'button');
+                        s.setAttribute('aria-pressed', 'false');
+                        var toggle = function() {
+                            var isOpen = detail.style.display !== 'none';
+                            detail.style.display = isOpen ? 'none' : 'block';
+                            s.setAttribute('aria-pressed', isOpen ? 'false' : 'true');
+                        };
+                        s.addEventListener('click', toggle);
+                        s.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
                         });
                     });
                 })();
