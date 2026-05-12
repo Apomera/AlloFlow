@@ -10280,7 +10280,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   );
                 })
               ),
-              h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '14px', lineHeight: 1.5 } },
+              h('div', { style: { fontSize: '10px', color: '#cbd5e1', marginTop: '14px', lineHeight: 1.5 } },
                 'Source: 14 CFR § 107 (Small Unmanned Aircraft Systems). For real flights, study the official FAA Part 107 study guide and pass the Remote Pilot Knowledge Test.'
               ),
               h('div', { style: { display: 'flex', gap: '8px', marginTop: '16px' } },
@@ -10379,7 +10379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('button', { onClick: function() { flightPlanRef.current = { departure: null, destination: null, route: [], distNm: 0, estTime: 0, initialHdg: 0 }; startFlying('kpwm'); },
               style: { width: '100%', padding: '16px', borderRadius: '14px', border: '2px solid #3b82f6', background: 'linear-gradient(135deg, #1e40af, #3b82f6)', color: '#fff', fontSize: '16px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 20px rgba(59,130,246,0.3)' }
             }, '\uD83D\uDEEB Free Flight from Portland, ME'),
-            h('div', { style: { textAlign: 'center', fontSize: '10px', color: '#475569', marginTop: '4px' } }, 'Takeoff from Portland International Jetport \u2022 Fly anywhere in the world')
+            h('div', { style: { textAlign: 'center', fontSize: '11px', color: '#cbd5e1', marginTop: '6px' } }, 'Takeoff from Portland International Jetport \u2022 Fly anywhere in the world')
           ),
           // Flight Planner
           h('div', { style: { padding: '0 24px 16px' } },

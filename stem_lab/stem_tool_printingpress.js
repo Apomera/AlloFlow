@@ -2143,6 +2143,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             );
           })(),
 
+          // ── Famous typos through history ──
+          // Companion to the proofreader exercise above. Shows that even
+          // skilled correctors missed catastrophic errors. Pedagogy: print
+          // has always been imperfect; quality control is institutional,
+          // not individual.
+          sectionHeader('💀', 'Famous typos through history (when proofreaders missed)'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.danger, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+              'Even the most careful 1450-1900 shops shipped errors. Some of them changed history; some of them got shops fined or shut down. The lesson is not "correctors were lazy." It is that a fast-moving system needs institutional quality control beyond any single human eye.'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+              [
+                { title: 'The "Wicked Bible"',
+                  year: '1631',
+                  shop: 'Robert Barker (London, the King\'s printer)',
+                  error: 'Exodus 20:14 set as "Thou shalt commit adultery." The word NOT was missing.',
+                  consequence: 'King Charles I and the Archbishop of Canterbury fined Barker £300 (a small fortune) and revoked his printing license. About 11 of the 1,000 copies survive today; collectors call them "Wicked Bibles" and they sell for hundreds of thousands of dollars.' },
+                { title: 'The "Murderer\'s Bible"',
+                  year: '1801',
+                  shop: 'Thomas Bensley (London)',
+                  error: 'Mark 7:27 reads "Let the children first be killed" instead of "Let the children first be filled." A single dropped letter changed Christ\'s instruction about feeding children into a command to murder them.',
+                  consequence: 'Recalled and corrected. A few uncorrected copies survive in the British Library and Folger Shakespeare Library.' },
+                { title: 'The Sheppard\'s Bible',
+                  year: '1716',
+                  shop: 'John Baskett (Oxford and London)',
+                  error: 'Jeremiah 31:34 set as "sin on more" instead of "sin no more." Repeated through ~8,000 copies of the Bible printed for the King\'s use.',
+                  consequence: 'Survived; nicknamed "The Vinegar Bible" by collectors because the running header for Luke 20 read "The Parable of the Vinegar" instead of "Vineyard." Multiple errors in one print run.' },
+                { title: 'The Bay Psalm Book',
+                  year: '1640',
+                  shop: 'Stephen Daye (Cambridge, Massachusetts Bay Colony)',
+                  error: 'First book printed in colonial English North America. Set with imported but mismatched fonts, awkward translations, and many small errors throughout. Quality was widely criticized in the 1640s.',
+                  consequence: 'Despite the errors, only 11 of the original 1,700 copies survive. One sold at auction in 2013 for $14.2 million, making it briefly the most expensive printed book ever sold.' }
+              ].map(function(t, i) {
+                return h('div', { key: i, style: { background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '3px solid ' + T.danger, borderRadius: 6, padding: 12 } },
+                  h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
+                    h('h4', { style: { margin: 0, fontSize: 13, color: T.accentHi, fontFamily: 'Georgia, serif' } }, t.title),
+                    h('span', { style: { fontSize: 10, color: T.dim, fontFamily: 'ui-monospace, monospace' } }, t.year)
+                  ),
+                  h('div', { style: { fontSize: 10, color: T.warn, fontStyle: 'italic', marginBottom: 6 } }, t.shop),
+                  h('div', { style: { background: T.bg, border: '1px dashed ' + T.danger, borderRadius: 4, padding: 8, marginBottom: 6 } },
+                    h('div', { style: { fontSize: 10, color: T.danger, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 3 } }, 'The error'),
+                    h('p', { style: { margin: 0, fontSize: 12, color: T.text, lineHeight: 1.5 } }, t.error)
+                  ),
+                  h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+                    h('strong', { style: { color: T.text, fontStyle: 'normal' } }, 'What happened: '), t.consequence)
+                );
+              })
+            ),
+            h('p', { style: { margin: '12px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'The shops that survived these embarrassments built bigger correction systems: dedicated correctors instead of shared ones, multiple proof passes, errata sheets distributed after the fact, eventually printed lists of corrections at the end of each book. Modern publishing (and modern software releases) inherited every one of these institutional fixes.')
+          ),
+
           // ── Challenge picker ──
           h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' } },
             CHALLENGES.map(function(ch, i) {
@@ -2620,6 +2671,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 'Bigger formats (quarto, 8 pages per sheet; octavo, 16 pages) follow the same kind of logic but get progressively harder. In a real 1450 shop, the imposer was a senior craftsman; getting it wrong meant printing the run upside-down or out of order. The schematics for octavo imposition look like geometry puzzles \u2014 and they are.')
             );
           })(),
+
+          // \u2500\u2500 A compositor's lifetime in characters \u2500\u2500
+          // Quick math reflection. Concrete number lands the scale of
+          // the craft for students who just spent 30 seconds setting one
+          // phrase.
+          sectionHeader('\u{1F9EE}', 'A compositor\u2019s lifetime in characters'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('p', { style: { margin: '0 0 10px', fontSize: 12, color: T.muted, lineHeight: 1.65 } },
+              'You just set 8 to 10 characters. A 1450 master compositor set roughly 1,000 characters per hour, ten hours per day, six days per week, for forty years.'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 12 } },
+              [
+                { label: 'Per hour', value: '1,000', unit: 'chars' },
+                { label: 'Per 10-hr day', value: '10,000', unit: 'chars' },
+                { label: 'Per 6-day week', value: '60,000', unit: 'chars' },
+                { label: 'Per 50-week year', value: '3,000,000', unit: 'chars' },
+                { label: 'Per 40-year career', value: '120,000,000', unit: 'chars' }
+              ].map(function(row, i) {
+                return h('div', { key: i, style: { background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '3px solid ' + T.accent, borderRadius: 6, padding: 10, textAlign: 'center' } },
+                  h('div', { style: { fontSize: 10, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 4, fontFamily: 'Georgia, serif' } }, row.label),
+                  h('div', { style: { fontSize: 18, color: T.accentHi, fontFamily: 'Georgia, serif', fontWeight: 800, fontVariantNumeric: 'tabular-nums', lineHeight: 1 } }, row.value),
+                  h('div', { style: { fontSize: 10, color: T.muted, marginTop: 2 } }, row.unit)
+                );
+              })
+            ),
+            h('p', { style: { margin: 0, fontSize: 12, color: T.text, lineHeight: 1.65 } },
+              'A 120-million-character career is roughly 600 King James Bibles, set one mirror-reversed sort at a time, by hand, by feel of the nick. Most compositors did this for less wage than a modern barista. The economic case for the press was that one of these workers, with a press to back them, could do hundreds of times what a scribe could do alone.'),
+            h('p', { style: { margin: '8px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'For comparison: a fast modern keyboard typist (12,000 chars/hour) writing 4 hours a day for 40 years produces about 380 million characters in their typing lifetime. The press-shop compositor was within an order of magnitude of this, four hundred years before computers existed.')
+          ),
 
           sectionHeader('📦', 'What you just did, in real-shop terms'),
           keyPointBlock(
@@ -4827,6 +4907,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         // render meaningful preview even before the student types.
         var typoNameRaw = useState('VERITAS');
         var typoName = typoNameRaw[0], setTypoName = typoNameRaw[1];
+        // Era-detective quiz state. 5 rounds of typeface-to-century matching.
+        var detRoundRaw = useState(0);
+        var detRound = detRoundRaw[0], setDetRound = detRoundRaw[1];
+        var detPickedRaw = useState(null);
+        var detPicked = detPickedRaw[0], setDetPicked = detPickedRaw[1];
+        var detScoreRaw = useState(0);
+        var detScore = detScoreRaw[0], setDetScore = detScoreRaw[1];
         return h('div', { style: { padding: 20, maxWidth: 860, margin: '0 auto', color: T.text } },
           backBar('🔤 Typography Today'),
           dropCapPara('Open any document on your laptop. Word, Google Docs, a text message. The vocabulary you see (font, leading, kerning, em-dash, justified, italic) is the vocabulary of a 1450 print shop. The medium changed; the language did not.'),
@@ -5182,6 +5269,113 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             correct: 2,
             explain: 'Latin "libra pondo" gave us both "lb" and the British pound sign £. Many Latin abbreviations (lb, oz from "uncia," etc., am/pm from "ante/post meridiem") survived into print because compositors had Latin-trained eyes and reusable sorts for these forms. Typography preserved a lot of medieval and Roman vocabulary that would otherwise have died.'
           }),
+
+          // ── Era detective: typeface-to-century matching quiz ──
+          // Tests the visual pattern recognition built up by the existing
+          // typeface showcases. 5 rounds of "name the century from this
+          // typeface sample." Designed for transferable skill, not memory.
+          sectionHeader('🔍', 'Era detective: name the century'),
+          (function() {
+            var ROUNDS = [
+              { sample: 'Verbum Domini',
+                font: '"UnifrakturMaguntia", "Old English Text MT", "Goudy Old Style", serif',
+                italic: false, era: '1450s',
+                why: 'Blackletter (Textura). Dense, vertical, ecclesiastical. The face of the Gutenberg Bible. Anyone publishing a sacred text in 1455 would set it like this.' },
+              { sample: 'Festina lente',
+                font: '"Cambria", "Georgia", serif', italic: true, era: '1500s',
+                why: 'Aldine italic. Slanted, cursive, modeled on humanist handwriting. Aldus Manutius commissioned this exact style from Francesco Griffo around 1500 to fit more text into pocket-format books.' },
+              { sample: 'Liberty or Death',
+                font: '"Big Caslon", "Caslon Pro", "Hoefler Text", "Georgia", serif',
+                italic: false, era: '1700s',
+                why: 'Caslon. The English workhorse typeface. The Declaration of Independence and the U.S. Constitution were first printed in Caslon. "When in doubt, use Caslon" was the standard rule of English-language printers for 200 years.' },
+              { sample: 'Madame Bovary',
+                font: '"Bodoni 72", "Didot", "Cambria", serif', italic: false, era: '1800s',
+                why: 'Bodoni. Hair-thin horizontals, heavy verticals, sharp serifs. The visual signature of the Enlightenment and Napoleonic Europe. Modern fashion magazines still reach for it for the same reason.' },
+              { sample: 'EXIT',
+                font: '"Helvetica", "Helvetica Neue", "Arial", sans-serif',
+                italic: false, era: '1900s',
+                why: 'Helvetica. Swiss post-war design philosophy: neutral, geometric, no ornament. Designed in 1957. Now the default of subway signs, corporate logos, and modernist branding.' }
+            ];
+            var ERAS = ['1450s', '1500s', '1700s', '1800s', '1900s'];
+            var round = ROUNDS[detRound % ROUNDS.length];
+            var done = detRound >= ROUNDS.length;
+            function pick(era) {
+              if (detPicked !== null) return;
+              setDetPicked(era);
+              if (era === round.era) setDetScore(detScore + 1);
+              announce(era === round.era ? 'Correct.' : 'Not that one. Correct era is now shown.');
+            }
+            function nextRound() {
+              setDetRound(detRound + 1);
+              setDetPicked(null);
+            }
+            function reset() {
+              setDetRound(0);
+              setDetPicked(null);
+              setDetScore(0);
+            }
+            return h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10, flexWrap: 'wrap', gap: 6 } },
+                h('div', { style: { fontSize: 11, color: T.dim, fontFamily: 'ui-monospace, monospace' } },
+                  done ? 'Round complete' : ('Round ' + (detRound + 1) + ' of ' + ROUNDS.length)),
+                h('div', { style: { fontSize: 11, color: T.accentHi, fontFamily: 'Georgia, serif', fontWeight: 700 } }, 'Score: ' + detScore + ' / ' + ROUNDS.length)
+              ),
+              !done && h(React.Fragment, null,
+                // The sample
+                h('div', { style: { background: T.parchment, color: T.ink, padding: '20px 18px', border: '2px solid ' + T.wood, borderRadius: 6, marginBottom: 12, textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.4) inset' } },
+                  h('div', { style: { fontFamily: round.font, fontStyle: round.italic ? 'italic' : 'normal', fontSize: 36, lineHeight: 1.1, fontWeight: 400 } }, round.sample)
+                ),
+                // Era buttons
+                h('div', { className: 'printingpress-no-print', style: { display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginBottom: 10 } },
+                  ERAS.map(function(era) {
+                    var isPicked = (detPicked === era);
+                    var isCorrect = (era === round.era);
+                    var bg = T.cardAlt;
+                    var brd = T.border;
+                    if (detPicked !== null) {
+                      if (isCorrect) { bg = 'rgba(127,176,105,0.18)'; brd = T.ok; }
+                      else if (isPicked) { bg = 'rgba(199,69,54,0.16)'; brd = T.danger; }
+                    }
+                    return h('button', { key: era,
+                      onClick: function() { pick(era); },
+                      disabled: detPicked !== null,
+                      style: btn({ padding: '8px 18px', fontSize: 13, fontFamily: 'Georgia, serif',
+                        background: bg, color: T.text, borderColor: brd,
+                        fontWeight: (detPicked !== null && isCorrect) ? 700 : 500 })
+                    }, era);
+                  })
+                ),
+                // Reveal
+                detPicked !== null && (function() {
+                  var correct = (detPicked === round.era);
+                  return h('div', { 'aria-live': 'polite',
+                    style: { padding: 10, borderRadius: 6, fontSize: 12, lineHeight: 1.6, marginBottom: 8,
+                      background: correct ? '#1f3d28' : '#3d2810',
+                      border: '1px solid ' + (correct ? T.ok : T.warn),
+                      color: correct ? '#bbf7d0' : '#fed7aa' } },
+                    h('div', { style: { fontWeight: 700, marginBottom: 4, fontFamily: 'Georgia, serif' } },
+                      correct ? '✓ ' + round.era : '✗ The correct era is ' + round.era),
+                    h('div', { style: { fontStyle: 'italic', opacity: 0.92 } }, round.why)
+                  );
+                })(),
+                detPicked !== null && h('div', { className: 'printingpress-no-print', style: { textAlign: 'center' } },
+                  h('button', { onClick: nextRound, style: btnPrimary({ padding: '8px 16px', fontSize: 12 }) },
+                    detRound < ROUNDS.length - 1 ? 'Next sample →' : 'See score →')
+                )
+              ),
+              done && h('div', { style: { padding: 14, background: detScore >= 4 ? '#1f3d28' : '#3d2810', border: '1px solid ' + (detScore >= 4 ? T.ok : T.warn), borderRadius: 8, color: detScore >= 4 ? '#bbf7d0' : '#fed7aa', textAlign: 'center' } },
+                h('div', { style: { fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 16, marginBottom: 6 } },
+                  'Final score: ' + detScore + ' / ' + ROUNDS.length),
+                h('div', { style: { fontSize: 12, fontStyle: 'italic', marginBottom: 10 } },
+                  detScore === ROUNDS.length ? 'Type historians would shake your hand. You can date a book by glance.' :
+                  detScore >= 3 ? 'Solid eye for period style. Another browse through the typeface gallery and you would be at 5/5.' :
+                  'The patterns become obvious with a few more passes. Try the typeface gallery again, then come back.'),
+                h('button', { className: 'printingpress-no-print',
+                  onClick: reset,
+                  style: btnPrimary({ padding: '8px 14px', fontSize: 12 }) }, '↻ Play again')
+              )
+            );
+          })(),
 
           sectionHeader('🧠', 'Mini-quiz'),
           miniQuizBlock('typographyToday', [
