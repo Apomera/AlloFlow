@@ -6276,139 +6276,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
-              // ── Beekeeper sprite ──
-              // Action-mode overrides the cameo cycle when d.bkAnim is set:
-              //   walk-in (0-25%) → perform at hive entrance (25-75%) → walk-back (75-100%)
-              // Action overlay (emoji above hands) + speech bubble (caption) render during "perform" phase.
-              (function () {
-                var bkAnim = ls.bkAnim;
-                var now = Date.now();
-                var inAction = bkAnim && bkAnim.startedAt && (now - bkAnim.startedAt) < (bkAnim.duration || 5000);
-
-                var bkCycle = (t2 % 1800) / 1800; // cameo cycle
-                var inCameo = !inAction && season !== 3 && bkCycle > 0.2 && bkCycle < 0.7;
-                if (!inAction && !inCameo) return;
-
-                // Compute position + phase
-                var homeX = W * 0.95;
-                var hiveEntranceX = hiveX + hiveW + 40 * bkScale;
-                var bkX, phase, perfT;
-                if (inAction) {
-                  var t = (now - bkAnim.startedAt) / (bkAnim.duration || 5000);
-                  if (t < 0.25) { // walk-in
-                    var p = t / 0.25;
-                    bkX = homeX - p * (homeX - hiveEntranceX);
-                    phase = 'walk';
-                  } else if (t < 0.75) { // perform
-                    bkX = hiveEntranceX;
-                    phase = 'perform';
-                    perfT = (t - 0.25) / 0.5; // 0..1 during perform
-                  } else { // walk-back
-                    var p2 = (t - 0.75) / 0.25;
-                    bkX = hiveEntranceX + p2 * (homeX - hiveEntranceX);
-                    phase = 'walk';
-                  }
-                } else {
-                  var bkProgress = (bkCycle - 0.2) / 0.5;
-                  bkX = homeX - bkProgress * (homeX - hiveEntranceX);
-                  phase = 'walk';
-                }
-
-                // Anchor feet to the visible grass plane (ground line drawn at H * 0.76, fence at H * 0.775).
-                // Previously anchored to (hiveY + hiveH + 4) which floated him slightly above the visible ground.
-                var bkGround = H * 0.82;
-                var bkBodyH = 14 * bkScale;
-                var bkBodyW = 8 * bkScale;
-                var bkY = bkGround - bkBodyH - (8 * bkScale);
-                var bkStep = phase === 'walk' ? Math.sin(t2 * 0.15) * 1.2 * bkScale : 0;
-
-                c.save();
-                // Shadow
-                c.fillStyle = 'rgba(0,0,0,0.25)';
-                c.beginPath(); c.ellipse(bkX, bkGround, 7 * bkScale, 1.6 * bkScale, 0, 0, 6.28); c.fill();
-                // Body
-                c.fillStyle = '#f1f5f9';
-                c.fillRect(bkX - bkBodyW / 2, bkY, bkBodyW, bkBodyH);
-                // Legs
-                c.fillStyle = '#1e293b';
-                c.fillRect(bkX - 3 * bkScale, bkY + bkBodyH, 2.5 * bkScale, 8 * bkScale + bkStep);
-                c.fillRect(bkX + 0.5 * bkScale, bkY + bkBodyH, 2.5 * bkScale, 8 * bkScale - bkStep);
-                // Arms — raised slightly during perform phase
-                c.fillStyle = '#f1f5f9';
-                var armLift = phase === 'perform' ? -2 * bkScale * Math.abs(Math.sin(t2 * 0.18)) : 0;
-                c.fillRect(bkX - 6 * bkScale, bkY + 2 * bkScale + armLift, 2 * bkScale, 9 * bkScale);
-                c.fillRect(bkX + 4 * bkScale, bkY + 2 * bkScale + armLift, 2 * bkScale, 9 * bkScale);
-                // Veil hood
-                c.fillStyle = '#f8fafc';
-                c.beginPath(); c.arc(bkX, bkY - 3 * bkScale, 5 * bkScale, 0, 6.28); c.fill();
-                c.fillStyle = 'rgba(30,41,59,0.4)';
-                c.beginPath(); c.arc(bkX, bkY - 2 * bkScale, 4 * bkScale, 0, 6.28); c.fill();
-                // Smoker in hand
-                c.fillStyle = '#44403c';
-                c.fillRect(bkX - 8 * bkScale, bkY + 8 * bkScale, 3 * bkScale, 6 * bkScale);
-                // Smoker puff — bigger during "smoke" action
-                var puffAlpha = (bkAnim && bkAnim.type === 'smoke' && phase === 'perform') ? 0.85 : 0.5;
-                var puffSize = (bkAnim && bkAnim.type === 'smoke' && phase === 'perform') ? 3.5 : 1.5;
-                c.fillStyle = 'rgba(220,220,220,' + puffAlpha + ')';
-                c.beginPath(); c.arc(bkX - 7 * bkScale, bkY + 5 * bkScale + Math.sin(t2 * 0.1) * 0.5 * bkScale, puffSize * bkScale, 0, 6.28); c.fill();
-                c.restore();
-
-                // ── Action overlay + speech bubble (perform phase only) ──
-                if (inAction && phase === 'perform' && bkAnim) {
-                  // Action emoji near hands (slight bounce)
-                  var itemY = bkY + 4 * bkScale + Math.sin(t2 * 0.2) * 1.5;
-                  var itemX = bkX + 7 * bkScale;
-                  c.save();
-                  c.font = 'bold ' + Math.round(14 * bkScale) + 'px system-ui, sans-serif';
-                  c.textAlign = 'center';
-                  c.textBaseline = 'middle';
-                  c.fillText(bkAnim.emoji || '🔍', itemX, itemY);
-                  c.restore();
-
-                  // Speech bubble above the beekeeper's head
-                  var caption = String(bkAnim.caption || '');
-                  if (caption) {
-                    c.save();
-                    c.font = 'bold 12px system-ui, sans-serif';
-                    c.textAlign = 'center';
-                    c.textBaseline = 'middle';
-                    var textW = c.measureText(caption).width;
-                    var bubW = Math.min(W * 0.45, textW + 20);
-                    var bubH = 28;
-                    var bubX = Math.max(8, Math.min(W - bubW - 8, bkX - bubW / 2));
-                    var bubY = bkY - 10 * bkScale - bubH - 6;
-                    // Bubble background
-                    c.fillStyle = 'rgba(255,255,255,0.96)';
-                    c.strokeStyle = 'rgba(30,41,59,0.5)';
-                    c.lineWidth = 1.2;
-                    c.beginPath();
-                    if (c.roundRect) c.roundRect(bubX, bubY, bubW, bubH, 8);
-                    else c.rect(bubX, bubY, bubW, bubH);
-                    c.fill(); c.stroke();
-                    // Tail
-                    c.beginPath();
-                    c.moveTo(bkX - 4, bubY + bubH);
-                    c.lineTo(bkX, bubY + bubH + 6);
-                    c.lineTo(bkX + 4, bubY + bubH);
-                    c.closePath();
-                    c.fillStyle = 'rgba(255,255,255,0.96)';
-                    c.fill();
-                    c.stroke();
-                    // Caption text
-                    c.fillStyle = '#1e293b';
-                    // Truncate if needed to fit bubble
-                    var drawnCaption = caption;
-                    if (textW > bubW - 16) {
-                      while (drawnCaption.length > 3 && c.measureText(drawnCaption + '…').width > bubW - 16) {
-                        drawnCaption = drawnCaption.slice(0, -1);
-                      }
-                      drawnCaption += '…';
-                    }
-                    c.fillText(drawnCaption, bubX + bubW / 2, bubY + bubH / 2);
-                    c.restore();
-                  }
-                }
-              })();
+              // ── Beekeeper sprite (moved further down the render order) ──
+              // Was previously drawn here, but meadow flowers / apple tree / tree
+              // line / hummingbird all paint AFTER this point and were partially
+              // hiding the beekeeper. Moved to just before the hive (after
+              // ladybugs) so the keeper layers above foliage and reads cleanly.
 
               // ── Hornet predator (rare — flies fast across scene every ~45s, adds drama) ──
               var hnCycle = (t2 % 2700) / 2700;
@@ -6862,6 +6734,153 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.beginPath(); c.arc(lbX + 0.4, lbY - 0.7, 0.4, 0, 6.28); c.fill();
                 });
               }
+
+              // ── Beekeeper sprite (depth-sorted in front of meadow foliage) ──
+              // Always visible outside winter — previously a 50% cameo window
+              // made the keeper appear/disappear unpredictably and felt buggy.
+              // Three phases now:
+              //   • action  → walk-in → perform at hive → walk-back (5s default)
+              //   • cameo   → slow walk from home toward hive once per ~30s
+              //   • idle    → stand at home (right side of scene) the rest of
+              //                 the time, so the keeper is always present.
+              // Action-mode overlay (emoji over hands) + speech bubble render
+              // during the "perform" phase.
+              (function () {
+                var bkAnim = ls.bkAnim;
+                var now = Date.now();
+                var inAction = bkAnim && bkAnim.startedAt && (now - bkAnim.startedAt) < (bkAnim.duration || 5000);
+                // Hide in winter unless actively doing something — visually consistent
+                // with the existing "no cameo in winter" rule.
+                if (!inAction && season === 3) return;
+
+                var bkCycle = (t2 % 1800) / 1800;
+                var inCameo = !inAction && season !== 3 && bkCycle > 0.2 && bkCycle < 0.7;
+
+                // Compute position + phase
+                var homeX = W * 0.95;
+                var hiveEntranceX = hiveX + hiveW + 40 * bkScale;
+                var bkX, phase, perfT;
+                if (inAction) {
+                  var t = (now - bkAnim.startedAt) / (bkAnim.duration || 5000);
+                  if (t < 0.25) { // walk-in
+                    var p = t / 0.25;
+                    bkX = homeX - p * (homeX - hiveEntranceX);
+                    phase = 'walk';
+                  } else if (t < 0.75) { // perform
+                    bkX = hiveEntranceX;
+                    phase = 'perform';
+                    perfT = (t - 0.25) / 0.5; // 0..1 during perform
+                  } else { // walk-back
+                    var p2 = (t - 0.75) / 0.25;
+                    bkX = hiveEntranceX + p2 * (homeX - hiveEntranceX);
+                    phase = 'walk';
+                  }
+                } else if (inCameo) {
+                  var bkProgress = (bkCycle - 0.2) / 0.5;
+                  bkX = homeX - bkProgress * (homeX - hiveEntranceX);
+                  phase = 'walk';
+                } else {
+                  // Idle: stand at home with a subtle breathing bob so the
+                  // keeper still feels alive even when nothing's scheduled.
+                  bkX = homeX;
+                  phase = 'idle';
+                }
+
+                // Anchor feet to the visible grass plane (ground line drawn at H * 0.76, fence at H * 0.775).
+                var bkGround = H * 0.82;
+                var bkBodyH = 14 * bkScale;
+                var bkBodyW = 8 * bkScale;
+                var idleBob = phase === 'idle' ? Math.sin(t2 * 0.04) * 0.8 : 0;
+                var bkY = bkGround - bkBodyH - (8 * bkScale) + idleBob;
+                var bkStep = phase === 'walk' ? Math.sin(t2 * 0.15) * 1.2 * bkScale : 0;
+
+                c.save();
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.25)';
+                c.beginPath(); c.ellipse(bkX, bkGround, 7 * bkScale, 1.6 * bkScale, 0, 0, 6.28); c.fill();
+                // Body
+                c.fillStyle = '#f1f5f9';
+                c.fillRect(bkX - bkBodyW / 2, bkY, bkBodyW, bkBodyH);
+                // Legs
+                c.fillStyle = '#1e293b';
+                c.fillRect(bkX - 3 * bkScale, bkY + bkBodyH, 2.5 * bkScale, 8 * bkScale + bkStep);
+                c.fillRect(bkX + 0.5 * bkScale, bkY + bkBodyH, 2.5 * bkScale, 8 * bkScale - bkStep);
+                // Arms — raised slightly during perform phase
+                c.fillStyle = '#f1f5f9';
+                var armLift = phase === 'perform' ? -2 * bkScale * Math.abs(Math.sin(t2 * 0.18)) : 0;
+                c.fillRect(bkX - 6 * bkScale, bkY + 2 * bkScale + armLift, 2 * bkScale, 9 * bkScale);
+                c.fillRect(bkX + 4 * bkScale, bkY + 2 * bkScale + armLift, 2 * bkScale, 9 * bkScale);
+                // Veil hood
+                c.fillStyle = '#f8fafc';
+                c.beginPath(); c.arc(bkX, bkY - 3 * bkScale, 5 * bkScale, 0, 6.28); c.fill();
+                c.fillStyle = 'rgba(30,41,59,0.4)';
+                c.beginPath(); c.arc(bkX, bkY - 2 * bkScale, 4 * bkScale, 0, 6.28); c.fill();
+                // Smoker in hand
+                c.fillStyle = '#44403c';
+                c.fillRect(bkX - 8 * bkScale, bkY + 8 * bkScale, 3 * bkScale, 6 * bkScale);
+                // Smoker puff — bigger during "smoke" action
+                var puffAlpha = (bkAnim && bkAnim.type === 'smoke' && phase === 'perform') ? 0.85 : 0.5;
+                var puffSize = (bkAnim && bkAnim.type === 'smoke' && phase === 'perform') ? 3.5 : 1.5;
+                c.fillStyle = 'rgba(220,220,220,' + puffAlpha + ')';
+                c.beginPath(); c.arc(bkX - 7 * bkScale, bkY + 5 * bkScale + Math.sin(t2 * 0.1) * 0.5 * bkScale, puffSize * bkScale, 0, 6.28); c.fill();
+                c.restore();
+
+                // ── Action overlay + speech bubble (perform phase only) ──
+                if (inAction && phase === 'perform' && bkAnim) {
+                  // Action emoji near hands (slight bounce)
+                  var itemY = bkY + 4 * bkScale + Math.sin(t2 * 0.2) * 1.5;
+                  var itemX = bkX + 7 * bkScale;
+                  c.save();
+                  c.font = 'bold ' + Math.round(14 * bkScale) + 'px system-ui, sans-serif';
+                  c.textAlign = 'center';
+                  c.textBaseline = 'middle';
+                  c.fillText(bkAnim.emoji || '🔍', itemX, itemY);
+                  c.restore();
+
+                  // Speech bubble above the beekeeper's head
+                  var caption = String(bkAnim.caption || '');
+                  if (caption) {
+                    c.save();
+                    c.font = 'bold 12px system-ui, sans-serif';
+                    c.textAlign = 'center';
+                    c.textBaseline = 'middle';
+                    var textW = c.measureText(caption).width;
+                    var bubW = Math.min(W * 0.45, textW + 20);
+                    var bubH = 28;
+                    var bubX = Math.max(8, Math.min(W - bubW - 8, bkX - bubW / 2));
+                    var bubY = bkY - 10 * bkScale - bubH - 6;
+                    // Bubble background
+                    c.fillStyle = 'rgba(255,255,255,0.96)';
+                    c.strokeStyle = 'rgba(30,41,59,0.5)';
+                    c.lineWidth = 1.2;
+                    c.beginPath();
+                    if (c.roundRect) c.roundRect(bubX, bubY, bubW, bubH, 8);
+                    else c.rect(bubX, bubY, bubW, bubH);
+                    c.fill(); c.stroke();
+                    // Tail
+                    c.beginPath();
+                    c.moveTo(bkX - 4, bubY + bubH);
+                    c.lineTo(bkX, bubY + bubH + 6);
+                    c.lineTo(bkX + 4, bubY + bubH);
+                    c.closePath();
+                    c.fillStyle = 'rgba(255,255,255,0.96)';
+                    c.fill();
+                    c.stroke();
+                    // Caption text
+                    c.fillStyle = '#1e293b';
+                    // Truncate if needed to fit bubble
+                    var drawnCaption = caption;
+                    if (textW > bubW - 16) {
+                      while (drawnCaption.length > 3 && c.measureText(drawnCaption + '…').width > bubW - 16) {
+                        drawnCaption = drawnCaption.slice(0, -1);
+                      }
+                      drawnCaption += '…';
+                    }
+                    c.fillText(drawnCaption, bubX + bubW / 2, bubY + bubH / 2);
+                    c.restore();
+                  }
+                }
+              })();
 
               // ── Hive (detailed cross-section with 3D-ish look) ──
               // Ground cast shadow (soft, wide ellipse — gives the hive weight)
