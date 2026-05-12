@@ -944,6 +944,20 @@ window.SelHub = window.SelHub || {
       var aiResponse = d.aiResponse || null;
       var aiLoading = d.aiLoading || false;
 
+      // ── Rehearsal Role-Play state ──
+      // AI plays one of three restorative-conference participants while the
+      // student practices what they would actually say. Mirrors the pattern
+      // proven in Upstander but with restorative-specific characters and
+      // facilitator-friendly coach prompts.
+      var rcRpRole         = d.rcRpRole || '';        // '' | 'facilitator' | 'accountability' | 'listening'
+      var rcRpScene        = d.rcRpScene || '';       // AI-generated scene description
+      var rcRpHistory      = d.rcRpHistory || [];     // [{ speaker, text }]
+      var rcRpInput        = d.rcRpInput || '';
+      var rcRpLoading      = !!d.rcRpLoading;
+      var rcRpStarting     = !!d.rcRpStarting;
+      var rcRpEnded        = !!d.rcRpEnded;
+      var rcRpReflection   = d.rcRpReflection || '';
+
       // ── Badge progress tracking ──
       var badgeProgress = d.badgeProgress || {};
       var earnedBadges = d.earnedBadges || {};
@@ -1076,13 +1090,14 @@ window.SelHub = window.SelHub || {
 
         // ── Tab Navigation ──
         h('div', { role: 'tablist', 'aria-label': 'Restorative Circle tabs', className: 'flex flex-wrap gap-1 bg-amber-50 rounded-xl p-1 border border-amber-200' },
-          ['home', 'circle', 'scripts', 'harm-repair', 'scenarios', 'agreements', 'talking-piece', 'roots', 'questions', 'roles', 'empathy-map', 'compare', 'badges'].map(function(t) {
+          ['home', 'circle', 'scripts', 'harm-repair', 'scenarios', 'rehearse', 'agreements', 'talking-piece', 'roots', 'questions', 'roles', 'empathy-map', 'compare', 'badges'].map(function(t) {
             var labels = {
               'home': '\uD83C\uDFE0 Types',
               'circle': '\u2B55 Circle',
               'scripts': '\uD83D\uDCDC Scripts',
               'harm-repair': '\uD83E\uDE79 Repair',
               'scenarios': '\uD83C\uDFAD Scenarios',
+              'rehearse': '\uD83C\uDFAD Rehearse',
               'agreements': '\uD83E\uDD1D Agreements',
               'talking-piece': '\uD83E\uDEB6 Piece',
               'roots': '\uD83C\uDF0D Roots',
@@ -1507,6 +1522,296 @@ window.SelHub = window.SelHub || {
             );
           })()
         ),
+
+        // ═══ REHEARSE — Generative multi-turn role-play for restorative conversations ═══
+        // AI plays one restorative-conference role; student practices what they would say.
+        // Mirrors the Upstander role-play pattern but with restorative-specific characters,
+        // fresh scenes each playthrough, break-character coach, and end-reflection.
+        tab === 'rehearse' && (function renderRehearse() {
+          var rolesCfg = {
+            facilitator: {
+              label: 'Practice being the facilitator',
+              icon: '🪶',
+              desc: 'AI plays a participant in a circle who is being defensive or avoidant. You practice facilitating with curiosity, not judgment.',
+              charDesc: 'a middle/high school student attending a restorative circle. You are guarded, slightly defensive, and want to minimize what happened ("it was just a joke," "they overreacted," "I don\'t see why we have to talk about this"). You are NOT openly hostile, just resistant. Soften gradually IF the facilitator asks open, curious, non-blaming questions. Stay defensive if they accuse, lecture, or rush you.',
+              fallbackScene: 'You are facilitating a small repair circle. A student named Jamie is here because of a conflict at lunch yesterday. They sit with arms crossed.',
+              fallbackOpener: 'Look, can we just get this over with? I already apologized. I don\'t know why we have to make this such a big deal.'
+            },
+            accountability: {
+              label: 'Practice taking accountability',
+              icon: '🩹',
+              desc: 'AI plays the person you hurt. You practice acknowledging what you did without making excuses or over-apologizing.',
+              charDesc: 'a middle/high school student who was recently hurt by the student\'s actions. You are NOT in crisis. You are quiet, a little hurt, a little distrustful — you want a real acknowledgment, not a fast apology that erases what happened. You may ask follow-up questions ("did you actually know it would hurt me?" "are you only saying this because you got in trouble?"). Soften when you sense the student is being honest, not performing.',
+              fallbackScene: 'A facilitator just left the two of you alone for five minutes. You hurt this peer a few days ago — spread something private about them. They\'re sitting across from you, waiting.',
+              fallbackOpener: 'Okay. So. You wanted to say something to me.'
+            },
+            listening: {
+              label: 'Practice listening when someone shares their hurt',
+              icon: '👂',
+              desc: 'AI plays a peer telling you why something you did hurt them. You practice receiving without defending, explaining, or fixing.',
+              charDesc: 'a middle/high school peer who is trying to tell the student why something they did hurt. You speak in 1st person from the hurt — "when you said that, I felt ___, and I started ___." You are vulnerable, NOT angry. You will NOT pre-forgive. If the student gets defensive or starts explaining themselves, you will get quieter and start to shut down. If they just listen and reflect back what they hear, you will keep going and open up more.',
+              fallbackScene: 'A classmate texted you "hey can we talk?" Now you\'re sitting together at a quiet table after school. They look like they\'ve been thinking about how to say something for a while.',
+              fallbackOpener: 'I\'ve been trying to figure out how to tell you this. When you laughed along last week — I know it seems small to you. It really wasn\'t small to me.'
+            }
+          };
+          var charCfg = rcRpRole && rolesCfg[rcRpRole];
+          var bandLabel = gradeBand === 'elementary' ? 'elementary (3-5)' : gradeBand === 'middle' ? 'middle (6-8)' : gradeBand === 'high' ? 'high (9-12)' : 'middle school';
+
+          function rcStartRolePlay(roleKey) {
+            var cfg = rolesCfg[roleKey];
+            if (!cfg) return;
+            if (!callGemini) {
+              updMulti({ rcRpRole: roleKey, rcRpScene: cfg.fallbackScene, rcRpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener }], rcRpInput: '', rcRpEnded: false, rcRpReflection: '', rcRpStarting: false });
+              return;
+            }
+            updMulti({ rcRpRole: roleKey, rcRpScene: '', rcRpHistory: [], rcRpInput: '', rcRpEnded: false, rcRpReflection: '', rcRpStarting: true });
+            if (announceToSR) announceToSR('Generating restorative-practice scene');
+            var prompt =
+              'You are setting up a brief role-play for an SEL restorative-practice rehearsal tool. Build a fresh, realistic mini-scene for the student. ' +
+              'Return STRICT JSON only (no markdown, no fences, no preamble):\n' +
+              '{"scene":"1-2 sentence scene-setter naming WHO the other person is (use a first name and one detail), WHERE this is happening, and WHAT happened earlier — present tense, neutral observer voice","opener":"the FIRST in-character line the other person says, 1-2 sentences, in their voice, no narration, no quotation marks"}\n\n' +
+              'YOUR CHARACTER: ' + cfg.charDesc + '\n' +
+              'AUDIENCE: ' + bandLabel + ' grade band. Use age-appropriate vocabulary and social dynamics.\n\n' +
+              'RULES:\n' +
+              '- Vary the setting and details each time — avoid defaulting to "the cafeteria yesterday".\n' +
+              '- The "scene" field is neutral narration, not in character.\n' +
+              '- The "opener" field is the character SPEAKING in 1st person, sounds like a real student.\n' +
+              '- NO slurs, NO physical violence, NO sexual content. Keep harm at the relational/verbal level.\n' +
+              '- Avoid identity-based harm (race/gender/disability) — keep the harm general so any student can rehearse.\n\n' +
+              'Return ONLY the JSON object.';
+            callGemini(prompt, true).then(function(r) {
+              try {
+                var clean = (r || '').replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim().replace(/^[^{]*/, '').replace(/[^}]*$/, '');
+                var parsed = JSON.parse(clean);
+                if (!parsed || !parsed.scene || !parsed.opener) throw new Error('shape');
+                updMulti({
+                  rcRpScene: String(parsed.scene).trim(),
+                  rcRpHistory: [{ speaker: 'ai', text: String(parsed.opener).trim().replace(/^"|"$/g, '') }],
+                  rcRpStarting: false
+                });
+                if (announceToSR) announceToSR('Scene ready. ' + cfg.label);
+              } catch (e) {
+                updMulti({ rcRpScene: cfg.fallbackScene, rcRpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener }], rcRpStarting: false });
+              }
+            }).catch(function() {
+              updMulti({ rcRpScene: cfg.fallbackScene, rcRpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener }], rcRpStarting: false });
+            });
+          }
+
+          return h('div', { className: 'space-y-4' },
+            h('div', { className: 'text-center mb-2' },
+              h('h3', { className: 'text-lg font-black text-slate-800' }, '🎭 Rehearse the conversation'),
+              h('p', { className: 'text-xs text-slate-600' }, 'Restorative work is dialogue. Practice what you would actually say before you have to say it for real.')
+            ),
+            // STEP 1: pick a role to rehearse
+            !rcRpRole && h('div', { className: 'space-y-3' },
+              h('p', { className: 'text-sm text-slate-600' },
+                h('strong', { className: 'text-amber-700' }, 'Pick what you want to practice. '),
+                'The AI plays the OTHER person. You play yourself. Keep responses short and real — the way you would actually talk.'),
+              h('div', { className: 'grid gap-2' },
+                ['facilitator', 'accountability', 'listening'].map(function(roleKey) {
+                  var cfg = rolesCfg[roleKey];
+                  return h('button', {
+                    key: roleKey,
+                    onClick: function() { rcStartRolePlay(roleKey); },
+                    disabled: !callGemini || rcRpStarting,
+                    style: {
+                      padding: '12px 14px', textAlign: 'left',
+                      background: '#fff', border: '2px solid #fde68a', borderRadius: 10,
+                      fontSize: 14, color: '#0f172a', cursor: (callGemini && !rcRpStarting) ? 'pointer' : 'not-allowed',
+                      display: 'flex', alignItems: 'flex-start', gap: 10,
+                      opacity: rcRpStarting ? 0.6 : 1
+                    }
+                  },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 22, marginTop: 2 } }, cfg.icon),
+                    h('div', { style: { flex: 1 } },
+                      h('div', { style: { fontWeight: 700, marginBottom: 4 } }, cfg.label),
+                      h('div', { style: { fontSize: 12, color: '#64748b', lineHeight: 1.45 } }, cfg.desc)
+                    )
+                  );
+                })
+              ),
+              rcRpStarting && h('p', { 'aria-live': 'polite', className: 'text-xs italic text-amber-700' }, 'Generating a fresh scene…'),
+              !callGemini && h('p', { className: 'text-xs text-amber-700 italic' }, 'AI features need a connection. Try the Scenarios tab while offline.')
+            ),
+            // STEP 2: conversation in progress
+            rcRpRole && charCfg && h('div', { className: 'space-y-3' },
+              h('div', { style: { padding: '8px 12px', background: '#fef3c7', borderRadius: 8, fontSize: 12, color: '#92400e', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+                h('span', { style: { fontWeight: 700 } }, charCfg.icon + ' ' + charCfg.label),
+                h('button', {
+                  onClick: function() { updMulti({ rcRpRole: '', rcRpScene: '', rcRpHistory: [], rcRpInput: '', rcRpEnded: false, rcRpReflection: '', rcRpStarting: false }); },
+                  style: { padding: '4px 10px', background: '#fff', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+                }, '← Different role')
+              ),
+              // Scene
+              rcRpScene && h('div', { style: { padding: '10px 12px', background: '#fafafa', border: '1px solid #e5e7eb', borderLeft: '3px solid #f59e0b', borderRadius: 8, fontSize: 13, lineHeight: 1.5, color: '#475569', fontStyle: 'italic' } },
+                h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: '#92400e', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene:'),
+                rcRpScene
+              ),
+              // Conversation log
+              h('div', { 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '40vh', overflowY: 'auto', padding: 4 } },
+                rcRpHistory.map(function(turn, ti) {
+                  var isStudent = turn.speaker === 'student';
+                  var isCoach = turn.speaker === 'coach';
+                  return h('div', {
+                    key: 'rc-rp-' + ti,
+                    style: {
+                      alignSelf: isStudent ? 'flex-end' : 'flex-start',
+                      maxWidth: '85%',
+                      padding: '10px 13px',
+                      borderRadius: 12,
+                      fontSize: 14, lineHeight: 1.5, whiteSpace: 'pre-wrap',
+                      background: isStudent ? '#dbeafe' : (isCoach ? '#fef3c7' : '#f1f5f9'),
+                      border: '1px solid ' + (isStudent ? '#93c5fd' : (isCoach ? '#fcd34d' : '#cbd5e1')),
+                      color: '#0f172a'
+                    }
+                  },
+                    h('div', { style: { fontSize: 10, fontWeight: 700, color: isStudent ? '#1d4ed8' : (isCoach ? '#92400e' : '#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
+                      isStudent ? 'You' : (isCoach ? '🪶 Coach (out of character)' : '🎭 ' + (rcRpRole === 'facilitator' ? 'Defensive participant' : rcRpRole === 'accountability' ? 'Person you hurt' : 'Peer sharing their hurt'))),
+                    h('div', null, turn.text)
+                  );
+                })
+              ),
+              // Input + actions
+              !rcRpEnded && h('div', null,
+                h('textarea', { id: 'rc-rp-input', value: rcRpInput,
+                  onChange: function(e) { upd('rcRpInput', e.target.value); },
+                  placeholder: 'What would you actually say next? Keep it short — restorative work is more about listening than fixing.',
+                  rows: 2,
+                  disabled: rcRpLoading,
+                  className: 'w-full p-2 text-sm border border-slate-300 rounded-lg font-inherit resize-y',
+                  style: { boxSizing: 'border-box', marginBottom: 8 }
+                }),
+                h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                  // Send
+                  h('button', {
+                    disabled: rcRpLoading || !rcRpInput.trim() || !callGemini,
+                    'aria-busy': rcRpLoading ? 'true' : 'false',
+                    onClick: function() {
+                      if (!callGemini || !rcRpInput.trim()) return;
+                      var studentTurn = rcRpInput.trim();
+                      var newHist = rcRpHistory.concat([{ speaker: 'student', text: studentTurn }]);
+                      updMulti({ rcRpHistory: newHist, rcRpInput: '', rcRpLoading: true });
+                      var historyText = newHist.map(function(t) {
+                        if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
+                        if (t.speaker === 'coach') return 'COACH (out of character): ' + t.text;
+                        return 'OTHER (' + rcRpRole + '): "' + t.text.replace(/"/g, '\\"') + '"';
+                      }).join('\n');
+                      var turnN = newHist.filter(function(t) { return t.speaker === 'student'; }).length;
+                      var prompt =
+                        'You are role-playing for an SEL restorative-practice rehearsal tool. The student practices what to say in real life.\n\n' +
+                        'YOUR CHARACTER: ' + charCfg.charDesc + '\n' +
+                        'AUDIENCE: ' + bandLabel + ' grade band. Use age-appropriate vocabulary.\n\n' +
+                        (rcRpScene ? 'SCENE (stay consistent with this throughout): ' + rcRpScene + '\n\n' : '') +
+                        'STRICT RULES:\n' +
+                        '- Stay in character. Reply with 1-3 sentences max, like a real student would talk.\n' +
+                        '- NO slurs. NO physical threats or violence. Stay at the relational/verbal level.\n' +
+                        '- Do NOT narrate, moralize, or break character. Just speak as the character.\n' +
+                        '- Do not include quotation marks around your reply — just the words.\n' +
+                        '- This is turn ' + turnN + ' of the conversation. By turn 4-5, if the student is responding well (curious not accusing, listening not fixing, acknowledging not excusing), your character can soften, open up, or take a small step. If they are NOT responding well, stay consistent — do not fold.\n\n' +
+                        'CONVERSATION SO FAR:\n' + historyText + '\n\n' +
+                        'Respond as the character in 1-3 sentences. Just the line.';
+                      callGemini(prompt, false).then(function(r) {
+                        var reply = (r || '').trim().replace(/^"|"$/g, '');
+                        updMulti({ rcRpHistory: newHist.concat([{ speaker: 'ai', text: reply || '...' }]), rcRpLoading: false });
+                        if (announceToSR) announceToSR('Response received');
+                      }).catch(function() {
+                        updMulti({ rcRpHistory: newHist.concat([{ speaker: 'ai', text: '(AI not reachable — try again in a moment)' }]), rcRpLoading: false });
+                      });
+                    },
+                    className: 'px-4 py-2 rounded-lg text-sm font-bold text-white',
+                    style: { background: (rcRpLoading || !rcRpInput.trim() || !callGemini) ? '#cbd5e1' : '#d97706', cursor: (rcRpLoading || !rcRpInput.trim() || !callGemini) ? 'not-allowed' : 'pointer' }
+                  }, rcRpLoading ? 'Thinking…' : 'Send →'),
+                  // Break character → coach
+                  h('button', {
+                    disabled: rcRpLoading || !callGemini || rcRpHistory.length === 0,
+                    onClick: function() {
+                      if (!callGemini) return;
+                      upd('rcRpLoading', true);
+                      var historyText = rcRpHistory.map(function(t) {
+                        if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
+                        if (t.speaker === 'coach') return 'COACH: ' + t.text;
+                        return 'OTHER: "' + t.text.replace(/"/g, '\\"') + '"';
+                      }).join('\n');
+                      var roleHint =
+                        rcRpRole === 'facilitator' ? 'Restorative facilitation centers curiosity over judgment, asks open questions, names what is happening without taking sides.' :
+                        rcRpRole === 'accountability' ? 'Real accountability is naming what you did, naming the impact (not the intent), and asking what would help repair — without rushing forgiveness.' :
+                        'Restorative listening is reflecting back what you heard before you respond, naming the feeling not the fact, resisting the urge to defend or explain.';
+                      var prompt =
+                        'You are a kind, grounded restorative-practice coach watching a role-play between a student and an AI peer. ' +
+                        'OUT OF CHARACTER NOW. Briefly tell the student two things, under 80 words total:\n' +
+                        '1) What is going on in this moment — what the other person is doing and what they probably need from the student.\n' +
+                        '2) One concrete thing the student could try saying next. Give an example phrasing.\n\n' +
+                        'No moralizing. No "good job" filler. Warm, peer-mentor tone. Plain English.\n' +
+                        'CONTEXT: ' + roleHint + '\n\n' +
+                        'CHARACTER played by AI: ' + charCfg.charDesc + '\n' +
+                        (rcRpScene ? 'SCENE: ' + rcRpScene + '\n' : '') +
+                        'CONVERSATION:\n' + historyText;
+                      callGemini(prompt, false).then(function(r) {
+                        var coachText = (r || 'Take a breath and notice what just happened. What would you say if you were not trying to fix it?').trim();
+                        updMulti({ rcRpHistory: rcRpHistory.concat([{ speaker: 'coach', text: coachText }]), rcRpLoading: false });
+                      }).catch(function() {
+                        upd('rcRpLoading', false);
+                      });
+                    },
+                    className: 'px-3 py-2 rounded-lg text-sm font-semibold',
+                    style: { background: '#fff', color: '#92400e', border: '1px solid #fcd34d', cursor: (rcRpLoading || !callGemini || rcRpHistory.length === 0) ? 'not-allowed' : 'pointer' }
+                  }, '🪶 Break character — coach me'),
+                  // End & reflect
+                  rcRpHistory.filter(function(t) { return t.speaker === 'student'; }).length >= 2 && h('button', {
+                    disabled: rcRpLoading || !callGemini,
+                    onClick: function() {
+                      if (!callGemini) return;
+                      upd('rcRpLoading', true);
+                      var historyText = rcRpHistory.map(function(t) {
+                        if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
+                        if (t.speaker === 'coach') return 'COACH: ' + t.text;
+                        return 'OTHER: "' + t.text.replace(/"/g, '\\"') + '"';
+                      }).join('\n');
+                      var prompt =
+                        'You are a kind restorative-practice coach reflecting back on a brief role-play. ' +
+                        'In 2-3 sentences (under 70 words), name:\n' +
+                        '1) One specific thing the student did well in their responses (refer to their actual words when you can).\n' +
+                        '2) One thing they could try differently next time.\n\n' +
+                        'Be real and specific. No empty praise. Restorative tone: curious, not corrective.\n\n' +
+                        'CHARACTER played by AI: ' + charCfg.charDesc + '\n' +
+                        (rcRpScene ? 'SCENE: ' + rcRpScene + '\n' : '') +
+                        'CONVERSATION:\n' + historyText;
+                      callGemini(prompt, false).then(function(r) {
+                        var reflectText = (r || 'You showed up to the practice. That matters. Next time, try one sentence shorter — restorative work is often more about the silence between sentences than the sentences themselves.').trim();
+                        updMulti({ rcRpEnded: true, rcRpReflection: reflectText, rcRpLoading: false });
+                        incrementBadgeStat('roleplayed', 1);
+                      }).catch(function() {
+                        updMulti({ rcRpEnded: true, rcRpReflection: 'Practice complete. Next time, try one sentence shorter — restorative work lives in the silence between sentences.', rcRpLoading: false });
+                      });
+                    },
+                    className: 'px-3 py-2 rounded-lg text-sm font-semibold',
+                    style: { background: '#fff', color: '#475569', border: '1px solid #cbd5e1', cursor: (rcRpLoading || !callGemini) ? 'not-allowed' : 'pointer' }
+                  }, 'End & reflect')
+                )
+              ),
+              // STEP 3: reflection
+              rcRpEnded && rcRpReflection && h('div', { style: { padding: 14, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#166534', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'How that went'),
+                h('p', { style: { margin: '0 0 12px', fontSize: 14, lineHeight: 1.55, color: '#0f172a', whiteSpace: 'pre-wrap' } }, rcRpReflection),
+                h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                  h('button', {
+                    onClick: function() { updMulti({ rcRpRole: '', rcRpScene: '', rcRpHistory: [], rcRpInput: '', rcRpEnded: false, rcRpReflection: '', rcRpStarting: false }); },
+                    className: 'px-3 py-2 rounded-lg text-sm font-bold text-white',
+                    style: { background: '#d97706', cursor: 'pointer' }
+                  }, 'Practice again'),
+                  h('button', {
+                    onClick: function() { upd('tab', 'home'); updMulti({ rcRpRole: '', rcRpScene: '', rcRpHistory: [], rcRpInput: '', rcRpEnded: false, rcRpReflection: '' }); },
+                    className: 'px-3 py-2 rounded-lg text-sm font-semibold',
+                    style: { background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', cursor: 'pointer' }
+                  }, 'Done')
+                )
+              ),
+              rcRpRole && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#92400e', fontStyle: 'italic' } },
+                'AI-generated responses. No real student is depicted. Treat coach feedback as one perspective.')
+            )
+          );
+        })(),
 
         // ═══ COMMUNITY AGREEMENTS BUILDER ═══
         tab === 'agreements' && h('div', { className: 'space-y-4' },
