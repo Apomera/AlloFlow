@@ -511,8 +511,10 @@
         { id: '_cat_InnerWork', icon: '\uD83E\uDDD8', label: 'Inner Work', desc: '', color: 'slate', category: true },
         { id: 'mindfulness', icon: '\uD83E\uDDD8', label: 'Mindfulness Corner',  desc: 'Guided breathing exercises, body scans, and mindfulness activities.', color: 'purple', recommendedRange: 'K-12' },
         { id: 'quietQuestions', icon: '\uD83C\uDF12', label: 'Quiet Questions',  desc: 'Weekly inner inquiry practice. Sit with one open-ended question for a full week. 20 rotating queries across attention, longing, difficulty, connection, and becoming. Inspired by Quaker query tradition; secular and non-prescriptive.', color: 'purple', recommendedRange: '5-12' },
+        { id: 'orientations', icon: '\uD83E\uDDED', label: 'Orientations',      desc: 'Ways of Living, Compared. Eight philosophical traditions (Daoism, Zen, Stoicism, Existentialism, Confucian ethics, Ubuntu, Indigenous relationality, Care Ethics) compared on big life questions. Non-prescriptive; each tradition has an honest "what it cannot do well" panel.', color: 'purple', recommendedRange: '6-12' },
         // Care of Self (self-compassion, relational self-care)
         { id: '_cat_CareOfSelf', icon: '\uD83E\uDD7A', label: 'Care of Self', desc: '', color: 'slate', category: true },
+        { id: 'careConstellations', icon: '\uD83C\uDF0C', label: 'Care Constellations', desc: 'A relational map of who cares for you and who you care for. Refuses the individualist or consumerist "self-care" frame. Includes a substantive philosophical view on Care of Self vs Self-Care (Foucault, Greek epimeleia heautou, Audre Lorde, eudaimonic vs hedonic).', color: 'rose', recommendedRange: '5-12' },
         // Self-Direction (agency, goal-setting, executive function)
         { id: '_cat_SelfDirection', icon: '\uD83E\uDDED', label: 'Self-Direction', desc: '', color: 'slate', category: true },
         { id: 'goals',       icon: '\uD83D\uDCCB', label: 'Goal Setter',         desc: 'Set SMART goals, track progress, and celebrate milestones.', color: 'indigo', recommendedRange: '3-12' },
