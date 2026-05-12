@@ -570,27 +570,100 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             h('p', { className: 'text-lg text-slate-700 max-w-2xl mx-auto relative' },
               'Welding & metal joining — heat-input physics, bead geometry, defect ID, AWS symbols, OSHA-aligned safety, and Maine welding careers (Bath Iron Works, EMCC, AWS).')
           ),
-          h('div', {
-            'aria-live': 'polite',
-            className: 'mb-6 p-4 rounded-2xl border-2 ' + (allDone ? 'bg-orange-50 border-orange-300' : 'bg-slate-50 border-slate-200') + ' flex items-center justify-between gap-4'
-          },
-            h('div', { className: 'flex items-center gap-3' },
-              h('span', { className: 'text-3xl' + (allDone ? ' weldlab-arc-pulse' : '') }, allDone ? '🏆' : '🛠️'),
-              h('div', null,
-                h('div', { className: 'font-bold text-slate-800' },
-                  allDone ? 'All modules explored — full welding path complete!' : ('Progress: ' + visitedCount + ' of ' + totalCount + ' modules explored')
+          // ── Welder's journey progress card ──
+          // Pulls the existing 13-module menu into a career-arc narrative
+          // so students see their visit progress as moving up a real-world
+          // welding ladder (apprentice → journeyman → master → AWS-certified)
+          // rather than a flat 0-of-11 counter. Surfaces the closest
+          // un-visited module by name with a direct jump button.
+          (function () {
+            var BADGE_LABELS = {
+              heatInput: 'Heat Input Calculator',
+              beadLab: 'Weld Bead Lab',
+              defectHunt: 'Defect Hunt Lab',
+              processCompare: 'Process Comparison',
+              jointCatalog: 'Joint Configuration',
+              symbolsReader: 'Welding Symbols Reader',
+              ppeSafety: 'PPE & Safety',
+              careerPaths: 'Career Pathways',
+              underwater: 'Underwater Welding',
+              speedChallenge: 'Speed Challenge',
+              defectCatalog: "Welder's Defect Catalog"
+            };
+            // Career tier from visit count. Mirrors the AWS certification
+            // ladder loosely: entry-level → working → master → certified.
+            var tier, tierColor, tierIcon, tierBlurb;
+            if (allDone) {
+              tier = 'AWS Certified Master Welder';
+              tierColor = 'text-orange-700';
+              tierIcon = '🏆';
+              tierBlurb = 'You toured every station in the shop. Revisit any to deepen the craft.';
+            } else if (visitedCount >= 8) {
+              tier = 'Master Welder (in progress)';
+              tierColor = 'text-orange-600';
+              tierIcon = '🔥';
+              tierBlurb = 'Broad expertise. ' + (totalCount - visitedCount) + ' module' + (totalCount - visitedCount === 1 ? '' : 's') + ' to AWS-certified.';
+            } else if (visitedCount >= 4) {
+              tier = 'Journeyman';
+              tierColor = 'text-amber-700';
+              tierIcon = '⚒️';
+              tierBlurb = 'Working knowledge. ' + (8 - visitedCount) + ' more to Master.';
+            } else if (visitedCount >= 1) {
+              tier = 'Apprentice';
+              tierColor = 'text-yellow-700';
+              tierIcon = '🛠️';
+              tierBlurb = 'Just getting started. ' + (4 - visitedCount) + ' more to Journeyman.';
+            } else {
+              tier = 'New to the shop';
+              tierColor = 'text-slate-700';
+              tierIcon = '👋';
+              tierBlurb = 'Pick any module below. Heat Input is the foundation everything else builds on.';
+            }
+            // Find the next un-visited badge in declaration order — that
+            // matches the rough learning-progression Aaron set when
+            // ordering BADGE_IDS (foundational science first, then
+            // application, then specialties).
+            var nextBadgeId = null;
+            for (var bi = 0; bi < BADGE_IDS.length; bi++) {
+              if (!badges[BADGE_IDS[bi]]) { nextBadgeId = BADGE_IDS[bi]; break; }
+            }
+            var nextLabel = nextBadgeId ? BADGE_LABELS[nextBadgeId] : null;
+            return h('div', {
+              'aria-live': 'polite',
+              className: 'mb-6 p-4 rounded-2xl border-2 ' + (allDone ? 'bg-orange-50 border-orange-300' : 'bg-slate-50 border-slate-200')
+            },
+              h('div', { className: 'flex items-center justify-between gap-4 flex-wrap' },
+                h('div', { className: 'flex items-center gap-3 flex-1 min-w-[220px]' },
+                  h('span', { className: 'text-3xl' + (allDone ? ' weldlab-arc-pulse' : ''), 'aria-hidden': true }, tierIcon),
+                  h('div', null,
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider ' + tierColor + ' mb-0.5' }, 'Your tier'),
+                    h('div', { className: 'font-bold text-slate-800 text-lg leading-tight' }, tier),
+                    h('div', { className: 'text-xs text-slate-700 mt-0.5' }, tierBlurb)
+                  )
                 ),
-                h('div', { className: 'text-xs text-slate-700' },
-                  allDone ? 'Revisit any module to deepen your understanding.' : 'Open each card below to learn its specialty.')
+                h('div', { className: 'flex-shrink-0 w-36' },
+                  h('div', { className: 'text-xs text-slate-700 mb-1 text-right font-mono' }, visitedCount + ' / ' + totalCount + ' modules'),
+                  h('div', { className: 'w-full h-3 bg-slate-200 rounded-full overflow-hidden relative', 'aria-hidden': true },
+                    h('div', {
+                      className: 'h-full weldlab-stripe-anim ' + (allDone ? 'bg-orange-500' : 'bg-orange-400') + ' transition-all',
+                      style: { width: Math.round((visitedCount / totalCount) * 100) + '%' }
+                    })
+                  )
+                )
+              ),
+              // Next-up nudge — only shown when there's a clear next module.
+              !allDone && nextBadgeId && h('div', { className: 'mt-3 pt-3 border-t border-slate-300/60 flex items-center justify-between gap-3 flex-wrap' },
+                h('div', { className: 'text-sm text-slate-700 flex-1 min-w-[180px]' },
+                  h('span', { className: 'font-bold text-slate-800' }, '→ Try next: '),
+                  h('span', null, nextLabel)
+                ),
+                h('button', {
+                  onClick: function () { goto(nextBadgeId); },
+                  className: 'px-3 py-1.5 rounded-lg bg-orange-600 text-white text-xs font-bold hover:bg-orange-700 focus:outline-none focus:ring-4 ring-orange-500/40 transition'
+                }, 'Open →')
               )
-            ),
-            h('div', { className: 'flex-shrink-0 w-32 h-3 bg-slate-200 rounded-full overflow-hidden relative', 'aria-hidden': true },
-              h('div', {
-                className: 'h-full weldlab-stripe-anim ' + (allDone ? 'bg-orange-500' : 'bg-orange-400') + ' transition-all',
-                style: { width: Math.round((visitedCount / totalCount) * 100) + '%' }
-              })
-            )
-          ),
+            );
+          })(),
           // ── Welder's Defect Catalog summary tile ──
           // Persistent count of unique defect types the student has identified
           // across all Defect Hunt samples. Click jumps to the full catalog
