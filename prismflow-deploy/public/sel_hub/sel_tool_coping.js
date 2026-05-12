@@ -583,6 +583,18 @@ window.SelHub = window.SelHub || {
       var activeTab     = d.activeTab || 'library';
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
 
+      // Rehearse-mode state — AI plays a TRIGGER (anxious voice, escalating
+      // parent, distant friend, sensory overload). Student practices
+      // applying a coping strategy in the moment. Clinically distinct from
+      // peer-conversation role-play: the AI is the stressor, not a peer.
+      var cpRpScenarioId = d.cpRpScenarioId || '';
+      var cpRpHistory    = d.cpRpHistory || [];
+      var cpRpInput      = d.cpRpInput || '';
+      var cpRpLoading    = !!d.cpRpLoading;
+      var cpRpStarting   = !!d.cpRpStarting;
+      var cpRpEnded      = !!d.cpRpEnded;
+      var cpRpReflection = d.cpRpReflection || '';
+
       // Library state
       var selectedType    = d.selectedType || null;    // filter by strategy type
       var expandedStrat   = d.expandedStrat || null;   // which strategy is expanded
@@ -755,6 +767,7 @@ window.SelHub = window.SelHub || {
       var tabs = [
         { id: 'library',  label: '\uD83D\uDCDA Library' },
         { id: 'practice', label: '\uD83C\uDFAF Practice' },
+        { id: 'rehearse', label: '\uD83C\uDFAD Rehearse' },
         { id: 'plan',     label: '\uD83D\uDCCB My Calm Plan' },
         { id: 'matcher',  label: '\u2728 Matcher' },
         { id: 'log',      label: '\uD83D\uDCCA Practice Log' }
@@ -795,6 +808,7 @@ window.SelHub = window.SelHub || {
         var TAB_META = {
           library:  { accent: '#14b8a6', soft: 'rgba(20,184,166,0.14)',  icon: '\uD83D\uDCDA', title: 'Library \u2014 the coping toolkit',                hint: 'Cognitive (reframe, name it to tame it), behavioral (move, breathe, ground), social (call a friend, share). Multiple strategies in your back pocket beats one silver bullet \u2014 different stress states need different tools.' },
           practice: { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)',  icon: '\uD83C\uDFAF', title: 'Practice \u2014 box breathing, 5-4-3-2-1, body scan',  hint: 'Box breathing (4-4-4-4) is what Navy SEALs use to manage acute stress. 5-4-3-2-1 grounding pulls anxious attention back into the present via the senses. Both work because they change physiology, not thoughts.' },
+          rehearse: { accent: '#f97316', soft: 'rgba(249,115,22,0.14)',  icon: '\uD83C\uDFAD', title: 'Rehearse \u2014 apply a coping skill in a hard moment', hint: 'Mental rehearsal (Driskell et al., 1994) builds the same neural pathways as practiced response. The AI plays the trigger (anxious voice, escalating parent, distant friend, overwhelming environment); you practice what you would do in your body and your mind.' },
           plan:     { accent: '#10b981', soft: 'rgba(16,185,129,0.14)',  icon: '\uD83D\uDCCB', title: 'My Calm Plan \u2014 your personalized go-to list',     hint: 'Pre-commit to specific responses BEFORE you\u2019re activated. Implementation intentions (Gollwitzer 1999): \u201Cif X happens, then I\u2019ll do Y\u201D \u2014 doubles follow-through compared to vague intentions to cope.' },
           matcher:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)',  icon: '\u2728',         title: 'Matcher \u2014 right tool for the right zone',         hint: 'Yellow-zone overwhelm needs different strategies than red-zone shutdown. Zones of Regulation (Kuypers) gives a shared language; this matcher gives the strategy. Self-knowledge IS regulation.' },
           log:      { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',   icon: '\uD83D\uDCCA', title: 'Practice Log \u2014 what worked and when',             hint: 'Tracking turns coping from reactive to deliberate. Patterns emerge over weeks: which strategy works for which trigger. The log itself becomes a self-knowledge artifact you can show a counselor or trusted adult.' }
@@ -1817,6 +1831,320 @@ window.SelHub = window.SelHub || {
       }
 
       // ══════════════════════════════════════════════════════════
+      // ── TAB: Rehearse — Coping-skill application in a simulated stress moment ──
+      // The AI plays the trigger (an anxious voice, an escalating parent, a
+      // distant friend, or sensory overload). The student practices what
+      // they would actually do — say, think, or shift in their body —
+      // while the trigger persists. Multi-turn back-and-forth, coach break,
+      // end-and-reflect. Mirrors the proven Upstander / Restorative scaffold
+      // but with the AI as stressor rather than peer.
+      var rehearseContent = null;
+      if (activeTab === 'rehearse') {
+        var COPING_TRIGGERS = {
+          anxious_voice: {
+            label: 'The anxious voice in your head before something hard',
+            icon: '🌀',
+            blurb: 'Before a presentation, a test, a hard conversation. AI plays the voice in your head ("you\'re going to mess up, everyone will notice"). You practice talking back, defusing, or letting it pass.',
+            charName: 'Anxious voice',
+            charDesc: 'You are the worried voice in this student\'s head right before they do something hard (a class presentation, a test, asking out a crush). You speak in 2nd person ("you\'re going to forget everything"), short catastrophizing thoughts in 1-2 sentences. You are NOT cruel — you are FEARFUL. You get LOUDER if the student ignores or argues with you. You get QUIETER if the student names you ("that\'s my anxiety talking"), accepts you without believing you ("hi anxiety, thanks for trying to protect me"), or grounds in something physical ("I notice my feet on the floor").',
+            fallbackScene: 'You are about to present a project in front of your whole class. Your hands are sweating. You\'re next.',
+            fallbackOpener: 'You\'re going to mess this up. Everyone is going to see you panic. You should have prepared more. Why did you even sign up for this?'
+          },
+          parent_escalating: {
+            label: 'A parent escalating an argument',
+            icon: '🔥',
+            blurb: 'A parent who is getting more frustrated, raising volume, repeating the same point. You practice de-escalating without shutting down, without matching their energy, without giving up your own perspective.',
+            charName: 'Parent',
+            charDesc: 'You are a parent who is frustrated and escalating an argument with their kid (about screen time, grades, an unmade bed, plans for the weekend — pick something realistic). You speak in 1-2 sentences. You repeat your point louder when not heard. You may make small "you always..." overgeneralizations. You are NOT abusive — you are stressed and human. You de-escalate when the student validates your underlying concern WITHOUT folding ("I hear you\'re worried about X, AND I still see it this way"), uses a calm tone, or asks a curious question. You stay escalated if they roll their eyes, mirror your volume, or stonewall.',
+            fallbackScene: 'You\'re in the kitchen after dinner. The conversation about grades has been going for ten minutes. Your parent just raised their voice for the third time.',
+            fallbackOpener: 'This is exactly what I mean. You don\'t take any of this seriously. Do you even WANT to graduate?'
+          },
+          friend_bailing: {
+            label: 'A friend bailing on plans (last minute, vague)',
+            icon: '📵',
+            blurb: 'A friend texts to cancel and is being weird about it. Your brain starts the rejection spiral. You practice NOT spiraling, NOT lashing out, asking what\'s actually going on.',
+            charName: 'Friend',
+            charDesc: 'You are a teenager texting your friend (the student) to cancel plans last-minute. You are vague and a little distant. The REAL reason (which you do not volunteer at first) is realistic and not about the student — you\'re fighting with your mom, you\'re overwhelmed with homework, you\'re going through something. You speak in short text-like 1-sentence replies ("sorry I can\'t make it tonight" / "I just can\'t" / "it\'s complicated"). You open up IF the student doesn\'t spiral, doesn\'t accuse, and asks a kind direct question. You close back down if the student gets passive-aggressive, sarcastic, or guilt-trips you.',
+            fallbackScene: 'It\'s Friday afternoon. You and your closest friend have been planning to hang out tonight all week. They just texted: "hey so I can\'t come anymore."',
+            fallbackOpener: 'sorry I can\'t make it tonight'
+          },
+          sensory_overload: {
+            label: 'Sensory overload at a school event',
+            icon: '🎆',
+            blurb: 'Pep rally, lunchroom, dance, fire drill. AI plays the environment getting louder, brighter, more chaotic. You practice grounding skills — noticing your body, finding the exit, asking for what you need.',
+            charName: 'The environment',
+            charDesc: 'You are NOT a person. You are the SETTING — a sensory environment that is getting more overwhelming for this student (pep rally / lunchroom / dance / crowded hallway). You speak in 2nd-person observational sentences describing what is happening AROUND the student ("the bass drops; the bleachers shake; someone whoops behind you; the lights pulse red"). Each turn, the environment gets a little more intense if the student does nothing, OR levels off / quiets down if the student names a grounding move ("I\'m putting in my earplugs", "I notice my feet on the floor", "I\'m walking to the exit"). Keep each turn 1-2 sentences, sensory, present tense. NO dialogue — you are the environment, not a person.',
+            fallbackScene: 'You\'re at the school pep rally in the gym. The whole school is here. The band is warming up.',
+            fallbackOpener: 'The pep band hits its first crashing chord. The cheerleaders run out screaming. The bleachers behind you start stomping in unison — your sternum vibrates with it.'
+          }
+        };
+        var TRIG_ORDER = ['anxious_voice', 'parent_escalating', 'friend_bailing', 'sensory_overload'];
+        var trigCfg = cpRpScenarioId && COPING_TRIGGERS[cpRpScenarioId];
+
+        var bandLabel = band === 'elementary' ? 'upper elementary (3-5)' : (band === 'middle' ? 'middle school (6-8)' : 'high school (9-12)');
+
+        function cpStartRolePlay(trigId) {
+          var cfg = COPING_TRIGGERS[trigId];
+          if (!cfg) return;
+          if (!callGemini) {
+            upd({ cpRpScenarioId: trigId, cpRpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener, scene: cfg.fallbackScene }], cpRpInput: '', cpRpEnded: false, cpRpReflection: '', cpRpStarting: false });
+            return;
+          }
+          upd({ cpRpScenarioId: trigId, cpRpHistory: [], cpRpInput: '', cpRpEnded: false, cpRpReflection: '', cpRpStarting: true });
+          var prompt =
+            'You are setting up a brief in-vivo coping-skill rehearsal for an SEL tool. Build a fresh, realistic mini-scene + opening trigger line. ' +
+            'Return STRICT JSON only (no markdown, no fences, no preamble):\n' +
+            '{"scene":"1-2 sentence scene-setter in 2nd person (\\"you\\") naming WHERE the student is, WHAT just happened, and WHAT is starting to come up — present tense, observational","opener":"the FIRST trigger line — the words / sounds / pressure the student is now facing in 1-2 sentences. Match the character described below."}\n\n' +
+            'YOUR CHARACTER: ' + cfg.charDesc + '\n' +
+            'AUDIENCE: ' + bandLabel + ' student. Age-appropriate stressors only.\n\n' +
+            'RULES:\n' +
+            '- Vary the specifics (subject of argument, what test, which friend) each playthrough — do not default to "math test" or "messy room".\n' +
+            '- Scene is in 2nd person, observational, neutral.\n' +
+            '- Opener is in the character\'s voice (or environment\'s sensory voice for sensory_overload).\n' +
+            '- NO violence, NO sexual content, NO self-harm or suicidal content, NO slurs.\n' +
+            '- For parent_escalating: keep it stressful but NOT abusive. Frustrated, not cruel.\n' +
+            '- For anxious_voice: catastrophizing thoughts, NOT suicidal ideation.\n' +
+            '- For friend_bailing: ambiguous, NOT a serious crisis on the friend\'s side.\n' +
+            '- For sensory_overload: sensory description, no dialogue or people speaking.\n\n' +
+            'Return ONLY the JSON object.';
+          callGemini(prompt, true).then(function(r) {
+            try {
+              var clean = (r || '').replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim().replace(/^[^{]*/, '').replace(/[^}]*$/, '');
+              var parsed = JSON.parse(clean);
+              if (!parsed || !parsed.scene || !parsed.opener) throw new Error('shape');
+              upd({
+                cpRpHistory: [{ speaker: 'ai', text: String(parsed.opener).trim().replace(/^"|"$/g, ''), scene: String(parsed.scene).trim() }],
+                cpRpStarting: false
+              });
+            } catch (e) {
+              upd({ cpRpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener, scene: cfg.fallbackScene }], cpRpStarting: false });
+            }
+          }).catch(function() {
+            upd({ cpRpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener, scene: cfg.fallbackScene }], cpRpStarting: false });
+          });
+        }
+
+        function cpSendTurn() {
+          if (!callGemini || !cpRpInput.trim() || !trigCfg) return;
+          var studentTurn = cpRpInput.trim();
+          var newHist = cpRpHistory.concat([{ speaker: 'student', text: studentTurn }]);
+          upd({ cpRpHistory: newHist, cpRpInput: '', cpRpLoading: true });
+          var scene = (cpRpHistory[0] && cpRpHistory[0].scene) || trigCfg.fallbackScene;
+          var historyText = newHist.map(function(t) {
+            if (t.speaker === 'student') return 'STUDENT (what they say / do / notice): "' + t.text.replace(/"/g, '\\"') + '"';
+            if (t.speaker === 'coach') return 'COACH (out of character): ' + t.text;
+            return 'TRIGGER (' + trigCfg.charName + '): "' + t.text.replace(/"/g, '\\"') + '"';
+          }).join('\n');
+          var turnN = newHist.filter(function(t) { return t.speaker === 'student'; }).length;
+          var prompt =
+            'You are role-playing a TRIGGER for an SEL coping-skill rehearsal. The student practices applying a coping technique in real time.\n\n' +
+            'YOUR ROLE: ' + trigCfg.charDesc + '\n' +
+            'SCENE (constant): ' + scene + '\n' +
+            'AUDIENCE: ' + bandLabel + ' student.\n\n' +
+            'STRICT RULES:\n' +
+            '- Stay in role. Reply with 1-2 sentences, matching your character voice.\n' +
+            '- NO slurs, NO violence, NO sexual content, NO self-harm content, NO suicidal ideation.\n' +
+            '- Track the student\'s coping attempt this turn (did they name the trigger? ground physically? validate without folding? walk away? defuse the thought? regulate their breath?). React accordingly:\n' +
+            '   * If they used a recognized coping skill effectively → ease off (parent quieter, voice softer, friend opens up, environment levels)\n' +
+            '   * If they did NOT cope effectively (argued, escalated, stonewalled, suppressed) → stay consistent or slightly escalate appropriately\n' +
+            '- This is turn ' + turnN + '. By turn 4-5, the trigger should resolve (calm down, quiet, soften, fade) if the student has done ANY reasonable coping.\n' +
+            '- Do NOT moralize, break character, or narrate the student\'s feelings. Just deliver the next trigger line.\n\n' +
+            'CONVERSATION SO FAR:\n' + historyText + '\n\n' +
+            'Respond as the trigger in 1-2 sentences. Just the line.';
+          callGemini(prompt, false).then(function(r) {
+            var reply = (r || '').trim().replace(/^"|"$/g, '');
+            upd({ cpRpHistory: newHist.concat([{ speaker: 'ai', text: reply || '...' }]), cpRpLoading: false });
+          }).catch(function() {
+            upd({ cpRpHistory: newHist.concat([{ speaker: 'ai', text: '(AI not reachable — take a real breath. Try again in a moment.)' }]), cpRpLoading: false });
+          });
+        }
+
+        function cpCoachBreak() {
+          if (!callGemini || cpRpHistory.length === 0 || !trigCfg) return;
+          upd('cpRpLoading', true);
+          var scene = (cpRpHistory[0] && cpRpHistory[0].scene) || trigCfg.fallbackScene;
+          var historyText = cpRpHistory.map(function(t) {
+            if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
+            if (t.speaker === 'coach') return 'COACH: ' + t.text;
+            return 'TRIGGER: "' + t.text.replace(/"/g, '\\"') + '"';
+          }).join('\n');
+          var prompt =
+            'You are a kind coping-skills coach watching a student practice applying a coping technique in a simulated stress moment. ' +
+            'OUT OF CHARACTER NOW. Briefly tell the student two things, under 80 words total:\n' +
+            '1) What is happening to their nervous system right now in this scene — what the body is probably doing.\n' +
+            '2) One concrete coping skill they could try in this moment — name a specific technique (e.g. box breathing, 5-4-3-2-1 grounding, naming the thought, defusion, asking one curious question, walking to a different room). Give an example phrasing or action.\n\n' +
+            'No moralizing. No "great job" filler. Warm, grounded tone. Plain English.\n\n' +
+            'TRIGGER TYPE: ' + trigCfg.charDesc + '\n' +
+            'SCENE: ' + scene + '\n' +
+            'CONVERSATION:\n' + historyText;
+          callGemini(prompt, false).then(function(r) {
+            var coachText = (r || 'Take a real breath. What\'s one thing you notice in your body right now? Name it out loud or in your head before you do anything else.').trim();
+            upd({ cpRpHistory: cpRpHistory.concat([{ speaker: 'coach', text: coachText }]), cpRpLoading: false });
+          }).catch(function() {
+            upd('cpRpLoading', false);
+          });
+        }
+
+        function cpEndReflect() {
+          if (!callGemini || !trigCfg) return;
+          upd('cpRpLoading', true);
+          var scene = (cpRpHistory[0] && cpRpHistory[0].scene) || trigCfg.fallbackScene;
+          var historyText = cpRpHistory.map(function(t) {
+            if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
+            if (t.speaker === 'coach') return 'COACH: ' + t.text;
+            return 'TRIGGER: "' + t.text.replace(/"/g, '\\"') + '"';
+          }).join('\n');
+          var prompt =
+            'You are a kind coping-skills coach reflecting on a brief simulated stress rehearsal. ' +
+            'In 2-3 sentences (under 70 words), name:\n' +
+            '1) One specific coping skill the student used in this practice (reference their actual words/actions).\n' +
+            '2) One coping skill they did NOT try yet that might help next time. Name it concretely.\n\n' +
+            'Be real and specific. No empty praise. Frame coping as a skill the student is BUILDING, not a test they\'re taking.\n\n' +
+            'TRIGGER TYPE: ' + trigCfg.charDesc + '\n' +
+            'SCENE: ' + scene + '\n' +
+            'CONVERSATION:\n' + historyText;
+          callGemini(prompt, false).then(function(r) {
+            var reflectText = (r || 'You stayed in the moment instead of bailing. That\'s the rep that matters. Next time, try naming the feeling out loud in one short sentence ("I notice I\'m anxious") before doing anything else.').trim();
+            upd({ cpRpEnded: true, cpRpReflection: reflectText, cpRpLoading: false });
+            // Reward the rep — small XP bump for completing a rehearsal.
+            if (ctx.awardXP) ctx.awardXP('coping', 5);
+          }).catch(function() {
+            upd({ cpRpEnded: true, cpRpReflection: 'Rehearsal complete. The act of staying in the moment IS the coping skill. Next time, try naming the feeling out loud in one short sentence before reacting.', cpRpLoading: false });
+          });
+        }
+
+        function cpResetRp() {
+          upd({ cpRpScenarioId: '', cpRpHistory: [], cpRpInput: '', cpRpEnded: false, cpRpReflection: '', cpRpStarting: false });
+        }
+
+        var sceneLine = cpRpHistory[0] && cpRpHistory[0].scene;
+        rehearseContent = h('div', { style: { padding: 20, maxWidth: 680, margin: '0 auto' } },
+          // Picker
+          !cpRpScenarioId && h('div', null,
+            h('h3', { style: { textAlign: 'center', marginBottom: 8, color: '#f1f5f9', fontSize: 18 } }, 'Rehearse coping in a hard moment'),
+            h('p', { style: { textAlign: 'center', marginBottom: 20, color: '#94a3b8', fontSize: 13, lineHeight: 1.5 } },
+              'Pick a trigger. The AI plays it. You practice what you would actually do — say, think, or shift in your body. The trigger eases if your coping lands. This is rehearsal, not performance.'),
+            h('div', { style: { display: 'grid', gap: 10 } },
+              TRIG_ORDER.map(function(tid) {
+                var cfg = COPING_TRIGGERS[tid];
+                return h('button', {
+                  key: tid,
+                  onClick: function() { cpStartRolePlay(tid); if (soundEnabled) sfxClick(); },
+                  disabled: !callGemini || cpRpStarting,
+                  style: {
+                    padding: '12px 14px', textAlign: 'left',
+                    background: 'rgba(249,115,22,0.08)', border: '2px solid rgba(249,115,22,0.35)',
+                    borderRadius: 10, color: '#f1f5f9', cursor: (callGemini && !cpRpStarting) ? 'pointer' : 'not-allowed',
+                    display: 'flex', alignItems: 'flex-start', gap: 12,
+                    opacity: cpRpStarting ? 0.6 : 1, fontSize: 14
+                  }
+                },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 26, marginTop: 2 } }, cfg.icon),
+                  h('div', { style: { flex: 1 } },
+                    h('div', { style: { fontWeight: 700, marginBottom: 6, color: '#fed7aa' } }, cfg.label),
+                    h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } }, cfg.blurb)
+                  )
+                );
+              })
+            ),
+            cpRpStarting && h('p', { 'aria-live': 'polite', style: { textAlign: 'center', marginTop: 14, fontSize: 12, color: '#fdba74', fontStyle: 'italic' } }, 'Setting the scene…'),
+            !callGemini && h('p', { style: { textAlign: 'center', marginTop: 14, fontSize: 12, color: '#fdba74', fontStyle: 'italic' } }, 'AI features need a connection. Try the Practice tab while offline.')
+          ),
+          // Conversation
+          cpRpScenarioId && trigCfg && h('div', null,
+            h('div', { style: { padding: '8px 12px', marginBottom: 12, background: 'rgba(249,115,22,0.14)', borderRadius: 8, fontSize: 12, color: '#fed7aa', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+              h('span', { style: { fontWeight: 700 } }, trigCfg.icon + ' ' + trigCfg.label),
+              h('button', {
+                onClick: cpResetRp,
+                style: { padding: '4px 10px', background: 'rgba(15,23,42,0.4)', color: '#fed7aa', border: '1px solid rgba(253,186,116,0.4)', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+              }, '← Different trigger')
+            ),
+            // Scene
+            sceneLine && h('div', { style: { padding: '10px 12px', marginBottom: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(148,163,184,0.25)', borderLeft: '3px solid #f97316', borderRadius: 8, fontSize: 13, lineHeight: 1.5, color: '#cbd5e1', fontStyle: 'italic' } },
+              h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: '#fdba74', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene:'),
+              sceneLine
+            ),
+            // Chat
+            h('div', { 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '40vh', overflowY: 'auto', padding: 4 } },
+              cpRpHistory.map(function(turn, ti) {
+                var isStudent = turn.speaker === 'student';
+                var isCoach = turn.speaker === 'coach';
+                return h('div', {
+                  key: 'cp-rp-' + ti,
+                  style: {
+                    alignSelf: isStudent ? 'flex-end' : 'flex-start',
+                    maxWidth: '85%',
+                    padding: '10px 13px',
+                    borderRadius: 12,
+                    fontSize: 13, lineHeight: 1.5, whiteSpace: 'pre-wrap',
+                    background: isStudent ? 'rgba(20,184,166,0.18)' : (isCoach ? 'rgba(245,158,11,0.18)' : 'rgba(249,115,22,0.18)'),
+                    border: '1px solid ' + (isStudent ? 'rgba(45,212,191,0.5)' : (isCoach ? 'rgba(252,211,77,0.5)' : 'rgba(253,186,116,0.45)')),
+                    color: '#f1f5f9'
+                  }
+                },
+                  h('div', { style: { fontSize: 10, fontWeight: 700, color: isStudent ? '#5eead4' : (isCoach ? '#fcd34d' : '#fdba74'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
+                    isStudent ? 'You' : (isCoach ? '🪶 Coach (out of character)' : '🎭 ' + trigCfg.charName)),
+                  h('div', null, turn.text)
+                );
+              })
+            ),
+            // Input
+            !cpRpEnded && h('div', { style: { marginTop: 10 } },
+              h('textarea', {
+                id: 'cp-rp-input', value: cpRpInput,
+                onChange: function(e) { upd('cpRpInput', e.target.value); },
+                placeholder: 'What would you actually say / do / notice? You can describe an action ("I take a slow breath"), say something out loud, or both.',
+                rows: 2,
+                disabled: cpRpLoading,
+                style: { width: '100%', padding: 10, fontSize: 13, background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(148,163,184,0.4)', borderRadius: 8, color: '#f1f5f9', fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 8 }
+              }),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                h('button', {
+                  onClick: cpSendTurn,
+                  disabled: cpRpLoading || !cpRpInput.trim() || !callGemini,
+                  'aria-busy': cpRpLoading ? 'true' : 'false',
+                  style: {
+                    padding: '10px 16px',
+                    background: (cpRpLoading || !cpRpInput.trim() || !callGemini) ? 'rgba(148,163,184,0.3)' : '#f97316',
+                    color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
+                    cursor: (cpRpLoading || !cpRpInput.trim() || !callGemini) ? 'not-allowed' : 'pointer',
+                    fontSize: 13
+                  }
+                }, cpRpLoading ? 'Thinking…' : 'Send →'),
+                h('button', {
+                  onClick: cpCoachBreak,
+                  disabled: cpRpLoading || !callGemini || cpRpHistory.length === 0,
+                  style: { padding: '10px 14px', background: 'rgba(245,158,11,0.15)', color: '#fcd34d', border: '1px solid rgba(252,211,77,0.5)', borderRadius: 8, fontWeight: 600, cursor: (cpRpLoading || !callGemini || cpRpHistory.length === 0) ? 'not-allowed' : 'pointer', fontSize: 13 }
+                }, '🪶 Pause — coach me'),
+                cpRpHistory.filter(function(t) { return t.speaker === 'student'; }).length >= 2 && h('button', {
+                  onClick: cpEndReflect,
+                  disabled: cpRpLoading || !callGemini,
+                  style: { padding: '10px 14px', background: 'rgba(15,23,42,0.6)', color: '#cbd5e1', border: '1px solid rgba(148,163,184,0.4)', borderRadius: 8, fontWeight: 600, cursor: (cpRpLoading || !callGemini) ? 'not-allowed' : 'pointer', fontSize: 13 }
+                }, 'End & reflect')
+              )
+            ),
+            // Reflection
+            cpRpEnded && cpRpReflection && h('div', { style: { marginTop: 12, padding: 14, background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(45,212,191,0.4)', borderRadius: 10 } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: '#5eead4', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'How that went'),
+              h('p', { style: { margin: '0 0 12px', fontSize: 14, lineHeight: 1.55, color: '#f1f5f9', whiteSpace: 'pre-wrap' } }, cpRpReflection),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                h('button', {
+                  onClick: function() { cpStartRolePlay(cpRpScenarioId); },
+                  style: { padding: '8px 14px', background: '#f97316', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                }, 'Try again'),
+                h('button', {
+                  onClick: cpResetRp,
+                  style: { padding: '8px 14px', background: 'rgba(15,23,42,0.6)', color: '#cbd5e1', border: '1px solid rgba(148,163,184,0.4)', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
+                }, 'Different trigger')
+              )
+            ),
+            h('p', { style: { margin: '10px 0 0', fontSize: 11, color: '#fdba74', fontStyle: 'italic' } },
+              'AI-generated trigger simulation. If anything brings up something real that needs support, talk to a trusted adult — coping rehearsal is practice, not therapy.')
+          )
+        );
+      }
+
+      // ══════════════════════════════════════════════════════════
       // ── TAB: My Calm Plan ──
       // ══════════════════════════════════════════════════════════
       var planContent = null;
@@ -2387,6 +2715,7 @@ window.SelHub = window.SelHub || {
       // ── Final Render ──
       // ══════════════════════════════════════════════════════════
       return h('div', { style: { minHeight: '100%' } },
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('coping', h) : null),
         tabBar,
         heroBand,
         dailyCheckin,
@@ -2394,6 +2723,7 @@ window.SelHub = window.SelHub || {
         badgePopup,
         libraryContent,
         practiceContent,
+        rehearseContent,
         planContent,
         matcherContent,
         logContent,
