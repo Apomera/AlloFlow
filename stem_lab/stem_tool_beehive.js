@@ -10689,6 +10689,92 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             );
           })(),
 
+          // ── Next badges (3 closest to earning) ──
+          // Gamification + clarity at once: instead of an opaque "13 badges
+          // exist somewhere" message, show the three the student is nearest
+          // to earning, with a real-time progress bar, the description, and
+          // a click-through to the full Badges sheet. Binary badges (e.g.,
+          // "Harvest honey for the first time") get a one-click-from-done
+          // treatment so they don't dominate the list with 0% bars.
+          viewMode === 'beekeeper' && colonySurvived && (function() {
+            // Per-badge progress: { now, target, isBinary }
+            function progressFor(id) {
+              switch (id) {
+                case 'first_day':       return { now: Math.min(day, 1),                    target: 1,     isBinary: true };
+                case 'survive_30':      return { now: Math.min(day, 30),                   target: 30 };
+                case 'survive_120':     return { now: Math.min(day, 120),                  target: 120 };
+                case 'honey_harvest':   return { now: (d.totalHarvested || 0) > 0 ? 1 : 0, target: 1,     isBinary: true };
+                case 'varroa_fighter':  return { now: Math.min((d.varroaTreats || 0), 3),  target: 3 };
+                case 'conservationist': return { now: Math.min((d.conservationsDone || 0), 5), target: 5 };
+                case 'garden_friend':   return { now: Math.min(gardenPollinators, 3),      target: 3 };
+                case 'thriving':        return { now: Math.min(colonyHealth, 80),          target: 80 };
+                case 'big_colony':      return { now: Math.min(workers, 25000),            target: 25000 };
+                case 'quiz_master':     return { now: Math.min((d.bestQuizScore || 0), 8), target: 8 };
+                case 'inspector':       return { now: Math.min((d.layersViewed || []).length, 9), target: 9 };
+                case 'weather_wise':    return { now: Math.min((d.weatherEventsHandled || 0), 3), target: 3 };
+                case 'varietal_master': return { now: Math.min(Object.keys(d.varietals || {}).length, 4), target: 4 };
+                case 'event_handler':   return { now: Math.min((d.eventsHandled || 0), 5), target: 5 };
+                default:                return { now: 0, target: 1 };
+              }
+            }
+            var unearned = BADGE_DEFS.filter(function(bd) { return !newBadges[bd.id]; });
+            if (unearned.length === 0) {
+              return h('div', { className: 'rounded-xl border-2 p-3 ' + (dk ? 'bg-gradient-to-r from-amber-900/30 to-yellow-900/20 border-amber-500/60' : 'bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-400'),
+                role: 'status' },
+                h('div', { className: 'flex items-center gap-2' },
+                  h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, '🏆'),
+                  h('div', null,
+                    h('div', { className: 'text-sm font-bold ' + (dk ? 'text-amber-200' : 'text-amber-900') }, 'All ' + BADGE_DEFS.length + ' badges earned!'),
+                    h('p', { className: 'text-[11px] ' + (dk ? 'text-amber-300' : 'text-amber-700') }, 'Master beekeeper. You\'ve seen the full sim — try the Queen RTS or Drone Flight modes next.')
+                  )
+                ));
+            }
+            // Sort by progress % desc, with a tiny epsilon so binary (1-of-1) badges
+            // don't all tie at 100% and drown out scalar progress bars.
+            var withProg = unearned.map(function(bd) {
+              var p = progressFor(bd.id);
+              var pct = p.target > 0 ? (p.now / p.target) : 0;
+              // Demote pure-zero progress so we don't show 3 untouched 0% bars.
+              if (p.now === 0) pct -= 0.001;
+              return { bd: bd, prog: p, pct: pct };
+            }).sort(function(a, b) { return b.pct - a.pct; }).slice(0, 3);
+            return h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-amber-900/15 border-amber-700/40' : 'bg-amber-50 border-amber-200'),
+              role: 'region', 'aria-label': 'Next badges to earn' },
+              h('div', { className: 'flex items-center justify-between mb-2' },
+                h('div', { className: 'flex items-center gap-2' },
+                  h('span', { 'aria-hidden': 'true' }, '🎖️'),
+                  h('span', { className: 'text-xs font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Next Badges'),
+                  h('span', { className: 'text-[10px] px-1.5 py-0.5 rounded ' + (dk ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-700') }, badgeCount + ' / ' + BADGE_DEFS.length + ' earned')
+                ),
+                h('button', {
+                  onClick: function() { upd('showBadges', true); },
+                  title: 'See all badges and their requirements',
+                  className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'text-amber-400 hover:bg-amber-900/40' : 'text-amber-700 hover:bg-amber-100')
+                }, 'See all →')
+              ),
+              h('div', { className: 'space-y-1.5' },
+                withProg.map(function(item) {
+                  var bd = item.bd;
+                  var p = item.prog;
+                  var pctDisplay = Math.max(0, Math.min(100, Math.round(item.pct * 100)));
+                  var nearlyThere = pctDisplay >= 75;
+                  return h('div', { key: bd.id, className: 'flex items-start gap-2 p-1.5 rounded-md ' + (nearlyThere ? (dk ? 'bg-amber-900/30' : 'bg-amber-100/60') : '') },
+                    h('span', { className: 'text-xl flex-shrink-0', 'aria-hidden': 'true', style: { lineHeight: '1' } }, bd.icon),
+                    h('div', { className: 'flex-1 min-w-0' },
+                      h('div', { className: 'flex items-baseline justify-between gap-2' },
+                        h('span', { className: 'text-xs font-bold ' + (dk ? 'text-amber-100' : 'text-amber-900') }, bd.label),
+                        h('span', { className: 'text-[10px] font-mono ' + (nearlyThere ? (dk ? 'text-amber-300 font-bold' : 'text-amber-700 font-bold') : (dk ? 'text-slate-300' : 'text-slate-500')) },
+                          p.isBinary ? (p.now > 0 ? '✓' : 'not yet') : (p.now + ' / ' + p.target))),
+                      h('p', { className: 'text-[10px] leading-snug ' + (dk ? 'text-slate-300' : 'text-slate-600') }, bd.desc),
+                      h('div', { className: 'h-1 mt-1 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200') },
+                        h('div', { style: { width: pctDisplay + '%' }, className: 'h-full bg-gradient-to-r from-amber-400 to-yellow-300 rounded-full transition-all' }))
+                    )
+                  );
+                })
+              )
+            );
+          })(),
+
           // Habitat & Pesticide meters (beekeeper only)
           viewMode === 'beekeeper' && colonySurvived && h('div', { className: 'grid grid-cols-2 gap-2' },
             h('div', { className: 'rounded-lg border p-2 ' + (dk ? 'bg-green-900/20 border-green-700/40' : 'bg-green-50 border-green-200') },
