@@ -526,7 +526,7 @@ window.SelHub = window.SelHub || {
     label: 'Mindfulness Corner',
     desc: 'Guided breathing, body scans, grounding, and gratitude \u2014 find your calm.',
     color: 'purple',
-    category: 'self-management',
+    category: 'inner-work',
     cleanup: function() { stopBreathTimer(); stopScanTimer(); },
     render: function(ctx) {
       var React = ctx.React;

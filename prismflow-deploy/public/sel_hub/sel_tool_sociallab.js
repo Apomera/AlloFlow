@@ -717,13 +717,26 @@ window.SelHub = window.SelHub || {
               placeholder: 'Type what you would say...', disabled: chatLoading,
               style: { flex: 1, padding: '10px 14px', border: '2px solid #d1d5db', borderRadius: '12px', fontSize: '14px', outline: 'none' },
               'aria-label': 'Your response' }),
-            // Speech-to-text button
+            // Speech-to-text button — Phase 3v.M migrated to shared
+            // window.AlloFlowVoice.initWebSpeechCapture when available;
+            // inline fallback retained for race-tolerance on first paint.
             ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) && h('button', { onClick: function() {
+              var appendTranscript = function(t) { setChatInput(function(prev) { return prev ? prev + ' ' + t : t; }); };
+              var onErr = function() { addToast && addToast('Voice input failed. Try typing instead.', 'info'); };
+              if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === 'function') {
+                var ctrl = window.AlloFlowVoice.initWebSpeechCapture({
+                  lang: 'en-US', continuous: false, interimResults: false,
+                  onTranscript: appendTranscript, onError: onErr
+                });
+                if (ctrl.supported) ctrl.start();
+                addToast && addToast('Listening... speak now!', 'info');
+                return;
+              }
               var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
               var rec = new SpeechRec();
               rec.lang = 'en-US'; rec.interimResults = false; rec.maxAlternatives = 1;
-              rec.onresult = function(ev) { var t = ev.results[0][0].transcript; setChatInput(function(prev) { return prev ? prev + ' ' + t : t; }); };
-              rec.onerror = function() { addToast && addToast('Voice input failed. Try typing instead.', 'info'); };
+              rec.onresult = function(ev) { appendTranscript(ev.results[0][0].transcript); };
+              rec.onerror = onErr;
               rec.start();
               addToast && addToast('Listening... speak now!', 'info');
             }, disabled: chatLoading, style: btn('#f1f5f9', '#374151', chatLoading), 'aria-label': 'Voice input' }, '🎤'),

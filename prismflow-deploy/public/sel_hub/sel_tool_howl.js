@@ -5,7 +5,7 @@
 // schools. Supports configurable HOWL sets (default 4: Active
 // Engagement, Effective Effort, Crew Membership, Habits of Mind).
 // Registered tool ID: "howlTracker"
-// Category: self-management
+// Category: self-direction
 // ═══════════════════════════════════════════════════════════════
 
 window.SelHub = window.SelHub || {
@@ -178,7 +178,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
     label: 'HOWL Tracker',
     desc: 'Track your Habits of Work and Learning across the quarter. Weekly self-assessment, goal setting, Crew conversation prompts. Aligned with EL Education\'s HOWL framework; designed for Crew time at middle schools.',
     color: 'indigo',
-    category: 'self-management',
+    category: 'self-direction',
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

@@ -572,7 +572,7 @@ window.SelHub = window.SelHub || {
     label: 'Goal Setter',
     desc: 'Set SMART goals, track progress, and celebrate milestones.',
     color: 'indigo',
-    category: 'self-management',
+    category: 'self-direction',
 
     render: function(ctx) {
       var React = ctx.React;

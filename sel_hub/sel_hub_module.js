@@ -55,14 +55,23 @@
     }
 
     // ── CASEL 5 Competency Categories ──
-    // Tools are organized by the CASEL framework competencies.
-    // Each tool declares its category; the hub groups them under these headers.
+    // Tools are organized into categories that draw on CASEL but expand
+    // beyond it. CASEL's "Self-Management" has been split into more
+    // pedagogically precise framings (Self-Regulation for arousal/emotion
+    // work; Self-Direction for agency/goal work), and three additional
+    // categories have been added (Inner Work, Care of Self, Stewardship)
+    // to make room for contemplative, relational, and community-oriented
+    // tools without forcing them into the individualist-managerial frame.
     var SEL_CATEGORIES = [
       { id: 'self-awareness',             label: 'Self-Awareness',             icon: '\uD83E\uDDE0', desc: 'Recognizing emotions, strengths, and areas for growth' },
-      { id: 'self-management',            label: 'Self-Management',            icon: '\uD83C\uDFAF', desc: 'Regulating emotions, setting goals, and self-discipline' },
+      { id: 'self-regulation',            label: 'Self-Regulation',            icon: '\uD83C\uDFAF', desc: 'Regulating emotions, arousal, attention; coping practice' },
+      { id: 'self-direction',             label: 'Self-Direction',             icon: '\uD83E\uDDED', desc: 'Goal-setting, agency, executive function, growth mindset' },
+      { id: 'inner-work',                 label: 'Inner Work',                 icon: '\uD83E\uDDD8', desc: 'Contemplative and reflective practices' },
+      { id: 'care-of-self',               label: 'Care of Self',               icon: '\uD83E\uDD7A', desc: 'Self-compassion, relational self-care' },
       { id: 'social-awareness',           label: 'Social Awareness',           icon: '\uD83E\uDD1D', desc: 'Empathy, perspective-taking, and appreciating diversity' },
       { id: 'relationship-skills',        label: 'Relationship Skills',        icon: '\uD83D\uDCAC', desc: 'Communication, teamwork, and conflict resolution' },
-      { id: 'responsible-decision-making', label: 'Responsible Decision-Making', icon: '\u2696\uFE0F', desc: 'Ethical choices, evaluating consequences, and problem-solving' }
+      { id: 'responsible-decision-making', label: 'Responsible Decision-Making', icon: '\u2696\uFE0F', desc: 'Ethical choices, evaluating consequences, and problem-solving' },
+      { id: 'stewardship',                label: 'Stewardship',                icon: '\uD83C\uDF31', desc: 'Caring for community, justice, land, and the future' }
     ];
 
     // ── SEL Pathways (Curated Learning Sequences — equivalent to STEM Lab Stations) ──
@@ -495,10 +504,16 @@
         { id: 'emotions',    icon: '\uD83D\uDE0A', label: 'Emotion Explorer',    desc: 'Build emotional vocabulary — identify, name, and rate the intensity of feelings.', color: 'blue', recommendedRange: 'K-8' },
         { id: 'strengths',   icon: '\u2B50',       label: 'Strengths Finder',    desc: 'Discover and reflect on personal strengths, talents, and growth areas.', color: 'amber', recommendedRange: 'K-12' },
 
-        // ── Self-Management ──
-        { id: '_cat_SelfManagement', icon: '\uD83C\uDFAF', label: 'Self-Management', desc: '', color: 'slate', category: true },
+        // Self-Regulation (was Self-Management; split to give arousal/emotion tools their own home)
+        { id: '_cat_SelfRegulation', icon: '\uD83C\uDFAF', label: 'Self-Regulation', desc: '', color: 'slate', category: true },
         { id: 'coping',      icon: '\uD83E\uDDE8', label: 'Coping Toolkit',      desc: 'Explore and practice coping strategies — breathing, grounding, movement, and more.', color: 'teal', recommendedRange: 'K-12' },
+        // Inner Work (contemplative + reflective practice)
+        { id: '_cat_InnerWork', icon: '\uD83E\uDDD8', label: 'Inner Work', desc: '', color: 'slate', category: true },
         { id: 'mindfulness', icon: '\uD83E\uDDD8', label: 'Mindfulness Corner',  desc: 'Guided breathing exercises, body scans, and mindfulness activities.', color: 'purple', recommendedRange: 'K-12' },
+        // Care of Self (self-compassion, relational self-care)
+        { id: '_cat_CareOfSelf', icon: '\uD83E\uDD7A', label: 'Care of Self', desc: '', color: 'slate', category: true },
+        // Self-Direction (agency, goal-setting, executive function)
+        { id: '_cat_SelfDirection', icon: '\uD83E\uDDED', label: 'Self-Direction', desc: '', color: 'slate', category: true },
         { id: 'goals',       icon: '\uD83D\uDCCB', label: 'Goal Setter',         desc: 'Set SMART goals, track progress, and celebrate milestones.', color: 'indigo', recommendedRange: '3-12' },
         { id: 'howlTracker', icon: '\uD83E\uDDED', label: 'HOWL Tracker',        desc: 'Habits of Work and Learning self-assessment for Crew time. Weekly check-ins, quarterly goals, trend chart, Crew conversation prompts. Aligned with EL Education\'s HOWL framework.', color: 'indigo', recommendedRange: '3-12' },
 
@@ -518,27 +533,43 @@
         { id: 'decisions',   icon: '\uD83E\uDD14', label: 'Decision Lab',        desc: 'Work through real-life scenarios using stop-think-act frameworks.', color: 'violet', recommendedRange: '3-12' },
         { id: 'journal',     icon: '\uD83D\uDCD3', label: 'Feelings Journal',    desc: 'Daily check-in journal — log moods, triggers, and reflections over time.', color: 'pink', recommendedRange: 'K-12' },
         { id: 'safety',      icon: '\uD83D\uDEE1\uFE0F', label: 'Safety & Boundaries', desc: 'Learn about personal boundaries, trusted adults, and safe vs. unsafe situations.', color: 'red', recommendedRange: 'K-8' },
+
+        // Stewardship (community, justice, land, and the future)
+        { id: '_cat_Stewardship', icon: '\uD83C\uDF31', label: 'Stewardship', desc: '', color: 'slate', category: true }
       ];
       // Append dynamically registered tools into the correct category positions
       var _dynamicTools = [
         { id: 'restorativeCircle', icon: '\uD83E\uDEB6', label: 'Restorative Circle', desc: 'Facilitate restorative and community-building circles. Explore talking pieces and Indigenous roots.', color: 'amber', recommendedRange: '3-12', _cat: 'relationship-skills' },
-        { id: 'compassion', icon: '\uD83E\uDD7A', label: 'Compassion & Self-Talk', desc: 'Practice self-compassion, reframe inner critic, and build a kinder inner voice.', color: 'rose', recommendedRange: 'K-12', _cat: 'self-awareness' },
+        { id: 'compassion', icon: '\uD83E\uDD7A', label: 'Compassion & Self-Talk', desc: 'Practice self-compassion, reframe inner critic, and build a kinder inner voice.', color: 'rose', recommendedRange: 'K-12', _cat: 'care-of-self' },
         { id: 'friendship', icon: '\uD83E\uDD1D', label: 'Friendship Builder', desc: 'Explore friendship styles, repair strategies, and healthy relationship patterns.', color: 'amber', recommendedRange: 'K-12', _cat: 'relationship-skills' },
-        { id: 'transitions', icon: '\uD83C\uDF31', label: 'Life Transitions', desc: 'Navigate changes like moving, new schools, and growing up.', color: 'emerald', recommendedRange: 'K-12', _cat: 'self-management' },
+        { id: 'transitions', icon: '\uD83C\uDF31', label: 'Life Transitions', desc: 'Navigate changes like moving, new schools, and growing up.', color: 'emerald', recommendedRange: 'K-12', _cat: 'self-regulation' },
         { id: 'upstander', icon: '\uD83E\uDDB8', label: 'Upstander Training', desc: 'Learn to stand up for others safely — bystander to upstander skills.', color: 'red', recommendedRange: '2-12', _cat: 'social-awareness' },
-        { id: 'growthmindset', icon: '\uD83E\uDDE0', label: 'Growth Mindset', desc: 'Brain science, reframing challenges, and building resilience.', color: 'violet', recommendedRange: 'K-12', _cat: 'self-management' },
+        { id: 'growthmindset', icon: '\uD83E\uDDE0', label: 'Growth Mindset', desc: 'Brain science, reframing challenges, and building resilience.', color: 'violet', recommendedRange: 'K-12', _cat: 'self-direction' },
         { id: 'advocacy', icon: '\uD83D\uDCE2', label: 'Self-Advocacy', desc: 'Learn to speak up for your needs, rights, and goals.', color: 'blue', recommendedRange: '3-12', _cat: 'self-awareness' },
-        { id: 'civicAction', icon: '\u270A', label: 'Civic Action & Hope', desc: 'Process hard feelings about injustice, build civic agency, and cultivate hope through action.', color: 'teal', recommendedRange: '3-12', _cat: 'responsible-decision-making' },
+        { id: 'civicAction', icon: '\u270A', label: 'Civic Action & Hope', desc: 'Process hard feelings about injustice, build civic agency, and cultivate hope through action.', color: 'teal', recommendedRange: '3-12', _cat: 'stewardship' },
         { id: 'ethicalReasoning', icon: '\u2696\uFE0F', label: 'Ethical Reasoning Lab', desc: 'Explore contemporary ethical dilemmas through multiple frameworks and AI Socratic dialogue.', color: 'slate', recommendedRange: '5-12', _cat: 'responsible-decision-making' },
         { id: 'cultureExplorer', icon: '\uD83C\uDF0D', label: 'Culture Explorer', desc: 'Take AI-powered deep dives into world cultures with illustrations and audio.', color: 'cyan', recommendedRange: 'K-12', _cat: 'social-awareness' },
         { id: 'voicedetective', icon: '\uD83D\uDD0A', label: 'Voice Detective', desc: 'Listen to voices and identify emotions from tone.', color: 'purple', recommendedRange: 'K-12', _cat: 'social-awareness' },
         { id: 'sociallab', icon: '\uD83C\uDFAD', label: 'Social Skills Lab', desc: 'Practice social scenarios and AI peer roleplay.', color: 'indigo', recommendedRange: 'K-12', _cat: 'relationship-skills' },
         { id: 'peersupport', icon: '\uD83E\uDD1D', label: 'Peer Support Coach', desc: 'Learn OARS listening skills and when to get adult help.', color: 'emerald', recommendedRange: '3-12', _cat: 'relationship-skills' },
         { id: 'conflicttheater', icon: '\uD83C\uDFAD', label: 'Conflict Theater', desc: 'Mediate a real conflict with two AI characters who have personalities, moods, and reasons of their own. Practice restorative principles in an immersive scene.', color: 'amber', recommendedRange: '5-12', _cat: 'relationship-skills' },
-        { id: 'digitalWellbeing', icon: '\uD83D\uDCF1', label: 'Digital Wellbeing Studio', desc: 'Self-check your relationship with social media and AI chatbots, build healthier phone habits, recover from cyberbullying, spot manipulation in the feed, navigate chatbot relationships safely, and find help when you need it.', color: 'cyan', recommendedRange: '5-12', _cat: 'self-management' },
+        { id: 'digitalWellbeing', icon: '\uD83D\uDCF1', label: 'Digital Wellbeing Studio', desc: 'Self-check your relationship with social media and AI chatbots, build healthier phone habits, recover from cyberbullying, spot manipulation in the feed, navigate chatbot relationships safely, and find help when you need it.', color: 'cyan', recommendedRange: '5-12', _cat: 'self-regulation' },
       ];
       // Insert each dynamic tool after its category header
-      var _catPositions = { 'self-awareness': '_cat_SelfAwareness', 'self-management': '_cat_SelfManagement', 'social-awareness': '_cat_SocialAwareness', 'relationship-skills': '_cat_RelationshipSkills', 'responsible-decision-making': '_cat_DecisionMaking' };
+      var _catPositions = {
+        'self-awareness': '_cat_SelfAwareness',
+        'self-regulation': '_cat_SelfRegulation',
+        'self-direction': '_cat_SelfDirection',
+        'inner-work': '_cat_InnerWork',
+        'care-of-self': '_cat_CareOfSelf',
+        'social-awareness': '_cat_SocialAwareness',
+        'relationship-skills': '_cat_RelationshipSkills',
+        'responsible-decision-making': '_cat_DecisionMaking',
+        'stewardship': '_cat_Stewardship',
+        // Backwards-compat: tools that still tag themselves 'self-management'
+        // fall into Self-Regulation by default (the closest equivalent).
+        'self-management': '_cat_SelfRegulation'
+      };
       _dynamicTools.forEach(function(dt) {
         // Only add if the tool is actually registered in SelHub
         if (!window.SelHub || !window.SelHub.isRegistered(dt.id)) return;

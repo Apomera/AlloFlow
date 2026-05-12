@@ -208,7 +208,7 @@ window.SelHub = window.SelHub || {
     label: 'Executive Function',
     desc: 'Strategies for the harder parts of getting things done: starting, holding, planning, and tracking time.',
     color: 'cyan',
-    category: 'self-management',
+    category: 'self-direction',
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

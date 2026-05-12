@@ -166,7 +166,7 @@ window.SelHub = window.SelHub || {
     label: 'Self-Compassion',
     desc: 'Learn to treat yourself with the kindness you\u2019d give a friend \u2014 the antidote to the inner critic.',
     color: 'purple',
-    category: 'self-awareness',
+    category: 'care-of-self',
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

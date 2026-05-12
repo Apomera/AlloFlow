@@ -555,7 +555,7 @@ window.SelHub = window.SelHub || {
     label: 'Coping Toolkit',
     desc: 'Explore and practice coping strategies \u2014 breathing, grounding, movement, and more.',
     color: 'teal',
-    category: 'self-management',
+    category: 'self-regulation',
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

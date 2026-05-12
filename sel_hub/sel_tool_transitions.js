@@ -129,7 +129,7 @@ window.SelHub = window.SelHub || {
     label: 'Transitions & Change',
     desc: 'Navigate life changes with understanding \u2014 new school, family shifts, loss, moves, and growing through it all.',
     color: 'sky',
-    category: 'self-management',
+    category: 'self-regulation',
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

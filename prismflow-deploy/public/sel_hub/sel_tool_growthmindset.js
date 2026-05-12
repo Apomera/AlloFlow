@@ -218,7 +218,7 @@ window.SelHub = window.SelHub || {
     label: 'Growth Mindset Workshop',
     desc: 'Discover how your brain grows through effort \u2014 learn to transform "I can\u2019t" into "I can\u2019t yet."',
     color: 'emerald',
-    category: 'self-management',
+    category: 'self-direction',
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

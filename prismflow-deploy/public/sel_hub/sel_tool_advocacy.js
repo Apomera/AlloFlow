@@ -1137,7 +1137,7 @@ window.SelHub = window.SelHub || {
     label: 'Self-Advocacy Workshop',
     desc: 'Learn to speak up for your needs with advocacy scenarios, script templates, rights education, and AI-powered voice practice.',
     color: 'indigo',
-    category: 'self-management',
+    category: 'self-awareness',
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

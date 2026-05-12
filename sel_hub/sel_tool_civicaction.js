@@ -647,7 +647,7 @@ window.SelHub = window.SelHub || {
     label: 'Civic Action & Hope',
     desc: 'Process hard feelings about injustice, build civic agency, and cultivate hope through action.',
     color: 'teal',
-    category: 'responsible-decision-making',
+    category: 'stewardship',
 
     render: function(ctx) {
       var React = ctx.React;
