@@ -3594,6 +3594,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // the underlying scenario entry stuck at time='night' for every subsequent drive.
       var _scenarioBase = SCENARIOS.find(function(s) { return s.id === selectedScenario; }) || SCENARIOS[0];
       var currentScenario = Object.assign({}, _scenarioBase);
+      // Fold Free Explore overrides into currentScenario at every render. These
+      // live in d.freeExploreScenario (persisted via updMulti). Without this
+      // step, picking time='night' in Free Explore setup would NOT make the
+      // scene render as night, because currentScenario gets rebuilt fresh from
+      // SCENARIOS[id] every render and the feScenario state was only ever
+      // applied to the throwaway clone inside startDriving.
+      // Also makes the in-drive HUD Day/Night/Weather/Traffic toggles work
+      // properly: persisting via updMulti({freeExploreScenario}) now survives
+      // the next render because this block re-applies the override.
+      if (d.freeExplore && d.freeExploreScenario) {
+        var _fes = d.freeExploreScenario;
+        if (_fes.weather) currentScenario.weather = _fes.weather;
+        if (_fes.time) currentScenario.time = _fes.time;
+        if (_fes.traffic) currentScenario.traffic = _fes.traffic;
+        if (_fes.speedLimit) currentScenario.speedLimit = _fes.speedLimit;
+      }
 
       // ── Refs for the active driving sim ──
       var canvasRef = useRef(null);  // 2D HUD overlay canvas
@@ -5331,6 +5347,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (ws.enabled && ws.queue.length > 0 && curT >= ws.queue[0].startAt) {
                 var nextW = ws.queue.shift();
                 var changed = false;
+                var feDelta = null; // built up if we need to persist
                 if (nextW.weather && nextW.weather !== currentScenario.weather) {
                   Object.assign(currentScenario, { weather: nextW.weather });
                   ws.lastApplied = nextW.weather;
@@ -5338,6 +5355,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   addToast((wIcon[nextW.weather] || '🌦️') + ' Weather changing to ' + nextW.weather);
                   journalLog('weather_change', wIcon[nextW.weather] || '🌦️', 'Weather → ' + nextW.weather);
                   changed = true;
+                  feDelta = Object.assign(feDelta || {}, { weather: nextW.weather });
                 }
                 if (nextW.time && nextW.time !== currentScenario.time) {
                   var priorTime = currentScenario.time;
@@ -5346,6 +5364,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   addToast((tIcon[nextW.time] || '🕐') + ' Time of day: ' + nextW.time);
                   journalLog('time_change', tIcon[nextW.time] || '🕐', 'Time of day: ' + priorTime + ' → ' + nextW.time);
                   changed = true;
+                  feDelta = Object.assign(feDelta || {}, { time: nextW.time });
+                }
+                // Persist the change to d.freeExploreScenario so the next React
+                // render (which rebuilds currentScenario fresh from SCENARIOS)
+                // still reflects the change. Without this, the rAF loop sees the
+                // change (it captured the same currentScenario object) but the
+                // HUD weather/time buttons revert their "active" highlight.
+                if (changed && feDelta) {
+                  var feMerged = Object.assign({}, d.freeExploreScenario || {}, feDelta);
+                  updMulti({ freeExploreScenario: feMerged });
                 }
                 if (changed) {
                   speak(nextW.narration);
@@ -20810,12 +20838,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               [['clear','☀️'],['rain','🌧'],['snow','❄'],['fog','🌫']].map(function(w) {
                 var active = currentScenario.weather === w[0];
                 return h('button', { key: w[0], onClick: function() {
-                  var newScn = Object.assign({}, currentScenario, { weather: w[0] });
-                  if (w[0] === 'snow') newScn.speedLimit = Math.min(newScn.speedLimit, 35);
-                  if (w[0] === 'fog') newScn.speedLimit = Math.min(newScn.speedLimit, 30);
-                  upd('scenario', newScn.id); // keep scenario ID but the physics reads currentScenario
-                  // Mutate the scenario ref for immediate effect (CDN tool pattern)
-                  Object.assign(currentScenario, newScn);
+                  // Mutate the in-scope currentScenario for IMMEDIATE per-frame
+                  // effect (the rAF loop captured this object on scene init,
+                  // so writes here turn the sky/lights right now), AND persist
+                  // via updMulti so the change survives the next React render
+                  // (which rebuilds currentScenario fresh from _scenarioBase).
+                  var nextW = w[0];
+                  var newSpeedLimit = currentScenario.speedLimit;
+                  if (nextW === 'snow') newSpeedLimit = Math.min(newSpeedLimit, 35);
+                  if (nextW === 'fog') newSpeedLimit = Math.min(newSpeedLimit, 30);
+                  Object.assign(currentScenario, { weather: nextW, speedLimit: newSpeedLimit });
+                  var feNext = Object.assign({}, d.freeExploreScenario || {}, { weather: nextW, speedLimit: newSpeedLimit });
+                  updMulti({ freeExploreScenario: feNext });
                 },
                   style: { padding: '3px 6px', borderRadius: '4px', border: '1px solid ' + (active ? '#a78bfa' : '#334155'), background: active ? '#2e1065' : 'transparent', color: '#fff', cursor: 'pointer', fontSize: '12px' } }, w[1]);
               })
@@ -20826,6 +20860,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var active = currentScenario.time === t[0];
                 return h('button', { key: t[0], onClick: function() {
                   Object.assign(currentScenario, { time: t[0] });
+                  var feNext = Object.assign({}, d.freeExploreScenario || {}, { time: t[0] });
+                  updMulti({ freeExploreScenario: feNext });
                 },
                   style: { padding: '3px 8px', borderRadius: '4px', border: '1px solid ' + (active ? '#a78bfa' : '#334155'), background: active ? '#2e1065' : 'transparent', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, t[1]);
               })
@@ -20836,6 +20872,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var active = currentScenario.traffic === t[0];
                 return h('button', { key: t[0], onClick: function() {
                   Object.assign(currentScenario, { traffic: t[0] });
+                  var feNext = Object.assign({}, d.freeExploreScenario || {}, { traffic: t[0] });
+                  updMulti({ freeExploreScenario: feNext });
                   // Respawn traffic to match. Also clear the renderer's traffic mesh
                   // group so old vehicle meshes (built for prior types) don't get
                   // re-assigned to the new entities — that caused visual type mismatches
