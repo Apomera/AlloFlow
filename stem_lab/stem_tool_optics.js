@@ -35,8 +35,43 @@
       '.opticslab-mirage-haze { animation: opticslab-mirage-shimmer 1.6s ease-in-out infinite; transform-origin: center; }',
       '.opticslab-mirage-haze:nth-child(2) { animation-duration: 2.1s; animation-delay: -0.4s; }',
       '.opticslab-mirage-haze:nth-child(3) { animation-duration: 1.3s; animation-delay: -0.8s; }',
+
+      // Interference: expanding wavefronts radiating outward from a slit.
+      // We use r animation on <circle> elements (SVG attribute, NOT CSS prop).
+      // To keep transforms compatible, we scale up via CSS transform instead and
+      // place the circle with cx/cy on the SVG side, since some browsers do not
+      // animate SVG r via CSS yet. Each waveset is offset in time for ripple effect.
+      '@keyframes opticslab-wavefront {',
+      '  0%   { r: 4; opacity: 0.95; }',
+      '  100% { r: 110; opacity: 0; }',
+      '}',
+      '.opticslab-wavefront { animation: opticslab-wavefront 1.8s linear infinite; }',
+      '.opticslab-wavefront-2 { animation-delay: -0.6s; }',
+      '.opticslab-wavefront-3 { animation-delay: -1.2s; }',
+
+      // Photon dots traveling along a principal ray. We translate a small dot
+      // along an SVG path using offset-path / offset-distance (CSS Motion Path).
+      // Browsers without support fall back to a static dot (still visible).
+      '@keyframes opticslab-photon-travel {',
+      '  0%   { offset-distance: 0%;   opacity: 0; }',
+      '  10%  { opacity: 1; }',
+      '  90%  { opacity: 1; }',
+      '  100% { offset-distance: 100%; opacity: 0; }',
+      '}',
+      '.opticslab-photon { animation: opticslab-photon-travel 2.4s linear infinite; offset-rotate: 0deg; }',
+      '.opticslab-photon-2 { animation-delay: -0.8s; }',
+      '.opticslab-photon-3 { animation-delay: -1.6s; }',
+
+      // E-field vector oscillation — a perpendicular line that grows and shrinks
+      // in sync with the wave traveling through the polarizer system.
+      '@keyframes opticslab-efield-pulse {',
+      '  0%, 100% { transform: scaleY(1); opacity: 0.9; }',
+      '  50%      { transform: scaleY(-1); opacity: 0.9; }',
+      '}',
+      '.opticslab-efield-vec { animation: opticslab-efield-pulse 1.2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }',
+
       '@media (prefers-reduced-motion: reduce) {',
-      '  .opticslab-mirage-haze { animation: none !important; }',
+      '  .opticslab-mirage-haze, .opticslab-wavefront, .opticslab-photon, .opticslab-efield-vec { animation: none !important; }',
       '}'
     ].join('');
     if (document.head) document.head.appendChild(_opStyle);
@@ -814,6 +849,10 @@
           if (d_i == null || lens.error) return children;
           var imgY = m * hObj;
           var isVirtual = d_i < 0;
+          // Collect ray-path strings so we can attach traveling photon dots that
+          // animate along each ray (CSS Motion Path). This gives students a
+          // visceral sense of light actually moving through the system.
+          var photonPaths = [];
           // Ray 1 — parallel to axis from tip → hits lens at (0, hObj) → bends through F' (right focus, at +fAbs)
           children.push(h('line', { key: 'r1a', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(hObj), stroke: '#10b981', strokeWidth: 1.5 }));
           if (lt === 'converging') {
@@ -823,6 +862,8 @@
             var rightX = cmMax;
             var rightY = hObj + slope1 * (rightX - 0);
             children.push(h('line', { key: 'r1b', x1: sx(0), y1: sy(hObj), x2: sx(rightX), y2: sy(rightY), stroke: '#10b981', strokeWidth: 1.5 }));
+            photonPaths.push({ color: '#10b981',
+              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(hObj) + ' L ' + sx(rightX) + ' ' + sy(rightY) });
           } else {
             // Diverging: ray bends as if it came from the LEFT focus (F at -fAbs).
             // The outgoing ray's extension passes through (-fAbs, 0).
@@ -833,12 +874,16 @@
             children.push(h('line', { key: 'r1b', x1: sx(0), y1: sy(hObj), x2: sx(rx), y2: sy(ry), stroke: '#10b981', strokeWidth: 1.5 }));
             // Dotted backward extension to F (the apparent virtual source)
             children.push(h('line', { key: 'r1c', x1: sx(0), y1: sy(hObj), x2: sx(-fAbs), y2: sy(0), stroke: '#10b981', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.5 }));
+            photonPaths.push({ color: '#10b981',
+              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(hObj) + ' L ' + sx(rx) + ' ' + sy(ry) });
           }
           // Ray 2 — through center of lens, undeviated
           var slope2 = (0 - hObj) / (0 - objX);
           var rx2 = cmMax;
           var ry2 = hObj + slope2 * (rx2 - objX);
           children.push(h('line', { key: 'r2', x1: sx(objX), y1: sy(hObj), x2: sx(rx2), y2: sy(ry2), stroke: '#06b6d4', strokeWidth: 1.5 }));
+          photonPaths.push({ color: '#06b6d4',
+            path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(rx2) + ' ' + sy(ry2) });
           // Ray 3 — through near focal point F (left, at -fAbs) emerges parallel to axis (converging only)
           if (lt === 'converging' && d_o > fAbs) {
             // Slope from (objX, hObj) through (-fAbs, 0)
@@ -846,7 +891,30 @@
             var yAtLens = hObj + slope3 * (0 - objX);
             children.push(h('line', { key: 'r3a', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(yAtLens), stroke: '#a855f7', strokeWidth: 1.5 }));
             children.push(h('line', { key: 'r3b', x1: sx(0), y1: sy(yAtLens), x2: sx(cmMax), y2: sy(yAtLens), stroke: '#a855f7', strokeWidth: 1.5 }));
+            photonPaths.push({ color: '#a855f7',
+              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(yAtLens) + ' L ' + sx(cmMax) + ' ' + sy(yAtLens) });
           }
+          // Add traveling photon dots — one per ray, staggered in time.
+          // Uses CSS Motion Path (offset-path) so the dot follows the ray.
+          // Browsers without offset-path leave the dot at its origin (acceptable
+          // fallback because the ray lines themselves are already visible).
+          var photonClasses = ['opticslab-photon', 'opticslab-photon opticslab-photon-2', 'opticslab-photon opticslab-photon-3'];
+          photonPaths.forEach(function(pp, ppi) {
+            children.push(h('circle', {
+              key: 'photon' + ppi,
+              r: 3.5,
+              fill: pp.color,
+              stroke: '#fff', strokeWidth: 0.6,
+              className: photonClasses[ppi] || 'opticslab-photon',
+              style: {
+                offsetPath: 'path("' + pp.path + '")',
+                // WebKit prefix for older Safari
+                WebkitOffsetPath: 'path("' + pp.path + '")',
+                filter: 'drop-shadow(0 0 3px ' + pp.color + ')'
+              },
+              cx: 0, cy: 0
+            }));
+          });
           // Image arrow
           var imgIsValid = imgX != null && _isNum(imgX) && _isNum(imgY);
           if (imgIsValid) {
@@ -1064,15 +1132,43 @@
         h('rect', { x: barX, y: slitTopY - 1, width: 6, height: 3, fill: '#000' }),
         h('rect', { x: barX, y: slitBotY - 1, width: 6, height: 3, fill: '#000' }),
         h('text', { x: barX + 3, y: pad.t + 10, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'barrier'),
-        // Wavefront semi-circles emanating from each slit (decorative — 4 arcs each)
+        // Live wavefronts: animated expanding circles from each slit, clipped
+        // to the right of the barrier so they look like wavefronts emerging
+        // toward the screen. Three staggered copies per slit create a ripple.
+        // The intersection of top + bottom wavefronts IS the interference —
+        // students can see the constructive/destructive zones forming live.
         (function() {
-          var arcs = [];
-          for (var k = 1; k <= 4; k++) {
-            var rPx = 18 + k * 25;
-            arcs.push(h('path', { key: 'wt' + k, d: 'M ' + (barX + 6) + ',' + (slitTopY - rPx) + ' A ' + rPx + ' ' + rPx + ' 0 0 1 ' + (barX + 6) + ' ' + (slitTopY + rPx), fill: 'none', stroke: color, strokeWidth: 0.6, opacity: 0.30 }));
-            arcs.push(h('path', { key: 'wb' + k, d: 'M ' + (barX + 6) + ',' + (slitBotY - rPx) + ' A ' + rPx + ' ' + rPx + ' 0 0 1 ' + (barX + 6) + ' ' + (slitBotY + rPx), fill: 'none', stroke: color, strokeWidth: 0.6, opacity: 0.30 }));
-          }
-          return arcs;
+          var defs = h('defs', { key: 'wf-defs' },
+            h('clipPath', { id: 'opt-int-clip-' + Math.abs((d_mm + L_m).toString().length) },
+              h('rect', { x: barX + 6, y: pad.t, width: screenX - barX - 6, height: H - pad.t - pad.b })
+            ),
+            h('filter', { id: 'opt-soft-glow' },
+              h('feGaussianBlur', { stdDeviation: '1.4', result: 'g' }),
+              h('feMerge', null,
+                h('feMergeNode', { in: 'g' }),
+                h('feMergeNode', { in: 'SourceGraphic' })
+              )
+            )
+          );
+          var clipId = 'opt-int-clip-' + Math.abs((d_mm + L_m).toString().length);
+          var rings = [];
+          ['', 'opticslab-wavefront-2', 'opticslab-wavefront-3'].forEach(function(extraCls, ki) {
+            rings.push(h('circle', {
+              key: 'wt' + ki, cx: barX + 6, cy: slitTopY, r: 4,
+              fill: 'none', stroke: color, strokeWidth: 1.2, opacity: 0.7,
+              filter: 'url(#opt-soft-glow)',
+              className: 'opticslab-wavefront ' + extraCls,
+              'clip-path': 'url(#' + clipId + ')'
+            }));
+            rings.push(h('circle', {
+              key: 'wb' + ki, cx: barX + 6, cy: slitBotY, r: 4,
+              fill: 'none', stroke: color, strokeWidth: 1.2, opacity: 0.7,
+              filter: 'url(#opt-soft-glow)',
+              className: 'opticslab-wavefront ' + extraCls,
+              'clip-path': 'url(#' + clipId + ')'
+            }));
+          });
+          return [defs].concat(rings);
         })(),
         // Screen
         h('rect', { x: screenX, y: screenTop, width: 8, height: screenHeight, fill: '#1e293b', stroke: '#475569', strokeWidth: 1 }),
@@ -1548,15 +1644,126 @@
         h('rect', { x: pad.l, y: midY - 8, width: 16, height: 16, fill: '#fef3c7', rx: 4 }),
         // Light beam segments — opacity scales with intensity
         h('rect', { x: pad.l + 16, y: midY - 6, width: disk1X - diskR - (pad.l + 16), height: 12, fill: '#fef3c7', opacity: I0 * 0.5 }),
+        // Unpolarized E-fields: scatter of 5 short vectors in random orientations
+        // to visually communicate "light vibrating in all directions"
+        (function() {
+          var n = 5;
+          var segX0 = pad.l + 16, segX1 = disk1X - diskR;
+          var pts = [];
+          for (var k = 0; k < n; k++) {
+            var cx = segX0 + (segX1 - segX0) * (k + 0.5) / n;
+            // Spread the angles across the beam so it reads as "all directions"
+            var angDeg = (k * 73) % 180;
+            var len = 7;
+            var dx = Math.cos(degToRad(angDeg)) * len;
+            var dy = Math.sin(degToRad(angDeg)) * len;
+            pts.push(h('line', {
+              key: 'eu' + k,
+              x1: cx - dx, y1: midY - dy, x2: cx + dx, y2: midY + dy,
+              stroke: '#facc15', strokeWidth: 1.4, strokeLinecap: 'round',
+              opacity: 0.95,
+              className: 'opticslab-efield-vec',
+              style: { animationDelay: (k * 0.18 - 0.6) + 's' }
+            }));
+          }
+          return pts;
+        })(),
         polarizerDisk(disk1X, 0, 'P₁', afterP1),
         h('rect', { x: disk1X + diskR, y: midY - 6, width: disk2X - diskR - (disk1X + diskR), height: 12, fill: '#fef3c7', opacity: afterP1 * 0.6 + 0.05 }),
+        // After P1: polarized along P1's 0° axis (vertical in our convention)
+        (function() {
+          var segX0 = disk1X + diskR, segX1 = disk2X - diskR;
+          var pts = [];
+          var n = 3;
+          for (var k = 0; k < n; k++) {
+            var cx = segX0 + (segX1 - segX0) * (k + 0.5) / n;
+            // P1 axis = 0° (we treat 0° as vertical in this view)
+            var len = 10;
+            var dx = Math.cos(degToRad(0 + 90)) * len;
+            var dy = Math.sin(degToRad(0 + 90)) * len;
+            pts.push(h('line', {
+              key: 'e1' + k,
+              x1: cx - dx, y1: midY - dy, x2: cx + dx, y2: midY + dy,
+              stroke: '#22d3ee', strokeWidth: 1.6, strokeLinecap: 'round',
+              opacity: Math.max(0.35, afterP1 * 1.6),
+              className: 'opticslab-efield-vec',
+              style: { animationDelay: (k * 0.2) + 's' }
+            }));
+          }
+          return pts;
+        })(),
         polarizerDisk(disk2X, theta2, 'P₂', afterP2),
         useP3 ? [
           h('rect', { key: 'beam23', x: disk2X + diskR, y: midY - 6, width: disk3X - diskR - (disk2X + diskR), height: 12, fill: '#fef3c7', opacity: afterP2 * 0.6 + 0.05 }),
+          // After P2 (axis = theta2)
+          (function() {
+            var segX0 = disk2X + diskR, segX1 = disk3X - diskR;
+            var pts = [];
+            var n = 2;
+            for (var k = 0; k < n; k++) {
+              var cx = segX0 + (segX1 - segX0) * (k + 0.5) / n;
+              var len = 8 + 4 * afterP2 / afterP1;
+              var dx = Math.cos(degToRad(theta2 + 90)) * len;
+              var dy = Math.sin(degToRad(theta2 + 90)) * len;
+              pts.push(h('line', {
+                key: 'e2' + k,
+                x1: cx - dx, y1: midY - dy, x2: cx + dx, y2: midY + dy,
+                stroke: '#22d3ee', strokeWidth: 1.6, strokeLinecap: 'round',
+                opacity: Math.max(0.25, afterP2 * 3),
+                className: 'opticslab-efield-vec',
+                style: { animationDelay: (k * 0.2) + 's' }
+              }));
+            }
+            return pts;
+          })(),
           polarizerDisk(disk3X, theta3, 'P₃', afterP3),
-          h('rect', { key: 'beamout', x: disk3X + diskR, y: midY - 6, width: W - pad.r - (disk3X + diskR), height: 12, fill: '#fef3c7', opacity: afterP3 * 0.6 + 0.05 })
+          h('rect', { key: 'beamout', x: disk3X + diskR, y: midY - 6, width: W - pad.r - (disk3X + diskR), height: 12, fill: '#fef3c7', opacity: afterP3 * 0.6 + 0.05 }),
+          // After P3 (axis = theta3)
+          (function() {
+            var segX0 = disk3X + diskR, segX1 = W - pad.r;
+            var pts = [];
+            var n = 2;
+            for (var k = 0; k < n; k++) {
+              var cx = segX0 + (segX1 - segX0) * (k + 0.5) / n;
+              if (afterP3 < 0.005) continue; // skip if extinguished
+              var len = 8 + 4 * afterP3 / Math.max(0.001, afterP2);
+              var dx = Math.cos(degToRad(theta3 + 90)) * len;
+              var dy = Math.sin(degToRad(theta3 + 90)) * len;
+              pts.push(h('line', {
+                key: 'e3' + k,
+                x1: cx - dx, y1: midY - dy, x2: cx + dx, y2: midY + dy,
+                stroke: '#22d3ee', strokeWidth: 1.6, strokeLinecap: 'round',
+                opacity: Math.max(0.25, afterP3 * 3),
+                className: 'opticslab-efield-vec',
+                style: { animationDelay: (k * 0.2) + 's' }
+              }));
+            }
+            return pts;
+          })()
         ] : [
-          h('rect', { key: 'beamout2', x: disk2X + diskR, y: midY - 6, width: W - pad.r - (disk2X + diskR), height: 12, fill: '#fef3c7', opacity: afterP2 * 0.6 + 0.05 })
+          h('rect', { key: 'beamout2', x: disk2X + diskR, y: midY - 6, width: W - pad.r - (disk2X + diskR), height: 12, fill: '#fef3c7', opacity: afterP2 * 0.6 + 0.05 }),
+          // After P2 (axis = theta2) — no P3
+          (function() {
+            var segX0 = disk2X + diskR, segX1 = W - pad.r;
+            var pts = [];
+            var n = 3;
+            for (var k = 0; k < n; k++) {
+              var cx = segX0 + (segX1 - segX0) * (k + 0.5) / n;
+              if (afterP2 < 0.005) continue;
+              var len = 8 + 4 * afterP2 / Math.max(0.001, afterP1);
+              var dx = Math.cos(degToRad(theta2 + 90)) * len;
+              var dy = Math.sin(degToRad(theta2 + 90)) * len;
+              pts.push(h('line', {
+                key: 'e2b' + k,
+                x1: cx - dx, y1: midY - dy, x2: cx + dx, y2: midY + dy,
+                stroke: '#22d3ee', strokeWidth: 1.6, strokeLinecap: 'round',
+                opacity: Math.max(0.25, afterP2 * 3),
+                className: 'opticslab-efield-vec',
+                style: { animationDelay: (k * 0.2) + 's' }
+              }));
+            }
+            return pts;
+          })()
         ],
         // Output indicator
         h('text', { x: W - pad.r - 4, y: midY - 14, fill: '#86efac', fontSize: 11, textAnchor: 'end', fontWeight: 700 },
