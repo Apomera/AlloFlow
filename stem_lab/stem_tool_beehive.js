@@ -8895,8 +8895,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('canvas', {
                 ref: _cvRef,
                 role: 'img',
-                'aria-label': 'Animated beehive simulation. Workers: ' + workers + ', Honey: ' + honey + ' lbs, Season: ' + seasonNames[season],
-                style: { width: '100%', height: '100%', display: 'block' }
+                'aria-label': 'Animated beehive simulation. Workers: ' + workers + ', Honey: ' + honey + ' lbs, Season: ' + seasonNames[season] + '. Click parts of the scene: hive opens the inspector, beekeeper shows last action, sunflowers jump to pollination tab.',
+                style: { width: '100%', height: '100%', display: 'block', cursor: beeView === 'scene' ? 'pointer' : 'default' },
+                onMouseMove: beeView === 'scene' ? function(e) {
+                  // Cursor hinting: pointer over interactive zones, default elsewhere.
+                  // Hit-zones use canvas-relative ratios so they line up at every size.
+                  var cv = e.currentTarget;
+                  var rect = cv.getBoundingClientRect();
+                  if (rect.width === 0) return;
+                  var rx = (e.clientX - rect.left) / rect.width;
+                  var ry = (e.clientY - rect.top) / rect.height;
+                  var overHive = rx > 0.10 && rx < 0.24 && ry > 0.45 && ry < 0.85;
+                  var overBk = rx > 0.90 && rx < 1.00 && ry > 0.55 && ry < 0.95;
+                  var overSun = rx > 0.45 && rx < 1.00 && ry > 0.20 && ry < 0.65 && !overHive && !overBk;
+                  cv.style.cursor = (overHive || overBk || overSun) ? 'pointer' : 'default';
+                } : null,
+                onClick: beeView === 'scene' ? function(e) {
+                  // ── Canvas hotspot click ──
+                  // Hive (left side) → open the Hive Inspector modal.
+                  // Beekeeper (far right) → echo a "what they\'re up to" toast.
+                  // Sunflowers / meadow (right of hive, upper-mid) → jump to
+                  //   Pollination canvas tab — the obvious place students go
+                  //   when they wonder "why does any of this matter?"
+                  var cv = e.currentTarget;
+                  var rect = cv.getBoundingClientRect();
+                  if (rect.width === 0) return;
+                  var rx = (e.clientX - rect.left) / rect.width;
+                  var ry = (e.clientY - rect.top) / rect.height;
+                  if (rx > 0.10 && rx < 0.24 && ry > 0.45 && ry < 0.85) {
+                    upd('showInspect', true);
+                    triggerBeekeeperAction('inspect', 'Opening the hive — let\'s see what\'s inside.', '🔍');
+                    return;
+                  }
+                  if (rx > 0.90 && rx < 1.00 && ry > 0.55 && ry < 0.95) {
+                    var bkAnim = d.bkAnim;
+                    var msg = bkAnim && bkAnim.caption
+                      ? '🐝 Beekeeper: ' + bkAnim.caption
+                      : '🐝 Beekeeper standing by. The action buttons below tell them what to do next.';
+                    if (addToast) addToast(msg, 'info');
+                    return;
+                  }
+                  if (rx > 0.45 && rx < 1.00 && ry > 0.20 && ry < 0.65) {
+                    upd('beeView', 'pollination');
+                    if (addToast) addToast('🌍 Switched to the Pollination view — why bees feed 1/3 of the food supply.', 'info');
+                    return;
+                  }
+                } : null
               }),
               // Fullscreen toggle button (top-right overlay)
               h('button', {
@@ -8917,7 +8961,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 title: 'Toggle fullscreen',
                 className: 'absolute top-2 right-2 z-10 px-2 py-1 rounded-md text-xs font-bold transition-all backdrop-blur-sm bg-black/45 hover:bg-black/65 text-amber-100 border border-amber-600/30',
                 style: { fontSize: '16px', lineHeight: 1, cursor: 'pointer' }
-              }, '⛶')
+              }, '⛶'),
+              // Click-to-explore hint chip (Scene view only) so the canvas
+              // interactivity is discoverable. aria-hidden because the
+              // canvas aria-label already announces this affordance.
+              beeView === 'scene' && h('div', {
+                'aria-hidden': 'true',
+                className: 'absolute bottom-2 left-2 z-10 px-2 py-1 rounded-md text-[10px] backdrop-blur-sm bg-black/45 text-amber-100 border border-amber-600/30 italic',
+                style: { lineHeight: 1.3, maxWidth: '60%' }
+              }, '💡 Tip: click the hive, beekeeper, or meadow to dive in')
             ),
             // ── Live Scene narration strip ──
             // Caption that auto-picks the most representative description of
