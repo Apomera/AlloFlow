@@ -13814,13 +13814,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const hasAnyImage = sortItems.some(ci => ci.image);
 
           const categoryCardsHtml = `
-              <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;" role="list" aria-label="Sorting categories">
+              <div class="alloflow-cs-categories" data-cs-section="${item.id}" style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;" role="list" aria-label="Sorting categories">
                   ${categories.map((cat, catIdx) => {
                       const catColor = catColors[catIdx % catColors.length];
                       return `
-                          <div role="listitem" style="flex: 1; min-width: 160px; border: 2px solid ${catColor}; border-radius: 12px; background: ${catColor}11; padding: 14px 12px; text-align: center; break-inside: avoid; page-break-inside: avoid;">
+                          <div role="listitem" class="alloflow-cs-dropzone" data-category-id="${cat.id}" data-category-color="${catColor}" style="flex: 1; min-width: 160px; border: 2px solid ${catColor}; border-radius: 12px; background: ${catColor}11; padding: 14px 12px; text-align: center; break-inside: avoid; page-break-inside: avoid;">
                               <div style="font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.05em; color: ${catColor}; font-weight: bold; margin-bottom: 4px;">Category</div>
                               <div style="font-size: 1.05em; font-weight: bold; color: #1e293b;">${cat.label}</div>
+                              <div class="alloflow-cs-dropzone-target" data-dropzone-for="${cat.id}" style="margin-top: 10px; min-height: 36px; border: 2px dashed transparent; border-radius: 6px; transition: border-color 0.15s; display: none;"></div>
                           </div>
                       `;
                   }).join('')}
@@ -13834,13 +13835,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           `;
 
           const stripsHtml = `
-              <div role="list" aria-label="Sortable items">
+              <div role="list" aria-label="Sortable items" class="alloflow-cs-strips" data-cs-section="${item.id}">
                   ${sortItems.map((ci, idx) => {
                       const imageHtml = ci.image
                           ? `<div style="flex-shrink: 0; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; background: #f8fafc; border-radius: 6px; overflow: hidden;"><img src="${ci.image}" alt="" style="max-width: 100%; max-height: 100%; object-fit: contain;"/></div>`
                           : '';
                       return `
-                          <div role="listitem" style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 2px dashed #94a3b8; border-radius: 8px; margin-bottom: 10px; background: white; break-inside: avoid; page-break-inside: avoid;">
+                          <div role="listitem" class="alloflow-cs-strip" data-strip-idx="${idx}" data-category-id="${ci.categoryId || ''}" style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 2px dashed #94a3b8; border-radius: 8px; margin-bottom: 10px; background: white; break-inside: avoid; page-break-inside: avoid;">
                               <div style="font-family: monospace; font-size: 0.75em; color: #94a3b8; min-width: 28px;" aria-hidden="true">✂ ${idx + 1}</div>
                               ${imageHtml}
                               <div style="flex: 1; font-size: 1em; line-height: 1.5; color: #1e293b;">${ci.content}</div>
@@ -13870,11 +13871,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               </div>
           `;
 
+          const interactiveControlsHtml = (cfg.conceptSortInteractive !== false && !isWorksheet) ? `
+              <div class="alloflow-cs-controls" data-cs-section="${item.id}" style="display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 6px; align-items:center;">
+                  <button type="button" class="alloflow-cs-check-btn" style="padding:8px 16px; background:#4f46e5; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9em;">🎯 Check my sort</button>
+                  <button type="button" class="alloflow-cs-reset-btn" style="padding:8px 16px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-weight:600; cursor:pointer; font-size:0.85em;">↻ Reset</button>
+                  <div class="alloflow-cs-results" role="status" aria-live="polite" aria-atomic="true" style="font-size:0.95em; font-weight:700; color:#1e293b; margin-left:0.5rem;"></div>
+              </div>
+          ` : '';
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   ${instructionsHtml}
                   ${categoryCardsHtml}
+                  ${interactiveControlsHtml}
                   ${stripsHtml}
                   ${answerKeyHtml}
               </div>
@@ -14900,6 +14909,187 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         }, 400);
                     });
                 });
+                // ── Glossary flash-card interactions (May 11 2026) ──
+                // Hide each card's back by default, reveal on click. Master
+                // Show all / Hide all / Shuffle act on the grid. Print uses
+                // @media print to force backs visible so paper output still
+                // shows both sides for fold-and-cut use.
+                (function() {
+                    var cards = document.querySelectorAll('.alloflow-glossary-card');
+                    if (cards.length === 0) return;
+                    var BACK_HIDDEN_CLASS = 'alloflow-glossary-back-hidden';
+                    var styleEl = document.createElement('style');
+                    styleEl.textContent =
+                        '.' + BACK_HIDDEN_CLASS + ' .alloflow-glossary-card-back { display: none; }' +
+                        '.alloflow-glossary-card { cursor: pointer; transition: box-shadow 0.15s; }' +
+                        '.alloflow-glossary-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }' +
+                        '@media print {' +
+                        '  .' + BACK_HIDDEN_CLASS + ' .alloflow-glossary-card-back { display: block !important; }' +
+                        '  .alloflow-glossary-show-all, .alloflow-glossary-hide-all, .alloflow-glossary-shuffle { display: none !important; }' +
+                        '}';
+                    document.head.appendChild(styleEl);
+                    cards.forEach(function(c) {
+                        c.classList.add(BACK_HIDDEN_CLASS);
+                        c.setAttribute('tabindex', '0');
+                        c.setAttribute('role', 'button');
+                        c.setAttribute('aria-pressed', 'false');
+                        var toggle = function() {
+                            var hidden = c.classList.toggle(BACK_HIDDEN_CLASS);
+                            c.setAttribute('aria-pressed', hidden ? 'false' : 'true');
+                        };
+                        c.addEventListener('click', toggle);
+                        c.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+                        });
+                    });
+                    var showBtn = document.querySelector('.alloflow-glossary-show-all');
+                    var hideBtn = document.querySelector('.alloflow-glossary-hide-all');
+                    var shufBtn = document.querySelector('.alloflow-glossary-shuffle');
+                    if (showBtn) showBtn.addEventListener('click', function() {
+                        cards.forEach(function(c) { c.classList.remove(BACK_HIDDEN_CLASS); c.setAttribute('aria-pressed', 'true'); });
+                    });
+                    if (hideBtn) hideBtn.addEventListener('click', function() {
+                        cards.forEach(function(c) { c.classList.add(BACK_HIDDEN_CLASS); c.setAttribute('aria-pressed', 'false'); });
+                    });
+                    if (shufBtn) shufBtn.addEventListener('click', function() {
+                        var grid = cards[0].parentNode;
+                        var nodes = Array.prototype.slice.call(grid.children);
+                        for (var i = nodes.length - 1; i > 0; i--) {
+                            var j = Math.floor(Math.random() * (i + 1));
+                            grid.insertBefore(nodes[i], nodes[j]);
+                            var tmp = nodes[i]; nodes[i] = nodes[j]; nodes[j] = tmp;
+                        }
+                        cards.forEach(function(c) { c.classList.add(BACK_HIDDEN_CLASS); c.setAttribute('aria-pressed', 'false'); });
+                    });
+                })();
+                // ── Concept-sort tap-to-place interaction (May 11 2026) ──
+                // Each section with .alloflow-cs-strips gets:
+                //   1. Click on a strip to select it (visual highlight).
+                //   2. Click on a category dropzone to place the selected strip there.
+                //   3. Strips in the original list pool show subtle hover affordance.
+                //   4. Check button compares each strip's data-category-id to where
+                //      it currently sits (still in pool or in a target) and marks
+                //      correct/wrong/skipped. Reset returns all strips to the pool.
+                // Tap-to-place chosen over native drag-and-drop because it works
+                // identically on desktop and touch (common school iPads/Chromebooks).
+                (function() {
+                    var sections = document.querySelectorAll('.alloflow-cs-controls');
+                    if (sections.length === 0) return;
+                    var csStyle = document.createElement('style');
+                    csStyle.textContent =
+                        '.alloflow-cs-strip { cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }' +
+                        '.alloflow-cs-strip:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }' +
+                        '.alloflow-cs-strip.alloflow-cs-selected { border-color: #4f46e5 !important; background: #eef2ff !important; box-shadow: 0 0 0 3px #c7d2fe; }' +
+                        '.alloflow-cs-dropzone { cursor: pointer; transition: background 0.15s; }' +
+                        '.alloflow-cs-dropzone.alloflow-cs-droptarget { background: rgba(79,70,229,0.08) !important; }' +
+                        '.alloflow-cs-dropzone-target.alloflow-cs-has-strips { display: block !important; border-color: rgba(148,163,184,0.3) !important; }' +
+                        '.alloflow-cs-strip.alloflow-cs-correct { border-color: #16a34a !important; background: #f0fdf4 !important; }' +
+                        '.alloflow-cs-strip.alloflow-cs-wrong { border-color: #dc2626 !important; background: #fef2f2 !important; }' +
+                        '@media print {' +
+                        '  .alloflow-cs-controls { display: none !important; }' +
+                        '  .alloflow-cs-dropzone-target { display: none !important; }' +
+                        '}';
+                    document.head.appendChild(csStyle);
+                    sections.forEach(function(ctrl) {
+                        var sectionId = ctrl.getAttribute('data-cs-section');
+                        var stripsContainer = document.querySelector('.alloflow-cs-strips[data-cs-section="' + sectionId + '"]');
+                        var categoriesContainer = document.querySelector('.alloflow-cs-categories[data-cs-section="' + sectionId + '"]');
+                        var checkBtn = ctrl.querySelector('.alloflow-cs-check-btn');
+                        var resetBtn = ctrl.querySelector('.alloflow-cs-reset-btn');
+                        var resultsEl = ctrl.querySelector('.alloflow-cs-results');
+                        if (!stripsContainer || !categoriesContainer || !checkBtn || !resetBtn) return;
+                        var selectedStrip = null;
+                        var clearSelection = function() {
+                            if (selectedStrip) { selectedStrip.classList.remove('alloflow-cs-selected'); selectedStrip.setAttribute('aria-pressed', 'false'); }
+                            selectedStrip = null;
+                            categoriesContainer.querySelectorAll('.alloflow-cs-dropzone').forEach(function(z) { z.classList.remove('alloflow-cs-droptarget'); });
+                        };
+                        var clearMarks = function() {
+                            stripsContainer.querySelectorAll('.alloflow-cs-strip').forEach(function(s) { s.classList.remove('alloflow-cs-correct', 'alloflow-cs-wrong'); });
+                            categoriesContainer.querySelectorAll('.alloflow-cs-strip').forEach(function(s) { s.classList.remove('alloflow-cs-correct', 'alloflow-cs-wrong'); });
+                        };
+                        // Wire each strip
+                        var allStrips = function() {
+                            return Array.prototype.slice.call(document.querySelectorAll(
+                                '.alloflow-cs-strips[data-cs-section="' + sectionId + '"] .alloflow-cs-strip, ' +
+                                '.alloflow-cs-categories[data-cs-section="' + sectionId + '"] .alloflow-cs-strip'
+                            ));
+                        };
+                        var wireStrip = function(s) {
+                            s.setAttribute('role', 'button');
+                            s.setAttribute('tabindex', '0');
+                            s.setAttribute('aria-pressed', 'false');
+                            var pick = function() {
+                                clearMarks();
+                                if (selectedStrip === s) { clearSelection(); return; }
+                                clearSelection();
+                                selectedStrip = s;
+                                s.classList.add('alloflow-cs-selected');
+                                s.setAttribute('aria-pressed', 'true');
+                                categoriesContainer.querySelectorAll('.alloflow-cs-dropzone').forEach(function(z) { z.classList.add('alloflow-cs-droptarget'); });
+                            };
+                            s.addEventListener('click', pick);
+                            s.addEventListener('keydown', function(e) {
+                                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); }
+                            });
+                        };
+                        stripsContainer.querySelectorAll('.alloflow-cs-strip').forEach(wireStrip);
+                        // Wire each dropzone
+                        categoriesContainer.querySelectorAll('.alloflow-cs-dropzone').forEach(function(z) {
+                            var target = z.querySelector('.alloflow-cs-dropzone-target');
+                            if (!target) return;
+                            z.addEventListener('click', function(e) {
+                                if (e.target.closest('.alloflow-cs-strip')) return;
+                                if (!selectedStrip) return;
+                                target.appendChild(selectedStrip);
+                                target.classList.add('alloflow-cs-has-strips');
+                                clearSelection();
+                            });
+                        });
+                        checkBtn.addEventListener('click', function() {
+                            clearMarks();
+                            var correct = 0, wrong = 0, skipped = 0;
+                            allStrips().forEach(function(s) {
+                                var target = s.parentNode;
+                                var dropzone = target.classList && target.classList.contains('alloflow-cs-dropzone-target')
+                                    ? target.getAttribute('data-dropzone-for')
+                                    : null;
+                                var expected = s.getAttribute('data-category-id') || '';
+                                if (!dropzone) { skipped++; return; }
+                                if (dropzone === expected) { s.classList.add('alloflow-cs-correct'); correct++; }
+                                else { s.classList.add('alloflow-cs-wrong'); wrong++; }
+                            });
+                            var total = correct + wrong + skipped;
+                            var parts = [correct + ' of ' + total + ' correct'];
+                            if (wrong > 0) parts.push(wrong + ' to review');
+                            if (skipped > 0) parts.push(skipped + ' unsorted');
+                            resultsEl.textContent = parts.join(' · ');
+                        });
+                        resetBtn.addEventListener('click', function() {
+                            clearMarks();
+                            // Move all strips back to the original strips container.
+                            // Preserve original strip-idx ordering for fairness.
+                            allStrips().forEach(function(s) {
+                                if (s.parentNode !== stripsContainer) {
+                                    var target = s.parentNode;
+                                    stripsContainer.appendChild(s);
+                                    if (target.classList && target.classList.contains('alloflow-cs-dropzone-target') &&
+                                        !target.querySelector('.alloflow-cs-strip')) {
+                                        target.classList.remove('alloflow-cs-has-strips');
+                                    }
+                                }
+                            });
+                            // Sort strips by data-strip-idx
+                            var pool = Array.prototype.slice.call(stripsContainer.querySelectorAll('.alloflow-cs-strip'));
+                            pool.sort(function(a, b) {
+                                return parseInt(a.getAttribute('data-strip-idx') || '0', 10) - parseInt(b.getAttribute('data-strip-idx') || '0', 10);
+                            });
+                            pool.forEach(function(s) { stripsContainer.appendChild(s); });
+                            clearSelection();
+                            resultsEl.textContent = '';
+                        });
+                    });
+                })();
                 // ── Glossary flash-card interactions (May 11 2026) ──
                 // Hide each card's back by default, reveal on click. Master
                 // Show all / Hide all / Shuffle act on the grid. Print uses
