@@ -4813,6 +4813,34 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [mathProbeForm, setMathProbeForm] = useState('A');
   const [screenerSession, setScreenerSession] = useState(null);
   const [rosterQueue, setRosterQueue] = useState([]);
+  // ── Phantom-ref shims (May 11 2026, cleanup pass) ──
+  // Surfaced by _audit_all_phantoms.cjs --full. Each was a bare reference
+  // that would have thrown ReferenceError if its code path executed. We
+  // ship safe fallbacks here so the calls become inert no-ops (or route
+  // to a real implementation if one is present at runtime).
+  const [activeSelStation, setActiveSelStation] = useState(null);
+  const launchBenchmarkProbe = useCallback((grade, activity, form) => {
+    warnLog && warnLog('[stub] launchBenchmarkProbe called but no implementation registered.');
+  }, []);
+  const speak = useCallback((text) => {
+    try {
+      const ab = window.AlloModules && window.AlloModules.AlloBot;
+      if (ab && typeof ab.speak === 'function') return ab.speak(text);
+      if (typeof window.speak === 'function') return window.speak(text);
+    } catch (e) {}
+  }, []);
+  const addXp = useCallback((amount) => {
+    try {
+      const x = window.AlloModules && window.AlloModules.XP;
+      if (x && typeof x.addXp === 'function') return x.addXp(amount);
+    } catch (e) {}
+  }, []);
+  const handleAudio = useCallback(async (text) => {
+    try {
+      if (typeof callTTS === 'function') return await callTTS(text);
+      if (typeof window.callTTS === 'function') return await window.callTTS(text);
+    } catch (e) {}
+  }, []);
   useEffect(() => {
     if (!screenerSession || screenerSession.status !== 'interstitial') return;
     const timer = setTimeout(() => {
@@ -6158,22 +6186,6 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isGeneratingExtensionGuide, setIsGeneratingExtensionGuide] = useState({});
   const [lessonCustomAdditions, setLessonCustomAdditions] = useState('');
   const [translateScope, setTranslateScope] = useState('single');
-  const handleSetIsMinimizedToFalse = React.useCallback(() => setIsMinimized(false), []);
-  const handleSetIsMinimizedToTrue = React.useCallback(() => setIsMinimized(true), []);
-  const handleSetUserSpellingConst = React.useCallback(() => setUserSpelling(''), []);
-  const handleSetUserAnswerConst = React.useCallback(() => setUserAnswer(''), []);
-  const handleSetShowReviewPanelToTrue = React.useCallback(() => setShowReviewPanel(true), []);
-  const handleSetSelectedStudentToNull = React.useCallback(() => setSelectedStudent(null), []);
-  const handleSetKeyboardSelectedItemIdToNull = React.useCallback(() => setKeyboardSelectedItemId(null), []);
-  const handleSetIsCallerModeToFalse = React.useCallback(() => setIsCallerMode(false), []);
-  const handleSetSelectedPuzzleToNull = React.useCallback(() => setSelectedPuzzle(null), []);
-  const handleSetShowEndConfirmToTrue = React.useCallback(() => setShowEndConfirm(true), []);
-  const handleSetShowEndConfirmToFalse = React.useCallback(() => setShowEndConfirm(false), []);
-  const handleSetActiveTabToStudents = React.useCallback(() => setActiveTab('students'), []);
-  const handleSetActiveTabToInsights = React.useCallback(() => setActiveTab('insights'), []);
-  const handleSetDashboardViewToList = React.useCallback(() => setDashboardView('list'), []);
-  const handleSetShowClearConfirmToFalse = React.useCallback(() => setShowClearConfirm(false), []);
-  const handleSetStepTo4 = React.useCallback(() => setStep(4), []);
   const handleSetStandardModeToAi = React.useCallback(() => setStandardMode('ai'), []);
   const handleSetStandardModeToManual = React.useCallback(() => setStandardMode('manual'), []);
   const handleSetIsConceptMapReadyToFalse = React.useCallback(() => setIsConceptMapReady(false), []);
@@ -6255,18 +6267,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const handleSetIsProjectSettingsOpenToFalse = React.useCallback(() => setIsProjectSettingsOpen(false), []);
   const handleSetShowStudyTimerModalToFalse = React.useCallback(() => setShowStudyTimerModal(false), []);
   const handleSetShowAdventureConfirmationToFalse = React.useCallback(() => setShowAdventureConfirmation(false), []);
-  const handleToggleIncludeGlossary = React.useCallback(() => setIncludeGlossary(prev => !prev), []);
-  const handleToggleIncludeFamily = React.useCallback(() => setIncludeFamily(prev => !prev), []);
-  const handleToggleIncludeCustom = React.useCallback(() => setIncludeCustom(prev => !prev), []);
-  const handleToggleIncludeSightWords = React.useCallback(() => setIncludeSightWords(prev => !prev), []);
-  const handleToggleIncludeAI = React.useCallback(() => setIncludeAI(prev => !prev), []);
-  const handleToggleIncludeLessonPlan = React.useCallback(() => setIncludeLessonPlan(prev => !prev), []);
-  const handleToggleIsEditing = React.useCallback(() => setIsEditing(prev => !prev), []);
-  const handleToggleShowLetterHints = React.useCallback(() => setShowLetterHints(prev => !prev), []);
-  const handleTogglePlayInstructions = React.useCallback(() => setPlayInstructions(prev => !prev), []);
   const handleToggleIsFullscreen = React.useCallback(() => setIsFullscreen(prev => !prev), []);
-  const handleToggleIsHistoryVisible = React.useCallback(() => setIsHistoryVisible(prev => !prev), []);
-  const handleToggleShowLocalStats = React.useCallback(() => setShowLocalStats(prev => !prev), []);
   const handleToggleIsMapLocked = React.useCallback(() => setIsMapLocked(prev => !prev), []);
   const handleToggleFocusMode = React.useCallback(() => setFocusMode(prev => !prev), []);
   const handleToggleDisableAnimations = React.useCallback(() => setDisableAnimations(prev => !prev), []);
@@ -23347,7 +23348,7 @@ Return ONLY valid JSON in this format:
                   stemLabCreateMode, stemLabTab, stemLabTool, submitExploreScore,
                   t, toolSnapshots, areaChallenge, areaFeedback, areaAnswer,
                   fracChallenge, fracFeedback, fracAnswer, handleGenerateMath,
-                  labToolData, setLabToolData, gradeLevel,
+                  labToolData, setLabToolData, gradeLevel, sourceTopic,
                   callGemini, callTTS, callImagen, callGeminiVision, callGeminiImageEdit,
                   activeStation, setActiveStation,
                   theme,
@@ -23761,6 +23762,7 @@ Return ONLY valid JSON in this format:
                     callTTS, callImagen, callGeminiVision,
                     onSafetyFlag: handleAiSafetyFlag,
                     studentCodename: studentNickname || 'student',
+                    selectedVoice,
                     t, ArrowLeft, X, Sparkles, Heart, GripVertical,
                     activeStation: activeSelStation,
                     onSaveStation: (station) => {

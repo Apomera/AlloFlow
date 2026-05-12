@@ -43,7 +43,7 @@ const GLOBAL_BUILTINS = new Set([
   'fetch', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval',
   'requestAnimationFrame', 'cancelAnimationFrame', 'queueMicrotask',
   'Math', 'Date', 'JSON', 'Object', 'Array', 'String', 'Number', 'Boolean',
-  'RegExp', 'Promise', 'Map', 'Set', 'WeakMap', 'WeakSet', 'Symbol',
+  'RegExp', 'Promise', 'Map', 'Set', 'WeakMap', 'WeakSet', 'Symbol', 'Function',
   'Error', 'TypeError', 'RangeError', 'SyntaxError',
   'URL', 'URLSearchParams', 'FormData', 'Blob', 'File', 'FileReader',
   'AbortController', 'CustomEvent', 'Event', 'EventTarget', 'MessageChannel',
