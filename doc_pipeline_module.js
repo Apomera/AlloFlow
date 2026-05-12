@@ -12477,6 +12477,24 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   };
   const generateResourceHTML = (item, isTeacher, responses = {}, config = null) => {
       const cfg = config || exportConfig;
+      // ── Worksheet (paper) mode helpers ──
+      // When cfg.isWorksheet is true, the export is being rendered for paper
+      // (cut, write by hand). Replace interactive inputs with handwriting
+      // affordances: textareas → ruled lines, radios → fillable circles,
+      // text inputs → underlined blanks, audio players → hidden.
+      // When false (default), keep the existing interactive HTML so the
+      // student can type on screen.
+      const isWorksheet = cfg.isWorksheet === true;
+      const ruledLines = (numLines = 4, label = '') => {
+          const lines = Array.from({length: Math.max(1, numLines)}, () =>
+              '<div style="border-bottom: 1px solid #94a3b8; height: 28px; margin-bottom: 4px; break-inside: avoid;"></div>'
+          ).join('');
+          return `<div style="margin-top: 8px; break-inside: avoid;">${label ? `<div style="font-size: 0.85em; color: #64748b; margin-bottom: 6px; font-weight: 600;">${label}</div>` : ''}${lines}</div>`;
+      };
+      const fillableCircle = () =>
+          '<span aria-hidden="true" style="display: inline-block; width: 14px; height: 14px; border: 2px solid #475569; border-radius: 50%; vertical-align: middle; margin-right: 6px; background: white;"></span>';
+      const fillableBlank = (widthPx = 150) =>
+          `<span aria-hidden="true" style="display: inline-block; width: ${widthPx}px; border-bottom: 1.5px solid #475569; height: 1.4em; vertical-align: middle; margin: 0 4px;"></span>`;
       // Resource type filtering — configurable via export preview modal.
       // Teacher-only resources (analysis, udl-advice, brainstorm) handled separately
       // below so they appear in teacher copy unconditionally but are toggleable for student copy.
@@ -13219,6 +13237,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               </div>
           `;
       } else if (item.type === 'quiz') {
+          const reflectionInputHtml = (text) => isWorksheet
+              ? ruledLines(4)
+              : `<textarea class="interactive-textarea" aria-label="${text}" placeholder="${t('common.type_answer_here')}"></textarea>`;
           const reflectionHtml = Array.isArray(item.data.reflections)
               ? item.data.reflections.map(r => {
                   const text = typeof r === 'string' ? r : r.text;
@@ -13226,14 +13247,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   return `
                       <div class="reflection-block">
                           <p><strong>${text}</strong>${textEn ? `<br><span style="font-weight:normal; font-style:italic; color:#666">(${textEn})</span>` : ''}</p>
-                          <textarea class="interactive-textarea" aria-label="${text}" placeholder="${t('common.type_answer_here')}"></textarea>
+                          ${reflectionInputHtml(text)}
                       </div>
                   `;
                 }).join('')
               : `
                   <div class="reflection-block">
                       <p><strong>${item.data.reflection}</strong></p>
-                      <textarea class="interactive-textarea" aria-label="${item.data.reflection}" placeholder="${t('common.type_answer_here')}"></textarea>
+                      ${reflectionInputHtml(item.data.reflection)}
                   </div>
               `;
           // Resolve each question's correct option to an INDEX (the radio value)
@@ -13290,7 +13311,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               return `
                               <div class="question">
                                   ${stem}
-                                  <textarea placeholder="Type your 1-2 sentence response…" rows="3" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>
+                                  ${isWorksheet
+                                      ? ruledLines(3)
+                                      : '<textarea placeholder="Type your 1-2 sentence response…" rows="3" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>'}
                                   ${isTeacher && q.expectedAnswer ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: <span style="font-weight:normal">${q.expectedAnswer}</span></p>` : ''}
                               </div>`;
                           }
@@ -13298,7 +13321,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               return `
                               <div class="question">
                                   ${stem}
-                                  <textarea placeholder="Explain in your own words (3-5 sentences)…" rows="5" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>
+                                  ${isWorksheet
+                                      ? ruledLines(5)
+                                      : '<textarea placeholder="Explain in your own words (3-5 sentences)…" rows="5" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>'}
                                   ${isTeacher && q.rubric ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">Rubric: <span style="font-weight:normal;font-style:italic">${q.rubric}</span></p>` : ''}
                               </div>`;
                           }
@@ -13315,8 +13340,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                   </ol>
                                   <div style="margin:0.5rem 0;">
                                       <strong style="font-size:0.9rem;">1. Is this order correct?</strong>
-                                      <label style="margin-left:1rem;"><input type="radio" name="ss_${item.id}_${i}_v"/> Yes</label>
-                                      <label style="margin-left:0.5rem;"><input type="radio" name="ss_${item.id}_${i}_v"/> No, item # ___ is misplaced</label>
+                                      ${isWorksheet
+                                          ? `<label style="margin-left:1rem;">${fillableCircle()}Yes</label><label style="margin-left:0.5rem;">${fillableCircle()}No, item # ___ is misplaced</label>`
+                                          : `<label style="margin-left:1rem;"><input type="radio" name="ss_${item.id}_${i}_v"/> Yes</label><label style="margin-left:0.5rem;"><input type="radio" name="ss_${item.id}_${i}_v"/> No, item # ___ is misplaced</label>`}
                                   </div>
                                   <div style="margin:0.5rem 0;">
                                       <strong style="font-size:0.9rem;">2. What's the ordering principle?</strong>
@@ -13338,7 +13364,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                   <div style="margin:0.5rem 0;">
                                       <strong style="font-size:0.9rem;">Wrong pair: # ___</strong>
                                   </div>
-                                  ${candidates.length > 0 ? `<div style="margin:0.5rem 0;"><strong style="font-size:0.9rem;">Correct partner:</strong> ${candidates.map(c => `<label style="margin-left:0.5rem;"><input type="radio" name="rm_${item.id}_${i}_p"/> ${c}</label>`).join('')}</div>` : ''}
+                                  ${candidates.length > 0 ? `<div style="margin:0.5rem 0;"><strong style="font-size:0.9rem;">Correct partner:</strong> ${candidates.map(c => isWorksheet ? `<label style="margin-left:0.5rem;">${fillableCircle()}${c}</label>` : `<label style="margin-left:0.5rem;"><input type="radio" name="rm_${item.id}_${i}_p"/> ${c}</label>`).join('')}</div>` : ''}
                                   ${isTeacher ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: pair #${(q.wrongPairIndex || 0) + 1} is wrong · correct partner: <em>${q.correctPartnerForWrong || ''}</em></p>` : ''}
                               </div>`;
                           }
@@ -13353,7 +13379,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               <div class="options">
                                   ${optsArr.map((opt, optIdx) => `
                                       <label class="mcq-label">
-                                          <input aria-label={t('common.text_field')} type="radio" name="q_${item.id}_${i}" value="${optIdx}">
+                                          ${isWorksheet
+                                              ? fillableCircle()
+                                              : `<input aria-label={t('common.text_field')} type="radio" name="q_${item.id}_${i}" value="${optIdx}">`}
                                           ${Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] ? `<img src="${q.optionImageUrls[optIdx]}" alt="${opt}" style="display:block;max-width:140px;max-height:80px;object-fit:contain;border-radius:4px;border:1px solid #e2e8f0;margin-bottom:4px;background:#fff"/>` : ''}
                                           <span>${opt} ${q.options_en && q.options_en[optIdx] ? `<span style="color:#888; font-size:0.9em;">(${q.options_en[optIdx]})</span>` : ''}</span>
                                       </label>
@@ -13364,7 +13392,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           </div>
                       `;
                       }).join('')}
-                      ${isTeacher ? '' : `
+                      ${isTeacher || isWorksheet ? '' : `
                           <div class="quiz-controls" style="margin:1rem 0;display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
                               <button type="button" class="quiz-check-btn" style="padding:8px 16px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9rem">🎯 Check my answers</button>
                               <button type="button" class="quiz-reset-btn" style="padding:8px 16px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85rem">↻ Reset</button>
@@ -13449,8 +13477,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           if (mode === 'list') {
               contentHtml = `<ul style="list-style:none;padding:0;">${items.map((i, idx) => {
                   const savedVal = responses[item.id]?.[idx] || '';
+                  const inputHtml = isWorksheet
+                      ? ruledLines(2)
+                      : `<textarea class="interactive-textarea" style="height: 60px;border-left:3px solid #4f46e5;" aria-label="${i.text}" placeholder="${t('common.complete_sentence')}">${savedVal}</textarea>`;
                   return `
-                  <li style="margin-bottom:15px; font-size: 1.1em;">
+                  <li style="margin-bottom:15px; font-size: 1.1em; break-inside: avoid;">
                       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:5px;">
                           <span style="background:#4f46e5;color:white;font-weight:800;font-size:11px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${idx+1}</span>
                           <div>
@@ -13458,7 +13489,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               ${i.text_en ? `<span style="font-size:0.8em; color:#666; margin-left: 5px;">(${i.text_en})</span>` : ''}
                           </div>
                       </div>
-                      <textarea class="interactive-textarea" style="height: 60px;border-left:3px solid #4f46e5;" aria-label="${i.text}" placeholder="${t('common.complete_sentence')}">${savedVal}</textarea>
+                      ${inputHtml}
                   </li>`;
               }).join('')}</ul>`;
           } else {
@@ -13466,7 +13497,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               const filledText = text.replace(/\[.*?\]/g, (match) => {
                    const savedVal = responses[item.id]?.[`paragraph-${pIdx}`] || '';
                    pIdx++;
-                   return `<input aria-label="___________" type="text" class="interactive-blank" placeholder="___________" value="${savedVal}">`;
+                   return isWorksheet
+                       ? fillableBlank(150)
+                       : `<input aria-label="___________" type="text" class="interactive-blank" placeholder="___________" value="${savedVal}">`;
               });
               contentHtml = `
                   <div style="line-height: 2.5; border: 1px solid #ddd; padding: 20px; border-radius: 8px; background: #fafafa;">
@@ -13747,12 +13780,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           </div>
                           <div style="padding:16px;">
                               <div style="background:#fefce8;border-left:4px solid #eab308;padding:12px;border-radius:4px;margin-bottom:12px;font-size:0.95em;line-height:1.6;">${doc.excerpt || ''}</div>
-                              ${doc.sourcingQuestions?.length > 0 ? `<div style="margin-bottom:8px;"><strong style="color:#7c3aed;font-size:0.85em;">Sourcing Questions:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.sourcingQuestions.map(q => `<li style="margin-bottom:4px;">${q}</li>`).join('')}</ol></div>` : ''}
-                              ${doc.analysisQuestions?.length > 0 ? `<div><strong style="color:#2563eb;font-size:0.85em;">Analysis Questions:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.analysisQuestions.map(q => `<li style="margin-bottom:4px;">${q}</li>`).join('')}</ol></div>` : ''}
+                              ${doc.sourcingQuestions?.length > 0 ? `<div style="margin-bottom:8px;"><strong style="color:#7c3aed;font-size:0.85em;">Sourcing Questions:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.sourcingQuestions.map(q => `<li style="margin-bottom:4px;break-inside:avoid;">${q}${isWorksheet ? ruledLines(2) : ''}</li>`).join('')}</ol></div>` : ''}
+                              ${doc.analysisQuestions?.length > 0 ? `<div><strong style="color:#2563eb;font-size:0.85em;">Analysis Questions:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.analysisQuestions.map(q => `<li style="margin-bottom:4px;break-inside:avoid;">${q}${isWorksheet ? ruledLines(2) : ''}</li>`).join('')}</ol></div>` : ''}
                           </div>
                       </div>
                   `).join('')}
-                  ${item.data.synthesisPrompt ? `<div style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:8px;padding:20px;margin-bottom:20px;"><strong style="font-size:1.1em;color:#166534;">📝 Synthesis Essay Prompt:</strong><p style="margin-top:8px;font-size:1em;line-height:1.7;color:#1e293b;">${item.data.synthesisPrompt}</p></div>` : ''}
+                  ${item.data.synthesisPrompt ? `<div style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:8px;padding:20px;margin-bottom:20px;break-inside:avoid;"><strong style="font-size:1.1em;color:#166534;">📝 Synthesis Essay Prompt:</strong><p style="margin-top:8px;font-size:1em;line-height:1.7;color:#1e293b;">${item.data.synthesisPrompt}</p>${isWorksheet ? `<div style="margin-top:16px;">${ruledLines(12, 'Your essay:')}</div>` : ''}</div>` : ''}
                   ${rubric.length > 0 ? `<div style="margin-top:20px;"><strong>Rubric:</strong><table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:0.85em;"><tr><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f1f5f9;text-align:left;">Criteria</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fef2f2;text-align:center;">1</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fefce8;text-align:center;">2</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f0fdf4;text-align:center;">3</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#eff6ff;text-align:center;">4</th></tr>${rubric.map(r => `<tr><td style="border:1px solid #e2e8f0;padding:8px;font-weight:bold;">${r.criteria}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['1'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['2'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['3'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['4'] || ''}</td></tr>`).join('')}</table></div>` : ''}
                   ${item.data.teacherNotes ? `<div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;margin-top:16px;font-size:0.85em;color:#6b21a8;"><strong>Teacher Notes:</strong> ${item.data.teacherNotes}</div>` : ''}
               </div>
@@ -13788,12 +13821,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         <div style="font-size: 2em; font-weight: 900; color: #1e3a8a;">${metrics.wcpm}</div>
                     </div>
                 </div>
-                <!-- Audio Player -->
-                ${audioRecording ? `
+                <!-- Audio Player (omitted in worksheet/paper mode) -->
+                ${isWorksheet
+                    ? ''
+                    : (audioRecording ? `
                     <div style="margin-bottom: 20px; background: #f8fafc; padding: 10px; border-radius: 50px; border: 1px solid #e2e8f0;">
                         <audio controls src="data:${mimeType};base64,${audioRecording}" style="width: 100%;"></audio>
                     </div>
-                ` : '<p style="font-style:italic; color: #94a3b8;">No audio recording available.</p>'}
+                ` : '<p style="font-style:italic; color: #94a3b8;">No audio recording available.</p>')}
                 <!-- AI Feedback -->
                 <div style="background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fcd34d; margin-bottom: 20px; font-style: italic; color: #92400e;">
                     <strong>AI Feedback:</strong> "${feedback}"
@@ -14247,7 +14282,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   );
   const generateFullPackHTML = (historyItems, topic, isWorksheet = false, responses = {}, config = null) => {
       if (historyItems.length === 0) return `<p>${t('export_status.no_content')}</p>`;
-      const cfg = config || exportConfig;
+      const cfg = { ...(config || exportConfig), isWorksheet };
       const studentContent = historyItems.map(item => generateResourceHTML(item, false, responses, cfg)).join('');
       const teacherContent = cfg.includeTeacherKey ? historyItems.map(item => generateResourceHTML(item, true, responses, cfg)).join('') : '';
       const isRtl = isRtlLang(leveledTextLanguage);
