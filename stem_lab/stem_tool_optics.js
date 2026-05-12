@@ -4271,10 +4271,48 @@
         }));
       }
     }
-    var svg = h('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { width: '100%', height: 'auto', borderRadius: 8 }, role: 'img', 'aria-label': 'Polarized sky simulator. Sky regions 90 degrees from the sun are most strongly polarized; rotating a polarizer dims them when its axis is crossed.' },
+    // ── Animated E-field vectors on the maximum-polarization band ──
+    // Where polarization peaks (90° from sun), draw small oscillating line
+    // segments perpendicular to the sun→point direction. As the polarizer
+    // axis rotates, each vector's opacity tracks Malus's cos²Δθ — students
+    // see the band brighten/dim AND the actual E-field direction at each
+    // sky position.
+    var efieldVectors = (function() {
+      var nodes = [];
+      var bandRadius = 90; // pixels from sun for the peak-polarization band
+      var nPts = 16;
+      for (var i = 0; i < nPts; i++) {
+        var angle = (i / nPts) * Math.PI * 2;
+        var vx = sunX + bandRadius * Math.cos(angle);
+        var vy = sunY + bandRadius * Math.sin(angle);
+        // Skip points outside the visible sky region (above ground, inside canvas)
+        if (vx < 8 || vx > W - 8 || vy < 8 || vy > 132) continue;
+        // Local axis: perpendicular to (sun → point), so add 90°
+        var localAxisDeg = (Math.atan2(vy - sunY, vx - sunX) * 180 / Math.PI) + 90;
+        var deltaDeg = ((polDeg - localAxisDeg) % 180 + 180) % 180;
+        var passFrac = Math.cos(degToRad(deltaDeg)) * Math.cos(degToRad(deltaDeg));
+        // Vector length scales with intensity transmitted through polarizer
+        var len = 4 + passFrac * 7;
+        var dx = Math.cos(degToRad(localAxisDeg)) * len;
+        var dy = Math.sin(degToRad(localAxisDeg)) * len;
+        nodes.push(h('line', {
+          key: 'ef' + i,
+          x1: vx - dx, y1: vy - dy, x2: vx + dx, y2: vy + dy,
+          stroke: '#facc15', strokeWidth: 1.4, strokeLinecap: 'round',
+          opacity: 0.35 + passFrac * 0.55,
+          className: 'opticslab-efield-vec',
+          style: { animationDelay: (i * 0.07 - 0.7) + 's' }
+        }));
+      }
+      return nodes;
+    })();
+
+    var svg = h('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { width: '100%', height: 'auto', borderRadius: 8 }, role: 'img', 'aria-label': 'Polarized sky simulator. Sky regions 90 degrees from the sun are most strongly polarized; rotating a polarizer dims them when its axis is crossed. Animated E-field vectors show the polarization direction at each point on the peak-polarization band.' },
       tiles,
       // Ground
       h('rect', { x: 0, y: 140, width: W, height: H - 140, fill: '#3f6b35' }),
+      // E-field vector indicators on the peak-polarization band
+      efieldVectors,
       // Sun
       h('circle', { cx: sunX, cy: sunY, r: 16, fill: '#fef9c3' }),
       h('circle', { cx: sunX, cy: sunY, r: 22, fill: 'none', stroke: '#fef9c3', strokeWidth: 1, opacity: 0.5 }),
@@ -4754,13 +4792,107 @@
     // Sun position
     var sunX = 50 + 280 * Math.cos(degToRad(sunAlt));
     var sunY = H - 60 - 130 * Math.sin(degToRad(sunAlt));
+    // Observer position (just above the horizon, looking up at the sun)
+    var obsX = W / 2;
+    var obsY = H - 36;
+    // Build animated photon paths: each wavelength sends a photon from the
+    // sun toward the observer. Short wavelengths (high scatter %) end early
+    // at a random sky location → represents being scattered out.
+    // Long wavelengths (low scatter %) make it all the way to the observer
+    // → represents surviving the atmospheric path. The visual story is the
+    // entire Rayleigh effect made watchable.
+    var photonNodes = wavelengths.map(function(w, wi) {
+      var s = survival(w.nm);
+      // Photon "reaches the observer" probability tracks survival fraction.
+      // For each wavelength, we draw TWO behaviors over time:
+      //   (a) a survival photon that travels sun → observer
+      //   (b) a scattered photon that hits a sky deflection point
+      // Their visibilities depend on s: high s → mostly survival path;
+      // low s → mostly scatter to random sky points.
+      // Stagger emissions by wavelength index for a continuous "stream" feel.
+      var dxObs = obsX - sunX, dyObs = obsY - sunY;
+      var distObs = Math.sqrt(dxObs * dxObs + dyObs * dyObs);
+      // Deflection point — somewhere along the path, pushed sideways.
+      // Short wavelengths get deflected closer to the sun (early scatter);
+      // long wavelengths would too if they scattered, but most survive.
+      var deflectFrac = 0.25 + (1 - s) * 0.35; // closer to sun for high scatter
+      var sideways = (wi % 2 === 0 ? 1 : -1) * (40 + wi * 12);
+      var deflectX = sunX + dxObs * deflectFrac + sideways;
+      var deflectY = sunY + dyObs * deflectFrac + 8;
+      // Build paths
+      var survivalPath = 'M ' + sunX + ' ' + sunY + ' L ' + obsX + ' ' + obsY;
+      var scatterPath = 'M ' + sunX + ' ' + sunY + ' L ' + deflectX.toFixed(1) + ' ' + deflectY.toFixed(1);
+      // Time-tuned durations: light still travels at c — we use the survival
+      // path duration as the baseline so survivors all reach the observer
+      // at the same visual cadence (~2.4s).
+      var arr = [];
+      // Survival photon (only visible if survival > 0.1 — otherwise it
+      // never reaches the eye and would look weird)
+      if (s > 0.1) {
+        arr.push(h('circle', {
+          key: 'sup' + wi, r: 2.4 + s * 1.2, fill: w.color,
+          stroke: '#fff', strokeWidth: 0.3,
+          style: {
+            offsetPath: 'path("' + survivalPath + '")',
+            WebkitOffsetPath: 'path("' + survivalPath + '")',
+            filter: 'drop-shadow(0 0 4px ' + w.color + ')',
+            animationDuration: '2.4s',
+            animationDelay: (-wi * 0.35) + 's',
+            opacity: 0.6 + s * 0.4  // brighter for high-survival
+          },
+          className: 'opticslab-photon',
+          cx: 0, cy: 0
+        }));
+      }
+      // Scatter photon (only if scattering is significant)
+      var scatterRate = 1 - s;
+      if (scatterRate > 0.2) {
+        arr.push(h('circle', {
+          key: 'scp' + wi, r: 2.2,
+          fill: w.color, stroke: '#fff', strokeWidth: 0.2,
+          style: {
+            offsetPath: 'path("' + scatterPath + '")',
+            WebkitOffsetPath: 'path("' + scatterPath + '")',
+            filter: 'drop-shadow(0 0 3px ' + w.color + ')',
+            animationDuration: '1.8s',
+            animationDelay: (-wi * 0.28 + 0.4) + 's',
+            opacity: 0.55 * scatterRate
+          },
+          className: 'opticslab-photon',
+          cx: 0, cy: 0
+        }));
+        // Tiny pulse at the deflection point — "scattered HERE"
+        arr.push(h('circle', {
+          key: 'scd' + wi,
+          cx: deflectX, cy: deflectY, r: 1.2,
+          fill: 'none', stroke: w.color, strokeWidth: 0.8,
+          opacity: 0.7,
+          className: 'opticslab-wavefront',
+          style: {
+            animationDuration: '1.8s',
+            animationDelay: (-wi * 0.28 + 1.2) + 's',
+            transformOrigin: deflectX.toFixed(1) + 'px ' + deflectY.toFixed(1) + 'px'
+          }
+        }));
+      }
+      return arr;
+    }).reduce(function(a, b) { return a.concat(b); }, []);
+
     var svg = h('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { width: '100%', height: 'auto', borderRadius: 8 },
-      role: 'img', 'aria-label': 'Sunset Rayleigh scattering simulator. Sun altitude controls atmospheric path length and scattering of short wavelengths.' },
+      role: 'img', 'aria-label': 'Sunset Rayleigh scattering simulator. Sun altitude controls atmospheric path length and scattering of short wavelengths. Animated photons show short wavelengths scattering out (creating the blue sky) while long wavelengths survive to the observer (red sun).' },
       h('rect', { x: 0, y: 0, width: W, height: H - 30, fill: skyCol }),
       h('rect', { x: 0, y: H - 30, width: W, height: 30, fill: '#1e293b' }),
       // Sun (color reflects what survived the path)
       h('circle', { cx: sunX, cy: sunY, r: 20, fill: sunCol }),
       h('circle', { cx: sunX, cy: sunY, r: 26, fill: 'none', stroke: sunCol, strokeWidth: 1, opacity: 0.5 }),
+      // Animated photons (drawn between sun and observer)
+      photonNodes,
+      // Observer marker — small silhouette at horizon center
+      h('g', { 'aria-hidden': 'true' },
+        h('circle', { cx: obsX, cy: obsY - 6, r: 3.5, fill: '#1f2937' }),
+        h('rect', { x: obsX - 3, y: obsY - 4, width: 6, height: 9, fill: '#1f2937' }),
+        h('text', { x: obsX, y: H - 5, fill: '#cbd5e1', fontSize: 9, textAnchor: 'middle' }, 'observer')
+      ),
       // Path indicator
       h('text', { x: 12, y: 18, fill: '#0f172a', fontSize: 11, fontWeight: 700 }, 'Atmospheric path: ' + airmass.toFixed(1) + '× normal'),
       h('text', { x: 12, y: 32, fill: '#0f172a', fontSize: 10 }, 'Sun altitude: ' + sunAlt.toFixed(0) + '° above horizon')
