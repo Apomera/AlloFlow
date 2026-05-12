@@ -62,6 +62,14 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   // before the restore effect has run.
   const sessionLoadedRef = useRef(false);
   const [savedSessionMeta, setSavedSessionMeta] = useState(null);  // { savedAt } if restored from localStorage
+  // Phase 3 v2.4 (May 12 2026): named rubric presets ("Reading Response",
+  // "Math Word Problem", etc.). Stored in localStorage under
+  // 'alloflow_rubric_presets'. Each preset captures rubric + context +
+  // anchors so the teacher can re-apply a full calibration in one click.
+  const [rubricPresets, setRubricPresets] = useState({});
+  const [presetsMenuOpen, setPresetsMenuOpen] = useState(false);
+  const [presetNameInput, setPresetNameInput] = useState('');
+  const presetsLoadedRef = useRef(false);
   const gradebookEntries = React.useMemo(() => {
     try {
       const raw = JSON.parse(localStorage.getItem('alloflow_offline_grades') || '{}');
@@ -118,6 +126,69 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
       }
     } catch (e) { /* private mode / quota */ }
   }, [globalRubric, anchors]);
+
+  // Load saved presets once when the modal first opens.
+  React.useEffect(() => {
+    if (!isOpen || presetsLoadedRef.current) return;
+    presetsLoadedRef.current = true;
+    try {
+      const raw = localStorage.getItem('alloflow_rubric_presets');
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') setRubricPresets(parsed);
+    } catch (e) { /* ignore corrupt storage */ }
+  }, [isOpen]);
+
+  const writePresets = (next) => {
+    try {
+      localStorage.setItem('alloflow_rubric_presets', JSON.stringify(next));
+    } catch (e) { /* private mode / quota */ }
+    setRubricPresets(next);
+  };
+  const savePreset = () => {
+    const name = (presetNameInput || '').trim();
+    if (!name) {
+      addToast && addToast('Give the preset a short name (e.g. "Reading response Ch.3").', 'warn');
+      return;
+    }
+    if (!(globalRubric.rubric || '').trim() && anchors.length === 0) {
+      addToast && addToast('Nothing to save yet — add a rubric or anchors first.', 'warn');
+      return;
+    }
+    const key = name.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+    const now = new Date().toISOString();
+    const existing = rubricPresets[key];
+    const preset = {
+      name: name,
+      rubric: globalRubric.rubric || '',
+      context: globalRubric.context || '',
+      anchors: anchors.slice(),
+      createdAt: existing ? existing.createdAt : now,
+      lastUsed: now,
+    };
+    const next = { ...rubricPresets, [key]: preset };
+    writePresets(next);
+    setPresetNameInput('');
+    addToast && addToast(existing ? 'Updated preset "' + name + '".' : 'Saved preset "' + name + '".', 'success');
+  };
+  const loadPreset = (key) => {
+    const p = rubricPresets[key];
+    if (!p) return;
+    setGlobalRubric({ rubric: p.rubric || '', context: p.context || '' });
+    setAnchors(Array.isArray(p.anchors) ? p.anchors.slice() : []);
+    const next = { ...rubricPresets, [key]: { ...p, lastUsed: new Date().toISOString() } };
+    writePresets(next);
+    setPresetsMenuOpen(false);
+    addToast && addToast('Loaded preset "' + p.name + '" (' + (p.anchors ? p.anchors.length : 0) + ' anchor' + ((p.anchors && p.anchors.length === 1) ? '' : 's') + ').', 'success');
+  };
+  const deletePreset = (key) => {
+    if (!rubricPresets[key]) return;
+    const name = rubricPresets[key].name;
+    const next = { ...rubricPresets };
+    delete next[key];
+    writePresets(next);
+    addToast && addToast('Deleted preset "' + name + '".', 'info');
+  };
 
   const clearSavedSession = () => {
     try { localStorage.removeItem('alloflow_inbox_session'); } catch (e) {}
@@ -726,6 +797,66 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
             }),
             /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.78rem', color: '#475569' } },
               'This rubric is used by "Grade entire queue" and as the default for each per-submission Grade button. Per-submission rubrics still override the global one when set.'
+            ),
+            // Named preset library — save/load named rubric+anchor sets across sessions
+            /*#__PURE__*/React.createElement('div', { style: { marginTop: 12, paddingTop: 10, borderTop: '1px dashed #c7d2fe' } },
+              /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+                /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.78rem', fontWeight: 700, color: '#3730a3', marginRight: 4 } }, '📋 Presets:'),
+                /*#__PURE__*/React.createElement('input', {
+                  type: 'text',
+                  value: presetNameInput,
+                  onChange: e => setPresetNameInput(e.target.value),
+                  onKeyDown: e => { if (e.key === 'Enter') { e.preventDefault(); savePreset(); } },
+                  placeholder: 'Name this preset (e.g. "Reading response Ch.3")',
+                  style: { flex: 1, minWidth: 180, padding: '5px 10px', border: '1px solid #c7d2fe', borderRadius: 6, fontSize: '0.8rem' }
+                }),
+                /*#__PURE__*/React.createElement('button', {
+                  type: 'button', onClick: savePreset,
+                  disabled: !presetNameInput.trim() || (!globalRubric.rubric.trim() && anchors.length === 0),
+                  title: 'Save the current rubric + context + anchors as a named preset.',
+                  style: {
+                    padding: '5px 12px',
+                    background: (!presetNameInput.trim() || (!globalRubric.rubric.trim() && anchors.length === 0)) ? '#cbd5e1' : '#4f46e5',
+                    color: 'white', border: 'none', borderRadius: 6, fontWeight: 700, fontSize: '0.78rem',
+                    cursor: (!presetNameInput.trim() || (!globalRubric.rubric.trim() && anchors.length === 0)) ? 'not-allowed' : 'pointer'
+                  }
+                }, '💾 Save'),
+                Object.keys(rubricPresets).length > 0 && /*#__PURE__*/React.createElement('div', { style: { position: 'relative' } },
+                  /*#__PURE__*/React.createElement('button', {
+                    type: 'button', onClick: () => setPresetsMenuOpen(!presetsMenuOpen),
+                    title: 'Load a saved preset',
+                    style: { padding: '5px 12px', background: 'white', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer' }
+                  }, '📂 Load (' + Object.keys(rubricPresets).length + ') ' + (presetsMenuOpen ? '▴' : '▾')),
+                  presetsMenuOpen && /*#__PURE__*/React.createElement('div', { style: { position: 'absolute', top: 'calc(100% + 4px)', right: 0, background: 'white', border: '1px solid #c7d2fe', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', minWidth: 280, maxHeight: 320, overflowY: 'auto', zIndex: 5 } },
+                    Object.entries(rubricPresets)
+                      .sort(([, a], [, b]) => (b.lastUsed || '').localeCompare(a.lastUsed || ''))
+                      .map(([key, p]) => /*#__PURE__*/React.createElement('div', {
+                        key: key,
+                        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderBottom: '1px solid #f1f5f9', gap: 6 }
+                      },
+                        /*#__PURE__*/React.createElement('button', {
+                          type: 'button', onClick: () => loadPreset(key),
+                          style: { flex: 1, textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }
+                        },
+                          /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' } }, p.name),
+                          /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.72rem', color: '#94a3b8' } },
+                            (p.anchors ? p.anchors.length : 0) + ' anchor' + (p.anchors && p.anchors.length === 1 ? '' : 's'),
+                            ' · last used ',
+                            p.lastUsed ? new Date(p.lastUsed).toLocaleDateString() : '—'
+                          )
+                        ),
+                        /*#__PURE__*/React.createElement('button', {
+                          type: 'button', onClick: (e) => { e.stopPropagation(); if (confirm('Delete preset "' + p.name + '"?')) deletePreset(key); },
+                          title: 'Delete this preset',
+                          style: { padding: '2px 8px', background: 'transparent', color: '#94a3b8', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: '0.7rem', cursor: 'pointer' }
+                        }, '✗')
+                      ))
+                  )
+                )
+              ),
+              /*#__PURE__*/React.createElement('div', { style: { marginTop: 6, fontSize: '0.72rem', color: '#64748b' } },
+                'Presets save the rubric + context + every calibration anchor as a named set. Pick a name like "Reading response", "Math word problem", "Lab report" so you can load the right calibration when the same assignment comes back.'
+              )
             ),
             (savedSessionMeta || (globalRubric.rubric || '').trim() || anchors.length > 0) && /*#__PURE__*/React.createElement('div', { style: { marginTop: 10, paddingTop: 10, borderTop: '1px dashed #c7d2fe', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, fontSize: '0.78rem', color: '#3730a3' } },
               /*#__PURE__*/React.createElement('span', null,
