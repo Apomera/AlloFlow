@@ -20,6 +20,11 @@
         registerTool: function(id, config) {
           config.id = id;
           config.ready = config.ready !== false;
+          // Normalize legacy field-name aliases + defaults (see stem_lab_module.js for rationale)
+          if (!config.label) config.label = config.title || config.name || id;
+          if (!config.desc) config.desc = config.description || '';
+          if (!config.color) config.color = 'slate';
+          if (!config.category) config.category = 'general';
           this._registry[id] = config;
           if (this._order.indexOf(id) === -1) this._order.push(id);
           console.log('[SelHub] Registered tool: ' + id);
@@ -495,6 +500,7 @@
         { id: 'coping',      icon: '\uD83E\uDDE8', label: 'Coping Toolkit',      desc: 'Explore and practice coping strategies — breathing, grounding, movement, and more.', color: 'teal', recommendedRange: 'K-12' },
         { id: 'mindfulness', icon: '\uD83E\uDDD8', label: 'Mindfulness Corner',  desc: 'Guided breathing exercises, body scans, and mindfulness activities.', color: 'purple', recommendedRange: 'K-12' },
         { id: 'goals',       icon: '\uD83D\uDCCB', label: 'Goal Setter',         desc: 'Set SMART goals, track progress, and celebrate milestones.', color: 'indigo', recommendedRange: '3-12' },
+        { id: 'howlTracker', icon: '\uD83E\uDDED', label: 'HOWL Tracker',        desc: 'Habits of Work and Learning self-assessment for Crew time. Weekly check-ins, quarterly goals, trend chart, Crew conversation prompts. Aligned with EL Education\'s HOWL framework.', color: 'indigo', recommendedRange: '3-12' },
 
         // ── Social Awareness ──
         { id: '_cat_SocialAwareness', icon: '\uD83E\uDD1D', label: 'Social Awareness', desc: '', color: 'slate', category: true },
@@ -529,6 +535,7 @@
         { id: 'sociallab', icon: '\uD83C\uDFAD', label: 'Social Skills Lab', desc: 'Practice social scenarios and AI peer roleplay.', color: 'indigo', recommendedRange: 'K-12', _cat: 'relationship-skills' },
         { id: 'peersupport', icon: '\uD83E\uDD1D', label: 'Peer Support Coach', desc: 'Learn OARS listening skills and when to get adult help.', color: 'emerald', recommendedRange: '3-12', _cat: 'relationship-skills' },
         { id: 'conflicttheater', icon: '\uD83C\uDFAD', label: 'Conflict Theater', desc: 'Mediate a real conflict with two AI characters who have personalities, moods, and reasons of their own. Practice restorative principles in an immersive scene.', color: 'amber', recommendedRange: '5-12', _cat: 'relationship-skills' },
+        { id: 'digitalWellbeing', icon: '\uD83D\uDCF1', label: 'Digital Wellbeing Studio', desc: 'Self-check your relationship with social media and AI chatbots, build healthier phone habits, recover from cyberbullying, spot manipulation in the feed, navigate chatbot relationships safely, and find help when you need it.', color: 'cyan', recommendedRange: '5-12', _cat: 'self-management' },
       ];
       // Insert each dynamic tool after its category header
       var _catPositions = { 'self-awareness': '_cat_SelfAwareness', 'self-management': '_cat_SelfManagement', 'social-awareness': '_cat_SocialAwareness', 'relationship-skills': '_cat_RelationshipSkills', 'responsible-decision-making': '_cat_DecisionMaking' };
