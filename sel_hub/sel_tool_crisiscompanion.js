@@ -84,8 +84,11 @@ window.SelHub = window.SelHub || {
   function lsGet(key, fallback) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; } }
   function lsSet(key, val)      { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
 
-  // Theme palette — calming teal / emerald, NOT alarming reds for this tool
-  var TEAL        = '#0d9488';   // teal-600
+  // Theme palette — calming teal / emerald, NOT alarming reds for this tool.
+  // TEAL is teal-700 (not teal-600) so white-on-TEAL buttons hit 5.48:1
+  // for WCAG AA normal text. teal-600 only gave 3.80:1 — borderline-fail
+  // on the many ~13-15px bold buttons where "large text" 3:1 doesn't apply.
+  var TEAL        = '#0f766e';   // teal-700 — white-on-it = 5.48:1 ✓
   var TEAL_DARK   = '#115e59';   // teal-800
   var TEAL_LIGHT  = '#f0fdfa';   // teal-50
   var TEAL_BORDER = '#99f6e4';   // teal-200
@@ -1728,7 +1731,10 @@ window.SelHub = window.SelHub || {
       // ── Final view: wrap content with crisis bars + nav strip ──
       return h('div', { className: 'selh-crisiscompanion', style: { padding: '16px', maxWidth: '900px', margin: '0 auto', color: SLATE_TEXT, fontFamily: 'system-ui, -apple-system, sans-serif' } },
         navStrip(),
-        withCrisisBars(content || h('div', null, 'Loading…'))
+        withCrisisBars(h('div', null,
+          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('crisiscompanion', h, ctx) : null),
+          content || h('div', null, 'Loading…')
+        ))
       );
     }
   });
