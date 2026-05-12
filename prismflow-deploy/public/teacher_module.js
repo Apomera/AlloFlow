@@ -37,11 +37,6 @@
   var useState = React.useState;
   var useEffect = React.useEffect;
   var useRef = React.useRef;
-  // WCAG 2.4.3: Focus management — save/restore focus on modal open/close
-  var _alloFocusTrigger = null;
-  function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
-  function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
-
   var useCallback = React.useCallback;
   var useMemo = React.useMemo;
   var useContext = React.useContext;
@@ -109,8 +104,6 @@
 
   // ═══════════════════════════════════════════════════════════════
   // TEACHER COMPONENTS (JSX pre-transformed by esbuild)
-  // ═══════════════════════════════════════════════════════════════
-
 var _alloFocusTrigger = null;
 function alloSaveFocus() {
   _alloFocusTrigger = document.activeElement;
@@ -124,59 +117,7 @@ function alloRestoreFocus() {
     _alloFocusTrigger = null;
   }
 }
-var _alloFocusTrigger = null;
-function alloSaveFocus() {
-  _alloFocusTrigger = document.activeElement;
-}
-function alloRestoreFocus() {
-  if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === "function") {
-    try {
-      _alloFocusTrigger.focus();
-    } catch (e) {
-    }
-    _alloFocusTrigger = null;
-  }
-}
-var _alloFocusTrigger = null;
-function alloSaveFocus() {
-  _alloFocusTrigger = document.activeElement;
-}
-function alloRestoreFocus() {
-  if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === "function") {
-    try {
-      _alloFocusTrigger.focus();
-    } catch (e) {
-    }
-    _alloFocusTrigger = null;
-  }
-}
-var _alloFocusTrigger = null;
-function alloSaveFocus() {
-  _alloFocusTrigger = document.activeElement;
-}
-function alloRestoreFocus() {
-  if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === "function") {
-    try {
-      _alloFocusTrigger.focus();
-    } catch (e) {
-    }
-    _alloFocusTrigger = null;
-  }
-}
-var _alloFocusTrigger = null;
-function alloSaveFocus() {
-  _alloFocusTrigger = document.activeElement;
-}
-function alloRestoreFocus() {
-  if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === "function") {
-    try {
-      _alloFocusTrigger.focus();
-    } catch (e) {
-    }
-    _alloFocusTrigger = null;
-  }
-}
-const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, onApplyGroup, onSyncToSession, onBatchGenerate, activeSessionCode, t, isParentMode, isIndependentMode }) => {
+const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, onApplyGroup, onSyncToSession, onBatchGenerate, activeSessionCode, t, isParentMode, isIndependentMode, onOpenSubmissionInbox }) => {
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupColor, setNewGroupColor] = useState("#4F46E5");
   const [newStudentName, setNewStudentName] = useState("");
@@ -401,6 +342,16 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     },
     /* @__PURE__ */ React.createElement(Lock, { size: 14 }),
     rosterKey?.submissionKey?.publicJwk ? t("roster.submissions_active") || "Submissions On" : t("roster.setup_submissions") || "Set up offline submissions"
+  ), typeof onOpenSubmissionInbox === "function" && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: onOpenSubmissionInbox,
+      disabled: !rosterKey?.submissionKey?.publicJwk,
+      title: rosterKey?.submissionKey?.publicJwk ? "Open the submission inbox to decrypt and review student-submitted HTML files." : "Set up offline submissions first to use the inbox.",
+      className: "px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-100 transition-colors flex items-center gap-1.5 disabled:opacity-40"
+    },
+    "\u{1F4E5} ",
+    t("roster.import_submissions") || "Import submissions"
   ), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowBatchConfig(true), disabled: !rosterKey || Object.keys(rosterKey?.groups || {}).length === 0, className: "px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors flex items-center gap-1.5 disabled:opacity-40 border border-amber-200" }, /* @__PURE__ */ React.createElement(Layers, { size: 14 }), " ", t("roster.batch_generate") || "Differentiate by Group"), activeSessionCode && /* @__PURE__ */ React.createElement("button", { onClick: onSyncToSession, disabled: !rosterKey || groupIds.length === 0, className: "px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors flex items-center gap-1.5 disabled:opacity-40 ml-auto" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14 }), " ", t("roster.sync_session") || "Sync to Live Session"), /* @__PURE__ */ React.createElement("input", { ref: fileInputRef, type: "file", accept: ".json", onChange: handleImport, className: "hidden", "aria-label": t("roster.import") || "Import roster JSON" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("roster.class_name") || "Class Name", ":"), /* @__PURE__ */ React.createElement(
     "input",
     {
