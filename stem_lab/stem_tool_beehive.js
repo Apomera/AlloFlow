@@ -9342,21 +9342,116 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                           h('p', { className: 'text-[11px] mt-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, s.note))));
                   })));
             })(),
-            // Next Day + actions
-            viewMode === 'beekeeper' && colonySurvived && h('div', { className: 'space-y-2' },
-              h('div', { className: 'flex gap-2' },
-                h('button', { onClick: advanceDay, className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white ' + (dk ? 'bg-amber-600' : 'bg-amber-500') }, '⏩ Next Day'),
-                h('button', { onClick: function() { advanceDays(5); }, className: 'px-3 py-2.5 rounded-xl text-xs ' + (dk ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-700') }, '+5'),
-                h('button', { onClick: function() { advanceDays(30); }, className: 'px-3 py-2.5 rounded-xl text-xs ' + (dk ? 'bg-amber-900/30 text-amber-400' : 'bg-amber-50 text-amber-600') }, '+30')),
-              h('div', { className: 'grid grid-cols-4 gap-1.5' },
-                h('button', { onClick: function() { smokeHive(); }, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-stone-800/40 text-stone-300' : 'bg-stone-100 text-stone-700') }, '💨 Smoke'),
-                h('button', { onClick: function() { upd('showInspect', true); triggerBeekeeperAction('inspect', 'Opening the hive for an inspection.', '🔍'); }, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-indigo-900/30 text-indigo-300' : 'bg-indigo-50 text-indigo-700') }, '🔬 Inspect'),
-                h('button', { onClick: treatVarroa, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-red-900/30 text-red-300' : 'bg-red-50 text-red-700') }, '🧪 Treat'),
-                h('button', { onClick: addSuper, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-50 text-blue-700') }, '📦 Super'),
-                h('button', { onClick: harvestHoney, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-50 text-amber-700') }, '🍯 Harvest'),
-                h('button', { onClick: feedBees, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, '🥣 Feed'),
-                h('button', { onClick: requeenColony, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-purple-900/30 text-purple-300' : 'bg-purple-50 text-purple-700') }, '👑 Requeen'),
-                h('button', { onClick: function() { upd('showBadges', true); }, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-50 text-amber-700') }, '🏅 Badges')))
+            // Next Day + actions (with Today's Priority coach card)
+            viewMode === 'beekeeper' && colonySurvived && (function() {
+              // ── Today's Priority: pick the single most urgent management
+              // action for the current state and explain WHY. Drives both the
+              // coach card UI AND the pulsing-ring highlight on the matching
+              // action button below, so a new beekeeper isn't staring at 8
+              // unlabeled icons wondering what to click first.
+              var coach;
+              if (varroaLevel >= 25) {
+                coach = { id: 'treat', emoji: '🧪', urgency: 'high', title: 'Treat varroa now — load is critical',
+                  why: 'Mite load is ' + varroaLevel + '% (≥25% causes colony collapse). Click 🧪 Treat and pick an IPM treatment that fits the season.' };
+              } else if (queenHealth < 30) {
+                coach = { id: 'requeen', emoji: '👑', urgency: 'high', title: 'Requeen — the queen is failing',
+                  why: 'Queen health is ' + queenHealth + '%. Egg-laying stops below ~30% and the colony declines fast. Click 👑 Requeen to install a new queen.' };
+              } else if (season === 3 && honey < 30) {
+                coach = { id: 'feed', emoji: '🥣', urgency: 'high', title: 'Feed bees — winter starvation risk',
+                  why: 'Honey stores ' + honey + ' lbs (need 60+ lbs to survive winter). Click 🥣 Feed to supplement with 1:1 sugar syrup.' };
+              } else if (morale < 30) {
+                coach = { id: 'smoke', emoji: '💨', urgency: 'high', title: 'Colony is stressed',
+                  why: 'Morale ' + morale + '% — bees agitated. Smoke calms them by masking alarm pheromone. Click 💨 Smoke before any other inspection.' };
+              } else if (diseaseRisk > 45) {
+                coach = { id: 'inspect', emoji: '🔬', urgency: 'warn', title: 'Inspect — disease risk rising',
+                  why: 'Disease risk ' + diseaseRisk + '%. Click 🔬 Inspect to look for foulbrood, chalkbrood, or nosema patterns.' };
+              } else if (honey < 15 && season !== 3) {
+                coach = { id: 'feed', emoji: '🥣', urgency: 'warn', title: 'Feed bees — stores running low',
+                  why: 'Honey ' + honey + ' lbs. During a nectar dearth the colony will starve before foragers can refill. Click 🥣 Feed.' };
+              } else if (honey >= 40 && (season === 1 || season === 2)) {
+                coach = { id: 'harvest', emoji: '🍯', urgency: 'ready', title: 'Honey surplus is ready to harvest',
+                  why: 'Honey ' + honey + ' lbs (≥15 lbs reserved for the colony, ' + Math.round((honey - 15) * 10) / 10 + ' lbs harvestable). Click 🍯 Harvest.' };
+              } else if (season === 1 && honey > 35 && wax < 15) {
+                coach = { id: 'super', emoji: '📦', urgency: 'ready', title: 'Add a super — they need more room',
+                  why: 'Peak nectar flow + ' + honey + ' lbs already stored. Without more comb space they\'ll swarm. Click 📦 Super.' };
+              } else if (day === 0) {
+                coach = { id: 'inspect', emoji: '🔍', urgency: 'ok', title: 'Welcome — start with a hive inspection',
+                  why: 'Click 🔬 Inspect to explore the colony across 9 biology layers, or ⏩ Next Day to advance time. Stats update with each day.' };
+              } else {
+                // Seasonal tip when nothing's urgent
+                var seasonalTips = [
+                  { id: 'inspect', emoji: '🌱', urgency: 'ok', title: 'Spring buildup — colony is growing',
+                    why: 'Population is climbing toward summer peak. Click 🔬 Inspect to watch role distribution shift, or ⏩ Next Day.' },
+                  { id: 'inspect', emoji: '☀️', urgency: 'ok', title: 'Summer nectar flow — peak season',
+                    why: 'Honey is filling. Watch for varroa creep (peak reproduction now). Click 🔬 Inspect for the bloom calendar layer.' },
+                  { id: 'inspect', emoji: '🍂', urgency: 'ok', title: 'Autumn prep — pivot to winter readiness',
+                    why: 'Drone eviction begins. Treat any lingering varroa now (broodless window opening). Click 🔬 Inspect → Native Bees to compare strategies.' },
+                  { id: 'inspect', emoji: '❄️', urgency: 'ok', title: 'Winter cluster — bees thermoregulate',
+                    why: 'Workers form a ball, vibrate flight muscles, and rotate the queen-warming core. Click 🔬 Inspect → Thermoregulation to see it live.' }
+                ];
+                coach = seasonalTips[season] || seasonalTips[0];
+              }
+              // Card palette per urgency
+              var coachStyles = {
+                high:  { card: dk ? 'border-red-500/70 bg-red-900/40'      : 'border-red-400 bg-red-50',
+                         label: dk ? 'text-red-300'    : 'text-red-700',    title: dk ? 'text-red-100'    : 'text-red-900',
+                         why:   dk ? 'text-red-200'    : 'text-red-800',    ring: 'ring-red-400'   },
+                warn:  { card: dk ? 'border-amber-500/70 bg-amber-900/30'  : 'border-amber-400 bg-amber-50',
+                         label: dk ? 'text-amber-300'  : 'text-amber-700',  title: dk ? 'text-amber-100'  : 'text-amber-900',
+                         why:   dk ? 'text-amber-200'  : 'text-amber-800',  ring: 'ring-amber-400' },
+                ready: { card: dk ? 'border-emerald-500/70 bg-emerald-900/30' : 'border-emerald-400 bg-emerald-50',
+                         label: dk ? 'text-emerald-300': 'text-emerald-700',title: dk ? 'text-emerald-100': 'text-emerald-900',
+                         why:   dk ? 'text-emerald-200': 'text-emerald-800',ring: 'ring-emerald-400' },
+                ok:    { card: dk ? 'border-sky-700/60 bg-sky-900/20'      : 'border-sky-300 bg-sky-50',
+                         label: dk ? 'text-sky-300'    : 'text-sky-700',    title: dk ? 'text-sky-100'    : 'text-sky-900',
+                         why:   dk ? 'text-sky-200'    : 'text-sky-800',    ring: 'ring-sky-400'   }
+              };
+              var cs = coachStyles[coach.urgency];
+              // Per-button pulse: only when urgency >= warn (don't yell during ok/ready resting state)
+              var pulseBtn = (coach.urgency === 'high' || coach.urgency === 'warn') ? coach.id : null;
+              function urgentCls(btnId) {
+                return btnId === pulseBtn ? ' ring-2 ring-offset-1 animate-pulse ' + cs.ring : '';
+              }
+              return h('div', { className: 'space-y-2' },
+                // Today's Priority coach card
+                h('div', {
+                  className: 'rounded-xl border-2 p-3 ' + cs.card,
+                  role: 'status', 'aria-live': 'polite',
+                  'aria-label': 'Today\'s Priority: ' + coach.title
+                },
+                  h('div', { className: 'flex items-start gap-3' },
+                    h('span', { className: 'text-2xl flex-shrink-0', 'aria-hidden': 'true', style: { lineHeight: '1' } }, coach.emoji),
+                    h('div', { className: 'flex-1 min-w-0' },
+                      h('div', { className: 'text-[10px] font-bold uppercase tracking-wider ' + cs.label }, 'Today\'s Priority' + (coach.urgency === 'high' ? ' · URGENT' : coach.urgency === 'ready' ? ' · READY' : '')),
+                      h('div', { className: 'text-sm font-bold leading-snug ' + cs.title }, coach.title),
+                      h('p', { className: 'text-[11px] mt-1 leading-relaxed ' + cs.why }, coach.why)
+                    )
+                  )
+                ),
+                h('div', { className: 'flex gap-2' },
+                  h('button', { onClick: advanceDay, title: 'Simulate one day — colony state updates with consumption, foraging, mite growth, and seasonal effects.', className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white ' + (dk ? 'bg-amber-600' : 'bg-amber-500') }, '⏩ Next Day'),
+                  h('button', { onClick: function() { advanceDays(5); }, title: 'Fast-forward 5 days (skip the routine, jump to the next decision).', className: 'px-3 py-2.5 rounded-xl text-xs ' + (dk ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-700') }, '+5'),
+                  h('button', { onClick: function() { advanceDays(30); }, title: 'Fast-forward a month — useful in winter when nothing\'s happening above ground.', className: 'px-3 py-2.5 rounded-xl text-xs ' + (dk ? 'bg-amber-900/30 text-amber-400' : 'bg-amber-50 text-amber-600') }, '+30')),
+                h('div', { className: 'grid grid-cols-4 gap-1.5' },
+                  h('button', { onClick: function() { smokeHive(); }, title: 'Puff cool smoke at the entrance. Masks alarm pheromone and triggers bees to gorge on honey — calms them before any inspection.',
+                    className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-stone-800/40 text-stone-300' : 'bg-stone-100 text-stone-700') + urgentCls('smoke') }, '💨 Smoke'),
+                  h('button', { onClick: function() { upd('showInspect', true); triggerBeekeeperAction('inspect', 'Opening the hive for an inspection.', '🔍'); },
+                    title: 'Open the hive inspector — 9 biology layers (roles, lifecycle, waggle dance, thermoregulation, pheromones, anatomy, native bees, bloom calendar, honey chemistry).',
+                    className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-indigo-900/30 text-indigo-300' : 'bg-indigo-50 text-indigo-700') + urgentCls('inspect') }, '🔬 Inspect'),
+                  h('button', { onClick: treatVarroa, title: 'Choose an Integrated Pest Management (IPM) treatment — oxalic acid, formic, thymol, sugar dust, or drone brood removal. Each has season-specific efficacy.',
+                    className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-red-900/30 text-red-300' : 'bg-red-50 text-red-700') + urgentCls('treat') }, '🧪 Treat'),
+                  h('button', { onClick: addSuper, title: 'Add a honey super (extra box) on top. Gives bees comb-building room and prevents swarming in peak nectar flow.',
+                    className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-50 text-blue-700') + urgentCls('super') }, '📦 Super'),
+                  h('button', { onClick: harvestHoney, title: 'Extract honey — only the surplus above the 15-lb reserve. Identifies the varietal (which flowers dominated this batch).',
+                    className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-50 text-amber-700') + urgentCls('harvest') }, '🍯 Harvest'),
+                  h('button', { onClick: feedBees, title: 'Supplement with 1:1 sugar syrup (spring) or 2:1 (autumn/winter). Use when honey stores drop below ~15 lbs or nectar dearth hits.',
+                    className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') + urgentCls('feed') }, '🥣 Feed'),
+                  h('button', { onClick: requeenColony, title: 'Install a new queen. Used when the old queen\'s laying drops, when temperament needs fixing, or after a swarm.',
+                    className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-purple-900/30 text-purple-300' : 'bg-purple-50 text-purple-700') + urgentCls('requeen') }, '👑 Requeen'),
+                  h('button', { onClick: function() { upd('showBadges', true); }, title: 'View your beekeeping badges. Each one rewards a real-world skill (Mite Manager, Honey Master, Winter Survivor, etc.).',
+                    className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-50 text-amber-700') }, '🏅 Badges'))
+              );
+            })()
           );
           console.log('[Beehive ORIGINAL] return succeeded, committing full tree');
           return _origRetval;
