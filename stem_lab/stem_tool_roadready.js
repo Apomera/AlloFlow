@@ -4144,6 +4144,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       // ── Start / stop driving ──
       var startDriving = useCallback(function(scenarioId, vehicleId) {
+        // Read d fresh from ctx.toolData inside the callback. useCallback with
+        // empty deps freezes the closure at first render, so the outer-scope
+        // `d` would be the first-render value forever. Callers like the Free
+        // Explore "Start Exploring" button do `updMulti({freeExplore: true});
+        // startDriving(...)` — without a fresh read here, the Free Explore
+        // branch below (lines ~4201) would see d.freeExplore = false and skip
+        // initialising the procedural world. (A safety-net at ~6120 catches
+        // that case, but the intro message / weather sys / scenario-override
+        // application would still be skipped.)
+        var d = (ctx.toolData && ctx.toolData['roadReady']) || {};
         // Shallow-clone so the Free Explore override block below (and any
         // other runtime mutations) don't leak into the SCENARIOS master
         // array. Previously `scn.time = fes.time` would mutate the source
@@ -10568,6 +10578,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           });
           } // ── end of scenario-mode road infrastructure block ──
 
+          // signalObjs is referenced from the per-frame loop and the scene
+          // return object — declare it outside the Free-Explore gate so the
+          // empty-array case still works.
+          var signalObjs = [];
+
+          // ── Scenario-mode world props (skip in Free Explore) ──
+          // Static buildings, trees, hedges, and scenario traffic-light/stop-sign
+          // poles all key off the fixed scenario `map` array and `signalsRef`,
+          // which are scenario-grid-aligned. Free Explore builds its own
+          // buildings, trees, intersections, and traffic lights per-chunk along
+          // the procedural spline, so running this block ALSO produces a phantom
+          // grid of scenario buildings + hedges + stop poles materializing on
+          // top of the curved infinite-world road.
+          if (!isFreeExploreInit) {
           // ── Buildings from map (with rooftops + driveways) ──
           var buildingMeshes = [];
           var buildColors = [0xb08c64, 0xa09078, 0x8c7a62, 0x9e8878, 0xc0a888];
@@ -10740,7 +10764,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // ── Traffic light + stop sign meshes ──
           // Traffic lights are overhead-mounted on arms extending from roadside poles (US style)
-          var signalObjs = [];
+          // (signalObjs is hoisted above the Free-Explore gate.)
           var sigPoleMat = new T.MeshLambertMaterial({ color: 0x555555 });
           signalsRef.current.forEach(function(s) {
             var sx = s.x - MAP_SIZE / 2;
@@ -10825,6 +10849,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               signalObjs.push({ ref: s, lamps: lamps, type: 'light' });
             }
           });
+          } // ── end of scenario-mode world props (buildings/trees/hedges/poles) ──
 
           // ── Dynamic object groups (updated each frame) ──
           var trafficGroup = new T.Group(); scene.add(trafficGroup);
@@ -14868,6 +14893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var grPostMat = new T.MeshLambertMaterial({ color: 0x4a4a52 });
                 var crackMat = new T.MeshBasicMaterial({ color: 0x16181c, transparent: true, opacity: 0.55 });
                 for (var grZ = chunkWorldZ + 2; grZ < chunkWorldZ + CHUNK_SIZE - 2; grZ += 2) {
+                  if (chunk.hasIntersection && Math.abs((grZ - chunkWorldZ) - chunk.intersectionY) < 3.5) continue;
                   var grHd = iw.spline.headingAt(grZ - chunkWorldZ + chunkBY);
                   if (Math.abs(grHd) < 0.18) continue;
                   var grSide = grHd > 0 ? 1 : -1;
@@ -14903,6 +14929,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
                 // Mile markers — small reflective post every ~16 cells, alternating sides
                 for (var mmZ = chunkWorldZ + 4; mmZ < chunkWorldZ + CHUNK_SIZE - 4; mmZ += 16) {
+                  if (chunk.hasIntersection && Math.abs((mmZ - chunkWorldZ) - chunk.intersectionY) < 3.5) continue;
                   var mmCx = lookupCenterAtZ(mmZ);
                   var mmHy = lookupHeightAtZ(mmZ);
                   var mmSide = ((Math.floor(mmZ) >> 4) & 1) ? 1 : -1;
@@ -14986,6 +15013,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var isNightSL = scn.time === 'night' || scn.id === 'night';
                   var slPoleMat = new T.MeshLambertMaterial({ color: 0x2a2e34 });
                   for (var slZ = chunkWorldZ + 6; slZ < chunkWorldZ + CHUNK_SIZE - 6; slZ += 10) {
+                    if (chunk.hasIntersection && Math.abs((slZ - chunkWorldZ) - chunk.intersectionY) < 4) continue;
                     var slSide = ((Math.floor(slZ) / 10) & 1) ? 1 : -1;
                     var slCx = lookupCenterAtZ(slZ);
                     var slHy = lookupHeightAtZ(slZ);
@@ -15021,6 +15049,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var upSpacing = 12;
                   var upStarts = [];
                   for (var upZ = chunkWorldZ + 3; upZ < chunkWorldZ + CHUNK_SIZE - 3; upZ += upSpacing) {
+                    if (chunk.hasIntersection && Math.abs((upZ - chunkWorldZ) - chunk.intersectionY) < 4) continue;
                     var upSide = 1; // always on same side for a clean wire line
                     var upCx = lookupCenterAtZ(upZ);
                     var upHy = lookupHeightAtZ(upZ);
@@ -15193,6 +15222,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var fnStart = chunkWorldZ + 2;
                   var fnEnd = chunkWorldZ + CHUNK_SIZE / 2 + furnRng() * (CHUNK_SIZE / 2 - 4);
                   for (var fnZ = fnStart; fnZ < fnEnd; fnZ += 1.4) {
+                    if (chunk.hasIntersection && Math.abs((fnZ - chunkWorldZ) - chunk.intersectionY) < 3.5) continue;
                     var fnCx = lookupCenterAtZ(fnZ);
                     var fnHy = lookupHeightAtZ(fnZ);
                     var fnPost = new T.Mesh(new T.BoxGeometry(0.06, 0.6, 0.06), fnMat);
@@ -17298,7 +17328,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (ki < unloadLo || ki > unloadHi) {
                 var cg = s3._loadedChunks[ki];
                 if (cg) {
-                  cg.traverse(function(obj) { if (obj.geometry) obj.geometry.dispose(); if (obj.material) obj.material.dispose(); });
+                  // Dispose .map (CanvasTexture / Texture) BEFORE the material so
+                  // we don't leak the GPU-side texture handle. The chunk builder
+                  // attaches 15+ canvas-textured signs per chunk (speed limit,
+                  // mile markers, shop signs, etc.) — without disposing .map
+                  // each, long Free Explore drives accumulate VRAM until the
+                  // browser tab gets killed.
+                  cg.traverse(function(obj) {
+                    if (obj.geometry) obj.geometry.dispose();
+                    if (obj.material) {
+                      var mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+                      mats.forEach(function(m) {
+                        if (m.map && typeof m.map.dispose === 'function') m.map.dispose();
+                        if (typeof m.dispose === 'function') m.dispose();
+                      });
+                    }
+                  });
                   s3.scene.remove(cg);
                 }
                 delete s3._loadedChunks[ki];
