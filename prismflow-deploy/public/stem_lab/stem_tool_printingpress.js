@@ -557,7 +557,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         broadside:       [{ id: 'setType', hook: 'Want to know how every word on a real broadside was set? Try it.' },
                           { id: 'beforeAfter', hook: 'See real broadsides from history — Common Sense, ballads, notices.' }],
         sameFears:       [{ id: 'beforeAfter', hook: 'See the real-world events the critics feared — Reformation, religious wars, scientific revolution.' },
-                          { id: 'economics', hook: 'The economics of mass print — the same cost-collapse argument we now have about AI.' }]
+                          { id: 'economics', hook: 'The economics of mass print — the same cost-collapse argument we now have about AI.' }],
+        dayInShop:       [{ id: 'people', hook: 'Meet the actual people who made these decisions — Gutenberg, Fust, Schöffer, Guillard.' },
+                          { id: 'economics', hook: 'See the financial math behind the decisions you just made.' }]
       };
       function crossLinkFooter(currentModId) {
         var links = CROSS_LINKS[currentModId];
@@ -659,8 +661,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           desc: 'Compose a single-page printable: a poem, a manifesto, an announcement. Choose your type, set your layout, print as PDF.', ready: true },
         { id: 'sameFears', icon: '🪶', label: 'The Same Fears', section: 'modules',
           desc: 'Every new information technology arrives with the same warnings. The 1450 print critics and the 2026 internet/AI critics often share an argument. Some critics were right. Some were wrong. The grown-up question is: how do you tell which is which in your own time?', ready: true },
+        { id: 'dayInShop', icon: '⚒️', label: 'A Day in the Shop', section: 'modules',
+          desc: 'It is 1455 in a Mainz print shop. Choose a role — apprentice, compositor, pressman, or master printer — and walk through four decisions across a working day. Your choices shape who you become. Pure role-play history.', ready: true },
         { id: 'cumulative', icon: '🎯', label: 'Cumulative Quiz', section: 'practice',
-          desc: '13 questions across all 9 modules. Missed answers link you back to the module you need to review.', ready: true },
+          desc: '15 questions across all 10 modules. Missed answers link you back to the module you need to review.', ready: true },
         { id: 'askPrinter', icon: '🤖', label: 'Ask the Printer (AI)', section: 'practice',
           desc: 'Ask any printing-press question; the AI returns a sourced answer. Educational only.', ready: true },
         { id: 'resources', icon: '📚', label: 'Resources', section: 'resources',
@@ -688,12 +692,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         typographyToday: 'Typography Today',
         people: 'The People Behind the Press',
         broadside: 'Build a Broadside',
-        sameFears: 'The Same Fears'
+        sameFears: 'The Same Fears',
+        dayInShop: 'A Day in the Shop'
       };
 
       function renderMenu() {
         var visitedCount = Object.keys(modulesVisited).length;
-        var totalModules = 9;
+        var totalModules = 10;
         // Tile counter for staggered entrance: each successive tile gets a
         // ~50ms incremental delay so they cascade in instead of all at once.
         // Reset per render so the cascade plays again if the user navigates
@@ -880,6 +885,92 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               })
             )
           ),
+
+          // ── Teacher Quick-Start card ──
+          // Collapsible so it does not crowd the student menu. Plain-language
+          // sequencing by class-period length so a teacher can preview the
+          // tool and map it onto their schedule in 30 seconds. Maine state
+          // standards + CCSS-ELA anchors below.
+          h('details', { style: { marginTop: 18, background: T.cardAlt, border: '1px solid ' + T.accent, borderRadius: 10, padding: '10px 14px' } },
+            h('summary', { style: { cursor: 'pointer', fontSize: 13, color: T.accentHi, fontWeight: 700, fontFamily: 'Georgia, serif' } },
+              '🎓 Teacher quick-start (click to expand)'),
+            h('div', { style: { marginTop: 12 } },
+              h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.6 } },
+                'Three pre-built sequences depending on how much class time you have. None require setup; everything in PrintingPress runs in the browser.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 } },
+                [
+                  { time: '20 minutes', label: 'Crew warm-up', tone: T.accent,
+                    plan: 'Open Press Mechanism. Run the Guided Tour. Pull the bar. End at the "What you just did" recap. Close with one Crew question: which century are we still living off?' },
+                  { time: '50 minutes', label: 'Single class period', tone: T.warn,
+                    plan: 'Press Mechanism (10m) → Set Your Own Type with the composing stick + proofreader (15m) → Build a Broadside; students compose and print one (20m) → 5-minute share-out.' },
+                  { time: '1-2 weeks', label: 'Full unit', tone: T.ok,
+                    plan: 'One module per day. End with the cumulative quiz and Ask the Printer. Have each student produce a finished broadside as the unit artifact. Use The Same Fears as the Crew anchor for the final discussion.' }
+                ].map(function(seq, i) {
+                  return h('div', { key: i, style: { background: T.card, border: '1px solid ' + T.border, borderLeft: '3px solid ' + seq.tone, borderRadius: 6, padding: 10 } },
+                    h('div', { style: { fontSize: 10, color: seq.tone, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: 4, fontFamily: 'Georgia, serif' } }, seq.time),
+                    h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, marginBottom: 6, fontFamily: 'Georgia, serif' } }, seq.label),
+                    h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.55 } }, seq.plan)
+                  );
+                })
+              ),
+              h('div', { style: { background: T.card, border: '1px dashed ' + T.accent, borderRadius: 8, padding: 12 } },
+                h('div', { style: { fontSize: 11, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 8, fontFamily: 'Georgia, serif' } }, 'Standards anchors'),
+                h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: T.muted, lineHeight: 1.6 } },
+                  h('li', null, h('strong', { style: { color: T.text } }, 'CCSS-ELA RH.6-8.2:'), ' Determine the central ideas of a primary source (use the Reformation theses + Falmouth Gazette as period sources).'),
+                  h('li', null, h('strong', { style: { color: T.text } }, 'CCSS-ELA RH.6-8.9:'), ' Analyze the relationship between a primary source and the secondary account (compare 1450 critic quotes to modern echoes in The Same Fears).'),
+                  h('li', null, h('strong', { style: { color: T.text } }, 'Maine Social Studies SS.M.4:'), ' Trace the development of a Maine institution; Falmouth Gazette (1785) traces to the modern Portland Press Herald, a 240-year chain.'),
+                  h('li', null, h('strong', { style: { color: T.text } }, 'NGSS MS-ETS1-2:'), ' Evaluate competing design solutions using systematic criteria (alloy designer in Casting Type).'),
+                  h('li', null, h('strong', { style: { color: T.text } }, 'CCSS-Math 7.RP, 8.F:'), ' Proportional reasoning and functions (pamphlet reach calculator + mechanical-advantage screw math).')
+                )
+              ),
+              // Subject-mapping mini-grid: which modules touch which school
+              // subject. Lets a teacher slot the tool into whatever subject
+              // window they have. Each subject lists 2-4 module IDs.
+              h('div', { style: { background: T.card, border: '1px dashed ' + T.warn, borderRadius: 8, padding: 12, marginTop: 10 } },
+                h('div', { style: { fontSize: 11, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 8, fontFamily: 'Georgia, serif' } }, 'Map to your subject'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8 } },
+                  [
+                    { subj: 'Physics', icon: '⚙️',
+                      mods: 'Press Mechanism, Casting Type',
+                      hook: 'Screw mechanical advantage, alloy materials science, screw-as-inclined-plane.' },
+                    { subj: 'English Language Arts', icon: '✍️',
+                      mods: 'Set Your Own Type, Typography Today, Build a Broadside',
+                      hook: 'Primary-source reading (Reformation theses, Common Sense, Falmouth Gazette), proofreader\'s eye, period vocabulary.' },
+                    { subj: 'Social Studies / History', icon: '🏛️',
+                      mods: 'Before & After, The People, The Same Fears',
+                      hook: 'Reformation spread map, Maine timeline, 1450 ↔ 2026 cross-era media parallels.' },
+                    { subj: 'Mathematics', icon: '🧮',
+                      mods: 'Print Run Economics, Press Mechanism',
+                      hook: 'Proportional reasoning, exponential reach modeling, mechanical-advantage formula, log-scale comparisons.' },
+                    { subj: 'Art / Design', icon: '🎨',
+                      mods: 'Typography Today, Build a Broadside',
+                      hook: 'Typeface anatomy, fleurons, drop caps, layout grid, signature design.' },
+                    { subj: 'Career & Technical Ed', icon: '🔧',
+                      mods: 'A Day in the Shop, Casting Type',
+                      hook: 'Skilled-trade pathways, modern echoes (CNC, industrial press, additive manufacturing), apprenticeship as a model.' },
+                    { subj: 'Crew / Advisory', icon: '🌱',
+                      mods: 'The Same Fears, Before & After',
+                      hook: 'Discussion-driven, no single-right-answer questions on tech, change, and what gets preserved.' },
+                    { subj: 'Local / Maine', icon: '🌲',
+                      mods: 'People, Build a Broadside, Before & After',
+                      hook: 'Falmouth Gazette (1785), Wait & Titcomb, 1820 statehood peg, 240-year newspaper chain.' }
+                  ].map(function(s, i) {
+                    return h('div', { key: i, style: { background: T.cardAlt, borderLeft: '3px solid ' + T.accent, borderRadius: 4, padding: 8 } },
+                      h('div', { style: { display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 } },
+                        h('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, s.icon),
+                        h('strong', { style: { fontSize: 12, color: T.accentHi, fontFamily: 'Georgia, serif' } }, s.subj)
+                      ),
+                      h('div', { style: { fontSize: 10, color: T.warn, fontStyle: 'italic', marginBottom: 4 } }, s.mods),
+                      h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } }, s.hook)
+                    );
+                  })
+                )
+              ),
+              h('p', { style: { margin: '12px 0 0', fontSize: 10, color: T.dim, fontStyle: 'italic', lineHeight: 1.5 } },
+                'Built by a Portland school psychologist for King Middle, EL Education aligned. Every module has a Teacher Notes block at the bottom with discussion prompts and "what students often ask." No student data is collected; everything runs locally in the browser.')
+            )
+          ),
+
           disclaimerFooter()
         );
       }
@@ -1570,6 +1661,108 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             explain: 'Patchy impression almost always means uneven platen pressure. Master printers obsessed over platen flatness. A modern letterpress shop uses "makeready" — small paper shims under the type to bring the impression even.'
           }),
 
+          // ── Inkmaking recipe card ──
+          // Closes the materials triad: type (alloy in castingType), paper
+          // (people / Maine sidebar), and now ink. Gutenberg's oil-based
+          // ink is the third quiet invention that made the system work.
+          // ── Shop hazards card ──
+          // The press is the romance; the shop was an industrial workplace
+          // with documented hazards. Names labor history without melodrama.
+          sectionHeader('⚠️', 'The other side: shop hazards'),
+          h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+            'A print shop was a workshop. Workshops have hazards. The romance of the press has tended to obscure the labor reality, but the historical record is clear: every role had specific occupational risks that printers wrote about, joked about, and sometimes died from.'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.danger, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+              [
+                { hazard: 'Lead exposure',
+                  who: 'Compositor + caster + pressman',
+                  detail: 'Type alloy is mostly lead. Compositors picked up sorts thousands of times a day; casters worked over molten metal. Chronic low-dose lead exposure produced the "printer\'s palsy" that 19th-century occupational physicians documented. Modern letterpress shops use polymer plates or photopolymer instead.' },
+                { hazard: 'Linseed-oil fire',
+                  who: 'Anyone making ink',
+                  detail: 'Boiling linseed oil to make varnish was the most dangerous step. Hot oil can ignite; once burning, it is hard to extinguish. Shops cooked ink outdoors when possible. Several documented 1500s shop fires started this way.' },
+                { hazard: 'Repetitive strain',
+                  who: 'Pressman (mainly)',
+                  detail: 'Pulling the bar 250 times a day, every working day, year after year, wore out shoulders and elbows. By age 50 many pressmen had lost the strength for full-day work. The Linotype operator inherited the same kind of injury in a different shape (keyboard) 400 years later.' },
+                { hazard: 'Eye strain',
+                  who: 'Compositor + corrector',
+                  detail: 'Reading mirror-reversed type by candle or oil-lamp light, for 10+ hour days, ruined eyes. Reading glasses became common among compositors a century before they were common in the general population.' },
+                { hazard: 'Chemical exposure',
+                  who: 'Inker + apprentice',
+                  detail: 'Cleaning solvents (turpentine, lye solutions) for cleaning type and inking balls produced respiratory and skin issues. Apprentices got the worst of this because cleaning was usually their job.' },
+                { hazard: 'Heavy lifting',
+                  who: 'Apprentice (mainly)',
+                  detail: 'Paper bales, lead pigs (raw type metal), finished books, locked formes all weighed substantial amounts. Back injuries were common. The apprentice carried everything.' }
+              ].map(function(z, i) {
+                return h('div', { key: i, style: { background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '3px solid ' + T.danger, borderRadius: 6, padding: 10 } },
+                  h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif', marginBottom: 3 } }, z.hazard),
+                  h('div', { style: { fontSize: 10, color: T.warn, fontStyle: 'italic', marginBottom: 6 } }, z.who),
+                  h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.55 } }, z.detail)
+                );
+              })
+            ),
+            h('p', { style: { margin: '12px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'Modern occupational-safety scholarship credits printers as one of the first trades to systematically document workplace hazards. The 19th-century reformers who pushed for child-labor laws, ventilation standards, and shop inspections often started by looking at print shops because the hazards were so visible.')
+          ),
+
+          sectionHeader('🖋️', 'Inkmaking, the third quiet invention'),
+          h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+            'Manuscript ink was water-based and beaded off metal type. Gutenberg adapted oil-painting varnish into a printer’s ink that clung to the type face, transferred cleanly to paper, and dried without bleeding. The recipe is short. Getting it right took years.'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 12, marginBottom: 14 } },
+              [
+                { name: 'Lampblack', role: 'Pigment', pct: 30, color: '#0a0805',
+                  note: 'Soot scraped from the inside of an oil lamp. Almost pure carbon. The black you see on a 1455 Bible page is lampblack.' },
+                { name: 'Linseed oil (boiled to varnish)', role: 'Vehicle', pct: 55, color: '#a87a3a',
+                  note: 'Linseed boiled slowly for hours becomes a sticky varnish. This is the breakthrough. It holds the pigment, clings to metal, and oxidizes to dry on paper instead of soaking through.' },
+                { name: 'Walnut oil / rosin / a touch of turpentine', role: 'Modifier', pct: 15, color: '#3a2a1a',
+                  note: 'Tunes the drying rate and consistency for the season. Hot summer ink is mixed differently from cold winter ink. This is artisan judgment, not a fixed formula.' }
+              ].map(function(ing, i) {
+                return h('div', { key: i, style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 8, padding: 12 } },
+                  // Mini-vessel SVG: a stylized apothecary jar with the ingredient color
+                  h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 8 } },
+                    h('svg', { viewBox: '0 0 60 80', width: 50, height: 66, 'aria-hidden': 'true' },
+                      // Jar body
+                      h('rect', { x: 12, y: 20, width: 36, height: 52, rx: 4, fill: T.parchment, stroke: T.wood, strokeWidth: 1.5 }),
+                      // Jar neck
+                      h('rect', { x: 18, y: 10, width: 24, height: 12, fill: T.parchment, stroke: T.wood, strokeWidth: 1.5 }),
+                      // Cork
+                      h('rect', { x: 20, y: 4, width: 20, height: 8, fill: T.wood, stroke: '#3d2810', strokeWidth: 1 }),
+                      // Contents fill (height proportional to pct)
+                      h('rect', { x: 14, y: 72 - (52 * ing.pct / 100), width: 32, height: 52 * ing.pct / 100, fill: ing.color, opacity: 0.92 }),
+                      // Label
+                      h('rect', { x: 14, y: 38, width: 32, height: 12, fill: T.parchment, stroke: T.wood, strokeWidth: 0.6, opacity: 0.85 }),
+                      h('text', { x: 30, y: 47, textAnchor: 'middle', fontFamily: 'Georgia, serif', fontSize: 6, fontWeight: 700, fill: T.ink }, ing.pct + '%')
+                    )
+                  ),
+                  h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif', marginBottom: 2, textAlign: 'center' } }, ing.name),
+                  h('div', { style: { fontSize: 10, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: 'center', fontWeight: 700, marginBottom: 8 } }, ing.role + ' · ~' + ing.pct + '%'),
+                  h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5 } }, ing.note)
+                );
+              })
+            ),
+            // Three-step process strip
+            h('div', { style: { background: T.cardAlt, border: '1px dashed ' + T.accent, borderRadius: 8, padding: 12 } },
+              h('div', { style: { fontSize: 11, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 8, textAlign: 'center', fontFamily: 'Georgia, serif' } }, 'The process'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 } },
+                [
+                  { n: 1, t: 'Boil the linseed oil', d: 'Slow heat for 4-6 hours until it thickens into varnish. The dangerous step. Hot linseed oil can ignite, so 1450 shops cooked it outdoors.' },
+                  { n: 2, t: 'Grind the lampblack in', d: 'Add pigment to warm varnish on a marble slab. Grind with a muller for hours until smooth, like a chef working a slow emulsion.' },
+                  { n: 3, t: 'Adjust for the day', d: 'Add modifier (walnut oil, rosin) to tune drying time to weather. Test on a proof. Adjust again. This is where masters earned their pay.' }
+                ].map(function(st, i) {
+                  return h('div', { key: i, style: { background: T.bg, border: '1px solid ' + T.border, borderRadius: 6, padding: 10 } },
+                    h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 4 } },
+                      h('div', { style: { background: T.accent, color: T.ink, width: 20, height: 20, borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, fontFamily: 'Georgia, serif' } }, st.n),
+                      h('div', { style: { fontSize: 12, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif' } }, st.t)
+                    ),
+                    h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } }, st.d)
+                  );
+                })
+              )
+            ),
+            h('p', { style: { margin: '12px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.5 } },
+              'A 1450 print shop kept its ink recipe close. Some shops were known for blacker blacks; others for faster drying. The recipe survived in apprentice notebooks, not published manuals. Most modern letterpress ink is still oil-based, with synthetic pigments swapped in for lampblack.')
+          ),
+
           sectionHeader('🧠', 'Mini-quiz'),
           miniQuizBlock('pressMechanism', [
             { q: 'The screw press is which type of simple machine?', opts: ['Lever', 'Pulley', 'Inclined plane (the screw is a wrapped inclined plane)', 'Wheel and axle'], ans: 2, explain: 'A screw is mathematically an inclined plane wrapped around a cylinder. The pitch of the thread is the rise of the inclined plane.' },
@@ -1637,6 +1830,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         var solved = st.slots.join('') === PHRASE;
         // Display helper: render the ligature placeholder as "fi"
         function displayChar(c) { return c === '' ? 'fi' : c; }
+        // Decode-mirror-text exercise state. Students see a mirror-reversed
+        // word and type what it would say after pressing. Tests the
+        // compositor skill: reading mirror-reversed at speed.
+        var decodeIdxRaw = useState(0);
+        var decodeIdx = decodeIdxRaw[0], setDecodeIdx = decodeIdxRaw[1];
+        var decodeAnswerRaw = useState('');
+        var decodeAnswer = decodeAnswerRaw[0], setDecodeAnswer = decodeAnswerRaw[1];
+        var decodeFeedbackRaw = useState(null);
+        var decodeFeedback = decodeFeedbackRaw[0], setDecodeFeedback = decodeFeedbackRaw[1];
+        var DECODE_WORDS = ['VERITAS', 'PRINT', 'TYPE', 'BIBLE', 'FREEDOM'];
+        // Proofreader's Eye exercise state. A corrector in a 1450 shop
+        // pulled a 'proof' print, scanned it against the manuscript, and
+        // flagged errors with margin marks. Students do that here: a
+        // printed-style line with one error, click the wrong word.
+        var proofIdxRaw = useState(0);
+        var proofIdx = proofIdxRaw[0], setProofIdx = proofIdxRaw[1];
+        var proofGuessRaw = useState(null);
+        var proofGuess = proofGuessRaw[0], setProofGuess = proofGuessRaw[1];
+        var proofRevealedRaw = useState(false);
+        var proofRevealed = proofRevealedRaw[0], setProofRevealed = proofRevealedRaw[1];
+        // Each round: tokens (words) of the printed line, errorIdx points
+        // to the wrong token. Explanation describes the mark a 1450
+        // corrector would have written in the margin.
+        var PROOF_LINES = [
+          {
+            tokens: ['IN', 'PRINT,', 'IDEAS', 'LIVE', 'FORVER.'],
+            errorIdx: 4,
+            corrected: 'FOREVER.',
+            mark: 'caret (\u2227) + missing letter in margin',
+            explanation: 'A letter is missing. The compositor dropped the second E in FOREVER. A 1450 corrector would mark a caret (\u2227) where the letter goes and write "e" in the margin.'
+          },
+          {
+            tokens: ['TEH', 'PRESS', 'GIVES', 'VOICE', 'TO', 'ALL.'],
+            errorIdx: 0,
+            corrected: 'THE',
+            mark: 'transposition mark (\u223F)',
+            explanation: 'Letters out of order. THE became TEH because the compositor reached for sorts in the wrong order. The mark is a tilde-like swoop over the swapped letters, sometimes called a transposition mark.'
+          },
+          {
+            tokens: ['BOOKS', 'ARE', 'CHEAP', 'BECAUSE', 'OF', 'TYPE', 'TYPE.'],
+            errorIdx: 6,
+            corrected: '(delete)',
+            mark: 'deletion mark (\u232B)',
+            explanation: 'A duplicated word. The compositor set the last sort twice. The corrector would draw a deletion mark through the second TYPE and write "dele" in the margin (short for delete).'
+          },
+          {
+            tokens: ['WE', 'PRINT', 'WHAT', 'THE', 'PEOPEL', 'NEED.'],
+            errorIdx: 4,
+            corrected: 'PEOPLE',
+            mark: 'transposition mark (\u223F)',
+            explanation: 'Letters out of order. PEOPLE became PEOPEL. A corrector would mark the swapped L and E with a transposition swoop, the same mark as in TEH above.'
+          },
+          {
+            tokens: ['ONE', 'PRESS,', 'TEN', 'TEN', 'HOURS,', 'A', 'BOOK.'],
+            errorIdx: 3,
+            corrected: '(delete)',
+            mark: 'deletion mark (\u232B)',
+            explanation: 'A duplicated word. TEN was set twice. The corrector would strike through the second TEN with a deletion mark, the same as the duplicated TYPE above.'
+          }
+        ];
+        // Clock-challenge mode: time the student composing the current
+        // phrase. startTime = epoch ms when they placed their first letter;
+        // elapsed = ms since. Calculated benchmarks compare to historical
+        // compositor speed (1,000 chars/hour = 3.6 sec per char) and modern
+        // keyboard speed (12,000 chars/hour = 0.3 sec per char).
+        var startTimeRaw = useState(null);
+        var startTime = startTimeRaw[0], setStartTime = startTimeRaw[1];
+        var nowRaw = useState(Date.now());
+        var nowTs = nowRaw[0], setNowTs = nowRaw[1];
+        useEffect(function() {
+          if (!startTime || solved) return;
+          var iv = setInterval(function() { setNowTs(Date.now()); }, 100);
+          return function() { clearInterval(iv); };
+        }, [startTime, solved]);
+        // Capture first-place start time. Track when slot count changes
+        // from 0 to 1.
+        var placedCount = st.slots.filter(function(s) { return s; }).length;
+        useEffect(function() {
+          if (placedCount > 0 && !startTime) setStartTime(Date.now());
+          if (placedCount === 0 && startTime) setStartTime(null);
+        }, [placedCount]);
+        var elapsedMs = startTime ? (nowTs - startTime) : 0;
+        var elapsedSec = elapsedMs / 1000;
+        // Folio-imposition puzzle state. Folio = one sheet, folded once,
+        // 4 pages total. Slots: [0]=outer-left, [1]=outer-right,
+        // [2]=inner-left, [3]=inner-right. Each holds a page number (1-4)
+        // or null. Correct answer: [4, 1, 2, 3].
+        var impSlotsRaw = useState([null, null, null, null]);
+        var impSlots = impSlotsRaw[0], setImpSlots = impSlotsRaw[1];
+        var impSelectedRaw = useState(null);
+        var impSelected = impSelectedRaw[0], setImpSelected = impSelectedRaw[1];
+        // 'edit' (placing), 'wrong' (revealed wrong), 'right' (revealed correct, outer side),
+        // 'right-open' (correct + opened inner side).
+        var impStageRaw = useState('edit');
+        var impStage = impStageRaw[0], setImpStage = impStageRaw[1];
 
         // Auto-advance pressing → printed after a short delay (drama)
         useEffect(function() {
@@ -1674,6 +1962,143 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           calloutBox('info', 'Why mirror-reversed?',
             'When the type presses against the paper, the image flips. So the type itself has to be a mirror image of what you want to print. (Look at the letter rendered on each sort below — it is the printable face.) Compositors in 1450 read type fluently mirror-reversed. It took years of apprenticeship.'),
 
+          // ── Decode mirror text exercise ──
+          // Tests the actual compositor skill: reading mirror-reversed at
+          // speed. Shows a word rendered mirror-reversed; the student
+          // types what it would print as. Quick, satisfying, directly
+          // grounds the "compositors took years to learn this" claim.
+          (function() {
+            var word = DECODE_WORDS[decodeIdx];
+            return h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi, fontFamily: 'Georgia, serif' } },
+                '🪞 Try it: read the type'),
+              h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                'Below is a word of type, mirror-reversed (as it would sit in the composing stick). What would it print as on the paper? Type the readable version.'),
+              h('div', { style: { background: T.ink, padding: '14px 18px', border: '2px solid ' + T.wood, borderRadius: 6, textAlign: 'center', marginBottom: 12 } },
+                h('div', { style: {
+                  display: 'inline-block',
+                  fontSize: 32, fontWeight: 700, fontFamily: 'Georgia, serif',
+                  color: T.parchment, letterSpacing: '0.12em',
+                  transform: 'scaleX(-1)'
+                } }, word)
+              ),
+              h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8 } },
+                h('input', {
+                  type: 'text', value: decodeAnswer,
+                  onChange: function(e) { setDecodeAnswer(e.target.value); setDecodeFeedback(null); },
+                  placeholder: 'Type the readable word…',
+                  style: { flex: 1, minWidth: 180, padding: 10, borderRadius: 6, border: '1px solid ' + T.border, background: T.cardAlt, color: T.text, fontSize: 16, fontFamily: 'Georgia, serif', letterSpacing: '0.05em', textTransform: 'uppercase' }
+                }),
+                h('button', {
+                  onClick: function() {
+                    var correct = decodeAnswer.trim().toUpperCase() === word;
+                    setDecodeFeedback({ correct: correct, attempted: decodeAnswer.trim().toUpperCase() });
+                    announce(correct ? 'Correct! That is what the type would print.' : 'Not quite. The correct word is ' + word + '.');
+                  },
+                  disabled: !decodeAnswer.trim(),
+                  style: btnPrimary({ padding: '10px 16px', fontSize: 13, opacity: decodeAnswer.trim() ? 1 : 0.5 })
+                }, 'Check'),
+                h('button', {
+                  onClick: function() {
+                    setDecodeIdx((decodeIdx + 1) % DECODE_WORDS.length);
+                    setDecodeAnswer(''); setDecodeFeedback(null);
+                    announce('Next word loaded.');
+                  },
+                  style: btn({ padding: '10px 16px', fontSize: 13 }) }, '↻ New word')
+              ),
+              decodeFeedback && h('div', { 'aria-live': 'polite',
+                style: { padding: 10, borderRadius: 6, fontSize: 13, lineHeight: 1.55,
+                  background: decodeFeedback.correct ? '#1f3d28' : '#3d2810',
+                  border: '1px solid ' + (decodeFeedback.correct ? T.ok : T.warn),
+                  color: decodeFeedback.correct ? '#bbf7d0' : '#fed7aa' } },
+                decodeFeedback.correct ? '✓ Correct. That is what the type would print as. You just did, briefly, what a 1450 compositor did all day.' :
+                  '✗ Not quite. You typed "' + decodeFeedback.attempted + '"; the type would print as "' + word + '." Tip: cover the type with a hand, squint, and the brain re-orients fast with practice.')
+            );
+          })(),
+
+          // ── Proofreader's Eye exercise ──
+          // The corrector's job: pull a proof, scan against the
+          // manuscript, flag every error with a margin mark. Students
+          // click the wrong word in a printed-style line.
+          (function() {
+            var round = PROOF_LINES[proofIdx];
+            return h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi, fontFamily: 'Georgia, serif' } },
+                '\u{1F50D} Proofreader\u2019s eye'),
+              h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                'A corrector in 1450 caught every typesetting error before the run. One word in this printed line is wrong. Click it.'),
+              // The 'printed' line in parchment-and-ink style
+              h('div', { style: { background: T.parchment, color: T.ink, padding: '16px 20px', border: '2px solid ' + T.wood, borderRadius: 6, marginBottom: 12, textAlign: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.4) inset', fontFamily: 'Georgia, "Times New Roman", serif', fontSize: 22, letterSpacing: '0.04em', lineHeight: 1.5 } },
+                round.tokens.map(function(tok, i) {
+                  var isError = (i === round.errorIdx);
+                  var isGuessed = (proofGuess === i);
+                  var bg = 'transparent';
+                  var color = T.ink;
+                  var underline = 'none';
+                  if (proofRevealed) {
+                    if (isError) { bg = 'rgba(199, 69, 54, 0.18)'; underline = '2px wavy ' + T.danger; }
+                    if (isGuessed && !isError) { bg = 'rgba(199, 69, 54, 0.10)'; color = T.danger; }
+                  } else if (isGuessed) {
+                    bg = 'rgba(201, 161, 74, 0.25)';
+                  }
+                  return h('button', {
+                    key: i,
+                    onClick: function() {
+                      if (proofRevealed) return;
+                      setProofGuess(i);
+                      setProofRevealed(true);
+                      announce(i === round.errorIdx ? 'Correct. That word is the error.' : 'Not the error. The correct answer is shown.');
+                    },
+                    'aria-pressed': isGuessed ? 'true' : 'false',
+                    'aria-label': 'Word ' + (i + 1) + ': ' + tok,
+                    disabled: proofRevealed,
+                    style: {
+                      display: 'inline-block',
+                      background: bg, color: color,
+                      border: 'none', padding: '2px 6px', margin: '0 2px',
+                      borderRadius: 3,
+                      font: 'inherit',
+                      letterSpacing: 'inherit',
+                      cursor: proofRevealed ? 'default' : 'pointer',
+                      textDecoration: underline,
+                      textUnderlineOffset: '4px',
+                      transition: 'background 0.2s ease'
+                    }
+                  }, tok);
+                })
+              ),
+              // Feedback / explanation panel
+              proofRevealed && h('div', { 'aria-live': 'polite',
+                style: { padding: 12, borderRadius: 6, fontSize: 13, lineHeight: 1.55, marginBottom: 10,
+                  background: proofGuess === round.errorIdx ? '#1f3d28' : '#3d2810',
+                  border: '1px solid ' + (proofGuess === round.errorIdx ? T.ok : T.warn),
+                  color: proofGuess === round.errorIdx ? '#bbf7d0' : '#fed7aa' } },
+                h('div', { style: { fontWeight: 700, marginBottom: 6, fontFamily: 'Georgia, serif' } },
+                  proofGuess === round.errorIdx ? '\u2713 You caught it.' : '\u2717 Missed. The error was the highlighted word.'),
+                h('div', { style: { marginBottom: 4 } },
+                  h('strong', null, 'What it should say: '), round.corrected),
+                h('div', { style: { marginBottom: 4 } },
+                  h('strong', null, 'Corrector\u2019s margin mark: '), round.mark),
+                h('div', { style: { fontStyle: 'italic', opacity: 0.92 } }, round.explanation)
+              ),
+              // Controls
+              h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                h('button', {
+                  onClick: function() {
+                    setProofIdx((proofIdx + 1) % PROOF_LINES.length);
+                    setProofGuess(null); setProofRevealed(false);
+                    announce('New proof loaded.');
+                  },
+                  style: btnPrimary({ padding: '8px 14px', fontSize: 12 })
+                }, '\u21BB New proof'),
+                proofRevealed && h('button', {
+                  onClick: function() { setProofGuess(null); setProofRevealed(false); },
+                  style: btn({ padding: '8px 14px', fontSize: 12 })
+                }, 'Try this one again')
+              )
+            );
+          })(),
+
           // ── Challenge picker ──
           h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' } },
             CHALLENGES.map(function(ch, i) {
@@ -1696,6 +2121,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           // Note about the special ligature sort, only shown for the fi challenge
           CHALLENGE.id === 'FIRST_PROOF' && h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic', marginBottom: 12, textAlign: 'center' } },
             'The "fi" in red is one ligature sort — a single piece of type with both letters joined.'),
+
+          // Clock-challenge panel. Live composing pace against
+          // historical (1,000 chars/hour) and modern (12,000 chars/hour)
+          // benchmarks. Only renders once the student places the first
+          // sort. After solve, shows a final verdict line.
+          (startTime || solved) && (function() {
+            var mins = Math.floor(elapsedSec / 60);
+            var secs = Math.floor(elapsedSec % 60);
+            var mmss = (mins < 10 ? '0' + mins : mins) + ':' + (secs < 10 ? '0' + secs : secs);
+            var cph = (placedCount > 0 && elapsedSec > 0) ? Math.round(placedCount / elapsedSec * 3600) : 0;
+            var verdict = null;
+            if (solved && elapsedSec > 0 && placedCount > 0) {
+              var secPerChar = elapsedSec / placedCount;
+              if (secPerChar < 3.6) verdict = { txt: 'Faster than a 1450 master compositor. A 12-hour day at this pace would yield more pages than Gutenberg himself.', color: T.ok };
+              else if (secPerChar < 7.2) verdict = { txt: 'About apprentice speed for a Mainz shop. A master would do this in half the time, but you would be earning your room and board.', color: T.accentHi };
+              else verdict = { txt: 'Still learning the case layout, which is exactly how every printer started. Speed comes after the muscle memory.', color: T.muted };
+            }
+            // Pace bar caps at 15,000 c/h so the modern marker sits near (but not at) the right edge.
+            var paceWidth = Math.min(100, cph / 15000 * 100);
+            return h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 8, padding: 12, marginBottom: 12 } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: verdict ? 10 : 0 } },
+                h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 64 } },
+                  h('div', { style: { fontFamily: 'Georgia, serif', fontSize: 22, fontWeight: 700, color: T.accentHi, fontVariantNumeric: 'tabular-nums', lineHeight: 1 } }, mmss),
+                  h('div', { style: { fontSize: 9, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 } }, 'elapsed')
+                ),
+                h('div', { style: { flex: 1, minWidth: 200 } },
+                  h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 5 } },
+                    'Your pace, ',
+                    h('span', { style: { color: T.accentHi, fontWeight: 700 } }, cph.toLocaleString()),
+                    ' characters per hour.'
+                  ),
+                  h('div', { style: { position: 'relative', height: 10, background: '#0e0a06', borderRadius: 5, border: '1px solid ' + T.border, overflow: 'visible' } },
+                    // Live pace fill
+                    h('div', { style: { position: 'absolute', left: 0, top: 0, bottom: 0, width: paceWidth + '%', background: 'linear-gradient(90deg, ' + T.accent + ', ' + T.accentHi + ')', borderRadius: 4, transition: 'width 0.25s ease-out' } }),
+                    // 1,000 c/h benchmark line (compositor)
+                    h('div', { 'aria-hidden': 'true', style: { position: 'absolute', left: (1000 / 15000 * 100) + '%', top: -3, bottom: -3, width: 2, background: T.muted, opacity: 0.7 } }),
+                    // 12,000 c/h benchmark line (modern typist)
+                    h('div', { 'aria-hidden': 'true', style: { position: 'absolute', left: (12000 / 15000 * 100) + '%', top: -3, bottom: -3, width: 2, background: T.ok, opacity: 0.7 } })
+                  ),
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: T.dim, marginTop: 4, fontFamily: 'Georgia, serif' } },
+                    h('span', null, '↑ 1,000 c/h (1450 compositor)'),
+                    h('span', null, '12,000 c/h (modern typist) ↑')
+                  )
+                )
+              ),
+              verdict && h('div', { style: { padding: '8px 12px', background: T.bg, border: '1px dashed ' + verdict.color, borderRadius: 6, color: verdict.color, fontSize: 13, fontFamily: 'Georgia, serif', fontStyle: 'italic', lineHeight: 1.4 } }, verdict.txt)
+            );
+          })(),
 
           sectionHeader('📐', 'Composing stick'),
           // Composing stick: brass-and-wood feel. Brass-rail bottom + dark
@@ -1739,6 +2212,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic', marginBottom: 10, padding: '8px 12px', background: T.cardAlt, borderRadius: 6, border: '1px dashed ' + T.border, lineHeight: 1.5 } },
             h('strong', { style: { color: T.muted, fontStyle: 'normal' } }, 'In a real 1450 case: '),
             'every letter had a fixed compartment. Vowels (a, e, i, o, u) and common consonants (n, r, s, t) sat near the center for fastest reach. Rare letters (q, x, z) lived at the edges. A skilled compositor knew the case by feel — picking sorts without looking.'),
+          // Letter-frequency visualization — visible heatmap showing which
+          // letters get used most in English. Explains why the type case
+          // is organized the way it is. Frequencies are approximate English
+          // letter frequencies (e dominant, t/a/o/i/n next, q/x/z near zero).
+          (function() {
+            // English letter frequency (rough percentages, rounded for clarity).
+            // Reference: Norvig's letter-frequency analysis of Google Books.
+            var FREQ = [
+              { l: 'E', p: 12.7 }, { l: 'T', p: 9.1 }, { l: 'A', p: 8.2 },
+              { l: 'O', p: 7.5 }, { l: 'I', p: 7.0 }, { l: 'N', p: 6.7 },
+              { l: 'S', p: 6.3 }, { l: 'H', p: 6.1 }, { l: 'R', p: 6.0 },
+              { l: 'D', p: 4.3 }, { l: 'L', p: 4.0 }, { l: 'C', p: 2.8 },
+              { l: 'U', p: 2.8 }, { l: 'M', p: 2.4 }, { l: 'W', p: 2.4 },
+              { l: 'F', p: 2.2 }, { l: 'G', p: 2.0 }, { l: 'Y', p: 2.0 },
+              { l: 'P', p: 1.9 }, { l: 'B', p: 1.5 }, { l: 'V', p: 1.0 },
+              { l: 'K', p: 0.8 }, { l: 'J', p: 0.15 }, { l: 'X', p: 0.15 },
+              { l: 'Q', p: 0.1 }, { l: 'Z', p: 0.07 }
+            ];
+            var maxP = 12.7;
+            return h('details', { style: { marginBottom: 10, background: T.cardAlt, border: '1px dashed ' + T.border, borderRadius: 6, padding: '8px 12px' } },
+              h('summary', { style: { cursor: 'pointer', fontSize: 11, color: T.muted, fontWeight: 600 } }, '📊 Why some compartments were bigger (letter frequency)'),
+              h('div', { style: { marginTop: 10 } },
+                h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, marginBottom: 8, fontStyle: 'italic' } },
+                  'English letter frequency. A compositor needed many more E\'s than Z\'s, so the case had ' +
+                  'large compartments for vowels and tiny ones for rare letters. Compartment size mirrored use.'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(46px, 1fr))', gap: 4 } },
+                  FREQ.map(function(f, fi) {
+                    var w = Math.max(8, (f.p / maxP) * 100);
+                    return h('div', { key: fi, style: { display: 'flex', flexDirection: 'column', alignItems: 'center' } },
+                      h('div', { style: { fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 14, color: T.text, marginBottom: 2 } }, f.l),
+                      h('div', { style: { width: '100%', height: 4, background: T.bg, borderRadius: 2, overflow: 'hidden' } },
+                        h('div', { style: { width: w + '%', height: '100%', background: T.accent } })),
+                      h('div', { style: { fontSize: 9, color: T.dim, marginTop: 2, fontFamily: 'ui-monospace, monospace' } }, f.p < 1 ? f.p.toFixed(2) + '%' : f.p.toFixed(1) + '%')
+                    );
+                  })
+                )
+              )
+            );
+          })(),
           // Type case: layered horizontal-grain wood texture using CSS
           // gradients (no SVG needed since this is a div). Repeating linear
           // gradients give the wood a planked-and-grained feel; the inset
@@ -1881,6 +2393,190 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             )
           ),
 
+          // ── Folio imposition puzzle ──
+          // A folio is one sheet of paper folded once = 4 pages.
+          // The student decides which page number goes where on the
+          // sheet so the folded book reads 1, 2, 3, 4. Correct:
+          //   outer-left = 4, outer-right = 1
+          //   inner-left = 2, inner-right = 3
+          // Mind-bender the first time. Real 1450 imposer's job.
+          (function() {
+            var CORRECT = [4, 1, 2, 3];
+            var isCorrect = impSlots.every(function(v, i) { return v === CORRECT[i]; });
+            var allPlaced = impSlots.every(function(v) { return v !== null; });
+            var revealed = (impStage === 'wrong' || impStage === 'right' || impStage === 'right-open');
+            var slotLabels = ['outer-left', 'outer-right', 'inner-left', 'inner-right'];
+            function placeIn(slot) {
+              if (revealed) return;
+              if (impSlots[slot] !== null) {
+                // Remove (allow re-place)
+                var copy = impSlots.slice();
+                copy[slot] = null;
+                setImpSlots(copy);
+                return;
+              }
+              if (impSelected === null) return;
+              // Place selected, ensure each page used at most once.
+              var copy = impSlots.slice();
+              for (var i = 0; i < copy.length; i++) {
+                if (copy[i] === impSelected) copy[i] = null;
+              }
+              copy[slot] = impSelected;
+              setImpSlots(copy);
+              setImpSelected(null);
+            }
+            function checkAnswer() {
+              setImpStage(isCorrect ? 'right' : 'wrong');
+              announce(isCorrect ? 'Correct. The fold reads 1, 2, 3, 4.' : 'Not yet. The correct imposition is shown.');
+            }
+            function reset() {
+              setImpSlots([null, null, null, null]);
+              setImpSelected(null);
+              setImpStage('edit');
+            }
+            // What to display in each slot for the reveal animations.
+            // On 'right-open', the outer side is hidden and the inner side shows 2|3.
+            function slotDisplay(idx) {
+              if (revealed && impStage !== 'wrong') return CORRECT[idx];
+              return impSlots[idx];
+            }
+            // The available palette: unused page numbers (those not in slots).
+            var palette = [1, 2, 3, 4].filter(function(n) { return impSlots.indexOf(n) === -1; });
+            return h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi, fontFamily: 'Georgia, serif' } },
+                '\u{1F4D1} Imposition puzzle (folio, 4 pages)'),
+              h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                'A "folio" is one sheet of paper folded once \u2014 4 pages total. To make the folded book read in order (1, 2, 3, 4), the pages need to be on the sheet in specific positions. Pick a page number from the palette and click an empty slot. When you think you have it, check the fold.'),
+              // Palette (the four page-number tiles)
+              !revealed && h('div', { className: 'printingpress-no-print', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 14, padding: 10, background: T.cardAlt, border: '1px dashed ' + T.border, borderRadius: 8 } },
+                h('div', { style: { fontSize: 10, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginRight: 6 } }, 'Pages'),
+                palette.length > 0 ? palette.map(function(n) {
+                  var isPicked = (impSelected === n);
+                  return h('button', { key: n,
+                    onClick: function() { setImpSelected(isPicked ? null : n); },
+                    'aria-pressed': isPicked ? 'true' : 'false',
+                    style: {
+                      width: 44, height: 44, borderRadius: 8,
+                      background: isPicked ? T.accent : T.parchment,
+                      color: isPicked ? T.ink : T.ink,
+                      border: '2px solid ' + (isPicked ? T.accentHi : T.wood),
+                      fontSize: 20, fontWeight: 700, fontFamily: 'Georgia, serif',
+                      cursor: 'pointer',
+                      boxShadow: isPicked ? '0 0 0 3px rgba(245,215,126,0.3)' : '0 1px 2px rgba(0,0,0,0.3)',
+                      transition: 'all 0.15s ease'
+                    }
+                  }, n);
+                }) : h('span', { style: { fontSize: 12, color: T.dim, fontStyle: 'italic' } }, 'All placed. Hit \u201CCheck the fold.\u201D')
+              ),
+              // Two sheets side by side: outer and inner
+              // 'right-open' shows only the inner side (animation step).
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, marginBottom: 12 } },
+                // OUTER SIDE
+                impStage !== 'right-open' && h('div', null,
+                  h('div', { style: { fontSize: 10, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: 4, textAlign: 'center' } }, 'Outer side of sheet'),
+                  h('div', { style: { background: T.parchment, color: T.ink, border: '2px solid ' + T.wood, borderRadius: 6, display: 'flex', minHeight: 110, position: 'relative', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' } },
+                    // Fold line in middle
+                    h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: -4, bottom: -4, left: '50%', width: 0, borderLeft: '1px dashed ' + T.wood, opacity: 0.5 } }),
+                    [0, 1].map(function(slotIdx) {
+                      var val = slotDisplay(slotIdx);
+                      var revealCorrect = revealed && impStage !== 'wrong';
+                      return h('button', { key: slotIdx,
+                        onClick: function() { placeIn(slotIdx); },
+                        'aria-label': slotLabels[slotIdx] + (val ? ', page ' + val : ', empty'),
+                        disabled: revealed,
+                        style: {
+                          flex: 1, padding: 14,
+                          background: 'transparent',
+                          border: 'none',
+                          borderRight: slotIdx === 0 ? '1px dashed ' + T.wood : 'none',
+                          cursor: revealed ? 'default' : 'pointer',
+                          fontSize: 40, fontWeight: 700, fontFamily: 'Georgia, serif',
+                          color: T.ink,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          minHeight: 100,
+                          position: 'relative'
+                        }
+                      }, val !== null ? val : h('span', { style: { color: T.dim, fontSize: 28, fontWeight: 400, fontStyle: 'italic' } }, '?'));
+                    })
+                  )
+                ),
+                // INNER SIDE
+                h('div', null,
+                  h('div', { style: { fontSize: 10, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: 4, textAlign: 'center' } }, 'Inner side of sheet'),
+                  h('div', { style: { background: T.parchment, color: T.ink, border: '2px solid ' + T.wood, borderRadius: 6, display: 'flex', minHeight: 110, position: 'relative', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' } },
+                    h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: -4, bottom: -4, left: '50%', width: 0, borderLeft: '1px dashed ' + T.wood, opacity: 0.5 } }),
+                    [2, 3].map(function(slotIdx) {
+                      var val = slotDisplay(slotIdx);
+                      return h('button', { key: slotIdx,
+                        onClick: function() { placeIn(slotIdx); },
+                        'aria-label': slotLabels[slotIdx] + (val ? ', page ' + val : ', empty'),
+                        disabled: revealed,
+                        style: {
+                          flex: 1, padding: 14,
+                          background: 'transparent',
+                          border: 'none',
+                          borderRight: slotIdx === 2 ? '1px dashed ' + T.wood : 'none',
+                          cursor: revealed ? 'default' : 'pointer',
+                          fontSize: 40, fontWeight: 700, fontFamily: 'Georgia, serif',
+                          color: T.ink,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          minHeight: 100
+                        }
+                      }, val !== null ? val : h('span', { style: { color: T.dim, fontSize: 28, fontWeight: 400, fontStyle: 'italic' } }, '?'));
+                    })
+                  )
+                )
+              ),
+              // Check / reveal controls
+              !revealed && h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
+                h('button', {
+                  onClick: checkAnswer,
+                  disabled: !allPlaced,
+                  style: btnPrimary({ padding: '10px 16px', fontSize: 13, opacity: allPlaced ? 1 : 0.5 })
+                }, '\u{1F4D6} Check the fold'),
+                h('button', { onClick: reset, style: btn({ padding: '10px 16px', fontSize: 13 }) }, '\u21BB Clear')
+              ),
+              // Reveal panel
+              revealed && h('div', { 'aria-live': 'polite',
+                style: { padding: 12, borderRadius: 6, fontSize: 13, lineHeight: 1.6, marginBottom: 10,
+                  background: impStage === 'wrong' ? '#3d2810' : '#1f3d28',
+                  border: '1px solid ' + (impStage === 'wrong' ? T.warn : T.ok),
+                  color: impStage === 'wrong' ? '#fed7aa' : '#bbf7d0' } },
+                h('div', { style: { fontWeight: 700, marginBottom: 8, fontFamily: 'Georgia, serif', fontSize: 14 } },
+                  impStage === 'wrong' ? '\u2717 Not yet \u2014 the correct imposition is now shown.' : '\u2713 Correct. Fold this sheet and the pages read in order.'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 8 } },
+                  [
+                    { slot: 'outer-left', page: 4, role: 'Back cover' },
+                    { slot: 'outer-right', page: 1, role: 'Front cover' },
+                    { slot: 'inner-left', page: 2, role: 'Left-hand inside page' },
+                    { slot: 'inner-right', page: 3, role: 'Right-hand inside page' }
+                  ].map(function(row, i) {
+                    return h('div', { key: i, style: { background: 'rgba(0,0,0,0.25)', borderRadius: 4, padding: '6px 8px' } },
+                      h('div', { style: { fontSize: 10, opacity: 0.85, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 } }, row.slot),
+                      h('div', { style: { fontSize: 13, fontWeight: 700 } }, 'Page ' + row.page + ' \u00B7 ' + row.role)
+                    );
+                  })
+                ),
+                h('div', { style: { fontStyle: 'italic', opacity: 0.92 } },
+                  'Why this works: when you fold the sheet in half, the outer-right page (1) lands on top of the outer-left page (4). Page 1 is the cover; page 4 is the back. Opening the folded sheet reveals the inner side, with page 2 facing page 3. Read the book \u2014 1, 2, 3, 4.')
+              ),
+              // After-reveal controls
+              revealed && h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
+                impStage === 'right' && h('button', {
+                  onClick: function() { setImpStage('right-open'); announce('Folded. Showing the inner side.'); },
+                  style: btnPrimary({ padding: '10px 16px', fontSize: 13 })
+                }, '\u{1F4D6} Fold it'),
+                impStage === 'right-open' && h('button', {
+                  onClick: function() { setImpStage('right'); },
+                  style: btn({ padding: '10px 16px', fontSize: 13 })
+                }, '\u21A9 Open it back up'),
+                h('button', { onClick: reset, style: btn({ padding: '10px 16px', fontSize: 13 }) }, '\u21BB Try again')
+              ),
+              h('p', { style: { margin: '12px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.5 } },
+                'Bigger formats (quarto, 8 pages per sheet; octavo, 16 pages) follow the same kind of logic but get progressively harder. In a real 1450 shop, the imposer was a senior craftsman; getting it wrong meant printing the run upside-down or out of order. The schematics for octavo imposition look like geometry puzzles \u2014 and they are.')
+            );
+          })(),
+
           sectionHeader('📦', 'What you just did, in real-shop terms'),
           keyPointBlock(
             'You set type the way it was done from 1450 to ~1880. The exact same physical operation:',
@@ -1963,6 +2659,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         var leadPct = leadPctRaw[0], setLeadPct = leadPctRaw[1];
         var tinPctRaw = useState(28);
         var tinPct = tinPctRaw[0], setTinPct = tinPctRaw[1];
+        // Inventory-guess game state. Slider on a log scale (~100 to 300,000).
+        var sortGuessRaw = useState(5000);
+        var sortGuess = sortGuessRaw[0], setSortGuess = sortGuessRaw[1];
+        var sortRevealedRaw = useState(false);
+        var sortRevealed = sortRevealedRaw[0], setSortRevealed = sortRevealedRaw[1];
+        // Right-side-up detection game state. Tests by-nick orientation.
+        var nickRoundRaw = useState(0);
+        var nickRound = nickRoundRaw[0], setNickRound = nickRoundRaw[1];
+        var nickPickedRaw = useState(null);
+        var nickPicked = nickPickedRaw[0], setNickPicked = nickPickedRaw[1];
+        var nickScoreRaw = useState(0);
+        var nickScore = nickScoreRaw[0], setNickScore = nickScoreRaw[1];
         var antimonyPct = Math.max(0, 100 - leadPct - tinPct);
 
         function setAlloy(field, val) {
@@ -2220,6 +2928,310 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           calloutBox('info', 'Why this was the breakthrough',
             'Wood-block printing existed in China and Korea centuries before Gutenberg. What Gutenberg actually invented (or perfected) was the punch-matrix-cast workflow that made identical, reusable, mass-produced metal type economically possible in a Western alphabet. Korean movable type used a different process and never displaced wood-block printing in the same way.'),
 
+          // ── Jikji vs Gutenberg side-by-side ──
+          // Honest comparison. Korean metal movable type predates Gutenberg
+          // by 78 years; the Jikji (1377) is the oldest extant book
+          // printed with metal movable type. The question is not whether
+          // Gutenberg invented metal type (he did not), but why the
+          // Western variant scaled into a continent-changing industry
+          // while the Korean did not. The honest answer is alphabet
+          // economics — a 250-glyph alphabet supports punch-matrix-cast
+          // amortization; a 6,000+ Hanja character set does not.
+          sectionHeader('🌏', 'Jikji (1377) vs Gutenberg Bible (1455)'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 } },
+              // Jikji card
+              h('div', { style: { background: T.cardAlt, borderRadius: 10, padding: 14, borderLeft: '3px solid #c44536' } },
+                h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, marginBottom: 4 } },
+                  h('h4', { style: { margin: 0, fontSize: 15, color: T.accentHi, fontFamily: 'Georgia, serif' } }, 'Jikji'),
+                  h('span', { style: { fontSize: 11, color: T.dim, fontFamily: 'ui-monospace, monospace' } }, '1377')
+                ),
+                h('div', { style: { fontSize: 12, color: T.warn, fontStyle: 'italic', marginBottom: 8 } }, 'Buddhist monks, Heungdeok Temple, Korea'),
+                h('p', { style: { margin: 0, fontSize: 13, color: T.text, lineHeight: 1.55 } },
+                  'The oldest extant book printed with metal movable type. 78 years before Gutenberg. Subject: a Buddhist Zen anthology. Surviving copy in the Bibliothèque nationale de France. The casting process was different from Gutenberg\'s — a sand-mold technique, not the steel-punch-into-copper-matrix workflow that scaled.')
+              ),
+              // Gutenberg card
+              h('div', { style: { background: T.cardAlt, borderRadius: 10, padding: 14, borderLeft: '3px solid ' + T.accent } },
+                h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, marginBottom: 4 } },
+                  h('h4', { style: { margin: 0, fontSize: 15, color: T.accentHi, fontFamily: 'Georgia, serif' } }, 'Gutenberg Bible'),
+                  h('span', { style: { fontSize: 11, color: T.dim, fontFamily: 'ui-monospace, monospace' } }, '1455')
+                ),
+                h('div', { style: { fontSize: 12, color: T.warn, fontStyle: 'italic', marginBottom: 8 } }, 'Johannes Gutenberg, Mainz, Germany'),
+                h('p', { style: { margin: 0, fontSize: 13, color: T.text, lineHeight: 1.55 } },
+                  '~180 copies of a 1,282-page Latin Bible. Subject: the Vulgate. ~49 copies survive (12 on vellum). The punch-matrix-cast workflow that scaled into a continent-wide industry within 50 years.')
+              )
+            ),
+            // The honest comparison row
+            h('div', { style: { marginTop: 14, padding: 12, background: T.bg, borderRadius: 8, border: '1px dashed ' + T.accent } },
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, 'So why did one scale and the other did not?'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '6px 12px', fontSize: 12, color: T.text, lineHeight: 1.6 } },
+                h('strong', { style: { color: T.accentHi } }, 'Alphabet size:'),
+                h('div', null, 'Korean Hanja used in 1377: ~6,000+ characters. Western Latin alphabet: ~250 glyphs (including caps, lowercase, ligatures, punctuation). The punch-cutting cost amortizes per book printed — a 250-glyph set pays off after ~50-100 books, a 6,000-glyph set never quite does.'),
+                h('strong', { style: { color: T.accentHi } }, 'Mold technique:'),
+                h('div', null, 'Jikji used sand-mold casting (less repeatable). Gutenberg used the hand-mold + copper matrix (very repeatable). Repeatability matters when you need 50,000 identical sorts.'),
+                h('strong', { style: { color: T.accentHi } }, 'Economic context:'),
+                h('div', null, 'Korea\'s Joseon dynasty restricted Hangul (the simpler alphabet of ~24 letters, designed by King Sejong in 1443) to limited use. Hanja remained the scholarly script. Western Europe had no such restriction — the Latin alphabet was the de-facto script everywhere print spread.'),
+                h('strong', { style: { color: T.accentHi } }, 'Honest summary:'),
+                h('div', null, 'Korea invented metal movable type. Gutenberg invented (or perfected) the SYSTEM — alphabet economics + repeatable mold + screw press + oil-based ink + paper supply — that made it scale. Both achievements are real; neither cancels the other.')
+              )
+            )
+          ),
+
+          // ── Anatomy of a single sort ──
+          // Most students have never seen a piece of metal type up close.
+          // A labeled axonometric diagram makes the physical object
+          // concrete before students try to design its alloy.
+          sectionHeader('🔍', 'Anatomy of a single sort'),
+          h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+            'One piece of metal type, about the size of a fingernail, is more engineered than it looks. Every named part exists for a reason: alignment, stacking, picking up by feel, even running ink. Before designing the alloy, look at what you are casting.'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 260px) 1fr', gap: 16, alignItems: 'center' } },
+              // Left: SVG diagram of a sort in axonometric view
+              h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 8, padding: 8 } },
+                h('svg', { viewBox: '0 0 240 320', width: '100%', height: 'auto', style: { maxHeight: 320, display: 'block' }, role: 'img', 'aria-label': 'Labeled axonometric diagram of a single piece of metal type' },
+                  h('defs', null,
+                    h('linearGradient', { id: 'sortMetal', x1: 0, y1: 0, x2: 1, y2: 0 },
+                      h('stop', { offset: '0%', stopColor: '#9a8a6a' }),
+                      h('stop', { offset: '50%', stopColor: '#c9b88a' }),
+                      h('stop', { offset: '100%', stopColor: '#6a5a3a' })
+                    ),
+                    h('linearGradient', { id: 'sortMetalTop', x1: 0, y1: 0, x2: 0, y2: 1 },
+                      h('stop', { offset: '0%', stopColor: '#d8c89a' }),
+                      h('stop', { offset: '100%', stopColor: '#8a7a5a' })
+                    )
+                  ),
+                  // Front face of the type body (main rectangle)
+                  h('polygon', { points: '70,80 140,80 140,290 70,290', fill: 'url(#sortMetal)', stroke: '#3a2a1a', strokeWidth: 1.5 }),
+                  // Top face of the type (the letter side, mirror-reversed)
+                  h('polygon', { points: '70,80 140,80 170,50 100,50', fill: 'url(#sortMetalTop)', stroke: '#3a2a1a', strokeWidth: 1.5 }),
+                  // Right side (depth)
+                  h('polygon', { points: '140,80 170,50 170,260 140,290', fill: '#8a7a5a', stroke: '#3a2a1a', strokeWidth: 1.5 }),
+                  // The letter face (the printing surface) — a mirror-reversed lowercase 'a'
+                  // Rendered as text on the slanted top face
+                  h('g', { transform: 'translate(135, 55) skewX(-30) scale(-1 1)' },
+                    h('text', { x: 0, y: 18, fontSize: 26, fontFamily: 'Georgia, serif', fontWeight: 700, fill: '#3a2a1a' }, 'a')
+                  ),
+                  // Nick — small groove on the front near the foot
+                  h('rect', { x: 70, y: 250, width: 70, height: 5, fill: '#3a2a1a' }),
+                  // Foot bevel — slightly indented at the very bottom
+                  h('polygon', { points: '70,285 140,285 140,290 70,290', fill: '#3a2a1a' }),
+                  // Shoulder — the angled bevel just below the face
+                  h('line', { x1: 70, y1: 92, x2: 140, y2: 92, stroke: '#3a2a1a', strokeWidth: 0.8, opacity: 0.6 }),
+                  // ─── Labels with leader lines ───
+                  // Face (top right)
+                  h('line', { x1: 160, y1: 55, x2: 215, y2: 30, stroke: T.accentHi, strokeWidth: 1 }),
+                  h('circle', { cx: 215, cy: 30, r: 2, fill: T.accentHi }),
+                  h('text', { x: 217, y: 28, fontSize: 11, fontFamily: 'Georgia, serif', fill: T.accentHi, fontWeight: 700 }, 'Face'),
+                  h('text', { x: 217, y: 39, fontSize: 9, fontFamily: 'Georgia, serif', fill: T.muted }, '(mirror letter)'),
+                  // Shoulder
+                  h('line', { x1: 140, y1: 92, x2: 200, y2: 100, stroke: T.accentHi, strokeWidth: 1 }),
+                  h('circle', { cx: 200, cy: 100, r: 2, fill: T.accentHi }),
+                  h('text', { x: 202, y: 104, fontSize: 11, fontFamily: 'Georgia, serif', fill: T.accentHi, fontWeight: 700 }, 'Shoulder'),
+                  // Shank (body)
+                  h('line', { x1: 140, y1: 170, x2: 210, y2: 175, stroke: T.accentHi, strokeWidth: 1 }),
+                  h('circle', { cx: 210, cy: 175, r: 2, fill: T.accentHi }),
+                  h('text', { x: 212, y: 179, fontSize: 11, fontFamily: 'Georgia, serif', fill: T.accentHi, fontWeight: 700 }, 'Shank'),
+                  h('text', { x: 212, y: 190, fontSize: 9, fontFamily: 'Georgia, serif', fill: T.muted }, '(body)'),
+                  // Nick
+                  h('line', { x1: 70, y1: 252, x2: 15, y2: 230, stroke: T.accentHi, strokeWidth: 1 }),
+                  h('circle', { cx: 15, cy: 230, r: 2, fill: T.accentHi }),
+                  h('text', { x: 13, y: 224, fontSize: 11, fontFamily: 'Georgia, serif', fill: T.accentHi, fontWeight: 700, textAnchor: 'end' }, 'Nick'),
+                  // Foot
+                  h('line', { x1: 100, y1: 290, x2: 60, y2: 310, stroke: T.accentHi, strokeWidth: 1 }),
+                  h('circle', { cx: 60, cy: 310, r: 2, fill: T.accentHi }),
+                  h('text', { x: 58, y: 314, fontSize: 11, fontFamily: 'Georgia, serif', fill: T.accentHi, fontWeight: 700, textAnchor: 'end' }, 'Foot'),
+                  // Height indicator (right side)
+                  h('line', { x1: 188, y1: 50, x2: 188, y2: 260, stroke: T.dim, strokeWidth: 0.6, strokeDasharray: '2 2' }),
+                  h('line', { x1: 184, y1: 50, x2: 192, y2: 50, stroke: T.dim, strokeWidth: 0.6 }),
+                  h('line', { x1: 184, y1: 260, x2: 192, y2: 260, stroke: T.dim, strokeWidth: 0.6 }),
+                  h('text', { x: 196, y: 158, fontSize: 9, fontFamily: 'ui-monospace, monospace', fill: T.dim, transform: 'rotate(90, 196, 158)' }, '~ 24 mm'),
+                  // Width indicator (bottom)
+                  h('line', { x1: 70, y1: 305, x2: 140, y2: 305, stroke: T.dim, strokeWidth: 0.6 }),
+                  h('line', { x1: 70, y1: 301, x2: 70, y2: 309, stroke: T.dim, strokeWidth: 0.6 }),
+                  h('line', { x1: 140, y1: 301, x2: 140, y2: 309, stroke: T.dim, strokeWidth: 0.6 }),
+                  h('text', { x: 105, y: 318, fontSize: 9, fontFamily: 'ui-monospace, monospace', fill: T.dim, textAnchor: 'middle' }, '~ 3-5 mm')
+                )
+              ),
+              // Right: parts descriptions
+              h('div', null,
+                [
+                  { name: 'Face', why: 'The raised letter, mirror-reversed. This is the only part that touches the ink and the paper. Designed to a fraction of a millimeter.' },
+                  { name: 'Shoulder', why: 'A small bevel from the face down to the body. Catches stray ink so it does not bleed onto the page during the impression.' },
+                  { name: 'Shank (body)', why: 'The bulk of the metal. Has to stand straight up under press pressure, stay dimensionally stable, and pack tightly against neighboring sorts.' },
+                  { name: 'Nick', why: 'A small horizontal groove on one side near the foot. The compositor feels for it without looking — it tells which way is up so they do not set a sort upside-down.' },
+                  { name: 'Foot', why: 'The flat base. Sometimes split into two parts during casting so the sort sits perfectly flat on the imposing stone. Uneven feet = uneven impression.' },
+                  { name: 'Height-to-paper', why: 'The total height from foot to face. In Anglo-American printing this is exactly 0.918 inches (~23.32 mm). EVERY sort in the world has to match this, or some letters press harder than others.' }
+                ].map(function(part, i) {
+                  return h('div', { key: i, style: { marginBottom: 10, paddingBottom: 10, borderBottom: i === 5 ? 'none' : '1px dashed ' + T.border } },
+                    h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif', marginBottom: 3 } }, part.name),
+                    h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } }, part.why)
+                  );
+                })
+              )
+            ),
+            h('p', { style: { margin: '12px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'A 1450 print shop kept maybe 100,000 sorts in inventory. Every one was identical in size and height to within a fraction of a millimeter. That dimensional precision, multiplied by 100,000, is the real Gutenberg achievement — not any one sort, but the system that made them all the same.')
+          ),
+
+          // ── Right-side-up sort detection game ──
+          // Tests the compositor's by-feel orientation skill. The nick must
+          // be near the foot on the front side. If the nick is on top, side,
+          // or absent, the sort is wrong-way-up and would print upside-down.
+          sectionHeader('🎯', 'Find the right-side-up sort'),
+          h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+            'A compositor picked up a sort and knew which way was up without looking. They felt for the nick groove near the foot on the front. Try the same skill below: in each row, only one of the four sorts is oriented correctly. Click it.'),
+          (function() {
+            // Each round defines which slot has the correctly-oriented sort.
+            // The other three have the nick in a wrong place (top, side, none).
+            // Wrong-orientation positions are fixed per round, deterministic
+            // so the same round renders identically across re-renders.
+            var ROUNDS = [
+              { correct: 1, configs: ['top', 'correct', 'side', 'none'] },
+              { correct: 3, configs: ['none', 'top', 'side', 'correct'] },
+              { correct: 0, configs: ['correct', 'side', 'none', 'top'] },
+              { correct: 2, configs: ['side', 'none', 'correct', 'top'] },
+              { correct: 1, configs: ['top', 'correct', 'none', 'side'] }
+            ];
+            var round = ROUNDS[nickRound % ROUNDS.length];
+            var done = nickRound >= ROUNDS.length;
+            // Renders one sort with the nick in the specified location.
+            function renderSort(config, slotIdx) {
+              var isPicked = (nickPicked === slotIdx);
+              var revealed = (nickPicked !== null);
+              var isCorrect = (slotIdx === round.correct);
+              var ringColor = T.border;
+              if (revealed) {
+                if (isCorrect) ringColor = T.ok;
+                else if (isPicked) ringColor = T.danger;
+              }
+              // Nick position on the SVG:
+              //   correct = front face, near the bottom (foot)
+              //   top     = front face, near the top (face) — wrong way up
+              //   side    = right side, middle — wrong rotation
+              //   none    = no nick at all
+              var nickRect = null;
+              if (config === 'correct') nickRect = h('rect', { x: 12, y: 90, width: 30, height: 4, fill: '#3a2a1a' });
+              else if (config === 'top') nickRect = h('rect', { x: 12, y: 30, width: 30, height: 4, fill: '#3a2a1a' });
+              else if (config === 'side') nickRect = h('rect', { x: 42, y: 60, width: 4, height: 30, fill: '#3a2a1a' });
+              // 'none' = no rect
+              return h('button', { key: slotIdx,
+                onClick: function() {
+                  if (revealed) return;
+                  setNickPicked(slotIdx);
+                  if (slotIdx === round.correct) setNickScore(nickScore + 1);
+                  announce(slotIdx === round.correct ? 'Correct. Nick is at the foot.' : 'Not quite. The right one is now outlined.');
+                },
+                disabled: revealed,
+                'aria-label': 'Sort ' + (slotIdx + 1) + ', nick ' + (config === 'correct' ? 'near foot' : config === 'top' ? 'near top' : config === 'side' ? 'on side' : 'absent'),
+                style: {
+                  background: T.cardAlt, border: '3px solid ' + ringColor, borderRadius: 8,
+                  padding: 8, cursor: revealed ? 'default' : 'pointer',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  transition: 'all 0.2s ease', minWidth: 80
+                }
+              },
+                h('svg', { viewBox: '0 0 60 120', width: 50, height: 100, 'aria-hidden': 'true' },
+                  // Sort body (front face)
+                  h('rect', { x: 12, y: 18, width: 30, height: 90, fill: '#c9b88a', stroke: '#3a2a1a', strokeWidth: 1.5 }),
+                  // Right side (depth hint)
+                  h('polygon', { points: '42,18 50,10 50,100 42,108', fill: '#8a7a5a', stroke: '#3a2a1a', strokeWidth: 1.5 }),
+                  // Top (the letter face)
+                  h('polygon', { points: '12,18 42,18 50,10 20,10', fill: '#d8c89a', stroke: '#3a2a1a', strokeWidth: 1.5 }),
+                  // The letter on the top face (visible as a mirror-reversed glyph)
+                  h('text', { x: 28, y: 16, fontSize: 8, fontFamily: 'Georgia, serif', fontWeight: 700, fill: '#3a2a1a', transform: 'scale(-1, 1)', textAnchor: 'middle' }, 'a'),
+                  // Nick wherever it goes
+                  nickRect
+                ),
+                revealed && isCorrect && h('div', { style: { fontSize: 10, color: T.ok, marginTop: 4, fontWeight: 700 } }, '✓ correct')
+              );
+            }
+            return h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8, flexWrap: 'wrap', gap: 6 } },
+                h('div', { style: { fontSize: 11, color: T.dim, fontFamily: 'ui-monospace, monospace' } },
+                  done ? 'Round complete' : ('Round ' + (nickRound + 1) + ' of ' + ROUNDS.length)),
+                h('div', { style: { fontSize: 11, color: T.accentHi, fontFamily: 'Georgia, serif', fontWeight: 700 } }, 'Score: ' + nickScore + ' / ' + ROUNDS.length)
+              ),
+              !done && h('div', { className: 'printingpress-no-print', style: { display: 'flex', justifyContent: 'space-around', gap: 8, flexWrap: 'wrap', marginBottom: 10 } },
+                round.configs.map(function(c, i) { return renderSort(c, i); })
+              ),
+              done && h('div', { 'aria-live': 'polite', style: { padding: 14, background: nickScore >= 4 ? '#1f3d28' : '#3d2810', border: '1px solid ' + (nickScore >= 4 ? T.ok : T.warn), borderRadius: 8, color: nickScore >= 4 ? '#bbf7d0' : '#fed7aa', textAlign: 'center', marginBottom: 10 } },
+                h('div', { style: { fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 16, marginBottom: 6 } },
+                  'You scored ' + nickScore + ' of ' + ROUNDS.length),
+                h('div', { style: { fontSize: 12, fontStyle: 'italic' } },
+                  nickScore === ROUNDS.length ? 'A 1450 master would have hired you on the spot.' :
+                  nickScore >= 3 ? 'Apprentice level. You would learn the rest in a week of full days.' :
+                  'Worth another round. The skill is real and takes practice.')
+              ),
+              nickPicked !== null && !done && h('div', { 'aria-live': 'polite', style: { padding: 10, background: nickPicked === round.correct ? '#1f3d28' : '#3d2810', border: '1px solid ' + (nickPicked === round.correct ? T.ok : T.warn), borderRadius: 6, color: nickPicked === round.correct ? '#bbf7d0' : '#fed7aa', marginBottom: 10, fontSize: 12, lineHeight: 1.55 } },
+                nickPicked === round.correct
+                  ? '✓ Yes. The nick groove sits near the foot, on the front. That is the by-feel signal that the sort is right-side-up.'
+                  : '✗ The correct sort is the one outlined in green. Its nick is on the front, near the foot. The others have the nick on top, on the side, or missing entirely.'),
+              h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
+                nickPicked !== null && !done && h('button', {
+                  onClick: function() { setNickRound(nickRound + 1); setNickPicked(null); },
+                  style: btnPrimary({ padding: '8px 14px', fontSize: 12 })
+                }, 'Next sort →'),
+                done && h('button', {
+                  onClick: function() { setNickRound(0); setNickPicked(null); setNickScore(0); },
+                  style: btnPrimary({ padding: '8px 14px', fontSize: 12 })
+                }, '↻ Play again')
+              )
+            );
+          })(),
+
+          // ── Inventory estimation game ──
+          // Most students wildly underestimate. The "aha" reveal is that
+          // sorts cannot be reused until a forme is printed AND distributed
+          // back, which means you need ~5-10× the per-page count just to
+          // keep the press running while sorts are tied up in formes.
+          sectionHeader('🎯', 'Guess the inventory'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+              'A 42-line Gutenberg Bible has about 1,290 pages, set two pages at a time in a forme. Each page averages roughly 2,500 characters. Question: about how many sorts (individual pieces of cast metal type) do you think Gutenberg\'s shop needed in inventory at one time?'),
+            h('label', { htmlFor: 'pp-sort-guess', style: { display: 'block', fontSize: 12, color: T.muted, marginBottom: 6 } },
+              'Your guess: ',
+              h('strong', { style: { color: T.accentHi, fontSize: 18, fontVariantNumeric: 'tabular-nums' } }, sortGuess.toLocaleString()),
+              ' sorts'),
+            h('input', {
+              id: 'pp-sort-guess', type: 'range', min: 100, max: 300000, step: 100,
+              value: sortGuess,
+              onChange: function(e) { setSortGuess(parseInt(e.target.value, 10)); if (sortRevealed) setSortRevealed(false); },
+              className: 'printingpress-no-print',
+              disabled: sortRevealed,
+              style: { width: '100%', accentColor: T.accent, marginBottom: 10 }
+            }),
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: T.dim, fontFamily: 'ui-monospace, monospace', marginBottom: 14 } },
+              h('span', null, '100'),
+              h('span', null, '300,000')
+            ),
+            !sortRevealed && h('div', { className: 'printingpress-no-print', style: { textAlign: 'center' } },
+              h('button', { onClick: function() { setSortRevealed(true); announce('Reveal: about 100,000 sorts.'); },
+                style: btnPrimary({ padding: '10px 20px', fontSize: 14 }) }, '🔍 Reveal the answer')
+            ),
+            sortRevealed && (function() {
+              var actual = 100000;
+              var diff = sortGuess - actual;
+              var off;
+              if (Math.abs(diff) < 10000) off = 'within an order of magnitude. Strong call.';
+              else if (sortGuess < actual / 5) off = 'a major underestimate. Most people guess far too low.';
+              else if (sortGuess < actual) off = 'low but in the right ballpark.';
+              else if (sortGuess < actual * 3) off = 'a little high, still ballpark.';
+              else off = 'higher than realistic, though some larger shops did approach this.';
+              return h('div', { 'aria-live': 'polite', style: { background: 'rgba(127,176,105,0.1)', border: '1px solid ' + T.ok, borderRadius: 8, padding: 14 } },
+                h('div', { style: { textAlign: 'center', marginBottom: 12 } },
+                  h('div', { style: { fontSize: 11, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: 4, fontFamily: 'Georgia, serif' } }, 'Approximate answer'),
+                  h('div', { style: { fontSize: 32, fontWeight: 800, color: T.accentHi, fontFamily: 'Georgia, serif', fontVariantNumeric: 'tabular-nums' } }, '~ 100,000'),
+                  h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic' } }, 'individual cast sorts in working inventory'),
+                  h('div', { style: { fontSize: 12, color: T.text, marginTop: 8 } },
+                    'Your guess of ', h('strong', null, sortGuess.toLocaleString()), ' was ', h('em', null, off))
+                ),
+                h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.65 } },
+                  h('strong', { style: { color: T.text } }, 'Why so many?'),
+                  ' A two-page forme might use 5,000 sorts. But once those sorts are locked in the forme, they cannot be reused until the run prints AND someone (often the apprentice) distributes them back to their compartments. With multiple formes in various stages of composing, pressing, and distribution, you need roughly 5 to 10 times the per-forme count just to keep all the presses running. Some sorts (E, T, A) need many more copies than others (Q, X, Z), so the inventory is unevenly distributed across the case.')
+              );
+            })()
+          ),
+
           sectionHeader('🧪', 'Type metal alloy: a materials science problem'),
           keyPointBlock(
             'Pure lead is too soft (deforms under press pressure). Pure tin shrinks unpredictably as it cools. The genius alloy:',
@@ -2363,6 +3375,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       function renderEconomics() {
         var copiesRaw = useState(180);  // Gutenberg printed ~180 Bibles
         var copies = copiesRaw[0], setCopies = copiesRaw[1];
+        // Pamphlet-reach state. 'reachCopies' is independent of the worker-years
+        // 'copies' slider so students can model a small pamphlet run (50 copies)
+        // without changing the Bible-scale calculator above.
+        var reachCopiesRaw = useState(500);
+        var reachCopies = reachCopiesRaw[0], setReachCopies = reachCopiesRaw[1];
+        var readersPerCopyRaw = useState(8);
+        var readersPerCopy = readersPerCopyRaw[0], setReadersPerCopy = readersPerCopyRaw[1];
+        var passingRoundsRaw = useState(3);
+        var passingRounds = passingRoundsRaw[0], setPassingRounds = passingRoundsRaw[1];
 
         // Hand-copying a Bible: ~1 year for a single scribe (well-documented)
         var SCRIBE_YEARS_PER_COPY = 1;
@@ -2556,6 +3577,103 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               'A roughly 5,000-fold cost reduction in 150 years. For comparison, computing power per dollar reduced by a similar factor over a comparable timespan in the late 20th century.')
           ),
 
+          // ── Pamphlet reach calculator ──
+          // Cost-per-book is one leverage axis. Reach-per-copy is the
+          // other. A 1450 pamphlet did not stop at the printed copy; it
+          // was lent, read aloud in taverns and pulpits, and passed on.
+          // This makes the multiplier explicit.
+          sectionHeader('\u{1F4E2}', 'Pamphlet reach calculator'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('p', { style: { margin: '0 0 14px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+              'A printed pamphlet did not stop at the buyer. It was lent, read aloud in taverns and town squares, posted on church doors, copied by hand, and re-printed in other cities. The reach multiplier is what made Luther\u2019s 95 Theses reach Rome inside three months. Try the math.'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginBottom: 14 } },
+              // Slider 1: copies printed
+              h('div', null,
+                h('label', { htmlFor: 'pp-reach-copies', style: { display: 'block', fontSize: 12, color: T.muted, marginBottom: 6 } },
+                  'Copies printed: ',
+                  h('strong', { style: { color: T.accentHi, fontSize: 16, fontVariantNumeric: 'tabular-nums' } }, reachCopies.toLocaleString())),
+                h('input', {
+                  id: 'pp-reach-copies', type: 'range', min: 50, max: 5000, step: 50,
+                  value: reachCopies,
+                  onChange: function(e) { setReachCopies(parseInt(e.target.value, 10)); },
+                  className: 'printingpress-no-print',
+                  style: { width: '100%', accentColor: T.accent }
+                }),
+                h('div', { style: { fontSize: 10, color: T.dim, marginTop: 4, fontStyle: 'italic' } },
+                  'Luther\u2019s 95 Theses ran ~300,000 copies in three years. A typical Reformation pamphlet ran 500\u20131,500.')
+              ),
+              // Slider 2: readers per copy
+              h('div', null,
+                h('label', { htmlFor: 'pp-readers', style: { display: 'block', fontSize: 12, color: T.muted, marginBottom: 6 } },
+                  'Readers per copy: ',
+                  h('strong', { style: { color: T.accentHi, fontSize: 16, fontVariantNumeric: 'tabular-nums' } }, readersPerCopy)),
+                h('input', {
+                  id: 'pp-readers', type: 'range', min: 1, max: 30, step: 1,
+                  value: readersPerCopy,
+                  onChange: function(e) { setReadersPerCopy(parseInt(e.target.value, 10)); },
+                  className: 'printingpress-no-print',
+                  style: { width: '100%', accentColor: T.accent }
+                }),
+                h('div', { style: { fontSize: 10, color: T.dim, marginTop: 4, fontStyle: 'italic' } },
+                  'In 1500 literacy was rare, so reading aloud was normal. One copy in a tavern might reach 10\u201320 hearers per evening.')
+              ),
+              // Slider 3: passing rounds
+              h('div', null,
+                h('label', { htmlFor: 'pp-rounds', style: { display: 'block', fontSize: 12, color: T.muted, marginBottom: 6 } },
+                  'Passing rounds: ',
+                  h('strong', { style: { color: T.accentHi, fontSize: 16, fontVariantNumeric: 'tabular-nums' } }, passingRounds)),
+                h('input', {
+                  id: 'pp-rounds', type: 'range', min: 1, max: 6, step: 1,
+                  value: passingRounds,
+                  onChange: function(e) { setPassingRounds(parseInt(e.target.value, 10)); },
+                  className: 'printingpress-no-print',
+                  style: { width: '100%', accentColor: T.accent }
+                }),
+                h('div', { style: { fontSize: 10, color: T.dim, marginTop: 4, fontStyle: 'italic' } },
+                  'Each round, the pamphlet finds new audiences \u2014 read aloud somewhere else, lent to a neighbor, reprinted in another town.')
+              )
+            ),
+            // Output computation. Halve the readers each subsequent round
+            // (diminishing returns) to keep the model honest \u2014 reach grows
+            // fast but not exponentially forever.
+            (function() {
+              var total = 0;
+              for (var r = 1; r <= passingRounds; r++) {
+                // Round r reach contribution: copies * readersPerCopy * decay^(r-1)
+                total += reachCopies * readersPerCopy * Math.pow(0.6, r - 1);
+              }
+              total = Math.round(total);
+              // Modern comparison: an average viral social-media post in 2026
+              // reaches roughly 1.5M unique viewers (rough order-of-magnitude).
+              var modernViral = 1500000;
+              var ratio = total > 0 ? (modernViral / total) : 0;
+              // Maine context: state population is ~1.4M (2026).
+              var mainePop = 1400000;
+              var mainePct = (total / mainePop * 100);
+              return h('div', { style: { background: 'rgba(201,161,74,0.08)', border: '1px solid ' + T.accent, borderRadius: 10, padding: 16, textAlign: 'center' } },
+                h('div', { style: { fontSize: 10, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: 6, fontFamily: 'Georgia, serif' } }, 'Estimated total reach'),
+                h('div', { style: { fontSize: 36, fontWeight: 800, color: T.accentHi, fontFamily: 'Georgia, serif', fontVariantNumeric: 'tabular-nums', lineHeight: 1, marginBottom: 8 } },
+                  total.toLocaleString()),
+                h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.5, marginBottom: 10 } },
+                  'people hear the idea (printed readers + listeners across ' + passingRounds + ' rounds, with diminishing returns)'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
+                  h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 6, padding: 8 } },
+                    h('div', { style: { fontSize: 10, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 3 } }, 'Maine population today'),
+                    h('div', { style: { fontSize: 13, color: T.text, fontWeight: 600 } },
+                      mainePct >= 1 ? (mainePct.toFixed(1) + '% of Maine (1.4M)') : ('< 1% of Maine (1.4M)'))
+                  ),
+                  h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 6, padding: 8 } },
+                    h('div', { style: { fontSize: 10, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 3 } }, 'Viral social post 2026'),
+                    h('div', { style: { fontSize: 13, color: T.text, fontWeight: 600 } },
+                      ratio >= 1 ? (Math.round(ratio).toLocaleString() + '\u00D7 more reach today (~1.5M)') : ('Your pamphlet reaches ' + Math.round(1 / ratio) + '\u00D7 more than a viral post'))
+                  )
+                )
+              );
+            })(),
+            h('p', { style: { margin: '14px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'Real history: Luther\u2019s 95 Theses (Oct 1517) reached Rome by Dec 1517. Distance ~750 miles. The mechanism was exactly this multiplier \u2014 print + read-aloud + reprint, in dozens of cities, all in three months. No army or institution could keep up with the spread.')
+          ),
+
           calloutBox('info', 'Why this matters historically',
             'A hand-copied Bible cost roughly 3 years of a craftsman\'s wages — only the wealthiest churches and nobles owned one. Within 50 years of Gutenberg, a printed Bible was within reach of merchants and parish priests. Within 150 years, printed books were affordable to literate working people. This is the prerequisite for: vernacular Bible reading (Reformation), scientific publication (the Royal Society), newspapers, the public sphere, and modern literacy itself.'),
 
@@ -2597,6 +3715,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         // Selected timeline event index. null = no event expanded.
         var selectedEventRaw = useState(null);
         var selectedEvent = selectedEventRaw[0], setSelectedEvent = selectedEventRaw[1];
+        // Reformation spread animation state. 0 = not started, 1+ = months elapsed.
+        var spreadMonthRaw = useState(0);
+        var spreadMonth = spreadMonthRaw[0], setSpreadMonth = spreadMonthRaw[1];
+        var spreadPlayingRaw = useState(false);
+        var spreadPlaying = spreadPlayingRaw[0], setSpreadPlaying = spreadPlayingRaw[1];
+        useEffect(function() {
+          if (!spreadPlaying) return;
+          if (spreadMonth >= 12) { setSpreadPlaying(false); return; }
+          var to = setTimeout(function() { setSpreadMonth(spreadMonth + 1); }, 600);
+          return function() { clearTimeout(to); };
+        }, [spreadPlaying, spreadMonth]);
+        // Primary-source reading exercise state — which thesis the student
+        // has selected to read + answer panel reveal flag.
+        var thesisIdxRaw = useState(0);
+        var thesisIdx = thesisIdxRaw[0], setThesisIdx = thesisIdxRaw[1];
+        var thesisReveal = useState(false);
+        var psReveal = thesisReveal[0], setPsReveal = thesisReveal[1];
         // PRINT_EVENTS: interactive milestones, 1377-1827. Sorted ascending.
         // Each event names what was printed, who made it happen, and why
         // print specifically (not just the idea) was the load-bearing piece.
@@ -2636,6 +3771,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             url: 'https://www.loc.gov/item/sn83025118/' },
           { year: 1830, title: 'Steam-powered cylinder press', who: 'Friedrich Koenig (earlier 1814 with The Times of London)',
             why: 'By 1830 the steam press had taken over major newspapers. Production jumped from ~250 impressions per day (Gutenberg-era) to ~1,000 per HOUR. The penny press became economically viable and mass-market journalism began.' },
+          { year: 1820, title: 'Maine becomes a state (Missouri Compromise)', who: 'Maine separation from Massachusetts',
+            local: true,
+            why: 'Maine entered the Union as the 23rd state, paired with Missouri\'s slave-state admission. The push for separate statehood had been argued in Maine\'s newspapers (notably the Falmouth Gazette) for 35 years before it succeeded. The Missouri Compromise paired a free state (Maine) with a slave state (Missouri) — a fragile 30-year truce that print debate would eventually unravel. Maine\'s statehood was a print-built political achievement.' },
           { year: 1851, title: 'Uncle Tom\'s Cabin', who: 'Harriet Beecher Stowe, Brunswick, Maine',
             local: true,
             why: 'Stowe wrote it in Brunswick, Maine, while her husband taught at Bowdoin College. Serialized in The National Era, then 300,000 copies in its first US year as a book — the most-printed novel of the 19th century. Lincoln allegedly told Stowe she was "the little woman who started this great war." A Maine kitchen produced one of the most consequential books in American history.',
@@ -2646,6 +3784,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         return h('div', { style: { padding: 20, maxWidth: 860, margin: '0 auto', color: T.text } },
           backBar('📜 Before & After'),
           dropCapPara('The press did not just print books. It restructured European intellectual life. Within 150 years it enabled the Reformation, the scientific revolution, vernacular literacy, the modern public sphere, and arguably the modern self.'),
+
+          // ── What the standard story leaves out ──
+          // The Eurocentric "Gutenberg invented printing" narrative is the
+          // default in U.S. textbooks. Naming the gaps respects student
+          // perspectives and addresses real historiographic concerns.
+          sectionHeader('🌏', 'What the standard story leaves out'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.warn, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+              'The narrative most U.S. textbooks tell is "Gutenberg invented printing in 1450." That is incomplete. Gutenberg invented the system that scaled printing for European alphabets in Europe. Printing as a concept and a practice is older and broader. The honest version names where else printing happened, and why those traditions did not produce the same explosive scale.'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+              [
+                { region: 'Tang Dynasty China', dates: '~600s–1000s',
+                  what: 'Block printing on paper. The Diamond Sutra (868 CE) is the oldest dated, complete printed book that survives. Buddhist texts, calendars, paper money, and astronomical charts were mass-produced for centuries before Gutenberg.',
+                  why: 'Chinese writing uses thousands of characters, not 26. Wood-block printing scales for fixed texts but movable type becomes uneconomic when each block holds 1,000-2,000 different glyphs. Block printing thrived; movable type did not displace it.' },
+                { region: 'Song Dynasty China', dates: '~1040s',
+                  what: 'Bi Sheng invented movable clay type around 1040 CE, 400 years before Gutenberg. Wang Zhen experimented with wooden movable type around 1297.',
+                  why: 'Same economic constraint as block printing: too many distinct characters for movable type to beat blocks. Bi Sheng\'s invention worked but did not scale.' },
+                { region: 'Goryeo and Joseon Korea', dates: '1234–1377',
+                  what: 'Metal movable type used for Sangjeong Gogeum Yemun (1234, lost) and the Jikji (1377, survives in Paris). Korea was casting metal type 78 years before Gutenberg.',
+                  why: 'Korean scholarly writing used Hanja (Chinese characters), so the same character-count economics applied. Hangul (the simpler Korean alphabet, 1443) was politically suppressed for scholarly use until the 19th century.' },
+                { region: 'Islamic world', dates: '~700s–1700s',
+                  what: 'Sophisticated paper-making (which the West learned from the Islamic world via Spain) and unmatched calligraphic tradition. Some block-printed amulets and scientific instruments. Movable-type printing for Arabic adopted only in the 1700s-1800s.',
+                  why: 'Multiple factors: religious scholars resisted mechanically reproducing the Qur\'an (the calligraphic act was theologically meaningful), Arabic\'s cursive joining and contextual letterforms are hard for movable type, and existing scribe guilds opposed the technology. Not "backwardness" — specific reasons rooted in the writing system and the religious tradition.' },
+                { region: 'Sub-Saharan Africa', dates: 'varies',
+                  what: 'Multiple indigenous writing systems (Ge\'ez in Ethiopia for ~2,000 years; Nsibidi in West Africa; Vai script, 1830s; many oral traditions with sophisticated transmission methods). The Timbuktu manuscripts (1300s-1600s) document a major manuscript culture in West Africa.',
+                  why: 'Printing arrived later than in Europe, often through colonial channels. Vibrant manuscript traditions and oral transmission systems served the same epistemic functions print served in Europe.' }
+              ].map(function(row, i) {
+                return h('div', { key: i, style: { background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '3px solid ' + T.warn, borderRadius: 6, padding: 12 } },
+                  h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
+                    h('h4', { style: { margin: 0, fontSize: 14, color: T.accentHi, fontFamily: 'Georgia, serif' } }, row.region),
+                    h('span', { style: { fontSize: 10, color: T.dim, fontFamily: 'ui-monospace, monospace' } }, row.dates)
+                  ),
+                  h('p', { style: { margin: '0 0 6px', fontSize: 12, color: T.text, lineHeight: 1.55 } },
+                    h('strong', { style: { color: T.warn } }, 'What happened: '), row.what),
+                  h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+                    h('strong', { style: { color: T.text, fontStyle: 'normal' } }, 'Why it did not scale like Mainz: '), row.why)
+                );
+              })
+            ),
+            h('p', { style: { margin: '12px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'The right framing: Gutenberg solved a specific problem for a specific writing system at a specific moment, and that solution scaled fast. He did not invent the human idea of duplicating texts. Crediting him as "the" inventor of printing erases hundreds of years of innovation in other parts of the world. The honest sentence is "Gutenberg developed the system that made movable-type printing economically viable for European alphabets."')
+          ),
 
           sectionHeader('📊', 'Books printed in Europe by century'),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 16, marginBottom: 14 } },
@@ -2803,8 +3983,201 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               'Tyndale, Calvin, and other reformers used the same playbook'
             ]
           ),
+          // ── Reformation spread interactive map ──
+          // 12-month animation. Cities pop in by month based on documented
+          // appearance of printed 95 Theses editions and Luther pamphlets.
+          // Hit "Play" → markers appear from Wittenberg outward over ~7
+          // seconds. Each city has an approximate month-of-arrival.
+          (function() {
+            var W = 360, H = 240;
+            // Approximate European city positions (relative to a simplified
+            // bounding box centered on Wittenberg). Position is editorial,
+            // not GIS-accurate; the point is relative geographic spread.
+            var CITIES = [
+              { name: 'Wittenberg', x: 200, y: 110, month: 0 },
+              { name: 'Leipzig',    x: 188, y: 122, month: 1 },
+              { name: 'Nuremberg',  x: 180, y: 152, month: 1 },
+              { name: 'Basel',      x: 160, y: 168, month: 2 },
+              { name: 'Mainz',      x: 142, y: 132, month: 2 },
+              { name: 'Augsburg',   x: 180, y: 170, month: 2 },
+              { name: 'Strasbourg', x: 148, y: 158, month: 3 },
+              { name: 'Cologne',    x: 142, y: 110, month: 3 },
+              { name: 'Vienna',     x: 232, y: 168, month: 4 },
+              { name: 'Antwerp',    x: 132, y: 84,  month: 5 },
+              { name: 'Paris',      x: 102, y: 142, month: 6 },
+              { name: 'Geneva',     x: 130, y: 178, month: 6 },
+              { name: 'London',     x: 88,  y: 76,  month: 8 },
+              { name: 'Lyon',       x: 122, y: 178, month: 9 },
+              { name: 'Krakow',     x: 254, y: 122, month: 10 }
+            ];
+            return h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 8, marginBottom: 10 } },
+                h('h4', { style: { margin: 0, fontSize: 14, color: T.accentHi, fontFamily: 'Georgia, serif' } },
+                  '🗺️ Watch the 95 Theses spread (Oct 1517 → Sept 1518)'),
+                h('div', { style: { fontSize: 13, color: T.muted, fontFamily: 'ui-monospace, monospace' } },
+                  spreadMonth === 0 ? 'Oct 1517' :
+                  spreadMonth >= 12 ? 'Sept 1518 (complete)' :
+                  ['Oct 1517','Nov 1517','Dec 1517','Jan 1518','Feb 1518','Mar 1518','Apr 1518','May 1518','Jun 1518','Jul 1518','Aug 1518'][spreadMonth - 1] || '')
+              ),
+              h('p', { style: { margin: '0 0 10px', fontSize: 12, color: T.muted, lineHeight: 1.5, fontStyle: 'italic' } },
+                'Each dot is a city where a printed edition of the Theses or an early Luther pamphlet appeared. Click play to watch the spread by month. By comparison, Wycliffe\'s manuscript-era writings (1380s) took decades to reach a fraction of these cities.'),
+              h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: 520, display: 'block', margin: '0 auto', background: '#1f3528', borderRadius: 8 },
+                role: 'img', 'aria-label': 'Simplified map of Europe showing cities where the 95 Theses appeared, by month' },
+                // Simplified Europe outline (very approximate — coastline + major rivers)
+                // Background landmass
+                h('path', { d: 'M 30 30 L 350 25 L 360 80 L 320 110 L 340 160 L 280 200 L 230 220 L 150 210 L 70 180 L 40 130 L 30 30 Z',
+                  fill: '#3a5a3a', stroke: '#1a3018', strokeWidth: 1 }),
+                // Major rivers (suggestive only — Rhine, Danube)
+                h('path', { d: 'M 142 60 Q 145 100 148 158 Q 150 180 130 200', fill: 'none', stroke: '#4a7080', strokeWidth: 1, opacity: 0.55 }),
+                h('path', { d: 'M 175 165 Q 210 170 245 175 Q 270 180 290 188', fill: 'none', stroke: '#4a7080', strokeWidth: 1, opacity: 0.55 }),
+                // Coastlines / north sea hint
+                h('path', { d: 'M 30 30 Q 80 50 130 60 Q 180 50 250 30', fill: 'none', stroke: '#4a7080', strokeWidth: 1.5, opacity: 0.4 }),
+                // City markers — appear by month
+                CITIES.map(function(c, i) {
+                  var visible = c.month <= spreadMonth;
+                  var isOrigin = c.month === 0;
+                  return h('g', { key: i, style: { opacity: visible ? 1 : 0, transition: 'opacity 0.5s ease' } },
+                    // Dot
+                    h('circle', { cx: c.x, cy: c.y, r: isOrigin ? 5 : 3.5,
+                      fill: isOrigin ? T.danger : T.accentHi,
+                      stroke: '#1a1410', strokeWidth: 1 }),
+                    // Ripple ring (only for newly-arrived in this month)
+                    c.month === spreadMonth && spreadMonth > 0 && h('circle', {
+                      cx: c.x, cy: c.y, r: 10,
+                      fill: 'none', stroke: T.accentHi, strokeWidth: 1, opacity: 0.6 }),
+                    // Label
+                    h('text', { x: c.x, y: c.y - 7, textAnchor: 'middle',
+                      fill: '#f5e8c8', fontSize: 8, fontFamily: 'Georgia, serif',
+                      fontWeight: isOrigin ? 700 : 500,
+                      style: { textShadow: '0 0 3px rgba(0,0,0,0.8)' } }, c.name)
+                  );
+                })
+              ),
+              h('div', { className: 'printingpress-no-print', style: { marginTop: 10, display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
+                !spreadPlaying && spreadMonth < 12 && h('button', {
+                  onClick: function() { setSpreadPlaying(true); announce('Reformation spread animation playing'); },
+                  style: btnPrimary({ padding: '8px 16px', fontSize: 13 }) },
+                  spreadMonth === 0 ? '▶ Play (Oct 1517 onward)' : '▶ Resume'),
+                spreadPlaying && h('button', {
+                  onClick: function() { setSpreadPlaying(false); },
+                  style: btn({ padding: '8px 16px', fontSize: 13 }) }, '⏸ Pause'),
+                spreadMonth >= 12 && h('button', {
+                  onClick: function() { setSpreadMonth(0); setSpreadPlaying(false); },
+                  style: btn({ padding: '8px 16px', fontSize: 13 }) }, '↺ Replay'),
+                spreadMonth > 0 && !spreadPlaying && h('button', {
+                  onClick: function() { setSpreadMonth(0); setSpreadPlaying(false); },
+                  style: btn({ padding: '8px 16px', fontSize: 13 }) }, '↺ Reset')
+              )
+            );
+          })(),
+          // ── Primary source reading ──
+          // 3 actual translated theses from Luther's 95, each with a brief
+          // comprehension prompt. Brings genuine primary-source literacy
+          // into the tool — students read what people actually wrote in
+          // 1517, not just summaries of it.
+          (function() {
+            var THESES = [
+              { num: 27, translation: 'They preach human follies who say that as soon as the coin clinks in the chest, the soul flies out of purgatory.',
+                prompt: 'What practice is Luther directly criticizing in this thesis?',
+                answer: 'The sale of indulgences — a Church practice where the faithful could pay money to reduce time their loved ones spent in purgatory. The "coin clinks in the chest" refers to the iron collection chests indulgence-sellers carried. Luther argues this is a "human folly," meaning a made-up tradition with no scriptural basis. This thesis became one of the most-quoted in the spread.' },
+              { num: 32, translation: 'Those who believe that, through letters of indulgence, they are made sure of their own salvation will be eternally damned along with their teachers.',
+                prompt: 'How would this thesis have read to a faithful 1517 Catholic, and what makes it explosive?',
+                answer: 'Explosive because Luther is saying not only that the indulgence-buyers are mistaken — but that they AND the priests selling indulgences will be damned. It directly attacks the religious authority of clergy who profit from the practice. This is the kind of language that turned an academic dispute into a movement that authorities could not easily suppress.' },
+              { num: 86, translation: 'Why does the pope, whose wealth today is greater than the wealth of the richest Crassus, build the basilica of St. Peter with the money of poor believers rather than with his own money?',
+                prompt: 'Why is naming Crassus (the famously wealthy Roman) such a powerful rhetorical move in 1517?',
+                answer: 'Crassus was a Latin shorthand for ultimate wealth — every educated reader would recognize the reference. Luther is comparing the pope to a notorious pagan plutocrat and asking why a man with that level of resources is taking money from the poor to build his church. The class critique is sharp; the historical-classical reference makes it impossible to dismiss as ignorant. This kind of educated polemic is what print specifically enabled.' }
+            ];
+            var th = THESES[thesisIdx];
+            return h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+              h('h4', { style: { margin: '0 0 4px', fontSize: 14, color: T.accentHi, fontFamily: 'Georgia, serif' } },
+                '📜 Read a primary source'),
+              h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+                'Excerpts from Luther\'s 95 Theses, translated from the Latin originals printed in 1517. Read the thesis, think about the comprehension question, then reveal the analysis.'),
+              // Selector
+              h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' } },
+                THESES.map(function(t, ti) {
+                  return h('button', { key: ti,
+                    onClick: function() { setThesisIdx(ti); setPsReveal(false); },
+                    style: ti === thesisIdx ? btnPrimary({ padding: '6px 12px', fontSize: 12 }) : btn({ padding: '6px 12px', fontSize: 12 })
+                  }, 'Thesis ' + t.num);
+                })
+              ),
+              // The thesis itself, parchment-styled
+              h('div', { style: {
+                background: T.parchment, color: T.ink,
+                padding: '16px 20px', borderRadius: 6, marginBottom: 12,
+                border: '2px solid #8a7a5a',
+                fontFamily: '"Garamond", "EB Garamond", "Cambria", serif',
+                fontSize: 16, lineHeight: 1.7, fontStyle: 'italic',
+                textAlign: 'center'
+              } },
+                h('div', { style: { fontSize: 10, fontStyle: 'normal', color: '#7c2d12', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, fontWeight: 700 } }, 'Thesis ' + th.num + ' · Martin Luther · 1517'),
+                '"' + th.translation + '"'
+              ),
+              // Comprehension prompt
+              h('div', { style: { fontSize: 13, color: T.text, lineHeight: 1.6, marginBottom: 10, padding: 10, background: T.cardAlt, borderRadius: 6 } },
+                h('strong', { style: { color: T.accentHi } }, '❓ '), th.prompt
+              ),
+              !psReveal && h('button', { className: 'printingpress-no-print',
+                onClick: function() { setPsReveal(true); announce('Analysis revealed'); },
+                style: btnPrimary({ padding: '8px 14px', fontSize: 12 }) }, '🔍 Reveal the analysis'),
+              psReveal && h('div', { 'aria-live': 'polite', style: {
+                background: '#1f3d28', border: '1px solid ' + T.ok, borderRadius: 6, padding: 12,
+                fontSize: 13, color: '#bbf7d0', lineHeight: 1.6 } },
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: T.ok, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Analysis'),
+                th.answer
+              )
+            );
+          })(),
+
           calloutBox('info', 'Mark Twain on Gutenberg (apocryphally attributed)',
             '"What the world is today, good and bad, it owes to Gutenberg. Everything can be traced to this source." Whether or not Twain actually said it, the structural argument holds: the Reformation required mass print. The Reformation broke the religious monopoly of one institution. Most modern political philosophy follows from that break.'),
+
+          // ── Speed of news: technology vs distance ──
+          // Visualizes how fast news traveled across major eras. Each row
+          // is one transmission technology with a representative speed
+          // figure (London → Vienna distance ~1,500 km used as benchmark).
+          // The bar widths inversely scale to time: longer bar = faster.
+          sectionHeader('⏱️', 'How fast news traveled (London → Vienna, ~1,500 km)'),
+          (function() {
+            var SPEEDS = [
+              { era: 'Foot messenger (Roman era)', time: '~60 days', daysVal: 60, note: 'A relay of runners. Reliable but slow. Imperial dispatches priority.' },
+              { era: 'Mounted courier (medieval)', time: '~25 days', daysVal: 25, note: 'Horse + relay station network. The Mongol yam system reached ~250 km/day; medieval Europe ran slower.' },
+              { era: 'Sailing ship + horse (1500)', time: '~14 days', daysVal: 14, note: 'Hanseatic League routes plus inland courier. Weather-dependent.' },
+              { era: 'Print broadside relay (1620)', time: '~10 days', daysVal: 10, note: 'Couriers carrying printed pamphlets that could be copied at each stop. Print multiplied at each node.' },
+              { era: 'Optical telegraph (1794)', time: '~12 hours', daysVal: 0.5, note: 'Chappe semaphore towers across France: signals from tower to tower at light-speed-of-sight, weather permitting.' },
+              { era: 'Electric telegraph (1850s)', time: '~minutes', daysVal: 0.005, note: 'Submarine cables under the Channel + overland wire. Reuters built a global news service on this.' },
+              { era: 'Internet (2026)', time: '<1 second', daysVal: 0.00001, note: 'Distance is irrelevant. The London → Vienna packet arrives faster than you can blink.' }
+            ];
+            var maxLog = Math.log10(60) + 6;  // log scale: foot messenger to internet spans 7+ orders of magnitude
+            function logBar(d) {
+              if (d <= 0.00001) return 100;
+              var logVal = Math.log10(d) + 6;  // shift so internet ~1, foot messenger ~7.78
+              var pct = 100 - (logVal / maxLog) * 100;
+              return Math.max(2, Math.min(100, pct));
+            }
+            return h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 16, marginBottom: 14 } },
+              h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+                'Bar width = relative speed (log scale; each tick is roughly 10× faster than the one above). Print was a step change — about 2× faster than horse-only, plus the ability to multiply copies at each relay stop. The bigger change came later (telegraph, internet). But print is when the curve first bent up.'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                SPEEDS.map(function(s, i) {
+                  var pct = logBar(s.daysVal);
+                  var isPrint = s.era.indexOf('Print') === 0;
+                  return h('div', { key: i },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 12, marginBottom: 2 } },
+                      h('span', { style: { color: isPrint ? T.accentHi : T.text, fontWeight: isPrint ? 700 : 600 } }, s.era),
+                      h('strong', { style: { color: isPrint ? T.accentHi : T.muted, fontFamily: 'ui-monospace, monospace' } }, s.time)
+                    ),
+                    h('div', { style: { width: '100%', height: 12, background: T.cardAlt, borderRadius: 3, overflow: 'hidden', border: '1px solid ' + T.border, marginBottom: 4 } },
+                      h('div', { style: { width: pct + '%', height: '100%',
+                        background: isPrint ? T.accent : '#5a6a7a' } })
+                    ),
+                    h('div', { style: { fontSize: 11, color: T.dim, lineHeight: 1.5, fontStyle: 'italic' } }, s.note)
+                  );
+                })
+              )
+            );
+          })(),
 
           sectionHeader('🔬', 'The scientific revolution'),
           keyPointBlock(
@@ -2845,6 +4218,387 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             explain: 'Wycliffe and Hus made very similar theological arguments to Luther, a century earlier, in manuscript culture. Both were locally suppressed — Hus was burned at the stake in 1415. The print difference is what allowed Luther\'s ideas to spread faster than they could be suppressed.'
           }),
 
+          // ── What survived? Durability comparison ──
+          // Permanence is one of the four pillars of print's contribution
+          // (named earlier in The Same Fears). Make it concrete with
+          // approximate survival rates across media. Best-effort figures
+          // drawn from bibliographic and archival scholarship.
+          sectionHeader('⏳', 'What survived? Durability across 600 years'),
+          h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+            'A medium\'s reach is one thing. Its durability is another. Print made ideas harder to erase by multiplying physical copies. The trade-off: each new generation of media keeps changing the math. Born-digital content is the most durable in principle and the most fragile in practice.'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+              [
+                { label: 'Pre-print European manuscripts (1100-1450)', survives: 5,
+                  note: 'Single copies, vulnerable to fire, mold, neglect. Most pre-print European texts are lost. Estimates vary by genre.',
+                  color: T.danger },
+                { label: 'Gutenberg Bibles (1455, ~180 printed)', survives: 27,
+                  note: '~49 of ~180 known to survive in some form. Sacred status protected them; cathedrals and universities preserved copies.',
+                  color: T.warn },
+                { label: 'Early printed books (1450-1500, "incunabula")', survives: 60,
+                  note: 'Bibliographers track ~30,000 known incunabula editions; surviving examples are reasonably well catalogued in research libraries.',
+                  color: T.accent },
+                { label: '19th-century newspapers (1800-1900)', survives: 35,
+                  note: 'Cheap acidic paper degrades. Microfilm and digitization captured a fraction; many small-town titles are partially or fully lost.',
+                  color: T.warn },
+                { label: '1990s websites (now ~30 years old)', survives: 30,
+                  note: 'Link rot, server shutdowns, format obsolescence. Internet Archive recovers a portion; much is gone or unreachable. The "Eternal September" generation of personal sites is largely vanished.',
+                  color: T.danger },
+                { label: 'Born-digital today, properly archived', survives: 95,
+                  note: 'In principle: bit-perfect copies, distributed redundancy, format migration. In practice: only if institutions actively curate. Most personal data is not curated.',
+                  color: T.ok }
+              ].map(function(row, i) {
+                return h('div', { key: i, style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 8, padding: 12 } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6, flexWrap: 'wrap', gap: 6 } },
+                    h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif' } }, row.label),
+                    h('div', { style: { fontSize: 14, fontWeight: 800, color: row.color, fontFamily: 'Georgia, serif', fontVariantNumeric: 'tabular-nums' } }, '~' + row.survives + '% survives')
+                  ),
+                  h('div', { style: { position: 'relative', height: 8, background: T.bg, borderRadius: 4, border: '1px solid ' + T.border, overflow: 'hidden', marginBottom: 6 } },
+                    h('div', { style: { position: 'absolute', left: 0, top: 0, bottom: 0, width: row.survives + '%', background: row.color, opacity: 0.85 } })
+                  ),
+                  h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, fontStyle: 'italic' } }, row.note)
+                );
+              })
+            ),
+            h('p', { style: { margin: '14px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'Figures are best-effort estimates from bibliographic and archival scholarship; "survival" includes any copy, fragment, or facsimile that can be examined today. The point is order-of-magnitude, not the second decimal. The takeaway: each new medium re-opens the durability question, and the answer is usually "depends on whether anyone bothers to preserve it."')
+          ),
+
+          // ── Crew reflection prompt ──
+          // Pulls the durability comparison from abstract into personal.
+          // Designed for EL Education Crew (advisory) discussions or as a
+          // short journal prompt.
+          h('div', { style: { background: T.parchment, color: T.ink, border: '2px solid ' + T.accent, borderRadius: 12, padding: 18, marginBottom: 14, position: 'relative' } },
+            h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 8, left: 12, color: T.accent, fontSize: 16 } }, '❦'),
+            h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 8, right: 12, color: T.accent, fontSize: 16 } }, '❦'),
+            h('div', { 'aria-hidden': 'true', style: { position: 'absolute', bottom: 8, left: 12, color: T.accent, fontSize: 16 } }, '❦'),
+            h('div', { 'aria-hidden': 'true', style: { position: 'absolute', bottom: 8, right: 12, color: T.accent, fontSize: 16 } }, '❦'),
+            h('div', { style: { fontSize: 11, color: '#7c2d12', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: 6, textAlign: 'center', fontFamily: 'Georgia, serif' } },
+              'Crew reflection · What about you would survive?'),
+            h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#3a2a1a', lineHeight: 1.65, fontFamily: 'Georgia, serif' } },
+              'A Gutenberg Bible survives because cathedrals kept it. A 1450 apprentice\'s notebook does not survive because no one preserved it. Your generation is producing more text and images than any previous one. Most of it is on platforms that did not exist 20 years ago and may not exist in 20 years.'),
+            h('ol', { style: { margin: '8px 0 0 18px', padding: 0, fontSize: 13, color: '#3a2a1a', lineHeight: 1.7, fontFamily: 'Georgia, serif' } },
+              h('li', { style: { marginBottom: 6 } }, h('strong', null, 'Which of your creations would you want to survive 600 years?'), ' Schoolwork, photos, texts to friends, social posts, a piece of writing nobody has seen yet?'),
+              h('li', { style: { marginBottom: 6 } }, h('strong', null, 'Where does that thing live right now?'), ' On your phone, in the cloud, on someone else\'s server, on paper?'),
+              h('li', { style: { marginBottom: 6 } }, h('strong', null, 'Who would have to keep caring about it for it to last?'), ' You, your family, your school, a company, an archive?'),
+              h('li', { style: { marginBottom: 0 } }, h('strong', null, 'What would your generation lose if cloud platforms shut down tomorrow?'), ' Be specific. What goes; what stays?')
+            )
+          ),
+
+          // ── Four print capitals comparison ──
+          // The Reformation-spread map shows geography; this section names
+          // four print centers and what each one specialized in. Helps
+          // students see that "European printing" was a network of regional
+          // shops with distinct styles, not a single uniform tradition.
+          sectionHeader('🏛️', 'Four print capitals, four specialties'),
+          h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+            'Print spread from Mainz outward in waves. Each major center developed a specialty matched to its trade, religion, and politics. By 1500 these four cities defined what European printing looked like.'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 14 } },
+            [
+              { city: 'Mainz', years: '1450 – 1500', flagColor: '#a83232',
+                specialty: 'Foundational presswork',
+                claim: 'Gutenberg + Fust + Schöffer perfected the system here. First Bibles, the Mainz Psalter (1457), the first dated colophon.',
+                fate: 'Sacked in the Diocesan War (1462), which scattered Mainz-trained printers across Europe and accidentally spread the technology.' },
+              { city: 'Strasbourg', years: '1460 – 1530', flagColor: '#3a7a3a',
+                specialty: 'Vernacular Bibles + reform texts',
+                claim: 'Mentelin\'s shop printed the first German Bible in 1466. Free imperial city, drew refugee printers and Reformation pamphleteers.',
+                fate: 'Became a primary center for Luther\'s pamphlets after 1517. The Reformation ran on Strasbourg type for a generation.' },
+              { city: 'Venice', years: '1470 – 1550', flagColor: '#c9a14a',
+                specialty: 'Classical scholarship + portable books',
+                claim: 'Aldus Manutius\'s Aldine Press: Greek and Latin classics, italic type (1500), the portable octavo format. ~150 shops at peak.',
+                fate: 'Venice\'s trade network put Aldine books on every European desk. The Index Librorum Prohibitorum (1559) hit Venice hardest because Venice printed everything.' },
+              { city: 'Paris', years: '1470 – 1600', flagColor: '#5a7aa8',
+                specialty: 'Scholarly reference + law + theology',
+                claim: 'Estienne family, Charlotte Guillard, the Sorbonne network. Latin Thesaurus and Greek New Testament with verse numbers still in use today.',
+                fate: 'Print regulation arrived early in Paris (royal censorship, 1521). Books either got the king\'s privilege or moved to Geneva and Antwerp.' }
+            ].map(function(c, i) {
+              return h('div', { key: i, style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 10, padding: 14, position: 'relative', overflow: 'hidden' } },
+                // Color stripe at top
+                h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: c.flagColor } }),
+                h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4, marginTop: 6, flexWrap: 'wrap' } },
+                  h('h4', { style: { margin: 0, fontSize: 16, color: T.accentHi, fontFamily: 'Georgia, serif' } }, c.city),
+                  h('span', { style: { fontSize: 10, color: T.dim, fontFamily: 'ui-monospace, monospace' } }, c.years)
+                ),
+                h('div', { style: { fontSize: 11, color: c.flagColor, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontFamily: 'Georgia, serif' } },
+                  c.specialty),
+                h('p', { style: { margin: '0 0 6px', fontSize: 12, color: T.text, lineHeight: 1.55 } }, c.claim),
+                h('p', { style: { margin: 0, fontSize: 11, color: T.muted, fontStyle: 'italic', lineHeight: 1.5 } }, c.fate)
+              );
+            })
+          ),
+
+          // ── Mainz Diocesan War (1462) sidebar ──
+          // The missing causal story for why press technology spread so
+          // fast: a local feudal war sacked Mainz, scattering its printers
+          // across Europe. The disaster became the engine of adoption.
+          sectionHeader('⚔️', 'The accident that scattered the printers: Mainz, 1462'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.danger, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+              'Print spread across Europe with a speed that looks miraculous unless you know the specific event that started it. In 1462, Mainz was caught in a local feudal conflict (the Diocesan War, also called the Mainz Archbishopric Feud) between two rival claimants to the archbishop\'s seat. The city was sacked and burned. The print shops were ruined.'),
+            h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+              'But the printers, journeymen, and apprentices were not killed. They left. They carried Mainz-trained skills (punch-cutting, matrix-making, casting, composing, press operation, inkmaking) with them to whatever city would take them in. Within a decade, that diaspora produced presses in 60+ European cities. The spread that the standard story tells as "the press caught on" was specifically a refugee crisis turning into a technology transfer.'),
+            h('div', { style: { background: T.cardAlt, borderLeft: '3px solid ' + T.warn, borderRadius: 6, padding: 12 } },
+              h('div', { style: { fontSize: 11, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 8, fontFamily: 'Georgia, serif' } }, 'Where they went · 1462–1475'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 6 } },
+                [
+                  { city: 'Cologne (1464)', who: 'Ulrich Zell — one of the earliest documented Mainz emigrés.' },
+                  { city: 'Strasbourg (~1464)', who: 'Multiple shops opened by Mainz-trained men; Mentelin had been working in parallel.' },
+                  { city: 'Rome (1467)', who: 'Sweynheym and Pannartz brought the press to Italy. Roman classical printing was born here.' },
+                  { city: 'Venice (1469)', who: 'Johannes de Spira opened the first Venice press. Within 30 years, Venice had ~150 shops.' },
+                  { city: 'Paris (1470)', who: 'Three Mainz-trained printers (Gering, Crantz, Friburger) set up the first Paris press at the Sorbonne.' },
+                  { city: 'Westminster (1476)', who: 'William Caxton — not directly Mainz-trained, but in the European print network the diaspora had created.' }
+                ].map(function(c, i) {
+                  return h('div', { key: i, style: { background: T.bg, border: '1px solid ' + T.border, borderRadius: 4, padding: 8 } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif', marginBottom: 3 } }, c.city),
+                    h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5 } }, c.who)
+                  );
+                })
+              )
+            ),
+            h('p', { style: { margin: '12px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'A technology that might have stayed locked in Mainz for a generation went international in a decade because of a local war that scattered the people who knew how. Counterfactual: without the 1462 sack, the technology probably still spreads, but slower, and the Reformation 55 years later might find a thinner network of presses to spread Luther\'s arguments. Local accidents shape global outcomes.')
+          ),
+
+          // ── Printing innovations timeline ──
+          // Gutenberg's press is the start of an arc, not a finished story.
+          // Six milestones from 1450 to today situate the press in the long
+          // continuity of duplication technology.
+          sectionHeader('🔧', 'What came after Gutenberg: innovations 1450 → 2024'),
+          h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+            'Each milestone collapses one bottleneck. The screw press scaled up the impression rate; the iron press eliminated frame failure; steam power broke human-arm throughput; Linotype broke composing-by-hand; desktop publishing put the shop on a desk; AI is trying to break composing entirely. The arc is six centuries of unbottlenecking the same job.'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+              [
+                { year: '1450', name: 'Gutenberg movable-type screw press',
+                  rate: '~250 impressions per day',
+                  note: 'The starting point you have been studying. Wooden screw press, hand-set metal type, oil-based ink, two-person crew.' },
+                { year: '1800', name: 'Stanhope iron press',
+                  rate: 'still ~250/day, but larger forme + no frame failure',
+                  note: 'Earl Stanhope replaced the wooden frame with cast iron. The press could handle larger sheets and last for decades without splitting. Same throughput, much higher reliability and page size.' },
+                { year: '1814', name: 'Koenig steam-powered press',
+                  rate: '~1,100 impressions per hour',
+                  note: 'The Times of London adopted Friedrich Koenig\'s steam-powered cylinder press. Daily newspapers became economically viable for the first time. Print broke free of human-arm throughput.' },
+                { year: '1886', name: 'Mergenthaler Linotype',
+                  rate: 'composing jumps from ~1,000 to ~5,000 chars/hour',
+                  note: 'A keyboard-operated machine cast a whole line of type at once from molten metal ("a line o\' type"). Newspapers exploded. The compositor\'s job changed from setting individual sorts to operating a keyboard. Same role, new bottleneck.' },
+                { year: '1985', name: 'Desktop publishing (Apple LaserWriter + PageMaker)',
+                  rate: 'shop fits on a desk',
+                  note: 'A laser printer plus page-layout software put what used to be a print shop into anyone\'s home. The 600-year arc from physical sorts to virtual type closes here. The terms (font, leading, kerning) come along untouched.' },
+                { year: '2024', name: 'Generative AI for text + layout',
+                  rate: 'composing seconds, not hours',
+                  note: 'The current frontier. The role of the human composer is shifting from setting type to setting prompts and judging output. The 1450 critic\'s questions (Who is responsible for accuracy? Does this rot reading? Who controls what spreads?) are getting asked again.' }
+              ].map(function(milestone, i) {
+                var isLast = (i === 5);
+                return h('div', { key: i, style: { display: 'flex', gap: 12, position: 'relative' } },
+                  // Year column with timeline dot
+                  h('div', { style: { flex: '0 0 70px', textAlign: 'right', position: 'relative' } },
+                    h('div', { style: { fontSize: 16, fontWeight: 800, color: T.accentHi, fontFamily: 'Georgia, serif', fontVariantNumeric: 'tabular-nums' } }, milestone.year),
+                    // Vertical line down to the next milestone
+                    !isLast && h('div', { 'aria-hidden': 'true', style: { position: 'absolute', right: -16, top: 24, bottom: -12, width: 2, background: T.accent, opacity: 0.4 } }),
+                    // Dot
+                    h('div', { 'aria-hidden': 'true', style: { position: 'absolute', right: -20, top: 4, width: 10, height: 10, borderRadius: '50%', background: T.accent, border: '2px solid ' + T.accentHi } })
+                  ),
+                  // Content column
+                  h('div', { style: { flex: 1, paddingLeft: 14, paddingBottom: isLast ? 0 : 4 } },
+                    h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif', marginBottom: 2 } }, milestone.name),
+                    h('div', { style: { fontSize: 11, color: T.warn, fontStyle: 'italic', marginBottom: 4 } }, milestone.rate),
+                    h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } }, milestone.note)
+                  )
+                );
+              })
+            ),
+            h('p', { style: { margin: '14px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'Notice the vocabulary. The 1450 words (font, kerning, leading, justify, italic, em-dash) survive every transition. The job description keeps changing; the language stays the same. Whatever comes after AI will probably still use these words.')
+          ),
+
+          // ── Press silhouettes through history ──
+          // Compact visual row showing how the press itself changed shape
+          // over 600 years. Pure visual; the text-heavy innovations
+          // timeline above this one supplies the words.
+          sectionHeader('🏭', 'The press changes shape: 1450 → today'),
+          h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+            'Same job, very different machines. The silhouettes below show what each generation\'s press looked like in profile. Notice how the press grows, mechanizes, and eventually disappears into a kitchen-appliance form factor.'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, alignItems: 'end' } },
+              [
+                { year: '1450', name: 'Wooden screw press',
+                  size: '~7 ft tall · 2-person crew',
+                  svg: h('svg', { viewBox: '0 0 80 100', width: '100%', style: { maxWidth: 100 }, 'aria-hidden': 'true' },
+                    // A-frame wooden uprights
+                    h('rect', { x: 14, y: 10, width: 6, height: 80, fill: T.wood, stroke: '#3a2a1a', strokeWidth: 1 }),
+                    h('rect', { x: 60, y: 10, width: 6, height: 80, fill: T.wood, stroke: '#3a2a1a', strokeWidth: 1 }),
+                    // Top horizontal beam
+                    h('rect', { x: 10, y: 6, width: 60, height: 8, fill: T.wood, stroke: '#3a2a1a', strokeWidth: 1 }),
+                    // Bottom horizontal beam
+                    h('rect', { x: 10, y: 86, width: 60, height: 8, fill: T.wood, stroke: '#3a2a1a', strokeWidth: 1 }),
+                    // Screw
+                    h('line', { x1: 40, y1: 14, x2: 40, y2: 64, stroke: T.accent, strokeWidth: 3 }),
+                    h('circle', { cx: 40, cy: 22, r: 6, fill: T.accentHi, stroke: '#5c4630', strokeWidth: 1 }),
+                    // Bar / lever
+                    h('line', { x1: 40, y1: 22, x2: 70, y2: 16, stroke: T.accent, strokeWidth: 2.5 }),
+                    h('circle', { cx: 70, cy: 16, r: 2, fill: T.wood }),
+                    // Platen
+                    h('rect', { x: 24, y: 60, width: 32, height: 5, fill: T.wood, stroke: '#3a2a1a', strokeWidth: 1 }),
+                    // Bed
+                    h('rect', { x: 22, y: 70, width: 36, height: 6, fill: '#3a2a1a' }),
+                    h('line', { x1: 12, y1: 96, x2: 68, y2: 96, stroke: '#3a2a1a', strokeWidth: 0.6 })
+                  ) },
+                { year: '1800', name: 'Stanhope iron press',
+                  size: '~6 ft tall · 1-person operation',
+                  svg: h('svg', { viewBox: '0 0 80 100', width: '100%', style: { maxWidth: 100 }, 'aria-hidden': 'true' },
+                    // Iron frame
+                    h('path', { d: 'M 16 14 L 14 88 L 22 88 L 22 14 Z', fill: '#5c5c5c', stroke: '#2a2a2a', strokeWidth: 1 }),
+                    h('path', { d: 'M 58 14 L 58 88 L 66 88 L 64 14 Z', fill: '#5c5c5c', stroke: '#2a2a2a', strokeWidth: 1 }),
+                    h('rect', { x: 10, y: 6, width: 60, height: 8, fill: '#3a3a3a', stroke: '#2a2a2a', strokeWidth: 1 }),
+                    h('rect', { x: 10, y: 86, width: 60, height: 6, fill: '#3a3a3a' }),
+                    // Compound lever mechanism
+                    h('line', { x1: 40, y1: 14, x2: 40, y2: 64, stroke: '#9a9a9a', strokeWidth: 2.5 }),
+                    h('circle', { cx: 40, cy: 22, r: 5, fill: '#7a7a7a', stroke: '#2a2a2a', strokeWidth: 1 }),
+                    h('line', { x1: 40, y1: 22, x2: 72, y2: 24, stroke: '#9a9a9a', strokeWidth: 3 }),
+                    h('circle', { cx: 72, cy: 24, r: 3, fill: '#7a7a7a' }),
+                    // Platen
+                    h('rect', { x: 22, y: 60, width: 36, height: 5, fill: '#3a3a3a' }),
+                    // Bed
+                    h('rect', { x: 20, y: 70, width: 40, height: 7, fill: '#2a2a2a' })
+                  ) },
+                { year: '1814', name: 'Koenig steam cylinder',
+                  size: 'room-sized · steam-powered',
+                  svg: h('svg', { viewBox: '0 0 80 100', width: '100%', style: { maxWidth: 100 }, 'aria-hidden': 'true' },
+                    // Main bed (horizontal)
+                    h('rect', { x: 4, y: 60, width: 74, height: 18, fill: '#3a3a3a', stroke: '#2a2a2a', strokeWidth: 1 }),
+                    // Cylinder
+                    h('circle', { cx: 40, cy: 50, r: 18, fill: '#5c5c5c', stroke: '#2a2a2a', strokeWidth: 1.5 }),
+                    h('circle', { cx: 40, cy: 50, r: 12, fill: '#7a7a7a', stroke: '#2a2a2a', strokeWidth: 0.6 }),
+                    h('circle', { cx: 40, cy: 50, r: 3, fill: '#2a2a2a' }),
+                    // Steam pipe rising
+                    h('rect', { x: 65, y: 20, width: 4, height: 40, fill: '#7a4a2a' }),
+                    h('rect', { x: 60, y: 14, width: 14, height: 8, fill: '#7a4a2a', stroke: '#3a2a1a' }),
+                    // Steam puffs
+                    h('circle', { cx: 67, cy: 10, r: 3, fill: '#cfcfcf', opacity: 0.6 }),
+                    h('circle', { cx: 72, cy: 6, r: 2, fill: '#cfcfcf', opacity: 0.5 }),
+                    // Paper feed wheel
+                    h('circle', { cx: 8, cy: 50, r: 6, fill: '#5c4630', stroke: '#2a2a2a' }),
+                    // Paper sheet
+                    h('rect', { x: 14, y: 47, width: 12, height: 6, fill: T.parchment, stroke: '#5c4630', strokeWidth: 0.4 }),
+                    // Legs
+                    h('rect', { x: 8, y: 78, width: 4, height: 18, fill: '#2a2a2a' }),
+                    h('rect', { x: 68, y: 78, width: 4, height: 18, fill: '#2a2a2a' })
+                  ) },
+                { year: '1886', name: 'Linotype machine',
+                  size: 'room-sized · keyboard-operated',
+                  svg: h('svg', { viewBox: '0 0 80 100', width: '100%', style: { maxWidth: 100 }, 'aria-hidden': 'true' },
+                    // Tall vertical magazine
+                    h('rect', { x: 28, y: 4, width: 30, height: 50, fill: '#5c5c5c', stroke: '#2a2a2a', strokeWidth: 1 }),
+                    // Magazine slots (vertical lines)
+                    [32, 36, 40, 44, 48, 52].map(function(x, i) {
+                      return h('line', { key: i, x1: x, y1: 8, x2: x, y2: 50, stroke: '#2a2a2a', strokeWidth: 0.5 });
+                    }),
+                    // Casting box
+                    h('rect', { x: 22, y: 54, width: 42, height: 16, fill: '#3a3a3a', stroke: '#2a2a2a', strokeWidth: 1 }),
+                    // Hot pot for molten lead (red glow)
+                    h('rect', { x: 58, y: 56, width: 8, height: 12, fill: '#c44536', stroke: '#7a2a2a', strokeWidth: 0.6 }),
+                    // Keyboard slope
+                    h('polygon', { points: '14,70 30,70 24,86 8,86', fill: '#5c4630', stroke: '#2a2a2a', strokeWidth: 1 }),
+                    // Key dots
+                    [12, 16, 20].map(function(x, i) {
+                      return [76, 80, 84].map(function(y, j) {
+                        return h('circle', { key: i + '-' + j, cx: x + j * 0.7, cy: y, r: 0.7, fill: '#cfcfcf' });
+                      });
+                    }),
+                    // Legs
+                    h('rect', { x: 22, y: 86, width: 4, height: 10, fill: '#2a2a2a' }),
+                    h('rect', { x: 58, y: 86, width: 4, height: 10, fill: '#2a2a2a' })
+                  ) },
+                { year: '1985+', name: 'Desktop printer / press',
+                  size: 'desk-sized · electric',
+                  svg: h('svg', { viewBox: '0 0 80 100', width: '100%', style: { maxWidth: 100 }, 'aria-hidden': 'true' },
+                    // Main rectangular body (like a laser printer)
+                    h('rect', { x: 8, y: 38, width: 64, height: 36, fill: '#cfcfcf', stroke: '#5c5c5c', strokeWidth: 1, rx: 3 }),
+                    h('rect', { x: 8, y: 38, width: 64, height: 6, fill: '#7a7a7a', rx: 3 }),
+                    // Output tray with paper
+                    h('rect', { x: 18, y: 28, width: 44, height: 12, fill: '#e8e8e8', stroke: '#5c5c5c', strokeWidth: 0.6 }),
+                    h('rect', { x: 22, y: 24, width: 36, height: 12, fill: T.parchment, stroke: '#5c5c5c', strokeWidth: 0.6 }),
+                    // Text on the page
+                    h('line', { x1: 26, y1: 28, x2: 54, y2: 28, stroke: '#3a2a1a', strokeWidth: 0.4 }),
+                    h('line', { x1: 26, y1: 30, x2: 50, y2: 30, stroke: '#3a2a1a', strokeWidth: 0.4 }),
+                    h('line', { x1: 26, y1: 32, x2: 52, y2: 32, stroke: '#3a2a1a', strokeWidth: 0.4 }),
+                    // Paper input tray
+                    h('rect', { x: 18, y: 74, width: 44, height: 8, fill: '#e8e8e8', stroke: '#5c5c5c', strokeWidth: 0.6 }),
+                    // Status light
+                    h('circle', { cx: 64, cy: 50, r: 2, fill: T.ok }),
+                    // Front display
+                    h('rect', { x: 14, y: 50, width: 20, height: 6, fill: '#2a2a2a', stroke: '#5c5c5c', strokeWidth: 0.4 })
+                  ) }
+              ].map(function(p, i) {
+                return h('div', { key: i, style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 8, padding: 10, textAlign: 'center' } },
+                  h('div', { style: { fontSize: 11, color: T.accentHi, fontFamily: 'ui-monospace, monospace', marginBottom: 6, fontWeight: 700 } }, p.year),
+                  h('div', { style: { background: T.bg, borderRadius: 6, padding: 6, marginBottom: 8 } }, p.svg),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif', marginBottom: 2 } }, p.name),
+                  h('div', { style: { fontSize: 9, color: T.dim, fontStyle: 'italic' } }, p.size)
+                );
+              })
+            ),
+            h('p', { style: { margin: '12px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'The 1450 press was wood and your two arms. The 2026 desktop printer is plastic, electronics, and a USB cable. Both put ink on paper. The shape of the work moved off your back and into a kilowatt.')
+          ),
+
+          // ── Where the press lives now ──
+          // Four modern devices/formats with their 1450 ancestor named.
+          // Grounds 600-year continuity in objects students use daily.
+          sectionHeader('📱', 'Where the press lives now'),
+          h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+            'You did not stop using the press. The press changed shape and moved into your pocket. Four examples of where 1450 technology lives in your daily life.'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 14 } },
+            [
+              { modern: 'Your laser printer',
+                ancestor: 'The screw press',
+                arrow: 'descended from',
+                lineage: 'A laser printer puts ink on paper via a heated drum instead of metal type, but the job is identical: convert digital text into physical impressions. The throughput equation (impressions per hour) is what shifted; the abstraction stayed.',
+                color: T.danger },
+              { modern: 'Your e-reader (Kindle, Kobo)',
+                ancestor: 'The printed book',
+                arrow: 'descended from',
+                lineage: 'An e-reader displays text in pages with leading and justification, in a typeface chosen by the publisher, with a cover and a colophon. The page-turning metaphor is direct. E-ink technology imitates the visual physics of ink on paper specifically because that is what worked for 600 years.',
+                color: T.accent },
+              { modern: 'A social-media post',
+                ancestor: 'The broadside',
+                arrow: 'descended from',
+                lineage: 'A 1450 broadside was a single sheet of opinion or announcement, distributed cheaply and quickly to a public who would read it aloud to others. A modern post is a single screen of opinion or announcement, distributed cheaply and quickly to a public who shares it. Same job, different medium.',
+                color: T.warn },
+              { modern: 'A PDF document',
+                ancestor: 'The forme (locked page of type)',
+                arrow: 'descended from',
+                lineage: 'A PDF is a fixed, page-addressable container of text and image arranged in a precise layout that will print identically wherever it goes. That is exactly what a forme was: locked-up content, paginated, distribution-ready. Adobe named the technology "Portable Document Format" because the forme was already portable.',
+                color: T.ok }
+            ].map(function(row, i) {
+              return h('div', { key: i, style: { background: T.card, border: '1px solid ' + T.border, borderLeft: '3px solid ' + row.color, borderRadius: 10, padding: 12 } },
+                h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif', marginBottom: 4 } }, row.modern),
+                h('div', { style: { fontSize: 10, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.05em', fontStyle: 'italic', marginBottom: 4 } }, row.arrow),
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: row.color, fontFamily: 'Georgia, serif', marginBottom: 8 } }, row.ancestor),
+                h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.55 } }, row.lineage)
+              );
+            })
+          ),
+
+          // ── Capstone quote card ──
+          // Period quotation as an emotional close to the module. The
+          // Erasmus quote is one of the earliest documented written
+          // reflections on what the press meant to a person living through
+          // its arrival.
+          h('div', { style: { position: 'relative', background: 'radial-gradient(ellipse at 50% 30%, #fef3c7 0%, ' + T.parchment + ' 70%)', color: T.ink, border: '3px solid ' + T.accent, borderRadius: 14, padding: '22px 26px', marginBottom: 14, textAlign: 'center', boxShadow: 'inset 0 0 24px rgba(201,161,74,0.18), 0 2px 8px rgba(0,0,0,0.3)' } },
+            h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 8, left: 12, color: T.accent } }, fleuron(14)),
+            h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 8, right: 12, color: T.accent } }, fleuron(14)),
+            h('div', { 'aria-hidden': 'true', style: { position: 'absolute', bottom: 8, left: 12, color: T.accent } }, fleuron(14)),
+            h('div', { 'aria-hidden': 'true', style: { position: 'absolute', bottom: 8, right: 12, color: T.accent } }, fleuron(14)),
+            h('div', { style: { fontSize: 60, color: T.accent, lineHeight: 0.5, fontFamily: 'Georgia, serif', marginBottom: 4, opacity: 0.5 } }, '“'),
+            h('p', { style: { margin: '0 auto 10px', fontSize: 16, lineHeight: 1.65, color: '#3a2a1a', fontFamily: 'Georgia, "Times New Roman", serif', fontStyle: 'italic', maxWidth: 560 } },
+              'Printing is the wonder of all wonders. It is the gift of God, by which old things may be made new and new things made known.'),
+            h('div', { style: { fontSize: 12, color: '#7c2d12', fontFamily: 'Georgia, serif', fontWeight: 700, letterSpacing: '0.04em' } },
+              '— Desiderius Erasmus, ~1500'),
+            h('div', { style: { fontSize: 10, color: '#5c4630', fontStyle: 'italic', marginTop: 4 } },
+              'Dutch humanist scholar, writing within a generation of Gutenberg, on what the printed book meant to a person living through its arrival.')
+          ),
+
           sectionHeader('🧠', 'Mini-quiz'),
           miniQuizBlock('beforeAfter', [
             { q: 'Approximately how many books were printed in Europe in the 16th century (1500s)?', opts: ['About 1 million', 'About 10 million', 'About 120 million', 'About 1 billion'], ans: 2, explain: '~120 million books in the 1500s, roughly 25× the cumulative European production of the entire previous century. The 1600s nearly tripled this again.' },
@@ -2868,6 +4622,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       // MODULE 6 — TYPOGRAPHY TODAY
       // ═════════════════════════════════════════════════════════════════════
       function renderTypographyToday() {
+        // Name personalizer state. Default placeholder lets the widget
+        // render meaningful preview even before the student types.
+        var typoNameRaw = useState('VERITAS');
+        var typoName = typoNameRaw[0], setTypoName = typoNameRaw[1];
         return h('div', { style: { padding: 20, maxWidth: 860, margin: '0 auto', color: T.text } },
           backBar('🔤 Typography Today'),
           dropCapPara('Open any document on your laptop. Word, Google Docs, a text message. The vocabulary you see (font, leading, kerning, em-dash, justified, italic) is the vocabulary of a 1450 print shop. The medium changed; the language did not.'),
@@ -2976,6 +4734,217 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             )
           ),
 
+          // ── Famous typefaces showcase ──
+          // 9 typefaces from Blackletter (1455) through Helvetica (1957),
+          // each with a sample line and a 2-3-sentence history. Uses CSS
+          // font-family fallbacks so visual differences appear on most
+          // systems without requiring web-font loads. Pedagogically: every
+          // major typeface has a recognizable visual personality that
+          // reflects the moment it was designed.
+          // ── One letter, six centuries ──
+          // Tight visual primer: render the lowercase 'a' in six period
+          // typefaces side by side. Same letter, dramatically different
+          // shape. Sets up the larger showcase below.
+          sectionHeader('🔡', 'One letter, six centuries'),
+          h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+            'Same letter. Six different times in history. The lowercase a is one of the most-changed letters in Latin type. Compare the closed double-storey "a" of medieval Blackletter with the open geometric "a" of Helvetica.'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 10 } },
+              [
+                { year: '1455', name: 'Blackletter', font: '"UnifrakturMaguntia", "Old English Text MT", "Goudy Old Style", serif', italic: false },
+                { year: '1470', name: 'Roman', font: '"Cambria", "Georgia", "Times New Roman", serif', italic: false },
+                { year: '1500', name: 'Italic', font: '"Cambria", "Georgia", serif', italic: true },
+                { year: '1722', name: 'Caslon', font: '"Big Caslon", "Caslon Pro", "Hoefler Text", "Georgia", serif', italic: false },
+                { year: '1798', name: 'Bodoni', font: '"Bodoni 72", "Didot", "Cambria", serif', italic: false },
+                { year: '1957', name: 'Helvetica', font: '"Helvetica", "Helvetica Neue", "Arial", sans-serif', italic: false }
+              ].map(function(tf, i) {
+                return h('div', { key: i, style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 8, padding: 10, textAlign: 'center' } },
+                  h('div', { style: {
+                    background: T.parchment, color: T.ink,
+                    fontFamily: tf.font,
+                    fontStyle: tf.italic ? 'italic' : 'normal',
+                    fontSize: 72, lineHeight: 1, padding: '8px 4px',
+                    border: '1px solid #8a7a5a', borderRadius: 4,
+                    marginBottom: 6, fontWeight: 400
+                  } }, 'a'),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif' } }, tf.name),
+                  h('div', { style: { fontSize: 10, color: T.dim, fontFamily: 'ui-monospace, monospace' } }, tf.year)
+                );
+              })
+            ),
+            h('p', { style: { margin: '12px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'Designers call this the letter\'s "skeleton" plus its "skin." The skeleton (basic structure) survives across centuries; the skin (proportions, contrast, terminals) marks the era. A type historian can usually date an unattributed book within 50 years just by looking at the lowercase a.')
+          ),
+
+          sectionHeader('🏛️', 'Six centuries of typefaces'),
+          h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+            'Every typeface carries the visual personality of its era. Blackletter is medieval. Aldine italic is Renaissance scholarship. Bodoni is the Enlightenment cult of contrast. Helvetica is post-war Swiss neutrality. The samples below render in approximations of each typeface (depends on what your system has installed).'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10, marginBottom: 14 } },
+            [
+              { name: 'Blackletter / Textura',  year: '1455', designer: 'Johannes Gutenberg, Mainz',
+                font: '"UnifrakturMaguntia", "Old English Text MT", "Goudy Old Style", serif',
+                hist: 'The face of the Gutenberg Bible. Dense, vertical, ecclesiastical — the look of medieval manuscripts brought to print. Hard to read for modern eyes; that density was a feature, not a bug, signaling "this is a sacred text."' },
+              { name: 'Roman (Jenson)', year: '1470', designer: 'Nicolas Jenson, Venice',
+                font: '"Cambria", "Georgia", "Times New Roman", serif',
+                hist: 'The first truly humanist Roman type. Jenson based the letterforms on Italian humanist scribes who themselves were imitating ancient Roman inscriptions. Almost every Roman typeface since (Garamond, Caslon, etc.) descends from this design.' },
+              { name: 'Italic (Aldine)', year: '1500', designer: 'Francesco Griffo for Aldus Manutius, Venice',
+                font: '"Cambria", "Georgia", serif', italic: true,
+                hist: 'Commissioned by Aldus Manutius for his pocket-format Greek classics. The slant let more text fit per line, making smaller, more portable books viable. The original "italic" was a body type, not used for emphasis — that came later.' },
+              { name: 'Garamond',  year: '1530', designer: 'Claude Garamond, Paris',
+                font: '"Garamond", "EB Garamond", "Cambria", serif',
+                hist: 'The defining French Renaissance Roman. Refined Jenson\'s letterforms with even more elegance. Most modern "Garamond" fonts (Adobe Garamond, EB Garamond, Garamond Premier) are revivals of either Garamond himself or his student Jean Jannon.' },
+              { name: 'Caslon', year: '1722', designer: 'William Caslon, London',
+                font: '"Big Caslon", "Caslon Pro", "Hoefler Text", "Georgia", serif',
+                hist: 'The English workhorse. The Declaration of Independence and the U.S. Constitution were first printed in Caslon. "When in doubt, use Caslon" was the standard advice for English-language printers for over 200 years.' },
+              { name: 'Baskerville', year: '1757', designer: 'John Baskerville, Birmingham',
+                font: '"Baskerville", "Libre Baskerville", "Cambria", serif',
+                hist: 'Higher contrast between thick and thin strokes than earlier Romans. So radical for its time that Benjamin Franklin defended it against critics who said the strokes were too sharp to read. Now considered one of the most readable typefaces ever designed.' },
+              { name: 'Bodoni', year: '1798', designer: 'Giambattista Bodoni, Parma',
+                font: '"Bodoni 72", "Didot", "Cambria", serif',
+                hist: 'Extreme contrast: hair-thin horizontals, heavy verticals, sharp serifs. The visual signature of the Enlightenment. Bodoni\'s editions of Homer and Virgil are still considered among the most beautiful books ever printed. Modern fashion magazines still reach for Bodoni for the same reason.' },
+              { name: 'Times New Roman', year: '1932', designer: 'Stanley Morison + Victor Lardent for The Times of London',
+                font: '"Times New Roman", "Times", serif',
+                hist: 'Designed for newspaper economics: narrower than earlier Romans, so more words fit per column inch. The Times of London used it for ~60 years. Became the default body text of office software in the 1990s, which is why your school documents probably default to it.' },
+              { name: 'Helvetica',  year: '1957', designer: 'Max Miedinger + Eduard Hoffmann, Switzerland',
+                font: '"Helvetica", "Helvetica Neue", "Arial", sans-serif',
+                hist: 'Swiss post-war design philosophy: neutral, geometric, no ornament. Designed to be the type that "disappears" so the message comes through. Now ubiquitous (NYC subway signs, corporate logos, modernist branding). A 2007 documentary is named for it.' }
+            ].map(function(tf, i) {
+              return h('div', { key: i, style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 10, padding: 14 } },
+                h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
+                  h('h4', { style: { margin: 0, fontSize: 14, color: T.accentHi, fontFamily: 'Georgia, serif', fontWeight: 700 } }, tf.name),
+                  h('span', { style: { fontSize: 11, color: T.dim, fontFamily: 'ui-monospace, monospace' } }, tf.year)
+                ),
+                h('div', { style: { fontSize: 11, color: T.warn, fontStyle: 'italic', marginBottom: 8 } }, tf.designer),
+                // Type sample
+                h('div', { style: {
+                  background: T.parchment, color: T.ink,
+                  padding: '12px 14px', borderRadius: 6, marginBottom: 10,
+                  fontFamily: tf.font,
+                  fontStyle: tf.italic ? 'italic' : 'normal',
+                  fontSize: 20, lineHeight: 1.2,
+                  border: '1px solid #8a7a5a',
+                  textAlign: 'center'
+                } }, 'The quick brown fox jumps over the lazy dog'),
+                h('p', { style: { margin: 0, fontSize: 12, color: T.text, lineHeight: 1.55 } }, tf.hist)
+              );
+            })
+          ),
+
+          // ── Name in 600 Years of Type ──
+          // Personal-relevance hook: the student types their name and
+          // sees it rendered in 5 typefaces spanning 1455 to 1957. Makes
+          // 'typeface as period costume' instantly tangible.
+          sectionHeader('\u270D\uFE0F', 'Your name through 600 years of type'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+              'Type your name, a word, or a short phrase. See it set in five typefaces from across the printed centuries. Each one was the default of its era. Your name in Blackletter would have looked like a 1455 contract. In Helvetica it would look like a 1980s passport.'),
+            // Input
+            h('div', { className: 'printingpress-no-print', style: { marginBottom: 14 } },
+              h('label', { htmlFor: 'pp-typo-name', style: { display: 'block', fontSize: 11, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 6 } }, 'Your name or word'),
+              h('input', {
+                id: 'pp-typo-name',
+                type: 'text',
+                value: typoName,
+                maxLength: 32,
+                onChange: function(e) { setTypoName(e.target.value || ''); },
+                placeholder: 'Type your name…',
+                style: { width: '100%', padding: 12, borderRadius: 8, border: '1px solid ' + T.border, background: T.cardAlt, color: T.text, fontSize: 16, fontFamily: 'Georgia, serif', letterSpacing: '0.04em', boxSizing: 'border-box' }
+              })
+            ),
+            // Five typeface samples
+            (function() {
+              var display = (typoName && typoName.trim()) ? typoName : 'YOUR NAME';
+              var SAMPLES = [
+                { name: 'Blackletter', year: '1455', context: 'Gutenberg Bible. Sacred.',
+                  font: '"UnifrakturMaguntia", "Old English Text MT", "Goudy Old Style", serif', italic: false },
+                { name: 'Garamond', year: '1530', context: 'French Renaissance. Scholarly.',
+                  font: '"Garamond", "EB Garamond", "Cambria", serif', italic: false },
+                { name: 'Caslon', year: '1722', context: 'Declaration of Independence.',
+                  font: '"Big Caslon", "Caslon Pro", "Hoefler Text", "Georgia", serif', italic: false },
+                { name: 'Bodoni', year: '1798', context: 'Enlightenment elegance.',
+                  font: '"Bodoni 72", "Didot", "Cambria", serif', italic: false },
+                { name: 'Helvetica', year: '1957', context: 'Swiss neutrality. Modern.',
+                  font: '"Helvetica", "Helvetica Neue", "Arial", sans-serif', italic: false }
+              ];
+              return h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+                SAMPLES.map(function(tf, i) {
+                  return h('div', { key: i, style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 8, padding: 12 } },
+                    h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 8 } },
+                      h('div', { style: { fontSize: 12, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif' } }, tf.name),
+                      h('div', { style: { fontSize: 10, color: T.dim, fontFamily: 'ui-monospace, monospace' } }, tf.year)
+                    ),
+                    h('div', { style: {
+                      background: T.parchment, color: T.ink,
+                      padding: '14px 12px', borderRadius: 6,
+                      fontFamily: tf.font, fontSize: 26, lineHeight: 1.15,
+                      textAlign: 'center', minHeight: 36,
+                      border: '1px solid #8a7a5a',
+                      overflowWrap: 'anywhere',
+                      marginBottom: 6
+                    } }, display),
+                    h('div', { style: { fontSize: 10, color: T.dim, fontStyle: 'italic', textAlign: 'center' } }, tf.context)
+                  );
+                })
+              );
+            })(),
+            h('p', { style: { margin: '12px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.5 } },
+              'If the typefaces look similar on your screen, your system may not have all of them installed. The fallbacks try to keep the right family (serif/sans/blackletter), but the exact letterforms vary.'),
+          ),
+
+          // ── Survivor's gallery: marks that crossed 600 years ──
+          // Many of the special characters on a modern keyboard came from
+          // 1450 print-shop practice. Showing them with their original
+          // purpose grounds the "typography vocabulary survived" claim.
+          sectionHeader('🧷', 'Marks that survived from 1450 into your keyboard'),
+          h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+            'Look at the special-character set in any word processor or in Unicode. Many of these marks were physical sorts in a 1450 print shop, and they survived because compositors kept setting them and readers kept understanding them.'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+              [
+                { mark: '¶', name: 'Pilcrow',
+                  then: 'Marked the start of a new paragraph in a manuscript or early printed book, especially in chapter divisions. From the Greek "paragraphos."',
+                  now: 'Still used in editing software to show formatting; the symbol survives in Word and Google Docs as "show invisible characters."' },
+                { mark: '§', name: 'Section sign',
+                  then: 'Marked a section break in legal and theological texts. Two interlocking S\'s suggesting "signum sectionis."',
+                  now: 'Used in legal documents, U.S. law citations (e.g., 18 U.S.C. § 1001), and academic writing.' },
+                { mark: '†', name: 'Dagger (obelus)',
+                  then: 'Used by editors to mark suspect or spurious passages in manuscripts. Carried over into footnotes when the asterisk was taken.',
+                  now: 'Footnote indicator after asterisk; also used to mark deceased authors in dated lists.' },
+                { mark: '‡', name: 'Double dagger',
+                  then: 'The third footnote mark after asterisk and dagger. Print shops kept all three on hand because no one wanted four footnotes in a paragraph.',
+                  now: 'Less common today but still standard for the third footnote when symbols are used instead of numbers.' },
+                { mark: '⁂', name: 'Asterism',
+                  then: 'Three asterisks in a triangle. Used to mark a section break inside a chapter, gentler than a chapter break.',
+                  now: 'Mostly extinct in mainstream typesetting, but used by some fiction publishers for scene breaks within a chapter.' },
+                { mark: '❦', name: 'Floral heart (aldus leaf)',
+                  then: 'A printer\'s flower (fleuron) used to decorate the end of a section or to fill out a short final line. Aldus Manutius set many of these.',
+                  now: 'Used in book design for decorative breaks; rendering depends on the font. You see it on poetry pages and chapter dividers.' },
+                { mark: '☞', name: 'Manicule (pointing hand)',
+                  then: 'A pointing-hand mark that indicated "look here." Drawn in manuscript margins; later cast as a metal sort. Books from 1500-1700 are full of them.',
+                  now: 'Re-emerged as a UI icon ("click here") and a Unicode character. The original "user-interface arrow."' },
+                { mark: '&', name: 'Ampersand',
+                  then: 'A ligature of the Latin "et" (and). Compositors cast it as a single sort because the word was so common. The shape comes from a hand-written "et" run together.',
+                  now: 'Everywhere. Brands love it (AT&T, Procter & Gamble). Still a ligature in many typefaces; some fonts give it nearly architectural beauty.' },
+                { mark: 'Æ', name: 'Æ ligature',
+                  then: 'A single sort combining A and E for Latin words like "Æneid." Compositors saved a slot in the case for it.',
+                  now: 'Still used in scientific names, Norse/Faroese/Icelandic text, and stylish branding (Encyclopædia Britannica kept it for centuries).' }
+              ].map(function(m, i) {
+                return h('div', { key: i, style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 8, padding: 12 } },
+                  h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 6 } },
+                    h('div', { style: { fontSize: 32, fontFamily: 'Georgia, serif', color: T.accentHi, lineHeight: 1, minWidth: 36, textAlign: 'center' } }, m.mark),
+                    h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif' } }, m.name)
+                  ),
+                  h('div', { style: { fontSize: 10, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 3 } }, 'In 1450'),
+                  h('p', { style: { margin: '0 0 6px', fontSize: 11, color: T.muted, lineHeight: 1.55 } }, m.then),
+                  h('div', { style: { fontSize: 10, color: T.ok, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 3 } }, 'In 2026'),
+                  h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.55 } }, m.now)
+                );
+              })
+            ),
+            h('p', { style: { margin: '12px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'Open a word processor right now and try Insert > Special Character. Roughly a quarter of what is in there is the contents of a 1450 type case.')
+          ),
+
           calloutBox('info', 'Movable type as the first discrete-symbol information system',
             'Computer scientists sometimes argue that movable type was the world\'s first true discrete information system. Each sort is a discrete symbol. Each character position is addressable. The forme is a 2D array of symbols. Print is a copy operation. The same conceptual structure shows up 500 years later in ASCII, Unicode, and digital text. Marshall McLuhan made this case explicitly in "The Gutenberg Galaxy" (1962).'),
 
@@ -3015,6 +4984,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       // MODULE 7 — THE PEOPLE BEHIND THE PRESS
       // ═════════════════════════════════════════════════════════════════════
       function renderPeople() {
+        // Who-said-this attribution game state. Quotes are imagined
+        // in the voice of each figure, drawing on documented work or
+        // motto. 5-round rotation, score persists in-session.
+        var pplQuoteIdxRaw = useState(0);
+        var pplQuoteIdx = pplQuoteIdxRaw[0], setPplQuoteIdx = pplQuoteIdxRaw[1];
+        var pplGuessRaw = useState(null);
+        var pplGuess = pplGuessRaw[0], setPplGuess = pplGuessRaw[1];
+        var pplRevealedRaw = useState(false);
+        var pplRevealed = pplRevealedRaw[0], setPplRevealed = pplRevealedRaw[1];
+        var pplScoreRaw = useState(0);
+        var pplScore = pplScoreRaw[0], setPplScore = pplScoreRaw[1];
+        var pplAttemptedRaw = useState(0);
+        var pplAttempted = pplAttemptedRaw[0], setPplAttempted = pplAttemptedRaw[1];
         // Period-archetype silhouette functions. Each is a small SVG portrait
         // (head + shoulders) styled to evoke the figure's era and role.
         // Stylized, not photorealistic — many of these figures (especially
@@ -3275,6 +5257,149 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           calloutBox('info', 'Why women printers got written out',
             'Estimates suggest 5-10% of European print shops in the 16th-17th centuries were run by women — usually printer widows who took over family businesses, but also some who came to it through other paths. Many produced significant scholarly and devotional work for decades. Standard 19th-century histories of printing focused almost exclusively on male printer-scholars and largely erased these contributions. Recent scholarship (Susan Broomhall, Helwi Blom, others) has been recovering this history. Worth bringing into a middle-school classroom.'),
 
+          // ── Who said this? Quote attribution game ──
+          // Lightly interactive layer on the read-only portrait gallery.
+          // 5 imagined quotes in each figure's voice; student picks the
+          // speaker from 4 multiple-choice candidates. Quotes are NOT
+          // claimed as historical \u2014 imagined in style of the figure's
+          // documented work, role, or motto.
+          (function() {
+            // Each entry: quote + correctName + 3 distractor names from PEOPLE.
+            // Names must match the PEOPLE[*].name strings exactly.
+            var QUOTES = [
+              {
+                text: '\u201CFestina lente \u2014 make haste, but slowly. A pocket book that pirates copy is still my book.\u201D',
+                speaker: 'Aldus Manutius',
+                hint: 'Pioneer of portable octavo books. Dolphin-and-anchor mark.'
+              },
+              {
+                text: '\u201CThe interest accrues whether you finish the Bible or not. Pay, or the press is mine.\u201D',
+                speaker: 'Johann Fust',
+                hint: 'Goldsmith and financier. Sued his collaborator.'
+              },
+              {
+                text: '\u201CMaster, with a tighter alloy and a slightly smaller body we could fit two more lines per page.\u201D',
+                speaker: 'Peter Sch\u00F6ffer',
+                hint: 'Apprentice and later partner in Mainz. Skilled scribe before he ever set type.'
+              },
+              {
+                text: '\u201CThe shop carries my husband\u2019s name. The work carries mine.\u201D',
+                speaker: 'Charlotte Guillard',
+                hint: 'Ran her press in Paris for nearly four decades after her husband\u2019s death.'
+              },
+              {
+                text: '\u201CNumber every verse. A reader needs to find their place \u2014 and a scholar needs to argue from it.\u201D',
+                speaker: 'The Estienne family',
+                hint: 'Multi-generational scholar-printers. Introduced verse numbering still used today.'
+              }
+            ];
+            var round = QUOTES[pplQuoteIdx];
+            // Build the 4 candidate names: correct + 3 distractors drawn from PEOPLE
+            var distractors = PEOPLE.map(function(pp) { return pp.name; }).filter(function(n) { return n !== round.speaker; });
+            // Deterministic distractor pick by quote index so the same round is stable
+            var seed = pplQuoteIdx;
+            var chosen = [];
+            for (var d = 0; d < 3 && d < distractors.length; d++) {
+              chosen.push(distractors[(seed + d) % distractors.length]);
+            }
+            // Insert correct at a position derived from the index
+            var insertAt = pplQuoteIdx % 4;
+            var choices = chosen.slice();
+            choices.splice(insertAt, 0, round.speaker);
+            var done = pplAttempted >= QUOTES.length;
+            function pickAnswer(name) {
+              if (pplRevealed) return;
+              setPplGuess(name);
+              setPplRevealed(true);
+              setPplAttempted(pplAttempted + 1);
+              if (name === round.speaker) setPplScore(pplScore + 1);
+              announce(name === round.speaker ? 'Correct. That is the speaker.' : 'Not quite. The speaker is shown.');
+            }
+            function nextRound() {
+              setPplQuoteIdx((pplQuoteIdx + 1) % QUOTES.length);
+              setPplGuess(null);
+              setPplRevealed(false);
+            }
+            function resetGame() {
+              setPplQuoteIdx(0);
+              setPplGuess(null);
+              setPplRevealed(false);
+              setPplScore(0);
+              setPplAttempted(0);
+            }
+            return h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8, flexWrap: 'wrap', gap: 6 } },
+                h('h4', { style: { margin: 0, fontSize: 14, color: T.accentHi, fontFamily: 'Georgia, serif' } },
+                  '\u{1F4AC} Who said this? (imagined voices)'),
+                h('div', { style: { fontSize: 11, color: T.dim, fontFamily: 'ui-monospace, monospace' } },
+                  'Round ' + Math.min(pplAttempted + (pplRevealed ? 0 : 1), QUOTES.length) + ' of ' + QUOTES.length + ' \u00B7 score ' + pplScore)
+              ),
+              h('p', { style: { margin: '0 0 12px', fontSize: 11, color: T.muted, fontStyle: 'italic', lineHeight: 1.5 } },
+                'These quotes are NOT historical transcripts \u2014 imagined paraphrases in the voice each figure is documented to have used. Pick the most likely speaker.'),
+              // The quote
+              h('blockquote', { style: { background: T.parchment, color: T.ink, padding: '14px 18px', borderLeft: '4px solid ' + T.accent, borderRadius: 4, margin: '0 0 12px', fontFamily: 'Georgia, serif', fontSize: 16, lineHeight: 1.55, fontStyle: 'italic' } },
+                round.text),
+              // Choices
+              h('div', { className: 'printingpress-no-print', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 10 } },
+                choices.map(function(name, i) {
+                  var isPicked = (pplGuess === name);
+                  var isCorrect = (name === round.speaker);
+                  var bg = T.cardAlt;
+                  var brd = T.border;
+                  if (pplRevealed) {
+                    if (isCorrect) { bg = 'rgba(127,176,105,0.18)'; brd = T.ok; }
+                    else if (isPicked) { bg = 'rgba(199,69,54,0.16)'; brd = T.danger; }
+                  }
+                  return h('button', { key: i,
+                    onClick: function() { pickAnswer(name); },
+                    disabled: pplRevealed,
+                    style: {
+                      padding: '10px 12px', textAlign: 'left',
+                      background: bg, color: T.text,
+                      border: '1.5px solid ' + brd, borderRadius: 8,
+                      cursor: pplRevealed ? 'default' : 'pointer',
+                      fontSize: 13, fontFamily: 'Georgia, serif',
+                      fontWeight: isCorrect && pplRevealed ? 700 : 500,
+                      transition: 'all 0.2s ease'
+                    }
+                  }, name);
+                })
+              ),
+              // Reveal panel
+              pplRevealed && (function() {
+                var correct = (pplGuess === round.speaker);
+                return h('div', { 'aria-live': 'polite',
+                  style: { padding: 12, borderRadius: 6, fontSize: 13, lineHeight: 1.55, marginBottom: 10,
+                    background: correct ? '#1f3d28' : '#3d2810',
+                    border: '1px solid ' + (correct ? T.ok : T.warn),
+                    color: correct ? '#bbf7d0' : '#fed7aa' } },
+                  h('div', { style: { fontWeight: 700, marginBottom: 4, fontFamily: 'Georgia, serif' } },
+                    correct ? '\u2713 ' + round.speaker : '\u2717 Speaker: ' + round.speaker),
+                  h('div', { style: { fontStyle: 'italic', opacity: 0.92, fontSize: 12 } }, round.hint)
+                );
+              })(),
+              // Controls
+              h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' } },
+                pplRevealed && !done && h('button', {
+                  onClick: nextRound,
+                  style: btnPrimary({ padding: '8px 14px', fontSize: 12 })
+                }, 'Next quote \u2192'),
+                pplRevealed && done && h('div', { style: { width: '100%', textAlign: 'center', padding: 10, background: T.cardAlt, border: '1px solid ' + T.accent, borderRadius: 6, marginBottom: 8 } },
+                  h('div', { style: { fontSize: 13, color: T.accentHi, fontFamily: 'Georgia, serif', fontWeight: 700, marginBottom: 4 } },
+                    'Round complete. Final score: ' + pplScore + ' / ' + QUOTES.length),
+                  h('div', { style: { fontSize: 11, color: T.muted, fontStyle: 'italic' } },
+                    pplScore === QUOTES.length ? 'A 1450 historian would be impressed.' :
+                    pplScore >= 3 ? 'Solid \u2014 you can hear the period voices.' :
+                    'Worth a re-read of the portrait gallery above, then another go.')
+                ),
+                done && h('button', {
+                  onClick: resetGame,
+                  style: btn({ padding: '8px 14px', fontSize: 12 })
+                }, '\u21BB Reset game')
+              )
+            );
+          })(),
+
           sectionHeader('🎭', 'Scenarios'),
           scenarioCard('people', 0, {
             prompt: 'A student says "Gutenberg invented the printing press all by himself." What is a more historically accurate framing?',
@@ -3287,6 +5412,85 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             correct: 1,
             explain: 'The historically accurate framing emphasizes Gutenberg as the integrator of an existing toolkit, dependent on capital, skilled labor, and a craft community. Korean metal movable type predates him by 78 years (the Jikji, 1377), but used a different process and faced different economics. The "lone genius" frame is comforting but inaccurate.'
           }),
+
+          // ── Maine Press Roots card ──
+          // Local-history sidebar for the King Middle audience. Connects to
+          // the 1785 peg on the Before & After timeline and to the new
+          // Falmouth Gazette template in Build a Broadside.
+          sectionHeader('🌲', 'Maine press roots'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 14, flexWrap: 'wrap' } },
+              // Small period-flag illustration on the left
+              h('div', { style: { flex: '0 0 auto' } },
+                h('svg', { viewBox: '0 0 80 100', width: 70, height: 88, 'aria-hidden': 'true' },
+                  // Pine tree (Maine's defining symbol, on the 1901 state flag's banner)
+                  h('rect', { x: 36, y: 60, width: 8, height: 30, fill: T.wood }),
+                  h('polygon', { points: '40,8 24,28 32,28 22,44 36,44 28,60 52,60 44,44 58,44 48,28 56,28', fill: '#3d6b3d', stroke: T.accent, strokeWidth: 1 }),
+                  // Faint dotted border
+                  h('rect', { x: 2, y: 2, width: 76, height: 96, fill: 'none', stroke: T.accent, strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.5 }),
+                  // Year banner
+                  h('rect', { x: 14, y: 78, width: 52, height: 14, fill: T.parchment, stroke: T.wood, strokeWidth: 0.8 }),
+                  h('text', { x: 40, y: 88, textAnchor: 'middle', fontFamily: 'Georgia, serif', fontSize: 9, fontWeight: 700, fill: T.ink }, '1785')
+                )
+              ),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('h4', { style: { margin: '0 0 6px', fontSize: 15, color: T.accentHi, fontFamily: 'Georgia, serif' } },
+                  'Thomas B. Wait & Benjamin Titcomb'),
+                h('div', { style: { fontSize: 11, color: T.warn, fontStyle: 'italic', marginBottom: 8 } },
+                  'Falmouth, District of Maine · January 1, 1785'),
+                h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.text, lineHeight: 1.6 } },
+                  'Wait and Titcomb founded the ',
+                  h('em', null, 'Falmouth Gazette and Weekly Advertiser'),
+                  ', the first newspaper printed in what would become Maine. They set up a press in Falmouth (now Portland) thirty-five years before Maine statehood, when Maine was still the District of Maine inside Massachusetts. Their press ran from a small shop on Fore Street.'),
+                h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.text, lineHeight: 1.6 } },
+                  'Why this matters: a frontier newspaper in 1785 was a political act. The Falmouth Gazette covered the statehood debate, advertised land sales, reprinted Boston and London news arriving by ship, and gave coastal Maine its first sustained source of printed information. Without local presses, news traveled at the speed of a horse from Boston.')
+              )
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginTop: 12 } },
+              h('div', { style: { background: T.cardAlt, borderLeft: '3px solid ' + T.accent, borderRadius: 4, padding: 8 } },
+                h('div', { style: { fontSize: 10, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 3 } }, 'Where the press sat'),
+                h('div', { style: { fontSize: 12, color: T.text } }, 'Fore Street, Falmouth (now Portland). Block walkable today from King Middle.')
+              ),
+              h('div', { style: { background: T.cardAlt, borderLeft: '3px solid ' + T.accent, borderRadius: 4, padding: 8 } },
+                h('div', { style: { fontSize: 10, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 3 } }, 'Successor papers'),
+                h('div', { style: { fontSize: 12, color: T.text } }, 'Cumberland Gazette (1786), Eastern Argus (1803), and on to the modern ',
+                  h('em', null, 'Portland Press Herald'),
+                  '. A 240-year chain.')
+              ),
+              h('div', { style: { background: T.cardAlt, borderLeft: '3px solid ' + T.accent, borderRadius: 4, padding: 8 } },
+                h('div', { style: { fontSize: 10, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 3 } }, 'Field trip'),
+                h('div', { style: { fontSize: 12, color: T.text } }, 'Maine Historical Society and the Wadsworth-Longfellow House (Congress Street) hold early Falmouth Gazette issues.')
+              )
+            )
+          ),
+
+          // ── "Did you know?" trivia card ──
+          // Five surprising facts about the named printers that did not fit
+          // the main portrait stories. Tell-a-friend material for students.
+          sectionHeader('💡', 'Did you know?'),
+          h('div', { style: { background: T.card, border: '1px solid ' + T.warn, borderRadius: 12, padding: 16, marginBottom: 14 } },
+            h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+              'A handful of facts that did not fit the main stories above, but are too good not to know.'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+              [
+                { fact: 'Gutenberg\'s actual surname was Gensfleisch.',
+                  detail: '"Gutenberg" came from the family estate "zum Gutenberg" in Mainz. Johannes Gensfleisch zur Laden zum Gutenberg is the full name. We remember the street he lived on, not his birth name.' },
+                { fact: 'The Aldine dolphin-and-anchor was so heavily pirated that Aldus published a guide to spotting fakes.',
+                  detail: 'Aldine books were bestsellers across Europe in the 1500s. Lyonnaise and Venetian rivals copied the mark and sold lower-quality knockoffs. Aldus printed a small pamphlet describing the precise proportions of his mark so buyers could check for themselves. The first published anti-counterfeiting guide.' },
+                { fact: 'Charlotte Guillard outlived two husbands (both printers) and ran her shop for 40 years.',
+                  detail: 'She inherited the press from her first husband, kept it through her second marriage to another printer, and continued running it for decades after his death. Over her career the Guillard press produced more than 150 substantial scholarly books. Many bore her own preface or note. Standard 19th-century histories did not mention her.' },
+                { fact: 'Peter Schöffer printed the first multicolor book using the press.',
+                  detail: 'The 1457 Mainz Psalter (Fust & Schöffer) used a complicated two-color printing technique: the body type in black, the large initial capitals printed in red and blue on the same impression. This required printing each page through the press in multiple passes with the type inked in different colors. Most scholars consider it among the most beautifully printed books ever made.' },
+                { fact: 'Benjamin Franklin ran away from his apprenticeship at age 17.',
+                  detail: 'His older brother James was a Boston printer who took Ben on as an apprentice at age 12. Five years in, Ben fled to Philadelphia rather than finish the term. The legal apprenticeship contract he broke is the same kind of contract you read above. He spent the rest of his life as a printer first and a politician second.' }
+              ].map(function(t, i) {
+                return h('div', { key: i, style: { background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '3px solid ' + T.warn, borderRadius: 6, padding: 10 } },
+                  h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif', marginBottom: 4 } }, t.fact),
+                  h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } }, t.detail)
+                );
+              })
+            )
+          ),
 
           sectionHeader('🧠', 'Mini-quiz'),
           miniQuizBlock('people', [
@@ -3329,7 +5533,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           // Wanted-style — broadsides were a primary public-information form
           // for fugitives, lost livestock, and rewards offered.
           { id: 'wanted', label: 'Notice / period announcement',
-            sample: 'NOTICE\n\nLost on the road\nbetween Portland\nand Falmouth\non the 8th day\nof May:\n\nA bay mare,\nfourteen hands,\nwhite blaze on forehead.\n\nReward of one dollar\nfor return to\nthe printer of\nthis sheet.' }
+            sample: 'NOTICE\n\nLost on the road\nbetween Portland\nand Falmouth\non the 8th day\nof May:\n\nA bay mare,\nfourteen hands,\nwhite blaze on forehead.\n\nReward of one dollar\nfor return to\nthe printer of\nthis sheet.' },
+          // Falmouth Gazette (1785) — first newspaper printed in what would
+          // become Maine. Predates statehood (1820) by 35 years. Anchored
+          // here for local-history relevance to Portland Public Schools.
+          { id: 'falmouth', label: 'Falmouth Gazette (1785) reproduction',
+            sample: 'THE FALMOUTH GAZETTE\nAND WEEKLY ADVERTISER\n\nVol. I, No. I\nFalmouth, in Maine,\nthe 1st of January, 1785.\n\nTo the inhabitants\nof the District of Maine:\n\nWe propose, by the\nblessing of Providence,\nto publish a Weekly\nNews-Paper, containing\nthe latest Intelligence\nfrom Europe and America.\n\nSubscriptions\nat 8 shillings\nper annum,\npayable quarterly.\n\nPrinted by\nThomas B. Wait\nand Benjamin Titcomb.' }
         ];
 
         var templateRaw = useState(0);
@@ -3345,6 +5554,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         // weight. Each option renders as SVG corners + edges that print.
         var borderStyleRaw = useState('classical');
         var borderStyle = borderStyleRaw[0], setBorderStyle = borderStyleRaw[1];
+        // Design-your-own-mark state. Each picker is a small ordered choice.
+        var markSymbolRaw = useState(0);
+        var markSymbol = markSymbolRaw[0], setMarkSymbol = markSymbolRaw[1];
+        var markMottoRaw = useState(0);
+        var markMotto = markMottoRaw[0], setMarkMotto = markMottoRaw[1];
+        var markFinishRaw = useState('gold');
+        var markFinish = markFinishRaw[0], setMarkFinish = markFinishRaw[1];
 
         function loadTemplate(i) {
           setTemplateIdx(i);
@@ -3492,6 +5708,280 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
           backBar('📰 Build a Broadside'),
           dropCapPara('A "broadside" was a single-sheet print, often political, advertising, or poetic. Compose your own. Pick a template, customize the text, choose a font, and print it. (Yes, the 🖨️ Print button at the top really prints.)'),
+
+          // ── Real printer's marks gallery ──
+          // Before students design their own colophon, show them five
+          // real shop marks from 1450-1555. Each is a small SVG icon +
+          // shop name + city + year + Latin motto with translation + a
+          // one-line note on what the symbolism claimed.
+          sectionHeader('\u2604\uFE0F', 'Five real printer\u2019s marks (1455\u20131555)'),
+          h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+            'Every serious shop had a mark, called a "device" or colophon. It went on the title page and the last page. It signaled who printed the book, which mattered when (a) buyers wanted quality and (b) authorities wanted accountability. The dolphin-and-anchor was so successful Aldus Manutius spent half his career suing counterfeiters.'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 14 } },
+            [
+              { shop: 'Fust & Sch\u00F6ffer', city: 'Mainz', year: '1457', motto: '(twin shields)',
+                meaning: 'The first printer\u2019s mark in history. Two heraldic shields, one for Fust, one for Sch\u00F6ffer, hanging from a branch. The book it appeared in (Mainz Psalter, 1457) is the first printed book to credit its makers.',
+                svg: h('svg', { viewBox: '0 0 80 80', width: 56, height: 56, 'aria-hidden': 'true' },
+                  h('line', { x1: 12, y1: 18, x2: 68, y2: 18, stroke: T.accent, strokeWidth: 2 }),
+                  h('line', { x1: 28, y1: 18, x2: 28, y2: 26, stroke: T.dim, strokeWidth: 1.5 }),
+                  h('line', { x1: 52, y1: 18, x2: 52, y2: 26, stroke: T.dim, strokeWidth: 1.5 }),
+                  h('path', { d: 'M 18 26 L 38 26 L 38 50 Q 28 58 18 50 Z', fill: T.cardAlt, stroke: T.accentHi, strokeWidth: 2 }),
+                  h('path', { d: 'M 42 26 L 62 26 L 62 50 Q 52 58 42 50 Z', fill: T.cardAlt, stroke: T.accentHi, strokeWidth: 2 }),
+                  h('path', { d: 'M 18 34 L 38 34 M 42 34 L 62 34', stroke: T.accent, strokeWidth: 1 }),
+                  h('path', { d: 'M 18 42 L 38 42 M 42 42 L 62 42', stroke: T.accent, strokeWidth: 1 })
+                )
+              },
+              { shop: 'Aldus Manutius', city: 'Venice', year: '1500',
+                motto: 'Festina lente \u2014 \u201Cmake haste slowly\u201D',
+                meaning: 'A dolphin (speed) coiled around an anchor (steadiness). Aldus pioneered portable octavo books and italic type; his motto captures the print-shop tension between turning out books fast and getting them right.',
+                svg: h('svg', { viewBox: '0 0 80 80', width: 56, height: 56, 'aria-hidden': 'true' },
+                  // Anchor
+                  h('circle', { cx: 40, cy: 14, r: 4, fill: 'none', stroke: T.accentHi, strokeWidth: 2 }),
+                  h('line', { x1: 40, y1: 18, x2: 40, y2: 64, stroke: T.accentHi, strokeWidth: 2.5 }),
+                  h('line', { x1: 28, y1: 22, x2: 52, y2: 22, stroke: T.accentHi, strokeWidth: 2 }),
+                  h('path', { d: 'M 40 64 Q 24 60 22 50', stroke: T.accentHi, strokeWidth: 2, fill: 'none' }),
+                  h('path', { d: 'M 40 64 Q 56 60 58 50', stroke: T.accentHi, strokeWidth: 2, fill: 'none' }),
+                  h('polygon', { points: '22,50 18,46 26,46', fill: T.accentHi }),
+                  h('polygon', { points: '58,50 62,46 54,46', fill: T.accentHi }),
+                  // Dolphin S-curve around the anchor
+                  h('path', { d: 'M 30 36 Q 16 34 18 48 Q 22 60 36 54 Q 50 48 56 36 Q 58 22 44 24', stroke: T.accent, strokeWidth: 2.2, fill: 'none', strokeLinecap: 'round' }),
+                  h('circle', { cx: 21, cy: 38, r: 1, fill: T.accent })
+                )
+              },
+              { shop: 'Robert Estienne', city: 'Paris', year: '1532',
+                motto: 'Noli altum sapere \u2014 \u201Cdo not be high-minded\u201D',
+                meaning: 'An olive tree with branches breaking off, from Romans 11:20. A scholar-printer\u2019s mark warning against pride. Estienne\u2019s shop printed the first numbered-verse Bibles, which is why your Bible has chapter and verse numbers at all.',
+                svg: h('svg', { viewBox: '0 0 80 80', width: 56, height: 56, 'aria-hidden': 'true' },
+                  // Trunk
+                  h('rect', { x: 36, y: 30, width: 8, height: 36, fill: T.accent, stroke: T.accentHi, strokeWidth: 1 }),
+                  // Roots
+                  h('path', { d: 'M 36 66 Q 24 70 18 66 M 44 66 Q 56 70 62 66', stroke: T.accentHi, strokeWidth: 1.5, fill: 'none' }),
+                  // Canopy (clusters of leaves)
+                  h('circle', { cx: 40, cy: 22, r: 12, fill: T.accentHi, opacity: 0.7 }),
+                  h('circle', { cx: 28, cy: 28, r: 8, fill: T.accentHi, opacity: 0.55 }),
+                  h('circle', { cx: 52, cy: 28, r: 8, fill: T.accentHi, opacity: 0.55 }),
+                  // Falling branches
+                  h('line', { x1: 22, y1: 36, x2: 14, y2: 50, stroke: T.dim, strokeWidth: 1.5, strokeLinecap: 'round' }),
+                  h('line', { x1: 58, y1: 36, x2: 66, y2: 50, stroke: T.dim, strokeWidth: 1.5, strokeLinecap: 'round' }),
+                  h('circle', { cx: 14, cy: 50, r: 2, fill: T.dim }),
+                  h('circle', { cx: 66, cy: 50, r: 2, fill: T.dim })
+                )
+              },
+              { shop: 'Johann Froben', city: 'Basel', year: '1491',
+                motto: 'Prudens simplicitas amorque recti \u2014 \u201Cwise simplicity and love of right\u201D',
+                meaning: 'A caduceus (winged staff with two serpents) flanked by doves. Froben published Erasmus and the humanists; the mark claimed Hermetic wisdom paired with peaceful intent. Caduceus = communication, doves = peace.',
+                svg: h('svg', { viewBox: '0 0 80 80', width: 56, height: 56, 'aria-hidden': 'true' },
+                  // Vertical staff
+                  h('line', { x1: 40, y1: 10, x2: 40, y2: 70, stroke: T.accentHi, strokeWidth: 2.5 }),
+                  // Ball-top
+                  h('circle', { cx: 40, cy: 10, r: 3.5, fill: T.accentHi }),
+                  // Wings at top
+                  h('path', { d: 'M 40 14 Q 30 12 24 18 Q 28 14 40 18', fill: T.accent, opacity: 0.85 }),
+                  h('path', { d: 'M 40 14 Q 50 12 56 18 Q 52 14 40 18', fill: T.accent, opacity: 0.85 }),
+                  // Two intertwined serpents (simplified as S-curves)
+                  h('path', { d: 'M 40 22 Q 30 28 40 34 Q 50 40 40 46 Q 30 52 40 58', stroke: T.accent, strokeWidth: 2, fill: 'none' }),
+                  h('path', { d: 'M 40 22 Q 50 28 40 34 Q 30 40 40 46 Q 50 52 40 58', stroke: T.accentHi, strokeWidth: 2, fill: 'none' }),
+                  // Doves
+                  h('path', { d: 'M 18 42 Q 14 38 16 36 Q 18 36 20 38 Q 22 36 24 38 Q 22 42 18 42 Z', fill: T.parchment, stroke: T.accentHi, strokeWidth: 0.8 }),
+                  h('path', { d: 'M 62 42 Q 58 38 60 36 Q 62 36 64 38 Q 66 36 68 38 Q 66 42 62 42 Z', fill: T.parchment, stroke: T.accentHi, strokeWidth: 0.8 })
+                )
+              },
+              { shop: 'Christopher Plantin', city: 'Antwerp', year: '1555',
+                motto: 'Labore et Constantia \u2014 \u201Cby labor and constancy\u201D',
+                meaning: 'A drafting compass with one point fixed, the other tracing a circle. The fixed leg is constancy, the moving leg is labor. Plantin built the largest printing operation of the 16th century. The compass-mark became a model for guild-pride symbolism across Europe.',
+                svg: h('svg', { viewBox: '0 0 80 80', width: 56, height: 56, 'aria-hidden': 'true' },
+                  // Outer traced circle (faint)
+                  h('circle', { cx: 40, cy: 50, r: 22, fill: 'none', stroke: T.dim, strokeWidth: 1, strokeDasharray: '3 2', opacity: 0.5 }),
+                  // Compass head
+                  h('circle', { cx: 40, cy: 14, r: 4, fill: T.accentHi, stroke: T.accent, strokeWidth: 1 }),
+                  h('line', { x1: 40, y1: 8, x2: 40, y2: 12, stroke: T.accentHi, strokeWidth: 2 }),
+                  // Fixed leg (vertical)
+                  h('line', { x1: 40, y1: 18, x2: 40, y2: 62, stroke: T.accent, strokeWidth: 2.5 }),
+                  h('polygon', { points: '37,62 43,62 40,68', fill: T.accentHi }),
+                  // Moving leg (angled)
+                  h('line', { x1: 40, y1: 18, x2: 60, y2: 64, stroke: T.accent, strokeWidth: 2.5 }),
+                  h('polygon', { points: '58,64 62,64 60,72', fill: T.accentHi }),
+                  // Small dot at the traced point on the circle
+                  h('circle', { cx: 60, cy: 64, r: 1.8, fill: T.warn })
+                )
+              }
+            ].map(function(mk, i) {
+              return h('div', { key: i, style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 10, padding: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' } },
+                h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 8, padding: 8, marginBottom: 10, lineHeight: 0 } }, mk.svg),
+                h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif', marginBottom: 2 } }, mk.shop),
+                h('div', { style: { fontSize: 10, color: T.dim, fontFamily: 'ui-monospace, monospace', marginBottom: 8 } }, mk.city + ', ' + mk.year),
+                h('div', { style: { fontSize: 11, color: T.warn, fontStyle: 'italic', marginBottom: 8, fontFamily: 'Georgia, serif', lineHeight: 1.35 } }, mk.motto),
+                h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5, textAlign: 'left' } }, mk.meaning)
+              );
+            })
+          ),
+          h('p', { style: { margin: '0 0 14px', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.5 } },
+            'When you design your own broadside below, the dolphin-and-anchor on the colophon (bottom of the page) is your tribute to Aldus. Your own version, with your own symbols, would have been someone\u2019s job for life in 1500.'),
+
+          // ── Design your own mark ──
+          // Mini-tool: pick a symbol + motto + finish. Renders a colophon
+          // preview. Students can screenshot/print it; this is a step
+          // toward thinking of yourself as a printer rather than just a
+          // reader of print.
+          sectionHeader('🎨', 'Design your own printer\u2019s mark'),
+          h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+            'Aldus had a dolphin and anchor. Plantin had a compass. Estienne had an olive tree. What would yours be? Pick a symbol that means something to you, choose a motto, and pick the finish. The result is YOUR mark, the way a 1500 printer would have signed every book they made.'),
+          (function() {
+            var SYMBOLS = [
+              { key: 'anchor', label: 'Anchor', meaning: 'Steadiness, persistence, returning safely.',
+                svg: function(color) { return [
+                  h('circle', { cx: 50, cy: 18, r: 5, fill: 'none', stroke: color, strokeWidth: 3 }),
+                  h('line', { x1: 50, y1: 23, x2: 50, y2: 78, stroke: color, strokeWidth: 4 }),
+                  h('line', { x1: 36, y1: 28, x2: 64, y2: 28, stroke: color, strokeWidth: 3 }),
+                  h('path', { d: 'M 50 78 Q 32 72 28 60', stroke: color, strokeWidth: 3, fill: 'none' }),
+                  h('path', { d: 'M 50 78 Q 68 72 72 60', stroke: color, strokeWidth: 3, fill: 'none' }),
+                  h('polygon', { points: '28,60 23,55 33,55', fill: color }),
+                  h('polygon', { points: '72,60 77,55 67,55', fill: color })
+                ]; } },
+              { key: 'compass', label: 'Compass', meaning: 'Precision, careful work, drawn boundaries.',
+                svg: function(color) { return [
+                  h('circle', { cx: 50, cy: 60, r: 25, fill: 'none', stroke: color, strokeWidth: 1, strokeDasharray: '3 2', opacity: 0.5 }),
+                  h('circle', { cx: 50, cy: 22, r: 5, fill: color }),
+                  h('line', { x1: 50, y1: 27, x2: 50, y2: 78, stroke: color, strokeWidth: 4 }),
+                  h('polygon', { points: '47,78 53,78 50,84', fill: color }),
+                  h('line', { x1: 50, y1: 27, x2: 75, y2: 82, stroke: color, strokeWidth: 4 }),
+                  h('polygon', { points: '72,80 78,82 76,87', fill: color })
+                ]; } },
+              { key: 'tree', label: 'Olive tree', meaning: 'Wisdom, peace, scholarly tradition.',
+                svg: function(color) { return [
+                  h('rect', { x: 46, y: 50, width: 8, height: 38, fill: color }),
+                  h('circle', { cx: 50, cy: 32, r: 18, fill: color, opacity: 0.7 }),
+                  h('circle', { cx: 32, cy: 42, r: 12, fill: color, opacity: 0.55 }),
+                  h('circle', { cx: 68, cy: 42, r: 12, fill: color, opacity: 0.55 })
+                ]; } },
+              { key: 'dove', label: 'Dove + branch', meaning: 'Hope, message, news from afar.',
+                svg: function(color) { return [
+                  h('ellipse', { cx: 50, cy: 50, rx: 18, ry: 12, fill: color, opacity: 0.9 }),
+                  h('circle', { cx: 67, cy: 44, r: 7, fill: color }),
+                  h('polygon', { points: '74,42 80,40 75,46', fill: color }),
+                  h('circle', { cx: 70, cy: 42, r: 1.5, fill: T.ink }),
+                  h('path', { d: 'M 32 48 Q 28 38 35 32 Q 30 44 38 50', fill: color, opacity: 0.7 }),
+                  h('line', { x1: 73, y1: 48, x2: 85, y2: 56, stroke: '#3d6b3d', strokeWidth: 2 }),
+                  h('circle', { cx: 82, cy: 54, r: 2, fill: '#3d6b3d' }),
+                  h('circle', { cx: 86, cy: 58, r: 2, fill: '#3d6b3d' })
+                ]; } },
+              { key: 'hammer', label: 'Hammer + book', meaning: 'Craft, work of hand and mind.',
+                svg: function(color) { return [
+                  h('rect', { x: 20, y: 50, width: 35, height: 28, fill: 'none', stroke: color, strokeWidth: 2 }),
+                  h('line', { x1: 37, y1: 50, x2: 37, y2: 78, stroke: color, strokeWidth: 1 }),
+                  h('line', { x1: 23, y1: 56, x2: 34, y2: 56, stroke: color, strokeWidth: 0.6, opacity: 0.6 }),
+                  h('line', { x1: 23, y1: 62, x2: 34, y2: 62, stroke: color, strokeWidth: 0.6, opacity: 0.6 }),
+                  h('line', { x1: 40, y1: 56, x2: 51, y2: 56, stroke: color, strokeWidth: 0.6, opacity: 0.6 }),
+                  h('rect', { x: 60, y: 30, width: 18, height: 12, fill: color }),
+                  h('rect', { x: 65, y: 42, width: 3, height: 36, fill: color })
+                ]; } },
+              { key: 'lighthouse', label: 'Lighthouse', meaning: 'Guidance, signal, holding the coast.',
+                svg: function(color) { return [
+                  h('polygon', { points: '40,80 60,80 56,30 44,30', fill: color, opacity: 0.85 }),
+                  h('rect', { x: 38, y: 22, width: 24, height: 10, fill: color }),
+                  h('polygon', { points: '42,22 58,22 50,10', fill: color }),
+                  h('rect', { x: 44, y: 36, width: 12, height: 6, fill: T.parchment, opacity: 0.8 }),
+                  h('line', { x1: 30, y1: 80, x2: 70, y2: 80, stroke: color, strokeWidth: 2 }),
+                  h('line', { x1: 62, y1: 25, x2: 85, y2: 18, stroke: color, strokeWidth: 1, opacity: 0.6, strokeDasharray: '2 2' }),
+                  h('line', { x1: 62, y1: 30, x2: 85, y2: 30, stroke: color, strokeWidth: 1, opacity: 0.6, strokeDasharray: '2 2' })
+                ]; } }
+            ];
+            var MOTTOES = [
+              { latin: 'Festina lente', en: 'Make haste slowly' },
+              { latin: 'Labore et constantia', en: 'By labor and constancy' },
+              { latin: 'Veritas vincit', en: 'Truth conquers' },
+              { latin: 'Per aspera ad astra', en: 'Through hardship to the stars' },
+              { latin: 'Lux ex tenebris', en: 'Light out of darkness' },
+              { latin: 'Vincit qui se vincit', en: 'They conquer who conquer themselves' }
+            ];
+            var FINISHES = [
+              { key: 'gold', label: 'Gold', color: T.accentHi },
+              { key: 'copper', label: 'Copper', color: '#b87333' },
+              { key: 'silver', label: 'Silver', color: '#cfd2cf' }
+            ];
+            var sym = SYMBOLS[markSymbol] || SYMBOLS[0];
+            var mot = MOTTOES[markMotto] || MOTTOES[0];
+            var fin = FINISHES.find(function(f) { return f.key === markFinish; }) || FINISHES[0];
+            return h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 220px) 1fr', gap: 18, alignItems: 'center' } },
+                // Left: live preview
+                h('div', { style: { background: T.parchment, color: T.ink, border: '3px double ' + T.wood, borderRadius: 8, padding: 14, textAlign: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' } },
+                  h('div', { style: { fontSize: 10, color: '#7c2d12', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700, marginBottom: 6, fontFamily: 'Georgia, serif' } }, 'Your mark'),
+                  h('svg', { viewBox: '0 0 100 100', width: 130, height: 130, style: { display: 'block', margin: '0 auto' }, 'aria-hidden': 'true' },
+                    h('circle', { cx: 50, cy: 50, r: 46, fill: 'none', stroke: fin.color, strokeWidth: 1.5, strokeDasharray: '2 2', opacity: 0.6 }),
+                    sym.svg(fin.color)
+                  ),
+                  h('div', { style: { marginTop: 8, fontFamily: 'Georgia, serif', fontStyle: 'italic', color: '#5c4630', fontSize: 12, lineHeight: 1.3 } }, mot.latin),
+                  h('div', { style: { fontFamily: 'Georgia, serif', color: '#7c2d12', fontSize: 10, marginTop: 2 } }, '"' + mot.en + '"')
+                ),
+                // Right: pickers
+                h('div', null,
+                  // Symbol picker
+                  h('div', { style: { marginBottom: 12 } },
+                    h('div', { style: { fontSize: 10, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 6, fontFamily: 'Georgia, serif' } }, 'Symbol'),
+                    h('div', { className: 'printingpress-no-print', style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+                      SYMBOLS.map(function(s, i) {
+                        var isPicked = (markSymbol === i);
+                        return h('button', { key: s.key,
+                          onClick: function() { setMarkSymbol(i); },
+                          'aria-pressed': isPicked ? 'true' : 'false',
+                          style: btn({
+                            padding: '6px 10px', fontSize: 11,
+                            background: isPicked ? T.accent : T.cardAlt,
+                            color: isPicked ? T.ink : T.text,
+                            borderColor: isPicked ? T.accentHi : T.border
+                          })
+                        }, s.label);
+                      })
+                    ),
+                    h('div', { style: { fontSize: 10, color: T.dim, fontStyle: 'italic', marginTop: 4 } }, sym.meaning)
+                  ),
+                  // Motto picker
+                  h('div', { style: { marginBottom: 12 } },
+                    h('div', { style: { fontSize: 10, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 6, fontFamily: 'Georgia, serif' } }, 'Motto (Latin)'),
+                    h('div', { className: 'printingpress-no-print', style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+                      MOTTOES.map(function(m, i) {
+                        var isPicked = (markMotto === i);
+                        return h('button', { key: i,
+                          onClick: function() { setMarkMotto(i); },
+                          'aria-pressed': isPicked ? 'true' : 'false',
+                          title: m.en,
+                          style: btn({
+                            padding: '6px 10px', fontSize: 11, fontStyle: 'italic',
+                            background: isPicked ? T.accent : T.cardAlt,
+                            color: isPicked ? T.ink : T.text,
+                            borderColor: isPicked ? T.accentHi : T.border
+                          })
+                        }, m.latin);
+                      })
+                    )
+                  ),
+                  // Finish picker
+                  h('div', null,
+                    h('div', { style: { fontSize: 10, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 6, fontFamily: 'Georgia, serif' } }, 'Finish'),
+                    h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 6 } },
+                      FINISHES.map(function(f) {
+                        var isPicked = (markFinish === f.key);
+                        return h('button', { key: f.key,
+                          onClick: function() { setMarkFinish(f.key); },
+                          'aria-pressed': isPicked ? 'true' : 'false',
+                          style: btn({
+                            padding: '6px 10px', fontSize: 11,
+                            background: isPicked ? f.color : T.cardAlt,
+                            color: isPicked ? T.ink : T.text,
+                            borderColor: isPicked ? T.accentHi : T.border,
+                            fontWeight: 700
+                          })
+                        }, f.label);
+                      })
+                    )
+                  )
+                )
+              ),
+              h('p', { style: { margin: '12px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+                'A real shop kept its mark for generations. The Estiennes used the olive tree for over 100 years across three printer-generations. Your mark would have appeared on every book your shop made.')
+            );
+          })(),
 
           // ── Editor ──
           // Composer controls use a darker variant of the parchment palette
@@ -3864,7 +6354,686 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       }
 
       // ═════════════════════════════════════════════════════════════════════
-      // CUMULATIVE QUIZ — 13 questions across all 9 modules
+      // MODULE 10 — A DAY IN THE SHOP
+      // Role-based narrative vignette. Student picks one of 4 shop roles
+      // (Apprentice / Compositor / Pressman / Master Printer) and walks
+      // through 4 decisions across a working day in 1455 Mainz. Each
+      // choice has a consequence; the end summary shows what kind of
+      // printer they turned out to be. Pure interactivity — no single
+      // right answer, just historical constraints to inhabit.
+      // ═════════════════════════════════════════════════════════════════════
+      function renderDayInShop() {
+        // State: which role + which decision step + cumulative outcome score
+        var roleRaw = useState(null);
+        var role = roleRaw[0], setRole = roleRaw[1];
+        var stepRaw = useState(0);
+        var step = stepRaw[0], setStep = stepRaw[1];
+        var choicesRaw = useState([]);
+        var choices = choicesRaw[0], setChoices = choicesRaw[1];
+        var feedbackRaw = useState(null);
+        var feedback = feedbackRaw[0], setFeedback = feedbackRaw[1];
+
+        // ROLES — each has a short character bio and 4 decisions
+        var ROLES = {
+          apprentice: {
+            label: 'Apprentice (Year 1)',
+            icon: '🧒',
+            bio: 'You are 12 years old. You started 6 months ago. You sweep, fetch ink, stack paper, and watch the journeymen. You are paid only in room and board, but you will be a master in 7 years if you stay disciplined.',
+            decisions: [
+              { id: 'a1', time: 'Morning', prompt: 'The master sends you to fetch oil-based ink from the cellar. You realize the shop has only enough for half a day. Telling him will mean blame for not noticing earlier. Saying nothing means the press stops at midday.',
+                choices: [
+                  { id: 'speak', text: 'Tell the master immediately, accept the blame.', outcome: 'The master is stern but glad you spoke up. He sends the senior apprentice to the supplier. A small reprimand, but you are trusted with more responsibility next week. +Trust.' },
+                  { id: 'hide',  text: 'Say nothing. Hope someone else notices.', outcome: 'The press stops at midday. The master traces the missed alert back to you. You lose a week of advancement privileges. The print run runs late. −Trust.' },
+                  { id: 'fetch', text: 'Run to the supplier on your own — show initiative.', outcome: 'You return with the wrong ink (water-based, useless for the press). The master sighs but appreciates the initiative. You learn the difference between ink types the hard way. Mixed.' }
+                ] },
+              { id: 'a2', time: 'Mid-morning', prompt: 'The compositor — a journeyman three years your senior — drops a galley. The type "falls in pi" (becomes a jumbled pile). It will take an hour to sort. He glances at you. He saw you watching. He could blame you.',
+                choices: [
+                  { id: 'help',  text: 'Help sort the type silently. Do not say who dropped it.', outcome: 'You and the compositor sort for an hour. He owes you. Years later when he is a master, he sponsors your transition. +Loyalty.' },
+                  { id: 'tell',  text: 'Tell the master what happened so he knows.', outcome: 'The compositor is docked half a day\'s pay. He resents you for years. The shop runs on tighter discipline. +Honesty, but social cost.' },
+                  { id: 'walk',  text: 'Pretend you did not see. Stay out of it.', outcome: 'The compositor blames you anyway. You spend the next hour proving it was him. Time wasted on both sides. Lesson learned about staying out of social politics.' }
+                ] },
+              { id: 'a3', time: 'Afternoon', prompt: 'You accidentally smudge a freshly printed page. The master is on the other side of the shop. The smudge is small. The page will be inserted into a Bible that costs the buyer 3 years\' wages.',
+                choices: [
+                  { id: 'speak', text: 'Tell the master immediately.', outcome: 'He reprints the page. Cost to the shop: 2 hours and one sheet of paper. He thanks you for your honesty. The Bible ships with no defect. +Integrity.' },
+                  { id: 'hide',  text: 'Slip the smudged page under a clean one and hope.', outcome: 'The Bible ships with a smudge on page 47. Three years later, that copy is in a Cologne library. A scholar finds the smudge and traces it to your shop. The shop\'s reputation takes a hit. −Reputation.' },
+                  { id: 'clean', text: 'Try to clean the smudge yourself with a damp cloth.', outcome: 'You make it worse — now there is a clear damp ring around the smudge. You have to confess. The master is twice as angry as he would have been. Lesson in problem-escalation.' }
+                ] },
+              { id: 'a4', time: 'Evening', prompt: 'The shop closes at sunset. Another apprentice asks if you would help him learn the letter positions in the type case (he is behind). Helping him means staying late. The master prefers apprentices rest so they work fresh tomorrow.',
+                choices: [
+                  { id: 'help',  text: 'Stay and help him. Skip dinner.', outcome: 'He learns faster than he would have. Three years from now you are the two strongest journeymen in the city. Crew matters more than grades. +Crew.' },
+                  { id: 'ask',   text: 'Suggest you both ask the master if you can use the next slow hour during the day.', outcome: 'The master appreciates the request and assigns a mentoring slot. You become known as someone who builds others up without sneaking around. +Initiative.' },
+                  { id: 'rest',  text: 'Tell him to figure it out himself. Apprentices need rest.', outcome: 'You sleep well. He struggles for weeks. The shop is a little less strong overall. You did the rational thing for yourself; the cost is invisible.' }
+                ] }
+            ]
+          },
+          compositor: {
+            label: 'Compositor (Year 5)',
+            icon: '🔤',
+            bio: 'You are 19. You set type for 8 hours a day, ~1,000 characters per hour, mirror-reversed, from memory. Your back hurts. You can read a manuscript fluently mirror-reversed and your fingers know where every letter sits in the case.',
+            decisions: [
+              { id: 'c1', time: 'Morning', prompt: 'A wealthy patron changes the order: they want the dedication page set in italic instead of Roman. Your shop has no italic punches. Buying punches takes weeks; the patron expects delivery in three days.',
+                choices: [
+                  { id: 'subcontract', text: 'Subcontract the italic dedication page to the Aldine Press in Venice (overnight courier).', outcome: 'It costs 30% of the patron\'s fee. The dedication ships on time and looks beautiful. Your shop builds a relationship with Aldus that pays off for a decade. Wise.' },
+                  { id: 'fake', text: 'Slant the Roman type slightly using shims. Hope the patron does not notice.', outcome: 'The patron notices. They withdraw the order and tell three other patrons. The shop loses two months of work. Faking craftsmanship is detectable.' },
+                  { id: 'refuse', text: 'Tell the patron honestly you cannot do italic. Offer Roman instead.', outcome: 'They accept Roman with a small discount. Your reputation for honesty grows. You decide that night to commission an italic punch set as a long-term investment. +Integrity, +Strategy.' }
+                ] },
+              { id: 'c2', time: 'Mid-morning', prompt: 'Setting type for the manuscript, you spot a clear misspelling — "recieve" instead of "receive." The author is dead (a 14th-century theologian). Modern copies all preserve the error.',
+                choices: [
+                  { id: 'fix', text: 'Silently correct it. No one will notice.', outcome: 'The print is cleaner. Three editions later, scholars use your edition as the authoritative source — your silent correction becomes the standard. You have shaped the historical record. +Quality, ±Authenticity.' },
+                  { id: 'mark', text: 'Print the error and add an editorial note: [recieve, sic].', outcome: 'Your editorial note becomes a model for future scholarly editions. You are doing modern textual criticism 400 years early. +Scholarship.' },
+                  { id: 'leave', text: 'Print exactly as the manuscript reads. Author intent rules.', outcome: 'You preserve the error faithfully. Scholars eventually develop "sic" notation to handle exactly this. You did not invent it but you obeyed the right principle.' }
+                ] },
+              { id: 'c3', time: 'Afternoon', prompt: 'A rival shop in Cologne poaches your apprentice mid-job with better pay. Your typesetting pace drops 30%. The Bible commission is due in two weeks.',
+                choices: [
+                  { id: 'recruit', text: 'Hire a replacement immediately, even if less skilled.', outcome: 'The replacement is slow at first but loyal. By month two your pace is back. You learn that hiring for character beats hiring for skill.' },
+                  { id: 'overtime', text: 'Pull extra hours yourself. Refuse to slow the deadline.', outcome: 'You hit the deadline. Your back gives out three months later. You miss six weeks of work. The Bible shipped on time; you nearly broke yourself for it.' },
+                  { id: 'renegotiate', text: 'Tell the patron the deadline must slip by a week. Explain why.', outcome: 'The patron is annoyed but agrees. Your reputation for transparency increases. Future patrons trust your timeline estimates. +Trust.' }
+                ] },
+              { id: 'c4', time: 'Evening', prompt: 'The master suggests you sign your name on the colophon of the next book. You are still a journeyman, not a master. It would be a step up. Other shops sometimes question whether journeymen-signed work counts.',
+                choices: [
+                  { id: 'accept', text: 'Accept the recognition. You earned it.', outcome: 'Your name appears on a notable edition. Two years later it accelerates your application for master status. The master\'s sponsorship matters more than the technical rules. +Career.' },
+                  { id: 'wait', text: 'Politely decline. Wait until you are a master.', outcome: 'You earn quiet respect for not rushing. When you finally make master, your first colophon-signed book is celebrated. +Discipline.' },
+                  { id: 'share', text: 'Suggest the colophon list both your names — master + journeyman.', outcome: 'It is unusual but happens. The book ships. You and the master become known as a pair. It is the precursor to "publisher + editor" credit norms 200 years before they formalized. +Innovation.' }
+                ] }
+            ]
+          },
+          pressman: {
+            label: 'Pressman (Year 6)',
+            icon: '💪',
+            bio: 'You are 22 and strong. You pull the bar 250 times a day, generating ~500 lb of platen pressure each time. Your shoulders are bigger than the compositor\'s. You can spot a misaligned forme by feel alone.',
+            decisions: [
+              { id: 'p1', time: 'Morning', prompt: 'The platen has a slight warp from yesterday\'s heat. Re-leveling takes 90 minutes. Pressing through means slightly uneven impressions all morning.',
+                choices: [
+                  { id: 'level', text: 'Re-level it. Lose 90 minutes.', outcome: 'Afternoon prints are crisp. Reputation for quality holds. The lost 90 minutes never show up in the final product. +Craft.' },
+                  { id: 'push', text: 'Push through. Accept 5% lower quality this morning.', outcome: 'The morning\'s impressions go to the patron who notices the unevenness and asks for reprints. You lose more than 90 minutes correcting them. False economy.' },
+                  { id: 'partial', text: 'Re-level only the parts that affect the title page; press through on body text.', outcome: 'Smart compromise. Title page is crisp, body is acceptable. You save 45 minutes and the patron is satisfied. +Judgment.' }
+                ] },
+              { id: 'p2', time: 'Mid-day', prompt: 'Ink supply is running low. Sending the apprentice to the supplier is risky (he might get the wrong kind, as he did last month). Stopping the press is expensive. Going yourself means abandoning the platen for an hour.',
+                choices: [
+                  { id: 'teach', text: 'Show the apprentice exactly which ink to ask for, give him a sample, send him with the master\'s seal.', outcome: 'He returns with the correct ink. He has now learned a real responsibility. Future deliveries are easier. +Apprentice growth.' },
+                  { id: 'stop', text: 'Stop the press, go yourself.', outcome: 'The shop loses an hour but gets the right ink. Safe choice. Costs 1 hour of production.' },
+                  { id: 'mix', text: 'Stretch what you have with a thinner blend. Hope it holds.', outcome: 'The thinner ink does not transfer cleanly. Half the morning\'s prints are pale and need reprinting. Larger loss than just stopping the press.' }
+                ] },
+              { id: 'p3', time: 'Afternoon', prompt: 'A page comes out smudged. The compositor blames the tympan; the master suspects the spacing in the forme. You can feel by hand which is true. Naming the compositor as the cause damages a colleague.',
+                choices: [
+                  { id: 'truth', text: 'State the truth: it is the compositor\'s spacing. Volunteer to help him correct it.', outcome: 'Compositor is embarrassed but grateful you helped fix it without escalation. Shop runs more honestly. +Crew.' },
+                  { id: 'tympan', text: 'Say it is the tympan. Volunteer to retighten it.', outcome: 'The smudge persists because the real cause is unaddressed. Two more reprints. The compositor never learns the spacing issue. False loyalty costs the shop.' },
+                  { id: 'master', text: 'Ask the master to inspect it together — let him diagnose.', outcome: 'The master sees the truth, handles the conversation. You stay out of the politics. Slowest but socially safest path.' }
+                ] },
+              { id: 'p4', time: 'Evening', prompt: 'A typo is discovered on page 23 of the Bible — already printed in 200 copies. Reprinting page 23 means re-setting and re-pressing 200 sheets. Errata slip (a printed correction tucked inside the book) is cheap but sloppy.',
+                choices: [
+                  { id: 'reprint', text: 'Reprint page 23 in full. Insert the corrected page.', outcome: 'Two extra days of work, one ream of paper. The Bible ships with no visible error. Patron pleased. +Quality. (This is what Gutenberg himself did for known errors in the 42-line Bible.)' },
+                  { id: 'errata', text: 'Insert a printed errata slip in the front matter.', outcome: 'Faster but visibly sloppy. Patron is mildly displeased. Some scholars now use "errata slip" as evidence of a hasty edition. ±Reputation.' },
+                  { id: 'leave', text: 'Ship as-is. Hope buyers do not notice.', outcome: 'They notice. Three years later your shop is known as "the one with the misprinted Bible." Long-term reputation cost greater than the reprint would have been.' }
+                ] }
+            ]
+          },
+          master: {
+            label: 'Master Printer',
+            icon: '🎩',
+            bio: 'You run the shop. You own the press, hire and fire, take risks, sign contracts, sue when necessary. Profit and reputation are both your responsibility. You are 40 and lived through three apprentices, two journeymen, one disastrous fire, and one lawsuit.',
+            decisions: [
+              { id: 'm1', time: 'Morning', prompt: 'Three orders arrive this morning. (A) A Bible commission — prestigious, low margin, 6 months of work. (B) An almanac — quick, mass-market, mid margin. (C) A heretical pamphlet — high margin, but printing it could mean Church penalties or worse.',
+                choices: [
+                  { id: 'bible', text: 'Take the Bible.', outcome: 'Reputation grows. Your shop becomes known for sacred work. Cash flow is tight for 6 months. Long-term it positions you well with patrons of all kinds.' },
+                  { id: 'almanac', text: 'Take the almanac.', outcome: 'Quick cash. You print 800 copies in a month. Your shop builds capacity in popular print, which scales well. +Sustainable business.' },
+                  { id: 'pamphlet', text: 'Take the heretical pamphlet.', outcome: 'You make a great margin. Six months later the Church investigates. You either flee to a Protestant city (life pivot) or pay massive fines (financial ruin). High risk, high reward.' }
+                ] },
+              { id: 'm2', time: 'Mid-day', prompt: 'A wealthy patron offers to fund a custom italic type set for your shop, in exchange for a 5-year exclusive on a single epic project — printing a complete Cicero in italic. It is a major investment of artistic capacity.',
+                choices: [
+                  { id: 'accept', text: 'Accept the deal.', outcome: 'You become the foremost italic shop in Mainz. The Cicero edition is talked about for centuries. You lose 5 years of flexibility but gain a permanent reputation.' },
+                  { id: 'counter', text: 'Counter-offer: 3-year exclusive, you retain rights to also print other italic works.', outcome: 'The patron agrees with a slightly smaller font commission. Smart compromise. You get the italic punches AND retain commercial flexibility.' },
+                  { id: 'decline', text: 'Decline. Keep your shop generalist.', outcome: 'You miss the italic wave. Aldus in Venice gets the patron instead. You stay financially stable but lose a positioning opportunity.' }
+                ] },
+              { id: 'm3', time: 'Afternoon', prompt: 'A competing shop in Strasbourg offers to merge with yours — combined capital, shared apprentices, larger market. You lose autonomy but gain scale.',
+                choices: [
+                  { id: 'merge', text: 'Merge.', outcome: 'The merged shop is the largest in the region. You are co-owner instead of sole owner. In two generations, your descendants run a print empire. +Scale, ±Autonomy.' },
+                  { id: 'partner', text: 'Form a partnership instead of merging — shared contracts, separate ownership.', outcome: 'Best of both worlds, hardest to manage. You and the Strasbourg shop trade work for 10 years. Ends amicably when the other master retires.' },
+                  { id: 'compete', text: 'Decline. Stay independent.', outcome: 'You remain sole owner. Your shop grows slower but never compromises. Your apprentices eventually open their own shops citing your model. +Legacy.' }
+                ] },
+              { id: 'm4', time: 'Evening', prompt: 'You close the books for the year. The shop made a small profit. Reinvest in: (A) more type, (B) better paper supply, (C) train another apprentice, (D) save for hard times?',
+                choices: [
+                  { id: 'type', text: 'Buy more type — open a second press line.', outcome: 'Doubled capacity. Risky if demand drops, but if it holds you double profit. Aggressive.' },
+                  { id: 'paper', text: 'Better paper supply chain — direct relationship with a mill.', outcome: 'Quality goes up, costs go down over 3 years. Patrons notice the paper quality and refer more work. +Quality.' },
+                  { id: 'apprentice', text: 'Train another apprentice — long-term capacity.', outcome: 'In 7 years you have another journeyman. In 10 you have another master who carries your name. Long-game.' },
+                  { id: 'save', text: 'Save against the next bad year.', outcome: 'Two years later a plague hits Mainz. The shop survives on savings while two competitors close. Conservative — but you are still printing in 1465 when others are not.' }
+                ] }
+            ]
+          }
+        };
+        var roleObj = role ? ROLES[role] : null;
+        var allDecisions = roleObj ? roleObj.decisions : [];
+        var currentDecision = allDecisions[step];
+        var isDone = roleObj && step >= allDecisions.length;
+
+        function pickRole(roleId) {
+          setRole(roleId);
+          setStep(0);
+          setChoices([]);
+          setFeedback(null);
+          announce('Role selected: ' + ROLES[roleId].label);
+        }
+        function pickChoice(choiceObj) {
+          setFeedback(choiceObj);
+          var newChoices = choices.concat([{ stepIdx: step, choice: choiceObj }]);
+          setChoices(newChoices);
+          announce('Choice recorded. ' + choiceObj.outcome);
+        }
+        function nextStep() {
+          setFeedback(null);
+          setStep(step + 1);
+        }
+        function restart() {
+          setRole(null);
+          setStep(0);
+          setChoices([]);
+          setFeedback(null);
+        }
+
+        return h('div', { style: { padding: 20, maxWidth: 860, margin: '0 auto', color: T.text } },
+          backBar('⚒️ A Day in the Shop'),
+          // ── Role selection screen ──
+          !role && h('div', null,
+            dropCapPara('It is 1455 in a Mainz print shop. The Gutenberg Bible is being produced. Choose your role and walk through four decisions across a working day. Each choice has consequences. There is no single right answer — there are historical constraints, and you are inside them.'),
+            sectionHeader('🎭', 'Choose your role'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12, marginBottom: 14 } },
+              ['apprentice', 'compositor', 'pressman', 'master'].map(function(roleId) {
+                var r = ROLES[roleId];
+                return h('button', { key: roleId,
+                  onClick: function() { pickRole(roleId); },
+                  'aria-label': 'Choose role: ' + r.label,
+                  style: btn({
+                    display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8,
+                    padding: 16, minHeight: 160, background: T.card, borderColor: T.border
+                  })
+                },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, width: '100%' } },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 32 } }, r.icon),
+                    h('span', { style: { fontWeight: 700, fontSize: 16, color: T.accentHi, fontFamily: 'Georgia, serif' } }, r.label)
+                  ),
+                  h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55 } }, r.bio)
+                );
+              })
+            ),
+            // ── Top-down shop floor plan ──
+            // Anchors the four roles spatially. Approximate layout of a
+            // 1455 Mainz workshop: ~20 ft square, master's desk near the
+            // door, type cases by the window for light, press in the
+            // working bay, drying lines along the back. Roles are color-
+            // coded to their primary station.
+            sectionHeader('🗺️', 'The shop you would work in'),
+            h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+              h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                'Approximate top-down floor plan of a 1455 Mainz workshop. A typical shop was about the size of a two-car garage. Light entered through tall windows; the press sat in the working bay; type cases lined the bright wall.'),
+              h('div', { style: { background: '#1a1410', borderRadius: 10, padding: 12, overflow: 'hidden' } },
+                h('svg', { viewBox: '0 0 420 280', width: '100%', height: 'auto', style: { maxHeight: 360, display: 'block', margin: '0 auto' }, role: 'img', 'aria-label': 'Top-down floor plan of a 1455 Mainz print shop' },
+                  // Floor planks pattern
+                  h('defs', null,
+                    h('pattern', { id: 'shopFloor', x: 0, y: 0, width: 30, height: 8, patternUnits: 'userSpaceOnUse' },
+                      h('rect', { x: 0, y: 0, width: 30, height: 8, fill: '#3a2a1a' }),
+                      h('line', { x1: 0, y1: 0, x2: 30, y2: 0, stroke: '#2a1f15', strokeWidth: 0.5 }),
+                      h('line', { x1: 0, y1: 4, x2: 30, y2: 4, stroke: '#2a1f15', strokeWidth: 0.3, opacity: 0.5 })
+                    )
+                  ),
+                  // Walls (thick frame)
+                  h('rect', { x: 10, y: 10, width: 400, height: 260, fill: 'url(#shopFloor)', stroke: T.wood, strokeWidth: 5 }),
+                  // Inner softer border
+                  h('rect', { x: 12, y: 12, width: 396, height: 256, fill: 'none', stroke: '#3d2810', strokeWidth: 1 }),
+                  // Window markings on left wall (let in light)
+                  h('rect', { x: 8, y: 50, width: 6, height: 30, fill: '#e0d8a8', stroke: T.accent, strokeWidth: 1 }),
+                  h('rect', { x: 8, y: 100, width: 6, height: 30, fill: '#e0d8a8', stroke: T.accent, strokeWidth: 1 }),
+                  // Door at front (south)
+                  h('rect', { x: 190, y: 264, width: 40, height: 8, fill: T.parchment, stroke: T.wood, strokeWidth: 1.5 }),
+                  h('text', { x: 210, y: 278, textAnchor: 'middle', fontSize: 9, fill: T.accentHi, fontFamily: 'Georgia, serif' }, 'street door'),
+                  // ─── Master's desk (front-right) ───
+                  h('rect', { x: 280, y: 30, width: 110, height: 50, fill: '#5c4630', stroke: T.accent, strokeWidth: 1.5, rx: 3 }),
+                  h('rect', { x: 290, y: 36, width: 90, height: 14, fill: T.parchment, stroke: T.wood, strokeWidth: 0.6 }),
+                  h('text', { x: 335, y: 47, textAnchor: 'middle', fontSize: 8, fill: T.ink, fontFamily: 'Georgia, serif' }, 'ledger'),
+                  h('text', { x: 335, y: 65, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: T.accentHi, fontFamily: 'Georgia, serif' }, 'Master’s desk'),
+                  h('text', { x: 335, y: 76, textAnchor: 'middle', fontSize: 9, fill: T.warn }, '👨‍💼'),
+                  // ─── Type cases along the bright window wall ───
+                  h('rect', { x: 28, y: 30, width: 50, height: 90, fill: T.wood, stroke: T.accent, strokeWidth: 1.5, rx: 2 }),
+                  // Upper case (capitals)
+                  h('rect', { x: 32, y: 34, width: 42, height: 38, fill: '#2a1f15', stroke: T.dim, strokeWidth: 0.5 }),
+                  // Lower case (minuscules)
+                  h('rect', { x: 32, y: 76, width: 42, height: 40, fill: '#2a1f15', stroke: T.dim, strokeWidth: 0.5 }),
+                  // grid of compartments
+                  [0, 1, 2, 3].map(function(c) {
+                    return h('g', { key: 'gC' + c },
+                      h('line', { x1: 32 + c * 10.5, y1: 34, x2: 32 + c * 10.5, y2: 72, stroke: T.dim, strokeWidth: 0.3 }),
+                      h('line', { x1: 32 + c * 10.5, y1: 76, x2: 32 + c * 10.5, y2: 116, stroke: T.dim, strokeWidth: 0.3 })
+                    );
+                  }),
+                  [0, 1, 2].map(function(r) {
+                    return h('g', { key: 'gR' + r },
+                      h('line', { x1: 32, y1: 44 + r * 9, x2: 74, y2: 44 + r * 9, stroke: T.dim, strokeWidth: 0.3 }),
+                      h('line', { x1: 32, y1: 86 + r * 10, x2: 74, y2: 86 + r * 10, stroke: T.dim, strokeWidth: 0.3 })
+                    );
+                  }),
+                  h('text', { x: 53, y: 130, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: T.accentHi, fontFamily: 'Georgia, serif' }, 'Type cases'),
+                  h('text', { x: 53, y: 142, textAnchor: 'middle', fontSize: 8, fill: T.dim, fontFamily: 'Georgia, serif' }, '(upper / lower)'),
+                  // Compositor's stand next to cases
+                  h('rect', { x: 88, y: 50, width: 30, height: 36, fill: '#3a2a1a', stroke: T.accent, strokeWidth: 1, rx: 2 }),
+                  h('rect', { x: 91, y: 55, width: 24, height: 5, fill: T.parchment, stroke: T.wood, strokeWidth: 0.4 }),
+                  h('text', { x: 103, y: 78, textAnchor: 'middle', fontSize: 8, fill: T.accentHi }, '✍️'),
+                  h('text', { x: 103, y: 98, textAnchor: 'middle', fontSize: 9, fontWeight: 700, fill: T.accentHi, fontFamily: 'Georgia, serif' }, 'Compositor'),
+                  // ─── The press itself (center) ───
+                  h('g', { transform: 'translate(180, 110)' },
+                    // Frame
+                    h('rect', { x: -28, y: -30, width: 56, height: 70, fill: T.wood, stroke: T.accent, strokeWidth: 2 }),
+                    h('rect', { x: -24, y: -26, width: 48, height: 60, fill: 'none', stroke: T.accentHi, strokeWidth: 0.6 }),
+                    // Bed
+                    h('rect', { x: -18, y: -5, width: 36, height: 16, fill: '#1a1410', stroke: T.dim, strokeWidth: 0.6 }),
+                    // Screw mechanism (top)
+                    h('circle', { cx: 0, cy: -22, r: 5, fill: T.accent, stroke: T.accentHi, strokeWidth: 1 }),
+                    // Bar (lever) sticking out
+                    h('line', { x1: 0, y1: -22, x2: 38, y2: -34, stroke: T.accent, strokeWidth: 3, strokeLinecap: 'round' }),
+                    h('circle', { cx: 38, cy: -34, r: 3, fill: T.accentHi }),
+                    // Pressman icon
+                    h('text', { x: 0, y: 56, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: T.accentHi, fontFamily: 'Georgia, serif' }, 'The press'),
+                    h('text', { x: 0, y: 68, textAnchor: 'middle', fontSize: 9, fill: T.warn }, '💪 pressman + apprentice')
+                  ),
+                  // ─── Ink table (right of press) ───
+                  h('rect', { x: 250, y: 110, width: 50, height: 30, fill: '#3a2a1a', stroke: T.accent, strokeWidth: 1, rx: 2 }),
+                  h('circle', { cx: 263, cy: 125, r: 5, fill: '#0a0805', stroke: T.dim, strokeWidth: 0.5 }),
+                  h('circle', { cx: 277, cy: 125, r: 5, fill: '#0a0805', stroke: T.dim, strokeWidth: 0.5 }),
+                  h('circle', { cx: 290, cy: 125, r: 4, fill: '#a87a3a', stroke: T.dim, strokeWidth: 0.5 }),
+                  h('text', { x: 275, y: 152, textAnchor: 'middle', fontSize: 9, fontWeight: 700, fill: T.accentHi, fontFamily: 'Georgia, serif' }, 'Ink table'),
+                  // ─── Drying lines along back wall ───
+                  h('line', { x1: 30, y1: 175, x2: 240, y2: 175, stroke: T.parchment, strokeWidth: 1.5 }),
+                  [50, 90, 130, 170, 210].map(function(x, i) {
+                    return h('g', { key: 'sheet' + i, transform: 'translate(' + x + ', 175)' },
+                      h('line', { x1: 0, y1: 0, x2: 0, y2: 4, stroke: T.dim, strokeWidth: 0.6 }),
+                      h('rect', { x: -8, y: 4, width: 16, height: 22, fill: T.parchment, stroke: T.wood, strokeWidth: 0.6 }),
+                      h('line', { x1: -6, y1: 9, x2: 6, y2: 9, stroke: T.ink, strokeWidth: 0.4, opacity: 0.6 }),
+                      h('line', { x1: -6, y1: 13, x2: 6, y2: 13, stroke: T.ink, strokeWidth: 0.4, opacity: 0.6 }),
+                      h('line', { x1: -6, y1: 17, x2: 6, y2: 17, stroke: T.ink, strokeWidth: 0.4, opacity: 0.6 })
+                    );
+                  }),
+                  h('text', { x: 135, y: 215, textAnchor: 'middle', fontSize: 9, fontWeight: 700, fill: T.accentHi, fontFamily: 'Georgia, serif' }, 'Drying lines'),
+                  h('text', { x: 135, y: 226, textAnchor: 'middle', fontSize: 8, fill: T.dim, fontFamily: 'Georgia, serif' }, '(printed sheets hang to dry, hours to a day)'),
+                  // ─── Stockroom (back-right) ───
+                  h('rect', { x: 280, y: 175, width: 110, height: 60, fill: '#3a2a1a', stroke: T.accent, strokeWidth: 1, rx: 2 }),
+                  // Stack of paper / books
+                  [0, 1, 2, 3].map(function(b) {
+                    return h('rect', { key: 'stk' + b,
+                      x: 290 + b * 6, y: 200 - b * 3, width: 10, height: 22, fill: T.parchment, stroke: T.wood, strokeWidth: 0.5 });
+                  }),
+                  [0, 1, 2, 3].map(function(b) {
+                    return h('rect', { key: 'stk2' + b,
+                      x: 340 + b * 6, y: 200 - b * 3, width: 10, height: 22, fill: T.parchment, stroke: T.wood, strokeWidth: 0.5 });
+                  }),
+                  h('text', { x: 335, y: 250, textAnchor: 'middle', fontSize: 9, fontWeight: 700, fill: T.accentHi, fontFamily: 'Georgia, serif' }, 'Paper + finished sheets'),
+                  // ─── Apprentice path (dotted line connecting everywhere) ───
+                  h('path', { d: 'M 100 80 Q 140 100 180 110 Q 220 130 270 125 Q 280 160 135 195 Q 110 200 100 80', fill: 'none', stroke: T.accentHi, strokeWidth: 0.6, strokeDasharray: '2 3', opacity: 0.5 }),
+                  // Apprentice icon (mid-floor)
+                  h('text', { x: 220, y: 245, textAnchor: 'middle', fontSize: 9, fontWeight: 700, fill: T.accentHi, fontFamily: 'Georgia, serif' }, 'apprentice paths'),
+                  h('text', { x: 220, y: 256, textAnchor: 'middle', fontSize: 10, fill: T.warn }, '🧒 · · ·')
+                )
+              ),
+              // Legend strip
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginTop: 12 } },
+                [
+                  { who: 'Apprentice', emoji: '🧒', where: 'Everywhere. Fetches ink, sweeps, runs errands, watches.' },
+                  { who: 'Compositor', emoji: '✍️', where: 'At the type cases by the window. Sets type one sort at a time.' },
+                  { who: 'Pressman', emoji: '💪', where: 'At the press in the center bay. Pulls the bar; manages registration.' },
+                  { who: 'Master', emoji: '👨‍💼', where: 'At the front desk. Greets customers; keeps the ledger; takes the risk.' }
+                ].map(function(r, i) {
+                  return h('div', { key: i, style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 6, padding: 8 } },
+                    h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', marginBottom: 3 } },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 16 } }, r.emoji),
+                      h('strong', { style: { fontSize: 12, color: T.accentHi, fontFamily: 'Georgia, serif' } }, r.who)
+                    ),
+                    h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } }, r.where)
+                  );
+                })
+              )
+            ),
+
+            // ── 1455 print-shop day clock SVG ──
+            // Circular 12-hour clock showing how a working day was
+            // structured. Pairs with the floor plan (spatial anchor) for
+            // a temporal anchor. Hours labeled around the rim; activities
+            // and role icons positioned at the relevant times.
+            sectionHeader('🕰️', 'A day on the clock: 1455 shop hours'),
+            h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+              'A working day in a 1455 print shop ran roughly dawn to dusk, with the highest-skill work in the bright morning hours when daylight made composing and casting easier. The diagram below tracks a representative day.'),
+            h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14, display: 'grid', gridTemplateColumns: 'minmax(0, 240px) 1fr', gap: 18, alignItems: 'center' } },
+              // Left: the circular clock
+              h('div', { style: { display: 'flex', justifyContent: 'center' } },
+                h('svg', { viewBox: '0 0 240 240', width: '100%', style: { maxWidth: 220 }, role: 'img', 'aria-label': 'Circular diagram of a 1455 print-shop working day' },
+                  // Outer ring
+                  h('circle', { cx: 120, cy: 120, r: 100, fill: T.cardAlt, stroke: T.wood, strokeWidth: 4 }),
+                  h('circle', { cx: 120, cy: 120, r: 100, fill: 'none', stroke: T.accent, strokeWidth: 1 }),
+                  // Inner core (clock face)
+                  h('circle', { cx: 120, cy: 120, r: 86, fill: T.parchment, stroke: T.accent, strokeWidth: 1 }),
+                  // Hour-tick marks every 30 degrees (12 hours, but we'll mark dawn=0 / noon=180 etc.)
+                  // Render 12 ticks
+                  Array.apply(null, { length: 12 }).map(function(_, i) {
+                    var angle = (i / 12) * 2 * Math.PI - Math.PI / 2;
+                    var x1 = 120 + Math.cos(angle) * 86;
+                    var y1 = 120 + Math.sin(angle) * 86;
+                    var x2 = 120 + Math.cos(angle) * 80;
+                    var y2 = 120 + Math.sin(angle) * 80;
+                    return h('line', { key: i, x1: x1, y1: y1, x2: x2, y2: y2, stroke: T.wood, strokeWidth: 1 });
+                  }),
+                  // Hour labels at cardinal points
+                  h('text', { x: 120, y: 28, textAnchor: 'middle', fontSize: 10, fontFamily: 'Georgia, serif', fontWeight: 700, fill: '#7c2d12' }, 'DAWN'),
+                  h('text', { x: 220, y: 124, textAnchor: 'end', fontSize: 10, fontFamily: 'Georgia, serif', fontWeight: 700, fill: '#7c2d12' }, 'NOON'),
+                  h('text', { x: 120, y: 220, textAnchor: 'middle', fontSize: 10, fontFamily: 'Georgia, serif', fontWeight: 700, fill: '#7c2d12' }, 'DUSK'),
+                  h('text', { x: 20, y: 124, textAnchor: 'start', fontSize: 10, fontFamily: 'Georgia, serif', fontWeight: 700, fill: '#7c2d12' }, 'NIGHT'),
+                  // Activity sectors — color-coded ring segments per phase
+                  // Dawn–8am: prep (apprentice fetches, fire lit)
+                  h('path', { d: 'M 120 120 L 120 20 A 100 100 0 0 1 170.9 33.4 Z', fill: '#a87a3a', opacity: 0.5 }),
+                  // 8am–noon: composing + casting (compositor + caster, bright daylight)
+                  h('path', { d: 'M 120 120 L 170.9 33.4 A 100 100 0 0 1 220 120 Z', fill: T.accent, opacity: 0.45 }),
+                  // Noon–4pm: pressing (pressman + apprentice)
+                  h('path', { d: 'M 120 120 L 220 120 A 100 100 0 0 1 170.9 206.6 Z', fill: T.danger, opacity: 0.4 }),
+                  // 4pm–dusk: distribution + drying (apprentice)
+                  h('path', { d: 'M 120 120 L 170.9 206.6 A 100 100 0 0 1 69.1 206.6 Z', fill: T.ok, opacity: 0.35 }),
+                  // Dusk–night: cleanup + ledger (master)
+                  h('path', { d: 'M 120 120 L 69.1 206.6 A 100 100 0 0 1 20 120 Z', fill: T.wood, opacity: 0.45 }),
+                  // Night: silent (no activity)
+                  h('path', { d: 'M 120 120 L 20 120 A 100 100 0 0 1 120 20 Z', fill: '#0a0805', opacity: 0.55 }),
+                  // Re-draw center for clean labels
+                  h('circle', { cx: 120, cy: 120, r: 30, fill: T.parchment, stroke: T.accent, strokeWidth: 1.5 }),
+                  h('text', { x: 120, y: 117, textAnchor: 'middle', fontSize: 9, fontFamily: 'Georgia, serif', fontWeight: 700, fill: '#7c2d12' }, '1455'),
+                  h('text', { x: 120, y: 130, textAnchor: 'middle', fontSize: 8, fontFamily: 'Georgia, serif', fontStyle: 'italic', fill: '#7c2d12' }, 'shop day')
+                )
+              ),
+              // Right: phase descriptions
+              h('div', null,
+                [
+                  { hour: 'Dawn → 8 am', who: '🧒 Apprentice', what: 'Sweeps the shop. Lights the fire. Fetches ink and paper from storage. Wakes the journeymen if they overslept. The shop comes alive.', color: '#a87a3a' },
+                  { hour: '8 am → noon', who: '✍️ Compositor + caster', what: 'The bright hours. Composing tiny mirror-reversed sorts and casting new type require daylight. The most skilled, eye-straining work is done here.', color: T.accent },
+                  { hour: 'Noon → 4 pm', who: '💪 Pressman + apprentice', what: 'Heavy work, two-person team. Bar-pulling, paper-flipping, ink-dabbing on rhythm. Roughly 250 impressions across the afternoon.', color: T.danger },
+                  { hour: '4 pm → dusk', who: '🧒 Apprentice', what: 'Hangs printed sheets to dry. Distributes worn type back into the case. Returns the press to a rest state. The shop quiets.', color: T.ok },
+                  { hour: 'Dusk → night', who: '👨‍💼 Master', what: 'Light fading. Master reviews ledger, plans tomorrow\'s work, talks to suppliers, decides commissions. The journeymen go home or to the tavern.', color: T.wood },
+                  { hour: 'Night', who: '— silent —', what: 'No work. Candles in 1455 were expensive, and the eye-precision work of composing was impossible by candlelight. The shop slept until dawn.', color: '#0a0805' }
+                ].map(function(phase, i) {
+                  return h('div', { key: i, style: { display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 8, paddingLeft: 6, borderLeft: '3px solid ' + phase.color } },
+                    h('div', { style: { flex: 1 } },
+                      h('div', { style: { fontSize: 11, color: phase.color === '#0a0805' ? T.muted : T.accentHi, fontFamily: 'Georgia, serif', fontWeight: 700, marginBottom: 2 } },
+                        phase.hour),
+                      h('div', { style: { fontSize: 11, color: T.warn, fontStyle: 'italic', marginBottom: 3 } }, phase.who),
+                      h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } }, phase.what)
+                    )
+                  );
+                })
+              )
+            ),
+            h('p', { style: { margin: '-4px 0 14px', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'Daylight was the constraint that shaped the day. Bright-hour activities (composing, casting) got the morning; lower-precision work (pressing, drying, hauling) got the afternoon. This pattern stayed roughly the same in print shops for 400 years, until gas lighting (1820s) and then electric (1880s) freed the workday from the sun.'),
+
+            // ── Primary-source reading: apprenticeship contract excerpt ──
+            // Composite text drawn from documented 1450-1500 European
+            // apprenticeship contracts in city archives (Frankfurt, Cologne,
+            // Lyon). Modernized into readable English; archaic terms
+            // annotated in the right column.
+            sectionHeader('📜', 'A real apprentice contract (excerpt)'),
+            h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+              'Apprenticeship was a legal contract, not a handshake. The text below is a composite drawn from documented 1450-1500 European print-shop apprenticeship contracts (city archives in Frankfurt, Cologne, and Lyon). Names and a few terms are normalized for readability. Annotations on the right explain the period vocabulary.'),
+            h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) 1fr', gap: 18 } },
+                // Left: the document
+                h('div', { style: { background: T.parchment, color: T.ink, border: '2px solid ' + T.wood, borderRadius: 6, padding: 18, fontFamily: 'Georgia, serif', boxShadow: '0 1px 3px rgba(0,0,0,0.3) inset' } },
+                  h('div', { style: { textAlign: 'center', fontSize: 11, color: '#7c2d12', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700, marginBottom: 10 } }, 'Mainz · the year of Our Lord 1457'),
+                  h('p', { style: { margin: '0 0 10px', fontSize: 13, lineHeight: 1.7 } },
+                    'On this day before God and witnesses, ',
+                    h('strong', null, 'Master Heinrich the printer'),
+                    ', householder of this city, has taken into his service ',
+                    h('strong', null, 'Konrad, son of Wilhelm the cooper'),
+                    ', a youth of twelve years, to be his apprentice in the art and ',
+                    h('strong', null, 'mystery'),
+                    ' of printing, for a term of ',
+                    h('strong', null, 'seven full years'),
+                    ' from this day.'),
+                  h('p', { style: { margin: '0 0 10px', fontSize: 13, lineHeight: 1.7 } },
+                    h('em', null, 'The Master agrees:'),
+                    ' to instruct the apprentice in casting type, setting type, the working of the press, the mixing of ink, and the keeping of a shop. To furnish ',
+                    h('strong', null, 'meat and drink, lodging and washing'),
+                    ', and at the end of the term one new suit of clothes ',
+                    h('strong', null, 'fit for a journeyman'),
+                    '. To deal with the apprentice in good faith and not to put him to work beneath the trade.'),
+                  h('p', { style: { margin: '0 0 10px', fontSize: 13, lineHeight: 1.7 } },
+                    h('em', null, 'The apprentice agrees:'),
+                    ' to serve faithfully day and night, to keep the secrets of the trade and not reveal them to any rival shop, to ',
+                    h('strong', null, 'shun taverns and play'),
+                    ', to take no wife during the term, to obey the Master and his household in all lawful things, and not to absent himself from service without leave.'),
+                  h('p', { style: { margin: '0 0 10px', fontSize: 13, lineHeight: 1.7 } },
+                    h('em', null, 'If the apprentice runs away'),
+                    ' or breaks this contract, he shall serve double the time absent on his return, and forfeit the clothes promised at the end of the term. If he reveals the trade\'s secrets, he forfeits all and may be pursued at law.'),
+                  h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.7 } },
+                    h('em', null, 'Sworn'),
+                    ' by Master Heinrich, by Wilhelm the cooper (the apprentice\'s father, acting for him), and by ',
+                    h('strong', null, 'two witnesses of the guild'),
+                    ', and entered into the city book by the clerk this day.'),
+                  // Period signature flourish
+                  h('div', { style: { borderTop: '1px dashed ' + T.wood, paddingTop: 8, marginTop: 6, fontSize: 11, color: '#5c4630', textAlign: 'right', fontStyle: 'italic' } },
+                    '— Sealed with the Master\'s mark · witnessed by the Guild of Printers, Mainz')
+                ),
+                // Right: vocabulary annotations
+                h('div', null,
+                  h('div', { style: { fontSize: 11, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 10, fontFamily: 'Georgia, serif' } }, 'Period vocabulary'),
+                  [
+                    { term: 'mystery', meaning: 'In a guild context, the "secrets of the trade" — recipes, techniques, and know-how that gave a shop its competitive advantage. Same Latin root as "mystery cult."' },
+                    { term: 'seven full years', meaning: 'Standard apprenticeship term across European craft guilds for centuries. After 7 years the apprentice became a journeyman (free to work for wages); after several more years and a "masterpiece," a master.' },
+                    { term: 'meat and drink, lodging and washing', meaning: 'Room, board, and laundry. The apprentice was paid only in these benefits during the term, plus training and the journeyman\'s suit at the end.' },
+                    { term: 'fit for a journeyman', meaning: 'Quality clothing that would let the apprentice present himself to other shops as a qualified hire. The suit was the literal credential.' },
+                    { term: 'shun taverns and play', meaning: 'Avoid drinking and gambling. Common clause: shops did not want their apprentices in compromising places that could harm the shop\'s reputation or the apprentice\'s availability.' },
+                    { term: 'witnesses of the guild', meaning: 'Two senior guild members who signed as legal witnesses. The contract was enforceable in city court; the guild also enforced its own discipline.' }
+                  ].map(function(v, i) {
+                    return h('div', { key: i, style: { background: T.cardAlt, borderLeft: '3px solid ' + T.accent, borderRadius: 4, padding: 8, marginBottom: 8 } },
+                      h('div', { style: { fontSize: 12, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif', marginBottom: 3 } }, v.term),
+                      h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.55 } }, v.meaning)
+                    );
+                  })
+                )
+              ),
+              h('p', { style: { margin: '14px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+                'Discussion: Modern internships and trade apprenticeships still inherit pieces of this structure — the term-of-service, the credential at the end, the implicit "no moonlighting." What stays the same; what has changed; what should change?')
+            ),
+
+            // ── Letter from a 1455 apprentice ──
+            // Composite text drawn from real surviving apprentice letters
+            // of the 1500s found in family archives across Europe (Frankfurt,
+            // Antwerp, Nuremberg). The contract is the legal voice; this is
+            // the human voice from inside the shop.
+            sectionHeader('✉️', 'A letter home from a 1455 apprentice'),
+            h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } },
+              'A composite letter drawn from surviving 1500s apprentice letters in family archives. The legal contract above is the official voice; this is the apprentice\'s own.'),
+            h('div', { style: { background: T.parchment, color: T.ink, border: '2px solid ' + T.wood, borderRadius: 8, padding: 22, marginBottom: 14, fontFamily: 'Georgia, serif', boxShadow: '0 2px 6px rgba(0,0,0,0.4) inset' } },
+              h('div', { style: { textAlign: 'right', fontSize: 11, color: '#7c2d12', fontStyle: 'italic', marginBottom: 14 } },
+                'Mainz, the Feast of St. Lawrence, 1455'),
+              h('p', { style: { margin: '0 0 12px', fontSize: 14, lineHeight: 1.7, color: '#3a2a1a' } },
+                'My dearest mother,'),
+              h('p', { style: { margin: '0 0 12px', fontSize: 13, lineHeight: 1.75, color: '#3a2a1a', textIndent: 24 } },
+                'I write to you in my own hand, which the Master says shows promise, though my fingers still ache from the cold of the morning. The shop is busy with the Bible. I have not seen any of the printed pages up close; the apprentices are not yet trusted to touch them. But I see them stacked under cloth in the back room. There must be thousands. The Master\'s shop has more books in it now than any cathedral library I have ever heard of.'),
+              h('p', { style: { margin: '0 0 12px', fontSize: 13, lineHeight: 1.75, color: '#3a2a1a', textIndent: 24 } },
+                'My duties are sweeping the shop, fetching ink from the cellar, carrying lead pigs to the casting room (they weigh as much as a small calf), and watching the journeymen at their work. The compositor, Master Konrad, has begun to let me sort distributed type back into the case. I am slow. He laughs but not unkindly. He says the slow apprentice becomes the careful master.'),
+              h('p', { style: { margin: '0 0 12px', fontSize: 13, lineHeight: 1.75, color: '#3a2a1a', textIndent: 24 } },
+                'The food is plain but enough. The Master\'s wife sees that I have bread and broth in the morning and meat at supper. I sleep on a straw mattress with the other apprentice in the loft above the press room. He is from Cologne and snores like a stuck pig.'),
+              h('p', { style: { margin: '0 0 12px', fontSize: 13, lineHeight: 1.75, color: '#3a2a1a', textIndent: 24 } },
+                'Today I dropped a tray. Not the type, thank God, but the wooden tray underneath it. The journeyman pressman did not see, and Master Konrad pretended not to. I will be more careful. The trade is full of dangers I had not thought of when we spoke before I left home: the lead, the boiling oil for the ink, the heavy quoins that can crush a finger. Already I have a small burn on my left hand from the casting room. It is healing.'),
+              h('p', { style: { margin: '0 0 12px', fontSize: 13, lineHeight: 1.75, color: '#3a2a1a', textIndent: 24 } },
+                'Mother, when the work is done at night and the press is quiet, I sometimes go look at the locked-up forme on the imposing stone. The letters are backwards, of course, and at first they made my head ache. But last week I read a full line by myself, reversed and all, and I thought of you and of how I will some day set a page that you could read. I will be a journeyman in six years and a master in ten, the Lord willing. I will print a Bible of my own. You will be proud.'),
+              h('p', { style: { margin: '0 0 12px', fontSize: 13, lineHeight: 1.75, color: '#3a2a1a', textIndent: 24 } },
+                'Pray for me. Give my love to my sisters. Tell Father I am well, and I will write again at Christmas.'),
+              h('div', { style: { textAlign: 'right', marginTop: 16, fontSize: 13, lineHeight: 1.6, color: '#3a2a1a', fontStyle: 'italic' } },
+                'Your obedient and loving son,',
+                h('div', { style: { fontFamily: 'Georgia, serif', fontSize: 16, fontWeight: 700, marginTop: 4, fontStyle: 'normal' } }, 'Konrad'),
+                h('div', { style: { fontSize: 11, color: '#5c4630' } }, 'Apprentice in the shop of Master Heinrich the printer, Mainz')
+              )
+            ),
+            h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 10, padding: 12, marginBottom: 14 } },
+              h('div', { style: { fontSize: 11, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: 6, fontFamily: 'Georgia, serif' } }, 'Reading discussion'),
+              h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.65 } },
+                h('li', null, 'What does Konrad reveal about apprenticeship that the contract did not? Where do the two documents agree; where do they differ in tone?'),
+                h('li', null, 'Konrad describes a "small burn" and dropping a tray. How does he treat these incidents? What does that say about workplace norms?'),
+                h('li', null, 'The closing two paragraphs shift from work to home. What does Konrad seem to want most from his mother\'s reply, and how is that different from what an apprentice in 2026 might want from a parent?'),
+                h('li', null, 'Konrad describes reading a full line of mirror-reversed type as a milestone. In a 2026 trade apprenticeship (electrical, plumbing, etc.), what would the equivalent "I did the hard thing once" milestone be?')
+              )
+            ),
+
+            calloutBox('info', 'Pure role-play',
+              'Each role makes 4 decisions across a working day. After each choice you see the consequence. At the end you get a summary of what kind of printer you turned out to be. Pick any role; try multiple if you have time. The point is to inhabit the constraints, not to "win."')
+          ),
+
+          // ── Decision screen ──
+          role && !isDone && currentDecision && h('div', null,
+            // Role + progress header
+            h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.border, borderRadius: 10, padding: 12, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } },
+              h('span', { style: { fontSize: 26 } }, roleObj.icon),
+              h('div', { style: { flex: 1, minWidth: 0 } },
+                h('div', { style: { fontSize: 14, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif' } }, roleObj.label),
+                h('div', { style: { fontSize: 11, color: T.dim, marginTop: 2 } }, 'Decision ' + (step + 1) + ' of ' + allDecisions.length + ' · ' + currentDecision.time)
+              ),
+              h('button', { className: 'printingpress-no-print',
+                onClick: function() { if (typeof window !== 'undefined' && window.confirm && !window.confirm('Restart? You will lose your current progress.')) return; restart(); },
+                style: btn({ padding: '4px 10px', fontSize: 11 }) }, 'Restart')
+            ),
+            // Progress bar
+            h('div', { style: { width: '100%', height: 6, background: T.cardAlt, borderRadius: 3, overflow: 'hidden', border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('div', { style: { width: ((step / allDecisions.length) * 100) + '%', height: '100%', background: T.accent, transition: 'width 0.3s ease' } })),
+            // Decision prompt
+            h('div', { style: { background: T.card, border: '2px solid ' + T.accent, borderRadius: 12, padding: 18, marginBottom: 14 } },
+              h('div', { style: { fontSize: 11, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: 8 } }, currentDecision.time),
+              h('p', { style: { margin: 0, fontSize: 14, color: T.text, lineHeight: 1.65, fontFamily: 'Georgia, serif' } }, currentDecision.prompt)
+            ),
+            // Choices OR feedback
+            !feedback && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              currentDecision.choices.map(function(c, ci) {
+                return h('button', { key: c.id,
+                  onClick: function() { pickChoice(c); },
+                  style: btn({
+                    padding: 14, fontSize: 13, lineHeight: 1.5,
+                    textAlign: 'left', background: T.card, borderColor: T.border
+                  })
+                },
+                  h('div', { style: { display: 'flex', gap: 10, alignItems: 'flex-start' } },
+                    h('span', { 'aria-hidden': 'true', style: { color: T.accent, fontWeight: 700, fontSize: 14, flexShrink: 0 } }, ['A.', 'B.', 'C.', 'D.'][ci]),
+                    h('span', { style: { color: T.text } }, c.text)
+                  )
+                );
+              })
+            ),
+            feedback && h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.ok, borderRadius: 10, padding: 16, marginTop: 12 } },
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: T.ok, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, 'Consequence'),
+              h('p', { style: { margin: '0 0 12px', fontSize: 13, color: T.text, lineHeight: 1.65 } }, feedback.outcome),
+              h('button', { className: 'printingpress-no-print',
+                onClick: nextStep,
+                style: btnPrimary({ padding: '10px 18px', fontSize: 14 }) },
+                step + 1 < allDecisions.length ? 'Next decision →' : 'See your day →')
+            )
+          ),
+
+          // ── End-of-day summary ──
+          role && isDone && h('div', null,
+            h('div', { style: { background: T.parchment, color: T.ink, border: '3px solid ' + T.accent, borderRadius: 14, padding: 24, textAlign: 'center', marginBottom: 14, position: 'relative' } },
+              h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 8, left: 12, color: T.accent } }, fleuron(14)),
+              h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 8, right: 12, color: T.accent } }, fleuron(14)),
+              h('div', { 'aria-hidden': 'true', style: { position: 'absolute', bottom: 8, left: 12, color: T.accent } }, fleuron(14)),
+              h('div', { 'aria-hidden': 'true', style: { position: 'absolute', bottom: 8, right: 12, color: T.accent } }, fleuron(14)),
+              h('div', { style: { fontSize: 48, marginBottom: 6 } }, roleObj.icon),
+              h('h2', { style: { margin: '0 0 4px', fontSize: 22, color: '#7c2d12', fontFamily: 'Georgia, serif', fontWeight: 800 } }, 'End of day'),
+              h('p', { style: { margin: 0, fontSize: 13, color: '#5c4630', fontStyle: 'italic' } }, 'You worked as a ' + roleObj.label + '. Here is what your day looked like:')
+            ),
+            h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 16, marginBottom: 14 } },
+              choices.map(function(c, i) {
+                var d = allDecisions[c.stepIdx];
+                return h('div', { key: i, style: { paddingBottom: 12, marginBottom: 12, borderBottom: i === choices.length - 1 ? 'none' : '1px dashed ' + T.border } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, d.time),
+                  h('div', { style: { fontSize: 13, color: T.text, marginBottom: 4 } }, h('strong', null, 'You chose: '), c.choice.text),
+                  h('div', { style: { fontSize: 12, color: T.muted, fontStyle: 'italic', lineHeight: 1.55 } }, c.choice.outcome)
+                );
+              })
+            ),
+            calloutBox('info', 'Why this matters',
+              'No single right answer means you had to weigh tradeoffs the way a 1455 printer actually did: quality vs speed, loyalty vs honesty, risk vs reward, autonomy vs scale. The historical record is not made of heroes choosing the obvious good. It is made of people like the ones you just inhabited, making real decisions under real constraints.'),
+            // ── Modern echoes of your role ──
+            // For each 1450 role, surface 2026 careers that share the
+            // same fundamental work. Maine-relevant where possible so the
+            // career-exploration thread lands locally.
+            (function() {
+              var ECHOES = {
+                apprentice: {
+                  intro: 'Year-one apprentice work \u2014 observation, scut work, building trust through small reliable acts \u2014 is still how a lot of skilled-trade pathways begin.',
+                  items: [
+                    { title: 'Skilled-trade apprentice', maine: 'Electrician, plumber, welder, HVAC \u2014 EMCC, KVCC, Maine IBEW',
+                      note: 'Same model: low pay early, learn by watching, certify out in 4\u20136 years. Maine has thousands of openings and not enough hands.' },
+                    { title: 'Kitchen prep cook', maine: 'Any Portland restaurant',
+                      note: 'Start at prep station, observe sous-chefs, advance through skill. Same apprenticeship structure with a faster ladder.' },
+                    { title: 'Lab or shop intern', maine: 'Bath Iron Works co-op, Idexx intern, Jackson Lab',
+                      note: 'Junior role on a real team. The senior staff are your masters; the work is real but supervised.' }
+                  ]
+                },
+                compositor: {
+                  intro: 'A compositor combined craft (mirror-reading, fine motor work) with aesthetics (layout, spacing, type choice). That blend is still its own family of careers.',
+                  items: [
+                    { title: 'Graphic designer / typographer', maine: 'Most Portland design studios',
+                      note: 'Direct lineage. Same job, software replaces metal. Type pairings, kerning, grid layout all descend from 1450 composing practice.' },
+                    { title: 'Front-end web developer', maine: 'Portland tech scene (Tilson, Wex, kotonik)',
+                      note: 'CSS grid, line-height, em/rem units, kerning \u2014 the vocabulary of layout is literally compositor vocabulary.' },
+                    { title: 'Book designer', maine: 'Tilbury House, Down East Books, Islandport',
+                      note: 'The most direct heir of the compositor\u2019s craft. Chooses typefaces, sets margins, plans the page. Working Maine publishers still hire for this.' }
+                  ]
+                },
+                pressman: {
+                  intro: 'A pressman ran a heavy, dangerous machine that demanded both strength and a finicky sense for registration, ink flow, and material behavior. That cluster lives in modern manufacturing.',
+                  items: [
+                    { title: 'Industrial press operator', maine: 'J.S. McCarthy Printers (Augusta), Penmor (Lewiston)',
+                      note: 'The literal heir. Bigger, faster machines; same job description: feed material, hold registration, manage wear, hit the schedule.' },
+                    { title: 'CNC machinist', maine: 'Pratt & Whitney North Berwick, Bath Iron Works',
+                      note: 'Skilled-machine operator. Read prints, run programs, hold tolerances, change tooling. Top earners in Maine\u2019s manufacturing sector.' },
+                    { title: '3D-printer / additive manufacturing technician', maine: 'Maine MEP, UMaine ASCC',
+                      note: 'Newer machine, same role: load material, monitor a run, troubleshoot defects, calibrate. The pressman\u2019s skill cluster on 21st-century hardware.' }
+                  ]
+                },
+                master: {
+                  intro: 'A master printer balanced risk \u2014 which commissions to accept, when to hire, when to refuse the dangerous job. That is the small-business decision space, then and now.',
+                  items: [
+                    { title: 'Small business owner', maine: 'Any of the ~140,000 small businesses in Maine',
+                      note: 'Same tradeoffs at smaller scale: who to trust, what jobs to accept, when to invest, when to say no. The most common business form in the state.' },
+                    { title: 'Publisher or editor-in-chief', maine: 'Portland Press Herald, Maine Public, Down East',
+                      note: 'Direct lineage. Decides what gets printed (or aired), takes the legal and reputational risk, hires the talent, sells the audience.' },
+                    { title: 'Studio or production manager', maine: 'Any creative agency, film production, theater',
+                      note: 'Strategic decisions \u2014 which projects to take, which to decline, how to deploy a team of specialists. The master\u2019s job in modern dress.' }
+                  ]
+                }
+              };
+              var echo = ECHOES[role];
+              if (!echo) return null;
+              return h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+                h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi, fontFamily: 'Georgia, serif' } },
+                  '\u{1F517} Modern echoes of your role'),
+                h('p', { style: { margin: '0 0 14px', fontSize: 12, color: T.muted, lineHeight: 1.55 } }, echo.intro),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+                  echo.items.map(function(it, i) {
+                    return h('div', { key: i, style: { background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '3px solid ' + T.accent, borderRadius: 6, padding: 12 } },
+                      h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif', marginBottom: 4 } }, it.title),
+                      h('div', { style: { fontSize: 10, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 6 } }, '\u{1F4CD} Maine: ' + it.maine),
+                      h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5 } }, it.note)
+                    );
+                  })
+                ),
+                h('p', { style: { margin: '12px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.5 } },
+                  'You inhabited a 1450 role for a few minutes. The skills cluster you just practiced \u2014 the patience, the craft, the judgment under pressure \u2014 is still recruited for. Maine in 2026 has openings in every column above.')
+              );
+            })(),
+            h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
+              h('button', { onClick: restart, style: btnPrimary({ padding: '10px 16px', fontSize: 13 }) }, '🔄 Try a different role'),
+              h('button', { onClick: function() { upd('view', 'menu'); }, style: btn({ padding: '10px 16px', fontSize: 13 }) }, '← Back to menu')
+            )
+          ),
+
+          h(TeacherNotes, TEACHER_NOTES.dayInShop),
+          crossLinkFooter('dayInShop'),
+          disclaimerFooter()
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════
+      // CUMULATIVE QUIZ — 15 questions across all 10 modules
       // ═════════════════════════════════════════════════════════════════════
       var CUMULATIVE_QUESTIONS = [
         { module: 'pressMechanism', q: 'The screw press achieves its mechanical advantage through:', opts: ['A complicated system of gears', 'A wrapped inclined plane (the screw thread); MA = 2π × bar length ÷ thread pitch, often 100:1 or more', 'Pure muscle power', 'Hydraulic pressure'], ans: 1, explain: 'A screw is mathematically an inclined plane wrapped around a cylinder. Mechanical advantage scales with bar length and inversely with thread pitch — a Gutenberg-era press could turn 30 lb of arm pull into hundreds of pounds of platen force.' },
@@ -3879,7 +7048,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         { module: 'typographyToday', q: 'The term "leading" (line spacing) comes from:', opts: ['The lead actor', 'Strips of LEAD inserted between lines of metal type to add vertical spacing', 'Leading the eye', 'Lead-in copy'], ans: 1, explain: 'Lead strips of varying thickness physically inserted between rows of type. CSS line-height is the digital descendant.' },
         { module: 'people', q: 'Who sued Gutenberg, won, and ended up with most of the printing equipment?', opts: ['Schöffer', 'Johann Fust (his financier)', 'The Catholic Church', 'A rival printer'], ans: 1, explain: 'Fust lent Gutenberg the capital and sued when Gutenberg could not repay on schedule. Subsequent books bore Fust and Schöffer\'s names, not Gutenberg\'s.' },
         { module: 'broadside', q: 'About how many copies of Thomas Paine\'s "Common Sense" sold in the American colonies in 1776?', opts: ['About 1,000', 'About 10,000', 'About 150,000', 'About 1 million'], ans: 2, explain: '~150,000 copies in a colonial population of ~2.5 million. Per capita, one of the best-selling political pamphlets in American history. The Revolution was a print event as much as a military one.' },
-        { module: 'sameFears', q: 'The honest reading of 1450 critics worried about the printing press is:', opts: ['They were silly and obviously wrong about everything', 'They were prophets and obviously right about everything', 'They were partly right (print did cause religious violence, mass propaganda, information overload) and partly wrong (memory did not collapse, the social order did not end); the response was institutional development, not banning print', 'They did not really exist'], ans: 2, explain: 'Partial validity is the honest historical reading. The grown-up response was institutional (editorial standards, copyright, peer review, libraries) rather than prohibitionist. This is probably also the right frame for evaluating modern critics of the internet and AI — some concerns are real, some are panic, and institutional development is usually the productive path forward.' }
+        { module: 'sameFears', q: 'The honest reading of 1450 critics worried about the printing press is:', opts: ['They were silly and obviously wrong about everything', 'They were prophets and obviously right about everything', 'They were partly right (print did cause religious violence, mass propaganda, information overload) and partly wrong (memory did not collapse, the social order did not end); the response was institutional development, not banning print', 'They did not really exist'], ans: 2, explain: 'Partial validity is the honest historical reading. The grown-up response was institutional (editorial standards, copyright, peer review, libraries) rather than prohibitionist. This is probably also the right frame for evaluating modern critics of the internet and AI — some concerns are real, some are panic, and institutional development is usually the productive path forward.' },
+        { module: 'dayInShop', q: 'In a 1455 Mainz print shop, what was a master printer\'s primary concern that the apprentice, compositor, and pressman did NOT directly bear?', opts: ['The strength to pull the bar', 'The skill to read mirror-reversed type', 'The financial and reputational risk: which jobs to accept, when to invest, when to refuse risky work (heretical pamphlets, etc.)', 'The ability to mix ink'], ans: 2, explain: 'The master made the business and risk decisions: which commissions to accept (Bible vs almanac vs heretical pamphlet), when to invest in new type, when to merge or stay independent. The technical roles handled craft execution; the master handled the strategic uncertainty.' },
+        { module: 'beforeAfter', q: 'Approximately how many European cities had printed editions of Luther\'s 95 Theses within the first three months after October 1517?', opts: ['Two or three', 'About a dozen, all in Saxony', 'Dozens, across Germany and into Switzerland and France', 'Only Wittenberg'], ans: 2, explain: 'Within 3 months the Theses had been reprinted in dozens of cities across Germany, then quickly into Basel, Strasbourg, Paris, and beyond. This is the geographic spread the Reformation-spread map visualizes. Compare to Wycliffe (1380s), whose manuscript-era writings took decades to reach a fraction of these cities — and were locally suppressed before reaching mass audiences.' },
+        { module: 'people', q: 'The first newspaper printed in what would become Maine was:', opts: ['The Portland Press Herald (1862)', 'The Falmouth Gazette (1785)', 'The Cumberland Gazette (1786)', 'The Bangor Daily News (1889)'], ans: 1, explain: 'The Falmouth Gazette and Weekly Advertiser, first issued January 1, 1785 from a Fore Street shop in Falmouth (now Portland), by printers Thomas B. Wait and Benjamin Titcomb. It predates Maine statehood (1820) by 35 years and started a 240-year chain of Portland newspapers that continues with the modern Portland Press Herald.' }
       ];
 
       function renderCumulative() {
@@ -3968,6 +7140,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   earned
                     ? 'You have traveled the press — its mechanism, its materials, its economics, its impact. The history of how knowledge spreads now lives in your head.'
                     : 'Below 80% on the cumulative quiz means there are concepts worth revisiting. The cards below show exactly what you missed and where to review.'),
+                // Crew reflection prompt on mastery. Closes the loop from
+                // "I learned this" to "what will I do with it."
+                earned && h('div', { style: { background: T.parchment, color: T.ink, border: '2px dashed ' + T.accent, borderRadius: 8, padding: 14, margin: '0 auto 16px', maxWidth: 520, position: 'relative' } },
+                  h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 6, left: 10, color: '#7c2d12', fontSize: 14 } }, '❦'),
+                  h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 6, right: 10, color: '#7c2d12', fontSize: 14 } }, '❦'),
+                  h('div', { style: { fontSize: 10, color: '#7c2d12', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: 8, fontFamily: 'Georgia, serif' } }, 'Closing reflection'),
+                  h('p', { style: { margin: 0, fontSize: 13, color: '#3a2a1a', fontStyle: 'italic', lineHeight: 1.65, fontFamily: 'Georgia, serif' } },
+                    'You finished the tool. Pick one of these prompts and answer it in your head before you close the tab. Or write it down. Or bring it to your Crew this week:'),
+                  h('ul', { style: { margin: '10px 0 0 20px', padding: 0, fontSize: 13, color: '#3a2a1a', fontFamily: 'Georgia, serif', lineHeight: 1.7 } },
+                    h('li', null, 'What is one thing you understand about technology change that you didn\'t before?'),
+                    h('li', null, 'Pick a 1450 fear from The Same Fears. Is it your fear today, or do you disagree?'),
+                    h('li', null, 'What would you print first if you ran a shop?')
+                  )
+                ),
                 h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginTop: earned ? 16 : 0 } },
                   // Print certificate — only on mastery. Opens a new window
                   // with a printable HTML certificate styled like a period
@@ -4169,11 +7355,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           return Math.floor(hr / 24) + ' day' + (Math.floor(hr / 24) === 1 ? '' : 's') + ' ago';
         }
 
+        // Starter prompts — click to seed the textarea with a real question
+        // a student or teacher might ask. Reduces the blank-page problem
+        // that makes AI tutors feel intimidating. Each prompt links to a
+        // concept covered elsewhere in the tool, so the AI's answer tends
+        // to reinforce module content.
+        var STARTER_PROMPTS = [
+          'How did Aldus Manutius decide what books to print first?',
+          'What was a 1450 type-caster\'s daily routine?',
+          'Why did the Reformation succeed when earlier reform movements failed?',
+          'How does the screw press generate so much pressure?',
+          'What did 1450 print critics get right and what did they get wrong?',
+          'Who were the most important women printers, and why are they not in my textbook?'
+        ];
         return h('div', { style: { padding: 20, maxWidth: 760, margin: '0 auto', color: T.text } },
           backBar('🤖 Ask the Printer (AI)'),
           h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 14, lineHeight: 1.55 } },
             'Type any printing-press question. The AI grounds its answer in the same sources cited throughout this lab. ',
             h('strong', null, 'Educational only.')),
+          // Starter prompts
+          h('div', { className: 'printingpress-no-print', style: { marginBottom: 14 } },
+            h('div', { style: { fontSize: 11, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, fontWeight: 700 } }, 'Or click a starter question:'),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+              STARTER_PROMPTS.map(function(sp, spi) {
+                return h('button', { key: spi,
+                  onClick: function() { setQ(sp); announce('Question loaded. Click Ask to submit.'); },
+                  style: btn({ padding: '6px 10px', fontSize: 12, background: T.cardAlt, borderColor: T.border, color: T.muted }) },
+                  '💭 ' + sp);
+              })
+            )
+          ),
           h('label', { htmlFor: 'pp-q', style: { display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 } }, 'Your question:'),
           h('textarea', { id: 'pp-q', value: q,
             onChange: function(e) { setQ(e.target.value); }, rows: 3,
@@ -4297,6 +7508,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { label: 'Susan Broomhall — Work on women in early modern French print', kind: 'book' },
             { label: 'Helwi Blom — Recent scholarship on women printers in early modern Europe', kind: 'book' },
             { label: 'Library of Congress — Charlotte Guillard biography', url: 'https://www.bnf.fr/', kind: 'website' }
+          ] },
+          { name: 'Maine archives & places to visit', icon: 'museum', items: [
+            { label: 'Maine Historical Society (Portland) — Falmouth Gazette issues, 19th-c Maine newspapers, exhibits open to school groups', url: 'https://www.mainehistory.org/', kind: 'museum' },
+            { label: 'Wadsworth-Longfellow House (Portland) — Longfellow family papers, early Portland press connections; walking distance from King Middle', url: 'https://www.mainehistory.org/house-overview/', kind: 'museum' },
+            { label: 'Bowdoin College Library Special Collections (Brunswick) — early American imprints, Maine pamphlets, periodicals', url: 'https://library.bowdoin.edu/arch/', kind: 'book' },
+            { label: 'Bates College Edmund S. Muskie Archives (Lewiston) — political papers, Maine journalism history', url: 'https://www.bates.edu/archives/', kind: 'book' },
+            { label: 'Maine State Archives (Augusta) — colonial-era documents, original Maine constitutional materials (1820)', url: 'https://www.maine.gov/sos/arc/', kind: 'museum' },
+            { label: 'Colby College Special Collections (Waterville) — Maine literature manuscripts; Edwin Arlington Robinson papers', url: 'https://www.colby.edu/special-collections/', kind: 'book' },
+            { label: 'Penobscot Marine Museum (Searsport) — historic broadsides relating to coastal Maine shipping and ports', url: 'https://penobscotmarinemuseum.org/', kind: 'museum' },
+            { label: 'University of Maine Fogler Library (Orono) — extensive Maine periodicals collection; the largest run of pre-1900 Maine newspapers in the state', url: 'https://library.umaine.edu/special/', kind: 'book' },
+            { label: 'Portland Public Library — Portland Room — Portland-specific materials including 19th- and 20th-c newspapers on microfilm', url: 'https://www.portlandlibrary.com/', kind: 'museum' }
           ] }
         ];
         return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
@@ -4319,6 +7541,123 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               )
             );
           }),
+          // Glossary panel. Compact alphabetized reference of period
+          // vocabulary used across all 10 modules. Designed to be
+          // printable (via browser print) as a student handout.
+          h('div', { style: { marginTop: 16, padding: 16, background: T.card, border: '1px solid ' + T.accent, borderRadius: 12 } },
+            h('h3', { style: { margin: '0 0 4px', fontSize: 15, color: T.accentHi, fontFamily: 'Georgia, serif' } }, '📖 Period vocabulary glossary'),
+            h('p', { style: { margin: '0 0 12px', fontSize: 11, color: T.muted, fontStyle: 'italic', lineHeight: 1.5 } },
+              'Every period term used in this lab. Print this page and you have a one-sheet reference for the whole tool. Alphabetized for fast scan.'),
+            h('div', { style: { columns: '2 200px', columnGap: 18, fontSize: 12, color: T.text, lineHeight: 1.6 } },
+              [
+                { t: 'Antimony', d: 'Metal that expands slightly on cooling. The "secret ingredient" in type alloy — its expansion counters lead and tin shrinkage so cast type comes out the right size.' },
+                { t: 'Beard', d: 'The sloped area on a sort connecting the printing face down to the body. Catches stray ink.' },
+                { t: 'Blackletter', d: 'The dense, vertical, medieval typeface of the Gutenberg Bible. Also called Textura or Old English.' },
+                { t: 'Broadside', d: 'A single-sheet print, often political, advertising, religious, or poetic. The format of Common Sense (1776) and most early American pamphlets.' },
+                { t: 'Caduceus', d: 'A winged staff with two intertwined serpents. Froben\'s printer\'s mark; later the symbol of Hermes / Mercury and (mistakenly in the U.S.) of medicine.' },
+                { t: 'Casting', d: 'Pouring molten alloy into a copper matrix to produce one sort. Mainz printers cast tens of thousands per shop.' },
+                { t: 'Colophon', d: 'The printer\'s mark and credit at the back of a book. Fust and Schöffer\'s 1457 Mainz Psalter has the first printed colophon.' },
+                { t: 'Composing stick', d: 'A handheld metal tray adjustable for line width. The compositor built one line at a time, right-to-left.' },
+                { t: 'Compositor', d: 'The person who set type. Required years of training to read mirror-reversed text at speed and know the case layout by feel.' },
+                { t: 'Counter', d: 'The enclosed space inside a letter (the loop of an o, the bowl of a b). The "negative space" of typography.' },
+                { t: 'Distribution', d: 'Returning each sort to its compartment after a forme is printed. Long and tedious; usually the apprentice\'s job.' },
+                { t: 'Em-dash, en-dash', d: 'Dashes the width of a capital M and a lowercase n respectively. Widths come from physical type sizes used as rulers.' },
+                { t: 'Face (of type)', d: 'The raised letter at the top of a sort. The only part that touches ink and paper.' },
+                { t: 'Falling in pi', d: 'When set type is dropped and the sorts mix up. Shop disaster; takes hours of resorting.' },
+                { t: 'Fell (felt the nick)', d: 'Identifying which way is up on a sort by feeling for the nick groove. Compositor by-touch skill.' },
+                { t: 'Festina lente', d: 'Latin: "make haste slowly." Aldus Manutius\'s motto; the meaning of the dolphin-and-anchor mark.' },
+                { t: 'Fleuron', d: 'A printer\'s flower — a decorative ornament cast as a sort, used to fill short lines or mark section breaks.' },
+                { t: 'Folio, quarto, octavo', d: 'Sheet-folding formats. Folio = folded once (4 pages), quarto = folded twice (8 pages), octavo = folded three times (16 pages). Smaller formats = more portable books.' },
+                { t: 'Font', d: 'Originally a "fount" — a complete set of one typeface in one size. Thousands of physical sorts in 1450; a file on your laptop today.' },
+                { t: 'Forme', d: 'A complete page-worth of locked-up type ready to be inked and pressed. Locked into a metal frame with wedges.' },
+                { t: 'Galley', d: 'A flat metal tray that held set type before pagination. "Galley proofs" today (a publishing-industry term) descend from this.' },
+                { t: 'Hangul', d: 'The Korean alphabet (~24 letters), designed by King Sejong in 1443. Simpler than Hanja but politically suppressed in scholarly use.' },
+                { t: 'Hanja', d: 'Chinese characters used in Korea (thousands of glyphs). The economic challenge that made Korean movable-type printing harder to scale than European.' },
+                { t: 'Height-to-paper', d: 'The total foot-to-face height of a sort. In Anglo-American printing exactly 0.918 inches. Every sort must match.' },
+                { t: 'Imposition', d: 'Arranging pages on a sheet so they read in order after folding. Senior craftsman\'s job; messed up and you reprint the run.' },
+                { t: 'Incunabula', d: 'Books printed before 1501. The "cradle period" of European printing. ~30,000 known editions; bibliographers track them all.' },
+                { t: 'Italic', d: 'A slanted typeface modeled on humanist handwriting. Aldus Manutius commissioned the first body italic from Francesco Griffo (1500) to fit more text per page.' },
+                { t: 'Justification', d: 'Inserting thin metal spacers (quads) between words to make every line the same width. Gives us "justified text" today.' },
+                { t: 'Kerning', d: 'Adjusting space between specific letter pairs. The "kern" was the part of a sort that overhung the metal block (the diagonal of W, the foot of f, etc.).' },
+                { t: 'Lampblack', d: 'Pure carbon soot scraped from oil-lamp interiors. The pigment in Gutenberg-era oil-based ink.' },
+                { t: 'Leading', d: 'Pronounced "ledding." Lead strips inserted between rows of type for vertical spacing. CSS line-height descends from this.' },
+                { t: 'Ligature', d: 'Two or more characters cast as a single sort (fi, fl, æ, &). Smoothed out awkward letter combinations.' },
+                { t: 'Manicule', d: 'A pointing-hand mark used to indicate "look here." Drawn in manuscript margins; later cast as a sort. ☞' },
+                { t: 'Manuscript', d: 'A handwritten document, especially a book copied before print. Slow, expensive, often one of a kind.' },
+                { t: 'Matrix', d: 'The mother-mold pressed by a punch into a copper blank. Used to cast hundreds of identical sorts. The matrix lasts decades; the cast sorts wear out.' },
+                { t: 'Nick', d: 'A small horizontal groove on a sort, near the foot, on one side. Compositors felt for it to know which way was up.' },
+                { t: 'Pi (in pi)', d: 'See "falling in pi." A pile of jumbled, unsorted type.' },
+                { t: 'Pilcrow (¶)', d: 'Paragraph-start mark used in manuscripts and early printed books. Still in your word processor.' },
+                { t: 'Platen', d: 'The heavy flat plate that pressed paper against type. Master printers obsessed over keeping it flat.' },
+                { t: 'Punch (puncheon)', d: 'A hardened-steel die with one letter shape cut in mirror-image at one end. Pressed into a copper matrix to create the casting mold.' },
+                { t: 'Quoin', d: 'A wedge used to lock type into a forme. Pronounced "coin." Tighter quoin = sorts stay in place; too tight and the forme cracks.' },
+                { t: 'Recto, verso', d: 'The right-hand and left-hand pages of an open book. Recto is odd-numbered (1, 3, 5); verso is even.' },
+                { t: 'Shoulder', d: 'A small bevel on a sort just below the printing face. Catches stray ink.' },
+                { t: 'Shank', d: 'The main body of a sort. Stands the dimensional and mechanical load when pressed.' },
+                { t: 'Sort', d: 'A single piece of cast metal type. A shop kept ~100,000 in inventory.' },
+                { t: 'Tympan', d: 'A frame covered with parchment that held the paper in place during the impression.' },
+                { t: 'Type case', d: 'The wooden compartmented tray that held all the sorts of one typeface. Upper case (capitals) and lower case (minuscules) literally upper and lower.' },
+                { t: 'Vernacular', d: 'The everyday language of a region as opposed to scholarly Latin. Vernacular Bibles (Luther\'s German, Tyndale\'s English) were politically explosive.' },
+                { t: 'Watermark', d: 'A faint design pressed into paper during papermaking; visible when held to light. Identifies the papermaker; helps date undated books.' }
+              ].map(function(g, gi) {
+                return h('div', { key: gi, style: { breakInside: 'avoid', marginBottom: 8 } },
+                  h('strong', { style: { color: T.accentHi, fontFamily: 'Georgia, serif' } }, g.t),
+                  h('span', { style: { color: T.muted } }, ' — ' + g.d)
+                );
+              })
+            ),
+            h('p', { style: { margin: '12px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'Use your browser\'s print menu (Cmd/Ctrl + P) on this Resources page to capture the glossary as a one-sheet handout.')
+          ),
+
+          // Next steps for curious learners — concrete actions a student
+          // or teacher could take after this tool. Turns abstract interest
+          // into specific behavior.
+          h('div', { style: { marginTop: 16, padding: 16, background: T.card, border: '1px solid ' + T.ok, borderRadius: 12 } },
+            h('h3', { style: { margin: '0 0 4px', fontSize: 15, color: T.accentHi, fontFamily: 'Georgia, serif' } }, '🛤️ Next steps if this lab caught you'),
+            h('p', { style: { margin: '0 0 12px', fontSize: 11, color: T.muted, fontStyle: 'italic', lineHeight: 1.55 } },
+              'You finished the tool. The most rewarding learning happens off the screen. Pick one or two from this list and actually do them.'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+              [
+                { tier: 'Easy', tone: T.ok,
+                  action: 'Visit a working press museum',
+                  detail: 'International Printing Museum (Carson, CA) runs Gutenberg demonstrations on real reconstructions. Gutenberg Museum (Mainz) has originals. Neither requires special arrangement.' },
+                { tier: 'Easy', tone: T.ok,
+                  action: 'Watch the Linotype documentary',
+                  detail: '"Linotype: The Film" (2012, on streaming) covers the Mergenthaler Linotype, the machine that changed newspapers for 80 years. Wonderfully nerdy. The machines still run at hobbyist shops.' },
+                { tier: 'Easy', tone: T.ok,
+                  action: 'Examine a real printed book',
+                  detail: 'Pull any hardback off a shelf. Look at the title page, the colophon (back of the title page), the type, the leading. You now know what every choice means.' },
+                { tier: 'Medium', tone: T.warn,
+                  action: 'Find a letterpress shop near you',
+                  detail: 'Briar Press maintains a directory of working letterpress shops worldwide. Many offer workshops. In Maine: try AS220 Industries (Providence, drivable) or look up Down East letterpress practitioners.' },
+                { tier: 'Medium', tone: T.warn,
+                  action: 'Identify a typeface in the wild',
+                  detail: 'Pick a sign, a book, an app, a logo. Try to identify the typeface. Use Fonts In Use (fontsinuse.com) or the Identifont question-based tool. Keep doing this. Within a month you will start seeing typefaces everywhere.' },
+                { tier: 'Medium', tone: T.warn,
+                  action: 'Follow a modern type designer',
+                  detail: 'Tobias Frere-Jones, Erik Spiekermann, Jessica Hische, Tracy Jenkins. They share work-in-progress sketches, talk about historical references, and post the kind of behind-the-scenes craft that schools rarely show.' },
+                { tier: 'Stretch', tone: T.danger,
+                  action: 'Design one letter',
+                  detail: 'Open Glyphr Studio (free, browser-based) or FontForge (free, desktop). Design the lowercase "a" for your own typeface. You will fail your first 10 attempts. You will learn more about type than from any book.' },
+                { tier: 'Stretch', tone: T.danger,
+                  action: 'Print a real broadside',
+                  detail: 'Take the broadside you composed in the Build a Broadside module, print it on heavy paper (cardstock), and post it somewhere public with permission. Watch what happens. This is what a 1450 broadside was for.' },
+                { tier: 'Stretch', tone: T.danger,
+                  action: 'Read a primary source in full',
+                  detail: 'The British Library has the entire Gutenberg Bible online as a high-resolution facsimile. Spend 15 minutes scrolling. Try to read a line of Blackletter. Notice what you can and cannot decode.' }
+              ].map(function(step, i) {
+                return h('div', { key: i, style: { background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '3px solid ' + step.tone, borderRadius: 6, padding: 10 } },
+                  h('div', { style: { fontSize: 10, color: step.tone, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: 4, fontFamily: 'Georgia, serif' } }, step.tier),
+                  h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif', marginBottom: 4 } }, step.action),
+                  h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.55 } }, step.detail)
+                );
+              })
+            ),
+            h('p', { style: { margin: '12px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'A skill built by holding a 30-pound platen is qualitatively different from a skill built by reading about one. Even a single hands-on session at a working press shifts everything you understood from this lab.')
+          ),
+
           // Citation hint — for teachers who use this tool as a classroom
           // resource. Provides a clean attribution format they can adapt
           // for handouts, lesson plans, or student bibliographies.
@@ -4464,6 +7803,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             { wrong: 'Today\'s tech critics are uniformly wrong and we should laugh at them.', right: 'Same as above — some will be right, some wrong, and we cannot tell which from inside our own moment. Treat both "uniquely bad" and "uniquely good" framings as equally suspicious.' }
           ],
           extension: 'Have students interview a parent or grandparent about a technology they were worried about (TV, video games, smartphones, internet). Compare to the 1450 fears in this module. Where do the worries map? Where do they not? Write a 1-page essay arguing whether the worry was right, wrong, or partially both — with specific evidence.'
+        },
+        dayInShop: {
+          standards: ['CCSS.ELA-Literacy.RH.6-8.2', 'C3 Framework D2.His.3.6-8 (perspectives)', 'C3 Framework D2.His.14.6-8 (causation)', 'CASEL — Responsible Decision-Making', 'NCSS Theme 4 — Individual Development and Identity'],
+          discussion: [
+            'You picked a role and made four decisions. Did your choices reflect what you would actually have done in 1455, or what you think a "good" answer is by modern values? Where do those diverge?',
+            'Trade between the roles in your class. Compare the master\'s decisions to the apprentice\'s. Whose constraints were harder? Whose were more interesting?',
+            'In several decisions there was a "lie-and-hope" option and a "speak-honestly" option. The historical record is full of both choices. What does that say about the difference between historical actors and historical heroes?',
+            'The pamphlet-printing decision (master role) had asymmetric outcomes: high reward + possibly catastrophic risk. How do you think about decisions like that today? What modern parallels exist?',
+            'In the journeyman compositor scenario, you could "silently correct" a misspelling. Modern textual criticism would call this an unauthorized edit. But many famous scholarly editions made exactly this choice. Where is the right line?'
+          ],
+          misconceptions: [
+            { wrong: 'Historical actors had obvious right answers and were either heroes or villains.', right: 'They had real constraints and made tradeoffs we are still making versions of today. The "right" answer was rarely obvious from inside their moment.' },
+            { wrong: 'A printer\'s job was just turning a screw.', right: 'A print shop had four distinct skilled trades (apprentice / compositor / pressman / master), each with multi-year training. The technical, social, and economic decisions in this module reflect what each role actually managed.' },
+            { wrong: 'Loyalty and honesty are always the same thing.', right: 'Several decisions in this module pit them against each other (covering for a colleague vs reporting to the master). The historical record is full of both choices. Recognizing the tension is part of moral education.' }
+          ],
+          extension: 'After students complete the module once, have them try a different role. Then debrief in pairs: how did the SAME workshop look different from inside two different jobs? Optional advanced extension: have students write a journal entry "in character" describing their day from their role\'s point of view.'
         }
       };
 
@@ -4487,6 +7842,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       else if (view === 'people')          content = h(_ViewWrapper, { key: 'people',          _render: renderPeople });
       else if (view === 'broadside')       content = h(_ViewWrapper, { key: 'broadside',       _render: renderBroadside });
       else if (view === 'sameFears')       content = h(_ViewWrapper, { key: 'sameFears',       _render: renderSameFears });
+      else if (view === 'dayInShop')       content = h(_ViewWrapper, { key: 'dayInShop',       _render: renderDayInShop });
       else if (view === 'cumulative')      content = h(_ViewWrapper, { key: 'cumulative',      _render: renderCumulative });
       else if (view === 'askPrinter')      content = h(_ViewWrapper, { key: 'askPrinter',      _render: renderAskPrinter });
       else if (view === 'resources')       content = h(_ViewWrapper, { key: 'resources',       _render: renderResources });
