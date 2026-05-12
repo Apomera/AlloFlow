@@ -535,7 +535,8 @@
         { id: 'safety',      icon: '\uD83D\uDEE1\uFE0F', label: 'Safety & Boundaries', desc: 'Learn about personal boundaries, trusted adults, and safe vs. unsafe situations.', color: 'red', recommendedRange: 'K-8' },
 
         // Stewardship (community, justice, land, and the future)
-        { id: '_cat_Stewardship', icon: '\uD83C\uDF31', label: 'Stewardship', desc: '', color: 'slate', category: true }
+        { id: '_cat_Stewardship', icon: '\uD83C\uDF31', label: 'Stewardship', desc: '', color: 'slate', category: true },
+        { id: 'landPlace',   icon: '\uD83C\uDF31', label: 'Land & Place',         desc: 'Stewardship Studio for ongoing relationship with the land you live on. Three threads (history, ecology, present), critical reflection on land acknowledgment as practice rather than performance, Wabanaki-led organizations as authoritative voices, and a private reflection journal.', color: 'emerald', recommendedRange: '5-12' }
       ];
       // Append dynamically registered tools into the correct category positions
       var _dynamicTools = [
