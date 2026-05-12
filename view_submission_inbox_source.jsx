@@ -40,6 +40,13 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   const [anchors, setAnchors] = useState([]);
   const [anchorsPanelOpen, setAnchorsPanelOpen] = useState(false);
   const [pendingAnchor, setPendingAnchor] = useState(null);  // {submissionIdx, responseKey, responseText}
+  // Phase 3 v2.1 (May 12 2026): one global rubric the teacher sets at the
+  // top of the inbox, used by both the per-row Grade button (as default)
+  // and the new "Grade entire queue" bulk action.
+  const [globalRubric, setGlobalRubric] = useState({ rubric: '', context: '' });
+  const [globalRubricOpen, setGlobalRubricOpen] = useState(false);
+  const [bulkGrading, setBulkGrading] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 });
   const keyInputRef = useRef(null);
   const subInputRef = useRef(null);
 
@@ -170,14 +177,18 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   const updateRubric = (idx, patch) => {
     setRubrics(prev => ({ ...prev, [idx]: { ...(prev[idx] || { rubric: '', context: '', exemplar: '' }), ...patch } }));
   };
-  const gradeRow = async (idx) => {
+  const gradeRow = async (idx, opts) => {
+    opts = opts || {};
     const row = queue[idx];
     if (!row || row.status !== 'decrypted' || !row.payload) return;
     const r = rubrics[idx] || {};
-    const rubricText = (r.rubric || '').trim();
+    // Per-row rubric wins; fall back to the global rubric so a bulk run
+    // or a row that hasn't been customized still has something to grade by.
+    const rubricText = ((r.rubric || '').trim() || (globalRubric.rubric || '').trim());
+    const contextText = ((r.context || '').trim() || (globalRubric.context || '').trim());
     if (!rubricText) {
-      addToast && addToast('Please describe what a good response should include before grading.', 'warn');
-      return;
+      if (!opts.silent) addToast && addToast('Add a class rubric at the top, or a per-submission rubric, before grading.', 'warn');
+      return { ok: 0, fail: 0, skipped: true };
     }
     const QH = window.AlloModules && window.AlloModules.QuizAIHelpers;
     if (!QH || typeof QH.gradeFreeformAnswerWithCalibration !== 'function') {
@@ -220,13 +231,13 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
     const responseEntries = Object.entries(row.payload.responses || {})
       .filter(([k, v]) => v && String(v).trim() && !anchoredKeys.has(k));
     if (responseEntries.length === 0) {
-      addToast && addToast(
+      if (!opts.silent) addToast && addToast(
         anchoredKeys.size > 0
           ? 'All responses on this submission are already anchored.'
           : 'No responses to grade in this submission.',
         'warn'
       );
-      return;
+      return { ok: 0, fail: 0, skipped: true };
     }
     setGradingRow(idx);
     // Pre-populate anchored responses' grades so they show in the row
@@ -249,7 +260,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
       try {
         const result = await QH.gradeFreeformAnswerWithCalibration({
           rubric: rubricText,
-          context: r.context || row.payload.docTitle || '',
+          context: contextText || row.payload.docTitle || '',
           studentResponse: String(value),
           calibrationSamples: cappedSamples,
           callGemini: callGemini,
@@ -268,9 +279,50 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
       }
     }
     setGradingRow(null);
-    addToast && addToast(
+    if (!opts.silent) addToast && addToast(
       'Graded ' + ok + ' response' + (ok === 1 ? '' : 's') + (fail > 0 ? ', ' + fail + ' failed' : ''),
       fail > 0 ? 'warn' : 'success'
+    );
+    return { ok, fail };
+  };
+  // Phase 3 v2.1: bulk-grade every decrypted submission using the global
+  // rubric (and per-row override if one exists). Runs sequentially so the
+  // Gemini API isn't hammered + so the teacher can see progress.
+  const gradeAllDecrypted = async () => {
+    if (!(globalRubric.rubric || '').trim()) {
+      addToast && addToast('Add a class rubric at the top before bulk grading.', 'warn');
+      setGlobalRubricOpen(true);
+      return;
+    }
+    const decryptedIdxs = queue
+      .map((r, i) => ({ r, i }))
+      .filter(x => x.r.status === 'decrypted')
+      .map(x => x.i);
+    if (decryptedIdxs.length === 0) {
+      addToast && addToast('No decrypted submissions to grade.', 'warn');
+      return;
+    }
+    setBulkGrading(true);
+    setBulkProgress({ current: 0, total: decryptedIdxs.length });
+    let totalOk = 0, totalFail = 0, totalSkipped = 0;
+    for (let i = 0; i < decryptedIdxs.length; i++) {
+      const idx = decryptedIdxs[i];
+      setBulkProgress({ current: i + 1, total: decryptedIdxs.length });
+      const result = await gradeRow(idx, { silent: true });
+      if (result) {
+        totalOk += result.ok || 0;
+        totalFail += result.fail || 0;
+        if (result.skipped) totalSkipped += 1;
+      }
+    }
+    setBulkGrading(false);
+    setBulkProgress({ current: 0, total: 0 });
+    addToast && addToast(
+      'Bulk grade done: ' + totalOk + ' response' + (totalOk === 1 ? '' : 's') + ' graded across ' +
+        (decryptedIdxs.length - totalSkipped) + ' submission' + (decryptedIdxs.length - totalSkipped === 1 ? '' : 's') +
+        (totalFail > 0 ? ', ' + totalFail + ' failed' : '') +
+        (totalSkipped > 0 ? ', ' + totalSkipped + ' skipped (already fully anchored or no responses)' : ''),
+      totalFail > 0 ? 'warn' : 'success'
     );
   };
   // ── Anchor management (Phase 3 v2: multi-anchor few-shot) ──────
@@ -452,6 +504,65 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
           })
         ),
 
+        // Class rubric panel — shown whenever ≥1 row is decrypted. Optional
+        // global rubric that fills in the per-row rubric when grading.
+        (counts.decrypted || 0) > 0 && /*#__PURE__*/React.createElement('div', { style: { background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 10, padding: globalRubricOpen ? '14px 16px' : '8px 14px', marginBottom: 14 } },
+          /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
+            /*#__PURE__*/React.createElement('button', {
+              type: 'button',
+              onClick: () => setGlobalRubricOpen(!globalRubricOpen),
+              style: { display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 700, color: '#3730a3', fontSize: '0.9rem' }
+            },
+              '🎯 Class rubric',
+              (globalRubric.rubric || '').trim() && /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', padding: '1px 8px', borderRadius: 999, background: '#c7d2fe', color: '#3730a3', fontSize: '0.7rem', fontWeight: 700 } }, '✓ set'),
+              /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.75rem', fontWeight: 600, color: '#6366f1' } }, globalRubricOpen ? '▾' : '▸')
+            ),
+            /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
+              !bulkGrading && /*#__PURE__*/React.createElement('button', {
+                type: 'button',
+                onClick: gradeAllDecrypted,
+                disabled: (counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim(),
+                title: (globalRubric.rubric || '').trim()
+                  ? 'Grade every decrypted submission in the queue with this rubric'
+                  : 'Set a class rubric first',
+                style: {
+                  padding: '8px 16px',
+                  background: ((counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim()) ? '#cbd5e1' : '#4f46e5',
+                  color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem',
+                  cursor: ((counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim()) ? 'not-allowed' : 'pointer'
+                }
+              }, '🎯 Grade entire queue (' + (counts.decrypted || 0) + ')'),
+              bulkGrading && /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem', color: '#3730a3', fontWeight: 700 } },
+                /*#__PURE__*/React.createElement('span', null, 'Grading ' + bulkProgress.current + ' / ' + bulkProgress.total + '…'),
+                /*#__PURE__*/React.createElement('div', { style: { width: 120, height: 8, background: '#c7d2fe', borderRadius: 999, overflow: 'hidden' } },
+                  /*#__PURE__*/React.createElement('div', { style: { width: (bulkProgress.total ? (bulkProgress.current / bulkProgress.total * 100) : 0) + '%', height: '100%', background: '#4f46e5', transition: 'width 0.3s' } })
+                )
+              )
+            )
+          ),
+          globalRubricOpen && /*#__PURE__*/React.createElement('div', { style: { marginTop: 12, paddingTop: 12, borderTop: '1px solid #c7d2fe' } },
+            /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.78rem', color: '#3730a3', fontWeight: 600, marginBottom: 4 } }, 'Rubric for this batch — what does full credit look like?'),
+            /*#__PURE__*/React.createElement('textarea', {
+              value: globalRubric.rubric,
+              onChange: e => setGlobalRubric(prev => ({ ...prev, rubric: e.target.value })),
+              placeholder: 'e.g., "Each response should name the main idea, cite at least one specific detail from the text, and explain reasoning in 2-3 complete sentences."',
+              rows: 3,
+              style: { width: '100%', padding: 8, border: '1px solid #c7d2fe', borderRadius: 6, fontSize: '0.88rem', fontFamily: 'inherit', resize: 'vertical', marginBottom: 10 }
+            }),
+            /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.78rem', color: '#3730a3', fontWeight: 600, marginBottom: 4 } }, 'Assignment context (optional)'),
+            /*#__PURE__*/React.createElement('input', {
+              type: 'text',
+              value: globalRubric.context,
+              onChange: e => setGlobalRubric(prev => ({ ...prev, context: e.target.value })),
+              placeholder: 'e.g., "Reading response to chapter 3"',
+              style: { width: '100%', padding: '6px 8px', border: '1px solid #c7d2fe', borderRadius: 6, fontSize: '0.85rem', marginBottom: 8 }
+            }),
+            /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.78rem', color: '#475569' } },
+              'This rubric is used by "Grade entire queue" and as the default for each per-submission Grade button. Per-submission rubrics still override the global one when set.'
+            )
+          )
+        ),
+
         // Calibration anchors panel — visible whenever the queue has decrypted rows
         (counts.decrypted || 0) > 0 && /*#__PURE__*/React.createElement('div', { style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: anchorsPanelOpen ? '12px 16px' : '8px 14px', marginBottom: 14 } },
           /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
@@ -602,11 +713,16 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                             /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#475569', fontSize: '0.8rem', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } },
                               '🎯 AI Grade with rubric'
                             ),
-                            /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.78rem', color: '#475569', fontWeight: 600, marginBottom: 4 } }, 'Rubric (what full credit looks like) *'),
+                            /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.78rem', color: '#475569', fontWeight: 600, marginBottom: 4 } },
+                              'Rubric (what full credit looks like)',
+                              (globalRubric.rubric || '').trim() && !((rubrics[idx] && rubrics[idx].rubric) || '').trim()
+                                ? /*#__PURE__*/React.createElement('span', { style: { fontWeight: 400, color: '#94a3b8', marginLeft: 6, fontSize: '0.72rem' } }, '— using class rubric above (override here for this submission only)')
+                                : null
+                            ),
                             /*#__PURE__*/React.createElement('textarea', {
                               value: (rubrics[idx] && rubrics[idx].rubric) || '',
                               onChange: e => updateRubric(idx, { rubric: e.target.value }),
-                              placeholder: 'e.g., "Explains the main idea in their own words, cites at least one detail from the text, uses complete sentences."',
+                              placeholder: (globalRubric.rubric || '').trim() ? globalRubric.rubric : 'e.g., "Explains the main idea in their own words, cites at least one detail from the text, uses complete sentences."',
                               rows: 3,
                               style: { width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: '0.85rem', fontFamily: 'inherit', resize: 'vertical', marginBottom: 8 }
                             }),
