@@ -45,6 +45,16 @@ const SOURCE = path.join(ROOT, 'AlloFlowANTI.txt');
 const OUTPUT = path.join(ROOT, 'prismflow-deploy', 'src', 'App.jsx');
 const BACKUP = path.join(ROOT, 'prismflow-deploy', 'src', 'AlloFlowANTI.txt');
 
+// ── CDN base (May 12 2026) ──────────────────────────────────────
+// Switched from jsdelivr (cdn.jsdelivr.net/gh/Apomera/AlloFlow@<hash>/<file>)
+// to Cloudflare Pages because jsdelivr started returning GitHub's "429:
+// Too Many Requests" plaintext as response bodies, causing ~30-40 of 127
+// modules to [CDN-FAIL] every cold load. Cloudflare Pages serves the files
+// directly from its edge network — no GitHub API in the request path, no
+// rate-limit cascade. URLs no longer need a @hash because Cloudflare
+// invalidates by content automatically when a new commit pushes to main.
+const CLOUDFLARE_CDN_BASE = 'https://alloflow-cdn.pages.dev';
+
 // ── Module definitions ──────────────────────────────────────────
 // Each module: { name, filename, cdnTemplate }
 const MODULES = [
@@ -779,6 +789,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_swimlab.js',
     'stem_lab/stem_tool_printingpress.js',
     'sel_hub/sel_safety_layer.js',  // MUST load before any sel_tool_*.js
+    'sel_hub/sel_standards_alignment.js',  // standards alignment data + helper used by sel_tool_*.js About views
     'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
     'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_mindfulness.js',
     'sel_hub/sel_tool_social.js',
@@ -791,6 +802,38 @@ const PLUGIN_FILES = [
     'sel_hub/sel_tool_quietquestions.js',
     'sel_hub/sel_tool_careconstellations.js',
     'sel_hub/sel_tool_orientations.js',
+    'sel_hub/sel_tool_onepageprofile.js',
+    'sel_hub/sel_tool_maps.js',
+    'sel_hub/sel_tool_path.js',
+    'sel_hub/sel_tool_ecomap.js',
+    'sel_hub/sel_tool_circlesofsupport.js',
+    'sel_hub/sel_tool_genogram.js',
+    'sel_hub/sel_tool_windowoftolerance.js',
+    'sel_hub/sel_tool_stressbucket.js',
+    'sel_hub/sel_tool_viastrengths.js',
+    'sel_hub/sel_tool_wheeloflife.js',
+    'sel_hub/sel_tool_thoughtrecord.js',
+    'sel_hub/sel_tool_costbenefit.js',
+    'sel_hub/sel_tool_tipp.js',
+    'sel_hub/sel_tool_dearman.js',
+    'sel_hub/sel_tool_valuescommittedaction.js',
+    'sel_hub/sel_tool_sfbt.js',
+    'sel_hub/sel_tool_behavioralactivation.js',
+    'sel_hub/sel_tool_careercompass.js',
+    'sel_hub/sel_tool_perma.js',
+    'sel_hub/sel_tool_motivationalinterviewing.js',
+    'sel_hub/sel_tool_crewprotocols.js',
+    'sel_hub/sel_tool_griefloss.js',
+    'sel_hub/sel_tool_anxietytoolkit.js',
+    'sel_hub/sel_tool_sleep.js',
+    'sel_hub/sel_tool_sensoryregulation.js',
+    'sel_hub/sel_tool_traumapsychoed.js',
+    'sel_hub/sel_tool_bodystory.js',
+    'sel_hub/sel_tool_sourcesofstrength.js',
+    'sel_hub/sel_tool_bigfeelings.js',
+    'sel_hub/sel_tool_healthyrelationships.js',
+    'sel_hub/sel_tool_substancepsychoed.js',
+    'sel_hub/sel_tool_identitysupport.js',
     'sel_hub/sel_tool_strengths.js',
     'sel_hub/sel_tool_goals.js',
     'sel_hub/sel_tool_community.js',
@@ -1226,8 +1269,11 @@ content = content.replace(LOAD_MODULE_RE, (match, moduleName, currentUrl) => {
         // Point to local file for hot-reloading during development
         newUrl = `./${moduleDef.filename}`;
     } else {
-        // Production: CDN URL with git hash
-        newUrl = `${moduleDef.cdnBase}@${gitHash}/${moduleDef.filename}`;
+        // Production: Cloudflare Pages serves the file from its edge network.
+        // No @hash needed — Cloudflare auto-invalidates by content on each push.
+        // moduleDef.cdnBase (legacy jsdelivr URL) is left in the MODULES table
+        // but unused; kept for diff readability if we ever need to switch back.
+        newUrl = `${CLOUDFLARE_CDN_BASE}/${moduleDef.filename}`;
     }
 
     replacementCount++;
@@ -1240,23 +1286,27 @@ content = content.replace(LOAD_MODULE_RE, (match, moduleName, currentUrl) => {
 });
 
 // ── Transform plugin loader CDN base ────────────────────────────
-// Matches: var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@HASH/';
-const PLUGIN_CDN_RE = /var\s+pluginCdnBase\s*=\s*'https:\/\/cdn\.jsdelivr\.net\/gh\/Apomera\/AlloFlow@[^/]+\//;
+// Matches either the legacy jsdelivr URL OR the new Cloudflare Pages URL,
+// so re-running build.js after the May 12 2026 CDN switch still works.
+//   var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@HASH/'
+//   var pluginCdnBase = 'https://alloflow-cdn.pages.dev/'
+//   var pluginCdnBase = './'   (dev mode)
+const PLUGIN_CDN_RE = /var\s+pluginCdnBase\s*=\s*'[^']*'/;
 let pluginReplaced = false;
 
 if (mode === 'dev') {
     // In dev mode, plugins load from local paths
     content = content.replace(PLUGIN_CDN_RE, () => {
         pluginReplaced = true;
-        console.log('  ✏️  pluginCdnBase: → local (./)'); 
-        return "var pluginCdnBase = './";
+        console.log('  ✏️  pluginCdnBase: → local (./)');
+        return "var pluginCdnBase = './'";
     });
 } else {
     content = content.replace(PLUGIN_CDN_RE, () => {
         pluginReplaced = true;
-        const newBase = `https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@${gitHash}/`;
-        console.log(`  ✏️  pluginCdnBase: → @${gitHash}`);
-        return `var pluginCdnBase = '${newBase}`;
+        const newBase = `${CLOUDFLARE_CDN_BASE}/`;
+        console.log(`  ✏️  pluginCdnBase: → Cloudflare Pages (${CLOUDFLARE_CDN_BASE})`);
+        return `var pluginCdnBase = '${newBase}'`;
     });
 }
 

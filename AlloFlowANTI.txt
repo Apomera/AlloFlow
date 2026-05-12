@@ -3624,7 +3624,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       s.onerror = (e) => {
         console.error('[CDN-FAIL] ' + name + ' network error, trying GitHub raw fallback:', e);
-        var fb = url.replace(/cdn\.jsdelivr\.net\/gh\/Apomera\/AlloFlow@[^\/]+\//, 'raw.githubusercontent.com/Apomera/AlloFlow/main/') + '?v=' + Date.now();
+        // Same fallback regex as the onload path above — recognizes both
+        // Cloudflare Pages and legacy jsdelivr URLs.
+        var fb = url.replace(/https:\/\/(?:cdn\.jsdelivr\.net\/gh\/Apomera\/AlloFlow@[^\/]+|alloflow-cdn\.pages\.dev)\//, 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/') + '?v=' + Date.now();
         var s2 = document.createElement('script'); s2.src = fb;
         s2.onload = function() { console.log('[CDN-FALLBACK] ' + name + ': ' + (window.AlloModules && window.AlloModules[name] ? 'SUCCESS' : 'FAILED')); };
         document.head.appendChild(s2);
