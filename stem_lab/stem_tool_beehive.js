@@ -10287,9 +10287,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
           // Colony Dashboard (beekeeper mode only)
           viewMode === 'beekeeper' && h('div', { className: 'rounded-xl border p-4 ' + (dk ? 'bg-gradient-to-br from-amber-900/30 to-yellow-900/20 border-amber-700/40' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200'), style: { boxShadow: dk ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.05)' }, role: 'region', 'aria-live': 'polite', 'aria-label': 'Colony dashboard showing population, resources, and health metrics' },
-            h('div', { className: 'flex items-center justify-between mb-3' },
+            h('div', { className: 'flex items-center justify-between mb-1' },
               h('div', { className: 'text-sm font-bold ' + (dk ? 'text-amber-300' : 'text-amber-900') }, '🐝 Colony Status'),
               h('div', { className: 'text-sm font-black ' + ratingColor }, colonyRating + ' (' + colonyHealth + ')')),
+            // ── Diagnostic sentence ──
+            // Builds a one-line narrative explanation of WHY the rating is
+            // what it is. Identifies the strongest dimension to anchor and
+            // the weakest one as a teaching nudge. Uses the same five
+            // weighted components that compute colonyHealth (workers 30%,
+            // queen 20%, anti-varroa 20%, morale 15%, honey 15%) so the
+            // sentence and the score always agree.
+            (function() {
+              // Score each dimension 0–100 — same conventions as colonyHealth math.
+              var dims = [
+                { id: 'workers', score: Math.min(100, workers / 300), label: 'workforce', value: fmtPop(workers),
+                  strong: 'a strong ' + fmtPop(workers) + ' workers',
+                  weak:  'workforce is rebuilding (' + fmtPop(workers) + ' workers — healthy colonies run 20,000+)' },
+                { id: 'queen', score: queenHealth, label: 'queen', value: queenHealth + '%',
+                  strong: 'a vigorous queen (' + queenHealth + '%)',
+                  weak:  'queen is failing (' + queenHealth + '% — egg-laying slows below 30%)' },
+                { id: 'varroa', score: 100 - varroaLevel, label: 'mite control', value: varroaLevel + '%',
+                  strong: 'mite load under control (' + varroaLevel + '%)',
+                  weak:  'mites are climbing (' + varroaLevel + '% — treat before 25%)' },
+                { id: 'morale', score: morale, label: 'morale', value: morale + '%',
+                  strong: 'high morale (' + morale + '%)',
+                  weak:  'morale is low (' + morale + '% — smoke, feed, or check the queen)' },
+                { id: 'honey', score: Math.min(100, honey * 3), label: 'honey stores', value: honey + ' lbs',
+                  strong: 'good honey stores (' + honey + ' lbs)',
+                  weak:  'honey stores are thin (' + honey + ' lbs — feed or harvest carefully)' }
+              ];
+              var sorted = dims.slice().sort(function(a, b) { return b.score - a.score; });
+              var strongest = sorted[0];
+              var weakest = sorted[sorted.length - 1];
+              var weakest2 = sorted[sorted.length - 2];
+              var sentence;
+              if (colonyHealth >= 80) {
+                sentence = 'Every dimension is healthy — ' + strongest.strong + ' is your standout. Keep the current rhythm.';
+              } else if (colonyHealth >= 55) {
+                sentence = 'Stable with ' + strongest.strong + ', but ' + weakest.weak + '.';
+              } else if (colonyHealth >= 35) {
+                sentence = weakest.weak.charAt(0).toUpperCase() + weakest.weak.slice(1) + ', and ' + weakest2.weak + ' — both are dragging the score down.';
+              } else {
+                sentence = 'Critical: ' + weakest.weak + ' AND ' + weakest2.weak + '. Risk of collapse — fix the most-urgent item the coach card flags first.';
+              }
+              return h('p', {
+                className: 'text-[11px] leading-relaxed mb-3 ' + (dk ? 'text-slate-200' : 'text-slate-600'),
+                role: 'status'
+              }, sentence);
+            })(),
             h('div', { className: 'grid grid-cols-4 gap-2 text-center mb-3' },
               h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-amber-500', style: { fontFamily: 'monospace' } }, fmtPop(workers)), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, '👷 Workers')),
               h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-pink-500', style: { fontFamily: 'monospace' } }, fmtPop(brood)), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, '🥚 Brood')),
