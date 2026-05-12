@@ -3411,13 +3411,20 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [showStationCreator, setShowStationCreator] = useState(false);
   const [stationDraft, setStationDraft] = useState({ name: '', tools: [], teacherNote: '' });
   const [showBehaviorLens, setShowBehaviorLens] = useState(false);
-  const [showEducatorHub, setShowEducatorHub] = useState(false);
+  const [showEducatorHub, _setShowEducatorHubRaw] = useState(false);
+  const setShowEducatorHub = React.useCallback((v) => { if (v && window.__alloLazyEducatorHubModal) { try { window.__alloLazyEducatorHubModal(); } catch(_) {} } _setShowEducatorHubRaw(v); }, []);
   const [showReportWriter, setShowReportWriter] = useState(false);
-  const [isSymbolStudioOpen, setIsSymbolStudioOpen] = useState(false);
+  const [isSymbolStudioOpen, _setIsSymbolStudioOpenRaw] = useState(false);
+  const setIsSymbolStudioOpen = React.useCallback((v) => { if (v && window.__alloLazySymbolStudio) { try { window.__alloLazySymbolStudio(); } catch(_) {} } _setIsSymbolStudioOpenRaw(v); }, []);
   const [isAlloHavenOpen, _setIsAlloHavenOpenRaw] = useState(false);
-  // Lazy-load AlloHaven arcade modes on first open.
+  // Lazy-load AlloHaven host module + arcade-mode plugins on first open.
+  // The host module is the largest single file in the bundle (~1.1 MB), so
+  // deferring it until the cozy-room is actually opened is a big cold-load win.
   const setIsAlloHavenOpen = React.useCallback((v) => {
     var trigger = function() {
+      if (typeof window.__alloLazyAlloHaven === 'function') {
+        try { window.__alloLazyAlloHaven(); } catch(_) {}
+      }
       if (typeof window.__alloEnsureArcadeModesLoaded === 'function') {
         try { window.__alloEnsureArcadeModesLoaded(); } catch(_) {}
       }
@@ -3429,10 +3436,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       _setIsAlloHavenOpenRaw(v);
     }
   }, []);
-  const [showStoryForge, setShowStoryForge] = useState(false);
-  const [showLitLab, setShowLitLab] = useState(false);
-  const [showPoetTree, setShowPoetTree] = useState(false);
-  const [showLearningHub, setShowLearningHub] = useState(false);
+  const [showStoryForge, _setShowStoryForgeRaw] = useState(false);
+  const setShowStoryForge = React.useCallback((v) => { if (v && window.__alloLazyStoryForge) { try { window.__alloLazyStoryForge(); } catch(_) {} } _setShowStoryForgeRaw(v); }, []);
+  const [showLitLab, _setShowLitLabRaw] = useState(false);
+  const setShowLitLab = React.useCallback((v) => { if (v && window.__alloLazyLitLab) { try { window.__alloLazyLitLab(); } catch(_) {} } _setShowLitLabRaw(v); }, []);
+  const [showPoetTree, _setShowPoetTreeRaw] = useState(false);
+  const setShowPoetTree = React.useCallback((v) => { if (v && window.__alloLazyPoetTree) { try { window.__alloLazyPoetTree(); } catch(_) {} } _setShowPoetTreeRaw(v); }, []);
+  const [showLearningHub, _setShowLearningHubRaw] = useState(false);
+  const setShowLearningHub = React.useCallback((v) => { if (v && window.__alloLazyLearningHubModal) { try { window.__alloLazyLearningHubModal(); } catch(_) {} } _setShowLearningHubRaw(v); }, []);
   const [showSelHub, _setShowSelHubRaw] = useState(false);
   // Lazy-load SEL Hub plugin batch on first open.
   const setShowSelHub = React.useCallback((v) => {
@@ -3765,9 +3776,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('HistoryPanel', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0e65cd65/view_history_panel_module.js');
     loadModule('FabStack', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0e65cd65/view_fab_stack_module.js');
     window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0e65cd65/view_study_timer_modal_module.js'); }; })();
-    loadModule('EducatorHubModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0e65cd65/view_educator_hub_modal_module.js');
-    loadModule('VisualSupportsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0e65cd65/view_visual_supports_modal_module.js');
-    loadModule('LearningHubModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0e65cd65/view_learning_hub_modal_module.js');
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0e65cd65/view_educator_hub_modal_module.js'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0e65cd65/view_visual_supports_modal_module.js'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0e65cd65/view_learning_hub_modal_module.js'); }; })();
     loadModule('ClozeInteractionPanel', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0e65cd65/view_cloze_interaction_panel_module.js');
     loadModule('LabelPositions', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0e65cd65/label_positions_module.js');
     loadModule('UILanguageSelector', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0e65cd65/ui_language_selector_module.js');
@@ -4266,7 +4277,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isGeneratingReflectionPrompt, setIsGeneratingReflectionPrompt] = useState(false);
   const [reflectionFeedback, setReflectionFeedback] = useState(null);
   const [isFabExpanded, setIsFabExpanded] = useState(false);
-  const [showVisualSupports, setShowVisualSupports] = useState(false);
+  const [showVisualSupports, _setShowVisualSupportsRaw] = useState(false);
+  const setShowVisualSupports = React.useCallback((v) => { if (v && window.__alloLazyVisualSupportsModal) { try { window.__alloLazyVisualSupportsModal(); } catch(_) {} } _setShowVisualSupportsRaw(v); }, []);
   const [vsTab, setVsTab] = useState('boards');
   const [visualSupportsPayload, setVisualSupportsPayload] = useState(null);
   const [storyForgeSubmissions, setStoryForgeSubmissions] = useState([]);
