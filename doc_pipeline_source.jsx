@@ -141,14 +141,15 @@ var createDocPipeline = function(deps) {
       pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
       pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount,
       pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
-      pdfBatchQueue, pdfExperimentMode, pdfExperimentRuns,
+      pdfBatchQueue, pdfBatchSummary, pdfExperimentMode, pdfExperimentRuns,
       customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef, pdfTargetScore,
       setPdfAuditResult, setPdfAuditLoading, setPdfFixResult, setPdfFixLoading,
       setPdfFixStep, setPendingPdfBase64, setPendingPdfFile,
       setPdfBatchQueue, setPdfBatchProcessing, setPdfBatchCurrentIndex,
       setPdfBatchStep, setPdfBatchSummary, setIsGeneratingStyle,
       setCustomExportCSS, setInputText, setGenerationStep, setIsExtracting,
-      exportAuditResult, setExportAuditLoading, setExportAuditResult;
+      exportAuditResult, setExportAuditLoading, setExportAuditResult,
+      setError;
   // Bind all vars from the state bag before each public function call
   var _bindState = function() {
     var s = _s();
@@ -166,7 +167,8 @@ var createDocPipeline = function(deps) {
     pdfAuditorCount = s.pdfAuditorCount;
     pdfPreviewTheme = s.pdfPreviewTheme; pdfPreviewFontSize = s.pdfPreviewFontSize;
     pdfPreviewA11yInspect = s.pdfPreviewA11yInspect;
-    pdfBatchQueue = s.pdfBatchQueue; pdfExperimentMode = s.pdfExperimentMode;
+    pdfBatchQueue = s.pdfBatchQueue; pdfBatchSummary = s.pdfBatchSummary;
+    pdfExperimentMode = s.pdfExperimentMode;
     pdfExperimentRuns = s.pdfExperimentRuns;
     customExportCSS = s.customExportCSS; exportStylePrompt = s.exportStylePrompt;
     pdfFixModeRef = s.pdfFixModeRef; pdfPreviewRef = s.pdfPreviewRef; pdfTargetScore = s.pdfTargetScore || 90;
@@ -182,6 +184,7 @@ var createDocPipeline = function(deps) {
     setIsExtracting = s.setIsExtracting;
     exportAuditResult = s.exportAuditResult;
     setExportAuditLoading = s.setExportAuditLoading; setExportAuditResult = s.setExportAuditResult;
+    setError = s.setError;
   };
 
   // ── IndexedDB chunk progress persistence ──
@@ -14323,6 +14326,125 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             </div>
         </div>
       ` : '';
+      // ── Submission injection (Phase 1, May 11 2026) ──
+      // When the class has set up offline submissions (cfg.classPublicJwk is
+      // a JWK object), inject a "Save my work" button + inline encryption
+      // helper into the exported HTML. Students can complete offline, save
+      // an encrypted submission file, and the teacher batch-uploads to
+      // AlloFlow for AI grading. Disabled in worksheet (paper) mode because
+      // ruled-line worksheets are handed in physically — not as HTML.
+      const _hasSubmission = cfg.classPublicJwk && !isWorksheet;
+      const _submissionPublicKeyJson = _hasSubmission
+          ? `<script type="application/json" id="alloflow-class-public-key">${JSON.stringify(cfg.classPublicJwk).replace(/</g, '\\u003c')}</script>`
+          : '';
+      // INLINE_ENCRYPT_SCRIPT comes from window.AlloModules.SubmissionCrypto.
+      // Lazy lookup per feedback_iife_lazy_lookup.md — SubmissionCrypto loads
+      // separately and is not guaranteed at this module's IIFE-load time.
+      const _getInlineEncryptScript = () => {
+          const sc = (typeof window !== 'undefined' && window.AlloModules) ? window.AlloModules.SubmissionCrypto : null;
+          return (sc && typeof sc.INLINE_ENCRYPT_SCRIPT === 'string') ? sc.INLINE_ENCRYPT_SCRIPT : '';
+      };
+      const _submissionEncryptScript = _hasSubmission ? `<script>${_getInlineEncryptScript()}</script>` : '';
+      // Visible CTA inserted right before the footer.
+      const _submissionSaveButton = _hasSubmission ? `
+        <div id="alloflow-save-cta" style="margin:32px auto 16px;text-align:center;padding:20px;background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:12px;max-width:600px;break-inside:avoid;page-break-inside:avoid;">
+          <p style="margin:0 0 12px 0;font-size:1.05rem;color:#166534;font-weight:700;">Done with your work?</p>
+          <p style="margin:0 0 16px 0;font-size:0.9rem;color:#475569;">Click below to save an encrypted file with your answers. Send the downloaded file to your teacher.</p>
+          <button type="button" id="alloflow-save-submission-btn" style="padding:12px 28px;background:#16a34a;color:white;border:none;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:0 2px 6px rgba(22,163,74,0.3);">📝 Save my work</button>
+          <p style="margin:12px 0 0 0;font-size:0.75rem;color:#94a3b8;">🔐 Your responses are encrypted with your class key. Only your teacher can open the file.</p>
+        </div>
+      ` : '';
+      // Click handler — appended inside the existing DOMContentLoaded block.
+      // Reads ALL localStorage entries auto-saved by the existing textarea
+      // + interactive-blank scripts above, plus the current radio button
+      // state, encrypts the payload, and downloads as <nickname>-<doc>-<date>.alloflow.html.
+      const _submissionSaveHandler = _hasSubmission ? `
+                // ── Save submission button (Phase 1, 2026-05-11) ──
+                (function() {
+                    var btn = document.getElementById('alloflow-save-submission-btn');
+                    var keyEl = document.getElementById('alloflow-class-public-key');
+                    if (!btn || !keyEl) return;
+                    var publicJwk;
+                    try { publicJwk = JSON.parse(keyEl.textContent); }
+                    catch (e) { btn.disabled = true; btn.textContent = 'Save unavailable (key missing)'; return; }
+                    var _esc = function(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+                    var _collectResponses = function() {
+                        var out = {};
+                        var prefixes = ['allo-ta:' + _docKey + ':', 'allo-bx:' + _docKey + ':'];
+                        try {
+                            for (var i = 0; i < localStorage.length; i++) {
+                                var k = localStorage.key(i);
+                                if (!k) continue;
+                                for (var p = 0; p < prefixes.length; p++) {
+                                    if (k.indexOf(prefixes[p]) === 0) {
+                                        out[k] = localStorage.getItem(k);
+                                        break;
+                                    }
+                                }
+                            }
+                        } catch (e) { /* private mode */ }
+                        // Radio MCQ selections (not auto-saved, captured live)
+                        document.querySelectorAll('.question[data-correct]').forEach(function(q, idx) {
+                            var checked = q.querySelector('input[type="radio"]:checked');
+                            if (checked) {
+                                var name = checked.getAttribute('name') || ('q' + idx);
+                                out['allo-mcq:' + name] = checked.value;
+                            }
+                        });
+                        return out;
+                    };
+                    btn.addEventListener('click', async function() {
+                        if (typeof window.__alloflowEncryptSubmission !== 'function') {
+                            alert('Encryption not available in this browser. You may need a more modern browser to save submissions.');
+                            return;
+                        }
+                        var urlParams = new URLSearchParams(window.location.search);
+                        var nicknameFromUrl = urlParams.get('nickname');
+                        var nickname = nicknameFromUrl || prompt('Enter your name or nickname so your teacher knows this is yours:');
+                        if (!nickname) return;
+                        nickname = String(nickname).trim().slice(0, 60);
+                        if (!nickname) return;
+                        btn.disabled = true; btn.textContent = 'Saving…';
+                        try {
+                            var payload = {
+                                nickname: nickname,
+                                docTitle: document.title || 'Worksheet',
+                                timestamp: new Date().toISOString(),
+                                responses: _collectResponses(),
+                                schemaVersion: 1
+                            };
+                            var encrypted = await window.__alloflowEncryptSubmission(payload, publicJwk);
+                            var fileJson = {
+                                schemaVersion: 1,
+                                nickname: payload.nickname,
+                                docTitle: payload.docTitle,
+                                timestamp: payload.timestamp,
+                                wrappedKey: encrypted.wrappedKey,
+                                iv: encrypted.iv,
+                                ciphertext: encrypted.ciphertext
+                            };
+                            var subHtml = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Submission: ' + _esc(nickname) + ' — ' + _esc(payload.docTitle) + '</title><style>body{font-family:system-ui;max-width:600px;margin:3rem auto;padding:2rem;text-align:center;color:#334155}h1{color:#1e3a5f}.card{background:#f1f5f9;border-radius:12px;padding:24px;margin-top:24px}.tag{display:inline-block;background:#dbeafe;color:#1e40af;padding:4px 12px;border-radius:999px;font-size:0.85rem;font-weight:600}</style></head><body><h1>📝 Submission for ' + _esc(nickname) + '</h1><div class="card"><p><strong>Worksheet:</strong> ' + _esc(payload.docTitle) + '</p><p><strong>Saved:</strong> ' + new Date().toLocaleString() + '</p><p class="tag">🔐 Encrypted with class key</p><p style="font-size:0.85rem;color:#64748b;margin-top:16px;">This file contains the student\\'s encrypted responses. Open it in AlloFlow (Document Builder → Import submissions) with the matching class key file to decrypt.</p></div><' + 'script type="application/json" id="alloflow-submission">' + JSON.stringify(fileJson).replace(/</g, '\\\\u003c') + '<' + '/script></body></html>';
+                            var blob = new Blob([subHtml], { type: 'text/html;charset=utf-8' });
+                            var url2 = URL.createObjectURL(blob);
+                            var a = document.createElement('a');
+                            var safeName = nickname.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 40);
+                            var safeTitle = (payload.docTitle || 'worksheet').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 40);
+                            var dateStr = new Date().toISOString().slice(0, 10);
+                            a.href = url2;
+                            a.download = safeName + '-' + safeTitle + '-' + dateStr + '.alloflow.html';
+                            document.body.appendChild(a);
+                            a.click();
+                            setTimeout(function() { URL.revokeObjectURL(url2); if (a.parentNode) a.parentNode.removeChild(a); }, 200);
+                            btn.textContent = '✓ Saved — download started';
+                            setTimeout(function() { btn.disabled = false; btn.textContent = '📝 Save my work again'; }, 1500);
+                        } catch (e) {
+                            btn.disabled = false;
+                            btn.textContent = '📝 Save my work';
+                            alert('Could not save your work: ' + (e && e.message ? e.message : 'unknown error'));
+                        }
+                    });
+                })();
+      ` : '';
       const rawHtml = `
       <!DOCTYPE html>
       <html lang="${({'English':'en','Spanish':'es','French':'fr','German':'de','Italian':'it','Portuguese':'pt','Chinese':'zh','Japanese':'ja','Korean':'ko','Arabic':'ar','Russian':'ru','Hindi':'hi','Vietnamese':'vi','Haitian Creole':'ht','Somali':'so'})[currentUiLanguage] || 'en'}" dir="${direction}">
@@ -14331,6 +14453,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <title>${pageTitle}</title>
+        ${_submissionPublicKeyJson}
+        ${_submissionEncryptScript}
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Lexend:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap');
           ${exportFontImport}
@@ -14523,6 +14647,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           This document was generated with WCAG 2.1 AA compliance features: semantic HTML structure, proper heading hierarchy, table header scope, landmark regions, language attribute, logical reading order, and print-optimized layout. Created with AlloFlow.
         </div>
         </main>
+        ${_submissionSaveButton}
         <footer role="contentinfo" style="text-align:center;color:#94a3b8;font-size:0.8rem;margin-top:3rem;padding:24px 0;border-top:1px solid #e2e8f0;">
             <p style="margin:0;">${t('output.generated_via')} • <a href="https://Ko-fi.com/aaronpomeranz207" target="_blank" rel="noopener noreferrer" style="color:#94a3b8;text-decoration:underline;">${t('export.support_dev')}</a></p>
         </footer>
@@ -14662,6 +14787,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         }, 400);
                     });
                 });
+                ${_submissionSaveHandler}
             });
         </script>
       </body>

@@ -18,7 +18,7 @@ const TMP_COMPILED = TMP + '.compiled.js';
 const existingModule = fs.readFileSync(OUTPUT, 'utf-8');
 // Find header end: just before the first compiled JSX component.
 // The first compiled component in teacher_source.jsx is RosterKeyPanel.
-const headerEndMarker = /^var RosterKeyPanel/m;
+const headerEndMarker = /^(?:var|const|let) RosterKeyPanel/m;
 const m = headerEndMarker.exec(existingModule);
 if (!m) {
   console.error('Could not locate header/body boundary in teacher_module.js');

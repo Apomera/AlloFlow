@@ -3599,6 +3599,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4828baf0/allo_data_module.js');
+    loadModule('SubmissionCrypto', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/submission_crypto_module.js');
     loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4828baf0/firestore_sync_module.js');
     loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4828baf0/safety_checker_module.js');
     loadModule('Fluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@4828baf0/fluency_module.js');
@@ -13999,7 +14000,14 @@ Return ONLY valid JSON in this format:
       return getSlidesPreviewHTML();
     }
     const isWorksheet = exportPreviewMode === 'worksheet';
-    return generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, exportConfig);
+    // Phase 1 (May 11 2026): plumb the class submission public key into
+    // exportConfig so doc_pipeline embeds it + the Save button in the
+    // student HTML. Only the interactive 'print'/'html' modes get this;
+    // worksheet (paper) mode skips since kids hand in paper.
+    const cfgWithSubmissionKey = (!isWorksheet && rosterKey?.submissionKey?.publicJwk)
+      ? { ...exportConfig, classPublicJwk: rosterKey.submissionKey.publicJwk }
+      : exportConfig;
+    return generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, cfgWithSubmissionKey);
   };
   const getSlidesPreviewHTML = () => {
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
@@ -20628,6 +20636,8 @@ Return ONLY valid JSON in this format:
                 targetAppId={activeSessionAppId}
                 t={t}
                 playSound={playSound}
+                isTeacherMode={isTeacherMode}
+                setIsEscapeTimerRunning={setIsEscapeTimerRunning}
             />
           </ErrorBoundary>
       )}

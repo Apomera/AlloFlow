@@ -65,6 +65,67 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
+  // ── Offline submissions setup ──
+  // Generates an RSA-OAEP class keypair, downloads the private key as
+  // `class-key.alloflow` for the teacher's class Drive folder, and stores
+  // the public JWK in rosterKey.submissionKey so HTML exports embed it.
+  // Phase 1, May 11 2026. Teacher MUST keep the downloaded file safe;
+  // without it, encrypted student submissions are unrecoverable.
+  const handleSetupOfflineSubmissions = async () => {
+    const SC = window.AlloModules && window.AlloModules.SubmissionCrypto;
+    if (!SC || typeof SC.generateClassKeypair !== 'function') {
+      alert('Submission crypto module not loaded yet. Please refresh and try again.');
+      return;
+    }
+    if (rosterKey?.submissionKey?.publicJwk) {
+      const confirmReplace = confirm(
+        'This class already has offline submissions set up.\n\n' +
+        'Generating a new key will INVALIDATE the old one — any student files saved with the old key will no longer be decryptable.\n\n' +
+        'Continue anyway?'
+      );
+      if (!confirmReplace) return;
+    }
+    try {
+      const { publicJwk, privateJwk } = await SC.generateClassKeypair();
+      const classId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('class-' + Date.now());
+      const createdAt = new Date().toISOString();
+      // Download the private key file
+      const keyFile = {
+        schemaVersion: 1,
+        kind: 'alloflow-class-key',
+        className: rosterKey?.className || '',
+        classId: classId,
+        createdAt: createdAt,
+        privateJwk: privateJwk
+      };
+      const blob = new Blob([JSON.stringify(keyFile, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const safeClass = (rosterKey?.className || 'class').replace(/[^a-zA-Z0-9]/g, '_').slice(0, 40);
+      a.href = url;
+      a.download = 'class-key_' + safeClass + '_' + createdAt.slice(0, 10) + '.alloflow';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { URL.revokeObjectURL(url); if (a.parentNode) a.parentNode.removeChild(a); }, 200);
+      // Store the public key in roster for future exports
+      setRosterKey(prev => ({
+        ...(prev || { groups: {}, students: {} }),
+        className: prev?.className || '',
+        groups: prev?.groups || {},
+        students: prev?.students || {},
+        submissionKey: { publicJwk: publicJwk, classId: classId, createdAt: createdAt }
+      }));
+      // First-time warning
+      alert(
+        '🔐 Offline submissions are set up for this class.\n\n' +
+        'IMPORTANT: Save the downloaded "class-key" file in a safe place (your class Google Drive folder is recommended). Without it, you cannot open student submissions.\n\n' +
+        'AlloFlow does not keep a copy of this file. If you lose it, the encrypted submissions cannot be recovered.'
+      );
+    } catch (err) {
+      console.error('handleSetupOfflineSubmissions failed:', err);
+      alert('Could not set up submissions: ' + (err && err.message ? err.message : 'unknown error'));
+    }
+  };
   const handleAddGroup = () => {
     if (!newGroupName.trim()) return;
     const id = newGroupName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -173,6 +234,23 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
           </button>
           <button onClick={handleExport} disabled={!rosterKey} className="px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors flex items-center gap-1.5 disabled:opacity-40">
             <Download size={14} /> {t('roster.export') || 'Export JSON'}
+          </button>
+          <button
+            onClick={handleSetupOfflineSubmissions}
+            disabled={!rosterKey}
+            title={rosterKey?.submissionKey?.publicJwk
+              ? 'Offline submissions are active for this class. Click to regenerate (invalidates the existing key).'
+              : 'Generate a class keypair so students can save HTML worksheets back to you.'}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 disabled:opacity-40 ${
+              rosterKey?.submissionKey?.publicJwk
+                ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300'
+                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+            }`}
+          >
+            <Lock size={14} />
+            {rosterKey?.submissionKey?.publicJwk
+              ? (t('roster.submissions_active') || 'Submissions On')
+              : (t('roster.setup_submissions') || 'Set up offline submissions')}
           </button>
           <button onClick={() => setShowBatchConfig(true)} disabled={!rosterKey || Object.keys(rosterKey?.groups || {}).length === 0} className="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors flex items-center gap-1.5 disabled:opacity-40 border border-amber-200">
             <Layers size={14} /> {t('roster.batch_generate') || 'Differentiate by Group'}
@@ -516,7 +594,7 @@ const ConfettiEffect = ({ isActive }) => {
   );
 };
 // @section ESCAPE_ROOM — Escape Room student overlay
-const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionCode, targetAppId, t, playSound }) => {
+const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionCode, targetAppId, t, playSound, isTeacherMode, setIsEscapeTimerRunning }) => {
   const escapeState = sessionData?.escapeRoomState;
   const [selectedPuzzle, setSelectedPuzzle] = useState(null);
   const [userInput, setUserInput] = useState('');
