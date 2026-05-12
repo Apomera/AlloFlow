@@ -3560,6 +3560,27 @@ window.SelHub = window.SelHub || {
                     onClick: function() { upd({ genScenario: null, genChoice: null, genError: '' }); },
                     style: { padding: '8px 14px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
                   }, 'Generate another'),
+                  // Bridge: take this scenario into the role-play below.
+                  // Carry the setup over as the scene so the AI peer stays in
+                  // the same context the student just read. Student still
+                  // picks which role to practice.
+                  callGemini && h('button', {
+                    onClick: function() {
+                      upd({
+                        rpShown: true,
+                        rpRole: '',
+                        rpScene: genScenario.setup || '',
+                        rpHistory: [],
+                        rpInput: '',
+                        rpEnded: false,
+                        rpReflection: '',
+                        rpStarting: false
+                      });
+                      if (soundOn) sfxClick();
+                      if (announceToSR) announceToSR('Role-play opened with this scene. Pick which role to practice.');
+                    },
+                    style: { padding: '8px 14px', background: '#fff', color: '#6b21a8', border: '2px solid #a855f7', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                  }, 'Try this as a role-play →'),
                   h('button', {
                     onClick: function() { upd({ genShown: false, genScenario: null, genChoice: null, genError: '' }); },
                     style: { padding: '8px 14px', background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
@@ -3608,13 +3629,36 @@ window.SelHub = window.SelHub || {
               var cfg = rpRoles[roleKey];
               if (!cfg) return;
               if (!callGemini) {
-                upd({ rpRole: roleKey, rpScene: cfg.fallbackScene, rpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener }], rpInput: '', rpEnded: false, rpReflection: '', rpStarting: false });
+                upd({ rpRole: roleKey, rpScene: rpScene || cfg.fallbackScene, rpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener }], rpInput: '', rpEnded: false, rpReflection: '', rpStarting: false });
                 return;
               }
-              upd({ rpRole: roleKey, rpScene: '', rpHistory: [], rpInput: '', rpEnded: false, rpReflection: '', rpStarting: true });
-              if (announceToSR) announceToSR('Generating fresh role-play scene');
+              // If a scene is already provided (e.g., from the "Try this as
+              // a role-play →" bridge on a generated scenario), only generate
+              // an opener that matches THAT scene + this role. Otherwise
+              // generate both fresh.
+              var preExistingScene = (rpScene && rpScene.trim()) || '';
+              upd({ rpRole: roleKey, rpHistory: [], rpInput: '', rpEnded: false, rpReflection: '', rpStarting: true });
+              if (announceToSR) announceToSR(preExistingScene ? 'Generating role-play opener' : 'Generating fresh role-play scene');
               var bandLabel = band === 'k2' ? 'K-2' : band === 'g35' ? '3-5' : band === 'g68' ? '6-8' : band === 'g912' ? '9-12' : 'middle school';
-              var prompt =
+              var prompt;
+              if (preExistingScene) {
+                prompt =
+                  'You are starting a role-play for an SEL bullying-rehearsal tool. The SCENE is already fixed (see below). ' +
+                  'Generate just the FIRST in-character line the peer says — 1-2 sentences, in their voice, sounds like a real ' + bandLabel + ' student. ' +
+                  'No narration, no quotation marks, no commentary — just the line.\n\n' +
+                  'YOUR PEER CHARACTER: ' + cfg.charDesc + '\n\n' +
+                  'SCENE (the role-play takes place inside this situation): ' + preExistingScene + '\n\n' +
+                  'RULES: NO slurs, NO explicit threats or violence. Stay at the "social meanness" level. Return ONLY the line.';
+                callGemini(prompt, false).then(function(r) {
+                  var line = (r || cfg.fallbackOpener).trim().replace(/^"|"$/g, '');
+                  upd({ rpScene: preExistingScene, rpHistory: [{ speaker: 'ai', text: line }], rpStarting: false });
+                  if (announceToSR) announceToSR('Role-play ready. ' + cfg.label);
+                }).catch(function() {
+                  upd({ rpScene: preExistingScene, rpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener }], rpStarting: false });
+                });
+                return;
+              }
+              prompt =
                 'You are setting up a brief role-play for an SEL bullying-rehearsal tool. Build a fresh, realistic mini-scene for the student. ' +
                 'Return STRICT JSON only (no markdown, no fences, no preamble):\n' +
                 '{"scene":"1-2 sentence scene-setter naming WHO the third party is (use a first name and one detail), WHERE this is happening, and WHAT just happened — present tense, neutral observer voice","opener":"the FIRST in-character line the peer says, 1-2 sentences, in their voice, no narration, no quotation marks"}\n\n' +
@@ -3639,8 +3683,6 @@ window.SelHub = window.SelHub || {
                   });
                   if (announceToSR) announceToSR('Scene ready. ' + cfg.label);
                 } catch (e) {
-                  // JSON parse failed — fall back to the hand-written opener so the
-                  // user still gets a working role-play, just with a fixed scene.
                   upd({ rpScene: cfg.fallbackScene, rpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener }], rpStarting: false });
                 }
               }).catch(function() {
@@ -3679,9 +3721,21 @@ window.SelHub = window.SelHub || {
               rpShown && h('div', { style: { marginTop: 12, padding: 18, background: '#fff', border: '1px solid #d8b4fe', borderRadius: 14 } },
                 // STEP 1: pick a role to practice
                 !rpRole && h('div', null,
+                  // Scene-carried-over banner (if the student came in via the
+                  // "Try this as a role-play →" bridge on a generated scenario)
+                  rpScene && h('div', { style: {
+                    padding: '10px 12px', marginBottom: 12, background: '#fafafa',
+                    border: '1px solid #e5e7eb', borderLeft: '3px solid #a855f7', borderRadius: 8,
+                    fontSize: 13, lineHeight: 1.5, color: '#475569', fontStyle: 'italic'
+                  } },
+                    h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: '#6b21a8', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene loaded:'),
+                    rpScene
+                  ),
                   h('p', { style: { margin: '0 0 14px', fontSize: 13, lineHeight: 1.55, color: '#475569' } },
                     h('strong', { style: { color: '#6b21a8' } }, 'Pick what you want to practice. '),
-                    'The AI will play the OTHER person. You play yourself. Keep responses short and real — the way you would actually talk.'),
+                    rpScene
+                      ? 'The scene above is the setting. The AI will play the OTHER person inside that scene. You play yourself.'
+                      : 'The AI will play the OTHER person. You play yourself. Keep responses short and real — the way you would actually talk.'),
                   h('div', { style: { display: 'grid', gap: 8 } },
                     ['bully', 'target', 'bystander'].map(function(roleKey) {
                       var cfg = rpRoles[roleKey];
