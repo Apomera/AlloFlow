@@ -15192,59 +15192,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         });
                     });
                 })();
-                // ── Glossary flash-card interactions (May 11 2026) ──
-                // Hide each card's back by default, reveal on click. Master
-                // Show all / Hide all / Shuffle act on the grid. Print uses
-                // @media print to force backs visible so paper output still
-                // shows both sides for fold-and-cut use.
-                (function() {
-                    var cards = document.querySelectorAll('.alloflow-glossary-card');
-                    if (cards.length === 0) return;
-                    var BACK_HIDDEN_CLASS = 'alloflow-glossary-back-hidden';
-                    var styleEl = document.createElement('style');
-                    styleEl.textContent =
-                        '.' + BACK_HIDDEN_CLASS + ' .alloflow-glossary-card-back { display: none; }' +
-                        '.alloflow-glossary-card { cursor: pointer; transition: box-shadow 0.15s; }' +
-                        '.alloflow-glossary-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }' +
-                        '@media print {' +
-                        '  .' + BACK_HIDDEN_CLASS + ' .alloflow-glossary-card-back { display: block !important; }' +
-                        '  .alloflow-glossary-show-all, .alloflow-glossary-hide-all, .alloflow-glossary-shuffle { display: none !important; }' +
-                        '}';
-                    document.head.appendChild(styleEl);
-                    cards.forEach(function(c) {
-                        c.classList.add(BACK_HIDDEN_CLASS);
-                        c.setAttribute('tabindex', '0');
-                        c.setAttribute('role', 'button');
-                        c.setAttribute('aria-pressed', 'false');
-                        var toggle = function() {
-                            var hidden = c.classList.toggle(BACK_HIDDEN_CLASS);
-                            c.setAttribute('aria-pressed', hidden ? 'false' : 'true');
-                        };
-                        c.addEventListener('click', toggle);
-                        c.addEventListener('keydown', function(e) {
-                            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
-                        });
-                    });
-                    var showBtn = document.querySelector('.alloflow-glossary-show-all');
-                    var hideBtn = document.querySelector('.alloflow-glossary-hide-all');
-                    var shufBtn = document.querySelector('.alloflow-glossary-shuffle');
-                    if (showBtn) showBtn.addEventListener('click', function() {
-                        cards.forEach(function(c) { c.classList.remove(BACK_HIDDEN_CLASS); c.setAttribute('aria-pressed', 'true'); });
-                    });
-                    if (hideBtn) hideBtn.addEventListener('click', function() {
-                        cards.forEach(function(c) { c.classList.add(BACK_HIDDEN_CLASS); c.setAttribute('aria-pressed', 'false'); });
-                    });
-                    if (shufBtn) shufBtn.addEventListener('click', function() {
-                        var grid = cards[0].parentNode;
-                        var nodes = Array.prototype.slice.call(grid.children);
-                        for (var i = nodes.length - 1; i > 0; i--) {
-                            var j = Math.floor(Math.random() * (i + 1));
-                            grid.insertBefore(nodes[i], nodes[j]);
-                            var tmp = nodes[i]; nodes[i] = nodes[j]; nodes[j] = tmp;
-                        }
-                        cards.forEach(function(c) { c.classList.add(BACK_HIDDEN_CLASS); c.setAttribute('aria-pressed', 'false'); });
-                    });
-                })();
                 ${_submissionSaveHandler}
             });
         </script>
