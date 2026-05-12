@@ -15406,6 +15406,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     // Inner edge: at the road's outer edge (touches asphalt)
                     var innerX = sWX + shldSide * roadHalfW;
                     var outerX = sWX + shldSide * (roadHalfW + shldWidth);
+                    // Collapse the strip to a degenerate width across the
+                    // intersection so the dirt shoulder doesn't paint over the
+                    // perpendicular cross-street asphalt + crosswalks.
+                    if (chunk.hasIntersection && Math.abs(sR - chunk.intersectionY) < 3.5) {
+                      outerX = innerX;
+                    }
                     shldVerts[(sR * 2 + 0) * 3 + 0] = innerX;
                     shldVerts[(sR * 2 + 0) * 3 + 1] = sH;
                     shldVerts[(sR * 2 + 0) * 3 + 2] = sWZ;
@@ -16651,7 +16657,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // the wild grass/tree line. Short ribbon segments.
                 var shoulderMat = new T.MeshLambertMaterial({ color: scn.weather === 'snow' ? 0xd8dde4 : 0x4a8a3a });
                 var shOff = roadHalfW + 0.4;
+                // Same intersection-clearance pattern as the dashed stripes:
+                // skip a ±3.5m window around the cross-street so the grass
+                // strip doesn't block the perpendicular asphalt at intersections.
+                var shSkipZ1 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY - 3.5 : -99999;
+                var shSkipZ2 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY + 3.5 : -99999;
                 for (var shZ = chunkWorldZ + 0.5; shZ < chunkWorldZ + CHUNK_SIZE - 0.5; shZ += 1.5) {
+                  if (shZ > shSkipZ1 && shZ < shSkipZ2) continue;
                   var shCtr = markCenterAtZ(shZ);
                   var shHt = iw.spline ? iw.spline.heightAt(shZ - chunkWorldZ + ribbonChunkBaseY) : 0;
                   var shHd = iw.spline ? iw.spline.headingAt(shZ - chunkWorldZ + ribbonChunkBaseY) : 0;
@@ -16672,7 +16684,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // the road edge.
                 var curbMat = new T.MeshLambertMaterial({ color: 0xb8b8b0 });
                 var edgeOff = roadHalfW + 0.1; // just outside the ribbon edge
+                // Skip the curb across the intersection — otherwise the concrete
+                // strip runs through the cross-street like a sidewalk barrier.
+                var cbSkipZ1 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY - 3.5 : -99999;
+                var cbSkipZ2 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY + 3.5 : -99999;
                 for (var cbZ = chunkWorldZ + 0.5; cbZ < chunkWorldZ + CHUNK_SIZE - 0.5; cbZ += 1.0) {
+                  if (cbZ > cbSkipZ1 && cbZ < cbSkipZ2) continue;
                   var cbCtr = markCenterAtZ(cbZ);
                   var cbHt = iw.spline ? iw.spline.heightAt(cbZ - chunkWorldZ + ribbonChunkBaseY) : 0;
                   var cbHd = iw.spline ? iw.spline.headingAt(cbZ - chunkWorldZ + ribbonChunkBaseY) : 0;
@@ -16692,7 +16709,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var amberMat = new T.MeshBasicMaterial({ color: isNightRef ? 0xffc040 : 0xbc7a1a });
                 var whiteRefMat = new T.MeshBasicMaterial({ color: isNightRef ? 0xffffff : 0xcccccc });
                 var refLineOff = roadHalfW - 0.2;
+                // Skip reflectors over the cross-street so they don't appear
+                // floating on the perpendicular asphalt at intersections.
+                var refSkipZ1 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY - 3.5 : -99999;
+                var refSkipZ2 = chunk.hasIntersection ? chunkWorldZ + chunk.intersectionY + 3.5 : -99999;
                 for (var refZ = chunkWorldZ + 2; refZ < chunkWorldZ + CHUNK_SIZE - 2; refZ += 4) {
+                  if (refZ > refSkipZ1 && refZ < refSkipZ2) continue;
                   var refCtr = markCenterAtZ(refZ);
                   var refHt = iw.spline ? iw.spline.heightAt(refZ - chunkWorldZ + ribbonChunkBaseY) : 0;
                   var refHd = iw.spline ? iw.spline.headingAt(refZ - chunkWorldZ + ribbonChunkBaseY) : 0;
