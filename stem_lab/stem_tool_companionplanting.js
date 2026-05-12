@@ -2843,19 +2843,25 @@ var d = (labToolData.companionPlanting) || {};
 
           // ── CG: plant in cell ──
           function cgPlantCell(idx) {
-            if (!cgSelectedPlant || cgPhase !== 'plan') return;
+            if (!cgSelectedPlant || cgPhase !== 'plan') return false;
             var plant = CG_PLANTS[cgSelectedPlant];
-            if (!plant) return;
+            if (!plant) return false;
             // Economics: deduct seed cost from budget
             var seedCost = plant.cost ? plant.cost * 0.10 : 0.50; // cost field is points; convert to dollars
             if (cgBudget < seedCost) {
               if (addToast) addToast('\uD83D\uDCB0 Not enough budget! Need $' + seedCost.toFixed(2) + ' (have $' + cgBudget.toFixed(2) + ')', 'info');
-              return;
+              return false;
             }
             var newGrid = cgGrid.slice();
             newGrid[idx] = { plantId: cgSelectedPlant, growthDay: 0, health: 100, watered: false, pests: 0 };
             cgUpd({ grid: newGrid, budget: Math.round((cgBudget - seedCost) * 100) / 100, expenses: cgExpenses + seedCost });
             if (awardStemXP) awardStemXP(5);
+            // Visible success feedback (UDL: confirm the action across modalities)
+            var plantEmoji = plant.emoji || '\uD83C\uDF31';
+            var plantName = plant.label || plant.name || cgSelectedPlant;
+            if (addToast) addToast(plantEmoji + ' Planted ' + plantName + '! \u2212$' + seedCost.toFixed(2) + ' \u00B7 +5 XP', 'success');
+            if (stemBeep) { try { stemBeep('plant'); } catch (e) {} }
+            return true;
           }
 
           // ── CG: remove plant from cell ──
@@ -3907,6 +3913,8 @@ var d = (labToolData.companionPlanting) || {};
                   var rect = e.currentTarget.getBoundingClientRect();
                   var mx = (e.clientX - rect.left) * (e.currentTarget.width / rect.width);
                   var my = (e.clientY - rect.top) * (e.currentTarget.height / rect.height);
+                  // Record click location for the ripple effect (drawn in drawCG)
+                  e.currentTarget._clickRipple = { x: mx, y: my, t0: performance.now() };
                   // Iso grid params (must match draw code)
                   var isoOX = e.currentTarget.width / 2; var isoOY = 180;
                   var iTW = 240; var iTH = 130; // must match draw-code constants in canvas ref below
@@ -3917,7 +3925,21 @@ var d = (labToolData.companionPlanting) || {};
                   if (iRow >= 0 && iRow < 4 && iCol >= 0 && iCol < 4) {
                     var cellIdx = iRow * 4 + iCol;
                     if (cgPhase === 'plan') {
-                      if (cgSelectedPlant && !cgGrid[cellIdx].plantId) { cgPlantCell(cellIdx); }
+                      if (cgSelectedPlant && !cgGrid[cellIdx].plantId) {
+                        var plantedOk = cgPlantCell(cellIdx);
+                        // Trigger burst animation only on successful plant
+                        if (plantedOk) {
+                          var pl = CG_PLANTS[cgSelectedPlant];
+                          e.currentTarget._plantBurst = {
+                            idx: cellIdx,
+                            t0: performance.now(),
+                            emoji: (pl && pl.emoji) || '🌱',
+                            label: (pl && pl.label) || cgSelectedPlant
+                          };
+                          // Suppress the generic click ripple so the burst is the only feedback
+                          e.currentTarget._clickRipple = null;
+                        }
+                      }
                       else if (cgGrid[cellIdx].plantId && !cgSelectedPlant) { cgRemoveCell(cellIdx); }
                     } else if (cgPhase === 'grow' && cgGrid[cellIdx].plantId) {
                       cgUpd({ microscopeCell: cellIdx, microscopeLayer: 'roots' });
@@ -3972,19 +3994,77 @@ var d = (labToolData.companionPlanting) || {};
                     var sSeason = cgSeason; // read directly (canvas re-mounts on state change)
                     var grid2 = cgGrid;
 
+                    // ── Time-of-day cycle (~120s per "day") ──
+                    // todPhase 0..1 = continuous loop; map to: dawn (0-0.1), morning (0.1-0.3),
+                    // day (0.3-0.6), afternoon (0.6-0.7), dusk (0.7-0.8), night (0.8-1.0).
+                    var DAY_SECONDS = 120;
+                    var todPhase = ((t / DAY_SECONDS) % 1 + 1) % 1;
+                    var isNight = todPhase >= 0.8 || todPhase < 0.05;
+                    var isDusk = todPhase >= 0.7 && todPhase < 0.8;
+                    var isDawn = todPhase >= 0.05 && todPhase < 0.15;
+                    var nightStrength = isNight ? Math.min(1, Math.abs(todPhase < 0.05 ? (0.05 - todPhase) * 5 : (todPhase - 0.8) * 5)) : 0;
+                    var sunArcT = todPhase < 0.8 ? (todPhase - 0.05) / 0.75 : 0;  // 0..1 across the visible-sun portion (5%-80% of cycle)
+
                     // Clear
                     gctx.clearRect(0, 0, W, H);
 
-                    // ── Sky ──
+                    // ── Sky (season gradient + time-of-day overlay) ──
                     gctx.fillStyle = skyGrads[sSeason] || skyGrads[0]; gctx.fillRect(0, 0, W, H * 0.25);
-                    // Sun
-                    var sunX = W * 0.82 + Math.sin(t * 0.3) * 15;
-                    var sunY = 50 + Math.sin(t * 0.2) * 8;
-                    gctx.fillStyle = '#ffd700'; gctx.beginPath(); gctx.arc(sunX, sunY, 20, 0, Math.PI * 2); gctx.fill();
-                    gctx.globalAlpha = 0.12; gctx.beginPath(); gctx.arc(sunX, sunY, 35, 0, Math.PI * 2); gctx.fill(); gctx.globalAlpha = 1;
-                    // Clouds
-                    if (sSeason !== 3) {
-                      gctx.fillStyle = 'rgba(255,255,255,0.2)';
+                    // Time-of-day tint overlay
+                    if (isDawn) {
+                      gctx.fillStyle = 'rgba(255,180,120,0.35)';
+                      gctx.fillRect(0, 0, W, H * 0.25);
+                    } else if (isDusk) {
+                      gctx.fillStyle = 'rgba(255,120,80,0.45)';
+                      gctx.fillRect(0, 0, W, H * 0.25);
+                    } else if (isNight) {
+                      // Dark blue overlay covers whole canvas, deeper at midnight
+                      gctx.fillStyle = 'rgba(15,20,55,' + (0.55 * nightStrength) + ')';
+                      gctx.fillRect(0, 0, W, H);
+                      // Stars
+                      gctx.fillStyle = 'rgba(255,255,255,' + (0.7 * nightStrength) + ')';
+                      for (var sti = 0; sti < 25; sti++) {
+                        var sStarX = (sti * 73.3) % W;
+                        var sStarY = (sti * 41.7) % (H * 0.22) + 8;
+                        var twink = 0.5 + 0.5 * Math.sin(t * 2 + sti * 1.7);
+                        gctx.globalAlpha = twink * nightStrength;
+                        gctx.beginPath(); gctx.arc(sStarX, sStarY, 0.8, 0, Math.PI * 2); gctx.fill();
+                      }
+                      gctx.globalAlpha = 1;
+                    }
+
+                    // ── Sun OR Moon (depending on time-of-day) ──
+                    if (!isNight) {
+                      // Sun arcs east → west across the sky
+                      var sunX = W * 0.08 + sunArcT * W * 0.84;
+                      var sunY = 60 + Math.sin(sunArcT * Math.PI) * -25;  // peak at noon
+                      // Color shifts warmer at dawn/dusk
+                      var sunColor = isDawn ? '#ff9966' : isDusk ? '#ff6644' : '#ffd700';
+                      var glowColor = isDawn || isDusk ? 'rgba(255,150,100,0.18)' : 'rgba(255,215,0,0.12)';
+                      gctx.fillStyle = glowColor;
+                      gctx.beginPath(); gctx.arc(sunX, sunY, 35, 0, Math.PI * 2); gctx.fill();
+                      gctx.fillStyle = sunColor;
+                      gctx.beginPath(); gctx.arc(sunX, sunY, 20, 0, Math.PI * 2); gctx.fill();
+                    } else {
+                      // Moon arcs east → west during night portion of cycle
+                      var moonArcT = ((todPhase - 0.8) / 0.25 + 0.04) % 1;
+                      if (moonArcT < 0) moonArcT += 1;
+                      var moonX = W * 0.1 + moonArcT * W * 0.8;
+                      var moonY = 50 + Math.sin(moonArcT * Math.PI) * -20;
+                      // Glow
+                      gctx.fillStyle = 'rgba(220,220,240,' + (0.18 * nightStrength) + ')';
+                      gctx.beginPath(); gctx.arc(moonX, moonY, 28, 0, Math.PI * 2); gctx.fill();
+                      // Moon
+                      gctx.fillStyle = '#e8e8f0';
+                      gctx.beginPath(); gctx.arc(moonX, moonY, 14, 0, Math.PI * 2); gctx.fill();
+                      // Crescent shadow (subtle)
+                      gctx.fillStyle = 'rgba(60,70,100,0.35)';
+                      gctx.beginPath(); gctx.arc(moonX + 5, moonY - 1, 12, 0, Math.PI * 2); gctx.fill();
+                    }
+
+                    // ── Clouds ──
+                    if (sSeason !== 3 && !isNight) {
+                      gctx.fillStyle = isDusk ? 'rgba(255,160,120,0.3)' : isDawn ? 'rgba(255,200,180,0.3)' : 'rgba(255,255,255,0.2)';
                       for (var cl2 = 0; cl2 < 3; cl2++) {
                         var clx2 = (t * 10 + cl2 * W * 0.35) % (W + 120) - 60;
                         var cly2 = 25 + cl2 * 18;
@@ -3998,6 +4078,94 @@ var d = (labToolData.companionPlanting) || {};
                     grassG.addColorStop(0, sSeason === 3 ? '#8899aa' : sSeason === 2 ? '#8a7a40' : '#5a8a3e');
                     grassG.addColorStop(1, sSeason === 3 ? '#667788' : sSeason === 2 ? '#6a5a30' : '#3a6a28');
                     gctx.fillStyle = grassG; gctx.fillRect(0, H * 0.22, W, H);
+
+                    // ── Ground texture: grass tufts scattered around the garden ──
+                    // Deterministic positions (seeded by index) so tufts don't jitter each frame.
+                    // Skipped in winter (sSeason === 3).
+                    if (sSeason !== 3) {
+                      var tuftColors = sSeason === 2
+                        ? ['rgba(120,90,30,0.55)', 'rgba(140,110,50,0.5)']  // autumn dry tones
+                        : ['rgba(50,110,40,0.55)', 'rgba(70,140,50,0.5)', 'rgba(40,90,30,0.55)']; // spring/summer
+                      for (var tf = 0; tf < 80; tf++) {
+                        // Pseudo-random scatter via cheap hash
+                        var tfx = (tf * 173 + 47) % W;
+                        var tfy = H * 0.24 + ((tf * 91 + 13) % (H * 0.74));
+                        // Skip the garden footprint (rough diamond bounds)
+                        var dx = tfx - isoOX;
+                        var dy = tfy - isoOY;
+                        if (Math.abs(dx) / (iTW * 2.2) + Math.abs(dy) / (iTH * 2.2) < 1) continue;
+                        var tfCol = tuftColors[tf % tuftColors.length];
+                        gctx.strokeStyle = tfCol;
+                        gctx.lineWidth = 1;
+                        // Tiny tuft: 3 short vertical lines
+                        gctx.beginPath();
+                        gctx.moveTo(tfx, tfy);     gctx.lineTo(tfx - 1, tfy - 3);
+                        gctx.moveTo(tfx + 1, tfy); gctx.lineTo(tfx + 1, tfy - 4);
+                        gctx.moveTo(tfx + 2, tfy); gctx.lineTo(tfx + 3, tfy - 3);
+                        gctx.stroke();
+                      }
+                      // Wildflower dots (spring/summer only)
+                      if (sSeason === 0 || sSeason === 1) {
+                        var flowerPalette = sSeason === 0
+                          ? ['#fbbf24', '#f9a8d4', '#fde047', '#fff', '#fb923c']  // spring pastels
+                          : ['#dc2626', '#f59e0b', '#8b5cf6', '#fff', '#fbbf24']; // summer brights
+                        for (var fl = 0; fl < 28; fl++) {
+                          var flx = (fl * 251 + 23) % W;
+                          var fly = H * 0.26 + ((fl * 137 + 19) % (H * 0.7));
+                          var fdx = flx - isoOX, fdy = fly - isoOY;
+                          if (Math.abs(fdx) / (iTW * 2.4) + Math.abs(fdy) / (iTH * 2.4) < 1) continue;
+                          gctx.fillStyle = flowerPalette[fl % flowerPalette.length];
+                          gctx.beginPath(); gctx.arc(flx, fly, 1.6, 0, Math.PI * 2); gctx.fill();
+                          // Tiny stem
+                          gctx.strokeStyle = 'rgba(40,90,30,0.55)';
+                          gctx.lineWidth = 0.6;
+                          gctx.beginPath(); gctx.moveTo(flx, fly + 1); gctx.lineTo(flx, fly + 4); gctx.stroke();
+                        }
+                      }
+                    }
+
+                    // ── Soft stone border around the garden diamond ──
+                    // Scatter small flat stones along the perimeter to frame the
+                    // garden so it doesn't float on plain green.
+                    (function() {
+                      var topPos = isoToScreen(-0.3, -0.3);
+                      var rightPos = isoToScreen(-0.3, 4.3);
+                      var botPos = isoToScreen(4.3, 4.3);
+                      var leftPos = isoToScreen(4.3, -0.3);
+                      var corners = [topPos, rightPos, botPos, leftPos, topPos];
+                      // Stroke a faint outline (almost invisible — sets the bounds)
+                      gctx.strokeStyle = 'rgba(120,110,90,0.18)';
+                      gctx.lineWidth = 1;
+                      gctx.beginPath();
+                      gctx.moveTo(corners[0].x, corners[0].y);
+                      for (var ci = 1; ci < corners.length; ci++) {
+                        gctx.lineTo(corners[ci].x, corners[ci].y);
+                      }
+                      gctx.stroke();
+                      // Stones at intervals along each edge
+                      var stoneColors = ['#9a9088', '#807870', '#a8a098', '#706860'];
+                      for (var edge = 0; edge < 4; edge++) {
+                        var a = corners[edge], b = corners[edge + 1];
+                        var STONES_PER_EDGE = 9;
+                        for (var st = 1; st <= STONES_PER_EDGE; st++) {
+                          var tFrac = st / (STONES_PER_EDGE + 1);
+                          // Wobble each stone slightly off the line so it looks natural
+                          var wobX = (((edge * 7 + st * 13) % 5) - 2) * 1.5;
+                          var wobY = (((edge * 11 + st * 17) % 5) - 2) * 1.2;
+                          var sx = a.x + (b.x - a.x) * tFrac + wobX;
+                          var sy = a.y + (b.y - a.y) * tFrac + wobY;
+                          gctx.fillStyle = stoneColors[(edge + st) % stoneColors.length];
+                          gctx.beginPath();
+                          gctx.ellipse(sx, sy, 3.5 + ((edge + st) % 3), 2.4, 0, 0, Math.PI * 2);
+                          gctx.fill();
+                          // Tiny highlight
+                          gctx.fillStyle = 'rgba(255,255,255,0.18)';
+                          gctx.beginPath();
+                          gctx.ellipse(sx - 0.8, sy - 0.6, 1.4, 0.8, 0, 0, Math.PI * 2);
+                          gctx.fill();
+                        }
+                      }
+                    })();
 
                     // ── Background trees (behind garden) ──
                     var treeLine = isoOY - 40;
@@ -4021,6 +4189,181 @@ var d = (labToolData.companionPlanting) || {};
                     gctx.fillStyle = '#6a4a2a'; // roof
                     gctx.beginPath(); gctx.moveTo(shedPos.x - 22, shedPos.y - 30); gctx.lineTo(shedPos.x, shedPos.y - 42); gctx.lineTo(shedPos.x + 22, shedPos.y - 30); gctx.fill();
                     gctx.fillStyle = '#5a3a1a'; gctx.fillRect(shedPos.x - 4, shedPos.y - 18, 8, 12); // door
+                    // Tiny window on shed (lit warm at night, daylight blue otherwise)
+                    var windowLit = isNight || isDusk;
+                    gctx.fillStyle = windowLit ? '#fbbf24' : '#a8d4f0';
+                    gctx.fillRect(shedPos.x - 14, shedPos.y - 26, 6, 6);
+                    if (windowLit) {
+                      // Soft warm glow extending into the night
+                      gctx.fillStyle = 'rgba(251,191,36,' + (0.2 * (nightStrength + (isDusk ? 0.5 : 0))) + ')';
+                      gctx.beginPath(); gctx.arc(shedPos.x - 11, shedPos.y - 23, 14, 0, Math.PI * 2); gctx.fill();
+                    }
+                    gctx.strokeStyle = '#5a3a1a'; gctx.lineWidth = 0.5;
+                    gctx.beginPath(); gctx.moveTo(shedPos.x - 11, shedPos.y - 26); gctx.lineTo(shedPos.x - 11, shedPos.y - 20); gctx.stroke();
+                    gctx.beginPath(); gctx.moveTo(shedPos.x - 14, shedPos.y - 23); gctx.lineTo(shedPos.x - 8, shedPos.y - 23); gctx.stroke();
+                    // Chimney (so smoke wisps from earlier render through a real chimney shape)
+                    gctx.fillStyle = '#5a3a1a'; gctx.fillRect(shedPos.x + 8, shedPos.y - 44, 5, 8);
+
+                    // ── Wind chime hanging from shed eave (sways slightly) ──
+                    var chSway = Math.sin(t * 1.2) * 1.5;
+                    var chBaseX = shedPos.x - 22;
+                    var chBaseY = shedPos.y - 30;
+                    gctx.strokeStyle = 'rgba(120,90,60,0.7)'; gctx.lineWidth = 0.6;
+                    gctx.beginPath(); gctx.moveTo(chBaseX, chBaseY); gctx.lineTo(chBaseX + chSway, chBaseY + 4); gctx.stroke();
+                    // 4 hanging tubes
+                    var chTubeColors = ['#cbd5e1', '#94a3b8', '#cbd5e1', '#94a3b8'];
+                    for (var chi = 0; chi < 4; chi++) {
+                      var chTubeX = chBaseX + chSway * (1 + chi * 0.15) - 3 + chi * 2;
+                      gctx.strokeStyle = chTubeColors[chi]; gctx.lineWidth = 1;
+                      gctx.beginPath();
+                      gctx.moveTo(chTubeX, chBaseY + 4);
+                      gctx.lineTo(chTubeX + chSway * 0.3, chBaseY + 9 + chi);
+                      gctx.stroke();
+                    }
+
+                    // ── Wheelbarrow (parked just left of shed, ground level) ──
+                    var wbX = shedPos.x - 50;
+                    var wbY = shedPos.y - 4;
+                    // Tray (parallelogram in iso)
+                    gctx.fillStyle = '#9a3a2a';
+                    gctx.beginPath();
+                    gctx.moveTo(wbX - 12, wbY - 6);
+                    gctx.lineTo(wbX + 12, wbY - 6);
+                    gctx.lineTo(wbX + 14, wbY);
+                    gctx.lineTo(wbX - 10, wbY);
+                    gctx.closePath();
+                    gctx.fill();
+                    // Wheel
+                    gctx.fillStyle = '#3a2a1a';
+                    gctx.beginPath(); gctx.arc(wbX - 8, wbY + 4, 4, 0, Math.PI * 2); gctx.fill();
+                    gctx.fillStyle = '#5a3a2a';
+                    gctx.beginPath(); gctx.arc(wbX - 8, wbY + 4, 1.5, 0, Math.PI * 2); gctx.fill();
+                    // Handles
+                    gctx.strokeStyle = '#7a5a3a'; gctx.lineWidth = 1.5;
+                    gctx.beginPath(); gctx.moveTo(wbX + 12, wbY - 4); gctx.lineTo(wbX + 22, wbY); gctx.stroke();
+
+                    // ── Watering can leaning at shed door ──
+                    var wcX = shedPos.x + 16;
+                    var wcY = shedPos.y - 8;
+                    gctx.fillStyle = '#16a085';
+                    gctx.fillRect(wcX, wcY - 8, 7, 9);  // body
+                    gctx.beginPath();
+                    gctx.moveTo(wcX + 7, wcY - 6);
+                    gctx.lineTo(wcX + 13, wcY - 8);
+                    gctx.lineTo(wcX + 13, wcY - 5);
+                    gctx.lineTo(wcX + 7, wcY - 3);
+                    gctx.closePath();
+                    gctx.fill();
+                    // Handle
+                    gctx.strokeStyle = '#0e6655'; gctx.lineWidth = 1;
+                    gctx.beginPath(); gctx.arc(wcX + 3, wcY - 9, 3, Math.PI, 0); gctx.stroke();
+
+                    // ── Stack of terracotta pots at shed door ──
+                    var potsX = shedPos.x - 12;
+                    var potsY = shedPos.y - 4;
+                    for (var pti = 0; pti < 3; pti++) {
+                      var ptScale = 1 - pti * 0.18;
+                      var ptW = 8 * ptScale;
+                      var ptH = 6 * ptScale;
+                      var ptY = potsY - pti * 5;
+                      // Pot body (trapezoid)
+                      gctx.fillStyle = pti === 2 ? '#c97557' : '#b85a3c';
+                      gctx.beginPath();
+                      gctx.moveTo(potsX - ptW, ptY);
+                      gctx.lineTo(potsX + ptW, ptY);
+                      gctx.lineTo(potsX + ptW * 0.78, ptY - ptH);
+                      gctx.lineTo(potsX - ptW * 0.78, ptY - ptH);
+                      gctx.closePath();
+                      gctx.fill();
+                      // Rim line
+                      gctx.strokeStyle = '#8a3a20'; gctx.lineWidth = 0.6;
+                      gctx.beginPath(); gctx.moveTo(potsX - ptW, ptY); gctx.lineTo(potsX + ptW, ptY); gctx.stroke();
+                    }
+
+                    // ── Rain barrel at right corner of shed ──
+                    var rbX = shedPos.x + 26;
+                    var rbY = shedPos.y - 4;
+                    // Barrel body (vertical wood-stave look)
+                    gctx.fillStyle = '#3a5a8a';
+                    gctx.fillRect(rbX - 6, rbY - 18, 12, 18);
+                    // Stave lines
+                    gctx.strokeStyle = 'rgba(20,40,70,0.4)'; gctx.lineWidth = 0.5;
+                    for (var stv = 1; stv < 4; stv++) {
+                      gctx.beginPath(); gctx.moveTo(rbX - 6 + stv * 3, rbY - 18); gctx.lineTo(rbX - 6 + stv * 3, rbY); gctx.stroke();
+                    }
+                    // Metal hoops
+                    gctx.strokeStyle = '#5a5a5a'; gctx.lineWidth = 1;
+                    gctx.beginPath(); gctx.moveTo(rbX - 6, rbY - 14); gctx.lineTo(rbX + 6, rbY - 14); gctx.stroke();
+                    gctx.beginPath(); gctx.moveTo(rbX - 6, rbY - 4); gctx.lineTo(rbX + 6, rbY - 4); gctx.stroke();
+                    // Open top with water inside (visible water only when moisture is high — recently rained)
+                    gctx.fillStyle = '#1a3a5a';
+                    gctx.beginPath(); gctx.ellipse(rbX, rbY - 18, 6, 1.5, 0, 0, Math.PI * 2); gctx.fill();
+                    if (cgMoisture > 60) {
+                      gctx.fillStyle = '#4a7aaa';
+                      gctx.beginPath(); gctx.ellipse(rbX, rbY - 17.5, 5, 1.2, 0, 0, Math.PI * 2); gctx.fill();
+                      // Tiny ripple
+                      if (Math.sin(t * 0.8) > 0.3) {
+                        gctx.strokeStyle = 'rgba(255,255,255,0.3)'; gctx.lineWidth = 0.4;
+                        gctx.beginPath(); gctx.ellipse(rbX, rbY - 17.5, 2, 0.5, 0, 0, Math.PI * 2); gctx.stroke();
+                      }
+                    }
+                    // Spigot at bottom (small detail)
+                    gctx.fillStyle = '#5a5a5a';
+                    gctx.fillRect(rbX + 5, rbY - 3, 3, 1.5);
+
+                    // ── Compost bin (front-left of garden, outside fence) ──
+                    var cbPos = isoToScreen(4.6, 0.2);
+                    // 3-sided wood box (front + two sides, no top)
+                    gctx.fillStyle = '#7a5a3a';
+                    // Front board
+                    gctx.fillRect(cbPos.x - 14, cbPos.y - 12, 28, 12);
+                    // Left side (perspective slant)
+                    gctx.beginPath();
+                    gctx.moveTo(cbPos.x - 14, cbPos.y - 12);
+                    gctx.lineTo(cbPos.x - 18, cbPos.y - 14);
+                    gctx.lineTo(cbPos.x - 18, cbPos.y - 2);
+                    gctx.lineTo(cbPos.x - 14, cbPos.y);
+                    gctx.closePath();
+                    gctx.fillStyle = '#6a4a2a';
+                    gctx.fill();
+                    // Right side
+                    gctx.beginPath();
+                    gctx.moveTo(cbPos.x + 14, cbPos.y - 12);
+                    gctx.lineTo(cbPos.x + 18, cbPos.y - 14);
+                    gctx.lineTo(cbPos.x + 18, cbPos.y - 2);
+                    gctx.lineTo(cbPos.x + 14, cbPos.y);
+                    gctx.closePath();
+                    gctx.fillStyle = '#6a4a2a';
+                    gctx.fill();
+                    // Slat lines on front board
+                    gctx.strokeStyle = '#5a3a1a'; gctx.lineWidth = 0.5;
+                    for (var sli = 1; sli < 4; sli++) {
+                      gctx.beginPath(); gctx.moveTo(cbPos.x - 14, cbPos.y - 12 + sli * 3); gctx.lineTo(cbPos.x + 14, cbPos.y - 12 + sli * 3); gctx.stroke();
+                    }
+                    // Compost pile inside (visible above the front board)
+                    gctx.fillStyle = '#3a2a1a';
+                    gctx.beginPath();
+                    gctx.ellipse(cbPos.x, cbPos.y - 13, 14, 4, 0, 0, Math.PI);
+                    gctx.fill();
+                    // Compost flecks (organic matter visible)
+                    var compostColors = ['#5a3a1a', '#7a5a2a', '#4a3a1a', '#8a6a3a', '#5a4a2a'];
+                    for (var cfi = 0; cfi < 8; cfi++) {
+                      var cfx = cbPos.x - 12 + (cfi * 3);
+                      var cfy = cbPos.y - 14 + Math.sin(cfi * 1.3) * 1;
+                      gctx.fillStyle = compostColors[cfi % compostColors.length];
+                      gctx.fillRect(cfx, cfy, 2, 1.2);
+                    }
+                    // Steam wisp (compost is alive — decomposition releases heat)
+                    if (sSeason !== 3) {
+                      var stPhase = (t * 0.4) % 2;
+                      if (stPhase < 1.5) {
+                        var stA = (1 - stPhase / 1.5) * 0.25;
+                        gctx.fillStyle = 'rgba(220,220,200,' + stA + ')';
+                        gctx.beginPath();
+                        gctx.arc(cbPos.x + Math.sin(stPhase * 3) * 2, cbPos.y - 16 - stPhase * 8, 2 + stPhase, 0, Math.PI * 2);
+                        gctx.fill();
+                      }
+                    }
 
                     // ── Isometric stone paths (between rows) ──
                     gctx.fillStyle = 'rgba(160,150,130,0.2)';
@@ -4054,6 +4397,100 @@ var d = (labToolData.companionPlanting) || {};
                     gctx.lineTo(corners[2].x, corners[2].y - 6); gctx.lineTo(corners[3].x, corners[3].y - 6);
                     gctx.closePath(); gctx.stroke();
 
+                    // ── Birdbath (front-left of garden, just outside fence) ──
+                    var bbPos = isoToScreen(4.4, -0.8);
+                    // Pedestal (stone)
+                    gctx.fillStyle = '#8a8a90';
+                    gctx.fillRect(bbPos.x - 4, bbPos.y - 14, 8, 14);
+                    gctx.fillStyle = 'rgba(0,0,0,0.18)';  // pedestal shadow
+                    gctx.fillRect(bbPos.x - 4, bbPos.y - 8, 8, 2);
+                    // Bowl
+                    gctx.fillStyle = '#9a9aa0';
+                    gctx.beginPath(); gctx.ellipse(bbPos.x, bbPos.y - 14, 12, 4, 0, 0, Math.PI * 2); gctx.fill();
+                    // Water (lighter, with subtle ripple)
+                    gctx.fillStyle = '#6cb4d8';
+                    gctx.beginPath(); gctx.ellipse(bbPos.x, bbPos.y - 15, 9, 2.5, 0, 0, Math.PI * 2); gctx.fill();
+                    // Tiny ripple every few seconds
+                    var ripPhase = (t * 0.4) % 3;
+                    if (ripPhase < 1) {
+                      gctx.strokeStyle = 'rgba(255,255,255,' + (1 - ripPhase) * 0.4 + ')';
+                      gctx.lineWidth = 0.6;
+                      gctx.beginPath(); gctx.ellipse(bbPos.x + Math.sin(ripPhase * 6) * 2, bbPos.y - 15, 2 + ripPhase * 4, 0.6 + ripPhase * 1.5, 0, 0, Math.PI * 2); gctx.stroke();
+                    }
+
+                    // ── Garden gnome (decorative; near front-right corner) ──
+                    var gnPos = isoToScreen(4.3, 3.6);
+                    // Hat (red cone)
+                    gctx.fillStyle = '#dc2626';
+                    gctx.beginPath();
+                    gctx.moveTo(gnPos.x, gnPos.y - 18);
+                    gctx.lineTo(gnPos.x - 5, gnPos.y - 8);
+                    gctx.lineTo(gnPos.x + 5, gnPos.y - 8);
+                    gctx.closePath();
+                    gctx.fill();
+                    // Hat band
+                    gctx.fillStyle = '#b91c1c';
+                    gctx.fillRect(gnPos.x - 5, gnPos.y - 9, 10, 1.5);
+                    // Face
+                    gctx.fillStyle = '#fde2c8';
+                    gctx.beginPath(); gctx.arc(gnPos.x, gnPos.y - 5, 3.5, 0, Math.PI * 2); gctx.fill();
+                    // Beard
+                    gctx.fillStyle = '#e5e7eb';
+                    gctx.beginPath(); gctx.ellipse(gnPos.x, gnPos.y - 2, 4, 5, 0, 0, Math.PI * 2); gctx.fill();
+                    // Body
+                    gctx.fillStyle = '#1d4ed8';
+                    gctx.beginPath();
+                    gctx.moveTo(gnPos.x - 5, gnPos.y);
+                    gctx.lineTo(gnPos.x + 5, gnPos.y);
+                    gctx.lineTo(gnPos.x + 6, gnPos.y + 6);
+                    gctx.lineTo(gnPos.x - 6, gnPos.y + 6);
+                    gctx.closePath();
+                    gctx.fill();
+                    // Eyes (tiny)
+                    gctx.fillStyle = '#1f2937';
+                    gctx.fillRect(gnPos.x - 1.5, gnPos.y - 5, 0.8, 0.8);
+                    gctx.fillRect(gnPos.x + 0.7, gnPos.y - 5, 0.8, 0.8);
+
+                    // ── Wooden bench (community gathering spot, front-right outside fence) ──
+                    var bnPos = isoToScreen(4.6, 2.6);
+                    // Bench seat (wooden plank)
+                    gctx.fillStyle = '#8a6a3a';
+                    gctx.fillRect(bnPos.x - 18, bnPos.y - 10, 36, 4);
+                    // Backrest
+                    gctx.fillStyle = '#7a5a2a';
+                    gctx.fillRect(bnPos.x - 17, bnPos.y - 22, 34, 2);
+                    // Backrest vertical supports
+                    for (var bvi = 0; bvi < 4; bvi++) {
+                      gctx.fillRect(bnPos.x - 14 + bvi * 9.3, bnPos.y - 20, 1.5, 11);
+                    }
+                    // Legs (4 — front pair visible, back pair offset for iso)
+                    gctx.fillStyle = '#5a3a1a';
+                    gctx.fillRect(bnPos.x - 16, bnPos.y - 6, 2, 8);
+                    gctx.fillRect(bnPos.x + 14, bnPos.y - 6, 2, 8);
+                    // Wood grain lines on seat
+                    gctx.strokeStyle = 'rgba(70,50,20,0.3)';
+                    gctx.lineWidth = 0.4;
+                    gctx.beginPath(); gctx.moveTo(bnPos.x - 18, bnPos.y - 8); gctx.lineTo(bnPos.x + 18, bnPos.y - 8); gctx.stroke();
+
+                    // ── Sign post: "COMMUNITY GARDEN" (front-left of fence) ──
+                    var spPos = isoToScreen(4.5, -0.5);
+                    // Post
+                    gctx.fillStyle = '#7a5a3a';
+                    gctx.fillRect(spPos.x - 1.5, spPos.y - 24, 3, 24);
+                    // Sign board
+                    gctx.fillStyle = '#fbe4a3';
+                    gctx.fillRect(spPos.x - 22, spPos.y - 30, 44, 14);
+                    // Sign border
+                    gctx.strokeStyle = '#7a5a3a'; gctx.lineWidth = 1;
+                    gctx.strokeRect(spPos.x - 22, spPos.y - 30, 44, 14);
+                    // Sign text
+                    gctx.fillStyle = '#5a3a1a';
+                    gctx.font = 'bold 7px system-ui';
+                    gctx.textAlign = 'center';
+                    gctx.fillText('COMMUNITY', spPos.x, spPos.y - 23);
+                    gctx.fillText('GARDEN', spPos.x, spPos.y - 17);
+                    gctx.textAlign = 'left';  // reset
+
                     // ── Isometric 4×4 Grid (diamond tiles) ──
                     var hoverCell2 = cvEl._hoverCell;
                     var polCount2 = 0;
@@ -4068,8 +4505,13 @@ var d = (labToolData.companionPlanting) || {};
                         var isHovered = hoverCell2 === ci4;
 
                         // ── Soil tile (isometric diamond) ──
-                        var soilDark2 = cgMoisture > 50 ? 15 : 0;
-                        gctx.fillStyle = hasPlant ? 'rgba(' + (100 - soilDark2) + ',' + (65 - soilDark2 * 0.4) + ',30,0.85)' : 'rgba(110,75,35,0.6)';
+                        // Smooth moisture darkening: dry soil is light brown, saturated is dark + slightly cooler
+                        var moisFactor = Math.min(1, Math.max(0, cgMoisture / 100));
+                        var soilDark2 = Math.round(moisFactor * 25);
+                        var moisBlue = Math.round(moisFactor * 8);  // damp soil reads slightly cooler
+                        gctx.fillStyle = hasPlant
+                          ? 'rgba(' + (100 - soilDark2) + ',' + (65 - soilDark2 * 0.4) + ',' + (30 + moisBlue) + ',0.85)'
+                          : 'rgba(' + (110 - soilDark2) + ',' + (75 - soilDark2 * 0.5) + ',' + (35 + moisBlue) + ',0.6)';
                         gctx.beginPath();
                         gctx.moveTo(pos.x, pos.y - iTH / 2); // top
                         gctx.lineTo(pos.x + iTW / 2, pos.y);   // right
@@ -4104,19 +4546,109 @@ var d = (labToolData.companionPlanting) || {};
                         gctx.lineTo(pos.x, pos.y + iTH / 2 + depth);
                         gctx.closePath(); gctx.fill();
 
+                        // ── Weeds in empty plots (grow phase only) ──
+                        // 3-4 small weed sprigs per empty cell, positioned deterministically by cell index.
+                        // Subtle wind sway. Tells the player the plot needs attention.
+                        if (!hasPlant && cgPhase === 'grow' && sSeason !== 3) {
+                          var weedColor = sSeason === 2 ? 'rgba(140,120,60,0.55)' : 'rgba(110,150,80,0.55)';
+                          gctx.strokeStyle = weedColor;
+                          gctx.lineWidth = 0.8;
+                          for (var wdi = 0; wdi < 4; wdi++) {
+                            var wdAngle = (ci4 * 1.7 + wdi * 1.9) % (Math.PI * 2);
+                            var wdR = 18 + ((ci4 + wdi) % 5) * 4;
+                            var wdBaseX = pos.x + Math.cos(wdAngle) * wdR * 0.5;
+                            var wdBaseY = pos.y + Math.sin(wdAngle) * wdR * 0.25;
+                            var wdSway = Math.sin(t * 1.5 + ci4 + wdi) * 1.2;
+                            var wdH = 4 + ((ci4 + wdi) % 3) * 2;
+                            gctx.beginPath();
+                            gctx.moveTo(wdBaseX, wdBaseY);
+                            gctx.quadraticCurveTo(wdBaseX + wdSway * 0.5, wdBaseY - wdH * 0.5, wdBaseX + wdSway, wdBaseY - wdH);
+                            gctx.stroke();
+                            // Tiny weed leaf (occasional)
+                            if (wdi % 2 === 0) {
+                              gctx.fillStyle = weedColor;
+                              gctx.beginPath();
+                              gctx.ellipse(wdBaseX + wdSway * 0.7, wdBaseY - wdH * 0.6, 1.2, 0.6, wdAngle, 0, Math.PI * 2);
+                              gctx.fill();
+                            }
+                          }
+                        }
+
                         // ── Plant rendering (isometric) ──
                         if (hasPlant) {
                           var vis2 = PLANT_VISUALS[cell4.plantId] || defVis;
                           var gp2 = Math.min(1, cell4.growthDay / pl3.days);
-                          var sw2 = Math.sin(t * 1.2 + ci4 * 0.7) * gp2 * 3;
+                          // ── Droop factor: thirsty plants visibly wilt ──
+                          // 0 = healthy turgor; 1 = severely wilted (compresses height, exaggerates lean)
+                          var droopFactor = cgMoisture < 30 ? Math.max(0, (30 - cgMoisture) / 30) : 0;
+                          var sw2 = Math.sin(t * 1.2 + ci4 * 0.7) * gp2 * 3 + droopFactor * 4 * gp2;
                           // Drop shadow (isometric ellipse on soil surface)
                           var shadowAlpha = 0.1 + gp2 * 0.08;
                           gctx.fillStyle = 'rgba(0,0,0,' + shadowAlpha + ')';
                           gctx.beginPath();
                           gctx.ellipse(pos.x + 3, pos.y + 2, 8 + gp2 * 10, 4 + gp2 * 4, 0.3, 0, Math.PI * 2);
                           gctx.fill();
+                          // ── Harvest-ready glow (soft pulsing aura on mature plants) ──
+                          // Lets the player spot which crops are ready to pick at a glance.
+                          if (gp2 >= 0.98 && !pl3.isStructure) {
+                            var harvestPulse = 0.5 + 0.5 * Math.sin(t * 2.5 + ci4 * 0.7);
+                            gctx.fillStyle = 'rgba(254,240,138,' + (0.18 + harvestPulse * 0.18) + ')';
+                            gctx.beginPath();
+                            gctx.ellipse(pos.x, pos.y - iTH / 4, 16 + harvestPulse * 4, 9 + harvestPulse * 2.5, 0, 0, Math.PI * 2);
+                            gctx.fill();
+                            // Sparkle dots
+                            for (var hsp = 0; hsp < 3; hsp++) {
+                              var spA = (hsp + ci4 * 0.3 + t * 1.5) % 1;
+                              if (spA < 0.4) {
+                                var spX = pos.x + Math.cos(hsp * 2.1 + ci4) * 14;
+                                var spY = pos.y - iTH / 4 - 8 + Math.sin(hsp * 2.1 + ci4) * 6 - spA * 8;
+                                gctx.fillStyle = 'rgba(254,240,138,' + (1 - spA / 0.4) * 0.85 + ')';
+                                gctx.beginPath(); gctx.arc(spX, spY, 1.2, 0, Math.PI * 2); gctx.fill();
+                              }
+                            }
+                          }
                           var baseX = pos.x; var baseY = pos.y - iTH / 2 - 2;
+                          // sH2 reduced by droop (wilting plants slump)
                           var sH2 = gp2 * (vis2.tall ? 50 : vis2.bushy ? 18 : vis2.wide ? 25 : 35);
+                          sH2 *= (1 - droopFactor * 0.28);
+
+                          // ── Support structures (trellis / cage / stake) — drawn BEFORE plant so plant climbs/sits in front ──
+                          if (gp2 > 0.15 && !pl3.isStructure) {
+                            var supportType = null;
+                            if (cell4.plantId === 'beans' || cell4.plantId === 'peas') supportType = 'trellis';
+                            else if (cell4.plantId === 'tomato') supportType = 'cage';
+                            else if (cell4.plantId === 'sunflower' || cell4.plantId === 'corn') supportType = 'stake';
+                            if (supportType === 'trellis') {
+                              // Bamboo A-frame trellis (3 verticals + 2 horizontal crosses)
+                              gctx.strokeStyle = 'rgba(180,140,90,0.65)'; gctx.lineWidth = 1.2;
+                              gctx.beginPath(); gctx.moveTo(baseX - 9, baseY); gctx.lineTo(baseX - 3, baseY - sH2 * 1.15); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX + 9, baseY); gctx.lineTo(baseX + 3, baseY - sH2 * 1.15); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX, baseY); gctx.lineTo(baseX, baseY - sH2 * 1.2); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX - 3, baseY - sH2 * 1.15); gctx.lineTo(baseX + 3, baseY - sH2 * 1.15); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX - 6, baseY - sH2 * 0.7); gctx.lineTo(baseX + 6, baseY - sH2 * 0.7); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX - 7.5, baseY - sH2 * 0.4); gctx.lineTo(baseX + 7.5, baseY - sH2 * 0.4); gctx.stroke();
+                            } else if (supportType === 'cage') {
+                              // Tomato cage (4 wire verticals + 3 horizontal rings)
+                              gctx.strokeStyle = 'rgba(110,110,130,0.55)'; gctx.lineWidth = 1;
+                              var cageH = sH2 * 1.05;
+                              gctx.beginPath(); gctx.moveTo(baseX - 7, baseY); gctx.lineTo(baseX - 7, baseY - cageH); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX + 7, baseY); gctx.lineTo(baseX + 7, baseY - cageH); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX - 4, baseY); gctx.lineTo(baseX - 4, baseY - cageH); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX + 4, baseY); gctx.lineTo(baseX + 4, baseY - cageH); gctx.stroke();
+                              for (var ringI = 1; ringI <= 3; ringI++) {
+                                gctx.beginPath(); gctx.ellipse(baseX, baseY - cageH * (ringI / 4), 7, 1.5, 0, 0, Math.PI * 2); gctx.stroke();
+                              }
+                            } else if (supportType === 'stake') {
+                              // Single bamboo stake behind plant + tie point at midstem
+                              gctx.strokeStyle = 'rgba(160,120,70,0.75)'; gctx.lineWidth = 1.5;
+                              gctx.beginPath(); gctx.moveTo(baseX + 2.5, baseY); gctx.lineTo(baseX + 2.5, baseY - sH2 * 1.18); gctx.stroke();
+                              if (gp2 > 0.5) {
+                                gctx.strokeStyle = 'rgba(80,60,30,0.7)'; gctx.lineWidth = 0.8;
+                                gctx.beginPath(); gctx.moveTo(baseX, baseY - sH2 * 0.5); gctx.lineTo(baseX + 5, baseY - sH2 * 0.5); gctx.stroke();
+                                gctx.beginPath(); gctx.moveTo(baseX, baseY - sH2 * 0.85); gctx.lineTo(baseX + 5, baseY - sH2 * 0.85); gctx.stroke();
+                              }
+                            }
+                          }
 
                           if (pl3.isStructure) {
                             // Structure icons (geometric)
@@ -4209,16 +4741,581 @@ var d = (labToolData.companionPlanting) || {};
                       }
                     }
 
-                    // ── Pollinators (bees/butterflies) ──
-                    for (var bi3 = 0; bi3 < Math.min(5, polCount2); bi3++) {
-                      var bx3 = (t * 20 + bi3 * 100) % (W + 60) - 30;
-                      var by3 = isoOY - 20 + Math.sin(t * 1.5 + bi3 * 2.5) * 25;
-                      gctx.fillStyle = bi3 % 2 === 0 ? '#fbbf24' : '#f97316';
-                      gctx.beginPath(); gctx.arc(bx3, by3, 2.5, 0, Math.PI * 2); gctx.fill();
-                      gctx.fillStyle = 'rgba(255,255,255,0.5)';
-                      var wA2 = Math.sin(t * 8 + bi3) * 0.5;
-                      gctx.beginPath(); gctx.ellipse(bx3 - 2.5, by3 - 1.5, 3, 1.8, wA2, 0, Math.PI * 2); gctx.fill();
-                      gctx.beginPath(); gctx.ellipse(bx3 + 2.5, by3 - 1.5, 3, 1.8, -wA2, 0, Math.PI * 2); gctx.fill();
+                    // ═══════════════════════════════════════════════════════
+                    // AMBIENT WILDLIFE — makes the garden feel alive year-round
+                    // not just when the player has planted pollinator-attracting crops.
+                    // Each species respects season; counts boosted by polCount2.
+                    // ═══════════════════════════════════════════════════════
+
+                    // ── Bees (ambient + boosted by pollinator plants; daytime only) ──
+                    // Bees periodically VISIT flowering plants (pause + emit pollen burst on departure)
+                    // instead of just hovering generically. Builds a deterministic visit cycle per bee.
+                    if (sSeason !== 3 && !isNight) {  // skip in winter and at night
+                      // Find flowering plants (target candidates for landings)
+                      var floweringCells = [];
+                      for (var fci = 0; fci < 16; fci++) {
+                        var fcCell = grid2[fci];
+                        if (!fcCell || !fcCell.plantId) continue;
+                        var fcPlant = CG_PLANTS[fcCell.plantId];
+                        var fcVis = PLANT_VISUALS[fcCell.plantId];
+                        if (fcPlant && fcVis && fcVis.flowerColor && (fcCell.growthDay / fcPlant.days) > 0.5) {
+                          floweringCells.push(fci);
+                        }
+                      }
+                      var beeCount = (sSeason === 2 ? 1 : 2) + Math.min(4, polCount2);
+                      for (var bi3 = 0; bi3 < beeCount; bi3++) {
+                        // Each bee has a 14-second cycle: travel (0-50%) → land (50-75%) → leave w/ pollen burst (75-100%)
+                        var beeCycle = 14;
+                        var beePhase = ((t + bi3 * 3.5) % beeCycle) / beeCycle;
+                        var bx3, by3, isLanded = false, isLeaving = false;
+                        if (floweringCells.length > 0 && beePhase >= 0.5) {
+                          // Pick a target flowering plant deterministically per cycle
+                          var beeStage = Math.floor((t + bi3 * 3.5) / beeCycle);
+                          var tgtCell = floweringCells[(beeStage + bi3) % floweringCells.length];
+                          var tgtPos = isoToScreen(Math.floor(tgtCell / 4), tgtCell % 4);
+                          var tgtVis = PLANT_VISUALS[grid2[tgtCell].plantId];
+                          var tgtGp = Math.min(1, grid2[tgtCell].growthDay / CG_PLANTS[grid2[tgtCell].plantId].days);
+                          var tgtFlowerY = tgtPos.y - iTH / 2 - 2 - (tgtVis.tall ? 50 : 35) * tgtGp - 3;
+                          if (beePhase < 0.75) {
+                            // Landed at the flower (slight bobbing)
+                            isLanded = true;
+                            bx3 = tgtPos.x + Math.sin(t * 4) * 1;
+                            by3 = tgtFlowerY + Math.cos(t * 4) * 0.8;
+                          } else {
+                            // Leaving with a pollen burst — interpolate away from flower
+                            isLeaving = true;
+                            var leaveT = (beePhase - 0.75) / 0.25;
+                            bx3 = tgtPos.x + leaveT * (40 + bi3 * 20);
+                            by3 = tgtFlowerY - leaveT * 25;
+                            // Pollen burst (yellow particles trailing)
+                            for (var pbi = 0; pbi < 5; pbi++) {
+                              var pbT = (leaveT + pbi * 0.15) % 1;
+                              if (pbT < 0.6) {
+                                var pbX = tgtPos.x + Math.cos(pbi * 1.3) * (5 + pbT * 15);
+                                var pbY = tgtFlowerY + Math.sin(pbi * 1.3) * (5 + pbT * 12) - pbT * 8;
+                                gctx.fillStyle = 'rgba(252,211,77,' + (1 - pbT / 0.6) * 0.85 + ')';
+                                gctx.beginPath(); gctx.arc(pbX, pbY, 1 + pbT * 0.8, 0, Math.PI * 2); gctx.fill();
+                              }
+                            }
+                          }
+                        } else {
+                          // Generic ambient travel (drifting across the canvas)
+                          bx3 = (t * 20 + bi3 * 100) % (W + 60) - 30;
+                          by3 = isoOY - 20 + Math.sin(t * 1.5 + bi3 * 2.5) * 25;
+                        }
+                        // Bee body
+                        gctx.fillStyle = bi3 % 2 === 0 ? '#fbbf24' : '#f97316';
+                        gctx.beginPath(); gctx.arc(bx3, by3, 2.5, 0, Math.PI * 2); gctx.fill();
+                        // Wings (faster flap when hovering/landing)
+                        gctx.fillStyle = 'rgba(255,255,255,0.5)';
+                        var wingSpeed = isLanded ? 16 : 8;
+                        var wA2 = Math.sin(t * wingSpeed + bi3) * 0.5;
+                        gctx.beginPath(); gctx.ellipse(bx3 - 2.5, by3 - 1.5, 3, 1.8, wA2, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(bx3 + 2.5, by3 - 1.5, 3, 1.8, -wA2, 0, Math.PI * 2); gctx.fill();
+                        // Tiny pollen dot on bee's back when leaving (it picked up pollen!)
+                        if (isLeaving) {
+                          gctx.fillStyle = '#fde047';
+                          gctx.beginPath(); gctx.arc(bx3, by3 - 1, 1, 0, Math.PI * 2); gctx.fill();
+                        }
+                      }
+                    }
+
+                    // ── Butterflies (spring/summer; lazy figure-8 path; daytime only) ──
+                    if ((sSeason === 0 || sSeason === 1) && !isNight) {
+                      var btColors = ['#fda4af', '#a78bfa', '#fbbf24'];
+                      var btCount = 2 + Math.min(2, polCount2);
+                      for (var bti = 0; bti < btCount; bti++) {
+                        var btPhase = t * 0.4 + bti * 2.1;
+                        var btCx = W * (0.2 + (bti / btCount) * 0.7) + Math.sin(btPhase) * 70;
+                        var btCy = H * 0.42 + Math.sin(btPhase * 2) * 28;
+                        var wingPh = Math.sin(t * 14 + bti) * 0.55 + 0.45;
+                        var btCol = btColors[bti % btColors.length];
+                        gctx.fillStyle = btCol;
+                        // 4 wings (paired fore + hind)
+                        gctx.beginPath(); gctx.ellipse(btCx - 2.5, btCy - 1.8, 3 * wingPh, 3.5, -0.3, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(btCx + 2.5, btCy - 1.8, 3 * wingPh, 3.5, 0.3, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(btCx - 2.5, btCy + 1.5, 2.2 * wingPh, 2.6, 0.3, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(btCx + 2.5, btCy + 1.5, 2.2 * wingPh, 2.6, -0.3, 0, Math.PI * 2); gctx.fill();
+                        // Body
+                        gctx.fillStyle = '#1f2937';
+                        gctx.fillRect(btCx - 0.5, btCy - 2.5, 1, 5);
+                      }
+                    }
+
+                    // ── Birds (seasonal: V-formation migration in autumn, scattered swoop spring/summer; daytime only) ──
+                    if (sSeason !== 3 && !isNight) {
+                      gctx.strokeStyle = 'rgba(40,40,50,0.6)';
+                      gctx.lineWidth = 1.5;
+                      if (sSeason === 2) {
+                        // Autumn: V-formation migrating south
+                        var leadX = ((t * 25) % (W + 240)) - 120;
+                        var leadY = 35;
+                        var formation = [[0,0], [12,7], [-12,7], [24,14], [-24,14]];
+                        for (var fi = 0; fi < formation.length; fi++) {
+                          var bx = leadX + formation[fi][0];
+                          var by = leadY + formation[fi][1];
+                          var flap = Math.sin(t * 6 + fi * 0.4) * 2;
+                          gctx.beginPath();
+                          gctx.moveTo(bx - 5, by + flap);
+                          gctx.quadraticCurveTo(bx, by - 1.5, bx + 5, by + flap);
+                          gctx.stroke();
+                        }
+                      } else {
+                        // Spring/Summer: 3 birds scattered, swooping individually
+                        for (var bi4 = 0; bi4 < 3; bi4++) {
+                          var bcx = ((t * 18 + bi4 * W * 0.4) % (W + 100)) - 50;
+                          var bcy = 28 + Math.sin(t * 0.7 + bi4 * 1.7) * 20 + bi4 * 8;
+                          var flap2 = Math.sin(t * 7.5 + bi4 * 0.5) * 2.5;
+                          gctx.beginPath();
+                          gctx.moveTo(bcx - 6, bcy + flap2);
+                          gctx.quadraticCurveTo(bcx, bcy - 1.5, bcx + 6, bcy + flap2);
+                          gctx.stroke();
+                        }
+                      }
+                    }
+
+                    // ── Hopping rabbit cameo (every ~22s, spring/summer/autumn only) ──
+                    if (sSeason !== 3) {
+                      var rabCycle = 22;
+                      var rabPhase = (t % rabCycle) / rabCycle;
+                      if (rabPhase < 0.45) {
+                        var rabT = rabPhase / 0.45;
+                        var rx = W * 0.05 + rabT * (W * 0.9);
+                        var hopY = Math.abs(Math.sin(rabT * 16)) * -10;
+                        var ry = H * 0.93 + hopY;
+                        gctx.fillStyle = 'rgba(170,140,110,0.85)';
+                        // body
+                        gctx.beginPath(); gctx.ellipse(rx, ry, 8, 5, 0, 0, Math.PI * 2); gctx.fill();
+                        // head
+                        gctx.beginPath(); gctx.ellipse(rx + 6, ry - 4, 4, 4, 0, 0, Math.PI * 2); gctx.fill();
+                        // ears (two upright)
+                        gctx.fillStyle = 'rgba(170,140,110,0.7)';
+                        gctx.beginPath(); gctx.ellipse(rx + 5, ry - 9, 1.2, 3.5, 0, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(rx + 7, ry - 9, 1.2, 3.5, 0, 0, Math.PI * 2); gctx.fill();
+                        // cottontail
+                        gctx.fillStyle = 'rgba(255,255,255,0.8)';
+                        gctx.beginPath(); gctx.arc(rx - 7, ry - 1, 2.2, 0, Math.PI * 2); gctx.fill();
+                        // eye
+                        gctx.fillStyle = '#1f2937';
+                        gctx.beginPath(); gctx.arc(rx + 7, ry - 4.5, 0.6, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Falling leaves (autumn only) ──
+                    if (sSeason === 2) {
+                      var leafCols = ['#dc2626', '#ea580c', '#eab308', '#ca8a04', '#b45309'];
+                      for (var li = 0; li < 14; li++) {
+                        var lx = (li * 67 + Math.sin(t * 0.6 + li) * 35) % W;
+                        var ly = ((li * 53 + t * 28) % (H + 30)) - 15;
+                        var lr = Math.sin(t * 0.8 + li) * 0.5 + t * 0.4;
+                        gctx.fillStyle = leafCols[li % leafCols.length];
+                        gctx.save();
+                        gctx.translate(lx, ly);
+                        gctx.rotate(lr);
+                        gctx.beginPath(); gctx.ellipse(0, 0, 3, 1.5, 0, 0, Math.PI * 2); gctx.fill();
+                        gctx.restore();
+                      }
+                    }
+
+                    // ── Wildflower tufts in foreground meadow (wind sway, spring/summer/autumn) ──
+                    if (sSeason !== 3) {
+                      var flowCols = ['#fbbf24', '#fda4af', '#a78bfa', '#ffffff', '#f472b6'];
+                      for (var fwi = 0; fwi < 22; fwi++) {
+                        var sway = Math.sin(t * 0.9 + fwi * 0.4) * 1.8;
+                        var fwx = ((fwi * 79) % W) + sway;
+                        var fwy = H * (0.86 + (fwi % 4) * 0.025);
+                        if (fwy > H * 0.97) continue;
+                        // Stem
+                        gctx.strokeStyle = 'rgba(80,120,60,0.55)';
+                        gctx.lineWidth = 0.8;
+                        gctx.beginPath(); gctx.moveTo(fwx - sway * 0.5, fwy + 5); gctx.lineTo(fwx, fwy); gctx.stroke();
+                        // Bloom
+                        gctx.fillStyle = sSeason === 2 ? 'rgba(202,138,4,0.7)' : flowCols[fwi % flowCols.length];
+                        gctx.beginPath(); gctx.arc(fwx, fwy, 1.7, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Shed chimney smoke (cold months — winter + chilly autumn evenings) ──
+                    if (sSeason === 3 || sSeason === 2) {
+                      for (var smi = 0; smi < 4; smi++) {
+                        var smPhase = ((t * 0.35 + smi * 0.6) % 2);
+                        if (smPhase > 1.6) continue;
+                        var smX = shedPos.x + 12 + Math.sin(smPhase * 4 + smi) * 3.5;
+                        var smY = shedPos.y - 42 - smPhase * 28;
+                        var smA = Math.max(0, (1 - smPhase / 1.6)) * 0.45;
+                        gctx.fillStyle = 'rgba(220,220,220,' + smA + ')';
+                        gctx.beginPath(); gctx.arc(smX, smY, 2.5 + smPhase * 2.2, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Squirrel cameo (climbs the side of the shed every ~30s, all seasons) ──
+                    var sqCycle = 30;
+                    var sqPhase = (t % sqCycle) / sqCycle;
+                    if (sqPhase > 0.15 && sqPhase < 0.55) {
+                      // Climbs up (15-35%) then back down (35-55%)
+                      var climbT = sqPhase < 0.35 ? (sqPhase - 0.15) / 0.2 : 1 - (sqPhase - 0.35) / 0.2;
+                      var sqX = shedPos.x - 22;  // left side of shed
+                      var sqY = shedPos.y - 6 - climbT * 24;  // up along shed wall
+                      var sqWiggle = Math.sin(t * 12) * 0.6;
+                      // Body (gray ellipse)
+                      gctx.fillStyle = 'rgba(120,110,100,0.95)';
+                      gctx.beginPath(); gctx.ellipse(sqX + sqWiggle, sqY, 4, 5, 0, 0, Math.PI * 2); gctx.fill();
+                      // Head
+                      gctx.beginPath(); gctx.arc(sqX + sqWiggle, sqY - 4, 2.5, 0, Math.PI * 2); gctx.fill();
+                      // Bushy tail (curved up)
+                      gctx.fillStyle = 'rgba(140,130,120,0.95)';
+                      gctx.beginPath();
+                      gctx.ellipse(sqX + sqWiggle - 4, sqY - 2, 3, 5, -0.5, 0, Math.PI * 2);
+                      gctx.fill();
+                      // Eye
+                      gctx.fillStyle = '#1f2937';
+                      gctx.beginPath(); gctx.arc(sqX + sqWiggle + 1.5, sqY - 4, 0.5, 0, Math.PI * 2); gctx.fill();
+                    }
+
+                    // ── Perched birds on fence (always-2 in spring/summer, 1 in autumn; daytime only — they roost at night) ──
+                    if (sSeason !== 3 && !isNight) {
+                      var perchCount = sSeason === 2 ? 1 : 2;
+                      for (var pbi = 0; pbi < perchCount; pbi++) {
+                        // Position along the front fence (corner 2 → corner 3)
+                        var perchT = 0.25 + pbi * 0.35 + Math.sin(t * 0.3 + pbi) * 0.05;
+                        var pbX = corners[2].x + (corners[3].x - corners[2].x) * perchT;
+                        var pbY = corners[2].y + (corners[3].y - corners[2].y) * perchT - 8;
+                        // Occasionally hop in place
+                        var hopBoost = Math.max(0, Math.sin(t * 0.5 + pbi * 2) - 0.92) * 12;
+                        pbY -= hopBoost;
+                        // Body
+                        gctx.fillStyle = pbi === 0 ? 'rgba(190,80,60,0.9)' : 'rgba(80,90,140,0.9)';  // robin red + bluebird
+                        gctx.beginPath(); gctx.ellipse(pbX, pbY, 3.5, 2.5, 0, 0, Math.PI * 2); gctx.fill();
+                        // Head
+                        gctx.beginPath(); gctx.arc(pbX + 2.5, pbY - 1.5, 1.8, 0, Math.PI * 2); gctx.fill();
+                        // Beak
+                        gctx.fillStyle = '#fbbf24';
+                        gctx.beginPath();
+                        gctx.moveTo(pbX + 4.2, pbY - 1.5);
+                        gctx.lineTo(pbX + 5.5, pbY - 1.2);
+                        gctx.lineTo(pbX + 4.2, pbY - 0.8);
+                        gctx.closePath();
+                        gctx.fill();
+                        // Tail (small triangle)
+                        gctx.fillStyle = pbi === 0 ? 'rgba(150,60,40,0.9)' : 'rgba(50,60,110,0.9)';
+                        gctx.beginPath();
+                        gctx.moveTo(pbX - 3.5, pbY);
+                        gctx.lineTo(pbX - 6, pbY - 1.5);
+                        gctx.lineTo(pbX - 6, pbY + 1.5);
+                        gctx.closePath();
+                        gctx.fill();
+                      }
+                    }
+
+                    // ── Bird sitting on the birdbath edge (occasional, spring/summer) ──
+                    if ((sSeason === 0 || sSeason === 1) && (t % 18) < 6) {
+                      var bbBirdX = bbPos.x - 8;
+                      var bbBirdY = bbPos.y - 16;
+                      gctx.fillStyle = 'rgba(80,120,170,0.9)';
+                      gctx.beginPath(); gctx.ellipse(bbBirdX, bbBirdY, 3, 2.2, 0, 0, Math.PI * 2); gctx.fill();
+                      gctx.beginPath(); gctx.arc(bbBirdX + 2.2, bbBirdY - 1.4, 1.6, 0, Math.PI * 2); gctx.fill();
+                      gctx.fillStyle = '#fbbf24';
+                      gctx.beginPath();
+                      gctx.moveTo(bbBirdX + 3.6, bbBirdY - 1.4);
+                      gctx.lineTo(bbBirdX + 4.6, bbBirdY - 1.2);
+                      gctx.lineTo(bbBirdX + 3.6, bbBirdY - 0.8);
+                      gctx.closePath();
+                      gctx.fill();
+                      // Tiny splash if bird is moving
+                      if (Math.sin(t * 5) > 0.7) {
+                        gctx.fillStyle = 'rgba(255,255,255,0.6)';
+                        gctx.beginPath(); gctx.arc(bbPos.x + 3, bbPos.y - 15, 1, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Fireflies (dusk + early night, spring/summer only) ──
+                    if ((isDusk || (isNight && nightStrength < 0.7)) && (sSeason === 0 || sSeason === 1)) {
+                      var ffStrength = isDusk ? 0.5 : (1 - nightStrength);
+                      for (var ffi = 0; ffi < 12; ffi++) {
+                        var ffx = (ffi * 87 + Math.sin(t * 0.6 + ffi) * 30) % W;
+                        var ffy = H * (0.55 + (ffi % 5) * 0.06) + Math.cos(t * 0.4 + ffi) * 12;
+                        var ffBlink = Math.max(0, Math.sin(t * 1.5 + ffi * 1.3));
+                        if (ffBlink < 0.4) continue;
+                        gctx.fillStyle = 'rgba(254,240,138,' + (ffBlink * 0.85 * ffStrength) + ')';
+                        gctx.beginPath(); gctx.arc(ffx, ffy, 1.8, 0, Math.PI * 2); gctx.fill();
+                        // Glow
+                        gctx.fillStyle = 'rgba(254,240,138,' + (ffBlink * 0.25 * ffStrength) + ')';
+                        gctx.beginPath(); gctx.arc(ffx, ffy, 4.5, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Snail crossing the foreground in early morning (dawn only, slow + leaves a wet trail) ──
+                    if (isDawn && sSeason !== 3) {
+                      // Calculate snail position based on time-of-day (slow march across the foreground)
+                      var snProgress = (todPhase - 0.05) / 0.1;  // 0..1 across dawn
+                      var snX = W * 0.1 + snProgress * W * 0.5;
+                      var snY = H * 0.94;
+                      // Wet trail behind snail
+                      gctx.strokeStyle = 'rgba(180,200,220,0.45)';
+                      gctx.lineWidth = 2;
+                      gctx.beginPath();
+                      var trailLen = 60;
+                      for (var tri = 0; tri < trailLen; tri += 4) {
+                        var trX = snX - tri;
+                        var trY = snY + Math.sin(tri * 0.3) * 0.8;
+                        if (tri === 0) gctx.moveTo(trX, trY);
+                        else gctx.lineTo(trX, trY);
+                      }
+                      gctx.stroke();
+                      // Snail body (foot)
+                      gctx.fillStyle = 'rgba(180,160,140,0.9)';
+                      gctx.beginPath(); gctx.ellipse(snX, snY, 6, 2, 0, 0, Math.PI * 2); gctx.fill();
+                      // Spiral shell on top
+                      gctx.fillStyle = '#a87a4a';
+                      gctx.beginPath(); gctx.arc(snX, snY - 2.5, 4, 0, Math.PI * 2); gctx.fill();
+                      gctx.strokeStyle = '#7a4a20'; gctx.lineWidth = 0.6;
+                      // Spiral lines
+                      for (var spi = 0; spi < 3; spi++) {
+                        gctx.beginPath();
+                        gctx.arc(snX - spi * 0.3, snY - 2.5, 3.5 - spi * 1, -Math.PI * 0.7, Math.PI * 0.3);
+                        gctx.stroke();
+                      }
+                      // Eye stalks (two thin antennae with little eyes on top)
+                      gctx.strokeStyle = 'rgba(120,100,80,0.85)'; gctx.lineWidth = 0.6;
+                      gctx.beginPath(); gctx.moveTo(snX + 4, snY - 1); gctx.lineTo(snX + 6, snY - 4); gctx.stroke();
+                      gctx.beginPath(); gctx.moveTo(snX + 5, snY - 1); gctx.lineTo(snX + 7, snY - 4); gctx.stroke();
+                      gctx.fillStyle = '#1f2937';
+                      gctx.beginPath(); gctx.arc(snX + 6, snY - 4, 0.5, 0, Math.PI * 2); gctx.fill();
+                      gctx.beginPath(); gctx.arc(snX + 7, snY - 4, 0.5, 0, Math.PI * 2); gctx.fill();
+                    }
+
+                    // ── Cricket "song" — musical notes float up at night (synesthetic visual for cricket sound) ──
+                    if (isNight && nightStrength > 0.4 && sSeason !== 3) {
+                      var noteCols = ['rgba(168,85,247,', 'rgba(96,165,250,', 'rgba(244,114,182,'];
+                      for (var nti = 0; nti < 5; nti++) {
+                        var ntCycle = 5;
+                        var ntPhase = ((t + nti * 1) % ntCycle) / ntCycle;  // 0..1 rise
+                        if (ntPhase > 0.85) continue;  // pause between rises
+                        var ntX = W * (0.18 + (nti / 5) * 0.65) + Math.sin(t * 0.5 + nti * 1.7) * 8;
+                        var ntY = H * 0.85 - ntPhase * 50;
+                        var ntA = (1 - ntPhase / 0.85) * 0.65 * nightStrength;
+                        gctx.fillStyle = noteCols[nti % noteCols.length] + ntA + ')';
+                        // Eighth-note glyph: stem + flag + filled head
+                        gctx.fillRect(ntX + 1, ntY - 5, 0.8, 6);  // stem
+                        gctx.beginPath(); gctx.ellipse(ntX, ntY, 1.8, 1.2, -0.3, 0, Math.PI * 2); gctx.fill();  // head
+                        // Flag
+                        gctx.beginPath();
+                        gctx.moveTo(ntX + 1.8, ntY - 5);
+                        gctx.quadraticCurveTo(ntX + 4, ntY - 4, ntX + 3, ntY - 1.5);
+                        gctx.lineTo(ntX + 1.8, ntY - 2);
+                        gctx.closePath();
+                        gctx.fill();
+                      }
+                    }
+
+                    // ── Owl in background tree at night (silhouette + glowing eyes) ──
+                    if (isNight && nightStrength > 0.5 && sSeason !== 3) {
+                      var owlX = W * 0.32;
+                      var owlY = isoOY - 50;
+                      // Body silhouette
+                      gctx.fillStyle = 'rgba(20,15,30,0.85)';
+                      gctx.beginPath(); gctx.ellipse(owlX, owlY, 6, 8, 0, 0, Math.PI * 2); gctx.fill();
+                      // Head
+                      gctx.beginPath(); gctx.arc(owlX, owlY - 6, 4.5, 0, Math.PI * 2); gctx.fill();
+                      // Ear tufts
+                      gctx.beginPath();
+                      gctx.moveTo(owlX - 3, owlY - 9); gctx.lineTo(owlX - 4.5, owlY - 12); gctx.lineTo(owlX - 1.5, owlY - 9);
+                      gctx.closePath(); gctx.fill();
+                      gctx.beginPath();
+                      gctx.moveTo(owlX + 3, owlY - 9); gctx.lineTo(owlX + 4.5, owlY - 12); gctx.lineTo(owlX + 1.5, owlY - 9);
+                      gctx.closePath(); gctx.fill();
+                      // Eyes (glowing yellow, blink occasionally)
+                      var eyeBlink = Math.sin(t * 0.3) > 0.95 ? 0 : 1;
+                      gctx.fillStyle = 'rgba(251,191,36,' + (0.9 * eyeBlink * nightStrength) + ')';
+                      gctx.beginPath(); gctx.arc(owlX - 1.8, owlY - 6, 1, 0, Math.PI * 2); gctx.fill();
+                      gctx.beginPath(); gctx.arc(owlX + 1.8, owlY - 6, 1, 0, Math.PI * 2); gctx.fill();
+                    }
+
+                    // ── Dragonflies (summer, daytime; iridescent wings, fast straight-line zips) ──
+                    if (sSeason === 1 && !isNight) {
+                      var dfCount = 2;
+                      for (var dfi = 0; dfi < dfCount; dfi++) {
+                        // Each dragonfly does a 12s loop: zip across, pause, zip back
+                        var dfLoop = 12;
+                        var dfPhase = ((t + dfi * 6) % dfLoop) / dfLoop;  // 0..1
+                        var direction = Math.floor((t + dfi * 6) / dfLoop) % 2 === 0 ? 1 : -1;
+                        var dfx, dfy;
+                        if (dfPhase < 0.4) {
+                          // Zipping across
+                          var zipT = dfPhase / 0.4;
+                          dfx = direction > 0 ? zipT * W : (1 - zipT) * W;
+                          dfy = H * 0.45 + dfi * 35 + Math.sin(t * 4 + dfi) * 8;
+                        } else if (dfPhase < 0.55) {
+                          // Hovering
+                          dfx = direction > 0 ? W : 0;
+                          dfy = H * 0.45 + dfi * 35 + Math.sin(t * 4 + dfi) * 12;
+                          continue;  // off-screen during hover
+                        } else {
+                          continue;
+                        }
+                        // Long thin body (segments)
+                        var bodyAng = direction > 0 ? 0 : Math.PI;
+                        gctx.save();
+                        gctx.translate(dfx, dfy);
+                        gctx.rotate(bodyAng);
+                        // Iridescent wings (4 wings, fast flap)
+                        var wingFlap = Math.abs(Math.sin(t * 30 + dfi)) * 0.6 + 0.4;
+                        gctx.fillStyle = 'rgba(180,220,255,' + (0.45 * wingFlap) + ')';
+                        gctx.beginPath(); gctx.ellipse(-2, -3, 7 * wingFlap, 2, -0.1, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(2, -3, 7 * wingFlap, 2, 0.1, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(-2, 3, 6 * wingFlap, 1.7, 0.1, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(2, 3, 6 * wingFlap, 1.7, -0.1, 0, Math.PI * 2); gctx.fill();
+                        // Body (3 segments — thorax + abdomen)
+                        gctx.fillStyle = '#0e7490';
+                        gctx.fillRect(-2, -1, 4, 2);
+                        gctx.fillStyle = '#0891b2';
+                        gctx.fillRect(2, -0.6, 8, 1.3);
+                        // Head
+                        gctx.fillStyle = '#155e75';
+                        gctx.beginPath(); gctx.arc(-3, 0, 1.6, 0, Math.PI * 2); gctx.fill();
+                        // Eyes (large, compound)
+                        gctx.fillStyle = '#1f2937';
+                        gctx.beginPath(); gctx.arc(-3.3, -0.8, 0.6, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.arc(-3.3, 0.8, 0.6, 0, Math.PI * 2); gctx.fill();
+                        gctx.restore();
+                      }
+                    }
+
+                    // ── Ladybug on a random leaf (periodic, all non-winter seasons; sits ~6s then moves) ──
+                    if (sSeason !== 3 && !isNight) {
+                      var lbCycle = 14;
+                      var lbStage = Math.floor(t / lbCycle);
+                      var lbPhase = (t % lbCycle) / lbCycle;
+                      // Pick a target tile that has a plant (deterministic by stage)
+                      var plantedCells = [];
+                      for (var pci = 0; pci < 16; pci++) { if (grid2[pci] && grid2[pci].plantId) plantedCells.push(pci); }
+                      if (plantedCells.length > 0 && lbPhase < 0.45) {
+                        var targetCell = plantedCells[lbStage % plantedCells.length];
+                        var lbPos = isoToScreen(Math.floor(targetCell / 4), targetCell % 4);
+                        var lbX = lbPos.x + Math.sin(lbStage * 1.7) * 6;
+                        var lbY = lbPos.y - iTH / 2 - 18 + Math.cos(lbStage * 2.3) * 4;
+                        // Body (red dome)
+                        gctx.fillStyle = '#dc2626';
+                        gctx.beginPath(); gctx.ellipse(lbX, lbY, 2.5, 2, 0, 0, Math.PI * 2); gctx.fill();
+                        // Head (small black)
+                        gctx.fillStyle = '#1f2937';
+                        gctx.beginPath(); gctx.arc(lbX - 2, lbY, 1, 0, Math.PI * 2); gctx.fill();
+                        // Center line down the back
+                        gctx.strokeStyle = '#1f2937'; gctx.lineWidth = 0.6;
+                        gctx.beginPath(); gctx.moveTo(lbX - 1, lbY); gctx.lineTo(lbX + 2.5, lbY); gctx.stroke();
+                        // 6 spots (3 per side)
+                        gctx.fillStyle = '#1f2937';
+                        gctx.beginPath(); gctx.arc(lbX, lbY - 0.8, 0.4, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.arc(lbX + 1.4, lbY - 0.5, 0.4, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.arc(lbX + 0.5, lbY + 0.8, 0.4, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.arc(lbX, lbY + 0.8, 0.4, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.arc(lbX + 1.4, lbY + 0.5, 0.4, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Garden cat (orange tabby; sleeps near birdbath most of the time, walks occasionally) ──
+                    if (sSeason !== 3) {  // cat is indoors in winter
+                      var catCycle = 60;  // 60-second loop
+                      var catPhase = (t % catCycle) / catCycle;
+                      var catX, catY, catSleeping;
+                      if (catPhase < 0.7) {
+                        // Sleeping curled up next to birdbath
+                        catX = bbPos.x - 22;
+                        catY = bbPos.y - 4;
+                        catSleeping = true;
+                      } else {
+                        // Walking from birdbath toward fence and back (30% of the time)
+                        var walkT = (catPhase - 0.7) / 0.3;
+                        var walkProgress = walkT < 0.5 ? walkT * 2 : (1 - walkT) * 2;  // out then back
+                        catX = bbPos.x - 22 + walkProgress * 60;
+                        catY = bbPos.y - 4 + Math.abs(Math.sin(walkT * 24)) * -1.5;  // tiny step bounce
+                        catSleeping = false;
+                      }
+                      var catColor = '#d97706';  // orange tabby
+                      var catStripe = '#92400e';
+                      if (catSleeping) {
+                        // Curled body (loaf shape)
+                        gctx.fillStyle = catColor;
+                        gctx.beginPath(); gctx.ellipse(catX, catY, 9, 5, 0, 0, Math.PI * 2); gctx.fill();
+                        // Tail wrapped around (curve)
+                        gctx.beginPath();
+                        gctx.ellipse(catX + 6, catY + 1, 4, 2, 0.3, 0, Math.PI * 2);
+                        gctx.fill();
+                        // Head tucked
+                        gctx.beginPath(); gctx.arc(catX - 6, catY - 1, 3.5, 0, Math.PI * 2); gctx.fill();
+                        // Stripes (3 dark bands)
+                        gctx.fillStyle = catStripe;
+                        gctx.fillRect(catX - 3, catY - 3, 1.2, 4);
+                        gctx.fillRect(catX, catY - 3.5, 1.2, 4.5);
+                        gctx.fillRect(catX + 3, catY - 3, 1.2, 4);
+                        // Closed eye (just a line)
+                        gctx.strokeStyle = catStripe; gctx.lineWidth = 0.8;
+                        gctx.beginPath(); gctx.moveTo(catX - 7, catY - 1.5); gctx.lineTo(catX - 5, catY - 1.5); gctx.stroke();
+                        // Ears (two triangles)
+                        gctx.fillStyle = catColor;
+                        gctx.beginPath();
+                        gctx.moveTo(catX - 8, catY - 4); gctx.lineTo(catX - 6.5, catY - 6); gctx.lineTo(catX - 5.5, catY - 3.5);
+                        gctx.closePath(); gctx.fill();
+                        gctx.beginPath();
+                        gctx.moveTo(catX - 6, catY - 4); gctx.lineTo(catX - 4.5, catY - 6); gctx.lineTo(catX - 3.5, catY - 3.5);
+                        gctx.closePath(); gctx.fill();
+                      } else {
+                        // Walking pose (side view)
+                        gctx.fillStyle = catColor;
+                        // Body
+                        gctx.beginPath(); gctx.ellipse(catX, catY, 8, 4, 0, 0, Math.PI * 2); gctx.fill();
+                        // Head
+                        gctx.beginPath(); gctx.arc(catX + 7, catY - 2, 3.5, 0, Math.PI * 2); gctx.fill();
+                        // Ears
+                        gctx.beginPath();
+                        gctx.moveTo(catX + 5, catY - 5); gctx.lineTo(catX + 6, catY - 7); gctx.lineTo(catX + 7, catY - 4.5);
+                        gctx.closePath(); gctx.fill();
+                        gctx.beginPath();
+                        gctx.moveTo(catX + 7, catY - 5); gctx.lineTo(catX + 8, catY - 7); gctx.lineTo(catX + 9, catY - 4.5);
+                        gctx.closePath(); gctx.fill();
+                        // Tail (raised, slightly curved, swishing)
+                        var tailSwish = Math.sin(t * 4) * 1.5;
+                        gctx.strokeStyle = catColor; gctx.lineWidth = 2.5;
+                        gctx.beginPath();
+                        gctx.moveTo(catX - 7, catY - 1);
+                        gctx.quadraticCurveTo(catX - 11, catY - 5 + tailSwish, catX - 12, catY - 7);
+                        gctx.stroke();
+                        // Legs (4, stepping)
+                        var stepPhase = Math.sin(t * 8);
+                        gctx.lineWidth = 1.8;
+                        gctx.beginPath(); gctx.moveTo(catX + 5, catY + 2); gctx.lineTo(catX + 5, catY + 5 + Math.max(0, stepPhase) * -1); gctx.stroke();
+                        gctx.beginPath(); gctx.moveTo(catX + 2, catY + 2); gctx.lineTo(catX + 2, catY + 5 + Math.max(0, -stepPhase) * -1); gctx.stroke();
+                        gctx.beginPath(); gctx.moveTo(catX - 3, catY + 2); gctx.lineTo(catX - 3, catY + 5 + Math.max(0, stepPhase) * -1); gctx.stroke();
+                        gctx.beginPath(); gctx.moveTo(catX - 6, catY + 2); gctx.lineTo(catX - 6, catY + 5 + Math.max(0, -stepPhase) * -1); gctx.stroke();
+                        // Eyes (two yellow dots)
+                        gctx.fillStyle = '#eab308';
+                        gctx.beginPath(); gctx.arc(catX + 8.5, catY - 2, 0.7, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.arc(catX + 9.5, catY - 2, 0.7, 0, Math.PI * 2); gctx.fill();
+                        // Stripes on body
+                        gctx.fillStyle = catStripe;
+                        gctx.fillRect(catX - 3, catY - 2.5, 1, 3);
+                        gctx.fillRect(catX, catY - 3, 1, 3.5);
+                        gctx.fillRect(catX + 3, catY - 2.5, 1, 3);
+                      }
+                    }
+
+                    // ── Spider web in fence corner (subtle, top-left) — small decorative detail ──
+                    var webX = corners[0].x + 8;
+                    var webY = corners[0].y - 4;
+                    gctx.strokeStyle = 'rgba(220,220,230,0.18)';
+                    gctx.lineWidth = 0.6;
+                    for (var wsi = 0; wsi < 6; wsi++) {
+                      var ang = wsi * Math.PI / 3;
+                      gctx.beginPath();
+                      gctx.moveTo(webX, webY);
+                      gctx.lineTo(webX + Math.cos(ang) * 7, webY + Math.sin(ang) * 7);
+                      gctx.stroke();
+                    }
+                    // Concentric web threads
+                    for (var wsj = 1; wsj <= 3; wsj++) {
+                      gctx.beginPath();
+                      gctx.arc(webX, webY, wsj * 2.3, 0, Math.PI * 2);
+                      gctx.stroke();
                     }
 
                     // ── Weather ──
@@ -4233,6 +5330,95 @@ var d = (labToolData.companionPlanting) || {};
                       gctx.fillStyle = 'rgba(255,255,255,0.45)';
                       for (var si4 = 0; si4 < 25; si4++) {
                         gctx.beginPath(); gctx.arc((si4 * 41 + t * 6) % W, (si4 * 23 + t * 12) % H, 1.2 + Math.sin(si4 + t * 0.4) * 0.5, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Click ripple effect (1.2-second expanding circle on player click) ──
+                    if (cvEl._clickRipple) {
+                      var rDur = 1.2;  // seconds
+                      var rElapsed = (performance.now() - cvEl._clickRipple.t0) / 1000;
+                      if (rElapsed < rDur) {
+                        var rT = rElapsed / rDur;
+                        var rR = 5 + rT * 50;
+                        var rA = (1 - rT) * 0.55;
+                        // Outer ring
+                        gctx.strokeStyle = 'rgba(251,191,36,' + rA + ')';
+                        gctx.lineWidth = 2 * (1 - rT) + 0.5;
+                        gctx.beginPath(); gctx.arc(cvEl._clickRipple.x, cvEl._clickRipple.y, rR, 0, Math.PI * 2); gctx.stroke();
+                        // Inner softer ring
+                        gctx.strokeStyle = 'rgba(254,240,138,' + (rA * 0.6) + ')';
+                        gctx.lineWidth = 1;
+                        gctx.beginPath(); gctx.arc(cvEl._clickRipple.x, cvEl._clickRipple.y, rR * 0.6, 0, Math.PI * 2); gctx.stroke();
+                      } else {
+                        cvEl._clickRipple = null;
+                      }
+                    }
+
+                    // ── Plant burst (1.6-second celebration on successful plant) ──
+                    // Expanding green/yellow rings + sparkle particles + emoji + label
+                    // popping up briefly above the cell. UDL: high-visibility
+                    // confirmation that the planting action actually happened.
+                    if (cvEl._plantBurst) {
+                      var pbDur = 1.6;
+                      var pbElapsed = (performance.now() - cvEl._plantBurst.t0) / 1000;
+                      if (pbElapsed < pbDur) {
+                        var pbT = pbElapsed / pbDur;          // 0→1
+                        var pbCell = isoToScreen(Math.floor(cvEl._plantBurst.idx / 4), cvEl._plantBurst.idx % 4);
+                        // Three staggered expanding rings (green → yellow → green)
+                        var ringColors = ['rgba(74,222,128,', 'rgba(253,224,71,', 'rgba(34,197,94,'];
+                        for (var pri = 0; pri < 3; pri++) {
+                          var ringStart = pri * 0.12;
+                          if (pbT < ringStart) continue;
+                          var ringT = (pbT - ringStart) / (1 - ringStart);
+                          if (ringT > 1) continue;
+                          var ringR = 6 + ringT * 65;
+                          var ringA = (1 - ringT) * 0.65;
+                          gctx.strokeStyle = ringColors[pri] + ringA + ')';
+                          gctx.lineWidth = 2.5 * (1 - ringT) + 0.4;
+                          gctx.beginPath();
+                          gctx.ellipse(pbCell.x, pbCell.y, ringR, ringR * 0.55, 0, 0, Math.PI * 2);
+                          gctx.stroke();
+                        }
+                        // Sparkle particles flying outward + up
+                        var pCount = 8;
+                        for (var pp = 0; pp < pCount; pp++) {
+                          var pAng = (pp / pCount) * Math.PI * 2 + pbT * 0.5;
+                          var pDist = pbT * 55;
+                          var pPx = pbCell.x + Math.cos(pAng) * pDist;
+                          var pPy = pbCell.y - 5 + Math.sin(pAng) * pDist * 0.55 - pbT * 18; // arc up
+                          var pAlpha = (1 - pbT) * 0.85;
+                          gctx.fillStyle = (pp % 2 === 0) ? 'rgba(253,224,71,' + pAlpha + ')' : 'rgba(74,222,128,' + pAlpha + ')';
+                          gctx.beginPath(); gctx.arc(pPx, pPy, 2 + (1 - pbT) * 1.5, 0, Math.PI * 2); gctx.fill();
+                        }
+                        // Floating emoji + "Planted!" label rising above the cell (first 0.85s)
+                        if (pbT < 0.85) {
+                          var labelT = pbT / 0.85;
+                          var labelY = pbCell.y - 40 - labelT * 40;
+                          var labelA = labelT < 0.15 ? labelT / 0.15 : (1 - (labelT - 0.15) / 0.85);
+                          gctx.globalAlpha = Math.max(0, labelA);
+                          // Backdrop pill
+                          var labelText = cvEl._plantBurst.emoji + ' Planted!';
+                          gctx.font = 'bold 22px system-ui, sans-serif';
+                          var labelW = gctx.measureText(labelText).width + 22;
+                          gctx.fillStyle = 'rgba(20,40,15,0.78)';
+                          gctx.beginPath();
+                          if (gctx.roundRect) {
+                            gctx.roundRect(pbCell.x - labelW / 2, labelY - 18, labelW, 28, 14);
+                            gctx.fill();
+                          } else {
+                            gctx.fillRect(pbCell.x - labelW / 2, labelY - 18, labelW, 28);
+                          }
+                          // Text
+                          gctx.fillStyle = '#fef9c3';
+                          gctx.textAlign = 'center';
+                          gctx.textBaseline = 'middle';
+                          gctx.fillText(labelText, pbCell.x, labelY - 4);
+                          gctx.globalAlpha = 1;
+                          gctx.textAlign = 'start';
+                          gctx.textBaseline = 'alphabetic';
+                        }
+                      } else {
+                        cvEl._plantBurst = null;
                       }
                     }
 
