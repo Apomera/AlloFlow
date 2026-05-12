@@ -74,7 +74,9 @@
         food_security:      'Major aid donor through USAID and WFP; supports market-based ag reform; resists tariff-only solutions.',
         cybersecurity:      'Pushes liberal-democratic norms; CISA-led private-sector partnerships; cool on UN cybercrime treaty.',
         migration_compact:  'Did not sign GCM; bilateral border deals; oscillating asylum + enforcement posture.',
-        womens_rights:      'Signed but never ratified CEDAW; Title IX domestic anchor; Mexico City Policy oscillates by admin.'
+        womens_rights:      'Signed but never ratified CEDAW; Title IX domestic anchor; Mexico City Policy oscillates by admin.',
+        antarctic_minerals: 'Antarctic Treaty Consultative Party; supports Madrid Protocol; cautious on permanent extension during 2025-2048 window.',
+        indigenous_rights:  'Endorsed UNDRIP (2010) as aspirational; tribal sovereignty domestically; uneven federal FPIC implementation.'
       }
     },
     { iso: 'CHN', name: 'China',             flag: '🇨🇳', region: 'East Asia', gov: 'One-party state',
@@ -90,7 +92,9 @@
         food_security:      'Aggressive grain-stockpile strategy; BRI ag investments; resists Western ag-subsidy framings.',
         cybersecurity:      'Cyber-sovereignty doctrine; pushes UN-led framework via SCO; rejects US-led norms.',
         migration_compact:  'Did not sign GCM; rejects refugee burden-sharing; tight border policies.',
-        womens_rights:      'Demographic focus reshaping policy; resists LGBTQ+ inclusion in international working groups.'
+        womens_rights:      'Demographic focus reshaping policy; resists LGBTQ+ inclusion in international working groups.',
+        antarctic_minerals: 'Expanding Antarctic station footprint; opposes making the ban permanent; emphasizes future resource access for all states.',
+        indigenous_rights:  'Voted in favor of UNDRIP but rejects "Indigenous peoples" framing for own minority groups; resists external scrutiny.'
       }
     },
     { iso: 'RUS', name: 'Russia',            flag: '🇷🇺', region: 'Eurasia', gov: 'Federal semi-presidential',
@@ -106,7 +110,9 @@
         food_security:      'Major grain exporter; weaponizes wheat exports; periodically blocks Black Sea corridor.',
         cybersecurity:      'Resists Western attribution norms; advances own UN cybercrime convention; sovereignty-first.',
         migration_compact:  'Limited GCM engagement; CIS bilateral labor framework preferred over global compact.',
-        womens_rights:      'Decriminalized domestic violence (2017); "LGBT propaganda" expanded ban; conservative bloc lead.'
+        womens_rights:      'Decriminalized domestic violence (2017); "LGBT propaganda" expanded ban; conservative bloc lead.',
+        antarctic_minerals: 'Active Antarctic station network; reluctant to lock in permanent ban; views Antarctica through resource-frontier lens.',
+        indigenous_rights:  'Voted for UNDRIP; uneven implementation in Far North (Sakha, Nenets); resource projects often override consultation.'
       }
     },
     { iso: 'GBR', name: 'United Kingdom',    flag: '🇬🇧', region: 'Europe', gov: 'Constitutional monarchy',
@@ -122,7 +128,9 @@
         food_security:      'Strong FCDO development funder; backs nutrition-sensitive agriculture; G7 food task force.',
         cybersecurity:      'NCSC + Five Eyes; offensive cyber capability disclosed; international norms advocate.',
         migration_compact:  'Did not sign GCM; tightened asylum; Rwanda removal scheme controversy.',
-        womens_rights:      'Women-Peace-Security advocate; backs CEDAW; gender-mainstreaming in development policy.'
+        womens_rights:      'Women-Peace-Security advocate; backs CEDAW; gender-mainstreaming in development policy.',
+        antarctic_minerals: 'Original Antarctic Treaty signatory; territorial claim (BAT); strong supporter of Madrid Protocol permanence.',
+        indigenous_rights:  'No domestic Indigenous population per UN definition; supports UNDRIP internationally via FCDO programming.'
       }
     },
     { iso: 'FRA', name: 'France',            flag: '🇫🇷', region: 'Europe', gov: 'Semi-presidential republic',
@@ -138,7 +146,9 @@
         food_security:      'Backs EU CAP green pivot; advocates fair trade in Africa; defends agricultural sovereignty.',
         cybersecurity:      'ANSSI-led EU resilience push; Paris Call for Trust and Security in Cyberspace champion.',
         migration_compact:  'Signed GCM; supports orderly EU intake; tightened domestic asylum.',
-        womens_rights:      'Feminist foreign policy advocate; Generation Equality Forum host; abortion-rights advocate.'
+        womens_rights:      'Feminist foreign policy advocate; Generation Equality Forum host; abortion-rights advocate.',
+        antarctic_minerals: 'Antarctic Treaty Consultative Party; co-led 1991 ban with Australia; advocates permanent prohibition.',
+        indigenous_rights:  'Constitutional non-recognition of communautarisme complicates UNDRIP; New Caledonia Kanak rights remain contested.'
       }
     },
     { iso: 'DEU', name: 'Germany',           flag: '🇩🇪', region: 'Europe', gov: 'Federal parliamentary republic',
@@ -154,7 +164,9 @@
         food_security:      'Hosts Global Forum for Food and Agriculture; backs Africa-EU agri-investment; resists CAP rollback.',
         cybersecurity:      'BSI domestic lead; EU Cybersecurity Act backer; opposes broad surveillance powers.',
         migration_compact:  'Signed GCM; integration-funding leader; Skilled Immigration Act expansion.',
-        womens_rights:      'Adopted feminist foreign policy (2023); pay-gap legislation; CEDAW compliance review.'
+        womens_rights:      'Adopted feminist foreign policy (2023); pay-gap legislation; CEDAW compliance review.',
+        antarctic_minerals: 'Antarctic Treaty Consultative Party; non-claimant; strong scientific cooperation focus; supports permanent ban.',
+        indigenous_rights:  'No domestic Indigenous population; supports UNDRIP internationally; strong development-cooperation focus on Indigenous rights abroad.'
       }
     },
     { iso: 'JPN', name: 'Japan',             flag: '🇯🇵', region: 'East Asia', gov: 'Constitutional monarchy',
@@ -170,7 +182,9 @@
         food_security:      'Low self-sufficiency anxiety; rice diplomacy in Asia; G7 food-security task force backer.',
         cybersecurity:      'Active Cyber Defense pivot (2024); Quad cyber partnership; resilience focus.',
         migration_compact:  'Signed GCM; Specified Skilled Worker program expanding; demographic-driven.',
-        womens_rights:      'Womenomics initiative; persistent OECD-low pay/leadership gap; gradual reform.'
+        womens_rights:      'Womenomics initiative; persistent OECD-low pay/leadership gap; gradual reform.',
+        antarctic_minerals: 'Antarctic Treaty Consultative Party; large scientific program (Showa Station); supports Madrid Protocol.',
+        indigenous_rights:  'Recognized Ainu as Indigenous (2019); Ryukyuan recognition pending; gradual UNDRIP implementation.'
       }
     },
     { iso: 'IND', name: 'India',             flag: '🇮🇳', region: 'South Asia', gov: 'Federal parliamentary republic',
@@ -186,7 +200,9 @@
         food_security:      'PDS subsidy defender at WTO; Right to Food Act; opposes WTO ag-subsidy caps.',
         cybersecurity:      'Digital sovereignty + data localization push; cautious on UN cybercrime treaty overreach.',
         migration_compact:  'Did not sign GCM; CAA citizenship law controversial; large diaspora protection focus.',
-        womens_rights:      'Beti Bachao Beti Padhao campaign; constitutional reservation; uneven implementation.'
+        womens_rights:      'Beti Bachao Beti Padhao campaign; constitutional reservation; uneven implementation.',
+        antarctic_minerals: 'Antarctic Treaty Consultative Party (1983); two stations; opposes commercial mining; emphasizes peaceful use.',
+        indigenous_rights:  'Domestic Adivasi/Scheduled Tribes framework predates UNDRIP; resists external "Indigenous" label; FPIC implementation contested.'
       }
     },
     { iso: 'BRA', name: 'Brazil',            flag: '🇧🇷', region: 'South America', gov: 'Federal presidential republic',
@@ -202,7 +218,9 @@
         food_security:      'Major exporter; Zero Hunger program legacy; Lula re-prioritized Family Farm Program.',
         cybersecurity:      'LGPD data-protection law; multilateral approach; favors UN-led cyber norms.',
         migration_compact:  'Signed GCM; humanitarian visa for Venezuelans and Haitians; Roraima emergency response.',
-        womens_rights:      'High GBV rates; Ministry of Women restored 2023; femicide criminalized.'
+        womens_rights:      'High GBV rates; Ministry of Women restored 2023; femicide criminalized.',
+        antarctic_minerals: 'Antarctic Treaty Consultative Party; Comandante Ferraz station; strong environmental-protection voice on continent.',
+        indigenous_rights:  'Constitutional Indigenous protections; Lula re-prioritized demarcations; Amazon FPIC battles continuous.'
       }
     },
     { iso: 'CAN', name: 'Canada',            flag: '🇨🇦', region: 'North America', gov: 'Federal parliamentary',
@@ -218,7 +236,9 @@
         food_security:      'Cairns Group founder; Feminist International Assistance Policy ties food to gender.',
         cybersecurity:      'CSE + Five Eyes; ransomware-payment policy debates; critical infrastructure focus.',
         migration_compact:  'Signed GCM; high per-capita intake target; Express Entry economic stream.',
-        womens_rights:      'Original feminist foreign policy adopter; backs UN Women; gender-based-analysis-plus framework.'
+        womens_rights:      'Original feminist foreign policy adopter; backs UN Women; gender-based-analysis-plus framework.',
+        antarctic_minerals: 'Non-claimant Antarctic Treaty Party; strong Arctic parallel; supports Madrid Protocol permanence.',
+        indigenous_rights:  'TRC concluded 2015; UNDRIP Act 2021 mandates federal implementation; ongoing 215+ unmarked graves reckoning.'
       }
     },
     { iso: 'AUS', name: 'Australia',         flag: '🇦🇺', region: 'Oceania', gov: 'Federal parliamentary',
@@ -234,7 +254,9 @@
         food_security:      'Cairns Group major exporter; aid focus on Pacific food resilience.',
         cybersecurity:      'ASD + Five Eyes; Critical Infrastructure Act; AUKUS Pillar II cyber.',
         migration_compact:  'Did not sign GCM; offshore processing controversy; modest humanitarian intake.',
-        womens_rights:      'National Action Plan on Women, Peace and Security; strong CEDAW backer.'
+        womens_rights:      'National Action Plan on Women, Peace and Security; strong CEDAW backer.',
+        antarctic_minerals: 'Largest territorial claim (Australian Antarctic Territory); co-architect of 1991 ban; permanent-extension champion.',
+        indigenous_rights:  'No formal treaty with Aboriginal/Torres Strait Islander peoples; Voice referendum failed 2023; UNDRIP support uneven.'
       }
     },
     { iso: 'KOR', name: 'South Korea',       flag: '🇰🇷', region: 'East Asia', gov: 'Presidential republic',
@@ -250,7 +272,9 @@
         food_security:      'Low self-sufficiency anxiety; backs ASEAN+3 Emergency Rice Reserve.',
         cybersecurity:      'K-CSIRT capacity; offensive doctrine vs DPRK; private-sector innovation.',
         migration_compact:  'Signed GCM; F-visa skilled-worker expansion; demographic pressure.',
-        womens_rights:      'Persistent OECD-low gender pay gap; #MeToo legislative reforms; demographic crisis dimension.'
+        womens_rights:      'Persistent OECD-low gender pay gap; #MeToo legislative reforms; demographic crisis dimension.',
+        antarctic_minerals: 'Antarctic Treaty Consultative Party; King Sejong + Jang Bogo stations; supports Madrid Protocol.',
+        indigenous_rights:  'No domestic Indigenous population; supports UNDRIP internationally; limited development-cooperation focus.'
       }
     },
     { iso: 'ZAF', name: 'South Africa',      flag: '🇿🇦', region: 'Africa', gov: 'Parliamentary republic',
@@ -266,7 +290,9 @@
         food_security:      'Land-reform policy drives production debate; backs African Continental ag integration.',
         cybersecurity:      'POPIA data-protection law; African Cyber Union supporter.',
         migration_compact:  'Signed GCM with reservations; persistent xenophobic violence; AU Free Movement protocol delays.',
-        womens_rights:      'High femicide rate (4x global avg); strong constitutional protections; implementation gap.'
+        womens_rights:      'High femicide rate (4x global avg); strong constitutional protections; implementation gap.',
+        antarctic_minerals: 'Antarctic Treaty Consultative Party (SANAE base); supports Madrid Protocol; emphasizes Southern Hemisphere stewardship.',
+        indigenous_rights:  'Khoisan and San rights recognized in constitution; implementation uneven; UNDRIP supporter.'
       }
     },
     { iso: 'NGA', name: 'Nigeria',           flag: '🇳🇬', region: 'Africa', gov: 'Federal presidential',
@@ -282,7 +308,9 @@
         food_security:      'Africa\'s largest food producer and importer; Anchor Borrowers\' Program; Boko Haram disrupts north.',
         cybersecurity:      'Cybercrime Act 2015; ECOWAS cyber strategy backer; bank-fraud focus.',
         migration_compact:  'Signed GCM; remittance-dependent diaspora; ECOWAS free movement member.',
-        womens_rights:      'Constitutional protections; Northern Sharia states variance; child-marriage hotspot.'
+        womens_rights:      'Constitutional protections; Northern Sharia states variance; child-marriage hotspot.',
+        antarctic_minerals: 'Not an Antarctic Treaty Party; voice for non-Antarctic states\' future access concerns; views ban as locking in advantage.',
+        indigenous_rights:  'Domestic ethnic-pluralism framework rather than Indigenous; voted for UNDRIP; minority-rights focus.'
       }
     },
     { iso: 'KEN', name: 'Kenya',             flag: '🇰🇪', region: 'Africa', gov: 'Presidential republic',
@@ -298,7 +326,9 @@
         food_security:      'Drought-recovery + food-import dependence; smallholder maize farmer focus; GMO debate.',
         cybersecurity:      'Computer Misuse Act 2018; African Union cyber lead; Konza Tech City build-out.',
         migration_compact:  'Signed GCM; major refugee host (Somali/South Sudanese); Dadaab/Kakuma camps.',
-        womens_rights:      'Constitutional gender protections; FGM/C banned 2011; political-representation quotas.'
+        womens_rights:      'Constitutional gender protections; FGM/C banned 2011; political-representation quotas.',
+        antarctic_minerals: 'Not an Antarctic Treaty Party; supports continued scientific use; cautious on permanent extraction ban.',
+        indigenous_rights:  'Maasai, Samburu, Endorois recognized; African Commission Endorois ruling landmark; UNDRIP supporter.'
       }
     },
     { iso: 'EGY', name: 'Egypt',             flag: '🇪🇬', region: 'Middle East / N Africa', gov: 'Presidential republic',
@@ -314,7 +344,9 @@
         food_security:      'Largest wheat importer globally; bread-subsidy political stakes; Black Sea corridor critical.',
         cybersecurity:      'Cybercrime Law 2018 chilling effect concerns; Arab cyber strategy participant.',
         migration_compact:  'Signed GCM; transit + host country; African Union migration coordinator.',
-        womens_rights:      'CEDAW with reservations; FGM/C banned 2008 (uneven enforcement); inheritance reform debates.'
+        womens_rights:      'CEDAW with reservations; FGM/C banned 2008 (uneven enforcement); inheritance reform debates.',
+        antarctic_minerals: 'Not an Antarctic Treaty Party; supports continued peaceful use; emphasizes equitable future access.',
+        indigenous_rights:  'No domestic Indigenous population per UN definition; Coptic and Nubian heritage protections; UNDRIP supporter internationally.'
       }
     },
     { iso: 'SAU', name: 'Saudi Arabia',      flag: '🇸🇦', region: 'Middle East', gov: 'Absolute monarchy',
@@ -330,7 +362,9 @@
         food_security:      'Massive food importer; Vision 2030 ag-investment abroad; halal supply chain emphasis.',
         cybersecurity:      'NCA national authority; reactive posture after Aramco attack; cool on liberal-democratic norms.',
         migration_compact:  'Signed GCM; kafala labor reform pace contested; migrant-worker majority workforce.',
-        womens_rights:      'Vision 2030 reforms (driving 2018, guardianship loosened); persistent advocacy crackdowns.'
+        womens_rights:      'Vision 2030 reforms (driving 2018, guardianship loosened); persistent advocacy crackdowns.',
+        antarctic_minerals: 'Not an Antarctic Treaty Party; cautious on permanent extraction bans setting precedent for other domains.',
+        indigenous_rights:  'No domestic Indigenous population recognition framework; abstained on UNDRIP; uneven international engagement.'
       }
     },
     { iso: 'IRN', name: 'Iran',              flag: '🇮🇷', region: 'Middle East', gov: 'Theocratic republic',
@@ -346,7 +380,9 @@
         food_security:      'Sanctions-exemption advocate; water-scarcity crisis driving internal migration.',
         cybersecurity:      'APT35/APT39 attributions; halal-internet policy; opposes Western frameworks.',
         migration_compact:  'Signed GCM; world\'s largest refugee host (Afghans); chronically under-funded.',
-        womens_rights:      'Mahsa Amini protests legacy; mandatory hijab; international advocacy crackdown.'
+        womens_rights:      'Mahsa Amini protests legacy; mandatory hijab; international advocacy crackdown.',
+        antarctic_minerals: 'Not an Antarctic Treaty Party; supports continued peaceful scientific use; resists Western-led governance.',
+        indigenous_rights:  'No domestic Indigenous framework; voted for UNDRIP; resists external scrutiny of minority issues.'
       }
     },
     { iso: 'ISR', name: 'Israel',            flag: '🇮🇱', region: 'Middle East', gov: 'Parliamentary democracy',
@@ -362,7 +398,9 @@
         food_security:      'Ag-tech exporter (drip irrigation); strong food-security narrative; Gaza access controversy.',
         cybersecurity:      'Unit 8200 expertise; Iron Dome cyber-defense exporter; INCD national agency.',
         migration_compact:  'Did not sign GCM; restrictive asylum (esp. African); Russian/Ukrainian intake.',
-        womens_rights:      'Gender-equal IDF service; persistent religious-secular tension; pay-gap legislation.'
+        womens_rights:      'Gender-equal IDF service; persistent religious-secular tension; pay-gap legislation.',
+        antarctic_minerals: 'Not an Antarctic Treaty Party; aligned with US/Western consensus on continued peaceful use.',
+        indigenous_rights:  'Voted for UNDRIP; Bedouin recognition contested; Palestinian Indigenous claims politically charged.'
       }
     },
     { iso: 'TUR', name: 'Türkiye',           flag: '🇹🇷', region: 'Middle East / Europe', gov: 'Presidential republic',
@@ -378,7 +416,9 @@
         food_security:      'Black Sea Grain corridor mediator; aid to Syrian-host regions; ag self-sufficiency push.',
         cybersecurity:      'USOM coordination; NATO ally with sovereignty caveats; cyber-norms ambivalence.',
         migration_compact:  'Signed GCM; world\'s largest single-country refugee host (Syrians); EU readmission deal.',
-        womens_rights:      'Istanbul Convention withdrawal (2021); rising femicide; civil-society pushback.'
+        womens_rights:      'Istanbul Convention withdrawal (2021); rising femicide; civil-society pushback.',
+        antarctic_minerals: 'Antarctic Treaty Party (2017, non-Consultative); emerging Antarctic research presence; cautious on permanent bans.',
+        indigenous_rights:  'Domestic minority framework rather than Indigenous; Kurdish rights remain contested; uneven UNDRIP engagement.'
       }
     },
     { iso: 'MEX', name: 'Mexico',            flag: '🇲🇽', region: 'North America', gov: 'Federal presidential',
@@ -394,7 +434,9 @@
         food_security:      'GMO-corn import dispute with US; smallholder farmer protection; SADER agricultural strategy.',
         cybersecurity:      'Limited offensive capacity; PEMEX attack legacy; USMCA-framed US cooperation.',
         migration_compact:  'Signed GCM; transit + destination + origin country; US-Mexico bilateral pressure.',
-        womens_rights:      'Femicide crisis high-visibility; gender-parity in Congress; abortion decriminalization wave.'
+        womens_rights:      'Femicide crisis high-visibility; gender-parity in Congress; abortion decriminalization wave.',
+        antarctic_minerals: 'Not an Antarctic Treaty Party; supports continued scientific protection; values multilateral environmental governance.',
+        indigenous_rights:  'Strong constitutional Indigenous recognition; 68 official languages; uneven FPIC implementation on extractive projects.'
       }
     },
     { iso: 'ARG', name: 'Argentina',         flag: '🇦🇷', region: 'South America', gov: 'Federal presidential',
@@ -410,7 +452,9 @@
         food_security:      'Top-5 grain/beef exporter; tension between Vaca Muerta extraction and ag land; G20 ag voice.',
         cybersecurity:      'PDP data-protection law; OAS CICTE backer; limited offensive doctrine.',
         migration_compact:  'Signed GCM; Latin America Compact contributor; Venezuelan/Bolivian intake.',
-        womens_rights:      'Abortion legalized 2020 (regional leader); persistent femicide concerns; gender-violence prevention law.'
+        womens_rights:      'Abortion legalized 2020 (regional leader); persistent femicide concerns; gender-violence prevention law.',
+        antarctic_minerals: 'Major territorial claim (overlapping with Chile, UK); permanent Antarctic station network; ban supporter.',
+        indigenous_rights:  'Mapuche, Qom, Wichí recognized; constitutional protections; FPIC implementation contested in Vaca Muerta development.'
       }
     },
     { iso: 'IDN', name: 'Indonesia',         flag: '🇮🇩', region: 'Southeast Asia', gov: 'Presidential republic',
@@ -426,7 +470,9 @@
         food_security:      'Rice self-sufficiency mandate; palm-oil export tension with EU; smallholder support.',
         cybersecurity:      'BSSN national agency; UU PDP 2022 data law; ASEAN cyber capacity-building.',
         migration_compact:  'Signed GCM; major sending country (domestic workers); Rohingya transit concerns.',
-        womens_rights:      'Strong national women\'s ministry; persistent FGM/C; child-marriage reform.'
+        womens_rights:      'Strong national women\'s ministry; persistent FGM/C; child-marriage reform.',
+        antarctic_minerals: 'Not an Antarctic Treaty Party; supports continued peaceful use; ASEAN-aligned environmental stewardship voice.',
+        indigenous_rights:  'Adat (customary law) recognition pending; AMAN organization advocates; UNDRIP supporter with reservations.'
       }
     },
     { iso: 'VNM', name: 'Vietnam',           flag: '🇻🇳', region: 'Southeast Asia', gov: 'Communist state',
@@ -442,7 +488,9 @@
         food_security:      'Top rice exporter; Mekong climate vulnerability; ag-product diversification push.',
         cybersecurity:      'Cybersecurity Law 2019 controversial (data localization, content control); APT32 attribution.',
         migration_compact:  'Signed GCM; labor migration to JP/KR/Taiwan; remittance economy.',
-        womens_rights:      'Gender equality in constitution; female leadership in legislature; rural gap persists.'
+        womens_rights:      'Gender equality in constitution; female leadership in legislature; rural gap persists.',
+        antarctic_minerals: 'Not an Antarctic Treaty Party; supports continued peaceful scientific use; cautious on permanent bans.',
+        indigenous_rights:  'Domestic 54-ethnic-group framework rather than "Indigenous" framing; voted for UNDRIP with interpretation reservations.'
       }
     },
     { iso: 'PHL', name: 'Philippines',       flag: '🇵🇭', region: 'Southeast Asia', gov: 'Presidential republic',
@@ -458,7 +506,9 @@
         food_security:      'Rice importer; tropical-cyclone supply disruption; ASEAN+3 Emergency Rice Reserve member.',
         cybersecurity:      'DICT Cybersecurity Plan; persistent Chinese APT concern; press-freedom chilling effects.',
         migration_compact:  'Signed GCM; OFW economy backbone; remittance-dependent; bilateral labor agreements.',
-        womens_rights:      'Magna Carta of Women (2009); divorce-prohibition reform pending; RH Law debates ongoing.'
+        womens_rights:      'Magna Carta of Women (2009); divorce-prohibition reform pending; RH Law debates ongoing.',
+        antarctic_minerals: 'Not an Antarctic Treaty Party; supports continued peaceful use; emphasizes climate-vulnerable nations\' Antarctic stake.',
+        indigenous_rights:  'IPRA 1997 strong domestic framework; NCIP institutional advocate; FPIC implementation contested on mining and dams.'
       }
     },
     { iso: 'POL', name: 'Poland',            flag: '🇵🇱', region: 'Europe', gov: 'Parliamentary republic',
@@ -474,7 +524,9 @@
         food_security:      'EU CAP recipient; Ukrainian grain transit disputes 2023-24; rising ag-protectionism.',
         cybersecurity:      'NASK + cyber command; NATO Cooperative Cyber Defence CoE host; RU APT focus.',
         migration_compact:  'Did not sign GCM (2018); Ukrainian intake 2022+; Belarus border crisis posture.',
-        womens_rights:      'Near-total abortion ban (2020); 2023 government shift loosening stance; pay-gap legislation.'
+        womens_rights:      'Near-total abortion ban (2020); 2023 government shift loosening stance; pay-gap legislation.',
+        antarctic_minerals: 'Antarctic Treaty Consultative Party; Arctowski station; supports Madrid Protocol; emerging Antarctic science investment.',
+        indigenous_rights:  'No domestic Indigenous population per UN definition; supports UNDRIP internationally via development cooperation.'
       }
     },
     { iso: 'UKR', name: 'Ukraine',           flag: '🇺🇦', region: 'Europe', gov: 'Semi-presidential republic',
@@ -490,7 +542,9 @@
         food_security:      'Pre-war 10% of global wheat exports; Black Sea Grain Initiative champion; corridor advocacy.',
         cybersecurity:      'Battlefield cyber-warfare experience; NATO cyber-coalition partnership; CERT-UA active.',
         migration_compact:  'Signed GCM; 6M+ displaced since 2022; reconstruction migration policy in flux.',
-        womens_rights:      'Combat service expansion; conflict-related GBV documentation focus; CEDAW commitments.'
+        womens_rights:      'Combat service expansion; conflict-related GBV documentation focus; CEDAW commitments.',
+        antarctic_minerals: 'Antarctic Treaty Consultative Party; Vernadsky station (former UK Faraday); strong Madrid Protocol supporter.',
+        indigenous_rights:  'Crimean Tatars recognized as Indigenous (2014); UNDRIP supporter; conflict context adds protection urgency.'
       }
     },
     { iso: 'NOR', name: 'Norway',            flag: '🇳🇴', region: 'Europe', gov: 'Constitutional monarchy',
@@ -506,7 +560,9 @@
         food_security:      'Major aquaculture exporter; Svalbard Global Seed Vault host; high food-import dependence.',
         cybersecurity:      'NSM + NATO partner; offensive-cyber transparency advocate; private-sector resilience focus.',
         migration_compact:  'Did not sign GCM (2018); EEA-aligned asylum; integration-focused intake.',
-        womens_rights:      'Gender board quotas (40%); strong parental-leave policy; feminist foreign policy advocate.'
+        womens_rights:      'Gender board quotas (40%); strong parental-leave policy; feminist foreign policy advocate.',
+        antarctic_minerals: 'Major Antarctic claim (Queen Maud Land); long Antarctic research history; ban supporter.',
+        indigenous_rights:  'Sami Parliament established 1989; Finnmark Act 2005; among strongest UNDRIP implementers globally.'
       }
     },
     { iso: 'CHE', name: 'Switzerland',       flag: '🇨🇭', region: 'Europe', gov: 'Federal directorial',
@@ -522,7 +578,9 @@
         food_security:      'Geneva HQ for WFP/FAO ops; strong humanitarian funding; ag-protectionism domestic.',
         cybersecurity:      'NCSC + neutrality balance; GovWare ban; ICT-supply-chain caution.',
         migration_compact:  'Signed GCM; strict asylum + integration framework; ICRC HQ duty.',
-        womens_rights:      'Late voting franchise (1971); gender-equality act 1996; CEDAW periodic review.'
+        womens_rights:      'Late voting franchise (1971); gender-equality act 1996; CEDAW periodic review.',
+        antarctic_minerals: 'Antarctic Treaty Party (1990); non-claimant; emphasizes neutrality, scientific cooperation, and protection.',
+        indigenous_rights:  'No domestic Indigenous population per UN definition; strong international UNDRIP funding via SDC programming.'
       }
     },
     { iso: 'NZL', name: 'New Zealand',       flag: '🇳🇿', region: 'Oceania', gov: 'Parliamentary democracy',
@@ -538,7 +596,9 @@
         food_security:      'Cairns Group; agricultural export powerhouse; methane-reduction ag policy.',
         cybersecurity:      'GCSB + Five Eyes; supply-chain caution (Huawei 5G ban); Pacific cyber capacity-building.',
         migration_compact:  'Signed GCM; humanitarian intake under refugee-resettlement strategy.',
-        womens_rights:      'First country with women\'s suffrage (1893); strong pay-gap framework; gender-mainstreaming.'
+        womens_rights:      'First country with women\'s suffrage (1893); strong pay-gap framework; gender-mainstreaming.',
+        antarctic_minerals: 'Territorial claim (Ross Dependency); strong Madrid Protocol champion; co-leads with Australia on permanence push.',
+        indigenous_rights:  'Treaty of Waitangi central to constitutional framework; Maori sovereignty recognition; UNDRIP supporter; strong implementation.'
       }
     }
   ];
@@ -696,6 +756,34 @@
         'Calls upon Member States to establish national action plans with measurable participation targets for women in peace processes;',
         'Urges that humanitarian response plans include comprehensive sexual and reproductive health services as a core component.'
       ]
+    },
+    { id: 'antarctic_minerals', title: 'Antarctic Mineral Rights & Environmental Protection', emoji: '🧊',
+      background: 'The Antarctic Treaty\'s 1991 Madrid Protocol banned mineral extraction with a 50-year prohibition window (review in 2048). As climate change exposes new ice-free areas and great-power competition intensifies, pressure to revisit the ban is growing. Russia and China have expanded scientific stations; tourism is at record levels.',
+      keyQuestions: [
+        'Should the Madrid Protocol\'s mining ban be extended beyond 2048 or made permanent?',
+        'How are non-Antarctic Treaty parties\' interests represented in continent governance?',
+        'What enforcement mechanisms exist for "scientific" stations that may have dual purposes?',
+        'How are climate-driven impacts (krill fisheries, ecosystem shifts) factored into resource decisions?'
+      ],
+      sampleClauses: [
+        'Reaffirms the indefinite prohibition of mineral resource activities under the Madrid Protocol and calls for the ban to be made permanent in advance of the 2048 review window;',
+        'Establishes an independent Antarctic Environmental Monitoring Body with annual public reporting on all national activities;',
+        'Urges all Consultative Parties to share station infrastructure data, including dual-use capabilities, to build mutual trust.'
+      ]
+    },
+    { id: 'indigenous_rights', title: 'Indigenous Peoples\' Rights & Self-Determination', emoji: '🪶',
+      background: 'The UN Declaration on the Rights of Indigenous Peoples (UNDRIP, 2007) was adopted with 144 in favor, 4 against, 11 abstentions. Implementation remains deeply uneven. Land rights, language preservation, free prior and informed consent (FPIC), and the legacy of residential schools and forced assimilation continue to drive tension between states and Indigenous nations.',
+      keyQuestions: [
+        'How are free, prior and informed consent obligations enforced when states authorize extractive projects on Indigenous lands?',
+        'What mechanisms support Indigenous-language revitalization, especially for languages at imminent risk of extinction?',
+        'How are truth and reconciliation processes structured for states with histories of residential schools or cultural genocide?',
+        'What is the relationship between Indigenous sovereignty and state sovereignty in international law?'
+      ],
+      sampleClauses: [
+        'Reaffirms the UN Declaration on the Rights of Indigenous Peoples and urges remaining hold-out states to formally adopt it;',
+        'Calls upon Member States to establish independent national truth and reconciliation processes for historical state policies of forced assimilation;',
+        'Establishes a UN-administered Indigenous Languages Preservation Fund to support documentation, education, and intergenerational transmission of at-risk languages.'
+      ]
     }
   ];
 
@@ -723,6 +811,16 @@
       desc: 'Promotes and protects human rights globally. 47 members rotating. Often debates refugee, civil-liberty, and accountability issues.',
       capacity: 15,
       members: ['DEU','FRA','GBR','BRA','MEX','ZAF','NGA','KEN','EGY','ARG','IDN','PHL','POL','NOR','NZL']
+    },
+    { id: 'crisis_committee', name: 'Crisis Committee',
+      desc: 'Small ad-hoc cabinet handling unfolding crises in real time. 8 seats, fast cadence, frequent news drops. Best for short class periods or experienced delegates.',
+      capacity: 8,
+      members: ['USA','CHN','RUS','GBR','FRA','IND','TUR','ISR']
+    },
+    { id: 'unesco', name: 'UNESCO',
+      desc: 'UN Educational, Scientific and Cultural Organization. Debates heritage protection, education access, scientific cooperation, and cultural rights. 12 seats.',
+      capacity: 12,
+      members: ['FRA','DEU','GBR','JPN','IND','BRA','MEX','EGY','KEN','IDN','PHL','NZL']
     }
   ];
 
@@ -2634,6 +2732,81 @@
         advice:    parsed.advice.slice(0, 800),
         nextSteps: Array.isArray(parsed.nextSteps) ? parsed.nextSteps.slice(0, 5).map(function(x) { return String(x).slice(0, 200); }) : []
       };
+    }).catch(function() { return null; });
+  }
+
+  // ═══════════════════════════════════════════
+  // AI HELPER — Grade each delegate's crisis response on 3 dimensions:
+  // Position Consistency, Diplomatic Tone, Concrete Proposal. Returns
+  // { grades: { uid: { positionConsistency, diplomaticTone, concreteProposal, summary } } }
+  // or null. Called when the host closes the crisis window.
+  // ═══════════════════════════════════════════
+  function aiGradeCrisisResponses(ctx, payload) {
+    if (!ctx || typeof ctx.callGemini !== 'function' || !payload || !payload.news || !payload.agenda) {
+      return Promise.resolve(null);
+    }
+    var news = payload.news;
+    var agenda = payload.agenda;
+    var responses = payload.responses || {};
+    var uids = Object.keys(responses);
+    if (uids.length === 0) return Promise.resolve(null);
+    // Build a compact response packet for the AI judge
+    var respBlock = uids.map(function(uid) {
+      var r = responses[uid];
+      var c = countryById(r.country);
+      var stance = (c && c.defaultPositions && c.defaultPositions[agenda.id]) || 'standard';
+      return '- uid="' + uid + '" country=' + (c ? c.name : r.country) + ' baseline="' + stance.slice(0, 200) + '" response="' + (r.text || '').slice(0, 320) + '"';
+    }).join('\n');
+
+    var prompt = [
+      'You are grading Model UN crisis responses. Each delegate had 90 seconds to react to breaking news.',
+      '',
+      'NEWS:',
+      'Headline: ' + (news.headline || ''),
+      'Body: ' + (news.body || ''),
+      '',
+      'Agenda being debated: ' + agenda.title,
+      '',
+      'Responses to grade (one per delegate):',
+      respBlock,
+      '',
+      'For each uid, score 1-4 on three dimensions:',
+      '  - positionConsistency: How well does the response align with the country\'s baseline stance on this agenda?',
+      '  - diplomaticTone: Is the language appropriately diplomatic, first-person plural, and committee-floor-ready?',
+      '  - concreteProposal: Does the response include a SPECIFIC action/proposal vs vague concern?',
+      '',
+      '1 = Beginning, 2 = Developing, 3 = Proficient, 4 = Advanced.',
+      '',
+      'Return JSON only:',
+      '{',
+      '  "grades": {',
+      '    "<uid>": { "positionConsistency": 1-4, "diplomaticTone": 1-4, "concreteProposal": 1-4, "summary": "<one short sentence with specific reference>" }',
+      '  }',
+      '}',
+      '',
+      'Cover EVERY uid above. Each summary MAX 180 chars.'
+    ].join('\n');
+
+    return Promise.resolve(ctx.callGemini(prompt, true)).then(function(result) {
+      var raw = typeof result === 'string' ? result : (result && result.text ? result.text : String(result || ''));
+      raw = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      var s = raw.indexOf('{'); var e = raw.lastIndexOf('}');
+      if (s < 0 || e <= s) return null;
+      var parsed; try { parsed = JSON.parse(raw.substring(s, e + 1)); } catch (err) { return null; }
+      if (!parsed || !parsed.grades || typeof parsed.grades !== 'object') return null;
+      var grades = {};
+      Object.keys(parsed.grades).forEach(function(uid) {
+        var g = parsed.grades[uid];
+        if (!g || typeof g !== 'object') return;
+        var sc = function(x) { var n = parseInt(x, 10); if (isNaN(n)) n = 1; return Math.max(1, Math.min(4, n)); };
+        grades[uid] = {
+          positionConsistency: sc(g.positionConsistency),
+          diplomaticTone:      sc(g.diplomaticTone),
+          concreteProposal:    sc(g.concreteProposal),
+          summary:             String(g.summary || '').slice(0, 240)
+        };
+      });
+      return { grades: grades };
     }).catch(function() { return null; });
   }
 
@@ -5558,6 +5731,9 @@
     var textTuple = useState('');
     var text = textTuple[0];
     var setText = textTuple[1];
+    var gradeTuple = useState({ loading: false, grades: null });
+    var gradeState = gradeTuple[0];
+    var setGradeState = gradeTuple[1];
 
     function submitResponse() {
       if (!myCountry || !myUid) return;
@@ -5572,6 +5748,18 @@
       bumpStat('crisisResponsesGiven', 1);
       setText('');
       if (typeof ctx.addToast === 'function') ctx.addToast('✓ Crisis response submitted');
+    }
+
+    function gradeResponses() {
+      if (gradeState.loading || !agenda || !news) return;
+      setGradeState({ loading: true, grades: null });
+      aiGradeCrisisResponses(ctx, {
+        news: news, agenda: agenda, responses: responses,
+        assigned: modelUn.assignedCountries || {}
+      }).then(function(r) {
+        setGradeState({ loading: false, grades: r ? r.grades : null });
+        if (!r && typeof ctx.addToast === 'function') ctx.addToast('AI grader unavailable for crisis responses.');
+      }).catch(function() { setGradeState({ loading: false, grades: null }); });
     }
 
     return h('div', {
@@ -5597,10 +5785,17 @@
             'Window closed. The Chair may now incorporate responses into the debate or move on.'
           )
         ),
-        isHost && h('button', {
-          onClick: onClose,
-          style: { padding: '4px 8px', fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.12)', color: '#fef9c3', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, cursor: 'pointer' }
-        }, crisisClosed ? '✕ Close' : '⏹ End early')
+        h('div', { style: { display: 'flex', gap: 6 } },
+          isHost && crisisClosed && responseCount > 0 && !gradeState.grades && h('button', {
+            onClick: gradeResponses,
+            disabled: gradeState.loading,
+            style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, background: gradeState.loading ? '#475569' : '#7c3aed', color: '#fff', border: 'none', borderRadius: 6, cursor: gradeState.loading ? 'wait' : 'pointer' }
+          }, gradeState.loading ? '⏳ Grading…' : '🤖 AI grade'),
+          isHost && h('button', {
+            onClick: onClose,
+            style: { padding: '4px 8px', fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.12)', color: '#fef9c3', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, cursor: 'pointer' }
+          }, crisisClosed ? '✕ Close' : '⏹ End early')
+        )
       ),
 
       // My-delegate compose (only while active and not yet responded)
@@ -5630,16 +5825,32 @@
       ),
 
       // Response feed
-      responseCount > 0 && h('div', { style: { maxHeight: 240, overflowY: 'auto', paddingRight: 4 } },
-        h('div', { style: { fontSize: 10, color: '#fde047', fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 } }, 'Live response feed'),
+      responseCount > 0 && h('div', { style: { maxHeight: 360, overflowY: 'auto', paddingRight: 4 } },
+        h('div', { style: { fontSize: 10, color: '#fde047', fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 } }, 'Live response feed' + (gradeState.grades ? ' · AI-graded' : '')),
         Object.keys(responses).sort(function(a, b) { return (responses[a].at || 0) - (responses[b].at || 0); }).map(function(uid) {
           var r = responses[uid];
           var country = countryById(r.country);
+          var g = gradeState.grades && gradeState.grades[uid];
           return h('div', { key: uid, style: { padding: 8, background: 'rgba(0,0,0,0.22)', borderRadius: 6, marginBottom: 6, borderLeft: '3px solid ' + (r.isAi ? '#a855f7' : '#facc15') } },
             h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fef9c3', marginBottom: 3 } },
               (country ? country.flag + ' ' + country.name : r.country) + (r.isAi ? ' 🤖' : '')
             ),
-            h('p', { style: { fontSize: 12, color: '#fefce8', margin: 0, lineHeight: 1.5 } }, r.text)
+            h('p', { style: { fontSize: 12, color: '#fefce8', margin: 0, lineHeight: 1.5 } }, r.text),
+            g && h('div', { style: { marginTop: 6, padding: 6, background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(196,181,253,0.25)', borderRadius: 4 } },
+              h('div', { style: { display: 'flex', gap: 6, marginBottom: 4 } },
+                [
+                  { label: 'Consistency',  v: g.positionConsistency },
+                  { label: 'Tone',         v: g.diplomaticTone },
+                  { label: 'Proposal',     v: g.concreteProposal }
+                ].map(function(d, i) {
+                  var col = d.v >= 4 ? '#10b981' : d.v >= 3 ? '#0ea5e9' : d.v >= 2 ? '#fbbf24' : '#ef4444';
+                  return h('div', { key: i, style: { flex: 1, padding: '2px 4px', fontSize: 9, fontWeight: 700, background: col + '22', color: col, border: '1px solid ' + col, borderRadius: 3, textAlign: 'center' } },
+                    d.label + ' · ' + d.v + '/4'
+                  );
+                })
+              ),
+              g.summary && h('p', { style: { fontSize: 11, color: '#ddd6fe', margin: 0, lineHeight: 1.4, fontStyle: 'italic' } }, g.summary)
+            )
           );
         })
       )
