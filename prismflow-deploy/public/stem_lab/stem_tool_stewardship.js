@@ -197,6 +197,112 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         });
       }
 
+      // ── First-time onboarding tutorial ──
+      // Five-step walkthrough that introduces the universal campaign
+      // pattern before students pick a campaign. Auto-shows on first
+      // hub visit. Returning players can re-launch via "Take the tour"
+      // in the header. Dismissible at any step.
+      var TUTORIAL_STEPS = [
+        {
+          icon: '🌍',
+          title: 'Five Maine environmental campaigns',
+          body: 'You are about to manage one of five Maine campaigns: Wabanaki fire stewardship (Cultural Mosaic), wildlife conservation (Conservation Manager), public health response (Outbreak Response), watershed restoration (Watershed Steward), or climate policy (Climate Pathways). Each is a multi-period simulation grounded in documented Maine work. They share a structural pattern; the underlying science is different in each one.'
+        },
+        {
+          icon: '🔁',
+          title: 'The campaign loop',
+          body: 'Every campaign cycles through four phases. Setup: pick a difficulty and read about the entities. Period (year, week, or 5-year period depending on the campaign): allocate stewardship hours to interventions on specific entities. Review: see how the system drifted and which events fired. Debrief at the end: see your outcome tier, a do-nothing comparison, and a trend chart. The pattern is the same in every campaign; the moves differ.'
+        },
+        {
+          icon: '🔄',
+          title: 'Feedback rules are the campaign\'s spine',
+          body: 'Each campaign has 3 to 4 feedback rules that fire AFTER your actions resolve. They tie entities together. Wolves suppress deer (Conservation Manager). Beavers help salmon and brook trout (Watershed Steward). Clean grid unlocks transport electrification (Climate Pathways). Low working-age trust triggers vaccine refusal (Outbreak Response). Read the year-end review for which feedback rules fired this period; that is where the real strategy lives.'
+        },
+        {
+          icon: '🔍',
+          title: 'AI Reading: what it is and what it is NOT',
+          body: 'Every campaign has a "Read the [land/county/watershed/etc] (AI)" button. This is an AI educator that reads your current state and offers coaching grounded in research and Maine case studies. It is NOT a Wabanaki person, NOT a real Public Health Officer, NOT a wildlife biologist, NOT an agency staff member. Real voices belong to real organizations: Wabanaki Public Health and Wellness, Maine Indian Basketmakers Alliance, Penobscot Nation CHPD, Maine CDC, Atlantic Salmon Federation, and others, named in every AI response disclaimer. The AI is a teaching helper, not an authority.'
+        },
+        {
+          icon: '🌱',
+          title: 'Choose your first campaign',
+          body: 'There is no required order. Conservation Manager has the cleanest feedback rules for first-timers and the most familiar species. Cultural Mosaic offers the deepest cultural grounding. Outbreak Response runs fastest (26 weeks instead of years). Watershed Steward is the most hands-on environmental work. Climate Pathways is the longest time horizon. Whichever you pick, the patterns transfer to the others. After 2 completions, the hub will show you cross-campaign patterns you would not see from any single run.'
+        }
+      ];
+
+      function startTutorial() { setHub({ tutorialStep: 0, tutorialSeen: false }); }
+      function advanceTutorial() {
+        var step = (hub.tutorialStep || 0);
+        if (step + 1 >= TUTORIAL_STEPS.length) {
+          setHub({ tutorialStep: null, tutorialSeen: true });
+        } else {
+          setHub({ tutorialStep: step + 1 });
+        }
+      }
+      function backTutorial() {
+        var step = (hub.tutorialStep || 0);
+        if (step > 0) setHub({ tutorialStep: step - 1 });
+      }
+      function dismissTutorial() { setHub({ tutorialStep: null, tutorialSeen: true }); }
+
+      function renderTutorial() {
+        var step = hub.tutorialStep || 0;
+        if (step >= TUTORIAL_STEPS.length) step = TUTORIAL_STEPS.length - 1;
+        var s = TUTORIAL_STEPS[step];
+        return h('div', {
+          style: { maxWidth: 700, margin: '0 auto', padding: 16 },
+          role: 'region', 'aria-label': 'Stewardship Hub onboarding tutorial'
+        },
+          // Header
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
+            h('div', null,
+              h('h2', { style: { margin: 0, color: '#86efac', fontSize: 22, fontWeight: 900 } }, '🌍 Welcome to Maine Stewardship Campaigns'),
+              h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4 } }, 'A 5-step tour before your first campaign.')
+            ),
+            h('button', { onClick: dismissTutorial, 'aria-label': 'Skip tutorial',
+              style: { marginLeft: 'auto', background: 'transparent', border: '1px solid #334155', color: '#94a3b8', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, 'Skip tour')
+          ),
+
+          // Step counter
+          h('div', { style: { display: 'flex', gap: 6, marginBottom: 14 } },
+            TUTORIAL_STEPS.map(function(_, i) {
+              return h('div', { key: i,
+                style: { flex: 1, height: 4, borderRadius: 2, background: i <= step ? '#86efac' : '#334155', transition: 'background 0.3s' }
+              });
+            })
+          ),
+
+          // Step content
+          h('div', {
+            style: {
+              padding: 20, borderRadius: 14,
+              background: 'linear-gradient(135deg, rgba(134,239,172,0.10) 0%, rgba(56,189,248,0.04) 100%)',
+              border: '1px solid rgba(134,239,172,0.4)', borderLeft: '4px solid #86efac',
+              marginBottom: 14
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
+              h('span', { style: { fontSize: 36 } }, s.icon),
+              h('div', null,
+                h('div', { style: { fontSize: 11, color: '#86efac', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Step ' + (step + 1) + ' of ' + TUTORIAL_STEPS.length),
+                h('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 18, fontWeight: 800 } }, s.title)
+              )
+            ),
+            h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 14, lineHeight: 1.7 } }, s.body)
+          ),
+
+          // Navigation
+          h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+            step > 0 ? h('button', { onClick: backTutorial, 'aria-label': 'Previous step',
+              style: { padding: '8px 16px', borderRadius: 10, border: '1px solid #475569', background: '#1e293b', color: '#cbd5e1', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back') : null,
+            h('div', { style: { flex: 1 } }),
+            h('button', { onClick: advanceTutorial, 'aria-label': step === TUTORIAL_STEPS.length - 1 ? 'Finish tutorial' : 'Next step',
+              style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } },
+              step === TUTORIAL_STEPS.length - 1 ? 'Got it, take me to the hub →' : 'Next →')
+          )
+        );
+      }
+
       // ── Printable Campaign Report mode ──
       // When hub.viewingReport is set to a campaign id, the hub renders a
       // clean printable summary of that completed campaign (instead of the
@@ -387,19 +493,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         return renderCampaignReport(hub.viewingReport);
       }
 
+      // Tutorial: auto-show on first visit (no tutorialSeen flag AND no launchedAny),
+      // OR show when the user explicitly relaunches the tour (tutorialStep is a number).
+      var firstTimeUser = !hub.tutorialSeen && !hub.launchedAny && completedCount === 0 && inProgressCount === 0;
+      if (hub.tutorialStep !== null && hub.tutorialStep !== undefined) {
+        return renderTutorial();
+      }
+      if (firstTimeUser) {
+        // Auto-show tutorial on very first visit
+        return renderTutorial();
+      }
+
       return h('div', {
         style: { maxWidth: 900, margin: '0 auto', padding: 16 },
         role: 'region',
         'aria-label': 'Maine Stewardship Campaigns hub'
       },
         // Header
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
           ArrowLeft ? h('button', { onClick: function() { setStemLabTool(null); }, 'aria-label': 'Back to STEM Lab',
             style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#cbd5e1', fontSize: 14 } }, '← Back') : null,
-          h('div', null,
+          h('div', { style: { flex: 1, minWidth: 280 } },
             h('h2', { style: { margin: 0, color: '#86efac', fontSize: 22, fontWeight: 900 } }, '🌍 Maine Stewardship Campaigns'),
             h('div', { style: { fontSize: 13, color: '#94a3b8', marginTop: 4, maxWidth: 700, lineHeight: 1.5 } }, 'Five environmental campaigns across Maine. Each is a multi-period simulation with its own pedagogical core (fire-return intervals, trophic cascades, public-health feedback, hydrological cascades, climate-policy interdependence). Same structural pattern across all five: setup, periodic decisions, review, debrief.')
-          )
+          ),
+          h('button', { onClick: startTutorial, 'aria-label': 'Take the 5-step tour',
+            title: 'Re-launch the onboarding tutorial',
+            style: { background: 'rgba(134,239,172,0.10)', border: '1px solid #86efac', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', color: '#86efac', fontSize: 12, fontWeight: 700 } }, '🧭 Take the tour')
         ),
 
         // Aggregate progress strip
@@ -518,6 +638,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 ),
                 h('span', { style: { background: statusColor(s.status) + '22', color: statusColor(s.status), border: '1px solid ' + statusColor(s.status) + '66', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 } }, statusLabel(s.status))
               ),
+              // Recommended starter badge for first-timers
+              (completedCount === 0 && inProgressCount === 0 && c.id === 'conserve') ? h('div', {
+                style: { background: 'rgba(134,239,172,0.15)', border: '1px solid #86efac', borderRadius: 6, padding: '4px 8px', fontSize: 11, color: '#86efac', fontWeight: 700, display: 'inline-block' }
+              }, '🌱 Recommended starter') : null,
               h('div', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, 'Mechanic: ' + c.mechanic),
               h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.5 } }, c.desc),
 

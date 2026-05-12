@@ -131,6 +131,23 @@ while ((cm = idRe.exec(catalogRegion)) !== null) {
   }
 }
 
+// Also recognize `aliases: ['x', 'y']` on a tile — a tile with aliases
+// covers those registerTool ids too. Example: stem_tool_fractions.js
+// registers both 'fractionViz' and 'fractions' against the same plugin
+// for backward-compat links. Without alias awareness, the checker
+// false-positives on the legitimate second registration.
+const aliasRe = /\baliases:\s*\[\s*([^\]]+)\]/g;
+let am;
+while ((am = aliasRe.exec(catalogRegion)) !== null) {
+  const absPos = bracketStart + am.index;
+  const line = catalogSrc.slice(0, absPos).split('\n').length;
+  const aliasList = am[1].match(/['"]([a-zA-Z_][a-zA-Z0-9_$]*)['"]/g) || [];
+  for (const quoted of aliasList) {
+    const aliasId = quoted.slice(1, -1);
+    if (!catalogIds.has(aliasId)) catalogIds.set(aliasId, line);
+  }
+}
+
 // ──────────────────────────────────────────────────────────────────────────
 // Step 3: diff the two sets
 // ──────────────────────────────────────────────────────────────────────────

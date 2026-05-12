@@ -182,6 +182,11 @@ const checks = [
     description: 'Every lucide import is assigned to window for CDN modules (HeaderBar bug class)',
   },
   {
+    name: 'View module missing props',
+    cmd: ['node', 'dev-tools/check_view_props.cjs'],
+    description: 'view_*_source.jsx references a useState name not in its destructured props (ExportPreviewView history bug class)',
+  },
+  {
     name: 'IIFE lazy lookup',
     cmd: ['node', 'dev-tools/check_iife_lazy_lookup.cjs', '--quiet'],
     description: 'Top-level snapshots of window.AlloModules.X in CDN IIFEs (QuickStart Fetch bug class)',

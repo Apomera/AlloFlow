@@ -74,14 +74,18 @@ if (modules.length === 0) {
 }
 
 // ──────────────────────────────────────────────────────────────────────────
-// Check if a node references `window.AlloModules.<X>` anywhere in its tree.
+// Check if a node references `window.AlloModules.<X>` at IIFE-load time.
+// CRITICAL: skips nested function bodies — refs inside `function() { ... }`,
+// arrow functions, methods, etc. are LAZY (evaluated at call time, not at
+// load time). So `var fn = function() { return window.AlloModules.X.y(); };`
+// is the CORRECT lazy pattern; only `var x = window.AlloModules.X.y;` is
+// the eager-snapshot bug class.
 // Returns the first matching MemberExpression node, or null.
 // ──────────────────────────────────────────────────────────────────────────
 function findAlloModulesRef(node) {
   if (!node || typeof node !== 'object') return null;
   // MemberExpression: window.AlloModules
   if (node.type === 'MemberExpression') {
-    // window.AlloModules.X — outer object is MemberExpression(window, AlloModules)
     const obj = node.object;
     if (
       obj && obj.type === 'MemberExpression' &&
@@ -91,7 +95,12 @@ function findAlloModulesRef(node) {
       return node;
     }
   }
-  // Recurse into children
+  // Stop at function boundaries — anything inside is lazy.
+  if (node.type === 'FunctionExpression' || node.type === 'ArrowFunctionExpression' ||
+      node.type === 'FunctionDeclaration' || node.type === 'ObjectMethod' ||
+      node.type === 'ClassMethod') {
+    return null;
+  }
   for (const key of Object.keys(node)) {
     if (key === 'loc' || key === 'range' || key === 'start' || key === 'end' || key === 'type') continue;
     const child = node[key];
