@@ -464,20 +464,32 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
   // ═══════════════════════════════════════════════════════════════
   var PRACTICE_SCENARIOS = {
     middle: [
-      { id: 'm1', title: 'New teacher, new year', situation: 'It\'s the second week of a new school year. You have a 504 plan for ADHD with accommodations for extended time, break access, and preferential seating. Your new math teacher has not mentioned your plan yet, and you\'re not sure she\'s read it.', goal: 'Politely and confidently make sure your teacher knows about your accommodations.' },
-      { id: 'm2', title: 'Asking to retake a test', situation: 'You had a really anxious day and bombed a test. Your plan doesn\'t technically include retakes, but you feel you could have done much better. How do you ask?', goal: 'Make a professional, respectful case for a retake without over-explaining or apologizing excessively.' },
-      { id: 'm3', title: 'Seat change request', situation: 'You need to be near the front, but the teacher already did a seating chart and you\'re in the back. You have a 504 accommodation for preferential seating. How do you bring it up without making it a big deal?', goal: 'Advocate for a seat change that you\'re entitled to, without embarrassment.' },
-      { id: 'm4', title: 'Friend asks about your accommodations', situation: 'A friend in your class noticed you get extra time on tests and goes to a different room for some things. They ask directly: "So what\'s up with that? Are you like, special ed or something?" How do you respond?', goal: 'Talk about your needs in a way that feels authentic to you, without pressure to over- or under-disclose.' },
-      { id: 'm5', title: 'Your IEP meeting is next week', situation: 'Your annual IEP meeting is scheduled for next week. Your case manager asked if you want to share anything. Normally your mom does most of the talking. This year you want to speak up about one thing: you don\'t want to be pulled out of science anymore because your friends are in that class and it\'s your best subject anyway.', goal: 'Plan how you\'ll make this ask at the meeting.' },
-      { id: 'm6', title: 'Substitute teacher confusion', situation: 'There\'s a substitute today. The sub announced a pop quiz and said "no exceptions on time — finish or don\'t." You have extended time as an accommodation. Other kids don\'t know about your plan. How do you handle this?', goal: 'Advocate for your accommodation without drawing unwanted attention or causing a scene with the sub.' }
+      { id: 'm1', title: 'New teacher, new year', situation: 'It\'s the second week of a new school year. You have a 504 plan for ADHD with accommodations for extended time, break access, and preferential seating. Your new math teacher has not mentioned your plan yet, and you\'re not sure she\'s read it.', goal: 'Politely and confidently make sure your teacher knows about your accommodations.',
+        peer: 'a busy but well-meaning middle-school math teacher who genuinely has not read the 504 yet. You are NOT hostile — just task-focused. You ask clarifying questions ("which specific accommodations?") and want to understand what the student actually needs day-to-day. You appreciate professionalism.' },
+      { id: 'm2', title: 'Asking to retake a test', situation: 'You had a really anxious day and bombed a test. Your plan doesn\'t technically include retakes, but you feel you could have done much better. How do you ask?', goal: 'Make a professional, respectful case for a retake without over-explaining or apologizing excessively.',
+        peer: 'a middle-school teacher who DOES sometimes allow retakes but does not advertise it. You are slightly skeptical and want to hear the student make their case without crumbling or over-explaining. You may say "everyone has bad days" — soften only if the student is specific and steady, not defensive or pleading.' },
+      { id: 'm3', title: 'Seat change request', situation: 'You need to be near the front, but the teacher already did a seating chart and you\'re in the back. You have a 504 accommodation for preferential seating. How do you bring it up without making it a big deal?', goal: 'Advocate for a seat change that you\'re entitled to, without embarrassment.',
+        peer: 'a middle-school teacher who is reasonable but a little defensive about the seating chart you spent time on. You did NOT read the 504 closely enough. If the student is matter-of-fact and references their accommodation, you will accommodate without making a scene.' },
+      { id: 'm4', title: 'Friend asks about your accommodations', situation: 'A friend in your class noticed you get extra time on tests and goes to a different room for some things. They ask directly: "So what\'s up with that? Are you like, special ed or something?" How do you respond?', goal: 'Talk about your needs in a way that feels authentic to you, without pressure to over- or under-disclose.',
+        peer: 'a middle-school friend who is genuinely curious, not malicious. You may use clumsy language ("special ed?") because you don\'t know better. You will follow the student\'s lead: if they share, you accept it; if they keep it private, you accept that too. You may ask awkward follow-ups out of curiosity. You are NOT a bully.' },
+      { id: 'm5', title: 'Your IEP meeting is next week', situation: 'Your annual IEP meeting is scheduled for next week. Your case manager asked if you want to share anything. Normally your mom does most of the talking. This year you want to speak up about one thing: you don\'t want to be pulled out of science anymore because your friends are in that class and it\'s your best subject anyway.', goal: 'Plan how you\'ll make this ask at the meeting.',
+        peer: 'a warm middle-school case manager / special-education teacher prepping the student for their IEP meeting. You ARE supportive but you ask good probing questions ("why is science different from your other pull-out classes?", "what would push-in support look like instead?"). You take notes. You want the student to lead.' },
+      { id: 'm6', title: 'Substitute teacher confusion', situation: 'There\'s a substitute today. The sub announced a pop quiz and said "no exceptions on time — finish or don\'t." You have extended time as an accommodation. Other kids don\'t know about your plan. How do you handle this?', goal: 'Advocate for your accommodation without drawing unwanted attention or causing a scene with the sub.',
+        peer: 'a substitute teacher who does not know the students and has been told to keep things tight. You are NOT cruel but you default to "no exceptions" because you don\'t want to be tricked. If the student is calm, quiet, and references that their teacher / 504 grants this accommodation, you will check or adjust. If they argue or escalate, you double down.' }
     ],
     high: [
-      { id: 'h1', title: 'College visit — disability services office', situation: 'You\'re on a college visit with your family. You want to visit the Disability Services office to ask about registering. Your parents aren\'t sure it\'s necessary. You have an IEP now and want to understand how it will work in college.', goal: 'Plan what you\'ll say at Disability Services and what questions you\'ll ask.' },
-      { id: 'h2', title: 'Teacher refusing to follow IEP', situation: 'Your calculus teacher has told you that his classroom policy is "no extended time for anyone, period" and he won\'t give you your documented accommodation. You know your IEP entitles you to this.', goal: 'Plan how to escalate this — starting with the teacher, then moving up if needed.' },
-      { id: 'h3', title: 'Job interview — no disclosure', situation: 'You\'re interviewing for a summer internship. The interviewer asks a broad question like "Tell me about yourself." You have ADHD and sometimes feel pressure to explain it. The job doesn\'t require disclosure.', goal: 'Present yourself powerfully without feeling pressured to disclose, and feel confident about that choice.' },
-      { id: 'h4', title: 'Asking your doctor for updated documentation', situation: 'You\'re going to college next year. Disability Services at your college wants documentation "within the past three years" and your most recent eval is four years old. You need to ask your pediatrician or a specialist for an updated evaluation. How do you frame this request?', goal: 'Advocate for what you need for college even though your current doctor hasn\'t brought it up.' },
-      { id: 'h5', title: 'Transition planning pushback', situation: 'Your IEP team has scheduled your transition planning meeting. The school counselor is pushing you toward a specific community college program that you don\'t want. You want to apply to four-year schools. Your parents are unsure.', goal: 'Advocate for your own goals when adults are pushing a different path.' },
-      { id: 'h6', title: 'Disclosure to a new romantic partner', situation: 'You\'ve been dating someone for a couple of months. You\'re getting more serious. You have a chronic health condition that affects your schedule, energy, and sometimes your mood. They don\'t know. You\'re thinking it\'s time to share.', goal: 'Plan how, when, and how much to disclose in a way that\'s authentic and keeps your sense of self intact.' }
+      { id: 'h1', title: 'College visit — disability services office', situation: 'You\'re on a college visit with your family. You want to visit the Disability Services office to ask about registering. Your parents aren\'t sure it\'s necessary. You have an IEP now and want to understand how it will work in college.', goal: 'Plan what you\'ll say at Disability Services and what questions you\'ll ask.',
+        peer: 'a college Disability Services intake staffer who is friendly, professional, and used to talking to students AND parents. You will explain how college differs from K-12 (student is the self-advocate now, not the parent) if asked. You ask the student what they used in high school. You are NOT gatekeeping — you want them to register.' },
+      { id: 'h2', title: 'Teacher refusing to follow IEP', situation: 'Your calculus teacher has told you that his classroom policy is "no extended time for anyone, period" and he won\'t give you your documented accommodation. You know your IEP entitles you to this.', goal: 'Plan how to escalate this — starting with the teacher, then moving up if needed.',
+        peer: 'a calculus teacher who genuinely believes "fair is everyone the same" and is openly resistant to extended time. You are NOT cruel but you are dismissive ("everyone has stuff going on", "this is high school, you need to prepare for college"). You may try to make the student doubt their own accommodation is legitimate. Only acknowledge IEP language if the student is firm and specific.' },
+      { id: 'h3', title: 'Job interview — no disclosure', situation: 'You\'re interviewing for a summer internship. The interviewer asks a broad question like "Tell me about yourself." You have ADHD and sometimes feel pressure to explain it. The job doesn\'t require disclosure.', goal: 'Present yourself powerfully without feeling pressured to disclose, and feel confident about that choice.',
+        peer: 'a friendly internship interviewer at a small organization. You ask normal interview questions: "Tell me about yourself," "What interests you about this work?", "How do you stay organized?" You are NOT trying to trick the student into disclosing — you just ask open questions. Treat their answers professionally.' },
+      { id: 'h4', title: 'Asking your doctor for updated documentation', situation: 'You\'re going to college next year. Disability Services at your college wants documentation "within the past three years" and your most recent eval is four years old. You need to ask your pediatrician or a specialist for an updated evaluation. How do you frame this request?', goal: 'Advocate for what you need for college even though your current doctor hasn\'t brought it up.',
+        peer: 'a busy pediatrician or family practitioner. You are NOT a specialist in learning disabilities — your usual job is well-checks and prescriptions. You may suggest the student go to a specialist OR offer a referral. You appreciate clear, specific requests ("I need a current cognitive evaluation for college disability services"). You may not realize what the student needs until they spell it out.' },
+      { id: 'h5', title: 'Transition planning pushback', situation: 'Your IEP team has scheduled your transition planning meeting. The school counselor is pushing you toward a specific community college program that you don\'t want. You want to apply to four-year schools. Your parents are unsure.', goal: 'Advocate for your own goals when adults are pushing a different path.',
+        peer: 'a well-meaning high-school counselor who has seen students struggle in 4-year colleges and is pushing community college as "more realistic." You are NOT being cruel — you think you are protecting the student. You may cite grades, executive function, or organizational challenges. Soften only when the student demonstrates a concrete plan, not just "I want to."' },
+      { id: 'h6', title: 'Disclosure to a new romantic partner', situation: 'You\'ve been dating someone for a couple of months. You\'re getting more serious. You have a chronic health condition that affects your schedule, energy, and sometimes your mood. They don\'t know. You\'re thinking it\'s time to share.', goal: 'Plan how, when, and how much to disclose in a way that\'s authentic and keeps your sense of self intact.',
+        peer: 'a romantic partner of a couple of months. You like the student. You don\'t know about the condition. You will react with curiosity and care, not pity or panic — but you may ask reasonable follow-ups ("does this mean we can\'t do XYZ?", "how can I help?"). Your tone is warm and a little unsure, like a real teenager finding out something important.' }
     ]
   };
 
@@ -1621,6 +1633,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
       var pResponse = d.pResponse || '';
       var pCritique = d.pCritique || '';
       var pLoading = !!d.pLoading;
+      // Rehearse-mode state (multi-turn role-play within Practice tab) —
+      // student practices the actual conversation with AI playing the
+      // other person (teacher, case manager, interviewer, doctor, friend,
+      // partner) defined by each scenario's `peer` field.
+      var pRehearseMode = !!d.pRehearseMode;
+      var pRpHistory    = d.pRpHistory || [];
+      var pRpInput      = d.pRpInput || '';
+      var pRpLoading    = !!d.pRpLoading;
+      var pRpStarting   = !!d.pRpStarting;
+      var pRpEnded      = !!d.pRpEnded;
+      var pRpReflection = d.pRpReflection || '';
 
       // ── Switch tab with focus + SR announcement ──
       function switchTab(tabId, label) {
@@ -2592,8 +2615,138 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
         var selected = pScenarioId ? scenarios.find(function(s) { return s.id === pScenarioId; }) : null;
 
         var selectScenario = function(id) {
-          upd({ pScenarioId: id, pResponse: '', pCritique: '' });
+          upd({ pScenarioId: id, pResponse: '', pCritique: '', pRehearseMode: false, pRpHistory: [], pRpInput: '', pRpEnded: false, pRpReflection: '', pRpStarting: false });
         };
+
+        // ── Multi-turn rehearsal: AI plays the `peer` defined in each scenario.
+        // The "scene" is the scenario.situation, the "character" is scenario.peer.
+        // Pattern proven in Upstander + Restorative Circle: send → coach → end-reflect.
+        var bandLabel = viewBand === 'high' ? 'high school' : (viewBand === 'middle' ? 'middle school' : 'middle school');
+        var startRolePlay = function() {
+          if (!selected) return;
+          if (!callGemini) {
+            // Fallback: skip AI opener generation, use a generic prompt.
+            upd({ pRehearseMode: true, pRpHistory: [{ speaker: 'ai', text: 'Hi — what did you want to talk to me about?' }], pRpInput: '', pRpEnded: false, pRpReflection: '', pRpStarting: false });
+            return;
+          }
+          upd({ pRehearseMode: true, pRpHistory: [], pRpInput: '', pRpEnded: false, pRpReflection: '', pRpStarting: true });
+          announceSR('Generating role-play opener');
+          var prompt =
+            'You are starting a role-play for a self-advocacy rehearsal tool. The student is about to practice having a real conversation. ' +
+            'You play the OTHER person in this scenario. Generate ONLY the FIRST in-character line that person says (or the opening question they ask the student) — 1-2 sentences, in their voice, sounds like a real person in this situation. No narration, no quotation marks.\n\n' +
+            'YOUR CHARACTER: ' + (selected.peer || 'the other person in this situation') + '\n\n' +
+            'SITUATION: ' + selected.situation + '\n' +
+            'AUDIENCE: a ' + bandLabel + ' student is on the other side of this conversation. Match age-appropriate dynamics.\n\n' +
+            'RULES:\n' +
+            '- Just the opener line. No commentary or stage directions.\n' +
+            '- NO slurs, NO explicit content. Professional and realistic.\n' +
+            '- The student initiates the actual ask — your opener can be a greeting, a "what can I do for you?", a clarifying question, or a starting prompt depending on the scenario.\n\n' +
+            'Return ONLY the line of dialogue.';
+          Promise.resolve(callGemini(prompt, false, false, 0.7, null))
+            .then(function(r) {
+              var line = (typeof r === 'string') ? r : (r && r.text ? r.text : String(r));
+              line = (line || '').trim().replace(/^"|"$/g, '');
+              upd({ pRpHistory: [{ speaker: 'ai', text: line || 'Hi — what did you want to talk to me about?' }], pRpStarting: false });
+              announceSR('Ready');
+            })
+            .catch(function() {
+              upd({ pRpHistory: [{ speaker: 'ai', text: 'Hi — what did you want to talk to me about?' }], pRpStarting: false });
+            });
+        };
+        var sendRpTurn = function() {
+          if (!callGemini || !pRpInput.trim() || !selected) return;
+          var studentTurn = pRpInput.trim();
+          var newHist = pRpHistory.concat([{ speaker: 'student', text: studentTurn }]);
+          upd({ pRpHistory: newHist, pRpInput: '', pRpLoading: true });
+          var historyText = newHist.map(function(t) {
+            if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
+            if (t.speaker === 'coach') return 'COACH (out of character): ' + t.text;
+            return 'OTHER: "' + t.text.replace(/"/g, '\\"') + '"';
+          }).join('\n');
+          var turnN = newHist.filter(function(t) { return t.speaker === 'student'; }).length;
+          var prompt =
+            'You are role-playing for a self-advocacy rehearsal tool. The student is practicing a real conversation.\n\n' +
+            'YOUR CHARACTER: ' + (selected.peer || 'the other person in this scenario') + '\n' +
+            'SITUATION (stay consistent with this throughout): ' + selected.situation + '\n' +
+            'AUDIENCE: ' + bandLabel + ' student.\n\n' +
+            'STRICT RULES:\n' +
+            '- Stay in character. Reply with 1-3 sentences, like a real person.\n' +
+            '- NO slurs, NO explicit content. Professional and realistic.\n' +
+            '- Do NOT narrate or break character. Just speak as the character.\n' +
+            '- Do not include quotation marks — just the words.\n' +
+            '- This is turn ' + turnN + ' of the conversation. By turn 4-5, if the student has advocated effectively (clear ask, evidence-based, not over-apologizing), soften or move toward agreement appropriate to your character. If they have NOT, stay consistent.\n\n' +
+            'CONVERSATION SO FAR:\n' + historyText + '\n\n' +
+            'Respond as the character in 1-3 sentences. Just the line.';
+          Promise.resolve(callGemini(prompt, false, false, 0.7, null))
+            .then(function(r) {
+              var reply = (typeof r === 'string') ? r : (r && r.text ? r.text : String(r));
+              reply = (reply || '').trim().replace(/^"|"$/g, '');
+              upd({ pRpHistory: newHist.concat([{ speaker: 'ai', text: reply || '...' }]), pRpLoading: false });
+            })
+            .catch(function() {
+              upd({ pRpHistory: newHist.concat([{ speaker: 'ai', text: '(AI not reachable — try again in a moment)' }]), pRpLoading: false });
+            });
+        };
+        var coachRp = function() {
+          if (!callGemini || pRpHistory.length === 0 || !selected) return;
+          upd('pRpLoading', true);
+          var historyText = pRpHistory.map(function(t) {
+            if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
+            if (t.speaker === 'coach') return 'COACH: ' + t.text;
+            return 'OTHER: "' + t.text.replace(/"/g, '\\"') + '"';
+          }).join('\n');
+          var prompt =
+            'You are a kind, grounded self-advocacy coach watching a role-play between a ' + bandLabel + ' student and an AI peer/adult. ' +
+            'OUT OF CHARACTER NOW. Briefly tell the student two things, under 80 words total:\n' +
+            '1) What is going on in this moment — what the other person is doing and what they probably need to hear.\n' +
+            '2) One concrete thing the student could try saying next. Give an example phrasing they could use.\n\n' +
+            'No moralizing. No "great job" filler. Plain English. Self-advocacy principles: claim what is yours, do not over-explain or over-apologize, be specific, ask for the thing.\n\n' +
+            'GOAL OF THE SCENARIO: ' + selected.goal + '\n' +
+            'OTHER PERSON: ' + (selected.peer || 'the other person in this scenario') + '\n' +
+            'SITUATION: ' + selected.situation + '\n\n' +
+            'CONVERSATION:\n' + historyText;
+          Promise.resolve(callGemini(prompt, false, false, 0.5, null))
+            .then(function(r) {
+              var coachText = (typeof r === 'string') ? r : (r && r.text ? r.text : String(r));
+              coachText = (coachText || 'Take a breath. What is the actual ask? State it once, clearly, without justifying it twice.').trim();
+              upd({ pRpHistory: pRpHistory.concat([{ speaker: 'coach', text: coachText }]), pRpLoading: false });
+            })
+            .catch(function() {
+              upd('pRpLoading', false);
+            });
+        };
+        var endRp = function() {
+          if (!callGemini || !selected) return;
+          upd('pRpLoading', true);
+          var historyText = pRpHistory.map(function(t) {
+            if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
+            if (t.speaker === 'coach') return 'COACH: ' + t.text;
+            return 'OTHER: "' + t.text.replace(/"/g, '\\"') + '"';
+          }).join('\n');
+          var prompt =
+            'You are a kind self-advocacy coach reflecting back on a brief role-play. ' +
+            'In 2-3 sentences (under 70 words), name:\n' +
+            '1) One specific thing the student did well in their responses (refer to actual words they used when you can).\n' +
+            '2) One thing they could try differently next time.\n\n' +
+            'Be real and specific. No empty praise. Self-advocacy lens: did they claim what is theirs without over-apologizing? Did they make the ask clear? Did they keep the energy steady?\n\n' +
+            'GOAL: ' + selected.goal + '\n' +
+            'OTHER PERSON: ' + (selected.peer || 'the other person in this scenario') + '\n' +
+            'SITUATION: ' + selected.situation + '\n' +
+            'CONVERSATION:\n' + historyText;
+          Promise.resolve(callGemini(prompt, false, false, 0.5, null))
+            .then(function(r) {
+              var reflectText = (typeof r === 'string') ? r : (r && r.text ? r.text : String(r));
+              reflectText = (reflectText || 'You showed up to the practice. That matters. Next time, try making your ask in one clear sentence before any context — the context can follow.').trim();
+              upd({ pRpEnded: true, pRpReflection: reflectText, pRpLoading: false });
+            })
+            .catch(function() {
+              upd({ pRpEnded: true, pRpReflection: 'Practice complete. Next time, try making the ask in one clear sentence before any context.', pRpLoading: false });
+            });
+        };
+        var resetRp = function() {
+          upd({ pRehearseMode: false, pRpHistory: [], pRpInput: '', pRpEnded: false, pRpReflection: '', pRpStarting: false });
+        };
+
         var critique = function() {
           if (!callGemini) { addToast({ message: 'AI unavailable', type: 'error' }); return; }
           if (!selected) return;
@@ -2659,6 +2812,105 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
             pCritique && h('div', { className: 'mt-4 p-3 rounded bg-slate-900/70 border border-emerald-500/30', role: 'region', 'aria-label': 'Coach feedback', 'aria-live': 'polite' },
               h('div', { className: 'text-xs font-bold text-emerald-300 mb-2' }, 'Coach feedback'),
               h('pre', { className: 'text-xs text-slate-100 whitespace-pre-wrap font-sans leading-relaxed' }, pCritique)
+            ),
+
+            // ── OR — Rehearse the actual conversation (multi-turn role-play) ──
+            // Complementary to the Write-and-Critique flow above. Students can do
+            // either or both depending on what they need: drafting helps clarify;
+            // rehearsing builds nerve.
+            h('div', { className: 'mt-5 pt-4 border-t border-fuchsia-500/20' },
+              !pRehearseMode && h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('div', null,
+                  h('div', { className: 'text-xs font-black text-fuchsia-300 mb-0.5' }, '🎭 Or rehearse the actual conversation'),
+                  h('div', { className: 'text-[11px] text-slate-300' }, 'AI plays ' + (selected.peer ? selected.peer.split('.')[0].toLowerCase().replace(/^a /,'').replace(/^the /,'') : 'the other person') + '. You practice what you would actually say back and forth.')
+                ),
+                h('button', {
+                  onClick: startRolePlay,
+                  disabled: !callGemini || pRpStarting,
+                  'aria-label': 'Start a role-play of this conversation',
+                  className: 'px-3 py-2 rounded-lg text-xs font-bold ' + ((!callGemini || pRpStarting) ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-violet-600 text-white hover:bg-violet-500')
+                }, pRpStarting ? 'Starting…' : 'Start rehearsal →')
+              ),
+              // In-conversation state
+              pRehearseMode && h('div', { className: 'space-y-3' },
+                h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                  h('div', { className: 'text-xs font-black text-fuchsia-300' }, '🎭 Rehearsal: ' + selected.title),
+                  h('button', {
+                    onClick: resetRp,
+                    className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-700 text-slate-200 hover:bg-slate-600'
+                  }, '× End rehearsal')
+                ),
+                // Chat history
+                h('div', { 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '40vh', overflowY: 'auto', padding: 4 } },
+                  pRpHistory.map(function(turn, ti) {
+                    var isStudent = turn.speaker === 'student';
+                    var isCoach = turn.speaker === 'coach';
+                    return h('div', {
+                      key: 'sa-rp-' + ti,
+                      style: {
+                        alignSelf: isStudent ? 'flex-end' : 'flex-start',
+                        maxWidth: '85%',
+                        padding: '10px 13px',
+                        borderRadius: 12,
+                        fontSize: 13, lineHeight: 1.5, whiteSpace: 'pre-wrap',
+                        background: isStudent ? '#312e81' : (isCoach ? '#78350f' : '#1f2937'),
+                        border: '1px solid ' + (isStudent ? '#6366f1' : (isCoach ? '#f59e0b' : '#475569')),
+                        color: '#f1f5f9'
+                      }
+                    },
+                      h('div', { style: { fontSize: 10, fontWeight: 700, color: isStudent ? '#c7d2fe' : (isCoach ? '#fcd34d' : '#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
+                        isStudent ? 'You' : (isCoach ? '🪶 Coach (out of character)' : '🎭 The other person')),
+                      h('div', null, turn.text)
+                    );
+                  })
+                ),
+                // Input + actions
+                !pRpEnded && h('div', null,
+                  h('textarea', {
+                    id: 'sa-rp-input', value: pRpInput,
+                    onChange: function(e) { upd('pRpInput', e.target.value); },
+                    placeholder: 'What would you actually say next? Keep it short — make the ask, then stop.',
+                    rows: 2,
+                    disabled: pRpLoading,
+                    className: 'w-full p-2 rounded bg-slate-900/60 border border-slate-600 text-xs text-slate-100 font-sans leading-relaxed mb-2',
+                    style: { boxSizing: 'border-box' }
+                  }),
+                  h('div', { className: 'flex flex-wrap gap-2' },
+                    h('button', {
+                      onClick: sendRpTurn,
+                      disabled: pRpLoading || !pRpInput.trim() || !callGemini,
+                      'aria-busy': pRpLoading ? 'true' : 'false',
+                      className: 'px-3 py-2 rounded-lg text-xs font-bold ' + ((pRpLoading || !pRpInput.trim() || !callGemini) ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-violet-600 text-white hover:bg-violet-500')
+                    }, pRpLoading ? 'Thinking…' : 'Send →'),
+                    h('button', {
+                      onClick: coachRp,
+                      disabled: pRpLoading || !callGemini || pRpHistory.length === 0,
+                      className: 'px-3 py-2 rounded-lg text-xs font-bold border ' + ((pRpLoading || !callGemini || pRpHistory.length === 0) ? 'bg-slate-700 text-slate-400 border-slate-600 cursor-not-allowed' : 'bg-amber-900/40 text-amber-200 border-amber-500/40 hover:bg-amber-900/60')
+                    }, '🪶 Break character — coach me'),
+                    pRpHistory.filter(function(t) { return t.speaker === 'student'; }).length >= 2 && h('button', {
+                      onClick: endRp,
+                      disabled: pRpLoading || !callGemini,
+                      className: 'px-3 py-2 rounded-lg text-xs font-bold border bg-slate-700 text-slate-200 border-slate-600 hover:bg-slate-600'
+                    }, 'End & reflect')
+                  )
+                ),
+                // End-of-rehearsal reflection
+                pRpEnded && pRpReflection && h('div', { className: 'p-3 rounded bg-emerald-900/30 border border-emerald-500/30', role: 'region', 'aria-label': 'Rehearsal reflection', 'aria-live': 'polite' },
+                  h('div', { className: 'text-xs font-bold text-emerald-300 mb-2' }, 'How that went'),
+                  h('div', { className: 'text-xs text-slate-100 leading-relaxed whitespace-pre-wrap mb-3' }, pRpReflection),
+                  h('div', { className: 'flex flex-wrap gap-2' },
+                    h('button', {
+                      onClick: function() { startRolePlay(); },
+                      className: 'px-3 py-2 rounded-lg text-xs font-bold bg-violet-600 text-white hover:bg-violet-500'
+                    }, 'Rehearse again'),
+                    h('button', {
+                      onClick: resetRp,
+                      className: 'px-3 py-2 rounded-lg text-xs font-bold bg-slate-700 text-slate-200 hover:bg-slate-600'
+                    }, 'Done')
+                  )
+                ),
+                h('p', { className: 'text-[11px] italic text-fuchsia-300/70 mt-1' }, 'AI-generated. The other person is a simulation, not a script. Take what is useful.')
+              )
             )
           ),
 
