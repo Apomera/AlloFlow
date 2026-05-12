@@ -7,11 +7,6 @@
  *
  * Extracted from AlloFlowANTI.txt lines 23679-23791 (May 2026).
  * ~113 lines, 17 deps.
- *
- * NOTE: setPdfBatchFiles is referenced in this block but not defined
- * anywhere in AlloFlowANTI.txt — caught by phantom-ref check, fourth
- * latent-bug class found by extraction toolchain this session. Defaulted
- * to noop here; TODO: define the setter in source or remove the dead call.
  */
 function EducatorHubModal(props) {
   const {
@@ -19,7 +14,10 @@ function EducatorHubModal(props) {
     setIsAccessibilityLabOpen, setIsCommunityCatalogOpen, setIsSymbolStudioOpen,
     setPdfAuditResult, setPdfBatchMode, setPendingPdfBase64, setPendingPdfFile,
     setShowBehaviorLens, setShowEducatorHub, setShowReportWriter, showEducatorHub, t,
-    setPdfBatchFiles = (() => {}),
+    // Phase A.3 polish (May 12 2026): renamed from setPdfBatchFiles (which was
+    // never defined in host scope). The real host setter is setPdfBatchQueue,
+    // matching the batch-files array shape stored in `pdfBatchQueue` state.
+    setPdfBatchQueue = (() => {}),
   } = props;
 
   return (
@@ -90,7 +88,7 @@ function EducatorHubModal(props) {
                                   batchFiles.push({ name: file.name, base64: reader.result.split(',')[1], size: file.size });
                                   loaded++;
                                   if (loaded === pdfFiles.length) {
-                                      setPdfBatchFiles(batchFiles);
+                                      setPdfBatchQueue(batchFiles);
                                       setPdfBatchMode(true);
                                       setPdfAuditResult({ _choosing: true, fileName: pdfFiles.length + ' files', fileSize: pdfFiles.reduce((s, f) => s + f.size, 0) });
                                   }

@@ -8,11 +8,11 @@
  * Extracted from AlloFlowANTI.txt lines 21275-21796 (May 2026).
  * 522 lines, ~85 deps. Single biggest remaining clean extraction.
  *
- * NOTE: setActiveSelStation and activeSelStation are referenced in the source
- * but never defined anywhere in AlloFlowANTI.txt (real phantom — phantom-ref
- * check caught it). The rare-path "Delete SEL Station" button would throw
- * at runtime if clicked. Defaulted to null/noop here to preserve behavior.
- * TODO: define these in the source or remove the SEL stations UI.
+ * Phase A.3 polish (May 12 2026): activeSelStation + setActiveSelStation
+ * are now defined in AlloFlowANTI.txt as a real useState(null) and
+ * threaded through as props from the HistoryPanel invocation. The
+ * destructure defaults below stay as safety nets but are no longer the
+ * real source of these values.
  */
 function HistoryPanel(props) {
   const noop = () => null;

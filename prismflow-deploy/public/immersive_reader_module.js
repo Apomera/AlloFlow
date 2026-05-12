@@ -1213,12 +1213,8 @@ const ImmersiveWord = React.memo(({ wordData, settings, onClick, isActive }) => 
   );
 });
 window.AlloModules = window.AlloModules || {};
-window.AlloModules.SpeedReaderOverlay = (typeof SpeedReaderOverlay !== 'undefined') ? SpeedReaderOverlay : null;
-window.AlloModules.BionicChunkReader = (typeof BionicChunkReader !== 'undefined') ? BionicChunkReader : null;
-window.AlloModules.PerspectiveCrawlOverlay = (typeof PerspectiveCrawlOverlay !== 'undefined') ? PerspectiveCrawlOverlay : null;
-window.AlloModules.KaraokeReaderOverlay = (typeof KaraokeReaderOverlay !== 'undefined') ? KaraokeReaderOverlay : null;
-window.AlloModules.ImmersiveToolbar = (typeof ImmersiveToolbar !== 'undefined') ? ImmersiveToolbar : null;
+// ImmersiveWord is defined below the source's main registration block, so re-register here.
 window.AlloModules.ImmersiveWord = (typeof ImmersiveWord !== 'undefined') ? ImmersiveWord : null;
 window.AlloModules.ImmersiveReaderModule = true;
-console.log('[ImmersiveReaderModule] 6 components registered');
+console.log('[ImmersiveReaderModule] components registered');
 })();

@@ -635,10 +635,10 @@ module renders correctly.
 ├── *_module.js                   ← Other CDN modules (~50 files)
 ├── stem_lab/
 │   ├── stem_lab_module.js        ← STEM Lab host
-│   └── stem_tool_*.js            ← ~90 plugin tools
+│   └── stem_tool_*.js            ← 95 plugin tools (May 2026)
 ├── sel_hub/
 │   ├── sel_hub_module.js         ← SEL Hub host
-│   └── sel_tool_*.js             ← ~25 plugin tools
+│   └── sel_tool_*.js             ← 49 plugin tools (May 2026)
 ├── tests/
 │   ├── setup.js                  ← vitest fixture
 │   └── *.test.js                 ← 5 helper module test files
