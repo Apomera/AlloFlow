@@ -4598,7 +4598,8 @@
     "bridge_f2f_person_b_language": "Person B language",
     "group_name": "Group name",
     "submissions_active": "Submissions On",
-    "setup_submissions": "Set up offline submissions"
+    "setup_submissions": "Set up offline submissions",
+    "import_submissions": "Import submissions"
   },
   "adventure": {
     "title": "Adventure Mode",

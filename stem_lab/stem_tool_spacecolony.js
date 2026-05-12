@@ -1320,13 +1320,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                           var pItem = mapPickups[pk]; var psx = ppx * cs + cs/2; var psy = ppy * cs + cs/2;
                           var pColor = pItem.rarity === 'epic' ? '#f59e0b' : pItem.rarity === 'rare' ? '#8b5cf6' : '#22c55e';
                           var pSize = pItem.rarity === 'epic' ? cs*0.4 : pItem.rarity === 'rare' ? cs*0.35 : cs*0.25;
-                          ctx.save(); ctx.globalAlpha = 0.7 + 0.3 * Math.sin(Date.now()/500 + parseInt(pxy[0]));
-                          ctx.fillStyle = pColor; ctx.shadowColor = pColor; ctx.shadowBlur = pItem.rarity === 'epic' ? 12 : 6;
-                          ctx.beginPath();
-                          if (pItem.rarity === 'epic') { for (var si=0;si<5;si++){var a=si*Math.PI*2/5-Math.PI/2;ctx.lineTo(psx+Math.cos(a)*pSize,psy+Math.sin(a)*pSize);a+=Math.PI/5;ctx.lineTo(psx+Math.cos(a)*pSize*0.4,psy+Math.sin(a)*pSize*0.4);} }
-                          else if (pItem.rarity === 'rare') { for (var si2=0;si2<4;si2++){var a2=si2*Math.PI/2+Math.PI/4;ctx.lineTo(psx+Math.cos(a2)*pSize,psy+Math.sin(a2)*pSize);a2+=Math.PI/4;ctx.lineTo(psx+Math.cos(a2)*pSize*0.5,psy+Math.sin(a2)*pSize*0.5);} }
-                          else { ctx.arc(psx, psy, pSize, 0, Math.PI * 2); }
-                          ctx.closePath(); ctx.fill(); ctx.restore();
+                          mCtx.save(); mCtx.globalAlpha = 0.7 + 0.3 * Math.sin(Date.now()/500 + parseInt(pxy[0]));
+                          mCtx.fillStyle = pColor; mCtx.shadowColor = pColor; mCtx.shadowBlur = pItem.rarity === 'epic' ? 12 : 6;
+                          mCtx.beginPath();
+                          if (pItem.rarity === 'epic') { for (var si=0;si<5;si++){var a=si*Math.PI*2/5-Math.PI/2;mCtx.lineTo(psx+Math.cos(a)*pSize,psy+Math.sin(a)*pSize);a+=Math.PI/5;mCtx.lineTo(psx+Math.cos(a)*pSize*0.4,psy+Math.sin(a)*pSize*0.4);} }
+                          else if (pItem.rarity === 'rare') { for (var si2=0;si2<4;si2++){var a2=si2*Math.PI/2+Math.PI/4;mCtx.lineTo(psx+Math.cos(a2)*pSize,psy+Math.sin(a2)*pSize);a2+=Math.PI/4;mCtx.lineTo(psx+Math.cos(a2)*pSize*0.5,psy+Math.sin(a2)*pSize*0.5);} }
+                          else { mCtx.arc(psx, psy, pSize, 0, Math.PI * 2); }
+                          mCtx.closePath(); mCtx.fill(); mCtx.restore();
                         }
                       });
                     // Colony marker
