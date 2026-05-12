@@ -9035,6 +9035,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('span', null, line)
               );
             })(),
+            // ── "Dig deeper" recommended canvas tabs ──
+            // Surfaces 2-3 of the 18 educational canvas views that best match
+            // current state. Most students never discover what's behind the
+            // top tab strip; this row turns those tabs into context-aware
+            // suggestions tied to what's happening RIGHT NOW in their colony.
+            viewMode === 'beekeeper' && colonySurvived && beeView === 'scene' && (function() {
+              // State → recommended view-id, in priority order. Each entry
+              // has a `when` predicate so we only suggest tabs that match.
+              var ALL_TABS = [
+                { id: 'threats',     icon: '🚨', label: 'Threats',     why: 'See why mites + DWV cause Colony Collapse Disorder.' },
+                { id: 'lifecycle',   icon: '🥚', label: 'Life Cycle',  why: 'Egg → larva → pupa → adult in 21 days.' },
+                { id: 'pollination', icon: '🌍', label: 'Pollination', why: '$15B/year · 1/3 of the food supply.' },
+                { id: 'anatomy',     icon: '🔬', label: 'Anatomy',     why: 'What every part of a bee is for.' },
+                { id: 'thermo',      icon: '🌡️', label: 'Thermoreg',   why: 'How the colony holds 95°F at the brood.' },
+                { id: 'castes',      icon: '👑', label: 'Castes',      why: 'Queen, worker, drone — same genome, different lives.' },
+                { id: 'waggle',      icon: '💃', label: 'Waggle Dance',why: 'The symbolic language Karl von Frisch decoded.' },
+                { id: 'honey',       icon: '🍯', label: 'Honey Chem',  why: 'Why honey never spoils — chemistry of the comb.' },
+                { id: 'pheromones',  icon: '🧪', label: 'Pheromones',  why: 'The invisible chemical net that holds the colony together.' },
+                { id: 'cognition',   icon: '🧠', label: 'Cognition',   why: 'Bees count to 4, know zero, recognize faces.' },
+                { id: 'vision',      icon: '🌸', label: 'Vision',      why: 'See flowers the way a bee sees them — UV bullseyes.' },
+                { id: 'physics',     icon: '✈️', label: 'Flight Physics', why: 'How a bee flies — leading-edge vortex.' }
+              ];
+              function tab(id) { return ALL_TABS.filter(function(t) { return t.id === id; })[0]; }
+              // Build a state-sorted recommendation list. Higher score = more
+              // contextually relevant right now.
+              var recs = [];
+              if (varroaLevel >= 15 || diseaseRisk >= 25) recs.push({ tab: tab('threats'), prio: 100 });
+              if (gardenBonus > 0) recs.push({ tab: tab('pollination'), prio: 95 });
+              if (queenHealth < 60) recs.push({ tab: tab('castes'), prio: 92 });
+              if (season === 3) recs.push({ tab: tab('thermo'), prio: 90 });
+              if (workers >= 18000) recs.push({ tab: tab('waggle'), prio: 85 });
+              if (brood >= 3000) recs.push({ tab: tab('lifecycle'), prio: 80 });
+              if (day < 7) recs.push({ tab: tab('anatomy'), prio: 75 });
+              if (honey >= 30 && season === 1) recs.push({ tab: tab('honey'), prio: 70 });
+              if ((d.layersViewed || []).indexOf('pheromones') === -1) recs.push({ tab: tab('pheromones'), prio: 60 });
+              // "Always-on" fallbacks so the row never looks empty.
+              recs.push({ tab: tab('cognition'), prio: 50 });
+              recs.push({ tab: tab('vision'), prio: 48 });
+              recs.push({ tab: tab('physics'), prio: 45 });
+              // Dedup by tab.id, keeping the highest priority entry.
+              var seen = {};
+              recs = recs.filter(function(r) { if (seen[r.tab.id]) return false; seen[r.tab.id] = true; return true; });
+              recs.sort(function(a, b) { return b.prio - a.prio; });
+              var top3 = recs.slice(0, 3);
+              return h('div', { className: 'flex items-center gap-2 flex-wrap', role: 'navigation', 'aria-label': 'Recommended educational views based on current colony state' },
+                h('span', { className: 'text-[10px] font-bold uppercase tracking-wider flex-shrink-0 ' + (dk ? 'text-amber-400' : 'text-amber-700') }, '📚 Dig deeper'),
+                top3.map(function(r) {
+                  return h('button', {
+                    key: r.tab.id,
+                    onClick: function() {
+                      upd('beeView', r.tab.id);
+                      if (addToast) addToast(r.tab.icon + ' ' + r.tab.label + ' — ' + r.tab.why, 'info');
+                    },
+                    title: r.tab.why,
+                    'aria-label': 'Switch to ' + r.tab.label + ' canvas: ' + r.tab.why,
+                    className: 'text-[11px] px-2 py-1 rounded-full border transition-all ' + (dk ? 'bg-slate-800/60 border-amber-700/40 text-amber-200 hover:bg-amber-900/40' : 'bg-white border-amber-300 text-amber-800 hover:bg-amber-50')
+                  }, r.tab.icon + ' ' + r.tab.label + ' →');
+                })
+              );
+            })(),
             // ═══ QUEEN RTS UI ═══
             viewMode === 'queen' && h('div', { className: 'space-y-3' },
               !queenGameActive
