@@ -3600,6 +3600,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     })();
     loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f006c147/allo_data_module.js');
     loadModule('SubmissionCrypto', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f006c147/submission_crypto_module.js');
+    loadModule('SubmissionInbox', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/view_submission_inbox_module.js');
     loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f006c147/firestore_sync_module.js');
     loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f006c147/safety_checker_module.js');
     loadModule('Fluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@f006c147/fluency_module.js');
@@ -3811,6 +3812,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_weldlab.js',
         'stem_lab/stem_tool_nutritionlab.js',
         'stem_lab/stem_tool_birdlab.js',
+        'stem_lab/stem_tool_printingpress.js',
         'stem_lab/stem_tool_bakingscience.js',
         'stem_lab/stem_tool_allobotsage.js',
         'stem_lab/stem_tool_skatelab.js',
@@ -4738,6 +4740,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, []);
   const [rosterKey, setRosterKey] = useState(null);
   const [isRosterKeyOpen, setIsRosterKeyOpen] = useState(false);
+  const [isSubmissionInboxOpen, setIsSubmissionInboxOpen] = useState(false);
   useEffect(() => {
     try {
       const saved = safeGetItem('alloflow_roster_key');
@@ -22775,7 +22778,22 @@ Return ONLY valid JSON in this format:
         t={t}
         isParentMode={isParentMode}
         isIndependentMode={isIndependentMode}
+        onOpenSubmissionInbox={() => { setIsRosterKeyOpen(false); setIsSubmissionInboxOpen(true); }}
       />
+      {isSubmissionInboxOpen && (() => {
+        const M = window.AlloModules && window.AlloModules.SubmissionInbox;
+        const C = M && M.SubmissionInbox;
+        if (!C) { return null; }
+        return (
+          <C
+            isOpen={isSubmissionInboxOpen}
+            onClose={() => setIsSubmissionInboxOpen(false)}
+            rosterKey={rosterKey}
+            t={t}
+            addToast={addToast}
+          />
+        );
+      })()}
       <StudentSubmitModal
           isOpen={showSubmitModal}
           onClose={handleCloseSubmitModal}

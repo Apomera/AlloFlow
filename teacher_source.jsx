@@ -5,7 +5,7 @@ var _alloFocusTrigger = null;
 function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
 function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
 
-const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, onApplyGroup, onSyncToSession, onBatchGenerate, activeSessionCode, t, isParentMode, isIndependentMode }) => {
+const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, onApplyGroup, onSyncToSession, onBatchGenerate, activeSessionCode, t, isParentMode, isIndependentMode, onOpenSubmissionInbox }) => {
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupColor, setNewGroupColor] = useState('#4F46E5');
   const [newStudentName, setNewStudentName] = useState('');
@@ -252,6 +252,18 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               ? (t('roster.submissions_active') || 'Submissions On')
               : (t('roster.setup_submissions') || 'Set up offline submissions')}
           </button>
+          {typeof onOpenSubmissionInbox === 'function' && (
+            <button
+              onClick={onOpenSubmissionInbox}
+              disabled={!rosterKey?.submissionKey?.publicJwk}
+              title={rosterKey?.submissionKey?.publicJwk
+                ? 'Open the submission inbox to decrypt and review student-submitted HTML files.'
+                : 'Set up offline submissions first to use the inbox.'}
+              className="px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-100 transition-colors flex items-center gap-1.5 disabled:opacity-40"
+            >
+              📥 {t('roster.import_submissions') || 'Import submissions'}
+            </button>
+          )}
           <button onClick={() => setShowBatchConfig(true)} disabled={!rosterKey || Object.keys(rosterKey?.groups || {}).length === 0} className="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors flex items-center gap-1.5 disabled:opacity-40 border border-amber-200">
             <Layers size={14} /> {t('roster.batch_generate') || 'Differentiate by Group'}
           </button>
