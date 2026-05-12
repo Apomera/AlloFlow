@@ -1015,8 +1015,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               ctxC.beginPath();
               ctxC.arc(arcX, jointY, 4, 0, Math.PI * 2);
               ctxC.fill();
+              // Sparks splaying off the arc tip — adds visceral "this
+              // is welding" atmosphere without storing per-spark state.
+              // Deterministic per-frame seed (elapsed * 60) so sparks
+              // animate visibly but never need a particle buffer. Y-axis
+              // is squashed (× 0.45) to suggest sparks splaying along the
+              // plate surface in perspective rather than radiating in a
+              // perfect circle. Reduced-motion already skipped (see
+              // outer guard).
+              var sparkCount = 8;
+              for (var sp = 0; sp < sparkCount; sp++) {
+                var sphase = (elapsed * 60 + sp * 1.7) % 1;
+                var sangle = (sp / sparkCount) * Math.PI * 2 + elapsed * 8 + sp;
+                var sdist = 4 + sphase * 28;
+                var cx = Math.cos(sangle), sy = Math.sin(sangle);
+                var x1 = arcX + cx * (sdist - 4);
+                var y1 = jointY + sy * (sdist - 4) * 0.45;
+                var x2 = arcX + cx * sdist;
+                var y2 = jointY + sy * sdist * 0.45;
+                var sparkAlpha = (1 - sphase) * 0.85;
+                ctxC.strokeStyle = 'rgba(255, ' + Math.round(180 + 75 * (1 - sphase)) + ', 80, ' + sparkAlpha + ')';
+                ctxC.lineWidth = 1.2;
+                ctxC.beginPath();
+                ctxC.moveTo(x1, y1);
+                ctxC.lineTo(x2, y2);
+                ctxC.stroke();
+              }
             } else if (_prefersReducedMotion) {
-              // Static finished bead — no arc
+              // Static finished bead — no arc, no sparks
             }
 
             // Plate edge labels
@@ -3198,6 +3224,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                       h('li', null, 'Joint stress (knees, back, shoulders) accumulates over decades')
                     )
                   )
+                )
+              ),
+              // ── First day at Bath Iron Works vignette ──
+              // Composite school-psych narrative pairing the stats above
+              // with what the floor actually looks like to a new welder.
+              // Maine-specific (BIW), grounded in real shipyard practice.
+              h('div', { className: 'bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl shadow border-2 border-blue-200 p-5' },
+                h('div', { className: 'flex items-center gap-2 mb-3' },
+                  h('span', { 'aria-hidden': true, className: 'text-2xl' }, '⚓'),
+                  h('div', null,
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-700' }, 'A first day on the floor'),
+                    h('div', { className: 'text-lg font-black text-slate-800' }, 'Composite — Bath Iron Works, Maine')
+                  )
+                ),
+                h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-3' },
+                  h('em', null, 'Composite voice drawn from BIW + EMCC welder accounts. Names changed; everything else is from the floor.')
+                ),
+                h('div', { className: 'space-y-3 text-sm text-slate-800 leading-relaxed' },
+                  h('p', null,
+                    'Six-fifteen on a Monday morning. You park under the gantry crane that built the ',
+                    h('em', null, 'Arleigh Burke'),
+                    '-class hulls and watched ',
+                    h('em', null, 'Zumwalts'),
+                    ' slide down the ways. The shift whistle goes at six-thirty. You\'re early because your dad worked here for thirty-one years and told you, "If you\'re on time, you\'re late."'),
+                  h('p', null,
+                    'Your assignor walks you onto the deck. The ',
+                    h('em', null, 'DDG'),
+                    ' you\'ll be welding on for the next year is parked on stands the size of school buses. It is bigger than you imagined and somehow also smaller — closer up than the photos. Inside, the smell hits first: hot metal, weld fume, machine oil. The sound second: arc gouging from two bays over (a sound like the world\'s loudest staple gun), grinders, the ventilation rumble.'),
+                  h('p', null,
+                    'You are issued a leather kit, an auto-darkening helmet that someone has signed in the brim, FR coveralls a size too big, and a respirator. The lead welder on your bay is a woman named Maria who has been here for nineteen years. She watches you tie your boots and says, "First job today: just observe. Do not touch anything live. Ask before you do anything." She is not unkind. She has lost three apprentices to first-day burns and one to a flash that put him in the ER for three days.'),
+                  h('p', null,
+                    'By lunch you have not welded anything. You have learned where the eyewash station is, where the fire extinguishers live, what the alarm signals mean, where to clip your harness when you go up. You have watched Maria run a 6G stainless joint that you could not have done if your life depended on it. She makes it look like she\'s painting a wall.'),
+                  h('p', null,
+                    'After lunch she lets you strike your first arc on a piece of scrap. Your hands shake. The bead looks terrible. She nods once and says, "Better than mine on day one." You spend the rest of the afternoon practicing on scrap, stopping every fifteen minutes to drink water (the booth gets to 90 °F by 3 pm), watching the people around you do something that takes them about three years to learn well.'),
+                  h('p', null,
+                    'The shift whistle goes at three. You have a small cut on your wrist where the leather glove rode up. You have not earned anything you could put on a wall. You have learned the layout of the bay, the names of four people, and that this work is going to be harder and slower than every YouTube video made it look. On the way to your car you see the gantry crane swing a bow section toward the dry dock. You will help build that, eventually. Not this week. Maybe not this year. Eventually.')
+                ),
+                h('div', { className: 'mt-4 pt-3 border-t border-blue-200 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-slate-700' },
+                  h('div', null,
+                    h('div', { className: 'font-bold text-blue-700 uppercase tracking-wider mb-1' }, 'What this captures'),
+                    h('p', { className: 'leading-relaxed' }, 'Pace, scale, sensory load, the specific safety culture of a shipyard. The "do not touch anything" first day is real practice.')),
+                  h('div', null,
+                    h('div', { className: 'font-bold text-blue-700 uppercase tracking-wider mb-1' }, 'What it leaves out'),
+                    h('p', { className: 'leading-relaxed' }, 'Union vs non-union politics, shift differentials, deployments to other yards, what happens when a hull is delayed. Real, but not the day-one story.')),
+                  h('div', null,
+                    h('div', { className: 'font-bold text-blue-700 uppercase tracking-wider mb-1' }, 'Discussion'),
+                    h('p', { className: 'leading-relaxed' }, 'What in this story would draw you in? What would push you away? What questions would you want to ask Maria before signing on?'))
                 )
               )
             ),
