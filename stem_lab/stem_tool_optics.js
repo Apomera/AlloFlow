@@ -70,8 +70,30 @@
       '}',
       '.opticslab-efield-vec { animation: opticslab-efield-pulse 1.2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }',
 
+      // Quantum-twist "photon just landed" flash for the newest dot in the
+      // single-photon double-slit accumulator. Brief scale-up + glow that
+      // settles to the steady 1.5px dot.
+      '@keyframes opticslab-photon-land {',
+      '  0%   { transform: scale(3.5); opacity: 0.2; filter: drop-shadow(0 0 8px #fbbf24); }',
+      '  40%  { transform: scale(2.2); opacity: 1;   filter: drop-shadow(0 0 10px #fbbf24); }',
+      '  100% { transform: scale(1);   opacity: 1;   filter: none; }',
+      '}',
+      '.opticslab-photon-land { transform-origin: center; transform-box: fill-box; animation: opticslab-photon-land 360ms ease-out; }',
+
+      // Quantum-twist wavefront ripples emanating from each slit (continuous,
+      // not gated on photon firing). Two slits = two coherent sources.
+      '@keyframes opticslab-slit-wave {',
+      '  0%   { r: 2;  opacity: 0.65; }',
+      '  100% { r: 80; opacity: 0;    }',
+      '}',
+      '.opticslab-slit-wave { animation: opticslab-slit-wave 2.2s linear infinite; }',
+      '.opticslab-slit-wave-2 { animation-delay: -0.55s; }',
+      '.opticslab-slit-wave-3 { animation-delay: -1.10s; }',
+      '.opticslab-slit-wave-4 { animation-delay: -1.65s; }',
+
       '@media (prefers-reduced-motion: reduce) {',
-      '  .opticslab-mirage-haze, .opticslab-wavefront, .opticslab-photon, .opticslab-efield-vec { animation: none !important; }',
+      '  .opticslab-mirage-haze, .opticslab-wavefront, .opticslab-photon, .opticslab-efield-vec,',
+      '  .opticslab-photon-land, .opticslab-slit-wave { animation: none !important; }',
       '}'
     ].join('');
     if (document.head) document.head.appendChild(_opStyle);
@@ -3992,7 +4014,7 @@
     // Ray starting from object (a tree) at the right side
     var rays = [];
     var startX = W - 60;
-    function tracedRay(initialAngle, color, opacity) {
+    function tracedRay(initialAngle, color, opacity, rayIdx) {
       var pts = [{ x: startX, y: 80 }];
       var x = startX, y = 80;
       var ang = initialAngle; // radians from horizontal, downward positive
@@ -4017,15 +4039,34 @@
         pts.push({ x: x, y: y });
         if (pts.length > 220) break;
       }
-      // Build polyline
-      return h('polyline', {
-        points: pts.map(function(p) { return p.x.toFixed(1) + ',' + p.y.toFixed(1); }).join(' '),
-        fill: 'none', stroke: color, strokeWidth: 1.6, opacity: opacity
-      });
+      // Build BOTH a polyline (static ray) AND a motion-path string for the
+      // animated photon that traces the same curve. Photons let students see
+      // light "flowing" through the hot air gradient — the curving path is
+      // the entire physics story of why a mirage looks like water.
+      var pathD = 'M ' + pts.map(function(p) { return p.x.toFixed(1) + ' ' + p.y.toFixed(1); }).join(' L ');
+      var polyPts = pts.map(function(p) { return p.x.toFixed(1) + ',' + p.y.toFixed(1); }).join(' ');
+      return [
+        h('polyline', {
+          key: 'line' + rayIdx,
+          points: polyPts,
+          fill: 'none', stroke: color, strokeWidth: 1.6, opacity: opacity
+        }),
+        h('circle', {
+          key: 'photon' + rayIdx,
+          r: 2.6, fill: color, stroke: '#fff', strokeWidth: 0.4,
+          className: 'opticslab-photon',
+          'aria-hidden': 'true',
+          style: {
+            offsetPath: 'path("' + pathD + '")',
+            animationDelay: (rayIdx * -0.6) + 's',
+            filter: 'drop-shadow(0 0 3px ' + color + ')'
+          }
+        })
+      ];
     }
-    rays.push(tracedRay(0.05, '#fbbf24', 0.85));   // shallow downward — bends up to viewer
-    rays.push(tracedRay(0.20, '#f59e0b', 0.70));   // steeper — also bends
-    rays.push(tracedRay(-0.05, '#86efac', 0.85));  // upward — direct path (no mirage)
+    rays = rays.concat(tracedRay(0.05, '#fbbf24', 0.85, 0));   // shallow downward — bends up to viewer
+    rays = rays.concat(tracedRay(0.20, '#f59e0b', 0.70, 1));   // steeper — also bends
+    rays = rays.concat(tracedRay(-0.05, '#86efac', 0.85, 2));  // upward — direct path (no mirage)
     var svg = h('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { width: '100%', height: 'auto', background: 'linear-gradient(180deg,#1e3a5f 0%,#7dd3fc 70%,#fef3c7 100%)', borderRadius: 8 },
       role: 'img', 'aria-label': 'Hot-air mirage simulator — light rays from a distant tree curve upward as they pass through hot lower air. The viewer perceives an inverted image at the road surface that looks like a puddle of water.' },
       // Heat haze layers — subtle CSS shimmer animation gives the visual
@@ -5236,8 +5277,22 @@
       }, rate === 'fast' ? 50 : 120);
     }
     // Render dots as small SVG circles. 1500 circles is borderline but works.
+    // The newest dot gets a brief landing flash (scale + glow → settle) so
+    // each fired photon visibly "arrives" on the screen.
+    var lastIdx = dots.length - 1;
     var dotEls = dots.map(function(p, i) {
-      return h('circle', { key: i, cx: p.x.toFixed(1), cy: p.y.toFixed(1), r: 1.5, fill: '#fbbf24' });
+      var isLatest = i === lastIdx;
+      var attrs = {
+        key: i, cx: p.x.toFixed(1), cy: p.y.toFixed(1),
+        r: 1.5, fill: '#fbbf24'
+      };
+      if (isLatest) {
+        attrs.className = 'opticslab-photon-land';
+        // Force a unique key for React so the latest dot remounts and
+        // replays the animation on every new photon.
+        attrs.key = 'latest-' + count;
+      }
+      return h('circle', attrs);
     });
     // Faint reference: the underlying intensity envelope (so students see what
     // shape the dots are converging toward). Drawn as a low-opacity polyline.
@@ -5247,6 +5302,12 @@
       envPoints.push(ex + ',' + (H - 6 - I * (H - 30)));
     }
     var envelope = h('polyline', { points: envPoints.join(' '), fill: 'none', stroke: '#06b6d4', strokeWidth: 1, opacity: 0.25, strokeDasharray: '2 3' });
+    // Two slit positions for the visual barrier (left edge of the SVG).
+    // The actual physics uses the cos² intensity envelope above — the barrier
+    // graphic just makes the experimental setup legible to the viewer.
+    var slitY1 = H / 2 - 22;
+    var slitY2 = H / 2 + 22;
+    var barrierX = 18;
     var svg = h('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { width: '100%', height: 'auto', background: '#020617', borderRadius: 8, display: 'block' },
       role: 'img', 'aria-label': 'Quantum interference demo. Photons fired one at a time appear as random-looking dots, but accumulate into the same fringe pattern as the classical wave model. Total photons: ' + count + '.' },
       // Backdrop tinted bands showing the bright-fringe regions
@@ -5255,12 +5316,47 @@
         return h('rect', { key: 'band' + i, x: cxF - 18, y: 0, width: 36, height: H, fill: 'rgba(56,189,248,0.06)' });
       }),
       envelope,
+      // ── Slit barrier (visual setup, not physics) ──
+      // Three rectangles form a vertical barrier with two horizontal openings.
+      // The two openings are where photons emerge as coherent sources.
+      h('rect', { x: barrierX - 3, y: 0, width: 6, height: slitY1 - 4, fill: '#1f2937', stroke: '#475569', strokeWidth: 0.5 }),
+      h('rect', { x: barrierX - 3, y: slitY1 + 4, width: 6, height: slitY2 - slitY1 - 8, fill: '#1f2937', stroke: '#475569', strokeWidth: 0.5 }),
+      h('rect', { x: barrierX - 3, y: slitY2 + 4, width: 6, height: H - slitY2 - 4, fill: '#1f2937', stroke: '#475569', strokeWidth: 0.5 }),
+      // Slit-opening glow markers
+      h('circle', { cx: barrierX, cy: slitY1, r: 2.5, fill: '#fbbf24', opacity: 0.9 }),
+      h('circle', { cx: barrierX, cy: slitY2, r: 2.5, fill: '#fbbf24', opacity: 0.9 }),
+      // ── Wavefronts emerging from each slit (always animating) ──
+      // Even with the source dimmed to one photon at a time, the "wave" that
+      // determines probability is always there. Four phase-staggered ripples
+      // per slit suggest the continuous interference background.
+      [1,2,3,4].map(function(i) {
+        return h('circle', {
+          key: 'w1' + i, cx: barrierX, cy: slitY1, r: 4, fill: 'none',
+          stroke: 'rgba(251,191,36,0.55)', strokeWidth: 0.8,
+          className: 'opticslab-slit-wave' + (i === 1 ? '' : ' opticslab-slit-wave-' + i)
+        });
+      }),
+      [1,2,3,4].map(function(i) {
+        return h('circle', {
+          key: 'w2' + i, cx: barrierX, cy: slitY2, r: 4, fill: 'none',
+          stroke: 'rgba(251,191,36,0.55)', strokeWidth: 0.8,
+          className: 'opticslab-slit-wave' + (i === 1 ? '' : ' opticslab-slit-wave-' + i)
+        });
+      }),
+      // Source laser indicator on the far left
+      h('rect', { x: 2, y: H / 2 - 4, width: 10, height: 8, fill: '#7e22ce', rx: 2 }),
+      h('line', { x1: 12, y1: H / 2, x2: barrierX - 4, y2: H / 2, stroke: 'rgba(251,191,36,0.4)', strokeWidth: 0.6, strokeDasharray: '2 2' }),
+      // Slit labels
+      h('text', { x: barrierX + 8, y: slitY1 + 3, fill: '#fbbf24', fontSize: 9, fontFamily: 'monospace', opacity: 0.7 }, 'A'),
+      h('text', { x: barrierX + 8, y: slitY2 + 3, fill: '#fbbf24', fontSize: 9, fontFamily: 'monospace', opacity: 0.7 }, 'B'),
       dotEls,
       // Photon counter (top-right)
       h('rect', { x: W - 110, y: 6, width: 100, height: 22, fill: 'rgba(15,23,42,0.85)', rx: 4 }),
       h('text', { x: W - 60, y: 21, fill: '#fbbf24', fontSize: 12, fontFamily: 'monospace', fontWeight: 800, textAnchor: 'middle' }, count + ' photons'),
+      // Screen label (right edge, bottom corner)
+      h('text', { x: W - 12, y: H - 6, fill: '#475569', fontSize: 9, fontFamily: 'monospace', textAnchor: 'end', opacity: 0.65 }, 'detection screen →'),
       // Empty-state hint
-      count === 0 && h('text', { x: W / 2, y: H / 2, fill: '#94a3b8', fontSize: 12, textAnchor: 'middle', fontStyle: 'italic' }, 'Press Fire to send a single photon →')
+      count === 0 && h('text', { x: W / 2 + 30, y: H / 2, fill: '#94a3b8', fontSize: 12, textAnchor: 'middle', fontStyle: 'italic' }, 'Press Fire to send a single photon →')
     );
     var controls = h('div', { style: { marginTop: 10, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
       h('button', {
