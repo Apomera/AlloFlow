@@ -1308,6 +1308,27 @@
             fill: color, opacity: alpha
           });
         }),
+        // Pulsing halo on the central maximum — softly breathes to communicate
+        // that the bright fringes are LIVE wave action, not a static print.
+        (function() {
+          var centerY = screenTop + screenHeight / 2;
+          return h('g', null,
+            h('circle', {
+              cx: screenX + 4, cy: centerY, r: 14,
+              fill: 'none', stroke: color, strokeWidth: 1.5,
+              opacity: 0.45,
+              className: 'opticslab-wavefront',
+              style: { animationDuration: '1.6s', transformOrigin: (screenX + 4) + 'px ' + centerY + 'px' }
+            }),
+            h('circle', {
+              cx: screenX + 4, cy: centerY, r: 14,
+              fill: 'none', stroke: color, strokeWidth: 1.2,
+              opacity: 0.45,
+              className: 'opticslab-wavefront',
+              style: { animationDuration: '1.6s', animationDelay: '-0.55s', transformOrigin: (screenX + 4) + 'px ' + centerY + 'px' }
+            })
+          );
+        })(),
         h('text', { x: screenX + 4, y: pad.t + 10, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'screen'),
         // Fringe-spacing annotation: vertical bracket between two adjacent maxima
         (function() {
@@ -3824,6 +3845,60 @@
       var c = spectrum[i % spectrum.length].color;
       return h('line', { key: 'rr' + i, x1: p.x, y1: p.y, x2: obsX, y2: obsY - 4, stroke: c, strokeWidth: 1.4, opacity: 0.85 });
     }) : null;
+    // ── Animated photons traversing each drop ──
+    // Each drop gets two motion dots: a white "sunlight" photon traveling from
+    // the sun to the drop, and a colored photon traveling from the drop to the
+    // observer. Together they show the sun → drop → eye journey that makes the
+    // rainbow visible at 42°.
+    var dropPhotons = showRays ? (function() {
+      var nodes = [];
+      dropPositions.forEach(function(p, i) {
+        var c = spectrum[i % spectrum.length].color;
+        var inPath = 'M ' + sunX + ' ' + sunY + ' L ' + p.x.toFixed(1) + ' ' + p.y.toFixed(1);
+        var outPath = 'M ' + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ' L ' + obsX + ' ' + (obsY - 4);
+        // White incident photon
+        nodes.push(h('circle', {
+          key: 'rbpi' + i, r: 2.4, fill: '#fef9c3',
+          stroke: '#fff', strokeWidth: 0.3,
+          style: {
+            offsetPath: 'path("' + inPath + '")',
+            WebkitOffsetPath: 'path("' + inPath + '")',
+            filter: 'drop-shadow(0 0 4px #fef9c3)',
+            animationDuration: '3s',
+            animationDelay: (-i * 0.4) + 's'
+          },
+          className: 'opticslab-photon', cx: 0, cy: 0
+        }));
+        // Tiny "internal reflection" pulse INSIDE the drop —
+        // a small ring expanding briefly to suggest the back-wall bounce.
+        nodes.push(h('circle', {
+          key: 'rbpr' + i,
+          cx: p.x, cy: p.y, r: 1,
+          fill: 'none', stroke: c, strokeWidth: 0.8,
+          opacity: 0.85,
+          className: 'opticslab-wavefront',
+          style: {
+            animationDuration: '3s',
+            animationDelay: (-i * 0.4 + 0.6) + 's',
+            transformOrigin: p.x + 'px ' + p.y + 'px'
+          }
+        }));
+        // Colored returning photon (wavelength color of this drop)
+        nodes.push(h('circle', {
+          key: 'rbpo' + i, r: 2.6, fill: c,
+          stroke: '#fff', strokeWidth: 0.3,
+          style: {
+            offsetPath: 'path("' + outPath + '")',
+            WebkitOffsetPath: 'path("' + outPath + '")',
+            filter: 'drop-shadow(0 0 4px ' + c + ')',
+            animationDuration: '2.5s',
+            animationDelay: (-i * 0.4 + 1.2) + 's'
+          },
+          className: 'opticslab-photon', cx: 0, cy: 0
+        }));
+      });
+      return nodes;
+    })() : null;
     var svg = h('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { width: '100%', height: 'auto', borderRadius: 8 },
       role: 'img', 'aria-label': 'Rainbow scene — sun shines on a curtain of raindrops; light bouncing inside each drop returns toward the observer at 42° from the antisolar point, forming the colored bow.' },
       // Sky gradient
@@ -3855,6 +3930,8 @@
       drops,
       // Returning colored rays
       returnRays,
+      // Animated photons traversing each drop
+      dropPhotons,
       // Observer (small figure)
       h('circle', { cx: obsX, cy: obsY - 14, r: 5, fill: '#1f2937' }),
       h('rect', { x: obsX - 4, y: obsY - 10, width: 8, height: 14, fill: '#1f2937' }),
@@ -4441,6 +4518,54 @@
         h('text', { x: focusPx, y: eyeCy - 8, fill: '#fcd34d', fontSize: 9, textAnchor: 'middle' },
           focusOffset < 0 ? 'short' : 'past retina')
       ),
+      // Animated photons traveling object → lens → retina (or focus point if blurry).
+      // Two paths: upper edge and lower edge of the object, converging at retina/focus.
+      // When glasses are on, the photons pass THROUGH the glasses lens midway so the
+      // optical path visually includes the corrective element.
+      (function() {
+        var photons = [];
+        var photonColor = canFocus ? '#fde047' : '#fca5a5';
+        var endX, endY;
+        if (canFocus) {
+          endX = retinaX + 4; endY = eyeCy;
+        } else {
+          endX = focusPx; endY = eyeCy;
+        }
+        // Build the upper-ray and lower-ray paths.
+        // With glasses, insert a waypoint at the glasses lens midline so the photon
+        // is visibly "redirected" by the corrective lens.
+        function buildPath(startY, midY) {
+          var pts = [];
+          pts.push('M ' + objX + ' ' + startY);
+          if (glassesOn) {
+            pts.push('L ' + glassesX + ' ' + (eyeCy + (startY - objY) * 0.3));
+          }
+          pts.push('L ' + lensX + ' ' + midY);
+          pts.push('L ' + endX + ' ' + endY);
+          return pts.join(' ');
+        }
+        var upperPath = buildPath(objY - objSize / 2, eyeCy - lensRy * 0.7);
+        var lowerPath = buildPath(objY + objSize / 2, eyeCy + lensRy * 0.7);
+        // Stagger 2 photons per path for a continuous "beam" feel
+        [upperPath, lowerPath].forEach(function(p, pi) {
+          [0, -1.1].forEach(function(delay, di) {
+            photons.push(h('circle', {
+              key: 'eyep' + pi + '_' + di, r: 2.8, fill: photonColor,
+              stroke: '#fff', strokeWidth: 0.35,
+              style: {
+                offsetPath: 'path("' + p + '")',
+                WebkitOffsetPath: 'path("' + p + '")',
+                filter: 'drop-shadow(0 0 3px ' + photonColor + ')',
+                animationDuration: '2.2s',
+                animationDelay: delay + 's'
+              },
+              className: 'opticslab-photon',
+              cx: 0, cy: 0
+            }));
+          });
+        });
+        return photons;
+      })(),
       // Readouts (top-left)
       h('text', { x: 12, y: 16, fill: '#cbd5e1', fontSize: 11, fontWeight: 700 },
         'Eye power: ' + diopters.toFixed(1) + ' D · range ' + pMin.toFixed(0) + '–' + pMax.toFixed(0) + ' D'),
