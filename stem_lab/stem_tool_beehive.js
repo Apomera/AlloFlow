@@ -10180,35 +10180,119 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-blue-400', style: { fontFamily: 'monospace' } }, drones), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, '♂ Drones')),
               h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black ' + (queenHealth > 70 ? 'text-purple-400' : 'text-red-500'), style: { fontFamily: 'monospace' } }, queenHealth + '%'), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, '👑 Queen'))),
             // Meters
-            h('div', { className: 'space-y-2' },
-              // Varroa
-              h('div', null,
-                h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
-                  h('span', { className: 'font-bold ' + (dk ? 'text-red-400' : 'text-red-700') }, '🦟 Varroa Mites'),
-                  h('span', { className: varroaLevel > 30 ? 'text-red-500 font-bold' : (dk ? 'text-slate-200' : 'text-slate-600'), style: { fontFamily: 'monospace' } }, varroaLevel + '%')),
-                h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
-                  h('div', { style: { width: varroaLevel + '%' }, className: 'h-full bg-gradient-to-r from-red-500 to-red-400 rounded-full transition-all' }))),
-              // Morale
-              h('div', null,
-                h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
-                  h('span', { className: 'font-bold ' + (dk ? 'text-amber-300' : 'text-amber-700') }, '😊 Colony Morale'),
-                  h('span', { className: morale < 40 ? 'text-red-500 font-bold' : (dk ? 'text-slate-200' : 'text-slate-600'), style: { fontFamily: 'monospace' } }, morale + '%')),
-                h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
-                  h('div', { style: { width: morale + '%' }, className: 'h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all' }))),
-              // Foraging
-              h('div', null,
-                h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
-                  h('span', { className: 'font-bold ' + (dk ? 'text-green-300' : 'text-green-700') }, '🌸 Foraging Efficiency'),
-                  h('span', { className: dk ? 'text-slate-200' : 'text-slate-600', style: { fontFamily: 'monospace' } }, foragingEfficiency + '%' + (gardenBonus > 0 ? ' (+' + gardenBonus + '%)' : ''))),
-                h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
-                  h('div', { style: { width: Math.min(100, foragingEfficiency + gardenBonus) + '%' }, className: 'h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all' }))),
-              // Disease Risk
-              h('div', null,
-                h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
-                  h('span', { className: 'font-bold ' + (dk ? 'text-purple-300' : 'text-purple-700') }, '🦠 Disease Risk'),
-                  h('span', { className: diseaseRisk > 45 ? 'text-red-500 font-bold' : diseaseRisk > 25 ? 'text-amber-400 font-bold' : (dk ? 'text-slate-200' : 'text-slate-600'), style: { fontFamily: 'monospace' } }, diseaseRisk + '%' + (diseaseRisk > 45 ? ' ⚠ outbreak likely' : ''))),
-                h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
-                  h('div', { style: { width: diseaseRisk + '%' }, className: 'h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all' }))))),
+            (function() {
+              // ── Click-to-expand stat explainers ──
+              // Each meter is a button that toggles an inline panel teaching
+              // students what the metric means, its healthy range, the danger
+              // threshold, and the management response. Critical for clarity
+              // because the bar alone (e.g. "🦟 Varroa Mites · 18%") doesn't
+              // tell a new beekeeper what varroa ARE or why 18% matters.
+              var openExp = d.statExpand || null;
+              function toggle(id) { upd('statExpand', openExp === id ? null : id); }
+              function meterRow(id, color, emoji, label, valueStr, dangerCls, gradientCls, widthPct, explainer) {
+                var isOpen = openExp === id;
+                var arrow = isOpen ? '▼' : '▶';
+                return h('div', { className: 'rounded-md ' + (isOpen ? (dk ? 'bg-slate-800/40' : 'bg-slate-50') : '') },
+                  h('button', {
+                    onClick: function() { toggle(id); },
+                    'aria-expanded': isOpen ? 'true' : 'false',
+                    'aria-label': label + ' — ' + valueStr + (isOpen ? '. Hide explanation' : '. Show explanation'),
+                    title: isOpen ? 'Hide ' + label.toLowerCase() + ' explanation' : 'What is ' + label.toLowerCase() + '?',
+                    className: 'w-full text-left px-1.5 py-1 rounded-md transition-colors ' + (dk ? 'hover:bg-slate-800/60' : 'hover:bg-slate-100')
+                  },
+                    h('div', { className: 'flex justify-between items-center text-[11px] mb-0.5' },
+                      h('span', { className: 'font-bold ' + color },
+                        h('span', { className: 'mr-1 text-[10px] inline-block ' + (dk ? 'text-slate-300' : 'text-slate-400'), style: { width: 10 }, 'aria-hidden': 'true' }, arrow),
+                        emoji + ' ' + label),
+                      h('span', { className: dangerCls, style: { fontFamily: 'monospace' } }, valueStr)),
+                    h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
+                      h('div', { style: { width: widthPct + '%' }, className: 'h-full ' + gradientCls + ' rounded-full transition-all' }))
+                  ),
+                  isOpen && h('div', {
+                    className: 'mt-1 px-2 py-2 rounded-md text-[11px] leading-relaxed border-l-2 ' + explainer.cardCls,
+                    role: 'region', 'aria-label': label + ' explanation'
+                  },
+                    h('p', { className: 'mb-1 ' + (dk ? 'text-slate-100' : 'text-slate-700') }, explainer.what),
+                    h('div', { className: 'grid grid-cols-3 gap-1 mt-1.5 text-[10px]' },
+                      h('div', { className: 'rounded p-1 text-center ' + (dk ? 'bg-emerald-900/30 text-emerald-200' : 'bg-emerald-50 text-emerald-800') },
+                        h('div', { className: 'font-bold' }, '✓ Healthy'),
+                        h('div', null, explainer.healthy)),
+                      h('div', { className: 'rounded p-1 text-center ' + (dk ? 'bg-amber-900/30 text-amber-200' : 'bg-amber-50 text-amber-800') },
+                        h('div', { className: 'font-bold' }, '⚠ Watch'),
+                        h('div', null, explainer.watch)),
+                      h('div', { className: 'rounded p-1 text-center ' + (dk ? 'bg-red-900/30 text-red-200' : 'bg-red-50 text-red-800') },
+                        h('div', { className: 'font-bold' }, '⛔ Danger'),
+                        h('div', null, explainer.danger))
+                    ),
+                    h('p', { className: 'mt-2 italic ' + (dk ? 'text-slate-200' : 'text-slate-600') },
+                      h('strong', null, 'What to do: '), explainer.action)
+                  )
+                );
+              }
+              var widthFor = Math.min(100, foragingEfficiency + gardenBonus);
+              return h('div', { className: 'space-y-2' },
+                meterRow('varroa',
+                  dk ? 'text-red-400' : 'text-red-700', '🦟', 'Varroa Mites',
+                  varroaLevel + '%',
+                  varroaLevel > 30 ? 'text-red-500 font-bold' : (dk ? 'text-slate-200' : 'text-slate-600'),
+                  'bg-gradient-to-r from-red-500 to-red-400',
+                  varroaLevel,
+                  {
+                    cardCls: dk ? 'bg-red-900/15 border-red-500' : 'bg-red-50/70 border-red-300',
+                    what: 'Parasitic mites (Varroa destructor) that feed on bee hemolymph and brood fat bodies. They transmit Deformed Wing Virus and Acute Bee Paralysis Virus — the leading cause of colony collapse worldwide.',
+                    healthy: '1–5%',
+                    watch: '6–24%',
+                    danger: '25%+',
+                    action: 'Treat with IPM — 🧪 Treat picks the right one for the season (oxalic in winter, thymol in late summer, drone-brood trap in peak summer).'
+                  }
+                ),
+                meterRow('morale',
+                  dk ? 'text-amber-300' : 'text-amber-700', '😊', 'Colony Morale',
+                  morale + '%',
+                  morale < 40 ? 'text-red-500 font-bold' : (dk ? 'text-slate-200' : 'text-slate-600'),
+                  'bg-gradient-to-r from-amber-500 to-amber-400',
+                  morale,
+                  {
+                    cardCls: dk ? 'bg-amber-900/15 border-amber-500' : 'bg-amber-50/70 border-amber-300',
+                    what: 'Composite measure of pheromone harmony, queen status, food stores, and recent stressors. Low morale shows up as defensive bees, absconding risk, supersedure cells, and laying-worker chaos.',
+                    healthy: '70–100%',
+                    watch: '40–69%',
+                    danger: '<30%',
+                    action: '💨 Smoke before inspections; 🥣 Feed if dearth; check for queenlessness (👑 Requeen if she\'s failing).'
+                  }
+                ),
+                meterRow('foraging',
+                  dk ? 'text-green-300' : 'text-green-700', '🌸', 'Foraging Efficiency',
+                  foragingEfficiency + '%' + (gardenBonus > 0 ? ' (+' + gardenBonus + '% garden)' : ''),
+                  dk ? 'text-slate-200' : 'text-slate-600',
+                  'bg-gradient-to-r from-green-500 to-emerald-400',
+                  widthFor,
+                  {
+                    cardCls: dk ? 'bg-emerald-900/15 border-emerald-500' : 'bg-emerald-50/70 border-emerald-300',
+                    what: 'Percentage of forager-age workers actively bringing nectar + pollen home. Driven by weather, bloom availability, distance to forage, and pesticide load. Each forager visits 50–1,000 flowers per trip.',
+                    healthy: '70–100%',
+                    watch: '40–69%',
+                    danger: '<25%',
+                    action: 'Plant pollinator gardens via Companion Planting Lab (bonus stacks here). Reduce neighbor pesticide exposure. Diversify bloom across seasons.'
+                  }
+                ),
+                meterRow('disease',
+                  dk ? 'text-purple-300' : 'text-purple-700', '🦠', 'Disease Risk',
+                  diseaseRisk + '%' + (diseaseRisk > 45 ? ' ⚠ outbreak likely' : ''),
+                  diseaseRisk > 45 ? 'text-red-500 font-bold' : diseaseRisk > 25 ? 'text-amber-400 font-bold' : (dk ? 'text-slate-200' : 'text-slate-600'),
+                  'bg-gradient-to-r from-purple-500 to-pink-500',
+                  diseaseRisk,
+                  {
+                    cardCls: dk ? 'bg-purple-900/15 border-purple-500' : 'bg-purple-50/70 border-purple-300',
+                    what: 'Probability of a hive-level outbreak — American Foulbrood, European Foulbrood, Nosema, Chalkbrood, Sacbrood. Climbs with high humidity, weak queens, mite-borne viral co-infection, and low colony morale.',
+                    healthy: '0–24%',
+                    watch: '25–44%',
+                    danger: '45%+',
+                    action: '🔬 Inspect to see brood-pattern symptoms; replace failing 👑 queen; ventilate the hive; in extreme AFB cases burn affected frames (real beekeepers do this — it\'s federally regulated in many states).'
+                  }
+                )
+              );
+            })()),
 
           // ── Colony History Sparkline Chart ── (beekeeper only)
           viewMode === 'beekeeper' && history.length > 2 && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } },
