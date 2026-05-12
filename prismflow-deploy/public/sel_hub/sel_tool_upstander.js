@@ -884,9 +884,11 @@ window.SelHub = window.SelHub || {
       // a short back-and-forth so the student practices what they would say.
       var rpShown           = !!d.rpShown;
       var rpRole            = d.rpRole || '';        // '' | 'bully' | 'target' | 'bystander'
+      var rpScene           = d.rpScene || '';       // AI-generated scene description (replayable variance)
       var rpHistory         = d.rpHistory || [];     // [{ speaker, text }]
       var rpInput           = d.rpInput || '';
       var rpLoading         = !!d.rpLoading;
+      var rpStarting        = !!d.rpStarting;        // loading state while AI builds opening scene
       var rpEnded           = !!d.rpEnded;
       var rpReflection      = d.rpReflection || '';
       // Role reflection state (inside Three Roles tab)
@@ -3579,23 +3581,72 @@ window.SelHub = window.SelHub || {
                 icon: '🛡️',
                 desc: 'A peer is putting someone else down in front of you. Practice what you would actually say to interrupt without making it worse.',
                 charDesc: 'a middle/high school student who is being verbally mean to a classmate in a casual social setting. You are NOT physically threatening. Your meanness shows up as mocking remarks, exclusion language, and dismissive jokes — the kind of social cruelty that happens in real schools every day. You believe you are joking, not bullying.',
-                opener: 'Oh come on, look at them — they’re sitting alone again. Probably their choice though, right? Like, who would even want to sit with them?'
+                fallbackOpener: 'Oh come on, look at them — they’re sitting alone again. Probably their choice though, right? Like, who would even want to sit with them?',
+                fallbackScene: 'In the cafeteria. A quieter classmate is sitting alone two tables away. Your peer just leaned in to point at them.'
               },
               target: {
                 label: 'AI plays someone who just got bullied (you support them)',
                 icon: '🤝',
                 desc: 'A peer was just targeted and is sitting near you. Practice offering support without saying the wrong thing.',
                 charDesc: 'a middle/high school student who was just publicly humiliated by a group and is sitting near the student. You are NOT in crisis. You are quiet, withdrawn, slightly tearful, embarrassed. You may deflect support at first ("I’m fine," "it’s whatever") because that is what a real teenager does. Open up only if the student’s words feel safe and non-pitying.',
-                opener: 'I’m fine. It’s whatever. I don’t even care.'
+                fallbackOpener: 'I’m fine. It’s whatever. I don’t even care.',
+                fallbackScene: 'Just after lunch. A classmate was publicly mocked a minute ago and is now sitting near you, eyes down.'
               },
               bystander: {
                 label: 'AI plays a friend going along with it (you push back)',
                 icon: '🪞',
                 desc: 'A friend of yours is laughing along while someone gets mocked. Practice naming what you see without losing the friendship.',
                 charDesc: 'a peer who is friends with the student. You were just laughing along at a joke that was clearly at someone’s expense. You are NOT the leader of the bullying — you went along to fit in. You are defensive when called on it: you minimize ("it was just a joke"), deflect ("everyone laughed"), and may briefly get annoyed at the student for "making it a thing." Soften only if the student stays calm and specific.',
-                opener: 'Oh my god, did you SEE that? That was so funny. Why aren’t you laughing?'
+                fallbackOpener: 'Oh my god, did you SEE that? That was so funny. Why aren’t you laughing?',
+                fallbackScene: 'In the hallway between classes. A group just walked off after teasing someone. Your friend turns to you, still laughing.'
               }
             };
+            // Generate a fresh scene + opener line for replayability. Different setting,
+            // target, and details each time. Falls back to the hand-written defaults if
+            // the AI is unreachable or returns malformed JSON.
+            function startRolePlay(roleKey) {
+              var cfg = rpRoles[roleKey];
+              if (!cfg) return;
+              if (!callGemini) {
+                upd({ rpRole: roleKey, rpScene: cfg.fallbackScene, rpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener }], rpInput: '', rpEnded: false, rpReflection: '', rpStarting: false });
+                return;
+              }
+              upd({ rpRole: roleKey, rpScene: '', rpHistory: [], rpInput: '', rpEnded: false, rpReflection: '', rpStarting: true });
+              if (announceToSR) announceToSR('Generating fresh role-play scene');
+              var bandLabel = band === 'k2' ? 'K-2' : band === 'g35' ? '3-5' : band === 'g68' ? '6-8' : band === 'g912' ? '9-12' : 'middle school';
+              var prompt =
+                'You are setting up a brief role-play for an SEL bullying-rehearsal tool. Build a fresh, realistic mini-scene for the student. ' +
+                'Return STRICT JSON only (no markdown, no fences, no preamble):\n' +
+                '{"scene":"1-2 sentence scene-setter naming WHO the third party is (use a first name and one detail), WHERE this is happening, and WHAT just happened — present tense, neutral observer voice","opener":"the FIRST in-character line the peer says, 1-2 sentences, in their voice, no narration, no quotation marks"}\n\n' +
+                'YOUR PEER CHARACTER: ' + cfg.charDesc + '\n' +
+                'AUDIENCE: ' + bandLabel + ' grade band. Use age-appropriate vocabulary and social dynamics.\n\n' +
+                'RULES:\n' +
+                '- Vary the setting, target name, and details each time — do NOT default to the cafeteria.\n' +
+                '- The "scene" field is neutral narration (third person), not in character.\n' +
+                '- The "opener" field is the peer SPEAKING in 1st person, 1-2 sentences, sounds like a real student.\n' +
+                '- NO slurs, NO explicit threats, NO physical violence in the scene. Social meanness only.\n' +
+                '- Avoid identity-based harm (race/gender/disability) — keep the harm relational and general.\n\n' +
+                'Return ONLY the JSON object.';
+              callGemini(prompt, true).then(function(r) {
+                try {
+                  var clean = (r || '').replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim().replace(/^[^{]*/, '').replace(/[^}]*$/, '');
+                  var parsed = JSON.parse(clean);
+                  if (!parsed || !parsed.scene || !parsed.opener) throw new Error('shape');
+                  upd({
+                    rpScene: String(parsed.scene).trim(),
+                    rpHistory: [{ speaker: 'ai', text: String(parsed.opener).trim().replace(/^"|"$/g, '') }],
+                    rpStarting: false
+                  });
+                  if (announceToSR) announceToSR('Scene ready. ' + cfg.label);
+                } catch (e) {
+                  // JSON parse failed — fall back to the hand-written opener so the
+                  // user still gets a working role-play, just with a fixed scene.
+                  upd({ rpScene: cfg.fallbackScene, rpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener }], rpStarting: false });
+                }
+              }).catch(function() {
+                upd({ rpScene: cfg.fallbackScene, rpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener }], rpStarting: false });
+              });
+            }
             var charCfg = rpRole && rpRoles[rpRole];
             return h('div', { style: { marginTop: 16 } },
               h('button', {
@@ -3636,18 +3687,14 @@ window.SelHub = window.SelHub || {
                       var cfg = rpRoles[roleKey];
                       return h('button', {
                         key: roleKey,
-                        onClick: function() {
-                          if (!callGemini) return;
-                          upd({ rpRole: roleKey, rpHistory: [{ speaker: 'ai', text: cfg.opener }], rpInput: '', rpEnded: false, rpReflection: '' });
-                          if (soundOn) sfxClick();
-                          if (announceToSR) announceToSR('Role-play started. ' + cfg.label);
-                        },
-                        disabled: !callGemini,
+                        onClick: function() { if (soundOn) sfxClick(); startRolePlay(roleKey); },
+                        disabled: !callGemini || rpStarting,
                         style: {
                           padding: '12px 14px', textAlign: 'left',
                           background: '#fff', border: '2px solid #cbd5e1', borderRadius: 10,
-                          fontSize: 14, color: '#0f172a', cursor: callGemini ? 'pointer' : 'not-allowed',
-                          display: 'flex', alignItems: 'flex-start', gap: 10
+                          fontSize: 14, color: '#0f172a', cursor: (callGemini && !rpStarting) ? 'pointer' : 'not-allowed',
+                          display: 'flex', alignItems: 'flex-start', gap: 10,
+                          opacity: rpStarting ? 0.6 : 1
                         }
                       },
                         h('span', { 'aria-hidden': 'true', style: { fontSize: 22, marginTop: 2 } }, cfg.icon),
@@ -3658,6 +3705,8 @@ window.SelHub = window.SelHub || {
                       );
                     })
                   ),
+                  rpStarting && h('p', { 'aria-live': 'polite', style: { margin: '10px 0 0', fontSize: 12, color: '#6b21a8', fontStyle: 'italic' } },
+                    'Generating a fresh scene…'),
                   !callGemini && h('p', { style: { margin: '12px 0 0', fontSize: 11, color: '#6b21a8' } },
                     'AI features need a connection. Try the hand-written scenarios above while offline.')
                 ),
@@ -3669,9 +3718,18 @@ window.SelHub = window.SelHub || {
                   } },
                     h('span', { style: { fontWeight: 700 } }, charCfg.icon + ' ' + charCfg.label),
                     h('button', {
-                      onClick: function() { upd({ rpRole: '', rpHistory: [], rpInput: '', rpEnded: false, rpReflection: '' }); if (soundOn) sfxClick(); },
+                      onClick: function() { upd({ rpRole: '', rpScene: '', rpHistory: [], rpInput: '', rpEnded: false, rpReflection: '', rpStarting: false }); if (soundOn) sfxClick(); },
                       style: { padding: '4px 10px', background: '#fff', color: '#6b21a8', border: '1px solid #d8b4fe', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }
                     }, '← Different role')
+                  ),
+                  // Scene-setter (italic, neutral observer voice) above the conversation
+                  rpScene && h('div', { style: {
+                    padding: '10px 12px', marginBottom: 10, background: '#fafafa', border: '1px solid #e5e7eb',
+                    borderLeft: '3px solid #a855f7', borderRadius: 8,
+                    fontSize: 13, lineHeight: 1.5, color: '#475569', fontStyle: 'italic'
+                  } },
+                    h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: '#6b21a8', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene:'),
+                    rpScene
                   ),
                   // Conversation log
                   h('div', { 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12, maxHeight: '40vh', overflowY: 'auto', padding: 4 } },
@@ -3727,6 +3785,7 @@ window.SelHub = window.SelHub || {
                             'You are role-playing for an SEL bullying-rehearsal tool. The student practices what to say in real life.\n\n' +
                             'YOUR CHARACTER: ' + charCfg.charDesc + '\n' +
                             'AUDIENCE: ' + bandLabel + ' grade band. Use age-appropriate vocabulary.\n\n' +
+                            (rpScene ? 'SCENE (stay consistent with this throughout): ' + rpScene + '\n\n' : '') +
                             'STRICT RULES:\n' +
                             '- Stay in character. Reply with 1-3 sentences max, like a real student would talk.\n' +
                             '- NO slurs of any kind. NO explicit threats or violence. Stay at the "social meanness" level.\n' +
@@ -3769,6 +3828,7 @@ window.SelHub = window.SelHub || {
                             '2) One concrete thing the student could try saying next. Give an example phrasing.\n\n' +
                             'No moralizing. No "good job" filler. Warm, peer-mentor tone. Plain English.\n\n' +
                             'CHARACTER: ' + charCfg.charDesc + '\n' +
+                            (rpScene ? 'SCENE: ' + rpScene + '\n' : '') +
                             'CONVERSATION:\n' + historyText;
                           callGemini(prompt, false).then(function(r) {
                             var coachText = (r || 'Take a breath and notice what just happened. What would you say if it were lower-stakes?').trim();
@@ -3803,6 +3863,7 @@ window.SelHub = window.SelHub || {
                             '2) One thing they could try differently next time.\n\n' +
                             'Be real and specific. No empty praise. No "great job!" filler. Refer to actual words they used when you can.\n\n' +
                             'CHARACTER played by AI: ' + charCfg.charDesc + '\n' +
+                            (rpScene ? 'SCENE: ' + rpScene + '\n' : '') +
                             'CONVERSATION:\n' + historyText;
                           callGemini(prompt, false).then(function(r) {
                             var reflectText = (r || 'You showed up to the practice. That matters. Next time, try one sentence shorter — short and direct usually lands better than long.').trim();
@@ -3832,11 +3893,11 @@ window.SelHub = window.SelHub || {
                     h('p', { style: { margin: '0 0 12px', fontSize: 14, lineHeight: 1.55, color: '#0f172a', whiteSpace: 'pre-wrap' } }, rpReflection),
                     h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                       h('button', {
-                        onClick: function() { upd({ rpRole: '', rpHistory: [], rpInput: '', rpEnded: false, rpReflection: '' }); if (soundOn) sfxClick(); },
+                        onClick: function() { upd({ rpRole: '', rpScene: '', rpHistory: [], rpInput: '', rpEnded: false, rpReflection: '', rpStarting: false }); if (soundOn) sfxClick(); },
                         style: { padding: '8px 14px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
                       }, 'Practice again'),
                       h('button', {
-                        onClick: function() { upd({ rpShown: false, rpRole: '', rpHistory: [], rpInput: '', rpEnded: false, rpReflection: '' }); },
+                        onClick: function() { upd({ rpShown: false, rpRole: '', rpScene: '', rpHistory: [], rpInput: '', rpEnded: false, rpReflection: '', rpStarting: false }); },
                         style: { padding: '8px 14px', background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
                       }, 'Done')
                     )
