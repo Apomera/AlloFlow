@@ -192,6 +192,15 @@ window.SelHub = window.SelHub || {
       var coachInput    = d.coachInput || '';
       var coachHistory  = d.coachHistory || [];
       var coachLoading  = d.coachLoading || false;
+      // Rehearse state — multi-turn role-play where AI plays the friend/peer
+      // (separate from the Practice tab's Q&A advice coach).
+      var fRpScenarioId = d.fRpScenarioId || '';
+      var fRpHistory    = d.fRpHistory || [];
+      var fRpInput      = d.fRpInput || '';
+      var fRpLoading    = !!d.fRpLoading;
+      var fRpStarting   = !!d.fRpStarting;
+      var fRpEnded      = !!d.fRpEnded;
+      var fRpReflection = d.fRpReflection || '';
       // Friendship journal
       var friendNotes   = d.friendNotes || [];
       var newNote       = d.newNote || '';
@@ -211,6 +220,7 @@ window.SelHub = window.SelHub || {
         { id: 'repair',   icon: '\uD83E\uDE79', label: 'Repair' },
         { id: 'endings',  icon: '\uD83C\uDF43', label: 'Endings' },
         { id: 'coach',    icon: '\uD83E\uDD16', label: 'Practice' },
+        { id: 'rehearse', icon: '\uD83C\uDFAD', label: 'Rehearse' },
       ];
 
       var exploredTabs = d.exploredTabs || {};
@@ -622,8 +632,280 @@ window.SelHub = window.SelHub || {
         );
       }
 
-      var content = compassContent || startContent || keepContent || digitalContent || repairContent || endingsContent || coachContent;
+      // ══════════════════════════════════════════════════════════
+      // ── Rehearse — multi-turn role-play (AI plays the friend/peer) ──
+      // ══════════════════════════════════════════════════════════
+      var rehearseContent = null;
+      if (activeTab === 'rehearse') {
+        var FRIEND_SCENARIOS = {
+          new_invite: {
+            label: 'Asking a new person to hang out',
+            icon: '💬', title: 'New person, new invite',
+            blurb: 'You\'ve been chatting with someone in class but never hung out outside school. You want to invite them to something.',
+            charName: 'Potential friend',
+            charDesc: 'a ' + band + '-school student the user has been chatting with in class but has never hung out with outside school. You are friendly, mildly cautious about the unfamiliar ask, and want it to sound like a normal-stakes hang, not "are we best friends now?" You may ask clarifying questions ("oh, who else is going?" / "what time?"). You say yes IF the invite is specific and low-pressure. You hedge if it sounds vague or intense.',
+            fallbackScene: 'After class on Friday. You\'re packing up. The other person is standing nearby, not in a rush.',
+            fallbackOpener: 'Oh hey — what\'s up?'
+          },
+          apologize: {
+            label: 'Apologizing after a fight',
+            icon: '🩹', title: 'Repair after a fight',
+            blurb: 'You and your friend got into it last week. You haven\'t talked since. You want to repair.',
+            charName: 'Friend you hurt',
+            charDesc: 'a ' + band + '-school student\'s close friend who is still hurt from a fight a few days ago. You are NOT in crisis. You are guarded, slightly cool, waiting to see if the apology is real or performative. You may test the apology ("so you actually get why that was messed up?"). You soften IF the apology names the specific impact, doesn\'t make excuses, doesn\'t rush you to forgive. You stay cool if it\'s vague, defensive, or fishing.',
+            fallbackScene: 'Lunch. You see each other across the cafeteria for the first time since the fight. You walk over.',
+            fallbackOpener: 'Hi.'
+          },
+          set_boundary: {
+            label: 'Setting a boundary with a friend',
+            icon: '🛡️', title: 'Setting a boundary',
+            blurb: 'A friend keeps doing the thing — borrowing without asking, last-minute canceling, pulling you into drama. You need to say something.',
+            charName: 'Boundary-pushing friend',
+            charDesc: 'a close ' + band + '-school friend who keeps doing a specific thing that bothers the student (borrowing without asking / chronically canceling / pulling them into drama — pick one realistically). You don\'t see it as a big deal. When called on it, you may minimize ("seriously? you\'re making this a thing?"), get defensive, or get briefly hurt feelings. You DO actually care about the friendship — you adjust IF the student names it directly without attacking your character.',
+            fallbackScene: 'Texting after the latest time it happened. You\'re about to ask them for the favor again.',
+            fallbackOpener: 'heyyy can I borrow your charger one more time'
+          },
+          left_out: {
+            label: 'Being honest about feeling left out',
+            icon: '💔', title: 'Naming the hurt',
+            blurb: 'You weren\'t invited to something your friend group did. You\'re not making a scene — but you want to say it.',
+            charName: 'Friend from the group',
+            charDesc: 'a close friend of the student who was at a group hang the student wasn\'t invited to. There WAS a reason (the host\'s parent capped numbers / they thought you had work / it was a small thing). You feel a little caught. You may try to brush it off ("it was nothing, you didn\'t miss anything") or get defensive ("it wasn\'t even my call"). You soften and engage honestly IF the student names the hurt without guilt-tripping or making it about loyalty.',
+            fallbackScene: 'Walking together after school the next day.',
+            fallbackOpener: 'Hey what\'s up — you seem off today.'
+          },
+          calling_in: {
+            label: 'Calling a friend IN (not OUT) on bad behavior',
+            icon: '🪞', title: 'Calling in, not calling out',
+            blurb: 'A friend did something that wasn\'t okay — a comment, a joke, a freeze-out of someone. You want to talk to them about it, just the two of you.',
+            charName: 'Friend who messed up',
+            charDesc: 'a close friend of the student. You did something recently that crossed a line (a joke at someone\'s expense / going along with mocking another kid / a comment that landed wrong). Your initial reaction to being called on it is defensive: "it was a joke," "you laughed too," "everyone does it," "are you serious right now?" You soften IF the student keeps it private (1:1), doesn\'t shame, and names the specific behavior + specific impact. You harden if the student lectures, moralizes, or threatens the friendship.',
+            fallbackScene: 'Texting later that night. Just the two of you. The day is over but the moment is still sitting with the student.',
+            fallbackOpener: 'yo what up'
+          },
+          reconnect: {
+            label: 'Reconnecting after a drift',
+            icon: '🌱', title: 'Reaching out after months',
+            blurb: 'You and a friend slowly drifted — different schedules, different friend groups. You miss them. You want to reach out without it being weird.',
+            charName: 'Old friend',
+            charDesc: 'an old friend of the student who has drifted from them over months — not from a fight, just life. You are happy to hear from them but a little unsure ("why now?" / "is everything okay?"). You are warm. You may admit you\'ve also been wanting to reconnect but felt awkward. You re-engage easily IF the student keeps it light, names that they miss them without making it a big thing.',
+            fallbackScene: 'You\'re texting cold for the first time in months. Last text was in August.',
+            fallbackOpener: 'oh hey!! it\'s been forever, what\'s going on'
+          }
+        };
+        var F_ORDER = ['new_invite', 'apologize', 'set_boundary', 'left_out', 'calling_in', 'reconnect'];
+        var fCfg = fRpScenarioId && FRIEND_SCENARIOS[fRpScenarioId];
+
+        function fStartRp(sid) {
+          var cfg = FRIEND_SCENARIOS[sid];
+          if (!cfg) return;
+          if (!callGemini) {
+            upd({ fRpScenarioId: sid, fRpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener, scene: cfg.fallbackScene }], fRpInput: '', fRpEnded: false, fRpReflection: '', fRpStarting: false });
+            return;
+          }
+          upd({ fRpScenarioId: sid, fRpHistory: [], fRpInput: '', fRpEnded: false, fRpReflection: '', fRpStarting: true });
+          var prompt =
+            'You are setting up a brief friendship role-play. Build a fresh mini-scene + the other person\'s opening line. STRICT JSON only:\n' +
+            '{"scene":"1-2 sentence scene-setter in 2nd person naming WHERE, WHEN, and the current moment — present tense, observational","opener":"the FIRST in-character line, 1-2 sentences, in their voice. For text scenarios use lowercase/casual texting style."}\n\n' +
+            'CHARACTER: ' + cfg.charDesc + '\n' +
+            'TYPICAL SCENE: ' + cfg.fallbackScene + '\n' +
+            'AUDIENCE: ' + band + ' grade band.\n\n' +
+            'RULES: Vary the specifics. NO slurs, NO sexual content, NO violence. Return ONLY the JSON.';
+          callGemini(prompt, true).then(function(r) {
+            try {
+              var clean = (r || '').replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim().replace(/^[^{]*/, '').replace(/[^}]*$/, '');
+              var parsed = JSON.parse(clean);
+              if (!parsed || !parsed.scene || !parsed.opener) throw new Error('shape');
+              upd({ fRpHistory: [{ speaker: 'ai', text: String(parsed.opener).trim().replace(/^"|"$/g, ''), scene: String(parsed.scene).trim() }], fRpStarting: false });
+            } catch (e) {
+              upd({ fRpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener, scene: cfg.fallbackScene }], fRpStarting: false });
+            }
+          }).catch(function() {
+            upd({ fRpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener, scene: cfg.fallbackScene }], fRpStarting: false });
+          });
+        }
+        function fSendTurn() {
+          if (!callGemini || !fRpInput.trim() || !fCfg) return;
+          var st = fRpInput.trim();
+          var newHist = fRpHistory.concat([{ speaker: 'student', text: st }]);
+          upd({ fRpHistory: newHist, fRpInput: '', fRpLoading: true });
+          var sceneTxt = (fRpHistory[0] && fRpHistory[0].scene) || fCfg.fallbackScene;
+          var histStr = newHist.map(function(t) {
+            if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
+            if (t.speaker === 'coach') return 'COACH: ' + t.text;
+            return 'FRIEND: "' + t.text.replace(/"/g, '\\"') + '"';
+          }).join('\n');
+          var turnN = newHist.filter(function(t) { return t.speaker === 'student'; }).length;
+          var prompt =
+            'You are role-playing a friendship scenario for an SEL practice tool.\n\n' +
+            'YOUR CHARACTER: ' + fCfg.charDesc + '\n' +
+            'SCENE: ' + sceneTxt + '\n' +
+            'AUDIENCE: ' + band + ' student.\n\n' +
+            'STRICT RULES:\n' +
+            '- Stay in character. 1-3 sentences. Sound like a real teenager.\n' +
+            '- NO slurs, NO sexual content, NO violence.\n' +
+            '- Do NOT narrate, moralize, or break character. Just speak as the character. No quotation marks.\n' +
+            '- This is turn ' + turnN + '. By turn 4-5, if the student handled it well (specific, non-attacking, named impact, kept it real) — soften, engage, agree to the ask. If they did NOT — stay consistent or get more guarded.\n\n' +
+            'CONVERSATION:\n' + histStr + '\n\n' +
+            'Respond as the character in 1-3 sentences. Just the line.';
+          callGemini(prompt, false).then(function(r) {
+            var reply = (r || '').trim().replace(/^"|"$/g, '');
+            upd({ fRpHistory: newHist.concat([{ speaker: 'ai', text: reply || '...' }]), fRpLoading: false });
+          }).catch(function() {
+            upd({ fRpHistory: newHist.concat([{ speaker: 'ai', text: '(AI not reachable — try again in a moment)' }]), fRpLoading: false });
+          });
+        }
+        function fCoachBreak() {
+          if (!callGemini || fRpHistory.length === 0 || !fCfg) return;
+          upd('fRpLoading', true);
+          var sceneTxt = (fRpHistory[0] && fRpHistory[0].scene) || fCfg.fallbackScene;
+          var histStr = fRpHistory.map(function(t) {
+            if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
+            if (t.speaker === 'coach') return 'COACH: ' + t.text;
+            return 'FRIEND: "' + t.text.replace(/"/g, '\\"') + '"';
+          }).join('\n');
+          var prompt =
+            'You are a kind friendship coach watching a role-play. OUT OF CHARACTER NOW. Tell the student under 80 words:\n' +
+            '1) What the friend probably needs from them in THIS moment.\n' +
+            '2) One concrete phrase or move to try next. Example wording.\n\n' +
+            'No moralizing. No "great job" filler. Warm peer-mentor tone. Plain English. Friendship principles: specific over vague, name impact not motive, don\'t lecture friends.\n\n' +
+            'CHARACTER: ' + fCfg.charDesc + '\n' +
+            'SCENE: ' + sceneTxt + '\n' +
+            'CONVERSATION:\n' + histStr;
+          callGemini(prompt, false).then(function(r) {
+            var ct = (r || 'Take a breath. What\'s the one specific thing you want them to hear? Say that — then stop talking.').trim();
+            upd({ fRpHistory: fRpHistory.concat([{ speaker: 'coach', text: ct }]), fRpLoading: false });
+          }).catch(function() { upd('fRpLoading', false); });
+        }
+        function fEndRp() {
+          if (!callGemini || !fCfg) return;
+          upd('fRpLoading', true);
+          var sceneTxt = (fRpHistory[0] && fRpHistory[0].scene) || fCfg.fallbackScene;
+          var histStr = fRpHistory.map(function(t) {
+            if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
+            if (t.speaker === 'coach') return 'COACH: ' + t.text;
+            return 'FRIEND: "' + t.text.replace(/"/g, '\\"') + '"';
+          }).join('\n');
+          var prompt =
+            'You are a kind friendship coach reflecting on a brief role-play. In 2-3 sentences (under 70 words):\n' +
+            '1) One specific thing the student did well — reference their actual words.\n' +
+            '2) One thing to try differently next time.\n\n' +
+            'No empty praise. Friendship lens: were they specific? did they name impact? did they listen?\n\n' +
+            'CHARACTER: ' + fCfg.charDesc + '\n' +
+            'SCENE: ' + sceneTxt + '\n' +
+            'CONVERSATION:\n' + histStr;
+          callGemini(prompt, false).then(function(r) {
+            var rt = (r || 'You showed up. That\'s the rep that counts. Next time, try saying the thing in one sentence before any context — the context can come second.').trim();
+            upd({ fRpEnded: true, fRpReflection: rt, fRpLoading: false });
+            if (awardXP) awardXP(5, 'Rehearsed a friendship conversation!');
+          }).catch(function() {
+            upd({ fRpEnded: true, fRpReflection: 'Practice complete. Next time, try saying the main thing in one sentence first, then any context.', fRpLoading: false });
+          });
+        }
+        function fResetRp() { upd({ fRpScenarioId: '', fRpHistory: [], fRpInput: '', fRpEnded: false, fRpReflection: '', fRpStarting: false }); }
+
+        var sceneTxt = fRpHistory[0] && fRpHistory[0].scene;
+        rehearseContent = h('div', { style: { padding: '20px', maxWidth: '640px', margin: '0 auto' } },
+          !fRpScenarioId && h('div', null,
+            h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: 16 } },
+              h('div', { className: 'sel-hero-icon', style: { fontSize: 48, marginBottom: 6 } }, '🎭'),
+              h('h3', { style: { fontSize: 18, fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'Rehearse the conversation'),
+              h('p', { style: { fontSize: 13, color: '#94a3b8', margin: 0 } }, 'AI plays the friend. You practice what you would actually say. Coach is one tap away.')
+            ),
+            h('div', { style: { display: 'grid', gap: 10 } },
+              F_ORDER.map(function(sid) {
+                var cfg = FRIEND_SCENARIOS[sid];
+                return h('button', {
+                  key: sid,
+                  onClick: function() { fStartRp(sid); },
+                  disabled: !callGemini || fRpStarting,
+                  style: {
+                    padding: '12px 14px', textAlign: 'left',
+                    background: '#fffbeb', border: '2px solid #fde68a', borderRadius: 12,
+                    color: '#0f172a', cursor: (callGemini && !fRpStarting) ? 'pointer' : 'not-allowed',
+                    display: 'flex', alignItems: 'flex-start', gap: 12, fontSize: 14,
+                    opacity: fRpStarting ? 0.6 : 1
+                  }
+                },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 24, marginTop: 2 } }, cfg.icon),
+                  h('div', { style: { flex: 1 } },
+                    h('div', { style: { fontWeight: 700, color: AMBER_DARK, marginBottom: 4 } }, cfg.label),
+                    h('div', { style: { fontSize: 12, color: '#64748b', lineHeight: 1.5 } }, cfg.blurb)
+                  )
+                );
+              })
+            ),
+            fRpStarting && h('p', { 'aria-live': 'polite', style: { textAlign: 'center', marginTop: 12, fontSize: 12, color: AMBER_DARK, fontStyle: 'italic' } }, 'Setting the scene…'),
+            !callGemini && h('p', { style: { textAlign: 'center', marginTop: 12, fontSize: 12, color: AMBER_DARK, fontStyle: 'italic' } }, 'AI features need a connection.')
+          ),
+          fRpScenarioId && fCfg && h('div', null,
+            h('div', { style: { padding: '8px 12px', marginBottom: 12, background: '#fef3c7', borderRadius: 8, fontSize: 12, color: AMBER_DARK, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+              h('span', { style: { fontWeight: 700 } }, fCfg.icon + ' ' + fCfg.label),
+              h('button', { onClick: fResetRp, style: { padding: '4px 10px', background: '#fff', color: AMBER_DARK, border: '1px solid #fcd34d', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' } }, '← Different scenario')
+            ),
+            sceneTxt && h('div', { style: { padding: '10px 12px', marginBottom: 10, background: '#fafafa', border: '1px solid #e5e7eb', borderLeft: '3px solid #f59e0b', borderRadius: 8, fontSize: 13, lineHeight: 1.5, color: '#475569', fontStyle: 'italic' } },
+              h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: AMBER_DARK, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene:'),
+              sceneTxt
+            ),
+            h('div', { 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '40vh', overflowY: 'auto', padding: 4 } },
+              fRpHistory.map(function(turn, ti) {
+                var isStudent = turn.speaker === 'student';
+                var isCoach = turn.speaker === 'coach';
+                return h('div', {
+                  key: 'f-rp-' + ti,
+                  style: {
+                    alignSelf: isStudent ? 'flex-end' : 'flex-start', maxWidth: '85%',
+                    padding: '10px 13px', borderRadius: 12, fontSize: 14, lineHeight: 1.5, whiteSpace: 'pre-wrap',
+                    background: isStudent ? '#eff6ff' : (isCoach ? '#fef3c7' : '#fffbeb'),
+                    border: '1px solid ' + (isStudent ? '#bfdbfe' : (isCoach ? '#fcd34d' : '#fde68a')),
+                    color: '#1f2937'
+                  }
+                },
+                  h('div', { style: { fontSize: 10, fontWeight: 700, color: isStudent ? '#1d4ed8' : AMBER_DARK, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
+                    isStudent ? 'You' : (isCoach ? '🪶 Coach (out of character)' : '🎭 ' + fCfg.charName)),
+                  h('div', null, turn.text)
+                );
+              })
+            ),
+            !fRpEnded && h('div', { style: { marginTop: 10 } },
+              h('textarea', {
+                id: 'f-rp-input', value: fRpInput,
+                onChange: function(ev) { upd('fRpInput', ev.target.value); },
+                placeholder: 'What would you actually say? Keep it short — say one thing, then listen.',
+                rows: 2, disabled: fRpLoading,
+                style: { width: '100%', padding: 10, fontSize: 13, border: '2px solid #fde68a', borderRadius: 8, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 8 }
+              }),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                h('button', {
+                  onClick: fSendTurn, disabled: fRpLoading || !fRpInput.trim() || !callGemini, 'aria-busy': fRpLoading ? 'true' : 'false',
+                  style: { padding: '10px 16px', background: (fRpLoading || !fRpInput.trim() || !callGemini) ? '#cbd5e1' : '#f59e0b', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: (fRpLoading || !fRpInput.trim() || !callGemini) ? 'not-allowed' : 'pointer', fontSize: 13 }
+                }, fRpLoading ? 'Thinking…' : 'Send →'),
+                h('button', {
+                  onClick: fCoachBreak, disabled: fRpLoading || !callGemini || fRpHistory.length === 0,
+                  style: { padding: '10px 14px', background: '#fff', color: AMBER_DARK, border: '1px solid #fcd34d', borderRadius: 8, fontWeight: 600, cursor: (fRpLoading || !callGemini || fRpHistory.length === 0) ? 'not-allowed' : 'pointer', fontSize: 13 }
+                }, '🪶 Break character — coach me'),
+                fRpHistory.filter(function(t) { return t.speaker === 'student'; }).length >= 2 && h('button', {
+                  onClick: fEndRp, disabled: fRpLoading || !callGemini,
+                  style: { padding: '10px 14px', background: '#fff', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: (fRpLoading || !callGemini) ? 'not-allowed' : 'pointer', fontSize: 13 }
+                }, 'End & reflect')
+              )
+            ),
+            fRpEnded && fRpReflection && h('div', { style: { marginTop: 12, padding: 14, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10 } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: '#166534', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'How that went'),
+              h('p', { style: { margin: '0 0 12px', fontSize: 14, lineHeight: 1.55, color: '#0f172a', whiteSpace: 'pre-wrap' } }, fRpReflection),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                h('button', { onClick: function() { fStartRp(fRpScenarioId); }, style: { padding: '8px 14px', background: '#f59e0b', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 } }, 'Try again'),
+                h('button', { onClick: fResetRp, style: { padding: '8px 14px', background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 } }, 'Different scenario')
+              )
+            ),
+            h('p', { style: { margin: '10px 0 0', fontSize: 11, color: AMBER_DARK, fontStyle: 'italic' } }, 'AI-generated. The friend is a simulation. Take what is useful, leave the rest.')
+          )
+        );
+      }
+
+      var content = compassContent || startContent || keepContent || digitalContent || repairContent || endingsContent || coachContent || rehearseContent;
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('friendship', h) : null),
         tabBar,
         heroBand,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content),
