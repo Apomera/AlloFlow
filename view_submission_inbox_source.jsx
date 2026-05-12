@@ -53,6 +53,15 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   // re-reads without needing a full remount.
   const [gradebookOpen, setGradebookOpen] = useState(false);
   const [gradebookRefresh, setGradebookRefresh] = useState(0);
+  // Phase 3 v2.3 (May 12 2026): group-by pivot for the gradebook table.
+  const [gradebookGroupBy, setGradebookGroupBy] = useState('submission');  // 'submission' | 'student'
+  const [expandedStudent, setExpandedStudent] = useState(null);
+  // Session persistence: auto-save globalRubric + anchors to localStorage
+  // so the teacher doesn't lose their setup across browser refreshes / tabs.
+  // sessionLoadedRef prevents the first auto-save from overwriting state
+  // before the restore effect has run.
+  const sessionLoadedRef = useRef(false);
+  const [savedSessionMeta, setSavedSessionMeta] = useState(null);  // { savedAt } if restored from localStorage
   const gradebookEntries = React.useMemo(() => {
     try {
       const raw = JSON.parse(localStorage.getItem('alloflow_offline_grades') || '{}');
@@ -63,6 +72,60 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   const subInputRef = useRef(null);
 
   const tx = t || ((k, fallback) => fallback || k);
+
+  // Restore last saved session on first open (Phase 3 v2.3, May 12 2026).
+  // Pulls globalRubric + anchors back from localStorage. Class key + queue
+  // are intentionally NOT persisted — those are per-batch and shouldn't
+  // surprise the teacher by sticking around.
+  React.useEffect(() => {
+    if (!isOpen || sessionLoadedRef.current) return;
+    sessionLoadedRef.current = true;
+    try {
+      const raw = localStorage.getItem('alloflow_inbox_session');
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (saved && typeof saved === 'object') {
+        if (saved.globalRubric && (saved.globalRubric.rubric || saved.globalRubric.context)) {
+          setGlobalRubric({
+            rubric: saved.globalRubric.rubric || '',
+            context: saved.globalRubric.context || '',
+          });
+          setGlobalRubricOpen(true);
+        }
+        if (Array.isArray(saved.anchors) && saved.anchors.length > 0) {
+          setAnchors(saved.anchors);
+        }
+        if (saved.savedAt) setSavedSessionMeta({ savedAt: saved.savedAt });
+      }
+    } catch (e) { /* ignore corrupt storage */ }
+  }, [isOpen]);
+
+  // Auto-save on changes to globalRubric or anchors (only after first restore
+  // has run, so we don't clobber stored state on mount).
+  React.useEffect(() => {
+    if (!sessionLoadedRef.current) return;
+    try {
+      const payload = {
+        globalRubric: globalRubric,
+        anchors: anchors,
+        savedAt: new Date().toISOString(),
+      };
+      // Only write if there's actually something worth saving.
+      if ((globalRubric.rubric || '').trim() || (globalRubric.context || '').trim() || anchors.length > 0) {
+        localStorage.setItem('alloflow_inbox_session', JSON.stringify(payload));
+      } else {
+        localStorage.removeItem('alloflow_inbox_session');
+      }
+    } catch (e) { /* private mode / quota */ }
+  }, [globalRubric, anchors]);
+
+  const clearSavedSession = () => {
+    try { localStorage.removeItem('alloflow_inbox_session'); } catch (e) {}
+    setGlobalRubric({ rubric: '', context: '' });
+    setAnchors([]);
+    setSavedSessionMeta(null);
+    addToast && addToast('Cleared saved class rubric and anchors.', 'info');
+  };
 
   const handleKeyFile = async (e) => {
     const file = e.target?.files?.[0];
@@ -663,6 +726,18 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
             }),
             /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.78rem', color: '#475569' } },
               'This rubric is used by "Grade entire queue" and as the default for each per-submission Grade button. Per-submission rubrics still override the global one when set.'
+            ),
+            (savedSessionMeta || (globalRubric.rubric || '').trim() || anchors.length > 0) && /*#__PURE__*/React.createElement('div', { style: { marginTop: 10, paddingTop: 10, borderTop: '1px dashed #c7d2fe', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, fontSize: '0.78rem', color: '#3730a3' } },
+              /*#__PURE__*/React.createElement('span', null,
+                savedSessionMeta
+                  ? '💾 Restored from saved session (' + new Date(savedSessionMeta.savedAt).toLocaleString() + '). Auto-saves on every change.'
+                  : '💾 Auto-saves your rubric + anchors so they persist across browser refreshes.'
+              ),
+              /*#__PURE__*/React.createElement('button', {
+                type: 'button', onClick: clearSavedSession,
+                title: 'Clear the auto-saved rubric and anchors',
+                style: { padding: '4px 10px', background: 'transparent', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer' }
+              }, 'Clear saved session')
             )
           )
         ),
@@ -680,11 +755,23 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
               /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', padding: '1px 8px', borderRadius: 999, background: '#bbf7d0', color: '#166534', fontSize: '0.7rem', fontWeight: 700 } }, gradebookEntries.length + ' saved'),
               /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.75rem', fontWeight: 600, color: '#16a34a' } }, gradebookOpen ? '▾' : '▸')
             ),
-            gradebookEntries.length > 0 && /*#__PURE__*/React.createElement('button', {
-              type: 'button', onClick: exportGradebookCsv,
-              title: 'Download all saved grades as a CSV spreadsheet',
-              style: { padding: '6px 12px', background: 'white', color: '#166534', border: '1px solid #86efac', borderRadius: 6, fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }
-            }, '⬇ Export CSV')
+            gradebookEntries.length > 0 && /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
+              /*#__PURE__*/React.createElement('div', { style: { display: 'inline-flex', background: 'white', border: '1px solid #86efac', borderRadius: 6, padding: 2, fontSize: '0.74rem', fontWeight: 600 } },
+                /*#__PURE__*/React.createElement('button', {
+                  type: 'button', onClick: () => setGradebookGroupBy('submission'),
+                  style: { padding: '4px 10px', background: gradebookGroupBy === 'submission' ? '#16a34a' : 'transparent', color: gradebookGroupBy === 'submission' ? 'white' : '#166534', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 700 }
+                }, 'Submissions'),
+                /*#__PURE__*/React.createElement('button', {
+                  type: 'button', onClick: () => setGradebookGroupBy('student'),
+                  style: { padding: '4px 10px', background: gradebookGroupBy === 'student' ? '#16a34a' : 'transparent', color: gradebookGroupBy === 'student' ? 'white' : '#166534', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 700 }
+                }, 'By student')
+              ),
+              /*#__PURE__*/React.createElement('button', {
+                type: 'button', onClick: exportGradebookCsv,
+                title: 'Download all saved grades as a CSV spreadsheet',
+                style: { padding: '6px 12px', background: 'white', color: '#166534', border: '1px solid #86efac', borderRadius: 6, fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }
+              }, '⬇ Export CSV')
+            )
           ),
           gradebookOpen && /*#__PURE__*/React.createElement('div', { style: { marginTop: 12, paddingTop: 12, borderTop: '1px solid #bbf7d0' } },
             gradebookEntries.length === 0
@@ -696,44 +783,117 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                     /*#__PURE__*/React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' } },
                       /*#__PURE__*/React.createElement('thead', null,
                         /*#__PURE__*/React.createElement('tr', { style: { background: '#f0fdf4', borderBottom: '1px solid #bbf7d0' } },
-                          /*#__PURE__*/React.createElement('th', { style: { textAlign: 'left', padding: '8px 12px', fontWeight: 700, color: '#166534', fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Nickname'),
-                          /*#__PURE__*/React.createElement('th', { style: { textAlign: 'left', padding: '8px 12px', fontWeight: 700, color: '#166534', fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Document'),
-                          /*#__PURE__*/React.createElement('th', { style: { textAlign: 'left', padding: '8px 12px', fontWeight: 700, color: '#166534', fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Avg'),
-                          /*#__PURE__*/React.createElement('th', { style: { textAlign: 'left', padding: '8px 12px', fontWeight: 700, color: '#166534', fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Graded'),
+                          /*#__PURE__*/React.createElement('th', { style: { textAlign: 'left', padding: '8px 12px', fontWeight: 700, color: '#166534', fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, gradebookGroupBy === 'student' ? 'Student' : 'Nickname'),
+                          /*#__PURE__*/React.createElement('th', { style: { textAlign: 'left', padding: '8px 12px', fontWeight: 700, color: '#166534', fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, gradebookGroupBy === 'student' ? 'Submissions' : 'Document'),
+                          /*#__PURE__*/React.createElement('th', { style: { textAlign: 'left', padding: '8px 12px', fontWeight: 700, color: '#166534', fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, gradebookGroupBy === 'student' ? 'Avg of avgs' : 'Avg'),
+                          /*#__PURE__*/React.createElement('th', { style: { textAlign: 'left', padding: '8px 12px', fontWeight: 700, color: '#166534', fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, gradebookGroupBy === 'student' ? 'Last graded' : 'Graded'),
                           /*#__PURE__*/React.createElement('th', { style: { textAlign: 'right', padding: '8px 12px' } }, '')
                         )
                       ),
                       /*#__PURE__*/React.createElement('tbody', null,
-                        gradebookEntries.map((entry, i) => {
-                          const avg = gradebookAvg(entry);
-                          const sc = typeof avg === 'number' ? scoreColor(avg) : { bg: '#f1f5f9', color: '#475569' };
-                          const respCount = Object.keys(entry.grades || {}).length;
-                          return /*#__PURE__*/React.createElement('tr', { key: i, style: { borderBottom: '1px solid #f1f5f9' } },
-                            /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', fontWeight: 700, color: '#1e293b' } },
-                              entry.nickname,
-                              entry.className && /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.72rem', color: '#94a3b8', fontWeight: 400 } }, entry.className)
-                            ),
-                            /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', color: '#475569' } },
-                              entry.docTitle,
-                              /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.72rem', color: '#94a3b8' } }, respCount + ' response' + (respCount === 1 ? '' : 's'))
-                            ),
-                            /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px' } },
-                              avg !== null
-                                ? /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700, fontSize: '0.78rem' } }, avg + '/100')
-                                : /*#__PURE__*/React.createElement('span', { style: { color: '#94a3b8', fontSize: '0.8rem' } }, '—')
-                            ),
-                            /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', fontSize: '0.78rem', color: '#64748b' } },
-                              entry.gradedAt ? new Date(entry.gradedAt).toLocaleDateString() : '—'
-                            ),
-                            /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', textAlign: 'right' } },
-                              /*#__PURE__*/React.createElement('button', {
-                                type: 'button', onClick: () => deleteGradebookEntry(entry.key),
-                                title: 'Remove from local gradebook',
-                                style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: '0.74rem', cursor: 'pointer' }
-                              }, '✗')
-                            )
-                          );
-                        })
+                        gradebookGroupBy === 'student'
+                          ? (() => {
+                              // Group entries by nickname
+                              const byStudent = {};
+                              gradebookEntries.forEach(e => {
+                                const key = (e.nickname || 'unknown').toLowerCase();
+                                if (!byStudent[key]) byStudent[key] = { nickname: e.nickname, className: e.className, entries: [] };
+                                byStudent[key].entries.push(e);
+                              });
+                              const students = Object.values(byStudent).sort((a, b) => (a.nickname || '').localeCompare(b.nickname || ''));
+                              return students.map((s, i) => {
+                                const avgs = s.entries.map(e => gradebookAvg(e)).filter(a => typeof a === 'number');
+                                const avgOfAvgs = avgs.length > 0 ? Math.round(avgs.reduce((a, b) => a + b, 0) / avgs.length) : null;
+                                const sc = typeof avgOfAvgs === 'number' ? scoreColor(avgOfAvgs) : { bg: '#f1f5f9', color: '#475569' };
+                                const lastGraded = s.entries
+                                  .map(e => e.gradedAt)
+                                  .filter(Boolean)
+                                  .sort()
+                                  .pop();
+                                const studentKey = s.nickname + '|' + (s.className || '');
+                                const isExpanded = expandedStudent === studentKey;
+                                return /*#__PURE__*/React.createElement(React.Fragment, { key: i },
+                                  /*#__PURE__*/React.createElement('tr', { style: { borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }, onClick: () => setExpandedStudent(isExpanded ? null : studentKey) },
+                                    /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', fontWeight: 700, color: '#1e293b' } },
+                                      /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', marginRight: 6, fontSize: '0.7rem', color: '#94a3b8' } }, isExpanded ? '▾' : '▸'),
+                                      s.nickname,
+                                      s.className && /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.72rem', color: '#94a3b8', fontWeight: 400, marginLeft: 14 } }, s.className)
+                                    ),
+                                    /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', color: '#475569' } },
+                                      s.entries.length + ' submission' + (s.entries.length === 1 ? '' : 's')
+                                    ),
+                                    /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px' } },
+                                      avgOfAvgs !== null
+                                        ? /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700, fontSize: '0.78rem' } }, avgOfAvgs + '/100')
+                                        : /*#__PURE__*/React.createElement('span', { style: { color: '#94a3b8', fontSize: '0.8rem' } }, '—')
+                                    ),
+                                    /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', fontSize: '0.78rem', color: '#64748b' } },
+                                      lastGraded ? new Date(lastGraded).toLocaleDateString() : '—'
+                                    ),
+                                    /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', textAlign: 'right', fontSize: '0.72rem', color: '#94a3b8' } },
+                                      isExpanded ? 'click to collapse' : 'click for detail'
+                                    )
+                                  ),
+                                  isExpanded && s.entries.map((entry, j) => {
+                                    const eAvg = gradebookAvg(entry);
+                                    const eSc = typeof eAvg === 'number' ? scoreColor(eAvg) : { bg: '#f1f5f9', color: '#475569' };
+                                    const respCount = Object.keys(entry.grades || {}).length;
+                                    return /*#__PURE__*/React.createElement('tr', { key: 'e' + j, style: { borderBottom: '1px solid #f1f5f9', background: '#fafaf9' } },
+                                      /*#__PURE__*/React.createElement('td', { style: { padding: '6px 12px 6px 36px', fontSize: '0.78rem', color: '#94a3b8', fontWeight: 400 } }, '↳ entry ' + (j + 1)),
+                                      /*#__PURE__*/React.createElement('td', { style: { padding: '6px 12px', color: '#475569', fontSize: '0.82rem' } },
+                                        entry.docTitle,
+                                        /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.7rem', color: '#94a3b8' } }, respCount + ' response' + (respCount === 1 ? '' : 's'))
+                                      ),
+                                      /*#__PURE__*/React.createElement('td', { style: { padding: '6px 12px' } },
+                                        eAvg !== null
+                                          ? /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', padding: '1px 7px', borderRadius: 999, background: eSc.bg, color: eSc.color, fontWeight: 700, fontSize: '0.72rem' } }, eAvg + '/100')
+                                          : /*#__PURE__*/React.createElement('span', { style: { color: '#94a3b8', fontSize: '0.8rem' } }, '—')
+                                      ),
+                                      /*#__PURE__*/React.createElement('td', { style: { padding: '6px 12px', fontSize: '0.72rem', color: '#64748b' } },
+                                        entry.gradedAt ? new Date(entry.gradedAt).toLocaleDateString() : '—'
+                                      ),
+                                      /*#__PURE__*/React.createElement('td', { style: { padding: '6px 12px', textAlign: 'right' } },
+                                        /*#__PURE__*/React.createElement('button', {
+                                          type: 'button', onClick: (e) => { e.stopPropagation(); deleteGradebookEntry(entry.key); },
+                                          title: 'Remove from local gradebook',
+                                          style: { padding: '2px 8px', background: 'transparent', color: '#94a3b8', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: '0.7rem', cursor: 'pointer' }
+                                        }, '✗')
+                                      )
+                                    );
+                                  })
+                                );
+                              });
+                            })()
+                          : gradebookEntries.map((entry, i) => {
+                              const avg = gradebookAvg(entry);
+                              const sc = typeof avg === 'number' ? scoreColor(avg) : { bg: '#f1f5f9', color: '#475569' };
+                              const respCount = Object.keys(entry.grades || {}).length;
+                              return /*#__PURE__*/React.createElement('tr', { key: i, style: { borderBottom: '1px solid #f1f5f9' } },
+                                /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', fontWeight: 700, color: '#1e293b' } },
+                                  entry.nickname,
+                                  entry.className && /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.72rem', color: '#94a3b8', fontWeight: 400 } }, entry.className)
+                                ),
+                                /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', color: '#475569' } },
+                                  entry.docTitle,
+                                  /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.72rem', color: '#94a3b8' } }, respCount + ' response' + (respCount === 1 ? '' : 's'))
+                                ),
+                                /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px' } },
+                                  avg !== null
+                                    ? /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700, fontSize: '0.78rem' } }, avg + '/100')
+                                    : /*#__PURE__*/React.createElement('span', { style: { color: '#94a3b8', fontSize: '0.8rem' } }, '—')
+                                ),
+                                /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', fontSize: '0.78rem', color: '#64748b' } },
+                                  entry.gradedAt ? new Date(entry.gradedAt).toLocaleDateString() : '—'
+                                ),
+                                /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', textAlign: 'right' } },
+                                  /*#__PURE__*/React.createElement('button', {
+                                    type: 'button', onClick: () => deleteGradebookEntry(entry.key),
+                                    title: 'Remove from local gradebook',
+                                    style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: '0.74rem', cursor: 'pointer' }
+                                  }, '✗')
+                                )
+                              );
+                            })
                       )
                     )
                   ),
