@@ -510,6 +510,7 @@
         // Inner Work (contemplative + reflective practice)
         { id: '_cat_InnerWork', icon: '\uD83E\uDDD8', label: 'Inner Work', desc: '', color: 'slate', category: true },
         { id: 'mindfulness', icon: '\uD83E\uDDD8', label: 'Mindfulness Corner',  desc: 'Guided breathing exercises, body scans, and mindfulness activities.', color: 'purple', recommendedRange: 'K-12' },
+        { id: 'quietQuestions', icon: '\uD83C\uDF12', label: 'Quiet Questions',  desc: 'Weekly inner inquiry practice. Sit with one open-ended question for a full week. 20 rotating queries across attention, longing, difficulty, connection, and becoming. Inspired by Quaker query tradition; secular and non-prescriptive.', color: 'purple', recommendedRange: '5-12' },
         // Care of Self (self-compassion, relational self-care)
         { id: '_cat_CareOfSelf', icon: '\uD83E\uDD7A', label: 'Care of Self', desc: '', color: 'slate', category: true },
         // Self-Direction (agency, goal-setting, executive function)
