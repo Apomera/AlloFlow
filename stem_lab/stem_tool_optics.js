@@ -633,6 +633,98 @@
           // TIR: draw the reflected ray as the strong outgoing ray (no transmitted light)
           h('text', { key: 'tir', x: cx, y: H - 8, fill: '#ef4444', fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, '⚡ TIR — no light transmitted into n₂')
         ],
+        // ── Animated photon dots along each ray ──
+        // Visualizes light traveling: incoming photon hits interface, splits
+        // into reflected (always) and refracted (when not TIR). Refracted
+        // photon's animation duration scales with n₂ so denser-medium light
+        // visibly slows down — the physics intuition behind Snell's law.
+        // Browsers without CSS Motion Path fall back to static dots.
+        (function() {
+          var photons = [];
+          var incPath = 'M ' + inX.toFixed(1) + ' ' + inY.toFixed(1) + ' L ' + cx + ' ' + cy;
+          var reflPath = 'M ' + cx + ' ' + cy + ' L ' + reflX.toFixed(1) + ' ' + reflY.toFixed(1);
+          // Incident photons — yellow, fast
+          photons.push(h('circle', {
+            key: 'pin1', r: 3.5, fill: '#fde047',
+            stroke: '#fff', strokeWidth: 0.6,
+            style: {
+              offsetPath: 'path("' + incPath + '")',
+              WebkitOffsetPath: 'path("' + incPath + '")',
+              filter: 'drop-shadow(0 0 4px #fde047)',
+              animationDuration: '1.8s'
+            },
+            className: 'opticslab-photon',
+            cx: 0, cy: 0
+          }));
+          photons.push(h('circle', {
+            key: 'pin2', r: 3,
+            fill: '#fde047', stroke: '#fff', strokeWidth: 0.4,
+            style: {
+              offsetPath: 'path("' + incPath + '")',
+              WebkitOffsetPath: 'path("' + incPath + '")',
+              filter: 'drop-shadow(0 0 3px #fde047)',
+              animationDuration: '1.8s',
+              animationDelay: '-0.9s'
+            },
+            className: 'opticslab-photon',
+            cx: 0, cy: 0
+          }));
+          // Reflected photons — green
+          photons.push(h('circle', {
+            key: 'pref1', r: 3, fill: '#34d399',
+            stroke: '#fff', strokeWidth: 0.4,
+            style: {
+              offsetPath: 'path("' + reflPath + '")',
+              WebkitOffsetPath: 'path("' + reflPath + '")',
+              filter: 'drop-shadow(0 0 3px #34d399)',
+              animationDuration: '1.8s'
+            },
+            className: 'opticslab-photon',
+            cx: 0, cy: 0
+          }));
+          // Refracted photons — cyan, slower in denser medium (×n2/n1 ≈ c/v)
+          if (!isTIR && theta2 != null) {
+            var refPath = 'M ' + cx + ' ' + cy + ' L ' + refrX.toFixed(1) + ' ' + refrY.toFixed(1);
+            // Photon visibly slows when n2 > n1. Cap so absurd durations don't kill animation.
+            var refDur = (1.8 * Math.max(0.5, Math.min(2.2, n2 / n1))).toFixed(2);
+            photons.push(h('circle', {
+              key: 'prefr1', r: 3.5, fill: '#22d3ee',
+              stroke: '#fff', strokeWidth: 0.5,
+              style: {
+                offsetPath: 'path("' + refPath + '")',
+                WebkitOffsetPath: 'path("' + refPath + '")',
+                filter: 'drop-shadow(0 0 4px #22d3ee)',
+                animationDuration: refDur + 's'
+              },
+              className: 'opticslab-photon',
+              cx: 0, cy: 0
+            }));
+            photons.push(h('circle', {
+              key: 'prefr2', r: 3, fill: '#22d3ee',
+              stroke: '#fff', strokeWidth: 0.4,
+              style: {
+                offsetPath: 'path("' + refPath + '")',
+                WebkitOffsetPath: 'path("' + refPath + '")',
+                filter: 'drop-shadow(0 0 3px #22d3ee)',
+                animationDuration: refDur + 's',
+                animationDelay: '-' + (parseFloat(refDur) / 2).toFixed(2) + 's'
+              },
+              className: 'opticslab-photon',
+              cx: 0, cy: 0
+            }));
+          }
+          // Interface impact glow — pulsing spot where photon strikes
+          photons.push(h('circle', {
+            key: 'impact',
+            cx: cx, cy: cy, r: 5,
+            fill: 'none',
+            stroke: isTIR ? '#ef4444' : '#fbbf24',
+            strokeWidth: 1.2,
+            className: 'opticslab-wavefront',
+            style: { animationDuration: '1.4s', transformOrigin: cx + 'px ' + cy + 'px' }
+          }));
+          return photons;
+        })(),
         // Critical angle indicator (when n1 > n2)
         theta_c != null && h('text', { x: pad.l + 8, y: pad.t + 14, fill: '#fbbf24', fontSize: 10 }, 'θ_c = ' + radToDeg(theta_c).toFixed(2) + '°'),
         // Click hint
@@ -1412,6 +1504,57 @@
             rays.push(h('line', { key: 'rr' + k, x1: slitX, y1: midY, x2: endX, y2: endY, stroke: color, strokeWidth: 0.6, opacity: 0.18 }));
           }
           return rays;
+        })(),
+        // ── Animated wavefronts emanating from slit(s) ──
+        // Single-slit: one source of expanding wavefronts that look like
+        // ripples spreading toward the screen.
+        // Grating: each slit emits its own wavefronts → mutual interference
+        // produces the sharp peak pattern.
+        // All wavefronts are clipped to the right side of the barrier so they
+        // don't leak backward through the source side.
+        (function() {
+          var slitX = barX + 6;
+          var clipId = 'opt-diff-clip-' + Math.abs((slitWidth_um + L_m * 100).toString().length);
+          var nodes = [];
+          // SVG defs: clip path + soft glow filter
+          nodes.push(h('defs', { key: 'diff-defs' },
+            h('clipPath', { id: clipId },
+              h('rect', { x: slitX, y: pad.t, width: screenX - slitX, height: H - pad.t - pad.b })
+            ),
+            h('filter', { id: 'opt-diff-glow' },
+              h('feGaussianBlur', { stdDeviation: '1.2', result: 'g' }),
+              h('feMerge', null,
+                h('feMergeNode', { in: 'g' }),
+                h('feMergeNode', { in: 'SourceGraphic' })
+              )
+            )
+          ));
+          // Wavefront origins: one for single-slit, several for grating
+          var origins;
+          if (mode === 'single') {
+            origins = [midY];
+          } else {
+            var nSlits = 6;
+            var spacing = 6;
+            var startY = midY - (nSlits / 2) * spacing;
+            origins = [];
+            for (var k = 0; k < nSlits; k++) origins.push(startY + k * spacing);
+          }
+          // Three staggered rings per origin
+          origins.forEach(function(oy, oi) {
+            ['', 'opticslab-wavefront-2', 'opticslab-wavefront-3'].forEach(function(extraCls, ki) {
+              nodes.push(h('circle', {
+                key: 'wfd-' + oi + '-' + ki,
+                cx: slitX, cy: oy, r: 4,
+                fill: 'none', stroke: color, strokeWidth: mode === 'single' ? 1.2 : 0.7,
+                opacity: mode === 'single' ? 0.7 : 0.45,
+                filter: 'url(#opt-diff-glow)',
+                className: 'opticslab-wavefront ' + extraCls,
+                'clip-path': 'url(#' + clipId + ')'
+              }));
+            });
+          });
+          return nodes;
         })(),
         // Screen
         h('rect', { x: screenX, y: screenTop, width: 8, height: screenHeight, fill: '#1e293b', stroke: '#475569', strokeWidth: 1 }),
