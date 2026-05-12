@@ -8919,6 +8919,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 style: { fontSize: '16px', lineHeight: 1, cursor: 'pointer' }
               }, '⛶')
             ),
+            // ── Live Scene narration strip ──
+            // Caption that auto-picks the most representative description of
+            // what students are seeing in the canvas right now, based on
+            // season, view, recent action, and colony health. Turns the
+            // ambient animation from "pretty" into "read what's happening."
+            viewMode === 'beekeeper' && colonySurvived && beeView === 'scene' && (function() {
+              var bkAnim = d.bkAnim;
+              var inAction = bkAnim && bkAnim.startedAt && (Date.now() - bkAnim.startedAt) < (bkAnim.duration || 5000);
+              // State-priority order: in-action caption > stress > seasonal narration
+              var line, icon;
+              if (inAction && bkAnim.caption) {
+                icon = bkAnim.emoji || '🔍';
+                line = bkAnim.caption;
+              } else if (varroaLevel >= 25) {
+                icon = '🦟';
+                line = 'Mites are hidden in the capped brood — about half the load is out of reach until cells uncap. You\'ll see foragers with shortened wings if Deformed Wing Virus is taking hold.';
+              } else if (morale < 30) {
+                icon = '😬';
+                line = 'The hum is anxious — alarm pheromone (isopentyl acetate, banana-scented) is in the air. Bees are jumpy, guards are defensive, and the queen\'s laying may slow.';
+              } else if (queenHealth < 40) {
+                icon = '👑';
+                line = 'The queen\'s pheromone signature is weakening. Watch for emergency queen cells along the comb edges — workers may be preparing to supersede her.';
+              } else if (season === 0) {
+                // Spring narrations cycle on day-of-season so the caption isn't static
+                var springLines = [
+                  'Nurses are warming brood at 95°F. Foragers scout the first dandelions and willow catkins — early-spring pollen rebuilds the colony fast.',
+                  'Workers are uncapping last year\'s honey stores and feeding the larvae. The first cleansing flights of the year are happening today.',
+                  'Spring buildup — population is doubling about every 21 days. The queen is laying near her peak: 1,500–2,000 eggs a day.'
+                ];
+                line = springLines[day % springLines.length];
+                icon = '🌱';
+              } else if (season === 1) {
+                var summerLines = [
+                  'Peak nectar flow — foragers return every 30–60 minutes loaded with pollen baskets on their hind legs. Fanners cool the entrance.',
+                  'Workers are evaporating water from nectar to make honey, fanning their wings at 230 Hz to drive the moisture content below 18%.',
+                  'Drones are flying to nearby Drone Congregation Areas, hovering 15–40 m up, waiting for virgin queens. Most won\'t return.'
+                ];
+                line = summerLines[day % summerLines.length];
+                icon = '☀️';
+              } else if (season === 2) {
+                var autumnLines = [
+                  'Autumn — drones are being evicted (no longer "earning" their share of stores). You\'ll see them turned out at the entrance.',
+                  'Workers are propolizing cracks and reducing the entrance — winter prep. The queen has slowed her laying to ~500 eggs a day.',
+                  'This is the moment to verify your varroa levels. Going into winter with even 3% mite load can collapse the cluster by January.'
+                ];
+                line = autumnLines[day % autumnLines.length];
+                icon = '🍂';
+              } else {
+                var winterLines = [
+                  'Winter cluster — workers vibrate flight muscles, generating heat to keep the queen at the 95°F core. They rotate from the cold outer shell inward.',
+                  'The colony eats roughly 1 lb of honey per week in winter. They never defecate inside the hive; they wait for warm cleansing-flight days.',
+                  'No brood right now in most colonies — which is exactly why winter is the perfect window for an oxalic acid varroa treatment.'
+                ];
+                line = winterLines[day % winterLines.length];
+                icon = '❄️';
+              }
+              return h('div', {
+                className: 'rounded-lg px-3 py-2 text-xs leading-relaxed italic border-l-4 ' + (dk ? 'bg-slate-800/40 border-amber-500/70 text-slate-200' : 'bg-amber-50/70 border-amber-400 text-slate-700'),
+                role: 'status', 'aria-live': 'polite', 'aria-label': 'Live scene narration'
+              },
+                h('span', { 'aria-hidden': 'true', className: 'mr-2 not-italic' }, icon),
+                h('span', null, line)
+              );
+            })(),
             // ═══ QUEEN RTS UI ═══
             viewMode === 'queen' && h('div', { className: 'space-y-3' },
               !queenGameActive
