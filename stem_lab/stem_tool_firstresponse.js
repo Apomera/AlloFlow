@@ -1048,6 +1048,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         var audioCtxRef = useRef(null);
         var intervalRef = useRef(null);
 
+        // Close the AudioContext on unmount. Browsers limit ~4-6 contexts
+        // per tab; without this, a student who navigates in and out of
+        // FirstResponse multiple times in a session can silently lose
+        // metronome audio after a few visits.
+        useEffect(function() {
+          return function() {
+            if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
+              try { audioCtxRef.current.close(); } catch (e) {}
+              audioCtxRef.current = null;
+            }
+          };
+        }, []);
+
         // Drive the metronome only while user is on the metronome sub-view.
         // Tearing down on unmount or sub-view change prevents background audio.
         useEffect(function() {
