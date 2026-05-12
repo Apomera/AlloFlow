@@ -112,6 +112,59 @@ risk because there's no rebuild path.
 Adjacent files (`adventure_handlers`, `adventure_session_handlers`) have
 build scripts already, so Option A is the more consistent path.
 
+## Idempotency-test workflow (May 12 2026 — discovered the hard way)
+
+For JSX-compiled modules, the body-byte audit reports false positives
+on every function whose JSX got compiled to verbose React.createElement
+calls. To distinguish FALSE POSITIVE drift (audit-only) from REAL drift
+(hand-edits that the build would wipe), run the build script and
+**diff before/after**:
+
+```bash
+cp X_module.js /tmp/X_before.js
+node _build_X_module.js
+md5sum <(tr -d '\r' < /tmp/X_before.js) <(tr -d '\r' < X_module.js)
+# Identical md5 → false positive (no real drift; safe to commit the rebuild)
+# Different md5 → REAL drift; restore module.js from backup and port the
+#                 hand-edits to source.jsx, then rebuild
+```
+
+**Critical:** always back up FIRST. A rebuild can silently wipe hundreds
+of lines of unported hand-edits.
+
+## Module classification by idempotency test (May 12 2026)
+
+Tested all 5 modules the audit flagged for nested-body drift:
+
+| Module | Idempotent? | Status |
+|---|---|---|
+| `immersive_reader` | ✓ yes | **False positive.** Audit flagged 3 functions (_lazyIcon, handleKeyDown, renderBionicWord) but all are byte-identical logic, just esbuild reformatting. No port needed. |
+| `games` | ✓ yes | **False positive.** Audit flagged 3 functions but rebuild produces byte-identical module.js. No port needed. |
+| `teacher` | ✗ no | **REAL drift.** Rebuild changed module.js → there are hand-edits that would be wiped. Per-function review required. Restored from backup. |
+| `story_forge` | ✗ no | **REAL drift.** Rebuild wiped 116 lines (`128 → 12` diff vs origin). Restored from backup. |
+| `view_sidebar_panels` | ✗ no | **REAL drift.** Rebuild wiped 77 lines (`89 → 12` diff vs origin). Restored from backup. |
+
+**Real-drift modules now have specific, scoped work**:
+
+### teacher
+Rebuild changed content but full diff not yet inventoried. Audit
+previously flagged 2 fn (metricBar src-bigger, alloRestoreFocus +
+alloSaveFocus mod-bigger). At least these need per-function manual
+diff between source.jsx and module.js → port the mod-bigger changes
+back to source.jsx → rebuild + verify clean.
+
+### story_forge
+116 lines of hand-edits in module.js missing from source.jsx. Likely
+clustered around the audit-flagged 4 fn (aiScoreNum, beatColor,
+stopRecording, startRecording) — but the line delta suggests there's
+more than what the audit caught.
+
+### view_sidebar_panels
+77 lines of hand-edits missing from source.jsx. Audit flagged 3 fn
++ 3 module-only declarations (_lazyIcon, handleMixChange,
+handleResetMix). The module-only declarations likely account for
+some of the 77 lines.
+
 ## Nested-body drift in JSX-compiled modules — May 12 2026 investigation
 
 The auditor's new nested-body detection (added when resolving
