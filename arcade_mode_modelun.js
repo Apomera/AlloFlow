@@ -1020,6 +1020,24 @@
       window.__alloHavenModelUNClassMode = null;
       ctx.onLaunch(minutesAsked);
     }
+    // Quick-start: pre-configure committee + agenda, then launch solo
+    function handleQuickStart(committeeId, agendaId) {
+      if (disabled) return;
+      window.__alloHavenModelUNClassMode = null;
+      window.__alloHavenModelUNPreset = { committeeId: committeeId, agendaId: agendaId };
+      ctx.onLaunch(minutesAsked);
+    }
+
+    var galleryOpenTuple = useState(false);
+    var galleryOpen = galleryOpenTuple[0];
+    var setGalleryOpen = galleryOpenTuple[1];
+
+    var QUICK_STARTS = [
+      { id: 'climate-ga',    label: 'Climate at GA',          icon: '🌍', committee: 'general_assembly',     agenda: 'climate_action' },
+      { id: 'refugees-hrc',  label: 'Refugees at HRC',        icon: '🚶', committee: 'human_rights_council', agenda: 'refugee_crisis' },
+      { id: 'ai-crisis',     label: 'AI Gov. at Crisis Cmte', icon: '🤖', committee: 'crisis_committee',     agenda: 'ai_governance' },
+      { id: 'indigenous-unesco', label: 'Indigenous at UNESCO', icon: '🪶', committee: 'unesco',              agenda: 'indigenous_rights' }
+    ];
     function handleStartClassSession() {
       if (disabled) return;
       if (typeof ctx.sessionUpdate !== 'function') {
@@ -1111,7 +1129,7 @@
       h('button', {
         onClick: handleSoloLaunch,
         disabled: disabled || !canAfford,
-        'aria-label': 'Start a solo Model UN simulation',
+        'aria-label': 'Start a solo Model UN simulation (you pick committee + agenda)',
         style: {
           width: '100%', padding: '10px 12px',
           background: 'rgba(14,165,233,0.18)', color: text,
@@ -1120,8 +1138,46 @@
           cursor: (disabled || !canAfford) ? 'not-allowed' : 'pointer'
         }
       },
-        canAfford ? '🎓 Solo simulation (you + AI delegates)' : 'Need ' + tokensCost + ' 🪙 to start'
+        canAfford ? '🎓 Solo: pick committee + agenda' : 'Need ' + tokensCost + ' 🪙 to start'
       ),
+
+      // Quick-start presets — one-click pre-configured debates
+      h('div', { style: { marginTop: 10 } },
+        h('div', { style: { fontSize: 10, color: textMuted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, '⚡ Quick start (pre-set)'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 } },
+          QUICK_STARTS.map(function(qs) {
+            return h('button', {
+              key: qs.id,
+              onClick: function() { handleQuickStart(qs.committee, qs.agenda); },
+              disabled: disabled || !canAfford,
+              'aria-label': 'Quick start: ' + qs.label,
+              style: {
+                padding: '8px 10px', fontSize: 11, fontWeight: 600,
+                background: 'rgba(168,85,247,0.10)', color: text,
+                border: '1px solid #a855f7',
+                borderRadius: 8, textAlign: 'left',
+                cursor: (disabled || !canAfford) ? 'not-allowed' : 'pointer',
+                opacity: (disabled || !canAfford) ? 0.5 : 1
+              }
+            },
+              h('div', { style: { fontSize: 16, marginBottom: 2 } }, qs.icon),
+              h('div', null, qs.label)
+            );
+          })
+        )
+      ),
+
+      // Achievement gallery trigger
+      h('button', {
+        onClick: function() { setGalleryOpen(true); },
+        'aria-label': 'View Model UN achievements',
+        style: {
+          width: '100%', marginTop: 10, padding: '8px 12px', fontSize: 11, fontWeight: 700,
+          background: 'rgba(251,191,36,0.10)', color: '#fbbf24',
+          border: '1px dashed #fbbf24', borderRadius: 8, cursor: 'pointer'
+        }
+      }, '🏆 Achievements & quests'),
+      galleryOpen && h(AchievementGallery, { onClose: function() { setGalleryOpen(false); } }),
 
       // In-session status footer
       isInSession && h('div', { style: { marginTop: '10px', fontSize: '11px', color: textMuted } },
@@ -1157,15 +1213,21 @@
       return typeof unsubscribe === 'function' ? unsubscribe : function () {};
     }, [ctx.sessionCode, isSolo]);
 
+    // Read any quick-start preset (set by the QuickStartCard on the launcher).
+    // Preset jumps straight to ASSIGNMENT with committee + agenda pre-picked.
+    var preset = window.__alloHavenModelUNPreset || null;
+    // Consume the preset immediately so a second mount doesn't re-apply it
+    if (preset) { try { delete window.__alloHavenModelUNPreset; } catch (e) { window.__alloHavenModelUNPreset = null; } }
+
     // Local-only state for solo mode (mirror of what would live in session for class).
     var localStateTuple = useState({
       status: 'open',
-      committeeId: null,
-      agendaId: null,
-      phase: PHASES.SETUP,
+      committeeId: preset ? preset.committeeId : null,
+      agendaId:    preset ? preset.agendaId    : null,
+      phase:       preset ? PHASES.ASSIGNMENT  : PHASES.SETUP,
       assignedCountries: {}, // { uid → iso }   in solo: { 'me' → iso, ai_NOR → 'NOR', ... }
       aiFillsEmpty: true,
-      assignmentMode: 'teacher', // 'teacher' | 'random' | 'student-pick'
+      assignmentMode: preset ? 'random' : 'teacher', // preset → random for one-click flow
       startedAt: classModeFlag ? classModeFlag.startedAt : new Date().toISOString()
     });
     var localState = localStateTuple[0];
@@ -1776,6 +1838,14 @@
     var helpOpen = helpTuple[0];
     var setHelpOpen = helpTuple[1];
 
+    // Auto-save: debounced 1.5s after the last keystroke. Avoids spamming
+    // Firestore on every character while still relieving the student of
+    // the "did I save?" anxiety.
+    var autoSaveTuple = useState({ pending: false, lastSavedAt: 0 });
+    var autoSave = autoSaveTuple[0];
+    var setAutoSave = autoSaveTuple[1];
+    var autoSaveTimerRef = React.useRef ? React.useRef(null) : { current: null };
+
     var humanUids = Object.keys(assigned).filter(function(uid) { return uid.indexOf('ai_') !== 0; });
     var submittedCount = humanUids.filter(function(uid) { return papers[uid] && papers[uid].savedAt; }).length;
 
@@ -1783,6 +1853,30 @@
       var next = Object.assign({}, form);
       next[field] = (value || '').slice(0, 1500); // doc-budget cap per field
       setForm(next);
+
+      // Debounce an auto-save 1.5s after the last keystroke (only if the
+      // student has at least a stance — don't auto-save empty paper).
+      if (autoSaveTimerRef.current) { try { clearTimeout(autoSaveTimerRef.current); } catch (e) {} }
+      var stanceLen = (field === 'stance' ? value : next.stance || '').trim().length;
+      if (stanceLen >= 20) {
+        setAutoSave({ pending: true, lastSavedAt: autoSave.lastSavedAt });
+        autoSaveTimerRef.current = setTimeout(function() {
+          if (!myCountry) return;
+          var nextPapers = Object.assign({}, modelUn.positionPapers || {});
+          nextPapers[myUid] = {
+            background: next.background || '',
+            stance:     next.stance || '',
+            solutions:  next.solutions || '',
+            allies:     next.allies || '',
+            savedAt:    Date.now()
+          };
+          updateMUN({ positionPapers: nextPapers });
+          setAutoSave({ pending: false, lastSavedAt: Date.now() });
+          if (!window.__alloHavenModelUNStats.positionPapersSubmitted) {
+            bumpStat('positionPapersSubmitted', 1);
+          }
+        }, 1500);
+      }
     }
 
     function savePaper() {
@@ -1945,7 +2039,11 @@
           'Which delegations are most likely to co-sponsor your clauses? Why?',
           form.allies, 'allies', 3
         ),
-        h('div', { style: { display: 'flex', gap: 8, marginTop: 8, justifyContent: 'flex-end' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 } },
+          // Auto-save indicator (left side)
+          autoSave.pending && h('span', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, '✏️ Auto-saving…'),
+          !autoSave.pending && autoSave.lastSavedAt > 0 && h('span', { style: { fontSize: 11, color: '#10b981', fontStyle: 'italic' } }, '✓ Auto-saved'),
+          h('div', { style: { flex: 1 } }),
           h('button', {
             onClick: savePaper,
             disabled: status.saving || !form.stance,
@@ -3409,9 +3507,32 @@
         },
         'aria-label': 'Compose your opening speech'
       }),
-      h('div', { style: { display: 'flex', alignItems: 'center', marginTop: 6 } },
+      // Word-count progress bar: shows progress toward the target window
+      // (green inside target band, yellow under-/over-target, gray empty).
+      (function() {
+        var maxScale = shortForm ? 120 : 250;
+        var pct = Math.min(100, (wordCount / maxScale) * 100);
+        var lowPct = (targetLow / maxScale) * 100;
+        var highPct = (targetHigh / maxScale) * 100;
+        return h('div', { style: { marginTop: 6, position: 'relative', height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'visible' } },
+          // Target window highlight
+          h('div', {
+            style: {
+              position: 'absolute', top: 0, bottom: 0,
+              left: lowPct + '%', width: (highPct - lowPct) + '%',
+              background: 'rgba(16,185,129,0.18)',
+              borderLeft: '1px dashed #10b981',
+              borderRight: '1px dashed #10b981'
+            },
+            'aria-hidden': 'true'
+          }),
+          // Filled portion
+          h('div', { style: { position: 'absolute', top: 0, bottom: 0, left: 0, width: pct + '%', background: wcColor, borderRadius: 3, transition: 'width 0.2s ease' } })
+        );
+      })(),
+      h('div', { style: { display: 'flex', alignItems: 'center', marginTop: 4 } },
         h('span', { style: { fontSize: 10, color: wcColor, fontWeight: 600 } },
-          wordCount + ' word' + (wordCount !== 1 ? 's' : '') + (wordCount > 0 && (wordCount < targetLow || wordCount > targetHigh) ? (' (target ' + (shortForm ? '50-80' : '120-180') + ')') : '')
+          wordCount + ' word' + (wordCount !== 1 ? 's' : '') + ' · target ' + targetLow + '–' + targetHigh
         ),
         h('button', {
           onClick: handleSubmit,
@@ -6246,6 +6367,90 @@
   // moment. Great teacher artifact: see the SHAPE of the debate at a glance.
   // ═══════════════════════════════════════════
   // ═══════════════════════════════════════════
+  // ═══════════════════════════════════════════
+  // AchievementGallery — visualize earned + locked quest badges with
+  // progress bars. Triggered from the launcher card "🏆 Achievements" button.
+  // Reads window.__alloHavenModelUNStats directly for live progress numbers.
+  // ═══════════════════════════════════════════
+  var MUN_ACHIEVEMENTS = [
+    { id: 'first_speech',         label: 'First Speech',          icon: '🎤', desc: 'Deliver your first opening speech in any committee.',
+      progress: function() { var s = window.__alloHavenModelUNStats; return s.firstSpeechDelivered ? { done: true, pct: 100, line: 'Earned' } : { done: false, pct: 0, line: 'Not yet' }; } },
+    { id: 'first_clause',         label: 'First Clause',          icon: '📜', desc: 'Propose your first resolution clause (preambulatory or operative).',
+      progress: function() { var s = window.__alloHavenModelUNStats; return s.firstClauseProposed ? { done: true, pct: 100, line: 'Earned' } : { done: false, pct: 0, line: 'Not yet' }; } },
+    { id: 'first_vote',           label: 'First Vote',            icon: '🗳', desc: 'Cast Yes / No / Abstain on a final resolution.',
+      progress: function() { var s = window.__alloHavenModelUNStats; return s.voteCast ? { done: true, pct: 100, line: 'Earned' } : { done: false, pct: 0, line: 'Not yet' }; } },
+    { id: 'ai_scaffold',          label: 'UDL Scaffold User',     icon: '✨', desc: 'Use the AI speech starter at least once. UDL multiple-means-of-action.',
+      progress: function() { var s = window.__alloHavenModelUNStats; return s.aiStarterUsed ? { done: true, pct: 100, line: 'Earned' } : { done: false, pct: 0, line: 'Not yet' }; } },
+    { id: 'resolution_passed',    label: 'Resolution Adopted',    icon: '✅', desc: 'Be present in a chamber that passes a resolution.',
+      progress: function() { var n = window.__alloHavenModelUNStats.resolutionsPassed || 0; return { done: n >= 1, pct: Math.min(100, n * 100), line: n + ' passed' }; } },
+    { id: 'three_speeches',       label: 'Veteran Speaker',       icon: '🎙', desc: 'Deliver 3 speeches across your debates.',
+      progress: function() { var n = window.__alloHavenModelUNStats.totalSpeeches || 0; return { done: n >= 3, pct: Math.min(100, (n / 3) * 100), line: n + ' / 3' }; } },
+    { id: 'three_clauses',        label: 'Clause Architect',      icon: '📚', desc: 'Propose 3 resolution clauses across your debates.',
+      progress: function() { var n = window.__alloHavenModelUNStats.totalClauses || 0; return { done: n >= 3, pct: Math.min(100, (n / 3) * 100), line: n + ' / 3' }; } },
+    { id: 'position_paper',       label: 'Prepared Diplomat',     icon: '📝', desc: 'Submit a written position paper before debate.',
+      progress: function() { var n = window.__alloHavenModelUNStats.positionPapersSubmitted || 0; return { done: n >= 1, pct: n >= 1 ? 100 : 0, line: n >= 1 ? 'Earned' : 'Not yet' }; } },
+    { id: 'crisis_responder',     label: 'Crisis Responder',      icon: '🚨', desc: 'React to a breaking-news crisis within the 90-second window.',
+      progress: function() { var n = window.__alloHavenModelUNStats.crisisResponsesGiven || 0; return { done: n >= 1, pct: n >= 1 ? 100 : 0, line: n >= 1 ? 'Earned · ' + n : 'Not yet' }; } },
+    { id: 'consistency_master',   label: 'Consistency Master',    icon: '📐', desc: 'Reach 90+ on the diplomatic-consistency AI judge.',
+      progress: function() { var n = window.__alloHavenModelUNStats.bestConsistencyScore || 0; return { done: n >= 90, pct: Math.min(100, (n / 90) * 100), line: n + ' / 90' }; } },
+    { id: 'backchannel_diplomat', label: 'Backchannel Diplomat',  icon: '📬', desc: 'Pass a private 1:1 note during a moderated caucus.',
+      progress: function() { var n = window.__alloHavenModelUNStats.backchannelMessagesSent || 0; return { done: n >= 1, pct: n >= 1 ? 100 : 0, line: n >= 1 ? 'Earned · ' + n + ' sent' : 'Not yet' }; } }
+  ];
+
+  function AchievementGallery(props) {
+    var React = window.React;
+    var h = React.createElement;
+    var onClose = props.onClose;
+    var rows = MUN_ACHIEVEMENTS.map(function(a) {
+      var p = (function() { try { return a.progress(); } catch (e) { return { done: false, pct: 0, line: '—' }; } })();
+      return Object.assign({}, a, { p: p });
+    });
+    var earned = rows.filter(function(r) { return r.p.done; }).length;
+
+    return h('div', {
+      role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'mun-ach-title',
+      style: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, overflow: 'auto' },
+      onClick: function(e) { if (e.target === e.currentTarget) onClose(); }
+    },
+      h('div', {
+        style: { width: 560, maxWidth: '100%', maxHeight: '88vh', overflowY: 'auto', background: '#0f172a', border: '2px solid #fbbf24', borderRadius: 12, color: '#e2e8f0' }
+      },
+        h('div', { style: { padding: 14, borderBottom: '1px solid #334155', position: 'sticky', top: 0, background: '#0f172a', zIndex: 1, display: 'flex', alignItems: 'center', gap: 10 } },
+          h('span', { style: { fontSize: 26 } }, '🏆'),
+          h('div', { style: { flex: 1 } },
+            h('div', { id: 'mun-ach-title', style: { fontSize: 16, fontWeight: 800 } }, 'Model UN Achievements'),
+            h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, earned + ' / ' + rows.length + ' earned')
+          ),
+          h('button', {
+            onClick: onClose, 'aria-label': 'Close gallery',
+            style: { padding: '4px 10px', fontSize: 14, fontWeight: 700, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' }
+          }, '✕')
+        ),
+        h('div', { style: { padding: 14, display: 'flex', flexDirection: 'column', gap: 8 } },
+          rows.map(function(r) {
+            var col = r.p.done ? '#10b981' : '#475569';
+            return h('div', {
+              key: r.id,
+              style: { padding: 10, background: r.p.done ? 'rgba(16,185,129,0.10)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + col, borderRadius: 8, opacity: r.p.done ? 1 : 0.78 }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                h('span', { style: { fontSize: 22, filter: r.p.done ? 'none' : 'grayscale(60%)' } }, r.icon),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontSize: 13, fontWeight: 700, color: r.p.done ? '#10b981' : '#e2e8f0' } }, r.label + (r.p.done ? ' · ✓' : '')),
+                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, r.desc)
+                ),
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: col } }, r.p.line)
+              ),
+              !r.p.done && h('div', { style: { width: '100%', height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' } },
+                h('div', { style: { width: r.p.pct + '%', height: '100%', background: col, transition: 'width 0.3s ease' } })
+              )
+            );
+          })
+        )
+      )
+    );
+  }
+
   // TeacherRubricPanel — host-only grading interface in Debrief.
   // AI auto-fills a 5-domain rubric for every human student; teacher can
   // override any score. Exportable as CSV for gradebook import.
