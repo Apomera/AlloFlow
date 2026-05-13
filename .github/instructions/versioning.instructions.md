@@ -4,6 +4,16 @@ description: "Versioning rules for AlloFlow admin project. Use when: making code
 applyTo: ["admin/**", "admin/package.json"]
 ---
 
+# ⚠️ CRITICAL: Read Local App Architecture FIRST
+
+**BEFORE making ANY AI provider, TTS, or agent changes:**
+→ Review: `memories/repo/alloflow-local-app-architecture.md`
+
+This documents the ACTUAL port layers, AIProvider dispatch, token handling, and common mistakes.
+Glossing over this has caused 3 broken builds due to routing to non-existent proxy endpoints.
+
+---
+
 # AlloFlow Admin - Versioning Rules
 
 Uptick to x.x.x+1 for each bug fix, or minor change. This ensures clear version history and helps users track updates effectively.
@@ -87,6 +97,26 @@ git merge upstream/main
 # - Merge to main if stable
 # - Cherry-pick specific commits if full merge causes issues
 ```
+
+## Build Order: Tests BEFORE Installer
+
+Always run the full Playwright suite **before** building the installer. A passing test run is a gate — never ship an installer that hasn't been validated.
+
+```powershell
+# 1. Compile the local app
+node local_build.js
+
+# 2. Run ALL Playwright tests (125+) — must pass
+node scripts/test_local_app.js --verbose
+
+# 3. Only after 100% pass → build installer
+cd admin && npm run dist
+```
+
+❌ **WRONG**: Code fix → `npm run dist` → test later (or never)
+✅ **RIGHT**: Code fix → `node local_build.js` → `node scripts/test_local_app.js --verbose` → all green → `npm run dist`
+
+---
 
 ## Anti-Pattern: Multiple Changes Without Increment
 

@@ -1125,7 +1125,16 @@ const AlloFlowContent = () => {
       window.removeEventListener('keydown', handleInteraction);
     };
   }, []);
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState(() => {
+    try { return localStorage.getItem('allo_session_inputText') || ''; } catch (e) { debugLog('[Session] Storage read blocked:', e.message); return ''; }
+  });
+  // Persist inputText with debounce (don't thrash storage on every keystroke)
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try { localStorage.setItem('allo_session_inputText', inputText); } catch (e) { debugLog('[Session] Storage write blocked:', e.message); }
+    }, 800);
+    return () => clearTimeout(t);
+  }, [inputText]);
   const [studyTimeLeft, setStudyTimeLeft] = useState(0);
   const [studyDuration, setStudyDuration] = useState(0);
   const [isStudyTimerRunning, setIsStudyTimerRunning] = useState(false);
@@ -1782,7 +1791,19 @@ const AlloFlowContent = () => {
       }, 1000);
       return () => clearTimeout(handler);
   }, [studentResponses]);
-  const [generatedContent, setGeneratedContent] = useState(null);
+  const [generatedContent, setGeneratedContent] = useState(() => {
+    try {
+      const s = localStorage.getItem('allo_session_generatedContent');
+      return s ? JSON.parse(s) : null;
+    } catch (e) { debugLog('[Session] generatedContent read blocked:', e.message); return null; }
+  });
+  // Persist generatedContent
+  useEffect(() => {
+    try {
+      if (generatedContent) localStorage.setItem('allo_session_generatedContent', JSON.stringify(generatedContent));
+      else localStorage.removeItem('allo_session_generatedContent');
+    } catch (e) { debugLog('[Session] generatedContent write blocked:', e.message); }
+  }, [generatedContent]);
   const handleStudentInput = (resourceId, questionKey, value) => {
       setStudentResponses(prev => ({
           ...prev,
@@ -2512,7 +2533,13 @@ Return ONLY a valid JSON object:
   const [vsTab, setVsTab] = useState('boards');
   const [visualSupportsPayload, setVisualSupportsPayload] = useState(null);
   const [storyForgeSubmissions, setStoryForgeSubmissions] = useState([]);
-  const [activeView, setActiveView] = useState('input');
+  const [activeView, setActiveView] = useState(() => {
+    try { return localStorage.getItem('allo_session_activeView') || 'input'; } catch (e) { debugLog('[Session] activeView read blocked:', e.message); return 'input'; }
+  });
+  // Persist activeView on change
+  useEffect(() => {
+    try { localStorage.setItem('allo_session_activeView', activeView); } catch (e) { debugLog('[Session] activeView write blocked:', e.message); }
+  }, [activeView]);
   const [showReadThisPage, setShowReadThisPage] = useState(false);
   const [focusNarrationEnabled, setFocusNarrationEnabled] = useState(false);
   const rtpReadingRef = useRef(false);

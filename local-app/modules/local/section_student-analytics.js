@@ -394,7 +394,7 @@ let HELP_STRINGS = {};
     try {
         const cached = localStorage.getItem("alloflow_ui_strings_cache");
         if (cached) { UI_STRINGS = JSON.parse(cached); }
-        const resp = await fetch("https://raw.githubusercontent.com/Apomera/AlloFlow/main/shared/ui_strings.js?v=" + Date.now());
+        const resp = await fetch("/shared/ui_strings.js?v=" + Date.now());
         if (resp.ok) {
             const text = await resp.text();
             try {
@@ -425,7 +425,7 @@ let HELP_STRINGS = {};
     try {
         const hsCached = localStorage.getItem("alloflow_help_strings_cache");
         if (hsCached) { HELP_STRINGS = JSON.parse(hsCached); }
-        const hsResp = await fetch("https://raw.githubusercontent.com/Apomera/AlloFlow/main/shared/help_strings.js?v=" + Date.now());
+        const hsResp = await fetch("/shared/help_strings.js?v=" + Date.now());
         if (hsResp.ok) {
             const hsText = (await hsResp.text()).replace(/^\s*\/\/.*$/gm, '').trim();
             try {
@@ -764,7 +764,23 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5) =>
       if (response.status !== 429 && response.status !== 503 && response.status !== 401) {
         let errorMessage = `HTTP Error: ${response.status} ${response.statusText}`;
         if (response.status === 403) {
-          errorMessage = `${response.status} Forbidden: API access denied. Check your API key and permissions.`;
+          // Check if server returned REAUTH_REQUIRED (scope-insufficient token)
+          let reauthRequired = false;
+          try {
+            const bodyClone = response.clone();
+            const bodyJson = await bodyClone.json().catch(() => null);
+            if (bodyJson?.code === 'REAUTH_REQUIRED') {
+              reauthRequired = true;
+              errorMessage = bodyJson.error || 'Gemini token lacks required scopes. Re-authorize in AlloFlow Admin > Settings > AI Config.';
+            }
+          } catch (_) {}
+          if (!reauthRequired) {
+            errorMessage = `${response.status} Forbidden: API access denied. Check your API key and permissions.`;
+          }
+          const error = new Error(errorMessage);
+          error.isFatal = true;
+          error.reauthRequired = reauthRequired;
+          throw error;
         }
         const error = new Error(errorMessage);
         error.isFatal = true;
@@ -1290,25 +1306,6 @@ const useTranslation = (targetLanguage, apiKey) => {
             }
         }
         setIsTranslating(true);
-        setStatusMessage(t('language_selector.status_checking', { lang: targetLanguage }));
-        try {
-            const langSlug = targetLanguage.toLowerCase().replace(/\s+/g, '_');
-            const githubUrl = `https://raw.githubusercontent.com/Apomera/AlloFlow/main/lang/${langSlug}.js`;
-            const ghResp = await fetch(githubUrl);
-            if (ghResp.ok) {
-                const ghText = await ghResp.text();
-                const ghPack = new Function('return ' + ghText)();
-                if (ghPack && Object.keys(ghPack).length > 10) {
-                    debugLog(`[useTranslation] Loaded ${targetLanguage} from GitHub.`);
-                    setLanguagePack(ghPack);
-                    setIsTranslating(false);
-                    try { await storageDB.set(storageKey, ghPack); } catch(e) { warnLog('Cache save error:', e?.message || e); }
-                    return;
-                }
-            }
-        } catch (ghErr) {
-            warnLog('GitHub language pack not available:', ghErr?.message);
-        }
         setStatusMessage(t('language_selector.status_generating', { lang: targetLanguage }));
         setProgress(5);
         let _helpStrings = {};
@@ -1316,7 +1313,7 @@ const useTranslation = (targetLanguage, apiKey) => {
           const hsCached = localStorage.getItem('alloflow_help_strings_cache');
           if (hsCached) { _helpStrings = JSON.parse(hsCached); }
           else {
-            const hsResp = await fetch('https://raw.githubusercontent.com/Apomera/AlloFlow/main/shared/help_strings.js');
+            const hsResp = await fetch('/shared/help_strings.js');
             if (hsResp.ok) {
               const hsText = (await hsResp.text()).replace(/^\s*\/\/.*$/gm, '').trim();
               _helpStrings = new Function('return ' + hsText)();

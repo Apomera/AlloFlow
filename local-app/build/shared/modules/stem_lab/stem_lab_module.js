@@ -2922,6 +2922,11 @@
                 color: 'emerald', ready: true
               },
               {
+                id: 'bakingScience', icon: '🥐', label: 'Baking Lab',
+                desc: 'Leavening chemistry, emulsions, recipe scaling, oven timeline, and Maillard browning — the science behind every bake.',
+                color: 'amber', ready: true
+              },
+              {
                 id: 'dissection', icon: '\uD83D\uDD2C', label: 'Dissection Lab',
                 desc: 'Virtual frog dissection — peel back layers to explore organs, muscles, and skeleton.',
                 color: 'emerald', ready: true
@@ -3048,6 +3053,11 @@
                 desc: 'Tax & paycheck calculator, data literacy, decision matrix, contract reader, health insurance navigator, and applied science for daily life.',
                 color: 'cyan', ready: true
               },
+              {
+                id: 'typingPractice', icon: '\u2328\uFE0F', label: 'Typing Practice',
+                desc: 'Disability-first keyboarding — dyslexia font, high-contrast, audio cues, error-tolerant mode, pace reference, on-screen keyboard. 8+ drill tiers, AI-personalized passages, IEP-ready progress reports.',
+                color: 'violet', ready: true
+              },
 
               {
                 id: 'flightSim', icon: '✈️', label: 'SkySchool',
@@ -3058,6 +3068,11 @@
                 id: 'roadReady', icon: '🚗', label: "RoadReady: Driver's Ed",
                 desc: "3D driving simulator + US permit test + fuel efficiency physics. 14 scenarios, 114 practice questions, real stopping-distance math. Maine state focus.",
                 color: 'emerald', ready: true
+              },
+              {
+                id: 'bikeLab', icon: '🚲', label: 'BikeLab: Physics & Repair',
+                desc: '2D side-view physics sandbox (force vectors, energy graph) + gearing lab (chainring/cassette math, climb sim) + hands-on repair simulator (patch tube, brakes, chain, derailleur).',
+                color: 'amber', ready: true
               },
               {
                 id: 'echoTrainer', icon: '🎧', label: 'Echo Navigator',
@@ -3073,6 +3088,7 @@
               { id: '_cat_Strategy', icon: '', label: '⚔️ Strategy Games', desc: '', color: 'slate', category: true },
               { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true },
               { id: 'spaceExplorer', label: 'Space Explorer', icon: '\uD83C\uDF0C', desc: 'Roguelike missions across the solar system. AI-generated challenges teach real science through strategic decisions.', color: 'purple', ready: true },
+              { id: 'alloBotSage', label: 'AlloBot: Starbound Sage', icon: '\uD83E\uDDD9\u200D\u2642\uFE0F', desc: 'Cozy sci-fi roguelite. AlloBot\u2019s spells unlock as you master other STEM Lab tools \u2014 and every cast is a retrieval-practice micro-challenge. Spaced practice, in-game.', color: 'violet', ready: true },
               { id: 'gameStudio', icon: '🎮', label: 'Game Studio', desc: 'Design, build, and test your own games with a visual coding interface.', color: 'purple', ready: true },
 
               { id: '_cat_Biology', icon: '', label: '🧬 Biology & Life Science', desc: '', color: 'slate', category: true },
@@ -3142,7 +3158,7 @@
             // Category filter (from chip buttons)
             var _catFilter = d._categoryFilter || '';
             if (_catFilter && !_activeStation) {
-              var _catMap = { science: ['Science', 'Biology', 'Life Science', 'science'], math: ['Math', 'math'], engineering: ['Engineering', 'tech', 'cs', 'engineering'], creative: ['Creative', 'creative', 'Art'], applied: ['Applied', 'applied', 'geo'], strategy: ['Strategy', 'strategy'] };
+              var _catMap = { science: ['Science', 'Biology', 'Life Science', 'science'], math: ['Math', 'math'], engineering: ['Engineering', 'tech', 'cs', 'engineering'], creative: ['Creative', 'creative', 'Art'], applied: ['Applied', 'applied', 'geo', 'life-skills', 'life skills', 'economics', 'social studies'], strategy: ['Strategy', 'strategy'] };
               var _catKeys = _catMap[_catFilter] || [_catFilter];
               _filteredTools = _filteredTools.filter(function(tool) {
                 if (tool.category) {
@@ -4128,8 +4144,10 @@
             // Applied
             a11yAuditor: true, lifeSkills: true, physics: true, wave: true,
             worldBuilder: true,
+            typingPractice: true,
             flightSim: true,
             roadReady: true,
+            bikeLab: true,
             atcTower: true,
             musicSynth: true,
             beehive: true,
@@ -4138,7 +4156,9 @@
             oratory: true,
             singing: true,
             migration: true,
-            appLab: true
+            appLab: true,
+            bakingScience: true,
+            alloBotSage: true
           };
           // Throttle fallback log to once per tool (avoid flooding console on re-renders)
           if (!window._stemFallbackLogged) window._stemFallbackLogged = {};
@@ -4227,6 +4247,9 @@
             setCanvasNarrateEnabled: typeof setCanvasNarrateEnabled === 'function' ? setCanvasNarrateEnabled : function() {},
             celebrate: typeof stemCelebrate === 'function' ? stemCelebrate : function() {},
             callGemini: typeof callGemini === 'function' ? callGemini : null,
+            sourceText: typeof inputText === 'string' ? inputText : (typeof sourceText === 'string' ? sourceText : ''),
+            inputText: typeof inputText === 'string' ? inputText : '',
+            gradeLevel: typeof gradeLevel === 'string' ? gradeLevel : '',
             t: typeof t === 'function' ? t : function(k) { return k; },
             icons: { ArrowLeft: ArrowLeft, Calculator: Calculator, Sparkles: Sparkles, X: X, GripVertical: GripVertical },
             _codingCanvasRef: typeof _codingCanvasRef !== 'undefined' ? _codingCanvasRef : null,

@@ -28306,7 +28306,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
         }}>
           <div style={{ textAlign: 'center', animation: 'pulse 2s ease-in-out infinite', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <h1 style={{ fontSize: '36px', fontWeight: 900, color: 'white', margin: '0 0 16px', letterSpacing: '-0.5px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>AlloFlow</h1>
-            <img src={"https://raw.githubusercontent.com/Apomera/AlloFlow/main/shared/rainbow-book.jpg"} alt="AlloFlow" style={{ width: '120px', height: '120px', marginBottom: '16px', filter: 'drop-shadow(0 0 24px rgba(99,102,241,0.5))', borderRadius: '20px', objectFit: 'cover' }} />
+            <img src={"/shared/rainbow-book.jpg"} alt="AlloFlow" style={{ width: '120px', height: '120px', marginBottom: '16px', filter: 'drop-shadow(0 0 24px rgba(99,102,241,0.5))', borderRadius: '20px', objectFit: 'cover' }} />
             <p style={{ fontSize: '13px', color: 'rgba(165,180,252,0.8)', margin: '0 0 32px', fontWeight: 600, letterSpacing: '3px', textTransform: 'uppercase' }}>Adaptive Levels, Layers, & Outputs</p>
             <p style={{ fontSize: '11px', color: 'rgba(165,180,252,0.5)', margin: '0 0 32px', fontWeight: 500, fontStyle: 'italic' }}>{t('splash.udl_tagline')}</p>
           </div>
@@ -28337,7 +28337,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
             .lp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #818cf8, #6366f1); color: white; font-size: 9px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1.5px; animation: shimmer 3s infinite linear; background-size: 200% auto; }
           `}</style>
           <div style={{ textAlign: 'center', marginBottom: '48px', animation: 'fadeIn 0.6s ease-out' }}>
-            <img src="https://raw.githubusercontent.com/Apomera/AlloFlow/main/shared/rainbow-book.jpg" alt="AlloFlow" style={{ width: '80px', height: '80px', margin: '0 auto 16px', display: 'block', filter: 'drop-shadow(0 0 24px rgba(99,102,241,0.5))', borderRadius: '16px', objectFit: 'cover', animation: 'float 3s ease-in-out infinite' }} />
+            <img src="/shared/rainbow-book.jpg" alt="AlloFlow" style={{ width: '80px', height: '80px', margin: '0 auto 16px', display: 'block', filter: 'drop-shadow(0 0 24px rgba(99,102,241,0.5))', borderRadius: '16px', objectFit: 'cover', animation: 'float 3s ease-in-out infinite' }} />
             <h1 style={{ fontSize: '32px', fontWeight: 900, color: 'white', margin: '0 0 8px', letterSpacing: '-0.5px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>AlloFlow</h1>
             <p style={{ fontSize: '12px', color: 'rgba(165,180,252,0.7)', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', margin: 0 }}>{t('launch_pad.subtitle')}</p>
           </div>

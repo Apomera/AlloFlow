@@ -19,7 +19,7 @@ const DEPLOYMENT_TYPES = [
   }
 ];
 
-const AI_PROVIDER_SERVICES = ['llm-engine', 'gemini', 'copilot'];
+const AI_PROVIDER_SERVICES = ['llm-engine', 'gemini', 'copilot', 'nvidia'];
 const IMAGE_PROVIDER_SERVICES = ['flux', 'gemini', 'copilot'];
 
 export default function SetupWizard({ onComplete }) {
@@ -37,11 +37,13 @@ export default function SetupWizard({ onComplete }) {
   const [deploymentProgress, setDeploymentProgress] = useState(null);
   const [gpuStatus, setGpuStatus] = useState(null); // { strategy, label, warning } or { gpu_accelerated, device, fallback_reason }
   const [webAppUrl, setWebAppUrl] = useState(null);
-  const [geminiAuthDone, setGeminiAuthDone] = useState(false);
-  const [geminiEmail, setGeminiEmail] = useState('');
-  const [geminiClientId, setGeminiClientId] = useState(process.env.REACT_APP_GEMINI_CLIENT_ID || '');
-  const [geminiClientSecret, setGeminiClientSecret] = useState(process.env.REACT_APP_GEMINI_CLIENT_SECRET || '');
-  const [geminiConnecting, setGeminiConnecting] = useState(false);
+  const [geminiApiKey, setGeminiApiKey] = useState(process.env.REACT_APP_GEMINI_API_KEY || '');
+  const [geminiModel, setGeminiModel] = useState('gemini-2.0-flash');
+  const [showGeminiKey, setShowGeminiKey] = useState(false);
+  const [geminiKeySaved, setGeminiKeySaved] = useState(false);
+  const [nvidiaApiKey, setNvidiaApiKey] = useState(process.env.REACT_APP_NVIDIA_API_KEY || '');
+  const [showNvidiaKey, setShowNvidiaKey] = useState(false);
+  const [nvidiaKeySaved, setNvidiaKeySaved] = useState(false);
   const [copilotAuthDone, setCopilotAuthDone] = useState(false);
   const [copilotEmail, setCopilotEmail] = useState('');
   const [copilotClientId, setCopilotClientId] = useState('');
@@ -420,6 +422,7 @@ export default function SetupWizard({ onComplete }) {
                 { id: 'llm-engine', name: 'Local AI (LM Studio)', icon: '🦙', description: 'Run LLMs locally on your machine using llama.cpp. No internet needed after setup.' },
                 { id: 'gemini', name: 'Google Gemini', icon: '✨', description: 'Cloud AI via Google Gemini — text + image generation. Requires Google sign-in.' },
                 { id: 'copilot', name: 'Microsoft Copilot', icon: '🤖', description: 'Cloud AI via Azure OpenAI — text + DALL-E images. Requires Microsoft Entra ID sign-in.' },
+                { id: 'nvidia', name: 'NVIDIA NIM', icon: '⚡', description: 'Cloud AI via NVIDIA NIM — multimodal: text, images, audio & video. Free API key at build.nvidia.com.' },
               ].map(provider => {
                 const isSelected = selectedAiProvider === provider.id;
                 return (
@@ -648,137 +651,143 @@ export default function SetupWizard({ onComplete }) {
                   </div>
                 )}
 
-                {/* Gemini OAuth — show when Gemini is selected as AI provider or image provider */}
+                {/* Gemini API Key — show when Gemini is selected as AI provider or image provider */}
                 {(selectedAiProvider === 'gemini' || (selectedAiProvider === 'llm-engine' && config.selectedServices?.includes('gemini'))) && (
                   <div className="info-box" style={{borderColor: '#4285f4', backgroundColor: 'rgba(66,133,244,0.05)'}}>
-                    <strong>✨ Google Gemini — Sign in (optional)</strong>
+                    <strong>✨ Google Gemini — API Key (optional)</strong>
                     <p style={{fontSize: '0.9rem', marginTop: '6px', marginBottom: '10px'}}>
-                      Sign in now so AI features work immediately after setup. You can also authenticate later via Settings → AI Config.
+                      Enter your API key so AI features work immediately after setup. You can also add it later via Settings → AI Config.
                     </p>
-                    {geminiAuthDone ? (
-                      <p style={{color: '#28a745', fontWeight: 600, margin: 0}}>
-                        ✓ Signed in{geminiEmail ? ` as ${geminiEmail}` : ''}
-                      </p>
+                    {geminiKeySaved ? (
+                      <p style={{color: '#28a745', fontWeight: 600, margin: 0}}>✓ API key saved</p>
                     ) : (
                       <>
-                        <div style={{display: 'grid', gap: '8px', marginBottom: '10px'}}>
-                          <input
-                            type="text"
-                            value={geminiClientId}
-                            onChange={e => setGeminiClientId(e.target.value)}
-                            placeholder="Google OAuth Client ID"
-                            style={{width: '100%', fontFamily: 'monospace', fontSize: '0.85rem'}}
-                          />
-                          <input
-                            type="password"
-                            value={geminiClientSecret}
-                            onChange={e => setGeminiClientSecret(e.target.value)}
-                            placeholder="Client Secret"
-                            style={{width: '100%', fontFamily: 'monospace', fontSize: '0.85rem'}}
-                          />
+                        <div style={{padding: '8px 10px', background: 'rgba(66,133,244,0.06)', borderRadius: '6px', border: '1px solid rgba(66,133,244,0.2)', marginBottom: '10px'}}>
+                          <strong style={{fontSize: '0.85rem'}}>How to get a free API key (1 minute)</strong>
+                          <ol style={{margin: '6px 0 8px 0', paddingLeft: '18px', lineHeight: 1.7, fontSize: '0.8rem', color: '#555'}}>
+                            <li>Click <strong>Open Google AI Studio</strong> below — sign in with your Google account</li>
+                            <li>Click <strong>Get API key</strong> → <strong>Create API key</strong></li>
+                            <li>Copy the key and paste it in the field below</li>
+                          </ol>
+                          <button type="button" style={{fontSize: '0.75rem', padding: '3px 10px', cursor: 'pointer'}}
+                            onClick={() => window.alloAPI?.openExternal('https://aistudio.google.com/apikey')}>
+                            Open Google AI Studio ↗
+                          </button>
                         </div>
+                        <label style={{display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px'}}>API Key</label>
+                        <div style={{display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '10px'}}>
+                          <input
+                            type={showGeminiKey ? 'text' : 'password'}
+                            value={geminiApiKey}
+                            onChange={e => setGeminiApiKey(e.target.value)}
+                            placeholder="Paste your Gemini API key..."
+                            style={{flex: 1, fontFamily: 'monospace', fontSize: '0.85rem'}}
+                          />
+                          <button type="button" style={{fontSize: '0.75rem', padding: '3px 8px', cursor: 'pointer', flexShrink: 0}}
+                            onClick={() => setShowGeminiKey(v => !v)}>
+                            {showGeminiKey ? 'Hide' : 'Show'}
+                          </button>
+                        </div>
+                        <label style={{display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px'}}>AI Model</label>
+                        <select
+                          value={geminiModel}
+                          onChange={e => setGeminiModel(e.target.value)}
+                          style={{width: '100%', fontFamily: 'monospace', fontSize: '0.85rem', marginBottom: '10px'}}
+                        >
+                          <option value="gemini-2.0-flash">gemini-2.0-flash (Free · Fast · Recommended)</option>
+                          <option value="gemini-2.5-flash">gemini-2.5-flash (Free · Smarter)</option>
+                          <option value="gemini-2.5-flash-8b">gemini-2.5-flash-8b (Free · Lightest)</option>
+                          <option value="gemini-2.5-pro">gemini-2.5-pro (Paid · Best quality)</option>
+                          <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite (Free · Fastest)</option>
+                        </select>
                         <button
                           type="button"
                           className="btn-primary"
-                          disabled={!geminiClientId || geminiConnecting}
+                          disabled={!geminiApiKey}
                           onClick={async () => {
-                            setGeminiConnecting(true);
                             try {
-                              await window.alloAPI.writeAIConfig({ aiProvider: selectedAiProvider === 'gemini' ? 'gemini' : undefined, imageProvider: 'gemini', googleClientId: geminiClientId.trim(), googleClientSecret: geminiClientSecret.trim() });
-                              const result = await window.alloAPI?.geminiOAuth?.start?.();
-                              if (result?.success) {
-                                setGeminiAuthDone(true);
-                                setGeminiEmail(result.email || '');
-                              } else {
-                                alert('Sign-in failed: ' + (result?.error || 'Unknown error'));
-                              }
-                            } finally {
-                              setGeminiConnecting(false);
+                              await window.alloAPI.writeAIConfig({
+                                aiProvider: selectedAiProvider === 'gemini' ? 'gemini' : undefined,
+                                imageProvider: 'gemini',
+                                geminiApiKey: geminiApiKey.trim(),
+                                geminiModel: geminiModel,
+                              });
+                              setGeminiKeySaved(true);
+                            } catch (err) {
+                              alert('Failed to save: ' + (err?.message || 'Unknown error'));
                             }
                           }}
                         >
-                          {geminiConnecting ? 'Opening browser...' : 'Sign in with Google'}
+                          Save API Key
                         </button>
-                        <details style={{marginTop: '10px'}} open={!geminiClientId}>
-                          <summary style={{fontSize: '0.8rem', color: '#888', cursor: 'pointer', fontWeight: 600}}>
-                            {geminiClientId ? '⚙ Credentials saved — click to review steps' : '⚙ How to get your credentials (4 steps)'}
-                          </summary>
-                          <div style={{fontSize: '0.8rem', color: '#555', marginTop: '10px', display: 'grid', gap: '10px'}}>
+                      </>
+                    )}
+                  </div>
+                )}
 
-                            <div style={{padding: '8px 10px', background: 'rgba(66,133,244,0.06)', borderRadius: '6px', border: '1px solid rgba(66,133,244,0.2)'}}>
-                              <strong>Step 1 — Create a Google Cloud project</strong>
-                              <ol style={{margin: '6px 0 8px 0', paddingLeft: '18px', lineHeight: 1.7}}>
-                                <li>Click <strong>Open Console</strong> below and sign in with your Google account</li>
-                                <li>Click the project dropdown at the top → <strong>New Project</strong></li>
-                                <li>Name it anything (e.g. <em>AlloFlow</em>) → <strong>Create</strong></li>
-                                <li>Make sure the new project is selected in the top bar</li>
-                              </ol>
-                              <button type="button" style={{fontSize: '0.75rem', padding: '3px 10px', cursor: 'pointer'}}
-                                onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/projectcreate')}>
-                                Open Console ↗
-                              </button>
-                            </div>
-
-                            <div style={{padding: '8px 10px', background: 'rgba(66,133,244,0.06)', borderRadius: '6px', border: '1px solid rgba(66,133,244,0.2)'}}>
-                              <strong>Step 2 — Enable the Generative Language API</strong>
-                              <ol style={{margin: '6px 0 8px 0', paddingLeft: '18px', lineHeight: 1.7}}>
-                                <li>Click <strong>Open API Library</strong> below</li>
-                                <li>Confirm your new project is selected at the top</li>
-                                <li>Click the blue <strong>Enable</strong> button</li>
-                              </ol>
-                              <button type="button" style={{fontSize: '0.75rem', padding: '3px 10px', cursor: 'pointer'}}
-                                onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/apis/library/generativelanguage.googleapis.com')}>
-                                Open API Library ↗
-                              </button>
-                            </div>
-
-                            <div style={{padding: '8px 10px', background: 'rgba(66,133,244,0.06)', borderRadius: '6px', border: '1px solid rgba(66,133,244,0.2)'}}>
-                              <strong>Step 3 — Configure the OAuth consent screen (IMPORTANT)</strong>
-                              <ol style={{margin: '6px 0 8px 0', paddingLeft: '18px', lineHeight: 1.7}}>
-                                <li>Click <strong>Open Consent Screen</strong> below</li>
-                                <li>Choose <strong>External</strong> → <strong>Create</strong></li>
-                                <li>Fill in <strong>App name</strong> (e.g. <em>AlloFlow</em>) and your email → <strong>Save and Continue</strong></li>
-                                <li>Skip the Scopes page → <strong>Save and Continue</strong></li>
-                                <li><strong style={{color: '#d32f2f'}}>MUST DO:</strong> Click <strong>Open Test Users</strong> below → click <strong>+ Add users</strong> and add your own Gmail address (the one you'll use to sign in to AlloFlow) → <strong>Save and Continue</strong></li>
-                                <li>Go back to Dashboard</li>
-                              </ol>
-                              <div style={{display: 'grid', gap: '6px', gridTemplateColumns: '1fr 1fr'}}>
-                                <button type="button" style={{fontSize: '0.75rem', padding: '3px 10px', cursor: 'pointer'}}
-                                  onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/apis/credentials/consent')}>
-                                  Open Consent Screen ↗
-                                </button>
-                                <button type="button" style={{fontSize: '0.75rem', padding: '3px 10px', cursor: 'pointer', background: '#d32f2f', color: 'white', border: 'none', borderRadius: '4px'}}
-                                  onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/auth/audience')}>
-                                  Open Test Users ↗
-                                </button>
-                              </div>
-                            </div>
-
-                            <div style={{padding: '8px 10px', background: 'rgba(66,133,244,0.06)', borderRadius: '6px', border: '1px solid rgba(66,133,244,0.2)'}}>
-                              <strong>Step 4 — Create OAuth credentials</strong>
-                              <ol style={{margin: '6px 0 8px 0', paddingLeft: '18px', lineHeight: 1.7}}>
-                                <li>Click <strong>Open Credentials</strong> below</li>
-                                <li>Click <strong>+ Create Credentials</strong> → <strong>OAuth client ID</strong></li>
-                                <li>Application type: <strong>Desktop app</strong> → <strong>Create</strong></li>
-                                <li>A popup shows your <strong>Client ID</strong> and <strong>Client secret</strong> — paste them in the fields above</li>
-                              </ol>
-                              <button type="button" style={{fontSize: '0.75rem', padding: '3px 10px', cursor: 'pointer'}}
-                                onClick={() => window.alloAPI?.openExternal('https://console.cloud.google.com/apis/credentials')}>
-                                Open Credentials ↗
-                              </button>
-                            </div>
-
-                            <div style={{padding: '8px 10px', background: 'rgba(245,158,11,0.08)', borderRadius: '6px', border: '1px solid rgba(245,158,11,0.3)'}}>
-                              <strong>⚠ School Google Workspace account?</strong><br/>
-                              Your IT admin needs to approve the app once: <strong>admin.google.com</strong> → Security → Access and data control → API controls → Manage third-party app access → Add app → search by Client ID → set to <strong>Trusted</strong>.
-                            </div>
-
-                            <div style={{padding: '10px', background: 'rgba(211,47,47,0.08)', borderRadius: '6px', border: '1px solid rgba(211,47,47,0.3)'}}>
-                              <strong style={{color: '#d32f2f'}}>⚠ Getting "Error 403: access_denied"?</strong><br/>
-                              <span style={{fontSize: '0.85rem', color: '#555'}}>You did not add yourself as a Test User in Step 3. Go back and complete Step 3, item 5 (click <strong>+ Add users</strong> and add your email), then try signing in again.</span>
-                            </div>
+                {/* NVIDIA NIM — show when NVIDIA is selected as AI provider */}
+                {selectedAiProvider === 'nvidia' && (
+                  <div className="info-box" style={{borderColor: '#76b900', backgroundColor: 'rgba(118,185,0,0.05)', marginTop: '16px'}}>
+                    <strong>⚡ NVIDIA NIM — API Key (optional)</strong>
+                    <p style={{fontSize: '0.9rem', marginTop: '6px', marginBottom: '10px'}}>
+                      Enter your API key so AI features work immediately after setup. You can also add it later via Settings → AI Config.
+                    </p>
+                    {nvidiaKeySaved ? (
+                      <p style={{color: '#28a745', fontWeight: 600, margin: 0}}>✓ API key saved — Nemotron 3 Nano Omni model selected</p>
+                    ) : (
+                      <>
+                        <div style={{padding: '8px 10px', background: 'rgba(118,185,0,0.06)', borderRadius: '6px', border: '1px solid rgba(118,185,0,0.2)', marginBottom: '10px'}}>
+                          <strong style={{fontSize: '0.85rem'}}>How to get a free NVIDIA API key (1 minute)</strong>
+                          <ol style={{margin: '6px 0 8px 0', paddingLeft: '18px', lineHeight: 1.7, fontSize: '0.8rem', color: '#555'}}>
+                            <li>Click <strong>Open NVIDIA Build</strong> below — sign in (free, no credit card)</li>
+                            <li>Click your avatar → <strong>Get API Key</strong> → <strong>Generate Key</strong></li>
+                            <li>Copy the key and paste it in the field below</li>
+                          </ol>
+                          <div style={{marginBottom: '8px', padding: '4px 8px', background: 'rgba(118,185,0,0.1)', borderRadius: '4px', fontSize: '0.78rem', color: '#444'}}>
+                            ✓ Model pre-selected: <strong>nvidia/nemotron-3-nano-omni-30b-a3b-reasoning</strong> — text, images, audio &amp; video
                           </div>
-                        </details>
+                          <button type="button" style={{fontSize: '0.75rem', padding: '3px 10px', cursor: 'pointer'}}
+                            onClick={() => window.alloAPI?.openExternal('https://build.nvidia.com')}>
+                            Open NVIDIA Build ↗
+                          </button>
+                        </div>
+                        <label style={{display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '4px'}}>API Key</label>
+                        <div style={{display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '10px'}}>
+                          <input
+                            type={showNvidiaKey ? 'text' : 'password'}
+                            value={nvidiaApiKey}
+                            onChange={e => setNvidiaApiKey(e.target.value)}
+                            placeholder="nvapi-..."
+                            style={{flex: 1, fontFamily: 'monospace', fontSize: '0.85rem'}}
+                          />
+                          <button type="button" style={{fontSize: '0.75rem', padding: '3px 8px', cursor: 'pointer', flexShrink: 0}}
+                            onClick={() => setShowNvidiaKey(v => !v)}>
+                            {showNvidiaKey ? 'Hide' : 'Show'}
+                          </button>
+                        </div>
+                        {nvidiaApiKey && (
+                          <p style={{fontSize: '0.75rem', color: '#28a745', margin: '0 0 8px 0'}}>✓ API key pre-filled — click Save to confirm</p>
+                        )}
+                        <button
+                          type="button"
+                          className="btn-primary"
+                          disabled={!nvidiaApiKey}
+                          onClick={async () => {
+                            try {
+                              await window.alloAPI.writeAIConfig({
+                                aiProvider: 'nvidia',
+                                nvidiaApiKey: nvidiaApiKey.trim(),
+                                nvidiaModel: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning',
+                                nvidiaReasoningMode: true,
+                              });
+                              setNvidiaKeySaved(true);
+                            } catch (err) {
+                              alert('Failed to save: ' + (err?.message || 'Unknown error'));
+                            }
+                          }}
+                        >
+                          Save API Key
+                        </button>
                       </>
                     )}
                   </div>
@@ -1091,19 +1100,16 @@ export default function SetupWizard({ onComplete }) {
 
           {selectedServices.includes('gemini') && (
             <div style={{
-              background: geminiAuthDone ? '#d4edda' : '#fff3cd',
-              border: `1px solid ${geminiAuthDone ? '#28a745' : '#ffc107'}`,
+              background: geminiKeySaved ? '#d4edda' : '#fff3cd',
+              border: `1px solid ${geminiKeySaved ? '#28a745' : '#ffc107'}`,
               borderRadius: '8px', padding: '16px', margin: '16px 0',
-              color: geminiAuthDone ? '#155724' : '#856404'
+              color: geminiKeySaved ? '#155724' : '#856404'
             }}>
-              {geminiAuthDone ? (
-                <>
-                  <p style={{fontWeight: 'bold', margin: '0 0 4px 0'}}>✨ Google Gemini connected</p>
-                  {geminiEmail && <p style={{margin: 0, fontSize: '0.9em'}}>{geminiEmail}</p>}
-                </>
+              {geminiKeySaved ? (
+                <p style={{fontWeight: 'bold', margin: 0}}>✨ Google Gemini API key saved</p>
               ) : (
                 <p style={{margin: 0}}>
-                  ⚠️ Gemini selected but not authenticated. Sign in via <strong>Settings → AI Config</strong> to activate it.
+                  ⚠️ Gemini selected but no API key entered. Add one via <strong>Settings → AI Config</strong> to activate it.
                 </p>
               )}
             </div>

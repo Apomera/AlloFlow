@@ -867,7 +867,7 @@ const loadPsychometricProbes = async () => {
     loadWordAudioBank(); // Background fetch word audio when probes launch
     if (window.BENCHMARK_PROBE_BANKS && window.ORF_SCREENING_PASSAGES && window.MATH_PROBE_BANKS && window.MISSING_NUMBER_PROBES && window.QUANTITY_DISCRIMINATION_PROBES && window.NWF_PROBE_BANKS && window.LNF_PROBE_BANKS && window.RAN_PROBE_BANKS) return;
     try {
-        const response = await fetch('https://raw.githubusercontent.com/Apomera/AlloFlow/main/shared/psychometric_probes.json');
+        const response = await fetch('/shared/psychometric_probes.json');
         if (!response.ok) throw new Error('Network response was not ok');
         const probeData = await response.json();
         if (probeData.BENCHMARK_PROBE_BANKS) window.BENCHMARK_PROBE_BANKS = probeData.BENCHMARK_PROBE_BANKS;
@@ -878,7 +878,7 @@ const loadPsychometricProbes = async () => {
     }
     if (!window.MATH_PROBE_BANKS) {
         try {
-            const mathResp = await fetch('https://raw.githubusercontent.com/Apomera/AlloFlow/main/shared/psychometric_math_probes.json');
+            const mathResp = await fetch('/shared/psychometric_math_probes.json');
             if (mathResp.ok) {
                 const mathData = await mathResp.json();
                 if (mathData.MATH_PROBE_BANKS) window.MATH_PROBE_BANKS = mathData.MATH_PROBE_BANKS;
@@ -892,7 +892,7 @@ const loadPsychometricProbes = async () => {
     }
     if (!window.NWF_PROBE_BANKS) {
         try {
-            const litResp = await fetch('https://raw.githubusercontent.com/Apomera/AlloFlow/main/shared/psychometric_literacy_probes.json');
+            const litResp = await fetch('/shared/psychometric_literacy_probes.json');
             if (litResp.ok) {
                 const litData = await litResp.json();
                 if (litData.NWF_PROBE_BANKS) window.NWF_PROBE_BANKS = litData.NWF_PROBE_BANKS;

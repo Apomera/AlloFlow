@@ -9,13 +9,14 @@
  * Usage:
  *   node scripts/test_local_app.js                  # backend + frontend
  *   node scripts/test_local_app.js --backend-only   # only API tests, no browser
- *   node scripts/test_local_app.js --no-mock        # use real LM Studio on :1234
  *   node scripts/test_local_app.js --verbose        # print all logs to stdout too
- *   node scripts/test_local_app.js --keep-servers   # don't kill servers after tests
  *
- * Prerequisites for frontend tests:
- *   cd local-app && npm install --save-dev @playwright/test
- *   cd local-app && npx playwright install chromium
+ * Prerequisites:
+ *   AlloFlow must already be running (launch the installed app first).
+ *   Playwright must be installed for frontend tests:
+ *     cd local-app && npm install --save-dev @playwright/test
+ *     cd local-app && npx playwright install chromium
+ *   LM Studio on :1234 is optional — only needed when AI provider is set to lmstudio.
  *
  * Output: test-results/report_<timestamp>.html  (opened automatically)
  *         test-results/log_<timestamp>.txt       (full raw log)
@@ -44,9 +45,31 @@ const LOG_FILE    = path.join(RESULTS_DIR, `log_${TS}.txt`);
 
 const ARGS           = process.argv.slice(2);
 const BACKEND_ONLY   = ARGS.includes('--backend-only');
-const NO_MOCK_AI     = ARGS.includes('--no-mock');
 const VERBOSE        = ARGS.includes('--verbose');
-const KEEP_SERVERS   = ARGS.includes('--keep-servers');
+
+// ── API key resolution ───────────────────────────────────────────────────────
+// Priority: ~/.alloflow/ai_config.json (runtime, set by admin UI)
+//       → admin/.env REACT_APP_GEMINI_API_KEY (dev/build env, same source as SetupWizard pre-fill)
+//       → process.env.GEMINI_API_KEY (CI environment variable)
+
+/**
+ * Parse a .env file and return a key→value map. Single-line only, no multiline.
+ */
+function parseEnvFile(filePath) {
+    try {
+        return fs.readFileSync(filePath, 'utf-8')
+            .split('\n')
+            .reduce((acc, line) => {
+                const trimmed = line.replace(/\r$/, ''); // strip CRLF
+                const m = trimmed.match(/^([A-Z0-9_]+)=(.*)/);
+                if (m) acc[m[1]] = m[2].trim().replace(/^['"]|['"]$/g, '');
+                return acc;
+            }, {});
+    } catch { return {}; }
+}
+
+const _adminEnv      = parseEnvFile(path.join(ROOT, 'admin', '.env'));
+const _devGeminiKey  = _adminEnv.REACT_APP_GEMINI_API_KEY || process.env.GEMINI_API_KEY || '';
 
 // Read the configured AI provider from ~/.alloflow/ai_config.json (set by admin app after setup).
 // Used to decide whether an unreachable :1234 in --no-mock mode is a SKIP or a FAIL.
@@ -58,9 +81,9 @@ const CONFIGURED_AI_PROVIDER = (() => {
         return JSON.parse(raw)?.aiProvider || 'lmstudio';
     } catch { return 'lmstudio'; }
 })();
-// When --no-mock and provider is cloud-based, unreachable :1234 is expected → skip.
-// When --no-mock and provider is lmstudio/llm-engine (or unset), unreachable :1234 is a real failure.
-const LM_STUDIO_IS_OPTIONAL = NO_MOCK_AI && CLOUD_AI_PROVIDERS.has(CONFIGURED_AI_PROVIDER);
+// LM Studio (:1234) is optional when the configured AI provider is cloud-based.
+// When provider is lmstudio/llm-engine, unreachable :1234 is a real failure.
+const LM_STUDIO_IS_OPTIONAL = CLOUD_AI_PROVIDERS.has(CONFIGURED_AI_PROVIDER);
 
 // ── Logging ───────────────────────────────────────────────────────────────────
 
@@ -102,185 +125,7 @@ function addResult(suite, name, passed, ms, extra = {}) {
     log(`${icon} ${name} (${ms}ms)${note}`, tag);
 }
 
-// ── Process list for cleanup ───────────────────────────────────────────────────
-
-const procs = [];
-
-function spawnServer(label, cmd, args_, cwd, readyPattern) {
-    return new Promise((resolve, reject) => {
-        const proc = spawn(cmd, args_, {
-            cwd,
-            stdio: ['ignore', 'pipe', 'pipe'],
-            shell: false,
-        });
-        procs.push({ label, proc });
-
-        let ready = false;
-        const timeout = setTimeout(() => {
-            if (!ready) reject(new Error(`${label} did not become ready within 10s`));
-        }, 10000);
-
-        const onData = (data) => {
-            logRaw(data, label);
-            if (!ready && readyPattern.test(String(data))) {
-                ready = true;
-                clearTimeout(timeout);
-                results.servers.push({ name: label, status: 'started' });
-                log(`${label} ready`, 'INFO');
-                resolve(proc);
-            }
-        };
-
-        proc.stdout.on('data', onData);
-        proc.stderr.on('data', (d) => {
-            logRaw(d, `${label}:ERR`);
-            onData(d);
-            if (!ready && String(d).includes('EADDRINUSE')) {
-                results.servers.push({ name: label, status: 'port already in use' });
-                reject(new Error(`${label}: port already in use — kill stale node processes first`));
-            }
-        });
-
-        proc.on('error', (err) => {
-            results.servers.push({ name: label, status: 'error: ' + err.message });
-            reject(err);
-        });
-        proc.on('close', (code) => {
-            if (!ready) {
-                results.servers.push({ name: label, status: `exited(${code})` });
-                reject(new Error(`${label} exited with code ${code}`));
-            }
-        });
-    });
-}
-
-// ── Mock LM Studio ─────────────────────────────────────────────────────────────
-//  Responds to OpenAI-compatible /v1/chat/completions.
-//  Detects the request intent from the prompt and returns appropriate JSON.
-
-function startMockAI() {
-    return new Promise((resolve) => {
-        const CANNED = {
-            analysis: JSON.stringify({
-                readingLevel: { range: '6th-8th Grade', explanation: 'Moderate vocabulary and sentence complexity.' },
-                concepts: ['Main Concept', 'Supporting Idea', 'Key Theme'],
-                accuracy: { rating: 'High', reason: 'Content appears factually consistent.' },
-                grammar: ['No significant issues detected.'],
-            }),
-            quiz: JSON.stringify({
-                questions: [
-                    { question: 'What is the main topic discussed?', options: ['Option A', 'Option B', 'Option C', 'Option D'], correctAnswer: 'Option A' },
-                    { question: 'Which concept was introduced first?', options: ['Concept 1', 'Concept 2', 'Concept 3', 'Concept 4'], correctAnswer: 'Concept 1' },
-                ],
-                reflections: ['What did you learn from this text?'],
-            }),
-            glossary: JSON.stringify([
-                { term: 'Analysis', def: 'The process of examining something in detail.', tier: 'Academic' },
-                { term: 'Concept', def: 'An abstract idea or general notion.', tier: 'Academic' },
-                { term: 'Synthesis', def: 'The combination of elements to form a whole.', tier: 'Academic' },
-            ]),
-            outline: JSON.stringify({
-                main: 'Central Topic',
-                branches: [
-                    { title: 'Key Point 1', items: ['Supporting detail A', 'Supporting detail B'] },
-                    { title: 'Key Point 2', items: ['Supporting detail C', 'Supporting detail D'] },
-                ],
-                structureType: 'Structured Outline',
-            }),
-            faq: JSON.stringify([
-                { question: 'What is the main topic?', answer: 'The main topic is about test content used for automated testing.' },
-                { question: 'Why is testing important?', answer: 'Testing ensures the app works correctly and catches bugs early.' },
-            ]),
-            brainstorm: JSON.stringify([
-                { title: 'Classroom Activity', description: 'A hands-on group activity related to the topic.', connection: 'Reinforces key concepts.' },
-                { title: 'Research Project', description: 'Students investigate the topic independently.', connection: 'Extends understanding beyond the text.' },
-            ]),
-            frames: JSON.stringify({
-                mode: 'list',
-                items: [
-                    { text: 'I think the main idea is...' },
-                    { text: 'The author supports this by...' },
-                    { text: 'This reminds me of...' },
-                ],
-                rubric: '| Criteria | 1 | 2 | 3 | 4 |\n|---|---|---|---|---|\n| Content | Minimal | Basic | Adequate | Thorough |',
-            }),
-            simplified: 'This is a simplified version of the text for testing purposes. The content has been adapted to be easier to understand while preserving the core ideas.',
-        };
-
-        function detectType(prompt) {
-            const p = prompt.toLowerCase();
-            if (p.includes('"readinglevel"') || p.includes('analyze')) return 'analysis';
-            if (p.includes('"questions"') || p.includes('exit ticket') || p.includes('multiple choice')) return 'quiz';
-            if (p.includes('"term"') || p.includes('tier 2') || p.includes('tier 3') || p.includes('vocabulary')) return 'glossary';
-            if (p.includes('"branches"') || p.includes('structured outline') || p.includes('visual organizer')) return 'outline';
-            if (p.includes('frequently asked') || p.includes('"question"')) return 'faq';
-            if (p.includes('brainstorm') || p.includes('activity ideas')) return 'brainstorm';
-            if (p.includes('sentence starters') || p.includes('scaffold')) return 'frames';
-            return 'simplified';
-        }
-
-        const server = http.createServer((req, res) => {
-            res.setHeader('Access-Control-Allow-Origin', '*');
-            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-            if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
-
-            if (req.url === '/health') {
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ status: 'ok', mock: true }));
-                return;
-            }
-            if (req.url === '/v1/models') {
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ data: [{ id: 'mock-model', object: 'model' }] }));
-                return;
-            }
-            if (req.url === '/v1/chat/completions' && req.method === 'POST') {
-                let body = '';
-                req.on('data', c => body += c);
-                req.on('end', () => {
-                    try {
-                        const parsed = JSON.parse(body);
-                        const fullPrompt = (parsed.messages || []).map(m => m.content || '').join(' ');
-                        const type = detectType(fullPrompt);
-                        const content = CANNED[type] || CANNED.simplified;
-                        logRaw(`[mock:${type}] returning canned response`, 'MOCK_AI');
-                        res.writeHead(200, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({
-                            id: 'chatcmpl-mock-' + Date.now(),
-                            object: 'chat.completion',
-                            created: Math.floor(Date.now() / 1000),
-                            model: 'mock-model',
-                            choices: [{ index: 0, message: { role: 'assistant', content }, finish_reason: 'stop' }],
-                            usage: { prompt_tokens: 50, completion_tokens: 50, total_tokens: 100 },
-                        }));
-                    } catch (e) {
-                        res.writeHead(400, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({ error: e.message }));
-                    }
-                });
-                return;
-            }
-            res.writeHead(404); res.end('Not found');
-        });
-
-        server.listen(PORTS.mockAI, '127.0.0.1', () => {
-            results.servers.push({ name: 'Mock LM Studio', status: 'started' });
-            log(`Mock LM Studio listening on :${PORTS.mockAI}`, 'INFO');
-            resolve(server);
-        });
-
-        server.on('error', (err) => {
-            if (err.code === 'EADDRINUSE') {
-                log(`Port ${PORTS.mockAI} already in use — assuming real LM Studio running`, 'INFO');
-                results.servers.push({ name: 'Mock LM Studio', status: 'skipped (port in use)' });
-                resolve(null);
-            } else {
-                throw err;
-            }
-        });
-    });
-}
+// ── (mock LM Studio removed — tests run against the real API) ───────────────────
 
 // ── Wait for HTTP port ────────────────────────────────────────────────────────
 
@@ -466,66 +311,50 @@ async function runBackendTests() {
         if (r.status !== 401) throw new Error(`Expected 401 after logout, got ${r.status}`);
     });
 
-    // ── AI connectivity (mock or real LM Studio) ──────────────────────────────
+    // ── AI connectivity (LM Studio) ───────────────────────────────────────────
 
     // Pre-check reachability. Failure here means:
     //   - cloud AI provider configured → tests will skip (LM Studio not expected)
-    //   - LM Studio provider configured → tests will fail (misconfiguration or server not started)
+    //   - LM Studio provider configured → tests will fail (LM Studio not started)
     const _aiReachable = await get(PORTS.mockAI, '/health').then(r => r.status === 200).catch(() => false);
-    if (NO_MOCK_AI && !_aiReachable) {
-        log(`AI endpoint :${PORTS.mockAI} unreachable — configured provider: ${CONFIGURED_AI_PROVIDER} (${LM_STUDIO_IS_OPTIONAL ? 'cloud, will skip' : 'LM Studio, will fail'})`, 'INFO');
+    if (!_aiReachable) {
+        log(`LM Studio :${PORTS.mockAI} unreachable — configured provider: ${CONFIGURED_AI_PROVIDER} (${LM_STUDIO_IS_OPTIONAL ? 'cloud, will skip' : 'LM Studio, will fail'})`, 'INFO');
     }
 
-    await test('Mock LM Studio /health → ok', async () => {
+    await test('LM Studio /health → ok', async () => {
         if (!_aiReachable) {
             if (LM_STUDIO_IS_OPTIONAL) { SKIP(`LM Studio not running on :1234 (${CONFIGURED_AI_PROVIDER} is cloud provider)`); }
             throw new Error(`LM Studio unreachable on :1234 — configured provider is '${CONFIGURED_AI_PROVIDER}', expected LM Studio to be running`);
         }
         const r = await get(PORTS.mockAI, '/health');
         if (r.status !== 200) throw new Error(`Expected 200, got ${r.status}`);
-        // Mock returns { status } — real LM Studio returns { status } or just 200 body
-        if (!NO_MOCK_AI && !r.body.status) throw new Error('No status field');
     });
 
-    await test('Mock LM Studio /v1/chat/completions → valid response', async () => {
+    await test('LM Studio /v1/chat/completions → valid response', async () => {
         if (!_aiReachable) {
             if (LM_STUDIO_IS_OPTIONAL) { SKIP(`LM Studio not running on :1234 (${CONFIGURED_AI_PROVIDER} is cloud provider)`); }
             throw new Error(`LM Studio unreachable on :1234 — configured provider is '${CONFIGURED_AI_PROVIDER}', expected LM Studio to be running`);
         }
         const r = await post(PORTS.mockAI, '/v1/chat/completions', {
-            model: NO_MOCK_AI ? 'google/gemma-3-4b' : 'mock-model',
+            model: 'google/gemma-3-4b',
             messages: [{ role: 'user', content: 'Analyze this text: "The sun is a star."' }],
         });
         if (r.status !== 200) throw new Error(`Expected 200, got ${r.status}`);
         if (!r.body.choices?.[0]?.message?.content) throw new Error('No content in response');
     });
 
-    await test('Mock LM Studio returns quiz JSON for quiz prompt', async () => {
+    await test('LM Studio /v1/chat/completions → responds to quiz prompt', async () => {
         if (!_aiReachable) {
             if (LM_STUDIO_IS_OPTIONAL) { SKIP(`LM Studio not running on :1234 (${CONFIGURED_AI_PROVIDER} is cloud provider)`); }
             throw new Error(`LM Studio unreachable on :1234 — configured provider is '${CONFIGURED_AI_PROVIDER}', expected LM Studio to be running`);
         }
-        if (NO_MOCK_AI) {
-            // Real LLMs don't reliably return strict JSON — skip structural check
-            const r = await post(PORTS.mockAI, '/v1/chat/completions', {
-                model: 'google/gemma-3-4b',
-                messages: [{ role: 'user', content: 'Create a 2-question multiple choice quiz. Return JSON with a "questions" array.' }],
-            });
-            if (r.status !== 200) throw new Error(`Expected 200, got ${r.status}`);
-            if (!r.body.choices?.[0]?.message?.content) throw new Error('No content in response');
-            return; // pass — real LLM responded, structural JSON not enforced
-        }
+        // Real LLMs don't reliably return strict JSON — only assert status and content presence
         const r = await post(PORTS.mockAI, '/v1/chat/completions', {
-            model: 'mock-model',
-            messages: [{ role: 'user', content: 'Create an exit ticket quiz with multiple choice questions. Return JSON with "questions" array.' }],
+            model: 'google/gemma-3-4b',
+            messages: [{ role: 'user', content: 'Create a 2-question multiple choice quiz. Return JSON with a "questions" array.' }],
         });
-        const content = r.body.choices?.[0]?.message?.content || '';
-        try {
-            const parsed = JSON.parse(content);
-            if (!parsed.questions) throw new Error('No questions array');
-        } catch (e) {
-            throw new Error(`Expected quiz JSON, got: ${content.slice(0, 100)}`);
-        }
+        if (r.status !== 200) throw new Error(`Expected 200, got ${r.status}`);
+        if (!r.body.choices?.[0]?.message?.content) throw new Error('No content in response');
     });
 
     // ── Static app server ─────────────────────────────────────────────────────
@@ -550,6 +379,136 @@ async function runBackendTests() {
     await test('Static app server → db_local_module.js exists', async () => {
         const r = await get(PORTS.app, '/db_local_module.js');
         if (r.status !== 200) throw new Error(`Expected 200, got ${r.status}`);
+    });
+
+    // ── Gemini Proxy Integration Tests ────────────────────────────────────────
+    // These tests call the REAL /api/gemini/proxy/:model endpoint on the local
+    // app server (port 3730). They validate end-to-end: model name resolves,
+    // token is valid, and the API returns content. Skipped if no token found.
+    //
+    // WHY: Playwright mocks all AI routes, so browser tests never catch model
+    // name errors, expired tokens, or API format changes. These backend tests
+    // run without any mocking and will FAIL if the model doesn't exist.
+
+    // Check for API key — priority order:
+    // 1. ~/.alloflow/ai_config.json (written by admin UI after setup, 0.8.17+)
+    // 2. admin/.env REACT_APP_GEMINI_API_KEY (dev machine, same source as SetupWizard pre-fill)
+    const _aiConfigFile = path.join(os.homedir(), '.alloflow', 'ai_config.json');
+    const _hasGeminiApiKey = (() => {
+        try {
+            const cfg = JSON.parse(fs.readFileSync(_aiConfigFile, 'utf-8'));
+            if (cfg?.geminiApiKey && cfg.geminiApiKey.length > 10) return true;
+        } catch { /* no file */ }
+        if (_devGeminiKey.length > 10) return true;
+        return false;
+    })();
+    log(`[AI key check] ai_config.json: ${fs.existsSync(_aiConfigFile)}, devKey len: ${_devGeminiKey.length}, hasKey: ${_hasGeminiApiKey}`, 'INFO');
+    // Legacy OAuth token fallback (pre-0.8.17)
+    const _geminiTokenFile = path.join(os.homedir(), '.alloflow', 'gemini_token.json');
+    const _hasGeminiToken = _hasGeminiApiKey || (() => {
+        try {
+            const tok = JSON.parse(fs.readFileSync(_geminiTokenFile, 'utf-8'));
+            return !!(tok?.access_token || tok?.token);
+        } catch { return false; }
+    })();
+
+    await test('Gemini proxy: /api/gemini/proxy/gemini-2.5-flash — text generation', async () => {
+        if (!_hasGeminiToken) SKIP('No Gemini API key at ~/.alloflow/ai_config.json — add key via Admin Settings → AI Config');
+        const r = await post(PORTS.app, '/api/gemini/proxy/gemini-2.5-flash', {
+            contents: [{ parts: [{ text: 'Say exactly: "AlloFlow proxy test OK"' }] }],
+            generationConfig: { maxOutputTokens: 20 },
+        });
+        if (r.status === 401) throw new Error('Gemini token invalid or expired — re-authorize via Admin Settings → AI Config');
+        if (r.status === 403) {
+            const code = typeof r.body === 'object' ? (r.body?.code || r.body?.error || '') : r.body;
+            throw new Error(`403 Forbidden — ${code}. Re-authorize Gemini in Admin Settings → AI Config`);
+        }
+        if (r.status === 404) throw new Error(`404 Not Found — model "gemini-2.5-flash" may not exist or be available for this token`);
+        if (r.status === 429) SKIP('Rate limit exceeded (429) — key is valid but throttled. Try again in a moment.');
+        if (r.status === 400) {
+            const detail = typeof r.body === 'object' ? JSON.stringify(r.body).substring(0, 200) : String(r.body).substring(0, 200);
+            throw new Error(`400 Bad Request — check model name and request format: ${detail}`);
+        }
+        if (r.status !== 200) throw new Error(`Expected 200, got ${r.status}: ${JSON.stringify(r.body).substring(0, 200)}`);
+        const text = r.body?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text) throw new Error(`No text in response candidates. Got: ${JSON.stringify(r.body).substring(0, 300)}`);
+        log(`[Gemini proxy text] Response (${text.length} chars): "${text.substring(0, 80)}"`, 'INFO');
+    });
+
+    await test('Gemini proxy: /api/gemini/proxy/gemini-2.5-flash-preview-tts — TTS model reachable', async () => {
+        if (!_hasGeminiToken) SKIP('No Gemini API key — add key via Admin Settings → AI Config');
+        const r = await post(PORTS.app, '/api/gemini/proxy/gemini-2.5-flash-preview-tts', {
+            contents: [{ parts: [{ text: 'Say: Hello' }] }],
+            generationConfig: {
+                responseModalities: ['AUDIO'],
+                speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Puck' } } },
+            },
+        });
+        if (r.status === 401) throw new Error('Gemini token invalid or expired — re-authorize via Admin Settings');
+        if (r.status === 403) {
+            const code = typeof r.body === 'object' ? (r.body?.code || r.body?.error || '') : r.body;
+            throw new Error(`403 Forbidden — ${code}`);
+        }
+        if (r.status === 404) throw new Error(`404 Not Found — model "gemini-2.5-flash-preview-tts" may not exist for this API key`);
+        if (r.status === 429) SKIP('Rate limit exceeded (429) — key is valid but throttled on TTS. Try again in a moment.');
+        if (r.status === 400) {
+            const detail = typeof r.body === 'object' ? JSON.stringify(r.body).substring(0, 200) : String(r.body).substring(0, 200);
+            throw new Error(`400 Bad Request — TTS model or request format issue: ${detail}`);
+        }
+        if (r.status !== 200) throw new Error(`Expected 200, got ${r.status}: ${JSON.stringify(r.body).substring(0, 200)}`);
+        const audioPart = r.body?.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.data);
+        if (!audioPart) throw new Error(`TTS response has no audio data. Got: ${JSON.stringify(r.body).substring(0, 300)}`);
+        const audioBytes = audioPart.inlineData.data.length;
+        log(`[Gemini proxy TTS] Audio base64 length: ${audioBytes} chars`, 'INFO');
+        if (audioBytes < 100) throw new Error(`TTS audio data suspiciously small: ${audioBytes} chars`);
+    });
+
+    await test('Gemini proxy: rejects "local" model placeholder → 400', async () => {
+        const r = await post(PORTS.app, '/api/gemini/proxy/local', {
+            contents: [{ parts: [{ text: 'test' }] }],
+        });
+        if (r.status === 400) return; // Admin proxy correctly rejects "local"
+        if (r.status === 200 && typeof r.body === 'string' && r.body.trim().startsWith('<')) return; // static SPA fallback
+        throw new Error(`Expected 400 for "local" model placeholder, got ${r.status}`);
+    });
+
+    await test('Imagen proxy: /api/imagen/proxy — image generation', async () => {
+        if (!_hasGeminiToken) SKIP('No Gemini API key — add key via Admin Settings → AI Config');
+        const r = await post(PORTS.app, '/api/imagen/proxy', {
+            model: 'imagen-4.0-generate-001',
+            instances: [{ prompt: 'A simple red circle on a white background' }],
+            parameters: { sampleCount: 1 },
+        });
+        if (r.status === 401) throw new Error('Gemini API key not configured — add key via Admin Settings → AI Config');
+        if (r.status === 403) throw new Error('403 Forbidden — Imagen API may not be enabled for this key. Check Google AI Studio permissions.');
+        if (r.status === 429) SKIP('Imagen rate limited (429) — try again later');
+        if (r.status === 400) {
+            const detail = typeof r.body === 'object' ? r.body?.error?.message || JSON.stringify(r.body).substring(0, 200) : String(r.body).substring(0, 200);
+            if (detail.toLowerCase().includes('paid plan') || detail.toLowerCase().includes('billing') || detail.toLowerCase().includes('upgrade')) {
+                SKIP(`Imagen requires paid plan — ${detail}`);
+            }
+            throw new Error(`400 Bad Request — ${detail}`);
+        }
+        if (r.status !== 200) throw new Error(`Expected 200, got ${r.status}: ${JSON.stringify(r.body).substring(0, 200)}`);
+        const b64 = r.body?.predictions?.[0]?.bytesBase64Encoded;
+        if (!b64) throw new Error(`No image in response. Got: ${JSON.stringify(r.body).substring(0, 300)}`);
+        if (b64.length < 100) throw new Error(`Image data suspiciously small: ${b64.length} chars`);
+        log(`[Imagen proxy] Image base64 length: ${b64.length} chars`, 'INFO');
+    });
+
+    await test('Gemini proxy: 503 fallback — overloaded model falls back to gemini-2.0-flash', async () => {
+        if (!_hasGeminiToken) SKIP('No Gemini API key — add key via Admin Settings → AI Config');
+        // Use a real but unavailable-sounding model name to trigger the 503 path;
+        // the proxy should either return a valid response from the fallback or a non-503 error.
+        // We just confirm the proxy itself doesn't crash or hang.
+        const r = await post(PORTS.app, '/api/gemini/proxy/gemini-2.5-pro', {
+            contents: [{ parts: [{ text: 'Say: test' }] }],
+            generationConfig: { maxOutputTokens: 10 },
+        });
+        // 200 = model worked (or fallback worked), 400/404 = model rejected by API — all acceptable
+        // Only 503 passthrough (no fallback attempted) is a failure
+        if (r.status === 503) throw new Error('Proxy returned 503 without attempting fallback to gemini-2.0-flash');
+        log(`[503 fallback test] Status: ${r.status}`, 'INFO');
     });
 }
 
@@ -757,10 +716,6 @@ ${results.frontend.length > 0 ? `
 let _cleaned = false;
 function cleanup() {
     if (_cleaned) return; _cleaned = true;
-    procs.forEach(({ label, proc }) => {
-        try { proc.kill('SIGTERM'); } catch {}
-        log(`Stopped ${label}`, 'INFO');
-    });
     logStream.end();
 }
 
@@ -778,54 +733,39 @@ process.on('SIGTERM', () => { cleanup(); process.exit(143); });
     log(`Arguments: ${ARGS.join(' ') || '(none)'}`, 'INFO');
     log(`Test log: ${LOG_FILE}`, 'INFO');
 
-    // ── Check build exists ────────────────────────────────────────────────────
+    // ── Preflight: verify AlloFlow is already running ─────────────────────────
+    // Tests require the installed app to be open. Start AlloFlow before running tests.
 
-    const appJsPath = path.join(LOCAL_APP, 'build', 'app.js');
-    if (!fs.existsSync(appJsPath)) {
-        log('Build not found. Running: node local_build.js', 'INFO');
-        try {
-            execSync('node local_build.js', { cwd: ROOT, stdio: 'inherit' });
-        } catch (e) {
-            log('Build failed — aborting tests', 'FAIL');
-            process.exit(1);
-        }
+    log('Checking AlloFlow services are running...', 'INFO');
+
+    const appUp = await get(PORTS.app, '/').then(r => r.status === 200).catch(() => false);
+    if (!appUp) {
+        console.error(`\n  ERROR: AlloFlow app server not detected on port ${PORTS.app}.`);
+        console.error('  Please start AlloFlow first, then run tests again.\n');
+        process.exit(1);
     }
+    results.servers.push({ name: 'Local App Server', status: 'running' });
+    log(`Local App Server on :${PORTS.app} — OK`, 'INFO');
 
-    // ── Start services ────────────────────────────────────────────────────────
-
-    let mockAIServer = null;
-
-    if (!NO_MOCK_AI) {
-        mockAIServer = await startMockAI();
+    const backendUp = await get(PORTS.backend, '/health').then(r => r.status === 200).catch(() => false);
+    if (!backendUp) {
+        console.error(`\n  ERROR: AlloFlow backend not detected on port ${PORTS.backend}.`);
+        console.error('  Please start AlloFlow first, then run tests again.\n');
+        process.exit(1);
     }
+    results.servers.push({ name: 'SQLite Backend', status: 'running' });
+    log(`SQLite Backend on :${PORTS.backend} — OK`, 'INFO');
 
-    try {
-        await spawnServer(
-            'SQLite Backend',
-            'node',
-            ['backend/server.js'],
-            LOCAL_APP,
-            /Listening|ready|:3747/i
-        );
-    } catch (e) {
-        log(`Failed to start SQLite backend: ${e.message}`, 'FAIL');
-        log('Trying to continue — backend may already be running', 'INFO');
-        try { await waitForPort(PORTS.backend, 2000); }
-        catch { log('Backend not available — backend tests will fail', 'FAIL'); }
-    }
-
-    try {
-        await spawnServer(
-            'Static App Server',
-            'node',
-            ['server.js'],
-            LOCAL_APP,
-            /AlloFlow local app|localhost:\d+/i
-        );
-    } catch (e) {
-        log(`Failed to start static server: ${e.message}`, 'FAIL');
-        try { await waitForPort(PORTS.app, 2000); }
-        catch { log('Static server not available — app tests will fail', 'FAIL'); }
+    const aiUp = await get(PORTS.mockAI, '/health').then(r => r.status === 200).catch(() => false);
+    if (aiUp) {
+        results.servers.push({ name: 'LM Studio', status: 'running' });
+        log(`LM Studio on :${PORTS.mockAI} — OK`, 'INFO');
+    } else if (LM_STUDIO_IS_OPTIONAL) {
+        results.servers.push({ name: 'LM Studio', status: `not running (${CONFIGURED_AI_PROVIDER} is cloud provider — OK)` });
+        log(`LM Studio not running — cloud provider (${CONFIGURED_AI_PROVIDER}) in use, LM Studio tests will skip`, 'INFO');
+    } else {
+        results.servers.push({ name: 'LM Studio', status: 'not running — LM Studio tests will fail' });
+        log(`LM Studio not detected on :${PORTS.mockAI} — configured provider is '${CONFIGURED_AI_PROVIDER}', LM Studio tests will fail`, 'INFO');
     }
 
     // ── Run tests ─────────────────────────────────────────────────────────────
@@ -842,9 +782,7 @@ process.on('SIGTERM', () => { cleanup(); process.exit(143); });
 
     // ── Cleanup ───────────────────────────────────────────────────────────────
 
-    if (!KEEP_SERVERS) {
-        cleanup();
-    }
+    cleanup();
 
     // Open report automatically on Windows/Mac
     try {

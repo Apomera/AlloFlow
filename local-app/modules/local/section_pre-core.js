@@ -252,5 +252,7 @@ const isGlobalMuted = () => globalMuteEnabled;
 // [LOCAL] Also provide callOllama alias so any sections that call callGemini work after C1 stripping
 const callOllama = (...args) => {
     if (AIProvider && typeof AIProvider.chat === 'function') return AIProvider.chat(...args);
-    return Promise.resolve('[Local AI not available]');
+    // Return valid JSON when jsonMode is true (2nd arg), empty string otherwise
+    const jsonMode = args[1];
+    return Promise.resolve(jsonMode ? '{}' : '');
 };

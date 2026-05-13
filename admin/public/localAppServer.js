@@ -49,7 +49,7 @@ const MIME_TYPES = {
 const isStaticExt = new Set([
     '.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg',
     '.ico', '.woff', '.woff2', '.ttf', '.map', '.wav', '.mp3',
-    '.ogg', '.wasm',
+    '.ogg', '.wasm', '.json',
 ]);
 
 // ── Config helpers ────────────────────────────────────────────────────────────
@@ -84,12 +84,17 @@ function buildLocalConfigScript() {
             if (ai.aiProvider) cfg.aiProvider = ai.aiProvider;
             if (ai.imageProvider) cfg.imageProvider = ai.imageProvider;
             if (ai.copilot?.endpoint) cfg.copilotEndpoint = ai.copilot.endpoint;
+            // Expose configured Gemini model so client UI can display it
+            if (ai.geminiModel) cfg.geminiModel = ai.geminiModel;            if (ai.geminiTtsModel)      cfg.geminiTtsModel = ai.geminiTtsModel;
+            // Expose NVIDIA config (model only — API key stays server-side)
+            if (ai.nvidiaModel) cfg.nvidiaModel = ai.nvidiaModel;
+            if (ai.nvidiaReasoningMode !== undefined) cfg.nvidiaReasoningMode = ai.nvidiaReasoningMode;
         }
     } catch (_) {}
 
-    // For cloud providers (gemini, copilot), redirect llmEngineUrl to this server
+    // For cloud providers (gemini, copilot, nvidia), redirect llmEngineUrl to this server
     // so that ai_local_module.js calls /v1/chat/completions here instead of LM Studio.
-    const CLOUD_PROVIDERS = new Set(['gemini', 'copilot', 'openai']);
+    const CLOUD_PROVIDERS = new Set(['gemini', 'copilot', 'openai', 'nvidia']);
     if (CLOUD_PROVIDERS.has(cfg.aiProvider)) {
         cfg.llmEngineUrl = `http://localhost:${_serverPort}`;
     }
@@ -108,6 +113,24 @@ window.__alloLocalDBUrl  = window.__alloLocalConfig.sqliteUrl;
 // ── API Proxy Endpoints ───────────────────────────────────────────────────────
 
 /**
+ * Parse the GCP project number from a Google OAuth client ID.
+ * Format: "{project_number}-{hash}.apps.googleusercontent.com"
+ * When using cloud-platform scope, Gemini API requires x-goog-user-project header.
+ * @returns {string|null} Project number string, or null if not available
+ */
+function getGeminiProjectNumber() {
+    try {
+        if (!fs.existsSync(AI_CONFIG_FILE)) return null;
+        const ai = JSON.parse(fs.readFileSync(AI_CONFIG_FILE, 'utf-8'));
+        const clientId = ai.googleClientId || '';
+        const match = clientId.match(/^(\d+)-/);
+        return match ? match[1] : null;
+    } catch {
+        return null;
+    }
+}
+
+/**
  * Load and validate Gemini access token from disk.
  * @returns {string|null} Valid access token or null if missing/expired
  */
@@ -120,6 +143,135 @@ function loadGeminiToken() {
         return tok.access_token;
     } catch {
         return null;
+    }
+}
+
+/**
+ * Load the Gemini API key from ai_config.json.
+ * @returns {string|null} API key string, or null if not configured
+ */
+function loadGeminiApiKey() {
+    try {
+        if (!fs.existsSync(AI_CONFIG_FILE)) return process.env.GEMINI_API_KEY || null;
+        const ai = JSON.parse(fs.readFileSync(AI_CONFIG_FILE, 'utf-8'));
+        return ai.geminiApiKey || process.env.GEMINI_API_KEY || null;
+    } catch {
+        return process.env.GEMINI_API_KEY || null;
+    }
+}
+
+/**
+ * Load the user-selected Gemini model from ai_config.json.
+ * Falls back to gemini-2.0-flash (stable, GA, free-tier).
+ * @returns {string} Gemini model ID to use for content generation
+ */
+function loadGeminiModel() {
+    try {
+        if (!fs.existsSync(AI_CONFIG_FILE)) return 'gemini-2.0-flash';
+        const ai = JSON.parse(fs.readFileSync(AI_CONFIG_FILE, 'utf-8'));
+        return ai.geminiModel || 'gemini-2.0-flash';
+    } catch {
+        return 'gemini-2.0-flash';
+    }
+}
+
+/**
+ * Load the NVIDIA NIM API key from ai_config.json (never sent to client).
+ * @returns {string|null}
+ */
+function loadNvidiaApiKey() {
+    try {
+        if (!fs.existsSync(AI_CONFIG_FILE)) return process.env.NVIDIA_API_KEY || null;
+        const ai = JSON.parse(fs.readFileSync(AI_CONFIG_FILE, 'utf-8'));
+        return ai.nvidiaApiKey || process.env.NVIDIA_API_KEY || null;
+    } catch {
+        return process.env.NVIDIA_API_KEY || null;
+    }
+}
+
+/**
+ * Load the user-selected NVIDIA model from ai_config.json.
+ * Falls back to Nemotron Omni (multimodal reasoning flagship).
+ * @returns {string}
+ */
+function loadNvidiaModel() {
+    try {
+        if (!fs.existsSync(AI_CONFIG_FILE)) return 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning';
+        const ai = JSON.parse(fs.readFileSync(AI_CONFIG_FILE, 'utf-8'));
+        return ai.nvidiaModel || 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning';
+    } catch {
+        return 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning';
+    }
+}
+
+/**
+ * Handle GET /api/gemini/models — fetches available models from Gemini API
+ * and annotates them with free/paid tier metadata.
+ */
+async function handleGeminiModelsList(req, res) {
+    const t0 = Date.now();
+    const apiKey = loadGeminiApiKey();
+    if (!apiKey) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Gemini API key not configured' }));
+    }
+
+    try {
+        const upstream = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}&pageSize=100`
+        );
+        const data = await upstream.json();
+        logAIProxy('/api/gemini/models', 'gemini', upstream.status, Date.now() - t0);
+
+        if (!upstream.ok) {
+            res.writeHead(upstream.status, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify(data));
+        }
+
+        // Filter to text generation models only
+        const EXCLUDED = ['embedding', 'aqa', 'vision', 'tts', 'image', 'audio'];
+        const FREE_PATTERNS = ['flash', '1.5', '2.0', 'exp', 'preview'];
+        const PAID_PATTERNS = ['-pro'];
+
+        const models = (data.models || [])
+            .filter(m => {
+                const methods = m.supportedGenerationMethods || [];
+                if (!methods.includes('generateContent')) return false;
+                const id = (m.name || '').replace('models/', '').toLowerCase();
+                return !EXCLUDED.some(ex => ex !== 'tts' ? false : id.includes(ex));
+            })
+            .filter(m => {
+                const id = (m.name || '').replace('models/', '').toLowerCase();
+                // Exclude TTS and image-only models
+                if (id.includes('-tts') || id.includes('imagen')) return false;
+                return true;
+            })
+            .map(m => {
+                const id = m.name.replace('models/', '');
+                const lower = id.toLowerCase();
+                const isPaid = PAID_PATTERNS.some(p => lower.includes(p));
+                const isFree = !isPaid;
+                return {
+                    id,
+                    displayName: m.displayName || id,
+                    description: m.description || '',
+                    inputTokenLimit: m.inputTokenLimit || 0,
+                    outputTokenLimit: m.outputTokenLimit || 0,
+                    tier: isPaid ? 'paid' : 'free',
+                };
+            })
+            // Put free models first, then paid; within each group sort by displayName
+            .sort((a, b) => {
+                if (a.tier !== b.tier) return a.tier === 'free' ? -1 : 1;
+                return a.displayName.localeCompare(b.displayName);
+            });
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ models, currentModel: loadGeminiModel() }));
+    } catch (err) {
+        console.error('[localApp:ai-proxy] /api/gemini/models error:', err.message);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Failed to fetch models: ' + err.message }));
     }
 }
 
@@ -150,19 +302,23 @@ async function handleAiChatApi(req, res, body) {
         const { provider, messages, model } = body;
         
         if (!provider || provider === 'gemini') {
-            const token = loadGeminiToken();
-            if (!token) {
+            const apiKey = loadGeminiApiKey();
+            const token  = apiKey ? null : loadGeminiToken();
+            if (!apiKey && !token) {
                 res.writeHead(401, { 'Content-Type': 'application/json' });
-                return res.end(JSON.stringify({ error: 'Gemini token not available' }));
+                return res.end(JSON.stringify({ error: 'Gemini not configured — add an API key in Settings → AI Config' }));
             }
 
-            // Call Gemini OpenAI-compatible API with server-side token
-            const geminiRes = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+            const geminiUrl = apiKey
+                ? `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions?key=${encodeURIComponent(apiKey)}`
+                : 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
+            const geminiHeaders = { 'Content-Type': 'application/json' };
+            if (token) geminiHeaders['Authorization'] = `Bearer ${token}`;
+
+            // Call Gemini OpenAI-compatible API
+            const geminiRes = await fetch(geminiUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
+                headers: geminiHeaders,
                 body: JSON.stringify({ messages, model: model || 'gemini-2.0-flash' }),
             });
 
@@ -236,17 +392,29 @@ async function handleV1ChatCompletions(req, res, body) {
 
     try {
         if (provider === 'gemini') {
-            const token = loadGeminiToken();
-            if (!token) {
+            const apiKey = loadGeminiApiKey();
+            const token  = apiKey ? null : loadGeminiToken();
+            if (!apiKey && !token) {
                 logAIProxy('/v1/chat/completions', 'gemini', 401, Date.now() - t0);
                 res.writeHead(401, { 'Content-Type': 'application/json' });
-                return res.end(JSON.stringify({ error: 'Gemini token not available — re-authorize in Settings' }));
+                return res.end(JSON.stringify({ error: 'Gemini not configured — add an API key in Settings → AI Config' }));
             }
-            // Forward as-is to Gemini's OpenAI-compat endpoint
-            const upstream = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+            // Forward to Gemini's OpenAI-compat endpoint, overriding the model
+            // with the admin-configured model (defaults to gemini-2.0-flash)
+            const configuredModel = loadGeminiModel();
+            const geminiBody = { ...body, model: configuredModel };
+            const geminiUrl = apiKey
+                ? `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions?key=${encodeURIComponent(apiKey)}`
+                : 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
+            const geminiHeaders = { 'Content-Type': 'application/json' };
+            if (token) geminiHeaders['Authorization'] = `Bearer ${token}`;
+            if (body.model && body.model !== configuredModel) {
+                console.log(`[localApp:ai-proxy] /v1 model override: ${body.model} → ${configuredModel}`);
+            }
+            const upstream = await fetch(geminiUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify(body),
+                headers: geminiHeaders,
+                body: JSON.stringify(geminiBody),
             });
             const data = await upstream.json();
             logAIProxy('/v1/chat/completions', 'gemini', upstream.status, Date.now() - t0);
@@ -285,9 +453,11 @@ async function handleV1ChatCompletions(req, res, body) {
             res.writeHead(upstream.status, { 'Content-Type': 'application/json' });
             return res.end(JSON.stringify(data));
 
+        } else if (provider === 'nvidia') {
+            await handleNvidiaProxy(req, res, body);
+            return;
+
         } else {
-            // LM Studio passthrough
-            const lmUrl = 'http://localhost:1234/v1/chat/completions';
             const upstream = await fetch(lmUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -325,6 +495,12 @@ async function handleV1Models(req, res) {
         logAIProxy('/v1/models', 'copilot', 200, Date.now() - t0);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify(data));
+    } else if (provider === 'nvidia') {
+        const nvidiaModel = loadNvidiaModel();
+        const data = { object: 'list', data: [{ id: nvidiaModel, object: 'model', owned_by: 'nvidia' }] };
+        logAIProxy('/v1/models', 'nvidia', 200, Date.now() - t0);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify(data));
     } else {
         // LM Studio passthrough
         try {
@@ -351,22 +527,57 @@ async function handleV1Models(req, res) {
  */
 async function handleGeminiNativeProxy(req, res, model, body) {
     const t0 = Date.now();
-    const token = loadGeminiToken();
-    if (!token) {
-        logAIProxy(`/api/gemini/proxy/${model}`, 'gemini', 401, Date.now() - t0);
-        res.writeHead(401, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ error: 'Gemini token not available — re-authorize in Settings' }));
+
+    // Guard: reject 'local' placeholder — means the client GEMINI_MODELS wasn't resolved
+    if (!model || model === 'local') {
+        logAIProxy(`/api/gemini/proxy/local`, 'gemini', 400, Date.now() - t0);
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Invalid model "local" — configure aiProvider in Settings to use a real Gemini model.' }));
     }
 
-    const safeModel = model || 'gemini-2.0-flash';
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${safeModel}:generateContent`;
+    // Override the model with the user-configured model UNLESS this is a TTS call.
+    // TTS models (e.g. gemini-2.5-flash-preview-tts) must be kept as-is.
+    const isTTSModel = model.toLowerCase().includes('-tts');
+    const effectiveModel = isTTSModel ? model : loadGeminiModel();
+
+    const apiKey = loadGeminiApiKey();
+    const token  = apiKey ? null : loadGeminiToken();
+    if (!apiKey && !token) {
+        logAIProxy(`/api/gemini/proxy/${model}`, 'gemini', 401, Date.now() - t0);
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Gemini not configured — add an API key in Settings → AI Config' }));
+    }
+
+    const safeModel = effectiveModel;
+    const geminiHeaders = { 'Content-Type': 'application/json' };
+    if (token) geminiHeaders['Authorization'] = `Bearer ${token}`;
+    const url = apiKey
+        ? `https://generativelanguage.googleapis.com/v1beta/models/${safeModel}:generateContent?key=${encodeURIComponent(apiKey)}`
+        : `https://generativelanguage.googleapis.com/v1beta/models/${safeModel}:generateContent`;
+    if (!isTTSModel && safeModel !== model) {
+        console.log(`[localApp:ai-proxy] Model override: ${model} → ${safeModel}`);
+    }
     try {
         const upstream = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            headers: geminiHeaders,
             body: JSON.stringify(body),
         });
         const data = await upstream.json();
+        // If preferred model is overloaded, retry once with stable fallback
+        if (upstream.status === 503 && safeModel !== 'gemini-2.0-flash' && !isTTSModel) {
+            console.warn(`[localApp:ai-proxy] ${safeModel} returned 503, falling back to gemini-2.0-flash`);
+            const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+            try {
+                const fallback = await fetch(fallbackUrl, { method: 'POST', headers: geminiHeaders, body: JSON.stringify(body) });
+                const fallbackData = await fallback.json();
+                logAIProxy(`/api/gemini/proxy/gemini-2.0-flash(fallback)`, 'gemini', fallback.status, Date.now() - t0);
+                res.writeHead(fallback.status, { 'Content-Type': 'application/json' });
+                return res.end(JSON.stringify(fallbackData));
+            } catch (fbErr) {
+                console.error('[localApp:ai-proxy] Fallback also failed:', fbErr.message);
+            }
+        }
         logAIProxy(`/api/gemini/proxy/${safeModel}`, 'gemini', upstream.status, Date.now() - t0);
         res.writeHead(upstream.status, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify(data));
@@ -375,6 +586,149 @@ async function handleGeminiNativeProxy(req, res, model, body) {
         logAIProxy(`/api/gemini/proxy/${safeModel}`, 'gemini', 500, Date.now() - t0);
         res.writeHead(500, { 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ error: 'Gemini proxy error: ' + err.message }));
+    }
+}
+
+/**
+ * Handle POST /api/nvidia/proxy — forward OpenAI-format requests to NVIDIA NIM API.
+ * Handles 202 async polling for long-running inference.
+ * API key is injected server-side; never exposed to client.
+ */
+async function handleNvidiaProxy(req, res, body) {
+    const t0 = Date.now();
+    const apiKey = loadNvidiaApiKey();
+    if (!apiKey) {
+        logAIProxy('/api/nvidia/proxy', 'nvidia', 401, Date.now() - t0);
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'NVIDIA API key not configured — add it in Settings → AI Config' }));
+    }
+
+    const effectiveModel = loadNvidiaModel();
+    const nvidiaBody = { ...body, model: effectiveModel };
+    const nvidiaHeaders = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+    };
+
+    // Pass through NVCF asset reference header for large-file uploads
+    const assetRefs = req.headers['nvcf-input-asset-references'];
+    if (assetRefs) nvidiaHeaders['NVCF-INPUT-ASSET-REFERENCES'] = assetRefs;
+
+    try {
+        const upstream = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+            method: 'POST',
+            headers: nvidiaHeaders,
+            body: JSON.stringify(nvidiaBody),
+        });
+
+        // Handle 202 async — NVIDIA may queue long multimodal requests
+        if (upstream.status === 202) {
+            const requestId = upstream.headers.get('nvcf-reqid') || upstream.headers.get('location');
+            if (!requestId) {
+                res.writeHead(502, { 'Content-Type': 'application/json' });
+                return res.end(JSON.stringify({ error: 'NVIDIA returned 202 but no request ID for polling' }));
+            }
+            const pollUrl = requestId.startsWith('http')
+                ? requestId
+                : `https://api.nvcf.nvidia.com/v2/nvcf/pexec/status/${requestId}`;
+            // Poll up to 60 s (30 × 2 s)
+            for (let i = 0; i < 30; i++) {
+                await new Promise(r => setTimeout(r, 2000));
+                const poll = await fetch(pollUrl, {
+                    headers: { 'Authorization': `Bearer ${apiKey}` }
+                });
+                if (poll.status === 200) {
+                    const data = await poll.json();
+                    logAIProxy('/api/nvidia/proxy (polled)', 'nvidia', 200, Date.now() - t0);
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    return res.end(JSON.stringify(data));
+                }
+                if (poll.status !== 202) {
+                    const errData = await poll.json().catch(() => ({}));
+                    res.writeHead(poll.status, { 'Content-Type': 'application/json' });
+                    return res.end(JSON.stringify(errData));
+                }
+            }
+            res.writeHead(504, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify({ error: 'NVIDIA request timed out after 60 s of polling' }));
+        }
+
+        const data = await upstream.json();
+        logAIProxy('/api/nvidia/proxy', 'nvidia', upstream.status, Date.now() - t0);
+        res.writeHead(upstream.status, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify(data));
+    } catch (err) {
+        console.error('[localApp:nvidia-proxy] error:', err.message);
+        logAIProxy('/api/nvidia/proxy', 'nvidia', 500, Date.now() - t0);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'NVIDIA proxy error: ' + err.message }));
+    }
+}
+
+/**
+ * Handle POST /api/nvidia/asset-upload — create a presigned NVCF asset upload slot.
+ * Client sends { contentType, description } → returns { assetId, uploadUrl } for direct S3 PUT.
+ */
+async function handleNvidiaAssetUpload(req, res, body) {
+    const apiKey = loadNvidiaApiKey();
+    if (!apiKey) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'NVIDIA API key not configured' }));
+    }
+    const { contentType, description } = body || {};
+    if (!contentType) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'contentType is required' }));
+    }
+    try {
+        const upstream = await fetch('https://api.nvcf.nvidia.com/v2/nvcf/assets', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+                contentType,
+                description: description || 'AlloFlow multimodal asset',
+            }),
+        });
+        const data = await upstream.json();
+        res.writeHead(upstream.status, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify(data));
+    } catch (err) {
+        console.error('[localApp:nvidia-asset] error:', err.message);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'NVIDIA asset upload init error: ' + err.message }));
+    }
+}
+
+/**
+ * Handle /api/imagen/proxy — proxies Imagen image generation requests server-side so the API key stays private.
+ */
+async function handleImagenProxy(req, res, body) {
+    const t0 = Date.now();
+    const apiKey = loadGeminiApiKey();
+    if (!apiKey) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Gemini API key not configured — add it in Settings → AI Config' }));
+    }
+    const model = (body && body.model) || 'imagen-4.0-generate-001';
+    const safeModel = model.replace(/[^a-zA-Z0-9._-]/g, '');
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${safeModel}:predict?key=${encodeURIComponent(apiKey)}`;
+    try {
+        const upstream = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ instances: body.instances, parameters: body.parameters }),
+        });
+        const data = await upstream.json();
+        logAIProxy(`/api/imagen/proxy/${safeModel}`, 'imagen', upstream.status, Date.now() - t0);
+        res.writeHead(upstream.status, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify(data));
+    } catch (err) {
+        console.error('[localApp:imagen-proxy] error:', err.message);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: 'Imagen proxy error: ' + err.message }));
     }
 }
 
@@ -467,6 +821,31 @@ function startLocalAppServer(port, isPackaged) {
                 return;
             }
 
+            // Gemini models list — used by AIConfig.jsx model selector
+            if (urlPath === '/api/gemini/models' && req.method === 'GET') {
+                handleGeminiModelsList(req, res).catch(err => {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: err.message }));
+                });
+                return;
+            }
+
+            // Imagen proxy — proxies imagen-4.0 requests with server-side API key injection
+            if (urlPath === '/api/imagen/proxy' && req.method === 'POST') {
+                let body = '';
+                req.on('data', chunk => { body += chunk.toString(); });
+                req.on('end', async () => {
+                    try {
+                        const parsed = JSON.parse(body);
+                        await handleImagenProxy(req, res, parsed);
+                    } catch (err) {
+                        res.writeHead(400, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ error: 'Invalid JSON' }));
+                    }
+                });
+                return;
+            }
+
             // Gemini native-format proxy — used by callGemini() when aiProvider=gemini
             if (urlPath.startsWith('/api/gemini/proxy/') && req.method === 'POST') {
                 const model = decodeURIComponent(urlPath.slice('/api/gemini/proxy/'.length));
@@ -484,8 +863,43 @@ function startLocalAppServer(port, isPackaged) {
                 return;
             }
 
+            // NVIDIA NIM proxy — used by callGemini() when aiProvider=nvidia
+            if (urlPath === '/api/nvidia/proxy' && req.method === 'POST') {
+                let body = '';
+                req.on('data', chunk => { body += chunk.toString(); });
+                req.on('end', async () => {
+                    try {
+                        const parsed = JSON.parse(body);
+                        await handleNvidiaProxy(req, res, parsed);
+                    } catch (err) {
+                        res.writeHead(400, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ error: 'Invalid JSON' }));
+                    }
+                });
+                return;
+            }
+
+            // NVIDIA NVCF asset upload — client gets presigned S3 URL for large-file uploads (>180 KB)
+            if (urlPath === '/api/nvidia/asset-upload' && req.method === 'POST') {
+                let body = '';
+                req.on('data', chunk => { body += chunk.toString(); });
+                req.on('end', async () => {
+                    try {
+                        const parsed = JSON.parse(body);
+                        await handleNvidiaAssetUpload(req, res, parsed);
+                    } catch (err) {
+                        res.writeHead(400, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ error: 'Invalid JSON' }));
+                    }
+                });
+                return;
+            }
+
             // ── Static file serving ───────────────────────────────────────────
             if (urlPath === '/') urlPath = '/index.html';
+
+            // Alias: /audio_bank.json → /shared/audio_bank.json (build puts it in shared/)
+            if (urlPath === '/audio_bank.json') urlPath = '/shared/audio_bank.json';
 
             // Prevent path traversal
             const safePath = path.normalize(urlPath).replace(/^(\.\.(\/|\\|$))+/, '');
@@ -628,3 +1042,17 @@ module.exports = {
     stopLocalAppServer,
     getLocalAppPort,
 };
+
+// ── Standalone mode (for integration tests / dev without Electron) ────────────
+// Run: node admin/public/localAppServer.js
+if (require.main === module) {
+    const port = parseInt(process.env.PORT || '3730', 10);
+    startLocalAppServer(port, false)
+        .then(actualPort => {
+            console.log(`[localApp] AlloFlow local app server ready on port ${actualPort}`);
+        })
+        .catch(err => {
+            console.error('[localApp] Failed to start standalone server:', err.message);
+            process.exit(1);
+        });
+}

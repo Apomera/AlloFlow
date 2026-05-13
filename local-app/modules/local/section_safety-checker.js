@@ -118,7 +118,10 @@ window.__alloShared = {
   safeGetItem, safeSetItem, warnLog, SafetyContentChecker,
   Download, Upload, Trash2, BarChart3, ClipboardList, Cloud, Wifi,
   ShieldCheck, Settings, ChevronLeft, AlertCircle, Check, Save,
-  Activity, Users, Search, X
+  Activity, Users, Search, X,
+  // Teacher-mode helpers — updated reactively by the App component
+  isTeacher: true,
+  setTeacherMode: null,
 };
 window.__alloDebugLog = debugLog;
 window.__alloIsGlobalMuted = isGlobalMuted;

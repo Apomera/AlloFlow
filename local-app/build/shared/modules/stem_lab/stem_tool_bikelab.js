@@ -456,6 +456,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         // see why a 10 mph headwind erases more power than a 10% grade.
         var windState = useState(0);
         var wind = windState[0], setWind = windState[1];
+        // Coast-down: when true, pedal force is forced to zero so students can
+        // watch pure drag + rolling + gravity decelerate the bike \u2014 the
+        // classic physics-lab demo where you let a cart roll and time its
+        // stopping distance.
+        var coastState = useState(false);
+        var coasting = coastState[0], setCoasting = coastState[1];
 
         var bike = BIKES.find(function(b) { return b.id === bikeId; }) || BIKES[1];
         var terrain = TERRAINS.find(function(t) { return t.id === terrainId; }) || TERRAINS[1];
@@ -473,11 +479,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         // Particle system for surface-specific spray/dust behind rear wheel.
         // Each particle: {x, y, vx, vy, life, maxLife, size, color}. World-space.
         var particlesRef = useRef([]);
+        // Milestone teaching callouts: a set of string keys already triggered
+        // this session so each concept fires a toast at most once per ride.
+        // Cleared on reset. Teaches the physics in context as students discover
+        // it rather than front-loading a wall of instruction.
+        var milestonesRef = useRef({});
 
         var reset = function() {
           posRef.current = 0; velRef.current = 0; timeRef.current = 0;
           energyHistoryRef.current = [];
           particlesRef.current = [];
+          setCoasting(false);
+          milestonesRef.current = {};
           setHudTick(function(x) { return x + 1; });
         };
 
@@ -503,7 +516,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           var vRel = v + wind;
           var dragF = 0.5 * RHO_AIR * bike.cdA * vRel * Math.abs(vRel); // v_rel²
           // Pedal force from power: F = P/v. Floor so we don't divide by zero at rest.
-          var effectivePower = Math.min(power, bike.maxPower) * gear;
+          var effectivePower = coasting ? 0 : Math.min(power, bike.maxPower) * gear;
           var pedalF = v > 0.3 ? effectivePower / v : effectivePower / 0.3;
           // At rest with throttle on, pedal force is launched limited.
           if (v < 0.3) pedalF = Math.min(pedalF, 250); // cap static force to reasonable pedal max
@@ -521,7 +534,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           var hist = energyHistoryRef.current;
           hist.push({ t: timeRef.current, ke: ke, pe: pe, total: ke + pe });
           if (hist.length > 600) hist.shift();
-        }, [bike, terrain, power, gear, wind]);
+        }, [bike, terrain, power, gear, wind, coasting]);
+
+        // Check milestone teaching callouts. Fires each concept at most once
+        // per reset. Keeps toasts as one-shot "gotcha!" moments rather than
+        // repeating mid-ride.
+        var checkMilestones = function() {
+          var ms = milestonesRef.current;
+          var v = velRef.current;
+          var x = posRef.current;
+          var p = terrain.profile(x);
+          var pAhead = terrain.profile(x + 1);
+          var slopeLocal = pAhead.y - p.y;
+          var fire = function(key, msg) {
+            if (ms[key]) return;
+            ms[key] = true;
+            if (addToast) addToast(msg, 'info');
+          };
+          if (v * 2.23694 >= 10) fire('mph10', '\uD83D\uDCA8 10 mph \u2014 air drag is catching up to rolling resistance. From here, drag grows with v\u00B2.');
+          if (v * 2.23694 >= 20) fire('mph20', '\uD83D\uDCA8 20 mph \u2014 drag just quadrupled vs. 10 mph. That\u2019s why pros tuck and wear skin-tight kit.');
+          if (x >= 100) fire('dist100', '\uD83D\uDCCF 100 m rolled. Work done \u2248 pedal power \u00D7 time, minus everything drag + rolling dissipated as heat.');
+          if (slopeLocal > 0.05) fire('climb', '\u26F0\uFE0F Climbing! Gravity now works against motion: F_grav = m\u00B7g\u00B7sin\u03B8. Every meter of rise = m\u00B7g\u00B7h stored as PE.');
+          if (slopeLocal < -0.05) fire('descend', '\uD83D\uDD3D Descending. PE \u2192 KE: your altitude is converting straight into speed even with no pedaling.');
+          if (p.kind === 'sand') fire('surfSand', '\uD83C\uDFDC\uFE0F Sand \u2014 rolling resistance ~3\u00D7 pavement. Speed bleeds fast even on flat ground.');
+          if (p.kind === 'wet') fire('surfWet', '\uD83D\uDCA7 Wet pavement \u2014 rolling up ~20%. Grip drops more than that, so corner gently.');
+          if (p.kind === 'dirt') fire('surfDirt', '\uD83C\uDFDE\uFE0F Dirt \u2014 rolling resistance ~1.8\u00D7 pavement. Knobby tires cost you on smooth roads too.');
+          if (coasting && v < 0.5 && x > 5) fire('stopped', '\uD83D\uDED1 Stopped coasting. All the KE you had went to drag + rolling + uphill work \u2014 none vanished, just moved form.');
+        };
 
         // Animation loop
         useEffect(function() {
@@ -536,6 +575,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             // Substep for stability at high power
             var sub = 4;
             for (var i = 0; i < sub; i++) step(dt / sub);
+            checkMilestones();
             draw();
             setHudTick(function(x) { return (x + 1) % 1000; });
             rafRef.current = requestAnimationFrame(loop);
@@ -922,6 +962,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             drawEnergyGraph(ctx2d, W, H);
           }
 
+          // ── Elevation minimap (bottom-right) ──
+          // Samples terrain profile from 0-400m and draws it as a filled curve,
+          // with a marker at the rider\u2019s current x. Students see the course
+          // shape AND their position on it \u2014 crucial for the sandbox\u2019s energy
+          // conservation lesson (PE ? KE as you roll into valleys).
+          (function() {
+            var mmW = 180, mmH = 52;
+            var mmX = W - mmW - 10;
+            var mmY = H - mmH - 10;
+            var mmXMin = 0, mmXMax = 400;
+            // Find elevation range for y-scaling
+            var mmYMin = Infinity, mmYMax = -Infinity;
+            for (var mmSample = mmXMin; mmSample <= mmXMax; mmSample += 8) {
+              var me = terrain.profile(mmSample).y;
+              if (me < mmYMin) mmYMin = me;
+              if (me > mmYMax) mmYMax = me;
+            }
+            if (mmYMax - mmYMin < 4) { mmYMax = mmYMin + 4; } // pad flat terrain
+            var mmToX = function(wx) { return mmX + ((wx - mmXMin) / (mmXMax - mmXMin)) * mmW; };
+            var mmToY = function(wy) { return mmY + mmH - 6 - ((wy - mmYMin) / (mmYMax - mmYMin)) * (mmH - 10); };
+            // Background panel
+            ctx2d.fillStyle = 'rgba(15,23,42,0.78)';
+            ctx2d.strokeStyle = 'rgba(148,163,184,0.3)';
+            ctx2d.lineWidth = 1;
+            ctx2d.beginPath();
+            if (ctx2d.roundRect) ctx2d.roundRect(mmX, mmY, mmW, mmH, 6); else ctx2d.rect(mmX, mmY, mmW, mmH);
+            ctx2d.fill(); ctx2d.stroke();
+            // Label
+            ctx2d.fillStyle = '#fbbf24';
+            ctx2d.font = 'bold 9px monospace';
+            ctx2d.textAlign = 'left';
+            ctx2d.fillText('COURSE', mmX + 6, mmY + 11);
+            ctx2d.fillStyle = '#64748b';
+            ctx2d.fillText(Math.round(mmXMax) + ' m', mmX + mmW - 34, mmY + 11);
+            // Terrain curve (filled)
+            ctx2d.fillStyle = 'rgba(56,189,248,0.22)';
+            ctx2d.strokeStyle = 'rgba(56,189,248,0.9)';
+            ctx2d.lineWidth = 1.2;
+            ctx2d.beginPath();
+            ctx2d.moveTo(mmToX(mmXMin), mmY + mmH - 2);
+            for (var mmx = mmXMin; mmx <= mmXMax; mmx += 4) {
+              var my = terrain.profile(mmx).y;
+              ctx2d.lineTo(mmToX(mmx), mmToY(my));
+            }
+            ctx2d.lineTo(mmToX(mmXMax), mmY + mmH - 2);
+            ctx2d.closePath();
+            ctx2d.fill();
+            // Stroke just the top edge
+            ctx2d.beginPath();
+            for (var mmx2 = mmXMin; mmx2 <= mmXMax; mmx2 += 4) {
+              var my2 = terrain.profile(mmx2).y;
+              if (mmx2 === mmXMin) ctx2d.moveTo(mmToX(mmx2), mmToY(my2));
+              else ctx2d.lineTo(mmToX(mmx2), mmToY(my2));
+            }
+            ctx2d.stroke();
+            // Rider position marker
+            var mmRiderX = mmToX(Math.max(mmXMin, Math.min(mmXMax, camX)));
+            var mmRiderY = mmToY(terrain.profile(Math.max(mmXMin, Math.min(mmXMax, camX))).y);
+            ctx2d.fillStyle = '#f43f5e';
+            ctx2d.beginPath();
+            ctx2d.arc(mmRiderX, mmRiderY - 2, 3, 0, 2 * Math.PI);
+            ctx2d.fill();
+            ctx2d.strokeStyle = 'rgba(244,63,94,0.45)';
+            ctx2d.lineWidth = 1;
+            ctx2d.beginPath();
+            ctx2d.moveTo(mmRiderX, mmY + 16); ctx2d.lineTo(mmRiderX, mmY + mmH - 2);
+            ctx2d.stroke();
+          })();
+
           // ── Wind indicator (top-center) ──
           // Large arrow showing wind direction and magnitude. Wind > 0 means
           // the air is moving TOWARD the rider (headwind) so the arrow points
@@ -1013,7 +1122,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           ctx2d.fillStyle = '#e2e8f0';
           ctx2d.font = 'bold 11px monospace';
           ctx2d.fillText('cad ' + hudCadRpm + ' rpm', hudX + 8, hudY + 44);
-          ctx2d.fillText('pwr ' + Math.round(Math.min(power, bike.maxPower)) + ' W', hudX + 8, hudY + 58);
+          ctx2d.fillText(coasting ? 'pwr 0 W (COAST)' : ('pwr ' + Math.round(Math.min(power, bike.maxPower)) + ' W'), hudX + 8, hudY + 58);
           ctx2d.fillStyle = '#a5b4fc';
           ctx2d.font = '9px monospace';
           ctx2d.fillText('surface: ' + hudSurfLabel, hudX + 8, hudY + 72);
@@ -1174,7 +1283,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 h('button', {
                   onClick: function() { setShowGraph(!showGraph); upd('sandboxShowEnergyGraph', !showGraph); },
                   className: 'py-2.5 px-4 rounded-xl font-bold transition-colors ' + (showGraph ? 'bg-pink-500 text-white' : 'bg-slate-200 text-slate-600')
-                }, '📈 Energy Graph')
+                }, '📈 Energy Graph'),
+                h('button', {
+                  onClick: function() { setCoasting(!coasting); },
+                  title: 'Stop pedaling \u2014 watch drag, rolling, and gravity decelerate the bike on their own.',
+                  className: 'py-2.5 px-4 rounded-xl font-bold transition-colors ' + (coasting ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-600')
+                }, coasting ? '\uD83D\uDED1 Coasting' : '\uD83D\uDECC\uFE0F Coast Down')
               ),
               h('div', { className: 'grid grid-cols-5 gap-2' },
                 [['Speed', mph.toFixed(1) + ' mph', kph.toFixed(1) + ' km/h'],

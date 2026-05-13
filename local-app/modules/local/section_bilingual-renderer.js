@@ -529,22 +529,103 @@ const parseTaggedContent = (text) => {
   };
   const ai = AIProvider ? new AIProvider(_aiConfig) : _aiConfig;
 
+  // True when the server-side proxy holds credentials (gemini/copilot mode)
+  const _isLocalProxyProvider = () => {
+    const p = window.__alloLocalConfig?.aiProvider;
+    return p === 'gemini' || p === 'copilot' || p === 'openai';
+  };
+
+  // ─── Cloud model defaults (used when GEMINI_MODELS values are 'local' placeholder) ───
+  // GEMINI_MODELS is set to { default: 'local', tts: 'local', ... } in the local build.
+  // In cloud provider mode (aiProvider=gemini/copilot), we need real model names.
+  const _GEMINI_CLOUD_DEFAULTS = {
+    default: window.__alloLocalConfig?.geminiModel || 'gemini-2.5-flash',
+    tts: window.__alloLocalConfig?.geminiTtsModel || 'gemini-2.5-flash-preview-tts',
+  };
+
   const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null) => {
-    if (!apiKey && !_isCanvasEnv) {
-      console.warn('[callGemini] No API key available — skipping request.');
+    // ─── In local mode: delegate to AIProvider (proper architecture) ─────────────
+    const _aiProv = window.__alloLocalConfig?.aiProvider;
+    if (!_aiProv || _aiProv === 'lmstudio' || _aiProv === 'localai') {
+      // Local LM Studio mode — use AIProvider.generateText (OpenAI format)
+      if (ai && typeof ai.generateText === 'function') {
+        try {
+          debugLog(`[callGemini→AIProvider] Local mode, delegating to ai.generateText`);
+          const result = await ai.generateText(prompt, { json: jsonMode, temperature });
+          if (useSearch) {
+            return { text: result || "", groundingMetadata: null };
+          }
+          return result;
+        } catch (localErr) {
+          console.error('[callGemini] AIProvider failed in local mode:', localErr.message);
+          if (jsonMode) return "{}";
+          if (useSearch) return { text: "", groundingMetadata: null };
+          return "";
+        }
+      }
+      // If ai not available, skip
+      console.warn('[callGemini] AIProvider not available in local mode');
       if (jsonMode) return "{}";
       if (useSearch) return { text: "", groundingMetadata: null };
       return "";
     }
+    
+    // ─── Cloud provider mode (gemini/copilot/nvidia) ──────────────────────────
+    // In local mode with cloud provider, tokens are ALWAYS server-side in ~/.alloflow/
+    // Just proceed to the proxy call — let the proxy validate the token and return 401 if missing
+    if (_aiProv === 'nvidia') {
+      // Route through NVIDIA NIM proxy using OpenAI-compatible format
+      try {
+        const _base = (window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '');
+        const _nvPayload = {
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 8192,
+          ...(temperature !== null ? { temperature } : {}),
+          ...(jsonMode ? { response_format: { type: 'json_object' } } : {}),
+        };
+        const _nvRes = await fetch(`${_base}/api/nvidia/proxy`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(_nvPayload),
+        });
+        if (!_nvRes.ok) {
+          const _errData = await _nvRes.json().catch(() => ({}));
+          throw new Error(_errData.error || `NVIDIA proxy ${_nvRes.status}`);
+        }
+        const _nvData = await _nvRes.json();
+        const _nvText = _nvData?.choices?.[0]?.message?.content || '';
+        if (useSearch) return { text: _nvText, groundingMetadata: null };
+        return _nvText;
+      } catch (nvErr) {
+        console.error('[callGemini] NVIDIA call failed:', nvErr.message);
+        if (jsonMode) return '{}';
+        if (useSearch) return { text: '', groundingMetadata: null };
+        return '';
+      }
+    } else if (_aiProv === 'gemini' || _aiProv === 'copilot') {
+      // Proceed - server handles token validation
+    } else if (!apiKey && !_isCanvasEnv) {
+      // Canvas env fallback
+      console.warn('[callGemini] No recognized provider configured');
+      if (jsonMode) return "{}";
+      if (useSearch) return { text: "", groundingMetadata: null };
+      return "";
+    }
+    
     const _buildUrl = (model) => {
-      console.log(`[callGemini] ✉ Using model: ${model}`);
-      const _aiProv = window.__alloLocalConfig?.aiProvider;
+      // Resolve 'local' placeholder to the real cloud model name
+      const _resolvedModel = (!model || model === 'local')
+        ? _GEMINI_CLOUD_DEFAULTS.default
+        : model;
+      console.log(`[callGemini] ✉ Using model: ${_resolvedModel}`);
       if (_aiProv === 'gemini' || _aiProv === 'copilot') {
         // Route through local server proxy for cloud providers (server holds the token)
         const _base = (window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '');
-        return `${_base}/api/gemini/proxy/${encodeURIComponent(model || 'gemini-2.0-flash')}`;
+        return `${_base}/api/gemini/proxy/${encodeURIComponent(_resolvedModel)}`;
       }
-      return 'http://localhost:11434/api/chat'; /* [LOCAL:removed] Gemini API URL → Ollama */
+      // Fallback should never reach here after local mode guard above
+      console.error('[callGemini] Invalid provider state — no URL available');
+      return null;
     };
     const payload = {
       contents: [{ parts: [{ text: prompt }] }],
@@ -638,6 +719,10 @@ const parseTaggedContent = (text) => {
         err.message.includes('RESOURCE_EXHAUSTED')
       );
       console.error('[callGemini] Error caught:', err.message);
+      if (err.reauthRequired) {
+        console.error('[callGemini] ⚠️ REAUTH_REQUIRED — Gemini token lacks required scopes. Open AlloFlow Admin > Settings > AI Config > Sign out and re-authorize.');
+        throw new Error('Gemini needs re-authorization. Open AlloFlow Admin → Settings → AI Config → Sign out and sign back in.');
+      }
       if (isActualQuota) {
         const quotaErr = new Error('API_QUOTA_EXHAUSTED');
         quotaErr.isQuota = true;
@@ -1182,7 +1267,14 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     return changes;
   };
   const callGeminiImageEdit = async (prompt, base64Image, width = 800, qual = 0.9, referenceBase64 = null) => {
-    const url = 'http://localhost:11434/api/chat'; /* [LOCAL:removed] Gemini API URL → Ollama */
+    // Image editing is Gemini-only feature
+    const _aiProv = window.__alloLocalConfig?.aiProvider;
+    if (_aiProv && _aiProv !== 'gemini' && _aiProv !== 'copilot') {
+      console.warn('[callGeminiImageEdit] Image editing not available in local mode');
+      throw new Error("Image editing requires Gemini or Copilot provider in cloud mode");
+    }
+    
+    const url = `${(window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '')}/api/gemini/proxy/gemini-2.5-flash`;
     const parts = [
       { text: prompt },
       { inlineData: { mimeType: "image/png", data: base64Image } }
@@ -1214,7 +1306,14 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     }
   };
   const callGeminiVision = async (prompt, base64Data, mimeType) => {
-    const url = 'http://localhost:11434/api/chat'; /* [LOCAL:removed] Gemini API URL → Ollama */
+    // Vision analysis is Gemini-only feature
+    const _aiProv = window.__alloLocalConfig?.aiProvider;
+    if (_aiProv && _aiProv !== 'gemini' && _aiProv !== 'copilot') {
+      console.warn('[callGeminiVision] Vision analysis not available in local mode');
+      throw new Error("Vision analysis requires Gemini or Copilot provider in cloud mode");
+    }
+    
+    const url = `${(window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '')}/api/gemini/proxy/gemini-2.5-flash`;
     const payload = {
       contents: [{
         parts: [
@@ -1266,14 +1365,25 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
   };
   const fetchTTSBytes = useCallback((text, voiceName = "Puck", speed = 1) => {
     // Gemini TTS now works in Canvas (preview) — allow it to attempt, caller handles fallback
-    // Defensive: ensure voiceName is a valid Gemini voice, fall back to Kore if not
+    // Defensive: ensure voiceName is a valid Gemini voice, fall back to Puck if not
     const safeVoice = AVAILABLE_VOICES.map(v => v.toLowerCase()).includes((voiceName || '').toLowerCase()) ? voiceName : 'Puck';
     if (safeVoice !== voiceName) console.warn(`[TTS] Voice "${voiceName}" is not a valid Gemini voice. Falling back to "${safeVoice}".`);
     debugLog("[fetchTTSBytes] text:", text?.substring(0, 30));
     const queuedTask = globalTtsQueue.then(async () => {
-        const baseUrl = 'http://localhost:11434/api/chat' /* [LOCAL:removed] Gemini API URL → Ollama */;
-        // In Canvas, ?key= with empty value signals the proxy to inject auth
-        const url = `${baseUrl}?key=${apiKey || ''}`;
+        const _aiProv = window.__alloLocalConfig?.aiProvider;
+        const _isCloudTTS = (_aiProv === 'gemini' || _aiProv === 'copilot');
+        
+        // ─── Local mode: skip Gemini TTS, let callers use AIProvider.textToSpeech ──
+        if (!_isCloudTTS) {
+          return null; // Callers (callTTS, callTTSDirect) handle local TTS via AIProvider
+        }
+        
+        // ─── Cloud mode (gemini/copilot): fetch audio bytes from proxy ─────────────
+        const _resolvedTtsModel = (!GEMINI_MODELS?.tts || GEMINI_MODELS.tts === 'local')
+          ? _GEMINI_CLOUD_DEFAULTS.tts
+          : GEMINI_MODELS.tts;
+        const baseUrl = `${(window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '')}/api/gemini/proxy/${encodeURIComponent(_resolvedTtsModel)}`;
+        const url = baseUrl;
         const decodeBase64 = (base64) => {
              const binaryString = window.atob(base64);
              const len = binaryString.length;
@@ -1282,7 +1392,9 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
              return bytes;
         };
         // Clean text for TTS: strip list numbering, collapse whitespace, preserve character prompts
-        let promptText = text.length <= 2 ? `Say the sound: ${text}` : text;
+        let promptText = text.length <= 2 ? `Say the sound: ${text}`
+            : text.length <= 50 ? `Say: ${text}`
+            : `Read the following text aloud naturally, do not perform sound effects or noises: ${text}`;
         // Strip markdown/numbered list markers that cause latency (the model tries to "read" formatting)
         promptText = promptText.replace(/^\s*\d+\.\s+/gm, ''); // "1. " at start of lines
         promptText = promptText.replace(/^\s*[-*•]\s+/gm, ''); // "- " or "* " at start of lines
@@ -1316,6 +1428,11 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
             }
             const errorBody = await response.text().catch(() => '');
             console.error("[TTS] API Error:", response.status, response.statusText, errorBody.substring(0, 200));
+            if (response.status === 403) {
+              let reauthRequired = false;
+              try { const b = JSON.parse(errorBody); if (b?.code === 'REAUTH_REQUIRED') reauthRequired = true; } catch (_) {}
+              if (reauthRequired) throw new Error('Gemini needs re-authorization. Open AlloFlow Admin → Settings → AI Config → Sign out and sign back in.');
+            }
             throw new Error(`API Error: ${response.status} ${response.statusText}`);
           }
           const data = await response.json();
@@ -1325,7 +1442,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
               if (text.length <= 5) {
                   try {
                       const retryPayload = {
-                          contents: [{ parts: [{ text: `Please say the word: ${text}` }] }],
+                          contents: [{ parts: [{ text: `Say: ${text}` }] }],
                           generationConfig: {
                               responseModalities: ["AUDIO"],
                               speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: safeVoice } } }
@@ -1478,6 +1595,11 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
           try {
               const ttsResult = await fetchTTSBytes(text, voiceName, speed);
               if (!ttsResult) { throw new Error("[TTS] fetchTTSBytes returned no audio data"); }
+              // fetchTTSBytes returns string URL (local) or { bytes, base64 } (cloud)
+              if (typeof ttsResult === 'string') {
+                globalTtsUrlCache.set(cacheKey, ttsResult);
+                return ttsResult;
+              }
               const { bytes: pcmBytes } = ttsResult;
               const wavBuffer = pcmToWav(pcmBytes);
               const blob = new Blob([wavBuffer], { type: 'audio/wav' });
@@ -1587,8 +1709,37 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
               // Inline fetch using globalBotTtsQueue (separate from Word Sounds queue)
               const queuedTask = globalBotTtsQueue.then(async () => {
                   console.log("[TTS-Bot] 🔄 Queue slot acquired, making API call...");
-                  const baseUrl = 'http://localhost:11434/api/chat' /* [LOCAL:removed] Gemini API URL → Ollama */;
-                  const url = `${baseUrl}${apiKey ? `?key=${apiKey}` : ''}`;
+                  const _aiProvBot = window.__alloLocalConfig?.aiProvider;
+                  // Server holds OAuth token — no client API key needed to detect cloud mode
+                  const _isCloudBot = (_aiProvBot === 'gemini' || _aiProvBot === 'copilot');
+                  
+                  // ─── Local mode: use AIProvider TTS directly and return URL ─────────────
+                  if (!_isCloudBot) {
+                    try {
+                      if (ai && typeof ai.textToSpeech === 'function') {
+                        const audioUrl = await ai.textToSpeech(text, { voice: safeVoice, speed });
+                        if (audioUrl) {
+                          globalTtsUrlCache.set(cacheKey, audioUrl);
+                          console.log("[TTS-Bot] ✅ Local WASM TTS succeeded, returning URL");
+                          return audioUrl; // Return URL directly, not bytes
+                        }
+                      }
+                    } catch (localErr) {
+                      console.warn('[TTS-Bot] Local TTS failed:', localErr.message);
+                      // Fall through to cloud attempt if available
+                    }
+                    // If local failed and we're not cloud-configured, throw error
+                    if (!_isCloudBot) {
+                      throw new Error("No TTS available (local failed, cloud not configured)");
+                    }
+                  }
+                  
+                  // ─── Cloud mode: fetch from Gemini API and return bytes ──────────────────
+                  const botTtsModel = (!GEMINI_MODELS?.tts || GEMINI_MODELS.tts === 'local')
+                    ? _GEMINI_CLOUD_DEFAULTS.tts
+                    : GEMINI_MODELS.tts;
+                  const baseUrl = `${(window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '')}/api/gemini/proxy/${encodeURIComponent(botTtsModel)}`;
+                  const url = baseUrl;
                   const decodeBase64 = (base64) => {
                        const binaryString = window.atob(base64);
                        const len = binaryString.length;
@@ -1596,8 +1747,11 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
                        for (let j = 0; j < len; j++) bytes[j] = binaryString.charCodeAt(j);
                        return bytes;
                   };
+                  const _botTtsPrompt = text.length <= 2 ? `Say the sound: ${text}`
+                      : text.length <= 50 ? `Say: ${text}`
+                      : `Read the following text aloud naturally, do not perform sound effects or noises: ${text}`;
                   const payload = {
-                    contents: [{ parts: [{ text: (text.length > 10 ? 'Read the following text aloud naturally, do not perform sound effects or noises: ' : '') + text }] }],
+                    contents: [{ parts: [{ text: _botTtsPrompt }] }],
                     generationConfig: {
                       responseModalities: ["AUDIO"],
                       speechConfig: {
@@ -1623,6 +1777,11 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
                     }
                     const errorBody = await response.text().catch(() => '');
                     console.error("[TTS-Bot] ❌ API Error:", response.status, response.statusText, errorBody.substring(0, 200));
+                    if (response.status === 403) {
+                      let reauthRequired = false;
+                      try { const b = JSON.parse(errorBody); if (b?.code === 'REAUTH_REQUIRED') reauthRequired = true; } catch (_) {}
+                      if (reauthRequired) throw new Error('Gemini needs re-authorization. Open AlloFlow Admin → Settings → AI Config → Sign out and sign back in.');
+                    }
                     throw new Error(`API Error: ${response.status} ${response.statusText}`);
                   }
                   const data = await response.json();
@@ -1646,7 +1805,13 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
               });
               globalBotTtsQueue = queuedTask.catch(() => {});
               const ttsResult = await queuedTask;
-              if (!ttsResult) { throw new Error("[TTS-Bot] fetchTTSBytes returned no audio data"); }
+              if (!ttsResult) { throw new Error("[TTS-Bot] No audio data from TTS"); }
+              // Local TTS returns a URL string; cloud returns { bytes, base64 }
+              if (typeof ttsResult === 'string') {
+                globalTtsUrlCache.set(cacheKey, ttsResult);
+                console.log("[TTS-Bot] ✅ Local TTS URL returned for:", text?.substring(0, 30));
+                return ttsResult;
+              }
               const { bytes: pcmBytes } = ttsResult;
               const wavBuffer = pcmToWav(pcmBytes);
               const blob = new Blob([wavBuffer], { type: 'audio/wav' });

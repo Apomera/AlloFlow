@@ -1,6 +1,6 @@
 {
   "name": "alloflow-admin",
-  "version": "0.8.5",
+  "version": "0.9.2",
   "description": "AlloFlow Admin - Setup Wizard & Management",
   "main": "public/main.js",
   "author": "AlloFlow Team",
@@ -45,6 +45,7 @@
   "build": {
     "appId": "com.alloflow.admin",
     "productName": "AlloFlow Admin",
+    "afterPack": "./afterPack.js",
     "files": [
       "build/**/*",
       "public/**/*",
@@ -75,7 +76,8 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "AlloFlow Admin",
-      "include": "uninstaller.nsh"
+      "include": "uninstaller.nsh",
+      "warningsAsErrors": false
     },
     "win": {
       "target": [

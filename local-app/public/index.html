@@ -8,12 +8,12 @@
   <meta http-equiv="Expires" content="0" />
   <meta http-equiv="Content-Security-Policy"
     content="default-src 'self' localhost:* 127.0.0.1:*;
-             script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com;
+             script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://cdnjs.cloudflare.com;
              style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-             font-src 'self' https://fonts.gstatic.com;
-             img-src 'self' data: blob:;
+             font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net;
+             img-src 'self' data: blob: https://raw.githubusercontent.com;
              media-src 'self' blob:;
-             connect-src 'self' localhost:* 127.0.0.1:* ws://localhost:*;" />
+             connect-src 'self' localhost:* 127.0.0.1:* ws://localhost:* https://raw.githubusercontent.com https://generativelanguage.googleapis.com;" />
   <title>AlloFlow — Local</title>
 
   <!-- Tailwind CSS - served from build or CDN for dev -->

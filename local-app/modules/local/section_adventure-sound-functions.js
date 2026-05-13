@@ -16,8 +16,60 @@ const playGenerativeSoundscape = (ctx, dest, params) => {
     if (fn) return fn(ctx, dest, params);
     return null;
 };
-const ClimaxProgressBar = React.memo((props) => {
-    const Ext = window.AlloModules && window.AlloModules.ClimaxProgressBar;
-    if (Ext) return <Ext {...props} />;
-    return null;
+const ClimaxProgressBar = React.memo(({ climaxState }) => {
+  const { t } = useContext(LanguageContext);
+  if (!climaxState || !climaxState.isActive) return null;
+  const { masteryScore, archetype } = climaxState;
+  let typeKey = (archetype || 'default').toLowerCase();
+  if (typeKey === 'auto') typeKey = 'default';
+  const label = t(`adventure.climax_archetypes.${typeKey}.label`) || t('adventure.climax_archetypes.default.label');
+  const leftLabel = t(`adventure.climax_archetypes.${typeKey}.left`) || t('adventure.climax_archetypes.default.left');
+  const rightLabel = t(`adventure.climax_archetypes.${typeKey}.right`) || t('adventure.climax_archetypes.default.right');
+  let icon = "⚔️";
+  switch (archetype) {
+    case 'Antagonist': icon = "⚔️"; break;
+    case 'Catastrophe': icon = "⚠️"; break;
+    case 'Masterpiece': icon = "🎨"; break;
+    case 'Discovery': icon = "🗺️"; break;
+  }
+  let barColor = "bg-yellow-500";
+  let textColor = "text-yellow-400";
+  let borderColor = "border-yellow-600";
+  if (masteryScore >= 80) {
+    barColor = "bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.6)]";
+    textColor = "text-green-400";
+    borderColor = "border-green-600";
+  } else if (masteryScore <= 30) {
+    barColor = "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.6)]";
+    textColor = "text-red-400";
+    borderColor = "border-red-600";
+  }
+  return (
+    <div className={`w-full bg-slate-900/95 backdrop-blur-md border-y-4 ${borderColor} p-4 shadow-2xl animate-in slide-in-from-top-4 relative z-40 mb-2 transition-colors duration-500`}>
+      <div className="flex justify-between items-end mb-2 px-1">
+        <div className="flex items-center gap-2">
+          <span className="text-xl animate-pulse">{icon}</span>
+          <span className="text-xs font-black text-indigo-200 uppercase tracking-widest">{label}</span>
+        </div>
+        <span className={`text-2xl font-black ${textColor} drop-shadow-sm font-mono transition-colors duration-500`}>
+          {Math.round(masteryScore)}%
+        </span>
+      </div>
+      <div className="relative h-6 w-full bg-slate-800 rounded-full border-2 border-slate-600 overflow-hidden shadow-inner">
+        <div
+          className={`h-full ${barColor} transition-all duration-1000 ease-out relative`}
+          style={{ width: `${Math.max(5, Math.min(100, masteryScore))}%` }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_infinite]"></div>
+        </div>
+        <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/30 z-10 border-l border-black/20"></div>
+        <div className="absolute top-0 bottom-0 left-[25%] w-px bg-white/10 z-0"></div>
+        <div className="absolute top-0 bottom-0 left-[75%] w-px bg-white/10 z-0"></div>
+      </div>
+      <div className="flex justify-between text-[9px] font-bold text-slate-500 uppercase mt-1.5 px-1">
+        <span className="text-red-400">{leftLabel} (0%)</span>
+        <span className="text-green-400">{rightLabel} (100%)</span>
+      </div>
+    </div>
+  );
 });

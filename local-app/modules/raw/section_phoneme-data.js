@@ -82,7 +82,7 @@ const GEMINI_MODELS = {
   image: _isCanvasEnv ? 'gemini-2.5-flash-image-preview' : 'gemini-3.1-flash-image-preview',
   fallback: _isCanvasEnv ? 'gemini-3-flash-preview' : 'gemini-3-flash-preview',
   flash: _isCanvasEnv ? 'gemini-3-flash-preview' : 'gemini-3-flash-preview',
-  tts: 'gemini-2.5-flash-preview-tts',
+  tts: 'gemini-3.1-flash-tts-preview',
   safety: 'gemini-2.5-flash-lite',
   quality: _isCanvasEnv ? 'gemini-2.5-pro' : 'gemini-3.1-pro-preview',
 };
@@ -97,7 +97,7 @@ const _CANVAS_MODELS = {
   flash: 'gemini-3-flash-preview',
   image: 'gemini-2.5-flash-image-preview',
   imagen: 'imagen-4.0-generate-001',
-  tts: 'gemini-3-flash-preview',
+  tts: 'gemini-3.1-flash-tts-preview',
   safety: 'gemini-2.5-flash-lite',
   vision: 'gemini-3-flash-preview',
   quality: 'gemini-2.5-pro',       // For clinical reports, high-stakes operations
@@ -108,7 +108,7 @@ const _DEPLOY_MODELS = {
   flash: 'gemini-3-flash-preview',
   image: 'gemini-3.1-flash-image-preview',
   imagen: 'imagen-4.0-generate-001',
-  tts: 'gemini-2.5-flash-preview-tts',
+  tts: 'gemini-3.1-flash-tts-preview',
   safety: 'gemini-2.5-flash-lite',
   vision: 'gemini-3-flash-preview',
   quality: 'gemini-3.1-pro-preview', // For clinical reports, high-stakes operations

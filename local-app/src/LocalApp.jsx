@@ -1,7 +1,7 @@
 // ╔══════════════════════════════════════════════════════════════════════╗
 // ║  AlloFlow — Local App                                               ║
 // ║  Auto-assembled by local_build.js — DO NOT EDIT MANUALLY            ║
-// ║  Built: 2026-04-15T16:37:22.734Z
+// ║  Built: 2026-04-29T18:27:26.930Z
 // ╚══════════════════════════════════════════════════════════════════════╝
 // @mode react
 
@@ -247,7 +247,9 @@ const isGlobalMuted = () => globalMuteEnabled;
 // [LOCAL] Also provide callOllama alias so any sections that call callGemini work after C1 stripping
 const callOllama = (...args) => {
     if (AIProvider && typeof AIProvider.chat === 'function') return AIProvider.chat(...args);
-    return Promise.resolve('[Local AI not available]');
+    // Return valid JSON when jsonMode is true (2nd arg), empty string otherwise
+    const jsonMode = args[1];
+    return Promise.resolve(jsonMode ? '{}' : '');
 };
 
 
@@ -2466,7 +2468,7 @@ const loadPsychometricProbes = async () => {
     loadWordAudioBank(); // Background fetch word audio when probes launch
     if (window.BENCHMARK_PROBE_BANKS && window.ORF_SCREENING_PASSAGES && window.MATH_PROBE_BANKS && window.MISSING_NUMBER_PROBES && window.QUANTITY_DISCRIMINATION_PROBES && window.NWF_PROBE_BANKS && window.LNF_PROBE_BANKS && window.RAN_PROBE_BANKS) return;
     try {
-        const response = await fetch('https://raw.githubusercontent.com/Apomera/AlloFlow/main/shared/psychometric_probes.json');
+        const response = await fetch('/shared/psychometric_probes.json');
         if (!response.ok) throw new Error('Network response was not ok');
         const probeData = await response.json();
         if (probeData.BENCHMARK_PROBE_BANKS) window.BENCHMARK_PROBE_BANKS = probeData.BENCHMARK_PROBE_BANKS;
@@ -2477,7 +2479,7 @@ const loadPsychometricProbes = async () => {
     }
     if (!window.MATH_PROBE_BANKS) {
         try {
-            const mathResp = await fetch('https://raw.githubusercontent.com/Apomera/AlloFlow/main/shared/psychometric_math_probes.json');
+            const mathResp = await fetch('/shared/psychometric_math_probes.json');
             if (mathResp.ok) {
                 const mathData = await mathResp.json();
                 if (mathData.MATH_PROBE_BANKS) window.MATH_PROBE_BANKS = mathData.MATH_PROBE_BANKS;
@@ -2491,7 +2493,7 @@ const loadPsychometricProbes = async () => {
     }
     if (!window.NWF_PROBE_BANKS) {
         try {
-            const litResp = await fetch('https://raw.githubusercontent.com/Apomera/AlloFlow/main/shared/psychometric_literacy_probes.json');
+            const litResp = await fetch('/shared/psychometric_literacy_probes.json');
             if (litResp.ok) {
                 const litData = await litResp.json();
                 if (litData.NWF_PROBE_BANKS) window.NWF_PROBE_BANKS = litData.NWF_PROBE_BANKS;
@@ -2912,7 +2914,7 @@ let HELP_STRINGS = {};
     try {
         const cached = localStorage.getItem("alloflow_ui_strings_cache");
         if (cached) { UI_STRINGS = JSON.parse(cached); }
-        const resp = await fetch("https://raw.githubusercontent.com/Apomera/AlloFlow/main/shared/ui_strings.js?v=" + Date.now());
+        const resp = await fetch("/shared/ui_strings.js?v=" + Date.now());
         if (resp.ok) {
             const text = await resp.text();
             try {
@@ -2943,7 +2945,7 @@ let HELP_STRINGS = {};
     try {
         const hsCached = localStorage.getItem("alloflow_help_strings_cache");
         if (hsCached) { HELP_STRINGS = JSON.parse(hsCached); }
-        const hsResp = await fetch("https://raw.githubusercontent.com/Apomera/AlloFlow/main/shared/help_strings.js?v=" + Date.now());
+        const hsResp = await fetch("/shared/help_strings.js?v=" + Date.now());
         if (hsResp.ok) {
             const hsText = (await hsResp.text()).replace(/^\s*\/\/.*$/gm, '').trim();
             try {
@@ -3282,7 +3284,23 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5) =>
       if (response.status !== 429 && response.status !== 503 && response.status !== 401) {
         let errorMessage = `HTTP Error: ${response.status} ${response.statusText}`;
         if (response.status === 403) {
-          errorMessage = `${response.status} Forbidden: API access denied. Check your API key and permissions.`;
+          // Check if server returned REAUTH_REQUIRED (scope-insufficient token)
+          let reauthRequired = false;
+          try {
+            const bodyClone = response.clone();
+            const bodyJson = await bodyClone.json().catch(() => null);
+            if (bodyJson?.code === 'REAUTH_REQUIRED') {
+              reauthRequired = true;
+              errorMessage = bodyJson.error || 'Gemini token lacks required scopes. Re-authorize in AlloFlow Admin > Settings > AI Config.';
+            }
+          } catch (_) {}
+          if (!reauthRequired) {
+            errorMessage = `${response.status} Forbidden: API access denied. Check your API key and permissions.`;
+          }
+          const error = new Error(errorMessage);
+          error.isFatal = true;
+          error.reauthRequired = reauthRequired;
+          throw error;
         }
         const error = new Error(errorMessage);
         error.isFatal = true;
@@ -3808,25 +3826,6 @@ const useTranslation = (targetLanguage, apiKey) => {
             }
         }
         setIsTranslating(true);
-        setStatusMessage(t('language_selector.status_checking', { lang: targetLanguage }));
-        try {
-            const langSlug = targetLanguage.toLowerCase().replace(/\s+/g, '_');
-            const githubUrl = `https://raw.githubusercontent.com/Apomera/AlloFlow/main/lang/${langSlug}.js`;
-            const ghResp = await fetch(githubUrl);
-            if (ghResp.ok) {
-                const ghText = await ghResp.text();
-                const ghPack = new Function('return ' + ghText)();
-                if (ghPack && Object.keys(ghPack).length > 10) {
-                    debugLog(`[useTranslation] Loaded ${targetLanguage} from GitHub.`);
-                    setLanguagePack(ghPack);
-                    setIsTranslating(false);
-                    try { await storageDB.set(storageKey, ghPack); } catch(e) { warnLog('Cache save error:', e?.message || e); }
-                    return;
-                }
-            }
-        } catch (ghErr) {
-            warnLog('GitHub language pack not available:', ghErr?.message);
-        }
         setStatusMessage(t('language_selector.status_generating', { lang: targetLanguage }));
         setProgress(5);
         let _helpStrings = {};
@@ -3834,7 +3833,7 @@ const useTranslation = (targetLanguage, apiKey) => {
           const hsCached = localStorage.getItem('alloflow_help_strings_cache');
           if (hsCached) { _helpStrings = JSON.parse(hsCached); }
           else {
-            const hsResp = await fetch('https://raw.githubusercontent.com/Apomera/AlloFlow/main/shared/help_strings.js');
+            const hsResp = await fetch('/shared/help_strings.js');
             if (hsResp.ok) {
               const hsText = (await hsResp.text()).replace(/^\s*\/\/.*$/gm, '').trim();
               _helpStrings = new Function('return ' + hsText)();
@@ -4727,6 +4726,86 @@ const TeacherGate = React.memo((props) => {
     if (Ext) return <Ext {...props} />;
     if (!props.isOpen) return null;
     return null;
+});
+
+
+// ─────────────────────────────────────────────────────────────────────
+// Section: ADVENTURE_SOUND_FUNCTIONS
+// ─────────────────────────────────────────────────────────────────────
+// AlloFlow Section: ADVENTURE_SOUND_FUNCTIONS
+// Module: unknown
+// Variant: local (cloud-stripped)
+// Source lines: 4908–4922
+// Hash: 592be289d743412a
+// Cloud stripped: false (0 replacements)
+// Extracted: 2026-04-11T18:46:20.676Z
+// DO NOT EDIT — re-generated by scripts/extract_modules_local.js
+// @section ADVENTURE_SOUND_FUNCTIONS — CDN wrappers (source: adventure_module.js)
+const playAdventureEventSound = (type) => {
+    const fn = window.AlloModules && window.AlloModules.playAdventureEventSound;
+    if (fn) fn(type);
+};
+const playGenerativeSoundscape = (ctx, dest, params) => {
+    const fn = window.AlloModules && window.AlloModules.playGenerativeSoundscape;
+    if (fn) return fn(ctx, dest, params);
+    return null;
+};
+const ClimaxProgressBar = React.memo(({ climaxState }) => {
+  const { t } = useContext(LanguageContext);
+  if (!climaxState || !climaxState.isActive) return null;
+  const { masteryScore, archetype } = climaxState;
+  let typeKey = (archetype || 'default').toLowerCase();
+  if (typeKey === 'auto') typeKey = 'default';
+  const label = t(`adventure.climax_archetypes.${typeKey}.label`) || t('adventure.climax_archetypes.default.label');
+  const leftLabel = t(`adventure.climax_archetypes.${typeKey}.left`) || t('adventure.climax_archetypes.default.left');
+  const rightLabel = t(`adventure.climax_archetypes.${typeKey}.right`) || t('adventure.climax_archetypes.default.right');
+  let icon = "⚔️";
+  switch (archetype) {
+    case 'Antagonist': icon = "⚔️"; break;
+    case 'Catastrophe': icon = "⚠️"; break;
+    case 'Masterpiece': icon = "🎨"; break;
+    case 'Discovery': icon = "🗺️"; break;
+  }
+  let barColor = "bg-yellow-500";
+  let textColor = "text-yellow-400";
+  let borderColor = "border-yellow-600";
+  if (masteryScore >= 80) {
+    barColor = "bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.6)]";
+    textColor = "text-green-400";
+    borderColor = "border-green-600";
+  } else if (masteryScore <= 30) {
+    barColor = "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.6)]";
+    textColor = "text-red-400";
+    borderColor = "border-red-600";
+  }
+  return (
+    <div className={`w-full bg-slate-900/95 backdrop-blur-md border-y-4 ${borderColor} p-4 shadow-2xl animate-in slide-in-from-top-4 relative z-40 mb-2 transition-colors duration-500`}>
+      <div className="flex justify-between items-end mb-2 px-1">
+        <div className="flex items-center gap-2">
+          <span className="text-xl animate-pulse">{icon}</span>
+          <span className="text-xs font-black text-indigo-200 uppercase tracking-widest">{label}</span>
+        </div>
+        <span className={`text-2xl font-black ${textColor} drop-shadow-sm font-mono transition-colors duration-500`}>
+          {Math.round(masteryScore)}%
+        </span>
+      </div>
+      <div className="relative h-6 w-full bg-slate-800 rounded-full border-2 border-slate-600 overflow-hidden shadow-inner">
+        <div
+          className={`h-full ${barColor} transition-all duration-1000 ease-out relative`}
+          style={{ width: `${Math.max(5, Math.min(100, masteryScore))}%` }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_infinite]"></div>
+        </div>
+        <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/30 z-10 border-l border-black/20"></div>
+        <div className="absolute top-0 bottom-0 left-[25%] w-px bg-white/10 z-0"></div>
+        <div className="absolute top-0 bottom-0 left-[75%] w-px bg-white/10 z-0"></div>
+      </div>
+      <div className="flex justify-between text-[9px] font-bold text-slate-500 uppercase mt-1.5 px-1">
+        <span className="text-red-400">{leftLabel} (0%)</span>
+        <span className="text-green-400">{rightLabel} (100%)</span>
+      </div>
+    </div>
+  );
 });
 
 
@@ -8088,7 +8167,16 @@ const AlloFlowContent = () => {
       window.removeEventListener('keydown', handleInteraction);
     };
   }, []);
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState(() => {
+    try { return localStorage.getItem('allo_session_inputText') || ''; } catch (e) { debugLog('[Session] Storage read blocked:', e.message); return ''; }
+  });
+  // Persist inputText with debounce (don't thrash storage on every keystroke)
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try { localStorage.setItem('allo_session_inputText', inputText); } catch (e) { debugLog('[Session] Storage write blocked:', e.message); }
+    }, 800);
+    return () => clearTimeout(t);
+  }, [inputText]);
   const [studyTimeLeft, setStudyTimeLeft] = useState(0);
   const [studyDuration, setStudyDuration] = useState(0);
   const [isStudyTimerRunning, setIsStudyTimerRunning] = useState(false);
@@ -8745,7 +8833,19 @@ const AlloFlowContent = () => {
       }, 1000);
       return () => clearTimeout(handler);
   }, [studentResponses]);
-  const [generatedContent, setGeneratedContent] = useState(null);
+  const [generatedContent, setGeneratedContent] = useState(() => {
+    try {
+      const s = localStorage.getItem('allo_session_generatedContent');
+      return s ? JSON.parse(s) : null;
+    } catch (e) { debugLog('[Session] generatedContent read blocked:', e.message); return null; }
+  });
+  // Persist generatedContent
+  useEffect(() => {
+    try {
+      if (generatedContent) localStorage.setItem('allo_session_generatedContent', JSON.stringify(generatedContent));
+      else localStorage.removeItem('allo_session_generatedContent');
+    } catch (e) { debugLog('[Session] generatedContent write blocked:', e.message); }
+  }, [generatedContent]);
   const handleStudentInput = (resourceId, questionKey, value) => {
       setStudentResponses(prev => ({
           ...prev,
@@ -9475,7 +9575,13 @@ Return ONLY a valid JSON object:
   const [vsTab, setVsTab] = useState('boards');
   const [visualSupportsPayload, setVisualSupportsPayload] = useState(null);
   const [storyForgeSubmissions, setStoryForgeSubmissions] = useState([]);
-  const [activeView, setActiveView] = useState('input');
+  const [activeView, setActiveView] = useState(() => {
+    try { return localStorage.getItem('allo_session_activeView') || 'input'; } catch (e) { debugLog('[Session] activeView read blocked:', e.message); return 'input'; }
+  });
+  // Persist activeView on change
+  useEffect(() => {
+    try { localStorage.setItem('allo_session_activeView', activeView); } catch (e) { debugLog('[Session] activeView write blocked:', e.message); }
+  }, [activeView]);
   const [showReadThisPage, setShowReadThisPage] = useState(false);
   const [focusNarrationEnabled, setFocusNarrationEnabled] = useState(false);
   const rtpReadingRef = useRef(false);
@@ -16877,22 +16983,103 @@ const parseTaggedContent = (text) => {
   };
   const ai = AIProvider ? new AIProvider(_aiConfig) : _aiConfig;
 
+  // True when the server-side proxy holds credentials (gemini/copilot mode)
+  const _isLocalProxyProvider = () => {
+    const p = window.__alloLocalConfig?.aiProvider;
+    return p === 'gemini' || p === 'copilot' || p === 'openai';
+  };
+
+  // ─── Cloud model defaults (used when GEMINI_MODELS values are 'local' placeholder) ───
+  // GEMINI_MODELS is set to { default: 'local', tts: 'local', ... } in the local build.
+  // In cloud provider mode (aiProvider=gemini/copilot), we need real model names.
+  const _GEMINI_CLOUD_DEFAULTS = {
+    default: window.__alloLocalConfig?.geminiModel || 'gemini-2.5-flash',
+    tts: window.__alloLocalConfig?.geminiTtsModel || 'gemini-2.5-flash-preview-tts',
+  };
+
   const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null) => {
-    if (!apiKey && !_isCanvasEnv) {
-      console.warn('[callGemini] No API key available — skipping request.');
+    // ─── In local mode: delegate to AIProvider (proper architecture) ─────────────
+    const _aiProv = window.__alloLocalConfig?.aiProvider;
+    if (!_aiProv || _aiProv === 'lmstudio' || _aiProv === 'localai') {
+      // Local LM Studio mode — use AIProvider.generateText (OpenAI format)
+      if (ai && typeof ai.generateText === 'function') {
+        try {
+          debugLog(`[callGemini→AIProvider] Local mode, delegating to ai.generateText`);
+          const result = await ai.generateText(prompt, { json: jsonMode, temperature });
+          if (useSearch) {
+            return { text: result || "", groundingMetadata: null };
+          }
+          return result;
+        } catch (localErr) {
+          console.error('[callGemini] AIProvider failed in local mode:', localErr.message);
+          if (jsonMode) return "{}";
+          if (useSearch) return { text: "", groundingMetadata: null };
+          return "";
+        }
+      }
+      // If ai not available, skip
+      console.warn('[callGemini] AIProvider not available in local mode');
       if (jsonMode) return "{}";
       if (useSearch) return { text: "", groundingMetadata: null };
       return "";
     }
+    
+    // ─── Cloud provider mode (gemini/copilot/nvidia) ──────────────────────────
+    // In local mode with cloud provider, tokens are ALWAYS server-side in ~/.alloflow/
+    // Just proceed to the proxy call — let the proxy validate the token and return 401 if missing
+    if (_aiProv === 'nvidia') {
+      // Route through NVIDIA NIM proxy using OpenAI-compatible format
+      try {
+        const _base = (window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '');
+        const _nvPayload = {
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 8192,
+          ...(temperature !== null ? { temperature } : {}),
+          ...(jsonMode ? { response_format: { type: 'json_object' } } : {}),
+        };
+        const _nvRes = await fetch(`${_base}/api/nvidia/proxy`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(_nvPayload),
+        });
+        if (!_nvRes.ok) {
+          const _errData = await _nvRes.json().catch(() => ({}));
+          throw new Error(_errData.error || `NVIDIA proxy ${_nvRes.status}`);
+        }
+        const _nvData = await _nvRes.json();
+        const _nvText = _nvData?.choices?.[0]?.message?.content || '';
+        if (useSearch) return { text: _nvText, groundingMetadata: null };
+        return _nvText;
+      } catch (nvErr) {
+        console.error('[callGemini] NVIDIA call failed:', nvErr.message);
+        if (jsonMode) return '{}';
+        if (useSearch) return { text: '', groundingMetadata: null };
+        return '';
+      }
+    } else if (_aiProv === 'gemini' || _aiProv === 'copilot') {
+      // Proceed - server handles token validation
+    } else if (!apiKey && !_isCanvasEnv) {
+      // Canvas env fallback
+      console.warn('[callGemini] No recognized provider configured');
+      if (jsonMode) return "{}";
+      if (useSearch) return { text: "", groundingMetadata: null };
+      return "";
+    }
+    
     const _buildUrl = (model) => {
-      console.log(`[callGemini] ✉ Using model: ${model}`);
-      const _aiProv = window.__alloLocalConfig?.aiProvider;
+      // Resolve 'local' placeholder to the real cloud model name
+      const _resolvedModel = (!model || model === 'local')
+        ? _GEMINI_CLOUD_DEFAULTS.default
+        : model;
+      console.log(`[callGemini] ✉ Using model: ${_resolvedModel}`);
       if (_aiProv === 'gemini' || _aiProv === 'copilot') {
         // Route through local server proxy for cloud providers (server holds the token)
         const _base = (window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '');
-        return `${_base}/api/gemini/proxy/${encodeURIComponent(model || 'gemini-2.0-flash')}`;
+        return `${_base}/api/gemini/proxy/${encodeURIComponent(_resolvedModel)}`;
       }
-      return 'http://localhost:11434/api/chat'; /* [LOCAL:removed] Gemini API URL → Ollama */
+      // Fallback should never reach here after local mode guard above
+      console.error('[callGemini] Invalid provider state — no URL available');
+      return null;
     };
     const payload = {
       contents: [{ parts: [{ text: prompt }] }],
@@ -16986,6 +17173,10 @@ const parseTaggedContent = (text) => {
         err.message.includes('RESOURCE_EXHAUSTED')
       );
       console.error('[callGemini] Error caught:', err.message);
+      if (err.reauthRequired) {
+        console.error('[callGemini] ⚠️ REAUTH_REQUIRED — Gemini token lacks required scopes. Open AlloFlow Admin > Settings > AI Config > Sign out and re-authorize.');
+        throw new Error('Gemini needs re-authorization. Open AlloFlow Admin → Settings → AI Config → Sign out and sign back in.');
+      }
       if (isActualQuota) {
         const quotaErr = new Error('API_QUOTA_EXHAUSTED');
         quotaErr.isQuota = true;
@@ -17530,7 +17721,14 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     return changes;
   };
   const callGeminiImageEdit = async (prompt, base64Image, width = 800, qual = 0.9, referenceBase64 = null) => {
-    const url = 'http://localhost:11434/api/chat'; /* [LOCAL:removed] Gemini API URL → Ollama */
+    // Image editing is Gemini-only feature
+    const _aiProv = window.__alloLocalConfig?.aiProvider;
+    if (_aiProv && _aiProv !== 'gemini' && _aiProv !== 'copilot') {
+      console.warn('[callGeminiImageEdit] Image editing not available in local mode');
+      throw new Error("Image editing requires Gemini or Copilot provider in cloud mode");
+    }
+    
+    const url = `${(window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '')}/api/gemini/proxy/gemini-2.5-flash`;
     const parts = [
       { text: prompt },
       { inlineData: { mimeType: "image/png", data: base64Image } }
@@ -17562,7 +17760,14 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     }
   };
   const callGeminiVision = async (prompt, base64Data, mimeType) => {
-    const url = 'http://localhost:11434/api/chat'; /* [LOCAL:removed] Gemini API URL → Ollama */
+    // Vision analysis is Gemini-only feature
+    const _aiProv = window.__alloLocalConfig?.aiProvider;
+    if (_aiProv && _aiProv !== 'gemini' && _aiProv !== 'copilot') {
+      console.warn('[callGeminiVision] Vision analysis not available in local mode');
+      throw new Error("Vision analysis requires Gemini or Copilot provider in cloud mode");
+    }
+    
+    const url = `${(window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '')}/api/gemini/proxy/gemini-2.5-flash`;
     const payload = {
       contents: [{
         parts: [
@@ -17614,14 +17819,25 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
   };
   const fetchTTSBytes = useCallback((text, voiceName = "Puck", speed = 1) => {
     // Gemini TTS now works in Canvas (preview) — allow it to attempt, caller handles fallback
-    // Defensive: ensure voiceName is a valid Gemini voice, fall back to Kore if not
+    // Defensive: ensure voiceName is a valid Gemini voice, fall back to Puck if not
     const safeVoice = AVAILABLE_VOICES.map(v => v.toLowerCase()).includes((voiceName || '').toLowerCase()) ? voiceName : 'Puck';
     if (safeVoice !== voiceName) console.warn(`[TTS] Voice "${voiceName}" is not a valid Gemini voice. Falling back to "${safeVoice}".`);
     debugLog("[fetchTTSBytes] text:", text?.substring(0, 30));
     const queuedTask = globalTtsQueue.then(async () => {
-        const baseUrl = 'http://localhost:11434/api/chat' /* [LOCAL:removed] Gemini API URL → Ollama */;
-        // In Canvas, ?key= with empty value signals the proxy to inject auth
-        const url = `${baseUrl}?key=${apiKey || ''}`;
+        const _aiProv = window.__alloLocalConfig?.aiProvider;
+        const _isCloudTTS = (_aiProv === 'gemini' || _aiProv === 'copilot');
+        
+        // ─── Local mode: skip Gemini TTS, let callers use AIProvider.textToSpeech ──
+        if (!_isCloudTTS) {
+          return null; // Callers (callTTS, callTTSDirect) handle local TTS via AIProvider
+        }
+        
+        // ─── Cloud mode (gemini/copilot): fetch audio bytes from proxy ─────────────
+        const _resolvedTtsModel = (!GEMINI_MODELS?.tts || GEMINI_MODELS.tts === 'local')
+          ? _GEMINI_CLOUD_DEFAULTS.tts
+          : GEMINI_MODELS.tts;
+        const baseUrl = `${(window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '')}/api/gemini/proxy/${encodeURIComponent(_resolvedTtsModel)}`;
+        const url = baseUrl;
         const decodeBase64 = (base64) => {
              const binaryString = window.atob(base64);
              const len = binaryString.length;
@@ -17630,7 +17846,9 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
              return bytes;
         };
         // Clean text for TTS: strip list numbering, collapse whitespace, preserve character prompts
-        let promptText = text.length <= 2 ? `Say the sound: ${text}` : text;
+        let promptText = text.length <= 2 ? `Say the sound: ${text}`
+            : text.length <= 50 ? `Say: ${text}`
+            : `Read the following text aloud naturally, do not perform sound effects or noises: ${text}`;
         // Strip markdown/numbered list markers that cause latency (the model tries to "read" formatting)
         promptText = promptText.replace(/^\s*\d+\.\s+/gm, ''); // "1. " at start of lines
         promptText = promptText.replace(/^\s*[-*•]\s+/gm, ''); // "- " or "* " at start of lines
@@ -17664,6 +17882,11 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
             }
             const errorBody = await response.text().catch(() => '');
             console.error("[TTS] API Error:", response.status, response.statusText, errorBody.substring(0, 200));
+            if (response.status === 403) {
+              let reauthRequired = false;
+              try { const b = JSON.parse(errorBody); if (b?.code === 'REAUTH_REQUIRED') reauthRequired = true; } catch (_) {}
+              if (reauthRequired) throw new Error('Gemini needs re-authorization. Open AlloFlow Admin → Settings → AI Config → Sign out and sign back in.');
+            }
             throw new Error(`API Error: ${response.status} ${response.statusText}`);
           }
           const data = await response.json();
@@ -17673,7 +17896,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
               if (text.length <= 5) {
                   try {
                       const retryPayload = {
-                          contents: [{ parts: [{ text: `Please say the word: ${text}` }] }],
+                          contents: [{ parts: [{ text: `Say: ${text}` }] }],
                           generationConfig: {
                               responseModalities: ["AUDIO"],
                               speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: safeVoice } } }
@@ -17826,6 +18049,11 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
           try {
               const ttsResult = await fetchTTSBytes(text, voiceName, speed);
               if (!ttsResult) { throw new Error("[TTS] fetchTTSBytes returned no audio data"); }
+              // fetchTTSBytes returns string URL (local) or { bytes, base64 } (cloud)
+              if (typeof ttsResult === 'string') {
+                globalTtsUrlCache.set(cacheKey, ttsResult);
+                return ttsResult;
+              }
               const { bytes: pcmBytes } = ttsResult;
               const wavBuffer = pcmToWav(pcmBytes);
               const blob = new Blob([wavBuffer], { type: 'audio/wav' });
@@ -17935,8 +18163,37 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
               // Inline fetch using globalBotTtsQueue (separate from Word Sounds queue)
               const queuedTask = globalBotTtsQueue.then(async () => {
                   console.log("[TTS-Bot] 🔄 Queue slot acquired, making API call...");
-                  const baseUrl = 'http://localhost:11434/api/chat' /* [LOCAL:removed] Gemini API URL → Ollama */;
-                  const url = `${baseUrl}${apiKey ? `?key=${apiKey}` : ''}`;
+                  const _aiProvBot = window.__alloLocalConfig?.aiProvider;
+                  // Server holds OAuth token — no client API key needed to detect cloud mode
+                  const _isCloudBot = (_aiProvBot === 'gemini' || _aiProvBot === 'copilot');
+                  
+                  // ─── Local mode: use AIProvider TTS directly and return URL ─────────────
+                  if (!_isCloudBot) {
+                    try {
+                      if (ai && typeof ai.textToSpeech === 'function') {
+                        const audioUrl = await ai.textToSpeech(text, { voice: safeVoice, speed });
+                        if (audioUrl) {
+                          globalTtsUrlCache.set(cacheKey, audioUrl);
+                          console.log("[TTS-Bot] ✅ Local WASM TTS succeeded, returning URL");
+                          return audioUrl; // Return URL directly, not bytes
+                        }
+                      }
+                    } catch (localErr) {
+                      console.warn('[TTS-Bot] Local TTS failed:', localErr.message);
+                      // Fall through to cloud attempt if available
+                    }
+                    // If local failed and we're not cloud-configured, throw error
+                    if (!_isCloudBot) {
+                      throw new Error("No TTS available (local failed, cloud not configured)");
+                    }
+                  }
+                  
+                  // ─── Cloud mode: fetch from Gemini API and return bytes ──────────────────
+                  const botTtsModel = (!GEMINI_MODELS?.tts || GEMINI_MODELS.tts === 'local')
+                    ? _GEMINI_CLOUD_DEFAULTS.tts
+                    : GEMINI_MODELS.tts;
+                  const baseUrl = `${(window.__alloLocalConfig?.llmEngineUrl || 'http://localhost:3730').replace(/\/$/, '')}/api/gemini/proxy/${encodeURIComponent(botTtsModel)}`;
+                  const url = baseUrl;
                   const decodeBase64 = (base64) => {
                        const binaryString = window.atob(base64);
                        const len = binaryString.length;
@@ -17944,8 +18201,11 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
                        for (let j = 0; j < len; j++) bytes[j] = binaryString.charCodeAt(j);
                        return bytes;
                   };
+                  const _botTtsPrompt = text.length <= 2 ? `Say the sound: ${text}`
+                      : text.length <= 50 ? `Say: ${text}`
+                      : `Read the following text aloud naturally, do not perform sound effects or noises: ${text}`;
                   const payload = {
-                    contents: [{ parts: [{ text: (text.length > 10 ? 'Read the following text aloud naturally, do not perform sound effects or noises: ' : '') + text }] }],
+                    contents: [{ parts: [{ text: _botTtsPrompt }] }],
                     generationConfig: {
                       responseModalities: ["AUDIO"],
                       speechConfig: {
@@ -17971,6 +18231,11 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
                     }
                     const errorBody = await response.text().catch(() => '');
                     console.error("[TTS-Bot] ❌ API Error:", response.status, response.statusText, errorBody.substring(0, 200));
+                    if (response.status === 403) {
+                      let reauthRequired = false;
+                      try { const b = JSON.parse(errorBody); if (b?.code === 'REAUTH_REQUIRED') reauthRequired = true; } catch (_) {}
+                      if (reauthRequired) throw new Error('Gemini needs re-authorization. Open AlloFlow Admin → Settings → AI Config → Sign out and sign back in.');
+                    }
                     throw new Error(`API Error: ${response.status} ${response.statusText}`);
                   }
                   const data = await response.json();
@@ -17994,7 +18259,13 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
               });
               globalBotTtsQueue = queuedTask.catch(() => {});
               const ttsResult = await queuedTask;
-              if (!ttsResult) { throw new Error("[TTS-Bot] fetchTTSBytes returned no audio data"); }
+              if (!ttsResult) { throw new Error("[TTS-Bot] No audio data from TTS"); }
+              // Local TTS returns a URL string; cloud returns { bytes, base64 }
+              if (typeof ttsResult === 'string') {
+                globalTtsUrlCache.set(cacheKey, ttsResult);
+                console.log("[TTS-Bot] ✅ Local TTS URL returned for:", text?.substring(0, 30));
+                return ttsResult;
+              }
               const { bytes: pcmBytes } = ttsResult;
               const wavBuffer = pcmToWav(pcmBytes);
               const blob = new Blob([wavBuffer], { type: 'audio/wav' });
@@ -56115,7 +56386,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
         }}>
           <div style={{ textAlign: 'center', animation: 'pulse 2s ease-in-out infinite', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <h1 style={{ fontSize: '36px', fontWeight: 900, color: 'white', margin: '0 0 16px', letterSpacing: '-0.5px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>AlloFlow</h1>
-            <img src={"https://raw.githubusercontent.com/Apomera/AlloFlow/main/shared/rainbow-book.jpg"} alt="AlloFlow" style={{ width: '120px', height: '120px', marginBottom: '16px', filter: 'drop-shadow(0 0 24px rgba(99,102,241,0.5))', borderRadius: '20px', objectFit: 'cover' }} />
+            <img src={"/shared/rainbow-book.jpg"} alt="AlloFlow" style={{ width: '120px', height: '120px', marginBottom: '16px', filter: 'drop-shadow(0 0 24px rgba(99,102,241,0.5))', borderRadius: '20px', objectFit: 'cover' }} />
             <p style={{ fontSize: '13px', color: 'rgba(165,180,252,0.8)', margin: '0 0 32px', fontWeight: 600, letterSpacing: '3px', textTransform: 'uppercase' }}>Adaptive Levels, Layers, & Outputs</p>
             <p style={{ fontSize: '11px', color: 'rgba(165,180,252,0.5)', margin: '0 0 32px', fontWeight: 500, fontStyle: 'italic' }}>{t('splash.udl_tagline')}</p>
           </div>
@@ -56146,7 +56417,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
             .lp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #818cf8, #6366f1); color: white; font-size: 9px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1.5px; animation: shimmer 3s infinite linear; background-size: 200% auto; }
           `}</style>
           <div style={{ textAlign: 'center', marginBottom: '48px', animation: 'fadeIn 0.6s ease-out' }}>
-            <img src="https://raw.githubusercontent.com/Apomera/AlloFlow/main/shared/rainbow-book.jpg" alt="AlloFlow" style={{ width: '80px', height: '80px', margin: '0 auto 16px', display: 'block', filter: 'drop-shadow(0 0 24px rgba(99,102,241,0.5))', borderRadius: '16px', objectFit: 'cover', animation: 'float 3s ease-in-out infinite' }} />
+            <img src="/shared/rainbow-book.jpg" alt="AlloFlow" style={{ width: '80px', height: '80px', margin: '0 auto 16px', display: 'block', filter: 'drop-shadow(0 0 24px rgba(99,102,241,0.5))', borderRadius: '16px', objectFit: 'cover', animation: 'float 3s ease-in-out infinite' }} />
             <h1 style={{ fontSize: '32px', fontWeight: 900, color: 'white', margin: '0 0 8px', letterSpacing: '-0.5px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>AlloFlow</h1>
             <p style={{ fontSize: '12px', color: 'rgba(165,180,252,0.7)', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', margin: 0 }}>{t('launch_pad.subtitle')}</p>
           </div>
