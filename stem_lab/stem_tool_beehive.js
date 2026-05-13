@@ -10701,6 +10701,86 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             })
           ),
 
+          // ── Reflection Question (state-aware Socratic prompt) ──
+          // Picks 1 of ~12 prompts tagged with trigger conditions so the
+          // question always relates to what the student is seeing right now.
+          // Turns the simulation into Socratic engagement: instead of just
+          // managing meters, students are asked to articulate WHY the system
+          // behaves the way it does. Includes a "Show another →" cycler.
+          viewMode === 'beekeeper' && colonySurvived && (function() {
+            // Each prompt: { id, q (question), think (hint to anchor), when (predicate or null=always) }
+            var ALL_PROMPTS = [
+              // ── Stress-triggered (highest priority — bounce the student off something visible)
+              { id: 'high_varroa',  when: function() { return varroaLevel >= 20; },
+                q: 'If you skipped treating the mites for another month, what do you predict would happen to your colony — and which numbers on the dashboard would shift first?',
+                think: 'Track the chain: more mites → more virus transmission (DWV) → more deformed bees → fewer foragers → less honey → starvation.' },
+              { id: 'queen_failing', when: function() { return queenHealth < 50; },
+                q: 'Your queen\'s health is dropping. If you DIDN\'T install a new one, the colony might raise its own emergency queen. What would they need to do that — and what would the timeline look like?',
+                think: 'Workers need eggs younger than 3 days old. They flood larvae with royal jelly → emergency queen cells. Eclosion in ~16 days, plus mating + first eggs = ~24 days of zero new brood.' },
+              { id: 'low_morale',   when: function() { return morale < 35; },
+                q: 'Bees don\'t have brains the way mammals do. What does "low morale" actually mean for a colony? What physical mechanisms produce that aggregate signal?',
+                think: 'Disrupted queen pheromone (QMP), alarm pheromone (isopentyl acetate) building up, fewer waggle dances recruiting foragers, reduced trophallaxis (food sharing).' },
+              { id: 'low_honey_winter', when: function() { return honey < 25 && season === 3; },
+                q: 'A wild colony with this little honey going into winter would almost certainly die. Should beekeepers always supplement? What\'s the argument FOR letting some colonies fail?',
+                think: 'Selection pressure breeds resistance. The opposing view: with varroa pressure as it is now, almost no untreated colony can survive — natural selection isn\'t working on bees the way it would.' },
+              // ── Seasonal
+              { id: 'spring_buildup', when: function() { return season === 0 && day > 5; },
+                q: 'In early spring, the queen lays ~1,500 eggs a day — but the population doesn\'t double every day. Where does the loss go, and what does that tell you about a worker\'s life expectancy?',
+                think: 'Summer-bee lifespan is ~6 weeks. Workers die at the same rate while new ones emerge — population is the integral of (birth rate − death rate).' },
+              { id: 'summer_swarm',   when: function() { return season === 1 && workers >= 30000; },
+                q: 'When a colony gets crowded in early summer, it often swarms — half the workers leave with the old queen to start a new hive. Why is swarming the colony\'s "default" success path, not a failure?',
+                think: 'Reproduction at the superorganism level. The colony IS the unit of evolution — splitting into two viable colonies is how bees reproduce as a species, not how individuals reproduce.' },
+              { id: 'autumn_drone',   when: function() { return season === 2; },
+                q: 'In autumn, worker bees evict the drones — push them out, refuse them re-entry. Is this cruel, ruthless, or rational? Whose perspective are you taking?',
+                think: 'From the colony\'s perspective, drones cost honey to feed and can\'t forage, sting, or warm the hive. From the drone\'s, he was bred for a mating flight he probably never got.' },
+              { id: 'winter_cluster', when: function() { return season === 3; },
+                q: 'The winter cluster maintains 95°F at the queen\'s core even when it\'s 0°F outside. The bees don\'t shiver the way we do — what ARE they doing, and how does the heat get distributed?',
+                think: 'They vibrate flight muscles without moving wings (asynchronous indirect flight muscles, like a car idling in neutral). Heat radiates outward; bees rotate from cold outer shell inward.' },
+              // ── Context-aware
+              { id: 'pollination_value', when: function() { return gardenBonus > 0 || (d.totalHarvested || 0) > 0; },
+                q: 'Honeybees provide ~$15 billion/year in U.S. pollination — way more than the honey itself. If you had to monetize their ecological role, would $15 billion be too high or too low? Compared to what?',
+                think: 'Doesn\'t count wild pollination of non-crop plants. Doesn\'t count the 4,000+ native bee species, many of which are more efficient. Ecosystem-service economics has hard edges.' },
+              { id: 'inspection_open', when: function() { return showInspect; },
+                q: 'Opening the hive disturbs the bees, releases alarm pheromone, and lowers morale briefly. What\'s the smallest inspection that still gives you useful information?',
+                think: 'Lift the inner cover (no frames pulled) and read the temperature + smell. Pull just one frame near the brood — a quick "are eggs being laid?" check. Match cadence to what you need to learn.' },
+              // ── Always-applicable fallbacks
+              { id: 'meta_individual',
+                q: 'A worker bee lives ~6 weeks in summer. The colony has been here for decades or centuries. Who is the "individual" — the bee, the colony, or both? Why does it matter how you decide?',
+                think: 'Superorganism biology. Many traits make sense at the colony level (swarming, role specialization, communication) and lose meaning at the bee level.' },
+              { id: 'meta_simplification',
+                q: 'This simulator turns 50+ variables into four meters. What real-world signals do you think are missing or oversimplified — and how would you check that against a real beekeeper\'s observations?',
+                think: 'Brood pattern (spotty vs solid), entrance traffic, defensive behavior, abdomen color, frame weight, smell, sound pitch. Real beekeepers read all of these in 30 seconds with their eyes + nose + ears.' }
+            ];
+            // Build available pool based on `when`
+            var pool = ALL_PROMPTS.filter(function(p) { return !p.when || p.when(); });
+            if (pool.length === 0) pool = ALL_PROMPTS.filter(function(p) { return !p.when; });
+            // Index cycles via d.reflectionIdx; clamp to pool size; show "think" hint behind a disclosure.
+            var rIdx = (d.reflectionIdx || 0) % pool.length;
+            var prompt = pool[rIdx];
+            var showThink = !!d.reflectionThink;
+            return h('div', { className: 'rounded-xl border-l-4 p-3 ' + (dk ? 'bg-indigo-900/15 border-indigo-500 text-slate-100' : 'bg-indigo-50 border-indigo-400 text-slate-700'),
+              role: 'region', 'aria-label': 'Reflection question' },
+              h('div', { className: 'flex items-center justify-between mb-1.5' },
+                h('div', { className: 'flex items-center gap-2' },
+                  h('span', { 'aria-hidden': 'true', className: 'text-base' }, '💭'),
+                  h('span', { className: 'text-[10px] font-bold uppercase tracking-wider ' + (dk ? 'text-indigo-300' : 'text-indigo-700') }, 'Reflection · think about it')
+                ),
+                pool.length > 1 && h('button', {
+                  onClick: function() { upd('reflectionIdx', rIdx + 1); upd('reflectionThink', false); },
+                  title: 'Show another reflection question',
+                  className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'text-indigo-300 hover:bg-indigo-900/40' : 'text-indigo-700 hover:bg-indigo-100')
+                }, 'Another →')
+              ),
+              h('p', { className: 'text-xs leading-relaxed ' + (dk ? 'text-slate-100' : 'text-slate-700') }, prompt.q),
+              h('button', {
+                onClick: function() { upd('reflectionThink', !showThink); },
+                'aria-expanded': showThink ? 'true' : 'false',
+                className: 'mt-2 text-[11px] font-bold flex items-center gap-1 ' + (dk ? 'text-indigo-300 hover:text-indigo-200' : 'text-indigo-700 hover:text-indigo-900')
+              }, (showThink ? '▼' : '▶') + ' ' + (showThink ? 'Hide hint' : 'Stuck? Anchor your thinking →')),
+              showThink && h('p', { className: 'mt-1.5 text-[11px] leading-relaxed italic px-2 py-1.5 rounded ' + (dk ? 'bg-indigo-900/30 text-slate-200' : 'bg-white/60 text-slate-600') }, prompt.think)
+            );
+          })(),
+
           // ── Hive Cross-Section Visual ── (beekeeper only)
           viewMode === 'beekeeper' && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-gradient-to-b from-amber-900/30 to-amber-950/20 border-amber-700/40' : 'bg-gradient-to-b from-amber-100 to-amber-50 border-amber-300'),
             role: 'img', 'aria-label': 'Hive cross-section: honey stores on outer edges (' + Math.round(honey) + ' lbs), pollen ring (' + Math.round(pollen) + ' lbs), brood nest in center (' + fmtPop(brood) + ' larvae), queen health ' + queenHealth + '%. Bees organize comb concentrically for thermal efficiency.' },
