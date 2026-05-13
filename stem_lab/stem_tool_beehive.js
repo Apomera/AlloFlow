@@ -6929,6 +6929,166 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.restore();
               }
 
+              // ── Red fox cameo crossing the meadow at dusk (fall + winter) ──
+              // Real biology: red foxes are crepuscular hunters most active
+              // at dawn and dusk in colder months. Sleek body, bushy tail,
+              // pointed ears, white throat patch. Visible during dusk/dawn
+              // bands only, every ~45 seconds. Distinct from rabbit (trots
+              // steadily, doesn't hop) and squirrel (ground-level, not fence).
+              if ((season === 2 || season === 3)) {
+                var _fxDusk = (_sunCycle > 0.85 && _sunCycle < 1.10) ? Math.sin((_sunCycle - 0.85) / 0.25 * Math.PI) :
+                              (_sunCycle > 1.85 && _sunCycle < 2.10) ? Math.sin((_sunCycle - 1.85) / 0.25 * Math.PI) : 0;
+                if (_fxDusk > 0.15) {
+                  var _fxCycle = (t2 % 2700) / 2700;
+                  if (_fxCycle > 0.35 && _fxCycle < 0.80) {
+                    var _fxProg = (_fxCycle - 0.35) / 0.45;
+                    var _fxX = W * 1.05 - _fxProg * W * 1.15;
+                    var _fxY = H * 0.84 + Math.sin(_fxProg * 8) * 0.5;
+                    var _fxFacing = -1; // moving right to left
+                    if (_fxX < hiveX - 20 || _fxX > hiveX + hiveW + 20) {
+                      c.save();
+                      c.globalAlpha = _fxDusk;
+                      c.translate(_fxX, _fxY);
+                      c.scale(_fxFacing, 1);
+                      // Shadow
+                      c.fillStyle = 'rgba(0,0,0,0.22)';
+                      c.beginPath(); c.ellipse(0, 2.5, 6, 0.8, 0, 0, 6.28); c.fill();
+                      // Body — rusty orange-red
+                      c.fillStyle = '#c2410c';
+                      c.beginPath(); c.ellipse(0, 0, 5.5, 2, 0, 0, 6.28); c.fill();
+                      // Head + snout
+                      c.fillStyle = '#9a3412';
+                      c.beginPath(); c.ellipse(-4.8, -0.5, 2.2, 1.4, -0.15, 0, 6.28); c.fill();
+                      // Pointed ears (two triangles)
+                      c.beginPath();
+                      c.moveTo(-4.5, -1.5);
+                      c.lineTo(-4.0, -3);
+                      c.lineTo(-3.5, -1.2);
+                      c.closePath(); c.fill();
+                      c.beginPath();
+                      c.moveTo(-5.5, -1.4);
+                      c.lineTo(-5.2, -2.8);
+                      c.lineTo(-4.5, -1.5);
+                      c.closePath(); c.fill();
+                      // White throat patch + belly stripe
+                      c.fillStyle = 'rgba(254,243,199,0.85)';
+                      c.beginPath(); c.ellipse(-3.5, 0.8, 1.8, 0.6, 0, 0, 6.28); c.fill();
+                      c.fillRect(-2.5, 0.8, 3.5, 0.6);
+                      // Eye dot
+                      c.fillStyle = '#1c1917';
+                      c.beginPath(); c.arc(-5.3, -0.6, 0.3, 0, 6.28); c.fill();
+                      // Tiny nose
+                      c.beginPath(); c.arc(-6.4, -0.2, 0.3, 0, 6.28); c.fill();
+                      // Legs (4 visible)
+                      c.fillStyle = '#7c2d12';
+                      c.fillRect(-3, 1.5, 0.6, 2);
+                      c.fillRect(-1, 1.5, 0.6, 2);
+                      c.fillRect(1.5, 1.5, 0.6, 2);
+                      c.fillRect(3, 1.5, 0.6, 2);
+                      // Bushy tail with white tip
+                      c.fillStyle = '#c2410c';
+                      c.beginPath();
+                      c.moveTo(4.5, 0);
+                      c.quadraticCurveTo(7, -1, 8, 1);
+                      c.quadraticCurveTo(7, 2, 4.5, 1);
+                      c.closePath(); c.fill();
+                      // White tip
+                      c.fillStyle = 'rgba(254,243,199,0.95)';
+                      c.beginPath(); c.arc(8, 1, 1.0, 0, 6.28); c.fill();
+                      c.restore();
+                    }
+                  }
+                }
+              }
+
+              // ── Daisy patch at the lower meadow (spring/summer) ──
+              // 8 daisies with white petals + golden centers, clustered in
+              // a low spot near the meadow edge. Each daisy sways with the
+              // coherent wind wave to match the rest of the meadow motion.
+              if (season === 0 || season === 1) {
+                var _dsCx = W * 0.78;
+                var _dsCy = H * 0.86;
+                var _dsCount = 8;
+                for (var ds = 0; ds < _dsCount; ds++) {
+                  var _dsAng = (ds / _dsCount) * 6.28;
+                  var _dsR = 4 + (ds % 3) * 2;
+                  var _dsX = _dsCx + Math.cos(_dsAng) * _dsR + (ds % 2) * 1.5;
+                  var _dsY = _dsCy + Math.sin(_dsAng) * _dsR * 0.5 + (ds % 3) * 0.7;
+                  var _dsWind = Math.sin(t2 * 0.025 - _dsX * 0.015) * 0.8;
+                  // Stem
+                  c.strokeStyle = '#16a34a';
+                  c.lineWidth = 0.5;
+                  c.beginPath();
+                  c.moveTo(_dsX, _dsY + 4);
+                  c.lineTo(_dsX + _dsWind, _dsY);
+                  c.stroke();
+                  // Tiny leaf
+                  c.fillStyle = '#22c55e';
+                  c.beginPath();
+                  c.ellipse(_dsX + _dsWind * 0.5, _dsY + 2, 0.6, 0.3, 0.3, 0, 6.28);
+                  c.fill();
+                  // 8 white petals
+                  c.fillStyle = '#ffffff';
+                  for (var dpc = 0; dpc < 8; dpc++) {
+                    var _dpcA = dpc * 0.785;
+                    var _dpcX = _dsX + _dsWind + Math.cos(_dpcA) * 1.4;
+                    var _dpcY = _dsY + Math.sin(_dpcA) * 1.4;
+                    c.beginPath();
+                    c.ellipse(_dpcX, _dpcY, 0.7, 0.35, _dpcA, 0, 6.28);
+                    c.fill();
+                  }
+                  // Golden center
+                  c.fillStyle = '#facc15';
+                  c.beginPath(); c.arc(_dsX + _dsWind, _dsY, 0.65, 0, 6.28); c.fill();
+                  c.fillStyle = '#a16207';
+                  c.beginPath(); c.arc(_dsX + _dsWind - 0.2, _dsY - 0.2, 0.2, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Wooden walking stick leaning against the Adirondack chair ──
+              // Beloved Maine homestead detail. The keeper's walking stick
+              // rests against the right side of the chair. Slight knot in the
+              // wood. Year-round (the keeper uses it on icy winter walks too).
+              (function() {
+                var _acX = W * 0.55; // matches the Adirondack chair X
+                var _wsBottomX = _acX + 7.5, _wsBottomY = H * 0.89;
+                var _wsTopX = _acX + 6.5, _wsTopY = H * 0.86 - 6;
+                // Shadow
+                c.strokeStyle = 'rgba(0,0,0,0.18)';
+                c.lineWidth = 1;
+                c.beginPath();
+                c.moveTo(_wsBottomX + 0.5, _wsBottomY);
+                c.lineTo(_wsTopX + 0.5, _wsTopY);
+                c.stroke();
+                // Main stick — slightly tapered, varnished pine
+                c.strokeStyle = season === 3 ? '#7a5230' : '#a07248';
+                c.lineWidth = 1.1;
+                c.beginPath();
+                c.moveTo(_wsBottomX, _wsBottomY);
+                c.lineTo(_wsTopX, _wsTopY);
+                c.stroke();
+                // Wood-grain highlight along one side
+                c.strokeStyle = 'rgba(255,255,255,0.3)';
+                c.lineWidth = 0.3;
+                c.beginPath();
+                c.moveTo(_wsBottomX - 0.3, _wsBottomY);
+                c.lineTo(_wsTopX - 0.3, _wsTopY);
+                c.stroke();
+                // Small dark knot 2/3 up
+                c.fillStyle = season === 3 ? '#3a2510' : '#5a3a18';
+                var _wsKnotX = _wsBottomX + (_wsTopX - _wsBottomX) * 0.65;
+                var _wsKnotY = _wsBottomY + (_wsTopY - _wsBottomY) * 0.65;
+                c.beginPath(); c.ellipse(_wsKnotX, _wsKnotY, 0.5, 0.3, 0.5, 0, 6.28); c.fill();
+                // Rounded knob at the top (handle)
+                c.fillStyle = season === 3 ? '#5a3f25' : '#7a5230';
+                c.beginPath(); c.arc(_wsTopX, _wsTopY, 0.9, 0, 6.28); c.fill();
+                c.fillStyle = 'rgba(255,255,255,0.35)';
+                c.beginPath(); c.arc(_wsTopX - 0.25, _wsTopY - 0.25, 0.3, 0, 6.28); c.fill();
+                // Rubber tip at the bottom (winter ice grip)
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_wsBottomX, _wsBottomY, 0.55, 0, 6.28); c.fill();
+              })();
+
               // ── Rabbit hopping across the meadow (periodic cameo, every ~20s) ──
               if (season !== 3) {
                 var rbCycle = (t2 % 1200) / 1200; // 0..1 over ~20s
