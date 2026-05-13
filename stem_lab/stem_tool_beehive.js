@@ -7088,6 +7088,142 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              // ── Compost pile beside the vegetable garden (decomposer biology) ──
+              // Real biology: microbial decomposition releases heat — a working
+              // compost pile can hold 130-160°F at its core, visible as steam
+              // rising on cool mornings. Tilts the bee-friendly homestead
+              // toward whole-system biology (bees + garden + decomposers).
+              (function() {
+                var _cpX = W * 0.10, _cpY = H * 0.87;
+                // Three-bin wooden frame (simplified — just the visible front bin)
+                c.fillStyle = season === 3 ? '#3a2510' : '#5a3a18';
+                c.fillRect(_cpX - 11, _cpY - 2, 22, 5);
+                // Vertical posts
+                c.fillRect(_cpX - 12, _cpY - 4, 1.5, 8);
+                c.fillRect(_cpX +  10.5, _cpY - 4, 1.5, 8);
+                c.fillRect(_cpX - 1, _cpY - 4, 1.2, 8);
+                // Slat gaps (visible openings between front planks)
+                c.fillStyle = season === 3 ? '#1a1208' : '#2a1808';
+                c.fillRect(_cpX - 10.5, _cpY - 0.5, 22, 0.6);
+                c.fillRect(_cpX - 10.5, _cpY + 1.5, 22, 0.6);
+                // Compost contents inside — heap shape (brown organic matter)
+                var _cpContents = season === 3 ? '#5a4225' : season === 2 ? '#7a5530' : '#8a6028';
+                c.fillStyle = _cpContents;
+                c.beginPath();
+                c.moveTo(_cpX - 10, _cpY - 1);
+                c.quadraticCurveTo(_cpX, _cpY - 6, _cpX + 10, _cpY - 1);
+                c.lineTo(_cpX + 10, _cpY + 3);
+                c.lineTo(_cpX - 10, _cpY + 3);
+                c.closePath(); c.fill();
+                // Texture flecks (visible decomposing bits)
+                c.fillStyle = season === 3 ? '#7a5a3a' : '#a87a48';
+                for (var cpf = 0; cpf < 18; cpf++) {
+                  var _cpfX = _cpX - 9 + (cpf * 31) % 18;
+                  var _cpfY = _cpY - 4 + (cpf * 19) % 6;
+                  c.beginPath(); c.arc(_cpfX, _cpfY, 0.5, 0, 6.28); c.fill();
+                }
+                // Bits of green (kitchen scraps) on top
+                if (season !== 3) {
+                  c.fillStyle = '#65a30d';
+                  c.beginPath(); c.ellipse(_cpX - 3, _cpY - 5, 1.2, 0.6, 0.3, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_cpX + 4, _cpY - 4.5, 0.9, 0.5, -0.2, 0, 6.28); c.fill();
+                  // Tiny apple core / banana peel hint
+                  c.fillStyle = '#facc15';
+                  c.beginPath(); c.ellipse(_cpX + 2, _cpY - 5.2, 0.8, 0.3, 0.4, 0, 6.28); c.fill();
+                }
+                // Snow cap in winter
+                if (season === 3) {
+                  c.fillStyle = '#ffffff';
+                  c.beginPath();
+                  c.moveTo(_cpX - 10, _cpY - 1);
+                  c.quadraticCurveTo(_cpX, _cpY - 6.5, _cpX + 10, _cpY - 1);
+                  c.quadraticCurveTo(_cpX, _cpY - 4.5, _cpX - 10, _cpY - 1);
+                  c.closePath(); c.fill();
+                }
+                // ── Microbial steam (rising on cool mornings) ──
+                // Real biology: a hot pile (sometimes 130-160°F core) gives off
+                // visible water vapor when air is colder than the pile. Stronger
+                // at dawn (largest temp differential), gone at midday.
+                var _cpDawn = Math.max(0, 1 - Math.min(_sunCycle, 2 - _sunCycle) / 0.3);
+                var _cpCool = season === 2 || season === 3 ? 1 : 0.5; // colder seasons = more steam
+                var _cpSteamStr = (_cpDawn + 0.15) * _cpCool;
+                if (_cpSteamStr > 0.1) {
+                  c.save();
+                  for (var cps = 0; cps < 4; cps++) {
+                    var _cpsPhase = ((t2 * 0.12 + cps * 18) % 80) / 80;
+                    var _cpsX = _cpX + Math.sin(t2 * 0.02 + cps) * 4 + (cps - 1.5) * 3;
+                    var _cpsY = _cpY - 6 - _cpsPhase * 20;
+                    var _cpsR = 2.5 + _cpsPhase * 3;
+                    var _cpsA = _cpSteamStr * Math.sin(_cpsPhase * Math.PI) * 0.45;
+                    if (_cpsA < 0.02) continue;
+                    c.fillStyle = 'rgba(240,245,250,' + _cpsA.toFixed(3) + ')';
+                    c.beginPath();
+                    c.ellipse(_cpsX, _cpsY, _cpsR, _cpsR * 0.85, 0, 0, 6.28);
+                    c.fill();
+                  }
+                  c.restore();
+                }
+              })();
+
+              // ── Grasshopper hopping across the meadow (summer cameo) ──
+              // Real biology: green grasshoppers are a major sound of a summer
+              // meadow. Slim long-legged silhouette, bouncing flight pattern,
+              // characteristic stridulation invisible but implied by the hop
+              // cadence. Periodic cameo every ~22 seconds in summer.
+              if (season === 1) {
+                var _ghPeriod = 22000;
+                var _ghPhase = ((Date.now() % _ghPeriod) / _ghPeriod);
+                if (_ghPhase > 0.20 && _ghPhase < 0.75) {
+                  var _ghProg = (_ghPhase - 0.20) / 0.55;
+                  // Movement: left to right across the meadow
+                  var _ghX = -8 + _ghProg * (W + 16);
+                  // Bounding hop — each hop arcs up and down
+                  var _ghHopFreq = 0.08;
+                  var _ghHopPhase = (_ghX * _ghHopFreq) % Math.PI;
+                  var _ghHopHeight = Math.abs(Math.sin(_ghHopPhase * 2.5)) * 6;
+                  var _ghY = H * 0.83 - _ghHopHeight;
+                  // Skip if overlapping major elements
+                  if (_ghX > hiveX - 15 && _ghX < hiveX + hiveW + 15) {
+                    // hidden by hive
+                  } else {
+                    // Shadow
+                    c.fillStyle = 'rgba(0,0,0,0.22)';
+                    c.beginPath(); c.ellipse(_ghX, H * 0.835, 2.5, 0.6, 0, 0, 6.28); c.fill();
+                    // Slim body — grass-green
+                    c.fillStyle = '#65a30d';
+                    c.beginPath(); c.ellipse(_ghX, _ghY, 2.6, 1.1, -0.08, 0, 6.28); c.fill();
+                    // Wing patch (folded)
+                    c.fillStyle = '#84cc16';
+                    c.beginPath(); c.ellipse(_ghX + 0.4, _ghY - 0.3, 1.7, 0.6, -0.05, 0, 6.28); c.fill();
+                    // Head — slightly larger oval
+                    c.fillStyle = '#4d7c0f';
+                    c.beginPath(); c.arc(_ghX - 2.6, _ghY - 0.2, 1.0, 0, 6.28); c.fill();
+                    // Long antennae
+                    c.strokeStyle = '#1c1917';
+                    c.lineWidth = 0.3;
+                    c.beginPath();
+                    c.moveTo(_ghX - 3.2, _ghY - 0.8);
+                    c.lineTo(_ghX - 5.5, _ghY - 2.5);
+                    c.stroke();
+                    c.beginPath();
+                    c.moveTo(_ghX - 3.0, _ghY - 0.5);
+                    c.lineTo(_ghX - 4.8, _ghY - 2.0);
+                    c.stroke();
+                    // Long folded back legs (signature grasshopper "Z" shape)
+                    c.strokeStyle = '#4d7c0f';
+                    c.lineWidth = 0.6;
+                    c.beginPath();
+                    c.moveTo(_ghX + 1.5, _ghY + 0.5);
+                    c.lineTo(_ghX + 3.5, _ghY - 1.5);
+                    c.lineTo(_ghX + 2.5, _ghY + 1.5);
+                    c.stroke();
+                    // Eye dot
+                    c.fillStyle = '#0a0a0a';
+                    c.beginPath(); c.arc(_ghX - 3.2, _ghY - 0.4, 0.35, 0, 6.28); c.fill();
+                  }
+                }
+              }
+
               // ── Spare Langstroth super box stacked beside the hive (equipment realism) ──
               // Beekeepers always have spare supers ready for honey flow — this
               // empty box sits to the right of the working hive, half-tucked
@@ -7677,6 +7813,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillStyle = '#4b5563';
               c.beginPath(); c.arc(signX - 20, signY - 6, 0.7, 0, 6.28); c.fill();
               c.beginPath(); c.arc(signX + 24, signY - 6, 0.7, 0, 6.28); c.fill();
+              // ── Wind chime hanging off the apiary post (visual wind indicator) ──
+              // Suspended from a small bracket on the right of the post,
+              // beneath the sign. The chime swings in the same coherent wind
+              // wave that moves the grass and flowers (so the whole scene
+              // "agrees" about which way the wind is blowing). Subtle metallic
+              // glints catch the sun on the tubes.
+              (function() {
+                var _wcAnchorX = signX + 8;
+                var _wcAnchorY = signY + 10;
+                // Bracket arm
+                c.fillStyle = '#3a2510';
+                c.fillRect(signX + 2.5, signY + 8, 6, 1.2);
+                // Suspending string
+                c.strokeStyle = 'rgba(40,30,20,0.7)';
+                c.lineWidth = 0.4;
+                // Wind sway from same wave as grass — sign post X * 0.015
+                var _wcSway = Math.sin(t2 * 0.025 - signX * 0.015) * 1.8;
+                c.beginPath();
+                c.moveTo(_wcAnchorX, _wcAnchorY - 0.5);
+                c.lineTo(_wcAnchorX + _wcSway, _wcAnchorY + 4);
+                c.stroke();
+                // Center disc — the "wind catcher"
+                c.fillStyle = '#a8732a';
+                c.beginPath(); c.arc(_wcAnchorX + _wcSway, _wcAnchorY + 5, 1.4, 0, 6.28); c.fill();
+                c.fillStyle = 'rgba(255,235,180,0.6)';
+                c.beginPath(); c.arc(_wcAnchorX + _wcSway - 0.4, _wcAnchorY + 4.7, 0.5, 0, 6.28); c.fill();
+                // 5 tubes hanging beneath at staggered lengths
+                var _wcTubeLens = [6, 7, 8, 7, 6];
+                _wcTubeLens.forEach(function(_wcLen, wci) {
+                  var _wcTubeX = _wcAnchorX + _wcSway - 3 + wci * 1.5;
+                  // Per-tube extra sway (lighter tubes wobble more)
+                  var _wcTubeSway = Math.sin(t2 * 0.04 + wci * 0.7) * 0.4 + _wcSway * 0.3;
+                  // Suspension line
+                  c.strokeStyle = 'rgba(60,40,20,0.5)';
+                  c.lineWidth = 0.25;
+                  c.beginPath();
+                  c.moveTo(_wcTubeX, _wcAnchorY + 5.5);
+                  c.lineTo(_wcTubeX + _wcTubeSway, _wcAnchorY + 7);
+                  c.stroke();
+                  // Tube body — thin metallic rectangle
+                  var _wcGrad = c.createLinearGradient(_wcTubeX + _wcTubeSway - 0.6, _wcAnchorY + 7, _wcTubeX + _wcTubeSway + 0.6, _wcAnchorY + 7);
+                  _wcGrad.addColorStop(0, '#78716c');
+                  _wcGrad.addColorStop(0.5, '#d6d3d1');
+                  _wcGrad.addColorStop(1, '#57534e');
+                  c.fillStyle = _wcGrad;
+                  c.fillRect(_wcTubeX + _wcTubeSway - 0.6, _wcAnchorY + 7, 1.2, _wcLen);
+                });
+              })();
 
               // ── Apple tree near the hive (classic beekeeping companion plant) ──
               if (hiveX > 40) {

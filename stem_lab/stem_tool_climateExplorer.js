@@ -2593,6 +2593,136 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               );
             })(),
 
+            // ═══ CLIMATE DISPLACEMENT TRACKER ═══
+            // The Internal Displacement Monitoring Centre (IDMC) is the
+            // global authority on this data. Weather-driven displacement
+            // is the most-tracked and most-conservative climate-impact
+            // statistic: it counts actual people forced to move within
+            // their own country (not international refugees, who don't
+            // yet have legal recognition for climate causes). Even on
+            // this conservative measure, ~376 million people have been
+            // displaced since IDMC started tracking in 2008.
+            (function() {
+              var DISP_BY_YEAR = [
+                { year: 2018, millions: 17.2 },
+                { year: 2019, millions: 23.9 },
+                { year: 2020, millions: 30.7 },
+                { year: 2021, millions: 23.7 },
+                { year: 2022, millions: 32.6, note: 'Record year — Pakistan floods alone displaced ~8.2M' },
+                { year: 2023, millions: 26.4 }
+              ];
+              var DISP_BY_COUNTRY_2022_23 = [
+                { country: 'Pakistan',     emoji: '🇵🇰', millions: 8.2, cause: '2022 super-floods' },
+                { country: 'Philippines',  emoji: '🇵🇭', millions: 5.4, cause: 'recurring typhoons' },
+                { country: 'China',        emoji: '🇨🇳', millions: 3.6, cause: 'monsoon flooding' },
+                { country: 'India',        emoji: '🇮🇳', millions: 2.5, cause: 'monsoon + cyclones' },
+                { country: 'Brazil',       emoji: '🇧🇷', millions: 1.7, cause: 'floods + landslides' },
+                { country: 'Bangladesh',   emoji: '🇧🇩', millions: 1.6, cause: 'cyclones + floods' },
+                { country: 'Somalia',      emoji: '🇸🇴', millions: 1.1, cause: 'Horn of Africa drought' },
+                { country: 'Ethiopia',     emoji: '🇪🇹', millions: 1.0, cause: 'drought + floods' }
+              ];
+              var maxYear = DISP_BY_YEAR.reduce(function(m, x) { return Math.max(m, x.millions); }, 0);
+              var cumulative2008to23 = 376;  // IDMC GRID 2024 cumulative figure
+              var projected2050 = 216;       // World Bank Groundswell, internal-only, 6 regions
+              return el('div', {
+                style: {
+                  marginTop: 20, padding: 16, borderRadius: 12,
+                  background: 'linear-gradient(135deg, rgba(251,146,60,0.07), rgba(239,68,68,0.06))',
+                  border: '1px solid rgba(251,146,60,0.25)'
+                }
+              },
+                el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                  el('span', { style: { fontSize: 22 } }, '🧳'),
+                  el('div', null,
+                    el('div', { style: { color: '#fdba74', fontSize: 14, fontWeight: 900 } }, 'Climate Displacement — the people already moving'),
+                    el('div', { style: { color: '#94a3b8', fontSize: 10, fontStyle: 'italic', marginTop: 2 } },
+                      'New people forced to flee their homes by weather disasters each year — within their own country. Counted by the Internal Displacement Monitoring Centre since 2008.')
+                  )
+                ),
+                // Year-over-year bar chart
+                el('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(0,0,0,0.18)' } },
+                  el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 } }, 'New weather-driven displacements per year (millions)'),
+                  el('div', { style: { display: 'flex', alignItems: 'flex-end', gap: 8, height: 110, paddingBottom: 18 } },
+                    DISP_BY_YEAR.map(function(y) {
+                      var pct = (y.millions / maxYear) * 100;
+                      return el('div', { key: y.year, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 } },
+                        el('div', { style: { color: '#fdba74', fontSize: 11, fontWeight: 800, fontFamily: 'monospace' } }, y.millions + 'M'),
+                        el('div', {
+                          title: y.note || (y.year + ': ' + y.millions + 'M displaced'),
+                          style: {
+                            width: '90%', height: pct + '%', minHeight: 4,
+                            background: 'linear-gradient(180deg, #fb923c, #ea580c)',
+                            borderRadius: '3px 3px 0 0',
+                            boxShadow: '0 0 6px rgba(251,146,60,0.3)'
+                          }
+                        }),
+                        el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700, fontFamily: 'monospace', marginTop: 2 } }, y.year)
+                      );
+                    })
+                  )
+                ),
+                // Top countries strip
+                el('div', { style: { marginTop: 12 } },
+                  el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Top countries displaced, 2022–2023'),
+                  el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 6 } },
+                    DISP_BY_COUNTRY_2022_23.map(function(c) {
+                      return el('div', { key: c.country,
+                        style: {
+                          padding: '6px 10px', borderRadius: 6,
+                          background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(148,163,184,0.10)',
+                          display: 'flex', alignItems: 'center', gap: 8
+                        }
+                      },
+                        el('span', { style: { fontSize: 16 } }, c.emoji),
+                        el('div', { style: { flex: 1, minWidth: 0 } },
+                          el('div', { style: { color: '#e2e8f0', fontSize: 11, fontWeight: 700 } }, c.country),
+                          el('div', { style: { color: '#94a3b8', fontSize: 9, lineHeight: 1.3 } }, c.cause)
+                        ),
+                        el('div', { style: { color: '#fdba74', fontSize: 11, fontWeight: 800, fontFamily: 'monospace' } },
+                          c.millions + 'M')
+                      );
+                    })
+                  )
+                ),
+                // Cumulative + projection callout
+                el('div', {
+                  style: {
+                    marginTop: 12, padding: 12, borderRadius: 10,
+                    background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.20)',
+                    display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10
+                  }
+                },
+                  el('div', { style: { textAlign: 'center' } },
+                    el('div', { style: { color: '#fca5a5', fontSize: 22, fontWeight: 900, fontFamily: 'monospace' } }, '~' + cumulative2008to23 + 'M'),
+                    el('div', { style: { color: '#fecaca', fontSize: 10, fontWeight: 700, marginTop: 2 } }, 'Cumulative since 2008'),
+                    el('div', { style: { color: '#94a3b8', fontSize: 9, marginTop: 2, lineHeight: 1.4 } }, 'IDMC tracked total')
+                  ),
+                  el('div', { style: { textAlign: 'center' } },
+                    el('div', { style: { color: '#fca5a5', fontSize: 22, fontWeight: 900, fontFamily: 'monospace' } }, 'up to ' + projected2050 + 'M'),
+                    el('div', { style: { color: '#fecaca', fontSize: 10, fontWeight: 700, marginTop: 2 } }, 'Projected by 2050'),
+                    el('div', { style: { color: '#94a3b8', fontSize: 9, marginTop: 2, lineHeight: 1.4 } }, 'World Bank Groundswell — internal only, 6 regions')
+                  )
+                ),
+                // Legal-gap note
+                el('div', {
+                  style: {
+                    marginTop: 10, padding: 10, borderRadius: 8,
+                    background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.18)',
+                    color: '#cbd5e1', fontSize: 10, lineHeight: 1.6
+                  }
+                },
+                  '⚖️ ',
+                  el('strong', { style: { color: '#7dd3fc' } }, 'The legal gap:'),
+                  ' people forced across an international border by climate are not yet recognized as refugees under the 1951 UN Refugee Convention, which only covers persecution. In 2020 the UN Human Rights Committee ruled in Teitiota v. New Zealand that countries cannot deport people back to climate-existential danger — a landmark non-binding step. The legal category of "climate refugee" is still being built.'),
+                el('div', {
+                  style: {
+                    marginTop: 6, color: '#64748b', fontSize: 9, lineHeight: 1.5, fontStyle: 'italic'
+                  }
+                },
+                  '📚 IDMC Global Report on Internal Displacement 2024 (annual data); World Bank Groundswell Part II report (2021, 216M internal climate displaced by 2050 across 6 world regions on current trajectory). Figures exclude international migration, slow-onset displacement, and most drought-related movement, so they are conservative lower bounds.')
+              );
+            })(),
+
             // ═══ YOUTH CLIMATE LEADERS ═══
             el('div', { style: { marginTop: 20, padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(59,130,246,0.06))', border: '1px solid rgba(168,85,247,0.25)' } },
               el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
