@@ -6809,6 +6809,166 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              // ── Mason bee hotel mounted on a fence post (year-round fixture) ──
+              // Real beekeeping accessory: a wooden block drilled with 4-8 mm
+              // holes where solitary mason bees lay eggs. Closes the "honeybees
+              // aren't the only pollinator" story alongside butterflies, hummers,
+              // and the dragonfly. Mason bees pollinate apples ~120× more
+              // efficiently per individual than honeybees do — referenced in
+              // the quiz and the bee-vision tab; here it gets a visible artifact.
+              (function() {
+                // Mount on the 4th fence post from left to keep it visible
+                var _mbPostX = 20 + 3 * 70 + 1.25; // matches fence post stride
+                var _mbY = fenceBaseY - 7;
+                // Wooden block back
+                c.fillStyle = season === 2 ? '#7a5230' : season === 3 ? '#5a3f25' : '#8a6238';
+                c.fillRect(_mbPostX - 5, _mbY - 6, 10, 6);
+                // Block top (lighter wood-grain accent)
+                c.fillStyle = season === 3 ? '#7a5a3a' : '#a87a50';
+                c.fillRect(_mbPostX - 5, _mbY - 6, 10, 1);
+                // Side shadow
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.fillRect(_mbPostX + 3.5, _mbY - 6, 1.5, 6);
+                // Drilled bee tubes — 4x3 grid of small dark circles
+                c.fillStyle = '#1c1917';
+                for (var mby = 0; mby < 3; mby++) {
+                  for (var mbx = 0; mbx < 4; mbx++) {
+                    var _mbHoleX = _mbPostX - 3.5 + mbx * 2.2;
+                    var _mbHoleY = _mbY - 4.8 + mby * 1.6;
+                    c.beginPath(); c.arc(_mbHoleX, _mbHoleY, 0.55, 0, 6.28); c.fill();
+                  }
+                }
+                // A few tubes capped with mud (mason bees seal their tubes!)
+                // Only in spring + summer (the active season for mason bees)
+                if (season === 0 || season === 1) {
+                  c.fillStyle = '#a8745a'; // mud-cap color
+                  // Hole [0,0], [2,1], [3,2]
+                  c.beginPath(); c.arc(_mbPostX - 3.5 + 0 * 2.2, _mbY - 4.8 + 0 * 1.6, 0.55, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_mbPostX - 3.5 + 2 * 2.2, _mbY - 4.8 + 1 * 1.6, 0.55, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_mbPostX - 3.5 + 3 * 2.2, _mbY - 4.8 + 2 * 1.6, 0.55, 0, 6.28); c.fill();
+                  // A tiny mason bee approaching (spring only when nesting peaks)
+                  if (season === 0) {
+                    var _mbApT = ((t2 * 0.05) % 80) / 80; // 0..1 approach
+                    if (_mbApT < 0.5) {
+                      var _mbBeeX = _mbPostX + 8 - _mbApT * 16;
+                      var _mbBeeY = _mbY - 3 + Math.sin(_mbApT * 8) * 1.2;
+                      // Body — mason bees are dark blue-black metallic
+                      c.fillStyle = '#0c4a6e';
+                      c.beginPath(); c.ellipse(_mbBeeX, _mbBeeY, 1.6, 0.9, 0, 0, 6.28); c.fill();
+                      // Iridescent sheen
+                      c.fillStyle = 'rgba(56,189,248,0.4)';
+                      c.beginPath(); c.ellipse(_mbBeeX - 0.3, _mbBeeY - 0.3, 0.7, 0.4, 0, 0, 6.28); c.fill();
+                      // Tiny wing blur
+                      c.fillStyle = 'rgba(220,240,255,0.5)';
+                      c.beginPath(); c.ellipse(_mbBeeX, _mbBeeY - 1, 1.4, 0.5, 0, 0, 6.28); c.fill();
+                    }
+                  }
+                }
+                // Tiny "Mason Bees" label sliver below the block (only on closer zoom; tiny here)
+                c.strokeStyle = season === 3 ? '#3a2510' : '#5a3a1a';
+                c.lineWidth = 0.4;
+                c.beginPath();
+                c.moveTo(_mbPostX - 5, _mbY);
+                c.lineTo(_mbPostX + 5, _mbY);
+                c.stroke();
+              })();
+
+              // ── Barred owl on a fence post at night (winter especially) ──
+              // Counter to the dawn-chorus songbird — at deep night a silent
+              // hunter takes the perch. Real biology: barred owls are common in
+              // the Northeast year-round and frequently hunt mice that come for
+              // hive debris under beehives. Subtle head-turn animation, rare
+              // hoot ripple visualization.
+              if (_sunCycle > 1.15 && _sunCycle < 1.85) {
+                var _owlVis = _sunCycle < 1.5 ? (_sunCycle - 1.15) / 0.20 : Math.min(1, (1.85 - _sunCycle) / 0.20);
+                _owlVis = Math.max(0, Math.min(1, _owlVis));
+                if (_owlVis > 0.1) {
+                  // Sit on the 6th post from left (further from songbird position)
+                  var _owlPostX = 20 + 5 * 70 + 1.25;
+                  // Skip if owl post overlaps hive
+                  if (!(_owlPostX > hiveX - 18 && _owlPostX < hiveX + hiveW + 18)) {
+                    var _owlY = fenceBaseY - 2 - 1;
+                    var _owlHeadTurn = Math.sin(t2 * 0.008) > 0.7 ? 0.4 : (Math.sin(t2 * 0.012) > 0.85 ? -0.4 : 0);
+                    c.save();
+                    c.globalAlpha = _owlVis;
+                    // Body — pear-shaped silhouette
+                    c.fillStyle = '#1f2937';
+                    c.beginPath(); c.ellipse(_owlPostX, _owlY - 1, 3.2, 4.5, 0, 0, 6.28); c.fill();
+                    // Subtle plumage striping (horizontal — "barred" owl)
+                    c.strokeStyle = 'rgba(60,70,85,0.6)';
+                    c.lineWidth = 0.3;
+                    for (var pl = 0; pl < 3; pl++) {
+                      c.beginPath();
+                      c.moveTo(_owlPostX - 2.5, _owlY + 0.5 + pl * 1.2);
+                      c.lineTo(_owlPostX + 2.5, _owlY + 0.5 + pl * 1.2);
+                      c.stroke();
+                    }
+                    // Head — round, sits on the body
+                    c.save();
+                    c.translate(_owlPostX, _owlY - 4.8);
+                    c.rotate(_owlHeadTurn);
+                    c.fillStyle = '#1f2937';
+                    c.beginPath(); c.arc(0, 0, 2.8, 0, 6.28); c.fill();
+                    // Facial disc (lighter ring around the eyes)
+                    c.fillStyle = '#374151';
+                    c.beginPath(); c.ellipse(0, 0.3, 2.5, 2.2, 0, 0, 6.28); c.fill();
+                    // Two huge yellow-gold eyes
+                    c.fillStyle = '#fde047';
+                    c.beginPath(); c.arc(-1.0, -0.2, 0.85, 0, 6.28); c.fill();
+                    c.beginPath(); c.arc( 1.0, -0.2, 0.85, 0, 6.28); c.fill();
+                    // Pupils
+                    c.fillStyle = '#0a0a0a';
+                    c.beginPath(); c.arc(-1.0, -0.2, 0.45, 0, 6.28); c.fill();
+                    c.beginPath(); c.arc( 1.0, -0.2, 0.45, 0, 6.28); c.fill();
+                    // Eye highlight
+                    c.fillStyle = 'rgba(255,255,255,0.7)';
+                    c.beginPath(); c.arc(-1.2, -0.5, 0.15, 0, 6.28); c.fill();
+                    c.beginPath(); c.arc( 0.8, -0.5, 0.15, 0, 6.28); c.fill();
+                    // Beak — tiny downward triangle
+                    c.fillStyle = '#fbbf24';
+                    c.beginPath();
+                    c.moveTo(-0.4, 0.7);
+                    c.lineTo( 0.4, 0.7);
+                    c.lineTo( 0,   1.5);
+                    c.closePath(); c.fill();
+                    // Ear tufts (barred owls have minimal tufts vs great horneds — small bumps)
+                    c.fillStyle = '#1f2937';
+                    c.beginPath();
+                    c.moveTo(-1.8, -2.0);
+                    c.lineTo(-1.3, -2.8);
+                    c.lineTo(-1.0, -2.0);
+                    c.closePath(); c.fill();
+                    c.beginPath();
+                    c.moveTo( 1.8, -2.0);
+                    c.lineTo( 1.3, -2.8);
+                    c.lineTo( 1.0, -2.0);
+                    c.closePath(); c.fill();
+                    c.restore();
+                    // Talons gripping post
+                    c.strokeStyle = '#fbbf24';
+                    c.lineWidth = 0.4;
+                    c.beginPath();
+                    c.moveTo(_owlPostX - 1.5, _owlY + 3.2); c.lineTo(_owlPostX - 1.5, _owlY + 4.4);
+                    c.moveTo(_owlPostX + 1.5, _owlY + 3.2); c.lineTo(_owlPostX + 1.5, _owlY + 4.4);
+                    c.stroke();
+                    c.restore();
+                    // Occasional silent "hoot" ripple — a thin expanding circle every ~9 sec
+                    var _hootPeriod = 9000;
+                    var _hootT = (Date.now() % _hootPeriod) / _hootPeriod;
+                    if (_hootT < 0.18) {
+                      var _hootProg = _hootT / 0.18;
+                      var _hootR = 4 + _hootProg * 18;
+                      var _hootA = (1 - _hootProg) * 0.45 * _owlVis;
+                      c.strokeStyle = 'rgba(254,243,199,' + _hootA.toFixed(3) + ')';
+                      c.lineWidth = 0.8;
+                      c.beginPath();
+                      c.arc(_owlPostX, _owlY - 4.8, _hootR, 0, 6.28);
+                      c.stroke();
+                    }
+                  }
+                }
+              }
+
               // ── Songbird perched on a fence post (spring/summer/fall day) ──
               // Tiny robin-style silhouette with seasonal plumage. Sits on the
               // top of a fence post and occasionally tilts its head; during
