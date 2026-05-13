@@ -6809,6 +6809,127 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              // ── Bear paw prints in winter snow (rare biology cameo) ──
+              // Real beekeeping risk noted in the forest habitat: "Bears
+              // occasionally investigate — consider electric fencing." In
+              // winter (and especially early spring before full hibernation)
+              // a hungry bear may sniff the hive and leave tracks across the
+              // snow. Trail comes from the right meadow edge and stops short
+              // of the hive (the bear approached then turned back). Late-day
+              // 8+ of winter so the snow has had time to set first.
+              if (season === 3 && (day % 30) >= 8) {
+                // Path: 8 prints, from W * 0.85 (right edge) toward hive
+                var _bpEndX = hiveX + hiveW + 22;
+                var _bpStartX = W * 0.85;
+                var _bpCount = 8;
+                for (var bp = 0; bp < _bpCount; bp++) {
+                  var _bpProg = bp / (_bpCount - 1);
+                  var _bpX = _bpStartX + (_bpEndX - _bpStartX) * _bpProg;
+                  // Zigzag step pattern — left/right alternating
+                  var _bpSide = (bp % 2 === 0) ? -2 : 2;
+                  var _bpY = H * 0.84 + _bpSide;
+                  // Paw print — main pad (kidney-shaped)
+                  c.fillStyle = 'rgba(60,45,30,0.55)';
+                  c.beginPath();
+                  c.ellipse(_bpX, _bpY, 2.6, 1.8, -0.15, 0, 6.28);
+                  c.fill();
+                  // Four toe pads above the main pad
+                  for (var bpt = 0; bpt < 4; bpt++) {
+                    var _bptA = -1.2 + bpt * 0.55;
+                    var _bptX = _bpX + Math.sin(_bptA) * 2.2;
+                    var _bptY = _bpY - 1.8 - Math.cos(_bptA) * 0.6;
+                    c.beginPath(); c.ellipse(_bptX, _bptY, 0.7, 0.55, 0, 0, 6.28); c.fill();
+                  }
+                  // Tiny claw marks above each toe (black bear claws are short but visible)
+                  c.strokeStyle = 'rgba(40,30,20,0.5)';
+                  c.lineWidth = 0.3;
+                  for (var bpc = 0; bpc < 4; bpc++) {
+                    var _bpcA = -1.2 + bpc * 0.55;
+                    var _bpcX1 = _bpX + Math.sin(_bpcA) * 2.4;
+                    var _bpcY1 = _bpY - 2.4 - Math.cos(_bpcA) * 0.6;
+                    var _bpcX2 = _bpX + Math.sin(_bpcA) * 2.9;
+                    var _bpcY2 = _bpY - 3.0 - Math.cos(_bpcA) * 0.6;
+                    c.beginPath(); c.moveTo(_bpcX1, _bpcY1); c.lineTo(_bpcX2, _bpcY2); c.stroke();
+                  }
+                }
+                // Small mound of disturbed snow where the bear stopped
+                c.fillStyle = 'rgba(80,65,45,0.30)';
+                c.beginPath(); c.ellipse(_bpEndX - 2, H * 0.85, 5, 1.2, 0, 0, 6.28); c.fill();
+              }
+
+              // ── Crow on a fence post in winter daytime (year-round bird coverage) ──
+              // Counterpart to the songbird (spring/summer/fall day) and the
+              // owl (deep night): a crow takes the day shift in winter when
+              // other birds are gone south. Black silhouette, slightly larger
+              // than the songbird, with occasional "caw" ripple ring.
+              if (season === 3 && _sunCycle > 0.10 && _sunCycle < 0.95) {
+                var _crPostX = 20 + 5 * 70 + 1.25; // same post as owl, no conflict (winter day vs deep night)
+                if (!(_crPostX > hiveX - 18 && _crPostX < hiveX + hiveW + 18)) {
+                  var _crY = fenceBaseY - 2 - 0.5;
+                  var _crBob = Math.sin(t2 * 0.04) * 0.4;
+                  var _crHead = Math.sin(t2 * 0.025) > 0.7 ? 0.5 : (Math.sin(t2 * 0.018) > 0.85 ? -0.4 : 0);
+                  c.save();
+                  c.translate(_crPostX, _crY + _crBob);
+                  // Body — sleek black silhouette, longer than songbird
+                  c.fillStyle = '#0a0a0a';
+                  c.beginPath(); c.ellipse(0, 0, 4, 2.6, -0.05, 0, 6.28); c.fill();
+                  // Wing-fold accent (slightly darker)
+                  c.fillStyle = '#1c1917';
+                  c.beginPath(); c.ellipse(1.2, 0, 1.8, 1.2, -0.1, 0, 6.28); c.fill();
+                  // Head with subtle turn
+                  c.save();
+                  c.translate(-3.2, -1.8);
+                  c.rotate(_crHead);
+                  c.fillStyle = '#0a0a0a';
+                  c.beginPath(); c.arc(0, 0, 1.7, 0, 6.28); c.fill();
+                  // Strong black beak — pointed
+                  c.fillStyle = '#1c1917';
+                  c.beginPath();
+                  c.moveTo(-1.5, -0.1);
+                  c.lineTo(-3.5, 0.2);
+                  c.lineTo(-1.5, 0.6);
+                  c.closePath(); c.fill();
+                  // Beak gap line
+                  c.strokeStyle = '#3a2510';
+                  c.lineWidth = 0.3;
+                  c.beginPath(); c.moveTo(-1.5, 0.25); c.lineTo(-3.4, 0.3); c.stroke();
+                  // Eye — beady dark with small white glint
+                  c.fillStyle = '#fbbf24';
+                  c.beginPath(); c.arc(-0.4, -0.5, 0.42, 0, 6.28); c.fill();
+                  c.fillStyle = '#0a0a0a';
+                  c.beginPath(); c.arc(-0.4, -0.5, 0.25, 0, 6.28); c.fill();
+                  c.restore();
+                  // Tail wedge (longer than songbird's, fanned)
+                  c.fillStyle = '#0a0a0a';
+                  c.beginPath();
+                  c.moveTo(3.5, -0.5);
+                  c.lineTo(6.5, -1.2);
+                  c.lineTo(6.8, 0);
+                  c.lineTo(6.5, 1.2);
+                  c.lineTo(3.5, 0.5);
+                  c.closePath(); c.fill();
+                  // Feet hooked over post
+                  c.strokeStyle = '#3a2510';
+                  c.lineWidth = 0.4;
+                  c.beginPath(); c.moveTo(-0.8, 2.5); c.lineTo(-0.8, 3.6); c.stroke();
+                  c.beginPath(); c.moveTo( 0.6, 2.5); c.lineTo( 0.6, 3.6); c.stroke();
+                  c.restore();
+                  // "Caw" ripple ring every ~7 sec (shorter cadence than owl's hoot)
+                  var _cawPeriod = 7000;
+                  var _cawT = (Date.now() % _cawPeriod) / _cawPeriod;
+                  if (_cawT < 0.15) {
+                    var _cawProg = _cawT / 0.15;
+                    var _cawR = 3 + _cawProg * 14;
+                    var _cawA = (1 - _cawProg) * 0.40;
+                    c.strokeStyle = 'rgba(40,40,40,' + _cawA.toFixed(3) + ')';
+                    c.lineWidth = 0.7;
+                    c.beginPath();
+                    c.arc(_crPostX - 3.2, _crY - 1.8 + _crBob, _cawR, 0, 6.28);
+                    c.stroke();
+                  }
+                }
+              }
+
               // ── Mason bee hotel mounted on a fence post (year-round fixture) ──
               // Real beekeeping accessory: a wooden block drilled with 4-8 mm
               // holes where solitary mason bees lay eggs. Closes the "honeybees
@@ -7355,6 +7476,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   blossoms.forEach(function(bl) {
                     c.beginPath(); c.arc(atX + bl[0], canopyY + bl[1], 1.3, 0, 6.28); c.fill();
                   });
+                }
+                // ── Fallen + falling apples (late fall, day 20+) ──
+                // Real-world cue: ripe fruit gives up the branch. A few apples
+                // sit on the ground around the trunk (long-fallen, dulled red);
+                // one is in mid-fall (cycles every ~12 sec).
+                if (season === 2 && (day % 30) >= 20) {
+                  // Settled apples on the ground beneath the canopy
+                  var _faSettled = [
+                    { dx:  -4, dy: 1,   shade: '#b91c1c' },
+                    { dx:   6, dy: 0.5, shade: '#dc2626' },
+                    { dx: -10, dy: 2,   shade: '#991b1b' },
+                    { dx:  12, dy: 1.5, shade: '#b91c1c' },
+                    { dx:   2, dy: 3,   shade: '#7f1d1d' }  // bruised
+                  ];
+                  _faSettled.forEach(function(fa) {
+                    var _faX = atX + fa.dx, _faY = atY + fa.dy;
+                    // Shadow
+                    c.fillStyle = 'rgba(0,0,0,0.28)';
+                    c.beginPath(); c.ellipse(_faX, _faY + 1.5, 2.2, 0.6, 0, 0, 6.28); c.fill();
+                    // Apple body
+                    c.fillStyle = fa.shade;
+                    c.beginPath(); c.arc(_faX, _faY, 1.6, 0, 6.28); c.fill();
+                    // Highlight
+                    c.fillStyle = 'rgba(255,255,255,0.3)';
+                    c.beginPath(); c.arc(_faX - 0.5, _faY - 0.5, 0.4, 0, 6.28); c.fill();
+                    // Tiny brown stem flick
+                    c.strokeStyle = '#3a2010';
+                    c.lineWidth = 0.4;
+                    c.beginPath(); c.moveTo(_faX, _faY - 1.5); c.lineTo(_faX + 0.4, _faY - 2.2); c.stroke();
+                  });
+                  // One apple in mid-fall — cycles every ~12 sec
+                  var _faPeriod = 12000;
+                  var _faFallT = (Date.now() % _faPeriod) / _faPeriod;
+                  if (_faFallT < 0.40) {
+                    var _faProg = _faFallT / 0.40;
+                    var _faX = atX + 8;
+                    // Quadratic fall — accelerating
+                    var _faY = canopyY + 4 + (atY - canopyY - 6) * (_faProg * _faProg);
+                    var _faRot = _faProg * 4; // tumbling
+                    c.save();
+                    c.translate(_faX, _faY);
+                    c.rotate(_faRot);
+                    c.fillStyle = '#dc2626';
+                    c.beginPath(); c.arc(0, 0, 1.6, 0, 6.28); c.fill();
+                    c.fillStyle = 'rgba(255,255,255,0.35)';
+                    c.beginPath(); c.arc(-0.5, -0.5, 0.4, 0, 6.28); c.fill();
+                    c.strokeStyle = '#3a2010';
+                    c.lineWidth = 0.4;
+                    c.beginPath(); c.moveTo(0, -1.5); c.lineTo(0.3, -2.2); c.stroke();
+                    c.restore();
+                  }
+                  // Impact puff when an apple just landed
+                  if (_faFallT >= 0.40 && _faFallT < 0.46) {
+                    var _faPuffT = (_faFallT - 0.40) / 0.06;
+                    var _faPuffA = (1 - _faPuffT) * 0.5;
+                    c.fillStyle = 'rgba(200,160,100,' + _faPuffA.toFixed(3) + ')';
+                    c.beginPath(); c.ellipse(atX + 8, atY + 1, 3 + _faPuffT * 2, 1, 0, 0, 6.28); c.fill();
+                  }
                 }
                 // ── Swarm cluster hanging from an apple-tree branch ──
                 // Real biology: in late spring (day 18+), an overcrowded colony

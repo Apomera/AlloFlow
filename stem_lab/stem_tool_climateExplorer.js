@@ -2489,6 +2489,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               )
             ),
 
+            // ═══ LOSS & DAMAGE FUND TRACKER ═══
+            // The COP27 fund was the first international policy mechanism
+            // explicitly designed to address climate injustice — high-emit
+            // countries pay into a pool for "particularly vulnerable"
+            // developing nations. AOSIS (small island states) first
+            // proposed it at COP1 in Berlin (1995). It took 27 years to
+            // create. Pedagogically: shows that policy CAN respond to
+            // inequity, but the gap between pledged and needed is itself
+            // the next chapter of the climate justice story.
+            (function() {
+              var LD_CONTRIB = [
+                { country: 'UAE',         emoji: '🇦🇪', amountUSD: 100,  note: 'COP28 host pledge, Dec 2023' },
+                { country: 'Germany',     emoji: '🇩🇪', amountUSD: 108,  note: '€100M, COP28' },
+                { country: 'Italy',       emoji: '🇮🇹', amountUSD: 108,  note: '€100M, COP28' },
+                { country: 'France',      emoji: '🇫🇷', amountUSD: 108,  note: '€100M, COP28' },
+                { country: 'UK',          emoji: '🇬🇧', amountUSD: 50,   note: '£40M, COP28' },
+                { country: 'Denmark',     emoji: '🇩🇰', amountUSD: 50,   note: 'COP28' },
+                { country: 'Ireland',     emoji: '🇮🇪', amountUSD: 27,   note: 'COP28' },
+                { country: 'EU',          emoji: '🇪🇺', amountUSD: 27,   note: '€25M, COP28' },
+                { country: 'Norway',      emoji: '🇳🇴', amountUSD: 25,   note: 'COP28' },
+                { country: 'USA',         emoji: '🇺🇸', amountUSD: 17.5, note: 'COP28 — note: ~25% of all historical CO₂' },
+                { country: 'Japan',       emoji: '🇯🇵', amountUSD: 10,   note: 'COP28' },
+                { country: 'Canada',      emoji: '🇨🇦', amountUSD: 11,   note: 'COP28' }
+              ];
+              var pledgedTotalM = LD_CONTRIB.reduce(function(s, c) { return s + c.amountUSD; }, 0);
+              var pledgedB = pledgedTotalM / 1000;
+              var neededBPerYr = 400;  // SEI low-end estimate, $B/yr by 2030
+              var pledgedPctOfYearOneNeed = (pledgedB / neededBPerYr) * 100;
+              return el('div', {
+                style: {
+                  marginTop: 20, padding: 16, borderRadius: 12,
+                  background: 'linear-gradient(135deg, rgba(34,197,94,0.06), rgba(96,165,250,0.06))',
+                  border: '1px solid rgba(96,165,250,0.25)'
+                }
+              },
+                el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                  el('span', { style: { fontSize: 22 } }, '💰'),
+                  el('div', null,
+                    el('div', { style: { color: '#7dd3fc', fontSize: 14, fontWeight: 900 } }, 'Loss & Damage Fund — what the world is doing about it'),
+                    el('div', { style: { color: '#94a3b8', fontSize: 10, fontStyle: 'italic', marginTop: 2 } },
+                      'Proposed by small island states at COP1 (1995). Created at COP27 (2022). Capitalized at COP28 (2023). First disbursements 2024 — 27 years from proposal to first dollar paid.')
+                  )
+                ),
+                // Pledged-vs-needed visual
+                el('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(0,0,0,0.18)' } },
+                  el('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4, color: '#cbd5e1', fontSize: 11, fontWeight: 700 } },
+                    el('span', null, 'Pledged so far: ~$' + pledgedTotalM.toFixed(0) + 'M (' + pledgedB.toFixed(2) + 'B)'),
+                    el('span', { style: { color: '#fca5a5' } }, 'Needed: ~$' + neededBPerYr + 'B / year (by 2030, SEI estimate)')
+                  ),
+                  // Bar — pledged is barely visible against the needed
+                  el('div', { style: { height: 18, background: 'rgba(239,68,68,0.18)', borderRadius: 4, overflow: 'hidden', position: 'relative', border: '1px solid rgba(239,68,68,0.35)' } },
+                    el('div', { style: { width: Math.max(0.3, pledgedPctOfYearOneNeed) + '%', height: '100%', background: 'linear-gradient(90deg, #4ade80, #22c55e)', minWidth: 2 } })
+                  ),
+                  el('div', { style: { color: '#fbbf24', fontSize: 10, marginTop: 6, textAlign: 'center', fontStyle: 'italic' } },
+                    'Pledged is roughly ' + pledgedPctOfYearOneNeed.toFixed(2) + '% of the lowest-end estimate of one year of need.')
+                ),
+                // Top contributors
+                el('div', { style: { marginTop: 12 } },
+                  el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Top contributors so far'),
+                  el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 6 } },
+                    LD_CONTRIB.map(function(c) {
+                      return el('div', { key: c.country,
+                        style: {
+                          padding: '6px 10px', borderRadius: 6,
+                          background: 'rgba(255,255,255,0.03)',
+                          border: '1px solid rgba(148,163,184,0.10)',
+                          display: 'flex', alignItems: 'center', gap: 8
+                        }
+                      },
+                        el('span', { style: { fontSize: 16 } }, c.emoji),
+                        el('div', { style: { flex: 1, minWidth: 0 } },
+                          el('div', { style: { color: '#e2e8f0', fontSize: 11, fontWeight: 700 } }, c.country),
+                          el('div', { style: { color: '#94a3b8', fontSize: 9, lineHeight: 1.3 } }, c.note)
+                        ),
+                        el('div', { style: { color: '#86efac', fontSize: 11, fontWeight: 800, fontFamily: 'monospace' } },
+                          '$' + c.amountUSD + 'M')
+                      );
+                    })
+                  )
+                ),
+                // Cross-link to Saleemul Huq voice
+                el('div', {
+                  style: {
+                    marginTop: 10, padding: 10, borderRadius: 8,
+                    background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.18)',
+                    color: '#cbd5e1', fontSize: 10, lineHeight: 1.6
+                  }
+                },
+                  '🎙️ ',
+                  el('strong', { style: { color: '#7dd3fc' } }, 'Saleemul Huq'),
+                  ' (the Bangladeshi voice quoted above) was the lead architect of this fund — he pushed for it across nine consecutive COPs from 2013 to his death in 2023, and lived just long enough to see it formally created. The fund is sometimes called "the Saleemul Huq fund" by negotiators who worked with him.'),
+                el('div', {
+                  style: {
+                    marginTop: 6, color: '#64748b', fontSize: 9, lineHeight: 1.5, fontStyle: 'italic'
+                  }
+                },
+                  '📚 Pledges from official COP28 communiqués (Nov–Dec 2023). Need estimate from Stockholm Environment Institute 2023 ($400B/yr lower bound). Contributions converted to USD at end-2023 rates; some pledges remain unfulfilled or extend over multiple years. Updated reporting: UNFCCC Loss and Damage Fund Board minutes.')
+              );
+            })(),
+
             // ═══ YOUTH CLIMATE LEADERS ═══
             el('div', { style: { marginTop: 20, padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(59,130,246,0.06))', border: '1px solid rgba(168,85,247,0.25)' } },
               el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
