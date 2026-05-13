@@ -1005,7 +1005,21 @@ window.SelHub = window.SelHub || {
 
       // ── AI circle facilitator ──
       var askCircleFacilitator = function(question) {
-        if (!callGemini) return;
+        if (!callGemini || !question) return;
+        // Safety pre-check on the student's free-text question. Block on
+        // critical content (self-harm, harm-to-others); show coach message
+        // + crisis resources instead of an in-character facilitator reply.
+        var safety = (window.SelHub && window.SelHub.safeRehearseCheck)
+          ? window.SelHub.safeRehearseCheck(question, { toolId: 'restorativecircle', onSafetyFlag: ctx.onSafetyFlag })
+          : { action: 'continue' };
+        if (safety.action === 'block') {
+          updMulti({
+            aiResponse: window.SelHub.rehearseBreakCharacterText(safety.severity),
+            aiLoading: false,
+            _lastTier: 3
+          });
+          return;
+        }
         upd('aiLoading', true);
         var prompt = 'You are a warm, experienced circle facilitator helping a ' + (gradeLevel || '5th grade') + ' group. ' +
           'The circle type is: ' + (selectedCircleType || 'community building') + '. ' +
@@ -1013,7 +1027,7 @@ window.SelHub = window.SelHub || {
           'Respond with empathy and practical guidance. Keep it brief (2-3 sentences). ' +
           'If the question is about a conflict, center healing and accountability over punishment.';
         callGemini(prompt).then(function(resp) {
-          updMulti({ aiResponse: resp, aiLoading: false });
+          updMulti({ aiResponse: resp, aiLoading: false, _lastTier: safety.action === 'nudge' ? 2 : 0 });
         }).catch(function() {
           updMulti({ aiResponse: 'I\'m here to help. Let\'s take a breath and try again.', aiLoading: false });
         });
@@ -1088,10 +1102,10 @@ window.SelHub = window.SelHub || {
           )
         ),
 
-        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('restorativeCircle', h) : null),
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('restorativeCircle', h, ctx) : null),
         // ── Tab Navigation ──
         h('div', { role: 'tablist', 'aria-label': 'Restorative Circle tabs', className: 'flex flex-wrap gap-1 bg-amber-50 rounded-xl p-1 border border-amber-200' },
-          ['home', 'circle', 'scripts', 'harm-repair', 'scenarios', 'rehearse', 'agreements', 'talking-piece', 'roots', 'questions', 'roles', 'empathy-map', 'compare', 'badges'].map(function(t) {
+          ['home', 'circle', 'scripts', 'harm-repair', 'scenarios', 'rehearse', 'agreements', 'talking-piece', 'roots', 'questions', 'roles', 'empathy-map', 'compare', 'badges', 'print'].map(function(t) {
             var labels = {
               'home': '\uD83C\uDFE0 Types',
               'circle': '\u2B55 Circle',
@@ -1107,6 +1121,7 @@ window.SelHub = window.SelHub || {
               'empathy-map': '\uD83E\uDDE0 Empathy',
               'compare': '\u2696\uFE0F Compare',
               'badges': '\uD83C\uDFC5 Badges',
+              'print': '\uD83D\uDDA8 Print',
             };
             return h('button', { 'aria-label': 'Choose the type of circle you want to facilitate today.',
               key: t,
@@ -2636,6 +2651,9 @@ window.SelHub = window.SelHub || {
 
         // ── AI Response ──
         h('div', { role: 'region', 'aria-label': 'Circle facilitator response', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false' },
+        // Surface 988 / Crisis Text Line block when last facilitator question
+        // was flagged tier-3 (self-harm or harm-to-others keywords).
+        (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, gradeBand),
         aiResponse && h('div', { className: 'bg-indigo-50 border border-indigo-200 rounded-xl p-4' },
           h('div', { className: 'flex items-start gap-2' },
             h(Sparkles, { size: 14, className: 'text-indigo-500 mt-0.5 shrink-0' }),
@@ -2645,6 +2663,108 @@ window.SelHub = window.SelHub || {
             )
           ),
           h('button', { 'aria-label': 'Dismiss', onClick: function() { upd('aiResponse', null); }, className: 'mt-2 text-[10px] text-indigo-400 hover:text-indigo-600 font-bold' }, 'Dismiss')
+        ),
+
+        // ═══ PRINT ═══
+        tab === 'print' && h('div', { className: 'space-y-3' },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 8, fontSize: 12.5, color: '#78350f', lineHeight: 1.65 } },
+            h('strong', null, '\uD83D\uDDA8 Facilitator pocket reference. '),
+            'A one-page circle protocol: structure of the 4 movements, talking-piece norms, opening + closing scripts, role cards, and the questions bank for the three most common circle types. Designed for teachers and Crew leaders to carry.'
+          ),
+          h('div', { className: 'no-print', style: { textAlign: 'center', marginBottom: 14 } },
+            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, 'aria-label': 'Print or save as PDF',
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
+          ),
+          h('style', null,
+            '@media print { body * { visibility: hidden !important; } ' +
+            '#rc-print-region, #rc-print-region * { visibility: visible !important; } ' +
+            '#rc-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #0f172a !important; } ' +
+            '#rc-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
+            '.no-print { display: none !important; } }'
+          ),
+          h('div', { id: 'rc-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
+              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'Restorative Circle \u00b7 Facilitator Reference'),
+              h('div', { style: { fontSize: 11, color: '#475569' } }, 'IIRP \u00b7 Indigenous lineage \u00b7 EL Education Crew')
+            ),
+
+            h('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.6, color: '#78350f' } },
+              h('strong', null, 'Use this before, not during, the circle. '),
+              'In circle, eyes are on the talking piece, not paper. The reference is for prep. Once you have run a few circles, the structure becomes second nature.'
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'The four movements of a circle'),
+              h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: '#0f172a', lineHeight: 1.7 } },
+                h('li', { style: { marginBottom: 4 } }, h('strong', null, 'Welcome and centering. '), 'Greet the group. A short centering moment (breath, mindful minute, naming what you carry into the space). State the purpose of the circle in one sentence.'),
+                h('li', { style: { marginBottom: 4 } }, h('strong', null, 'Agreements. '), 'Name the talking-piece norm: when you hold it, you speak; when you do not, you listen. "Pass" is always an option. What is said in circle stays in circle.'),
+                h('li', { style: { marginBottom: 4 } }, h('strong', null, 'Rounds. '), 'Open the question. Pass the piece. Listen. Keep going until everyone has had a chance with the piece (more than once for deeper circles).'),
+                h('li', null, h('strong', null, 'Closing. '), 'Mark the end clearly. A second short centering. Thank the group. Offer a moment for one-word reflections or a closing read.')
+              )
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Talking-piece norms'),
+              h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: '#0f172a', lineHeight: 1.65 } },
+                h('li', null, 'The person holding the piece is the only person speaking. Everyone else listens, fully, without prepping a response.'),
+                h('li', null, 'Pass is always honored. Silence is part of the circle.'),
+                h('li', null, 'No cross-talk, no rebuttal, no interruption \u2014 even by the facilitator.'),
+                h('li', null, 'The piece moves in one direction around the circle.'),
+                h('li', null, 'A piece that carries meaning for the group (an object from the school, a stone from the land, an item a student brings) deepens the work. A pen will do in a pinch.')
+              )
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Opening + closing scripts'),
+              h('div', { style: { padding: 8, background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 6, marginBottom: 8 } },
+                h('div', { style: { fontSize: 11.5, color: '#78350f', fontWeight: 700, marginBottom: 4 } }, 'Opening'),
+                h('div', { style: { fontSize: 12, color: '#0f172a', lineHeight: 1.6, fontStyle: 'italic' } }, '"Welcome. We are gathering in circle today to ____. Before we begin, let\'s take a breath together. \u00b7 [breath] \u00b7 The talking piece is ____. When you hold it, you speak. When you do not, you listen. Pass is always okay. What we share in this circle stays in this circle. The first round will be on ____."')
+              ),
+              h('div', { style: { padding: 8, background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 6 } },
+                h('div', { style: { fontSize: 11.5, color: '#78350f', fontWeight: 700, marginBottom: 4 } }, 'Closing'),
+                h('div', { style: { fontSize: 12, color: '#0f172a', lineHeight: 1.6, fontStyle: 'italic' } }, '"As we close, I am going to invite one final round. One word, one breath, one feeling \u2014 something to carry out of this circle with you. \u00b7 [round] \u00b7 Thank you for your honesty, your listening, and your care for each other today. The circle is closed."')
+              )
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Question bank: the three most common circle types'),
+              h('div', { style: { marginBottom: 8 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#78350f', marginBottom: 3 } }, 'Community-building circle'),
+                h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 11.5, color: '#0f172a', lineHeight: 1.55 } },
+                  h('li', null, 'One word for how you arrived today.'),
+                  h('li', null, 'A small thing you are grateful for this week.'),
+                  h('li', null, 'Something you wish more people in this circle knew about you.')
+                )
+              ),
+              h('div', { style: { marginBottom: 8 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#78350f', marginBottom: 3 } }, 'Check-in / Crew circle'),
+                h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 11.5, color: '#0f172a', lineHeight: 1.55 } },
+                  h('li', null, 'How is your heart today? One word.'),
+                  h('li', null, 'A moment from this week when you were proud of who you were being.'),
+                  h('li', null, 'Something you are carrying that you want this Crew to know about, even briefly.')
+                )
+              ),
+              h('div', null,
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#78350f', marginBottom: 3 } }, 'Harm-repair circle'),
+                h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 11.5, color: '#0f172a', lineHeight: 1.55 } },
+                  h('li', null, 'For the person harmed: what happened, from your perspective?'),
+                  h('li', null, 'For the person who caused harm: what happened, from your perspective?'),
+                  h('li', null, 'For everyone: what was the impact on you, on the people you love, on this community?'),
+                  h('li', null, 'What would help make things as right as possible?'),
+                  h('li', null, 'What agreements do we leave this circle with?')
+                )
+              )
+            ),
+
+            h('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 10, fontSize: 11.5, color: '#78350f', lineHeight: 1.6 } },
+              h('strong', null, 'Roles: '),
+              'Keeper (holds the structure, opens and closes), Timekeeper (gentle, optional, especially for shorter circles), Talking-piece holder (one person who passes the piece in), Witness or Co-keeper (especially in harm-repair circles, to share the emotional load).'
+            ),
+
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
+              'Circle practice has deep Indigenous roots and was carried into Western restorative justice through Howard Zehr, Kay Pranis, and many First Nations elders. Sources: International Institute for Restorative Practices (iirp.edu), Kay Pranis (The Little Book of Circle Processes), Howard Zehr (The Little Book of Restorative Justice). Printed from AlloFlow SEL Hub.'
+            )
+          )
         )
         )
       );

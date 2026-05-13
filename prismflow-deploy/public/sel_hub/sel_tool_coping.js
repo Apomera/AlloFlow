@@ -1509,13 +1509,24 @@ window.SelHub = window.SelHub || {
               }),
               callGemini && tfCustomThought.trim() && h('button', { 'aria-label': 'Toggle sound',
                 onClick: function() {
+                  // Safety pre-check on the student's typed thought before
+                  // sending to the AI. Critical content (self-harm, harm-to-
+                  // others) halts and surfaces crisis resources instead of
+                  // an AI-generated "reframe" of something that needs a person.
+                  var tfSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                    ? window.SelHub.safeRehearseCheck(tfCustomThought, { toolId: 'coping_tf', onSafetyFlag: onSafetyFlag })
+                    : { action: 'continue' };
+                  if (tfSafety.action === 'block') {
+                    upd({ tfCustomFlip: window.SelHub.rehearseBreakCharacterText(tfSafety.severity), stLoading: false, _lastTier: 3 });
+                    return;
+                  }
                   upd({ stLoading: true, tfCustomFlip: null });
                   var prompt = 'A ' + band + ' school student has this negative thought: "' + tfCustomThought + '". ' +
                     'Provide a balanced, realistic reframe of this thought (not just a positive spin). ' +
                     'Use ' + (band === 'elementary' ? 'simple, warm language for a young child' : band === 'middle' ? 'relatable language for a teen' : 'mature, evidence-based language') + '. ' +
                     'Respond with ONLY the reframed thought in 1-2 sentences. No quotes.';
                   callGemini(prompt).then(function(resp) {
-                    upd({ tfCustomFlip: resp, stLoading: false });
+                    upd({ tfCustomFlip: resp, stLoading: false, _lastTier: tfSafety.action === 'nudge' ? 2 : 0 });
                     var newCount = tfFlipCount + 1;
                     upd('tfFlipCount', newCount);
                     if (newCount >= 5) tryAwardBadge('thought_flip_5');
@@ -1532,7 +1543,9 @@ window.SelHub = window.SelHub || {
               ),
               tfCustomFlip && h('div', { style: { marginTop: 10, padding: 12, borderRadius: 10, background: '#22c55e18', border: '1px solid #22c55e44', fontSize: 13, color: '#86efac', lineHeight: 1.5 } },
                 '\uD83D\uDD04 ' + tfCustomFlip
-              )
+              ),
+              // Surface 988 / Crisis Text Line block when last thought was tier-3.
+              (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band)
             ),
             h('button', { 'aria-label': 'Back to Practice Menu',
               onClick: function() { upd('practiceMode', null); },
@@ -1776,6 +1789,16 @@ window.SelHub = window.SelHub || {
             // Generate button
             callGemini && stInput.trim() && h('button', { 'aria-label': 'Generate button',
               onClick: function() {
+                // Safety pre-check on student's typed inner-critic statement.
+                // If it contains critical-tier content, surface crisis
+                // resources instead of generating "self-talk replacements."
+                var stSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                  ? window.SelHub.safeRehearseCheck(stInput, { toolId: 'coping_st', onSafetyFlag: onSafetyFlag })
+                  : { action: 'continue' };
+                if (stSafety.action === 'block') {
+                  upd({ stGenerated: window.SelHub.rehearseBreakCharacterText(stSafety.severity), stLoading: false, _lastTier: 3 });
+                  return;
+                }
                 upd({ stLoading: true, stGenerated: null });
                 var prompt = 'A ' + band + ' school student is being harsh on themselves. Their inner critic says: "' + stInput + '". ' +
                   'Generate 3 compassionate, realistic self-talk replacements (not toxic positivity \u2014 acknowledge the difficulty). ' +
@@ -1784,7 +1807,7 @@ window.SelHub = window.SelHub || {
                             'mature, evidence-based language rooted in self-compassion theory.') + ' ' +
                   'Format: number each one (1. 2. 3.) on separate lines.';
                 callGemini(prompt).then(function(resp) {
-                  upd({ stGenerated: resp, stLoading: false });
+                  upd({ stGenerated: resp, stLoading: false, _lastTier: stSafety.action === 'nudge' ? 2 : 0 });
                   if (soundEnabled) sfxCorrect();
                   tryAwardBadge('ai_match');
                 }).catch(function() {
@@ -1797,6 +1820,8 @@ window.SelHub = window.SelHub || {
               Sparkles ? h(Sparkles, { size: 14 }) : '\u2728',
               stLoading ? 'Generating kind words...' : 'Generate Kind Self-Talk'
             ),
+            // Surface 988 / Crisis Text Line block when last self-talk input was tier-3.
+            (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
             // Result
             stGenerated && h('div', { style: { padding: 16, borderRadius: 14, background: '#ec489918', border: '1px solid #ec489944', marginBottom: 16 } },
               h('p', { style: { fontSize: 11, color: '#ec4899', fontWeight: 700, marginBottom: 8 } }, 'Your Inner Coach Says:'),
@@ -2745,7 +2770,7 @@ window.SelHub = window.SelHub || {
       // ── Final Render ──
       // ══════════════════════════════════════════════════════════
       return h('div', { style: { minHeight: '100%' } },
-        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('coping', h) : null),
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('coping', h, ctx) : null),
         tabBar,
         heroBand,
         dailyCheckin,

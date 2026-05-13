@@ -2770,11 +2770,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           if (!callGemini) { addToast({ message: 'AI unavailable', type: 'error' }); return; }
           if (!selected) return;
           if (!pResponse || pResponse.length < 20) { addToast({ message: 'Write at least a sentence or two before asking for feedback.', type: 'warning' }); return; }
+          // Safety pre-check on the student's written draft. If critical-tier
+          // content appears in what they typed, swap the AI critique for a
+          // coach-style break-character message and surface crisis resources.
+          var critSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+            ? window.SelHub.safeRehearseCheck(pResponse, { toolId: 'selfadvocacy_critique', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+            : { action: 'continue' };
+          if (critSafety.action === 'block') {
+            upd({ pLoading: false, pCritique: window.SelHub.rehearseBreakCharacterText(critSafety.severity), _lastTier: 3 });
+            announceSR('Safety resources shown');
+            return;
+          }
           upd({ pLoading: true, pCritique: '' });
           Promise.resolve(callGemini(buildPracticeCritiquePrompt(selected, pResponse, viewBand), false, false, 0.5, null))
             .then(function(resp) {
               var text = (typeof resp === 'string') ? resp : (resp && resp.text ? resp.text : String(resp));
-              upd({ pLoading: false, pCritique: text });
+              upd({ pLoading: false, pCritique: text, _lastTier: critSafety.action === 'nudge' ? 2 : 0 });
               announceSR('Coaching feedback ready');
             })
             .catch(function(e) {
@@ -2828,6 +2839,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
                 className: 'px-4 py-2 rounded-lg text-xs font-bold no-print ' + (pLoading || !pResponse || pResponse.length < 20 ? 'bg-slate-700 text-slate-400' : 'bg-fuchsia-600 text-white hover:bg-fuchsia-500')
               }, pLoading ? 'Coaching…' : '\u2728 Get coaching feedback')
             ),
+            // Surface 988 / Crisis Text Line block when last draft was tier-3.
+            (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, viewBand === 'high' ? 'high' : 'middle'),
             pCritique && h('div', { className: 'mt-4 p-3 rounded bg-slate-900/70 border border-emerald-500/30', role: 'region', 'aria-label': 'Coach feedback', 'aria-live': 'polite' },
               h('div', { className: 'text-xs font-bold text-emerald-300 mb-2' }, 'Coach feedback'),
               h('pre', { className: 'text-xs text-slate-100 whitespace-pre-wrap font-sans leading-relaxed' }, pCritique)
@@ -4571,7 +4584,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
             if (main && main.focus) { try { main.focus(); } catch(err) {} }
           }
         }, 'Skip to main content'),
-        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('selfAdvocacy', h) : null),
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('selfAdvocacy', h, ctx) : null),
         renderTabs(),
         h('main', {
           id: 'selfadv-main-content',

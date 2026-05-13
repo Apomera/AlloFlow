@@ -1652,6 +1652,17 @@ window.SelHub = window.SelHub || {
                   'aria-busy': rhLoading ? 'true' : 'false',
                   onClick: function() {
                     if (!rhSituation.trim() || !rhAttempt.trim() || !callGemini) return;
+                    // Safety pre-check on combined situation + draft. If
+                    // critical-tier content appears, swap the AI feedback
+                    // for a coach-style break-character message + surface
+                    // crisis resources (rendered via _lastTier).
+                    var rhSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                      ? window.SelHub.safeRehearseCheck(rhSituation + ' ' + rhAttempt, { toolId: 'upstander_rh', onSafetyFlag: onSafetyFlag })
+                      : { action: 'continue' };
+                    if (rhSafety.action === 'block') {
+                      upd({ rhLoading: false, rhFeedback: window.SelHub.rehearseBreakCharacterText(rhSafety.severity), _lastTier: 3 });
+                      return;
+                    }
                     upd({ rhLoading: true, rhFeedback: '' });
                     var prompt =
                       'You are a kind, grounded coach helping a ' + band + ' school student rehearse what to say in a real-life bullying or social-harm moment. ' +
@@ -1665,7 +1676,7 @@ window.SelHub = window.SelHub || {
                       'SITUATION: \"' + rhSituation.trim().replace(/"/g, '\\"') + '\"\n' +
                       'DRAFT: \"' + rhAttempt.trim().replace(/"/g, '\\"') + '\"';
                     callGemini(prompt, false).then(function(r) {
-                      upd({ rhLoading: false, rhFeedback: (r || '').trim() });
+                      upd({ rhLoading: false, rhFeedback: (r || '').trim(), _lastTier: rhSafety.action === 'nudge' ? 2 : 0 });
                       if (soundOn) sfxBrave();
                       tryAwardBadge('rehearsed', 15);
                       if (announceToSR) announceToSR('Feedback ready');
@@ -1688,6 +1699,9 @@ window.SelHub = window.SelHub || {
               ),
               !callGemini && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#6b21a8' } },
                 'AI features need a connection. While offline, try reading your draft out loud.'),
+              // Surface 988 / Crisis Text Line block on tier-3 (set by the
+              // safety pre-check above the callGemini call in this section).
+              (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
               rhFeedback && h('div', { 'aria-live': 'polite', className: 'us-pop', style: {
                 marginTop: 14, padding: 14, background: '#faf5ff', border: '1px dashed #c084fc',
                 borderRadius: 10, fontSize: 14, lineHeight: 1.6, color: '#0f172a', whiteSpace: 'pre-wrap'
@@ -2196,6 +2210,17 @@ window.SelHub = window.SelHub || {
                         'aria-busy': apLoading ? 'true' : 'false',
                         onClick: function() {
                           if (!apHurt.trim() || !apDraft.trim() || !callGemini) return;
+                          // Safety pre-check. The Apology Coach is high-risk
+                          // because students describe harm they caused —
+                          // sometimes that opens into something a kid in
+                          // distress needs to bring to a real adult.
+                          var apSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                            ? window.SelHub.safeRehearseCheck(apHurt + ' ' + apDraft, { toolId: 'upstander_ap', onSafetyFlag: onSafetyFlag })
+                            : { action: 'continue' };
+                          if (apSafety.action === 'block') {
+                            upd({ apLoading: false, apFeedback: window.SelHub.rehearseBreakCharacterText(apSafety.severity), _lastTier: 3 });
+                            return;
+                          }
                           upd({ apLoading: true, apFeedback: '' });
                           var prompt =
                             'You are a kind, grounded coach helping a ' + band + ' school student rehearse an APOLOGY for harm they caused. ' +
@@ -2210,7 +2235,7 @@ window.SelHub = window.SelHub || {
                             'WHAT HAPPENED: \"' + apHurt.trim().replace(/"/g, '\\\"') + '\"\n' +
                             'THEIR DRAFT: \"' + apDraft.trim().replace(/"/g, '\\\"') + '\"';
                           callGemini(prompt, false).then(function(r) {
-                            upd({ apLoading: false, apFeedback: (r || '').trim() });
+                            upd({ apLoading: false, apFeedback: (r || '').trim(), _lastTier: apSafety.action === 'nudge' ? 2 : 0 });
                             if (soundOn) sfxBrave();
                             tryAwardBadge('rehearsed', 10);
                             if (announceToSR) announceToSR('Apology feedback ready');
@@ -2233,6 +2258,8 @@ window.SelHub = window.SelHub || {
                     ),
                     !callGemini && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#991b1b' } },
                       'AI features need a connection. While offline: read your draft out loud and listen for any \"but.\"'),
+                    // Surface 988 / Crisis Text Line block on tier-3.
+                    (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
                     apFeedback && h('div', { 'aria-live': 'polite', className: 'us-pop', style: {
                       marginTop: 12, padding: 12, background: '#fff1f2', border: '1px dashed #fca5a5',
                       borderRadius: 8, fontSize: 13, lineHeight: 1.6, color: '#0f172a', whiteSpace: 'pre-wrap'
@@ -4002,7 +4029,7 @@ window.SelHub = window.SelHub || {
       }
 
       var content = rolesContent || movesContent || pracContent || cycleContent || pledgeContent || coachContent || refContent;
-      return h('div', { className: 'us-root', style: { display: 'flex', flexDirection: 'column', height: '100%' } }, (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('upstander', h) : null), tabBar, h('div', { style: { flex: 1, overflow: 'auto' } }, content));
+      return h('div', { className: 'us-root', style: { display: 'flex', flexDirection: 'column', height: '100%' } }, (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('upstander', h, ctx) : null), tabBar, h('div', { style: { flex: 1, overflow: 'auto' } }, content));
     }
   });
 })();
