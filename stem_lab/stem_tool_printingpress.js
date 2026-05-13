@@ -789,6 +789,131 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             h('div', { style: { fontSize: 12, color: '#5c4630', fontStyle: 'italic', lineHeight: 1.5, maxWidth: 540, marginLeft: 'auto', marginRight: 'auto' } },
               'Every module visited. Take the cumulative quiz to earn the Master Printer badge, or revisit any module that piqued your curiosity.')
           ),
+          // ── Apprentice's journey progress card ──
+          // Pairs the existing module-visit count with a real 1450 print
+          // shop career arc (Apprentice → Journeyman → Master Printer).
+          // Surfaces only when the student is mid-journey — the existing
+          // celebration banner above handles the all-visited end state.
+          // Closes the menu's progress display from "X / 10 modules" (a
+          // checklist) into "you are an Apprentice in year two, three more
+          // modules to Journeyman" (a story).
+          !allVisited && (function () {
+            // Educational-tile order from MENU_TILES (start + modules).
+            // First un-visited in this order = the natural next stop,
+            // matching Aaron's pedagogical sequencing of the menu.
+            var educationalTiles = MENU_TILES.filter(function (t) {
+              return t.section === 'start' || t.section === 'modules';
+            });
+            var totalModules = educationalTiles.length;
+            var doneCount = educationalTiles.filter(function (t) {
+              return modulesVisited[t.id];
+            }).length;
+            // Career-tier mapping — uses period vocabulary the rest of
+            // the tool already establishes (apprentice/journeyman/master
+            // appear in dayInShop and the apprentice contract reading).
+            var tier, tierIcon, tierBlurb, tierColor;
+            if (doneCount === 0) {
+              tier = 'New to the shop';
+              tierIcon = '👋';
+              tierColor = T.dim;
+              tierBlurb = 'Pick any tile below to begin. The Press Mechanism is the dramatic foundation everything else builds on.';
+            } else if (doneCount <= 3) {
+              tier = 'Apprentice (Year ' + doneCount + ')';
+              tierIcon = '🧒';
+              tierColor = T.warn;
+              tierBlurb = 'Year-one work — sweeping the shop, fetching ink, watching the journeymen. ' + (4 - doneCount) + ' more module' + (4 - doneCount === 1 ? '' : 's') + ' to Journeyman.';
+            } else if (doneCount <= 7) {
+              tier = 'Journeyman';
+              tierIcon = '⚒️';
+              tierColor = T.accent;
+              tierBlurb = 'Qualified for daily work. You could draw wages from any shop in Mainz. ' + (8 - doneCount) + ' more to Master Printer (in progress).';
+            } else {
+              tier = 'Master Printer (in progress)';
+              tierIcon = '🔥';
+              tierColor = T.accentHi;
+              tierBlurb = 'You have run nearly the whole craft. ' + (totalModules - doneCount) + ' module' + (totalModules - doneCount === 1 ? '' : 's') + ' to a complete tour. Your colophon is almost on the title page.';
+            }
+            // Find the natural next tile — first un-visited educational
+            // tile in MENU_TILES declaration order.
+            var nextTile = null;
+            for (var ti = 0; ti < educationalTiles.length; ti++) {
+              if (!modulesVisited[educationalTiles[ti].id]) {
+                nextTile = educationalTiles[ti];
+                break;
+              }
+            }
+            return h('div', {
+              'aria-live': 'polite',
+              style: {
+                background: T.card,
+                border: '1px solid ' + tierColor,
+                borderLeft: '4px solid ' + tierColor,
+                borderRadius: 12,
+                padding: '14px 18px',
+                marginBottom: 14
+              }
+            },
+              // Top row: tier + progress bar
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 220 } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, tierIcon),
+                  h('div', null,
+                    h('div', { style: { fontSize: 10, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: 2, fontFamily: 'Georgia, serif' } }, 'Your tier'),
+                    h('div', { style: { fontSize: 16, fontWeight: 800, color: tierColor, fontFamily: 'Georgia, serif', lineHeight: 1.1 } }, tier),
+                    h('div', { style: { fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.4, maxWidth: 460 } }, tierBlurb)
+                  )
+                ),
+                h('div', { style: { flexShrink: 0, width: 144 } },
+                  h('div', { style: { fontSize: 10, color: T.dim, textAlign: 'right', fontFamily: 'ui-monospace, monospace', marginBottom: 4 } },
+                    doneCount + ' / ' + totalModules + ' modules'),
+                  h('div', { style: { width: '100%', height: 8, background: T.bg, border: '1px solid ' + T.border, borderRadius: 4, overflow: 'hidden' } },
+                    h('div', { 'aria-hidden': 'true', style: {
+                      height: '100%',
+                      width: Math.round((doneCount / totalModules) * 100) + '%',
+                      background: 'linear-gradient(90deg, ' + T.accent + ', ' + T.accentHi + ')',
+                      transition: 'width 0.3s ease-out'
+                    } })
+                  )
+                )
+              ),
+              // Bottom row: "Try next" nudge — only if there's a clear next stop
+              nextTile && h('div', {
+                style: {
+                  marginTop: 12,
+                  paddingTop: 10,
+                  borderTop: '1px dashed ' + T.border,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: 8
+                }
+              },
+                h('div', { style: { fontSize: 12, color: T.text, flex: 1, minWidth: 200 } },
+                  h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '→'),
+                  h('span', { style: { color: T.dim } }, 'Try next: '),
+                  h('strong', { style: { color: T.accentHi } }, nextTile.icon + ' ' + nextTile.label)
+                ),
+                h('button', {
+                  className: 'printingpress-no-print',
+                  onClick: function () {
+                    upd('view', nextTile.id);
+                    markVisited(nextTile.id);
+                    announce('Opening ' + nextTile.label);
+                  },
+                  style: Object.assign(btn({}), {
+                    background: T.accent,
+                    color: T.ink,
+                    borderColor: T.accentHi,
+                    padding: '6px 14px',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  })
+                }, 'Open →')
+              )
+            );
+          })(),
           // Hero — title + tagline + miniature press SVG. The press silhouette
           // gives the menu instant visual identity: "this tool is about THE
           // press, not just a webpage about printing."
