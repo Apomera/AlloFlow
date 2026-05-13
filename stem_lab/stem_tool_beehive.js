@@ -7782,6 +7782,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              // ── Night lights: warm glow from the hive entrance + apiary sign ──
+              // Painted AFTER the time-of-day dim, so the lights actually cut
+              // through the darkness instead of getting dimmed away. The hive
+              // shows that the colony is still metabolically active at night
+              // (workers vibrating flight muscles to keep brood at 95°F),
+              // and the apiary sign gets a small spotlight so the world
+              // still reads as inhabited.
+              if (_tdT >= 1.05 && _tdT <= 1.95) {
+                var nightFactor = _tdT > 1.5 ? (1 - (_tdT - 1.5) / 0.45) : ((_tdT - 1.05) / 0.45);
+                nightFactor = Math.max(0, Math.min(1, nightFactor));
+                // Hive entrance glow — warm orange, intensity scales with brood
+                if (brood > 100) {
+                  var hgX = hiveX + hiveW / 2;
+                  var hgY = hiveY + hiveH - 8;
+                  var hgStrength = Math.min(1, brood / 4000) * nightFactor;
+                  var hgGlow = c.createRadialGradient(hgX, hgY, 1, hgX, hgY, 28);
+                  hgGlow.addColorStop(0,   'rgba(254,215,170,' + (0.85 * hgStrength).toFixed(3) + ')'); // bright warm core
+                  hgGlow.addColorStop(0.3, 'rgba(251,146,60,'  + (0.45 * hgStrength).toFixed(3) + ')'); // orange mid
+                  hgGlow.addColorStop(1,   'rgba(251,146,60,0)');
+                  c.fillStyle = hgGlow;
+                  c.beginPath(); c.ellipse(hgX, hgY, 28, 16, 0, 0, 6.28); c.fill();
+                  // Tiny bright dot at the actual entrance opening
+                  c.fillStyle = 'rgba(255,237,213,' + (0.95 * hgStrength).toFixed(3) + ')';
+                  c.beginPath(); c.arc(hgX, hgY, 1.6 + 0.6 * Math.sin(t2 * 0.12), 0, 6.28); c.fill();
+                }
+                // Apiary sign spotlight — soft amber pool around the sign post (right of hive)
+                var signX = hiveX + hiveW + 35;
+                var signY = H * 0.76;
+                var sgStrength = nightFactor * 0.7;
+                var sgGlow = c.createRadialGradient(signX, signY, 2, signX, signY, 38);
+                sgGlow.addColorStop(0,   'rgba(254,243,199,' + (0.45 * sgStrength).toFixed(3) + ')');
+                sgGlow.addColorStop(0.6, 'rgba(254,215,170,' + (0.18 * sgStrength).toFixed(3) + ')');
+                sgGlow.addColorStop(1,   'rgba(254,215,170,0)');
+                c.fillStyle = sgGlow;
+                c.beginPath(); c.ellipse(signX, signY, 38, 22, 0, 0, 6.28); c.fill();
+              }
+
               // ── HUD overlay (glass morphism style) ──
               // Bigger panel: season + day + time-of-day clock, year +
               // workers, and 3 zone-colored stat chips at the bottom.
