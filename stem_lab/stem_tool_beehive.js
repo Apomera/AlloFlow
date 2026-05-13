@@ -7356,6 +7356,168 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     c.beginPath(); c.arc(atX + bl[0], canopyY + bl[1], 1.3, 0, 6.28); c.fill();
                   });
                 }
+                // ── Swarm cluster hanging from an apple-tree branch ──
+                // Real biology: in late spring (day 18+), an overcrowded colony
+                // produces a new queen. The OLD queen leaves with about half
+                // the workers — they hang in a temporary "bivouac" cluster on
+                // a nearby branch for 1-3 days while scout bees waggle-dance
+                // candidate nest sites until quorum is reached. This is a
+                // healthy reproductive event, not a failure.
+                if (season === 0 && (day % 30) >= 18 && (day % 30) <= 25) {
+                  var _swCx = atX + 16;
+                  var _swCy = canopyY + 8;
+                  var _swSway = Math.sin(t2 * 0.012) * 1.2;
+                  // Teardrop cluster outline — slight rocking sway
+                  c.save();
+                  c.translate(_swCx + _swSway, _swCy);
+                  // Shadow base
+                  c.fillStyle = 'rgba(40,25,10,0.55)';
+                  c.beginPath();
+                  c.moveTo(0, -6);
+                  c.bezierCurveTo(-7, -2, -8, 4, -5, 8);
+                  c.bezierCurveTo(-2, 12, 2, 12, 5, 8);
+                  c.bezierCurveTo(8, 4, 7, -2, 0, -6);
+                  c.closePath(); c.fill();
+                  // Bee bodies — tightly packed dots in the cluster
+                  for (var sw = 0; sw < 38; sw++) {
+                    var _swA = (sw / 38) * 6.28 + (sw % 7) * 0.4;
+                    var _swR = ((sw % 5) + 1) * 1.3;
+                    var _swPx = Math.cos(_swA) * _swR;
+                    var _swPy = Math.sin(_swA) * _swR * 1.4 + 2; // elongate downward
+                    if (Math.abs(_swPx) > 7 || _swPy < -5 || _swPy > 11) continue;
+                    var _swCol = sw % 3 === 0 ? '#fbbf24' : sw % 3 === 1 ? '#92400e' : '#1c1917';
+                    c.fillStyle = _swCol;
+                    c.beginPath(); c.arc(_swPx, _swPy, 0.7, 0, 6.28); c.fill();
+                  }
+                  // The queen at the center (slightly brighter, larger)
+                  c.fillStyle = '#facc15';
+                  c.beginPath(); c.ellipse(0, 2, 1.2, 0.7, 0, 0, 6.28); c.fill();
+                  c.fillStyle = '#92400e';
+                  c.fillRect(-0.4, 1.5, 0.3, 1);
+                  c.restore();
+                  // Scout bees flying in and out (3 of them, looping)
+                  for (var sc = 0; sc < 3; sc++) {
+                    var _scT = ((t2 * 0.04 + sc * 40) % 60) / 60; // 0..1
+                    var _scAng = sc * 2.1 + t2 * 0.02;
+                    var _scR = 18 + _scT * 22;
+                    var _scX = _swCx + _swSway + Math.cos(_scAng) * _scR;
+                    var _scY = _swCy + Math.sin(_scAng) * _scR * 0.5;
+                    c.fillStyle = '#fbbf24';
+                    c.beginPath(); c.arc(_scX, _scY, 0.8, 0, 6.28); c.fill();
+                    // Wing blur
+                    c.fillStyle = 'rgba(220,240,255,0.5)';
+                    c.beginPath(); c.ellipse(_scX, _scY - 0.5, 1.2, 0.4, 0, 0, 6.28); c.fill();
+                  }
+                }
+              }
+
+              // ── Native ground-bee nesting holes (real biology) ──
+              // 70% of native bees nest in bare soil, not in hives. Show a
+              // small cluster of darker pinhole openings in the meadow with
+              // a tiny mound of excavated dirt around each. Spring + summer
+              // only (active nesting season). One hole occasionally hosts a
+              // tiny dark blue mining-bee silhouette entering or leaving.
+              if (season === 0 || season === 1) {
+                var _gbCx = W * 0.30, _gbCy = H * 0.85;
+                var _gbHoles = [
+                  { dx:  0, dy:  0, r: 0.9 },
+                  { dx:  6, dy:  2, r: 0.7 },
+                  { dx: -5, dy:  3, r: 0.8 },
+                  { dx:  3, dy: -2, r: 0.65 },
+                  { dx: -7, dy: -1, r: 0.7 },
+                  { dx: 10, dy: -1, r: 0.6 }
+                ];
+                _gbHoles.forEach(function(gh) {
+                  var _ghX = _gbCx + gh.dx;
+                  var _ghY = _gbCy + gh.dy;
+                  // Mound of excavated dirt (lighter ring)
+                  c.fillStyle = season === 2 ? 'rgba(140,100,60,0.55)' : 'rgba(120,90,50,0.50)';
+                  c.beginPath(); c.ellipse(_ghX, _ghY, gh.r * 2.2, gh.r * 1.1, 0, 0, 6.28); c.fill();
+                  // Hole itself (dark pinhole)
+                  c.fillStyle = '#1c1917';
+                  c.beginPath(); c.arc(_ghX, _ghY, gh.r, 0, 6.28); c.fill();
+                });
+                // Mining bee at one hole (returns every ~6s)
+                var _gbT = ((t2 * 0.04) % 60) / 60;
+                if (_gbT > 0.30 && _gbT < 0.55) {
+                  var _gbAt = (_gbT - 0.30) / 0.25;
+                  var _gbBeeX = _gbCx + 6 - _gbAt * 2;
+                  var _gbBeeY = _gbCy + 2 - _gbAt * 0.5;
+                  c.fillStyle = '#1e3a8a'; // mining bee dark blue
+                  c.beginPath(); c.ellipse(_gbBeeX, _gbBeeY, 1.2, 0.7, 0, 0, 6.28); c.fill();
+                  // Tiny wing blur
+                  c.fillStyle = 'rgba(220,240,255,0.4)';
+                  c.beginPath(); c.ellipse(_gbBeeX, _gbBeeY - 0.8, 1.1, 0.4, 0, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Bumblebee cameo (spring + summer, distinct from honeybees) ──
+              // Real biology: bumblebees (Bombus spp.) are larger, fuzzier, can
+              // forage at lower temperatures than honeybees, and "buzz-pollinate"
+              // (vibrating to release pollen) on tomatoes/blueberries/cranberries.
+              // Visually distinguished here by 1.6× size, fuzzier body outline,
+              // bolder yellow/black banding, slower flight than honeybees.
+              if ((season === 0 || season === 1) && flowers.length > 3) {
+                var _bbT = ((t2 * 0.04) % 100) / 100; // 0..1 visit cycle
+                if (_bbT < 0.8) {
+                  var _bbTargetA = flowers[(season === 1 ? 2 : 5) % flowers.length];
+                  var _bbTargetB = flowers[(season === 1 ? 7 : 10) % flowers.length];
+                  var _bbVisitT = _bbT / 0.8;
+                  var _bbX, _bbY, _bbHovering = false;
+                  if (_bbVisitT < 0.30) {
+                    var _bbU = _bbVisitT / 0.30;
+                    _bbX = -8 + _bbU * (_bbTargetA.x + 8);
+                    _bbY = H * 0.65 + _bbU * (_bbTargetA.y - 8 - H * 0.65);
+                  } else if (_bbVisitT < 0.50) {
+                    _bbX = _bbTargetA.x + Math.sin(t2 * 0.08) * 1.8;
+                    _bbY = _bbTargetA.y - 6 + Math.cos(t2 * 0.06) * 1.2;
+                    _bbHovering = true;
+                  } else if (_bbVisitT < 0.70) {
+                    var _bbU2 = (_bbVisitT - 0.50) / 0.20;
+                    _bbX = _bbTargetA.x + (_bbTargetB.x - _bbTargetA.x) * _bbU2;
+                    _bbY = (_bbTargetA.y - 6) + (_bbTargetB.y - 6 - (_bbTargetA.y - 6)) * _bbU2;
+                  } else if (_bbVisitT < 0.85) {
+                    _bbX = _bbTargetB.x + Math.sin(t2 * 0.08 + 1) * 1.8;
+                    _bbY = _bbTargetB.y - 6 + Math.cos(t2 * 0.06 + 1) * 1.2;
+                    _bbHovering = true;
+                  } else {
+                    var _bbU3 = (_bbVisitT - 0.85) / 0.15;
+                    _bbX = _bbTargetB.x + _bbU3 * 60;
+                    _bbY = (_bbTargetB.y - 6) + _bbU3 * (H * 0.60 - (_bbTargetB.y - 6));
+                  }
+                  c.save();
+                  c.translate(_bbX, _bbY);
+                  // Fuzzy outline (extra-soft glow because bumblebees are HAIRY)
+                  c.fillStyle = 'rgba(251,191,36,0.4)';
+                  c.beginPath(); c.ellipse(0, 0, 4.5, 3, 0, 0, 6.28); c.fill();
+                  // Body — bold yellow with two thick black bands
+                  c.fillStyle = '#facc15';
+                  c.beginPath(); c.ellipse(0, 0, 3.6, 2.4, 0, 0, 6.28); c.fill();
+                  // Black bands (3 thick stripes — wider than honeybee's)
+                  c.fillStyle = '#1c1917';
+                  c.fillRect(-1.6, -2, 0.9, 4);
+                  c.fillRect(-0.1, -2, 0.9, 4);
+                  c.fillRect( 1.4, -2, 0.7, 4);
+                  // Fuzzy head (darker)
+                  c.fillStyle = '#1c1917';
+                  c.beginPath(); c.arc(-3, 0, 1.3, 0, 6.28); c.fill();
+                  // Pollen baskets — bright yellow lumps on the hind legs (loaded)
+                  if (_bbHovering) {
+                    c.fillStyle = '#fde047';
+                    c.beginPath(); c.ellipse(0.5, 2.3, 0.6, 0.9, 0.2, 0, 6.28); c.fill();
+                    c.fillStyle = 'rgba(202,138,4,0.6)';
+                    c.beginPath(); c.arc(0.5, 2.3, 0.3, 0, 6.28); c.fill();
+                  }
+                  // Wings — broader than honeybee, more visible
+                  c.fillStyle = 'rgba(220,240,255,0.55)';
+                  c.beginPath(); c.ellipse(0, -2.6, 3.0, 1.0, 0, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(0,  2.6, 3.0, 1.0, 0, 0, 6.28); c.fill();
+                  // Wing blur — bumblebees buzz at ~200 Hz, less than honeybees but visible
+                  c.strokeStyle = 'rgba(255,255,255,0.25)';
+                  c.lineWidth = 0.3;
+                  c.beginPath(); c.ellipse(0, -2.6, 3.4, 1.2, 0, 0, 6.28); c.stroke();
+                  c.restore();
+                }
               }
 
               // ── Tree line (mid-ground, adds scale) ──
