@@ -1981,7 +1981,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             hint: 'Compose FALMOUTH the way Thomas B. Wait and Benjamin Titcomb would have set it for the first issue of the Falmouth Gazette in January 1785 — the first newspaper printed in what would become Maine. (Falmouth is now Portland, walking distance from King Middle School.)' },
           { id: 'COMMON_SENSE', label: 'Phrase 4: COMMON SENSE (1776 Paine)', phrase: 'COMMON SENSE', slotCount: 12,
             sorts: ['C', 'O', 'M', 'M', 'O', 'N', ' ', 'S', 'E', 'N', 'S', 'E', 'T', 'R', 'I', 'A', 'P'],
-            hint: 'Compose the title of the pamphlet that sold about 150,000 copies in colonial America in 1776 — the highest-leverage broadside in American history. Thomas Paine wrote it in three months; printers across the colonies set it in days. Per capita, one of the best-selling political works ever published.' }
+            hint: 'Compose the title of the pamphlet that sold about 150,000 copies in colonial America in 1776 — the highest-leverage broadside in American history. Thomas Paine wrote it in three months; printers across the colonies set it in days. Per capita, one of the best-selling political works ever published.' },
+          { id: 'AD_FONTES', label: 'Phrase 5: AD FONTES (Renaissance motto)', phrase: 'AD FONTES', slotCount: 9,
+            sorts: ['A', 'D', ' ', 'F', 'O', 'N', 'T', 'E', 'S', 'B', 'L', 'U', 'P', 'R'],
+            hint: 'Compose AD FONTES — Latin for "to the sources" — the Renaissance scholar\'s rallying cry. When Erasmus and his fellow humanists pushed printers to publish ancient Greek and Hebrew texts in their original languages, this was the call. Movable type made it possible: scholars could finally lay ten copies of the same passage side by side and catch errors that a thousand years of hand-copying had introduced.' }
         ];
         var challengeIdxRaw = useState(0);
         var challengeIdx = challengeIdxRaw[0], setChallengeIdx = challengeIdxRaw[1];
