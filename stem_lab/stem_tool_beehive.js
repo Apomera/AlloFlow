@@ -6973,6 +6973,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
                 c.restore();
               }
+              // ── Buzz rings — the colony hum, made visible ──
+              // Real bees vibrate flight muscles continuously; the hive emits
+              // a constant audible buzz. Show 3 staggered expanding rings
+              // that radiate outward from the hive and fade. Frequency picks
+              // up with workforce density (more workers = louder hum).
+              if (season !== 3 && workers >= 1000) {
+                c.save();
+                var buzzCenterX = hiveX + hiveW / 2;
+                var buzzCenterY = hiveY + hiveH / 2;
+                var buzzPeriod = Math.max(900, 2400 - workers / 25); // ms — faster pings as colony grows
+                var buzzActivity = Math.min(1, workers / 25000);
+                for (var br = 0; br < 3; br++) {
+                  var brT = ((t2 * (1000 / buzzPeriod) * 0.016 + br * 0.33) % 1); // 0..1 each ring
+                  var brR = brT * hiveW * 1.8;
+                  var brAlpha = (1 - brT) * 0.18 * buzzActivity;
+                  if (brAlpha < 0.005) continue;
+                  c.strokeStyle = 'rgba(251,191,36,' + brAlpha.toFixed(3) + ')';
+                  c.lineWidth = 0.9;
+                  c.beginPath();
+                  c.ellipse(buzzCenterX, buzzCenterY, brR, brR * 0.55, 0, 0, 6.28);
+                  c.stroke();
+                }
+                c.restore();
+              }
               // Ground cast shadow (soft, wide ellipse — gives the hive weight)
               var csY = hiveY + hiveH + 6;
               var csGrad = c.createRadialGradient(hiveX + hiveW / 2, csY, 2, hiveX + hiveW / 2, csY, hiveW * 0.7);
@@ -6990,6 +7014,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillStyle = hg; c.beginPath(); c.roundRect(hiveX, hiveY, hiveW, hiveH, 10); c.fill();
               // Inner
               c.fillStyle = '#d4aa40'; c.beginPath(); c.roundRect(hiveX + 4, hiveY + 4, hiveW - 8, hiveH - 8, 7); c.fill();
+              // ── Brood warmth glow inside the hive ──
+              // The brood nest is held at 95°F (35°C) ± 0.5° year-round — more
+              // precise than most mammals. A soft warm orange radial gradient
+              // at hive center makes that thermoregulation visible. Intensity
+              // scales with brood count, dim in winter when the cluster is
+              // contracted and there's little active brood.
+              if (brood > 100) {
+                var broodCx = hiveX + hiveW / 2;
+                var broodCy = hiveY + hiveH * 0.55; // brood nest sits low-middle in a Langstroth
+                var broodStrength = Math.min(1, brood / 4000) * (season === 3 ? 0.5 : 1);
+                var broodR = hiveW * 0.42;
+                var broodGlow = c.createRadialGradient(broodCx, broodCy, 2, broodCx, broodCy, broodR);
+                broodGlow.addColorStop(0, 'rgba(251,146,60,' + (0.55 * broodStrength).toFixed(3) + ')');
+                broodGlow.addColorStop(0.5, 'rgba(251,191,36,' + (0.32 * broodStrength).toFixed(3) + ')');
+                broodGlow.addColorStop(1, 'rgba(251,191,36,0)');
+                c.fillStyle = broodGlow;
+                c.beginPath(); c.ellipse(broodCx, broodCy, broodR, broodR * 0.7, 0, 0, 6.28); c.fill();
+              }
               // Highlight
               c.fillStyle = 'rgba(255,255,255,0.08)'; c.fillRect(hiveX + 5, hiveY + 5, hiveW - 10, 12);
               // ── Stacked-super seams (3 visible Langstroth boxes separated by dark rails) ──
