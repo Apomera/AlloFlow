@@ -9046,6 +9046,150 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillStyle = '#4b5563';
               c.beginPath(); c.arc(signX - 20, signY - 6, 0.7, 0, 6.28); c.fill();
               c.beginPath(); c.arc(signX + 24, signY - 6, 0.7, 0, 6.28); c.fill();
+              // ── Analog thermometer mounted on the apiary post (seasonal mercury level) ──
+              // Real homestead detail: a wall thermometer near the apiary so
+              // the keeper can spot-check temperature before opening the hive.
+              // Mercury level rises/falls with the simulated season — winter
+              // dips well below 0°C, summer pushes 30°C+.
+              (function() {
+                var _tmAnchorX = signX - 8;
+                var _tmTopY = signY + 9;
+                // Background plate — pale cream
+                c.fillStyle = '#fef3c7';
+                c.fillRect(_tmAnchorX - 1.5, _tmTopY, 3, 15);
+                c.strokeStyle = '#3a2510';
+                c.lineWidth = 0.3;
+                c.strokeRect(_tmAnchorX - 1.5, _tmTopY, 3, 15);
+                // Tick marks — 6 evenly spaced
+                for (var tk = 0; tk < 7; tk++) {
+                  var _tkY = _tmTopY + 1 + tk * 2;
+                  c.beginPath(); c.moveTo(_tmAnchorX - 1.5, _tkY); c.lineTo(_tmAnchorX - 0.8, _tkY); c.stroke();
+                }
+                // Glass tube — thin clear strip
+                c.fillStyle = 'rgba(200,220,240,0.55)';
+                c.fillRect(_tmAnchorX - 0.4, _tmTopY + 1, 0.8, 13);
+                // Mercury (red) — height depends on season + day variation
+                // Spring/fall: midrange, summer: high, winter: very low
+                var _tmHeight = season === 0 ? 7 + Math.sin(t2 * 0.001) * 0.5 :
+                                 season === 1 ? 11 + Math.sin(t2 * 0.001) * 0.5 :
+                                 season === 2 ? 6 + Math.sin(t2 * 0.001) * 0.5 :
+                                                2.5 + Math.sin(t2 * 0.001) * 0.3;
+                c.fillStyle = '#dc2626';
+                c.fillRect(_tmAnchorX - 0.4, _tmTopY + 14 - _tmHeight, 0.8, _tmHeight);
+                // Bulb at the bottom (mercury reservoir)
+                c.fillStyle = '#b91c1c';
+                c.beginPath(); c.arc(_tmAnchorX, _tmTopY + 14.8, 1, 0, 6.28); c.fill();
+                c.fillStyle = 'rgba(255,255,255,0.4)';
+                c.beginPath(); c.arc(_tmAnchorX - 0.3, _tmTopY + 14.5, 0.3, 0, 6.28); c.fill();
+                // Tiny °F/°C labels
+                c.fillStyle = '#3a2510';
+                c.font = 'bold 1.6px sans-serif';
+                c.textAlign = 'left';
+                c.fillText('°F', _tmAnchorX + 1.6, _tmTopY + 3);
+                c.fillText('100', _tmAnchorX + 1.6, _tmTopY + 6);
+                c.fillText('50', _tmAnchorX + 1.6, _tmTopY + 10);
+                c.fillText('0', _tmAnchorX + 1.6, _tmTopY + 14);
+                c.textAlign = 'start';
+              })();
+
+              // ── Wooden birdhouse mounted on the apple tree trunk (year-round) ──
+              // Small pitched-roof birdhouse with a circular entrance hole and
+              // a perch beneath. Occasional bird (blue/orange flash) visits.
+              if (hiveX > 40) {
+                var _bhAtX = hiveX * 0.55;
+                var _bhX = _bhAtX - 6;
+                var _bhY = H * 0.76 - 32; // upper-trunk position
+                // Mount bracket
+                c.fillStyle = '#3a2510';
+                c.fillRect(_bhX + 3, _bhY, 1.2, 2);
+                // House body — pale wood
+                c.fillStyle = season === 3 ? '#a07a48' : '#c9a072';
+                c.fillRect(_bhX - 3, _bhY - 5, 6, 5);
+                // Wood grain
+                c.strokeStyle = 'rgba(80,55,25,0.5)';
+                c.lineWidth = 0.25;
+                c.beginPath(); c.moveTo(_bhX - 3, _bhY - 3); c.lineTo(_bhX + 3, _bhY - 3); c.stroke();
+                c.beginPath(); c.moveTo(_bhX - 3, _bhY - 1); c.lineTo(_bhX + 3, _bhY - 1); c.stroke();
+                // Triangular roof — dark
+                c.fillStyle = season === 3 ? '#3a2510' : '#5a3a18';
+                c.beginPath();
+                c.moveTo(_bhX - 3.5, _bhY - 5);
+                c.lineTo(_bhX, _bhY - 8);
+                c.lineTo(_bhX + 3.5, _bhY - 5);
+                c.closePath(); c.fill();
+                // Roof edge highlight
+                c.fillStyle = 'rgba(255,255,255,0.2)';
+                c.beginPath();
+                c.moveTo(_bhX - 3.5, _bhY - 5);
+                c.lineTo(_bhX, _bhY - 8);
+                c.lineTo(_bhX - 2.5, _bhY - 7);
+                c.closePath(); c.fill();
+                // Circular entrance hole
+                c.fillStyle = '#1a1208';
+                c.beginPath(); c.arc(_bhX, _bhY - 3, 0.9, 0, 6.28); c.fill();
+                // Wooden perch below the hole
+                c.fillStyle = '#5a3a18';
+                c.fillRect(_bhX - 0.3, _bhY - 1.8, 0.6, 1);
+                // Snow cap on roof in winter
+                if (season === 3) {
+                  c.fillStyle = '#ffffff';
+                  c.beginPath();
+                  c.moveTo(_bhX - 3.5, _bhY - 5);
+                  c.lineTo(_bhX, _bhY - 8.5);
+                  c.lineTo(_bhX + 3.5, _bhY - 5);
+                  c.lineTo(_bhX + 3.5, _bhY - 4.5);
+                  c.lineTo(_bhX, _bhY - 7.8);
+                  c.lineTo(_bhX - 3.5, _bhY - 4.5);
+                  c.closePath(); c.fill();
+                }
+                // Occasional resident peeking out (daytime, spring/summer)
+                if ((season === 0 || season === 1) && _sunCycle < 0.95) {
+                  var _bhPeekT = ((t2 + 400) % 1100) / 1100;
+                  if (_bhPeekT > 0.55 && _bhPeekT < 0.75) {
+                    // Bluebird beak/head poking out
+                    c.fillStyle = '#0284c7';
+                    c.beginPath(); c.arc(_bhX, _bhY - 3, 0.55, 0, 6.28); c.fill();
+                    c.fillStyle = '#fbbf24';
+                    c.beginPath();
+                    c.moveTo(_bhX, _bhY - 3);
+                    c.lineTo(_bhX - 1.2, _bhY - 2.8);
+                    c.lineTo(_bhX, _bhY - 2.6);
+                    c.closePath(); c.fill();
+                  }
+                }
+              }
+
+              // ── Rabbit tracks in winter snow (week 1+ of winter) ──
+              // Real biology: rabbits leave a distinctive print pattern —
+              // two large back-feet prints AHEAD of two smaller front-feet
+              // prints (they push off with the back legs in a hop). Tracks
+              // run diagonally across the meadow.
+              if (season === 3 && (day % 30) >= 3) {
+                var _rtCount = 6;
+                var _rtStartX = W * 0.65;
+                var _rtStartY = H * 0.83;
+                var _rtEndX = W * 0.20;
+                var _rtEndY = H * 0.87;
+                for (var rt = 0; rt < _rtCount; rt++) {
+                  var _rtT = rt / (_rtCount - 1);
+                  var _rtCx = _rtStartX + (_rtEndX - _rtStartX) * _rtT;
+                  var _rtCy = _rtStartY + (_rtEndY - _rtStartY) * _rtT;
+                  // Skip if track set overlaps hive
+                  if (_rtCx > hiveX - 15 && _rtCx < hiveX + hiveW + 15) continue;
+                  // Two large back-feet prints (ahead in direction of motion)
+                  c.fillStyle = 'rgba(180,200,225,0.65)';
+                  c.beginPath(); c.ellipse(_rtCx - 1, _rtCy - 1, 0.9, 1.6, 0, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_rtCx + 1, _rtCy - 1, 0.9, 1.6, 0, 0, 6.28); c.fill();
+                  // Two small front-feet prints (behind)
+                  c.beginPath(); c.ellipse(_rtCx - 0.5, _rtCy + 1.5, 0.5, 0.8, 0, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_rtCx + 0.5, _rtCy + 1.5, 0.5, 0.8, 0, 0, 6.28); c.fill();
+                  // Darker depression centers
+                  c.fillStyle = 'rgba(140,165,200,0.45)';
+                  c.beginPath(); c.ellipse(_rtCx - 1, _rtCy - 1, 0.45, 1.0, 0, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_rtCx + 1, _rtCy - 1, 0.45, 1.0, 0, 0, 6.28); c.fill();
+                }
+              }
+
               // ── Wind chime hanging off the apiary post (visual wind indicator) ──
               // Suspended from a small bracket on the right of the post,
               // beneath the sign. The chime swings in the same coherent wind
