@@ -2006,6 +2006,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         var decodeIdx = decodeIdxRaw[0], setDecodeIdx = decodeIdxRaw[1];
         var decodeAnswerRaw = useState('');
         var decodeAnswer = decodeAnswerRaw[0], setDecodeAnswer = decodeAnswerRaw[1];
+        // AI-generated mirror word — when set, displayed instead of the
+        // static DECODE_WORDS cycle. Cleared on "↻ New word" so the
+        // student can always return to the curated set.
+        var decodeAiWordRaw = useState(null);
+        var decodeAiWord = decodeAiWordRaw[0], setDecodeAiWord = decodeAiWordRaw[1];
+        var decodeGenStateRaw = useState({ loading: false, error: null });
+        var decodeGenState = decodeGenStateRaw[0], setDecodeGenState = decodeGenStateRaw[1];
         var decodeFeedbackRaw = useState(null);
         var decodeFeedback = decodeFeedbackRaw[0], setDecodeFeedback = decodeFeedbackRaw[1];
         var DECODE_WORDS = ['VERITAS', 'PRINT', 'TYPE', 'BIBLE', 'FREEDOM'];
@@ -2145,7 +2152,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           // types what it would print as. Quick, satisfying, directly
           // grounds the "compositors took years to learn this" claim.
           (function() {
-            var word = DECODE_WORDS[decodeIdx];
+            var word = decodeAiWord || DECODE_WORDS[decodeIdx];
+            var isAiWord = !!decodeAiWord;
+
+            function generateNewMirrorWord() {
+              if (!callGemini) {
+                setDecodeGenState({ loading: false, error: 'AI tutor unavailable in this build.' });
+                return;
+              }
+              setDecodeGenState({ loading: true, error: null });
+              var prompt = 'Pick ONE single English word, ALL CAPS, 5 to 10 letters, no punctuation, no spaces, that would feel at home as a 1450-1700 print-shop motto or scriptural / civic vocabulary item. Examples of the right register: VERITAS, PRESS, BIBLE, FREEDOM, JUSTICE, SCRIPTURE, MAINZ, GUTENBERG, PSALTER, COLOPHON. Avoid modern slang, brand names, profanity, and proper nouns from after 1900. Respond with ONLY the single word — no quotes, no explanation, no punctuation, no markdown.';
+              callGemini(prompt, { maxOutputTokens: 30 })
+                .then(function(resp) {
+                  var raw = (resp && (resp.text || resp.content || (typeof resp === 'string' ? resp : ''))) || '';
+                  // Extract first all-caps token of 3-12 letters. Strip quotes/markdown/punctuation.
+                  var match = raw.toUpperCase().match(/[A-Z]{3,12}/);
+                  if (!match) {
+                    setDecodeGenState({ loading: false, error: 'AI returned no valid word. Try again.' });
+                    return;
+                  }
+                  setDecodeAiWord(match[0]);
+                  setDecodeAnswer('');
+                  setDecodeFeedback(null);
+                  setDecodeGenState({ loading: false, error: null });
+                  announce('New AI-generated mirror word loaded.');
+                })
+                .catch(function(err) {
+                  setDecodeGenState({ loading: false, error: 'Could not reach the AI: ' + ((err && err.message) || 'unknown error') });
+                });
+            }
             return h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
               h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi, fontFamily: 'Georgia, serif' } },
                 '🪞 Try it: read the type'),
@@ -2177,12 +2212,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 }, 'Check'),
                 h('button', {
                   onClick: function() {
+                    // ↻ New word always returns to the static cycle, even
+                    // after an AI round, so students can flip back to the
+                    // curated set whenever they want.
+                    setDecodeAiWord(null);
                     setDecodeIdx((decodeIdx + 1) % DECODE_WORDS.length);
                     setDecodeAnswer(''); setDecodeFeedback(null);
+                    setDecodeGenState({ loading: false, error: null });
                     announce('Next word loaded.');
                   },
-                  style: btn({ padding: '10px 16px', fontSize: 13 }) }, '↻ New word')
+                  style: btn({ padding: '10px 16px', fontSize: 13 }) }, '↻ New word'),
+                callGemini && h('button', {
+                  onClick: generateNewMirrorWord,
+                  disabled: decodeGenState.loading,
+                  'aria-label': 'Generate a new AI word',
+                  style: btn({
+                    padding: '10px 16px', fontSize: 13,
+                    opacity: decodeGenState.loading ? 0.6 : 1,
+                    cursor: decodeGenState.loading ? 'wait' : 'pointer',
+                    borderColor: T.warn, color: T.warn
+                  })
+                }, decodeGenState.loading ? '\u{1F916} Generating…' : '\u{1F916} Generate (AI)')
               ),
+              // AI source chip when displaying a generated word
+              isAiWord && h('div', { style: { fontSize: 10, color: T.warn, fontStyle: 'italic', marginBottom: 8 } },
+                '\u{1F916} AI-generated word'),
+              // AI generation error / status
+              decodeGenState.error && h('div', {
+                'aria-live': 'polite', role: 'alert',
+                style: { padding: 8, borderRadius: 4, fontSize: 11, marginBottom: 10, background: '#3d2810', border: '1px dashed ' + T.warn, color: '#fed7aa' }
+              }, '⚠ ' + decodeGenState.error),
               decodeFeedback && h('div', { 'aria-live': 'polite',
                 style: { padding: 10, borderRadius: 6, fontSize: 13, lineHeight: 1.55,
                   background: decodeFeedback.correct ? '#1f3d28' : '#3d2810',
@@ -5643,6 +5702,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         var pplScore = pplScoreRaw[0], setPplScore = pplScoreRaw[1];
         var pplAttemptedRaw = useState(0);
         var pplAttempted = pplAttemptedRaw[0], setPplAttempted = pplAttemptedRaw[1];
+        // AI-generated quote override — when set, shown instead of the
+        // static QUOTES rotation. Cleared on "Next quote" so the student
+        // can always return to the curated set.
+        var pplAiQuoteRaw = useState(null);
+        var pplAiQuote = pplAiQuoteRaw[0], setPplAiQuote = pplAiQuoteRaw[1];
+        var pplGenStateRaw = useState({ loading: false, error: null });
+        var pplGenState = pplGenStateRaw[0], setPplGenState = pplGenStateRaw[1];
         // "Find your historical printer match" quiz state. 4 questions,
         // 4 archetypes. Each answer scores +1 toward one archetype.
         var matchAnswersRaw = useState([null, null, null, null]);
@@ -5943,7 +6009,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 hint: 'Multi-generational scholar-printers. Introduced verse numbering still used today.'
               }
             ];
-            var round = QUOTES[pplQuoteIdx];
+            // Use AI-generated quote if present, otherwise the static cycle.
+            var round = pplAiQuote || QUOTES[pplQuoteIdx];
+            var isAiQuote = !!pplAiQuote;
+
+            function generateNewQuote() {
+              if (!callGemini) {
+                setPplGenState({ loading: false, error: 'AI tutor unavailable in this build.' });
+                return;
+              }
+              setPplGenState({ loading: true, error: null });
+              // Constrain speaker to one of the named printers so the
+              // attribution game has a valid answer in the choices.
+              var speakerNames = PEOPLE.map(function(pp) { return pp.name; });
+              var prompt = 'Generate ONE imagined quote in the voice of a documented 1450-1800 European printer. Pick the speaker from this exact list: ' + speakerNames.join(' | ') + '. ' +
+                'The quote must be 1-3 sentences, period-appropriate, plausibly something the printer would say given their documented work, role, motto, or business situation. ' +
+                'Respond with ONLY a JSON object. NO markdown fences, NO commentary outside the JSON. Exact shape: ' +
+                '{"text": "<the quote in double smart-quotes “like this”>", "speaker": "<exact name from the list above>", "hint": "<one short sentence reminding the student which printer this is — their role, city, or signature work>"}. ' +
+                'Constraints: speaker must match one of the names above EXACTLY; the quote should not be a known historical transcript (label as imagined paraphrase); avoid modern phrasing or anachronisms.';
+              callGemini(prompt, { maxOutputTokens: 350 })
+                .then(function(resp) {
+                  var raw = (resp && (resp.text || resp.content || (typeof resp === 'string' ? resp : ''))) || '';
+                  var braceMatch = raw.match(/\{[\s\S]*\}/);
+                  if (!braceMatch) {
+                    setPplGenState({ loading: false, error: 'AI returned no JSON object. Try again.' });
+                    return;
+                  }
+                  var parsed;
+                  try { parsed = JSON.parse(braceMatch[0]); }
+                  catch (e) {
+                    setPplGenState({ loading: false, error: 'AI returned an unparseable response. Try again.' });
+                    return;
+                  }
+                  if (!parsed || !parsed.text || !parsed.speaker || !parsed.hint) {
+                    setPplGenState({ loading: false, error: 'AI response missing required fields. Try again.' });
+                    return;
+                  }
+                  // Validate speaker matches one of the printer names exactly.
+                  if (speakerNames.indexOf(parsed.speaker) === -1) {
+                    setPplGenState({ loading: false, error: 'AI named a speaker not in the printer list. Try again.' });
+                    return;
+                  }
+                  setPplAiQuote({ text: String(parsed.text), speaker: String(parsed.speaker), hint: String(parsed.hint) });
+                  setPplGuess(null);
+                  setPplRevealed(false);
+                  setPplGenState({ loading: false, error: null });
+                  announce('New AI-generated quote loaded.');
+                })
+                .catch(function(err) {
+                  setPplGenState({ loading: false, error: 'Could not reach the AI: ' + ((err && err.message) || 'unknown error') });
+                });
+            }
             // Build the 4 candidate names: correct + 3 distractors drawn from PEOPLE
             var distractors = PEOPLE.map(function(pp) { return pp.name; }).filter(function(n) { return n !== round.speaker; });
             // Deterministic distractor pick by quote index so the same round is stable
@@ -5966,21 +6082,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               announce(name === round.speaker ? 'Correct. That is the speaker.' : 'Not quite. The speaker is shown.');
             }
             function nextRound() {
+              // Always return to static cycle when advancing — students
+              // can fire the AI button again if they want another generated
+              // round, but Next Quote is the predictable curated path.
+              setPplAiQuote(null);
               setPplQuoteIdx((pplQuoteIdx + 1) % QUOTES.length);
               setPplGuess(null);
               setPplRevealed(false);
+              setPplGenState({ loading: false, error: null });
             }
             function resetGame() {
+              setPplAiQuote(null);
               setPplQuoteIdx(0);
               setPplGuess(null);
               setPplRevealed(false);
               setPplScore(0);
               setPplAttempted(0);
+              setPplGenState({ loading: false, error: null });
             }
             return h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8, flexWrap: 'wrap', gap: 6 } },
-                h('h4', { style: { margin: 0, fontSize: 14, color: T.accentHi, fontFamily: 'Georgia, serif' } },
-                  '\u{1F4AC} Who said this? (imagined voices)'),
+                h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
+                  h('h4', { style: { margin: 0, fontSize: 14, color: T.accentHi, fontFamily: 'Georgia, serif' } },
+                    '\u{1F4AC} Who said this? (imagined voices)'),
+                  isAiQuote && h('span', {
+                    style: { fontSize: 10, color: T.warn, fontStyle: 'italic', padding: '2px 8px', background: 'rgba(245,215,126,0.12)', borderRadius: 4, border: '1px solid ' + T.warn }
+                  }, '\u{1F916} AI-generated round')
+                ),
                 h('div', { style: { fontSize: 11, color: T.dim, fontFamily: 'ui-monospace, monospace' } },
                   'Round ' + Math.min(pplAttempted + (pplRevealed ? 0 : 1), QUOTES.length) + ' of ' + QUOTES.length + ' \u00B7 score ' + pplScore)
               ),
@@ -6028,12 +6156,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   h('div', { style: { fontStyle: 'italic', opacity: 0.92, fontSize: 12 } }, round.hint)
                 );
               })(),
+              // AI generation status \u2014 error or loading hint
+              pplGenState.error && h('div', {
+                'aria-live': 'polite', role: 'alert',
+                style: { padding: 8, borderRadius: 4, fontSize: 11, marginBottom: 10, background: '#3d2810', border: '1px dashed ' + T.warn, color: '#fed7aa' }
+              }, '\u26a0 ' + pplGenState.error),
               // Controls
               h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' } },
                 pplRevealed && !done && h('button', {
                   onClick: nextRound,
                   style: btnPrimary({ padding: '8px 14px', fontSize: 12 })
                 }, 'Next quote \u2192'),
+                callGemini && h('button', {
+                  onClick: generateNewQuote,
+                  disabled: pplGenState.loading,
+                  'aria-label': 'Generate a new AI quote',
+                  style: btn({
+                    padding: '8px 14px', fontSize: 12,
+                    opacity: pplGenState.loading ? 0.6 : 1,
+                    cursor: pplGenState.loading ? 'wait' : 'pointer',
+                    borderColor: T.warn, color: T.warn
+                  })
+                }, pplGenState.loading ? '\u{1F916} Generating\u2026' : '\u{1F916} Generate quote (AI)'),
                 pplRevealed && done && h('div', { style: { width: '100%', textAlign: 'center', padding: 10, background: T.cardAlt, border: '1px solid ' + T.accent, borderRadius: 6, marginBottom: 8 } },
                   h('div', { style: { fontSize: 13, color: T.accentHi, fontFamily: 'Georgia, serif', fontWeight: 700, marginBottom: 4 } },
                     'Round complete. Final score: ' + pplScore + ' / ' + QUOTES.length),
