@@ -5607,13 +5607,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.clearRect(0, 0, W, H);
 
               // ── Sky (seasonal gradient + atmosphere) ──
+              // Each season has a 3-stop vertical gradient (zenith / horizon
+              // / ground tint). We smoothly LERP between the current season
+              // and the next during the final 5 days of each 30-day season,
+              // so the sky shifts gradually instead of jumping color at the
+              // first frame of the new season.
               var skys = [
                 ['#7ec8e3','#b8e2f2','#90d88c'], ['#4a9fd6','#7ec8e3','#4ade80'],
                 ['#c4856b','#e8c496','#a87732'], ['#8aa4be','#b0c4de','#dfe6ed']
               ];
               var sk = skys[season] || skys[0];
+              var skNext = skys[(season + 1) % 4];
+              var _daysInSeason = day % 30;
+              var transT = _daysInSeason >= 25 ? (_daysInSeason - 25) / 5 : 0;
+              function _lerpHex(a, b, t) {
+                if (t <= 0) return a;
+                if (t >= 1) return b;
+                var ai = parseInt(a.slice(1), 16);
+                var bi = parseInt(b.slice(1), 16);
+                var ar = (ai >> 16) & 0xff, ag = (ai >> 8) & 0xff, ab = ai & 0xff;
+                var br = (bi >> 16) & 0xff, bg = (bi >> 8) & 0xff, bb = bi & 0xff;
+                var r = Math.round(ar + (br - ar) * t);
+                var g = Math.round(ag + (bg - ag) * t);
+                var bl = Math.round(ab + (bb - ab) * t);
+                var hex = ((r << 16) | (g << 8) | bl).toString(16);
+                while (hex.length < 6) hex = '0' + hex;
+                return '#' + hex;
+              }
+              var sk0 = _lerpHex(sk[0], skNext[0], transT);
+              var sk1 = _lerpHex(sk[1], skNext[1], transT);
+              var sk2 = _lerpHex(sk[2], skNext[2], transT);
               var sg = c.createLinearGradient(0, 0, 0, H);
-              sg.addColorStop(0, sk[0]); sg.addColorStop(0.55, sk[1]); sg.addColorStop(1, sk[2]);
+              sg.addColorStop(0, sk0); sg.addColorStop(0.55, sk1); sg.addColorStop(1, sk2);
               c.fillStyle = sg; c.fillRect(0, 0, W, H);
 
               // Sun / Moon — moves in an arc across the sky following the _tod cycle
@@ -6801,6 +6826,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillStyle = 'rgba(0,0,0,0.28)';
                 var shStretch = phase === 'walk' ? 1.1 : 1.0;
                 c.beginPath(); c.ellipse(bkX, bkGround, 7 * bkScale * shStretch, 1.6 * bkScale, 0, 0, 6.28); c.fill();
+                // ── Walk dust — 2 small puffs behind the heel when walking ──
+                // Telegraphs forward motion without needing a sprite flip.
+                // Travel direction is from homeX (right) toward hiveEntranceX
+                // (left) during action walk-in, reverse during walk-back. The
+                // dust always trails behind, so we'll just emit on both sides
+                // and let the alpha mask handle it visually.
+                if (phase === 'walk') {
+                  for (var wd = 0; wd < 2; wd++) {
+                    var wdT = ((t2 * 0.4 + wd * 25) % 50) / 50; // 0..1 fade
+                    var wdAlpha = (1 - wdT) * 0.35;
+                    var wdR = (1 + wdT * 2.5) * bkScale * 0.4;
+                    var wdOff = (3.5 + wdT * 4) * bkScale; // drift outward
+                    var wdY = bkGround - wdT * 0.5 * bkScale; // small float
+                    c.fillStyle = 'rgba(180,160,130,' + wdAlpha.toFixed(3) + ')';
+                    c.beginPath(); c.arc(bkX + wdOff, wdY, wdR, 0, 6.28); c.fill();
+                  }
+                }
                 // ── Body (white suit) — slight taper from shoulder to waist via two trapezoidal rects ──
                 c.fillStyle = '#f1f5f9';
                 // Main chest panel
