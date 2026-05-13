@@ -6926,6 +6926,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.restore();
                 }
               }
+              // ── Queen Mandibular Pheromone (QMP) — golden ribbon above the hive ──
+              // Real bees can sense QMP through their antennae from inches
+              // away; it's the colony's most important social signal. We
+              // visualize it as a soft golden glow ringing the top of the
+              // hive whose intensity tracks queenHealth. Healthy queen =
+              // strong constant signal. Failing queen = thin, sputtering
+              // signal. Below 30% the signal collapses and stress shows up
+              // in the alarm pheromone wisp above.
+              if (queenHealth >= 35) {
+                var qmpStrength = Math.max(0, Math.min(1, (queenHealth - 30) / 70));
+                var qmpCx = hiveX + hiveW / 2;
+                var qmpCy = hiveY - 4;
+                c.save();
+                // Soft glow halo
+                var qmpGlow = c.createRadialGradient(qmpCx, qmpCy, 2, qmpCx, qmpCy, hiveW * 0.8);
+                qmpGlow.addColorStop(0, 'rgba(253,224,71,' + (0.22 * qmpStrength).toFixed(3) + ')');
+                qmpGlow.addColorStop(0.5, 'rgba(251,191,36,' + (0.10 * qmpStrength).toFixed(3) + ')');
+                qmpGlow.addColorStop(1, 'rgba(251,191,36,0)');
+                c.fillStyle = qmpGlow;
+                c.beginPath(); c.ellipse(qmpCx, qmpCy, hiveW * 0.8, hiveW * 0.35, 0, 0, 6.28); c.fill();
+                // Rising golden mote particles — count + speed scale with strength
+                var qmpCount = Math.round(2 + qmpStrength * 5);
+                c.globalAlpha = 0.7 * qmpStrength;
+                for (var qm = 0; qm < qmpCount; qm++) {
+                  var qmT = ((t2 * 0.22 + qm * 31) % 80) / 80; // 0..1 rise from hive top up
+                  var qmJitter = Math.sin(t2 * 0.04 + qm * 1.7) * 2;
+                  var qmX = qmpCx + (qm - qmpCount / 2) * 4 + qmJitter;
+                  var qmY = qmpCy - qmT * 28;
+                  var qmR = 0.9 + (1 - qmT) * 1.4;
+                  var qmAlpha = (1 - qmT) * 0.85;
+                  c.fillStyle = 'rgba(253,224,71,' + qmAlpha.toFixed(3) + ')';
+                  c.beginPath(); c.arc(qmX, qmY, qmR, 0, 6.28); c.fill();
+                }
+                c.restore();
+              } else if (queenHealth < 30 && queenHealth > 0) {
+                // Failing queen — golden motes falling (signal collapsing).
+                c.save();
+                c.globalAlpha = 0.35;
+                for (var qf = 0; qf < 3; qf++) {
+                  var qfT = ((t2 * 0.25 + qf * 27) % 60) / 60;
+                  var qfX = hiveX + hiveW / 2 + Math.sin(t2 * 0.05 + qf * 2) * 4;
+                  var qfY = hiveY - 2 + qfT * 14; // falling down
+                  c.fillStyle = 'rgba(217,119,6,' + ((1 - qfT) * 0.7).toFixed(3) + ')';
+                  c.beginPath(); c.arc(qfX, qfY, 1.2, 0, 6.28); c.fill();
+                }
+                c.restore();
+              }
               // Ground cast shadow (soft, wide ellipse — gives the hive weight)
               var csY = hiveY + hiveH + 6;
               var csGrad = c.createRadialGradient(hiveX + hiveW / 2, csY, 2, hiveX + hiveW / 2, csY, hiveW * 0.7);
@@ -7327,6 +7374,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               vig.addColorStop(0, 'rgba(0,0,0,0)');
               vig.addColorStop(1, 'rgba(0,0,0,0.15)');
               c.fillStyle = vig; c.fillRect(0, 0, W, H);
+
+              // ── Time-of-day darkening (after vignette, before HUD) ──
+              // Subtle navy overlay that ramps in/out across dusk → night →
+              // dawn so the scene actually FEELS like a 24-hour cycle. Drawn
+              // before the HUD so the HUD stays readable at night.
+              //
+              // Phases follow the same _sunCycle 0..2 that drives the sun arc:
+              //   clockT 0.0-0.9  → full day      (no dim)
+              //   clockT 0.9-1.1  → dusk          (warm orange tint, ramps up)
+              //   clockT 1.1-1.9  → night         (deep blue overlay, peaks at 1.5 = midnight)
+              //   clockT 1.9-2.0  → dawn          (warm orange tint, ramps down)
+              var _tdT = (((t2 * 0.0004) % 2) + 2) % 2;
+              if (_tdT > 0.9 && _tdT < 2.0) {
+                if (_tdT < 1.1) {
+                  // Dusk — orange/pink tint, alpha ramps 0 → 0.20
+                  var duskA = ((_tdT - 0.9) / 0.2) * 0.20;
+                  c.fillStyle = 'rgba(196,93,69,' + duskA.toFixed(3) + ')'; // warm sunset
+                  c.fillRect(0, 0, W, H);
+                } else if (_tdT < 1.9) {
+                  // Night — deep navy. Bell curve peaks at clockT=1.5.
+                  var nightBell = 1 - Math.abs(_tdT - 1.5) / 0.4; // 0..1
+                  var nightA = nightBell * 0.32;
+                  c.fillStyle = 'rgba(10,20,46,' + nightA.toFixed(3) + ')'; // deep navy
+                  c.fillRect(0, 0, W, H);
+                } else {
+                  // Dawn — orange/pink, alpha ramps 0.20 → 0
+                  var dawnA = (1 - (_tdT - 1.9) / 0.1) * 0.20;
+                  c.fillStyle = 'rgba(232,140,90,' + dawnA.toFixed(3) + ')'; // soft dawn
+                  c.fillRect(0, 0, W, H);
+                }
+              }
 
               // ── HUD overlay (glass morphism style) ──
               // Bigger panel: season + day + time-of-day clock, year +
