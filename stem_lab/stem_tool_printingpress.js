@@ -6113,6 +6113,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               // White cravat at throat
               h('path', { d: 'M 30 56 Q 35 62 40 56', stroke: '#f5e8c8', strokeWidth: 3, fill: 'none' })
             );
+          },
+          // Northern Renaissance humanist scholar (Erasmus archetype, after
+          // the Holbein portrait): soft round scholar's cap that covers the
+          // whole crown, pale studious face turned slightly to the side as
+          // if reading, beardless, austere black robe with a thin white
+          // collar showing. A quill held to the right side signals scholar-
+          // at-work — the documented Holbein portrait of Erasmus shows him
+          // writing.
+          erasmus: function() {
+            return h('svg', { width: 70, height: 80, viewBox: '0 0 70 80', 'aria-hidden': 'true' },
+              // Soft round scholar's cap (covers the whole crown, no brim)
+              h('path', { d: 'M 16 26 Q 16 8 35 6 Q 54 8 54 26 Q 54 28 52 28 L 18 28 Q 16 28 16 26 Z', fill: '#1a1410' }),
+              h('ellipse', { cx: 35, cy: 26, rx: 19, ry: 3, fill: '#0a0805' }),
+              // Cap shadow under the brim
+              h('path', { d: 'M 18 28 L 52 28', stroke: '#0a0805', strokeWidth: 0.6, fill: 'none', opacity: 0.7 }),
+              // Face — turned slightly (eye-line shifted right of center)
+              h('ellipse', { cx: 35, cy: 36, rx: 11, ry: 13, fill: '#dec0a0' }),
+              // Eyes (looking down + slightly right, studious)
+              h('circle', { cx: 32, cy: 36, r: 0.8, fill: '#1a1410' }),
+              h('circle', { cx: 39, cy: 36, r: 0.8, fill: '#1a1410' }),
+              // Faint nose line (Holbein portrait shows a sharp, prominent
+              // nose; signal it with a thin shadow)
+              h('path', { d: 'M 34 36 Q 33 40 34 43', stroke: '#a8896c', strokeWidth: 0.5, fill: 'none' }),
+              // Quietly drawn mouth
+              h('path', { d: 'M 32 46 Q 35 47 38 46', stroke: '#7c2d12', strokeWidth: 0.7, fill: 'none' }),
+              // Austere black scholar's robe
+              h('path', { d: 'M 14 80 L 14 58 Q 14 54 22 52 L 48 52 Q 56 54 56 58 L 56 80 Z', fill: '#1a1410' }),
+              // Thin white shirt collar showing
+              h('path', { d: 'M 26 52 Q 35 56 44 52', stroke: '#f5e8c8', strokeWidth: 1.2, fill: 'none' }),
+              // Quill held in right hand (to the right side of the figure)
+              h('line', { x1: 56, y1: 76, x2: 64, y2: 56, stroke: '#f5e8c8', strokeWidth: 1.4, strokeLinecap: 'round' }),
+              h('line', { x1: 60, y1: 66, x2: 64, y2: 60, stroke: '#d4c4a0', strokeWidth: 0.8, strokeLinecap: 'round' }),
+              h('line', { x1: 62, y1: 62, x2: 64, y2: 58, stroke: '#d4c4a0', strokeWidth: 0.8, strokeLinecap: 'round' })
+            );
           }
         };
         var PEOPLE = [
@@ -6124,6 +6158,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             story: 'A skilled scribe before he came to Gutenberg. Schöffer is credited with major refinements to type design, and he ran the press after Fust took it over. The Mainz Psalter (1457), one of the most beautiful early printed books, bears Fust and Schöffer\'s names — making it the first book with a printer\'s colophon.' },
           { silhouetteKey: 'aldus', name: 'Aldus Manutius', dates: '1449–1515', city: 'Venice', role: 'Renaissance scholar-printer who invented the pocket book.',
             story: 'Founded the Aldine Press in 1494. Pioneered the small octavo format ("portable books"), commissioned italic type to fit more text per page, and printed Greek classics in beautiful, scholarly editions. The Aldine dolphin-and-anchor logo was widely counterfeited — the first piracy of a publisher\'s brand. Modern paperbacks descend from his portable formats.' },
+          { silhouetteKey: 'erasmus', name: 'Desiderius Erasmus', dates: '1466–1536', city: 'Rotterdam, Basel, and most of Europe', role: 'Humanist scholar; the AD FONTES rallying cry was effectively his.',
+            story: 'The most prolific scholar in Europe in the early 1500s, and arguably the figure who most fully fused the printing press with humanist scholarship. His 1516 Greek New Testament — printed by Johann Froben in Basel — restored the original-language text after centuries of Latin Vulgate copies, and Luther translated from Erasmus\'s Greek edition into German three years later. Erasmus drove printers in Basel, Venice, Paris, and Antwerp to publish ancient sources in their original languages, and personally corresponded with Aldus Manutius for years. AD FONTES — back to the sources — was the program of his life.' },
           { silhouetteKey: 'guillard', name: 'Charlotte Guillard', dates: '~1485–1557', city: 'Paris', role: 'Printer and publisher; ran one of the largest Paris presses for ~30 years.',
             story: 'Inherited her husband\'s printing business in 1518 and ran it for nearly four decades. Specialized in scholarly Latin theology and law. Her shop produced over 150 substantial books — many with her own preface or note. One of dozens of women who ran European presses in the 16th-17th centuries; women printers were common but standard histories often left them out.' },
           { silhouetteKey: 'estienne', name: 'The Estienne family', dates: '1500s', city: 'Paris and Geneva', role: 'Multi-generational scholar-printers; produced reference standards still used today.',
@@ -6247,6 +6283,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 text: '\u201CNumber every verse. A reader needs to find their place \u2014 and a scholar needs to argue from it.\u201D',
                 speaker: 'The Estienne family',
                 hint: 'Multi-generational scholar-printers. Introduced verse numbering still used today.'
+              },
+              {
+                text: '\u201CAd fontes. The Greek before the Latin, the Latin before its copies \u2014 and let the press carry the original to every desk in Europe at once.\u201D',
+                speaker: 'Desiderius Erasmus',
+                hint: 'Northern Renaissance humanist. Pushed printers to publish ancient texts in their original languages.'
               }
             ];
             // Use AI-generated quote if present, otherwise the static cycle.
