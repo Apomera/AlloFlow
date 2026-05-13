@@ -7012,9 +7012,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
 
               // ── Flowers (enhanced with depth) ──
+              // Sway = coherent wind wave (same speed/direction as the grass
+              // blades, sweeps L→R across the meadow) + a smaller per-flower
+              // jitter so the field looks alive, not robotic. The shared wave
+              // makes the whole meadow feel like ONE moving system instead of
+              // a grid of independent oscillators.
               flowers.forEach(function(fl) {
                 if (season === 3) return;
-                var sw = Math.sin(t2 * 0.012 + fl.sp) * 2.5;
+                var _flWind   = Math.sin(t2 * 0.025 - fl.x * 0.015) * 2.0;
+                var _flJitter = Math.sin(t2 * 0.012 + fl.sp) * 1.0;
+                var sw = _flWind + _flJitter;
                 var bsz = fl.sz * (season === 1 ? 1.3 : season === 2 ? 0.7 : 1.0);
                 // Stem with leaf
                 c.strokeStyle = '#16a34a'; c.lineWidth = 1.8;
@@ -7035,6 +7042,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 // Center
                 c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(fl.x + sw, fl.y, bsz * 0.22, 0, 6.28); c.fill();
               });
+
+              // ── Water station: ceramic birdbath with water-forager bees ──
+              // Real bee biology: in warm months, a colony dedicates ~6-12 workers
+              // to water foraging. They collect droplets and bring them home to
+              // spread on comb — fanner bees evaporate the water to cool brood
+              // (target 95°F). Beekeepers put out shallow water stations with
+              // landing stones so bees don't drown. Drawn before stepping stones
+              // so the foreground depth-sort puts stones in front when overlap.
+              if (season === 0 || season === 1 || season === 2) {
+                var _bbCx = W * 0.62, _bbCy = H * 0.88;
+                var _bbW = 16, _bbH = 5;
+                // Outer pedestal shadow
+                c.fillStyle = 'rgba(0,0,0,0.18)';
+                c.beginPath(); c.ellipse(_bbCx + 1, _bbCy + 2.5, _bbW + 1.5, _bbH * 0.6, 0, 0, 6.28); c.fill();
+                // Stone pedestal (chunky base)
+                c.fillStyle = '#a8a29e';
+                c.fillRect(_bbCx - 4, _bbCy - 1, 8, 5);
+                c.fillStyle = '#78716c';
+                c.fillRect(_bbCx - 4, _bbCy + 3, 8, 1.5);
+                // Outer rim (ceramic)
+                c.fillStyle = '#e7e5e4';
+                c.beginPath(); c.ellipse(_bbCx, _bbCy - 1, _bbW, _bbH, 0, 0, 6.28); c.fill();
+                // Inner shadow ring (lip)
+                c.fillStyle = '#a8a29e';
+                c.beginPath(); c.ellipse(_bbCx, _bbCy - 0.6, _bbW - 2.5, _bbH - 1.2, 0, 0, 6.28); c.fill();
+                // Water surface — pale blue with subtle gradient
+                var _bbWg = c.createRadialGradient(_bbCx - 2, _bbCy - 1.5, 0.5, _bbCx, _bbCy - 1, _bbW - 3);
+                _bbWg.addColorStop(0, 'rgba(186,230,253,0.95)');
+                _bbWg.addColorStop(1, 'rgba(56,189,248,0.85)');
+                c.fillStyle = _bbWg;
+                c.beginPath(); c.ellipse(_bbCx, _bbCy - 1, _bbW - 3.5, _bbH - 1.8, 0, 0, 6.28); c.fill();
+                // Surface highlight (curved bright crescent on upper-left of water)
+                c.fillStyle = 'rgba(255,255,255,0.55)';
+                c.beginPath(); c.ellipse(_bbCx - 3, _bbCy - 1.8, 4, 0.6, -0.2, 0, 6.28); c.fill();
+                // Ripple rings — 2 expanding rings at a slow cadence (a bee just landed)
+                var _bbRipT = ((t2 * 0.06) % 60) / 60; // 0..1
+                if (_bbRipT < 0.65) {
+                  var _bbRr = _bbRipT * (_bbW - 4);
+                  c.strokeStyle = 'rgba(255,255,255,' + (0.55 * (1 - _bbRipT / 0.65)).toFixed(3) + ')';
+                  c.lineWidth = 0.45;
+                  c.beginPath(); c.ellipse(_bbCx - 2, _bbCy - 1.4, _bbRr, _bbRr * 0.45, 0, 0, 6.28); c.stroke();
+                }
+                var _bbRipT2 = ((t2 * 0.06 + 30) % 60) / 60;
+                if (_bbRipT2 < 0.65) {
+                  var _bbRr2 = _bbRipT2 * (_bbW - 5);
+                  c.strokeStyle = 'rgba(255,255,255,' + (0.45 * (1 - _bbRipT2 / 0.65)).toFixed(3) + ')';
+                  c.lineWidth = 0.4;
+                  c.beginPath(); c.ellipse(_bbCx + 3, _bbCy - 0.8, _bbRr2, _bbRr2 * 0.45, 0, 0, 6.28); c.stroke();
+                }
+                // Landing stones — 2 small pebbles peeking above the water (so bees don't drown)
+                c.fillStyle = '#9ca3af';
+                c.beginPath(); c.ellipse(_bbCx - 5, _bbCy - 1.5, 1.6, 0.8, 0, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(_bbCx + 4, _bbCy - 0.7, 1.3, 0.7, 0, 0, 6.28); c.fill();
+                c.fillStyle = 'rgba(255,255,255,0.3)';
+                c.beginPath(); c.arc(_bbCx - 5.2, _bbCy - 1.8, 0.4, 0, 6.28); c.fill();
+                // Water-forager bees on the rim — 2 bees crouched drinking, head tipped to water
+                var _bbBeeCount = season === 1 ? 3 : 2; // more in peak summer (cooling demand)
+                for (var wfb = 0; wfb < _bbBeeCount; wfb++) {
+                  var _wfbAng = (wfb / _bbBeeCount) * 2.2 - 1.0; // span ~front arc
+                  var _wfbX = _bbCx + Math.cos(_wfbAng) * (_bbW - 2.5);
+                  var _wfbY = _bbCy - 1 + Math.sin(_wfbAng) * (_bbH - 1.5) * 0.7;
+                  // Tiny bee body (top-down view since they're crouched on the rim)
+                  var _wfbBob = Math.sin(t2 * 0.05 + wfb * 1.7) * 0.2; // gentle bob while drinking
+                  c.save();
+                  c.translate(_wfbX, _wfbY + _wfbBob);
+                  c.rotate(_wfbAng + Math.PI); // head pointing in toward water
+                  // Body
+                  c.fillStyle = '#fbbf24';
+                  c.beginPath(); c.ellipse(0, 0, 2, 1.1, 0, 0, 6.28); c.fill();
+                  // Stripes
+                  c.fillStyle = '#1c1917';
+                  c.fillRect(-0.3, -1, 0.5, 2);
+                  c.fillRect(0.5, -0.8, 0.4, 1.6);
+                  // Head (smaller dark circle at the leading end)
+                  c.fillStyle = '#1c1917';
+                  c.beginPath(); c.arc(-1.6, 0, 0.7, 0, 6.28); c.fill();
+                  // Wings (semi-transparent, slow flutter)
+                  c.globalAlpha = 0.45 + Math.abs(Math.sin(t2 * 0.18 + wfb)) * 0.25;
+                  c.fillStyle = '#e0f2fe';
+                  c.beginPath(); c.ellipse(0.6, -0.6, 1.3, 0.5, -0.2, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(0.6,  0.6, 1.3, 0.5,  0.2, 0, 6.28); c.fill();
+                  c.restore();
+                }
+              }
 
               // ── Stepping stones path leading from meadow to the hive ──
               var stepCount = 7;
@@ -7707,6 +7798,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   }
                 }
               })();
+
+              // ── Winter hive breath (condensation rising from entrance) ──
+              // Real-world phenomenon: in winter the cluster maintains brood at
+              // ~95°F by shivering flight muscles, and the moist warm air leaves
+              // the entrance as visible condensation against the cold morning
+              // air. Beekeepers use this as a quick "the hive is alive" check
+              // on a freezing day. Strongest at dawn (cold/warm contrast peak),
+              // softer through the rest of winter day.
+              if (season === 3) {
+                var _wbBreathBase = hiveX + hiveW / 2;
+                var _wbBreathTop  = hiveY + hiveH - 4;
+                // Stronger at dawn — _sunCycle wraps at 2/0 = sunrise
+                var _wbDawnX = Math.max(0, 1 - Math.min(_sunCycle, 2 - _sunCycle) / 0.3);
+                var _wbBaseStrength = 0.25 + _wbDawnX * 0.55;
+                c.save();
+                for (var wbr = 0; wbr < 5; wbr++) {
+                  var _wbPhase = ((t2 * 0.15 + wbr * 25) % 100) / 100; // 0..1 rise cycle
+                  var _wbRiseY = _wbBreathTop - _wbPhase * 28;
+                  var _wbDrift = Math.sin(t2 * 0.02 + wbr * 1.3) * 4;
+                  var _wbR = 3 + _wbPhase * 6;
+                  // Fade in at low _wbPhase, fade out at high
+                  var _wbAlpha = _wbBaseStrength * Math.sin(_wbPhase * Math.PI) * 0.55;
+                  if (_wbAlpha < 0.02) continue;
+                  c.fillStyle = 'rgba(240,248,255,' + _wbAlpha.toFixed(3) + ')';
+                  c.beginPath();
+                  c.ellipse(_wbBreathBase + _wbDrift, _wbRiseY, _wbR, _wbR * 0.75, 0, 0, 6.28);
+                  c.fill();
+                }
+                c.restore();
+              }
 
               // ── Guard bees on the landing board (static sentries, face the entrance) ──
               var lbY = hiveY + hiveH + 0.5;
