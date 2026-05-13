@@ -1978,7 +1978,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             hint: 'This challenge includes a "fi" ligature — a single sort that prints both letters joined. Look for the special joined sort in the case.' },
           { id: 'FALMOUTH', label: 'Phrase 3: FALMOUTH (1785 Maine)', phrase: 'FALMOUTH', slotCount: 8,
             sorts: ['F', 'A', 'L', 'M', 'O', 'U', 'T', 'H', 'E', 'I', 'R', 'N', 'S'],
-            hint: 'Compose FALMOUTH the way Thomas B. Wait and Benjamin Titcomb would have set it for the first issue of the Falmouth Gazette in January 1785 — the first newspaper printed in what would become Maine. (Falmouth is now Portland, walking distance from King Middle School.)' }
+            hint: 'Compose FALMOUTH the way Thomas B. Wait and Benjamin Titcomb would have set it for the first issue of the Falmouth Gazette in January 1785 — the first newspaper printed in what would become Maine. (Falmouth is now Portland, walking distance from King Middle School.)' },
+          { id: 'COMMON_SENSE', label: 'Phrase 4: COMMON SENSE (1776 Paine)', phrase: 'COMMON SENSE', slotCount: 12,
+            sorts: ['C', 'O', 'M', 'M', 'O', 'N', ' ', 'S', 'E', 'N', 'S', 'E', 'T', 'R', 'I', 'A', 'P'],
+            hint: 'Compose the title of the pamphlet that sold about 150,000 copies in colonial America in 1776 — the highest-leverage broadside in American history. Thomas Paine wrote it in three months; printers across the colonies set it in days. Per capita, one of the best-selling political works ever published.' }
         ];
         var challengeIdxRaw = useState(0);
         var challengeIdx = challengeIdxRaw[0], setChallengeIdx = challengeIdxRaw[1];
@@ -2000,6 +2003,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         }, [challengeIdx]);
 
         var solved = st.slots.join('') === PHRASE;
+        // Track which challenges the student has completed this session.
+        // Map of challenge.id → true. Used by the picker to render a star
+        // badge next to completed phrases. Session-only by design (a
+        // student returning fresh should see all four challenges open).
+        var challengesDoneRaw = useState({});
+        var challengesDone = challengesDoneRaw[0], setChallengesDone = challengesDoneRaw[1];
+        useEffect(function () {
+          if (solved && CHALLENGE && CHALLENGE.id && !challengesDone[CHALLENGE.id]) {
+            var next = Object.assign({}, challengesDone);
+            next[CHALLENGE.id] = true;
+            setChallengesDone(next);
+          }
+        }, [solved, CHALLENGE && CHALLENGE.id]);
         // Display helper: render the ligature placeholder as "fi"
         function displayChar(c) { return c === '' ? 'fi' : c; }
         // Decode-mirror-text exercise state. Students see a mirror-reversed
@@ -2482,13 +2498,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
 
           // ── Challenge picker ──
-          h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' } },
+          // ⭐ badge appears on each challenge once the student composes it
+          // correctly this session. Session-only — a fresh visit shows all
+          // four challenges as still-to-do. Combined count rendered to the
+          // right of the picker (e.g. "2 / 4 composed") so students see a
+          // quick set-completion goal.
+          h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap', alignItems: 'center' } },
             CHALLENGES.map(function(ch, i) {
-              return h('button', { key: i,
+              var doneHere = !!challengesDone[ch.id];
+              return h('button', {
+                key: i,
                 onClick: function() { setChallengeIdx(i); announce('Loaded ' + ch.label); },
+                'aria-label': ch.label + (doneHere ? ' (composed)' : ''),
                 style: i === challengeIdx ? btnPrimary({ padding: '6px 12px', fontSize: 12 }) : btn({ padding: '6px 12px', fontSize: 12 })
-              }, ch.label);
-            })
+              },
+                doneHere && h('span', { 'aria-hidden': 'true', style: { color: T.accentHi, marginRight: 4 } }, '⭐'),
+                ch.label
+              );
+            }),
+            (function () {
+              var doneCount = CHALLENGES.filter(function (c) { return !!challengesDone[c.id]; }).length;
+              return h('div', { style: { fontSize: 11, color: doneCount === CHALLENGES.length ? T.accentHi : T.dim, marginLeft: 'auto', fontFamily: 'ui-monospace, Consolas, monospace' } },
+                doneCount + ' / ' + CHALLENGES.length + ' composed' + (doneCount === CHALLENGES.length ? ' ⭐' : '')
+              );
+            })()
           ),
           h('div', { style: { fontSize: 12, color: T.muted, fontStyle: 'italic', marginBottom: 12, padding: '8px 12px', background: T.cardAlt, borderRadius: 6, border: '1px solid ' + T.border, lineHeight: 1.5 } }, CHALLENGE.hint),
 

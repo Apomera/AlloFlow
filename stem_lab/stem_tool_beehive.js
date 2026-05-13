@@ -6090,6 +6090,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
 
               // ── Sunflowers (3 tall dramatic ones, major bee forage in summer/autumn) ──
+              // ⤴ Real sunflowers exhibit HELIOTROPISM — the young flower
+              // head physically tracks the sun across the sky (solar tracking
+              // via differential growth in the stem). We tilt each head a few
+              // pixels toward the current sun position to make this visible.
+              // At night, the heads face east (circadian "memory" of dawn) —
+              // a real phenomenon Helianthus annuus exhibits.
               if (season !== 3) {
                 var sunflowerSpots = [W * 0.50, W * 0.73, W * 0.95];
                 sunflowerSpots.forEach(function(sfx, sfi) {
@@ -6098,10 +6104,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   var sfH = 48 + sfi * 6;
                   var sfSw = Math.sin(t2 * 0.01 + sfi * 2) * 3;
                   var sfTopY = sfy - sfH;
-                  // Thick green stem
+                  // Heliotropism — head leans toward the sun by up to ~5px
+                  // (or east at night when sun is below horizon).
+                  var _helX = sunX - sfx;
+                  var _helY = sunY - sfTopY;
+                  var _helD = Math.hypot(_helX, _helY);
+                  var _isNight = _tdT >= 1.05 && _tdT <= 1.95;
+                  var helioX, helioY;
+                  if (_isNight) {
+                    // East-facing memory (slight leftward lean, slight upward)
+                    helioX = -4; helioY = -1;
+                  } else {
+                    helioX = _helD > 1 ? (_helX / _helD) * 4.5 : 0;
+                    helioY = _helD > 1 ? (_helY / _helD) * 3 : 0;
+                  }
+                  // Thick green stem — control point + endpoint shift with helio for a bent-toward-sun curve
                   c.strokeStyle = '#166534'; c.lineWidth = 2.5;
                   c.beginPath(); c.moveTo(sfx, sfy);
-                  c.quadraticCurveTo(sfx + sfSw * 0.6, sfy - sfH * 0.5, sfx + sfSw, sfTopY);
+                  c.quadraticCurveTo(sfx + sfSw * 0.6 + helioX * 0.4, sfy - sfH * 0.5 + helioY * 0.4, sfx + sfSw + helioX, sfTopY + helioY);
                   c.stroke();
                   // Leaves (2 per stem)
                   c.fillStyle = '#22c55e';
@@ -6109,8 +6129,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.beginPath(); c.ellipse(-5, 0, 6, 2.5, -0.4, 0, 6.28); c.fill();
                   c.beginPath(); c.ellipse(5, -6, 5, 2, 0.4, 0, 6.28); c.fill();
                   c.restore();
-                  // Petals (big yellow rays)
-                  var sfcX = sfx + sfSw, sfcY = sfTopY;
+                  // Petals (big yellow rays) — head leans toward the sun
+                  var sfcX = sfx + sfSw + helioX, sfcY = sfTopY + helioY;
                   c.save(); c.shadowColor = '#fbbf24'; c.shadowBlur = 4;
                   for (var sfp = 0; sfp < 14; sfp++) {
                     var sfpA = sfp * 0.449 + t2 * 0.001;
