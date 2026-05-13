@@ -7460,6 +7460,250 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              // ── Wooden trellis with morning glory vines (year-round structure, seasonal vines) ──
+              // A traditional pyramid trellis (3 angled stakes meeting at a top
+              // collar) with morning glory vines climbing in spring + summer,
+              // dried tangles in fall, bare structure in winter. Morning glories
+              // open at dawn and close by midafternoon — real biology.
+              (function() {
+                var _trX = W * 0.13, _trY = H * 0.85;
+                var _trTopY = _trY - 18;
+                // Three stakes forming an A-frame teepee silhouette
+                c.strokeStyle = season === 3 ? '#5a3f25' : '#7a5230';
+                c.lineWidth = 1.2;
+                c.beginPath(); c.moveTo(_trX - 5, _trY); c.lineTo(_trX,     _trTopY); c.stroke();
+                c.beginPath(); c.moveTo(_trX + 5, _trY); c.lineTo(_trX,     _trTopY); c.stroke();
+                c.beginPath(); c.moveTo(_trX + 2, _trY); c.lineTo(_trX,     _trTopY); c.stroke();
+                // Top collar where stakes meet
+                c.fillStyle = '#3a2510';
+                c.beginPath(); c.arc(_trX, _trTopY, 1, 0, 6.28); c.fill();
+                // Horizontal twine wraps (3 levels)
+                c.strokeStyle = season === 3 ? '#a8a29e' : '#d6d3d1';
+                c.lineWidth = 0.3;
+                [0.30, 0.55, 0.80].forEach(function(_trLT) {
+                  var _trLY = _trTopY + (_trY - _trTopY) * _trLT;
+                  var _trLeftX  = _trX - 5 * _trLT;
+                  var _trRightX = _trX + 5 * _trLT;
+                  c.beginPath(); c.moveTo(_trLeftX, _trLY); c.lineTo(_trRightX, _trLY); c.stroke();
+                });
+                // Morning glory vines (spring + summer in lush green; fall in brown tangles)
+                if (season !== 3) {
+                  var _trVineCol = season === 2 ? '#7a5530' : '#16a34a';
+                  c.strokeStyle = _trVineCol;
+                  c.lineWidth = 0.6;
+                  for (var trv = 0; trv < 3; trv++) {
+                    // Each vine spirals up one stake
+                    var _trvStakeSide = trv === 0 ? -1 : trv === 1 ? 1 : 0.4;
+                    var _trvFreq = 4 + trv * 0.3;
+                    c.beginPath();
+                    for (var trvP = 0; trvP <= 18; trvP += 0.5) {
+                      var _trvT = trvP / 18; // 0..1
+                      var _trvX = _trX + _trvStakeSide * 5 * (1 - _trvT) + Math.sin(_trvT * _trvFreq * Math.PI) * 1.2;
+                      var _trvY = _trY - trvP;
+                      if (trvP === 0) c.moveTo(_trvX, _trvY);
+                      else c.lineTo(_trvX, _trvY);
+                    }
+                    c.stroke();
+                  }
+                  // Heart-shaped leaves along the vines (spring + summer only)
+                  if (season !== 2) {
+                    var _trLeafCol = '#22c55e';
+                    c.fillStyle = _trLeafCol;
+                    var _trLeaves = [
+                      { side: -1, t: 0.25 }, { side: -1, t: 0.55 }, { side: -1, t: 0.80 },
+                      { side:  1, t: 0.30 }, { side:  1, t: 0.60 }, { side:  1, t: 0.85 },
+                      { side: 0.4, t: 0.40 }, { side: 0.4, t: 0.70 }
+                    ];
+                    _trLeaves.forEach(function(lf) {
+                      var _lfPT = lf.t * 18;
+                      var _lfX = _trX + lf.side * 5 * (1 - lf.t) + Math.sin(lf.t * 4 * Math.PI) * 1.2;
+                      var _lfY = _trY - _lfPT;
+                      // Subtle wind sway
+                      var _lfSway = Math.sin(t2 * 0.025 - _lfX * 0.015) * 0.7;
+                      c.beginPath();
+                      c.ellipse(_lfX + _lfSway + lf.side * 1.5, _lfY, 1.4, 1.0, lf.side * 0.4, 0, 6.28);
+                      c.fill();
+                    });
+                  }
+                  // Morning glory flowers — open at dawn/morning, closed by afternoon
+                  // (real biology: morning glory blossoms open at sunrise, close by ~noon)
+                  if (season === 0 || season === 1) {
+                    var _mgOpen = _sunCycle < 0.4 ? Math.max(0, 1 - _sunCycle / 0.4) :
+                                  _sunCycle > 1.8 ? Math.max(0, (_sunCycle - 1.8) / 0.2) : 0;
+                    if (_mgOpen > 0.15) {
+                      var _mgFlowers = [
+                        { side: -1,  t: 0.40, hue: '#8b5cf6' }, // violet
+                        { side:  1,  t: 0.55, hue: '#6366f1' }, // indigo
+                        { side:  0,  t: 0.85, hue: '#a78bfa' }  // pale violet
+                      ];
+                      _mgFlowers.forEach(function(mf) {
+                        var _mfPT = mf.t * 18;
+                        var _mfX = _trX + mf.side * 5 * (1 - mf.t) + Math.sin(mf.t * 4 * Math.PI) * 1.2;
+                        var _mfY = _trY - _mfPT;
+                        var _mfSway = Math.sin(t2 * 0.025 - _mfX * 0.015) * 0.7;
+                        // Trumpet outer
+                        c.fillStyle = mf.hue;
+                        c.globalAlpha = _mgOpen;
+                        c.beginPath();
+                        c.ellipse(_mfX + _mfSway, _mfY, 2.5, 2.0, 0, 0, 6.28);
+                        c.fill();
+                        // White center
+                        c.fillStyle = '#fafaf9';
+                        c.beginPath();
+                        c.arc(_mfX + _mfSway, _mfY, 0.6, 0, 6.28);
+                        c.fill();
+                        // Yellow stigma dot
+                        c.fillStyle = '#facc15';
+                        c.beginPath();
+                        c.arc(_mfX + _mfSway, _mfY, 0.25, 0, 6.28);
+                        c.fill();
+                        c.globalAlpha = 1;
+                      });
+                    }
+                  }
+                }
+                // Snow drift on the bottom of the trellis in winter
+                if (season === 3) {
+                  c.fillStyle = '#ffffff';
+                  c.beginPath();
+                  c.moveTo(_trX - 7, _trY + 0.5);
+                  c.quadraticCurveTo(_trX, _trY - 2, _trX + 7, _trY + 0.5);
+                  c.lineTo(_trX + 7, _trY + 1.5);
+                  c.lineTo(_trX - 7, _trY + 1.5);
+                  c.closePath(); c.fill();
+                }
+              })();
+
+              // ── Honey-extractor barrel near the keeper home (beekeeping equipment) ──
+              // Real beekeeping: an extractor is a metal drum that spins frames
+              // to fling honey out by centrifugal force. Hobbyist extractors
+              // are ~24-30 inches tall, stainless steel with a hand crank on
+              // top. Visible spring/summer/fall (brought indoors in winter).
+              if (season !== 3) {
+                var _exX = W * 0.78, _exY = H * 0.85;
+                // Shadow base
+                c.fillStyle = 'rgba(0,0,0,0.28)';
+                c.beginPath(); c.ellipse(_exX, _exY + 3.5, 7, 1.2, 0, 0, 6.28); c.fill();
+                // Barrel body — stainless steel cylinder
+                var _exBodyG = c.createLinearGradient(_exX - 5, _exY, _exX + 5, _exY);
+                _exBodyG.addColorStop(0, '#78716c');
+                _exBodyG.addColorStop(0.4, '#d6d3d1');
+                _exBodyG.addColorStop(0.7, '#a8a29e');
+                _exBodyG.addColorStop(1, '#57534e');
+                c.fillStyle = _exBodyG;
+                c.beginPath(); c.ellipse(_exX, _exY + 3, 5, 1.2, 0, 0, 6.28); c.fill();
+                c.fillRect(_exX - 5, _exY - 8, 10, 11);
+                c.fillStyle = _exBodyG;
+                c.beginPath(); c.ellipse(_exX, _exY - 8, 5, 1.2, 0, 0, 6.28); c.fill();
+                // Ribbed bands (3 horizontal lines around the barrel — structural rings)
+                c.strokeStyle = 'rgba(40,30,20,0.55)';
+                c.lineWidth = 0.3;
+                c.beginPath(); c.moveTo(_exX - 5, _exY - 5); c.lineTo(_exX + 5, _exY - 5); c.stroke();
+                c.beginPath(); c.moveTo(_exX - 5, _exY - 2); c.lineTo(_exX + 5, _exY - 2); c.stroke();
+                c.beginPath(); c.moveTo(_exX - 5, _exY + 1); c.lineTo(_exX + 5, _exY + 1); c.stroke();
+                // Spigot at the bottom (where honey flows out)
+                c.fillStyle = '#a8732a';
+                c.fillRect(_exX - 0.8, _exY + 3.5, 1.6, 2);
+                c.fillStyle = '#5a3a08';
+                c.fillRect(_exX - 1.2, _exY + 5, 2.4, 0.8);
+                // Top lid with crank gear housing
+                c.fillStyle = '#57534e';
+                c.fillRect(_exX - 5, _exY - 9, 10, 1.5);
+                // Crank handle — vertical post + horizontal L-bar
+                c.fillStyle = '#3a2510';
+                c.fillRect(_exX - 0.5, _exY - 14, 1, 5);
+                c.fillStyle = '#1c1917';
+                c.fillRect(_exX - 0.5, _exY - 14, 4, 0.8);
+                // Crank grip (small dark dot)
+                c.fillStyle = '#5a3a18';
+                c.beginPath(); c.arc(_exX + 3.5, _exY - 13.6, 0.6, 0, 6.28); c.fill();
+                // Slow rotation animation on the crank when summer (harvest season)
+                if (season === 1) {
+                  var _exRotAng = Math.sin(t2 * 0.015) * 0.15;
+                  c.save();
+                  c.translate(_exX, _exY - 9.5);
+                  c.rotate(_exRotAng);
+                  c.fillStyle = '#3a2510';
+                  c.fillRect(-0.5, -4.5, 1, 5);
+                  c.fillStyle = '#1c1917';
+                  c.fillRect(-0.5, -4.5, 4, 0.8);
+                  c.fillStyle = '#5a3a18';
+                  c.beginPath(); c.arc(3.5, -4.1, 0.6, 0, 6.28); c.fill();
+                  c.restore();
+                }
+                // Tiny honey puddle beneath the spigot (summer/fall, harvest active)
+                if (season === 1 || season === 2) {
+                  c.fillStyle = 'rgba(217,119,6,0.85)';
+                  c.beginPath(); c.ellipse(_exX, _exY + 5.8, 2.2, 0.6, 0, 0, 6.28); c.fill();
+                  c.fillStyle = 'rgba(254,243,199,0.6)';
+                  c.beginPath(); c.ellipse(_exX - 0.5, _exY + 5.7, 0.7, 0.2, 0, 0, 6.28); c.fill();
+                }
+                // Small "HONEY" label on the side
+                c.font = 'bold 2.4px sans-serif';
+                c.fillStyle = '#3a2510';
+                c.textAlign = 'center';
+                c.fillText('HONEY', _exX, _exY - 3.5);
+                c.textAlign = 'start';
+              }
+
+              // ── Dew-laden spider webs strung between fence posts at dawn ──
+              // Two small webs in the gaps between fence posts, only visible
+              // during the dawn window. Each shows a small grid pattern of
+              // dew droplets reflecting first light. Complements the corner
+              // web already drawn at upper-left.
+              (function() {
+                var _dwDawn = Math.max(0, 1 - Math.min(_sunCycle, 2 - _sunCycle) / 0.18);
+                if (_dwDawn < 0.08) return;
+                if (season === 3) return; // bare snow webs in winter, skip
+                var _dwWebs = [
+                  { x: 90 + 35 + 1.25, y: fenceBaseY - 1 },
+                  { x: 20 + 4 * 70 + 35, y: fenceBaseY - 1 }
+                ];
+                _dwWebs.forEach(function(web, wi) {
+                  var _dwL = 25; // span
+                  var _dwH = 6;  // hanging depth
+                  // Skip if web spans hive area
+                  if (web.x > hiveX - 25 && web.x < hiveX + hiveW + 25) return;
+                  c.save();
+                  c.strokeStyle = 'rgba(220,225,240,' + (0.55 * _dwDawn).toFixed(3) + ')';
+                  c.lineWidth = 0.25;
+                  // Upper anchor line
+                  c.beginPath(); c.moveTo(web.x - _dwL / 2, web.y); c.lineTo(web.x + _dwL / 2, web.y); c.stroke();
+                  // Vertical strands (4 of them)
+                  for (var dws = 0; dws < 4; dws++) {
+                    var _dwsX = web.x - _dwL / 2 + (_dwL / 3) * dws;
+                    c.beginPath(); c.moveTo(_dwsX, web.y); c.lineTo(_dwsX + 1, web.y + _dwH); c.stroke();
+                  }
+                  // Hanging anchor strands at the bottom
+                  for (var dwa = 0; dwa < 4; dwa++) {
+                    var _dwaX = web.x - _dwL / 2 + (_dwL / 3) * dwa + 1;
+                    c.beginPath();
+                    c.moveTo(_dwaX, web.y + _dwH);
+                    c.lineTo(_dwaX + 1, web.y + _dwH + 2);
+                    c.stroke();
+                  }
+                  // Horizontal cross-strands (3 levels)
+                  for (var dwh = 1; dwh < 4; dwh++) {
+                    var _dwhY = web.y + (_dwH / 4) * dwh;
+                    c.beginPath();
+                    c.moveTo(web.x - _dwL / 2 + dwh, _dwhY);
+                    c.lineTo(web.x + _dwL / 2 - dwh * 0.5, _dwhY);
+                    c.stroke();
+                  }
+                  // Dew drops at junctions
+                  for (var dwd = 0; dwd < 8; dwd++) {
+                    var _dwdX = web.x - _dwL / 2 + 2 + dwd * 2.8 + (dwd % 2);
+                    var _dwdY = web.y + 1.5 + (dwd % 3) * 1.4;
+                    var _dwdR = 0.45 + (dwd % 3) * 0.1;
+                    c.fillStyle = 'rgba(220,240,255,' + (0.75 * _dwDawn).toFixed(3) + ')';
+                    c.beginPath(); c.arc(_dwdX, _dwdY, _dwdR, 0, 6.28); c.fill();
+                    c.fillStyle = 'rgba(255,255,255,' + (0.95 * _dwDawn).toFixed(3) + ')';
+                    c.beginPath(); c.arc(_dwdX - 0.15, _dwdY - 0.2, _dwdR * 0.3, 0, 6.28); c.fill();
+                  }
+                  c.restore();
+                });
+              })();
+
               // ── Wheelbarrow with tools (homestead realism, year-round) ──
               // Tipped slightly to one side as if just set down. A coiled
               // garden hose loops over the rim. Reads as "lived-in apiary."
