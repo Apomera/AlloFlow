@@ -5949,6 +5949,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     c.beginPath(); c.arc(_dwX - _dwR * 0.35, _dwY - _dwR * 0.4, _dwR * 0.35, 0, 6.28); c.fill();
                   }
                 }
+                // First frosts — six-pointed crystals replace the dewdrops on
+                // late-fall dawns (day >= 19 of season 2). Real biology: the
+                // first frost is what pushes a colony into winter-cluster mode.
+                if (season === 2 && (day % 30) >= 19 && _dewDawn > 0.05) {
+                  for (var fr = 0; fr < 18; fr++) {
+                    var _frX = ((fr * 41 + 19) % W) + Math.sin(fr * 1.3) * 5;
+                    var _frY = H * 0.76 - 3 - (fr % 4) * 1.5;
+                    var _frR = 1.1 + (fr % 3) * 0.3;
+                    var _frA = 0.7 * _dewDawn;
+                    c.save();
+                    c.translate(_frX, _frY);
+                    c.strokeStyle = 'rgba(220,240,255,' + _frA.toFixed(3) + ')';
+                    c.lineWidth = 0.35;
+                    for (var frp = 0; frp < 6; frp++) {
+                      var _frpA = (frp / 6) * 6.28;
+                      c.beginPath();
+                      c.moveTo(0, 0);
+                      c.lineTo(Math.cos(_frpA) * _frR, Math.sin(_frpA) * _frR);
+                      c.stroke();
+                      var _frTickX = Math.cos(_frpA) * _frR * 0.6;
+                      var _frTickY = Math.sin(_frpA) * _frR * 0.6;
+                      var _frTickPerp = _frpA + Math.PI / 2;
+                      c.beginPath();
+                      c.moveTo(_frTickX - Math.cos(_frTickPerp) * 0.4, _frTickY - Math.sin(_frTickPerp) * 0.4);
+                      c.lineTo(_frTickX + Math.cos(_frTickPerp) * 0.4, _frTickY + Math.sin(_frTickPerp) * 0.4);
+                      c.stroke();
+                    }
+                    c.fillStyle = 'rgba(255,255,255,' + (0.9 * _dewDawn).toFixed(3) + ')';
+                    c.beginPath(); c.arc(0, 0, 0.4, 0, 6.28); c.fill();
+                    c.restore();
+                  }
+                }
               }
               // ── Cloud shadows drifting across the meadow ──
               // Soft dark patches on the ground that drift in sync with the
@@ -6636,6 +6668,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.fillStyle = 'rgba(255,255,255,0.2)';
                   c.fillRect(fpx, fenceBaseY - 2, 1, fenceH);
                   c.fillStyle = season === 2 ? '#8a5f2a' : season === 3 ? '#6b4a1f' : '#a0763a';
+                }
+              }
+
+              // ── Songbird perched on a fence post (spring/summer/fall day) ──
+              // Tiny robin-style silhouette with seasonal plumage. Sits on the
+              // top of a fence post and occasionally tilts its head; during
+              // the dawn window it emits three rising "warble" notes that
+              // float upward and fade — visual cue for dawn-chorus song.
+              if (season !== 3 && _sunCycle < 0.95) {
+                var _sbPostX = 90 + 2.5;  // 2nd post from left (fp=1: 20 + 70 = 90)
+                var _sbPerchY = fenceBaseY - 2 - 0.5; // sit on top of post
+                var _sbBobT = Math.sin(t2 * 0.05) * 0.5; // gentle body bob
+                var _sbHeadAng = Math.sin(t2 * 0.018) > 0.85 ? 0.35 : (Math.sin(t2 * 0.024) > 0.85 ? -0.35 : 0);
+                var _sbBreast = season === 0 ? '#ea580c' :        // robin orange
+                                 season === 1 ? '#ca8a04' :        // goldfinch yellow
+                                                '#9a3412';          // muted fall russet
+                var _sbBody = season === 1 ? '#365314' :          // olive-green summer
+                                              '#44403c';            // dark gray-brown
+                c.save();
+                c.translate(_sbPostX, _sbPerchY + _sbBobT);
+                // Body — small egg-shaped silhouette
+                c.fillStyle = _sbBody;
+                c.beginPath(); c.ellipse(0, 0, 3, 2.3, 0.05, 0, 6.28); c.fill();
+                // Breast
+                c.fillStyle = _sbBreast;
+                c.beginPath(); c.ellipse(-0.5, 0.4, 1.8, 1.4, 0.2, 0, 6.28); c.fill();
+                // Head (with tilt)
+                c.save();
+                c.translate(-2.4, -1.4);
+                c.rotate(_sbHeadAng);
+                c.fillStyle = _sbBody;
+                c.beginPath(); c.arc(0, 0, 1.6, 0, 6.28); c.fill();
+                // Tiny beak (yellow-orange triangle)
+                c.fillStyle = '#fbbf24';
+                c.beginPath();
+                c.moveTo(-1.4, -0.1);
+                c.lineTo(-2.5, 0);
+                c.lineTo(-1.4, 0.5);
+                c.closePath(); c.fill();
+                // Eye dot
+                c.fillStyle = '#0a0a0a';
+                c.beginPath(); c.arc(-0.3, -0.5, 0.35, 0, 6.28); c.fill();
+                c.restore();
+                // Wing fold (slightly darker arc)
+                c.fillStyle = 'rgba(0,0,0,0.25)';
+                c.beginPath(); c.ellipse(0.6, 0, 1.6, 1.2, -0.1, 0, 6.28); c.fill();
+                // Tail (small dark wedge pointing back-right)
+                c.fillStyle = _sbBody;
+                c.beginPath();
+                c.moveTo(2.5, 0);
+                c.lineTo(4.5, -0.5);
+                c.lineTo(4.5, 0.5);
+                c.closePath(); c.fill();
+                // Tiny feet (two thin lines hooked over the post top)
+                c.strokeStyle = '#1c1917'; c.lineWidth = 0.35;
+                c.beginPath(); c.moveTo(-0.6, 2.2); c.lineTo(-0.6, 3.2); c.stroke();
+                c.beginPath(); c.moveTo(0.4,  2.2); c.lineTo(0.4,  3.2); c.stroke();
+                c.restore();
+                // Dawn-chorus warble notes — three rising musical motes
+                var _sbDawn = Math.max(0, 1 - Math.min(_sunCycle, 2 - _sunCycle) / 0.2);
+                if (_sbDawn > 0.1) {
+                  for (var sbn = 0; sbn < 3; sbn++) {
+                    var _sbnT = ((t2 * 0.06 + sbn * 40) % 120) / 120; // 0..1 rise cycle
+                    if (_sbnT > 0.85) continue;
+                    var _sbnY = _sbPerchY - 4 - _sbnT * 24;
+                    var _sbnX = _sbPostX + 6 + Math.sin(_sbnT * 6) * 3;
+                    var _sbnA = (1 - _sbnT) * 0.85 * _sbDawn;
+                    c.fillStyle = 'rgba(254,243,199,' + _sbnA.toFixed(3) + ')';
+                    c.beginPath(); c.arc(_sbnX, _sbnY, 0.9, 0, 6.28); c.fill();
+                    // Little eighth-note flag
+                    c.strokeStyle = 'rgba(254,243,199,' + _sbnA.toFixed(3) + ')';
+                    c.lineWidth = 0.4;
+                    c.beginPath();
+                    c.moveTo(_sbnX + 0.5, _sbnY);
+                    c.lineTo(_sbnX + 0.5, _sbnY - 2.5);
+                    c.stroke();
+                  }
                 }
               }
 
@@ -8536,6 +8645,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.beginPath(); c.arc(_ssX, _ssY, 1.6, 0, 6.28); c.fill();
                 }
                 c.restore();
+              }
+
+              // ── Aurora borealis (winter night cameo, rare) ──
+              // Three undulating green-cyan ribbons drift across the upper sky
+              // on rare winter nights only. Cycle: appears for ~30s every ~4min
+              // of sim time, only during deep night (_tdT 1.2–1.8) AND season
+              // is winter. Each ribbon has its own phase + speed so they don't
+              // sync. A magical, almost-never moment that rewards kids who
+              // leave the canvas running long enough to see it.
+              if (season === 3 && _tdT > 1.2 && _tdT < 1.8) {
+                var _auPeriod = 240000; // ms — once every ~4 min
+                var _auEpoch = (Date.now() % _auPeriod) / _auPeriod; // 0..1
+                if (_auEpoch < 0.125) {
+                  var _auT = _auEpoch / 0.125;            // 0..1 across the visible window
+                  var _auVis = Math.sin(_auT * Math.PI);  // bell-curve envelope
+                  c.save();
+                  for (var au = 0; au < 3; au++) {
+                    var _auBaseY = H * (0.08 + au * 0.05);
+                    var _auColor = au === 0 ? 'rgba(74,222,128,' :   // emerald
+                                   au === 1 ? 'rgba(56,189,248,' :   // cyan
+                                              'rgba(167,139,250,';   // violet
+                    var _auBandA = (0.35 - au * 0.05) * _auVis;
+                    if (_auBandA < 0.02) continue;
+                    // Vertical ribbon: build a path that undulates left-to-right
+                    c.fillStyle = _auColor + _auBandA.toFixed(3) + ')';
+                    c.beginPath();
+                    var _auWobble = t2 * 0.012 + au * 1.7;
+                    for (var ax = 0; ax <= W; ax += 18) {
+                      var _auY = _auBaseY + Math.sin(ax * 0.012 + _auWobble) * 7 + Math.sin(ax * 0.027 + _auWobble * 1.4) * 3;
+                      ax === 0 ? c.moveTo(ax, _auY) : c.lineTo(ax, _auY);
+                    }
+                    // Close the ribbon with a downward sweep
+                    for (var ax2 = W; ax2 >= 0; ax2 -= 18) {
+                      var _auY2 = _auBaseY + 18 + Math.sin(ax2 * 0.014 + _auWobble + 0.4) * 6;
+                      c.lineTo(ax2, _auY2);
+                    }
+                    c.closePath(); c.fill();
+                    // Bright top edge — a thin highlight stroke
+                    c.strokeStyle = _auColor + (_auBandA * 1.6).toFixed(3) + ')';
+                    c.lineWidth = 0.8;
+                    c.beginPath();
+                    for (var ax3 = 0; ax3 <= W; ax3 += 12) {
+                      var _auY3 = _auBaseY + Math.sin(ax3 * 0.012 + _auWobble) * 7 + Math.sin(ax3 * 0.027 + _auWobble * 1.4) * 3;
+                      ax3 === 0 ? c.moveTo(ax3, _auY3) : c.lineTo(ax3, _auY3);
+                    }
+                    c.stroke();
+                  }
+                  c.restore();
+                }
               }
 
               // ── Moon (visible during the night phase) ──
