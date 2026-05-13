@@ -1147,6 +1147,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // Subtle theme-specific background texture. Returned as a CSS string that
   // goes into the tool root's background property. Each theme gets a flavor
   // effect that reads as ambiance, not noise.
+  // Reusable paper-grain SVG (low-opacity fractalNoise). Same SVG-data-uri
+  // pattern used by PrintingPress + ClimateExplorer; the texture is calibrated
+  // to read as 'subtle paper' rather than visible noise. Generated once at
+  // module load. Returns a CSS background-image url string.
+  var TP_PAPER_GRAIN_URI = (function() {
+    var svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220">' +
+        '<filter id="g">' +
+          '<feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="13"/>' +
+          '<feColorMatrix values="0 0 0 0 0.55   0 0 0 0 0.6   0 0 0 0 0.7   0 0 0 0.06 0"/>' +
+        '</filter>' +
+        '<rect width="100%" height="100%" filter="url(#g)"/>' +
+      '</svg>';
+    return 'url("data:image/svg+xml;utf8,' + encodeURIComponent(svg) + '")';
+  })();
+
   function getThemeBackgroundTexture(palette, themeName) {
     switch (themeName) {
       case 'steampunk':
@@ -1168,7 +1184,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         return palette.bg;
       case 'default':
       default:
-        return palette.bg;
+        // Three-layer atmospheric stack:
+        //   (1) soft accent glow at top center (the 'reading lamp' for the
+        //       default professional palette — uses the active accent color
+        //       so each accent (blue/teal/violet/amber/rose) gets its own
+        //       gentle wash without changing the overall palette)
+        //   (2) faint paper-grain texture so flat surfaces feel touched
+        //   (3) base palette.bg as the floor
+        // Matches the layered atmospheric backgrounds shipped on
+        // PrintingPress + ClimateExplorer, scaled down to clinical-tool
+        // calm — the glow is ~6% opacity, the grain is ~6% opacity.
+        var accentGlow = palette.accent || '#3b82f6';
+        return 'radial-gradient(ellipse 65% 45% at 50% 0%, ' + accentGlow + '14, transparent 70%), ' +
+               TP_PAPER_GRAIN_URI + ', ' + palette.bg;
     }
   }
 
@@ -9306,6 +9334,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           lang: rootLang,
           style: {
             background: rootBackground,
+            // Multi-layer default-theme backgrounds need explicit per-layer
+            // tile + attachment hints so the radial accent stays anchored
+            // and the SVG paper-grain repeats. Single-layer themes ignore
+            // these (CSS just truncates to the available layer count).
+            backgroundRepeat: 'no-repeat, repeat, no-repeat',
+            backgroundAttachment: 'fixed, scroll, scroll',
             minHeight: '100%',
             color: palette.text,
             fontFamily: fontFamily
