@@ -770,6 +770,8 @@ window.SelHub = window.SelHub || {
             h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Share a struggle or a fixed mindset thought. Your coach will help you reframe it.'),
             window.SelHub && window.SelHub.renderSafetyDisclosure && window.SelHub.renderSafetyDisclosure(h, band, ctx.activeSessionCode)
           ),
+          // Surface 988 / Crisis Text Line block when last turn was tier-3.
+          (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
           // Chat history
           coachHistory.length > 0 && h('div', { role: 'log', 'aria-label': 'Conversation with Growth Coach', 'aria-live': 'polite', 'aria-busy': coachLoading ? 'true' : 'false', style: { maxHeight: '300px', overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
             coachHistory.map(function(msg, i) {
@@ -819,12 +821,16 @@ window.SelHub = window.SelHub || {
                       onSafetyFlag: onSafetyFlag
                     });
                   } : function() {
-                    return callGemini(prompt, false).then(function(r) { return { response: r, tier: 0, showCrisis: false }; });
+                    var preFallback = (window.SelHub && window.SelHub.safeRehearseCheck)
+                      ? window.SelHub.safeRehearseCheck(userMsg, { toolId: 'growthmindset', onSafetyFlag: onSafetyFlag })
+                      : { action: 'continue' };
+                    return callGemini(prompt, false).then(function(r) { return { response: r, tier: preFallback.action === 'block' ? 3 : 0, showCrisis: preFallback.action === 'block' }; });
                   };
                   safeSend().then(function(result) {
                     upd({
                       coachHistory: newHistory.concat([{ role: 'coach', text: result.response }]),
-                      coachLoading: false
+                      coachLoading: false,
+                      _lastTier: result.tier || 0
                     });
                     if (awardXP) awardXP(5, 'Talked with Growth Coach!');
                   }).catch(function() {
@@ -871,12 +877,16 @@ window.SelHub = window.SelHub || {
                     onSafetyFlag: onSafetyFlag
                   });
                 } : function() {
-                  return callGemini(prompt, false).then(function(r) { return { response: r, tier: 0, showCrisis: false }; });
+                  var preFallback = (window.SelHub && window.SelHub.safeRehearseCheck)
+                    ? window.SelHub.safeRehearseCheck(userMsg, { toolId: 'growthmindset', onSafetyFlag: onSafetyFlag })
+                    : { action: 'continue' };
+                  return callGemini(prompt, false).then(function(r) { return { response: r, tier: preFallback.action === 'block' ? 3 : 0, showCrisis: preFallback.action === 'block' }; });
                 };
                 safeSend().then(function(result) {
                   upd({
                     coachHistory: newHistory.concat([{ role: 'coach', text: result.response }]),
-                    coachLoading: false
+                    coachLoading: false,
+                    _lastTier: result.tier || 0
                   });
                   if (awardXP) awardXP(5, 'Talked with Growth Coach!');
                 }).catch(function() {
@@ -1106,7 +1116,7 @@ window.SelHub = window.SelHub || {
       var content = brainContent || reframeContent || storiesContent || mapContent || coachContent || letterContent || educatorContent;
 
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
-        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('growthmindset', h) : null),
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('growthmindset', h, ctx) : null),
         tabBar,
         heroBand,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content),

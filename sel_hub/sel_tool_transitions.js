@@ -190,6 +190,7 @@ window.SelHub = window.SelHub || {
         { id: 'anchors',  icon: '\u2693',       label: 'My Anchors' },
         { id: 'plan',     icon: '\uD83D\uDDFA\uFE0F', label: 'My Plan' },
         { id: 'coach',    icon: '\uD83E\uDD16', label: 'AI Support' },
+        { id: 'print',    icon: '\uD83D\uDDA8', label: 'Print' },
       ];
 
       // Track explored tabs
@@ -586,6 +587,8 @@ window.SelHub = window.SelHub || {
             h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Talk about what you\u2019re going through.'),
             window.SelHub && window.SelHub.renderSafetyDisclosure && window.SelHub.renderSafetyDisclosure(h, band, ctx.activeSessionCode)
           ),
+          // Surface 988 / Crisis Text Line block when last turn was tier-3.
+          (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
           // Context summary
           (changeContext || phaseContext) && h('div', { style: { background: SKY_LIGHT, borderRadius: '10px', padding: '8px 12px', marginBottom: '12px', fontSize: '11px', color: SKY_DARK } },
             changeContext && h('span', null, changeContext.icon + ' Going through: ' + changeContext.label),
@@ -636,9 +639,16 @@ window.SelHub = window.SelHub || {
 
                   var sendSafe = (window.SelHub && window.SelHub.safeCoach)
                     ? function() { return window.SelHub.safeCoach({ studentMessage: userMsg, coachPrompt: prompt, toolId: 'transitions', band: band, callGemini: callGemini, codename: ctx.studentCodename || 'student', conversationHistory: newHist, onSafetyFlag: onSafetyFlag }); }
-                    : function() { return callGemini(prompt, false).then(function(r) { return { response: r, tier: 0, showCrisis: false }; }); };
+                    : function() {
+                        // Fallback when safeCoach didn't load: run regex safety
+                        // check before the unguarded callGemini.
+                        var preFallback = (window.SelHub && window.SelHub.safeRehearseCheck)
+                          ? window.SelHub.safeRehearseCheck(userMsg, { toolId: 'transitions', onSafetyFlag: onSafetyFlag })
+                          : { action: 'continue' };
+                        return callGemini(prompt, false).then(function(r) { return { response: r, tier: preFallback.action === 'block' ? 3 : 0, showCrisis: preFallback.action === 'block' }; });
+                      };
                   sendSafe().then(function(result) {
-                    upd({ coachHistory: newHist.concat([{ role: 'coach', text: result.response }]), coachLoading: false });
+                    upd({ coachHistory: newHist.concat([{ role: 'coach', text: result.response }]), coachLoading: false, _lastTier: result.tier || 0 });
                     if (awardXP) awardXP(5, 'Talked with Transition Coach');
                   }).catch(function() {
                     upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'I\u2019m having trouble connecting right now. But I want you to know: what you\u2019re going through is real, your feelings about it are valid, and the fact that you\u2019re here talking about it shows remarkable courage.' }]), coachLoading: false });
@@ -665,9 +675,14 @@ window.SelHub = window.SelHub || {
                 var prompt = 'You are a warm, empathetic transition support coach for a ' + band + ' school student. ' + context + 'The student said: "' + userMsg + '"\nValidate, normalize, suggest. Warm, concise, age-appropriate. Max 3-4 sentences.';
                 var sendSafe = (window.SelHub && window.SelHub.safeCoach)
                   ? function() { return window.SelHub.safeCoach({ studentMessage: userMsg, coachPrompt: prompt, toolId: 'transitions', band: band, callGemini: callGemini, codename: ctx.studentCodename || 'student', conversationHistory: newHist, onSafetyFlag: onSafetyFlag }); }
-                  : function() { return callGemini(prompt, false).then(function(r) { return { response: r, tier: 0, showCrisis: false }; }); };
+                  : function() {
+                      var preFallback = (window.SelHub && window.SelHub.safeRehearseCheck)
+                        ? window.SelHub.safeRehearseCheck(userMsg, { toolId: 'transitions', onSafetyFlag: onSafetyFlag })
+                        : { action: 'continue' };
+                      return callGemini(prompt, false).then(function(r) { return { response: r, tier: preFallback.action === 'block' ? 3 : 0, showCrisis: preFallback.action === 'block' }; });
+                    };
                 sendSafe().then(function(result) {
-                  upd({ coachHistory: newHist.concat([{ role: 'coach', text: result.response }]), coachLoading: false });
+                  upd({ coachHistory: newHist.concat([{ role: 'coach', text: result.response }]), coachLoading: false, _lastTier: result.tier || 0 });
                 }).catch(function() {
                   upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'Connection issue. But remember: you are not alone in this, and what you\u2019re feeling makes complete sense.' }]), coachLoading: false });
                 });
@@ -695,10 +710,91 @@ window.SelHub = window.SelHub || {
         } // end else (hasConsent)
       }
 
+      // ── Print: transition plan artifact ──
+      var printContent = null;
+      if (activeTab === 'print') {
+        var changeContext = selectedChange ? CHANGE_TYPES.find(function(ct) { return ct.id === selectedChange; }) : null;
+        var phases = (CHANGE_CURVE[band] || CHANGE_CURVE.middle);
+        var phaseContext = (myPhase != null && phases[myPhase]) ? phases[myPhase] : null;
+        printContent = h('div', { style: { padding: 16 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: '#f0f9ff', border: '1px solid #bae6fd', borderLeft: '3px solid ' + SKY, marginBottom: 12, fontSize: 12.5, color: SKY_DARK, lineHeight: 1.65 } },
+            h('strong', null, '🖨 My transition plan. '),
+            'A one-page artifact you can bring to a counselor, school psychologist, case manager, family member, or new teacher. Names what is changing, where you are in the change curve, what is holding you steady, and your next steps.'
+          ),
+          h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
+            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, 'aria-label': 'Print or save as PDF',
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + SKY + ', #0369a1)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+          ),
+          h('style', null,
+            '@media print { body * { visibility: hidden !important; } ' +
+            '#trans-print-region, #trans-print-region * { visibility: visible !important; } ' +
+            '#trans-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #0f172a !important; } ' +
+            '#trans-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
+            '.no-print { display: none !important; } }'
+          ),
+          h('div', { id: 'trans-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
+              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'My Transition Plan'),
+              h('div', { style: { fontSize: 11, color: '#475569' } }, 'Kübler-Ross · Bridges')
+            ),
+
+            // What's changing
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'What is changing'),
+              changeContext
+                ? h('div', null,
+                    h('div', { style: { fontSize: 14, fontWeight: 700, color: '#0f172a', marginBottom: 4 } }, changeContext.label),
+                    h('div', { style: { fontSize: 12, color: '#475569', marginBottom: 8 } }, changeContext.desc),
+                    myChangeNote ? h('div', { style: { padding: 8, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, fontSize: 12, color: '#0f172a', whiteSpace: 'pre-wrap', lineHeight: 1.55 } }, myChangeNote) : null
+                  )
+                : h('div', { style: { fontSize: 12.5, color: '#475569', fontStyle: 'italic' } }, '(no transition named yet — open the What\'s Changing tab to name it)')
+            ),
+
+            // Where on the curve
+            phaseContext ? h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'Where I am in the change curve'),
+              h('div', { style: { fontSize: 14, fontWeight: 700, color: '#0f172a', marginBottom: 4 } }, phaseContext.phase),
+              h('div', { style: { fontSize: 12, color: '#475569', lineHeight: 1.55, marginBottom: 6 } }, phaseContext.desc),
+              h('div', { style: { fontSize: 11.5, color: '#0c4a6e', fontStyle: 'italic', lineHeight: 1.55, padding: 6, background: '#ecfeff', borderRadius: 4 } }, phaseContext.normalize)
+            ) : null,
+
+            // Anchors
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'What is holding me steady (anchors)'),
+              anchors && anchors.length > 0
+                ? h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12.5, color: '#0f172a', lineHeight: 1.7 } },
+                    anchors.map(function(a, i) { return h('li', { key: i }, a.text || a); })
+                  )
+                : h('div', { style: { fontSize: 12.5, color: '#475569', fontStyle: 'italic' } }, '(no anchors named yet — open the My Anchors tab to add them)')
+            ),
+
+            // Plan steps
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 12, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'My next steps'),
+              planSteps && planSteps.length > 0
+                ? h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12.5, color: '#0f172a', lineHeight: 1.7 } },
+                    planSteps.map(function(s, i) { return h('li', { key: i }, s.text || s); })
+                  )
+                : h('div', { style: { fontSize: 12.5, color: '#475569', fontStyle: 'italic' } }, '(no plan steps yet — open the My Plan tab to add them)')
+            ),
+
+            // Crisis
+            h('div', { style: { padding: 10, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, marginBottom: 12, fontSize: 11.5, color: '#7f1d1d', lineHeight: 1.55 } },
+              h('strong', null, 'If a transition crosses into crisis: '),
+              '988 Suicide & Crisis Lifeline (call or text 988) · Crisis Text Line text HOME to 741741 · Trevor Project for LGBTQ+ youth 1-866-488-7386. Transition does not have to be navigated alone.'
+            ),
+
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
+              'Sources: Kübler-Ross, E. (1969), On Death and Dying · Bridges, W. (1980), Transitions: Making Sense of Life\'s Changes. Printed from AlloFlow SEL Hub.'
+            )
+          )
+        );
+      }
+
       // ── Final render ──
-      var content = identifyContent || curveContent || storiesContent || anchorsContent || planContent || coachContent;
+      var content = identifyContent || curveContent || storiesContent || anchorsContent || planContent || coachContent || printContent;
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
-        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('transitions', h) : null),
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('transitions', h, ctx) : null),
         tabBar,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content),
         window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)

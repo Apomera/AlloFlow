@@ -208,6 +208,7 @@ window.SelHub = window.SelHub || {
         { id: 'practice',icon: '\uD83E\uDDD8', label: 'Practice' },
         { id: 'letter',  icon: '\u2709\uFE0F', label: 'Kind Letter' },
         { id: 'coach',   icon: '\uD83E\uDD16', label: 'Compassion Coach' },
+        { id: 'print',   icon: '\uD83D\uDDA8', label: 'Print' },
       ];
 
       // Track explored tabs
@@ -432,6 +433,10 @@ window.SelHub = window.SelHub || {
             h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Share what your inner critic is saying.'),
             window.SelHub && window.SelHub.renderSafetyDisclosure && window.SelHub.renderSafetyDisclosure(h, band, ctx.activeSessionCode)
           ),
+          // Surface the loud 988 / Crisis Text Line block if the last student
+          // turn flagged tier-3 (safeCoach already appends crisis text inline,
+          // but the prominent block is what catches the kid's eye).
+          (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
           coachHistory.length > 0 && h('div', { role: 'log', 'aria-label': 'Compassion coach conversation', 'aria-live': 'polite', 'aria-busy': coachLoading ? 'true' : 'false', style: { maxHeight: '300px', overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
             coachHistory.map(function(msg, i) {
               var isUser = msg.role === 'user';
@@ -453,9 +458,14 @@ window.SelHub = window.SelHub || {
                   upd({ coachHistory: hist, coachInput: '', coachLoading: true });
                   var p = 'You are a self-compassion coach based on Kristin Neff\u2019s framework, speaking to a ' + band + ' school student. They shared this inner critic thought: "' + msg + '"\n\nRespond with:\n1. Validate the pain beneath the self-criticism (1 sentence)\n2. Reframe using one of the three pillars: self-kindness, common humanity, or mindfulness (1-2 sentences)\n3. A gentle, specific self-compassion practice they can try right now (1 sentence)\n\nBe warm, never dismissive. Never say "just think positive." Acknowledge the pain AND offer a compassionate alternative. Max 4 sentences.';
                   if (window.SelHub && window.SelHub.safeCoach) {
-                    window.SelHub.safeCoach({ studentMessage: msg, coachPrompt: p, toolId: 'compassion', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: hist }).then(function(result) { upd({ coachHistory: hist.concat([{ role: 'coach', text: result.response }]), coachLoading: false }); if (awardXP) awardXP(5, 'Practiced self-compassion'); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'I\u2019m having trouble connecting. But I want you to hear this: the fact that you noticed your inner critic means you\u2019re already practicing mindfulness. You see the voice. You\u2019re not the voice. That awareness is the first step toward compassion.' }]), coachLoading: false }); });
+                    window.SelHub.safeCoach({ studentMessage: msg, coachPrompt: p, toolId: 'compassion', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: hist }).then(function(result) { upd({ coachHistory: hist.concat([{ role: 'coach', text: result.response }]), coachLoading: false, _lastTier: result.tier || 0 }); if (awardXP) awardXP(5, 'Practiced self-compassion'); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'I\u2019m having trouble connecting. But I want you to hear this: the fact that you noticed your inner critic means you\u2019re already practicing mindfulness. You see the voice. You\u2019re not the voice. That awareness is the first step toward compassion.' }]), coachLoading: false }); });
                   } else {
-                    callGemini(p, false).then(function(r) { upd({ coachHistory: hist.concat([{ role: 'coach', text: r }]), coachLoading: false }); if (awardXP) awardXP(5, 'Practiced self-compassion'); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'I\u2019m having trouble connecting. But I want you to hear this: the fact that you noticed your inner critic means you\u2019re already practicing mindfulness. You see the voice. You\u2019re not the voice. That awareness is the first step toward compassion.' }]), coachLoading: false }); });
+                    // Fallback: safeCoach didn't load. Run the regex safety
+                    // check first so we don't ship an unguarded AI surface.
+                    var preFallback = (window.SelHub && window.SelHub.safeRehearseCheck)
+                      ? window.SelHub.safeRehearseCheck(msg, { toolId: 'compassion', onSafetyFlag: onSafetyFlag })
+                      : { action: 'continue' };
+                    callGemini(p, false).then(function(r) { upd({ coachHistory: hist.concat([{ role: 'coach', text: r }]), coachLoading: false, _lastTier: preFallback.action === 'block' ? 3 : 0 }); if (awardXP) awardXP(5, 'Practiced self-compassion'); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'I\u2019m having trouble connecting. But I want you to hear this: the fact that you noticed your inner critic means you\u2019re already practicing mindfulness. You see the voice. You\u2019re not the voice. That awareness is the first step toward compassion.' }]), coachLoading: false }); });
                   }
                 }
               },
@@ -472,9 +482,12 @@ window.SelHub = window.SelHub || {
                 upd({ coachHistory: hist, coachInput: '', coachLoading: true });
                 var p = 'You are a self-compassion coach (Kristin Neff framework) for a ' + band + ' student. Inner critic: "' + msg + '"\nValidate the pain, reframe with self-kindness/common humanity/mindfulness, give one practice. Warm, never dismissive. Max 4 sentences.';
                 if (window.SelHub && window.SelHub.safeCoach) {
-                  window.SelHub.safeCoach({ studentMessage: msg, coachPrompt: p, toolId: 'compassion', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: hist }).then(function(result) { upd({ coachHistory: hist.concat([{ role: 'coach', text: result.response }]), coachLoading: false }); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'Connection issue. But remember: you are not your inner critic. You are the one who hears it \u2014 and that observer deserves tremendous kindness.' }]), coachLoading: false }); });
+                  window.SelHub.safeCoach({ studentMessage: msg, coachPrompt: p, toolId: 'compassion', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: hist }).then(function(result) { upd({ coachHistory: hist.concat([{ role: 'coach', text: result.response }]), coachLoading: false, _lastTier: result.tier || 0 }); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'Connection issue. But remember: you are not your inner critic. You are the one who hears it \u2014 and that observer deserves tremendous kindness.' }]), coachLoading: false }); });
                 } else {
-                  callGemini(p, false).then(function(r) { upd({ coachHistory: hist.concat([{ role: 'coach', text: r }]), coachLoading: false }); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'Connection issue. But remember: you are not your inner critic. You are the one who hears it \u2014 and that observer deserves tremendous kindness.' }]), coachLoading: false }); });
+                  var preFallback2 = (window.SelHub && window.SelHub.safeRehearseCheck)
+                    ? window.SelHub.safeRehearseCheck(msg, { toolId: 'compassion', onSafetyFlag: onSafetyFlag })
+                    : { action: 'continue' };
+                  callGemini(p, false).then(function(r) { upd({ coachHistory: hist.concat([{ role: 'coach', text: r }]), coachLoading: false, _lastTier: preFallback2.action === 'block' ? 3 : 0 }); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'Connection issue. But remember: you are not your inner critic. You are the one who hears it \u2014 and that observer deserves tremendous kindness.' }]), coachLoading: false }); });
                 }
               },
               disabled: coachLoading || !coachInput.trim() || !callGemini,
@@ -624,9 +637,74 @@ window.SelHub = window.SelHub || {
         }
       }
 
-      var content = pillarsContent || criticContent || practiceContent || letterContent || coachContent;
+      // ── Print: self-compassion artifact ──
+      var printContent = null;
+      if (activeTab === 'print') {
+        printContent = h('div', { style: { padding: 16 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: PL, border: '1px solid #ddd6fe', borderLeft: '3px solid ' + PURPLE, marginBottom: 12, fontSize: 12.5, color: PD, lineHeight: 1.65 } },
+            h('strong', null, '\uD83D\uDDA8 Self-compassion script. '),
+            'A one-page reference: the three pillars (Neff), what kindness-to-self sounds like in your own words, and your saved kind letter if you wrote one. Carry it for the moments the inner critic shows up.'
+          ),
+          h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
+            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, 'aria-label': 'Print or save as PDF',
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + PURPLE + ' 0%, #a78bfa 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
+          ),
+          h('style', null,
+            '@media print { body * { visibility: hidden !important; } ' +
+            '#compassion-print-region, #compassion-print-region * { visibility: visible !important; } ' +
+            '#compassion-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #0f172a !important; } ' +
+            '#compassion-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
+            '.no-print { display: none !important; } }'
+          ),
+          h('div', { id: 'compassion-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
+              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'Self-Compassion Script'),
+              h('div', { style: { fontSize: 11, color: '#475569' } }, 'Neff, 2003 · Gilbert, 2009')
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'The three pillars'),
+              h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12.5, color: '#0f172a', lineHeight: 1.7 } },
+                h('li', null, h('strong', null, 'Mindfulness. '), 'Notice the pain without exaggerating it or pushing it away. "This hurts. I am hurting right now."'),
+                h('li', null, h('strong', null, 'Common humanity. '), 'You are not alone. Pain, mistakes, failure, and shame are part of being human, not signs that something is wrong with you specifically.'),
+                h('li', null, h('strong', null, 'Self-kindness. '), 'Speak to yourself the way you would speak to a friend in the same situation. Not letting yourself off the hook, but not turning the situation into evidence against your worth either.')
+              )
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'A self-compassion break (Neff)'),
+              h('div', { style: { fontSize: 12, color: '#0f172a', lineHeight: 1.7 } },
+                'When something hard happens, try saying these three things to yourself, in this order:',
+                h('ol', { style: { margin: '8px 0 0 22px', padding: 0, fontSize: 12.5, lineHeight: 1.65 } },
+                  h('li', { style: { marginBottom: 4 } }, h('em', null, '"This is a moment of suffering."'), ' (or: "This hurts." "This is hard right now.")'),
+                  h('li', { style: { marginBottom: 4 } }, h('em', null, '"Suffering is part of life."'), ' (or: "Other people feel this way too." "I am not alone in this.")'),
+                  h('li', null, h('em', null, '"May I be kind to myself in this moment."'), ' (or: "May I give myself the compassion I need." "May I accept myself as I am.")')
+                )
+              )
+            ),
+
+            savedLetters && savedLetters.length > 0 ? h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'A kind letter I wrote to myself'),
+              savedLetters.slice(-1).map(function(l, i) {
+                return h('div', { key: i, style: { padding: 10, background: '#faf5ff', border: '1px solid #ddd6fe', borderRadius: 8, fontSize: 12.5, color: '#0f172a', whiteSpace: 'pre-wrap', lineHeight: 1.65 } }, l.text || l);
+              })
+            ) : null,
+
+            h('div', { style: { padding: 10, background: '#faf5ff', border: '1px solid #ddd6fe', borderRadius: 8, marginBottom: 12, fontSize: 11.5, color: '#4c1d95', lineHeight: 1.6 } },
+              h('strong', null, 'Reminder: '),
+              'self-compassion is NOT self-pity (it acknowledges shared humanity), NOT self-indulgence (it asks what is actually helpful), and NOT weakness (research shows self-compassionate people are more resilient, not less).'
+            ),
+
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
+              'Sources: Neff, K. (2003), Self-Compassion: The proven power of being kind to yourself · Gilbert, P. (2009), The Compassionate Mind · self-compassion.org. Printed from AlloFlow SEL Hub.'
+            )
+          )
+        );
+      }
+
+      var content = pillarsContent || criticContent || practiceContent || letterContent || coachContent || printContent;
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
-        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('compassion', h) : null),
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('compassion', h, ctx) : null),
         tabBar,
         heroBand,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content)

@@ -498,6 +498,8 @@ window.SelHub = window.SelHub || {
             h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Describe a friendship situation.'),
             window.SelHub && window.SelHub.renderSafetyDisclosure && window.SelHub.renderSafetyDisclosure(h, band, ctx.activeSessionCode)
           ),
+          // Surface the loud 988 / Crisis Text Line block when last turn was tier-3.
+          (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
           coachHistory.length > 0 && h('div', { role: 'log', 'aria-label': 'Friendship practice conversation', 'aria-live': 'polite', 'aria-busy': coachLoading ? 'true' : 'false', style: { maxHeight: '300px', overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
             coachHistory.map(function(msg, i) {
               var isUser = msg.role === 'user';
@@ -521,9 +523,12 @@ window.SelHub = window.SelHub || {
                   var styleCtx = myStyle ? ' Their friendship style is "' + myStyle + '".' : '';
                   var prompt = 'You are a warm friendship coach for a ' + band + ' school student.' + styleCtx + ' The student said: "' + userMsg + '"\n\nRespond with:\n1. Validate their feeling (1 sentence)\n2. A specific thing they could say or do (give actual words in quotes)\n3. Why it would work (1 sentence)\n\nBe warm, specific, age-appropriate. Max 3-4 sentences. Use "you" not "one."';
                   if (window.SelHub && window.SelHub.safeCoach) {
-                    window.SelHub.safeCoach({ studentMessage: userMsg, toolId: 'friendship', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: newHist }).then(function(result) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: result.response }]), coachLoading: false }); if (awardXP) awardXP(5, 'Practiced friendship skills!'); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'Connection issue. But here\u2019s what I know: the fact that you\u2019re thinking about how to be a better friend means you already are one.' }]), coachLoading: false }); });
+                    window.SelHub.safeCoach({ studentMessage: userMsg, coachPrompt: prompt, toolId: 'friendship', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: newHist }).then(function(result) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: result.response }]), coachLoading: false, _lastTier: result.tier || 0 }); if (awardXP) awardXP(5, 'Practiced friendship skills!'); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'Connection issue. But here\u2019s what I know: the fact that you\u2019re thinking about how to be a better friend means you already are one.' }]), coachLoading: false }); });
                   } else {
-                    callGemini(prompt, false).then(function(r) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: r }]), coachLoading: false }); if (awardXP) awardXP(5, 'Practiced friendship skills!'); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'Connection issue. But here\u2019s what I know: the fact that you\u2019re thinking about how to be a better friend means you already are one.' }]), coachLoading: false }); });
+                    var preFallback = (window.SelHub && window.SelHub.safeRehearseCheck)
+                      ? window.SelHub.safeRehearseCheck(userMsg, { toolId: 'friendship', onSafetyFlag: onSafetyFlag })
+                      : { action: 'continue' };
+                    callGemini(prompt, false).then(function(r) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: r }]), coachLoading: false, _lastTier: preFallback.action === 'block' ? 3 : 0 }); if (awardXP) awardXP(5, 'Practiced friendship skills!'); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'Connection issue. But here\u2019s what I know: the fact that you\u2019re thinking about how to be a better friend means you already are one.' }]), coachLoading: false }); });
                   }
                 }
               },
@@ -540,9 +545,12 @@ window.SelHub = window.SelHub || {
                 upd({ coachHistory: newHist, coachInput: '', coachLoading: true });
                 var prompt = 'You are a warm friendship coach for a ' + band + ' school student. The student said: "' + userMsg + '"\nValidate, give specific words they could say, explain why. Max 3-4 sentences.';
                 if (window.SelHub && window.SelHub.safeCoach) {
-                  window.SelHub.safeCoach({ studentMessage: userMsg, toolId: 'friendship', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: newHist }).then(function(result) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: result.response }]), coachLoading: false }); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'I\u2019m having trouble connecting, but I believe in you. The courage to think about friendship is itself an act of friendship.' }]), coachLoading: false }); });
+                  window.SelHub.safeCoach({ studentMessage: userMsg, coachPrompt: prompt, toolId: 'friendship', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: newHist }).then(function(result) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: result.response }]), coachLoading: false, _lastTier: result.tier || 0 }); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'I\u2019m having trouble connecting, but I believe in you. The courage to think about friendship is itself an act of friendship.' }]), coachLoading: false }); });
                 } else {
-                  callGemini(prompt, false).then(function(r) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: r }]), coachLoading: false }); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'I\u2019m having trouble connecting, but I believe in you. The courage to think about friendship is itself an act of friendship.' }]), coachLoading: false }); });
+                  var preFallback2 = (window.SelHub && window.SelHub.safeRehearseCheck)
+                    ? window.SelHub.safeRehearseCheck(userMsg, { toolId: 'friendship', onSafetyFlag: onSafetyFlag })
+                    : { action: 'continue' };
+                  callGemini(prompt, false).then(function(r) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: r }]), coachLoading: false, _lastTier: preFallback2.action === 'block' ? 3 : 0 }); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'I\u2019m having trouble connecting, but I believe in you. The courage to think about friendship is itself an act of friendship.' }]), coachLoading: false }); });
                 }
               },
               disabled: coachLoading || !coachInput.trim() || !callGemini,
@@ -930,7 +938,7 @@ window.SelHub = window.SelHub || {
 
       var content = compassContent || startContent || keepContent || digitalContent || repairContent || endingsContent || coachContent || rehearseContent;
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
-        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('friendship', h) : null),
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('friendship', h, ctx) : null),
         tabBar,
         heroBand,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content),
