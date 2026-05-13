@@ -2405,6 +2405,8 @@ window.SelHub = window.SelHub || {
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('perspective', h, ctx) : null),
         tabBar,
         heroBand,
+        // Surface 988 / Crisis Text Line block when any AI-input turn was tier-3.
+        (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
         badgePopup,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content)
       );

@@ -2196,6 +2196,7 @@ window.SelHub = window.SelHub || {
       return h('div', { style: { minHeight: '100%' } },
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('social', h, ctx) : null),
         tabBar,
+        (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
         badgePopup,
         convoContent,
         simContent,

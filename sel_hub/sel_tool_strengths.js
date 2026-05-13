@@ -1060,6 +1060,8 @@ window.SelHub = window.SelHub || {
 
         return h('div', { className: 'selh-strengths', style: { display: 'flex', flexDirection: 'column', height: '100%', background: bgDark, color: '#e2e8f0', fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
           h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          // Surface 988 / Crisis Text Line block when any AI-input turn was tier-3.
+          (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
 
           // Header
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', background: 'linear-gradient(135deg, #78350f, #92400e)', borderBottom: '1px solid rgba(245,158,11,0.3)' } },
