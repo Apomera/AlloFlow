@@ -8909,6 +8909,98 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.restore();
               })();
 
+              // ── Pair of garden boots upside-down on a fence post (drying after use) ──
+              // Whimsical homestead detail: gardeners flip muddy boots upside
+              // down on fence posts to drain + dry. Mounted on the 2nd-to-last
+              // post from the right side.
+              (function() {
+                var _btPostX = 20 + 10 * 70 + 1.25;
+                if (_btPostX > W - 10) return;
+                if (_btPostX > hiveX - 18 && _btPostX < hiveX + hiveW + 18) return;
+                var _btTopY = fenceBaseY - 2 - 0.5;
+                // Two boots — slightly tilted, hanging upside-down
+                for (var bt = 0; bt < 2; bt++) {
+                  var _btX = _btPostX - 2 + bt * 4;
+                  var _btTilt = bt === 0 ? -0.12 : 0.12;
+                  c.save();
+                  c.translate(_btX, _btTopY);
+                  c.rotate(_btTilt);
+                  // Boot body — dark green rubber
+                  c.fillStyle = season === 3 ? '#365314' : '#4d7c0f';
+                  c.fillRect(-1.4, -5, 2.8, 5);
+                  // Boot tongue/opening (down because inverted)
+                  c.fillStyle = '#1a2a08';
+                  c.fillRect(-1.4, -0.4, 2.8, 0.6);
+                  // Boot sole (now on top — dark)
+                  c.fillStyle = '#1c1917';
+                  c.fillRect(-1.6, -6, 3.2, 1);
+                  // Treads on sole
+                  c.fillStyle = '#3a3325';
+                  for (var btt = 0; btt < 3; btt++) {
+                    c.fillRect(-1.4 + btt * 1.1, -5.8, 0.7, 0.3);
+                  }
+                  // Highlight stripe
+                  c.fillStyle = 'rgba(255,255,255,0.18)';
+                  c.fillRect(-1.2, -4.5, 0.4, 3.5);
+                  // Small drip of water beneath (in non-winter)
+                  if (season !== 3 && bt === 0) {
+                    c.fillStyle = 'rgba(160,200,230,0.6)';
+                    c.beginPath();
+                    c.ellipse(0, 1.5, 0.4, 0.6, 0, 0, 6.28);
+                    c.fill();
+                  }
+                  c.restore();
+                }
+              })();
+
+              // ── Wooden swing hanging from an apple-tree branch ──
+              // Real homestead childhood touch. A simple plank seat on two
+              // ropes hanging from a strong tree branch. The whole assembly
+              // sways gently with the coherent wind wave.
+              if (hiveX > 40) {
+                var _swAtX = hiveX * 0.55;
+                var _swBranchX = _swAtX + 18;
+                var _swBranchY = H * 0.76 - 38;
+                var _swSeatY = H * 0.83;
+                var _swWind2 = Math.sin(t2 * 0.025 - _swBranchX * 0.015) * 0.8;
+                // Branch — small darker line attaching to canopy
+                c.strokeStyle = '#4a2f1a';
+                c.lineWidth = 1.2;
+                c.beginPath();
+                c.moveTo(_swAtX + 14, _swBranchY - 4);
+                c.lineTo(_swBranchX + 4, _swBranchY);
+                c.stroke();
+                // Ropes — two parallel lines from branch to seat (with sway)
+                var _swSeatX = _swBranchX + _swWind2;
+                c.strokeStyle = 'rgba(140,110,70,0.85)';
+                c.lineWidth = 0.4;
+                c.beginPath();
+                c.moveTo(_swBranchX - 2.5, _swBranchY);
+                c.lineTo(_swSeatX - 3, _swSeatY);
+                c.stroke();
+                c.beginPath();
+                c.moveTo(_swBranchX + 2.5, _swBranchY);
+                c.lineTo(_swSeatX + 3, _swSeatY);
+                c.stroke();
+                // Seat plank
+                c.fillStyle = season === 3 ? '#5a3f25' : '#8a6238';
+                c.fillRect(_swSeatX - 4, _swSeatY, 8, 1.5);
+                // Plank highlight
+                c.fillStyle = 'rgba(255,255,255,0.25)';
+                c.fillRect(_swSeatX - 4, _swSeatY, 8, 0.4);
+                // Plank shadow
+                c.fillStyle = 'rgba(0,0,0,0.25)';
+                c.fillRect(_swSeatX - 4, _swSeatY + 1.2, 8, 0.4);
+                // Tiny rope knots at the seat corners
+                c.fillStyle = '#5a3a18';
+                c.beginPath(); c.arc(_swSeatX - 3, _swSeatY + 0.5, 0.4, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_swSeatX + 3, _swSeatY + 0.5, 0.4, 0, 6.28); c.fill();
+                // Branch tie-knots
+                c.fillStyle = '#3a2510';
+                c.beginPath(); c.arc(_swBranchX - 2.5, _swBranchY, 0.5, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_swBranchX + 2.5, _swBranchY, 0.5, 0, 6.28); c.fill();
+              }
+
               // ── Mason bee hotel mounted on a fence post (year-round fixture) ──
               // Real beekeeping accessory: a wooden block drilled with 4-8 mm
               // holes where solitary mason bees lay eggs. Closes the "honeybees
@@ -10371,6 +10463,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 // Center
                 c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(fl.x + sw, fl.y, bsz * 0.22, 0, 6.28); c.fill();
               });
+
+              // ── Row of sunflowers (late summer + fall — major bee pollen plant) ──
+              // Real biology: sunflowers (Helianthus annuus) produce more
+              // pollen per acre than almost any other flower. Bees pack it
+              // into bright orange-yellow leg-baskets. Each disk-floret in
+              // the central head is a separate flower. Heads track the sun
+              // when young (heliotropism); fully bloomed heads face east.
+              if ((season === 1 && (day % 30) >= 14) || (season === 2 && (day % 30) <= 18)) {
+                var _sfRow = [
+                  W * 0.24, W * 0.28, W * 0.32
+                ];
+                _sfRow.forEach(function(_sfFootX, sfi) {
+                  if (_sfFootX > hiveX - 18 && _sfFootX < hiveX + hiveW + 18) return;
+                  var _sfFootY = H * 0.78;
+                  var _sfHeight = 22 + (sfi * 3);
+                  var _sfWind = Math.sin(t2 * 0.025 - _sfFootX * 0.015) * 1.5;
+                  var _sfTopX = _sfFootX + _sfWind;
+                  var _sfTopY = _sfFootY - _sfHeight;
+                  // Stalk (thick green)
+                  c.strokeStyle = '#365314';
+                  c.lineWidth = 1.6;
+                  c.beginPath();
+                  c.moveTo(_sfFootX, _sfFootY);
+                  c.quadraticCurveTo(_sfFootX + _sfWind * 0.5, _sfFootY - _sfHeight / 2, _sfTopX, _sfTopY + 3);
+                  c.stroke();
+                  // Two big leaves down the stalk
+                  c.fillStyle = '#4d7c0f';
+                  c.beginPath();
+                  c.ellipse(_sfFootX + _sfWind * 0.3 - 3, _sfFootY - _sfHeight * 0.4, 3.5, 1.4, -0.6, 0, 6.28);
+                  c.fill();
+                  c.beginPath();
+                  c.ellipse(_sfFootX + _sfWind * 0.5 + 3, _sfFootY - _sfHeight * 0.65, 3, 1.2, 0.5, 0, 6.28);
+                  c.fill();
+                  // Outer petals — bright yellow ring
+                  c.fillStyle = '#facc15';
+                  for (var sfp = 0; sfp < 16; sfp++) {
+                    var _sfpA = (sfp / 16) * 6.28;
+                    var _sfpX = _sfTopX + Math.cos(_sfpA) * 4.5;
+                    var _sfpY = _sfTopY + Math.sin(_sfpA) * 4.5;
+                    c.beginPath();
+                    c.ellipse(_sfpX, _sfpY, 1.4, 0.7, _sfpA, 0, 6.28);
+                    c.fill();
+                  }
+                  // Darker outer-petal accents (a few orange streaks)
+                  c.fillStyle = '#ea580c';
+                  for (var sfp2 = 0; sfp2 < 16; sfp2 += 3) {
+                    var _sfp2A = (sfp2 / 16) * 6.28;
+                    var _sfp2X = _sfTopX + Math.cos(_sfp2A) * 4.5;
+                    var _sfp2Y = _sfTopY + Math.sin(_sfp2A) * 4.5;
+                    c.beginPath();
+                    c.ellipse(_sfp2X, _sfp2Y, 0.8, 0.4, _sfp2A, 0, 6.28);
+                    c.fill();
+                  }
+                  // Central disk (brown — packed with thousands of disk-florets)
+                  c.fillStyle = '#7c2d12';
+                  c.beginPath(); c.arc(_sfTopX, _sfTopY, 3.2, 0, 6.28); c.fill();
+                  // Disk-floret texture: small dot pattern
+                  c.fillStyle = '#3a1808';
+                  for (var sfd = 0; sfd < 20; sfd++) {
+                    var _sfdA = (sfd / 20) * 6.28 + sfi * 0.3;
+                    var _sfdR = ((sfd % 4) + 1) * 0.55;
+                    c.beginPath();
+                    c.arc(_sfTopX + Math.cos(_sfdA) * _sfdR, _sfTopY + Math.sin(_sfdA) * _sfdR, 0.2, 0, 6.28);
+                    c.fill();
+                  }
+                  // Bee visiting the disk — periodic
+                  if (sfi === 1 && season === 1) {
+                    var _sfBeeT = ((t2 * 0.06) % 70) / 70;
+                    if (_sfBeeT < 0.5) {
+                      var _sfBeeX = _sfTopX + Math.cos(_sfBeeT * 6) * 2.2;
+                      var _sfBeeY = _sfTopY + Math.sin(_sfBeeT * 6) * 2.2;
+                      c.fillStyle = '#fbbf24';
+                      c.beginPath(); c.ellipse(_sfBeeX, _sfBeeY, 1.0, 0.6, 0, 0, 6.28); c.fill();
+                      c.fillStyle = '#1c1917';
+                      c.fillRect(_sfBeeX - 0.2, _sfBeeY - 0.5, 0.3, 1);
+                      c.fillStyle = 'rgba(220,240,255,0.5)';
+                      c.beginPath(); c.ellipse(_sfBeeX, _sfBeeY - 0.6, 0.9, 0.3, 0, 0, 6.28); c.fill();
+                      // Orange pollen ball on the bee's leg!
+                      c.fillStyle = '#ea580c';
+                      c.beginPath(); c.arc(_sfBeeX, _sfBeeY + 0.7, 0.3, 0, 6.28); c.fill();
+                    }
+                  }
+                });
+              }
 
               // ── Goldenrod plumes (late summer + fall) ──
               // Tall stalks with bushy yellow plume tops — the most important
