@@ -6057,14 +6057,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var waterAlpha = 0.65 + Math.sin(t2 * 0.04) * 0.08;
                 c.fillStyle = 'rgba(125,175,220,' + waterAlpha + ')';
                 c.beginPath(); c.ellipse(bbX, bbY - 7, 13, 3.5, 0, 0, 6.28); c.fill();
-                // Ripple rings
-                var rippleR = (t2 * 0.3) % 10;
-                c.strokeStyle = 'rgba(255,255,255,' + (0.4 - rippleR * 0.04) + ')'; c.lineWidth = 0.5;
-                c.beginPath(); c.ellipse(bbX + Math.sin(t2 * 0.01) * 3, bbY - 7, rippleR, rippleR * 0.28, 0, 0, 6.28); c.stroke();
-                // Tiny bees drinking at the rim (2 static)
+                // Subtle highlight crescent (water surface reflectance from sun)
+                c.fillStyle = 'rgba(255,255,255,0.18)';
+                c.beginPath(); c.ellipse(bbX - 4, bbY - 7.6, 6, 1, 0, 0, 6.28); c.fill();
+                // Tiny submerged pebble (so a bee has a perch to drink from without drowning —
+                // real-world recommendation: keep pebbles in your bee water source)
+                c.fillStyle = 'rgba(120,113,108,0.55)';
+                c.beginPath(); c.arc(bbX + 2, bbY - 6.5, 1.2, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(bbX - 5, bbY - 6.8, 0.9, 0, 6.28); c.fill();
+                // ── Ripple rings — 3 staggered, each cycling 0→14 radius ──
+                // Centers jitter slightly so the rings look like real water
+                // ripples (raindrops, bee landings) instead of perfect concentric circles.
+                for (var rr = 0; rr < 3; rr++) {
+                  var rrT = ((t2 * 0.03 + rr * 0.33) % 1); // 0..1
+                  var rrR = rrT * 11;
+                  var rrA = (1 - rrT) * 0.42;
+                  if (rrA < 0.02) continue;
+                  var rrCx = bbX + Math.sin(t2 * 0.012 + rr * 1.7) * 3;
+                  var rrCy = bbY - 7 + Math.cos(t2 * 0.009 + rr) * 0.4;
+                  c.strokeStyle = 'rgba(255,255,255,' + rrA.toFixed(3) + ')';
+                  c.lineWidth = 0.6;
+                  c.beginPath(); c.ellipse(rrCx, rrCy, rrR, rrR * 0.28, 0, 0, 6.28); c.stroke();
+                }
+                // Tiny bees drinking at the rim (2 static, with a slow head-bob via sin)
                 c.fillStyle = '#fbbf24';
-                c.beginPath(); c.arc(bbX - 10, bbY - 6, 1.4, 0, 6.28); c.fill();
-                c.beginPath(); c.arc(bbX + 9, bbY - 5.5, 1.4, 0, 6.28); c.fill();
+                var drinkBob = Math.sin(t2 * 0.08) * 0.3;
+                c.beginPath(); c.arc(bbX - 10, bbY - 6 + drinkBob, 1.4, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(bbX + 9, bbY - 5.5 - drinkBob, 1.4, 0, 6.28); c.fill();
                 c.fillStyle = '#292524';
                 c.fillRect(bbX - 10.3, bbY - 6.3, 0.6, 0.6);
                 c.fillRect(bbX + 8.7, bbY - 5.8, 0.6, 0.6);
@@ -7576,11 +7595,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 b.wp += 0.45;
                 var angle = Math.atan2(b.vy, b.vx);
 
-                // Flight trail (fading dots behind bee)
+                // Flight trail (fading dots behind bee) — DIFFERENTIATED by
+                // forager state. Bees CARRYING pollen back to the hive leave
+                // a brighter orange-gold trail (the "loaded return flight");
+                // bees heading OUT toward the meadow leave a fainter pale
+                // yellow trail. Students can now read the foraging cycle by
+                // tracing the colored trails.
                 if (Math.hypot(b.vx, b.vy) > 0.4) {
-                  c.fillStyle = 'rgba(251,191,36,0.12)';
-                  c.beginPath(); c.arc(b.x - b.vx * 3, b.y - b.vy * 3, 1.2, 0, 6.28); c.fill();
-                  c.beginPath(); c.arc(b.x - b.vx * 6, b.y - b.vy * 6, 0.8, 0, 6.28); c.fill();
+                  if (b.carry) {
+                    // Returning forager — bright pollen-orange, 3 dots
+                    c.fillStyle = 'rgba(251,146,60,0.32)';
+                    c.beginPath(); c.arc(b.x - b.vx * 2.5, b.y - b.vy * 2.5, 1.5, 0, 6.28); c.fill();
+                    c.fillStyle = 'rgba(251,146,60,0.22)';
+                    c.beginPath(); c.arc(b.x - b.vx * 5, b.y - b.vy * 5, 1.1, 0, 6.28); c.fill();
+                    c.fillStyle = 'rgba(251,146,60,0.12)';
+                    c.beginPath(); c.arc(b.x - b.vx * 8, b.y - b.vy * 8, 0.7, 0, 6.28); c.fill();
+                  } else {
+                    // Outbound — faint pale yellow, 2 dots
+                    c.fillStyle = 'rgba(254,243,199,0.18)';
+                    c.beginPath(); c.arc(b.x - b.vx * 3, b.y - b.vy * 3, 1.2, 0, 6.28); c.fill();
+                    c.fillStyle = 'rgba(254,243,199,0.10)';
+                    c.beginPath(); c.arc(b.x - b.vx * 6, b.y - b.vy * 6, 0.8, 0, 6.28); c.fill();
+                  }
                 }
 
                 // Body glow
