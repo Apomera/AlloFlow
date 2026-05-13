@@ -1227,8 +1227,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           if (announceToSR) announceToSR(quizOpen ? 'Quiz closed.' : 'Quiz opened.');
         }
       }
+      // Layered planetary backdrop. Base is the original forest-to-navy
+      // diagonal (kept for color-identity continuity); an upper radial
+      // gradient suggests atmospheric / aurora glow at the top of the
+      // frame; a warm lower radial suggests horizon-light (sunset over
+      // a coast — quietly evokes the climate-urgency angle without
+      // resorting to alarm imagery); and a faint SVG turbulence layer
+      // adds atmospheric grain so the whole panel reads as planet-and-
+      // atmosphere rather than a flat color slab.
+      var ceGrainSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240">' +
+          '<filter id="g">' +
+            '<feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="11"/>' +
+            '<feColorMatrix values="0 0 0 0 0.55   0 0 0 0 0.85   0 0 0 0 0.7   0 0 0 0.06 0"/>' +
+          '</filter>' +
+          '<rect width="100%" height="100%" filter="url(#g)"/>' +
+        '</svg>'
+      );
+      var ceBgLayers =
+        'radial-gradient(ellipse 75% 50% at 50% 0%, rgba(96, 165, 250, 0.18), transparent 70%), ' +
+        'radial-gradient(ellipse 90% 55% at 50% 100%, rgba(251, 146, 60, 0.16), transparent 75%), ' +
+        'url("' + ceGrainSvg + '"), ' +
+        'linear-gradient(135deg, #064e3b 0%, #0f172a 50%, #064e3b 100%)';
       return el('div', {
-        style: { background: 'linear-gradient(135deg, #064e3b 0%, #0f172a 50%, #064e3b 100%)', borderRadius: 16, minHeight: '70vh', padding: 0, boxShadow: '0 0 40px rgba(34,197,94,0.15)', outline: 'none' },
+        style: {
+          background: ceBgLayers,
+          backgroundRepeat: 'no-repeat, no-repeat, repeat, no-repeat',
+          backgroundAttachment: 'scroll, scroll, scroll, scroll',
+          borderRadius: 16,
+          minHeight: '70vh',
+          padding: 0,
+          boxShadow: '0 0 40px rgba(34,197,94,0.15)',
+          outline: 'none'
+        },
         role: 'region',
         'aria-label': 'Climate Explorer. Keyboard shortcuts: 1 through 6 switch tabs, Q toggles quiz.',
         tabIndex: 0,
