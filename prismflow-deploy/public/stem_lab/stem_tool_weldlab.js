@@ -893,12 +893,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var P_state = usePersistedState('bl_process', 'mig');
         var M_state = usePersistedState('bl_material', 'steel');
         var TH_state = usePersistedState('bl_thickness', 0.25);
+        // View mode: 'topdown' (default, existing 2D Canvas2D) or '3d'
+        // (new Three.js scene). Persisted so a student returning to the
+        // module gets the same view they last used.
+        var BV_state = usePersistedState('bl_view', 'topdown');
         var V = V_state[0], setV = V_state[1];
         var A = A_state[0], setA = A_state[1];
         var TS = TS_state[0], setTS = TS_state[1];
         var P = P_state[0], setP = P_state[1];
         var M = M_state[0], setM = M_state[1];
         var TH = TH_state[0], setTH = TH_state[1];
+        var beadView = BV_state[0], setBeadView = BV_state[1];
 
         var net = heatInputNet(V, A, TS, P);
         var mat = MATERIAL[M];
@@ -1063,7 +1068,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           return function() {
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
           };
-        }, []);
+        }, [beadView]); // re-run when view toggles so 2D draw loop stops while 3D is active and restarts cleanly when user returns to top-down
 
         var canvasAriaLabel = 'Weld bead simulation. ' +
           (P === 'mig' ? 'MIG' : P === 'tig' ? 'TIG' : P === 'stick' ? 'Stick' : 'Oxy-Fuel') +
@@ -1143,8 +1148,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 min: 3, max: 30, step: 0.5, value: TS, onChange: setTS
               })
             ),
-            // Canvas
-            h('div', { className: 'bg-slate-900 rounded-2xl shadow border-2 border-slate-700 p-3' },
+            // ── View-mode toggle ──
+            // Top-down (default) preserves the existing physics-precise
+            // 2D view used for inspector-style geometry reading. 3D adds
+            // the immersive perspective for engagement; same V/A/TS state
+            // drives both. Three.js is lazy-loaded only when 3D is opened.
+            h('div', { role: 'tablist', 'aria-label': 'Bead view mode', className: 'flex gap-2 items-center' },
+              h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mr-1' }, 'View:'),
+              [
+                { id: 'topdown', label: 'Top-down', icon: '📐', sub: 'physics view' },
+                { id: '3d', label: '3D Scene', icon: '🎥', sub: 'immersive' }
+              ].map(function (m) {
+                var sel = (beadView === m.id);
+                return h('button', {
+                  key: m.id,
+                  role: 'tab',
+                  'aria-selected': sel ? 'true' : 'false',
+                  'aria-pressed': sel ? 'true' : 'false',
+                  onClick: function () {
+                    setBeadView(m.id);
+                    announce('View: ' + m.label + ' (' + m.sub + ')');
+                  },
+                  className: 'px-3 py-1.5 rounded-lg border-2 font-bold text-xs transition focus:outline-none focus:ring-2 ring-orange-500/40 ' +
+                    (sel ? 'bg-orange-600 text-white border-orange-700 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-orange-400')
+                },
+                  h('span', { 'aria-hidden': true, className: 'mr-1' }, m.icon),
+                  m.label
+                );
+              })
+            ),
+            // Canvas — existing top-down 2D view (default)
+            beadView === 'topdown' && h('div', { className: 'bg-slate-900 rounded-2xl shadow border-2 border-slate-700 p-3' },
               h('canvas', {
                 ref: canvasRef,
                 width: 900,
@@ -1154,6 +1188,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 className: 'w-full block rounded-lg'
               })
             ),
+            // 3D scene — new immersive view, Three.js lazy-loaded on first
+            // open. Same liveRef so it sees the same V/A/TS/material/process
+            // state without duplicating the physics layer.
+            beadView === '3d' && h(WeldBeadLab3D, {
+              liveRef: liveRef,
+              P: P,
+              M: M,
+              TH: TH,
+              mat: mat,
+              ariaLabel: canvasAriaLabel
+            }),
             // Stat cards
             h('div', { className: 'grid grid-cols-2 md:grid-cols-5 gap-3' },
               h(StatCard, { label: 'Net HI', value: net.toFixed(1), unit: 'kJ/in', color: 'text-red-700' }),
@@ -1208,6 +1253,438 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               ],
               extension: 'Pick a real welded product (your bike frame, a chair, a railing). Identify the metal, joint type, and likely process. Use this lab to estimate what heat-input range that weld was made at.'
             })
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
+      // MODULE 2 (companion): WELD BEAD 3D SCENE
+      // ─────────────────────────────────────────────────────
+      // Immersive 3rd-person view of the same bead the WeldBeadLab is
+      // computing. Reads the live physics state (V/A/TS/material/process,
+      // bead width derived from heat input) via the parent's liveRef so
+      // there is no state duplication. Visual only — no new sliders,
+      // controls, or scoring. Lazy-loads Three.js r128 from cdnjs only
+      // when this view is opened (mirrors the same pattern RoadReady has
+      // used in production for months). If Three.js fails to load, falls
+      // back to a polite message + reverts user to top-down.
+      //
+      // Scene composition:
+      //   - dark slate bench (BoxGeometry)
+      //   - plate sized to current TH, color from current material
+      //   - torch group (handle + nozzle), color/tip-color swap by process
+      //   - growing bead (BoxGeometry scaled with arc travel progress)
+      //   - arc sphere + PointLight at torch tip, pulsing
+      //   - 12 spark spheres splaying off the arc, deterministic per-frame
+      //   - ambient + directional lighting
+      //
+      // Camera: spherical (azimuth, elevation, radius) controlled by
+      // pointer-drag and wheel-zoom. Reset button restores defaults.
+      // Reduced-motion: arc holds at end of travel; sparks suppressed;
+      // arc pulse disabled.
+      function WeldBeadLab3D(props) {
+        var canvasRef = useRef(null);
+        var sceneRef = useRef(null);
+        var rafRef = useRef(null);
+        var statusState = useState('loading'); // loading | ready | error
+        var status = statusState[0], setStatus = statusState[1];
+        var liveRef = props.liveRef;
+
+        function resetCamera() {
+          if (!sceneRef.current) return;
+          var s = sceneRef.current;
+          s.camAngle.az = -0.7;
+          s.camAngle.el = 0.55;
+          s.camAngle.r = 3.2;
+          s.syncCamera();
+        }
+
+        useEffect(function () {
+          var cancelled = false;
+
+          function init() {
+            if (cancelled) return;
+            var THREE = window.THREE;
+            if (!THREE) { setStatus('error'); return; }
+            var canvas = canvasRef.current;
+            if (!canvas) return;
+
+            var W = canvas.clientWidth || 600;
+            var H = 280;
+
+            try {
+              var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+              renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+              renderer.setSize(W, H, false);
+            } catch (e) {
+              console.error('[WeldLab] WebGL init failed:', e);
+              setStatus('error');
+              return;
+            }
+
+            var scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0f172a);
+
+            var camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 100);
+            // Spherical camera coords. az = horizontal angle, el = elevation
+            // angle (0 = horizon, π/2 = top), r = radius from origin.
+            var camAngle = { az: -0.7, el: 0.55, r: 3.2 };
+            function syncCamera() {
+              var x = camAngle.r * Math.cos(camAngle.el) * Math.sin(camAngle.az);
+              var y = camAngle.r * Math.sin(camAngle.el);
+              var z = camAngle.r * Math.cos(camAngle.el) * Math.cos(camAngle.az);
+              camera.position.set(x, y, z);
+              camera.lookAt(0, 0, 0);
+            }
+            syncCamera();
+
+            // ── Lights ──
+            var ambient = new THREE.AmbientLight(0x4a5060, 1.4);
+            scene.add(ambient);
+            var dirLight = new THREE.DirectionalLight(0xffffff, 0.65);
+            dirLight.position.set(2, 3.5, 2);
+            scene.add(dirLight);
+            var fillLight = new THREE.DirectionalLight(0x6080a0, 0.25);
+            fillLight.position.set(-2, 1, -1);
+            scene.add(fillLight);
+
+            // ── Bench ──
+            var benchGeom = new THREE.BoxGeometry(3.5, 0.06, 1.8);
+            var benchMat = new THREE.MeshStandardMaterial({ color: 0x1c2532, roughness: 0.92 });
+            var bench = new THREE.Mesh(benchGeom, benchMat);
+            bench.position.y = -0.08;
+            scene.add(bench);
+
+            // ── Plate ──
+            // Plate height comes from current TH; updated each frame so
+            // changing thickness in the controls is reflected live.
+            var plateGeom = new THREE.BoxGeometry(2.0, 0.05, 1.0);
+            var plateMat = new THREE.MeshStandardMaterial({ color: 0x9ca3af, roughness: 0.55, metalness: 0.55 });
+            var plate = new THREE.Mesh(plateGeom, plateMat);
+            scene.add(plate);
+
+            // ── Bead ──
+            // Box from -1 to +1 on x. Scale.x grows with arc progress;
+            // position.x shifts so left edge stays anchored at -1.
+            var beadGeom = new THREE.BoxGeometry(2.0, 0.025, 0.07);
+            var beadMat = new THREE.MeshStandardMaterial({
+              color: 0x7a2510, emissive: 0x4a1a08, emissiveIntensity: 0.4, roughness: 0.85
+            });
+            var bead = new THREE.Mesh(beadGeom, beadMat);
+            scene.add(bead);
+
+            // ── Torch group ──
+            // Same shape for all 4 processes — color of handle + nozzle
+            // swap to convey process identity (MIG = black/grey, TIG =
+            // black + yellow tip, Stick = orange + grey rod, Oxy = green
+            // + brass tip). Travel-angle and work-angle are set per
+            // process by tilting the group.
+            var torchGroup = new THREE.Group();
+            var handleGeom = new THREE.CylinderGeometry(0.05, 0.055, 0.45, 12);
+            var handleMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.6 });
+            var handle = new THREE.Mesh(handleGeom, handleMat);
+            handle.position.y = 0.22; // above nozzle
+            torchGroup.add(handle);
+            var nozzleGeom = new THREE.CylinderGeometry(0.04, 0.025, 0.18, 10);
+            var nozzleMat = new THREE.MeshStandardMaterial({ color: 0x6b6b6b, roughness: 0.45, metalness: 0.7 });
+            var nozzle = new THREE.Mesh(nozzleGeom, nozzleMat);
+            nozzle.position.y = 0.025; // just above plate
+            torchGroup.add(nozzle);
+            // Tip — small bit of contact tip / electrode poking out of nozzle
+            var tipGeom = new THREE.CylinderGeometry(0.012, 0.012, 0.05, 8);
+            var tipMat = new THREE.MeshStandardMaterial({ color: 0xc0c0c0, emissive: 0x331100, emissiveIntensity: 0.3 });
+            var tip = new THREE.Mesh(tipGeom, tipMat);
+            tip.position.y = -0.085; // below nozzle
+            torchGroup.add(tip);
+            scene.add(torchGroup);
+
+            // ── Arc + arc light ──
+            var arcMat = new THREE.MeshBasicMaterial({ color: 0xffeeaa, transparent: true, opacity: 0.95 });
+            var arcSphere = new THREE.Mesh(new THREE.SphereGeometry(0.04, 10, 8), arcMat);
+            scene.add(arcSphere);
+            var arcLight = new THREE.PointLight(0xffddaa, 1.8, 2.0, 2);
+            scene.add(arcLight);
+
+            // ── Sparks ──
+            // 12 small spheres updated per frame. Stateless math (same
+            // pattern as the 2D view) — positions derived from elapsed +
+            // index, no per-spark buffer.
+            var sparkCount = 12;
+            var sparks = [];
+            var sparkMat = new THREE.MeshBasicMaterial({ color: 0xffaa44, transparent: true, opacity: 0.9 });
+            for (var si = 0; si < sparkCount; si++) {
+              var sp = new THREE.Mesh(new THREE.SphereGeometry(0.012, 5, 4), sparkMat.clone());
+              scene.add(sp);
+              sparks.push(sp);
+            }
+
+            // ── Process color helper ──
+            // Updates handle/nozzle/tip colors when process changes.
+            // Called once on init then again whenever live.P changes.
+            var lastProcess = null;
+            function applyProcessColors(p) {
+              if (p === lastProcess) return;
+              lastProcess = p;
+              if (p === 'mig') {
+                handleMat.color.setHex(0x111111);
+                nozzleMat.color.setHex(0x6b6b6b);
+                tipMat.color.setHex(0xc0c0c0);
+              } else if (p === 'tig') {
+                handleMat.color.setHex(0x1a1a1a);
+                nozzleMat.color.setHex(0x4a4a4a);
+                tipMat.color.setHex(0xfde047); // tungsten yellow
+              } else if (p === 'stick') {
+                handleMat.color.setHex(0xc2410c); // orange holder
+                nozzleMat.color.setHex(0x303030);
+                tipMat.color.setHex(0xa8a29e); // grey electrode
+              } else { // oxy
+                handleMat.color.setHex(0x166534); // green oxygen handle
+                nozzleMat.color.setHex(0x854d0e); // brass tip
+                tipMat.color.setHex(0xa16207);
+              }
+            }
+
+            sceneRef.current = {
+              scene: scene, camera: camera, renderer: renderer,
+              plate: plate, plateMat: plateMat,
+              torchGroup: torchGroup,
+              arcSphere: arcSphere, arcMat: arcMat, arcLight: arcLight,
+              bead: bead, beadMat: beadMat,
+              sparks: sparks,
+              camAngle: camAngle, syncCamera: syncCamera,
+              applyProcessColors: applyProcessColors,
+              startTime: performance.now(),
+              dispose: null
+            };
+
+            setStatus('ready');
+
+            // ── RAF loop ──
+            function loop(now) {
+              if (cancelled) return;
+              var s = sceneRef.current;
+              if (!s) return;
+              var live = liveRef.current;
+              if (!live) {
+                rafRef.current = requestAnimationFrame(loop);
+                return;
+              }
+              var elapsed = (now - s.startTime) / 1000;
+              var travelTime = 6.0 * (12 / Math.max(3, live.TS));
+              var t = _prefersReducedMotion
+                ? 0.95
+                : ((elapsed % travelTime) / travelTime);
+
+              // Plate: update color (mat changes) + height (TH changes)
+              s.plateMat.color.setStyle(live.mat.color);
+              // BoxGeometry height = 0.05 baseline; scale.y = TH/0.25 so
+              // 1/4" = baseline visual.
+              var plateScaleY = Math.max(0.4, (props.TH || 0.25) / 0.25);
+              s.plate.scale.y = plateScaleY;
+              s.plate.position.y = (0.05 * plateScaleY) / 2 - 0.025;
+
+              // Bead — grows with arc travel. Width tracks heat-input
+              // physics via beadWidth from liveRef (in inches; visual scale
+              // 1" plate-edge ≈ 1 unit in scene, so bead pixels need ~×3).
+              var beadWidthVis = Math.max(0.04, Math.min(0.18, live.beadWidth * 0.6));
+              s.bead.scale.set(t || 0.001, 1, beadWidthVis / 0.07);
+              // Anchor left edge at -1
+              s.bead.position.set(-1 + t, 0.013 + (0.05 * plateScaleY) / 2 - 0.025, 0);
+
+              // Torch position — follows arc tip
+              var torchX = -1 + 2 * t;
+              s.torchGroup.position.set(torchX, 0.13 + (0.05 * plateScaleY) / 2 - 0.025, 0);
+              // Work angle: tilt slightly forward (push or drag depending on process)
+              var workAngle = (live.P === 'tig' || live.P === 'stick') ? 0.22 : -0.22;
+              s.torchGroup.rotation.z = workAngle;
+
+              // Process colors
+              s.applyProcessColors(live.P);
+
+              // Arc — sphere + light + opacity pulse
+              s.arcSphere.position.set(torchX, 0.025 + (0.05 * plateScaleY) / 2 - 0.025, 0);
+              s.arcLight.position.set(torchX, 0.18, 0);
+              if (_prefersReducedMotion) {
+                s.arcMat.opacity = 0.9;
+                s.arcLight.intensity = 1.5;
+              } else {
+                var pulse = 0.7 + 0.3 * Math.sin(elapsed * 30);
+                s.arcMat.opacity = pulse;
+                s.arcLight.intensity = 1.4 + pulse * 0.7;
+              }
+
+              // Sparks — only when arc is welding (t < 1) and motion allowed
+              if (t < 0.99 && !_prefersReducedMotion) {
+                for (var sk = 0; sk < s.sparks.length; sk++) {
+                  var sphase = (elapsed * 50 + sk * 1.7) % 1;
+                  var sangle = (sk / s.sparks.length) * Math.PI * 2 + elapsed * 6 + sk;
+                  var sdist = 0.04 + sphase * 0.30;
+                  var sx = torchX + Math.cos(sangle) * sdist;
+                  var sy = (0.025 + (0.05 * plateScaleY) / 2 - 0.025) + Math.abs(Math.sin(sangle * 0.6)) * sdist * 0.8;
+                  var sz = Math.sin(sangle) * sdist * 0.45;
+                  s.sparks[sk].position.set(sx, sy, sz);
+                  s.sparks[sk].material.opacity = (1 - sphase) * 0.85;
+                  s.sparks[sk].visible = true;
+                }
+              } else {
+                for (var sh = 0; sh < s.sparks.length; sh++) s.sparks[sh].visible = false;
+              }
+
+              s.renderer.render(s.scene, s.camera);
+              rafRef.current = requestAnimationFrame(loop);
+            }
+            rafRef.current = requestAnimationFrame(loop);
+
+            // ── Pointer + wheel controls ──
+            var dragging = false;
+            var lastX = 0, lastY = 0;
+            function onPointerDown(e) {
+              dragging = true;
+              lastX = e.clientX; lastY = e.clientY;
+              try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+            }
+            function onPointerMove(e) {
+              if (!dragging) return;
+              var dx = (e.clientX - lastX) * 0.008;
+              var dy = (e.clientY - lastY) * 0.008;
+              camAngle.az -= dx;
+              camAngle.el = Math.max(0.05, Math.min(Math.PI / 2 - 0.05, camAngle.el - dy));
+              lastX = e.clientX; lastY = e.clientY;
+              syncCamera();
+            }
+            function onPointerUp(e) {
+              dragging = false;
+              try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+            }
+            function onWheel(e) {
+              e.preventDefault();
+              camAngle.r = Math.max(1.6, Math.min(7.5, camAngle.r + e.deltaY * 0.0035));
+              syncCamera();
+            }
+            canvas.addEventListener('pointerdown', onPointerDown);
+            canvas.addEventListener('pointermove', onPointerMove);
+            canvas.addEventListener('pointerup', onPointerUp);
+            canvas.addEventListener('pointercancel', onPointerUp);
+            canvas.addEventListener('wheel', onWheel, { passive: false });
+
+            // Keyboard alternative — arrow keys orbit, +/- zoom
+            function onKey(e) {
+              var step = 0.08;
+              if (e.key === 'ArrowLeft')  { camAngle.az += step; syncCamera(); e.preventDefault(); }
+              else if (e.key === 'ArrowRight') { camAngle.az -= step; syncCamera(); e.preventDefault(); }
+              else if (e.key === 'ArrowUp')   { camAngle.el = Math.min(Math.PI / 2 - 0.05, camAngle.el + step); syncCamera(); e.preventDefault(); }
+              else if (e.key === 'ArrowDown') { camAngle.el = Math.max(0.05, camAngle.el - step); syncCamera(); e.preventDefault(); }
+              else if (e.key === '+' || e.key === '=') { camAngle.r = Math.max(1.6, camAngle.r - 0.3); syncCamera(); e.preventDefault(); }
+              else if (e.key === '-' || e.key === '_') { camAngle.r = Math.min(7.5, camAngle.r + 0.3); syncCamera(); e.preventDefault(); }
+            }
+            canvas.addEventListener('keydown', onKey);
+
+            // Resize handler — re-fit renderer + aspect to container width
+            function onResize() {
+              if (cancelled) return;
+              var w = canvas.clientWidth || 600;
+              renderer.setSize(w, H, false);
+              camera.aspect = w / H;
+              camera.updateProjectionMatrix();
+            }
+            window.addEventListener('resize', onResize);
+
+            // Stash teardown
+            sceneRef.current.dispose = function () {
+              canvas.removeEventListener('pointerdown', onPointerDown);
+              canvas.removeEventListener('pointermove', onPointerMove);
+              canvas.removeEventListener('pointerup', onPointerUp);
+              canvas.removeEventListener('pointercancel', onPointerUp);
+              canvas.removeEventListener('wheel', onWheel);
+              canvas.removeEventListener('keydown', onKey);
+              window.removeEventListener('resize', onResize);
+              try {
+                benchGeom.dispose(); benchMat.dispose();
+                plateGeom.dispose(); plateMat.dispose();
+                handleGeom.dispose(); handleMat.dispose();
+                nozzleGeom.dispose(); nozzleMat.dispose();
+                tipGeom.dispose(); tipMat.dispose();
+                beadGeom.dispose(); beadMat.dispose();
+                arcMat.dispose(); arcSphere.geometry.dispose();
+                for (var di = 0; di < sparks.length; di++) {
+                  sparks[di].geometry.dispose();
+                  if (sparks[di].material && sparks[di].material.dispose) sparks[di].material.dispose();
+                }
+                renderer.dispose();
+                renderer.forceContextLoss();
+              } catch (e) { /* best-effort cleanup */ }
+            };
+          }
+
+          // Lazy-load Three.js — same CDN + r128 used in RoadReady.
+          if (window.THREE) {
+            init();
+          } else {
+            var s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+            s.async = true;
+            s.onload = function () { if (!cancelled) init(); };
+            s.onerror = function () {
+              if (cancelled) return;
+              console.error('[WeldLab] Three.js failed to load');
+              setStatus('error');
+            };
+            document.head.appendChild(s);
+          }
+
+          return function () {
+            cancelled = true;
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
+            if (sceneRef.current && sceneRef.current.dispose) sceneRef.current.dispose();
+            sceneRef.current = null;
+          };
+        }, []);
+
+        return h('div', {
+          className: 'bg-slate-900 rounded-2xl shadow border-2 border-slate-700 p-3 relative'
+        },
+          h('canvas', {
+            ref: canvasRef,
+            tabIndex: 0,
+            role: 'img',
+            'aria-label': '3D welding scene. ' + (props.ariaLabel || '') + ' Drag to orbit camera, scroll to zoom, arrow keys to orbit, plus or minus to zoom.',
+            className: 'w-full block rounded-lg outline-none focus:ring-2 focus:ring-orange-500/40',
+            style: { height: 280, touchAction: 'none', cursor: 'grab' }
+          }),
+          // Loading state
+          status === 'loading' && h('div', {
+            className: 'absolute inset-0 flex items-center justify-center bg-slate-900/85 rounded-lg pointer-events-none'
+          },
+            h('div', { className: 'flex items-center gap-2 text-slate-300 text-sm' },
+              h('span', { className: 'animate-pulse' }, '🎥'),
+              h('span', null, 'Loading 3D scene…')
+            )
+          ),
+          // Error state — three.js failed to load
+          status === 'error' && h('div', {
+            'role': 'alert',
+            className: 'absolute inset-0 flex items-center justify-center bg-slate-900/95 rounded-lg p-4 text-center'
+          },
+            h('div', null,
+              h('div', { className: 'text-rose-300 text-sm font-bold mb-2' }, '3D view unavailable'),
+              h('div', { className: 'text-slate-300 text-xs leading-relaxed max-w-xs' },
+                'Three.js failed to load (CDN blocked, offline, or WebGL not supported on this device). Switch back to top-down view above.')
+            )
+          ),
+          // Camera controls overlay (only when scene is ready)
+          status === 'ready' && h('div', { className: 'absolute top-3 right-3 flex gap-2' },
+            h('button', {
+              'aria-label': 'Reset camera to default angle',
+              onClick: resetCamera,
+              className: 'px-2 py-1 rounded bg-slate-800/85 text-slate-200 text-xs font-bold border border-slate-600 hover:bg-slate-700 focus:outline-none focus:ring-2 ring-orange-500/40'
+            }, '↺ Reset camera')
+          ),
+          // Hint strip
+          status === 'ready' && h('div', { className: 'mt-2 text-[11px] text-slate-300 flex flex-wrap items-center gap-x-3 gap-y-1' },
+            h('span', null, '🖱 Drag to orbit'),
+            h('span', null, '⚙ Wheel to zoom'),
+            h('span', null, '⌨ Arrow keys + / − for keyboard control'),
+            h('span', { className: 'text-slate-400' }, '— same V/A/TS controls above drive both views')
           )
         );
       }
