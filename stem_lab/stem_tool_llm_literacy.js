@@ -2702,6 +2702,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         var runPlayTemp = useCallback(async function() {
           if (!playPrompt.trim()) return;
           if (!hasLiveAI) { addToast('Live AI not available \u2014 the playground only works with live calls.', 'info'); return; }
+          // Safety pre-check: the playground explicitly invites "type any
+          // prompt" \u2014 exactly the surface where a kid in distress could
+          // dump real feelings and get a creative-writing response back
+          // instead of a real-help signal. SafetyContentChecker is on
+          // window.__alloShared regardless of which Hub is loaded.
+          var _checker = (window.__alloShared && window.__alloShared.SafetyContentChecker)
+            || window.SafetyContentChecker || null;
+          var _flags = (_checker && _checker.check) ? _checker.check(playPrompt) : [];
+          var _critical = _flags && _flags.some && _flags.some(function(f) { return f.severity === 'critical'; });
+          if (_critical) {
+            setPlayOut(function(prev) {
+              var list = (prev || []).slice();
+              list.unshift({
+                temp: playTemp,
+                text: 'Hey, I want to pause before generating anything. What you just typed sounds heavy, and your wellbeing matters more than the experiment.\n\nIf any of this is real for you right now, please talk to a trusted adult, or reach out to:\n\n988 Suicide & Crisis Lifeline (call or text 988)\nCrisis Text Line (text HOME to 741741)\n\nYou are not alone.',
+                t: Date.now(),
+                _safety: true
+              });
+              if (list.length > 5) list = list.slice(0, 5);
+              return list;
+            });
+            return;
+          }
           setPlayBusy(true);
           try {
             var out = await callGemini(playPrompt, false, false, playTemp);
@@ -3154,6 +3177,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             ),
             playOut && playOut.length > 0 && h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
               playOut.map(function(run, i) {
+                // Safety entry: render as warm amber alert with embedded crisis-resources block.
+                if (run._safety) {
+                  return h('div', { key: i, role: 'alert', 'aria-live': 'assertive', className: i === 0 ? 'llm-lit-fade-in' : '', style: {
+                    background: '#fef3c7', border: '1px solid #fcd34d', borderLeft: '4px solid #d97706', borderRadius: 8, padding: '12px 14px'
+                  } },
+                    h('div', { style: { fontSize: 11, fontWeight: 800, color: '#92400e', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🪶 Coach (paused before AI)'),
+                    h('div', { style: { fontSize: 13, color: '#0f172a', lineHeight: 1.55, whiteSpace: 'pre-wrap' } }, run.text)
+                  );
+                }
                 var color = tempToColor(run.temp);
                 return h('div', { key: i, className: i === 0 ? 'llm-lit-fade-in' : '', style: {
                   background: '#fff',
