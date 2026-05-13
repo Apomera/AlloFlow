@@ -6791,38 +6791,129 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var bkBodyH = 14 * bkScale;
                 var bkBodyW = 8 * bkScale;
                 var idleBob = phase === 'idle' ? Math.sin(t2 * 0.04) * 0.8 : 0;
-                var bkY = bkGround - bkBodyH - (8 * bkScale) + idleBob;
+                // Walk bounce — subtle vertical lift in sync with the leg step
+                var walkBounce = phase === 'walk' ? -Math.abs(Math.sin(t2 * 0.15)) * 0.7 * bkScale : 0;
+                var bkY = bkGround - bkBodyH - (8 * bkScale) + idleBob + walkBounce;
                 var bkStep = phase === 'walk' ? Math.sin(t2 * 0.15) * 1.2 * bkScale : 0;
 
                 c.save();
-                // Shadow
-                c.fillStyle = 'rgba(0,0,0,0.25)';
-                c.beginPath(); c.ellipse(bkX, bkGround, 7 * bkScale, 1.6 * bkScale, 0, 0, 6.28); c.fill();
-                // Body
+                // ── Shadow (soft, faintly stretched during walk for motion read) ──
+                c.fillStyle = 'rgba(0,0,0,0.28)';
+                var shStretch = phase === 'walk' ? 1.1 : 1.0;
+                c.beginPath(); c.ellipse(bkX, bkGround, 7 * bkScale * shStretch, 1.6 * bkScale, 0, 0, 6.28); c.fill();
+                // ── Body (white suit) — slight taper from shoulder to waist via two trapezoidal rects ──
                 c.fillStyle = '#f1f5f9';
+                // Main chest panel
                 c.fillRect(bkX - bkBodyW / 2, bkY, bkBodyW, bkBodyH);
-                // Legs
+                // Subtle inner shading on the right side for dimensional read
+                c.fillStyle = 'rgba(15,23,42,0.06)';
+                c.fillRect(bkX + bkBodyW * 0.25, bkY, bkBodyW * 0.25, bkBodyH);
+                // Belt (suit cinch — dark band at waist)
+                c.fillStyle = '#475569';
+                c.fillRect(bkX - bkBodyW / 2, bkY + bkBodyH - 2 * bkScale, bkBodyW, 1.2 * bkScale);
+                // Zipper (subtle vertical center line)
+                c.fillStyle = 'rgba(100,116,139,0.45)';
+                c.fillRect(bkX - 0.25 * bkScale, bkY + 2 * bkScale, 0.5 * bkScale, bkBodyH - 4 * bkScale);
+                // Tool-belt clip
+                c.fillStyle = '#1e293b';
+                c.fillRect(bkX + bkBodyW * 0.2, bkY + bkBodyH - 2.4 * bkScale, 1.4 * bkScale, 0.6 * bkScale);
+                // ── Legs (pants — slightly darker than body, with cuff highlight) ──
                 c.fillStyle = '#1e293b';
                 c.fillRect(bkX - 3 * bkScale, bkY + bkBodyH, 2.5 * bkScale, 8 * bkScale + bkStep);
                 c.fillRect(bkX + 0.5 * bkScale, bkY + bkBodyH, 2.5 * bkScale, 8 * bkScale - bkStep);
-                // Arms — raised slightly during perform phase
+                // Boot caps
+                c.fillStyle = '#0f172a';
+                c.fillRect(bkX - 3 * bkScale, bkY + bkBodyH + 8 * bkScale + bkStep - 1.5 * bkScale, 2.5 * bkScale, 1.5 * bkScale);
+                c.fillRect(bkX + 0.5 * bkScale, bkY + bkBodyH + 8 * bkScale - bkStep - 1.5 * bkScale, 2.5 * bkScale, 1.5 * bkScale);
+                // ── Arms (suit fabric — raised slightly during perform) ──
                 c.fillStyle = '#f1f5f9';
                 var armLift = phase === 'perform' ? -2 * bkScale * Math.abs(Math.sin(t2 * 0.18)) : 0;
+                // Left arm (holding smoker)
                 c.fillRect(bkX - 6 * bkScale, bkY + 2 * bkScale + armLift, 2 * bkScale, 9 * bkScale);
+                // Right arm
                 c.fillRect(bkX + 4 * bkScale, bkY + 2 * bkScale + armLift, 2 * bkScale, 9 * bkScale);
-                // Veil hood
+                // Arm shading (right side darker for depth)
+                c.fillStyle = 'rgba(15,23,42,0.08)';
+                c.fillRect(bkX + 5 * bkScale, bkY + 2 * bkScale + armLift, 1 * bkScale, 9 * bkScale);
+                // ── Gloves (tan/cream) at the end of each arm ──
+                c.fillStyle = '#e8d9b8';
+                c.beginPath(); c.arc(bkX - 5 * bkScale, bkY + 11.5 * bkScale + armLift, 1.6 * bkScale, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(bkX + 5 * bkScale, bkY + 11.5 * bkScale + armLift, 1.6 * bkScale, 0, 6.28); c.fill();
+                // Glove cuff stripe (tan-dark accent)
+                c.fillStyle = 'rgba(140,110,70,0.35)';
+                c.fillRect(bkX - 6.2 * bkScale, bkY + 10 * bkScale + armLift, 2.4 * bkScale, 0.5 * bkScale);
+                c.fillRect(bkX + 3.8 * bkScale, bkY + 10 * bkScale + armLift, 2.4 * bkScale, 0.5 * bkScale);
+                // ── Veil hood (white outer dome + mesh pattern + face shadow) ──
                 c.fillStyle = '#f8fafc';
                 c.beginPath(); c.arc(bkX, bkY - 3 * bkScale, 5 * bkScale, 0, 6.28); c.fill();
-                c.fillStyle = 'rgba(30,41,59,0.4)';
-                c.beginPath(); c.arc(bkX, bkY - 2 * bkScale, 4 * bkScale, 0, 6.28); c.fill();
-                // Smoker in hand
+                // Hood crown rim (slight band where helmet meets veil)
+                c.fillStyle = '#cbd5e1';
+                c.beginPath(); c.ellipse(bkX, bkY - 6 * bkScale, 5 * bkScale, 1 * bkScale, 0, 0, 6.28); c.fill();
+                // Veil mesh face area (dark tinted oval)
+                c.fillStyle = 'rgba(30,41,59,0.55)';
+                c.beginPath(); c.ellipse(bkX, bkY - 2 * bkScale, 3.8 * bkScale, 4 * bkScale, 0, 0, 6.28); c.fill();
+                // Mesh weave dots (tiny grid hints — the bee netting)
+                c.fillStyle = 'rgba(0,0,0,0.35)';
+                for (var mr = -2; mr <= 2; mr++) {
+                  for (var mc = -2; mc <= 2; mc++) {
+                    var mx = bkX + mc * 0.9 * bkScale;
+                    var my = bkY - 2 * bkScale + mr * 0.9 * bkScale;
+                    // Mask to the face oval
+                    var dx = (mx - bkX) / (3.8 * bkScale);
+                    var dy = (my - (bkY - 2 * bkScale)) / (4 * bkScale);
+                    if (dx * dx + dy * dy > 0.85) continue;
+                    c.fillRect(mx, my, 0.35 * bkScale, 0.35 * bkScale);
+                  }
+                }
+                // Subtle suggestion of a face — two tiny lighter spots where eyes would be
+                c.fillStyle = 'rgba(248,250,252,0.45)';
+                c.beginPath(); c.arc(bkX - 1.2 * bkScale, bkY - 2 * bkScale, 0.5 * bkScale, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(bkX + 1.2 * bkScale, bkY - 2 * bkScale, 0.5 * bkScale, 0, 6.28); c.fill();
+                // Veil cord (string under chin securing the hood)
+                c.strokeStyle = 'rgba(100,116,139,0.5)'; c.lineWidth = 0.5;
+                c.beginPath();
+                c.moveTo(bkX - 4 * bkScale, bkY + 0.5 * bkScale);
+                c.quadraticCurveTo(bkX, bkY + 2 * bkScale, bkX + 4 * bkScale, bkY + 0.5 * bkScale);
+                c.stroke();
+                // ── Smoker (canister + bellows + spout) in left hand ──
+                var smX = bkX - 7.2 * bkScale;
+                var smY = bkY + 9 * bkScale + armLift;
+                // Bellows (squarish brown leather bag)
+                c.fillStyle = '#5b4632';
+                c.fillRect(smX - 1.4 * bkScale, smY + 1 * bkScale, 2.4 * bkScale, 3 * bkScale);
+                // Bellows wrinkles (3 thin lines)
+                c.fillStyle = 'rgba(0,0,0,0.30)';
+                c.fillRect(smX - 1.4 * bkScale, smY + 1.7 * bkScale, 2.4 * bkScale, 0.25 * bkScale);
+                c.fillRect(smX - 1.4 * bkScale, smY + 2.4 * bkScale, 2.4 * bkScale, 0.25 * bkScale);
+                c.fillRect(smX - 1.4 * bkScale, smY + 3.1 * bkScale, 2.4 * bkScale, 0.25 * bkScale);
+                // Canister (cylinder, metal gray) — leans slightly right
+                c.fillStyle = '#78716c';
+                c.fillRect(smX + 0.6 * bkScale, smY - 4 * bkScale, 2.4 * bkScale, 5.8 * bkScale);
+                // Canister rim band
                 c.fillStyle = '#44403c';
-                c.fillRect(bkX - 8 * bkScale, bkY + 8 * bkScale, 3 * bkScale, 6 * bkScale);
-                // Smoker puff — bigger during "smoke" action
-                var puffAlpha = (bkAnim && bkAnim.type === 'smoke' && phase === 'perform') ? 0.85 : 0.5;
-                var puffSize = (bkAnim && bkAnim.type === 'smoke' && phase === 'perform') ? 3.5 : 1.5;
-                c.fillStyle = 'rgba(220,220,220,' + puffAlpha + ')';
-                c.beginPath(); c.arc(bkX - 7 * bkScale, bkY + 5 * bkScale + Math.sin(t2 * 0.1) * 0.5 * bkScale, puffSize * bkScale, 0, 6.28); c.fill();
+                c.fillRect(smX + 0.6 * bkScale, smY - 1.6 * bkScale, 2.4 * bkScale, 0.5 * bkScale);
+                // Highlight on canister (left edge)
+                c.fillStyle = 'rgba(255,255,255,0.20)';
+                c.fillRect(smX + 0.7 * bkScale, smY - 4 * bkScale, 0.5 * bkScale, 5.6 * bkScale);
+                // Spout (small angled rectangle at the top)
+                c.fillStyle = '#44403c';
+                c.save(); c.translate(smX + 1.8 * bkScale, smY - 4 * bkScale); c.rotate(-0.3);
+                c.fillRect(-0.5 * bkScale, -1.4 * bkScale, 1 * bkScale, 1.6 * bkScale);
+                c.restore();
+                // ── Smoker puff(s) rising from spout ──
+                var puffActive = (bkAnim && bkAnim.type === 'smoke' && phase === 'perform');
+                var puffCount = puffActive ? 4 : 2;
+                var puffBaseAlpha = puffActive ? 0.85 : 0.45;
+                var puffBaseSize = puffActive ? 3.0 : 1.4;
+                for (var pf = 0; pf < puffCount; pf++) {
+                  var pfT = ((t2 * (puffActive ? 0.45 : 0.20) + pf * 12) % 30) / 30; // 0..1 rise
+                  var pfX = smX + 1.8 * bkScale + Math.sin(t2 * 0.04 + pf) * 1.5 - pfT * 1.5;
+                  var pfY = smY - 5 * bkScale - pfT * 9 * bkScale;
+                  var pfR = (puffBaseSize + pfT * 1.8) * bkScale;
+                  var pfA = (1 - pfT) * puffBaseAlpha;
+                  c.fillStyle = 'rgba(220,220,220,' + pfA.toFixed(3) + ')';
+                  c.beginPath(); c.arc(pfX, pfY, pfR, 0, 6.28); c.fill();
+                }
                 c.restore();
 
                 // ── Action overlay + speech bubble (perform phase only) ──
