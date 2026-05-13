@@ -5932,6 +5932,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   var wlPhase = ((t2 * 1.2 + wl * 80) % (W + 160)) - 80;
                   c.beginPath(); c.moveTo(wlPhase, wlY); c.lineTo(wlPhase + 40, wlY); c.stroke();
                 }
+                // Dewdrops on grass tips (dawn only) — tiny silver beads with a
+                // sharp highlight. _sunCycle wraps at 2.0/0.0 = sunrise, so the
+                // dawn factor peaks near the wrap and fades within ±0.2 units.
+                var _dewDawn = Math.max(0, 1 - Math.min(_sunCycle, 2 - _sunCycle) / 0.2);
+                if (_dewDawn > 0.02) {
+                  for (var dw = 0; dw < 28; dw++) {
+                    var _dwX = ((dw * 23 + 11) % W) + Math.sin(dw * 1.7) * 4;
+                    var _dwY = H * 0.76 - 5 - (dw % 3) * 1.2;
+                    var _dwR = 0.75 + (dw % 4) * 0.15;
+                    // Bead body
+                    c.fillStyle = 'rgba(220,240,255,' + (0.55 * _dewDawn).toFixed(3) + ')';
+                    c.beginPath(); c.arc(_dwX, _dwY, _dwR, 0, 6.28); c.fill();
+                    // Sharp highlight on upper-left
+                    c.fillStyle = 'rgba(255,255,255,' + (0.85 * _dewDawn).toFixed(3) + ')';
+                    c.beginPath(); c.arc(_dwX - _dwR * 0.35, _dwY - _dwR * 0.4, _dwR * 0.35, 0, 6.28); c.fill();
+                  }
+                }
               }
               // ── Cloud shadows drifting across the meadow ──
               // Soft dark patches on the ground that drift in sync with the
@@ -8141,6 +8158,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 sgGlow.addColorStop(1,   'rgba(254,215,170,0)');
                 c.fillStyle = sgGlow;
                 c.beginPath(); c.ellipse(signX, signY, 38, 22, 0, 0, 6.28); c.fill();
+              }
+
+              // ── Fireflies dance over the meadow (dusk/night, spring + summer) ──
+              // Tiny pulsing glows wandering above the grass. Each one has its
+              // own pulse phase so the field never blinks in unison. Cold-night
+              // winter and fall are too cold for them in real life — gated to
+              // spring + summer. Brighter at full dark (around _tdT=1.5).
+              if ((season === 0 || season === 1) && _tdT > 1.0 && _tdT < 2.0) {
+                var _ffVis = _tdT < 1.5 ? (_tdT - 1.0) / 0.5 : Math.min(1, (2.0 - _tdT) / 0.5);
+                _ffVis = Math.max(0, Math.min(1, _ffVis));
+                var _ffCount = season === 1 ? 14 : 9;
+                c.save();
+                for (var ff = 0; ff < _ffCount; ff++) {
+                  var _ffX = ((ff * 47 + 19) % W) + Math.sin(t2 * 0.012 + ff * 0.9) * 22;
+                  var _ffY = H * 0.72 + ((ff * 7) % Math.floor(H * 0.22)) + Math.cos(t2 * 0.009 + ff * 1.7) * 14;
+                  var _ffPulseRaw = Math.sin(t2 * 0.06 + ff * 1.4);
+                  var _ffPulse = _ffPulseRaw > 0 ? Math.pow(_ffPulseRaw, 1.4) : 0;
+                  var _ffA = _ffPulse * _ffVis;
+                  if (_ffA < 0.02) continue;
+                  var _ffG = c.createRadialGradient(_ffX, _ffY, 0.5, _ffX, _ffY, 7);
+                  _ffG.addColorStop(0,    'rgba(250,255,180,' + (0.75 * _ffA).toFixed(3) + ')');
+                  _ffG.addColorStop(0.45, 'rgba(220,255,150,' + (0.30 * _ffA).toFixed(3) + ')');
+                  _ffG.addColorStop(1,    'rgba(220,255,150,0)');
+                  c.fillStyle = _ffG;
+                  c.beginPath(); c.arc(_ffX, _ffY, 7, 0, 6.28); c.fill();
+                  c.fillStyle = 'rgba(255,255,210,' + (0.95 * _ffA).toFixed(3) + ')';
+                  c.beginPath(); c.arc(_ffX, _ffY, 0.9, 0, 6.28); c.fill();
+                }
+                c.restore();
               }
 
               // ── HUD overlay (glass morphism style) ──
