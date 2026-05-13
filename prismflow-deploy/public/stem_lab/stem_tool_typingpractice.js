@@ -3103,15 +3103,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               var weekAvgAcc = Math.round(
                 thisWeek.reduce(function(a, s) { return a + (s.accuracy || 0); }, 0) / thisWeek.length
               );
+              // Build the four stat tiles. Each is a small icon + value
+              // + label triplet, color-coded so a glance tells the student
+              // which dimension they're looking at: sessions/days = neutral
+              // accent, best WPM = success (green), avg acc = neutral text.
+              // Subtle internal spacing matches the curated-pack design
+              // system shipped earlier.
+              function statTile(icon, value, label, valueColor) {
+                return h('div', {
+                  style: {
+                    display: 'flex', alignItems: 'baseline', gap: '6px',
+                    padding: '4px 10px', borderRadius: '8px',
+                    background: palette.bg,
+                    border: '1px solid ' + palette.border
+                  }
+                },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: '13px', lineHeight: 1, position: 'relative', top: '1px' } }, icon),
+                  h('strong', {
+                    style: {
+                      fontSize: '14px',
+                      color: valueColor || palette.text,
+                      fontWeight: 800,
+                      fontVariantNumeric: 'tabular-nums',
+                      letterSpacing: '-0.01em'
+                    }
+                  }, value),
+                  h('span', { style: { fontSize: '11px', color: palette.textMute } }, label)
+                );
+              }
               return h('div', {
                 style: {
                   marginBottom: '16px',
-                  padding: '12px 16px',
+                  padding: '12px 14px 12px 14px',
                   background: palette.surface,
                   border: '1px solid ' + palette.border,
+                  borderLeft: '3px solid ' + palette.success,
                   borderRadius: '10px',
                   display: 'flex',
-                  gap: '18px',
+                  gap: '12px',
                   alignItems: 'center',
                   flexWrap: 'wrap',
                   fontVariantNumeric: 'tabular-nums'
@@ -3123,23 +3152,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     color: palette.textMute,
                     textTransform: 'uppercase',
                     letterSpacing: '0.06em',
-                    fontWeight: 700
+                    fontWeight: 800,
+                    paddingRight: '8px',
+                    borderRight: '1px solid ' + palette.border,
+                    marginRight: '2px'
                   }
                 }, '📅 This week'),
-                h('span', { style: { fontSize: '12px', color: palette.textDim } },
-                  h('strong', { style: { color: palette.text } }, thisWeek.length),
-                  ' session', thisWeek.length === 1 ? '' : 's'
-                ),
-                h('span', { style: { fontSize: '12px', color: palette.textDim } },
-                  h('strong', { style: { color: palette.text } }, Object.keys(weekDays).length),
-                  ' day', Object.keys(weekDays).length === 1 ? '' : 's', ' practiced'
-                ),
-                h('span', { style: { fontSize: '12px', color: palette.textDim } },
-                  'best ', h('strong', { style: { color: palette.success } }, weekBestWpm + ' WPM')
-                ),
-                h('span', { style: { fontSize: '12px', color: palette.textDim } },
-                  'avg ', h('strong', { style: { color: palette.text } }, weekAvgAcc + '% acc')
-                )
+                statTile('⌨️', thisWeek.length, 'session' + (thisWeek.length === 1 ? '' : 's'), palette.text),
+                statTile('✓', Object.keys(weekDays).length, 'day' + (Object.keys(weekDays).length === 1 ? '' : 's') + ' practiced', palette.text),
+                statTile('🏁', weekBestWpm, 'best WPM', palette.success),
+                statTile('🎯', weekAvgAcc + '%', 'avg accuracy', palette.text)
               );
             })() : null,
 
