@@ -5720,9 +5720,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillRect(0, 0, W, H * 0.55);
               }
 
-              // Clouds (parallax, layered)
-              c.globalAlpha = 0.25;
-              c.fillStyle = '#fff';
+              // ── Periodic weather cycle: clear → rain → rainbow → clear ──
+              // 240s cycle independent of the sim's activeEvent system. The
+              // rain phase darkens clouds, animates falling drops + ground
+              // splashes, and is followed by a brief rainbow as the sun
+              // returns. Real bee biology: bees can't fly in rain (droplets
+              // hit their wings with hurricane force at their scale), so the
+              // weather cycle is also a felt-cue for "no foraging right now."
+              // Suppressed in winter (where snow already covers the system).
+              var _wxPeriod = 240000; // 4 minutes
+              var _wxPhase = (Date.now() % _wxPeriod) / _wxPeriod; // 0..1
+              // Rain phase: 0.60..0.80 (~48s)
+              // Rainbow: 0.80..0.92 (~29s, while sun returns)
+              var _wxRain = 0;
+              var _wxRainbow = 0;
+              if (season !== 3 && _sunCycle < 1.0) {
+                if (_wxPhase >= 0.60 && _wxPhase < 0.80) {
+                  var _wxRainT = (_wxPhase - 0.60) / 0.20; // 0..1
+                  _wxRain = Math.sin(_wxRainT * Math.PI); // ramp-in/out bell
+                } else if (_wxPhase >= 0.80 && _wxPhase < 0.92) {
+                  var _wxRbT = (_wxPhase - 0.80) / 0.12;
+                  _wxRainbow = Math.sin(_wxRbT * Math.PI); // bell ramp
+                }
+              }
+              // Clouds (parallax, layered) — darken during rain
+              var _cloudAlpha = 0.25 + _wxRain * 0.40;
+              var _cloudFill = _wxRain > 0.1 ?
+                'rgba(' + Math.round(255 - _wxRain * 100) + ',' +
+                          Math.round(255 - _wxRain * 100) + ',' +
+                          Math.round(255 - _wxRain * 80) + ',' + _cloudAlpha.toFixed(3) + ')'
+                : '#fff';
+              c.globalAlpha = _cloudAlpha;
+              c.fillStyle = _cloudFill;
               for (var ci = 0; ci < 4; ci++) {
                 var cx = (ci * W * 0.28 + t2 * (0.08 + ci * 0.04) + ci * 70) % (W + 80) - 40;
                 var cy = 18 + ci * 14 + Math.sin(t2 * 0.005 + ci) * 3;
@@ -5730,6 +5759,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.ellipse(cx + 18, cy - 3, 18, 7, 0, 0, 6.28); c.fill();
               }
               c.globalAlpha = 1;
+              // ── Rain shower (falling streaks + ground splashes) ──
+              if (_wxRain > 0.08) {
+                c.save();
+                c.strokeStyle = 'rgba(160,190,220,' + (0.6 * _wxRain).toFixed(3) + ')';
+                c.lineWidth = 0.5;
+                for (var rd = 0; rd < 80; rd++) {
+                  var _rdX = ((rd * 31 + 7) % W) + Math.sin(rd) * 5;
+                  var _rdY = ((rd * 41 + t2 * 6) % H);
+                  c.beginPath();
+                  c.moveTo(_rdX, _rdY);
+                  c.lineTo(_rdX - 1.2, _rdY + 4);
+                  c.stroke();
+                }
+                // Ground splashes — tiny ellipses along H*0.80
+                c.strokeStyle = 'rgba(200,220,240,' + (0.55 * _wxRain).toFixed(3) + ')';
+                c.lineWidth = 0.3;
+                for (var sp = 0; sp < 14; sp++) {
+                  var _spX = (sp * 67 + ((t2 * 1.5) % 60)) % W;
+                  var _spY = H * 0.83;
+                  var _spT = ((t2 * 0.5 + sp * 23) % 30) / 30;
+                  if (_spT > 0.6) continue;
+                  c.beginPath();
+                  c.arc(_spX, _spY, 1 + _spT * 3, 0, Math.PI);
+                  c.stroke();
+                }
+                c.restore();
+                // Soft gray overlay across the whole scene
+                c.fillStyle = 'rgba(50,60,80,' + (0.12 * _wxRain).toFixed(3) + ')';
+                c.fillRect(0, 0, W, H * 0.78);
+              }
+              // ── Rainbow (arcs across the sky as the rain dies away) ──
+              if (_wxRainbow > 0.1) {
+                c.save();
+                var _rbCx = W * 0.5;
+                var _rbCy = H * 0.95;
+                var _rbR = H * 0.55;
+                var _rbBands = [
+                  { col: 'rgba(220, 38, 38, ', off:  0 },
+                  { col: 'rgba(251,146, 60, ', off:  2 },
+                  { col: 'rgba(250,204, 21, ', off:  4 },
+                  { col: 'rgba(74, 222,128, ', off:  6 },
+                  { col: 'rgba(56, 189,248, ', off:  8 },
+                  { col: 'rgba(99,102,241, ', off: 10 },
+                  { col: 'rgba(167,139,250, ', off: 12 }
+                ];
+                _rbBands.forEach(function(rb) {
+                  c.strokeStyle = rb.col + (0.35 * _wxRainbow).toFixed(3) + ')';
+                  c.lineWidth = 2.2;
+                  c.beginPath();
+                  c.arc(_rbCx, _rbCy, _rbR - rb.off, Math.PI * 1.1, Math.PI * 1.9);
+                  c.stroke();
+                });
+                c.restore();
+              }
 
               // ── Distant birds (seasonal: hawk in spring/summer, V-formation in fall) ──
               // Tiny silhouettes in the upper sky add scale and the felt sense
@@ -7573,6 +7656,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.closePath(); c.fill();
                 }
               })();
+
+              // ── Wooden crate of HONEY jars (late summer + fall — harvest aftermath) ──
+              // Sits to the left of the honey extractor. Appears from day 22
+              // of summer (peak harvest week) through fall. 6 jars in a 3x2
+              // grid inside a slatted wooden crate; jars have amber gradient
+              // contents and small white "HONEY" labels.
+              if ((season === 1 && (day % 30) >= 22) || season === 2) {
+                var _hcX = W * 0.74, _hcY = H * 0.86;
+                var _hcW = 12, _hcH = 7;
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.25)';
+                c.beginPath(); c.ellipse(_hcX, _hcY + 4, _hcW * 0.7, 1.2, 0, 0, 6.28); c.fill();
+                // Crate body — wood
+                c.fillStyle = '#7a5230';
+                c.fillRect(_hcX - _hcW / 2, _hcY - _hcH, _hcW, _hcH);
+                // Slat gaps (3 vertical dark lines)
+                c.fillStyle = '#3a2510';
+                for (var hcs = 0; hcs < 3; hcs++) {
+                  c.fillRect(_hcX - _hcW / 2 + 3 + hcs * 3, _hcY - _hcH, 0.6, _hcH);
+                }
+                // Top rim
+                c.fillStyle = '#5a3a18';
+                c.fillRect(_hcX - _hcW / 2 - 0.5, _hcY - _hcH - 0.5, _hcW + 1, 1.2);
+                // Jars — 3 visible at the front (the front row of a 3x2 grid)
+                for (var hcj = 0; hcj < 3; hcj++) {
+                  var _hcjX = _hcX - 4 + hcj * 4;
+                  var _hcjY = _hcY - _hcH - 4;
+                  // Glass jar with amber honey gradient
+                  var _hcjG = c.createLinearGradient(_hcjX - 1.5, _hcjY, _hcjX + 1.5, _hcjY);
+                  _hcjG.addColorStop(0, 'rgba(254,243,199,0.9)');
+                  _hcjG.addColorStop(0.5, 'rgba(217,119,6,0.92)');
+                  _hcjG.addColorStop(1, 'rgba(154, 76, 5, 0.85)');
+                  c.fillStyle = _hcjG;
+                  c.fillRect(_hcjX - 1.5, _hcjY, 3, 4);
+                  // Brass lid
+                  c.fillStyle = '#a16207';
+                  c.fillRect(_hcjX - 1.6, _hcjY - 0.8, 3.2, 1);
+                  c.fillStyle = '#5a3a08';
+                  c.fillRect(_hcjX - 1.6, _hcjY - 0.5, 3.2, 0.3);
+                  // White label band
+                  c.fillStyle = 'rgba(255,255,255,0.9)';
+                  c.fillRect(_hcjX - 1.3, _hcjY + 1, 2.6, 1.4);
+                  c.fillStyle = '#3a2510';
+                  c.font = 'bold 1.4px sans-serif';
+                  c.textAlign = 'center';
+                  c.fillText('HONEY', _hcjX, _hcjY + 2);
+                  c.textAlign = 'start';
+                  // Glass highlight strip
+                  c.fillStyle = 'rgba(255,255,255,0.4)';
+                  c.fillRect(_hcjX - 1.2, _hcjY + 0.3, 0.4, 3);
+                }
+                // Tiny chalk price tag dangling from one jar
+                if (Math.sin(t2 * 0.018) > 0) {
+                  c.fillStyle = '#fafaf9';
+                  c.fillRect(_hcX - 6, _hcY - _hcH - 6, 3, 1.6);
+                  c.fillStyle = '#3a2510';
+                  c.font = 'bold 1.2px sans-serif';
+                  c.textAlign = 'center';
+                  c.fillText('$12', _hcX - 4.5, _hcY - _hcH - 4.8);
+                  c.textAlign = 'start';
+                  // String connecting tag to jar
+                  c.strokeStyle = 'rgba(60,40,20,0.6)';
+                  c.lineWidth = 0.3;
+                  c.beginPath();
+                  c.moveTo(_hcX - 3, _hcY - _hcH - 5.2);
+                  c.lineTo(_hcX - 4, _hcY - _hcH - 4.4);
+                  c.stroke();
+                }
+              }
 
               // ── Honey-extractor barrel near the keeper home (beekeeping equipment) ──
               // Real beekeeping: an extractor is a metal drum that spins frames

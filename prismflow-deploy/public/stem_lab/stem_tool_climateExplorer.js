@@ -2883,6 +2883,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               );
             })(),
 
+            // ═══ CLIMATE JUSTICE TIMELINE ═══
+            // A compact temporal frame that shows just how slowly this
+            // policy field moves. Aaron's middle-school students will
+            // notice immediately: the most important wins on this list
+            // are within their lifetime — and the gap between proposal
+            // and implementation is measured in decades. Helps them
+            // calibrate "why hasn't anyone fixed this" with "look how
+            // long it took to get this far." Sources are official COP /
+            // UN documents.
+            (function() {
+              var TIMELINE = [
+                { year: 1990, label: 'IPCC First Assessment Report', what: 'The IPCC tells the world, with scientific consensus for the first time, that human emissions are warming the planet.', tag: 'science', color: '#60a5fa' },
+                { year: 1992, label: 'UN Framework Convention on Climate Change', what: 'The UNFCCC is opened for signature at the Rio Earth Summit. The treaty creates the COP process. 198 countries are now parties.', tag: 'policy', color: '#22c55e' },
+                { year: 1995, label: 'AOSIS proposes Loss & Damage at COP1 Berlin', what: 'The Alliance of Small Island States, led by Vanuatu, formally proposes an international financial mechanism for unavoidable climate damage. Wealthy nations decline.', tag: 'demand', color: '#fbbf24' },
+                { year: 2008, label: 'IDMC begins tracking weather displacement', what: 'The Internal Displacement Monitoring Centre starts the global database that now documents 376M+ cumulative weather displacements.', tag: 'data', color: '#60a5fa' },
+                { year: 2009, label: 'COP15 Copenhagen — $100B/yr finance pledge', what: 'Wealthy nations pledge $100B/yr in climate finance to developing countries by 2020. The pledge is met for the first time, late, in 2022.', tag: 'pledge', color: '#fbbf24' },
+                { year: 2015, label: 'Paris Agreement — Article 8 mentions L&D', what: 'The Paris text formally names "loss and damage associated with climate change impacts" — but explicitly excludes any basis for liability or compensation.', tag: 'policy', color: '#22c55e' },
+                { year: 2020, label: 'UN HRC Teitiota v. New Zealand ruling', what: 'The UN Human Rights Committee rules countries cannot deport people back to climate-existential danger. Non-binding but landmark — the first time a UN body recognized climate displacement in a human-rights frame.', tag: 'law', color: '#a855f7' },
+                { year: 2021, label: 'World Bank Groundswell Part II report', what: 'Projects up to 216M people internally climate-displaced by 2050 across 6 world regions on current trajectory.', tag: 'data', color: '#60a5fa' },
+                { year: 2022, label: 'COP27 Sharm el-Sheikh — L&D Fund created', what: 'After 27 years, the Loss & Damage Fund is formally established. No money attached yet. Saleemul Huq calls it "the most important COP outcome since Paris."', tag: 'win', color: '#86efac' },
+                { year: 2023, label: 'COP28 Dubai — L&D Fund capitalized', what: 'Initial pledges total ~$700M, hosted by World Bank for 4 years. Roughly 0.16% of one year of estimated need. Saleemul Huq dies one month before the COP opens; the fund is sometimes informally called by his name.', tag: 'win', color: '#86efac' },
+                { year: 2024, label: 'First L&D Fund disbursements', what: 'The fund makes its first small payments to vulnerable countries. The slow work of building disbursement criteria, eligibility, and accountability begins.', tag: 'win', color: '#86efac' },
+                { year: 2030, label: 'IPCC 1.5°C deadline (target year)', what: 'The Paris Agreement target year for emissions to peak and begin declining. Current trajectory points well past this.', tag: 'target', color: '#fda4af', future: true }
+              ];
+              return el('div', {
+                style: {
+                  marginTop: 20, padding: 16, borderRadius: 12,
+                  background: 'linear-gradient(135deg, rgba(139,92,246,0.06), rgba(96,165,250,0.06))',
+                  border: '1px solid rgba(139,92,246,0.25)'
+                }
+              },
+                el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 } },
+                  el('span', { style: { fontSize: 22 } }, '⏳'),
+                  el('div', null,
+                    el('div', { style: { color: '#c4b5fd', fontSize: 14, fontWeight: 900 } }, 'Climate justice timeline — how long it actually takes'),
+                    el('div', { style: { color: '#94a3b8', fontSize: 11, lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' } },
+                      'From the first scientific consensus (1990) to the first dollar of Loss & Damage payment (2024) is 34 years. The big wins on this list are inside your lifetime — most are within the last 10 years. Slow does not mean impossible.')
+                  )
+                ),
+                el('div', { style: { marginTop: 12, paddingLeft: 12, borderLeft: '2px solid rgba(139,92,246,0.30)' } },
+                  TIMELINE.map(function(t) {
+                    return el('div', { key: t.year,
+                      style: {
+                        position: 'relative', paddingLeft: 18, paddingBottom: 12, marginLeft: -2
+                      }
+                    },
+                      // Dot
+                      el('div', {
+                        style: {
+                          position: 'absolute', left: -7, top: 4,
+                          width: 12, height: 12, borderRadius: '50%',
+                          background: t.color,
+                          border: '2px solid rgba(15,23,42,0.7)',
+                          boxShadow: '0 0 6px ' + t.color + '55',
+                          opacity: t.future ? 0.7 : 1
+                        }
+                      }),
+                      el('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 2, flexWrap: 'wrap' } },
+                        el('span', { style: { color: t.color, fontSize: 13, fontWeight: 900, fontFamily: 'monospace', minWidth: 44 } }, t.year),
+                        el('span', { style: { color: '#e2e8f0', fontSize: 12, fontWeight: 800 } }, t.label),
+                        el('span', {
+                          style: {
+                            padding: '1px 7px', borderRadius: 10,
+                            background: t.color + '20', color: t.color,
+                            fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em'
+                          }
+                        }, t.tag)
+                      ),
+                      el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.55 } }, t.what)
+                    );
+                  })
+                ),
+                el('div', {
+                  style: {
+                    marginTop: 6, padding: 10, borderRadius: 8,
+                    background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.18)',
+                    color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, textAlign: 'center', fontStyle: 'italic'
+                  }
+                },
+                  'The first proposal to the first payment was 29 years. The next 29 are yours.')
+              );
+            })(),
+
             // Discussion prompts — restructured into two banks. The
             // original four foundational questions stay (they work as
             // warm-up). Below them, a deeper bank ties directly to the
