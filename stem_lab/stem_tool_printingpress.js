@@ -263,20 +263,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       }
 
       function backBar(title) {
-        return h('div', { className: 'printingpress-back-bar', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
-          h('button', {
-            className: 'printingpress-no-print',
-            'aria-label': 'Back to PrintingPress menu',
-            onClick: function() { upd('view', 'menu'); announce('Back to menu'); },
-            style: btn({ padding: '6px 12px', fontSize: 12 })
-          }, '← Menu'),
-          h('h2', { style: { margin: 0, fontSize: 18, color: T.text, flex: 1, fontFamily: 'Georgia, serif' } }, title),
-          h('button', {
-            className: 'printingpress-no-print',
-            'aria-label': 'Print this module as a classroom handout',
-            onClick: function() { try { window.print(); } catch (_) {} },
-            style: btn({ padding: '6px 12px', fontSize: 12 })
-          }, '🖨️ Print')
+        // Period-flourish row: back button | fleuron | title | fleuron | print
+        // button. Below it, a thin double gold rule (the same border treatment
+        // a 1450 book page used between the headpiece and the body text).
+        // Pure visual framing — matches the broadside borders elsewhere in
+        // the tool so every view feels printed, not screen-rendered.
+        return h('div', { className: 'printingpress-back-bar', style: { marginBottom: 14 } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } },
+            h('button', {
+              className: 'printingpress-no-print',
+              'aria-label': 'Back to PrintingPress menu',
+              onClick: function() { upd('view', 'menu'); announce('Back to menu'); },
+              style: btn({ padding: '6px 12px', fontSize: 12 })
+            }, '← Menu'),
+            h('span', { 'aria-hidden': 'true', style: { color: T.accent, opacity: 0.7, display: 'inline-flex', alignItems: 'center' } }, fleuron(11)),
+            h('h2', { style: { margin: 0, fontSize: 18, color: T.text, flex: 1, fontFamily: 'Georgia, serif', letterSpacing: '0.01em' } }, title),
+            h('span', { 'aria-hidden': 'true', style: { color: T.accent, opacity: 0.7, display: 'inline-flex', alignItems: 'center' } }, fleuron(11)),
+            h('button', {
+              className: 'printingpress-no-print',
+              'aria-label': 'Print this module as a classroom handout',
+              onClick: function() { try { window.print(); } catch (_) {} },
+              style: btn({ padding: '6px 12px', fontSize: 12 })
+            }, '🖨️ Print')
+          ),
+          // Double gold rule (thick + thin), the period-typical headpiece
+          // separator. ~6px gap between rules.
+          h('div', { 'aria-hidden': 'true', style: { marginTop: 8 } },
+            h('div', { style: { height: 1.5, background: T.accent, opacity: 0.55 } }),
+            h('div', { style: { height: 1, background: T.accent, opacity: 0.35, marginTop: 2 } })
+          )
         );
       }
 
