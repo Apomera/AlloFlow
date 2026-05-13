@@ -2017,6 +2017,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         var proofIdx = proofIdxRaw[0], setProofIdx = proofIdxRaw[1];
         var proofGuessRaw = useState(null);
         var proofGuess = proofGuessRaw[0], setProofGuess = proofGuessRaw[1];
+        // AI-generated round override — when set, displayed in place of
+        // the static PROOF_LINES round. Stays in place until the student
+        // clicks "↻ New proof" (which clears the override and advances
+        // the static cycle) or generates another AI round.
+        var proofAiRoundRaw = useState(null);
+        var proofAiRound = proofAiRoundRaw[0], setProofAiRound = proofAiRoundRaw[1];
+        var proofGenStateRaw = useState({ loading: false, error: null });
+        var proofGenState = proofGenStateRaw[0], setProofGenState = proofGenStateRaw[1];
         var proofRevealedRaw = useState(false);
         var proofRevealed = proofRevealedRaw[0], setProofRevealed = proofRevealedRaw[1];
         // Each round: tokens (words) of the printed line, errorIdx points
@@ -2189,17 +2197,93 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           // The corrector's job: pull a proof, scan against the
           // manuscript, flag every error with a margin mark. Students
           // click the wrong word in a printed-style line.
+          //
+          // Two enhancements live here:
+          // (1) Duplicate-word tolerance — for "TEN TEN" / "TYPE TYPE."
+          //     style errors, the two copies are visually identical, so
+          //     either click counts as correctly identifying the
+          //     duplicate. Both copies highlight on reveal so the
+          //     student sees the duplicate-pattern itself.
+          // (2) AI-generated rounds — a \u{1F916} button calls Gemini for a
+          //     fresh proof line with a parsed { tokens, errorIdx,
+          //     corrected, mark, explanation } shape, validated before
+          //     it overrides the static cycle. Falls back politely if
+          //     the AI is unreachable or returns an unparseable response.
           (function() {
-            var round = PROOF_LINES[proofIdx];
+            var round = proofAiRound || PROOF_LINES[proofIdx];
+            var isAiRound = !!proofAiRound;
+            // Duplicate-tolerant correctness check. Returns true if the
+            // index is the marked error position OR if it is an adjacent
+            // copy of the same word text (the duplicate-word case).
+            function isProofErrorPosition(i) {
+              if (i === round.errorIdx) return true;
+              if (Math.abs(i - round.errorIdx) === 1 &&
+                  round.tokens[i] === round.tokens[round.errorIdx]) {
+                return true;
+              }
+              return false;
+            }
+            var guessIsCorrect = proofGuess !== null && isProofErrorPosition(proofGuess);
+
+            function generateNewProof() {
+              if (!callGemini) {
+                setProofGenState({ loading: false, error: 'AI tutor unavailable in this build.' });
+                return;
+              }
+              setProofGenState({ loading: true, error: null });
+              var prompt = 'Generate ONE short printed line in the style of a 1450 broadside or pamphlet, with EXACTLY ONE intentional typesetting error. ' +
+                'The error must be one of: missing letter, transposed letters (one pair swapped), or duplicated word. ' +
+                'Respond with ONLY a JSON object. NO markdown fences, NO commentary, NO explanation outside the JSON. ' +
+                'Exact shape: ' +
+                '{"tokens": ["WORD1", "WORD2", ...], "errorIdx": <0-based index of the wrong token in tokens>, "corrected": "<what the wrong token should say, or the literal string (delete) for duplicated words>", "mark": "<corrector\'s margin mark name + symbol>", "explanation": "<1-2 sentence explanation of the error type and what a 1450 corrector would write in the margin>"} ' +
+                'Constraints: 5 to 8 tokens; tokens are space-separated words including any trailing punctuation; ALL CAPS throughout; the line should sound like 1450-1700 print culture (a motto, declaration, scriptural verse, or news bulletin); errorIdx must point to the actual wrong token; for duplicated-word errors errorIdx points to the second copy and the duplicate token is identical to its neighbor; mark should reference the appropriate symbol (caret ∧ for missing letter, transposition swoop ∿ for letter order, deletion mark ⌫ for duplicated word).';
+              callGemini(prompt, { maxOutputTokens: 400 })
+                .then(function(resp) {
+                  var text = (resp && (resp.text || resp.content || (typeof resp === 'string' ? resp : ''))) || '';
+                  // Strip any leading/trailing prose; extract the first {...} block.
+                  var braceMatch = text.match(/\{[\s\S]*\}/);
+                  if (!braceMatch) {
+                    setProofGenState({ loading: false, error: 'AI returned no JSON object. Try again.' });
+                    return;
+                  }
+                  var parsed;
+                  try { parsed = JSON.parse(braceMatch[0]); }
+                  catch (e) {
+                    setProofGenState({ loading: false, error: 'AI returned an unparseable response. Try again.' });
+                    return;
+                  }
+                  if (!parsed || !Array.isArray(parsed.tokens) || parsed.tokens.length < 3 ||
+                      typeof parsed.errorIdx !== 'number' || parsed.errorIdx < 0 || parsed.errorIdx >= parsed.tokens.length ||
+                      !parsed.corrected || !parsed.explanation) {
+                    setProofGenState({ loading: false, error: 'AI response was missing required fields. Try again.' });
+                    return;
+                  }
+                  parsed.tokens = parsed.tokens.map(function(t) { return String(t); });
+                  parsed.mark = parsed.mark || 'corrector’s mark';
+                  setProofAiRound(parsed);
+                  setProofGuess(null);
+                  setProofRevealed(false);
+                  setProofGenState({ loading: false, error: null });
+                  announce('New AI-generated proof loaded.');
+                })
+                .catch(function(err) {
+                  setProofGenState({ loading: false, error: 'Could not reach the AI: ' + ((err && err.message) || 'unknown error') });
+                });
+            }
+
             return h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
-              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi, fontFamily: 'Georgia, serif' } },
-                '\u{1F50D} Proofreader\u2019s eye'),
+              h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
+                h('h4', { style: { margin: 0, fontSize: 14, color: T.accentHi, fontFamily: 'Georgia, serif' } },
+                  '\u{1F50D} Proofreader\u2019s eye'),
+                isAiRound && h('span', {
+                  style: { fontSize: 10, color: T.warn, fontStyle: 'italic', padding: '2px 8px', background: 'rgba(245,215,126,0.12)', borderRadius: 4, border: '1px solid ' + T.warn }
+                }, '\u{1F916} AI-generated round')
+              ),
               h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
                 'A corrector in 1450 caught every typesetting error before the run. One word in this printed line is wrong. Click it.'),
-              // The 'printed' line in parchment-and-ink style
               h('div', { style: { background: T.parchment, color: T.ink, padding: '16px 20px', border: '2px solid ' + T.wood, borderRadius: 6, marginBottom: 12, textAlign: 'center', boxShadow: '0 1px 4px rgba(0,0,0,0.4) inset', fontFamily: 'Georgia, "Times New Roman", serif', fontSize: 22, letterSpacing: '0.04em', lineHeight: 1.5 } },
                 round.tokens.map(function(tok, i) {
-                  var isError = (i === round.errorIdx);
+                  var isError = isProofErrorPosition(i);
                   var isGuessed = (proofGuess === i);
                   var bg = 'transparent';
                   var color = T.ink;
@@ -2216,7 +2300,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                       if (proofRevealed) return;
                       setProofGuess(i);
                       setProofRevealed(true);
-                      announce(i === round.errorIdx ? 'Correct. That word is the error.' : 'Not the error. The correct answer is shown.');
+                      announce(isProofErrorPosition(i) ? 'Correct. That word is the error.' : 'Not the error. The correct answer is shown.');
                     },
                     'aria-pressed': isGuessed ? 'true' : 'false',
                     'aria-label': 'Word ' + (i + 1) + ': ' + tok,
@@ -2236,30 +2320,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   }, tok);
                 })
               ),
-              // Feedback / explanation panel
               proofRevealed && h('div', { 'aria-live': 'polite',
                 style: { padding: 12, borderRadius: 6, fontSize: 13, lineHeight: 1.55, marginBottom: 10,
-                  background: proofGuess === round.errorIdx ? '#1f3d28' : '#3d2810',
-                  border: '1px solid ' + (proofGuess === round.errorIdx ? T.ok : T.warn),
-                  color: proofGuess === round.errorIdx ? '#bbf7d0' : '#fed7aa' } },
+                  background: guessIsCorrect ? '#1f3d28' : '#3d2810',
+                  border: '1px solid ' + (guessIsCorrect ? T.ok : T.warn),
+                  color: guessIsCorrect ? '#bbf7d0' : '#fed7aa' } },
                 h('div', { style: { fontWeight: 700, marginBottom: 6, fontFamily: 'Georgia, serif' } },
-                  proofGuess === round.errorIdx ? '\u2713 You caught it.' : '\u2717 Missed. The error was the highlighted word.'),
+                  guessIsCorrect ? '\u2713 You caught it.' : '\u2717 Missed. The error was the highlighted word.'),
                 h('div', { style: { marginBottom: 4 } },
                   h('strong', null, 'What it should say: '), round.corrected),
                 h('div', { style: { marginBottom: 4 } },
                   h('strong', null, 'Corrector\u2019s margin mark: '), round.mark),
                 h('div', { style: { fontStyle: 'italic', opacity: 0.92 } }, round.explanation)
               ),
-              // Controls
-              h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+              proofGenState.error && h('div', {
+                'aria-live': 'polite',
+                role: 'alert',
+                style: { padding: 8, borderRadius: 4, fontSize: 11, marginBottom: 10, background: '#3d2810', border: '1px dashed ' + T.warn, color: '#fed7aa' }
+              }, '\u26A0 ' + proofGenState.error),
+              h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' } },
                 h('button', {
                   onClick: function() {
+                    setProofAiRound(null);
                     setProofIdx((proofIdx + 1) % PROOF_LINES.length);
                     setProofGuess(null); setProofRevealed(false);
+                    setProofGenState({ loading: false, error: null });
                     announce('New proof loaded.');
                   },
                   style: btnPrimary({ padding: '8px 14px', fontSize: 12 })
                 }, '\u21BB New proof'),
+                callGemini && h('button', {
+                  onClick: generateNewProof,
+                  disabled: proofGenState.loading,
+                  style: btn({
+                    padding: '8px 14px', fontSize: 12,
+                    opacity: proofGenState.loading ? 0.6 : 1,
+                    cursor: proofGenState.loading ? 'wait' : 'pointer',
+                    borderColor: T.warn,
+                    color: T.warn
+                  })
+                }, proofGenState.loading ? '\u{1F916} Generating\u2026' : '\u{1F916} Generate new (AI)'),
                 proofRevealed && h('button', {
                   onClick: function() { setProofGuess(null); setProofRevealed(false); },
                   style: btn({ padding: '8px 14px', fontSize: 12 })
