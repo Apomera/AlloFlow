@@ -4731,11 +4731,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     h('rect', { x: 58, y: 56, width: 8, height: 12, fill: '#c44536', stroke: '#7a2a2a', strokeWidth: 0.6 }),
                     // Keyboard slope
                     h('polygon', { points: '14,70 30,70 24,86 8,86', fill: '#5c4630', stroke: '#2a2a2a', strokeWidth: 1 }),
-                    // Key dots
+                    // Key dots — wrapped in Fragment so the outer .map's
+                    // returned arrays have unique keys (React warns
+                    // otherwise — only the inner circles having keys is
+                    // not enough when an outer iteration also returns lists)
                     [12, 16, 20].map(function(x, i) {
-                      return [76, 80, 84].map(function(y, j) {
-                        return h('circle', { key: i + '-' + j, cx: x + j * 0.7, cy: y, r: 0.7, fill: '#cfcfcf' });
-                      });
+                      return h(React.Fragment, { key: 'kbrow' + i },
+                        [76, 80, 84].map(function(y, j) {
+                          return h('circle', { key: j, cx: x + j * 0.7, cy: y, r: 0.7, fill: '#cfcfcf' });
+                        })
+                      );
                     }),
                     // Legs
                     h('rect', { x: 22, y: 86, width: 4, height: 10, fill: '#2a2a2a' }),
