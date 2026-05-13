@@ -9113,7 +9113,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         } },
         h('div', { ref: _liveRef, 'aria-live': 'polite', 'aria-atomic': 'true',
           style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 } }),
-        content
+        content,
+        // ── Colophon footer ──
+        // The period-typical end-of-page mark. 1450-era books closed every
+        // section (and the whole work) with a colophon: printer's name, city,
+        // year, often a fleuron mark and the word FINIS. Mirrors the
+        // headpiece treatment in backBar() so every view is framed top-and-
+        // bottom like a printed page. Skipped on the menu (which has its
+        // own all-modules celebration banner at the top).
+        view !== 'menu' && h('div', { 'aria-hidden': 'true', style: { maxWidth: 980, margin: '24px auto 28px', padding: '0 20px' } },
+          // Inverse double rule (thin then thick) — bottom counterpart to
+          // the headpiece's thick-then-thin double rule.
+          h('div', { style: { height: 1, background: T.accent, opacity: 0.35, marginBottom: 2 } }),
+          h('div', { style: { height: 1.5, background: T.accent, opacity: 0.55, marginBottom: 10 } }),
+          // Centered FINIS row with flanking fleurons.
+          h('div', { style: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10, color: T.accent } },
+            h('span', { style: { display: 'inline-flex', alignItems: 'center', opacity: 0.7 } }, fleuron(10)),
+            h('span', { style: { fontFamily: 'Georgia, "Times New Roman", serif', fontSize: 13, fontWeight: 700, color: T.accentHi, letterSpacing: '0.3em' } }, 'FINIS'),
+            h('span', { style: { display: 'inline-flex', alignItems: 'center', opacity: 0.7 } }, fleuron(10))
+          ),
+          // Colophon credit line — period-style printer's mark.
+          h('div', { style: { textAlign: 'center', fontSize: 11, color: T.dim, fontStyle: 'italic', marginTop: 6, fontFamily: 'Georgia, serif', lineHeight: 1.5 } },
+            'Composed and pressed by hand at the AlloFlow PrintingPress · Mainz 1455 in spirit · MMXXVI')
+        )
       );
 
       } catch (err) {
