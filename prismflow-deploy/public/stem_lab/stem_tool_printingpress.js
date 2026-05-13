@@ -9024,8 +9024,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       // height, and the parent's lighter background shows through wherever
       // the tool doesn't fill. Also explicitly sets margin/padding to 0 on
       // outer container to defeat any inherited spacing.
+      // Background is layered to evoke a 1450 print shop: a warm overhead
+      // glow (oil-lamp / window light over the press), a recessed floor
+      // shadow at the bottom, and a faint parchment grain (SVG turbulence)
+      // over the base wood-brown. The grain is tiled and very low-opacity
+      // so it reads as texture, not pattern. backgroundAttachment: fixed
+      // keeps the lighting stable as the student scrolls.
+      var paperGrainSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220">' +
+          '<filter id="g">' +
+            '<feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7"/>' +
+            '<feColorMatrix values="0 0 0 0 0.35   0 0 0 0 0.27   0 0 0 0 0.16   0 0 0 0.10 0"/>' +
+          '</filter>' +
+          '<rect width="100%" height="100%" filter="url(#g)"/>' +
+        '</svg>'
+      );
+      var bgLayers =
+        'radial-gradient(ellipse 70% 55% at 50% 0%, rgba(245, 215, 126, 0.10), transparent 70%), ' +
+        'radial-gradient(ellipse 90% 70% at 50% 100%, rgba(0, 0, 0, 0.35), transparent 75%), ' +
+        'url("' + paperGrainSvg + '"), ' + T.bg;
       return h('div', { style: {
-          background: T.bg,
+          background: bgLayers,
+          backgroundRepeat: 'no-repeat, no-repeat, repeat, no-repeat',
+          backgroundAttachment: 'fixed, fixed, scroll, scroll',
           minHeight: '100vh',
           height: '100%',
           margin: 0,
