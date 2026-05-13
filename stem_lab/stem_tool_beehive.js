@@ -5731,6 +5731,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               c.globalAlpha = 1;
 
+              // ── Distant birds (seasonal: hawk in spring/summer, V-formation in fall) ──
+              // Tiny silhouettes in the upper sky add scale and the felt sense
+              // of a real ecosystem above the apiary. Fully suppressed in winter.
+              if (season === 0 || season === 1) {
+                // Lazy circling hawk: parametric circle in sky, with wing flap
+                var _hkT = t2 * 0.003;
+                var _hkCx = W * 0.55 + Math.sin(t2 * 0.0008) * 30;
+                var _hkCy = H * 0.16 + Math.cos(t2 * 0.0008) * 8;
+                var _hkX = _hkCx + Math.cos(_hkT) * 36;
+                var _hkY = _hkCy + Math.sin(_hkT) * 12;
+                var _hkFlap = Math.sin(t2 * 0.04) * 0.35;
+                c.save();
+                c.translate(_hkX, _hkY);
+                c.rotate(_hkT + Math.PI / 2);
+                c.strokeStyle = 'rgba(60,50,40,0.55)';
+                c.lineWidth = 1.1;
+                c.beginPath();
+                c.moveTo(-9, 0);
+                c.quadraticCurveTo(-4, -2 + _hkFlap, 0, 0);
+                c.quadraticCurveTo(4, -2 + _hkFlap, 9, 0);
+                c.stroke();
+                // Tail dot
+                c.fillStyle = 'rgba(60,50,40,0.6)';
+                c.beginPath(); c.arc(0, 1.5, 0.9, 0, 6.28); c.fill();
+                c.restore();
+              } else if (season === 2) {
+                // Fall: V-formation of 5 migrating geese sweeping right→left across sky
+                var _vfPhase = ((t2 * 0.18) % (W + 240)) - 60;
+                var _vfBaseX = W - _vfPhase;
+                var _vfBaseY = H * 0.13 + Math.sin(t2 * 0.002) * 4;
+                c.save();
+                c.strokeStyle = 'rgba(50,45,55,0.55)';
+                c.lineWidth = 1;
+                for (var vfi = 0; vfi < 5; vfi++) {
+                  var _vfRow = Math.floor(vfi / 2);
+                  var _vfSide = (vfi % 2 === 0) ? -1 : 1;
+                  var _vfX = _vfBaseX + _vfRow * 7 * _vfSide + (vfi === 0 ? 0 : 0);
+                  var _vfY = _vfBaseY + _vfRow * 4;
+                  if (vfi === 0) { _vfX = _vfBaseX; _vfY = _vfBaseY; }
+                  // Per-bird wing flap, slight phase offset
+                  var _vfFlap = Math.sin(t2 * 0.07 + vfi * 0.6) * 0.5;
+                  c.beginPath();
+                  c.moveTo(_vfX - 4, _vfY);
+                  c.quadraticCurveTo(_vfX - 1.5, _vfY - 1.5 + _vfFlap, _vfX, _vfY);
+                  c.quadraticCurveTo(_vfX + 1.5, _vfY - 1.5 + _vfFlap, _vfX + 4, _vfY);
+                  c.stroke();
+                }
+                c.restore();
+              }
+
               // ── Red barn next to the farmhouse (classic rural pairing) ──
               if (season !== 3) {
                 var bnX = W * 0.80, bnY = H * 0.70;
@@ -5853,6 +5903,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   var wlPhase = ((t2 * 1.2 + wl * 80) % (W + 160)) - 80;
                   c.beginPath(); c.moveTo(wlPhase, wlY); c.lineTo(wlPhase + 40, wlY); c.stroke();
                 }
+              }
+              // ── Cloud shadows drifting across the meadow ──
+              // Soft dark patches on the ground that drift in sync with the
+              // overhead clouds. Fades out at dawn/dusk (low sun = no shadow)
+              // and is suppressed in winter. Gives kids a visceral, no-words
+              // cue of cloud motion they can track on the ground.
+              if (season !== 3) {
+                var _csDay = Math.max(0, Math.sin(_sunT_arc * Math.PI));
+                c.save();
+                c.fillStyle = '#1f2937';
+                for (var csi = 0; csi < 4; csi++) {
+                  var _csX = ((csi * W * 0.32 + t2 * (0.08 + csi * 0.04) + csi * 70) % (W + 160)) - 80;
+                  var _csY = H * 0.79 + csi * 4 + Math.sin(t2 * 0.004 + csi) * 1.2;
+                  c.globalAlpha = (0.09 + csi * 0.01) * _csDay;
+                  c.beginPath();
+                  c.ellipse(_csX, _csY, 48 + csi * 8, 9 + csi * 1.5, 0, 0, 6.28);
+                  c.fill();
+                  c.beginPath();
+                  c.ellipse(_csX + 26, _csY + 2, 30, 7, 0, 0, 6.28);
+                  c.fill();
+                }
+                c.restore();
               }
               // Snow
               if (season === 3) {
@@ -6775,6 +6847,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // Highlight
               c.fillStyle = 'rgba(255,255,255,0.15)';
               c.fillRect(standX + 2, standY + 2, standW - 4, 1);
+
+              // ── Butterflies fluttering over the meadow (spring/summer) ──
+              // Slow erratic wandering, distinctly different motion from bees so
+              // it reads as a separate species. Wings beat slowly (vs. bee blur).
+              // Reinforces the pollinator-ecosystem story without numeric chrome.
+              if ((season === 0 || season === 1) && flowers.length > 4) {
+                var _bfCount = season === 1 ? 3 : 2;
+                for (var bfi = 0; bfi < _bfCount; bfi++) {
+                  // Each butterfly orbits a slowly drifting center point near the flower band
+                  var _bfPhase = t2 * 0.011 + bfi * 2.1;
+                  var _bfHome = flowers[(bfi * 3 + 2) % flowers.length];
+                  var _bfx = _bfHome.x + Math.cos(_bfPhase) * 28 + Math.sin(_bfPhase * 2.3) * 9;
+                  var _bfy = _bfHome.y - 6 + Math.sin(_bfPhase * 0.9) * 9 + Math.cos(_bfPhase * 1.7) * 4;
+                  // Wing-flap (slow, 4-5 Hz)
+                  var _bfFlap = Math.abs(Math.sin(t2 * 0.18 + bfi));
+                  var _bfWingW = 2.2 + _bfFlap * 2.4;
+                  var _bfWingH = 3.3 - _bfFlap * 1.6;
+                  // Heading (face direction of motion for slight rotation)
+                  var _bfHeading = Math.atan2(Math.cos(_bfPhase * 0.9) * 9, -Math.sin(_bfPhase) * 28);
+                  var _bfCol = bfi === 0 ? '#f97316' : bfi === 1 ? '#a78bfa' : '#fde047';
+                  var _bfEdge = bfi === 0 ? '#7c2d12' : bfi === 1 ? '#4c1d95' : '#a16207';
+                  c.save();
+                  c.translate(_bfx, _bfy);
+                  c.rotate(_bfHeading * 0.3);
+                  // Body
+                  c.fillStyle = '#1f2937';
+                  c.beginPath(); c.ellipse(0, 0, 0.7, 2.2, 0, 0, 6.28); c.fill();
+                  // Antennae
+                  c.strokeStyle = '#1f2937'; c.lineWidth = 0.35;
+                  c.beginPath(); c.moveTo(-0.4, -2); c.lineTo(-1.2, -3.5); c.stroke();
+                  c.beginPath(); c.moveTo(0.4, -2); c.lineTo(1.2, -3.5); c.stroke();
+                  // Left wing pair
+                  c.fillStyle = _bfCol;
+                  c.beginPath(); c.ellipse(-_bfWingW * 0.55, -0.4, _bfWingW, _bfWingH, -0.3, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(-_bfWingW * 0.5, 1.2, _bfWingW * 0.7, _bfWingH * 0.7, -0.2, 0, 6.28); c.fill();
+                  // Right wing pair
+                  c.beginPath(); c.ellipse(_bfWingW * 0.55, -0.4, _bfWingW, _bfWingH, 0.3, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_bfWingW * 0.5, 1.2, _bfWingW * 0.7, _bfWingH * 0.7, 0.2, 0, 6.28); c.fill();
+                  // Wing veins / edge accents
+                  c.strokeStyle = _bfEdge; c.lineWidth = 0.4;
+                  c.beginPath(); c.ellipse(-_bfWingW * 0.55, -0.4, _bfWingW, _bfWingH, -0.3, 0, 6.28); c.stroke();
+                  c.beginPath(); c.ellipse(_bfWingW * 0.55, -0.4, _bfWingW, _bfWingH, 0.3, 0, 6.28); c.stroke();
+                  // Wing dots (monarch-style)
+                  c.fillStyle = 'rgba(255,255,255,0.7)';
+                  c.beginPath(); c.arc(-_bfWingW * 0.55, -1, 0.35, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_bfWingW * 0.55, -1, 0.35, 0, 6.28); c.fill();
+                  c.restore();
+                }
+              }
 
               // ── Ladybugs on flowers (spring/summer, static on 2 flowers) ──
               if ((season === 0 || season === 1) && flowers.length > 3) {
