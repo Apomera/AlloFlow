@@ -2883,14 +2883,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               );
             })(),
 
-            // Discussion prompt
-            el('div', { style: { marginTop: 20, padding: 16, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', textAlign: 'center' } },
-              el('div', { style: { color: '#a5b4fc', fontSize: 13, fontWeight: 800, marginBottom: 6 } }, '\uD83D\uDDE3\uFE0F Discussion Questions'),
-              el('div', { style: { color: '#94a3b8', fontSize: 11, lineHeight: 1.8 } },
-                'Is it fair that the communities least responsible for climate change are most affected?\n' +
-                'What responsibilities do high-emitting countries have?\n' +
-                'How can we support communities building resilience?\n' +
-                'Which of the youth leaders above resonates with you — and why?')
+            // Discussion prompts — restructured into two banks. The
+            // original four foundational questions stay (they work as
+            // warm-up). Below them, a deeper bank ties directly to the
+            // new panels (inversion, voices, L&D, displacement, action
+            // ladder) so a teacher running this in class has both an
+            // intro discussion and a critical-thinking discussion ready.
+            el('div', { style: { marginTop: 20, padding: 16, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)' } },
+              el('div', { style: { color: '#a5b4fc', fontSize: 13, fontWeight: 800, marginBottom: 8, textAlign: 'center' } }, '\uD83D\uDDE3\uFE0F Discussion Questions'),
+              // Foundational bank
+              el('div', { style: { marginBottom: 12 } },
+                el('div', { style: { color: '#c7d2fe', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, 'Warm-up'),
+                el('ol', { style: { margin: 0, paddingLeft: 22, color: '#94a3b8', fontSize: 11, lineHeight: 1.7 } },
+                  el('li', null, 'Is it fair that the communities least responsible for climate change are most affected?'),
+                  el('li', null, 'What responsibilities do high-emitting countries have?'),
+                  el('li', null, 'How can we support communities building resilience?'),
+                  el('li', null, 'Which of the youth leaders above resonates with you — and why?')
+                )
+              ),
+              // Deep-dive bank
+              el('div', { style: { paddingTop: 10, borderTop: '1px dashed rgba(99,102,241,0.3)' } },
+                el('div', { style: { color: '#c7d2fe', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, 'Deep-dive — connects to specific panels above'),
+                el('ol', { style: { margin: 0, paddingLeft: 22, color: '#94a3b8', fontSize: 11, lineHeight: 1.8 } },
+                  el('li', null,
+                    el('strong', { style: { color: '#cbd5e1' } }, 'Inversion chart: '),
+                    'Looking at "Caused vs Exposed", what is the single thing that surprises you most? What story does the chart tell that the historical-totals chart does NOT?'
+                  ),
+                  el('li', null,
+                    el('strong', { style: { color: '#cbd5e1' } }, 'Loss & Damage Fund: '),
+                    'Total pledges are about 0.16% of one year of estimated need. Is that "the system is working slowly" or "the system is failing"? Take a side and defend it with one piece of evidence from this tab.'
+                  ),
+                  el('li', null,
+                    el('strong', { style: { color: '#cbd5e1' } }, 'Climate displacement: '),
+                    '~376 million people have been internally displaced since 2008 — almost all within their own country. What does that fact mean for how the US, or Maine specifically, should respond? Is welcoming refugees a climate policy?'
+                  ),
+                  el('li', null,
+                    el('strong', { style: { color: '#cbd5e1' } }, 'Front-line voices: '),
+                    'Sherri Mitchell teaches the principle of considering "the next seven generations." If you make a climate decision now that helps people 200 years from now but costs you something today, is that fair to ask of you? Of your parents? Of your community?'
+                  ),
+                  el('li', null,
+                    el('strong', { style: { color: '#cbd5e1' } }, 'Action ladder: '),
+                    'Pick one rung of the action ladder. What actually stops most people from climbing it — knowledge, money, time, fear, social cost, or something else? What would it take to remove that block for one specific person you know?'
+                  )
+                )
+              ),
+              el('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.20)', color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic' } },
+                '\uD83D\uDC69\u200D\uD83C\uDFEB Teacher note: the deep-dive bank is designed for classroom Socratic seminar — every question has multiple defensible answers. The point is the reasoning students show, not the conclusion they reach.')
             )
           ),
 
