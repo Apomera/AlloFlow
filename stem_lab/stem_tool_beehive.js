@@ -5656,6 +5656,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillStyle = season === 3 ? '#d0dae8' : '#ffe066';
               c.beginPath(); c.arc(sunX, sunY, sunR, 0, 6.28); c.fill();
               c.restore();
+              // ── 22° sun halo in cold air (winter optical phenomenon) ──
+              // Real atmospheric optics: light refracts through hexagonal ice
+              // crystals in cirrus clouds to form a faint ring at exactly 22°
+              // around the sun. Most visible on cold clear winter days. The
+              // ring has a subtle red-inner / blue-outer color separation.
+              if (season === 3 && _sunT_arc > 0.15 && _sunT_arc < 0.85) {
+                var _haloIntensity = Math.min(1, (_sunT_arc - 0.15) / 0.15) * Math.min(1, (0.85 - _sunT_arc) / 0.15);
+                var _haloR = sunR * 3.5;
+                c.save();
+                // Outer ring (slight blue tint)
+                c.strokeStyle = 'rgba(200,215,235,' + (0.35 * _haloIntensity).toFixed(3) + ')';
+                c.lineWidth = 1.0;
+                c.beginPath(); c.arc(sunX, sunY, _haloR + 0.6, 0, 6.28); c.stroke();
+                // Mid ring (white core)
+                c.strokeStyle = 'rgba(255,255,255,' + (0.55 * _haloIntensity).toFixed(3) + ')';
+                c.lineWidth = 1.2;
+                c.beginPath(); c.arc(sunX, sunY, _haloR, 0, 6.28); c.stroke();
+                // Inner ring (faint red tint)
+                c.strokeStyle = 'rgba(255,220,200,' + (0.30 * _haloIntensity).toFixed(3) + ')';
+                c.lineWidth = 0.7;
+                c.beginPath(); c.arc(sunX, sunY, _haloR - 0.8, 0, 6.28); c.stroke();
+                c.restore();
+              }
+
               // Sun rays (not winter) — short radiating spikes
               if (season !== 3) {
                 c.strokeStyle = 'rgba(255,220,100,0.15)'; c.lineWidth = 1;
@@ -10213,6 +10237,105 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.fillStyle = 'rgba(255,237,150,' + (0.7 * _jlNight * _jlFlick).toFixed(3) + ')';
                   c.beginPath(); c.arc(_jlX, _jlY + 0.5, 1.6 * _jlFlick, 0, 6.28); c.fill();
                 }
+              }
+
+              // ── Coiled garden hose near the birdbath (homestead detail) ──
+              // Real bee-keeping: water IS the apiary's most critical resource
+              // in summer. The hose stays coiled out for refilling the bath.
+              // Visible in spring/summer/fall (drained + stored for winter).
+              if (season !== 3) {
+                var _ghCx = W * 0.66, _ghCy = H * 0.89;
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.20)';
+                c.beginPath(); c.ellipse(_ghCx + 1, _ghCy + 0.8, 8, 1, 0, 0, 6.28); c.fill();
+                // Three concentric coils of hose — fading from outer to inner
+                var _ghCoils = [
+                  { r: 7,   sw: 1.3 },
+                  { r: 5,   sw: 1.1 },
+                  { r: 3.2, sw: 0.9 }
+                ];
+                _ghCoils.forEach(function(coil) {
+                  c.strokeStyle = '#16a34a';
+                  c.lineWidth = coil.sw;
+                  c.beginPath(); c.ellipse(_ghCx, _ghCy, coil.r, coil.r * 0.35, 0, 0, 6.28); c.stroke();
+                  // Highlight on upper-left of each coil
+                  c.strokeStyle = 'rgba(74,222,128,0.6)';
+                  c.lineWidth = coil.sw * 0.35;
+                  c.beginPath(); c.ellipse(_ghCx, _ghCy - 0.1, coil.r, coil.r * 0.35, 0, Math.PI * 1.1, Math.PI * 1.7); c.stroke();
+                });
+                // Brass nozzle/fitting at one end
+                c.fillStyle = '#a16207';
+                c.fillRect(_ghCx + 7, _ghCy - 0.4, 2, 0.8);
+                c.fillStyle = '#ca8a04';
+                c.beginPath(); c.arc(_ghCx + 9, _ghCy, 0.8, 0, 6.28); c.fill();
+                // Tail of hose snaking off toward the birdbath
+                c.strokeStyle = '#16a34a';
+                c.lineWidth = 0.9;
+                c.beginPath();
+                c.moveTo(_ghCx - 7, _ghCy + 0.2);
+                c.quadraticCurveTo(_ghCx - 12, _ghCy - 1, _ghCx - 14, _ghCy + 0.5);
+                c.stroke();
+              }
+
+              // ── Roadside "FRESH HONEY $12" sandwich-board sign (harvest season) ──
+              // Hobbyist beekeepers' classic — a folding wooden A-frame at the
+              // gate during harvest with the price chalked on. Late summer +
+              // fall only (matches the honey crate availability).
+              if ((season === 1 && (day % 30) >= 22) || season === 2) {
+                var _hsX = W * 0.42 + 14;
+                var _hsY = H * 0.88;
+                // A-frame back/front board (visible front)
+                c.fillStyle = '#a07248';
+                c.beginPath();
+                c.moveTo(_hsX - 7, _hsY);
+                c.lineTo(_hsX - 4.5, _hsY - 12);
+                c.lineTo(_hsX + 4.5, _hsY - 12);
+                c.lineTo(_hsX + 7, _hsY);
+                c.closePath(); c.fill();
+                // Wood-grain lines
+                c.strokeStyle = 'rgba(80,55,25,0.55)';
+                c.lineWidth = 0.3;
+                c.beginPath(); c.moveTo(_hsX - 6, _hsY - 3); c.lineTo(_hsX + 6, _hsY - 3); c.stroke();
+                c.beginPath(); c.moveTo(_hsX - 5.5, _hsY - 6); c.lineTo(_hsX + 5.5, _hsY - 6); c.stroke();
+                c.beginPath(); c.moveTo(_hsX - 5, _hsY - 9); c.lineTo(_hsX + 5, _hsY - 9); c.stroke();
+                // Border
+                c.strokeStyle = '#3a2510';
+                c.lineWidth = 0.4;
+                c.beginPath();
+                c.moveTo(_hsX - 7, _hsY);
+                c.lineTo(_hsX - 4.5, _hsY - 12);
+                c.lineTo(_hsX + 4.5, _hsY - 12);
+                c.lineTo(_hsX + 7, _hsY);
+                c.closePath();
+                c.stroke();
+                // Hand-chalked text
+                c.fillStyle = '#fafaf9';
+                c.font = 'bold 2.4px sans-serif';
+                c.textAlign = 'center';
+                c.fillText('FRESH', _hsX, _hsY - 9);
+                c.fillText('HONEY', _hsX, _hsY - 6.5);
+                c.font = 'bold 3px sans-serif';
+                c.fillStyle = '#fde047';
+                c.fillText('$12', _hsX, _hsY - 3);
+                c.font = 'bold 1.8px sans-serif';
+                c.fillStyle = '#fafaf9';
+                c.fillText('/jar', _hsX, _hsY - 1);
+                c.textAlign = 'start';
+                // Tiny honey-pot icon at the top of the sign
+                c.fillStyle = '#d97706';
+                c.beginPath(); c.arc(_hsX, _hsY - 11.2, 0.7, 0, 6.28); c.fill();
+                c.fillStyle = '#fbbf24';
+                c.beginPath(); c.arc(_hsX, _hsY - 11.2, 0.5, 0, 6.28); c.fill();
+                // Visible second board edge (showing the A-frame is folded)
+                c.strokeStyle = 'rgba(0,0,0,0.35)';
+                c.lineWidth = 0.4;
+                c.beginPath();
+                c.moveTo(_hsX + 7, _hsY);
+                c.lineTo(_hsX + 5.5, _hsY - 12);
+                c.stroke();
+                // Side shadow on ground
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.beginPath(); c.ellipse(_hsX, _hsY + 1.3, 7.5, 0.7, 0, 0, 6.28); c.fill();
               }
 
               // ── Stepping stones path leading from meadow to the hive ──
