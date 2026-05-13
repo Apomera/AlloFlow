@@ -6968,6 +6968,216 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              // ── Small vegetable garden patch (seasonal crops, real bee-companion biology) ──
+              // A 4-row raised-bed plot in the foreground — tomatoes/beans
+              // depend on pollination. Crops shift with season: bare brown
+              // soil + seedlings (spring) → leafy crops on stakes (summer) →
+              // dried stalks + last red tomatoes (fall) → snow-covered
+              // mounded rows + visible stakes (winter).
+              (function() {
+                var _vgX = W * 0.18, _vgY = H * 0.85;
+                var _vgW = 36, _vgH = 7;
+                // Raised-bed wooden frame
+                c.fillStyle = season === 3 ? '#5a3f25' : '#6b4a1f';
+                c.fillRect(_vgX - _vgW / 2, _vgY - 2, _vgW, 2);
+                c.fillRect(_vgX - _vgW / 2, _vgY + _vgH, _vgW, 2);
+                c.fillRect(_vgX - _vgW / 2 - 1, _vgY - 2, 1.5, _vgH + 4);
+                c.fillRect(_vgX + _vgW / 2 - 0.5, _vgY - 2, 1.5, _vgH + 4);
+                // Soil interior
+                var _vgSoil = season === 3 ? '#3a2d1f' : '#4a3525';
+                c.fillStyle = _vgSoil;
+                c.fillRect(_vgX - _vgW / 2, _vgY, _vgW, _vgH);
+                // Two raised soil rows (slight mounds)
+                c.fillStyle = season === 3 ? '#2d2418' : '#3a2918';
+                c.fillRect(_vgX - _vgW / 2, _vgY + 2, _vgW, 1);
+                c.fillRect(_vgX - _vgW / 2, _vgY + 5, _vgW, 1);
+                // Snow cap on the bed in winter
+                if (season === 3) {
+                  c.fillStyle = '#ffffff';
+                  c.fillRect(_vgX - _vgW / 2, _vgY - 0.5, _vgW, 1.5);
+                  // Snow drifts on the soil
+                  c.beginPath();
+                  c.moveTo(_vgX - _vgW / 2, _vgY + 1);
+                  for (var snw = 0; snw <= _vgW; snw += 4) {
+                    c.lineTo(_vgX - _vgW / 2 + snw, _vgY + 1 + Math.sin(snw * 0.4) * 0.6);
+                  }
+                  c.lineTo(_vgX + _vgW / 2, _vgY + 2);
+                  c.lineTo(_vgX - _vgW / 2, _vgY + 2);
+                  c.closePath(); c.fill();
+                }
+                // Stakes — visible all year (overwintered)
+                c.strokeStyle = season === 3 ? '#a8a29e' : '#8a6238';
+                c.lineWidth = 0.6;
+                var _vgStakes = [-12, -4, 4, 12];
+                _vgStakes.forEach(function(stX, sti) {
+                  var _vgStTopY = _vgY - 10;
+                  c.beginPath(); c.moveTo(_vgX + stX, _vgY + 2); c.lineTo(_vgX + stX, _vgStTopY); c.stroke();
+                  // Tomato cage horizontals (just in summer when in use)
+                  if (season === 1) {
+                    c.strokeStyle = '#8a8a8a';
+                    c.lineWidth = 0.35;
+                    c.beginPath(); c.moveTo(_vgX + stX - 3, _vgStTopY + 2); c.lineTo(_vgX + stX + 3, _vgStTopY + 2); c.stroke();
+                    c.beginPath(); c.moveTo(_vgX + stX - 3, _vgStTopY + 5); c.lineTo(_vgX + stX + 3, _vgStTopY + 5); c.stroke();
+                    c.strokeStyle = '#8a6238';
+                    c.lineWidth = 0.6;
+                  }
+                });
+                // Seasonal plants on each stake
+                if (season === 0) {
+                  // Spring — small green seedlings
+                  c.fillStyle = '#65a30d';
+                  _vgStakes.forEach(function(stX) {
+                    c.beginPath(); c.ellipse(_vgX + stX, _vgY - 1, 1.4, 1, 0, 0, 6.28); c.fill();
+                    c.beginPath(); c.ellipse(_vgX + stX - 1.3, _vgY - 0.5, 0.8, 0.5, -0.3, 0, 6.28); c.fill();
+                    c.beginPath(); c.ellipse(_vgX + stX + 1.3, _vgY - 0.5, 0.8, 0.5,  0.3, 0, 6.28); c.fill();
+                  });
+                } else if (season === 1) {
+                  // Summer — leafy plants climbing the stakes, with tomatoes
+                  c.fillStyle = '#15803d';
+                  _vgStakes.forEach(function(stX, sti) {
+                    // Vine of leaves
+                    for (var lf = 0; lf < 5; lf++) {
+                      var _vgLfY = _vgY - 1 - lf * 2;
+                      var _vgLfSide = (lf + sti) % 2 === 0 ? -1 : 1;
+                      c.beginPath();
+                      c.ellipse(_vgX + stX + _vgLfSide * 1.6, _vgLfY, 1.5, 0.9, _vgLfSide * 0.3, 0, 6.28);
+                      c.fill();
+                    }
+                    // Ripe tomatoes (2-3 small red orbs)
+                    if (sti % 2 === 0) {
+                      c.fillStyle = '#dc2626';
+                      c.beginPath(); c.arc(_vgX + stX + 0.8, _vgY - 4, 0.9, 0, 6.28); c.fill();
+                      c.beginPath(); c.arc(_vgX + stX - 0.5, _vgY - 7, 0.85, 0, 6.28); c.fill();
+                      c.fillStyle = 'rgba(255,255,255,0.4)';
+                      c.beginPath(); c.arc(_vgX + stX + 0.6, _vgY - 4.2, 0.25, 0, 6.28); c.fill();
+                      c.fillStyle = '#15803d';
+                    }
+                  });
+                } else if (season === 2) {
+                  // Fall — drying yellowing stalks + last red tomatoes
+                  c.fillStyle = '#a16207';
+                  _vgStakes.forEach(function(stX, sti) {
+                    for (var dr = 0; dr < 3; dr++) {
+                      var _dryY = _vgY - 1 - dr * 2.5;
+                      var _drySide = (dr + sti) % 2 === 0 ? -1 : 1;
+                      c.beginPath();
+                      c.ellipse(_vgX + stX + _drySide * 1.4, _dryY, 1.1, 0.65, _drySide * 0.3, 0, 6.28);
+                      c.fill();
+                    }
+                    // Last lingering tomato (only on 1 stake — most have been picked)
+                    if (sti === 1) {
+                      c.fillStyle = '#b91c1c';
+                      c.beginPath(); c.arc(_vgX + stX + 0.6, _vgY - 4.5, 0.8, 0, 6.28); c.fill();
+                      c.fillStyle = '#a16207';
+                    }
+                  });
+                }
+                // ── A bee visiting a tomato flower (summer only) — buzz-pollination cameo
+                if (season === 1) {
+                  var _vgBeeT = ((t2 * 0.06) % 100) / 100;
+                  if (_vgBeeT < 0.5) {
+                    var _vgBeeX = _vgX - 4 + Math.sin(_vgBeeT * 8) * 1.2;
+                    var _vgBeeY = _vgY - 5 + Math.cos(_vgBeeT * 6) * 0.8;
+                    c.fillStyle = '#fbbf24';
+                    c.beginPath(); c.ellipse(_vgBeeX, _vgBeeY, 1.4, 0.9, 0, 0, 6.28); c.fill();
+                    c.fillStyle = '#1c1917';
+                    c.fillRect(_vgBeeX - 0.3, _vgBeeY - 0.8, 0.4, 1.6);
+                    c.fillStyle = 'rgba(220,240,255,0.5)';
+                    c.beginPath(); c.ellipse(_vgBeeX, _vgBeeY - 0.7, 1.0, 0.4, 0, 0, 6.28); c.fill();
+                  }
+                }
+              })();
+
+              // ── Spare Langstroth super box stacked beside the hive (equipment realism) ──
+              // Beekeepers always have spare supers ready for honey flow — this
+              // empty box sits to the right of the working hive, half-tucked
+              // behind the stand. The box only appears in spring/summer/fall
+              // (in winter the beekeeper brings everything indoors to avoid
+              // wax-moth + water damage).
+              if (season !== 3 && hiveX + hiveW < W * 0.30) {
+                var _ssX = hiveX + hiveW + 8;
+                var _ssY = hiveY + hiveH - 8;
+                var _ssW = 14, _ssH = 12;
+                // Box body
+                c.fillStyle = '#a07810';
+                c.fillRect(_ssX, _ssY, _ssW, _ssH);
+                c.fillStyle = '#7a5808';
+                c.fillRect(_ssX, _ssY + _ssH - 2, _ssW, 2);
+                // Inner shadow
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.fillRect(_ssX + 1, _ssY + 1, 2, _ssH - 2);
+                // Side highlight
+                c.fillStyle = 'rgba(255,255,255,0.18)';
+                c.fillRect(_ssX, _ssY, 1, _ssH);
+                // Frame slots visible at the top
+                c.strokeStyle = '#5a3a08';
+                c.lineWidth = 0.4;
+                for (var fs = 0; fs < 5; fs++) {
+                  c.beginPath();
+                  c.moveTo(_ssX + 2 + fs * 2.4, _ssY);
+                  c.lineTo(_ssX + 2 + fs * 2.4, _ssY + 2);
+                  c.stroke();
+                }
+                // Tiny side handle indent (the cut-out grip)
+                c.fillStyle = 'rgba(60,40,5,0.6)';
+                c.fillRect(_ssX + _ssW * 0.35, _ssY + _ssH * 0.5, _ssW * 0.3, 1.2);
+                // Faded "B2" hand-painted label (matches the main hive plaque)
+                c.fillStyle = 'rgba(254,243,199,0.7)';
+                c.fillRect(_ssX + 3, _ssY + 4, 4, 3);
+                c.fillStyle = '#1c1917';
+                c.font = 'bold 3.5px sans-serif';
+                c.textAlign = 'center';
+                c.fillText('B2', _ssX + 5, _ssY + 6.5);
+                c.textAlign = 'start';
+              }
+
+              // ── Wooden "Bees Quiet Please" sign stuck in the ground (year-round) ──
+              // Real beekeeping etiquette + visual cue. A hand-painted wooden
+              // sign on a stake stuck into the ground between the meadow path
+              // and the hive, so visitors approaching the hive area see it.
+              (function() {
+                var _bsX = W * 0.50, _bsY = H * 0.83;
+                // Stake (in ground)
+                c.fillStyle = season === 3 ? '#5a4225' : '#8a6238';
+                c.fillRect(_bsX - 0.7, _bsY, 1.4, 8);
+                // Sign board — slightly tilted
+                c.save();
+                c.translate(_bsX, _bsY - 3);
+                c.rotate(-0.04);
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.20)';
+                c.fillRect(-8, -5 + 1, 17, 8);
+                // Board
+                c.fillStyle = season === 3 ? '#a07a48' : '#d2a574';
+                c.fillRect(-8, -5, 17, 8);
+                // Wood grain lines
+                c.strokeStyle = 'rgba(80,55,25,0.45)';
+                c.lineWidth = 0.3;
+                c.beginPath(); c.moveTo(-7.5, -3); c.lineTo(8, -3); c.stroke();
+                c.beginPath(); c.moveTo(-7.5,  0); c.lineTo(8,  0); c.stroke();
+                c.beginPath(); c.moveTo(-7.5,  2); c.lineTo(8,  2); c.stroke();
+                // Border
+                c.strokeStyle = '#5a3a18';
+                c.lineWidth = 0.4;
+                c.strokeRect(-8, -5, 17, 8);
+                // Hand-painted text
+                c.fillStyle = '#3a2510';
+                c.font = 'bold 2.6px sans-serif';
+                c.textAlign = 'center';
+                c.textBaseline = 'middle';
+                c.fillText('BEES', 0, -2);
+                c.font = 'bold 2.0px sans-serif';
+                c.fillText('quiet please', 0, 1.5);
+                c.textAlign = 'start';
+                c.textBaseline = 'alphabetic';
+                // Tiny bee silhouette at the top-left corner of the board
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.ellipse(-6.5, -3.5, 0.8, 0.45, 0.2, 0, 6.28); c.fill();
+                c.fillStyle = '#fbbf24';
+                c.beginPath(); c.ellipse(-6.5, -3.5, 0.55, 0.3, 0.2, 0, 6.28); c.fill();
+                c.restore();
+              })();
+
               // ── Mason bee hotel mounted on a fence post (year-round fixture) ──
               // Real beekeeping accessory: a wooden block drilled with 4-8 mm
               // holes where solitary mason bees lay eggs. Closes the "honeybees
