@@ -926,7 +926,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           cascade: 'Multi-meter sea level rise. Bangladesh, Florida, Pacific island nations face existential threat.' },
         { id: 'boreal', emoji: '\uD83C\uDF32', name: 'Boreal Forest Die-off', threshold: 4.0, status: 'future-risk',
           desc: 'Northern coniferous forests (Russia, Canada, Scandinavia) are stressed by warming, bark beetles, and wildfires. A full transition to grassland could release vast amounts of stored carbon.',
-          cascade: 'Release of stored carbon. Habitat loss for Arctic species. Changes to global weather patterns.' }
+          cascade: 'Release of stored carbon. Habitat loss for Arctic species. Changes to global weather patterns.' },
+        { id: 'gulfofmaine', emoji: '\uD83E\uDD9E', name: 'Gulf of Maine Rapid Warming', threshold: 1.0, status: 'happening',
+          desc: 'The Gulf of Maine has warmed faster than 99% of the world\u2019s oceans since 1980 \u2014 about 0.5\u00B0F per decade, roughly 3\u00D7 the global ocean average. The cold-water Labrador current has weakened while warm Gulf Stream water reaches further north, fundamentally restructuring the food web in real time. Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq coastal communities have documented these shifts in oral record decades before the satellites confirmed them.',
+          cascade: 'Maine lobster nursery grounds shifting north into Canadian waters. Atlantic cod nearly extinct south of Cape Cod. Right whales chasing copepods into shipping lanes. Portland-area tide gauges show ~7 inches of sea level rise since 1950 with 1.5\u20134 ft projected by 2100, threatening coastal Wabanaki villages and the working waterfronts of every Maine port town.' }
       ];
 
       // ══════════════════════════════════════
