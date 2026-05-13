@@ -1975,7 +1975,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             // Note:  is a placeholder for the "fi" ligature in the target.
             // The corresponding sort is 'fi' (a 2-character string treated as one block).
             sorts: ['F', '', 'R', 'S', 'T', ' ', 'P', 'R', 'O', 'O', 'F', 'I', 'N'],
-            hint: 'This challenge includes a "fi" ligature — a single sort that prints both letters joined. Look for the special joined sort in the case.' }
+            hint: 'This challenge includes a "fi" ligature — a single sort that prints both letters joined. Look for the special joined sort in the case.' },
+          { id: 'FALMOUTH', label: 'Phrase 3: FALMOUTH (1785 Maine)', phrase: 'FALMOUTH', slotCount: 8,
+            sorts: ['F', 'A', 'L', 'M', 'O', 'U', 'T', 'H', 'E', 'I', 'R', 'N', 'S'],
+            hint: 'Compose FALMOUTH the way Thomas B. Wait and Benjamin Titcomb would have set it for the first issue of the Falmouth Gazette in January 1785 — the first newspaper printed in what would become Maine. (Falmouth is now Portland, walking distance from King Middle School.)' }
         ];
         var challengeIdxRaw = useState(0);
         var challengeIdx = challengeIdxRaw[0], setChallengeIdx = challengeIdxRaw[1];
