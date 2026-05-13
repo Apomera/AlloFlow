@@ -6953,6 +6953,85 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.restore();
               }
 
+              // ── Young white-tailed deer at the meadow edge (spring + fall, dawn/dusk) ──
+              // Real Maine wildlife: white-tailed deer are most active at dawn
+              // and dusk, browsing on early greens in spring and apple windfalls
+              // in fall. They freeze when they sense activity. Tan body, white
+              // throat patch, large ears, white tail underside flashing if
+              // alarmed. Static here (not moving) to read as "browsing."
+              if (season === 0 || season === 2) {
+                var _dDusk = (_sunCycle > 0.85 && _sunCycle < 1.05) ? Math.sin((_sunCycle - 0.85) / 0.20 * Math.PI) :
+                              (_sunCycle > 1.85 && _sunCycle < 2.10) ? Math.sin((_sunCycle - 1.85) / 0.25 * Math.PI) : 0;
+                if (_dDusk > 0.10) {
+                  var _dCycle = (t2 % 1800) / 1800;
+                  // Deer stands still 80% of the time, glances up 20%
+                  var _dGlanceUp = _dCycle > 0.65 && _dCycle < 0.85;
+                  var _deerX = W * 0.84, _deerY = H * 0.81;
+                  if (!(_deerX > hiveX - 18 && _deerX < hiveX + hiveW + 18)) {
+                    c.save();
+                    c.globalAlpha = _dDusk;
+                    // Shadow
+                    c.fillStyle = 'rgba(0,0,0,0.22)';
+                    c.beginPath(); c.ellipse(_deerX, _deerY + 4, 7, 0.9, 0, 0, 6.28); c.fill();
+                    // Body — tan/brown
+                    c.fillStyle = season === 2 ? '#8a6238' : '#a07248';
+                    c.beginPath(); c.ellipse(_deerX, _deerY, 6.5, 2.5, 0, 0, 6.28); c.fill();
+                    // Back darker stripe (winter darkening even in fall)
+                    c.fillStyle = season === 2 ? '#6b4a1f' : '#7a5230';
+                    c.fillRect(_deerX - 5, _deerY - 2.2, 10, 0.8);
+                    // White belly + throat patch
+                    c.fillStyle = 'rgba(254,243,199,0.9)';
+                    c.beginPath(); c.ellipse(_deerX, _deerY + 1.5, 4, 0.8, 0, 0, 6.28); c.fill();
+                    // Legs — 4 slim brown rectangles
+                    c.fillStyle = season === 2 ? '#5a3a18' : '#6b4a1f';
+                    c.fillRect(_deerX - 5, _deerY + 2, 0.7, 4);
+                    c.fillRect(_deerX - 3, _deerY + 2, 0.7, 4);
+                    c.fillRect(_deerX + 2.5, _deerY + 2, 0.7, 4);
+                    c.fillRect(_deerX + 4.5, _deerY + 2, 0.7, 4);
+                    // Tail — small triangle (white underside flashing if alarmed)
+                    c.fillStyle = season === 2 ? '#8a6238' : '#a07248';
+                    c.beginPath();
+                    c.moveTo(_deerX + 6.5, _deerY - 0.5);
+                    c.lineTo(_deerX + 7.8, _deerY - 2);
+                    c.lineTo(_deerX + 7, _deerY + 0.5);
+                    c.closePath(); c.fill();
+                    // Tail white tip
+                    c.fillStyle = '#fafaf9';
+                    c.beginPath(); c.arc(_deerX + 7.8, _deerY - 1.8, 0.4, 0, 6.28); c.fill();
+                    // Head — tilted down if browsing, up if glancing
+                    var _dHeadY = _dGlanceUp ? _deerY - 2 : _deerY + 1;
+                    var _dHeadX = _deerX - 6.5;
+                    c.fillStyle = season === 2 ? '#7a5230' : '#8a6238';
+                    c.beginPath(); c.ellipse(_dHeadX, _dHeadY, 1.6, 1.1, _dGlanceUp ? -0.4 : 0.4, 0, 6.28); c.fill();
+                    // Neck connecting head to body
+                    c.strokeStyle = season === 2 ? '#8a6238' : '#a07248';
+                    c.lineWidth = 1.4;
+                    c.beginPath();
+                    c.moveTo(_deerX - 5, _deerY - 0.5);
+                    c.lineTo(_dHeadX + 0.5, _dHeadY);
+                    c.stroke();
+                    // Ears — two upright triangles (alert)
+                    c.fillStyle = season === 2 ? '#7a5230' : '#8a6238';
+                    c.beginPath();
+                    c.moveTo(_dHeadX - 0.5, _dHeadY - 0.8);
+                    c.lineTo(_dHeadX - 1.2, _dHeadY - 2.5);
+                    c.lineTo(_dHeadX, _dHeadY - 1);
+                    c.closePath(); c.fill();
+                    c.beginPath();
+                    c.moveTo(_dHeadX + 0.5, _dHeadY - 0.8);
+                    c.lineTo(_dHeadX + 0.2, _dHeadY - 2.5);
+                    c.lineTo(_dHeadX + 1, _dHeadY - 1);
+                    c.closePath(); c.fill();
+                    // Eye
+                    c.fillStyle = '#1c1917';
+                    c.beginPath(); c.arc(_dHeadX - 0.4, _dHeadY - 0.4, 0.3, 0, 6.28); c.fill();
+                    // Nose
+                    c.beginPath(); c.arc(_dHeadX - 1.5, _dHeadY + 0.3, 0.3, 0, 6.28); c.fill();
+                    c.restore();
+                  }
+                }
+              }
+
               // ── Red fox cameo crossing the meadow at dusk (fall + winter) ──
               // Real biology: red foxes are crepuscular hunters most active
               // at dawn and dusk in colder months. Sleek body, bushy tail,
@@ -7174,6 +7253,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   }
                 });
               }
+
+              // ── Stone wall segment along the back meadow (classic New England) ──
+              // Real Maine homestead detail: most farms in the Northeast have
+              // a section of dry-stacked stone wall — left behind from when
+              // farmers cleared the fields after the last ice age. Runs along
+              // a stretch on the LEFT side of the meadow, parallel to (but
+              // behind) the wooden fence. ~3 courses tall, mottled gray.
+              (function() {
+                var _swStartX = 4, _swEndX = W * 0.32;
+                var _swBaseY = fenceBaseY + 2;
+                // Skip if it would extend into the hive area
+                if (_swEndX > hiveX - 12) _swEndX = hiveX - 12;
+                // Three courses of stacked stones
+                for (var swc = 0; swc < 3; swc++) {
+                  var _swCourseY = _swBaseY + swc * 1.6;
+                  var _swXi = _swStartX + (swc % 2) * 0.7; // alternate offset (real masonry)
+                  while (_swXi < _swEndX) {
+                    var _swWidth = 1.8 + ((_swXi * 13) % 6) * 0.4;
+                    var _swHeight = 1.5 + ((_swXi * 7) % 4) * 0.15;
+                    var _swShade = ((_swXi * 11) % 4);
+                    var _swCol = _swShade === 0 ? '#78716c' :
+                                  _swShade === 1 ? '#a8a29e' :
+                                  _swShade === 2 ? '#5c5853' :
+                                                   '#92908c';
+                    c.fillStyle = _swCol;
+                    c.fillRect(_swXi, _swCourseY - _swHeight, _swWidth, _swHeight);
+                    // Top highlight on each stone
+                    c.fillStyle = 'rgba(255,255,255,0.18)';
+                    c.fillRect(_swXi, _swCourseY - _swHeight, _swWidth, 0.3);
+                    // Side shadow on each stone
+                    c.fillStyle = 'rgba(0,0,0,0.20)';
+                    c.fillRect(_swXi + _swWidth - 0.3, _swCourseY - _swHeight + 0.3, 0.3, _swHeight - 0.3);
+                    _swXi += _swWidth + 0.2;
+                  }
+                }
+                // Moss patches on a few stones (not winter)
+                if (season !== 3) {
+                  c.fillStyle = 'rgba(101,163,13,0.55)';
+                  for (var sm = 0; sm < 4; sm++) {
+                    var _smX = _swStartX + 8 + sm * 14;
+                    if (_smX > _swEndX - 4) continue;
+                    var _smY = _swBaseY - 0.5 - (sm % 2) * 1.6;
+                    c.beginPath(); c.ellipse(_smX, _smY, 1.2, 0.4, 0.2, 0, 6.28); c.fill();
+                  }
+                }
+                // Snow caps in winter
+                if (season === 3) {
+                  c.fillStyle = '#ffffff';
+                  c.fillRect(_swStartX, _swBaseY - 4.9, _swEndX - _swStartX, 0.7);
+                  // Light drift along the top
+                  c.beginPath();
+                  c.moveTo(_swStartX, _swBaseY - 4.9);
+                  for (var snd = _swStartX; snd <= _swEndX; snd += 3) {
+                    c.lineTo(snd, _swBaseY - 4.9 - Math.abs(Math.sin(snd * 0.3)) * 0.8);
+                  }
+                  c.lineTo(_swEndX, _swBaseY - 4.2);
+                  c.lineTo(_swStartX, _swBaseY - 4.2);
+                  c.closePath(); c.fill();
+                }
+              })();
 
               // ── Wooden garden fence along the ground ──
               c.fillStyle = season === 2 ? '#8a5f2a' : season === 3 ? '#6b4a1f' : '#a0763a';
@@ -9528,6 +9667,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     c.beginPath(); c.ellipse(atX + 8, atY + 1, 3 + _faPuffT * 2, 1, 0, 0, 6.28); c.fill();
                   }
                 }
+                // ── Empty bird nest in upper branch (early spring) ──
+                // Real biology: in early spring before leaves fully emerge,
+                // last year's nests are still visible. Old nests sometimes
+                // hold a clutch of small pale-blue eggs (robin, bluebird).
+                // Visible day 4-15 of spring (before canopy fills in fully).
+                if (season === 0 && (day % 30) >= 4 && (day % 30) <= 15) {
+                  var _bnX = atX - 16;
+                  var _bnY = canopyY - 8;
+                  // Nest shadow
+                  c.fillStyle = 'rgba(0,0,0,0.25)';
+                  c.beginPath(); c.ellipse(_bnX, _bnY + 1.5, 3.5, 0.8, 0, 0, 6.28); c.fill();
+                  // Nest base — woven twigs
+                  c.fillStyle = '#5a3a18';
+                  c.beginPath(); c.ellipse(_bnX, _bnY, 3.2, 1.5, 0, 0, 6.28); c.fill();
+                  // Lighter rim weave
+                  c.fillStyle = '#7a5230';
+                  c.beginPath(); c.ellipse(_bnX, _bnY - 0.4, 3.2, 1.0, 0, 0, 6.28); c.fill();
+                  // Dark interior cup
+                  c.fillStyle = '#3a2510';
+                  c.beginPath(); c.ellipse(_bnX, _bnY - 0.3, 2.0, 0.6, 0, 0, 6.28); c.fill();
+                  // Twig texture (3 visible strands)
+                  c.strokeStyle = '#3a2510';
+                  c.lineWidth = 0.25;
+                  c.beginPath(); c.moveTo(_bnX - 3, _bnY + 0.5); c.lineTo(_bnX + 3, _bnY + 0.7); c.stroke();
+                  c.beginPath(); c.moveTo(_bnX - 2.8, _bnY); c.lineTo(_bnX + 2.8, _bnY - 0.2); c.stroke();
+                  // Three small pale-blue robin eggs in the cup
+                  c.fillStyle = '#7dd3fc'; // robin-egg blue
+                  c.beginPath(); c.ellipse(_bnX - 0.7, _bnY - 0.5, 0.55, 0.4, 0, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_bnX + 0.2, _bnY - 0.6, 0.55, 0.4, 0, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_bnX + 1, _bnY - 0.4, 0.55, 0.4, 0, 0, 6.28); c.fill();
+                  // Tiny white speckles on each egg
+                  c.fillStyle = 'rgba(255,255,255,0.5)';
+                  c.beginPath(); c.arc(_bnX - 0.8, _bnY - 0.65, 0.13, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_bnX + 0.1, _bnY - 0.75, 0.13, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_bnX + 0.9, _bnY - 0.55, 0.13, 0, 6.28); c.fill();
+                  // Short branch under the nest
+                  c.strokeStyle = '#4a2f1a';
+                  c.lineWidth = 0.7;
+                  c.beginPath(); c.moveTo(_bnX - 4, _bnY + 1.4); c.lineTo(_bnX + 4, _bnY + 1.4); c.stroke();
+                }
+
                 // ── Swarm cluster hanging from an apple-tree branch ──
                 // Real biology: in late spring (day 18+), an overcrowded colony
                 // produces a new queen. The OLD queen leaves with about half
