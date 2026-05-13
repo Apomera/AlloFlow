@@ -243,10 +243,34 @@ filename. The build step writes the pinned-hash URL into the compiled
 ### `loadModule()` flow
 
 At app startup, `AlloFlowContent` calls `loadModule(name, url)` for each
-CDN module. The function injects a `<script>` tag and waits for the IIFE
-to register on `window.AlloModules.X`. If the CDN fetch fails, the shim
-falls back to its default (return null), keeping the app functional
-offline.
+CDN module that's not deferred (~110 of ~127). The function injects a
+`<script>` tag and waits for the IIFE to register on `window.AlloModules.X`.
+
+Two failure paths are wired:
+
+1. **Network onerror** — `s.onerror` fires (e.g., DNS, 5xx, CORS mismatch).
+   `loadModule` builds a fallback URL pointing at `raw.githubusercontent.com/Apomera/AlloFlow/main/`
+   and appends a second `<script>` tag. The fallback regex recognizes both
+   the new Cloudflare Pages URL pattern (`alloflow-cdn.pages.dev/`) and
+   the legacy jsdelivr pattern (`cdn.jsdelivr.net/gh/Apomera/AlloFlow@HASH/`)
+   so the four still-pinned jsdelivr modules can also recover.
+2. **Script loaded but never registered** — script returned 200 but didn't
+   call `window.AlloModules[name] = X`. Same fallback to GitHub raw, plus
+   a `console.error` listing the keys of `window.AlloModules` at the time
+   of failure for diagnosis.
+
+If both primary and fallback fail, the monolith-side shim returns its
+default (typically `null`), keeping the app functional in a degraded mode.
+
+**Lazy-load variant** (May 12 2026): about 17 modules wrap their
+`loadModule(...)` call inside a fire-once closure exposed as
+`window.__alloLazy<Name>`. The corresponding `setShow<Name>` React setter
+is wrapped via `React.useCallback` to invoke that closure on first true,
+deferring the script fetch until the user opens the feature. Reduces
+cold-load request count from 127 to ~110. Lazy candidates are pure modal
+modules (HintsModal, XPModal, etc.) and standalone feature hubs
+(AlloHaven, SymbolStudio, StoryForge, LitLab, PoetTree, EducatorHubModal,
+LearningHubModal, VisualSupportsModal).
 
 ## STEM Lab Plugin Architecture
 
@@ -402,22 +426,30 @@ runtime checks. Many of these checks fail-fast in a git pre-commit hook.
 ### `build.js`
 
 Single source of truth: `build.js --mode=prod` (or `--mode=dev`) reads
-`AlloFlowANTI.txt`, swaps every `loadModule(...)` URL for a pinned CDN
-hash (prod) or local path (dev), and writes
-`prismflow-deploy/src/App.jsx`. Auto-copies module files to
-`prismflow-deploy/public/`.
+`AlloFlowANTI.txt`, swaps every `loadModule(...)` URL for the Cloudflare
+Pages URL (`https://alloflow-cdn.pages.dev/<file>.js`) in prod or a local
+path (`./<file>.js`) in dev, and writes `prismflow-deploy/src/App.jsx`.
+Auto-copies module files to `prismflow-deploy/public/`. Prod URLs no
+longer include a `@hash` suffix because Cloudflare Pages auto-invalidates
+by content on every push to main; the old jsdelivr-era hash-pin pattern
+is gone for managed modules (see "CDN Hosting" below).
+
+The constant `CLOUDFLARE_CDN_BASE` at the top of `build.js` is the single
+swap point if the CDN ever needs to change again.
 
 ### `deploy.sh` (turbo-all)
 
 The full deploy is a 9-step orchestrator at the repo root:
 
 1. **Source commit** (only if files are pre-staged)
-2. **Push source to origin**
-3. **Run build.js** (regenerate `App.jsx` with pinned hashes)
+2. **Push source to origin** — Cloudflare Pages auto-detects this push and
+   starts its own build in parallel (~30-60 sec); see "CDN Hosting" below.
+3. **Run build.js** (regenerate `App.jsx` with Cloudflare Pages URLs)
 4. **npm run build** (CRA build to `prismflow-deploy/build/`)
-5. **Firebase deploy** (static hosting)
-6. **Post-deploy commit** (update CDN hash refs in `AlloFlowANTI.txt` to
-   point at the just-pushed commit)
+5. **Firebase deploy** (static hosting for the local-test mirror at
+   `prismflow-911fe.web.app`; Canvas users do NOT fetch from here)
+6. **Post-deploy commit** (mostly a no-op now that URLs don't include
+   a hash; still re-runs build.js to catch any drift)
 7. **Push post-deploy commit to origin**
 8. **Mirror to Codeberg backup** (push to `Pomera/AlloFlow-backup`)
 9. **Push tags to backup**
@@ -428,23 +460,46 @@ concurrent agents working on the codebase, you must explicitly
 banner that deploy.sh prints can be misleading when multiple deploys
 race — verify your specific commit landed via `git log --oneline -5`.
 
-## Pinned Dependency Injection
+## CDN Hosting
 
-CDN URLs are pinned to exact commit hashes via jsdelivr, never `@main`
-or `@latest`. This makes builds deterministic and offline-reproducible.
-The `build.js` rewrite step inserts the current commit hash.
+The runtime fetch chain for the ~127 CDN modules has two tiers as of
+May 12 2026:
 
-```js
-// Correct: pinned to exact commit
-loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a1b2c3d/stem_lab/stem_lab_module.js');
+**Primary: Cloudflare Pages** — `https://alloflow-cdn.pages.dev/<file>.js`.
+A Pages project (`alloflow-cdn`) on Aaron's Cloudflare account is linked
+to the `Apomera/AlloFlow` GitHub repo. Cloudflare auto-rebuilds on every
+push to main (~30-60 sec). Files are served from Cloudflare's edge
+network with no GitHub API in the request path — no rate-limit cascade
+risk. CORS is wide-open (`Access-Control-Allow-Origin: *`) so the
+Canvas blob: origin can fetch cross-origin. Per-file cap: 25 MiB. The
+`.gitignore` excludes media types that risk exceeding the cap (`*.m4a`,
+`*.mp4`, `*.mov`, `*.wav`, `*.onnx`) with one exception for the small
+audio file that `index.html` references.
 
-// The `@main` placeholder is reserved for newly-added modules between
-// the source commit and the rewrite; it must never end up in a tagged release.
-```
+**Fallback: GitHub raw** — `https://raw.githubusercontent.com/Apomera/AlloFlow/main/<file>.js?v=<timestamp>`.
+Fires from `loadModule`'s `s.onerror` handler. Subject to GitHub's
+unauthenticated rate limit (~60 req/hr per IP), so it's a safety net,
+not a sustainable primary.
 
-After every merge, `build.js` runs during the deploy and rewrites every
-`@hash` to point at the new commit. The post-deploy commit (step 6) is
-the record of which hash was deployed when.
+**Still on jsdelivr** (legacy): four pinned-hash modules — `ErrorReporter`
+(`@50c0e33`), `AIBackend` (`@97e87aa`), `PoetTree` (`@5e3ae8e`),
+`EscapeRoomModule` (`@19e37fe`) — kept jsdelivr URLs because they're not
+in `build.js`'s `MODULES` array. Plus a handful of npm packages
+(`jsonrepair`, `lz-string`, `idb-keyval`) that use jsdelivr's NPM
+pipeline (different from the GitHub raw cascade and unaffected by it).
+
+**Migration history:** Originally all CDN URLs were pinned to exact
+commit hashes via jsdelivr (`cdn.jsdelivr.net/gh/Apomera/AlloFlow@<hash>/`),
+making builds deterministic. In May 2026 jsdelivr's GitHub-fetch path
+started returning GitHub's "429: Too Many Requests" plaintext as response
+bodies on fresh commit hashes (see jsdelivr issues #18288 / #18311),
+causing 30-40 of 127 modules to fail every cold load. Switched primary
+to Cloudflare Pages; Cloudflare doesn't depend on GitHub at runtime
+(files are copied to Cloudflare's storage at build time). No more
+`@hash` in URLs because Cloudflare invalidates by content on each push.
+The build.js dirty-tree and shrink guards still apply — they check
+that local files match HEAD so what's pushed to GitHub is what
+Cloudflare will serve.
 
 ## Deployment Targets
 
