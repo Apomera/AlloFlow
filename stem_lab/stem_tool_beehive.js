@@ -7177,6 +7177,171 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(fl.x + sw, fl.y, bsz * 0.22, 0, 6.28); c.fill();
               });
 
+              // ── Goldenrod plumes (late summer + fall) ──
+              // Tall stalks with bushy yellow plume tops — the most important
+              // late-season nectar source in the Northeast, accounting for the
+              // bulk of fall honey stores. Real biology: when goldenrod is
+              // flowing, the hive smells faintly of sweat-socks (geraniol from
+              // the nectar fermenting). Appears in late summer (day >= 18 of
+              // season 1) and all of fall, fades as winter approaches.
+              if ((season === 1 && (day % 30) >= 18) || season === 2) {
+                var _grIntensity = season === 2 ? 1 : Math.min(1, ((day % 30) - 18) / 8);
+                var _grCount = Math.floor(12 * _grIntensity);
+                for (var gr = 0; gr < _grCount; gr++) {
+                  var _grBaseX = (gr * 67 + 23) % W;
+                  // Skip if too close to the hive/keeper area
+                  if (_grBaseX > hiveX - 25 && _grBaseX < hiveX + hiveW + 20) continue;
+                  var _grBaseY = H * 0.78 + (gr % 3) * 1.5;
+                  var _grHeight = 16 + (gr % 5) * 3;
+                  var _grWind = Math.sin(t2 * 0.025 - _grBaseX * 0.015) * 2.5;
+                  var _grTopX = _grBaseX + _grWind;
+                  var _grTopY = _grBaseY - _grHeight;
+                  // Stem (slim olive-green)
+                  c.strokeStyle = season === 2 ? '#65a30d' : '#84cc16';
+                  c.lineWidth = 1;
+                  c.beginPath();
+                  c.moveTo(_grBaseX, _grBaseY);
+                  c.quadraticCurveTo(_grBaseX + _grWind * 0.5, _grBaseY - _grHeight * 0.5, _grTopX, _grTopY);
+                  c.stroke();
+                  // Side leaves (small lance-shaped)
+                  c.fillStyle = season === 2 ? 'rgba(101,163,13,0.7)' : 'rgba(132,204,22,0.7)';
+                  c.beginPath();
+                  c.ellipse(_grBaseX + _grWind * 0.3, _grBaseY - _grHeight * 0.6, 1.2, 3.5, 0.4, 0, 6.28); c.fill();
+                  c.beginPath();
+                  c.ellipse(_grBaseX + _grWind * 0.5 + 1, _grBaseY - _grHeight * 0.35, 1.0, 3, -0.3, 0, 6.28); c.fill();
+                  // Plume — multiple small yellow florets clustered at the top
+                  var _grPlumeColor = season === 2 ? '#ca8a04' : '#facc15'; // duller in fall
+                  c.fillStyle = _grPlumeColor;
+                  for (var grf = 0; grf < 14; grf++) {
+                    var _grAng = (grf / 14) * 6.28 + gr * 0.5;
+                    var _grR = 0.55 + (grf % 3) * 0.15;
+                    var _grPx = _grTopX + Math.cos(_grAng) * (2 + (grf % 4) * 0.7);
+                    var _grPy = _grTopY + Math.sin(_grAng) * (3 + (grf % 4) * 0.5) - (grf % 5) * 0.4;
+                    c.beginPath(); c.arc(_grPx, _grPy, _grR, 0, 6.28); c.fill();
+                  }
+                  // Tiny highlight on plume's upper-left
+                  c.fillStyle = 'rgba(255,250,200,0.6)';
+                  c.beginPath(); c.arc(_grTopX - 1.5, _grTopY - 1.5, 0.9, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Drone eviction cameo (late fall biology) ──
+              // In late fall, female workers literally drag the now-useless
+              // drones (male bees) out of the hive and let them die — a stark
+              // resource-allocation behavior to preserve winter stores. Two
+              // workers pull a larger drone across the landing board. Plays
+              // briefly every ~35 sec during late fall (day >= 22 of season 2).
+              if (season === 2 && (day % 30) >= 22) {
+                var _evPeriod = 35000;
+                var _evPhase = ((Date.now() % _evPeriod) / _evPeriod);
+                if (_evPhase > 0.55 && _evPhase < 0.85) {
+                  var _evT = (_evPhase - 0.55) / 0.30; // 0..1
+                  var _evStartX = hiveX + hiveW * 0.5;
+                  var _evEndX = hiveX + hiveW + 14;
+                  var _evX = _evStartX + (_evEndX - _evStartX) * _evT;
+                  var _evY = hiveY + hiveH + 1.5;
+                  c.save();
+                  // The drone (larger, darker — male bee anatomy is bulkier)
+                  c.fillStyle = '#92400e';
+                  c.beginPath(); c.ellipse(_evX, _evY, 3.6, 2.3, 0, 0, 6.28); c.fill();
+                  c.fillStyle = '#1c1917';
+                  c.fillRect(_evX - 0.5, _evY - 1.8, 0.8, 3.6);
+                  c.fillRect(_evX + 1.2, _evY - 1.5, 0.6, 3);
+                  // Big drone eyes (drones have huge wraparound eyes for finding queens)
+                  c.fillStyle = '#1c1917';
+                  c.beginPath(); c.arc(_evX - 2.8, _evY - 0.5, 0.8, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_evX - 2.8, _evY + 0.5, 0.8, 0, 6.28); c.fill();
+                  // Two worker bees flanking, pulling the drone outward
+                  for (var ev = 0; ev < 2; ev++) {
+                    var _wkrX = _evX + (ev === 0 ? -4.5 : -3.2);
+                    var _wkrY = _evY + (ev === 0 ? -1.4 : 1.4);
+                    c.fillStyle = '#fbbf24';
+                    c.beginPath(); c.ellipse(_wkrX, _wkrY, 2, 1.3, ev === 0 ? -0.3 : 0.3, 0, 6.28); c.fill();
+                    c.fillStyle = '#1c1917';
+                    c.fillRect(_wkrX - 0.3, _wkrY - 1, 0.4, 2);
+                    // Worker head dot
+                    c.beginPath(); c.arc(_wkrX - 1.5, _wkrY + (ev === 0 ? -0.5 : 0.5), 0.5, 0, 6.28); c.fill();
+                  }
+                  c.restore();
+                }
+              }
+
+              // ── Hummingbird darting at flowers (spring + summer) ──
+              // Real biology: hummingbirds visit similar nectar sources as bees
+              // and are an important non-bee pollinator. Their motion is very
+              // distinct from bees and butterflies — fast straight darts to a
+              // flower, hover, then dart away. Iridescent green back, blurry
+              // wing-fan disc on each side. One bird at a time, periodic visits.
+              if ((season === 0 || season === 1) && flowers.length > 6) {
+                var _hbPeriod = 18000;
+                var _hbPhase = ((Date.now() % _hbPeriod) / _hbPeriod);
+                if (_hbPhase < 0.7) {
+                  // Visit cycle: 4 segments — approach, hover-flower-A, dart, hover-flower-B
+                  var _hbT = _hbPhase / 0.7; // 0..1 within visit
+                  var _hbTargetA = flowers[(season === 1 ? 4 : 7) % flowers.length];
+                  var _hbTargetB = flowers[(season === 1 ? 9 : 12) % flowers.length];
+                  var _hbStart = { x: W + 20, y: H * 0.55 };
+                  var _hbEnd = { x: -20, y: H * 0.60 };
+                  var _hbX, _hbY, _hbHovering;
+                  if (_hbT < 0.20) {
+                    var _hbU = _hbT / 0.20;
+                    _hbX = _hbStart.x + (_hbTargetA.x - _hbStart.x) * _hbU;
+                    _hbY = _hbStart.y + (_hbTargetA.y - 14 - _hbStart.y) * _hbU;
+                    _hbHovering = false;
+                  } else if (_hbT < 0.40) {
+                    _hbX = _hbTargetA.x + Math.sin(t2 * 0.4) * 1.5;
+                    _hbY = _hbTargetA.y - 14 + Math.cos(t2 * 0.3) * 1;
+                    _hbHovering = true;
+                  } else if (_hbT < 0.60) {
+                    var _hbU2 = (_hbT - 0.40) / 0.20;
+                    _hbX = _hbTargetA.x + (_hbTargetB.x - _hbTargetA.x) * _hbU2;
+                    _hbY = (_hbTargetA.y - 14) + (_hbTargetB.y - 14 - (_hbTargetA.y - 14)) * _hbU2;
+                    _hbHovering = false;
+                  } else if (_hbT < 0.80) {
+                    _hbX = _hbTargetB.x + Math.sin(t2 * 0.4 + 1) * 1.5;
+                    _hbY = _hbTargetB.y - 14 + Math.cos(t2 * 0.3 + 1) * 1;
+                    _hbHovering = true;
+                  } else {
+                    var _hbU3 = (_hbT - 0.80) / 0.20;
+                    _hbX = _hbTargetB.x + (_hbEnd.x - _hbTargetB.x) * _hbU3;
+                    _hbY = (_hbTargetB.y - 14) + (_hbEnd.y - (_hbTargetB.y - 14)) * _hbU3;
+                    _hbHovering = false;
+                  }
+                  // Direction-aware orientation
+                  var _hbFacing = (_hbT > 0.40 && _hbT < 0.60) || _hbT >= 0.80 ? -1 : 1;
+                  c.save();
+                  c.translate(_hbX, _hbY);
+                  c.scale(_hbFacing, 1);
+                  // Iridescent green back
+                  c.fillStyle = '#15803d';
+                  c.beginPath(); c.ellipse(0, 0, 2.5, 1.4, 0.05, 0, 6.28); c.fill();
+                  // Ruby throat patch (ruby-throated hummer is most common in Maine)
+                  c.fillStyle = '#dc2626';
+                  c.beginPath(); c.ellipse(-1.4, 0.3, 0.7, 0.5, 0, 0, 6.28); c.fill();
+                  // Pale belly
+                  c.fillStyle = 'rgba(254,243,199,0.85)';
+                  c.beginPath(); c.ellipse(0.3, 0.6, 1.6, 0.7, 0, 0, 6.28); c.fill();
+                  // Long needle beak
+                  c.strokeStyle = '#1c1917';
+                  c.lineWidth = 0.5;
+                  c.beginPath(); c.moveTo(-2.2, -0.1); c.lineTo(-5.5, -0.1); c.stroke();
+                  // Eye dot
+                  c.fillStyle = '#0a0a0a';
+                  c.beginPath(); c.arc(-1.6, -0.4, 0.3, 0, 6.28); c.fill();
+                  // Wing fans — blurry semi-transparent ellipses (50-80 wingbeats/sec)
+                  c.fillStyle = 'rgba(255,255,255,0.35)';
+                  c.beginPath(); c.ellipse(0, -1.6, 2.8, 1.2, 0.3, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(0,  1.6, 2.8, 1.2, -0.3, 0, 6.28); c.fill();
+                  // Slight motion blur when hovering (wing-induced air ripple)
+                  if (_hbHovering) {
+                    c.strokeStyle = 'rgba(255,255,255,0.25)';
+                    c.lineWidth = 0.3;
+                    c.beginPath(); c.arc(0, 2.5, 1.5 + Math.sin(t2 * 0.3) * 0.3, 0, Math.PI); c.stroke();
+                  }
+                  c.restore();
+                }
+              }
+
               // ── Frozen birdbath in winter (ice + frost rim) ──
               // Closes the seasonal arc for the water station: the bath doesn't
               // disappear when winter hits, it freezes. Hexagonal frost cracks
