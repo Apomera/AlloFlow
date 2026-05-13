@@ -5735,16 +5735,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // Tiny silhouettes in the upper sky add scale and the felt sense
               // of a real ecosystem above the apiary. Fully suppressed in winter.
               if (season === 0 || season === 1) {
-                // Lazy circling hawk: parametric circle in sky, with wing flap
+                // Lazy circling hawk with periodic dive (stoop).
+                // Real biology: red-tailed and cooper's hawks dive at ~120 mph
+                // when stooping on prey. Most of the time the hawk circles;
+                // every ~30 seconds it plunges briefly then climbs back to its
+                // circle. During the dive, wings tuck (smaller silhouette).
                 var _hkT = t2 * 0.003;
                 var _hkCx = W * 0.55 + Math.sin(t2 * 0.0008) * 30;
                 var _hkCy = H * 0.16 + Math.cos(t2 * 0.0008) * 8;
-                var _hkX = _hkCx + Math.cos(_hkT) * 36;
-                var _hkY = _hkCy + Math.sin(_hkT) * 12;
-                var _hkFlap = Math.sin(t2 * 0.04) * 0.35;
+                var _hkCircX = _hkCx + Math.cos(_hkT) * 36;
+                var _hkCircY = _hkCy + Math.sin(_hkT) * 12;
+                // Dive cycle — 3s active out of every 30s
+                var _hkDivePeriod = 30000;
+                var _hkDivePhase = (Date.now() % _hkDivePeriod) / _hkDivePeriod;
+                var _hkInDive = _hkDivePhase > 0.40 && _hkDivePhase < 0.50;
+                var _hkX, _hkY, _hkRot, _hkFlap, _hkSize;
+                if (_hkInDive) {
+                  // Plunge: ease-in down, then ease-out climb
+                  var _hkDiveT = (_hkDivePhase - 0.40) / 0.10; // 0..1
+                  // Parabolic Y: starts at circle, dips to H*0.62, returns
+                  var _hkDiveBend = Math.sin(_hkDiveT * Math.PI); // 0..1..0
+                  _hkX = _hkCircX + _hkDiveT * 30; // drifts right during dive
+                  _hkY = _hkCircY + _hkDiveBend * (H * 0.42);
+                  _hkRot = Math.PI / 2 + _hkDiveBend * 0.6; // tilt downward
+                  _hkFlap = 0; // wings tucked
+                  _hkSize = 0.7; // smaller silhouette (tucked)
+                } else {
+                  _hkX = _hkCircX;
+                  _hkY = _hkCircY;
+                  _hkRot = _hkT + Math.PI / 2;
+                  _hkFlap = Math.sin(t2 * 0.04) * 0.35;
+                  _hkSize = 1;
+                }
                 c.save();
                 c.translate(_hkX, _hkY);
-                c.rotate(_hkT + Math.PI / 2);
+                c.rotate(_hkRot);
+                c.scale(_hkSize, _hkSize);
                 c.strokeStyle = 'rgba(60,50,40,0.55)';
                 c.lineWidth = 1.1;
                 c.beginPath();
@@ -5756,6 +5782,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillStyle = 'rgba(60,50,40,0.6)';
                 c.beginPath(); c.arc(0, 1.5, 0.9, 0, 6.28); c.fill();
                 c.restore();
+                // Speed-streak motion lines behind the diving hawk
+                if (_hkInDive) {
+                  c.strokeStyle = 'rgba(60,50,40,0.30)';
+                  c.lineWidth = 0.5;
+                  for (var hst = 0; hst < 4; hst++) {
+                    var _hstY = _hkY - 4 - hst * 3;
+                    c.beginPath();
+                    c.moveTo(_hkX - 1, _hstY);
+                    c.lineTo(_hkX - 4, _hstY - 1);
+                    c.stroke();
+                  }
+                }
               } else if (season === 2) {
                 // Fall: V-formation of 5 migrating geese sweeping right→left across sky
                 var _vfPhase = ((t2 * 0.18) % (W + 240)) - 60;
@@ -8112,6 +8150,137 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.beginPath(); c.ellipse(0.6, -0.6, 1.3, 0.5, -0.2, 0, 6.28); c.fill();
                   c.beginPath(); c.ellipse(0.6,  0.6, 1.3, 0.5,  0.2, 0, 6.28); c.fill();
                   c.restore();
+                }
+              }
+
+              // ── Dappled sunlight under the apple tree (spring + summer day) ──
+              // Sub-canopy leaf-shadow play: real-world phenomenon where
+              // sunlight filtering through leaves creates moving bright spots
+              // on the ground. Each "spot" subtly drifts as if leaves above
+              // are stirred by wind. Only spring + summer (canopy is full)
+              // and gated to high sun (no spots at dawn/dusk).
+              if ((season === 0 || season === 1) && hiveX > 40) {
+                var _dpAtX = hiveX * 0.55;
+                var _dpDay = Math.max(0, Math.sin(_sunT_arc * Math.PI));
+                if (_dpDay > 0.15) {
+                  var _dpSpots = [
+                    { dx: -10, dy: 3,  r: 2.6 },
+                    { dx:  -4, dy: 5,  r: 2.0 },
+                    { dx:   6, dy: 4,  r: 2.3 },
+                    { dx:  12, dy: 2,  r: 1.8 },
+                    { dx:  -8, dy: 8,  r: 1.5 },
+                    { dx:   3, dy: 9,  r: 2.1 },
+                    { dx:  -1, dy: 7,  r: 1.7 },
+                    { dx:  10, dy: 7,  r: 1.9 }
+                  ];
+                  c.save();
+                  _dpSpots.forEach(function(sp, spi) {
+                    // Each spot drifts on its own slow phase (leaves moving)
+                    var _spJX = Math.sin(t2 * 0.008 + spi * 0.7) * 1.5;
+                    var _spJY = Math.cos(t2 * 0.006 + spi * 0.9) * 0.8;
+                    var _spA = (0.32 + Math.sin(t2 * 0.012 + spi) * 0.08) * _dpDay;
+                    var _spGrad = c.createRadialGradient(
+                      _dpAtX + sp.dx + _spJX, H * 0.76 + sp.dy + _spJY, 0.3,
+                      _dpAtX + sp.dx + _spJX, H * 0.76 + sp.dy + _spJY, sp.r
+                    );
+                    _spGrad.addColorStop(0, 'rgba(255,250,200,' + _spA.toFixed(3) + ')');
+                    _spGrad.addColorStop(1, 'rgba(255,250,200,0)');
+                    c.fillStyle = _spGrad;
+                    c.beginPath();
+                    c.arc(_dpAtX + sp.dx + _spJX, H * 0.76 + sp.dy + _spJY, sp.r, 0, 6.28);
+                    c.fill();
+                  });
+                  c.restore();
+                }
+              }
+
+              // ── Jack-o'-lantern in the fall meadow (day = pumpkin, night = lit) ──
+              // Maine autumn touch. During day it's just a carved orange pumpkin
+              // sitting on the meadow. At night the carved face glows warm
+              // orange and casts a soft pool of light on the ground around it.
+              // Only fall (season === 2), late month so it's near Halloween.
+              if (season === 2 && (day % 30) >= 15) {
+                var _jlX = W * 0.36, _jlY = H * 0.85;
+                // Pumpkin body — round with vertical segment ribs
+                var _jlBodyG = c.createRadialGradient(_jlX - 1.5, _jlY - 2, 0.5, _jlX, _jlY, 7);
+                _jlBodyG.addColorStop(0, '#fb923c');
+                _jlBodyG.addColorStop(1, '#c2410c');
+                c.fillStyle = _jlBodyG;
+                c.beginPath(); c.ellipse(_jlX, _jlY, 6.5, 5, 0, 0, 6.28); c.fill();
+                // Vertical rib segments (3 darker arcs)
+                c.strokeStyle = 'rgba(120,40,15,0.45)';
+                c.lineWidth = 0.6;
+                for (var jl = 0; jl < 3; jl++) {
+                  var _jlR = -3.5 + jl * 2.3;
+                  c.beginPath();
+                  c.moveTo(_jlX + _jlR, _jlY - 4.5);
+                  c.quadraticCurveTo(_jlX + _jlR * 1.2, _jlY, _jlX + _jlR, _jlY + 4.5);
+                  c.stroke();
+                }
+                // Brown stem on top
+                c.fillStyle = '#4a3014';
+                c.fillRect(_jlX - 0.7, _jlY - 6.5, 1.4, 2.2);
+                // Small green leaf curl off the stem
+                c.fillStyle = '#65a30d';
+                c.beginPath(); c.ellipse(_jlX + 1.2, _jlY - 6, 1, 0.5, -0.4, 0, 6.28); c.fill();
+                // Shadow base
+                c.fillStyle = 'rgba(0,0,0,0.28)';
+                c.beginPath(); c.ellipse(_jlX, _jlY + 3.5, 7, 0.9, 0, 0, 6.28); c.fill();
+                // Carved face (visible all day; glows at night)
+                var _jlNight = Math.max(0, Math.min(1,
+                  _sunCycle > 1.0 && _sunCycle < 2.0 ? Math.sin((_sunCycle - 1.0) * Math.PI) : 0
+                ));
+                var _jlFaceCol = _jlNight > 0.05
+                  ? 'rgba(254,215,80,' + (0.75 + 0.25 * _jlNight).toFixed(3) + ')'
+                  : 'rgba(60,15,5,0.85)';
+                c.fillStyle = _jlFaceCol;
+                // Triangle eye left
+                c.beginPath();
+                c.moveTo(_jlX - 2.8, _jlY - 1);
+                c.lineTo(_jlX - 1.2, _jlY - 1);
+                c.lineTo(_jlX - 2.0, _jlY + 0.5);
+                c.closePath(); c.fill();
+                // Triangle eye right
+                c.beginPath();
+                c.moveTo(_jlX + 1.2, _jlY - 1);
+                c.lineTo(_jlX + 2.8, _jlY - 1);
+                c.lineTo(_jlX + 2.0, _jlY + 0.5);
+                c.closePath(); c.fill();
+                // Triangle nose
+                c.beginPath();
+                c.moveTo(_jlX - 0.6, _jlY + 0.6);
+                c.lineTo(_jlX + 0.6, _jlY + 0.6);
+                c.lineTo(_jlX, _jlY + 1.7);
+                c.closePath(); c.fill();
+                // Jagged mouth (3-tooth grin)
+                c.beginPath();
+                c.moveTo(_jlX - 2.6, _jlY + 2.3);
+                c.lineTo(_jlX - 1.7, _jlY + 2.3);
+                c.lineTo(_jlX - 1.7, _jlY + 3.2);
+                c.lineTo(_jlX - 0.8, _jlY + 3.2);
+                c.lineTo(_jlX - 0.8, _jlY + 2.3);
+                c.lineTo(_jlX + 0.1, _jlY + 2.3);
+                c.lineTo(_jlX + 0.1, _jlY + 3.2);
+                c.lineTo(_jlX + 1.0, _jlY + 3.2);
+                c.lineTo(_jlX + 1.0, _jlY + 2.3);
+                c.lineTo(_jlX + 1.9, _jlY + 2.3);
+                c.lineTo(_jlX + 1.9, _jlY + 3.2);
+                c.lineTo(_jlX + 2.8, _jlY + 3.2);
+                c.lineTo(_jlX + 2.8, _jlY + 3.6);
+                c.lineTo(_jlX - 2.6, _jlY + 3.6);
+                c.closePath(); c.fill();
+                // Glow pool on the ground at night
+                if (_jlNight > 0.1) {
+                  var _jlGlow = c.createRadialGradient(_jlX, _jlY + 4, 1, _jlX, _jlY + 4, 22);
+                  _jlGlow.addColorStop(0, 'rgba(254,215,80,' + (0.55 * _jlNight).toFixed(3) + ')');
+                  _jlGlow.addColorStop(0.5, 'rgba(251,146,60,' + (0.25 * _jlNight).toFixed(3) + ')');
+                  _jlGlow.addColorStop(1, 'rgba(251,146,60,0)');
+                  c.fillStyle = _jlGlow;
+                  c.beginPath(); c.ellipse(_jlX, _jlY + 4, 22, 9, 0, 0, 6.28); c.fill();
+                  // Candle flicker — slight intensity wobble
+                  var _jlFlick = 1 + Math.sin(t2 * 0.4) * 0.15 + Math.sin(t2 * 0.7 + 1) * 0.08;
+                  c.fillStyle = 'rgba(255,237,150,' + (0.7 * _jlNight * _jlFlick).toFixed(3) + ')';
+                  c.beginPath(); c.arc(_jlX, _jlY + 0.5, 1.6 * _jlFlick, 0, 6.28); c.fill();
                 }
               }
 
