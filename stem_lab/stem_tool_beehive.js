@@ -7907,6 +7907,190 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              // ── Solar string lights strung along the fence (charge by day, glow at night) ──
+              // Real homestead touch — those Edison-bulb-style outdoor strings.
+              // Visible all year, but the bulbs only GLOW after dusk. They
+              // catenary-sag between every other fence post.
+              (function() {
+                var _slY = fenceBaseY - 2;
+                // Determine night-glow strength
+                var _slNight = 0;
+                if (_sunCycle > 0.95 && _sunCycle < 1.95) {
+                  if (_sunCycle < 1.5) _slNight = (_sunCycle - 0.95) / 0.45;
+                  else _slNight = (1.95 - _sunCycle) / 0.45;
+                }
+                _slNight = Math.max(0, Math.min(1, _slNight));
+                // Wire — continuous catenary across the fence
+                c.strokeStyle = 'rgba(40,30,20,0.55)';
+                c.lineWidth = 0.3;
+                c.beginPath();
+                for (var slX = 12; slX <= W - 8; slX += 14) {
+                  if (slX > hiveX - 25 && slX < hiveX + hiveW + 25) continue;
+                  var _slDip = Math.sin((slX % 70) / 70 * Math.PI) * 1.5;
+                  var _slY2 = _slY - 1 + _slDip;
+                  if (slX === 12) c.moveTo(slX, _slY2);
+                  else c.lineTo(slX, _slY2);
+                }
+                c.stroke();
+                // Bulbs along the wire — every ~14 pixels
+                for (var sb = 12; sb <= W - 8; sb += 14) {
+                  if (sb > hiveX - 25 && sb < hiveX + hiveW + 25) continue;
+                  var _sbDip = Math.sin((sb % 70) / 70 * Math.PI) * 1.5;
+                  var _sbY = _slY - 1 + _sbDip;
+                  // Bulb glass — small pear shape
+                  if (_slNight > 0.05) {
+                    // Glow halo when lit
+                    var _slGlow = c.createRadialGradient(sb, _sbY + 1.2, 0.3, sb, _sbY + 1.2, 5);
+                    _slGlow.addColorStop(0, 'rgba(254,243,199,' + (0.85 * _slNight).toFixed(3) + ')');
+                    _slGlow.addColorStop(0.5, 'rgba(251,191,36,' + (0.4 * _slNight).toFixed(3) + ')');
+                    _slGlow.addColorStop(1, 'rgba(251,191,36,0)');
+                    c.fillStyle = _slGlow;
+                    c.beginPath(); c.arc(sb, _sbY + 1.2, 5, 0, 6.28); c.fill();
+                    c.fillStyle = 'rgba(255,237,150,' + (0.95 * _slNight).toFixed(3) + ')';
+                  } else {
+                    c.fillStyle = 'rgba(217,200,150,0.55)';
+                  }
+                  c.beginPath(); c.ellipse(sb, _sbY + 1.2, 0.85, 1.1, 0, 0, 6.28); c.fill();
+                  // Tiny brass socket cap above
+                  c.fillStyle = '#78716c';
+                  c.fillRect(sb - 0.4, _sbY + 0.2, 0.8, 0.5);
+                }
+              })();
+
+              // ── Adirondack chair beside the apiary (weathered Maine homestead detail) ──
+              // The beekeeper's favorite resting spot — angled-back wooden chair
+              // visible just to the right of the BEES sign, tucked partly into
+              // the meadow grass. Year-round, weathered in winter.
+              (function() {
+                var _acX = W * 0.55, _acY = H * 0.86;
+                // Chair color (weathered grey-brown by season)
+                var _acCol = season === 3 ? '#5a5048' : season === 2 ? '#6b5d50' : '#8a7a68';
+                var _acColDark = season === 3 ? '#3a3028' : season === 2 ? '#4a3d30' : '#5a4d40';
+                // Shadow base
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.beginPath(); c.ellipse(_acX, _acY + 3, 11, 1.2, 0, 0, 6.28); c.fill();
+                // Back legs (vertical, slightly behind)
+                c.fillStyle = _acColDark;
+                c.fillRect(_acX - 5, _acY - 4, 1.4, 7);
+                c.fillRect(_acX + 4, _acY - 4, 1.4, 7);
+                // Front legs (visible from this angle)
+                c.fillStyle = _acCol;
+                c.fillRect(_acX - 4, _acY - 1, 1.2, 4);
+                c.fillRect(_acX + 3, _acY - 1, 1.2, 4);
+                // Wide seat (slanted, classic Adirondack)
+                c.beginPath();
+                c.moveTo(_acX - 5, _acY - 1.5);
+                c.lineTo(_acX + 6, _acY - 2);
+                c.lineTo(_acX + 6, _acY - 0.5);
+                c.lineTo(_acX - 5, _acY);
+                c.closePath(); c.fill();
+                // Tall back-rest with 5 vertical slats — the iconic Adirondack profile
+                var _acBackY = _acY - 12;
+                // Back frame
+                c.fillStyle = _acColDark;
+                c.fillRect(_acX - 5, _acBackY, 1, 11);
+                c.fillRect(_acX + 4, _acBackY - 1, 1, 12);
+                // Top crossbar (slight curve up at top)
+                c.fillStyle = _acCol;
+                c.beginPath();
+                c.moveTo(_acX - 4.5, _acBackY);
+                c.quadraticCurveTo(_acX - 0.5, _acBackY - 2, _acX + 4, _acBackY - 1);
+                c.lineTo(_acX + 4, _acBackY);
+                c.lineTo(_acX - 4.5, _acBackY + 1);
+                c.closePath(); c.fill();
+                // Five vertical slats
+                for (var acs = 0; acs < 5; acs++) {
+                  var _acsX = _acX - 4 + acs * 1.8;
+                  c.fillRect(_acsX, _acBackY, 0.6, 11);
+                }
+                // Two wide flat armrests — Adirondack signature
+                c.fillStyle = _acCol;
+                c.fillRect(_acX - 6, _acY - 4.5, 4, 1.2);
+                c.fillRect(_acX + 2, _acY - 5, 4, 1.2);
+                // Armrest shadow
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.fillRect(_acX - 6, _acY - 3.5, 4, 0.4);
+                c.fillRect(_acX + 2, _acY - 4, 4, 0.4);
+                // Snow on the seat + armrests in winter
+                if (season === 3) {
+                  c.fillStyle = '#ffffff';
+                  c.beginPath();
+                  c.moveTo(_acX - 5, _acY - 2);
+                  c.lineTo(_acX + 6, _acY - 2.5);
+                  c.lineTo(_acX + 6, _acY - 1.7);
+                  c.lineTo(_acX - 5, _acY - 1.2);
+                  c.closePath(); c.fill();
+                  c.fillRect(_acX - 6, _acY - 5, 4, 0.7);
+                  c.fillRect(_acX + 2, _acY - 5.5, 4, 0.7);
+                }
+                // Tiny coffee mug on the right armrest in spring/summer (the keeper's break spot)
+                if (season === 0 || season === 1) {
+                  c.fillStyle = '#a8a29e';
+                  c.fillRect(_acX + 3.5, _acY - 6.5, 1.4, 1.5);
+                  c.fillStyle = '#3a2510';
+                  c.fillRect(_acX + 3.7, _acY - 6.2, 1, 0.5);
+                  // Tiny steam wisp from the mug (dawn only)
+                  var _acDawn = Math.max(0, 1 - Math.min(_sunCycle, 2 - _sunCycle) / 0.3);
+                  if (_acDawn > 0.2) {
+                    c.fillStyle = 'rgba(240,245,250,' + (0.5 * _acDawn).toFixed(3) + ')';
+                    var _acSt = (t2 * 0.1) % 8;
+                    c.beginPath();
+                    c.ellipse(_acX + 4.2 + Math.sin(_acSt * 0.5) * 0.5, _acY - 8 - _acSt * 0.6, 0.8, 0.5, 0, 0, 6.28);
+                    c.fill();
+                  }
+                }
+              })();
+
+              // ── Wooden gate in the fence (homestead detail) ──
+              // Breaks up the long horizontal fence with a hinged gate.
+              // Placed off-center on the right side so it doesn't conflict with
+              // the BEES sign or the apiary fixtures.
+              (function() {
+                var _gtX = W * 0.42;
+                if (_gtX > hiveX - 20 && _gtX < hiveX + hiveW + 20) return;
+                var _gtTopY = fenceBaseY - 4;
+                var _gtBotY = fenceBaseY + 8;
+                var _gtW = 14;
+                // Hinge posts (slightly thicker than fence posts)
+                c.fillStyle = season === 3 ? '#5a3f25' : season === 2 ? '#7a5230' : '#8a6238';
+                c.fillRect(_gtX - _gtW / 2 - 1, _gtTopY - 1, 2, _gtBotY - _gtTopY + 1);
+                c.fillRect(_gtX + _gtW / 2 - 1, _gtTopY - 1, 2, _gtBotY - _gtTopY + 1);
+                // Three horizontal slat boards (the gate panel)
+                c.fillStyle = season === 3 ? '#7a5a3a' : season === 2 ? '#a07a4a' : '#b59060';
+                c.fillRect(_gtX - _gtW / 2, _gtTopY, _gtW, 2);
+                c.fillRect(_gtX - _gtW / 2, _gtTopY + 4, _gtW, 2);
+                c.fillRect(_gtX - _gtW / 2, _gtBotY - 2, _gtW, 2);
+                // Diagonal brace (Z-pattern — iconic farm gate)
+                c.strokeStyle = season === 3 ? '#5a3f25' : '#6b4a1f';
+                c.lineWidth = 1.4;
+                c.beginPath();
+                c.moveTo(_gtX - _gtW / 2 + 1, _gtBotY - 1);
+                c.lineTo(_gtX + _gtW / 2 - 1, _gtTopY + 1);
+                c.stroke();
+                // Iron hinges (left side, dark)
+                c.fillStyle = '#1c1917';
+                c.fillRect(_gtX - _gtW / 2 - 0.8, _gtTopY + 0.5, 2, 1);
+                c.fillRect(_gtX - _gtW / 2 - 0.8, _gtTopY + 5, 2, 1);
+                c.fillRect(_gtX - _gtW / 2 - 0.8, _gtBotY - 1.5, 2, 1);
+                // Hinge bolt highlights
+                c.fillStyle = '#78716c';
+                c.beginPath(); c.arc(_gtX - _gtW / 2, _gtTopY + 1, 0.25, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_gtX - _gtW / 2, _gtTopY + 5.5, 0.25, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_gtX - _gtW / 2, _gtBotY - 1, 0.25, 0, 6.28); c.fill();
+                // Small metal latch on the right side
+                c.fillStyle = '#57534e';
+                c.fillRect(_gtX + _gtW / 2 - 1.5, _gtTopY + 3.5, 2, 1);
+                // Latch handle (loop)
+                c.strokeStyle = '#1c1917';
+                c.lineWidth = 0.4;
+                c.beginPath();
+                c.arc(_gtX + _gtW / 2 - 0.5, _gtTopY + 4.2, 0.6, 0, 6.28);
+                c.stroke();
+                // Worn ground path through the gate (slight dirt patch)
+                c.fillStyle = 'rgba(120,90,55,0.30)';
+                c.beginPath(); c.ellipse(_gtX, fenceBaseY + 5, _gtW * 0.6, 1.2, 0, 0, 6.28); c.fill();
+              })();
+
               // ── Songbird perched on a fence post (spring/summer/fall day) ──
               // Tiny robin-style silhouette with seasonal plumage. Sits on the
               // top of a fence post and occasionally tilts its head; during

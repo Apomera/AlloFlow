@@ -1083,7 +1083,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         // ── Historical responsibility ──
         { q: 'Which single country is responsible for approximately 25% of all historical CO\u2082 emissions since 1850?', opts: ['China', 'Russia', 'United States', 'India'], a: 2 },
         { q: 'What is the "Loss & Damage" fund (created at COP27, 2022)?', opts: ['A climate insurance company', 'A pool where high-emitting countries pay vulnerable nations', 'A carbon trading scheme', 'A weather disaster loan'], a: 1 },
-        { q: 'Greta Thunberg\'s global school strike movement is called:', opts: ['Sunrise Movement', 'Fridays for Future', '350.org', 'Extinction Rebellion'], a: 1 }
+        { q: 'Greta Thunberg\'s global school strike movement is called:', opts: ['Sunrise Movement', 'Fridays for Future', '350.org', 'Extinction Rebellion'], a: 1 },
+        // \u2500\u2500 Per-capita inversion + climate justice deepening \u2500\u2500
+        { q: 'An average American has emitted roughly 1,545 tons of CO\u2082 over their lifetime. An average Bangladeshi has emitted about 13 tons. The American per-capita figure is roughly how many times larger?', opts: ['~12\u00d7', '~50\u00d7', '~120\u00d7', '~1,200\u00d7'], a: 2 },
+        { q: 'Compared to the rest of the world\u2019s oceans, the Gulf of Maine has been warming:', opts: ['Slower than average', 'About average', 'Faster than 75% of them', 'Faster than 99% of them'], a: 3 },
+        { q: 'Total pledges to the COP27 Loss & Damage Fund as of COP28 are approximately what fraction of one year of the lower-bound estimated need (~$400B/yr)?', opts: ['About half', 'About 10%', 'About 1%', 'Less than 1% (around 0.16%)'], a: 3 },
+        { q: 'Approximately how many people have been internally displaced by weather disasters since IDMC began tracking in 2008?', opts: ['~3.7 million', '~37 million', '~376 million', '~3.7 billion'], a: 2 },
+        { q: 'The Wabanaki Nations \u2014 Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq \u2014 have lived in what is now Maine for at least:', opts: ['~500 years', '~2,000 years', '~12,000 years', '~50,000 years'], a: 2 },
+        { q: 'Under the 1951 UN Refugee Convention, people forced across an international border by climate impacts are currently:', opts: ['Recognized as refugees with full protections', 'Recognized as climate migrants since 2015', 'Not yet recognized as refugees \u2014 the legal category is still being built', 'Automatically eligible for any country\u2019s asylum'], a: 2 }
       ];
 
       // ═══ CANVAS: Donut Chart ═══
