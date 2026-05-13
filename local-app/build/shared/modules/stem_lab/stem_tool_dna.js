@@ -31,6 +31,28 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-dna')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-dna';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _dnaAC = null;
@@ -98,7 +120,7 @@ window.StemLab = window.StemLab || {
     'Glu':{full:'Glutamic acid',abbr:'E',type:'negative',color:'#a855f7'},
     'His':{full:'Histidine',abbr:'H',type:'positive',color:'#ef4444'},
     'Gln':{full:'Glutamine',abbr:'Q',type:'polar',color:'#3b82f6'},
-    'Stop':{full:'Stop codon',abbr:'*',type:'stop',color:'#6b7280'}
+    'Stop':{full:'Stop codon',abbr:'*',type:'stop',color:'#94a3b8'}
   };
 
   var BASE_COMPLEMENT = { 'A':'T', 'T':'A', 'G':'C', 'C':'G' };
@@ -974,7 +996,7 @@ window.StemLab = window.StemLab || {
             return h("button", {
               key: gb,
               onClick: function() { upd('dnaGradeOverride', gb); addToast('\uD83C\uDF93 Grade set to ' + gb, 'success'); },
-              className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (gradeBand === gb ? 'bg-fuchsia-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-fuchsia-50 border border-slate-200')
+              className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (gradeBand === gb ? 'bg-fuchsia-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-fuchsia-50 border border-slate-400')
             }, gb);
           }),
           h("span", { className: "ml-auto px-2 py-0.5 bg-fuchsia-50 text-fuchsia-600 text-[11px] font-bold rounded-full border border-fuchsia-200" },
@@ -997,6 +1019,41 @@ window.StemLab = window.StemLab || {
           })
         ),
 
+        // ── Topic-accent hero band per tab ──
+        (function() {
+          var TAB_META = {
+            build:      { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83E\uDDEC', title: 'Build \u2014 the double helix from 4 letters',         hint: 'A pairs with T (2 bonds), G with C (3). Watson + Crick + Franklin (1953) cracked the structure from X-ray crystallography. The shape itself encodes how DNA copies and reads.' },
+            replicate:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDD00', title: 'Replicate \u2014 unzip, copy, rezip',                      hint: 'Helicase splits the strands; DNA polymerase synthesizes complements. Semi-conservative: each new helix has one old strand + one new. Meselson & Stahl proved it 1958.' },
+            transcribe: { accent: '#10b981', soft: 'rgba(16,185,129,0.10)', icon: '\uD83D\uDCDD', title: 'Transcribe \u2014 DNA \u2192 mRNA in the nucleus',          hint: 'RNA polymerase reads one DNA strand 3\u2032\u21925\u2032 and builds RNA 5\u2032\u21923\u2032. Same letters except T becomes U. mRNA carries the recipe out to the ribosomes \u2014 the central dogma\u2019s first arrow.' },
+            translate:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDD2C', title: 'Translate \u2014 mRNA \u2192 protein at the ribosome',     hint: '64 codons \u2192 20 amino acids (the genetic code is redundant). AUG starts; UAA/UAG/UGA stop. tRNA reads codons, charges them with the right amino acid, peptide bond forms.' },
+            mutate:     { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83E\uDDA0', title: 'Mutate \u2014 substitution, insertion, deletion',          hint: 'Point mutation: one letter swapped. Insertion/deletion: frameshift, the entire downstream protein is garbled. Sickle-cell is a single A\u2192T \u2014 one letter, lifelong consequence.' },
+            crispr:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\u2702',         title: 'CRISPR \u2014 the precision edit',                      hint: 'Bacterial immune system, repurposed. Cas9 enzyme + guide RNA = molecular scissors. Doudna + Charpentier won the 2020 Nobel. First CRISPR therapy (sickle-cell) FDA-approved Dec 2023.' },
+            protein:    { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83E\uDDEA', title: 'Protein \u2014 fold, function, malfunction',              hint: 'Sequence determines structure determines function. Hemoglobin carries O\u2082, antibodies recognize, enzymes catalyze. AlphaFold (2020) predicted ~200M structures \u2014 a problem that took 50 years, cracked in 18 months.' },
+            forensics:  { accent: '#475569', soft: 'rgba(71,85,105,0.10)',  icon: '\uD83D\uDD0D', title: 'Forensics \u2014 STR profiling + DNA evidence',           hint: 'CODIS uses 20 short tandem repeat (STR) loci. Match probability is one-in-quadrillions when all loci agree. Innocence Project: 245+ wrongful convictions overturned by post-conviction DNA testing.' },
+            challenge:  { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFAF', title: 'Challenge \u2014 graded problems',                          hint: 'Practice transcription, translation, mutation classification. AP Bio Big Idea 3.A.1: DNA, sometimes RNA, is the primary source of heritable information. NGSS HS-LS3-1.' },
+            battle:     { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '\u2694',         title: 'Battle \u2014 head-to-head retrieval',                  hint: 'Retrieval-practice gamified. Speed builds automaticity \u2014 once codon-table lookups are automatic, your working memory is free for higher-order thinking like predicting mutation impact.' },
+            learn:      { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCDA', title: 'Learn \u2014 the central dogma + history',                hint: 'DNA \u2192 RNA \u2192 protein \u2014 with retroviruses (HIV) running it backward via reverse transcriptase. Crick coined \u201Cdogma\u201D in 1957; he later said he meant it as a hypothesis, not scripture.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.build;
+          return h('div', {
+            style: {
+              margin: '0 0 12px',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // ═══ BADGE BAR ═══
         h("div", { className: "flex items-center gap-1 flex-wrap" },
           h("span", { className: "text-[11px] font-bold text-slate-600 mr-1" }, "\uD83C\uDFC6 " + earnedBadgeCount + "/" + DNA_BADGES.length),
@@ -1006,6 +1063,40 @@ window.StemLab = window.StemLab || {
           })
         ),
 
+        // ═══ TOPIC HERO BAND (per-tab) ═══
+        (function() {
+          var TAB_META = {
+            build:      { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDDEC', title: 'Build a DNA strand',          hint: 'Pick a sequence \u2014 the complementary strand fills in via base pairing (A\u2013T, G\u2013C). Real DNA is built like this constantly.' },
+            replicate:  { accent: '#3b82f6', soft: 'rgba(59,130,246,0.10)', icon: '\uD83D\uDD00', title: 'DNA replication',              hint: 'Helicase unwinds the helix; DNA polymerase reads each template strand and lays down its complement. Semiconservative \u2014 each daughter has one old + one new strand.' },
+            transcribe: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCDD', title: 'Transcription \u2014 DNA \u2192 mRNA', hint: 'RNA polymerase reads the template strand. Same complementary rules but T \u2192 U. Output: a single-stranded mRNA copy ready to leave the nucleus.' },
+            translate:  { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDD2C', title: 'Translation \u2014 mRNA \u2192 protein', hint: 'Ribosome reads codons (3 bases at a time). Each codon \u2192 one amino acid. The genetic code is read in non-overlapping triplets, no commas.' },
+            mutate:     { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83E\uDDA0', title: 'Mutations',                     hint: 'Point mutations: silent (no protein change), missense (one AA different), nonsense (premature stop). Frameshifts (insertion/deletion) are usually catastrophic.' },
+            crispr:     { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',  icon: '\u2702\uFE0F',  title: 'CRISPR-Cas9 editing',          hint: 'Guide RNA points Cas9 to a 20-base target. Cas9 cuts both strands. Cell repair pathways either knock out the gene or insert a template you provide.' },
+            protein:    { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83E\uDDEA', title: 'Protein structure',            hint: 'Primary (sequence) \u2192 secondary (\u03B1-helix, \u03B2-sheet) \u2192 tertiary (3D fold) \u2192 quaternary (multi-subunit). One amino acid swap can break the fold.' },
+            forensics:  { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.10)', icon: '\uD83D\uDD0D', title: 'DNA forensics',                hint: 'STR profiling: 13\u201320 short-tandem-repeat loci. Probability of a random match across all loci is roughly one in a billion. Used in CODIS, paternity, and crime labs.' },
+            challenge:  { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '\uD83C\uDFAF', title: 'Daily challenge',              hint: 'A new DNA puzzle every session. Translate, identify the mutation, find the ORF, or solve a forensic case. Streak counter tracks daily wins.' },
+            battle:     { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2694\uFE0F',  title: 'Codon battle',                 hint: 'Speed-translation duel. Decode codons fast against a timer. Tests whether the genetic code is in your head, not just your reference card.' },
+            learn:      { accent: '#64748b', soft: 'rgba(100,116,139,0.10)', icon: '\uD83D\uDCDA', title: 'Reference + glossary',         hint: 'Codon table, base-pairing rules, key terms (ORF, intron, exon, promoter, repressor) \u2014 the cheat sheet you keep coming back to.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.build;
+          return h('div', {
+            style: {
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // ═══════════════════════════════════════════
         // BUILD TAB
         // ═══════════════════════════════════════════
@@ -1013,7 +1104,7 @@ window.StemLab = window.StemLab || {
           h("div", { className: "bg-slate-900 rounded-xl p-4", role: "application", 'aria-label': 'DNA helix visualization' },
             h("canvas", { ref: _dnaCanvasRef, style: { width: '100%', height: 200 }, tabIndex: 0, 'aria-label': 'DNA helix: ' + dnaSeq })
           ),
-          h("div", { className: "bg-white rounded-xl border border-slate-200 p-4 space-y-3" },
+          h("div", { className: "bg-white rounded-xl border border-slate-400 p-4 space-y-3" },
             h("div", { className: "flex items-center justify-between flex-wrap gap-2" },
               h("h4", { className: "text-sm font-bold text-slate-700" }, "Template Strand (3'\u21925')"),
               h("div", { className: "flex gap-1 flex-wrap" },
@@ -1023,7 +1114,7 @@ window.StemLab = window.StemLab || {
                 })
               )
             ),
-            h("div", { className: "flex flex-wrap gap-1", role: "group", 'aria-label': 'DNA bases' },
+            h("div", { className: "flex flex-wrap gap-1", role: "group", },
               dnaSeq.split('').map(function(base, idx) {
                 return h("button", { key: idx, onClick: function() { var order = 'ATGC'; var next = order[(order.indexOf(base) + 1) % 4]; updMulti({ dnaSequence: dnaSeq.substring(0, idx) + next + dnaSeq.substring(idx + 1), mRNA: '', protein: [], animStep: 0 }); },
                   className: "w-8 h-8 rounded-lg font-mono font-bold text-white text-sm hover:scale-110 transition-all", style: { background: BASE_COLORS[base] }, 'aria-label': 'Base ' + (idx + 1) + ': ' + base
@@ -1059,7 +1150,7 @@ window.StemLab = window.StemLab || {
               [0.5, 1, 2, 4].map(function(s) { return h("button", { key: s, onClick: function() { upd('speed', s); }, className: "px-2 py-1 text-[11px] font-bold rounded-lg " + (speed === s ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-200') }, s + 'x'); })
             )
           ),
-          h("div", { className: "bg-white rounded-xl border border-slate-200 p-4 space-y-3" },
+          h("div", { className: "bg-white rounded-xl border border-slate-400 p-4 space-y-3" },
             h("div", { className: "flex justify-between text-xs text-slate-600 mb-1" },
               h("span", null, replStep + '/' + dnaSeq.length + ' bases replicated'),
               h("span", null, Math.round(replStep / dnaSeq.length * 100) + '%')
@@ -1098,7 +1189,7 @@ window.StemLab = window.StemLab || {
               [0.5, 1, 2, 4].map(function(s) { return h("button", { key: s, onClick: function() { upd('speed', s); }, className: "px-2 py-1 text-[11px] font-bold rounded-lg " + (speed === s ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-600") }, s + "x"); })
             )
           ),
-          h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" },
+          h("div", { className: "bg-white rounded-xl border border-slate-400 p-4" },
             h("div", { className: "flex justify-between text-xs text-slate-600 mb-2" }, h("span", null, animStep + "/" + dnaSeq.length), h("span", null, Math.round(animStep / dnaSeq.length * 100) + "%")),
             h("div", { className: "w-full bg-slate-100 rounded-full h-2" }, h("div", { className: "bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full h-2 transition-all", style: { width: (animStep / dnaSeq.length * 100) + '%' } })),
             mRNA && h("div", { className: "mt-3" }, h("span", { className: "text-xs font-bold text-violet-600" }, "mRNA: "), h("span", { className: "font-mono text-xs text-slate-700 break-all" }, mRNA)),
@@ -1110,7 +1201,7 @@ window.StemLab = window.StemLab || {
         // TRANSLATION TAB
         // ═══════════════════════════════════════════
         tab === 'translate' && h("div", { className: "space-y-4" },
-          h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" },
+          h("div", { className: "bg-white rounded-xl border border-slate-400 p-4" },
             h("h4", { className: "text-sm font-bold text-slate-700 mb-3" }, "\uD83D\uDD2C Ribosome Translation"),
             h("div", { className: "font-mono text-xs break-all mb-3 p-3 bg-slate-50 rounded-lg" },
               h("span", { className: "text-[11px] font-bold text-violet-600 block mb-1" }, "mRNA:"),
@@ -1263,12 +1354,12 @@ window.StemLab = window.StemLab || {
             crisprPhase === 'cut' && h("div", { className: "space-y-2" },
               h("p", { className: "text-xs font-bold text-red-600" }, '\u2702\uFE0F Double-strand break created! Choose repair pathway:'),
               h("div", { className: "grid grid-cols-2 gap-2" },
-                h("button", { onClick: function() { applyCRISPRRepair('nhej'); }, className: "p-3 rounded-xl border-2 border-amber-300 bg-amber-50 hover:bg-amber-100 transition-all text-left" },
+                h("button", { onClick: function() { applyCRISPRRepair('nhej'); }, className: "p-3 rounded-xl border-2 border-amber-600 bg-amber-50 hover:bg-amber-100 transition-all text-left" },
                   h("p", { className: "text-xs font-bold text-amber-700" }, '\uD83D\uDD27 NHEJ'),
                   h("p", { className: "text-[11px] text-amber-600 mt-0.5" }, 'Non-Homologous End Joining'),
                   h("p", { className: "text-[11px] text-slate-600 mt-1" }, gradeText('Quick fix \u2014 might make mistakes!', 'Error-prone, may add or delete bases.', 'Error-prone. Introduces indels. Used for gene knockouts.', 'Error-prone. Introduces indels. Used for gene knockouts.'))
                 ),
-                h("button", { onClick: function() { applyCRISPRRepair('hdr'); }, className: "p-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 transition-all text-left" },
+                h("button", { onClick: function() { applyCRISPRRepair('hdr'); }, className: "p-3 rounded-xl border-2 border-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-all text-left" },
                   h("p", { className: "text-xs font-bold text-emerald-700" }, '\uD83E\uDDEC HDR'),
                   h("p", { className: "text-[11px] text-emerald-600 mt-0.5" }, 'Homology-Directed Repair'),
                   h("p", { className: "text-[11px] text-slate-600 mt-1" }, gradeText('Careful fix \u2014 uses a template!', 'Precise editing using a template.', 'Precise editing using donor template. Used for gene knock-ins.', 'Precise editing using donor template. Used for gene knock-ins and corrections.'))
@@ -1293,7 +1384,7 @@ window.StemLab = window.StemLab || {
             )
           ),
 
-          h("details", { className: "bg-white rounded-xl border border-slate-200 overflow-hidden" },
+          h("details", { className: "bg-white rounded-xl border border-slate-400 overflow-hidden" },
             h("summary", { className: "px-4 py-3 text-sm font-bold text-slate-700 cursor-pointer hover:bg-slate-50" }, '\uD83D\uDCDA CRISPR Quick Reference'),
             h("div", { className: "p-3 text-[11px] text-slate-600 space-y-2" },
               h("div", null,
@@ -1320,7 +1411,7 @@ window.StemLab = window.StemLab || {
         // PROTEIN TAB
         // ═══════════════════════════════════════════
         tab === 'protein' && h("div", { className: "space-y-4" },
-          h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" },
+          h("div", { className: "bg-white rounded-xl border border-slate-400 p-4" },
             h("div", { className: "flex items-center justify-between mb-3" },
               h("h4", { className: "text-sm font-bold text-slate-700" }, "\uD83E\uDDEA Protein \u2014 " + fullProtein.length + " amino acids"),
               fullProtein.length > 0 && h("span", { className: "text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full" },
@@ -1360,7 +1451,7 @@ window.StemLab = window.StemLab || {
                   h("p", { className: "text-[11px] text-purple-500" }, 'Asp, Glu')
                 )
               ),
-              h("div", { className: "bg-slate-50 rounded-lg p-2 border border-slate-200 mt-1" },
+              h("div", { className: "bg-slate-50 rounded-lg p-2 border border-slate-400 mt-1" },
                 h("p", { className: "text-[11px] font-bold text-slate-600" }, '\u2696\uFE0F Estimated MW: ~' + (fullProtein.length * 110) + ' Da (' + (fullProtein.length * 110 / 1000).toFixed(1) + ' kDa) | Seq: ' + fullProtein.filter(function(p) { return p.aa !== 'Stop'; }).map(function(p) { return (AA_PROPS[p.aa] || {}).abbr || '?'; }).join(''))
               ),
               h("div", { className: "flex gap-3 text-[11px] text-slate-600 pt-2 border-t flex-wrap" },
@@ -1382,7 +1473,7 @@ window.StemLab = window.StemLab || {
               )
             ) : h("div", { className: "text-center py-8 text-slate-200" }, h("div", { className: "text-4xl mb-2" }, "\uD83E\uDDEA"), h("p", null, "Run Transcription and Translation first!"))
           ),
-          h("details", { className: "bg-white rounded-xl border border-slate-200 overflow-hidden" },
+          h("details", { className: "bg-white rounded-xl border border-slate-400 overflow-hidden" },
             h("summary", { className: "px-4 py-3 text-sm font-bold text-slate-700 cursor-pointer hover:bg-slate-50" }, '\uD83E\uDDA0 Genetic Disorders Reference'),
             h("div", { className: "p-3 space-y-2 max-h-60 overflow-y-auto" },
               GENETIC_DISORDERS.map(function(dis) {
@@ -1396,7 +1487,209 @@ window.StemLab = window.StemLab || {
                 );
               })
             )
-          )
+          ),
+
+          // \u2550\u2550\u2550 MUTATION EFFECT SLEUTH (net-new mini-game) \u2550\u2550\u2550
+          // 10 mutation vignettes. Player picks the effect type from 5 options
+          // (silent / missense / nonsense / frameshift / in-frame indel). Tests the
+          // AP Bio canonical concept that mutation TYPE matters more than mutation
+          // existence \u2014 silent mutations don't change protein, frameshifts are
+          // usually catastrophic, missense varies by which AA changes.
+          (function() {
+            var MS_TYPES = [
+              { id: 'silent',     label: 'Silent',           color: '#22c55e', icon: '\uD83E\uDD2D', def: 'Codon changes but encodes the same amino acid (wobble, mostly 3rd position). No protein change.' },
+              { id: 'missense',   label: 'Missense',         color: '#f59e0b', icon: '\uD83D\uDD04', def: 'Codon changes to a different amino acid. Effect ranges from harmless (conservative) to catastrophic (e.g., sickle cell).' },
+              { id: 'nonsense',   label: 'Nonsense',         color: '#dc2626', icon: '\uD83D\uDED1', def: 'Sense codon changes to STOP. Protein is truncated \u2014 usually nonfunctional.' },
+              { id: 'frameshift', label: 'Frameshift',       color: '#7c3aed', icon: '\u21AA\uFE0F',  def: 'Insertion or deletion NOT divisible by 3. Reading frame shifts; downstream protein is garbage. Usually catastrophic.' },
+              { id: 'inframe',    label: 'In-frame indel',   color: '#0ea5e9', icon: '\u2795', def: 'Insertion or deletion that IS divisible by 3. Adds or removes whole amino acids; rest of protein is unchanged.' }
+            ];
+            var MS_VIGNETTES = [
+              { id: 1, before: 'ATG GCC TTC TAA',  after: 'ATG GCC TTT TAA',          change: 'TTC \u2192 TTT (3rd-position C\u2192T)',
+                aaBefore: 'Met-Ala-Phe-stop', aaAfter: 'Met-Ala-Phe-stop', correct: 'silent',
+                why: 'Both TTC and TTT encode phenylalanine \u2014 the 3rd-position change is wobble and produces no protein change. Common at the 3rd codon position because of the genetic code\'s redundancy there.' },
+              { id: 2, before: 'ATG GAG GTG TAA', after: 'ATG GTG GTG TAA',           change: 'GAG \u2192 GTG (2nd-position A\u2192T)',
+                aaBefore: 'Met-Glu-Val-stop', aaAfter: 'Met-Val-Val-stop', correct: 'missense',
+                why: 'Glutamate \u2192 Valine. This is the actual sickle-cell hemoglobin mutation (HbS). Single AA swap radically changes hemoglobin folding under low O\u2082. Missense effect depends entirely on which AA changes to which.' },
+              { id: 3, before: 'ATG CAG GCC TAA', after: 'ATG TAG GCC TAA',           change: 'CAG \u2192 TAG (1st-position C\u2192T)',
+                aaBefore: 'Met-Gln-Ala-stop', aaAfter: 'Met-STOP', correct: 'nonsense',
+                why: 'Glutamine \u2192 STOP. Protein is truncated immediately after Met. CAG\u2192TAG (and CGA\u2192TGA, TGG\u2192TGA, TGG\u2192TAG) are the most common nonsense mutations \u2014 single base flip from a sense codon to a stop.' },
+              { id: 4, before: 'ATG GCC TTC GGG TAA', after: 'ATG GCC GTT CGG GTA A',  change: 'Single G inserted between codons 2 and 3',
+                aaBefore: 'Met-Ala-Phe-Gly-stop', aaAfter: 'Met-Ala-Val-Arg-Val-...', correct: 'frameshift',
+                why: 'Inserting one base shifts the reading frame for everything downstream. Every codon past the insertion is a different triplet \u2014 usually creating a premature stop within ~20 codons. Frameshifts almost always destroy protein function.' },
+              { id: 5, before: 'ATG GCC TTC TAA', after: 'ATG GCC GGG TTC TAA',       change: 'GGG (3 bases) inserted between codons 2 and 3',
+                aaBefore: 'Met-Ala-Phe-stop', aaAfter: 'Met-Ala-Gly-Phe-stop', correct: 'inframe',
+                why: 'Inserting 3 bases keeps the reading frame intact. One extra glycine added between Ala and Phe. The rest of the protein is unchanged \u2014 effect depends on whether the new AA disrupts folding. Often less severe than frameshift.' },
+              { id: 6, before: 'ATG CCG GCC TAA', after: 'ATG CCA GCC TAA',           change: 'CCG \u2192 CCA (3rd-position G\u2192A)',
+                aaBefore: 'Met-Pro-Ala-stop', aaAfter: 'Met-Pro-Ala-stop', correct: 'silent',
+                why: 'Both CCG and CCA encode proline. All four CC_ codons code for proline \u2014 the 3rd position is fully wobble for proline. Silent mutations are common in coding sequences and one reason synonymous-substitution rates are used in molecular evolution.' },
+              { id: 7, before: 'ATG TGG GCC TAA', after: 'ATG TGA GCC TAA',           change: 'TGG \u2192 TGA (3rd-position G\u2192A)',
+                aaBefore: 'Met-Trp-Ala-stop', aaAfter: 'Met-STOP', correct: 'nonsense',
+                why: 'Tryptophan \u2192 STOP. TGG is the only Trp codon, and a single 3rd-position G\u2192A change makes it a stop. This is one reason Trp residues are often essential \u2014 they are fragile in the genetic code.' },
+              { id: 8, before: 'ATG GCC TTC GGG TAA', after: 'ATG GCC TTC GGA',       change: 'Last base of stop codon deleted',
+                aaBefore: 'Met-Ala-Phe-Gly-stop', aaAfter: 'Met-Ala-Phe-Gly-...', correct: 'frameshift',
+                why: 'Deleting one base causes a frameshift. The stop codon is destroyed; ribosome reads through into UTR until it hits the next in-frame stop somewhere downstream. The extended protein is usually misfolded.' },
+              { id: 9, before: 'ATG TTC GGG GCC TAA', after: 'ATG GCC TAA',           change: 'TTC GGG (6 bases, 2 codons) deleted in-frame',
+                aaBefore: 'Met-Phe-Gly-Ala-stop', aaAfter: 'Met-Ala-stop', correct: 'inframe',
+                why: 'Deleting 6 bases (2 codons) keeps the reading frame intact. Phe and Gly are removed; Ala remains. Classic example: cystic fibrosis \u0394F508 is a 3-base deletion that removes one phenylalanine \u2014 in-frame, but breaks CFTR folding.' },
+              { id: 10, before: 'ATG AAA GCC TAA', after: 'ATG AGA GCC TAA',          change: 'AAA \u2192 AGA (2nd-position A\u2192G)',
+                aaBefore: 'Met-Lys-Ala-stop', aaAfter: 'Met-Arg-Ala-stop', correct: 'missense',
+                why: 'Lysine \u2192 Arginine. Both are basic, positively-charged AAs \u2014 chemically very similar. This is a CONSERVATIVE missense. Often has minimal protein-function impact, unlike radical missense (e.g., Glu\u2192Val in #2).' }
+            ];
+            var msIdx = d.msIdx == null ? -1 : d.msIdx;
+            var msSeed = d.msSeed || 1;
+            var msAnswered = !!d.msAnswered;
+            var msPick = d.msPick;
+            var msScore = d.msScore || 0;
+            var msRounds = d.msRounds || 0;
+            var msStreak = d.msStreak || 0;
+            var msBest = d.msBest || 0;
+            var msShown = d.msShown || [];
+            var msOpen = !!d.msOpen;
+            function startMs() {
+              var pool = [];
+              for (var i = 0; i < MS_VIGNETTES.length; i++) if (msShown.indexOf(i) < 0) pool.push(i);
+              if (pool.length === 0) { pool = []; for (var j = 0; j < MS_VIGNETTES.length; j++) pool.push(j); msShown = []; }
+              var seedNext = ((msSeed * 16807 + 11) % 2147483647) || 7;
+              var pick = pool[seedNext % pool.length];
+              upd('msSeed', seedNext);
+              upd('msIdx', pick);
+              upd('msAnswered', false);
+              upd('msPick', null);
+              upd('msShown', msShown.concat([pick]));
+            }
+            function pickMs(typeId) {
+              if (msAnswered) return;
+              var v = MS_VIGNETTES[msIdx];
+              var correct = typeId === v.correct;
+              var newScore = msScore + (correct ? 1 : 0);
+              var newStreak = correct ? (msStreak + 1) : 0;
+              var newBest = Math.max(msBest, newStreak);
+              upd('msAnswered', true);
+              upd('msPick', typeId);
+              upd('msScore', newScore);
+              upd('msRounds', msRounds + 1);
+              upd('msStreak', newStreak);
+              upd('msBest', newBest);
+            }
+            return h("div", { className: "bg-gradient-to-br from-violet-50 to-fuchsia-50 rounded-xl border-2 border-violet-300 p-4" },
+              h("div", { className: "flex items-center justify-between mb-2 flex-wrap gap-2" },
+                h("div", { className: "flex items-center gap-2" },
+                  h("span", { style: { fontSize: 22 }, "aria-hidden": "true" }, '\uD83D\uDD75\uFE0F'),
+                  h("div", null,
+                    h("div", { className: "text-sm font-black text-violet-800" }, 'Mutation Effect Sleuth'),
+                    h("div", { className: "text-[11px] text-slate-600 italic" }, 'Predict the effect type from 5 options.')
+                  )
+                ),
+                h("button", {
+                  onClick: function() { upd('msOpen', !msOpen); },
+                  className: "px-3 py-1 rounded-lg bg-violet-200 text-violet-800 text-[11px] font-bold hover:bg-violet-300"
+                }, msOpen ? 'Hide \u25B4' : 'Play \u2192')
+              ),
+              msOpen && (msIdx < 0
+                ? h("div", { className: "text-center py-3" },
+                    h("p", { className: "text-[11px] text-slate-700 leading-relaxed mb-3" },
+                      '10 mutation vignettes. Each shows a short before/after DNA sequence with the change highlighted. Pick the effect type \u2014 silent, missense, nonsense, frameshift, or in-frame indel. Coaching after each pick names what makes this effect more likely than the others.'),
+                    h("button", {
+                      onClick: startMs,
+                      'aria-label': 'Start Mutation Effect Sleuth',
+                      className: "px-4 py-2 rounded-lg bg-violet-600 text-white text-[11px] font-bold hover:bg-violet-500"
+                    }, '\uD83D\uDD75\uFE0F Start \u2014 vignette 1 of 10')
+                  )
+                : (function() {
+                    var v = MS_VIGNETTES[msIdx];
+                    var pickedCorrect = msAnswered && msPick === v.correct;
+                    var pct = msRounds > 0 ? Math.round((msScore / msRounds) * 100) : 0;
+                    var allDone = msShown.length >= MS_VIGNETTES.length && msAnswered;
+                    return h("div", null,
+                      h("div", { className: "flex items-center flex-wrap gap-3 mb-3 text-[11px] text-slate-600" },
+                        h("span", null, 'Vignette ', h('strong', { className: "text-slate-800" }, msShown.length)),
+                        h("span", null, 'Score ', h('strong', { className: "text-emerald-700" }, msScore + ' / ' + msRounds)),
+                        msRounds > 0 && h("span", null, 'Accuracy ', h('strong', { className: "text-cyan-700" }, pct + '%')),
+                        h("span", null, 'Streak ', h('strong', { className: "text-amber-700" }, msStreak)),
+                        h("span", null, 'Best ', h('strong', { className: "text-fuchsia-700" }, msBest))
+                      ),
+                      h("div", { className: "bg-white rounded-lg p-3 border border-violet-200 mb-2" },
+                        h("div", { className: "text-[10px] font-bold text-violet-700 uppercase tracking-wider mb-1" }, 'Vignette ' + msShown.length + ' of ' + MS_VIGNETTES.length),
+                        h("div", { className: "font-mono text-[12px] text-slate-700 mb-1" },
+                          h('span', { className: "text-slate-500" }, 'Before:  '),
+                          h('span', { className: "text-emerald-700 font-bold" }, v.before)
+                        ),
+                        h("div", { className: "font-mono text-[12px] text-slate-700 mb-1" },
+                          h('span', { className: "text-slate-500" }, 'After:   '),
+                          h('span', { className: "text-rose-700 font-bold" }, v.after)
+                        ),
+                        h("div", { className: "text-[11px] text-slate-700 italic mt-1" }, 'Change: ' + v.change),
+                        msAnswered && h("div", { className: "mt-2 pt-2 border-t border-violet-100 text-[11px] text-slate-700 font-mono" },
+                          h('div', null, h('span', { className: 'text-slate-500' }, 'AA before: '), v.aaBefore),
+                          h('div', null, h('span', { className: 'text-slate-500' }, 'AA after:  '), v.aaAfter)
+                        )
+                      ),
+                      h("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2", role: 'radiogroup', 'aria-label': 'Pick the mutation effect type' },
+                        MS_TYPES.map(function(t) {
+                          var picked = msAnswered && msPick === t.id;
+                          var isRight = msAnswered && t.id === v.correct;
+                          var bg, border, color;
+                          if (msAnswered) {
+                            if (isRight) { bg = '#ecfdf5'; border = '#22c55e'; color = '#166534'; }
+                            else if (picked) { bg = '#fef2f2'; border = '#ef4444'; color = '#991b1b'; }
+                            else { bg = '#f8fafc'; border = '#cbd5e1'; color = '#64748b'; }
+                          } else {
+                            bg = t.color + '15'; border = t.color + '60'; color = '#1e293b';
+                          }
+                          return h('button', {
+                            key: t.id, role: 'radio',
+                            'aria-checked': picked ? 'true' : 'false',
+                            'aria-label': t.label,
+                            disabled: msAnswered,
+                            onClick: function() { pickMs(t.id); },
+                            style: { padding: '10px 10px', borderRadius: 8, background: bg, color: color, border: '2px solid ' + border, cursor: msAnswered ? 'default' : 'pointer', textAlign: 'left', fontSize: 11, fontWeight: 700, transition: 'all 0.15s', minHeight: 64 }
+                          },
+                            h('div', { style: { display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 } },
+                              h('span', { style: { fontSize: 14 }, 'aria-hidden': 'true' }, t.icon),
+                              h('span', { style: { color: msAnswered ? color : t.color, fontSize: 12, fontWeight: 800 } }, t.label)
+                            ),
+                            h('div', { style: { fontSize: 10, fontWeight: 500, lineHeight: 1.4, color: msAnswered ? color : '#475569' } }, t.def)
+                          );
+                        })
+                      ),
+                      msAnswered && h("div", {
+                        className: "mt-3 p-3 rounded-lg",
+                        style: {
+                          background: pickedCorrect ? '#ecfdf5' : '#fef2f2',
+                          border: '1px solid ' + (pickedCorrect ? '#22c55e88' : '#ef444488')
+                        }
+                      },
+                        h("div", { className: "text-[12px] font-bold mb-1", style: { color: pickedCorrect ? '#166534' : '#991b1b' } },
+                          pickedCorrect
+                            ? '\u2705 Correct \u2014 ' + (MS_TYPES.filter(function(x) { return x.id === v.correct; })[0]).label
+                            : '\u274C The effect is ' + (MS_TYPES.filter(function(x) { return x.id === v.correct; })[0]).label + (msPick ? ' (you picked ' + (MS_TYPES.filter(function(x) { return x.id === msPick; })[0]).label + ')' : '')
+                        ),
+                        h("p", { className: "text-[11px] text-slate-700 leading-relaxed mb-2" }, v.why),
+                        allDone
+                          ? h("div", { className: "p-2 rounded bg-violet-100 border border-violet-300" },
+                              h("div", { className: "text-[12px] font-bold text-violet-800 mb-1" }, '\uD83C\uDFC6 All 10 vignettes complete'),
+                              h("div", { className: "text-[11px] text-slate-700 leading-relaxed" },
+                                'Final: ', h('strong', null, msScore + ' / ' + MS_VIGNETTES.length + ' (' + Math.round((msScore / MS_VIGNETTES.length) * 100) + '%)'),
+                                msScore === MS_VIGNETTES.length ? ' \u2014 every effect type correctly identified. Ready for AP Bio FRQ work.' :
+                                msScore >= 8 ? ' \u2014 strong codon-effect reasoning. The most-confused pair is usually missense vs silent (3rd-position changes can go either way) and frameshift vs in-frame indel (count the bases mod 3).' :
+                                msScore >= 6 ? ' \u2014 solid baseline. The mod-3 rule for indels and the wobble-rule for 3rd position are the two reflexes to build.' :
+                                ' \u2014 these distinctions take practice. Re-read the codon table + the rationales on misses, then retake.'
+                              ),
+                              h("button", {
+                                onClick: function() { upd('msIdx', -1); upd('msShown', []); upd('msScore', 0); upd('msRounds', 0); upd('msStreak', 0); },
+                                className: "mt-2 px-3 py-1.5 rounded bg-violet-600 text-white text-[11px] font-bold hover:bg-violet-500"
+                              }, '\uD83D\uDD04 Restart')
+                            )
+                          : h("button", {
+                              onClick: startMs,
+                              className: "px-3 py-1.5 rounded bg-violet-600 text-white text-[11px] font-bold hover:bg-violet-500"
+                            }, '\u27A1\uFE0F Next vignette')
+                      )
+                    );
+                  })()
+              )
+            );
+          })()
         ),
 
         // ═══════════════════════════════════════════
@@ -1422,7 +1715,7 @@ window.StemLab = window.StemLab || {
             h("div", { className: "flex gap-1 flex-wrap" },
               FORENSIC_CASES.map(function(c, idx) {
                 return h("button", { key: idx, onClick: function() { updMulti({ forensicCase: idx, forensicGelRun: false, forensicGuess: null, forensicResult: null }); },
-                  className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (forensicCase === idx ? 'bg-cyan-700 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-cyan-50 border border-slate-200')
+                  className: "px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (forensicCase === idx ? 'bg-cyan-700 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-cyan-50 border border-slate-400')
                 }, (idx + 1) + '. ' + c.name);
               })
             ),
@@ -1447,12 +1740,12 @@ window.StemLab = window.StemLab || {
                 h("text", { x: 200, y: 238, fill: '#22c55e', fontSize: 7, textAnchor: 'middle', fontWeight: 'bold' }, '+ (anode)'),
                 // Size ladder
                 h("rect", { x: 25, y: 18, width: 24, height: 5, fill: '#334155', rx: 1 }),
-                h("text", { x: 37, y: 16, fill: '#64748b', fontSize: 7, textAnchor: 'middle' }, 'Ladder'),
+                h("text", { x: 37, y: 16, fill: '#94a3b8', fontSize: 7, textAnchor: 'middle' }, 'Ladder'),
                 [100, 200, 300, 400, 500, 600, 700].map(function(size) {
                   var y = bandY(size);
                   return h("g", { key: 'l' + size },
                     h("rect", { x: 28, y: y, width: 18, height: 2.5, fill: '#f59e0b', rx: 0.5, opacity: 0.85 }),
-                    h("text", { x: 50, y: y + 2, fill: '#64748b', fontSize: 5.5 }, size + 'bp')
+                    h("text", { x: 50, y: y + 2, fill: '#94a3b8', fontSize: 5.5 }, size + 'bp')
                   );
                 }),
                 // Sample lanes
@@ -1476,7 +1769,7 @@ window.StemLab = window.StemLab || {
                   currentCase.samples.map(function(s, idx) {
                     if (s.isRef) return null;
                     return h("button", { key: idx, onClick: function() { upd('forensicGuess', idx); },
-                      className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (forensicGuess === idx ? 'bg-cyan-700 text-white shadow-md ring-2 ring-cyan-300' : 'bg-white text-slate-600 hover:bg-cyan-50 border border-slate-200')
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (forensicGuess === idx ? 'bg-cyan-700 text-white shadow-md ring-2 ring-cyan-300' : 'bg-white text-slate-600 hover:bg-cyan-50 border border-slate-400')
                     }, s.label);
                   })
                 ),
@@ -1517,7 +1810,7 @@ window.StemLab = window.StemLab || {
         // CHALLENGE TAB (Enhanced)
         // ═══════════════════════════════════════════
         tab === 'challenge' && h("div", { className: "space-y-4" },
-          h("div", { className: "bg-white rounded-xl border border-slate-200 p-4 space-y-4" },
+          h("div", { className: "bg-white rounded-xl border border-slate-400 p-4 space-y-4" },
             h("div", { className: "flex items-center justify-between flex-wrap gap-2" },
               h("h4", { className: "text-sm font-bold text-slate-700" }, "\uD83C\uDFAF DNA Challenge"),
               h("div", { className: "flex items-center gap-2" },
@@ -1563,7 +1856,7 @@ window.StemLab = window.StemLab || {
             ) : h("div", { className: "space-y-3" },
               challengeQ.isAI && h("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full" }, "\uD83E\uDDE0 AI-GENERATED"),
               h("p", { className: "text-sm font-medium text-slate-700" }, challengeQ.question),
-              h("input", { type: "text", value: challengeAnswer, onChange: function(e) { upd('challengeAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') checkChallenge(); }, placeholder: "Type your answer...", className: "w-full px-4 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:border-violet-400 outline-none", 'aria-label': 'Answer' }),
+              h("input", { type: "text", value: challengeAnswer, onChange: function(e) { upd('challengeAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') checkChallenge(); }, placeholder: "Type your answer...", className: "w-full px-4 py-2 border border-slate-400 rounded-xl text-sm font-mono focus:border-violet-400", 'aria-label': 'Answer' }),
               h("div", { className: "flex gap-2 flex-wrap" },
                 h("button", { onClick: checkChallenge, className: "px-4 py-2 text-sm font-bold bg-violet-600 text-white rounded-xl hover:bg-violet-700 transition-all" }, "\u2713 Check"),
                 h("button", { onClick: function() { updMulti({ challengeFeedback: '\uD83D\uDCA1 ' + (challengeQ.hint || 'No hint available') }); }, className: "px-4 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl" }, "\uD83D\uDCA1 Hint"),
@@ -1581,7 +1874,7 @@ window.StemLab = window.StemLab || {
               challengeFeedback && h("p", { className: "text-sm font-bold p-2 rounded-lg " + (challengeFeedback[0] === '\u2705' ? "bg-green-50 text-green-700" : challengeFeedback[0] === '\u274c' ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-700"), role: "alert" }, challengeFeedback)
             )
           ),
-          h("details", { className: "bg-white rounded-xl border border-slate-200 overflow-hidden" },
+          h("details", { className: "bg-white rounded-xl border border-slate-400 overflow-hidden" },
             h("summary", { className: "px-4 py-3 text-sm font-bold text-slate-700 cursor-pointer hover:bg-slate-50" }, "\uD83D\uDCD6 Codon Reference Table"),
             h("div", { className: "p-3 grid grid-cols-4 gap-1 text-[11px] font-mono max-h-60 overflow-y-auto" },
               Object.keys(CODON_TABLE).sort().map(function(c2) { var aa2 = CODON_TABLE[c2]; var pr2 = AA_PROPS[aa2] || { color: '#888' }; return h("div", { key: c2, className: "flex items-center gap-1 px-1.5 py-0.5 rounded", style: { background: pr2.color + '15' } }, h("span", { style: { color: pr2.color }, className: "font-bold" }, c2), h("span", { className: "text-slate-200" }, "\u2192 " + aa2)); })
@@ -1654,7 +1947,7 @@ window.StemLab = window.StemLab || {
                 return h("div", { className: "space-y-3" },
                   battleUseAI && h("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full" }, "\uD83E\uDDE0 AI-GENERATED"),
                   h("p", { className: "text-sm font-medium text-slate-700" }, q.q),
-                  h("input", { type: "text", value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: "Type your answer...", className: "w-full px-4 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:border-red-400 outline-none", 'aria-label': 'Battle answer' }),
+                  h("input", { type: "text", value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: "Type your answer...", className: "w-full px-4 py-2 border border-slate-400 rounded-xl text-sm font-mono focus:border-red-400", 'aria-label': 'Battle answer' }),
                   h("div", { className: "flex gap-2" },
                     h("button", { onClick: battleAttack, className: "px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all" }, "\u2694\uFE0F Attack!"),
                     h("button", { onClick: function() { updMulti({ battleFeedback: '\uD83D\uDCA1 ' + (q.h || 'No hint') }); }, className: "px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl" }, "\uD83D\uDCA1 Hint")
@@ -1670,13 +1963,13 @@ window.StemLab = window.StemLab || {
         // LEARN TAB (NEW)
         // ═══════════════════════════════════════════
         tab === 'learn' && h("div", { className: "space-y-4" },
-          h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" },
+          h("div", { className: "bg-white rounded-xl border border-slate-400 p-4" },
             h("h4", { className: "text-sm font-bold text-slate-700 mb-3" }, "\uD83D\uDCDA Learn \u2014 Genetics Concepts"),
             h("p", { className: "text-xs text-slate-600 mb-4" }, "Explore key topics adapted to your grade level (" + gradeBand + ").")
           ),
           LEARN_TOPICS.map(function(topic) {
             var content = topic.content[gradeBand] || topic.content['3-5'];
-            return h("div", { key: topic.title, className: "bg-white rounded-xl border border-slate-200 p-4 space-y-3" },
+            return h("div", { key: topic.title, className: "bg-white rounded-xl border border-slate-400 p-4 space-y-3" },
               h("div", { className: "flex items-center gap-2" },
                 h("span", { className: "text-lg" }, topic.icon),
                 h("h5", { className: "text-sm font-bold text-slate-700" }, topic.title)

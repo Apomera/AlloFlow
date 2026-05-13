@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_climateExplorer.js — Climate Explorer
 // Carbon calculator, renewables simulator, climate justice, solutions spotlight
@@ -57,6 +67,176 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
   })();
+
+  // ═══════════════════════════════════════════════════════
+  // CLIMATE POLICY PATHWAYS: 40-YEAR MAINE CAMPAIGN
+  // Fifth and last environmental campaign sibling. Pedagogical core
+  // is inter-sector policy dependence and time-lagged feedback:
+  // electrified transport needs a clean grid, low equity blocks
+  // policy passage, working-lands carbon shapes adaptation, and so on.
+  // Time scale: 2025-2065 in 5-year increments (8 turns).
+  // ═══════════════════════════════════════════════════════
+
+  var POLICY_SECTORS = [
+    {
+      id: 'energyGrid', name: 'Energy Grid', icon: '⚡', color: '#fbbf24',
+      role: 'Generation mix + storage',
+      desc: 'Maine\'s electricity supply. Currently about 30% hydro, 20% wind, 6% solar, the rest natural gas + biomass + imported nuclear. Renewable share has to rise sharply for transportation and building electrification to be worth doing.',
+      defaultState: { decarb: 35, resilience: 50, support: 55 }, targets: { decarb: 85, resilience: 70, support: 70 },
+      deepDive: {
+        knowledge: 'Maine\'s electricity grid sits inside ISO-New England, the regional grid operator. Generation mix matters because every other sector that electrifies (transport, buildings, industry) inherits the grid\'s carbon intensity. A heat pump on a coal grid emits more carbon than a natural-gas furnace; on a clean grid it is roughly 4x cleaner than a furnace. Storage at grid scale is the single missing piece for high renewable penetration.',
+        casework: 'Maine\'s 2019 climate law set 80% renewable electricity by 2030 and 100% by 2050. The state has fought over the New England Clean Energy Connect transmission line (HQ hydropower import) since 2019. Offshore wind in the Gulf of Maine is in early planning; the federal Bureau of Ocean Energy Management identified lease areas in 2024. Wabanaki nations have led objections to several inland transmission lines through their territories.',
+        modernContext: 'The biggest near-term levers are utility-scale solar (Maine has been adding ~200 MW/year), distributed solar (now over 800 MW), grid-scale battery storage (early), and energy efficiency (cheapest carbon abatement). Long-term, offshore wind is potentially transformative. Transmission siting is the chronic bottleneck.'
+      }
+    },
+    {
+      id: 'transportation', name: 'Transportation', icon: '🚊', color: '#0ea5e9',
+      role: 'EV + transit + walkability',
+      desc: 'Maine\'s largest direct emissions source (about 50% of state CO₂ output). Long rural commutes, limited transit, near-zero passenger rail. EV adoption is climbing but still under 5% of registrations. The bigger lever may be reducing vehicle-miles-traveled through housing density and remote work.',
+      defaultState: { decarb: 25, resilience: 45, support: 50 }, targets: { decarb: 70, resilience: 60, support: 65 },
+      deepDive: {
+        knowledge: 'Transportation emissions break down roughly: 60% light-duty vehicles, 20% medium/heavy trucks, 10% aviation, 10% other. Maine\'s rural geography makes per-capita VMT (vehicle-miles traveled) higher than the national average. EVs cut tailpipe emissions to zero and reduce lifecycle emissions about 50% on Maine\'s current grid (more as the grid cleans). Transit and walkability cut emissions PER TRIP and reduce total VMT.',
+        casework: 'Massachusetts and California EV rebate programs moved registrations from below 1% to above 10% in under a decade. Maine\'s Efficiency Maine EV rebate program offers $500-$7,500 depending on income; uptake has been steady. Portland has been adding bus rapid transit and protected bike lanes; smaller cities lag. Federal IRA tax credits (up to $7,500 new, $4,000 used EV) plus state rebates can stack.',
+        modernContext: 'Rural EV adoption faces a charging-anxiety problem more than an economic one. Federal funding for highway-corridor fast charging (NEVI program) is now in deployment phase. Heavy-duty truck electrification is slower; hydrogen is being explored. School bus electrification is well-funded under the EPA Clean School Bus Program.'
+      }
+    },
+    {
+      id: 'buildings', name: 'Buildings', icon: '🏠', color: '#ec4899',
+      role: 'Heat pumps + retrofits + codes',
+      desc: 'Buildings account for about 30% of Maine emissions (heating dominant; Maine has the highest oil-heat share in the US). Heat pumps work in Maine winter and have been the state\'s defining decarbonization win. Retrofits of older housing stock are the hard, expensive work.',
+      defaultState: { decarb: 40, resilience: 55, support: 65 }, targets: { decarb: 75, resilience: 70, support: 75 },
+      deepDive: {
+        knowledge: 'Maine has 60-70% of homes heated by oil, the highest share in the country. Cold-climate heat pumps now work efficiently to -15°F, which covers most Maine winters. A heat pump delivers about 3 units of heat per unit of electricity (a furnace delivers about 0.85 of fossil-fuel energy). Even on a partially-fossil grid, heat pumps cut heating emissions about 50%. Building envelope upgrades (insulation, air sealing) are usually a bigger lifetime saving than the heat-pump unit itself.',
+        casework: 'Maine met its goal of 100,000 heat pumps installed in 2023, two years ahead of schedule. The state has set a new target of 275,000 by 2027. Efficiency Maine rebates ($1,200-$3,200 depending on income) plus federal tax credits make installation accessible. The state codes for new residential construction were updated in 2022 to require heat-pump-ready electrical service.',
+        modernContext: 'The big remaining problem is older housing stock with poor envelopes; heat pumps work but bills rise without insulation. The Maine Affordable Housing Coalition has connected energy upgrades to housing affordability work. Wabanaki Public Health and Wellness has run weatherization programs for tribal housing units. Commercial buildings lag residential.'
+      }
+    },
+    {
+      id: 'workingLands', name: 'Working Lands', icon: '🌲', color: '#16a34a',
+      role: 'Forests + ag soils + blue carbon',
+      desc: 'Maine is 89% forested, the most forested state by percentage. Working forests sequester roughly 6 million tons CO₂ annually. Agricultural soils, salt marshes, and seagrass beds are smaller but additive carbon sinks. This is one of Maine\'s climate advantages most states lack.',
+      defaultState: { decarb: 60, resilience: 65, support: 70 }, targets: { decarb: 80, resilience: 80, support: 80 },
+      deepDive: {
+        knowledge: 'A managed working forest stores carbon in standing trees, soil, and the long-lived wood products that come out of it. Carbon flux depends on harvest intensity, regeneration speed, and the fate of harvested wood (long-lived structural lumber retains carbon for decades; pulp/paper releases it in years). Salt marshes and eelgrass sequester carbon faster per acre than tropical forests; Maine has substantial coastline acreage in both. Agricultural soils gain carbon under cover-cropping, perennials, and reduced tillage.',
+        casework: 'The Maine Climate Action Plan (2020, updated 2024) targets a doubling of working-forest carbon storage by 2050 and 25% increase in coastal blue-carbon habitat. The Wabanaki Cultural Heritage Forest project has worked toward land-back as climate policy. The Northern Forest Center supports community-scale forest stewardship.',
+        modernContext: 'The dominant tension is between protected forest (high carbon, lower jobs) and working forest (slightly lower carbon, supports rural economy). Most Maine climate planners argue for high-quality working-forest management over either pure preservation or industrial-scale clearcutting. Salt marsh restoration has lagged but recent federal funding accelerated several projects.'
+      }
+    },
+    {
+      id: 'adaptation', name: 'Adaptation + Resilience', icon: '🌊', color: '#06b6d4',
+      role: 'Coastal + heat + flood + fire',
+      desc: 'Maine is already experiencing climate impacts: sea level rising about 4 mm/year along the coast, more intense rainstorms, warming Gulf of Maine waters that affected lobster, increased winter ticks driving moose decline. Adaptation is not optional; the question is who pays and who gets protected.',
+      defaultState: { decarb: 20, resilience: 30, support: 50 }, targets: { decarb: 35, resilience: 75, support: 70 },
+      deepDive: {
+        knowledge: 'Adaptation includes coastal protection (seawalls, managed retreat, salt-marsh restoration), urban heat (cooling centers, tree planting, building reflectivity), inland flooding (stormwater systems, floodplain restoration), wildfire (defensible space, prescribed burning), and infrastructure resilience (grid hardening, road elevation). Some adaptation reduces emissions too (urban trees, salt marshes); some does not (seawalls). Just-transition framing matters: who benefits from adaptation investment is a justice question.',
+        casework: 'The Gulf of Maine has warmed faster than 99% of the global ocean. Maine\'s lobster industry has shifted northward and inland landings have dropped. The 2018 and 2023 coastal storms damaged hundreds of working waterfronts. Maine has begun coastal-bluff retreat planning in towns like South Portland. Federal BRIC (Building Resilient Infrastructure and Communities) grants have funded several Maine projects.',
+        modernContext: 'The hardest adaptation questions are about managed retreat: when does the state stop subsidizing coastal property insurance? Maine\'s Coastal Hazards Office and the Casco Bay Estuary Partnership lead a lot of this work. Wabanaki coastal communities (Sipayik, Indian Township, Pleasant Point) face acute sea-level and erosion risks.'
+      }
+    },
+    {
+      id: 'climateJustice', name: 'Climate Justice', icon: '⚖️', color: '#a855f7',
+      role: 'Equity + just transition + sovereignty',
+      desc: 'Who bears the costs of climate change, who pays for solutions, and who is at the decision-making table. Frontline communities (low-income, BIPOC, Wabanaki, coastal, rural elderly) face the highest impacts and often the lowest capacity to respond. Without equity investment, climate support across all other sectors degrades over time.',
+      defaultState: { decarb: 25, resilience: 30, support: 50 }, targets: { decarb: 45, resilience: 60, support: 75 },
+      deepDive: {
+        knowledge: 'Climate justice asks who bears costs and who reaps benefits. Frontline communities face higher heat exposure (urban heat islands), more polluted air (highway corridors), more flooding (low-lying neighborhoods, coastal mobile-home parks), and less capacity to relocate or rebuild. Just transition asks the same question for workers in fossil-fuel industries: how are they supported as that industry shrinks. Indigenous climate justice involves both impact (Wabanaki coastal communities face acute sea-level risk) and authority (Indigenous communities lead some of the most innovative climate work in Maine).',
+        casework: 'The federal Justice40 Initiative (40% of federal climate spending to disadvantaged communities) has driven several Maine programs. The Maine Climate Council included a Equity Subcommittee in its 2020 planning process. Wabanaki Public Health and Wellness has run weatherization, heat-pump, and EV-charger installation specifically for Wabanaki households. The Sunrise Movement Maine has organized around climate-justice framing.',
+        modernContext: 'Without equity foundations, climate policy collapses politically: utility-scale solar in low-income neighborhoods that does not lower local energy bills, EV rebates that only reach wealthy households, retrofit programs that miss renters. The strongest climate-policy results have come from programs that ARE the justice work, not programs that "add" justice afterward.'
+      }
+    }
+  ];
+
+  var PATHWAY_TECHNIQUES = [
+    { id: 'renewBuildout', name: 'Utility-scale renewables', icon: '☀️', hours: 7, desc: 'Build utility-scale solar, wind, and grid-scale storage projects. The single largest decarbonization lever once siting is solved.', effects: { decarb: 12, resilience: 3 }, appliesTo: ['energyGrid'] },
+    { id: 'distSolar', name: 'Distributed solar program', icon: '🏘️', hours: 5, desc: 'Rooftop solar and community solar incentives. Lower-impact siting, more equitable benefit distribution, slower buildout per dollar.', effects: { decarb: 7, support: 5 }, appliesTo: ['energyGrid'] },
+    { id: 'gridMod', name: 'Grid modernization', icon: '🔌', hours: 6, desc: 'Transmission upgrades, demand response, EV-ready infrastructure. Multiplies the value of every other grid investment.', effects: { decarb: 4, resilience: 9 }, appliesTo: ['energyGrid'] },
+    { id: 'evRebate', name: 'EV + transit + walkability', icon: '🚲', hours: 6, desc: 'Combined incentives for EVs, transit service expansion, and walkable-community zoning reforms. The transportation lever stack.', effects: { decarb: 11, resilience: 3, support: 2 }, appliesTo: ['transportation'] },
+    { id: 'heatPump', name: 'Heat pump retrofit program', icon: '♨️', hours: 5, desc: 'Subsidized heat-pump installation with building-envelope retrofits. Maine\'s defining decarbonization win.', effects: { decarb: 13, resilience: 4 }, appliesTo: ['buildings'] },
+    { id: 'codeUpdate', name: 'Net-zero building code', icon: '📜', hours: 4, desc: 'Require new construction to be net-zero ready. No effect on existing stock but locks in low emissions for everything built going forward.', effects: { decarb: 6, support: -4 }, appliesTo: ['buildings'] },
+    { id: 'forestCarbon', name: 'Forest carbon protection', icon: '🌳', hours: 7, desc: 'Conservation easements, deferred-harvest payments, working-forest management programs. Maine\'s biggest unbuilt asset.', effects: { decarb: 10, resilience: 8 }, appliesTo: ['workingLands'] },
+    { id: 'agSoil', name: 'Agricultural soil + blue carbon', icon: '🌾', hours: 5, desc: 'Cover cropping, perennial systems, and salt-marsh restoration. Smaller per-acre carbon but huge co-benefits.', effects: { decarb: 6, resilience: 7 }, appliesTo: ['workingLands'] },
+    { id: 'coastalAdapt', name: 'Coastal adaptation', icon: '🌊', hours: 8, desc: 'Managed retreat planning, salt-marsh restoration, working-waterfront protection. Hard politics, urgent need.', effects: { resilience: 14, decarb: 2, support: -4 }, appliesTo: ['adaptation'] },
+    { id: 'wildfireMgmt', name: 'Wildfire + heat + flood prep', icon: '🚒', hours: 6, desc: 'Defensible space, cooling centers, prescribed burning, stormwater retrofits. The adaptation grab-bag.', effects: { resilience: 12 }, appliesTo: ['adaptation'] },
+    { id: 'equityInvest', name: 'Equity + just-transition fund', icon: '🤝', hours: 6, desc: 'Frontline community grants, fossil-fuel worker retraining, Wabanaki-led climate programs, weatherization in low-income housing.', effects: { decarb: 4, resilience: 8, support: 10 }, appliesTo: ['climateJustice'] },
+    { id: 'publicAssembly', name: 'Citizen assemblies + education', icon: '📣', hours: 4, desc: 'Public deliberation, climate-literacy programs, school curriculum. Slow but durable support-building.', effects: { support: 11 }, appliesTo: 'any' },
+    { id: 'rest', name: 'Hold steady', icon: '🍃', hours: 0, desc: 'No new investment this period. Some natural drift; some momentum from prior turns.', effects: {}, appliesTo: 'any' }
+  ];
+
+  var PATHWAY_EVENTS = [
+    { id: 'majorHurricane', name: 'Major hurricane / nor\'easter', icon: '🌀', desc: 'A 100-year coastal storm hits. Coastal adaptation pays off where present; resilience matters everywhere.', apply: function(sectors) { sectors.forEach(function(s) { if (s.id === 'adaptation' && s.resilience < 50) s.resilience = Math.max(0, s.resilience - 8); if (s.id === 'adaptation') s.support = Math.min(100, s.support + 6); }); } },
+    { id: 'droughtLowHydro', name: 'Drought + low hydropower', icon: '☀️', desc: 'A dry year reduces hydropower generation. Grid carbon intensity rises temporarily; renewable buildout looks more attractive.', apply: function(sectors) { sectors.forEach(function(s) { if (s.id === 'energyGrid' && s.decarb < 50) s.decarb = Math.max(0, s.decarb - 5); if (s.id === 'energyGrid') s.support = Math.min(100, s.support + 4); }); } },
+    { id: 'heatDome', name: 'Heat dome event', icon: '🌡️', desc: 'A multi-day heat dome event drives cooling demand and reveals heat-island gaps. Adaptation and equity both surface as urgent.', apply: function(sectors) { sectors.forEach(function(s) { if (s.id === 'adaptation') s.support = Math.min(100, s.support + 8); if (s.id === 'climateJustice') s.support = Math.min(100, s.support + 5); }); } },
+    { id: 'federalFunding', name: 'Federal climate funding bump', icon: '💵', desc: 'A federal infrastructure / climate package lands (IRA-style). Stewardship hours next year +6, support rises in working lands.', apply: function(sectors, state) { state.fundingBonusNextYear = (state.fundingBonusNextYear || 0) + 6; sectors.forEach(function(s) { if (s.id === 'workingLands') s.support = Math.min(100, s.support + 5); }); } },
+    { id: 'carbonTaxFight', name: 'Carbon-tax political fight', icon: '🏛️', desc: 'A carbon-tax proposal divides the public. Equity-investment-heavy approaches survive; equity-light proposals fail.', apply: function(sectors, state) { sectors.forEach(function(s) { if (s.id === 'climateJustice' && s.decarb < 30) s.support = Math.max(0, s.support - 10); else if (s.id === 'climateJustice') s.support = Math.min(100, s.support + 4); }); } },
+    { id: 'techBreakthrough', name: 'Storage breakthrough', icon: '🔋', desc: 'A grid-scale storage technology becomes commercially viable. Future renewable buildout becomes much more effective.', apply: function(sectors, state) { state.activeMods = (state.activeMods || []).concat([{ id: 'storageBoost', turns: 3, decarbMult: 1.15 }]); } },
+    { id: 'skepticGovernor', name: 'Climate-skeptic governor elected', icon: '😡', desc: 'A new administration rolls back several climate programs. Hours next year reduced by 4, support drops in most sectors.', apply: function(sectors, state) { state.fundingBonusNextYear = (state.fundingBonusNextYear || 0) - 4; sectors.forEach(function(s) { if (s.id !== 'workingLands' && s.id !== 'climateJustice') s.support = Math.max(0, s.support - 8); }); } },
+    { id: 'indigenousVictory', name: 'Indigenous-led coalition victory', icon: '🏆', desc: 'A Wabanaki-led coalition wins a major land-back, river-restoration, or treaty-recognition campaign. Working lands and justice both rise; broader political room opens.', apply: function(sectors) { sectors.forEach(function(s) { if (s.id === 'workingLands' || s.id === 'climateJustice') { s.support = Math.min(100, s.support + 10); s.decarb = Math.min(100, s.decarb + 3); } }); } },
+    { id: 'insuranceWithdraw', name: 'Insurance market exits coast', icon: '🏦', desc: 'Property insurers withdraw from coastal markets. Adaptation urgency spikes; political pressure for managed retreat builds.', apply: function(sectors) { sectors.forEach(function(s) { if (s.id === 'adaptation') s.support = Math.min(100, s.support + 12); if (s.id === 'climateJustice') s.support = Math.min(100, s.support + 5); }); } },
+    { id: 'youthMobilization', name: 'Youth climate mobilization', icon: '🪧', desc: 'A wave of youth-led climate organizing builds public support across the board.', apply: function(sectors) { sectors.forEach(function(s) { s.support = Math.min(100, s.support + 7); }); } }
+  ];
+
+  // Inter-sector feedback rules (the cascade equivalent).
+  var PATHWAY_FEEDBACK_RULES = [
+    { id: 'cleanGridUnlocks', when: function(s) { return s.find(function(x) { return x.id === 'energyGrid'; }).decarb > 70; }, apply: function(s) { var t = s.find(function(x) { return x.id === 'transportation'; }); t.decarb = Math.min(100, t.decarb + 5); var b = s.find(function(x) { return x.id === 'buildings'; }); b.decarb = Math.min(100, b.decarb + 5); }, msg: 'Clean grid unlocked accelerated decarbonization in transportation and buildings.' },
+    { id: 'lowJusticeDrags', when: function(s) { return s.find(function(x) { return x.id === 'climateJustice'; }).support < 40; }, apply: function(s) { s.forEach(function(sec) { sec.support = Math.max(0, sec.support - 4); }); }, msg: 'Low climate-justice progress dragged public support down across all sectors.' },
+    { id: 'forestsBoostAdaptation', when: function(s) { return s.find(function(x) { return x.id === 'workingLands'; }).resilience > 70; }, apply: function(s) { var a = s.find(function(x) { return x.id === 'adaptation'; }); a.resilience = Math.min(100, a.resilience + 5); }, msg: 'Healthy working forests provided flood and heat resilience downstream.' },
+    { id: 'adaptDeficitErodes', when: function(s) { return s.find(function(x) { return x.id === 'adaptation'; }).resilience < 35; }, apply: function(s) { s.forEach(function(sec) { sec.support = Math.max(0, sec.support - 5); }); }, msg: 'Low adaptation capacity meant disasters eroded public trust in climate policy generally.' }
+  ];
+
+  var PATHWAY_DIFFICULTIES = {
+    optimist:   { id: 'optimist',   label: 'Optimistic Pathway',  hoursPerYear: 24, eventSkip: 0.3, severity: 0.8, desc: '24 hrs / period, gentler events. Good for first runs.' },
+    realist:    { id: 'realist',    label: 'Realistic Pathway',   hoursPerYear: 18, eventSkip: 0,   severity: 1.0, desc: '18 hrs / period, standard events. Default.' },
+    constrained:{ id: 'constrained',label: 'Hard Constraint Pathway', hoursPerYear: 14, eventSkip: 0, severity: 1.4, desc: '14 hrs / period, harsher events. Real political reality.' }
+  };
+
+  function defaultPathwayState() {
+    var diff = PATHWAY_DIFFICULTIES.realist;
+    return {
+      phase: 'setup',
+      year: 1,
+      maxYears: 8,         // 2025-2065 in 5-year increments
+      difficulty: diff.id,
+      hoursPerYear: diff.hoursPerYear,
+      hoursLeft: diff.hoursPerYear,
+      sectors: POLICY_SECTORS.map(function(s) { return Object.assign({ id: s.id }, s.defaultState); }),
+      yearActions: [],
+      yearLog: [],
+      lastEvent: null,
+      cascadesFiredThisYear: [],
+      finalOutcome: null,
+      activeMods: [],
+      fundingBonusNextYear: 0,
+      deepDiveSector: null,
+      firstTipDismissed: false,
+      aiReadResponse: null,
+      aiReadLoading: false,
+      seed: 'pathway-' + (new Date()).getFullYear() + (new Date()).getMonth() + (new Date()).getDate() + '-' + Math.floor(Math.random() * 9999)
+    };
+  }
+
+  function getPolicySector(id) {
+    for (var i = 0; i < POLICY_SECTORS.length; i++) if (POLICY_SECTORS[i].id === id) return POLICY_SECTORS[i];
+    return null;
+  }
+
+  function pathwayRng(seed, year, purpose) {
+    var s = (seed || 'default') + ':' + year + ':' + purpose;
+    var h = 2166136261 >>> 0;
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = (h * 16777619) >>> 0; }
+    return function() {
+      h |= 0; h = (h + 0x6D2B79F5) | 0;
+      var t = Math.imul(h ^ (h >>> 15), 1 | h);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function pathwayClamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  function pathwayYearLabel(year) {
+    var startYear = 2025 + (year - 1) * 5;
+    return startYear + '-' + (startYear + 4);
+  }
 
   if (!window.StemLab || !window.StemLab.registerTool) return;
 
@@ -334,10 +514,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         if (next[itemId].checkins >= 7) earnBadge('consistent');
       }
 
-      // Award habitMaster badge when 5+ sliders have been set
+      // Award habitMaster badge when 5+ sliders have been set.
+      // Reads granularFreq directly from toolData here because the local
+      // `var granularFreq = d.granularFreq || {}` is declared further down
+      // (line ~517) — the var IS hoisted but the assignment isn't, so at
+      // this point the local would be `undefined` and Object.keys() would
+      // throw "Cannot convert undefined or null to object" on first render.
       (function() {
+        var _gf = (d && d.granularFreq) || {};
         var activeCount = 0;
-        Object.keys(granularFreq).forEach(function(k) { if (granularFreq[k] > 0) activeCount++; });
+        Object.keys(_gf).forEach(function(k) { if (_gf[k] > 0) activeCount++; });
         if (activeCount >= 5 && !badges.habitMaster) setTimeout(function() { earnBadge('habitMaster'); }, 0);
       })();
 
@@ -780,7 +966,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         { id: 'industry',    emoji: '🏭', name: 'Industry',              pct: 21, color: '#a855f7', lever: 'Green steel (hydrogen), cement chemistry reform, circular manufacturing.' },
         { id: 'transport',   emoji: '🚗', name: 'Transport',             pct: 16, color: '#3b82f6', lever: 'EVs + rail + transit-friendly cities. Aviation is the hardest.' },
         { id: 'buildings',   emoji: '🏢', name: 'Buildings',             pct: 6,  color: '#22c55e', lever: 'Insulation + heat pumps + fossil-fuel-free construction.' },
-        { id: 'other',       emoji: '🌐', name: 'Other (waste, fugitive, aviation bunkers)', pct: 8, color: '#64748b', lever: 'Methane leaks from oil & gas, landfill capture, shipping fuels.' }
+        { id: 'other',       emoji: '🌐', name: 'Other (waste, fugitive, aviation bunkers)', pct: 8, color: '#94a3b8', lever: 'Methane leaks from oil & gas, landfill capture, shipping fuels.' }
       ];
 
       // ══════════════════════════════════════
@@ -972,7 +1158,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         c.beginPath(); c.arc(x(tl.length - 1), y(endGt), 4, 0, Math.PI * 2);
         c.fillStyle = c.strokeStyle; c.fill();
         // Y-axis labels
-        c.fillStyle = '#64748b'; c.font = '600 8px system-ui'; c.textAlign = 'right';
+        c.fillStyle = '#94a3b8'; c.font = '600 8px system-ui'; c.textAlign = 'right';
         for (var yl = 0; yl <= maxGt; yl += 10) c.fillText(yl + ' Gt', pad.l - 4, y(yl) + 3);
         // X-axis labels
         c.textAlign = 'center';
@@ -1001,7 +1187,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         } },
           el('span', { style: { fontSize: 20 } }, emoji),
           el('span', { style: { fontSize: 11, fontWeight: 700, color: isActive ? '#4ade80' : '#94a3b8' } }, label),
-          sub && el('span', { style: { fontSize: 11, color: '#64748b' } }, sub)
+          sub && el('span', { style: { fontSize: 11, color: '#94a3b8' } }, sub)
         );
       }
 
@@ -1010,7 +1196,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         return el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
           el('span', { style: { fontSize: 16, width: 24, textAlign: 'center' } }, emoji),
           el('span', { style: { fontSize: 11, fontWeight: 700, color: '#94a3b8', width: 60 } }, label),
-          el('input', { type: 'range', 'aria-label': 'value', min: 0, max: 100, value: value, onChange: onChange,
+          el('input', { type: 'range', min: 0, max: 100, value: value, onChange: onChange,
             'aria-label': label + ' slider',
             style: { flex: 1, accentColor: color, height: 6 } }),
           el('span', { style: { fontSize: 13, fontWeight: 900, color: color, width: 40, textAlign: 'right', fontFamily: 'monospace' } }, value + '%')
@@ -1041,8 +1227,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           if (announceToSR) announceToSR(quizOpen ? 'Quiz closed.' : 'Quiz opened.');
         }
       }
+      // Layered planetary backdrop. Base is the original forest-to-navy
+      // diagonal (kept for color-identity continuity); an upper radial
+      // gradient suggests atmospheric / aurora glow at the top of the
+      // frame; a warm lower radial suggests horizon-light (sunset over
+      // a coast — quietly evokes the climate-urgency angle without
+      // resorting to alarm imagery); and a faint SVG turbulence layer
+      // adds atmospheric grain so the whole panel reads as planet-and-
+      // atmosphere rather than a flat color slab.
+      var ceGrainSvg = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240">' +
+          '<filter id="g">' +
+            '<feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="11"/>' +
+            '<feColorMatrix values="0 0 0 0 0.55   0 0 0 0 0.85   0 0 0 0 0.7   0 0 0 0.06 0"/>' +
+          '</filter>' +
+          '<rect width="100%" height="100%" filter="url(#g)"/>' +
+        '</svg>'
+      );
+      var ceBgLayers =
+        'radial-gradient(ellipse 75% 50% at 50% 0%, rgba(96, 165, 250, 0.18), transparent 70%), ' +
+        'radial-gradient(ellipse 90% 55% at 50% 100%, rgba(251, 146, 60, 0.16), transparent 75%), ' +
+        'url("' + ceGrainSvg + '"), ' +
+        'linear-gradient(135deg, #064e3b 0%, #0f172a 50%, #064e3b 100%)';
       return el('div', {
-        style: { background: 'linear-gradient(135deg, #064e3b 0%, #0f172a 50%, #064e3b 100%)', borderRadius: 16, minHeight: '70vh', padding: 0, boxShadow: '0 0 40px rgba(34,197,94,0.15)', outline: 'none' },
+        style: {
+          background: ceBgLayers,
+          backgroundRepeat: 'no-repeat, no-repeat, repeat, no-repeat',
+          backgroundAttachment: 'scroll, scroll, scroll, scroll',
+          borderRadius: 16,
+          minHeight: '70vh',
+          padding: 0,
+          boxShadow: '0 0 40px rgba(34,197,94,0.15)',
+          outline: 'none'
+        },
         role: 'region',
         'aria-label': 'Climate Explorer. Keyboard shortcuts: 1 through 6 switch tabs, Q toggles quiz.',
         tabIndex: 0,
@@ -1051,11 +1268,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
         // ── Header ──
         el('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', gap: 12 } },
-          el('button', { onClick: function() { setStemLabTool(null); }, style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#94a3b8', fontSize: 16 } }, '\u2190'),
+          el('button', { onClick: function() { setStemLabTool(null); }, 'aria-label': 'Back to STEM Lab', style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#94a3b8', fontSize: 16 } }, '\u2190'),
           el('div', { style: { fontSize: 28 } }, '\uD83C\uDF0D'),
           el('div', null,
             el('h2', { style: { margin: 0, fontSize: 20, fontWeight: 900, background: 'linear-gradient(90deg, #22c55e, #3b82f6, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } }, 'Climate Explorer'),
-            el('p', { style: { margin: 0, fontSize: 11, color: '#64748b', fontWeight: 600 } }, 'Understand \u2022 Calculate \u2022 Act')
+            el('p', { style: { margin: 0, fontSize: 11, color: '#94a3b8', fontWeight: 600 } }, 'Understand \u2022 Calculate \u2022 Act')
           ),
           el('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' } },
             el('button', { onClick: exportClimateReport, title: 'Export your climate report to clipboard',
@@ -1071,7 +1288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
             el('span', { style: { fontSize: hopePct >= 80 ? 16 : 13, filter: hopePct >= 80 ? 'drop-shadow(0 0 4px #fbbf24)' : 'none', transition: 'all 0.3s' } }, hopePct >= 100 ? '\uD83C\uDF1F' : hopePct >= 60 ? '\u2600\uFE0F' : '\uD83C\uDF31'),
             el('span', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700 } }, 'Hope Meter'),
-            el('span', { style: { color: '#64748b', fontSize: 11, marginLeft: 'auto' } }, hopePts + '/' + HOPE_MILESTONES.length)
+            el('span', { style: { color: '#94a3b8', fontSize: 11, marginLeft: 'auto' } }, hopePts + '/' + HOPE_MILESTONES.length)
           ),
           el('div', { style: { width: '100%', height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
             el('div', { style: { width: hopePct + '%', height: '100%', borderRadius: 2, background: 'linear-gradient(90deg, #22c55e, #3b82f6, #a855f7)', transition: 'width 0.8s ease-out', boxShadow: hopePct >= 50 ? '0 0 8px rgba(34,197,94,0.4)' : 'none' } })
@@ -1087,7 +1304,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('span', { style: { fontSize: 18, filter: earned ? 'none' : 'grayscale(1)' } }, b.icon),
                 el('div', null,
                   el('div', { style: { fontSize: 10, fontWeight: 800, color: earned ? '#fbbf24' : '#475569' } }, b.label),
-                  el('div', { style: { fontSize: 11, color: '#64748b' } }, b.desc)
+                  el('div', { style: { fontSize: 11, color: '#94a3b8' } }, b.desc)
                 )
               );
             })
@@ -1102,15 +1319,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             { id: 'keeling', icon: '\uD83D\uDCC8', label: 'Keeling Curve' },
             { id: 'tipping', icon: '\u26A0\uFE0F', label: 'Tipping Points' },
             { id: 'justice', icon: '\u2696\uFE0F', label: 'Climate Justice' },
-            { id: 'solutions', icon: '\uD83D\uDCA1', label: 'Solutions' }
+            { id: 'solutions', icon: '\uD83D\uDCA1', label: 'Solutions' },
+            { id: 'pathways', icon: '\uD83D\uDDFA\uFE0F', label: 'Policy Pathways' }
           ].map(function(t) {
             var active = tab === t.id;
             return el('button', { key: t.id, onClick: function() { visitTab(t.id); },
               role: 'tab', 'aria-selected': active,
-              style: { padding: '12px 16px', border: 'none', borderBottom: active ? '2px solid #22c55e' : '2px solid transparent', background: 'none', color: active ? '#4ade80' : '#64748b', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.2s' } },
+              style: { padding: '12px 16px', border: 'none', borderBottom: active ? '2px solid #22c55e' : '2px solid transparent', background: 'none', color: active ? '#4ade80' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.2s' } },
               el('span', null, t.icon), t.label);
           })
         ),
+
+        // ── Topic-accent hero band (swaps with the active tab) ──
+        (function() {
+          var TAB_META = {
+            carbon:     { accent: '#22c55e', soft: 'rgba(34,197,94,0.12)',  icon: '\uD83E\uDDEE', title: 'Carbon Calculator',     hint: 'Average US household emits ~16 tons CO\u2082/yr. The biggest levers are home heating, transport, and diet \u2014 not plastic straws.' },
+            renewables: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.12)', icon: '\u26A1',         title: 'Renewable energy',      hint: 'Solar + wind are now cheaper than new fossil plants in most markets. The hard part is grid integration, not generation cost.' },
+            keeling:    { accent: '#06b6d4', soft: 'rgba(6,182,212,0.12)',  icon: '\uD83D\uDCC8', title: 'The Keeling Curve',     hint: 'Continuous CO\u2082 measurement at Mauna Loa since 1958 \u2014 the longest-running atmospheric record. Sawtooth pattern from N. Hemisphere photosynthesis.' },
+            tipping:    { accent: '#ef4444', soft: 'rgba(239,68,68,0.12)',  icon: '\u26A0\uFE0F', title: 'Climate tipping points', hint: 'Thresholds where the system shifts state and stays there \u2014 Greenland melt, Amazon dieback, AMOC slowdown. Recent work suggests several may be closer than thought.' },
+            justice:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.12)', icon: '\u2696\uFE0F',  title: 'Climate justice',       hint: 'The countries that emitted the least face the worst impacts. Climate is an equity issue first \u2014 vulnerability tracks income, geography, and historical responsibility.' },
+            solutions:  { accent: '#3b82f6', soft: 'rgba(59,130,246,0.12)', icon: '\uD83D\uDCA1', title: 'Solutions toolkit',     hint: 'Drawdown ranks 100 solutions by gigatons of CO\u2082 avoided. Refrigerants, food waste, and educating girls top the list \u2014 not what most people guess.' },
+            pathways:   { accent: '#15803d', soft: 'rgba(21,128,61,0.12)', icon: '\uD83D\uDDFA\uFE0F', title: 'Climate Policy Pathways: 40-year Maine campaign', hint: 'You are the state\'s lead climate strategist. Six sectors (grid, transport, buildings, working lands, adaptation, justice). 2025 to 2065 in 5-year periods. Inter-sector feedback rules tie the whole system together.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.carbon;
+          return el('div', {
+            style: {
+              margin: '12px 24px 0',
+              padding: '12px 16px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap'
+            }
+          },
+            el('div', { style: { fontSize: 32, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            el('div', { style: { flex: 1, minWidth: 220 } },
+              el('h3', { style: { color: meta.accent, fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              el('p', { style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
 
         // ── Content ──
         el('div', { style: { padding: 20 } },
@@ -1140,7 +1389,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     style: { display: 'block', width: '100%', padding: '10px 14px', marginBottom: 6, borderRadius: 8, textAlign: 'left',
                       border: isAnswer ? (isCorrect ? '2px solid #22c55e' : isChosen ? '2px solid #ef4444' : '1px solid rgba(255,255,255,0.08)') : '1px solid rgba(255,255,255,0.1)',
                       background: isAnswer ? (isCorrect ? 'rgba(34,197,94,0.1)' : isChosen ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.03)') : 'rgba(255,255,255,0.04)',
-                      color: isAnswer ? (isCorrect ? '#4ade80' : isChosen ? '#fca5a5' : '#64748b') : '#cbd5e1',
+                      color: isAnswer ? (isCorrect ? '#4ade80' : isChosen ? '#fca5a5' : '#94a3b8') : '#cbd5e1',
                       fontSize: 12, fontWeight: 600, cursor: isAnswer ? 'default' : 'pointer', transition: 'all 0.2s' } },
                     opt);
                 }),
@@ -1155,7 +1404,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           tab === 'carbon' && el('div', { style: { maxWidth: 680, margin: '0 auto' } },
             el('div', { style: { textAlign: 'center', marginBottom: 16 } },
               el('div', { style: { color: '#4ade80', fontSize: 16, fontWeight: 900 } }, '\uD83E\uDDEE Your Carbon Footprint'),
-              el('div', { style: { color: '#64748b', fontSize: 12 } }, 'See how your daily choices add up \u2014 and how small changes make a big difference')
+              el('div', { style: { color: '#94a3b8', fontSize: 12 } }, 'See how your daily choices add up \u2014 and how small changes make a big difference')
             ),
 
             // ── Global Emissions by Sector (context panel) ──
@@ -1168,7 +1417,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: sectorsExpanded ? 10 : 0 } },
                     el('div', null,
                       el('span', { style: { color: '#cbd5e1', fontSize: 13, fontWeight: 900 } }, (sectorsExpanded ? '▼ ' : '▶ ') + '🌐 Global Emissions by Sector'),
-                      el('div', { style: { color: '#64748b', fontSize: 10, marginTop: 2 } }, 'Personal action matters. Structural change matters more. Here\'s where global emissions actually come from.')
+                      el('div', { style: { color: '#94a3b8', fontSize: 10, marginTop: 2 } }, 'Personal action matters. Structural change matters more. Here\'s where global emissions actually come from.')
                     ),
                     el('span', { style: { color: '#60a5fa', fontSize: 11, fontWeight: 700 } }, '~54 Gt CO\u2082e/yr')
                   )
@@ -1213,7 +1462,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     }, opt.emoji, opt.label, opt.kg + ' kg/yr');
                   })
                 ),
-                el('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', color: '#64748b', fontSize: 10, fontStyle: 'italic' } },
+                el('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', color: '#94a3b8', fontSize: 10, fontStyle: 'italic' } },
                   cat.opts[val].desc)
               );
             }),
@@ -1243,7 +1492,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               el('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.15)', textAlign: 'center' } },
                 el('div', { style: { fontSize: 24 } }, '\uD83C\uDF33'),
                 el('div', { style: { color: '#4ade80', fontSize: 14, fontWeight: 900 } }, 'That\'s like ' + Math.round(ct.total / TREES_PER_YEAR) + ' trees working for a whole year'),
-                el('div', { style: { color: '#64748b', fontSize: 10, marginTop: 2 } }, 'Each tree absorbs about 22 kg CO\u2082 per year')
+                el('div', { style: { color: '#94a3b8', fontSize: 10, marginTop: 2 } }, 'Each tree absorbs about 22 kg CO\u2082 per year')
               )
             ),
 
@@ -1254,13 +1503,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 ['school', 'city', 'country'].map(function(s) {
                   var labels = { school: '\uD83C\uDFEB School', city: '\uD83C\uDFD9\uFE0F City', country: '\uD83C\uDDFA\uD83C\uDDF8 Country' };
                   return el('button', { key: s, onClick: function() { upd('ccScale', s); awardXP(5); playSound('calculate'); var nsc = Object.assign({}, scalesViewed); nsc[s] = true; upd('scalesViewed', nsc); if (Object.keys(nsc).length >= 3 && !badges.dataDiver) earnBadge('dataDiver'); },
-                    style: { flex: 1, padding: '8px', borderRadius: 8, border: ccScale === s ? '2px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: ccScale === s ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.03)', color: ccScale === s ? '#a5b4fc' : '#64748b', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
+                    style: { flex: 1, padding: '8px', borderRadius: 8, border: ccScale === s ? '2px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: ccScale === s ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.03)', color: ccScale === s ? '#a5b4fc' : '#94a3b8', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                     labels[s]);
                 })
               ),
               el('div', { style: { textAlign: 'center' } },
                 el('div', { style: { color: '#e2e8f0', fontSize: 20, fontWeight: 900 } }, (ct.total * scaleMult / 1000000).toFixed(1) + ' million tons CO\u2082/yr'),
-                el('div', { style: { color: '#64748b', fontSize: 11 } }, 'If all ' + scaleLabel + ' made these choices'),
+                el('div', { style: { color: '#94a3b8', fontSize: 11 } }, 'If all ' + scaleLabel + ' made these choices'),
                 ct.total < 2000 && el('div', { style: { marginTop: 8, color: '#4ade80', fontSize: 12, fontWeight: 700 } }, '\u2728 Great job! Your footprint is below average. Imagine if everyone did this!')
               )
             ),
@@ -1273,7 +1522,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               ),
               // Running total banner
               el('div', { style: { padding: 14, marginBottom: 16, borderRadius: 12, background: granular.total > 12000 ? 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(245,158,11,0.1))' : granular.total > 5000 ? 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(251,191,36,0.1))' : 'linear-gradient(135deg, rgba(34,197,94,0.15), rgba(59,130,246,0.08))', border: '1px solid ' + (granular.total > 12000 ? 'rgba(239,68,68,0.3)' : granular.total > 5000 ? 'rgba(245,158,11,0.3)' : 'rgba(34,197,94,0.25)'), textAlign: 'center' } },
-                el('div', { style: { color: '#64748b', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 4 } }, 'Your detailed footprint'),
+                el('div', { style: { color: '#94a3b8', fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 4 } }, 'Your detailed footprint'),
                 el('div', { style: { color: granular.total > 12000 ? '#fca5a5' : granular.total > 5000 ? '#fbbf24' : '#4ade80', fontSize: 28, fontWeight: 900 } },
                   (granular.total / 1000).toFixed(2) + ' t CO\u2082e/yr'),
                 el('div', { style: { color: '#94a3b8', fontSize: 11, marginTop: 4 } },
@@ -1327,10 +1576,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                           el('span', { style: { fontSize: 16, width: 22 } }, item.emoji),
                           el('div', { style: { flex: 1 } },
                             el('div', { style: { color: '#cbd5e1', fontSize: 12, fontWeight: 700 } }, item.label),
-                            el('div', { style: { color: '#64748b', fontSize: 10, fontStyle: 'italic', marginTop: 1 } }, item.note)
+                            el('div', { style: { color: '#94a3b8', fontSize: 10, fontStyle: 'italic', marginTop: 1 } }, item.note)
                           ),
                           el('div', { style: { minWidth: 90, textAlign: 'right' } },
-                            el('div', { style: { color: thisAnnual > 500 ? '#fca5a5' : thisAnnual > 50 ? '#fbbf24' : thisAnnual > 0 ? '#cbd5e1' : '#64748b', fontSize: 12, fontWeight: 800, fontFamily: 'monospace' } }, Math.round(thisAnnual).toLocaleString() + ' kg/yr'),
+                            el('div', { style: { color: thisAnnual > 500 ? '#fca5a5' : thisAnnual > 50 ? '#fbbf24' : thisAnnual > 0 ? '#cbd5e1' : '#94a3b8', fontSize: 12, fontWeight: 800, fontFamily: 'monospace' } }, Math.round(thisAnnual).toLocaleString() + ' kg/yr'),
                             savings > 1 && el('div', { style: { color: '#60a5fa', fontSize: 9, fontWeight: 700, marginTop: 2 } }, '\u2212' + Math.round(savings) + ' kg if cut 1')
                           )
                         ),
@@ -1446,7 +1695,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                           onTrack ? '✓ On track' : '⚠ Off target')
                       ),
                       el('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                        el('div', { style: { flex: 1, color: '#64748b', fontSize: 10 } },
+                        el('div', { style: { flex: 1, color: '#94a3b8', fontSize: 10 } },
                           '🔥 ' + (pledge.checkins || 0) + ' check-ins' + (pledge.checkins >= 7 ? ' · streak!' : '')),
                         el('button', { onClick: function() { pledgeCheckin(pid); },
                           style: { padding: '4px 10px', borderRadius: 6, border: 'none', background: 'rgba(34,197,94,0.15)', color: '#4ade80', fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
@@ -1473,9 +1722,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
           // ═══ TAB: RENEWABLES SIMULATOR ═══
           tab === 'renewables' && el('div', { style: { maxWidth: 680, margin: '0 auto' } },
-            el('div', { style: { textAlign: 'center', marginBottom: 20 } },
+            el('div', { style: { textAlign: 'center', marginBottom: 12 } },
               el('div', { style: { color: '#fbbf24', fontSize: 16, fontWeight: 900 } }, '\u26A1 Renewables Impact Simulator'),
-              el('div', { style: { color: '#64748b', fontSize: 12 } }, 'Design an energy mix and see how it changes our future')
+              el('div', { style: { color: '#94a3b8', fontSize: 12 } }, 'Design an energy mix and see how it changes our future')
+            ),
+
+            // \u2500\u2500 Goal banner: makes the implicit win condition explicit \u2500\u2500
+            // The Net-Zero badge earns at fossil <= 5%, but until now that
+            // target was nowhere visible to the student. Now stated up
+            // front so the four sliders feel like a target, not a sandbox.
+            el('div', {
+              style: {
+                marginBottom: 16, padding: '10px 14px', borderRadius: 12,
+                background: 'linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(245,158,11,0.10) 100%)',
+                border: '1px solid rgba(34,197,94,0.30)', borderLeft: '4px solid #22c55e',
+                color: '#ecfdf5'
+              }
+            },
+              el('div', { style: { fontSize: 12, fontWeight: 800, marginBottom: 4 } }, '\uD83C\uDFAF Goal: drive fossil share to 5% or lower'),
+              el('div', { style: { fontSize: 11, lineHeight: 1.5, color: '#bbf7d0' } },
+                'The four sliders are your renewable mix. Whatever they do not add up to gets filled by fossil fuels. ',
+                'Hit Fossil at or below 5% to earn the Net-Zero badge. Below the sliders you will see total gigatons of CO\u2082 avoided over 25 years for your design, with an AI analysis of trade-offs.'
+              )
             ),
 
             // Scenario presets
@@ -1509,7 +1777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             el('div', { style: { display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 16 } },
               [5, 10, 25, 50].map(function(y) {
                 return el('button', { key: y, onClick: function() { upd('rsTimespan', y); },
-                  style: { padding: '6px 14px', borderRadius: 8, border: rsTimespan === y ? '2px solid #22c55e' : '1px solid rgba(255,255,255,0.1)', background: rsTimespan === y ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.03)', color: rsTimespan === y ? '#4ade80' : '#64748b', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
+                  style: { padding: '6px 14px', borderRadius: 8, border: rsTimespan === y ? '2px solid #22c55e' : '1px solid rgba(255,255,255,0.1)', background: rsTimespan === y ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.03)', color: rsTimespan === y ? '#4ade80' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                   y + ' years');
               })
             ),
@@ -1566,7 +1834,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           tab === 'keeling' && el('div', { style: { maxWidth: 720, margin: '0 auto' } },
             el('div', { style: { textAlign: 'center', marginBottom: 16 } },
               el('div', { style: { color: '#60a5fa', fontSize: 16, fontWeight: 900 } }, '\uD83D\uDCC8 The Keeling Curve'),
-              el('div', { style: { color: '#64748b', fontSize: 12 } }, 'The most important graph in climate science \u2014 60+ years of atmospheric CO\u2082 from Mauna Loa, Hawaii')
+              el('div', { style: { color: '#94a3b8', fontSize: 12 } }, 'The most important graph in climate science \u2014 60+ years of atmospheric CO\u2082 from Mauna Loa, Hawaii')
             ),
             // Chart
             el('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(96,165,250,0.2)', marginBottom: 16 } },
@@ -1606,7 +1874,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 for (var gx = 1960; gx <= 2020; gx += 20) {
                   var xp = x2px(gx);
                   c.beginPath(); c.moveTo(xp, padT); c.lineTo(xp, padT + plotH); c.stroke();
-                  c.fillStyle = '#64748b'; c.font = '10px system-ui'; c.textAlign = 'center';
+                  c.fillStyle = '#94a3b8'; c.font = '10px system-ui'; c.textAlign = 'center';
                   c.fillText(String(gx), xp, h - padB + 16);
                 }
                 // Pre-industrial reference line (280 ppm)
@@ -1711,7 +1979,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           tab === 'tipping' && el('div', { style: { maxWidth: 720, margin: '0 auto' } },
             el('div', { style: { textAlign: 'center', marginBottom: 16 } },
               el('div', { style: { color: '#f87171', fontSize: 16, fontWeight: 900 } }, '\u26A0\uFE0F Climate Tipping Points'),
-              el('div', { style: { color: '#64748b', fontSize: 12 } }, 'Thresholds beyond which Earth-system changes become self-reinforcing and irreversible on human timescales')
+              el('div', { style: { color: '#94a3b8', fontSize: 12 } }, 'Thresholds beyond which Earth-system changes become self-reinforcing and irreversible on human timescales')
             ),
 
             // ═══ CARBON BUDGET CLOCK ═══
@@ -1754,7 +2022,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     onChange: function(e) { upd('budgetBurnRate', parseInt(e.target.value, 10)); playSound('slider'); },
                     'aria-label': 'Annual global CO2 emission rate',
                     style: { width: '100%', accentColor: '#ef4444' } }),
-                  el('div', { style: { display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: 9, marginTop: 2 } },
+                  el('div', { style: { display: 'flex', justifyContent: 'space-between', color: '#94a3b8', fontSize: 9, marginTop: 2 } },
                     el('span', null, '0 (net-zero)'),
                     el('span', null, '20 (halved)'),
                     el('span', null, '40 (today ▼)'),
@@ -1824,7 +2092,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(255,255,255,0.04)', color: picked.color, fontSize: 11, fontWeight: 700, fontStyle: 'italic' } },
                     '📌 Current likelihood: ' + picked.likelihood)
                 ),
-                el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(148,163,184,0.06)', color: '#64748b', fontSize: 10, lineHeight: 1.5 } },
+                el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(148,163,184,0.06)', color: '#94a3b8', fontSize: 10, lineHeight: 1.5 } },
                   '📚 Scenarios from IPCC AR6 Working Group I. SSP = "Shared Socioeconomic Pathway". The number pair (e.g., 1-2.6) combines societal storyline (1–5) with radiative forcing in W/m² by 2100. Current policies put us on track for roughly SSP2-4.5. Each incremental action steers toward the lower-warming lanes.')
               );
             })(),
@@ -1908,9 +2176,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     },
                     'aria-label': 'Sea level rise in meters',
                     style: { width: '100%', accentColor: '#3b82f6' } }),
-                  el('div', { style: { display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: 9, fontWeight: 700 } },
+                  el('div', { style: { display: 'flex', justifyContent: 'space-between', color: '#94a3b8', fontSize: 9, fontWeight: 700 } },
                     [0, 1, 2, 3, 5, 10].map(function(m) {
-                      return el('span', { key: m, style: { color: slr === m ? '#60a5fa' : '#64748b' } }, m + ' m');
+                      return el('span', { key: m, style: { color: slr === m ? '#60a5fa' : '#94a3b8' } }, m + ' m');
                     })
                   )
                 ),
@@ -1926,7 +2194,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     impact.cities.join(' · ')
                   )
                 ),
-                el('div', { style: { marginTop: 8, color: '#64748b', fontSize: 9, fontStyle: 'italic' } },
+                el('div', { style: { marginTop: 8, color: '#94a3b8', fontSize: 9, fontStyle: 'italic' } },
                   '📚 Sources: IPCC AR6 SROCC; Kopp et al. 2023 probabilistic projections; Climate Central coastal models. The ocean has ~90% of the excess heat and will keep expanding/melting ice for centuries even if emissions stop today.')
               );
             })(),
@@ -1949,7 +2217,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           tab === 'justice' && el('div', { style: { maxWidth: 700, margin: '0 auto' } },
             el('div', { style: { textAlign: 'center', marginBottom: 20 } },
               el('div', { style: { color: '#fbbf24', fontSize: 16, fontWeight: 900 } }, '\u2696\uFE0F Climate Justice'),
-              el('div', { style: { color: '#64748b', fontSize: 12 } }, 'Who is most affected by climate change \u2014 and is it fair?')
+              el('div', { style: { color: '#94a3b8', fontSize: 12 } }, 'Who is most affected by climate change \u2014 and is it fair?')
             ),
 
             // Key insight
@@ -1959,11 +2227,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 'The communities that contribute the LEAST to climate change often face the GREATEST risks. This is what scientists and advocates call climate injustice.')
             ),
 
+            // \u2500\u2500 Play-order hint \u2500\u2500
+            // The Climate Justice badge unlocks at 5 regions explored,
+            // but the grid shows 9 collapsed cards and the badge target
+            // was previously invisible. Now stated as the goal up front.
+            (function() {
+              var regionsViewed = Object.keys(d.regionsViewed || {}).length;
+              return el('div', {
+                style: {
+                  padding: '8px 12px', marginBottom: 12, borderRadius: 10,
+                  background: regionsViewed >= 5 ? 'rgba(34,197,94,0.12)' : 'rgba(168,85,247,0.10)',
+                  border: '1px solid ' + (regionsViewed >= 5 ? 'rgba(34,197,94,0.30)' : 'rgba(168,85,247,0.30)'),
+                  display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap'
+                }
+              },
+                el('span', { style: { fontSize: 14 } }, regionsViewed >= 5 ? '\uD83C\uDFC5' : '\uD83D\uDD0D'),
+                el('span', { style: { fontSize: 11, color: '#cbd5e1', fontWeight: 600, flex: 1, minWidth: 200 } },
+                  regionsViewed >= 5
+                    ? 'Justice Witness badge earned. Keep exploring; every region has a different story.'
+                    : 'Click a card to expand its data. Explore at least 5 regions to earn the Justice Witness badge.'
+                ),
+                el('span', { style: { fontSize: 11, fontFamily: 'monospace', fontWeight: 700, color: regionsViewed >= 5 ? '#86efac' : '#c4b5fd' } }, regionsViewed + ' / 5 explored')
+              );
+            })(),
+
             // View toggle
             el('div', { style: { display: 'flex', gap: 6, marginBottom: 16 } },
               [{ id: 'risk', label: '\u26A0\uFE0F Risks' }, { id: 'emissions', label: '\uD83C\uDFED Emissions' }, { id: 'resilience', label: '\uD83D\uDCAA Resilience' }].map(function(v) {
                 return el('button', { key: v.id, onClick: function() { upd('cjView', v.id); },
-                  style: { flex: 1, padding: '8px 12px', borderRadius: 8, border: cjView === v.id ? '2px solid #f59e0b' : '1px solid rgba(255,255,255,0.1)', background: cjView === v.id ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.03)', color: cjView === v.id ? '#fbbf24' : '#64748b', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
+                  style: { flex: 1, padding: '8px 12px', borderRadius: 8, border: cjView === v.id ? '2px solid #f59e0b' : '1px solid rgba(255,255,255,0.1)', background: cjView === v.id ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.03)', color: cjView === v.id ? '#fbbf24' : '#94a3b8', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                   v.label);
               })
             ),
@@ -1973,7 +2265,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               REGIONS.map(function(r) {
                 var isOpen = cjRegion === r.id;
                 var regionsViewed = d.regionsViewed || {};
-                return el('div', { key: r.id, onClick: function() {
+                return el('div', { key: r.id, role: 'button', tabIndex: 0, 'aria-expanded': isOpen, 'aria-label': r.name + (isOpen ? ' (expanded)' : ' (collapsed)'), onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() {
                     upd('cjRegion', isOpen ? null : r.id);
                     playSound('region');
                     if (!regionsViewed[r.id]) {
@@ -1989,14 +2281,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('span', { style: { fontSize: 20 } }, r.emoji),
                     el('div', { style: { flex: 1 } },
                       el('div', { style: { color: '#e2e8f0', fontSize: 13, fontWeight: 800 } }, r.name),
-                      el('div', { style: { fontSize: 10, color: '#64748b' } }, 'Pop: ' + r.pop)
+                      el('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Pop: ' + r.pop)
                     ),
                     el('span', { style: { padding: '2px 8px', borderRadius: 12, background: riskColors[r.risk] + '20', color: riskColors[r.risk], fontSize: 11, fontWeight: 800, textTransform: 'uppercase' } }, r.risk + ' risk')
                   ),
 
                   // Risk vs emissions bar
                   cjView === 'emissions' && el('div', { style: { marginTop: 6 } },
-                    el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#64748b', marginBottom: 2 } },
+                    el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 2 } },
                       el('span', null, 'Share of global emissions'), el('span', null, r.emPct + '%')),
                     el('div', { style: { height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
                       el('div', { style: { width: Math.min(100, r.emPct * 5) + '%', height: '100%', borderRadius: 3, background: '#ef4444' } })
@@ -2097,8 +2389,173 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           tab === 'solutions' && el('div', { style: { maxWidth: 720, margin: '0 auto' } },
             el('div', { style: { textAlign: 'center', marginBottom: 20 } },
               el('div', { style: { color: '#22c55e', fontSize: 16, fontWeight: 900 } }, '\uD83D\uDCA1 Solutions Spotlight'),
-              el('div', { style: { color: '#64748b', fontSize: 12 } }, 'Real innovations making a real difference \u2014 and what YOU can do')
+              el('div', { style: { color: '#94a3b8', fontSize: 12 } }, 'Real innovations making a real difference \u2014 and what YOU can do')
             ),
+
+            // ═══ DRAWDOWN SLEUTH (net-new mini-game) ═══
+            // 8 rounds. Each shows 4 climate solutions; player picks the biggest-impact
+            // one per Drawdown's Plausible Scenario (gigatons CO\u2082 over 2020\u20132050).
+            // Forces students past 'obvious' choices (rooftop solar, EVs) to recognize
+            // the boring-but-massive ones (refrigerant management, food waste, girls' ed).
+            (function() {
+              var DS_ROUNDS = [
+                { id: 1, ids: ['refrigerants', 'solar_roof', 'evs_personal', 'heat_pumps'], correct: 'refrigerants',
+                  why: 'Refrigerant management beats rooftop solar + EVs + heat pumps COMBINED. HFC refrigerants are 1,000\u20139,000\u00d7 more potent than CO\u2082; just *recapturing them properly at end-of-life* is the highest-impact single climate action available. The boring infrastructure solution wins over the visible-tech ones.' },
+                { id: 2, ids: ['reduced_waste', 'wind_onshore', 'solar_farms', 'buildings_retrofit'], correct: 'wind_onshore',
+                  why: 'Onshore wind (147 GT) beats reduced food waste (88 GT) and crushes solar farms + retrofits. Scaling existing cheap technology massively is currently the largest single lever in the global energy transition.' },
+                { id: 3, ids: ['plant_rich', 'tropical_forest', 'cycling_walking', 'efficient_transit'], correct: 'tropical_forest',
+                  why: 'Tropical forest restoration (85 GT) edges out plant-rich diets (65 GT). Both crush bike infrastructure (5 GT). Transport solutions are hugely visible in policy debate but smaller than the food + land solutions in absolute terms.' },
+                { id: 4, ids: ['girls_education', 'wind_onshore', 'solar_farms', 'buildings_retrofit'], correct: 'wind_onshore',
+                  why: 'Girls\' education + family planning is enormous (85 GT in Drawdown\'s combined estimate), but onshore wind at full scale is even bigger (147 GT). Education compounds across generations though \u2014 per-dollar impact is much higher than the absolute GT suggests.' },
+                { id: 5, ids: ['silvopasture', 'evs_personal', 'kelp_forests', 'cycling_walking'], correct: 'silvopasture',
+                  why: 'Silvopasture (42 GT) \u2014 integrating trees into grazing land \u2014 beats EVs + bike infrastructure + kelp forests combined. Trees + livestock together build soil carbon at 4\u00d7 the rate of bare pasture. A surprisingly large agricultural lever that gets almost no public attention.' },
+                { id: 6, ids: ['refrigerants', 'reduced_waste', 'plant_rich', 'tropical_forest'], correct: 'reduced_waste',
+                  why: 'Reduced food waste (88 GT) leads this group, edging out tropical forest (85), plant-rich diet (65), and refrigerants (57). One-third of all food grown is wasted; preventing waste avoids both methane from landfills AND the upstream emissions to grow it.' },
+                { id: 7, ids: ['solar_farms', 'wind_onshore', 'buildings_retrofit', 'peatlands'], correct: 'wind_onshore',
+                  why: 'Onshore wind (147 GT) is the single largest line item in Drawdown \u2014 bigger than utility solar (42), retrofits (33), peatlands (26). Note peatlands punching above their weight: globally they store 3\u00d7 more carbon than forests.' },
+                { id: 8, ids: ['heat_pumps', 'evs_personal', 'cycling_walking', 'refrigerants'], correct: 'refrigerants',
+                  why: 'Refrigerants (57 GT) beat heat pumps + EVs + bike infrastructure COMBINED (25 GT total). The visible "consumer green tech" solutions are real but small at global scale; HFC management dwarfs them. Kigali Amendment is doing more for climate than most realize.' }
+              ];
+              var dsIdx = d.dsIdx == null ? -1 : d.dsIdx;
+              var dsSeed = d.dsSeed || 1;
+              var dsAnswered = !!d.dsAnswered;
+              var dsPick = d.dsPick;
+              var dsScore = d.dsScore || 0;
+              var dsRounds = d.dsRounds || 0;
+              var dsStreak = d.dsStreak || 0;
+              var dsBest = d.dsBest || 0;
+              var dsShown = d.dsShown || [];
+              var dsOpen = !!d.dsOpen;
+              function getSol(id) { return DRAWDOWN_SOLUTIONS.find(function(x) { return x.id === id; }); }
+              function startDs() {
+                var pool = [];
+                for (var i = 0; i < DS_ROUNDS.length; i++) if (dsShown.indexOf(i) < 0) pool.push(i);
+                if (pool.length === 0) { pool = []; for (var j = 0; j < DS_ROUNDS.length; j++) pool.push(j); dsShown = []; }
+                var seedNext = ((dsSeed * 16807 + 11) % 2147483647) || 7;
+                var pick = pool[seedNext % pool.length];
+                upd('dsSeed', seedNext);
+                upd('dsIdx', pick);
+                upd('dsAnswered', false);
+                upd('dsPick', null);
+                upd('dsShown', dsShown.concat([pick]));
+              }
+              function pickDs(solId) {
+                if (dsAnswered) return;
+                var r = DS_ROUNDS[dsIdx];
+                var correct = solId === r.correct;
+                var newScore = dsScore + (correct ? 1 : 0);
+                var newStreak = correct ? (dsStreak + 1) : 0;
+                var newBest = Math.max(dsBest, newStreak);
+                upd('dsAnswered', true);
+                upd('dsPick', solId);
+                upd('dsScore', newScore);
+                upd('dsRounds', dsRounds + 1);
+                upd('dsStreak', newStreak);
+                upd('dsBest', newBest);
+              }
+              return el('div', { style: { padding: 16, marginBottom: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(15,23,42,0.4))', border: '2px solid rgba(34,197,94,0.30)' } },
+                el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 8 } },
+                  el('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                    el('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, '\uD83D\uDD75\uFE0F'),
+                    el('div', null,
+                      el('div', { style: { color: '#4ade80', fontSize: 14, fontWeight: 900 } }, 'Drawdown Sleuth'),
+                      el('div', { style: { color: '#94a3b8', fontSize: 11, fontStyle: 'italic' } }, 'Pick the biggest-impact climate solution. The "obvious" answer is often wrong.')
+                    )
+                  ),
+                  el('button', {
+                    onClick: function() { upd('dsOpen', !dsOpen); },
+                    style: { padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(34,197,94,0.40)', background: 'rgba(34,197,94,0.15)', color: '#4ade80', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                  }, dsOpen ? 'Hide \u25b4' : 'Play \u2192')
+                ),
+                dsOpen && (dsIdx < 0
+                  ? el('div', { style: { textAlign: 'center', padding: '16px 8px' } },
+                      el('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, marginBottom: 12 } },
+                        '8 rounds. Each shows 4 climate solutions; pick the one with the biggest CO\u2082 reduction (per Project Drawdown\'s Plausible Scenario, gigatons over 2020\u20132050). After picking, a coaching block names what makes the answer surprising.'),
+                      el('button', {
+                        onClick: startDs,
+                        'aria-label': 'Start Drawdown Sleuth',
+                        style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: '#22c55e', color: '#0f172a', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
+                      }, '\uD83D\uDD75\uFE0F Start \u2014 round 1 of 8')
+                    )
+                  : (function() {
+                      var r = DS_ROUNDS[dsIdx];
+                      var pickedCorrect = dsAnswered && dsPick === r.correct;
+                      var pct = dsRounds > 0 ? Math.round((dsScore / dsRounds) * 100) : 0;
+                      var allDone = dsShown.length >= DS_ROUNDS.length && dsAnswered;
+                      return el('div', null,
+                        el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 11, color: '#94a3b8', marginBottom: 8 } },
+                          el('span', null, 'Round ', el('strong', { style: { color: '#fff' } }, dsShown.length)),
+                          el('span', null, 'Score ', el('strong', { style: { color: '#4ade80' } }, dsScore + ' / ' + dsRounds)),
+                          dsRounds > 0 && el('span', null, 'Accuracy ', el('strong', { style: { color: '#0ea5e9' } }, pct + '%')),
+                          el('span', null, 'Streak ', el('strong', { style: { color: '#fbbf24' } }, dsStreak)),
+                          el('span', null, 'Best ', el('strong', { style: { color: '#f59e0b' } }, dsBest))
+                        ),
+                        el('div', { style: { color: '#fff', fontSize: 13, fontWeight: 800, marginBottom: 8 } }, 'Which solution avoids the most CO\u2082 globally (2020\u20132050)?'),
+                        el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': 'Pick the biggest-impact solution' },
+                          r.ids.map(function(solId) {
+                            var sol = getSol(solId);
+                            if (!sol) return null;
+                            var picked = dsAnswered && dsPick === solId;
+                            var isRight = dsAnswered && solId === r.correct;
+                            var bg, border, color;
+                            if (dsAnswered) {
+                              if (isRight) { bg = 'rgba(34,197,94,0.18)'; border = '#22c55e'; color = '#bbf7d0'; }
+                              else if (picked) { bg = 'rgba(239,68,68,0.18)'; border = '#ef4444'; color = '#fecaca'; }
+                              else { bg = 'rgba(30,41,59,0.5)'; border = 'rgba(100,116,139,0.4)'; color = '#94a3b8'; }
+                            } else {
+                              bg = 'rgba(30,41,59,0.7)'; border = 'rgba(34,197,94,0.40)'; color = '#e2e8f0';
+                            }
+                            return el('button', {
+                              key: solId, role: 'radio',
+                              'aria-checked': picked ? 'true' : 'false',
+                              'aria-label': sol.label,
+                              disabled: dsAnswered,
+                              onClick: function() { pickDs(solId); },
+                              style: { padding: '12px 10px', borderRadius: 10, background: bg, color: color, border: '2px solid ' + border, cursor: dsAnswered ? 'default' : 'pointer', textAlign: 'left', fontSize: 11, fontWeight: 700, transition: 'all 0.15s', minHeight: 80 }
+                            },
+                              el('div', { style: { fontSize: 22, marginBottom: 4 }, 'aria-hidden': 'true' }, sol.emoji),
+                              el('div', { style: { fontSize: 12, fontWeight: 800, lineHeight: 1.2, marginBottom: 4 } }, sol.label),
+                              dsAnswered && el('div', { style: { fontSize: 11, fontWeight: 800, color: isRight ? '#86efac' : (picked ? '#fca5a5' : '#94a3b8') } }, sol.gt + ' GT CO\u2082')
+                            );
+                          })
+                        ),
+                        dsAnswered && el('div', {
+                          style: {
+                            marginTop: 12, padding: '12px 14px', borderRadius: 10,
+                            background: pickedCorrect ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.08)',
+                            border: '1px solid ' + (pickedCorrect ? 'rgba(34,197,94,0.45)' : 'rgba(239,68,68,0.40)')
+                          }
+                        },
+                          el('div', { style: { fontSize: 13, fontWeight: 800, marginBottom: 6, color: pickedCorrect ? '#86efac' : '#fca5a5' } },
+                            pickedCorrect
+                              ? '\u2705 Correct \u2014 ' + getSol(r.correct).label + ' (' + getSol(r.correct).gt + ' GT)'
+                              : '\u274C The biggest is ' + getSol(r.correct).label + ' (' + getSol(r.correct).gt + ' GT)' + (dsPick ? ' (you picked ' + getSol(dsPick).label + ' at ' + getSol(dsPick).gt + ' GT)' : '')
+                          ),
+                          el('p', { style: { color: '#e2e8f0', fontSize: 12, lineHeight: 1.55, margin: '0 0 10px' } }, r.why),
+                          allDone
+                            ? el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.45)' } },
+                                el('div', { style: { fontSize: 13, fontWeight: 800, color: '#4ade80', marginBottom: 4 } }, '\uD83C\uDFC6 All 8 rounds complete'),
+                                el('div', { style: { color: '#e2e8f0', fontSize: 12, lineHeight: 1.5 } },
+                                  'Final: ', el('strong', null, dsScore + ' / ' + DS_ROUNDS.length + ' (' + Math.round((dsScore / DS_ROUNDS.length) * 100) + '%)'),
+                                  dsScore === DS_ROUNDS.length ? ' \u2014 you can spot the boring-but-massive solutions over the sexy-but-small ones. Project Drawdown\'s mission is exactly that.' :
+                                  dsScore >= 6 ? ' \u2014 strong intuition for scale. The most-confused pair is usually onshore wind vs reduced food waste \u2014 both are top-3 globally; the Plausible Scenario number depends on assumed deployment rate.' :
+                                  ' \u2014 these intuitions take rebuilding. The consumer-green-tech framing (rooftop solar, EVs, bikes) underplays the boring infrastructure solutions that actually move the needle. Re-read the rationales, then retake.'
+                                ),
+                                el('button', {
+                                  onClick: function() { upd('dsIdx', -1); upd('dsShown', []); upd('dsScore', 0); upd('dsRounds', 0); upd('dsStreak', 0); },
+                                  style: { marginTop: 8, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#22c55e', color: '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                                }, '\uD83D\uDD04 Restart')
+                              )
+                            : el('button', {
+                                onClick: startDs,
+                                style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: '#22c55e', color: '#0f172a', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                              }, '\u27a1\uFE0F Next round')
+                        )
+                      );
+                    })()
+                )
+              );
+            })(),
 
             // ═══ SOLUTION STACK BUILDER (Project Drawdown) ═══
             (function() {
@@ -2129,7 +2586,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } },
                   el('div', null,
                     el('div', { style: { color: '#4ade80', fontSize: 14, fontWeight: 900 } }, '🎯 Solution Stack Builder'),
-                    el('div', { style: { color: '#94a3b8', fontSize: 10 } }, 'Select solutions to stack — see combined impact in gigatons of CO\u2082 avoided by 2050 (Project Drawdown data)')
+                    el('div', { style: { color: '#94a3b8', fontSize: 10 } }, '🏅 Goal: stack to 200 Gt to earn the Gigaton badge. Select solutions — see combined impact in gigatons of CO\u2082 avoided by 2050 (Project Drawdown data)')
                   ),
                   el('div', { style: { textAlign: 'right' } },
                     el('div', { style: { color: totalGt >= 200 ? '#fbbf24' : '#4ade80', fontSize: 24, fontWeight: 900, fontFamily: 'monospace' } }, Math.round(totalGt) + ' Gt'),
@@ -2168,7 +2625,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   })
                 ),
                 // Educational footnote
-                el('div', { style: { marginTop: 10, padding: 8, borderRadius: 8, background: 'rgba(148,163,184,0.06)', color: '#64748b', fontSize: 10, lineHeight: 1.5 } },
+                el('div', { style: { marginTop: 10, padding: 8, borderRadius: 8, background: 'rgba(148,163,184,0.06)', color: '#94a3b8', fontSize: 10, lineHeight: 1.5 } },
                   '📚 Project Drawdown (drawdown.org) is a nonprofit research group that ranks climate solutions by their gigaton-scale CO\u2082 avoidance potential from 2020-2050. Gt = gigatons (1 billion tons). Current global emissions: ~40 Gt/year. Remaining budget for 1.5°C: ~250 Gt.')
               );
             })(),
@@ -2177,7 +2634,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             el('div', { style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap', justifyContent: 'center' } },
               [{ id: 'all', label: 'All' }, { id: 'energy', label: '\u26A1 Energy' }, { id: 'transport', label: '\uD83D\uDE8C Transport' }, { id: 'nature', label: '\uD83C\uDF33 Nature' }, { id: 'capture', label: '\uD83C\uDFED Capture' }].map(function(c) {
                 return el('button', { key: c.id, onClick: function() { upd('ssCategory', c.id); },
-                  style: { padding: '6px 14px', borderRadius: 20, border: ssCategory === c.id ? '2px solid #22c55e' : '1px solid rgba(255,255,255,0.1)', background: ssCategory === c.id ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.03)', color: ssCategory === c.id ? '#4ade80' : '#64748b', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
+                  style: { padding: '6px 14px', borderRadius: 20, border: ssCategory === c.id ? '2px solid #22c55e' : '1px solid rgba(255,255,255,0.1)', background: ssCategory === c.id ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.03)', color: ssCategory === c.id ? '#4ade80' : '#94a3b8', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                   c.label);
               })
             ),
@@ -2186,13 +2643,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
               SOLUTIONS.filter(function(s) { return ssCategory === 'all' || s.cat === ssCategory || s.cat === 'all'; }).map(function(s) {
                 var isExp = ssExpanded === s.id;
-                return el('div', { key: s.id, onClick: function() { upd('ssExpanded', isExp ? null : s.id); awardXP(5); playSound('action'); var nsv = Object.assign({}, solutionsViewed); nsv[s.id] = true; upd('solutionsViewed', nsv); if (Object.keys(nsv).length >= 8 && !badges.solutionScholar) earnBadge('solutionScholar'); },
+                return el('div', { key: s.id, role: 'button', tabIndex: 0, 'aria-expanded': isExp, 'aria-label': s.title + (isExp ? ' (expanded)' : ' (collapsed)'), onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() { upd('ssExpanded', isExp ? null : s.id); awardXP(5); playSound('action'); var nsv = Object.assign({}, solutionsViewed); nsv[s.id] = true; upd('solutionsViewed', nsv); if (Object.keys(nsv).length >= 8 && !badges.solutionScholar) earnBadge('solutionScholar'); },
                   style: { padding: 16, borderRadius: 12, background: s.highlight ? 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(245,158,11,0.08))' : 'rgba(255,255,255,0.04)', border: '1px solid ' + (s.highlight ? 'rgba(34,197,94,0.25)' : isExp ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.08)'), cursor: 'pointer', transition: 'all 0.2s' } },
                   el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: isExp ? 10 : 0 } },
                     el('span', { style: { fontSize: 28 } }, s.emoji),
                     el('div', null,
                       el('div', { style: { color: '#e2e8f0', fontSize: 14, fontWeight: 800 } }, s.title),
-                      !isExp && el('div', { style: { color: '#64748b', fontSize: 10, marginTop: 2 } }, s.what.substring(0, 60) + '...')
+                      !isExp && el('div', { style: { color: '#94a3b8', fontSize: 10, marginTop: 2 } }, s.what.substring(0, 60) + '...')
                     )
                   ),
                   isExp && el('div', null,
@@ -2228,7 +2685,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('span', { style: { fontSize: 20 } }, a.emoji),
                     el('div', { style: { flex: 1 } },
                       el('div', { style: { color: '#e2e8f0', fontSize: 12, fontWeight: 700 } }, a.text),
-                      el('div', { style: { color: '#64748b', fontSize: 10, marginTop: 2 } }, a.impact)
+                      el('div', { style: { color: '#94a3b8', fontSize: 10, marginTop: 2 } }, a.impact)
                     ),
                     el('span', { style: { padding: '2px 8px', borderRadius: 10, background: diffColors[a.diff] + '20', color: diffColors[a.diff], fontSize: 11, fontWeight: 700 } }, a.diff)
                   );
@@ -2248,7 +2705,608 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               el('div', { style: { color: '#94a3b8', fontSize: 12, lineHeight: 1.7, maxWidth: 500, margin: '0 auto' } },
                 'Solar is the cheapest energy in history. Electric vehicles outsell gas cars in many countries. Young people are leading the charge. The solutions exist \u2014 we just need to choose them. Every action, every conversation, every vote counts.')
             )
-          )
+          ),
+
+          // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+          // CLIMATE POLICY PATHWAYS: 40-YEAR MAINE CAMPAIGN
+          // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+          tab === 'pathways' && (function() {
+            var path = d.pathway || defaultPathwayState();
+            function setPath(patch) { upd('pathway', Object.assign({}, path, patch)); }
+            var T_GREEN = '#15803d', T_GREEN_HI = '#86efac';
+
+            function startPathway(opts) {
+              opts = opts || {};
+              var fresh = defaultPathwayState();
+              var diffId = opts.difficulty || path.difficulty || 'realist';
+              var diff = PATHWAY_DIFFICULTIES[diffId] || PATHWAY_DIFFICULTIES.realist;
+              fresh.phase = 'year';
+              fresh.difficulty = diff.id;
+              fresh.hoursPerYear = diff.hoursPerYear;
+              fresh.hoursLeft = diff.hoursPerYear;
+              if (opts.seed) fresh.seed = opts.seed;
+              setPath(fresh);
+              if (addToast) addToast('\ud83d\uddfa\ufe0f Climate Policy Pathways begins. 2025-2029 on ' + diff.label + '.', 'success');
+              if (typeof announceToSR === 'function') announceToSR('Climate Policy Pathways started on ' + diff.label + '. Period 2025-2029.');
+            }
+            function resetPathway() { setPath(defaultPathwayState()); }
+
+            function applyPathTech(techId, sectorId) {
+              var tech = PATHWAY_TECHNIQUES.find(function(t) { return t.id === techId; });
+              if (!tech) return;
+              if (path.hoursLeft < tech.hours) { if (addToast) addToast('Not enough hours left this period.', 'warn'); return; }
+              if (tech.appliesTo !== 'any' && sectorId && tech.appliesTo.indexOf(sectorId) < 0) {
+                if (addToast) addToast(tech.name + ' does not apply to that sector.', 'info'); return;
+              }
+              var storageMult = (path.activeMods || []).some(function(m) { return m.id === 'storageBoost'; }) ? 1.15 : 1.0;
+              var newSectors = path.sectors.map(function(s) {
+                if (sectorId && s.id !== sectorId && tech.appliesTo !== 'any') return s;
+                if (!sectorId && tech.appliesTo !== 'any') return s;
+                var ns = Object.assign({}, s);
+                if (tech.effects.decarb)     ns.decarb = pathwayClamp(ns.decarb + tech.effects.decarb * storageMult, 0, 100);
+                if (tech.effects.resilience) ns.resilience = pathwayClamp(ns.resilience + tech.effects.resilience, 0, 100);
+                if (tech.effects.support !== undefined) ns.support = pathwayClamp(ns.support + tech.effects.support, 0, 100);
+                return ns;
+              });
+              var actionLog = { tech: tech.name, target: sectorId ? (getPolicySector(sectorId) ? getPolicySector(sectorId).name : sectorId) : 'Cross-sector', hours: tech.hours };
+              setPath({ sectors: newSectors, hoursLeft: path.hoursLeft - tech.hours, yearActions: path.yearActions.concat([actionLog]) });
+              if (typeof announceToSR === 'function') announceToSR(tech.name + ' applied. ' + (path.hoursLeft - tech.hours) + ' hours left.');
+            }
+
+            function endPathwayPeriod() {
+              var pre = path.sectors.map(function(s) { return Object.assign({}, s); });
+              var drifted = path.sectors.map(function(s) {
+                var ns = Object.assign({}, s);
+                // Sectors above 70 build momentum; below 30 erode.
+                if (ns.decarb > 70) ns.decarb = pathwayClamp(ns.decarb + 2, 0, 100);
+                else if (ns.decarb < 30) ns.decarb = pathwayClamp(ns.decarb - 2, 0, 100);
+                ns.support = pathwayClamp(ns.support + (ns.support < 50 ? 1 : -1), 0, 100);
+                return ns;
+              });
+              // Event
+              var diff = PATHWAY_DIFFICULTIES[path.difficulty || 'realist'];
+              var skipRng = pathwayRng(path.seed, path.year, 'skip');
+              var pickRng = pathwayRng(path.seed, path.year, 'pick');
+              var ev;
+              if (skipRng() < (diff.eventSkip || 0)) {
+                ev = { id: 'quietYear', name: 'A Quiet Period', icon: '\ud83c\udf24\ufe0f', desc: 'No major political or climate event. Routine policy work continued.', apply: function() {} };
+              } else {
+                ev = PATHWAY_EVENTS[Math.floor(pickRng() * PATHWAY_EVENTS.length)];
+              }
+              var eventState = { fundingBonusNextYear: path.fundingBonusNextYear || 0, activeMods: (path.activeMods || []).slice() };
+              ev.apply(drifted, eventState);
+              // Severity scaling
+              var sev = diff.severity || 1;
+              if (sev !== 1) {
+                for (var di = 0; di < drifted.length; di++) {
+                  var sp = drifted[di]; var pr = pre[di];
+                  sp.decarb = pathwayClamp(pr.decarb + (sp.decarb - pr.decarb) * sev, 0, 100);
+                  sp.resilience = pathwayClamp(pr.resilience + (sp.resilience - pr.resilience) * sev, 0, 100);
+                  sp.support = pathwayClamp(pr.support + (sp.support - pr.support) * sev, 0, 100);
+                }
+              }
+              // Cascade rules
+              var fired = [];
+              PATHWAY_FEEDBACK_RULES.forEach(function(rule) {
+                if (rule.when(drifted)) { rule.apply(drifted); fired.push({ id: rule.id, msg: rule.msg }); }
+              });
+              // Decrement active mods
+              var newMods = (eventState.activeMods || []).map(function(m) { return Object.assign({}, m, { turns: (m.turns || 1) - 1 }); }).filter(function(m) { return m.turns > 0; });
+              var snap = {
+                year: path.year, event: ev.name, eventIcon: ev.icon, eventDesc: ev.desc,
+                pre: pre, post: drifted.map(function(s) { return Object.assign({}, s); }),
+                actions: path.yearActions.slice(), cascades: fired
+              };
+              setPath({
+                phase: 'review',
+                sectors: drifted,
+                lastEvent: ev,
+                cascadesFiredThisYear: fired,
+                yearLog: path.yearLog.concat([snap]),
+                activeMods: newMods,
+                fundingBonusNextYear: eventState.fundingBonusNextYear || 0
+              });
+              if (typeof announceToSR === 'function') announceToSR('Period ' + pathwayYearLabel(path.year) + ' complete. Event: ' + ev.name + '.');
+            }
+
+            function advanceFromPathwayReview() {
+              if (path.year >= path.maxYears) {
+                // Final outcome
+                var avgDecarb = Math.round(path.sectors.reduce(function(a, s) { return a + s.decarb; }, 0) / path.sectors.length);
+                var avgRes = Math.round(path.sectors.reduce(function(a, s) { return a + s.resilience; }, 0) / path.sectors.length);
+                var avgSup = Math.round(path.sectors.reduce(function(a, s) { return a + s.support; }, 0) / path.sectors.length);
+                var justice = path.sectors.find(function(s) { return s.id === 'climateJustice'; });
+                var outcome;
+                if (avgDecarb >= 75 && avgRes >= 65 && justice && justice.support >= 65) outcome = { tier: 'netzero', label: 'Net-zero Plus Equity', color: '#16a34a', icon: '\ud83c\udfc6', desc: 'You hit deep decarbonization across sectors, built resilience, and held equity at the center. This is what a successful climate transition looks like when the social contract holds.' };
+                else if (avgDecarb >= 60 && avgRes >= 55) outcome = { tier: 'uneven', label: 'Decarbonized but Uneven', color: '#22c55e', icon: '\ud83c\udf3f', desc: 'Significant decarbonization across the energy and transport sectors, but adaptation and justice lagged. The carbon curves are right; the political coalition is fragile.' };
+                else if (avgDecarb >= 40 || avgRes >= 50) outcome = { tier: 'partial', label: 'Partial Progress', color: '#f59e0b', icon: '\ud83c\udf43', desc: 'Some sectors moved. Others stalled. Public support eroded over time. This is the trajectory most real-world climate policies have run.' };
+                else outcome = { tier: 'failure', label: 'Climate Policy Failure', color: '#ef4444', icon: '\u26a0\ufe0f', desc: 'Decarbonization stalled. Adaptation gaps widened. Public support collapsed. This is the trajectory we work to avoid: climate impacts compounding without the social or technical infrastructure to respond.' };
+                setPath({ phase: 'debrief', finalOutcome: outcome, avgDecarb: avgDecarb, avgRes: avgRes, avgSup: avgSup });
+              } else {
+                setPath({
+                  phase: 'year', year: path.year + 1,
+                  hoursLeft: path.hoursPerYear + (path.fundingBonusNextYear || 0),
+                  fundingBonusNextYear: 0,
+                  yearActions: [], lastEvent: null
+                });
+                if (typeof announceToSR === 'function') announceToSR('Period ' + pathwayYearLabel(path.year + 1) + ' begins.');
+              }
+            }
+
+            // \u2500\u2500 Helpers (artifact, baseline, coaching, deep-dive, trend, AI) \u2500\u2500
+            function sectorArtifact(s) {
+              var pct = Math.round(s.decarb);
+              if (s.id === 'energyGrid')      return { icon: '\u26a1', text: pct + '% renewable electricity generation' };
+              if (s.id === 'transportation')  return { icon: '\ud83d\ude8a', text: Math.round(pct * 0.6) + '% of light-duty vehicle fleet electrified' };
+              if (s.id === 'buildings')       return { icon: '\u2668\ufe0f', text: Math.round(pct * 5500) + ' Maine homes on heat pumps' };
+              if (s.id === 'workingLands')    return { icon: '\ud83c\udf32', text: Math.round(pct * 60000) + ' acres protected for working-lands carbon' };
+              if (s.id === 'adaptation')      return { icon: '\ud83c\udf0a', text: Math.round(s.resilience * 0.8) + ' coastal communities with adaptation plans' };
+              if (s.id === 'climateJustice')  return { icon: '\u2696\ufe0f', text: Math.round(s.support * 1.3) + '% of climate funds reaching frontline communities' };
+              return { icon: '\ud83c\udf0d', text: '' };
+            }
+
+            function computePathwayDoNothing() {
+              var sim = POLICY_SECTORS.map(function(s) { return Object.assign({ id: s.id }, s.defaultState); });
+              for (var y = 0; y < path.maxYears; y++) {
+                sim = sim.map(function(s) {
+                  var ns = Object.assign({}, s);
+                  if (ns.decarb > 70) ns.decarb = pathwayClamp(ns.decarb + 2, 0, 100);
+                  else if (ns.decarb < 30) ns.decarb = pathwayClamp(ns.decarb - 2, 0, 100);
+                  ns.support = pathwayClamp(ns.support + (ns.support < 50 ? 1 : -1), 0, 100);
+                  return ns;
+                });
+                PATHWAY_FEEDBACK_RULES.forEach(function(rule) { if (rule.when(sim)) rule.apply(sim); });
+              }
+              return sim;
+            }
+
+            function pathwayCoachingTip() {
+              var justice = path.sectors.find(function(s) { return s.id === 'climateJustice'; });
+              var grid = path.sectors.find(function(s) { return s.id === 'energyGrid'; });
+              if (justice && justice.support < 55) {
+                return {
+                  priority: 'Build the equity foundation first',
+                  text: 'Climate Justice support is at ' + Math.round(justice.support) + '. The "Low climate-justice progress drags support" feedback rule will erode every other sector if you let this slip below 40. Equity Investment is your highest-leverage opening move; it works on both decarbonization and resilience while building support.'
+                };
+              }
+              if (grid && grid.decarb < 50) {
+                return {
+                  priority: 'Clean the grid before electrifying everything',
+                  text: 'Energy Grid decarbonization is at ' + Math.round(grid.decarb) + '. The "Clean grid unlocks accelerated decarbonization in transport and buildings" feedback rule fires above 70. Utility-scale renewables and grid modernization in the first 2 periods compound through the whole campaign.'
+                };
+              }
+              return {
+                priority: 'Spread your bets, watch for feedback rules',
+                text: 'Initial conditions are workable. Spread investment across 2-3 sectors in the first period to find which feedback rules fire first. Public education + citizen assemblies pays off slowly but durably.'
+              };
+            }
+
+            function openPathDeepDive(id) { setPath({ deepDiveSector: id }); }
+            function closePathDeepDive() { setPath({ deepDiveSector: null }); }
+
+            function renderPathDeepDive(id) {
+              var def = getPolicySector(id);
+              if (!def || !def.deepDive) return null;
+              var dd = def.deepDive;
+              var applicable = PATHWAY_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any' || t.appliesTo.indexOf(id) >= 0; });
+              return el('div', {
+                role: 'dialog', 'aria-modal': 'true',
+                style: { background: 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.85) 60%)', border: '1px solid ' + def.color + '88', borderLeft: '4px solid ' + def.color, borderRadius: 14, padding: 18, marginBottom: 16 }
+              },
+                el('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
+                  el('span', { style: { fontSize: 36 } }, def.icon),
+                  el('div', { style: { flex: 1 } },
+                    el('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Sector deep-dive'),
+                    el('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
+                    el('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
+                  ),
+                  el('button', { onClick: closePathDeepDive,
+                    style: { background: 'rgba(15,23,42,0.6)', border: '1px solid #334155', color: '#cbd5e1', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '\u2715 Close')
+                ),
+                el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
+                  el('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                    el('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83d\udd2c Policy mechanics'),
+                    el('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
+                  ),
+                  el('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                    el('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83d\udcf0 Case work'),
+                    el('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
+                  ),
+                  el('div', { style: { background: 'rgba(15,23,42,0.7)', borderRadius: 10, padding: 12 } },
+                    el('div', { style: { fontSize: 11, fontWeight: 700, color: '#38bdf8', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83c\udf0d Maine context'),
+                    el('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
+                  )
+                ),
+                applicable.length > 0 ? el('div', { style: { marginTop: 12, padding: 12, background: 'rgba(21,128,61,0.10)', border: '1px solid rgba(21,128,61,0.4)', borderLeft: '3px solid #15803d', borderRadius: 10 } },
+                  el('div', { style: { fontSize: 11, fontWeight: 700, color: '#86efac', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83d\udee0 What you can do for this sector'),
+                  applicable.map(function(t, i) {
+                    return el('div', { key: i, style: { margin: '4px 0', fontSize: 12.5, color: '#d1fae5', lineHeight: 1.5 } },
+                      el('strong', { style: { color: '#bbf7d0' } }, t.icon + ' ' + t.name), ' (' + t.hours + 'h): ', t.desc
+                    );
+                  })
+                ) : null
+              );
+            }
+
+            function renderPathTrendChart(yearLog) {
+              if (!yearLog || yearLog.length === 0) return null;
+              var w = 600, hgt = 220, padL = 36, padR = 110, padT = 12, padB = 24;
+              var ix = w - padL - padR;
+              var iy = hgt - padT - padB;
+              function ptsFor(sid) {
+                return yearLog.map(function(snap, i) {
+                  var post = (snap.post || []).find(function(p) { return p.id === sid; });
+                  var v = post ? post.decarb : 0;
+                  var x = padL + (yearLog.length === 1 ? ix / 2 : (i / (yearLog.length - 1)) * ix);
+                  var y = padT + iy - (v / 100) * iy;
+                  return { x: x, y: y };
+                });
+              }
+              function pathStr(pts) { return pts.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x + ',' + p.y; }).join(' '); }
+              return el('div', { style: { background: '#0f172a', borderRadius: 12, padding: 12, marginBottom: 14, border: '1px solid #1e293b' } },
+                el('div', { style: { fontSize: 12, fontWeight: 700, color: '#e2e8f0', marginBottom: 8 } }, '\ud83d\udcc8 Sector decarbonization across the campaign'),
+                el('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' } },
+                  [0, 25, 50, 75, 100].map(function(g, gi) {
+                    var y = padT + iy - (g / 100) * iy;
+                    return el('g', { key: 'g' + gi },
+                      el('line', { x1: padL, y1: y, x2: padL + ix, y2: y, stroke: '#1e293b', strokeWidth: 1 }),
+                      el('text', { x: padL - 4, y: y + 3, fontSize: 9, fill: '#64748b', textAnchor: 'end' }, g)
+                    );
+                  }),
+                  yearLog.map(function(snap, i) {
+                    var x = padL + (yearLog.length === 1 ? ix / 2 : (i / (yearLog.length - 1)) * ix);
+                    return el('text', { key: 'xl' + i, x: x, y: hgt - 8, fontSize: 9, fill: '#64748b', textAnchor: 'middle' }, pathwayYearLabel(snap.year).slice(0, 4));
+                  }),
+                  POLICY_SECTORS.map(function(sd) {
+                    var pts = ptsFor(sd.id);
+                    return el('g', { key: sd.id },
+                      el('path', { d: pathStr(pts), stroke: sd.color, strokeWidth: 2, fill: 'none', strokeLinejoin: 'round' })
+                    );
+                  }),
+                  POLICY_SECTORS.map(function(sd, si) {
+                    return el('g', { key: 'leg' + sd.id },
+                      el('line', { x1: w - padR + 6, y1: padT + 8 + si * 16, x2: w - padR + 20, y2: padT + 8 + si * 16, stroke: sd.color, strokeWidth: 2.5 }),
+                      el('text', { x: w - padR + 24, y: padT + 12 + si * 16, fontSize: 10, fill: '#cbd5e1' }, sd.icon + ' ' + sd.name.split(' ')[0])
+                    );
+                  })
+                )
+              );
+            }
+
+            function readPathway() {
+              if (!callGemini || path.aiReadLoading) return;
+              var summary = path.sectors.map(function(s) {
+                var def = getPolicySector(s.id);
+                return '- ' + def.name + ' (' + def.role + '): decarbonization ' + Math.round(s.decarb) + '/' + def.targets.decarb + ', resilience ' + Math.round(s.resilience) + '/' + def.targets.resilience + ', public support ' + Math.round(s.support) + '/' + def.targets.support;
+              }).join('\n');
+              var prompt = [
+                'You are an AI climate policy educator. You are NOT a Wabanaki person, NOT a real climate strategist or policy maker, NOT an agency staff member, and you do NOT speak for any Wabanaki nation, agency, organization, or named individual.',
+                '',
+                'A student is managing a simulated Maine climate-policy campaign across 8 5-year periods from 2025 to 2065.',
+                '',
+                'Current state (Period ' + pathwayYearLabel(path.year) + ', difficulty: ' + (PATHWAY_DIFFICULTIES[path.difficulty] || PATHWAY_DIFFICULTIES.realist).label + '):',
+                summary,
+                'Hours this period: ' + path.hoursLeft + ' of ' + path.hoursPerYear,
+                '',
+                'Read this state and give 3 to 4 sentences of practical coaching grounded in climate-policy research and documented Maine work.',
+                '',
+                'HARD CONSTRAINTS:',
+                '- NEVER claim to be Wabanaki, a real climate strategist, agency staff, or named individual.',
+                '- NEVER invoke sacred, ceremonial, or spiritual claims.',
+                '- NEVER use "noble savage" framing or romanticized language about Indigenous peoples.',
+                '- NEVER invent quotes attributed to anyone.',
+                '- DO frame as "documented climate-policy research" or "Maine Climate Action Plan analysis" or "IRA / Justice40 program design".',
+                '- DO acknowledge Wabanaki-led climate work (Wabanaki Public Health and Wellness weatherization programs, Wabanaki Cultural Heritage Forest, Wabanaki-led transmission objections) without speaking for the nations.',
+                '- DO stay grounded in observable sector state and concrete techniques.',
+                '- Name 1 or 2 highest-priority moves and explain why, grounded in inter-sector feedback rules.',
+                '- Be direct, observational, useful. No flowery language.',
+                '',
+                'Respond in 3 to 4 sentences of plain prose. Do not use markdown.'
+              ].join('\n');
+              setPath({ aiReadLoading: true, aiReadResponse: null });
+              try {
+                var p2 = callGemini(prompt);
+                if (p2 && typeof p2.then === 'function') {
+                  p2.then(function(resp) {
+                    var text = '';
+                    if (typeof resp === 'string') text = resp;
+                    else if (resp && typeof resp.text === 'string') text = resp.text;
+                    else if (resp && resp.candidates) text = (resp.candidates[0] && resp.candidates[0].content && resp.candidates[0].content.parts && resp.candidates[0].content.parts[0] && resp.candidates[0].content.parts[0].text) || '';
+                    text = (text || 'The reader returned no text. Try again in a moment.').replace(/\*\*/g, '').replace(/^[\s\n]+|[\s\n]+$/g, '');
+                    setPath({ aiReadResponse: text, aiReadLoading: false });
+                    if (typeof announceToSR === 'function') announceToSR('AI Climate Policy Reading complete.');
+                  }).catch(function() {
+                    setPath({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
+                  });
+                } else {
+                  setPath({ aiReadResponse: 'AI is not available in this context.', aiReadLoading: false });
+                }
+              } catch (e) {
+                setPath({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
+              }
+            }
+            function dismissPathAIRead() { setPath({ aiReadResponse: null }); }
+
+            function renderPathAIPanel() {
+              if (path.aiReadLoading) {
+                return el('div', { role: 'status', 'aria-live': 'polite',
+                  style: { padding: '12px 14px', borderRadius: 12, marginBottom: 12, background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.4)', borderLeft: '3px solid #38bdf8', color: '#bae6fd', fontSize: 13 } },
+                  '\u23f3 AI climate-policy educator is reading your campaign state...');
+              }
+              if (!path.aiReadResponse) return null;
+              return el('div', { role: 'region', 'aria-label': 'AI Climate Policy Reading',
+                style: { padding: 14, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(56,189,248,0.10) 0%, rgba(15,23,42,0.4) 100%)', border: '1px solid rgba(56,189,248,0.5)', borderLeft: '3px solid #38bdf8' } },
+                el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                  el('span', { style: { fontSize: 20 } }, '\ud83d\udd0d'),
+                  el('strong', { style: { color: '#38bdf8', fontSize: 14 } }, 'AI Climate Policy Reading'),
+                  el('div', { style: { marginLeft: 'auto', display: 'flex', gap: 6 } },
+                    el('button', { onClick: readPathway,
+                      style: { background: 'transparent', border: '1px solid #38bdf8', color: '#38bdf8', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\u21bb Re-read'),
+                    el('button', { onClick: dismissPathAIRead,
+                      style: { background: 'transparent', border: '1px solid #475569', color: '#cbd5e1', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\u2715')
+                  )
+                ),
+                el('p', { style: { margin: '0 0 10px 0', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.6 } }, path.aiReadResponse),
+                el('div', { style: { fontSize: 11, color: '#64748b', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
+                  'AI climate-policy educator. ',
+                  el('strong', null, 'It is not a Wabanaki person, not a real climate strategist or policy maker, and does not speak for any Wabanaki nation, agency, or organization.'),
+                  ' For authoritative voice on Maine climate policy: Penobscot Nation CHPD, Wabanaki Public Health and Wellness, Maine Climate Council, Maine Department of Environmental Protection, Sunrise Movement Maine, Maine Climate Action Now.'
+                )
+              );
+            }
+
+            var pathDeepDive = path.deepDiveSector ? renderPathDeepDive(path.deepDiveSector) : null;
+
+            // \u2500\u2500 SETUP \u2500\u2500
+            if (path.phase === 'setup') {
+              return el('div', { style: { maxWidth: 720, margin: '0 auto' } },
+                pathDeepDive,
+                el('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(56,189,248,0.06) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN, marginBottom: 14 } },
+                  el('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
+                    el('span', { style: { fontSize: 36 } }, '\ud83d\uddfa\ufe0f'),
+                    el('div', null,
+                      el('h3', { style: { margin: 0, color: T_GREEN_HI, fontSize: 22 } }, 'Climate Policy Pathways: 2025 to 2065'),
+                      el('div', { style: { fontSize: 13, color: '#cbd5e1', marginTop: 2 } }, 'You are Maine\'s lead climate strategist.')
+                    )
+                  ),
+                  el('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } },
+                    'Eight 5-year periods. Six policy sectors. ',
+                    el('strong', null, 'Inter-sector feedback rules'),
+                    ' tie the whole system together: clean grid unlocks decarbonization in transport and buildings; low climate justice drags support down everywhere; healthy working forests boost adaptation; adaptation deficit erodes public trust during disaster years.'
+                  )
+                ),
+                el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10, marginBottom: 14 } },
+                  POLICY_SECTORS.map(function(s) {
+                    return el('div', { key: s.id, style: { background: '#0f172a', borderLeft: '3px solid ' + s.color, borderRadius: 10, padding: 12 } },
+                      el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                        el('span', { style: { fontSize: 22 } }, s.icon),
+                        el('strong', { style: { color: s.color } }, s.name)
+                      ),
+                      el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, s.role),
+                      el('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 8 } }, s.desc),
+                      s.deepDive ? el('button', { onClick: function() { openPathDeepDive(s.id); }, 'aria-label': 'Deep-dive for ' + s.name,
+                        style: { width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid ' + s.color + '88', background: s.color + '22', color: s.color, cursor: 'pointer', fontWeight: 700, fontSize: 11.5 }
+                      }, '\ud83d\udcda Sector deep-dive \u2192') : null
+                    );
+                  })
+                ),
+                el('div', { style: { background: '#0f172a', borderRadius: 10, padding: 12, marginBottom: 14, border: '1px solid #1e293b' } },
+                  el('div', { style: { fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, fontWeight: 700 } }, 'Difficulty'),
+                  el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
+                    Object.keys(PATHWAY_DIFFICULTIES).map(function(dkey) {
+                      var df = PATHWAY_DIFFICULTIES[dkey];
+                      var picked = (path.difficulty || 'realist') === dkey;
+                      return el('button', { key: dkey, onClick: function() { setPath({ difficulty: dkey }); }, 'aria-pressed': picked,
+                        style: { background: picked ? 'rgba(21,128,61,0.20)' : '#1e293b', border: '1px solid ' + (picked ? '#15803d' : '#334155'), color: picked ? '#86efac' : '#cbd5e1', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', textAlign: 'left' } },
+                        el('div', { style: { fontWeight: 800, fontSize: 13 } }, df.label),
+                        el('div', { style: { fontSize: 11, color: picked ? '#a7f3d0' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, df.desc)
+                      );
+                    })
+                  )
+                ),
+                el('button', { onClick: function() { startPathway(); },
+                  style: { width: '100%', padding: '14px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + T_GREEN + ' 0%, #166534 100%)', color: '#fff', fontWeight: 800, fontSize: 16 } }, '\ud83d\uddfa\ufe0f Begin 40-year Climate Pathway')
+              );
+            }
+
+            // \u2500\u2500 DEBRIEF \u2500\u2500
+            if (path.phase === 'debrief' && path.finalOutcome) {
+              var o = path.finalOutcome;
+              var baseline = computePathwayDoNothing();
+              var actualAvgDecarb = path.avgDecarb;
+              var baselineAvgDecarb = Math.round(baseline.reduce(function(a, s) { return a + s.decarb; }, 0) / baseline.length);
+              return el('div', { style: { maxWidth: 720, margin: '0 auto' } },
+                pathDeepDive,
+                el('div', { style: { padding: 18, borderRadius: 14, marginBottom: 12, background: 'linear-gradient(135deg, ' + o.color + '24 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + o.color + '88', borderLeft: '4px solid ' + o.color } },
+                  el('div', { style: { fontSize: 40, marginBottom: 6 } }, o.icon),
+                  el('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
+                  el('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: 14, lineHeight: 1.6 } }, o.desc)
+                ),
+                renderPathTrendChart(path.yearLog),
+                el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 8, marginBottom: 14 } },
+                  path.sectors.map(function(s) {
+                    var def = getPolicySector(s.id);
+                    var art = sectorArtifact(s);
+                    return el('div', { key: s.id, style: { background: '#0f172a', borderLeft: '3px solid ' + def.color, padding: 10, borderRadius: 8, fontSize: 12 } },
+                      el('div', { style: { fontWeight: 700, color: def.color, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 } },
+                        el('span', null, def.icon + ' ' + def.name),
+                        def.deepDive ? el('button', { onClick: function() { openPathDeepDive(s.id); },
+                          style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '0 6px', fontSize: 11 } }, '\ud83d\udcda') : null
+                      ),
+                      el('div', { style: { color: '#cbd5e1', lineHeight: 1.55 } },
+                        'Decarb: ' + Math.round(s.decarb) + '/' + def.targets.decarb,
+                        el('br'),
+                        'Resilience: ' + Math.round(s.resilience) + '/' + def.targets.resilience,
+                        el('br'),
+                        'Support: ' + Math.round(s.support) + '/' + def.targets.support
+                      ),
+                      art.text ? el('div', { style: { marginTop: 6, padding: 6, background: '#1e293b', borderRadius: 6, fontSize: 11.5, color: '#fde68a' } },
+                        el('span', { style: { fontSize: 14, marginRight: 4 } }, art.icon), art.text
+                      ) : null
+                    );
+                  })
+                ),
+                el('div', { style: { padding: 12, borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(15,23,42,1) 0%, rgba(127,29,29,0.18) 100%)', border: '1px solid rgba(248,113,113,0.4)' } },
+                  el('strong', { style: { color: '#fecaca', fontSize: 14, display: 'block', marginBottom: 8 } }, '\u2194 What if you had done nothing for 40 years?'),
+                  el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+                    el('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8, borderLeft: '3px solid ' + o.color } },
+                      el('div', { style: { fontSize: 12, fontWeight: 700, color: o.color, marginBottom: 4 } }, 'Your pathway'),
+                      el('div', { style: { color: '#cbd5e1', fontSize: 13 } }, 'Avg decarb ' + actualAvgDecarb)
+                    ),
+                    el('div', { style: { background: '#0f172a', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
+                      el('div', { style: { fontSize: 12, fontWeight: 700, color: '#fca5a5', marginBottom: 4 } }, 'Pure neglect'),
+                      el('div', { style: { color: '#cbd5e1', fontSize: 13 } }, 'Avg decarb ' + baselineAvgDecarb)
+                    )
+                  ),
+                  el('div', { style: { marginTop: 8, fontSize: 12, color: '#fde68a', lineHeight: 1.5, fontStyle: 'italic' } },
+                    actualAvgDecarb > baselineAvgDecarb + 15
+                      ? 'Your campaign moved Maine substantially ahead of where neglect would have left it. That gap is the cumulative effect of every period\'s policy choice compounded by feedback rules.'
+                      : (actualAvgDecarb > baselineAvgDecarb
+                          ? 'You moved the needle but feedback rules limited the gains. Look at WHICH feedback rules failed to fire (e.g., grid never cleared 70%, or justice support dropped below 40 and erosion locked in).'
+                          : 'Active policy under-performed the baseline. Common cause: spreading hours too thin across sectors instead of building the foundational feedback chain (clean grid \u2192 electrification, or equity support \u2192 political capacity for the rest).')
+                  )
+                ),
+                el('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 } },
+                  el('button', { onClick: resetPathway, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#1e293b', color: '#cbd5e1', fontWeight: 700 } }, '\u21bb New campaign'),
+                  el('button', { onClick: function() { startPathway({ seed: path.seed, difficulty: path.difficulty }); },
+                    style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8', cursor: 'pointer', background: 'rgba(56,189,248,0.15)', color: '#bae6fd', fontWeight: 700 } }, '\ud83d\udd01 Replay same conditions')
+                ),
+                el('div', { style: { padding: 8, background: '#0f172a', borderRadius: 8, fontSize: 11.5, color: '#94a3b8', fontFamily: 'ui-monospace, monospace' } },
+                  el('span', { style: { color: '#64748b' } }, 'Campaign seed: '),
+                  el('strong', { style: { color: '#cbd5e1' } }, path.seed)
+                )
+              );
+            }
+
+            // \u2500\u2500 REVIEW \u2500\u2500
+            if (path.phase === 'review') {
+              var lastSnap = path.yearLog[path.yearLog.length - 1] || {};
+              var ev = path.lastEvent || {};
+              return el('div', { style: { maxWidth: 720, margin: '0 auto' } },
+                pathDeepDive,
+                el('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', borderLeft: '3px solid #fbbf24', marginBottom: 12 } },
+                  el('div', { style: { fontSize: 22, marginBottom: 4 } }, ev.icon || '\ud83c\udf3f'),
+                  el('strong', { style: { color: '#fbbf24', fontSize: 16 } }, 'Period ' + pathwayYearLabel(path.year) + ' event: ' + (ev.name || 'quiet')),
+                  el('p', { style: { margin: '6px 0 0', color: '#e2e8f0', fontSize: 13, lineHeight: 1.55 } }, ev.desc || '')
+                ),
+                (lastSnap.cascades && lastSnap.cascades.length > 0) ? el('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8', fontSize: 13, color: '#bae6fd', marginBottom: 12 } },
+                  el('strong', { style: { color: '#38bdf8' } }, '\ud83d\udd04 Inter-sector feedback rules this period'),
+                  lastSnap.cascades.map(function(c, ci) { return el('div', { key: ci, style: { margin: '6px 0 0', fontStyle: 'italic' } }, '\u00b7 ' + c.msg); })
+                ) : null,
+                el('div', { style: { background: '#0f172a', borderRadius: 10, padding: 10, marginBottom: 12 } },
+                  el('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 6, fontSize: 13 } }, 'What changed this period'),
+                  (lastSnap.pre || []).map(function(preS) {
+                    var postS = (lastSnap.post || []).find(function(p) { return p.id === preS.id; }) || preS;
+                    var def = getPolicySector(preS.id);
+                    function delta(label, before, after) {
+                      var dlt = Math.round(after - before);
+                      var color = '#64748b'; var arrow = '\u00b7';
+                      if (Math.abs(dlt) >= 1) { color = dlt > 0 ? '#86efac' : '#fca5a5'; arrow = dlt > 0 ? '\u25b2' : '\u25bc'; }
+                      return el('span', { style: { color: color, fontSize: 11, fontWeight: 700, marginRight: 8 } }, label + ' ' + Math.round(after) + ' ' + arrow + ' ' + (dlt > 0 ? '+' : '') + dlt);
+                    }
+                    return el('div', { key: preS.id, style: { fontSize: 12, padding: '4px 0', borderTop: '1px solid #1e293b' } },
+                      el('strong', { style: { color: def.color, marginRight: 8 } }, def.icon + ' ' + def.name),
+                      delta('Dec', preS.decarb, postS.decarb),
+                      delta('Res', preS.resilience, postS.resilience),
+                      delta('Sup', preS.support, postS.support)
+                    );
+                  })
+                ),
+                el('button', { onClick: advanceFromPathwayReview,
+                  style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + T_GREEN + ' 0%, #166534 100%)', color: '#fff', fontWeight: 700, fontSize: 14 } },
+                  path.year >= path.maxYears ? 'See final outcome \u2192' : 'Begin period ' + pathwayYearLabel(path.year + 1) + ' \u2192')
+              );
+            }
+
+            // \u2500\u2500 YEAR (5-YEAR PERIOD) \u2500\u2500
+            var coachingTip = (path.year === 1 && !path.firstTipDismissed && path.yearActions.length === 0) ? pathwayCoachingTip() : null;
+            return el('div', { style: { maxWidth: 720, margin: '0 auto' } },
+              pathDeepDive,
+              coachingTip ? el('div', { role: 'note', style: { padding: '10px 14px', borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(168,85,247,0.16) 0%, rgba(168,85,247,0.04) 100%)', border: '1px solid rgba(168,85,247,0.6)', borderLeft: '3px solid #a855f7', color: '#e9d5ff', fontSize: 13, lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 10 } },
+                el('span', { style: { fontSize: 20, flexShrink: 0 } }, '\ud83e\udeb6'),
+                el('div', { style: { flex: 1 } },
+                  el('strong', { style: { color: '#a855f7' } }, 'Period 1 priority: '),
+                  el('span', { style: { color: '#fde68a' } }, coachingTip.priority),
+                  el('div', { style: { marginTop: 4, color: '#e9d5ff' } }, coachingTip.text)
+                ),
+                el('button', { onClick: function() { setPath({ firstTipDismissed: true }); }, 'aria-label': 'Dismiss tip',
+                  style: { background: 'transparent', border: 'none', color: '#a855f7', cursor: 'pointer', fontSize: 16, padding: 0, marginLeft: 6 } }, '\u2715')
+              ) : null,
+              renderPathAIPanel(),
+              // HUD
+              el('div', { style: { padding: '10px 14px', borderRadius: 12, marginBottom: 12, background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(15,23,42,0) 100%)', border: '1px solid ' + T_GREEN + '66', borderLeft: '4px solid ' + T_GREEN, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
+                el('div', null,
+                  el('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Period'),
+                  el('div', { style: { fontSize: 18, fontWeight: 800, color: T_GREEN_HI } }, pathwayYearLabel(path.year))
+                ),
+                el('div', null,
+                  el('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Hours'),
+                  el('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, path.hoursLeft + ' / ' + path.hoursPerYear)
+                ),
+                el('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+                  callGemini ? el('button', { onClick: readPathway, disabled: path.aiReadLoading,
+                    style: { padding: '8px 12px', borderRadius: 10, border: '1px solid #38bdf8', cursor: path.aiReadLoading ? 'wait' : 'pointer', background: 'rgba(56,189,248,0.10)', color: '#38bdf8', fontWeight: 700, fontSize: 12, opacity: path.aiReadLoading ? 0.6 : 1 }
+                  }, path.aiReadLoading ? '\u23f3 Reading...' : '\ud83d\udd0d Read the pathway (AI)') : null,
+                  el('button', { onClick: endPathwayPeriod,
+                    style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 13 } }, 'End period \u2192')
+                )
+              ),
+              // Sector cards with actions
+              el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 10, marginBottom: 12 } },
+                path.sectors.map(function(s) {
+                  var def = getPolicySector(s.id);
+                  if (!def) return null;
+                  var applicable = PATHWAY_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any' || t.appliesTo.indexOf(s.id) >= 0; });
+                  return el('div', { key: s.id, style: { background: '#0f172a', borderRadius: 12, padding: 12, borderLeft: '3px solid ' + def.color } },
+                    el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
+                      el('span', { style: { fontSize: 22 } }, def.icon),
+                      el('div', { style: { flex: 1 } },
+                        el('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
+                        el('div', { style: { fontSize: 11, color: '#94a3b8' } }, def.role)
+                      ),
+                      def.deepDive ? el('button', { onClick: function() { openPathDeepDive(s.id); },
+                        style: { background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 } }, '\ud83d\udcda') : null
+                    ),
+                    el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
+                      [['Dec', Math.round(s.decarb), s.decarb < 30 ? '#ef4444' : s.decarb < 60 ? '#f59e0b' : '#22c55e', def.targets.decarb],
+                       ['Res', Math.round(s.resilience), s.resilience < 40 ? '#ef4444' : s.resilience < 65 ? '#f59e0b' : '#22c55e', def.targets.resilience],
+                       ['Sup', Math.round(s.support), s.support < 40 ? '#ef4444' : s.support < 60 ? '#f59e0b' : '#22c55e', def.targets.support]
+                      ].map(function(st, si) {
+                        return el('div', { key: si, style: { background: '#1e293b', padding: 6, borderRadius: 6, textAlign: 'center' } },
+                          el('div', { style: { fontSize: 10, color: '#94a3b8' } }, st[0]),
+                          el('div', { style: { fontSize: 15, fontWeight: 800, color: st[2] } }, st[1]),
+                          el('div', { style: { fontSize: 9, color: '#64748b' } }, 'goal ' + st[3])
+                        );
+                      })
+                    ),
+                    el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+                      applicable.filter(function(t) { return t.appliesTo !== 'any'; }).map(function(t) {
+                        var disabled = path.hoursLeft < t.hours;
+                        return el('button', { key: t.id, onClick: function() { applyPathTech(t.id, s.id); }, disabled: disabled, title: t.desc,
+                          style: { padding: '4px 8px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', background: disabled ? '#1e293b' : '#15803d', color: disabled ? '#475569' : '#fff', opacity: disabled ? 0.5 : 1 } },
+                          t.icon + ' ' + t.name + ' (' + t.hours + 'h)');
+                      })
+                    )
+                  );
+                })
+              ),
+              el('div', { style: { background: '#0f172a', borderRadius: 12, padding: 12, marginBottom: 12, borderLeft: '3px solid #38bdf8' } },
+                el('div', { style: { fontSize: 12, fontWeight: 700, color: '#bae6fd', marginBottom: 8 } }, '\ud83d\udee0 Cross-sector actions'),
+                el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                  PATHWAY_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any'; }).map(function(t) {
+                    var disabled = path.hoursLeft < t.hours;
+                    return el('button', { key: t.id, onClick: function() { applyPathTech(t.id, null); }, disabled: disabled, title: t.desc,
+                      style: { padding: '6px 10px', fontSize: 12, fontWeight: 700, borderRadius: 6, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', background: disabled ? '#1e293b' : '#15803d', color: disabled ? '#475569' : '#fff', opacity: disabled ? 0.5 : 1 } },
+                      t.icon + ' ' + t.name + ' (' + t.hours + 'h)');
+                  })
+                )
+              ),
+              path.yearActions.length > 0 ? el('div', { style: { background: '#0f172a', borderRadius: 10, padding: 10, fontSize: 12, color: '#cbd5e1' } },
+                el('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 4 } }, 'Period actions'),
+                path.yearActions.map(function(a, ai) { return el('div', { key: ai }, '\u00b7 ' + a.tech + ' \u2192 ' + a.target + ' (' + a.hours + 'h)'); })
+              ) : el('div', { style: { fontSize: 12, color: '#64748b', fontStyle: 'italic' } }, 'No actions yet this period. Pick a sector, pick a technique.')
+            );
+          })()
         )
       );
     }

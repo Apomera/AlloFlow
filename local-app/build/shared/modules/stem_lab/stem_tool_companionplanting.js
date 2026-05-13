@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_companionplanting.js — Companion Planting Lab (standalone CDN module)
 // Three Sisters garden simulator with Sims-style management, seasons, soil science
@@ -1639,9 +1649,14 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Season-aware Sky (smooth time-based sun arc) ──
-
-              var dayPhase = (Math.sin(elapsed * 0.18) + 1) / 2; // ~35s full cycle, smooth regardless of frame rate
+              // ── Day/night cycle (sawtooth: sun rises east, sets west, then night) ──
+              // Total cycle ≈ 40s: ~28s day + ~12s night. Sun travels one direction only.
+              var cycleProgress = ((elapsed * 0.025) % 1);  // 0..1 looping
+              var DAY_FRACTION = 0.7;
+              var isNight = cycleProgress >= DAY_FRACTION;
+              var dayPhase = isNight ? 0 : (cycleProgress / DAY_FRACTION);     // 0..1 across daytime, used for sun position
+              var nightPhase = isNight ? ((cycleProgress - DAY_FRACTION) / (1 - DAY_FRACTION)) : 0;  // 0..1 across nighttime
+              var dayBrightness = isNight ? 0 : Math.sin(dayPhase * Math.PI);  // 0 at dawn/dusk, 1 at noon
 
               var seasonSkies = [
 
@@ -1653,6 +1668,15 @@ var d = (labToolData.companionPlanting) || {};
 
                 { topH: 215, topS: 25, topL: 40, botH: 220, botS: 15, botL: 65 }   // winter — gray-blue
 
+              ];
+
+              // Ground gradient stops per season — declared here (not at first paint pass below)
+              // because the cached-gradient block reads it before the original declaration site.
+              var groundColors = [
+                ['#7CB342', '#558B2F', '#33691E'],  // spring
+                ['#8BC34A', '#689F38', '#33691E'],  // summer
+                ['#A1887F', '#795548', '#4E342E'],  // autumn
+                ['#B0BEC5', '#78909C', '#546E7A']   // winter
               ];
 
               var ssky = seasonSkies[_season];
@@ -1668,38 +1692,61 @@ var d = (labToolData.companionPlanting) || {};
                 _cachedGroundGrad = ctx.createLinearGradient(0, cH * 0.4, 0, cH);
                 _cachedGroundGrad.addColorStop(0, gc2[0]); _cachedGroundGrad.addColorStop(0.3, gc2[1]); _cachedGroundGrad.addColorStop(1, gc2[2]);
               }
-              // Apply subtle dayPhase brightness shift via globalAlpha overlay (cheaper than new gradient)
+              // Apply day/night overlay on top of cached season sky gradient
               ctx.fillStyle = _cachedSkyGrad;
               ctx.fillRect(0, 0, cW, cH * 0.45);
-              // Subtle brightness variation from day phase (avoids recreating gradient)
-              ctx.fillStyle = 'rgba(255,255,200,' + (dayPhase * 0.06) + ')';
-              ctx.fillRect(0, 0, cW, cH * 0.45);
+              if (!isNight) {
+                // Warm noon tint, peaks at noon, fades at dawn/dusk
+                ctx.fillStyle = 'rgba(255,255,200,' + (dayBrightness * 0.06) + ')';
+                ctx.fillRect(0, 0, cW, cH * 0.45);
+              } else {
+                // Dark blue overlay deepens toward midnight, lifts toward dawn
+                var nightDark = Math.sin(nightPhase * Math.PI) * 0.55 + 0.25;
+                ctx.fillStyle = 'rgba(15,20,55,' + nightDark + ')';
+                ctx.fillRect(0, 0, cW, cH * 0.45);
+                // Stars (twinkle)
+                for (var st = 0; st < 14; st++) {
+                  var sxs = (st * 73.3) % cW;
+                  var sys = ((st * 41.7) % (cH * 0.35)) + 6;
+                  var twinkle = 0.35 + 0.55 * Math.sin(tick * 0.05 + st * 1.7);
+                  ctx.fillStyle = 'rgba(255,255,255,' + (twinkle * nightDark * 1.3) + ')';
+                  ctx.beginPath(); ctx.arc(sxs, sys, 0.9, 0, Math.PI * 2); ctx.fill();
+                }
+              }
 
 
 
-              // Sun (smaller in winter, bigger in summer)
-
-              var sunSize = _season === 1 ? 18 : _season === 3 ? 10 : 14;
-
-              var sunX = cW * 0.15 + cW * 0.7 * dayPhase;
-
-              var sunY = cH * 0.05 + Math.sin(dayPhase * Math.PI) * cH * -0.12 + cH * 0.15;
-
-              var sunGlow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunSize * 3);
-
-              sunGlow.addColorStop(0, _season === 3 ? 'rgba(200,210,230,0.7)' : 'rgba(255,235,59,0.9)');
-
-              sunGlow.addColorStop(0.5, _season === 3 ? 'rgba(180,195,220,0.2)' : 'rgba(255,193,7,0.3)');
-
-              sunGlow.addColorStop(1, 'rgba(255,193,7,0)');
-
-              ctx.fillStyle = sunGlow;
-
-              ctx.fillRect(sunX - sunSize * 4, sunY - sunSize * 4, sunSize * 8, sunSize * 8);
-
-              ctx.fillStyle = _season === 3 ? '#B0BEC5' : '#FDD835';
-
-              ctx.beginPath(); ctx.arc(sunX, sunY, sunSize, 0, Math.PI * 2); ctx.fill();
+              // Sun (day) or Moon (night) — same arc east → west, only one visible at a time
+              if (!isNight) {
+                // Sun: smaller in winter, bigger in summer; tinted gray-blue in winter
+                var sunSize = _season === 1 ? 18 : _season === 3 ? 10 : 14;
+                var sunX = cW * 0.15 + cW * 0.7 * dayPhase;
+                var sunY = cH * 0.05 + Math.sin(dayPhase * Math.PI) * cH * -0.12 + cH * 0.15;
+                var sunGlow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunSize * 3);
+                sunGlow.addColorStop(0, _season === 3 ? 'rgba(200,210,230,0.7)' : 'rgba(255,235,59,0.9)');
+                sunGlow.addColorStop(0.5, _season === 3 ? 'rgba(180,195,220,0.2)' : 'rgba(255,193,7,0.3)');
+                sunGlow.addColorStop(1, 'rgba(255,193,7,0)');
+                ctx.fillStyle = sunGlow;
+                ctx.fillRect(sunX - sunSize * 4, sunY - sunSize * 4, sunSize * 8, sunSize * 8);
+                ctx.fillStyle = _season === 3 ? '#B0BEC5' : '#FDD835';
+                ctx.beginPath(); ctx.arc(sunX, sunY, sunSize, 0, Math.PI * 2); ctx.fill();
+              } else {
+                // Moon: traverses east → west during night, with crescent shadow
+                var moonSize = 12;
+                var moonX = cW * 0.15 + cW * 0.7 * nightPhase;
+                var moonY = cH * 0.05 + Math.sin(nightPhase * Math.PI) * cH * -0.12 + cH * 0.15;
+                var moonGlow = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonSize * 3);
+                moonGlow.addColorStop(0, 'rgba(220,220,240,0.85)');
+                moonGlow.addColorStop(0.5, 'rgba(200,200,220,0.2)');
+                moonGlow.addColorStop(1, 'rgba(200,200,220,0)');
+                ctx.fillStyle = moonGlow;
+                ctx.fillRect(moonX - moonSize * 4, moonY - moonSize * 4, moonSize * 8, moonSize * 8);
+                ctx.fillStyle = '#E8E8F0';
+                ctx.beginPath(); ctx.arc(moonX, moonY, moonSize, 0, Math.PI * 2); ctx.fill();
+                // Subtle crescent shadow
+                ctx.fillStyle = 'rgba(60,70,100,0.4)';
+                ctx.beginPath(); ctx.arc(moonX + moonSize * 0.4, moonY - moonSize * 0.1, moonSize * 0.85, 0, Math.PI * 2); ctx.fill();
+              }
 
 
 
@@ -1754,18 +1801,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
               // ── Ground (season-tinted) ──
-
-              var groundColors = [
-
-                ['#7CB342', '#558B2F', '#33691E'],  // spring
-
-                ['#8BC34A', '#689F38', '#33691E'],  // summer
-
-                ['#A1887F', '#795548', '#4E342E'],  // autumn
-
-                ['#B0BEC5', '#78909C', '#546E7A']   // winter
-
-              ];
+              // groundColors declared earlier alongside seasonSkies (cached-gradient block reads it).
 
               ctx.fillStyle = _cachedGroundGrad || '#5a7040';
 
@@ -3643,7 +3679,7 @@ var d = (labToolData.companionPlanting) || {};
                       placeholder: 'Write your reflection here...',
                       rows: 3,
                       'aria-label': 'Your reflection',
-                      className: 'w-full text-sm border border-slate-200 rounded-lg p-2 outline-none focus:ring-2 focus:ring-violet-300 resize-none'
+                      className: 'w-full text-sm border border-slate-400 rounded-lg p-2 outline-none focus:ring-2 focus:ring-violet-300 resize-none'
                     })),
                   h('div', { className: 'flex gap-2' },
                     h('button', { onClick: cgSubmitReflection, disabled: !cgReflectionResponse.trim(), className: 'px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-700 disabled:opacity-40' }, '📝 Save to Journal'),
@@ -3749,7 +3785,7 @@ var d = (labToolData.companionPlanting) || {};
                       'aria-label': p.label + (selected ? ' (selected)' : '') + ': ' + p.desc + '. ' + p.days + ' days to harvest. Water: ' + p.water + '/3. Sun: ' + p.sun + '/3.' + (p.nEffect > 0 ? ' Fixes nitrogen.' : p.nEffect < 0 ? ' Heavy feeder.' : '') + (p.pollinator ? ' Attracts pollinators.' : '') + (p.needsPoll ? ' Needs pollinators.' : ''),
                       'aria-pressed': selected ? 'true' : 'false',
                       title: p.label + ': ' + p.desc + ' (' + p.days + ' days)',
-                      className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold transition-all ' + (selected ? 'bg-emerald-700 text-white ring-2 ring-emerald-400' : 'bg-white text-slate-700 border border-slate-200 hover:border-emerald-400')
+                      className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold transition-all ' + (selected ? 'bg-emerald-700 text-white ring-2 ring-emerald-400' : 'bg-white text-slate-700 border border-slate-400 hover:border-emerald-400')
                     }, h('span', { 'aria-hidden': 'true' }, p.emoji), p.label);
                   })),
                 // Selected plant info card
@@ -3859,7 +3895,7 @@ var d = (labToolData.companionPlanting) || {};
                   var rect = e.currentTarget.getBoundingClientRect();
                   var mx = (e.clientX - rect.left) * (e.currentTarget.width / rect.width);
                   var my = (e.clientY - rect.top) * (e.currentTarget.height / rect.height);
-                  var isoOX2 = e.currentTarget.width / 2; var isoOY2 = 180; var iTW2 = 90; var iTH2 = 50;
+                  var isoOX2 = e.currentTarget.width / 2; var isoOY2 = 180; var iTW2 = 240; var iTH2 = 130; // must match draw-code constants
                   var relX2 = mx - isoOX2; var relY2 = my - isoOY2;
                   var hCol = Math.floor((relX2 / (iTW2 / 2) + relY2 / (iTH2 / 2)) / 2);
                   var hRow = Math.floor((relY2 / (iTH2 / 2) - relX2 / (iTW2 / 2)) / 2);
@@ -3873,7 +3909,7 @@ var d = (labToolData.companionPlanting) || {};
                   var my = (e.clientY - rect.top) * (e.currentTarget.height / rect.height);
                   // Iso grid params (must match draw code)
                   var isoOX = e.currentTarget.width / 2; var isoOY = 180;
-                  var iTW = 90; var iTH = 50;
+                  var iTW = 240; var iTH = 130; // must match draw-code constants in canvas ref below
                   // Reverse isometric transform
                   var relX = mx - isoOX; var relY = my - isoOY;
                   var iCol = Math.floor((relX / (iTW / 2) + relY / (iTH / 2)) / 2);
@@ -3897,7 +3933,15 @@ var d = (labToolData.companionPlanting) || {};
                   var startT = performance.now();
                   // Isometric tile parameters
                   var isoOX = W / 2; var isoOY = 180; // origin (center-top of grid)
-                  var iTW = 90; var iTH = 50; // tile width/height in iso space
+                  // Tile width/height in iso space. Bumped from 90/50 → 240/130
+                  // (~2.7×) so the 4×4 garden actually fills a meaningful share
+                  // of the canvas instead of looking like a pinpoint in the
+                  // background. Plant draws use iTW/iTH-relative offsets so they
+                  // scale proportionally; absolute plant heights (35-50 px) read
+                  // fine at this tile scale. If you change these here, also
+                  // update the matching constants in onClick + onMouseMove
+                  // handlers above so click hit-testing stays aligned.
+                  var iTW = 240; var iTH = 130;
                   // Convert grid (row,col) to screen (x,y) center of diamond
                   function isoToScreen(row, col) {
                     return { x: isoOX + (col - row) * iTW / 2, y: isoOY + (col + row) * iTH / 2 };
@@ -4257,7 +4301,7 @@ var d = (labToolData.companionPlanting) || {};
                 if (allBonuses.some(function(b) { return b.bonus > 0; }) && !cgSeenReflections.companion_discovery) {
                   setTimeout(function() { cgTriggerReflection('companion_discovery'); }, 500);
                 }
-                return h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-3' },
+                return h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-3' },
                   h('div', { className: 'text-xs font-bold text-slate-700 mb-2' }, '🔬 Active Companion Interactions (' + allBonuses.length + ')'),
                   h('div', { className: 'space-y-1' },
                     allBonuses.map(function(p, i) {
@@ -4286,7 +4330,7 @@ var d = (labToolData.companionPlanting) || {};
                 if (guide.length === 0) return null;
                 var friends = guide.filter(function(g) { return g.comp.bonus > 0; });
                 var enemies = guide.filter(function(g) { return g.comp.bonus < 0; });
-                return h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3' },
+                return h('div', { className: 'bg-white rounded-xl border border-slate-400 p-3' },
                   h('div', { className: 'text-xs font-bold text-slate-700 mb-2' }, '📖 Companion Planting Guide'),
                   friends.length > 0 && h('div', { className: 'mb-2' },
                     h('div', { className: 'text-[11px] font-bold text-emerald-700 mb-1' }, '✅ Good Companions (' + friends.length + ')'),
@@ -4325,7 +4369,7 @@ var d = (labToolData.companionPlanting) || {};
                         cgUpd(patch);
                         if (addToast) addToast('🎯 Challenge started: ' + ch.title, 'info');
                       },
-                      className: 'text-left p-2 rounded-lg border transition-all ' + (completed ? 'bg-emerald-50 border-emerald-300 opacity-60' : 'bg-white border-slate-200 hover:border-indigo-400 hover:shadow-sm')
+                      className: 'text-left p-2 rounded-lg border transition-all ' + (completed ? 'bg-emerald-50 border-emerald-600 opacity-60' : 'bg-white border-slate-200 hover:border-indigo-400 hover:shadow-sm')
                     },
                       h('div', { className: 'flex items-center gap-1.5' },
                         h('span', null, ch.emoji),
@@ -4364,11 +4408,11 @@ var d = (labToolData.companionPlanting) || {};
                 h('button', { onClick: function() { cgUpd({ grid: cgGrid.map(function() { return { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 }; }), day: 0, score: 0, totalHarvested: 0, phase: 'plan', activeChallenge: null }); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, '🗑️ Clear All')),
 
               cgPhase === 'grow' && h('div', { className: 'flex gap-2 flex-wrap items-center' },
-                h('button', { onClick: cgAdvanceDay, 'aria-label': 'Advance one day', className: 'px-4 py-2 bg-sky-600 text-white rounded-lg font-bold text-sm hover:bg-sky-700' }, '⏩ Next Day'),
+                h('button', { onClick: cgAdvanceDay, className: 'px-4 py-2 bg-sky-600 text-white rounded-lg font-bold text-sm hover:bg-sky-700' }, '⏩ Next Day'),
                 h('button', { onClick: function() { for(var i=0;i<5;i++) cgAdvanceDay(); }, className: 'px-3 py-2 bg-sky-100 text-sky-700 rounded-lg text-sm font-bold hover:bg-sky-200' }, '⏭️ +5 Days'),
-                h('button', { onClick: cgWater, 'aria-label': 'Water the garden', className: 'px-3 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-200' }, '💧 Water'),
-                h('button', { onClick: cgWeed, 'aria-label': 'Weed the garden', className: 'px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-bold hover:bg-green-200' }, '🧹 Weed'),
-                h('button', { onClick: cgCompost, 'aria-label': 'Add compost', className: 'px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-sm font-bold hover:bg-amber-200' }, '🧱 Compost'),
+                h('button', { onClick: cgWater, className: 'px-3 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-200' }, '💧 Water'),
+                h('button', { onClick: cgWeed, className: 'px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-bold hover:bg-green-200' }, '🧹 Weed'),
+                h('button', { onClick: cgCompost, className: 'px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-sm font-bold hover:bg-amber-200' }, '🧱 Compost'),
                 h('button', { onClick: cgHarvest, 'aria-label': 'Harvest ready crops', className: 'px-3 py-2 bg-yellow-100 text-yellow-700 rounded-lg text-sm font-bold hover:bg-yellow-200' }, '🌾 Harvest Ready'),
                 h('button', { onClick: function() { cgUpd({ phase: 'plan' }); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, '\u270F\uFE0F Edit Garden')),
 
@@ -4440,7 +4484,7 @@ var d = (labToolData.companionPlanting) || {};
                 callGemini && h('button', {
                   onClick: cgAskAdvisor,
                   disabled: cgAdvisorCooldown > 0,
-                  className: 'flex-1 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ' + (cgAdvisorCooldown > 0 ? 'bg-slate-100 text-slate-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-300')
+                  className: 'flex-1 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ' + (cgAdvisorCooldown > 0 ? 'bg-slate-100 text-slate-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-600')
                 }, cgAdvisorCooldown > 0 ? '\uD83E\uDDD1\u200D\uD83C\uDF3E Advisor (wait ' + cgAdvisorCooldown + ' days)' : '\uD83E\uDDD1\u200D\uD83C\uDF3E Ask Garden Advisor')
               ),
 
@@ -4535,14 +4579,14 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("button", {
                   onClick: function () { upd('gardenMode', 'community'); },
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-300"
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-600"
                 }, "🏡 Community Garden"),
 
                 React.createElement("button", {
 
                   onClick: function () { upd('showCulture', !showCulture); },
 
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showCulture ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-600 hover:bg-amber-50'),
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showCulture ? 'bg-amber-100 text-amber-800 border border-amber-600' : 'bg-slate-100 text-slate-600 hover:bg-amber-50'),
 
                   "aria-label": "Cultural context"
 
@@ -4552,7 +4596,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   onClick: function () { upd('compareMode', !compareMode); },
 
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (compareMode ? 'bg-blue-100 text-blue-800 border border-blue-300' : 'bg-slate-100 text-slate-600 hover:bg-blue-50')
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (compareMode ? 'bg-blue-100 text-blue-800 border border-blue-600' : 'bg-slate-100 text-slate-600 hover:bg-blue-50')
 
                 }, "🔬 Compare"),
 
@@ -4560,7 +4604,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   onClick: function () { upd('showSoilDetail', !showSoilDetail); },
 
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showSoilDetail ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showSoilDetail ? 'bg-emerald-100 text-emerald-800 border border-emerald-600' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
 
                 }, "🧪 Soil Science")
 
@@ -4752,9 +4796,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("h4", { className: "text-sm font-bold text-indigo-900 flex items-center gap-2" }, eventPopup.emoji + ' ' + eventPopup.title),
 
-                React.createElement("button", { "aria-label": "Change event popup",
-
-                  onClick: function () { upd('eventPopup', null); },
+                React.createElement("button", { onClick: function () { upd('eventPopup', null); },
 
                   className: "text-indigo-400 hover:text-indigo-700 text-lg font-bold"
 
@@ -4782,7 +4824,7 @@ var d = (labToolData.companionPlanting) || {};
 
               phase === 'plant' && React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
 
-                React.createElement("div", { className: "flex items-center gap-2 bg-white rounded-xl border border-slate-200 p-2" },
+                React.createElement("div", { className: "flex items-center gap-2 bg-white rounded-xl border border-slate-400 p-2" },
 
                   React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase px-1" }, "Plant:"),
 
@@ -4802,7 +4844,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     },
 
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (cornPlanted ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' : 'bg-slate-50 text-slate-600 hover:bg-yellow-50 border border-slate-200')
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (cornPlanted ? 'bg-yellow-100 text-yellow-800 border border-yellow-600' : 'bg-slate-50 text-slate-600 hover:bg-yellow-50 border border-slate-400')
 
                   }, "🌽 Corn" + (cornPlanted ? ' ✓' : '')),
 
@@ -4822,7 +4864,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     },
 
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (beansPlanted ? 'bg-green-100 text-green-800 border border-green-300' : 'bg-slate-50 text-slate-600 hover:bg-green-50 border border-slate-200')
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (beansPlanted ? 'bg-green-100 text-green-800 border border-green-600' : 'bg-slate-50 text-slate-600 hover:bg-green-50 border border-slate-400')
 
                   }, "🫘 Beans" + (beansPlanted ? ' ✓' : '')),
 
@@ -4842,7 +4884,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     },
 
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (squashPlanted ? 'bg-orange-100 text-orange-800 border border-orange-300' : 'bg-slate-50 text-slate-600 hover:bg-orange-50 border border-slate-200')
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (squashPlanted ? 'bg-orange-100 text-orange-800 border border-orange-600' : 'bg-slate-50 text-slate-600 hover:bg-orange-50 border border-slate-400')
 
                   }, "🎃 Squash" + (squashPlanted ? ' ✓' : ''))
 
@@ -4880,9 +4922,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     [1, 2, 5].map(function (s) {
 
-                      return React.createElement("button", { "aria-label": "Change grow speed",
-
-                        key: s,
+                      return React.createElement("button", { key: s,
 
                         onClick: function () { upd('growSpeed', s); },
 
@@ -5422,9 +5462,7 @@ var d = (labToolData.companionPlanting) || {};
 
               quizFeedback && React.createElement("div", { className: "text-xs leading-relaxed p-3 rounded-lg " + (quizAnswer === currentQuiz.correct ? 'bg-green-100 text-green-800' : 'bg-red-50 text-red-700') }, quizFeedback),
 
-              quizFeedback && React.createElement("button", { "aria-label": "Change quiz q",
-
-                onClick: function () { upd('quizQ', (quizQ + 1)); upd('quizAnswer', ''); upd('quizFeedback', ''); },
+              quizFeedback && React.createElement("button", { onClick: function () { upd('quizQ', (quizQ + 1)); upd('quizAnswer', ''); upd('quizFeedback', ''); },
 
                 className: "px-4 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all"
 
@@ -5448,8 +5486,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-green-800" }, "\u2696\uFE0F Sustainable Farming: Industrial vs Regenerative"),
-                React.createElement("button", { "aria-label": "Change show farm compare",
-                  onClick: function() { upd('showFarmCompare', !d.showFarmCompare); },
+                React.createElement("button", { onClick: function() { upd('showFarmCompare', !d.showFarmCompare); },
                   className: "text-[11px] text-green-600 hover:text-green-800 font-bold"
                 }, d.showFarmCompare ? 'Hide' : 'Compare \u2192')
               ),
@@ -5459,7 +5496,7 @@ var d = (labToolData.companionPlanting) || {};
                 React.createElement("div", { className: "flex gap-1 mb-3" },
                   FARMING_SYSTEMS.map(function(sys) {
                     var isActive = (d.farmSystemIdx || 'industrial') === sys.id;
-                    return React.createElement("button", { "aria-label": "Change farm system idx", key: sys.id,
+                    return React.createElement("button", { key: sys.id,
                       onClick: function() { upd('farmSystemIdx', sys.id); },
                       className: "flex-1 py-2 px-2 rounded-xl border-2 text-center transition-all " + (isActive ? 'scale-105 shadow-md' : 'hover:scale-[1.02]'),
                       style: { borderColor: isActive ? sys.color : sys.color + '30', background: isActive ? sys.color + '10' : '#fff' }
@@ -5546,8 +5583,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-blue-800" }, "\uD83D\uDE9A Food Miles & Carbon Calculator"),
-                React.createElement("button", { "aria-label": "Change show food miles",
-                  onClick: function() { upd('showFoodMiles', !d.showFoodMiles); },
+                React.createElement("button", { onClick: function() { upd('showFoodMiles', !d.showFoodMiles); },
                   className: "text-[11px] text-blue-600 hover:text-blue-800 font-bold"
                 }, d.showFoodMiles ? 'Hide' : 'Calculate \u2192')
               ),
@@ -5604,8 +5640,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-cyan-800" }, "\uD83D\uDCA7 Water Footprint of Food"),
-                React.createElement("button", { "aria-label": "Change show water foot",
-                  onClick: function() { upd('showWaterFoot', !d.showWaterFoot); },
+                React.createElement("button", { onClick: function() { upd('showWaterFoot', !d.showWaterFoot); },
                   className: "text-[11px] text-cyan-600 hover:text-cyan-800 font-bold"
                 }, d.showWaterFoot ? 'Hide' : 'View \u2192')
               ),
@@ -5636,8 +5671,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-violet-800" }, "\uD83C\uDF00 12 Permaculture Principles"),
-                React.createElement("button", { "aria-label": "Change show permaculture",
-                  onClick: function() { upd('showPermaculture', !d.showPermaculture); },
+                React.createElement("button", { onClick: function() { upd('showPermaculture', !d.showPermaculture); },
                   className: "text-[11px] text-violet-600 hover:text-violet-800 font-bold"
                 }, d.showPermaculture ? 'Hide' : 'Explore \u2192')
               ),
@@ -5665,8 +5699,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, "\uD83C\uDF31 Regenerative Practices"),
-                React.createElement("button", { "aria-label": "Change show regen",
-                  onClick: function() { upd('showRegen', !d.showRegen); },
+                React.createElement("button", { onClick: function() { upd('showRegen', !d.showRegen); },
                   className: "text-[11px] text-emerald-600 hover:text-emerald-800 font-bold"
                 }, d.showRegen ? 'Hide' : 'Learn \u2192')
               ),
@@ -5720,7 +5753,7 @@ var d = (labToolData.companionPlanting) || {};
                       var cls = !answered ? 'border-rose-100 bg-white hover:border-rose-400 cursor-pointer' :
                         isRight ? 'border-green-400 bg-green-50' :
                         isSelected && !isRight ? 'border-red-400 bg-red-50' : 'border-slate-200 bg-white opacity-40';
-                      return React.createElement("button", { "aria-label": "Companionplanting action", key: oi,
+                      return React.createElement("button", { key: oi,
                         onClick: function() {
                           if (answered) return;
                           upd('gardenScenarioAnswer', oi);
@@ -5786,8 +5819,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-teal-800" }, "\uD83D\uDCCB Quick Reference Cards"),
-                React.createElement("button", { "aria-label": "Change show garden ref",
-                  onClick: function() { upd('showGardenRef', !d.showGardenRef); },
+                React.createElement("button", { onClick: function() { upd('showGardenRef', !d.showGardenRef); },
                   className: "text-[11px] text-teal-600 hover:text-teal-800 font-bold"
                 }, d.showGardenRef ? 'Hide' : 'View \u2192')
               ),
@@ -5814,8 +5846,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-blue-800" }, "\u267B\uFE0F The Nitrogen Cycle"),
-                React.createElement("button", { "aria-label": "Change show nitrogen",
-                  onClick: function() { upd('showNitrogen', !d.showNitrogen); },
+                React.createElement("button", { onClick: function() { upd('showNitrogen', !d.showNitrogen); },
                   className: "text-[11px] text-blue-600 hover:text-blue-800 font-bold"
                 }, d.showNitrogen ? 'Hide' : 'Explore \u2192')
               ),
@@ -5825,8 +5856,7 @@ var d = (labToolData.companionPlanting) || {};
                   NITROGEN_CYCLE.map(function(step, si) {
                     var isActive = (d.nitroCycleIdx || 0) === si;
                     return React.createElement("div", { key: si, className: "flex items-center" },
-                      React.createElement("button", { "aria-label": "Change nitro cycle idx",
-                        onClick: function() { upd('nitroCycleIdx', si); },
+                      React.createElement("button", { onClick: function() { upd('nitroCycleIdx', si); },
                         className: "flex flex-col items-center px-2 py-1.5 rounded-xl border-2 transition-all " + (isActive ? 'scale-110 shadow-md' : 'hover:scale-105'),
                         style: { borderColor: isActive ? step.color : step.color + '30', background: isActive ? step.color + '10' : '#fff' }
                       },
@@ -5891,8 +5921,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, "\uD83D\uDCC5 Seasonal Planting Calendar"),
-                React.createElement("button", { "aria-label": "Change show calendar",
-                  onClick: function() { upd('showCalendar', !d.showCalendar); },
+                React.createElement("button", { onClick: function() { upd('showCalendar', !d.showCalendar); },
                   className: "text-[11px] text-emerald-600 hover:text-emerald-800 font-bold"
                 }, d.showCalendar ? 'Hide' : 'Plan \u2192')
               ),
@@ -5928,8 +5957,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-purple-800" }, "\u2696\uFE0F Soil pH & Plant Preferences"),
-                React.createElement("button", { "aria-label": "Change show p h",
-                  onClick: function() { upd('showPH', !d.showPH); },
+                React.createElement("button", { onClick: function() { upd('showPH', !d.showPH); },
                   className: "text-[11px] text-purple-600 hover:text-purple-800 font-bold"
                 }, d.showPH ? 'Hide' : 'View \u2192')
               ),
@@ -5977,8 +6005,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-green-800" }, "\uD83C\uDF31 Companion Planting Guide (" + COMPANION_PAIRS.length + " pairs)"),
-                React.createElement("button", { "aria-label": "Change show pairs",
-                  onClick: function() { upd('showPairs', !d.showPairs); },
+                React.createElement("button", { onClick: function() { upd('showPairs', !d.showPairs); },
                   className: "text-[11px] text-green-600 hover:text-green-800 font-bold"
                 }, d.showPairs ? 'Hide' : 'Explore \u2192')
               ),
@@ -5986,7 +6013,7 @@ var d = (labToolData.companionPlanting) || {};
                 // Filter
                 React.createElement("div", { className: "flex gap-1 mb-2" },
                   ['all', 'friend', 'enemy'].map(function(f) {
-                    return React.createElement("button", { "aria-label": "Change pair filter", key: f,
+                    return React.createElement("button", { key: f,
                       onClick: function() { upd('pairFilter', f); },
                       className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pairFilter || 'all') === f ? 'bg-green-700 text-white' : 'bg-white text-green-700 border border-green-200')
                     }, f === 'all' ? 'All' : f === 'friend' ? '\u2705 Friends' : '\u274C Enemies');
@@ -6021,8 +6048,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-violet-800" }, "\uD83C\uDF3E Plant Families & Crop Rotation"),
-                React.createElement("button", { "aria-label": "Change show families",
-                  onClick: function() { upd('showFamilies', !d.showFamilies); },
+                React.createElement("button", { onClick: function() { upd('showFamilies', !d.showFamilies); },
                   className: "text-[11px] text-violet-600 hover:text-violet-800 font-bold"
                 }, d.showFamilies ? 'Hide' : 'Learn \u2192')
               ),
@@ -6055,8 +6081,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "\uD83E\uDEA8 Soil Types Guide"),
-                React.createElement("button", { "aria-label": "Change show soil types",
-                  onClick: function() { upd('showSoilTypes', !d.showSoilTypes); },
+                React.createElement("button", { onClick: function() { upd('showSoilTypes', !d.showSoilTypes); },
                   className: "text-[11px] text-amber-600 hover:text-amber-800 font-bold"
                 }, d.showSoilTypes ? 'Hide' : 'Explore \u2192')
               ),
@@ -6088,8 +6113,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-red-800" }, "\uD83D\uDC1E Garden Pests & Allies"),
-                React.createElement("button", { "aria-label": "Change show pests",
-                  onClick: function() { upd('showPests', !d.showPests); },
+                React.createElement("button", { onClick: function() { upd('showPests', !d.showPests); },
                   className: "text-[11px] text-red-600 hover:text-red-800 font-bold"
                 }, d.showPests ? 'Hide' : 'Identify \u2192')
               ),

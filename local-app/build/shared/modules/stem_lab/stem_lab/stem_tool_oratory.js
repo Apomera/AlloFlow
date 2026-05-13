@@ -2463,7 +2463,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         // ═══════════════════════════════════════
         var cardClass = isDark
           ? 'bg-slate-800 border border-slate-700 rounded-xl p-4'
-          : 'bg-white border border-slate-200 rounded-xl p-4 shadow-sm';
+          : 'bg-white border border-slate-400 rounded-xl p-4 shadow-sm';
         var headingClass = isDark ? 'text-white font-bold' : 'text-slate-900 font-bold';
         var subTextClass = isDark ? 'text-slate-400 text-xs' : 'text-slate-600 text-xs';
         var btnPrimary = 'px-4 py-2 rounded-lg font-bold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ' +
@@ -3526,7 +3526,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
               reportText && h('pre', {
                 className: 'mt-3 p-3 rounded-lg text-xs leading-relaxed overflow-auto max-h-60 ' +
-                  (isDark ? 'bg-slate-900 text-slate-300 border border-slate-700' : 'bg-slate-50 text-slate-700 border border-slate-200'),
+                  (isDark ? 'bg-slate-900 text-slate-300 border border-slate-700' : 'bg-slate-50 text-slate-700 border border-slate-400'),
                 role: 'textbox',
                 'aria-label': 'Session report text',
                 'aria-readonly': 'true',
@@ -3575,7 +3575,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             className: 'flex items-center gap-3 p-2 rounded-lg ' +
               (achieved
                 ? (isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200')
-                : (isDark ? 'bg-slate-800 border border-slate-700' : 'bg-slate-50 border border-slate-200')),
+                : (isDark ? 'bg-slate-800 border border-slate-700' : 'bg-slate-50 border border-slate-400')),
             role: 'listitem'
           },
             h('span', { className: 'text-lg' }, achieved ? '\u2705' : icon),

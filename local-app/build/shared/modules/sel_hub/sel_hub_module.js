@@ -20,6 +20,11 @@
         registerTool: function(id, config) {
           config.id = id;
           config.ready = config.ready !== false;
+          // Normalize legacy field-name aliases + defaults (see stem_lab_module.js for rationale)
+          if (!config.label) config.label = config.title || config.name || id;
+          if (!config.desc) config.desc = config.description || '';
+          if (!config.color) config.color = 'slate';
+          if (!config.category) config.category = 'general';
           this._registry[id] = config;
           if (this._order.indexOf(id) === -1) this._order.push(id);
           console.log('[SelHub] Registered tool: ' + id);
@@ -50,14 +55,23 @@
     }
 
     // ── CASEL 5 Competency Categories ──
-    // Tools are organized by the CASEL framework competencies.
-    // Each tool declares its category; the hub groups them under these headers.
+    // Tools are organized into categories that draw on CASEL but expand
+    // beyond it. CASEL's "Self-Management" has been split into more
+    // pedagogically precise framings (Self-Regulation for arousal/emotion
+    // work; Self-Direction for agency/goal work), and three additional
+    // categories have been added (Inner Work, Care of Self, Stewardship)
+    // to make room for contemplative, relational, and community-oriented
+    // tools without forcing them into the individualist-managerial frame.
     var SEL_CATEGORIES = [
       { id: 'self-awareness',             label: 'Self-Awareness',             icon: '\uD83E\uDDE0', desc: 'Recognizing emotions, strengths, and areas for growth' },
-      { id: 'self-management',            label: 'Self-Management',            icon: '\uD83C\uDFAF', desc: 'Regulating emotions, setting goals, and self-discipline' },
+      { id: 'self-regulation',            label: 'Self-Regulation',            icon: '\uD83C\uDFAF', desc: 'Regulating emotions, arousal, attention; coping practice' },
+      { id: 'self-direction',             label: 'Self-Direction',             icon: '\uD83E\uDDED', desc: 'Goal-setting, agency, executive function, growth mindset' },
+      { id: 'inner-work',                 label: 'Inner Work',                 icon: '\uD83E\uDDD8', desc: 'Contemplative and reflective practices' },
+      { id: 'care-of-self',               label: 'Care of Self',               icon: '\uD83E\uDD7A', desc: 'Self-compassion, relational self-care' },
       { id: 'social-awareness',           label: 'Social Awareness',           icon: '\uD83E\uDD1D', desc: 'Empathy, perspective-taking, and appreciating diversity' },
       { id: 'relationship-skills',        label: 'Relationship Skills',        icon: '\uD83D\uDCAC', desc: 'Communication, teamwork, and conflict resolution' },
-      { id: 'responsible-decision-making', label: 'Responsible Decision-Making', icon: '\u2696\uFE0F', desc: 'Ethical choices, evaluating consequences, and problem-solving' }
+      { id: 'responsible-decision-making', label: 'Responsible Decision-Making', icon: '\u2696\uFE0F', desc: 'Ethical choices, evaluating consequences, and problem-solving' },
+      { id: 'stewardship',                label: 'Stewardship',                icon: '\uD83C\uDF31', desc: 'Caring for community, justice, land, and the future' }
     ];
 
     // ── SEL Pathways (Curated Learning Sequences — equivalent to STEM Lab Stations) ──
@@ -66,7 +80,7 @@
     var SEL_PATHWAYS = [
       { id: 'morning_check', name: 'Morning Check-In', icon: '\uD83C\uDF05', desc: 'Start the day with a mood check, breathing, and goal setting', tools: ['zones', 'mindfulness', 'goals', 'journal'], casel: 'self-awareness' },
       { id: 'calm_down', name: 'Calm Down Corner', icon: '\uD83E\uDDD8', desc: 'Regulation strategies for when emotions run high', tools: ['zones', 'coping', 'mindfulness'], casel: 'self-management' },
-      { id: 'conflict_unit', name: 'Conflict Resolution Unit', icon: '\u2696\uFE0F', desc: 'Practice resolving disagreements and building repair skills', tools: ['conflict', 'perspective', 'social', 'restorativeCircle'], casel: 'relationship-skills' },
+      { id: 'conflict_unit', name: 'Conflict Resolution Unit', icon: '\u2696\uFE0F', desc: 'Practice resolving disagreements and building repair skills', tools: ['conflict', 'conflicttheater', 'perspective', 'social', 'restorativeCircle'], casel: 'relationship-skills' },
       { id: 'empathy_week', name: 'Empathy & Perspective Week', icon: '\uD83D\uDC53', desc: 'Build empathy through perspective-taking and cultural awareness', tools: ['perspective', 'emotions', 'community', 'cultureExplorer'], casel: 'social-awareness' },
       { id: 'decision_making', name: 'Decision-Making Deep Dive', icon: '\uD83E\uDD14', desc: 'Practice ethical reasoning and responsible choices', tools: ['decisions', 'ethicalReasoning', 'safety'], casel: 'responsible-decision-making' },
       { id: 'self_discovery', name: 'Self-Discovery Journey', icon: '\u2728', desc: 'Explore who you are — strengths, emotions, and growth mindset', tools: ['strengths', 'emotions', 'growthmindset', 'compassion', 'advocacy'], casel: 'self-awareness' },
@@ -106,6 +120,11 @@
       var callGeminiVision = props.callGeminiVision;
       var onSafetyFlag    = props.onSafetyFlag || null; // connects to main app's handleAiSafetyFlag
       var studentCodename = props.studentCodename || 'student';
+      var selectedVoice   = props.selectedVoice || null;
+      // Drives renderSafetyDisclosure: tells AI-coach intros whether the
+      // conversation is truly private (solo) or visible to a hosting
+      // teacher (live session). No surveillance happens in solo mode.
+      var activeSessionCode = props.activeSessionCode || null;
       var t               = props.t || function(k) { return k; };
 
       // Lucide icons from parent
@@ -147,6 +166,20 @@
       var selXp  = _selXp[0];
       var setSelXp = _selXp[1];
 
+      // Plugin-load progress tick — bumped by the allo-plugins-changed event the
+      // lazy-loader fires after each sel_tool_*.js script finishes registering.
+      // Forces the tile grid to re-render as plugins stream in on first hub-open.
+      var _pluginProgress = React.useState(0);
+      var _setPluginProgressTick = _pluginProgress[1];
+      React.useEffect(function() {
+        var handler = function(e) {
+          if (e && e.detail && e.detail.label !== 'Sel') return;
+          _setPluginProgressTick(function(t) { return t + 1; });
+        };
+        window.addEventListener('allo-plugins-changed', handler);
+        return function() { window.removeEventListener('allo-plugins-changed', handler); };
+      }, []);
+
       function awardSelXP(amount) {
         var pts = amount || 5;
         setSelXp(function(prev) { return prev + pts; });
@@ -154,6 +187,261 @@
       }
 
       function getSelXP() { return selXp; }
+
+      // ── SEL Stations (custom teacher-authored bundles, parallel to STEM Lab Stations) ──
+      // Pulls from props.activeStation when parent passes one (e.g. clicked from sidebar).
+      // Otherwise reads/writes localStorage 'alloflow_sel_stations'.
+      var SEL_QUEST_TYPES = [
+        { id: 'xpThreshold',    label: 'Earn SEL XP',     icon: '⭐', paramLabel: 'XP Target', defaultVal: 30, unit: 'XP' },
+        { id: 'timeSpent',      label: 'Spend Time',      icon: '⏱', paramLabel: 'Minutes',   defaultVal: 5,  unit: 'min' },
+        { id: 'freeResponse',   label: 'Reflection',      icon: '✍️', paramLabel: 'Min Characters', defaultVal: 30, unit: 'chars' },
+        { id: 'manualComplete', label: 'Mark Complete',   icon: '✅', paramLabel: '',          defaultVal: '', unit: '' }
+      ];
+
+      var _savedStations = React.useState(function () {
+        try { return JSON.parse(localStorage.getItem('alloflow_sel_stations') || '[]'); } catch (e) { return []; }
+      });
+      var savedStations = _savedStations[0]; var setSavedStations = _savedStations[1];
+
+      // ── Engagement state: daily streak + per-tool usage counts ──
+      // Persistence model:
+      //   1. localStorage works in normal browsers AND within a single
+      //      Canvas session — but Canvas wipes localStorage between sessions.
+      //   2. The host's executeSaveFile / handleLoadProject pipeline picks up
+      //      `window.__alloflowSelEngagement` and serializes it into the
+      //      project JSON, which IS preserved across Canvas sessions.
+      //   3. On mount we prefer the window slot (means a project was just
+      //      loaded), then fall back to localStorage. We mirror every change
+      //      back to both so the next save round-trip and the next session
+      //      both work.
+      function _selReadInitial() {
+        try {
+          if (typeof window !== 'undefined' && window.__alloflowSelEngagement) {
+            return window.__alloflowSelEngagement;
+          }
+        } catch (e) {}
+        var streak = { count: 0, longest: 0, lastDate: null };
+        var toolUsage = {};
+        try {
+          var rawS = JSON.parse(localStorage.getItem('alloflow_sel_streak') || '{}');
+          streak = { count: rawS.count || 0, longest: rawS.longest || 0, lastDate: rawS.lastDate || null };
+        } catch (e) {}
+        try {
+          toolUsage = JSON.parse(localStorage.getItem('alloflow_sel_tool_usage') || '{}') || {};
+        } catch (e) {}
+        return { streak: streak, toolUsage: toolUsage };
+      }
+      var _selInitial = _selReadInitial();
+      var _selStreak = React.useState(_selInitial.streak || { count: 0, longest: 0, lastDate: null });
+      var selStreak = _selStreak[0]; var setSelStreak = _selStreak[1];
+
+      var _selToolUsage = React.useState(_selInitial.toolUsage || {});
+      var selToolUsage = _selToolUsage[0]; var setSelToolUsage = _selToolUsage[1];
+
+      // Mirror state changes to the window slot so the host save flow can
+      // serialize it into the project JSON. The _ts stamp lets the host
+      // skip emitting a SEL block when nothing has changed.
+      React.useEffect(function () {
+        try {
+          window.__alloflowSelEngagement = { streak: selStreak, toolUsage: selToolUsage, _ts: Date.now() };
+        } catch (e) {}
+      }, [selStreak, selToolUsage]);
+
+      // Hot-reload from a project JSON load mid-session: misc_handlers
+      // dispatches this event after writing window.__alloflowSelEngagement.
+      React.useEffect(function () {
+        function onRestore() {
+          try {
+            var w = window.__alloflowSelEngagement || {};
+            if (w.streak) setSelStreak(w.streak);
+            if (w.toolUsage) setSelToolUsage(w.toolUsage);
+          } catch (e) {}
+        }
+        window.addEventListener('alloflow-sel-engagement-restored', onRestore);
+        return function () { window.removeEventListener('alloflow-sel-engagement-restored', onRestore); };
+      }, []);
+
+      var _activeStationId = React.useState(null);
+      var activeStationId = _activeStationId[0]; var setActiveStationId = _activeStationId[1];
+      var activeStation = (function () {
+        if (!activeStationId) return null;
+        return savedStations.find(function (s) { return s.id === activeStationId; }) || null;
+      })();
+
+      var _questProgress = React.useState(function () {
+        try { return JSON.parse(localStorage.getItem('alloflow_sel_station_progress') || '{}'); } catch (e) { return {}; }
+      });
+      var questProgress = _questProgress[0]; var setQuestProgress = _questProgress[1];
+
+      // Builder state — only used in teacher mode
+      var _builderOpen = React.useState(false);
+      var builderOpen = _builderOpen[0]; var setBuilderOpen = _builderOpen[1];
+      var _builderName = React.useState('');
+      var builderName = _builderName[0]; var setBuilderName = _builderName[1];
+      var _builderNote = React.useState('');
+      var builderNote = _builderNote[0]; var setBuilderNote = _builderNote[1];
+      var _builderTools = React.useState({});
+      var builderTools = _builderTools[0]; var setBuilderTools = _builderTools[1];
+      var _builderQuests = React.useState([]);
+      var builderQuests = _builderQuests[0]; var setBuilderQuests = _builderQuests[1];
+
+      // Persist saved stations to localStorage whenever they change.
+      React.useEffect(function () {
+        try { localStorage.setItem('alloflow_sel_stations', JSON.stringify(savedStations)); } catch (e) {}
+      }, [savedStations]);
+
+      // Persist quest progress to localStorage whenever it changes.
+      React.useEffect(function () {
+        try { localStorage.setItem('alloflow_sel_station_progress', JSON.stringify(questProgress)); } catch (e) {}
+      }, [questProgress]);
+
+      // ── Daily streak tick ──
+      // When the SEL Hub opens on a new calendar day, increment the streak
+      // (or reset to 1 if the gap is > 1 day). Same-day re-opens are no-ops.
+      React.useEffect(function () {
+        if (!showSelHub) return;
+        var today = new Date().toDateString();
+        if (selStreak.lastDate === today) return;
+        var newCount = 1;
+        if (selStreak.lastDate) {
+          var diffMs = new Date(today).getTime() - new Date(selStreak.lastDate).getTime();
+          var diffDays = Math.round(diffMs / 86400000);
+          if (diffDays === 1) newCount = (selStreak.count || 0) + 1;
+        }
+        var next = { count: newCount, longest: Math.max(newCount, selStreak.longest || 0), lastDate: today };
+        setSelStreak(next);
+        try { localStorage.setItem('alloflow_sel_streak', JSON.stringify(next)); } catch (e) {}
+      }, [showSelHub]);
+
+      // Helper: record a tool-open event so we can surface "Continue" and
+      // "New" indicators. Called from the tool-card click handler.
+      function trackToolOpen(toolId) {
+        if (!toolId) return;
+        setSelToolUsage(function (prev) {
+          var prior = prev[toolId] || { count: 0 };
+          var next = Object.assign({}, prev);
+          next[toolId] = { count: (prior.count || 0) + 1, lastUsed: Date.now() };
+          try { localStorage.setItem('alloflow_sel_tool_usage', JSON.stringify(next)); } catch (e) {}
+          return next;
+        });
+      }
+
+      // Sync activeStation prop from parent (e.g. resource-history click).
+      React.useEffect(function () {
+        if (props.activeStation && props.activeStation.id) {
+          setActiveStationId(props.activeStation.id);
+          // If parent passed a station we don't have in localStorage, persist it.
+          var existing = savedStations.find(function (s) { return s.id === props.activeStation.id; });
+          if (!existing) setSavedStations(savedStations.concat([props.activeStation]));
+        }
+      }, [props.activeStation && props.activeStation.id]);
+
+      // Tick a "time spent" timer every 30s while a tool is active (for timeSpent quests).
+      React.useEffect(function () {
+        if (!activeStation || !selHubTool) return;
+        var timeQuests = (activeStation.quests || []).filter(function (q) { return q.type === 'timeSpent' && q.toolId === selHubTool; });
+        if (timeQuests.length === 0) return;
+        var interval = setInterval(function () {
+          setQuestProgress(function (prev) {
+            var next = Object.assign({}, prev);
+            var sp = Object.assign({}, next[activeStation.id] || {});
+            timeQuests.forEach(function (q) {
+              var qp = Object.assign({}, sp[q.qid] || {});
+              qp.timeAccumMs = (qp.timeAccumMs || 0) + 30000;
+              sp[q.qid] = qp;
+            });
+            next[activeStation.id] = sp;
+            return next;
+          });
+        }, 30000);
+        return function () { clearInterval(interval); };
+        // activeStation is in deps so a teacher-edit to the quest list refreshes
+        // the captured timeQuests instead of relying on a stale closure.
+      }, [selHubTool, activeStationId, activeStation]);
+
+      // Auto-evaluate xpThreshold + timeSpent quests on relevant changes.
+      React.useEffect(function () {
+        if (!activeStation || !activeStation.quests) return;
+        setQuestProgress(function (prev) {
+          var sp = Object.assign({}, prev[activeStation.id] || {});
+          var changed = false;
+          activeStation.quests.forEach(function (q) {
+            var qp = Object.assign({}, sp[q.qid] || {});
+            if (qp.complete) return;
+            var done = false;
+            if (q.type === 'xpThreshold') {
+              done = selXp >= (q.params && q.params.threshold || 30);
+            } else if (q.type === 'timeSpent') {
+              done = (qp.timeAccumMs || 0) >= (q.params && q.params.minutes || 5) * 60000;
+            } else if (q.type === 'freeResponse') {
+              done = (qp.response || '').length >= (q.params && q.params.minLength || 30);
+            } else if (q.type === 'manualComplete') {
+              done = !!qp.markedComplete;
+            }
+            if (done && !qp.complete) {
+              qp.complete = true;
+              qp.completedAt = new Date().toISOString();
+              sp[q.qid] = qp;
+              changed = true;
+            }
+          });
+          if (!changed) return prev;
+          var next = Object.assign({}, prev);
+          next[activeStation.id] = sp;
+          return next;
+        });
+      }, [selXp, activeStationId, questProgress]);
+
+      function _selQuestAutoLabel(type, toolId, params) {
+        var toolName = 'this hub';
+        if (toolId && window.SelHub && window.SelHub._registry && window.SelHub._registry[toolId]) {
+          toolName = window.SelHub._registry[toolId].name || toolId;
+        }
+        switch (type) {
+          case 'xpThreshold':    return 'Earn ' + ((params && params.threshold) || 30) + ' SEL XP overall';
+          case 'timeSpent':      return 'Spend ' + ((params && params.minutes) || 5) + ' minutes in ' + toolName;
+          case 'freeResponse':   return (params && params.prompt) || 'Write a reflection';
+          case 'manualComplete': return 'Complete the activity in ' + toolName;
+          default: return 'Complete a quest';
+        }
+      }
+
+      // Re-entrancy guard: a fast double-click on Save would otherwise create
+      // two stations with different Date.now() ids but identical content.
+      var _savingStation = React.useRef(false);
+      function _saveBuilderAsStation() {
+        if (_savingStation.current) return;
+        var selectedToolIds = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
+        if (selectedToolIds.length === 0) {
+          if (typeof addToast === 'function') addToast('Pick at least one tool first', 'info');
+          return;
+        }
+        _savingStation.current = true;
+        try {
+          var station = {
+            id: 'sel_station_' + Date.now(),
+            name: (builderName.trim() || 'Custom SEL Station'),
+            tools: selectedToolIds,
+            teacherNote: builderNote,
+            quests: builderQuests.map(function (q, i) {
+              return Object.assign({}, q, { qid: q.qid || ('q_' + i + '_' + Date.now()) });
+            }),
+            createdAt: new Date().toISOString(),
+            source: 'sel-hub-builder'
+          };
+          setSavedStations(savedStations.concat([station]));
+          setActiveStationId(station.id);
+          // Reset builder
+          setBuilderName(''); setBuilderNote(''); setBuilderTools({}); setBuilderQuests([]);
+          setBuilderOpen(false);
+          if (typeof addToast === 'function') addToast('SEL Station saved!', 'success');
+          announceToSR('Custom SEL Station saved and activated.');
+          // Surface to parent so the resource sidebar can show it.
+          if (typeof props.onSaveStation === 'function') props.onSaveStation(station);
+        } finally {
+          _savingStation.current = false;
+        }
+      }
 
       // ── Accessibility Helpers ──
       function announceToSR(msg) {
@@ -211,7 +499,7 @@
         bg:       isContrast ? '#000000' : isDark ? '#0f172a' : '#f8fafc',
         bgCard:   isContrast ? '#000000' : isDark ? '#1e293b' : '#ffffff',
         bgInput:  isContrast ? '#000000' : isDark ? '#1e293b' : '#ffffff',
-        border:   isContrast ? '#ffff00' : isDark ? '#334155' : '#e2e8f0',
+        border:   isContrast ? '#ffff00' : isDark ? '#64748b' : '#94a3b8',
         text:     isContrast ? '#ffff00' : isDark ? '#f1f5f9' : '#0f172a',
         textMuted:isContrast ? '#ffff00' : isDark ? '#94a3b8' : '#64748b',
         headerBg: isContrast ? '#000000' : isDark ? 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' : 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
@@ -234,12 +522,47 @@
         { id: 'zones',       icon: '\uD83D\uDEA6', label: 'Emotion Zones', desc: 'Identify your zone (blue, green, yellow, red) and explore strategies to self-regulate.', color: 'emerald', recommendedRange: 'K-12' },
         { id: 'emotions',    icon: '\uD83D\uDE0A', label: 'Emotion Explorer',    desc: 'Build emotional vocabulary — identify, name, and rate the intensity of feelings.', color: 'blue', recommendedRange: 'K-8' },
         { id: 'strengths',   icon: '\u2B50',       label: 'Strengths Finder',    desc: 'Discover and reflect on personal strengths, talents, and growth areas.', color: 'amber', recommendedRange: 'K-12' },
+        { id: 'viaStrengths', icon: '\uD83C\uDF1F', label: 'VIA Strengths',     desc: 'A simplified self-sort of the 24 VIA Character Strengths (Peterson and Seligman, 2004), with 6 virtues and identification of signature strengths. For the authoritative free survey, go to viacharacter.org. Reflective practice, not psychometric.', color: 'amber', recommendedRange: '5-12' },
+        { id: 'wheelOfLife', icon: '\uD83D\uDEDE', label: 'Wheel of Life',      desc: 'Spider chart of 8 life domains, each rated 1 to 10. A self-portrait of where life is full and where it is thin right now. From the coaching tradition (Meyer 1960s; Co-Active Coaching). Heuristic; not a validated psychometric.', color: 'amber', recommendedRange: '5-12' },
+        { id: 'perma',       icon: '\uD83C\uDF3B', label: 'PERMA Wellbeing',    desc: 'Self-check on the five (six) domains of human flourishing: Positive emotion, Engagement, Relationships, Meaning, Accomplishment, Health. 24 items, bar-chart result, per-domain reflection. From Seligman; pairs with VIA Strengths.', color: 'amber', recommendedRange: '5-12' },
 
-        // ── Self-Management ──
-        { id: '_cat_SelfManagement', icon: '\uD83C\uDFAF', label: 'Self-Management', desc: '', color: 'slate', category: true },
+        // Self-Regulation (was Self-Management; split to give arousal/emotion tools their own home)
+        { id: '_cat_SelfRegulation', icon: '\uD83C\uDFAF', label: 'Self-Regulation', desc: '', color: 'slate', category: true },
         { id: 'coping',      icon: '\uD83E\uDDE8', label: 'Coping Toolkit',      desc: 'Explore and practice coping strategies — breathing, grounding, movement, and more.', color: 'teal', recommendedRange: 'K-12' },
+        { id: 'windowOfTolerance', icon: '\uD83E\uDE9F', label: 'Window of Tolerance', desc: 'Trauma-informed self-awareness visual. Three arousal zones (hyperarousal, window, hypoarousal). Map your personal signs of each zone, your triggers, and the practices that bring you back. Based on Siegel (1999); standard in trauma-informed schools.', color: 'teal', recommendedRange: '5-12' },
+        { id: 'stressBucket', icon: '\uD83E\uDEA3', label: 'Stress Bucket',        desc: 'A capacity visual. Stressors pour in; coping practices drain out. See whether your inflow and outflow are balanced. CBT-tradition tool (Brabban and Turkington 2002), used across NHS IAPT and Mind UK. Honest about structural stressors.', color: 'teal', recommendedRange: '5-12' },
+        { id: 'tipp',        icon: '\uD83C\uDD98', label: 'TIPP',                desc: 'Four DBT crisis-survival skills (Temperature, Intense exercise, Paced breathing, Paired muscle relaxation) for ACUTE distress. Down-regulates the body in 30 seconds to 10 minutes before you try to think your way out. Foundational DBT Distress Tolerance skill (Linehan).', color: 'red', recommendedRange: '5-12' },
+        { id: 'anxietyToolkit', icon: '\uD83E\uDEE7', label: 'Anxiety Toolkit', desc: 'CBT-based skills for working with anxiety: psychoeducation, the worry tree (productive vs unproductive worry), scheduled worry time, decatastrophizing, grounding skills, and a personal patterns inventory. From Beck Institute, AACAP, ADAA. Pairs with Window of Tolerance and Stress Bucket.', color: 'cyan', recommendedRange: '5-12' },
+        { id: 'sleep',       icon: '\uD83D\uDE34', label: 'Sleep & Rest',        desc: 'Adolescent sleep is a public-health crisis. AAP-recommended 8-10 hours is rarely met. Psychoeducation, self-check, 8 common barriers + what works for each, and a sleep diary. From AAP, CDC, NSF, Carskadon research.', color: 'indigo', recommendedRange: '5-12' },
+        { id: 'sensoryRegulation', icon: '\uD83C\uDF08', label: 'Sensory Regulation', desc: 'Neurodiversity-affirming tool for understanding your own sensory processing across the 8 sensory systems. Build a personal profile, plan a sensory diet, identify school accommodations. Identity-first language; built on Ayres / Dunn / autistic-led scholarship.', color: 'orange', recommendedRange: '3-12' },
+        { id: 'behavioralActivation', icon: '\uD83D\uDCC5', label: 'Behavioral Activation', desc: 'Plan small activities, do them, rate them for mastery (felt competent) and pleasure (enjoyed). Mood follows action more than action follows mood. One of the most evidence-supported treatments for low mood and depression. From Lewinsohn, Jacobson, Martell.', color: 'emerald', recommendedRange: '5-12' },
+        // Inner Work (contemplative + reflective practice)
+        { id: '_cat_InnerWork', icon: '\uD83E\uDDD8', label: 'Inner Work', desc: '', color: 'slate', category: true },
         { id: 'mindfulness', icon: '\uD83E\uDDD8', label: 'Mindfulness Corner',  desc: 'Guided breathing exercises, body scans, and mindfulness activities.', color: 'purple', recommendedRange: 'K-12' },
+        { id: 'quietQuestions', icon: '\uD83C\uDF12', label: 'Quiet Questions',  desc: 'Weekly inner inquiry practice. Sit with one open-ended question for a full week. 20 rotating queries across attention, longing, difficulty, connection, and becoming. Inspired by Quaker query tradition; secular and non-prescriptive.', color: 'purple', recommendedRange: '5-12' },
+        { id: 'orientations', icon: '\uD83E\uDDED', label: 'Orientations',      desc: 'Ways of Living, Compared. Eight philosophical traditions (Daoism, Zen, Stoicism, Existentialism, Confucian ethics, Ubuntu, Indigenous relationality, Care Ethics) compared on big life questions. Non-prescriptive; each tradition has an honest "what it cannot do well" panel.', color: 'purple', recommendedRange: '6-12' },
+        { id: 'thoughtRecord', icon: '\uD83D\uDCD3', label: 'CBT Thought Record', desc: 'The 7-column thought record from Cognitive Behavioral Therapy. Walk through a hard moment: situation, emotion, automatic thought, evidence for and against, balanced thought, emotion re-rating. Saves entries over time. From Beck, Burns, Padesky.', color: 'purple', recommendedRange: '5-12' },
+        { id: 'costBenefit', icon: '\u2696\uFE0F', label: 'Cost-Benefit Grid',  desc: 'A 2x2 decision-making grid from Dialectical Behavior Therapy. Short-term and long-term pros and cons of a decision, side by side. Useful when emotion is pushing for one option. From Linehan.', color: 'purple', recommendedRange: '5-12' },
+        { id: 'sfbt',        icon: '\uD83D\uDD2D', label: 'Solution-Focused',   desc: 'Solution-Focused Brief Therapy: the Miracle Question, Scaling, Exception-finding, and Compliments. Looks forward instead of backward, asks what is already working. The most-used technique in US school counseling. From de Shazer and Berg.', color: 'purple', recommendedRange: '5-12' },
+        // Care of Self (self-compassion, relational self-care)
+        { id: '_cat_CareOfSelf', icon: '\uD83E\uDD7A', label: 'Care of Self', desc: '', color: 'slate', category: true },
+        { id: 'careConstellations', icon: '\uD83C\uDF0C', label: 'Care Constellations', desc: 'A relational map of who cares for you and who you care for. Refuses the individualist or consumerist "self-care" frame. Includes a substantive philosophical view on Care of Self vs Self-Care (Foucault, Greek epimeleia heautou, Audre Lorde, eudaimonic vs hedonic).', color: 'rose', recommendedRange: '5-12' },
+        { id: 'ecomap',      icon: '\uD83D\uDD78\uFE0F', label: 'Ecomap',              desc: 'Person-in-environment relationship map. You at the center; the 12 major life systems around you. Each connection rated for strength, stress, and energy direction. Standard social-work tool since Hartman (1978); used in IEPs, family assessment, and personal life inventory.', color: 'rose', recommendedRange: '5-12' },
+        { id: 'circlesOfSupport', icon: '\uD83C\uDFAF', label: 'Circles of Support', desc: 'Four concentric rings of relationship: Intimacy, Friendship, Participation, Exchange (paid). Makes visible who is actually close, including when paid people fill the inner rings. From Forest and Snow at Inclusion Press.', color: 'rose', recommendedRange: '3-12' },
+        { id: 'genogram',    icon: '\uD83C\uDF33', label: 'Genogram',            desc: 'Three-generation family map using standard family-systems symbols. For personal self-understanding only (NOT clinical assessment). Based on Bowen family systems theory and McGoldrick-Gerson-Petry notation. Includes prominent safe-framing guidance.', color: 'rose', recommendedRange: '5-12' },
+        { id: 'griefLoss',   icon: '\uD83D\uDD6F\uFE0F', label: 'Grief & Loss',         desc: 'A guided self-companion for grief. Death of a person or pet, family changes, friend losses, identity losses, ambiguous loss \u2014 all count. Walk through Worden\'s four tasks of mourning, write a letter, plan rituals. Strong safety framing pointing to Crisis Companion / 988 for severe or complicated grief.', color: 'rose', recommendedRange: '5-12' },
+        { id: 'traumaPsychoed', icon: '\uD83C\uDF3F', label: 'Understanding Trauma', desc: 'Psychoeducation only (NOT a screener). What trauma is and is not, neurobiology in plain English, common responses reframed as adaptations, SAMHSA\'s 6 principles, evidence-based treatments. For students and educators. Includes prominent safety framing about why screening without follow-up is unsafe.', color: 'emerald', recommendedRange: '6-12' },
+        { id: 'bodyStory',   icon: '\uD83E\uDEC2', label: 'Body Story',           desc: 'Body-acceptance and embodiment tool. NOT weight-focused, NOT diet-adjacent, NOT a screener. Built on Tylka body appreciation, intuitive eating principles, and media literacy. Inclusive of all bodies, all genders, all sizes. Strong NEDA referral framing for eating disorders.', color: 'rose', recommendedRange: '6-12' },
+        { id: 'sourcesOfStrength', icon: '\uD83C\uDF1F', label: 'Sources of Strength', desc: 'Map your 8 protective factors. The strongest evidence-based upstream youth suicide prevention framework (Wyman et al.). Builds protective factors BEFORE crisis hits. Complements Crisis Companion on the protective side.', color: 'amber', recommendedRange: '6-12' },
+        // Self-Direction (agency, goal-setting, executive function)
+        { id: '_cat_SelfDirection', icon: '\uD83E\uDDED', label: 'Self-Direction', desc: '', color: 'slate', category: true },
         { id: 'goals',       icon: '\uD83D\uDCCB', label: 'Goal Setter',         desc: 'Set SMART goals, track progress, and celebrate milestones.', color: 'indigo', recommendedRange: '3-12' },
+        { id: 'howlTracker', icon: '\uD83E\uDDED', label: 'HOWL Tracker',        desc: 'Habits of Work and Learning self-assessment for Crew time. Weekly check-ins, quarterly goals, trend chart, Crew conversation prompts. Aligned with EL Education\'s HOWL framework.', color: 'indigo', recommendedRange: '3-12' },
+        { id: 'onePageProfile', icon: '\uD83D\uDCC4', label: 'One-Page Profile', desc: 'Portable, printable profile that fits on one page. Three sections: what people like and admire about me, what is important to me, how best to support me. Person-centered planning artifact for IEP meetings, transitions, substitutes, or Crew. Based on Helen Sanderson Associates format.', color: 'indigo', recommendedRange: '3-12' },
+        { id: 'maps',        icon: '\uD83D\uDDFA\uFE0F', label: 'MAPS',         desc: 'Making Action Plans. Eight prompts in sequence (My Story, Dream, Nightmare, Who I Am, Gifts, Needs, Action Plan, First Steps). Person-centered visual from Pearpoint, O\'Brien, and Forest at Inclusion Press; widely used for transition planning.', color: 'indigo', recommendedRange: '5-12' },
+        { id: 'path',        icon: '\uD83E\uDDED', label: 'PATH',                desc: 'Planning Alternative Tomorrows with Hope. Futures-planning visual: eight stages from your long-horizon North Star backward to first steps in two weeks. Pearpoint, O\'Brien, and Forest at Inclusion Press; pairs with MAPS.', color: 'indigo', recommendedRange: '5-12' },
+        { id: 'valuesCommittedAction', icon: '\uD83E\uDDED', label: 'Values & Action', desc: 'Sort what matters, name your top values, and turn each into a small concrete action this week. From Acceptance and Commitment Therapy (Hayes); adolescent DNA-V framing. The ACT distinction between values (directions) and goals (destinations).', color: 'indigo', recommendedRange: '5-12' },
+        { id: 'careerCompass', icon: '\uD83E\uDDED', label: 'Career Compass', desc: 'Explore careers through your interests. 36-item RIASEC self-check gives a top-three Holland code; browse careers, the 16 federal Career Clusters, and concrete next steps (shadow days, info interviews, CTE, apprenticeships). Built on Holland\'s framework; points to the authoritative O*NET Interest Profiler at mynextmove.org.', color: 'indigo', recommendedRange: '5-12' },
 
         // ── Social Awareness ──
         { id: '_cat_SocialAwareness', icon: '\uD83E\uDD1D', label: 'Social Awareness', desc: '', color: 'slate', category: true },
@@ -251,31 +574,53 @@
         { id: 'conflict',    icon: '\u2696\uFE0F', label: 'Conflict Resolution', desc: 'Practice resolving conflicts with role-play scenarios and I-statements.', color: 'orange', recommendedRange: '2-12' },
         { id: 'social',      icon: '\uD83D\uDDE3\uFE0F', label: 'Social Skills Lab',  desc: 'Practice conversation skills, active listening, body language, and cooperation.', color: 'sky', recommendedRange: 'K-8' },
         { id: 'teamwork',    icon: '\uD83E\uDD1C\uD83E\uDD1B', label: 'Teamwork Builder', desc: 'Collaborative challenges and team role exploration.', color: 'lime', recommendedRange: 'K-12' },
+        { id: 'dearMan',     icon: '\uD83D\uDDE3\uFE0F', label: 'DEAR MAN',          desc: 'Build a script for a hard ask in seven steps: Describe, Express, Assert, Reinforce, Mindful, Appear confident, Negotiate. From DBT Interpersonal Effectiveness (Linehan); the most-used assertive-communication script in school counseling. Pairs with Self-Advocacy.', color: 'blue', recommendedRange: '5-12' },
+        { id: 'motivationalInterviewing', icon: '\uD83D\uDC42', label: 'Motivational Interviewing', desc: 'A conversation framework for helping someone (or yourself) think through a change. Learn OARS skills (Open questions, Affirmations, Reflections, Summaries), the three rulers, and Change Talk. From Miller and Rollnick; foundation of school counseling and peer-support work.', color: 'blue', recommendedRange: '6-12' },
+        { id: 'crewProtocols', icon: '\uD83E\uDE91', label: 'Crew Protocols', desc: 'A library of structured group formats for Crew time, advisory, or homeroom: community builders, openings, closings, restorative circles, reflection protocols, celebration formats, and hard-conversation guides. Plus a roll-up of all Crew prompts from across the SEL Hub. Built on EL Education Crew, Restorative Practices, Tribes, Responsive Classroom.', color: 'sky', recommendedRange: '3-12' },
 
         // ── Responsible Decision-Making ──
         { id: '_cat_DecisionMaking', icon: '\u2696\uFE0F', label: 'Responsible Decision-Making', desc: '', color: 'slate', category: true },
         { id: 'decisions',   icon: '\uD83E\uDD14', label: 'Decision Lab',        desc: 'Work through real-life scenarios using stop-think-act frameworks.', color: 'violet', recommendedRange: '3-12' },
         { id: 'journal',     icon: '\uD83D\uDCD3', label: 'Feelings Journal',    desc: 'Daily check-in journal — log moods, triggers, and reflections over time.', color: 'pink', recommendedRange: 'K-12' },
         { id: 'safety',      icon: '\uD83D\uDEE1\uFE0F', label: 'Safety & Boundaries', desc: 'Learn about personal boundaries, trusted adults, and safe vs. unsafe situations.', color: 'red', recommendedRange: 'K-8' },
+
+        // Stewardship (community, justice, land, and the future)
+        { id: '_cat_Stewardship', icon: '\uD83C\uDF31', label: 'Stewardship', desc: '', color: 'slate', category: true },
+        { id: 'landPlace',   icon: '\uD83C\uDF31', label: 'Land & Place',         desc: 'Stewardship Studio for ongoing relationship with the land you live on. Three threads (history, ecology, present), critical reflection on land acknowledgment as practice rather than performance, Wabanaki-led organizations as authoritative voices, and a private reflection journal.', color: 'emerald', recommendedRange: '5-12' }
       ];
       // Append dynamically registered tools into the correct category positions
       var _dynamicTools = [
         { id: 'restorativeCircle', icon: '\uD83E\uDEB6', label: 'Restorative Circle', desc: 'Facilitate restorative and community-building circles. Explore talking pieces and Indigenous roots.', color: 'amber', recommendedRange: '3-12', _cat: 'relationship-skills' },
-        { id: 'compassion', icon: '\uD83E\uDD7A', label: 'Compassion & Self-Talk', desc: 'Practice self-compassion, reframe inner critic, and build a kinder inner voice.', color: 'rose', recommendedRange: 'K-12', _cat: 'self-awareness' },
+        { id: 'compassion', icon: '\uD83E\uDD7A', label: 'Compassion & Self-Talk', desc: 'Practice self-compassion, reframe inner critic, and build a kinder inner voice.', color: 'rose', recommendedRange: 'K-12', _cat: 'care-of-self' },
         { id: 'friendship', icon: '\uD83E\uDD1D', label: 'Friendship Builder', desc: 'Explore friendship styles, repair strategies, and healthy relationship patterns.', color: 'amber', recommendedRange: 'K-12', _cat: 'relationship-skills' },
-        { id: 'transitions', icon: '\uD83C\uDF31', label: 'Life Transitions', desc: 'Navigate changes like moving, new schools, and growing up.', color: 'emerald', recommendedRange: 'K-12', _cat: 'self-management' },
+        { id: 'transitions', icon: '\uD83C\uDF31', label: 'Life Transitions', desc: 'Navigate changes like moving, new schools, and growing up.', color: 'emerald', recommendedRange: 'K-12', _cat: 'self-regulation' },
         { id: 'upstander', icon: '\uD83E\uDDB8', label: 'Upstander Training', desc: 'Learn to stand up for others safely — bystander to upstander skills.', color: 'red', recommendedRange: '2-12', _cat: 'social-awareness' },
-        { id: 'growthmindset', icon: '\uD83E\uDDE0', label: 'Growth Mindset', desc: 'Brain science, reframing challenges, and building resilience.', color: 'violet', recommendedRange: 'K-12', _cat: 'self-management' },
+        { id: 'growthmindset', icon: '\uD83E\uDDE0', label: 'Growth Mindset', desc: 'Brain science, reframing challenges, and building resilience.', color: 'violet', recommendedRange: 'K-12', _cat: 'self-direction' },
         { id: 'advocacy', icon: '\uD83D\uDCE2', label: 'Self-Advocacy', desc: 'Learn to speak up for your needs, rights, and goals.', color: 'blue', recommendedRange: '3-12', _cat: 'self-awareness' },
-        { id: 'civicAction', icon: '\u270A', label: 'Civic Action & Hope', desc: 'Process hard feelings about injustice, build civic agency, and cultivate hope through action.', color: 'teal', recommendedRange: '3-12', _cat: 'responsible-decision-making' },
+        { id: 'civicAction', icon: '\u270A', label: 'Civic Action & Hope', desc: 'Process hard feelings about injustice, build civic agency, and cultivate hope through action.', color: 'teal', recommendedRange: '3-12', _cat: 'stewardship' },
         { id: 'ethicalReasoning', icon: '\u2696\uFE0F', label: 'Ethical Reasoning Lab', desc: 'Explore contemporary ethical dilemmas through multiple frameworks and AI Socratic dialogue.', color: 'slate', recommendedRange: '5-12', _cat: 'responsible-decision-making' },
         { id: 'cultureExplorer', icon: '\uD83C\uDF0D', label: 'Culture Explorer', desc: 'Take AI-powered deep dives into world cultures with illustrations and audio.', color: 'cyan', recommendedRange: 'K-12', _cat: 'social-awareness' },
         { id: 'voicedetective', icon: '\uD83D\uDD0A', label: 'Voice Detective', desc: 'Listen to voices and identify emotions from tone.', color: 'purple', recommendedRange: 'K-12', _cat: 'social-awareness' },
         { id: 'sociallab', icon: '\uD83C\uDFAD', label: 'Social Skills Lab', desc: 'Practice social scenarios and AI peer roleplay.', color: 'indigo', recommendedRange: 'K-12', _cat: 'relationship-skills' },
         { id: 'peersupport', icon: '\uD83E\uDD1D', label: 'Peer Support Coach', desc: 'Learn OARS listening skills and when to get adult help.', color: 'emerald', recommendedRange: '3-12', _cat: 'relationship-skills' },
+        { id: 'conflicttheater', icon: '\uD83C\uDFAD', label: 'Conflict Theater', desc: 'Mediate a real conflict with two AI characters who have personalities, moods, and reasons of their own. Practice restorative principles in an immersive scene.', color: 'amber', recommendedRange: '5-12', _cat: 'relationship-skills' },
+        { id: 'digitalWellbeing', icon: '\uD83D\uDCF1', label: 'Digital Wellbeing Studio', desc: 'Self-check your relationship with social media and AI chatbots, build healthier phone habits, recover from cyberbullying, spot manipulation in the feed, navigate chatbot relationships safely, and find help when you need it.', color: 'cyan', recommendedRange: '5-12', _cat: 'self-regulation' },
       ];
       // Insert each dynamic tool after its category header
-      var _catPositions = { 'self-awareness': '_cat_SelfAwareness', 'self-management': '_cat_SelfManagement', 'social-awareness': '_cat_SocialAwareness', 'relationship-skills': '_cat_RelationshipSkills', 'responsible-decision-making': '_cat_DecisionMaking' };
+      var _catPositions = {
+        'self-awareness': '_cat_SelfAwareness',
+        'self-regulation': '_cat_SelfRegulation',
+        'self-direction': '_cat_SelfDirection',
+        'inner-work': '_cat_InnerWork',
+        'care-of-self': '_cat_CareOfSelf',
+        'social-awareness': '_cat_SocialAwareness',
+        'relationship-skills': '_cat_RelationshipSkills',
+        'responsible-decision-making': '_cat_DecisionMaking',
+        'stewardship': '_cat_Stewardship',
+        // Backwards-compat: tools that still tag themselves 'self-management'
+        // fall into Self-Regulation by default (the closest equivalent).
+        'self-management': '_cat_SelfRegulation'
+      };
       _dynamicTools.forEach(function(dt) {
         // Only add if the tool is actually registered in SelHub
         if (!window.SelHub || !window.SelHub.isRegistered(dt.id)) return;
@@ -425,6 +770,23 @@
           });
         }
 
+        // If a custom Station is active, filter to its tools only (parallel to pathway filtering)
+        if (activeStation && activeStation.tools && activeStation.tools.length > 0) {
+          var _stTools = activeStation.tools;
+          _filteredTools = _filteredTools.filter(function (t2) {
+            if (t2.category) return true;
+            return _stTools.indexOf(t2.id) >= 0;
+          });
+          _filteredTools = _filteredTools.filter(function (t2, i, arr) {
+            if (!t2.category) return true;
+            for (var j = i + 1; j < arr.length; j++) {
+              if (arr[j].category) return false;
+              return true;
+            }
+            return false;
+          });
+        }
+
         toolGrid = h('div', { role: 'main', 'aria-label': 'SEL Hub tool selection', style: { padding: 20 } },
           // Active pathway banner
           activePathway && h('div', {
@@ -440,6 +802,131 @@
               style: { background: 'none', border: '1px solid #7c3aed44', borderRadius: 8, padding: '4px 10px', color: '#7c3aed', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, '\u2715 Exit Pathway')
           ),
+          // Active station banner (mutually exclusive with active pathway in practice)
+          activeStation && (function () {
+            var stationProg = questProgress[activeStation.id] || {};
+            var totalQ = (activeStation.quests || []).length;
+            var doneQ = (activeStation.quests || []).filter(function (q) { return (stationProg[q.qid] || {}).complete; }).length;
+            return h('div', {
+              role: 'region', 'aria-label': 'Active SEL Station: ' + activeStation.name,
+              style: { marginBottom: 16, padding: '12px 16px', borderRadius: 12, background: 'linear-gradient(135deg, #ec489915, #f43f5e15)', border: '1px solid #ec489933' }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
+                h('div', { style: { minWidth: 0, flex: 1 } },
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: '#be185d' } }, '\ud83d\udccc ' + activeStation.name),
+                  h('div', { style: { fontSize: 11, color: _t.textMuted, marginTop: 2 } },
+                    (activeStation.tools || []).length + ' tools' + (totalQ > 0 ? ' \u2022 ' + doneQ + '/' + totalQ + ' quests done' : '')
+                  ),
+                  activeStation.teacherNote && h('div', { style: { fontSize: 11, color: _t.textMuted, marginTop: 6, fontStyle: 'italic', padding: '6px 8px', background: _t.bgCard, borderRadius: 6, borderLeft: '3px solid #ec4899' } }, '\ud83d\udcac ' + activeStation.teacherNote)
+                ),
+                h('button', {
+                  onClick: function () { setActiveStationId(null); announceToSR('Station cleared'); },
+                  'aria-label': 'Exit station mode',
+                  style: { background: 'none', border: '1px solid #ec489944', borderRadius: 8, padding: '4px 10px', color: '#be185d', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                }, '\u2715 Exit Station')
+              ),
+              totalQ > 0 && h('div', { style: { marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 } },
+                (activeStation.quests || []).map(function (q) {
+                  var qp = stationProg[q.qid] || {};
+                  var done = !!qp.complete;
+                  var qIcon = (SEL_QUEST_TYPES.find(function (qt) { return qt.id === q.type; }) || {}).icon || '\ud83c\udfaf';
+                  return h('div', { key: q.qid, style: { background: done ? '#dcfce7' : _t.bgCard, border: '1px solid ' + (done ? '#86efac' : _t.border), borderRadius: 8, padding: '6px 10px' } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, done ? '\u2705' : qIcon),
+                      h('span', { style: { fontSize: 12, fontWeight: 600, color: done ? '#166534' : _t.text, flex: 1, textDecoration: done ? 'line-through' : 'none' } }, q.label),
+                      !done && q.type === 'xpThreshold' && h('span', { style: { fontSize: 10, color: _t.textMuted } }, selXp + ' / ' + ((q.params && q.params.threshold) || 30)),
+                      !done && q.type === 'timeSpent' && h('span', { style: { fontSize: 10, color: _t.textMuted } }, Math.floor(((qp.timeAccumMs || 0) / 60000)) + ' / ' + ((q.params && q.params.minutes) || 5) + ' min'),
+                      !done && q.type === 'manualComplete' && h('button', {
+                        onClick: function () {
+                          setQuestProgress(function (prev) {
+                            var next = Object.assign({}, prev);
+                            var sp = Object.assign({}, next[activeStation.id] || {});
+                            sp[q.qid] = Object.assign({}, sp[q.qid] || {}, { markedComplete: true });
+                            next[activeStation.id] = sp;
+                            return next;
+                          });
+                          announceToSR('Quest marked complete: ' + q.label);
+                        },
+                        'aria-label': 'Mark "' + q.label + '" as complete',
+                        style: { fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, border: '1px solid #ec489966', background: '#fff', color: '#be185d', cursor: 'pointer' }
+                      }, 'Mark complete')
+                    ),
+                    !done && q.type === 'freeResponse' && h('textarea', {
+                      value: qp.response || '',
+                      onChange: function (ev) {
+                        var v = ev.target.value;
+                        setQuestProgress(function (prev) {
+                          var next = Object.assign({}, prev);
+                          var sp = Object.assign({}, next[activeStation.id] || {});
+                          sp[q.qid] = Object.assign({}, sp[q.qid] || {}, { response: v });
+                          next[activeStation.id] = sp;
+                          return next;
+                        });
+                      },
+                      placeholder: (q.params && q.params.prompt) || 'Write a reflection...',
+                      'aria-label': 'Reflection for ' + q.label,
+                      rows: 2,
+                      style: { width: '100%', marginTop: 6, padding: '6px 8px', borderRadius: 6, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 11, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }
+                    })
+                  );
+                })
+              )
+            );
+          })(),
+          // \u2500\u2500 Daily Streak + Continue Where You Left Off \u2500\u2500
+          // Pulls from localStorage-backed selStreak / selToolUsage.
+          // Streak chip surfaces only when count >= 2 (avoids "1-day streak"
+          // noise on first visit). Continue card shows the most recently
+          // opened tool if it was used within the last 7 days AND the user
+          // isn't already in a pathway/station view.
+          (function () {
+            var showStreak = (selStreak.count || 0) >= 2;
+            var continueTool = null;
+            if (!activePathway && !activeStation) {
+              var bestId = null; var bestTime = 0; var weekAgo = Date.now() - 7 * 86400000;
+              Object.keys(selToolUsage).forEach(function (k) {
+                var u = selToolUsage[k];
+                if (u && u.lastUsed && u.lastUsed > bestTime && u.lastUsed > weekAgo) { bestTime = u.lastUsed; bestId = k; }
+              });
+              if (bestId) {
+                continueTool = _allSelTools.find(function (t) { return t.id === bestId && !t.category; }) || null;
+              }
+            }
+            if (!showStreak && !continueTool) return null;
+            return h('div', {
+              style: { marginBottom: 12, padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, #f59e0b15, #ec489915)', border: '1px solid #f59e0b33', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } },
+                showStreak && h('div', {
+                  role: 'status',
+                  'aria-label': selStreak.count + '-day SEL streak. Longest: ' + (selStreak.longest || selStreak.count) + ' days.',
+                  style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 16, background: '#fff7ed', border: '1px solid #fed7aa' }
+                },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, '\uD83D\uDD25'),
+                  h('span', { style: { fontSize: 12, fontWeight: 800, color: '#c2410c' } }, selStreak.count + '-day streak'),
+                  (selStreak.longest > selStreak.count) && h('span', { style: { fontSize: 10, color: '#9a3412', fontWeight: 600 } }, '\u00B7 best ' + selStreak.longest)
+                ),
+                continueTool && h('div', { style: { fontSize: 12, color: _t.textMuted } },
+                  h('span', { style: { fontWeight: 700, color: _t.text } }, '\uD83D\uDC4B Welcome back. '),
+                  'Continue with ',
+                  h('span', { style: { fontWeight: 700, color: _t.text } }, continueTool.label),
+                  '?'
+                )
+              ),
+              continueTool && h('button', {
+                onClick: function () {
+                  trackToolOpen(continueTool.id);
+                  setSelHubTool(continueTool.id);
+                  announceToSR('Resumed ' + continueTool.label);
+                },
+                'aria-label': 'Continue with ' + continueTool.label,
+                style: { padding: '6px 14px', borderRadius: 10, background: '#f59e0b', color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
+              },
+                h('span', { 'aria-hidden': 'true' }, continueTool.icon),
+                'Continue \u2192'
+              )
+            );
+          })(),
           // Search bar
           h('div', { style: { marginBottom: 12 } },
             h('input', {
@@ -453,7 +940,7 @@
             })
           ),
           // CASEL category filter chips
-          h('div', { role: 'group', 'aria-label': 'Filter by CASEL competency', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
+          h('div', { role: 'group', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
             h('button', {
               onClick: function() { setSelCategoryFilter(null); announceToSR('Showing all categories'); },
               'aria-label': 'Show all categories',
@@ -503,6 +990,185 @@
               })
             )
           ),
+          // Custom SEL Stations — teacher-authored bundles (parallel to STEM Lab Stations)
+          !activeStation && !activePathway && h('details', {
+            open: builderOpen || savedStations.length > 0,
+            style: { marginBottom: 16, borderRadius: 12, border: '1px solid ' + _t.border, overflow: 'hidden' }
+          },
+            h('summary', {
+              style: { padding: '10px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: _t.textMuted, background: _t.bgCard, display: 'flex', alignItems: 'center', gap: 6 }
+            }, '📌 Custom SEL Stations — teacher-authored bundles'),
+            h('div', { style: { padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 10 } },
+              // Saved stations list
+              savedStations.length > 0 && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 } },
+                savedStations.map(function (st) {
+                  return h('div', { key: st.id, style: { padding: '10px 12px', borderRadius: 10, border: '1px solid ' + _t.border, background: _t.bgCard, display: 'flex', flexDirection: 'column', gap: 4 } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 } },
+                      h('div', { style: { fontSize: 12, fontWeight: 700, color: _t.text, minWidth: 0, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, '📌 ' + st.name),
+                      h('button', {
+                        onClick: function () {
+                          var keep = savedStations.filter(function (s) { return s.id !== st.id; });
+                          setSavedStations(keep);
+                          if (activeStationId === st.id) setActiveStationId(null);
+                          if (typeof addToast === 'function') addToast('Station removed', 'info');
+                        },
+                        'aria-label': 'Delete station ' + st.name,
+                        style: { background: 'none', border: 'none', color: '#ef4444', fontSize: 11, fontWeight: 700, cursor: 'pointer', padding: '2px 6px' }
+                      }, '✕')
+                    ),
+                    h('div', { style: { fontSize: 10, color: _t.textMuted } }, (st.tools || []).length + ' tools' + ((st.quests || []).length > 0 ? ' • ' + st.quests.length + ' quests' : '')),
+                    h('button', {
+                      onClick: function () {
+                        setActiveStationId(st.id);
+                        setActivePathway(null); setPathwayProgress({});
+                        setSelToolSearch(''); setSelCategoryFilter(null);
+                        announceToSR('Activated SEL Station: ' + st.name);
+                        if (typeof addToast === 'function') addToast('📌 ' + st.name + ' started!', 'success');
+                      },
+                      'aria-label': 'Activate station ' + st.name,
+                      style: { marginTop: 4, padding: '4px 10px', borderRadius: 8, border: 'none', background: '#db2777', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                    }, 'Activate')
+                  );
+                })
+              ),
+              // Open builder button
+              !builderOpen && h('button', {
+                onClick: function () { setBuilderOpen(true); announceToSR('Station builder opened'); },
+                'aria-label': 'Build a new custom SEL Station',
+                style: { padding: '8px 14px', borderRadius: 10, border: '1px dashed #ec4899', background: 'rgba(236, 72, 153, 0.05)', color: '#be185d', fontSize: 12, fontWeight: 700, cursor: 'pointer', alignSelf: 'flex-start' }
+              }, '+ Build a Custom Station'),
+              // Inline builder
+              builderOpen && (function () {
+                var registry = (window.SelHub && window.SelHub.getRegisteredTools) ? window.SelHub.getRegisteredTools() : [];
+                var QUEST_PRESETS = [
+                  { name: 'Daily Check-In', icon: '🌅', desc: 'Quick reflection + XP', build: function () {
+                    var picked = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
+                    return [
+                      { type: 'xpThreshold', toolId: null, label: 'Earn 20 SEL XP today', params: { threshold: 20 } },
+                      { type: 'freeResponse', toolId: null, label: 'How are you feeling right now?', params: { prompt: 'How are you feeling right now? What is one thing on your mind?', minLength: 30 } },
+                      { type: 'manualComplete', toolId: picked[0] || null, label: 'Complete one SEL activity', params: {} }
+                    ];
+                  } },
+                  { name: 'Reflection Deep Dive', icon: '🔍', desc: 'Time + reflection + XP', build: function () {
+                    var picked = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
+                    return [
+                      { type: 'xpThreshold', toolId: null, label: 'Earn 60 SEL XP', params: { threshold: 60 } },
+                      { type: 'timeSpent', toolId: picked[0] || null, label: 'Spend 8 minutes here', params: { minutes: 8 } },
+                      { type: 'freeResponse', toolId: null, label: 'What did you learn about yourself?', params: { prompt: 'What did you learn about yourself today? What is one thing you might do differently next time?', minLength: 60 } }
+                    ];
+                  } },
+                  { name: 'Repair Pack', icon: '🤝', desc: 'After-conflict repair', build: function () {
+                    var picked = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
+                    return [
+                      { type: 'manualComplete', toolId: picked[0] || null, label: 'Use the first tool to plan a repair', params: {} },
+                      { type: 'freeResponse', toolId: null, label: 'Write a repair statement', params: { prompt: 'Write what you would say to repair the relationship. Use "I" statements and name a specific action you can take.', minLength: 80 } },
+                      { type: 'manualComplete', toolId: null, label: 'Talk it through with a trusted adult', params: {} }
+                    ];
+                  } }
+                ];
+                return h('div', { role: 'region', 'aria-label': 'Station Builder', style: { padding: '12px 14px', borderRadius: 10, border: '1px solid #ec489955', background: 'rgba(236, 72, 153, 0.04)', display: 'flex', flexDirection: 'column', gap: 10 } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 } },
+                    h('div', { style: { fontSize: 12, fontWeight: 800, color: '#be185d' } }, '🧑‍🏫 Station Builder'),
+                    h('button', {
+                      onClick: function () { setBuilderOpen(false); setBuilderName(''); setBuilderNote(''); setBuilderTools({}); setBuilderQuests([]); },
+                      'aria-label': 'Cancel station builder',
+                      style: { fontSize: 11, fontWeight: 700, color: _t.textMuted, background: 'none', border: 'none', cursor: 'pointer' }
+                    }, '✕ Cancel')
+                  ),
+                  // Name
+                  h('input', {
+                    type: 'text', value: builderName,
+                    onChange: function (ev) { setBuilderName(ev.target.value); },
+                    placeholder: 'Station name (e.g. "Friday SEL Routine")',
+                    'aria-label': 'Station name',
+                    style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 12, outline: 'none', boxSizing: 'border-box' }
+                  }),
+                  // Teacher note
+                  h('textarea', {
+                    value: builderNote,
+                    onChange: function (ev) { setBuilderNote(ev.target.value); },
+                    placeholder: 'Optional teacher note (instructions students see when they activate this station)',
+                    'aria-label': 'Teacher note',
+                    rows: 2,
+                    style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgInput, color: _t.text, fontSize: 11, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }
+                  }),
+                  // Tool picker
+                  h('div', null,
+                    h('div', { style: { fontSize: 11, fontWeight: 700, color: _t.text, marginBottom: 4 } }, 'Pick tools to include:'),
+                    registry.length === 0
+                      ? h('div', { style: { fontSize: 11, color: _t.textMuted, fontStyle: 'italic' } }, 'No SEL tools registered yet. Open the hub once so plugins load, then return here.')
+                      : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 4, maxHeight: 180, overflowY: 'auto', padding: 4, border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgCard } },
+                          registry.map(function (tool) {
+                            var checked = !!builderTools[tool.id];
+                            return h('label', { key: tool.id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 6px', borderRadius: 6, cursor: 'pointer', background: checked ? '#fce7f3' : 'transparent', fontSize: 11, color: _t.text } },
+                              h('input', {
+                                type: 'checkbox', checked: checked,
+                                onChange: function () {
+                                  setBuilderTools(function (prev) { var n = Object.assign({}, prev); n[tool.id] = !checked; return n; });
+                                },
+                                'aria-label': 'Include ' + (tool.name || tool.id) + ' in this station'
+                              }),
+                              h('span', { 'aria-hidden': 'true' }, tool.icon || '🔧'),
+                              h('span', { style: { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, tool.name || tool.id)
+                            );
+                          })
+                        )
+                  ),
+                  // Quest presets + manual quest add
+                  h('div', null,
+                    h('div', { style: { fontSize: 11, fontWeight: 700, color: _t.text, marginBottom: 4 } }, 'Quests (optional):'),
+                    builderQuests.length === 0 && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 6 } },
+                      QUEST_PRESETS.map(function (preset) {
+                        return h('button', {
+                          key: preset.name,
+                          onClick: function () {
+                            var picked = Object.keys(builderTools).filter(function (k) { return builderTools[k]; });
+                            if (picked.length === 0) {
+                              if (typeof addToast === 'function') addToast('Pick tools first, then add quests', 'info');
+                              return;
+                            }
+                            setBuilderQuests(preset.build());
+                            if (typeof addToast === 'function') addToast('Applied "' + preset.name + '" quest preset!', 'success');
+                          },
+                          'aria-label': 'Apply preset: ' + preset.name + '. ' + preset.desc,
+                          style: { background: _t.bgCard, border: '1px solid ' + _t.border, borderRadius: 8, padding: '6px 4px', cursor: 'pointer', fontSize: 10, fontWeight: 600, color: _t.text, textAlign: 'center' }
+                        },
+                          h('div', { style: { fontSize: 16 } }, preset.icon),
+                          h('div', { style: { fontWeight: 700 } }, preset.name),
+                          h('div', { style: { fontSize: 9, color: _t.textMuted, marginTop: 2 } }, preset.desc)
+                        );
+                      })
+                    ),
+                    builderQuests.length > 0 && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+                      builderQuests.map(function (q, qi) {
+                        var qIcon = (SEL_QUEST_TYPES.find(function (qt) { return qt.id === q.type; }) || {}).icon || '🎯';
+                        return h('div', { key: qi, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 6, background: _t.bgCard, border: '1px solid ' + _t.border, fontSize: 11, color: _t.text } },
+                          h('span', { 'aria-hidden': 'true', style: { fontSize: 13 } }, qIcon),
+                          h('span', { style: { flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, q.label),
+                          h('button', {
+                            onClick: function () { setBuilderQuests(function (prev) { return prev.filter(function (_, i) { return i !== qi; }); }); },
+                            'aria-label': 'Remove quest "' + q.label + '"',
+                            style: { background: 'none', border: 'none', color: '#ef4444', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                          }, '✕')
+                        );
+                      }),
+                      h('button', {
+                        onClick: function () { setBuilderQuests([]); },
+                        'aria-label': 'Clear all quests',
+                        style: { fontSize: 10, color: _t.textMuted, background: 'none', border: 'none', cursor: 'pointer', alignSelf: 'flex-start', textDecoration: 'underline' }
+                      }, 'Clear all quests')
+                    )
+                  ),
+                  // Save button
+                  h('button', {
+                    onClick: _saveBuilderAsStation,
+                    'aria-label': 'Save this station',
+                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: '#db2777', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', alignSelf: 'flex-start' }
+                  }, '💾 Save Station')
+                );
+              })()
+            )
+          ),
           // Grid
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 } },
             _filteredTools.map(function(tool) {
@@ -532,6 +1198,7 @@
                 key: tool.id,
                 onClick: function() {
                   if (isRegistered) {
+                    trackToolOpen(tool.id);
                     setSelHubTool(tool.id);
                     announceToSR('Opened ' + tool.label);
                     // Track pathway progress
@@ -556,10 +1223,39 @@
                 onMouseLeave: function(e) { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }
               },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%' } },
-                  h('span', { style: { fontSize: 24 } }, tool.icon),
-                  h('span', { style: { fontSize: 14, fontWeight: 700, color: _t.text } }, tool.label)
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 24 } }, tool.icon),
+                  h('span', { style: { fontSize: 14, fontWeight: 700, color: _t.text, flex: 1 } }, tool.label),
+                  // Usage indicator: dot count / star for tools already visited.
+                  // Hidden from SR (already in aria-label of the card if needed).
+                  isRegistered && (function () {
+                    var u = selToolUsage[tool.id];
+                    if (!u || !u.count) {
+                      return null;
+                    }
+                    if (u.count >= 5) {
+                      return h('span', { 'aria-hidden': 'true', title: u.count + ' visits', style: { fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 8, background: cardColor + '22', color: cardColor } }, '★');
+                    }
+                    return h('span', { 'aria-hidden': 'true', title: u.count + (u.count === 1 ? ' visit' : ' visits'), style: { fontSize: 9, color: cardColor, letterSpacing: '1px' } }, '•'.repeat(Math.min(u.count, 4)));
+                  })()
                 ),
                 h('p', { style: { margin: 0, fontSize: 11, color: _t.textMuted, lineHeight: 1.4 } }, tool.desc),
+                // Evidence-tradition pill (sourced from sel_standards_alignment.js)
+                (function() {
+                  if (!window.SelHubStandards || !window.SelHubStandards.alignments) return null;
+                  var align = window.SelHubStandards.alignments[tool.id];
+                  if (!align) return null;
+                  var tag = null;
+                  if (align.other && align.other.length > 0) {
+                    tag = align.other[0].framework;
+                  } else if (align.casel && align.casel.length > 0) {
+                    tag = 'CASEL';
+                  }
+                  if (!tag) return null;
+                  return h('span', {
+                    'aria-label': 'Evidence tradition: ' + tag,
+                    style: { display: 'inline-block', fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: cardColor + '22', color: cardColor, letterSpacing: 0.3, textTransform: 'uppercase', marginTop: 4, alignSelf: 'flex-start' }
+                  }, tag);
+                })(),
                 tool.recommendedRange && h('span', {
                   style: { fontSize: 10, color: cardColor, fontWeight: 600, marginTop: 4 }
                 }, 'Grades ' + tool.recommendedRange),
@@ -633,6 +1329,8 @@
           callGeminiVision: typeof callGeminiVision === 'function' ? callGeminiVision : null,
           onSafetyFlag: onSafetyFlag,
           studentCodename: studentCodename,
+          selectedVoice: selectedVoice,
+          activeSessionCode: activeSessionCode,
 
           // ── Icons ──
           icons: {
@@ -682,13 +1380,26 @@
           if (!window.__selPluginComponents) window.__selPluginComponents = {};
           if (!window.__selPluginComponents[selHubTool]) {
             window.__selPluginComponents[selHubTool] = function SelPluginBridge(props) {
+              // On unmount (or toolId change), invoke the registered tool's
+              // cleanup if it defined one. Opt-in: tools without `cleanup` are
+              // unaffected. Used by tools with module-scope timers (e.g.
+              // mindfulness breath pacer, coping PMR/movement) to clear
+              // intervals so they don't keep firing after a tool switch.
+              React.useEffect(function() {
+                return function() {
+                  var entry = window.SelHub && window.SelHub._registry && window.SelHub._registry[props._toolId];
+                  if (entry && typeof entry.cleanup === 'function') {
+                    try { entry.cleanup(); } catch (e) { console.warn('[SelHub] cleanup error for ' + props._toolId, e); }
+                  }
+                };
+              }, [props._toolId]);
               return window.SelHub.renderTool(props._toolId, props._ctx);
             };
           }
           toolContent = React.createElement(window.__selPluginComponents[selHubTool], { key: 'sel-plugin-' + selHubTool, _toolId: selHubTool, _ctx: _ctx });
         } catch(e) {
           console.error('[SelHub] Plugin render error for ' + selHubTool, e);
-          toolContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 40, textAlign: 'center', color: '#ef4444' } },
+          toolContent = h('div', { style: { padding: 40, textAlign: 'center', color: '#ef4444' } },
             h('p', { style: { fontSize: 32, marginBottom: 12 } }, '\u26A0\uFE0F'),
             h('p', { style: { fontWeight: 700, marginBottom: 8 } }, 'Error loading ' + selHubTool),
             h('p', { style: { fontSize: 12, color: _t.textMuted, marginBottom: 16 } }, e.message || 'Unknown error'),
@@ -702,8 +1413,8 @@
 
       // ── Loading state (tool selected but plugin not yet loaded) ──
       if (selHubTool && !toolContent) {
-        toolContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 60, textAlign: 'center', color: _t.textMuted } },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+        toolContent = h('div', { style: { padding: 60, textAlign: 'center', color: _t.textMuted } },
+          h('div', { 'aria-hidden': 'true',
             style: {
               fontSize: 40, marginBottom: 16,
               animation: _reduceMotion ? 'none' : 'pulse 2s ease-in-out infinite'

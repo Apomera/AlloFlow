@@ -20,6 +20,7 @@ const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'view_renderers_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_renderers_module.js');
 const DEPLOY_OUT = path.join(ROOT, 'prismflow-deploy', 'public', 'view_renderers_module.js');
+const MONOLITH = path.join(ROOT, 'AlloFlowANTI.txt');
 const TMP = path.join(ROOT, '_tmp_view_renderers_entry.jsx');
 const TMP_COMPILED = TMP + '.compiled.js';
 
@@ -30,13 +31,87 @@ if (!fs.existsSync(SOURCE)) {
 
 const source = fs.readFileSync(SOURCE, 'utf-8');
 
-// Lucide icons used across the three renderers (from c:/tmp/audit_g2_deps.py).
-// Total of 13 unique icons. _lazyIcon defers resolution to call-time so the
-// module doesn't have to wait for window.AlloIcons to be populated.
-const ICONS = [
-  'AlertCircle', 'ArrowDown', 'ArrowRight', 'CheckCircle2', 'Gamepad2',
-  'Layout', 'List', 'ListOrdered', 'Lock', 'Plus', 'RefreshCw', 'Sparkles', 'X',
-];
+// Auto-detect Lucide icons used in the source by scanning for `<CapitalRef`
+// JSX patterns and intersecting with the keys of window.AlloIcons in the
+// monolith. This replaces the previous hardcoded ICONS array which silently
+// dropped icons it didn't know about (Unplug + Unlock shipped broken in
+// G.2 because of this). Build now FAILS LOUDLY if a JSX-referenced icon
+// isn't in window.AlloIcons — the failure tells us exactly which icon to
+// add to the monolith's AlloIcons object.
+function detectIconsAndComponents() {
+  // 1. Strip strings + comments so we don't match identifiers inside literals.
+  let stripped = source;
+  stripped = stripped.replace(/\/\/[^\n]*/g, '');
+  stripped = stripped.replace(/\/\*[\s\S]*?\*\//g, '');
+  stripped = stripped.replace(/'(?:\\.|[^'\\\n])*'/g, "''");
+  stripped = stripped.replace(/"(?:\\.|[^"\\\n])*"/g, '""');
+  // Template literals: keep ${...} contents, blank out the rest.
+  stripped = stripped.replace(/`([^`\\]|\\.)*`/g, '``');
+
+  // 2. Find every <CapitalRef in JSX position.
+  const jsxRefs = new Set();
+  const jsxRe = /<\s*([A-Z][A-Za-z0-9]+)\b/g;
+  let m;
+  while ((m = jsxRe.exec(stripped)) !== null) jsxRefs.add(m[1]);
+
+  // 3. Read window.AlloIcons keys from the monolith.
+  const monolith = fs.readFileSync(MONOLITH, 'utf-8');
+  const alloIconsMatch = monolith.match(/window\.AlloIcons\s*=\s*\{([\s\S]*?)\};/);
+  if (!alloIconsMatch) {
+    console.error('FAIL: could not find window.AlloIcons declaration in AlloFlowANTI.txt');
+    process.exit(1);
+  }
+  const alloIcons = new Set();
+  const iconBody = alloIconsMatch[1];
+  const idRe = /[A-Za-z_$][A-Za-z0-9_$]*/g;
+  let im;
+  while ((im = idRe.exec(iconBody)) !== null) alloIcons.add(im[0]);
+
+  // 4. Partition JSX refs into icons-to-alias vs. components-to-pass-through.
+  // Components (SimpleBarChart, KeyConceptMapView, etc.) come through deps
+  // since they're file-top shims that delegate to other CDN modules — we
+  // don't alias them at module level.
+  const icons = [];
+  const components = [];
+  // Known component names (passed through deps, never aliased here).
+  const KNOWN_COMPONENTS = new Set([
+    'React', 'Fragment', 'BranchItem', 'ConfettiExplosion', 'ErrorBoundary',
+    'KeyConceptMapView', 'MainTitle', 'SimpleBarChart', 'SimpleDonutChart',
+    'Tag', 'VennGame', 'CauseEffectSortGame', 'PipelineBuilderGame',
+    'TChartSortGame', 'ConceptMapSortGame', 'OutlineSortGame',
+    'FishboneSortGame', 'ProblemSolutionSortGame',
+    'GameButtonHint',
+  ]);
+
+  for (const ref of [...jsxRefs].sort()) {
+    if (KNOWN_COMPONENTS.has(ref)) {
+      components.push(ref);
+    } else if (alloIcons.has(ref)) {
+      icons.push(ref);
+    } else {
+      // JSX-position name that's neither a known component nor in
+      // window.AlloIcons. Fail the build so we add it to AlloIcons before
+      // shipping a module that will throw at render time.
+      console.error('');
+      console.error('═══════════════════════════════════════════════════════════════════');
+      console.error(`FAIL: JSX references <${ref}> but it is not in window.AlloIcons`);
+      console.error('      and not a recognized component shim.');
+      console.error('');
+      console.error('      Either:');
+      console.error(`      (a) Add ${ref} to window.AlloIcons in AlloFlowANTI.txt (~L4919),`);
+      console.error('      (b) Add it to KNOWN_COMPONENTS in this build script if it is a');
+      console.error('          file-top component shim, or');
+      console.error(`      (c) Verify <${ref}> isn't a typo in the source.`);
+      console.error('═══════════════════════════════════════════════════════════════════');
+      process.exit(1);
+    }
+  }
+  return { icons, components };
+}
+
+const { icons: ICONS, components: COMPONENTS_DETECTED } = detectIconsAndComponents();
+console.log(`[icon-scan] auto-detected ${ICONS.length} Lucide icons: ${ICONS.join(', ')}`);
+console.log(`[icon-scan] auto-detected ${COMPONENTS_DETECTED.length} component refs (passed via deps): ${COMPONENTS_DETECTED.join(', ')}`);
 
 const entry = `
 /* global React */

@@ -1110,7 +1110,7 @@ window.StemLab = window.StemLab || {
                   h('caption', { className: 'sr-only' }, 'punnett data table'), h('thead', null, h('tr', null,
                     h('th', { scope: 'col', className: 'w-16 h-16' }),
                     isSexLinked
-                      ? [h('th', { scope: 'col', key: 0, className: 'w-16 h-16 text-center text-lg font-bold text-blue-600 bg-blue-50 border border-blue-200' }, 'X' + parent2[0]), h('th', { key: 1, className: 'w-16 h-16 text-center text-lg font-bold text-slate-600 bg-slate-100 border border-slate-200' }, 'Y')]
+                      ? [h('th', { scope: 'col', key: 0, className: 'w-16 h-16 text-center text-lg font-bold text-blue-600 bg-blue-50 border border-blue-200' }, 'X' + parent2[0]), h('th', { key: 1, className: 'w-16 h-16 text-center text-lg font-bold text-slate-600 bg-slate-100 border border-slate-400' }, 'Y')]
                       : parent2.map(function(a, i) { return h('th', { scope: 'col', key: i, className: 'w-16 h-16 text-center text-lg font-bold text-blue-600 bg-blue-50 border border-blue-200' }, a); })
                   )),
                   h('tbody', null, parent1.map(function(a, r) {
@@ -1122,7 +1122,7 @@ window.StemLab = window.StemLab || {
                         var pc = phenoColor(p);
                         var cellLabel = isSexLinked ? (g.indexOf('Y') !== -1 ? '\u2642 Male' : '\u2640 Female') : (p === 'Blended' ? 'Blended' : p === 'Codominant' ? 'Both' : (g[0] === g[1] ? (p === 'Dominant' ? 'Homo D' : 'Homo R') : 'Hetero'));
                         var cellEmoji = activePreset ? (p === 'Blended' || p === 'Codominant' ? (activePreset.blendEmoji || activePreset.domEmoji) : (p === 'Dominant' ? activePreset.domEmoji : activePreset.recEmoji)) : null;
-                        return h('td', { key: c, className: 'w-16 h-16 text-center border border-slate-200 relative ' + pc.bg },
+                        return h('td', { key: c, className: 'w-16 h-16 text-center border border-slate-400 relative ' + pc.bg },
                           h('span', { className: 'text-lg font-bold ' + pc.text }, g),
                           h('span', { className: 'block text-[8px] ' + pc.sub }, cellLabel),
                           cellEmoji && h('span', { className: 'text-[10px] absolute top-0.5 right-0.5' }, cellEmoji)
@@ -1398,7 +1398,7 @@ window.StemLab = window.StemLab || {
                           diGrid[ri].map(function(geno, ci) {
                             var dp = diPhenotype(geno);
                             var dpc = diPhenoColor(dp);
-                            return h('td', { key: ci, className: 'w-14 h-14 text-center border border-slate-200 ' + dpc.bg },
+                            return h('td', { key: ci, className: 'w-14 h-14 text-center border border-slate-400 ' + dpc.bg },
                               h('span', { className: 'text-[10px] font-bold block ' + dpc.text }, geno.substring(0, 2)),
                               h('span', { className: 'text-[10px] font-bold block ' + dpc.text }, geno.substring(2)),
                               h('span', { className: 'text-[7px] block ' + dpc.sub }, diPhenoLabel(dp).split(' + ')[0])
@@ -1928,11 +1928,11 @@ window.StemLab = window.StemLab || {
                   // Quick presets
                   h('button', { 'aria-label': 'Sample 1',
                     onClick: function() { upd('_dnaSeq', 'ATGAAAGCTTTTCGATGA'); punnettSound('translate'); },
-                    className: 'px-2 py-1 text-[10px] font-bold rounded-lg bg-white text-slate-500 border border-slate-200 hover:border-fuchsia-300'
+                    className: 'px-2 py-1 text-[10px] font-bold rounded-lg bg-white text-slate-500 border border-slate-400 hover:border-fuchsia-300'
                   }, '\uD83E\uDDEA Sample 1'),
                   h('button', { 'aria-label': 'Sample 2',
                     onClick: function() { upd('_dnaSeq', 'ATGTGCCCGAACGTTTACTGA'); punnettSound('translate'); },
-                    className: 'px-2 py-1 text-[10px] font-bold rounded-lg bg-white text-slate-500 border border-slate-200 hover:border-fuchsia-300'
+                    className: 'px-2 py-1 text-[10px] font-bold rounded-lg bg-white text-slate-500 border border-slate-400 hover:border-fuchsia-300'
                   }, '\uD83E\uDDEA Sample 2'),
                   h('button', { 'aria-label': 'Translate',
                     onClick: function() {

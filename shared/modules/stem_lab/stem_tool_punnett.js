@@ -14,6 +14,15 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-punnett')) return;
@@ -977,40 +986,71 @@ window.StemLab = window.StemLab || {
           // ════════════════════════════════════════
           // RENDER
           // ════════════════════════════════════════
-          return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'max-w-2xl mx-auto animate-in fade-in duration-200' },
+          return h('div', { className: 'max-w-2xl mx-auto animate-in fade-in duration-200' },
 
             // ── Header ──
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-3' },
+            h('div', { className: 'flex items-center gap-3 mb-3' },
               h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back to tools' },
                 h(ArrowLeft, { size: 18, className: 'text-slate-600' })
               ),
               h('h3', { className: 'text-lg font-bold text-slate-800' }, '\uD83E\uDDEC Punnett Square Lab'),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-2 py-0.5 bg-violet-100 text-violet-700 text-[11px] font-bold rounded-full' }, 'GENETICS v3'),
+              h('span', { className: 'px-2 py-0.5 bg-violet-100 text-violet-700 text-[11px] font-bold rounded-full' }, 'GENETICS v3'),
               h('button', {
                 onClick: function() { upd('_showBadgePanel', !showBadgePanel); },
-                className: 'ml-auto px-2 py-1 text-[11px] font-bold rounded-lg border ' + (showBadgePanel ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-slate-50 text-slate-600 border-slate-200'),
+                className: 'ml-auto px-2 py-1 text-[11px] font-bold rounded-lg border ' + (showBadgePanel ? 'bg-amber-100 text-amber-700 border-amber-600' : 'bg-slate-50 text-slate-600 border-slate-200'),
                 'aria-label': 'Toggle badges'
               }, '\uD83C\uDFC5 ' + Object.keys(badges).length + '/' + BADGES.length),
               h('button', {
                 onClick: function() { upd('_showAI', !showAI); },
-                className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (showAI ? 'bg-sky-100 text-sky-700 border-sky-300' : 'bg-slate-50 text-slate-600 border-slate-200'),
+                className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (showAI ? 'bg-sky-100 text-sky-700 border-sky-600' : 'bg-slate-50 text-slate-600 border-slate-200'),
                 'aria-label': 'Toggle AI tutor'
               }, '\uD83E\uDD16 AI')
             ),
 
             // ── Sub-tool Navigation ──
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1 mb-4' },
+            h('div', { className: 'flex flex-wrap gap-1 mb-4' },
               SUBTOOLS.map(function(st) {
                 var isActive = subtool === st.id;
-                return h('button', { 'aria-label': 'Change subtool',
-                  key: st.id,
+                return h('button', { key: st.id,
                   onClick: function() { upd('subtool', st.id); announceToSR('Switched to ' + st.label); },
                   className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ' +
-                    (isActive ? 'bg-violet-600 text-white border-violet-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-300 hover:bg-violet-50'),
+                    (isActive ? 'bg-violet-600 text-white border-violet-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-600 hover:bg-violet-50'),
                   title: st.desc
                 }, st.icon + ' ' + st.label);
               })
             ),
+
+            // ── Topic-accent hero band per sub-tool ──
+            (function() {
+              var TAB_META = {
+                cross:       { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83E\uDDEC', title: 'Punnett Cross \u2014 predict offspring ratios',         hint: 'Mendel\u2019s peas (1866). Aa \u00d7 Aa \u2192 1:2:1 genotype, 3:1 phenotype. Codominant + incomplete + X-linked break the simple rule. Mendel\u2019s laws were ignored for 34 years until rediscovered in 1900.' },
+                pedigree:    { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDC6A', title: 'Pedigree \u2014 trace inheritance through families',     hint: 'Squares = males, circles = females, filled = affected. Autosomal recessive skips generations; autosomal dominant shows in every generation; X-linked recessive shows mostly in males. Real genetic counselors do this daily.' },
+                population:  { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDCCA', title: 'Population \u2014 Hardy-Weinberg equilibrium',           hint: 'p\u00b2 + 2pq + q\u00b2 = 1. Allele frequencies stay constant when 5 conditions hold (large pop, no migration, no mutation, no selection, random mating). Deviations reveal evolution in action. AP Bio Big Idea 1.A.1.' },
+                traits:      { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDD2C', title: 'Trait Explorer \u2014 real genetic conditions',          hint: 'Sickle cell trait protects against malaria (heterozygote advantage). Cystic fibrosis is recessive but in 1 of 25 carriers in NW European descent. Most \u201Csimple Mendelian\u201D textbook traits are actually polygenic.' },
+                dna2protein: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83E\uDDEA', title: 'DNA \u2192 Protein \u2014 codon table + translation',    hint: 'Triplet code: 64 codons \u2192 20 amino acids + stop. AUG starts; UAA/UAG/UGA stop. Wobble at the third position lets one tRNA read multiple codons \u2014 evolution\u2019s redundancy buffer.' },
+                challenge:   { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '\uD83C\uDFC6', title: 'Challenge \u2014 graded genetics quiz',                  hint: 'Punnett ratios, pedigree analysis, Hardy-Weinberg algebra, dihybrid 9:3:3:1, sex-linked traps. AP Bio Big Idea 3.A.1\u20133. NGSS HS-LS3-1, HS-LS3-2.' },
+                battle:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2694\uFE0F', title: 'Gene Defense \u2014 retrieval as combat',                hint: 'Speed builds automaticity. Once codon-table lookups + Punnett ratios are automatic, your working memory is free for higher-order reasoning like predicting the consequences of a frameshift mutation.' },
+                learn:       { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCD6', title: 'Learn \u2014 genetics concepts by grade',                hint: 'K-2: families pass on traits. 3-5: dominant/recessive. MS: Punnett squares + DNA basics. HS: full Mendelian + transcription/translation + epigenetics. AP Bio adds population genetics + evolutionary inference.' }
+              };
+              var meta = TAB_META[subtool] || TAB_META.cross;
+              return h('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                h('div', { style: { flex: 1, minWidth: 220 } },
+                  h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
 
             // ── Badge Panel ──
             showBadgePanel && h('div', { className: 'mb-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border border-amber-200' },
@@ -1036,10 +1076,9 @@ window.StemLab = window.StemLab || {
                   onKeyDown: function(e) { if (e.key === 'Enter' && aiQuestion.trim()) askAI(); },
                   placeholder: 'Ask about genetics, inheritance, alleles...',
                   'aria-label': 'Ask the genetics tutor',
-                  className: 'flex-1 px-3 py-1.5 text-sm border border-sky-200 rounded-lg focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-300'
+                  className: 'flex-1 px-3 py-1.5 text-sm border border-sky-600 rounded-lg focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-300'
                 }),
-                h('button', { 'aria-label': 'Ask A I',
-                  onClick: askAI,
+                h('button', { onClick: askAI,
                   disabled: aiLoading || !aiQuestion.trim(),
                   className: 'px-3 py-1.5 text-xs font-bold text-white bg-sky-500 rounded-lg hover:bg-sky-600 disabled:opacity-50'
                 }, aiLoading ? 'Thinking...' : 'Ask')
@@ -1052,21 +1091,20 @@ window.StemLab = window.StemLab || {
             // ════════════════════════════════════════
             subtool === 'cross' && h('div', null,
               // Inheritance Mode Selector
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mb-4 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-3 border border-violet-200' },
+              h('div', { className: 'mb-4 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-3 border border-violet-200' },
                 h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDEC Inheritance Mode'),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5 mb-2' },
+                h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
                   ['complete', 'incomplete', 'codominant', 'sexLinked'].map(function(mode) {
                     var info = MODE_INFO[mode];
                     var isActive = inheritMode === mode;
-                    return h('button', { 'aria-label': 'Punnett Sound',
-                      key: mode,
+                    return h('button', { key: mode,
                       onClick: function() {
                         punnettSound('mode');
                         upd('inheritMode', mode);
                         upd('_activePreset', null);
                         trackCross();
                       },
-                      className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all border-2 ' + (isActive ? 'bg-violet-600 text-white border-violet-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-300')
+                      className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all border-2 ' + (isActive ? 'bg-violet-600 text-white border-violet-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-600')
                     }, info.icon + ' ' + info.label);
                   })
                 ),
@@ -1110,7 +1148,7 @@ window.StemLab = window.StemLab || {
                   h('caption', { className: 'sr-only' }, 'punnett data table'), h('thead', null, h('tr', null,
                     h('th', { scope: 'col', className: 'w-16 h-16' }),
                     isSexLinked
-                      ? [h('th', { scope: 'col', key: 0, className: 'w-16 h-16 text-center text-lg font-bold text-blue-600 bg-blue-50 border border-blue-200' }, 'X' + parent2[0]), h('th', { key: 1, className: 'w-16 h-16 text-center text-lg font-bold text-slate-600 bg-slate-100 border border-slate-200' }, 'Y')]
+                      ? [h('th', { scope: 'col', key: 0, className: 'w-16 h-16 text-center text-lg font-bold text-blue-600 bg-blue-50 border border-blue-200' }, 'X' + parent2[0]), h('th', { key: 1, className: 'w-16 h-16 text-center text-lg font-bold text-slate-600 bg-slate-100 border border-slate-400' }, 'Y')]
                       : parent2.map(function(a, i) { return h('th', { scope: 'col', key: i, className: 'w-16 h-16 text-center text-lg font-bold text-blue-600 bg-blue-50 border border-blue-200' }, a); })
                   )),
                   h('tbody', null, parent1.map(function(a, r) {
@@ -1122,7 +1160,7 @@ window.StemLab = window.StemLab || {
                         var pc = phenoColor(p);
                         var cellLabel = isSexLinked ? (g.indexOf('Y') !== -1 ? '\u2642 Male' : '\u2640 Female') : (p === 'Blended' ? 'Blended' : p === 'Codominant' ? 'Both' : (g[0] === g[1] ? (p === 'Dominant' ? 'Homo D' : 'Homo R') : 'Hetero'));
                         var cellEmoji = activePreset ? (p === 'Blended' || p === 'Codominant' ? (activePreset.blendEmoji || activePreset.domEmoji) : (p === 'Dominant' ? activePreset.domEmoji : activePreset.recEmoji)) : null;
-                        return h('td', { key: c, className: 'w-16 h-16 text-center border border-slate-200 relative ' + pc.bg },
+                        return h('td', { key: c, className: 'w-16 h-16 text-center border border-slate-400 relative ' + pc.bg },
                           h('span', { className: 'text-lg font-bold ' + pc.text }, g),
                           h('span', { className: 'block text-[11px] ' + pc.sub }, cellLabel),
                           cellEmoji && h('span', { className: 'text-[11px] absolute top-0.5 right-0.5' }, cellEmoji)
@@ -1173,7 +1211,7 @@ window.StemLab = window.StemLab || {
                       }
                       slices.push(h('text', { key: 't1', x: 60, y: 56, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold' }, fill: '#1e293b' }, (domCount * 25) + '% D'));
                       if (blendCount > 0) slices.push(h('text', { key: 't2', x: 60, y: 68, textAnchor: 'middle', style: { fontSize: '8px', fontWeight: 'bold' }, fill: '#1e293b' }, (blendCount * 25) + '% ' + (inheritMode === 'incomplete' ? 'B' : 'Co')));
-                      slices.push(h('text', { key: 't3', x: 60, y: blendCount > 0 ? 80 : 72, textAnchor: 'middle', style: { fontSize: '11px' }, fill: '#64748b' }, (recCount * 25) + '% R'));
+                      slices.push(h('text', { key: 't3', x: 60, y: blendCount > 0 ? 80 : 72, textAnchor: 'middle', style: { fontSize: '11px' }, fill: '#94a3b8' }, (recCount * 25) + '% R'));
                       return slices;
                     })()
                   )
@@ -1203,12 +1241,11 @@ window.StemLab = window.StemLab || {
               ),
 
               // Quick Crosses
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 border-t border-slate-200 pt-3' },
+              h('div', { className: 'mt-3 border-t border-slate-200 pt-3' },
                 h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDEC Quick Crosses'),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
+                h('div', { className: 'flex flex-wrap gap-1.5' },
                   (PRESETS_BY_MODE[inheritMode] || []).map(function(preset) {
-                    return h('button', { 'aria-label': 'Punnett Sound',
-                      key: preset.label,
+                    return h('button', { key: preset.label,
                       onClick: function() {
                         punnettSound('preset');
                         updMulti({ parent1: preset.p1, parent2: preset.p2, _activePreset: preset });
@@ -1217,7 +1254,7 @@ window.StemLab = window.StemLab || {
                         trackCross();
                         addToast('\uD83E\uDDEC ' + preset.tip, 'success');
                       },
-                      className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100 transition-all'
+                      className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-violet-50 text-violet-700 border border-violet-600 hover:bg-violet-100 transition-all'
                     }, preset.label);
                   })
                 )
@@ -1269,10 +1306,9 @@ window.StemLab = window.StemLab || {
               // ═══════════════════════════════════════
               // DIHYBRID CROSS SECTION
               // ═══════════════════════════════════════
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-4 border-t border-slate-200 pt-3' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-3' },
-                  h('button', { 'aria-label': 'Punnett Sound',
-                    onClick: function() {
+              h('div', { className: 'mt-4 border-t border-slate-200 pt-3' },
+                h('div', { className: 'flex items-center gap-2 mb-3' },
+                  h('button', { onClick: function() {
                       punnettSound('mode');
                       upd('_isDihybrid', !isDihybrid);
                       if (!isDihybrid) {
@@ -1281,7 +1317,7 @@ window.StemLab = window.StemLab || {
                       }
                     },
                     className: 'px-3 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all ' +
-                      (isDihybrid ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300')
+                      (isDihybrid ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-600')
                   }, isDihybrid ? '\uD83E\uDDEC Dihybrid ON (4\u00D74)' : '\uD83E\uDDEC Dihybrid Cross (4\u00D74)'),
                   isDihybrid && h('span', { className: 'text-[11px] text-slate-600' }, 'Two genes, 16 offspring combinations')
                 ),
@@ -1315,7 +1351,7 @@ window.StemLab = window.StemLab || {
                               punnettSound('allele');
                             },
                             'aria-label': 'Parent 1 Gene 1 allele ' + (i + 1),
-                            className: 'px-2 py-1 border border-violet-200 rounded font-bold text-sm text-center'
+                            className: 'px-2 py-1 border border-violet-600 rounded font-bold text-sm text-center'
                           },
                             ['A','a','B','b','C','c','R','r','T','t'].map(function(a) { return h('option', { key: a, value: a }, a); })
                           );
@@ -1334,7 +1370,7 @@ window.StemLab = window.StemLab || {
                               punnettSound('allele');
                             },
                             'aria-label': 'Parent 1 Gene 2 allele ' + (i + 1),
-                            className: 'px-2 py-1 border border-violet-200 rounded font-bold text-sm text-center'
+                            className: 'px-2 py-1 border border-violet-600 rounded font-bold text-sm text-center'
                           },
                             ['A','a','B','b','C','c','R','r','T','t'].map(function(a) { return h('option', { key: a, value: a }, a); })
                           );
@@ -1356,7 +1392,7 @@ window.StemLab = window.StemLab || {
                               upd('_diP2G1', na);
                               punnettSound('allele');
                             },
-                            className: 'px-2 py-1 border border-blue-200 rounded font-bold text-sm text-center'
+                            className: 'px-2 py-1 border border-blue-600 rounded font-bold text-sm text-center'
                           },
                             ['A','a','B','b','C','c','R','r','T','t'].map(function(a) { return h('option', { key: a, value: a }, a); })
                           );
@@ -1374,7 +1410,7 @@ window.StemLab = window.StemLab || {
                               upd('_diP2G2', na);
                               punnettSound('allele');
                             },
-                            className: 'px-2 py-1 border border-blue-200 rounded font-bold text-sm text-center'
+                            className: 'px-2 py-1 border border-blue-600 rounded font-bold text-sm text-center'
                           },
                             ['A','a','B','b','C','c','R','r','T','t'].map(function(a) { return h('option', { key: a, value: a }, a); })
                           );
@@ -1398,7 +1434,7 @@ window.StemLab = window.StemLab || {
                           diGrid[ri].map(function(geno, ci) {
                             var dp = diPhenotype(geno);
                             var dpc = diPhenoColor(dp);
-                            return h('td', { key: ci, className: 'w-14 h-14 text-center border border-slate-200 ' + dpc.bg },
+                            return h('td', { key: ci, className: 'w-14 h-14 text-center border border-slate-400 ' + dpc.bg },
                               h('span', { className: 'text-[11px] font-bold block ' + dpc.text }, geno.substring(0, 2)),
                               h('span', { className: 'text-[11px] font-bold block ' + dpc.text }, geno.substring(2)),
                               h('span', { className: 'text-[11px] block ' + dpc.sub }, diPhenoLabel(dp).split(' + ')[0])
@@ -1435,12 +1471,11 @@ window.StemLab = window.StemLab || {
                   ),
 
                   // Dihybrid Quick Crosses
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 border-t border-slate-200 pt-3' },
+                  h('div', { className: 'mt-3 border-t border-slate-200 pt-3' },
                     h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83E\uDDEC Dihybrid Quick Crosses'),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
+                    h('div', { className: 'flex flex-wrap gap-1.5' },
                       DIHYBRID_PRESETS.map(function(dp) {
-                        return h('button', { 'aria-label': 'Punnett Sound',
-                          key: dp.label,
+                        return h('button', { key: dp.label,
                           onClick: function() {
                             punnettSound('preset');
                             updMulti({
@@ -1459,7 +1494,7 @@ window.StemLab = window.StemLab || {
                             var newPresets = presetsUsed + 1;
                             upd('_presetsUsed', newPresets);
                           },
-                          className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-all'
+                          className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-600 hover:bg-indigo-100 transition-all'
                         }, dp.label);
                       })
                     )
@@ -1489,27 +1524,25 @@ window.StemLab = window.StemLab || {
               ),
 
               // Preset selector
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5 mb-3' },
+              h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
                 PEDIGREE_PRESETS.map(function(ped, idx) {
                   var isActive = pedPreset === idx;
-                  return h('button', { 'aria-label': 'Change _ped show geno',
-                    key: ped.id,
+                  return h('button', { key: ped.id,
                     onClick: function() { updMulti({ _pedPreset: idx, _pedSolveAnswer: '', _pedSolveFeedback: null }); punnettSound('preset'); },
                     className: 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all border ' +
-                      (isActive ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-300')
+                      (isActive ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-600')
                   }, ped.label);
                 })
               ),
 
               // Controls
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mb-3' },
-                h('button', { 'aria-label': 'Change _ped show geno',
-                  onClick: function() { upd('_pedShowGeno', !pedShowGeno); },
-                  className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (pedShowGeno ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-600 border-slate-200')
+              h('div', { className: 'flex gap-2 mb-3' },
+                h('button', { onClick: function() { upd('_pedShowGeno', !pedShowGeno); },
+                  className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (pedShowGeno ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200')
                 }, pedShowGeno ? '\uD83D\uDC41 Hide Genotypes' : '\uD83D\uDC41 Show Genotypes'),
                 h('button', { 'aria-label': 'Toggle pedigree solve mode',
                   onClick: function() { updMulti({ _pedSolveMode: !pedSolveMode, _pedSolveAnswer: '', _pedSolveFeedback: null, _pedShowGeno: pedSolveMode }); },
-                  className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (pedSolveMode ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-300' : 'bg-slate-50 text-slate-600 border-slate-200')
+                  className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (pedSolveMode ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-600' : 'bg-slate-50 text-slate-600 border-slate-200')
                 }, pedSolveMode ? '\uD83E\uDDE9 Solve Mode ON' : '\uD83E\uDDE9 Solve Mode')
               ),
 
@@ -1521,14 +1554,14 @@ window.StemLab = window.StemLab || {
                 h('svg', { viewBox: '0 0 380 280', className: 'w-full max-w-md mx-auto', style: { background: '#fafafa', borderRadius: '8px' } },
                   // Legend
                   h('rect', { x: 5, y: 5, width: 12, height: 12, fill: 'white', stroke: '#1e293b', strokeWidth: 1.5 }),
-                  h('text', { x: 22, y: 14, style: { fontSize: '8px', fill: '#64748b' } }, 'Unaffected'),
+                  h('text', { x: 22, y: 14, style: { fontSize: '8px', fill: '#94a3b8' } }, 'Unaffected'),
                   h('rect', { x: 85, y: 5, width: 12, height: 12, fill: '#7c3aed', stroke: '#1e293b', strokeWidth: 1.5 }),
-                  h('text', { x: 102, y: 14, style: { fontSize: '8px', fill: '#64748b' } }, 'Affected'),
+                  h('text', { x: 102, y: 14, style: { fontSize: '8px', fill: '#94a3b8' } }, 'Affected'),
                   h('circle', { cx: 175, cy: 11, r: 6, fill: 'white', stroke: '#1e293b', strokeWidth: 1.5 }),
                   h('path', { d: 'M 175 5 A 6 6 0 0 0 175 17 Z', fill: '#c4b5fd' }),
                   h('circle', { cx: 175, cy: 11, r: 6, fill: 'none', stroke: '#1e293b', strokeWidth: 1.5 }),
-                  h('text', { x: 186, y: 14, style: { fontSize: '8px', fill: '#64748b' } }, 'Carrier'),
-                  h('text', { x: 240, y: 14, style: { fontSize: '8px', fill: '#64748b' } }, '\u25A1 = Male  \u25CB = Female'),
+                  h('text', { x: 186, y: 14, style: { fontSize: '8px', fill: '#94a3b8' } }, 'Carrier'),
+                  h('text', { x: 240, y: 14, style: { fontSize: '8px', fill: '#94a3b8' } }, '\u25A1 = Male  \u25CB = Female'),
 
                   // Connection lines
                   (function() {
@@ -1591,7 +1624,7 @@ window.StemLab = window.StemLab || {
                       }
                     }
                     // Label below
-                    els.push(h('text', { key: m.id + 'l', x: m.x, y: m.y + 30, textAnchor: 'middle', style: { fontSize: '11px', fill: '#64748b' } }, m.label));
+                    els.push(h('text', { key: m.id + 'l', x: m.x, y: m.y + 30, textAnchor: 'middle', style: { fontSize: '11px', fill: '#94a3b8' } }, m.label));
                     // Genotype inside
                     if (showGeno) {
                       els.push(h('text', { key: m.id + 'g', x: m.x, y: m.y + 4, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold', fill: m.affected ? 'white' : '#1e293b' } }, m.genotype));
@@ -1602,9 +1635,9 @@ window.StemLab = window.StemLab || {
               ),
 
               // Solve mode interface
-              pedSolveMode && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 bg-fuchsia-50 rounded-xl p-3 border border-fuchsia-200' },
+              pedSolveMode && h('div', { className: 'mt-3 bg-fuchsia-50 rounded-xl p-3 border border-fuchsia-200' },
                 h('p', { className: 'text-xs font-bold text-fuchsia-700 mb-2' }, 'What inheritance pattern does this pedigree show?'),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
+                h('div', { className: 'flex flex-wrap gap-1.5' },
                   [
                     { val: 'autosomal_dominant', label: 'Autosomal Dominant' },
                     { val: 'autosomal_recessive', label: 'Autosomal Recessive' },
@@ -1614,8 +1647,7 @@ window.StemLab = window.StemLab || {
                     { val: 'y_linked', label: 'Y-Linked' }
                   ].map(function(opt) {
                     var isSelected = pedSolveAnswer === opt.val;
-                    return h('button', { 'aria-label': 'Change _ped solve answer',
-                      key: opt.val,
+                    return h('button', { key: opt.val,
                       onClick: function() {
                         upd('_pedSolveAnswer', opt.val);
                         var correct = opt.val === currentPed.answer;
@@ -1630,7 +1662,7 @@ window.StemLab = window.StemLab || {
                         }
                       },
                       className: 'px-3 py-1.5 text-[11px] font-bold rounded-lg border transition-all ' +
-                        (isSelected ? (pedSolveFeedback && pedSolveFeedback.indexOf('\u2705') !== -1 ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-red-100 text-red-700 border-red-300') : 'bg-white text-slate-600 border-slate-200 hover:border-fuchsia-300')
+                        (isSelected ? (pedSolveFeedback && pedSolveFeedback.indexOf('\u2705') !== -1 ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-red-100 text-red-700 border-red-600') : 'bg-white text-slate-600 border-slate-200 hover:border-fuchsia-600')
                     }, opt.label);
                   })
                 ),
@@ -1665,7 +1697,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'mb-2' },
                   h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Allele Frequency (p = ' + popFreqA.toFixed(2) + ', q = ' + (1 - popFreqA).toFixed(2) + ')'),
                   h('input', {
-                    type: 'range', 'aria-label': 'pop freq a', min: '0.01', max: '0.99', step: '0.01', value: popFreqA,
+                    type: 'range', min: '0.01', max: '0.99', step: '0.01', value: popFreqA,
                     onChange: function(e) { upd('popFreqA', parseFloat(e.target.value)); },
                     className: 'w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -1675,7 +1707,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'mb-2' },
                   h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Population Size: ' + popSize),
                   h('input', {
-                    type: 'range', 'aria-label': 'pop size', min: '10', max: '1000', step: '10', value: popSize,
+                    type: 'range', min: '10', max: '1000', step: '10', value: popSize,
                     onChange: function(e) { upd('popSize', parseInt(e.target.value, 10)); },
                     className: 'w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -1685,7 +1717,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'mb-2' },
                   h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Generations: ' + popGens),
                   h('input', {
-                    type: 'range', 'aria-label': 'pop gens', min: '10', max: '100', step: '5', value: popGens,
+                    type: 'range', min: '10', max: '100', step: '5', value: popGens,
                     onChange: function(e) { upd('popGens', parseInt(e.target.value, 10)); },
                     className: 'w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -1695,35 +1727,34 @@ window.StemLab = window.StemLab || {
                 (band === 'g68' || band === 'g912') && h('div', { className: 'mb-2' },
                   h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Selection Against Recessive (s = ' + popSelection.toFixed(2) + ')'),
                   h('input', {
-                    type: 'range', 'aria-label': 'pop selection', min: '0', max: '1', step: '0.05', value: popSelection,
+                    type: 'range', min: '0', max: '1', step: '0.05', value: popSelection,
                     onChange: function(e) { upd('popSelection', parseFloat(e.target.value)); },
                     className: 'w-full h-2 bg-amber-200 rounded-lg appearance-none cursor-pointer'
                   })
                 ),
 
                 // Mutation rate
-                band === 'g912' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mb-2' },
+                band === 'g912' && h('div', { className: 'mb-2' },
                   h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Mutation Rate (\u03BC = ' + popMutation.toFixed(4) + ')'),
                   h('input', {
-                    type: 'range', 'aria-label': 'Enter', min: '0', max: '0.01', step: '0.0005', value: popMutation,
+                    type: 'range',  min: '0', max: '0.01', step: '0.0005', value: popMutation,
                     onChange: function(e) { upd('popMutation', parseFloat(e.target.value)); },
                     className: 'w-full h-2 bg-red-200 rounded-lg appearance-none cursor-pointer'
                   })
                 ),
 
                 // Drift toggle
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-2' },
+                h('div', { className: 'flex items-center gap-2 mb-2' },
                   h('button', { 'aria-label': 'Random genetic drift (stronger in small populations)',
                     onClick: function() { upd('popDrift', !popDrift); },
-                    className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (popDrift ? 'bg-sky-100 text-sky-700 border-sky-300' : 'bg-slate-50 text-slate-600 border-slate-200')
+                    className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (popDrift ? 'bg-sky-100 text-sky-700 border-sky-600' : 'bg-slate-50 text-slate-600 border-slate-200')
                   }, popDrift ? '\uD83C\uDFB2 Drift ON' : '\uD83C\uDFB2 Drift OFF'),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600' }, 'Random genetic drift (stronger in small populations)')
+                  h('span', { className: 'text-[11px] text-slate-600' }, 'Random genetic drift (stronger in small populations)')
                 ),
 
                 // Run / Reset buttons
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
-                  h('button', { 'aria-label': 'Change pop running',
-                    onClick: function() {
+                h('div', { className: 'flex gap-2' },
+                  h('button', { onClick: function() {
                       if (popRunning) {
                         upd('popRunning', false);
                       } else {
@@ -1843,7 +1874,7 @@ window.StemLab = window.StemLab || {
               ),
 
               // Filter buttons
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1 mb-3' },
+              h('div', { className: 'flex flex-wrap gap-1 mb-3' },
                 [
                   { val: 'all', label: 'All Traits' },
                   { val: 'complete', label: 'Dominant/Rec' },
@@ -1853,17 +1884,16 @@ window.StemLab = window.StemLab || {
                   { val: 'x_linked', label: 'X-Linked' },
                   { val: 'polygenic', label: 'Polygenic' }
                 ].map(function(f) {
-                  return h('button', { 'aria-label': 'Change _trait filter',
-                    key: f.val,
+                  return h('button', { key: f.val,
                     onClick: function() { upd('_traitFilter', f.val); },
                     className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' +
-                      (traitFilter === f.val ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-300')
+                      (traitFilter === f.val ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-600')
                   }, f.label);
                 })
               ),
 
               // Trait cards
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 gap-2' },
+              h('div', { className: 'grid grid-cols-2 gap-2' },
                 TRAIT_CATALOG.filter(function(t) {
                   return traitFilter === 'all' || t.mode === traitFilter;
                 }).map(function(t, idx) {
@@ -1874,7 +1904,7 @@ window.StemLab = window.StemLab || {
                     incomplete: 'pink', x_linked: 'blue', polygenic: 'teal'
                   };
                   var mc = modeColors[t.mode] || 'slate';
-                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                  return h('div', { 
                     key: idx,
                     onClick: function() { upd('_traitSelected', isSelected ? -1 : globalIdx); punnettSound('preset'); },
                     className: 'p-2.5 rounded-xl border cursor-pointer transition-all ' +
@@ -1911,28 +1941,28 @@ window.StemLab = window.StemLab || {
               ),
 
               // DNA input
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-fuchsia-50 to-purple-50 rounded-xl p-3 border border-fuchsia-200 mb-3' },
+              h('div', { className: 'bg-gradient-to-r from-fuchsia-50 to-purple-50 rounded-xl p-3 border border-fuchsia-200 mb-3' },
                 h('label', { className: 'text-[11px] font-bold text-fuchsia-600 uppercase tracking-wider block mb-1' }, '\uD83E\uDDEC Enter DNA Template Strand (5\'\u21923\')'),
                 h('input', {
                   type: 'text', value: dnaSeq,
                   onChange: function(e) { upd('_dnaSeq', e.target.value.toUpperCase().replace(/[^ATCG]/g, '')); },
                   placeholder: 'e.g. ATGCGTACCTGA',
                   'aria-label': 'DNA template strand sequence',
-                  className: 'w-full px-3 py-2 text-sm font-mono font-bold border border-fuchsia-200 rounded-lg focus:outline-none focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-300 tracking-widest'
+                  className: 'w-full px-3 py-2 text-sm font-mono font-bold border border-fuchsia-600 rounded-lg focus:outline-none focus:border-fuchsia-400 focus:ring-2 focus:ring-fuchsia-300 tracking-widest'
                 }),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mt-2' },
+                h('div', { className: 'flex gap-2 mt-2' },
                   h('button', { 'aria-label': 'Sample 1',
                     onClick: function() { upd('_dnaShowSteps', !dnaShowSteps); },
-                    className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (dnaShowSteps ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-300' : 'bg-white text-slate-600 border-slate-200')
+                    className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (dnaShowSteps ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-600' : 'bg-white text-slate-600 border-slate-200')
                   }, dnaShowSteps ? '\uD83D\uDC41 Hide Steps' : '\uD83D\uDC41 Show Steps'),
                   // Quick presets
                   h('button', { 'aria-label': 'Sample 1',
                     onClick: function() { upd('_dnaSeq', 'ATGAAAGCTTTTCGATGA'); punnettSound('translate'); },
-                    className: 'px-2 py-1 text-[11px] font-bold rounded-lg bg-white text-slate-600 border border-slate-200 hover:border-fuchsia-300'
+                    className: 'px-2 py-1 text-[11px] font-bold rounded-lg bg-white text-slate-600 border border-slate-400 hover:border-fuchsia-600'
                   }, '\uD83E\uDDEA Sample 1'),
                   h('button', { 'aria-label': 'Sample 2',
                     onClick: function() { upd('_dnaSeq', 'ATGTGCCCGAACGTTTACTGA'); punnettSound('translate'); },
-                    className: 'px-2 py-1 text-[11px] font-bold rounded-lg bg-white text-slate-600 border border-slate-200 hover:border-fuchsia-300'
+                    className: 'px-2 py-1 text-[11px] font-bold rounded-lg bg-white text-slate-600 border border-slate-400 hover:border-fuchsia-600'
                   }, '\uD83E\uDDEA Sample 2'),
                   h('button', { 'aria-label': 'Translate',
                     onClick: function() {
@@ -2016,7 +2046,7 @@ window.StemLab = window.StemLab || {
                   ),
 
                   // ═══ MUTATION SIMULATOR ═══
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-3 border border-red-200' },
+                  h('div', { className: 'bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-3 border border-red-200' },
                     h('p', { className: 'text-[11px] font-bold text-red-600 uppercase tracking-wider mb-2' }, '\u2622\uFE0F Mutation Simulator'),
                     h('p', { className: 'text-[11px] text-slate-600 mb-2' },
                       gradeText(
@@ -2026,22 +2056,22 @@ window.StemLab = window.StemLab || {
                         'Explore substitution (transition/transversion), insertion, and deletion mutations. Frameshifts from indels are typically more deleterious than point mutations.'
                       )(band)
                     ),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5 mb-2' },
+                    h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
                       h('button', { 'aria-label': 'Point Mutation',
                         onClick: function() { applyMutation('point'); },
-                        className: 'px-2.5 py-1.5 text-[11px] font-bold rounded-lg border bg-white text-orange-700 border-orange-200 hover:bg-orange-50 transition-all'
+                        className: 'px-2.5 py-1.5 text-[11px] font-bold rounded-lg border bg-white text-orange-700 border-orange-600 hover:bg-orange-50 transition-all'
                       }, '\uD83D\uDD00 Point Mutation'),
                       h('button', { 'aria-label': 'Insertion',
                         onClick: function() { applyMutation('insertion'); },
-                        className: 'px-2.5 py-1.5 text-[11px] font-bold rounded-lg border bg-white text-red-700 border-red-200 hover:bg-red-50 transition-all'
+                        className: 'px-2.5 py-1.5 text-[11px] font-bold rounded-lg border bg-white text-red-700 border-red-600 hover:bg-red-50 transition-all'
                       }, '\u2795 Insertion'),
                       h('button', { 'aria-label': 'Deletion',
                         onClick: function() { applyMutation('deletion'); },
-                        className: 'px-2.5 py-1.5 text-[11px] font-bold rounded-lg border bg-white text-red-700 border-red-200 hover:bg-red-50 transition-all'
+                        className: 'px-2.5 py-1.5 text-[11px] font-bold rounded-lg border bg-white text-red-700 border-red-600 hover:bg-red-50 transition-all'
                       }, '\u2796 Deletion'),
                       mutOriginalDna && h('button', { 'aria-label': 'Revert to Original',
                         onClick: revertMutation,
-                        className: 'px-2.5 py-1.5 text-[11px] font-bold rounded-lg border bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 transition-all'
+                        className: 'px-2.5 py-1.5 text-[11px] font-bold rounded-lg border bg-emerald-50 text-emerald-700 border-emerald-600 hover:bg-emerald-100 transition-all'
                       }, '\u21BA Revert to Original')
                     ),
 
@@ -2125,7 +2155,7 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs text-slate-600 italic mb-3' }, 'Test your genetics knowledge across 3 difficulty levels!'),
 
               // Difficulty selector
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mb-3' },
+              h('div', { className: 'flex gap-2 mb-3' },
                 ['easy', 'medium', 'hard'].map(function(diff) {
                   var labels = { easy: '\uD83C\uDF31 Beginner', medium: '\uD83D\uDD2C Intermediate', hard: '\uD83E\uDDE0 Advanced' };
                   var colors = { easy: 'emerald', medium: 'amber', hard: 'red' };
@@ -2139,20 +2169,19 @@ window.StemLab = window.StemLab || {
               ),
 
               // Score bar
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-3 bg-slate-50 rounded-lg p-2' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-600' }, 'Q ' + (chalIdx + 1) + '/' + chalQuestions.length),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-emerald-600' }, '\u2705 ' + chalScore),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-amber-600' }, '\uD83D\uDD25 Streak: ' + chalStreak),
-                chalStreak >= 3 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-fuchsia-600 animate-pulse' }, '\u2B50 BONUS!')
+              h('div', { className: 'flex items-center gap-3 mb-3 bg-slate-50 rounded-lg p-2' },
+                h('span', { className: 'text-xs font-bold text-slate-600' }, 'Q ' + (chalIdx + 1) + '/' + chalQuestions.length),
+                h('span', { className: 'text-xs font-bold text-emerald-600' }, '\u2705 ' + chalScore),
+                h('span', { className: 'text-xs font-bold text-amber-600' }, '\uD83D\uDD25 Streak: ' + chalStreak),
+                chalStreak >= 3 && h('span', { className: 'text-[11px] font-bold text-fuchsia-600 animate-pulse' }, '\u2B50 BONUS!')
               ),
 
               // Question
-              chalIdx < chalQuestions.length ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border p-4' },
+              chalIdx < chalQuestions.length ? h('div', { className: 'bg-white rounded-xl border p-4' },
                 h('p', { className: 'text-sm font-bold text-slate-700 mb-3' }, chalQuestions[chalIdx].q),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 gap-2' },
+                h('div', { className: 'grid grid-cols-2 gap-2' },
                   chalQuestions[chalIdx].a.map(function(opt, i) {
-                    return h('button', { 'aria-label': 'Action',
-                      key: i,
+                    return h('button', { key: i,
                       onClick: function() {
                         if (chalFeedback) return;
                         var isCorrect = i === chalQuestions[chalIdx].correct;
@@ -2182,12 +2211,12 @@ window.StemLab = window.StemLab || {
                         }, 1500);
                       },
                       className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' +
-                        (chalFeedback ? (i === chalQuestions[chalIdx].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-violet-300 hover:bg-violet-50')
+                        (chalFeedback ? (i === chalQuestions[chalIdx].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-violet-600 hover:bg-violet-50')
                     }, opt);
                   })
                 ),
                 chalFeedback && h('p', { className: 'mt-2 text-xs font-bold text-center ' + (chalFeedback.indexOf('\u2705') !== -1 ? 'text-emerald-600' : 'text-red-500') }, chalFeedback)
-              ) : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200 p-4 text-center' },
+              ) : h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200 p-4 text-center' },
                 h('p', { className: 'text-2xl mb-2' }, '\uD83C\uDFC6'),
                 h('p', { className: 'text-sm font-bold text-violet-700' }, 'Challenge Complete!'),
                 h('p', { className: 'text-lg font-bold text-fuchsia-600' }, chalScore + '/' + chalQuestions.length),
@@ -2205,7 +2234,7 @@ window.StemLab = window.StemLab || {
             subtool === 'battle' && h('div', null,
               h('p', { className: 'text-xs text-slate-600 italic mb-3' }, 'A mutation virus is attacking the cell! Answer genetics questions to defend the genome!'),
 
-              !battleActive && !battleResult && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-200 p-6' },
+              !battleActive && !battleResult && h('div', { className: 'text-center bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-200 p-6' },
                 h('p', { className: 'text-4xl mb-3' }, '\u2694\uFE0F'),
                 h('p', { className: 'text-lg font-bold text-red-700 mb-1' }, 'Gene Defense'),
                 h('p', { className: 'text-xs text-slate-600 mb-4' }, 'Battle the Mutation Virus! Answer correctly to deal damage. Wrong answers let the virus attack!'),
@@ -2244,12 +2273,11 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-[11px] font-bold text-slate-600 text-center mb-2' }, 'Round ' + (battleRound + 1) + '/' + BATTLE_QS.length + ' \u2014 Score: ' + battleScore),
 
                 // Question
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border p-4' },
+                h('div', { className: 'bg-white rounded-xl border p-4' },
                   h('p', { className: 'text-sm font-bold text-slate-700 mb-3' }, BATTLE_QS[battleRound].q),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 gap-2' },
+                  h('div', { className: 'grid grid-cols-2 gap-2' },
                     BATTLE_QS[battleRound].a.map(function(opt, i) {
-                      return h('button', { 'aria-label': 'Action',
-                        key: i,
+                      return h('button', { key: i,
                         onClick: function() {
                           if (battleFeedback) return;
                           var bq = BATTLE_QS[battleRound];
@@ -2283,7 +2311,7 @@ window.StemLab = window.StemLab || {
                           }, 1500);
                         },
                         className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' +
-                          (battleFeedback ? (i === BATTLE_QS[battleRound].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-300 hover:bg-red-50')
+                          (battleFeedback ? (i === BATTLE_QS[battleRound].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-600 hover:bg-red-50')
                       }, opt);
                     })
                   ),
@@ -2292,7 +2320,7 @@ window.StemLab = window.StemLab || {
               ),
 
               // Battle result
-              battleResult && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center bg-gradient-to-r ' + (battleResult === 'won' ? 'from-emerald-50 to-teal-50 border-emerald-200' : 'from-red-50 to-orange-50 border-red-200') + ' rounded-xl border p-6' },
+              battleResult && h('div', { className: 'text-center bg-gradient-to-r ' + (battleResult === 'won' ? 'from-emerald-50 to-teal-50 border-emerald-200' : 'from-red-50 to-orange-50 border-red-200') + ' rounded-xl border p-6' },
                 h('p', { className: 'text-4xl mb-2' }, battleResult === 'won' ? '\uD83C\uDFC6' : '\uD83D\uDCA5'),
                 h('p', { className: 'text-lg font-bold ' + (battleResult === 'won' ? 'text-emerald-700' : 'text-red-700') }, battleResult === 'won' ? 'Victory! Genome Defended!' : 'Defeated! The mutation spread...'),
                 h('p', { className: 'text-xs text-slate-600 mt-1 mb-3' }, 'Score: ' + battleScore + '/' + BATTLE_QS.length + ' | HP remaining: ' + battleHP),
@@ -2309,7 +2337,7 @@ window.StemLab = window.StemLab || {
               ),
 
               // Ran out of questions without KO
-              battleActive && battleRound >= BATTLE_QS.length && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-6' },
+              battleActive && battleRound >= BATTLE_QS.length && h('div', { className: 'text-center bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-6' },
                 h('p', { className: 'text-4xl mb-2' }, '\u23F0'),
                 h('p', { className: 'text-lg font-bold text-amber-700' }, 'Battle Over \u2014 Time Ran Out!'),
                 h('p', { className: 'text-xs text-slate-600 mt-1 mb-3' }, 'Score: ' + battleScore + '/' + BATTLE_QS.length + ' | Your HP: ' + battleHP + ' | Virus HP: ' + battleEnemyHP),
@@ -2333,40 +2361,39 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs text-slate-600 italic mb-3' }, 'Explore genetics concepts at your level. Content adapts to grade band: ' + band.toUpperCase()),
 
               // Topic cards
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
+              h('div', { className: 'space-y-2' },
                 LEARN_TOPICS.map(function(topic, idx) {
                   var isOpen = learnTopic === idx;
                   var content = topic[band] || topic.g35;
-                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: idx, className: 'bg-white rounded-xl border ' + (isOpen ? 'border-violet-300 shadow-md' : 'border-slate-200') },
-                    h('button', { 'aria-label': 'Select option',
-                      onClick: function() { upd('_learnTopic', isOpen ? -1 : idx); },
+                  return h('div', { key: idx, className: 'bg-white rounded-xl border ' + (isOpen ? 'border-violet-300 shadow-md' : 'border-slate-200') },
+                    h('button', { onClick: function() { upd('_learnTopic', isOpen ? -1 : idx); },
                       className: 'w-full flex items-center gap-2 p-3 text-left'
                     },
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xl' }, topic.icon),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-slate-700 flex-1' }, topic.title),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-slate-600' }, isOpen ? '\u25B2' : '\u25BC')
+                      h('span', { className: 'text-xl' }, topic.icon),
+                      h('span', { className: 'text-sm font-bold text-slate-700 flex-1' }, topic.title),
+                      h('span', { className: 'text-xs text-slate-600' }, isOpen ? '\u25B2' : '\u25BC')
                     ),
-                    isOpen && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-3 pb-3' },
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-violet-50 rounded-lg p-3 border border-violet-100' },
+                    isOpen && h('div', { className: 'px-3 pb-3' },
+                      h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-100' },
                         h('p', { className: 'text-[11px] font-bold text-violet-600 uppercase tracking-wider mb-1' }, band.toUpperCase() + ' Level'),
                         h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, content)
                       ),
                       // "Try it" links
                       idx === 0 && h('button', { 'aria-label': 'Try DNAProtein',
                         onClick: function() { upd('subtool', 'dna2protein'); },
-                        className: 'mt-2 px-3 py-1 text-[11px] font-bold text-fuchsia-600 bg-fuchsia-50 border border-fuchsia-200 rounded-lg hover:bg-fuchsia-100'
+                        className: 'mt-2 px-3 py-1 text-[11px] font-bold text-fuchsia-600 bg-fuchsia-50 border border-fuchsia-600 rounded-lg hover:bg-fuchsia-100'
                       }, '\u2192 Try DNA\u2192Protein'),
                       idx === 1 && h('button', { 'aria-label': 'Try Punnett Cross',
                         onClick: function() { upd('subtool', 'cross'); },
-                        className: 'mt-2 px-3 py-1 text-[11px] font-bold text-violet-600 bg-violet-50 border border-violet-200 rounded-lg hover:bg-violet-100'
+                        className: 'mt-2 px-3 py-1 text-[11px] font-bold text-violet-600 bg-violet-50 border border-violet-600 rounded-lg hover:bg-violet-100'
                       }, '\u2192 Try Punnett Cross'),
                       idx === 2 && h('button', { 'aria-label': 'Try Pedigree Builder',
                         onClick: function() { upd('subtool', 'pedigree'); },
-                        className: 'mt-2 px-3 py-1 text-[11px] font-bold text-violet-600 bg-violet-50 border border-violet-200 rounded-lg hover:bg-violet-100'
+                        className: 'mt-2 px-3 py-1 text-[11px] font-bold text-violet-600 bg-violet-50 border border-violet-600 rounded-lg hover:bg-violet-100'
                       }, '\u2192 Try Pedigree Builder'),
                       idx === 3 && h('button', { 'aria-label': 'Try Population Genetics',
                         onClick: function() { upd('subtool', 'population'); },
-                        className: 'mt-2 px-3 py-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100'
+                        className: 'mt-2 px-3 py-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-600 rounded-lg hover:bg-emerald-100'
                       }, '\u2192 Try Population Genetics')
                     )
                   );
@@ -2374,7 +2401,7 @@ window.StemLab = window.StemLab || {
               ),
 
               // Read-aloud
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3' },
+              h('div', { className: 'mt-3' },
                 h('button', { 'aria-label': 'Read Aloud',
                   onClick: function() {
                     if (learnTopic >= 0 && LEARN_TOPICS[learnTopic]) {
@@ -2383,17 +2410,17 @@ window.StemLab = window.StemLab || {
                     }
                   },
                   disabled: learnTopic < 0,
-                  className: 'px-3 py-1.5 text-[11px] font-bold text-violet-600 bg-violet-50 border border-violet-200 rounded-lg hover:bg-violet-100 disabled:opacity-40'
+                  className: 'px-3 py-1.5 text-[11px] font-bold text-violet-600 bg-violet-50 border border-violet-600 rounded-lg hover:bg-violet-100 disabled:opacity-40'
                 }, '\uD83D\uDD0A Read Aloud')
               )
             ),
 
             // ── Footer ──
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mt-4 pt-3 border-t border-slate-200' },
+            h('div', { className: 'flex gap-2 mt-4 pt-3 border-t border-slate-200' },
               h('button', {
                 onClick: function() { setStemLabTool('dnaLab'); announceToSR('Opening DNA Lab'); },
-                className: 'px-3 py-1.5 text-xs font-bold text-fuchsia-600 bg-fuchsia-50 border border-fuchsia-200 rounded-full hover:bg-fuchsia-100 transition-all',
-                'aria-label': 'Open DNA Lab'
+                className: 'px-3 py-1.5 text-xs font-bold text-fuchsia-600 bg-fuchsia-50 border border-fuchsia-600 rounded-full hover:bg-fuchsia-100 transition-all',
+                
               }, '\uD83E\uDDEC DNA Lab \u2192'),
               h('button', { 'aria-label': 'Snapshot',
                 onClick: takeSnapshot,

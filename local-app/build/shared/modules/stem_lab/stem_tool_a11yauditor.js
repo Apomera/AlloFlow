@@ -16,6 +16,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _a11yauAC = null;
@@ -373,19 +382,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
 
         // Header
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3' },
+        h('div', { className: 'flex items-center gap-3' },
           h('button', Object.assign({ className: 'p-2 rounded-full hover:bg-teal-100 text-teal-600 transition-colors' }, a11yClick(function() { ctx.setStemLabTool(null); })),
             h(ArrowLeft, { size: 20 })
           ),
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
+          h('div', { className: 'flex-1' },
             h('h2', { className: 'text-xl font-black text-slate-800' }, '\u267F Digital Accessibility Lab'),
             h('p', { className: 'text-xs text-slate-600' }, 'Be an Accessibility Change Agent \u2014 Audit, Learn, Advocate')
           ),
-          auditsCompleted > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-bold' }, auditsCompleted + ' audits')
+          auditsCompleted > 0 && h('span', { className: 'bg-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-bold' }, auditsCompleted + ' audits')
         ),
 
         // Student-friendly intro (collapsible)
-        !d.introHidden && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-teal-50 to-cyan-50 border-2 border-teal-200 rounded-2xl p-5 relative' },
+        !d.introHidden && h('div', { className: 'bg-gradient-to-r from-teal-50 to-cyan-50 border-2 border-teal-200 rounded-2xl p-5 relative' },
           h('button', { onClick: function() { upd('introHidden', true); }, className: 'absolute top-3 right-3 text-teal-400 hover:text-teal-600 text-xs font-bold', 'aria-label': 'Hide intro' }, '\u2716'),
           h('h3', { className: 'text-base font-black text-teal-800 mb-2' }, '\u267F What is Digital Accessibility?'),
           h('p', { className: 'text-sm text-teal-700 leading-relaxed mb-3' },
@@ -405,8 +414,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               return h('div', { key: d2.label, className: 'flex items-center gap-2 bg-white rounded-lg px-3 py-1.5 border border-teal-100 text-xs' },
                 h('span', null, d2.icon),
                 h('div', null,
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-teal-800' }, d2.label),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-teal-600 ml-1' }, '\u2014 ' + d2.desc)
+                  h('span', { className: 'font-bold text-teal-800' }, d2.label),
+                  h('span', { className: 'text-teal-600 ml-1' }, '\u2014 ' + d2.desc)
                 )
               );
             })
@@ -414,7 +423,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
         ),
 
         // Tabs
-        h('div', { role: 'tablist', 'aria-label': 'Accessibility Lab sections', className: 'flex gap-1 bg-teal-50 rounded-xl p-1 border border-teal-200 flex-wrap' },
+        h('div', { role: 'tablist', className: 'flex gap-1 bg-teal-50 rounded-xl p-1 border border-teal-200 flex-wrap' },
           [{ id: 'audit', label: '\uD83D\uDD0D Audit' }, { id: 'learn', label: '\uD83D\uDCD6 Learn' }, { id: 'knowbility', label: '\u267F Knowbility' }, { id: 'action', label: '\u2696\uFE0F Take Action' }, { id: 'history', label: '\uD83D\uDCCA History' }, { id: 'badges', label: '\uD83C\uDFC5 Badges' }].map(function(t) {
             return h('button', { 'aria-label': 'Switch to ' + t.label + ' tab',
               key: t.id, role: 'tab', 'aria-selected': tab === t.id,
@@ -424,15 +433,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           })
         ),
 
+        // ── Topic-accent hero band per tab ──
+        (function() {
+          var TAB_META = {
+            audit:      { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)',  icon: '\uD83D\uDD0D', title: 'Audit \u2014 paste it, see what breaks',         hint: 'AI runs a WCAG 2.1 AA pass against URL / HTML / PDF / screenshot / social / gov input. Common findings: missing alt text (1.1.1), color contrast under 4.5:1 (1.4.3), keyboard traps (2.1.1), unlabeled inputs (3.3.2).' },
+            learn:      { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',   icon: '\uD83D\uDCD6', title: 'Learn \u2014 the four POUR principles',         hint: 'Perceivable, Operable, Understandable, Robust. Every WCAG criterion maps to one of these. Disability is a mismatch between body and environment, never a property of the person.' },
+            knowbility: { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\u267F',         title: 'Knowbility \u2014 the field\u2019s veterans',     hint: 'Knowbility (Austin TX, est. 1999) runs OpenAIR \u2014 the world\u2019s longest-running accessibility hackathon \u2014 and trains pros via AccessU. They wrote much of the playbook every modern auditor uses.' },
+            action:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',   icon: '\u2696\uFE0F', title: 'Take Action \u2014 advocacy in practice',          hint: 'You don\u2019t need a lawyer to file an ADA Title II / III complaint. Department of Justice (ada.gov), Section 508 (section508.gov), and state AG offices all accept civilian complaints \u2014 and inaccessible gov sites are illegal.' },
+            history:    { accent: '#059669', soft: 'rgba(5,150,105,0.10)',   icon: '\uD83D\uDCCA', title: 'History \u2014 your audit trail',                hint: 'Past audits saved here so you can track which sites improved (or regressed) over time. Aggregate metrics let you make a sharable case to school IT or a vendor.' },
+            badges:     { accent: '#ca8a04', soft: 'rgba(202,138,4,0.10)',   icon: '\uD83C\uDFC5', title: 'Badges \u2014 audit milestones',                  hint: 'First Audit, 5 Audits, 10 Audits, Critical Issue Hunter, POUR Master, etc. Recognition for the unglamorous work of catching issues *before* they reach disabled users.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.audit;
+          return h('div', {
+            style: {
+              margin: '0 0 12px',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // ═══ AUDIT TAB ═══
         tab === 'audit' && h('div', { className: 'space-y-4' },
 
           // Input area
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
+          h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
             h('h3', { className: 'text-sm font-bold text-teal-700 mb-2' }, 'What would you like to audit?'),
 
             // Input mode tabs
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 bg-slate-100 rounded-lg p-1 mb-3' },
+            h('div', { className: 'flex gap-1 bg-slate-100 rounded-lg p-1 mb-3' },
               [
                 { id: 'url', icon: '\uD83C\uDF10', label: 'Website' },
                 { id: 'html', icon: '\uD83D\uDCBB', label: 'HTML' },
@@ -441,8 +480,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 { id: 'social', icon: '\uD83D\uDCF1', label: 'Social Media' },
                 { id: 'gov', icon: '\uD83C\uDFDB\uFE0F', label: 'Gov/School' }
               ].map(function(mode) {
-                return h('button', { 'aria-label': 'Change audit input mode',
-                  key: mode.id,
+                return h('button', { key: mode.id,
                   onClick: function() { upd('auditInputMode', mode.id); },
                   className: 'flex-1 px-2 py-1.5 rounded-md text-[11px] font-bold transition-all ' + (auditInputMode === mode.id ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-600 hover:text-slate-700')
                 }, mode.icon + ' ' + mode.label);
@@ -459,7 +497,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                   onKeyDown: function(e) { if (e.key === 'Enter' && auditUrl.trim()) fetchAndAudit(auditUrl.trim()); },
                   placeholder: 'https://example.com',
                   'aria-label': 'Website URL to audit',
-                  className: 'flex-1 text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-300'
+                  className: 'flex-1 text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-teal-300'
                 }),
                 h('button', { 'aria-label': 'Try:',
                   onClick: function() { if (auditUrl.trim()) fetchAndAudit(auditUrl.trim()); },
@@ -469,11 +507,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               ),
               h('p', { className: 'text-[11px] text-slate-600 mt-1' }, 'The AI will analyze the website\u2019s accessibility based on its known structure and common patterns.'),
               // Quick suggestions
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-2 pt-2' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600 font-bold' }, 'Try:'),
+              h('div', { className: 'flex flex-wrap gap-2 pt-2' },
+                h('span', { className: 'text-[11px] text-slate-600 font-bold' }, 'Try:'),
                 ['https://www.wikipedia.org', 'https://www.google.com', 'https://www.nytimes.com', 'https://www.amazon.com'].map(function(url) {
-                  return h('button', { 'aria-label': 'Change audit url',
-                    key: url,
+                  return h('button', { key: url,
                     onClick: function() { upd('auditUrl', url); },
                     className: 'text-[11px] text-teal-600 hover:text-teal-800 font-medium hover:underline'
                   }, url.replace('https://www.', ''));
@@ -489,10 +526,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 onChange: function(e) { upd('auditHtml', e.target.value); },
                 placeholder: '<html>\n  <head><title>My Page</title></head>\n  <body>\n    <h1>Hello World</h1>\n    <img src="photo.jpg">\n  </body>\n</html>',
                 'aria-label': 'HTML code to audit',
-                className: 'w-full text-xs p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-300 font-mono resize-none h-32'
+                className: 'w-full text-xs p-3 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-teal-300 font-mono resize-none h-32'
               }),
-              h('button', { 'aria-label': 'A11yauditor action',
-                onClick: function() { if (auditHtml.trim()) runAudit(auditHtml.trim(), 'html'); },
+              h('button', { onClick: function() { if (auditHtml.trim()) runAudit(auditHtml.trim(), 'html'); },
                 disabled: !auditHtml.trim() || auditLoading,
                 className: 'mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 disabled:opacity-40 transition-colors'
               }, auditLoading ? 'Auditing...' : '\uD83D\uDD0D Audit HTML'),
@@ -547,7 +583,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             h('label', { className: 'text-xs font-bold text-slate-600 block' }, 'Paste the post text (include hashtags, mentions, and any image descriptions)'),
             h('textarea', { value: socialText, onChange: function(e) { upd('socialText', e.target.value); },
               placeholder: 'Paste the full post text here...\n\nInclude:\n\u2022 All text content\n\u2022 Hashtags\n\u2022 Image descriptions (if any)\n\u2022 Link URLs',
-              className: 'w-full text-xs p-3 border border-pink-200 rounded-lg outline-none focus:ring-2 focus:ring-pink-300 resize-none h-28', 'aria-label': 'Social media post text'
+              className: 'w-full text-xs p-3 border border-pink-600 rounded-lg outline-none focus:ring-2 focus:ring-pink-300 resize-none h-28', 'aria-label': 'Social media post text'
             }),
             h('div', { className: 'flex gap-2' },
               h('button', { 'aria-label': 'Audit social media post',
@@ -590,7 +626,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               h('input', { type: 'url', value: govUrl, onChange: function(e) { upd('govUrl', e.target.value); },
                 onKeyDown: function(e) { if (e.key === 'Enter' && govUrl.trim()) runGovAudit(); },
                 placeholder: 'https://www.portlandschools.org', 'aria-label': 'Government website URL',
-                className: 'flex-1 text-sm p-2.5 border border-amber-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-300'
+                className: 'flex-1 text-sm p-2.5 border border-amber-600 rounded-lg outline-none focus:ring-2 focus:ring-amber-300'
               }),
               h('button', { 'aria-label': 'Run Title II audit',
                 onClick: runGovAudit, disabled: !govUrl.trim() || auditLoading,
@@ -618,7 +654,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             ),
 
             // Score breakdown radar
-            auditResult.score_breakdown && h('div', { className: 'bg-white rounded-2xl border border-slate-200 p-4' },
+            auditResult.score_breakdown && h('div', { className: 'bg-white rounded-2xl border border-slate-400 p-4' },
               h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-widest mb-3' }, 'Score Breakdown'),
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-5 gap-2' },
                 Object.entries(auditResult.score_breakdown).map(function(entry) {
@@ -648,7 +684,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             ),
 
             // Issues
-            auditResult.issues && auditResult.issues.length > 0 && h('div', { className: 'bg-white rounded-2xl border border-slate-200 p-4' },
+            auditResult.issues && auditResult.issues.length > 0 && h('div', { className: 'bg-white rounded-2xl border border-slate-400 p-4' },
               h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-widest mb-3' }, 'Issues Found (', auditResult.issues.length, ')'),
               h('div', { className: 'space-y-2' },
                 auditResult.issues.map(function(issue, i) {
@@ -667,20 +703,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             ),
 
             // Strengths
-            auditResult.strengths && auditResult.strengths.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-green-50 border border-green-200 rounded-xl p-4' },
+            auditResult.strengths && auditResult.strengths.length > 0 && h('div', { className: 'bg-green-50 border border-green-200 rounded-xl p-4' },
               h('h4', { className: 'text-xs font-bold text-green-600 uppercase tracking-widest mb-2' }, '✅ What\'s Good'),
               auditResult.strengths.map(function(s, i) {
-                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'text-xs text-green-700 mb-1 flex items-start gap-2' }, h('span', null, '✓'), ' ', s);
+                return h('div', { key: i, className: 'text-xs text-green-700 mb-1 flex items-start gap-2' }, h('span', null, '✓'), ' ', s);
               })
             ),
 
             // Recommendation
-            auditResult.recommendation && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-center' },
+            auditResult.recommendation && h('div', { className: 'bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-center' },
               h('p', { className: 'text-sm text-indigo-800 font-medium' }, '💡 ', auditResult.recommendation)
             ),
 
             // Action buttons
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 justify-center' },
+            h('div', { className: 'flex gap-2 justify-center' },
               h('button', { 'aria-label': 'Download Report', onClick: downloadReport, className: 'px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200 transition-colors' }, '📥 Download Report'),
               h('button', { 'aria-label': 'New Audit', onClick: function() { updMulti({ auditResult: null, auditUrl: '', auditHtml: '' }); }, className: 'px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors' }, '🔄 New Audit')
             )
@@ -688,12 +724,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
         ),
 
         // ═══ LEARN WCAG TAB ═══
-        tab === 'learn' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
+        tab === 'learn' && h('div', { className: 'space-y-3' },
           h('p', { className: 'text-sm text-slate-600 text-center mb-2' }, 'WCAG 2.1 AA has ', WCAG_CRITERIA.length, ' core criteria. Click any to learn more.'),
 
           WCAG_CRITERIA.map(function(criterion) {
             var isExpanded = selectedCriterion === criterion.id;
-            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: criterion.id,
+            return h('div', { key: criterion.id,
               className: 'rounded-2xl border-2 overflow-hidden transition-all ' + (isExpanded ? 'border-teal-400 bg-teal-50' : 'border-slate-200 bg-white hover:border-teal-300')
             },
               h('button', Object.assign({
@@ -707,15 +743,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 },
                 className: 'w-full p-4 text-left flex items-center gap-3'
               }, a11yClick ? {} : {}),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-teal-100 text-teal-700 px-2 py-1 rounded-lg text-xs font-bold shrink-0' }, criterion.id),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-sm text-slate-800' }, criterion.name),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600 font-bold' }, 'Level ', criterion.level)
+                h('span', { className: 'bg-teal-100 text-teal-700 px-2 py-1 rounded-lg text-xs font-bold shrink-0' }, criterion.id),
+                h('div', { className: 'flex-1' },
+                  h('div', { className: 'font-bold text-sm text-slate-800' }, criterion.name),
+                  h('span', { className: 'text-[11px] text-slate-600 font-bold' }, 'Level ', criterion.level)
                 )
               ),
-              isExpanded && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-4 pb-4 space-y-2' },
+              isExpanded && h('div', { className: 'px-4 pb-4 space-y-2' },
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, criterion.desc),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl p-3 border border-teal-200' },
+                h('div', { className: 'bg-white rounded-xl p-3 border border-teal-200' },
                   h('p', { className: 'text-xs text-teal-800 font-medium' }, '👤 Impact: ', criterion.impact)
                 ),
                 callTTS && h('button', { 'aria-label': 'Read aloud',
@@ -756,7 +792,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           h('div', { className: 'space-y-3' },
             h('h4', { className: 'text-sm font-black text-indigo-800 uppercase tracking-widest' }, 'Key Programs'),
             // AccessU
-            h('button', { onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(5); }, className: 'w-full text-left bg-white rounded-2xl border-2 border-purple-200 p-4 hover:border-purple-400 transition-all' },
+            h('button', { onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(5); }, className: 'w-full text-left bg-white rounded-2xl border-2 border-purple-600 p-4 hover:border-purple-400 transition-all' },
               h('div', { className: 'flex items-start gap-3' },
                 h('div', { className: 'text-2xl' }, '\uD83C\uDF93'),
                 h('div', { className: 'flex-1' },
@@ -767,7 +803,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               )
             ),
             // AIR
-            h('button', { onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(5); }, className: 'w-full text-left bg-white rounded-2xl border-2 border-teal-200 p-4 hover:border-teal-400 transition-all' },
+            h('button', { onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(5); }, className: 'w-full text-left bg-white rounded-2xl border-2 border-teal-600 p-4 hover:border-teal-400 transition-all' },
               h('div', { className: 'flex items-start gap-3' },
                 h('div', { className: 'text-2xl' }, '\uD83C\uDF10'),
                 h('div', { className: 'flex-1' },
@@ -787,7 +823,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                { icon: '\uD83D\uDCDA', title: 'Learn', desc: 'Attend AccessU sessions, use free resources, and build your accessibility skills.' },
                { icon: '\uD83D\uDCE3', title: 'Advocate', desc: 'Use THIS tool to audit and report accessibility barriers. Be a change agent in your community!' }
               ].map(function(item) {
-                return h('button', { key: item.title, onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(3); }, className: 'w-full text-left flex items-start gap-3 bg-white rounded-xl p-3 border border-amber-100 hover:border-amber-300 transition-all' },
+                return h('button', { key: item.title, onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(3); }, className: 'w-full text-left flex items-start gap-3 bg-white rounded-xl p-3 border border-amber-600 hover:border-amber-600 transition-all' },
                   h('span', { className: 'text-lg' }, item.icon),
                   h('div', null,
                     h('div', { className: 'font-bold text-xs text-amber-800' }, item.title),
@@ -826,16 +862,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             h('div', { className: 'flex gap-2 mb-3' },
               [{ id: 'ada_coordinator', label: '\uD83C\uDFE2 ADA Coordinator' }, { id: 'doj', label: '\uD83C\uDFDB\uFE0F Dept. of Justice' }].map(function(opt) {
                 return h('button', { key: opt.id, onClick: function() { upd('complaintType', opt.id); },
-                  className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all ' + (complaintType === opt.id ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-600 hover:border-red-300')
+                  className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all ' + (complaintType === opt.id ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-600 hover:border-red-600')
                 }, opt.label);
               })
             ),
             // Entity name
             h('label', { className: 'text-xs font-bold text-slate-600 block' }, 'Entity Name (school, city, agency)'),
-            h('input', { type: 'text', value: complaintEntity, onChange: function(e) { upd('complaintEntity', e.target.value); }, placeholder: 'e.g. Portland Public Schools, City of Austin', className: 'w-full text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-red-300 mt-1', 'aria-label': 'Entity name' }),
+            h('input', { type: 'text', value: complaintEntity, onChange: function(e) { upd('complaintEntity', e.target.value); }, placeholder: 'e.g. Portland Public Schools, City of Austin', className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-red-300 mt-1', 'aria-label': 'Entity name' }),
             // Impact description
             h('label', { className: 'text-xs font-bold text-slate-600 block mt-2' }, 'Describe the impact (who is affected and how)'),
-            h('textarea', { value: complaintImpact, onChange: function(e) { upd('complaintImpact', e.target.value); }, placeholder: 'e.g. My child uses a screen reader and cannot navigate the enrollment forms...', className: 'w-full text-xs p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-red-300 resize-none h-20 mt-1', 'aria-label': 'Impact description' }),
+            h('textarea', { value: complaintImpact, onChange: function(e) { upd('complaintImpact', e.target.value); }, placeholder: 'e.g. My child uses a screen reader and cannot navigate the enrollment forms...', className: 'w-full text-xs p-3 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-red-300 resize-none h-20 mt-1', 'aria-label': 'Impact description' }),
             // Auto-populate from last audit
             auditResult && auditResult.issues && h('p', { className: 'text-[11px] text-teal-600 font-bold' }, '\u2705 ' + auditResult.issues.length + ' issues from your last audit will be included automatically'),
             // Generate button
@@ -844,6 +880,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               disabled: !complaintEntity.trim() || complaintLoading,
               onClick: function() {
                 if (!callGemini) return;
+                // Request-ID guard: a multi-paragraph complaint letter for
+                // the wrong entity is high-impact confusion. Prevents stale
+                // letters from overwriting a newer entity's letter mid-fetch.
+                window.__a11yComplaintReqId = (window.__a11yComplaintReqId || 0) + 1;
+                var thisReqId = window.__a11yComplaintReqId;
                 upd('complaintLoading', true);
                 var issuesList = auditResult && auditResult.issues ? auditResult.issues.map(function(i) { return 'WCAG ' + i.criterion + ': ' + i.issue + ' (Severity: ' + i.severity + ')'; }).join('\n') : 'No automated audit data available.';
                 var prompt = 'Generate a formal ADA accessibility complaint letter.\n\n' +
@@ -856,10 +897,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                   'GRADE LEVEL: Write at a ' + (gradeLevel || '8th grade') + ' reading level.\n' +
                   'FORMAT: Return the complete letter ready to send, with proper formatting, date, addresses, and signature line. Include filing instructions at the end.';
                 callGemini(prompt, true).then(function(result) {
+                  if (thisReqId !== window.__a11yComplaintReqId) return;
                   updMulti({ complaintResult: result, complaintLoading: false, complaintsGenerated: complaintsGenerated + 1 });
                   if (awardStemXP) awardStemXP(20);
                   if (announceToSR) announceToSR('Complaint letter generated.');
                 }).catch(function() {
+                  if (thisReqId !== window.__a11yComplaintReqId) return;
                   updMulti({ complaintResult: 'Error generating complaint letter. Please try again.', complaintLoading: false });
                 });
               },
@@ -867,11 +910,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             }, complaintLoading ? 'Generating...' : '\uD83D\uDCDD Generate Complaint Letter'),
             // Result
             complaintResult && h('div', { className: 'mt-3 space-y-2' },
-              h('div', { className: 'bg-slate-50 border border-slate-200 rounded-xl p-4 max-h-60 overflow-y-auto' },
+              h('div', { className: 'bg-slate-50 border border-slate-400 rounded-xl p-4 max-h-60 overflow-y-auto' },
                 h('pre', { className: 'text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed' }, complaintResult)
               ),
               h('div', { className: 'flex gap-2' },
-                h('button', { 'aria-label': 'Copy letter', onClick: function() { navigator.clipboard.writeText(complaintResult); if (addToast) addToast('Copied to clipboard!', 'success'); }, className: 'flex-1 px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200' }, '\uD83D\uDCCB Copy to Clipboard'),
+                h('button', { onClick: function() { navigator.clipboard.writeText(complaintResult); if (addToast) addToast('Copied to clipboard!', 'success'); }, className: 'flex-1 px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200' }, '\uD83D\uDCCB Copy to Clipboard'),
                 h('button', { 'aria-label': 'Reset complaint', onClick: function() { upd('complaintResult', null); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200' }, '\uD83D\uDD04 New Letter')
               )
             )

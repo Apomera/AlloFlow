@@ -21,6 +21,49 @@ window.SelHub = window.SelHub || {
   'use strict';
 
   // ══════════════════════════════════════════════════════════════
+  // ── Accessibility scaffolding (WCAG 2.1 AA) ──
+  // Live region for SR announcements + reduced-motion CSS guard.
+  // ══════════════════════════════════════════════════════════════
+  (function() {
+    if (document.getElementById('allo-live-safety')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-safety';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0';
+    document.body.appendChild(lr);
+  })();
+  function announceSR(msg) {
+    var el = document.getElementById('allo-live-safety');
+    if (el) { el.textContent = ''; setTimeout(function() { el.textContent = msg; }, 50); }
+  }
+  // Crisis-content live region (assertive — interrupts SR for safety messages)
+  (function() {
+    if (document.getElementById('allo-live-safety-crisis')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-safety-crisis';
+    lr.setAttribute('aria-live', 'assertive');
+    lr.setAttribute('role', 'alert');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0';
+    document.body.appendChild(lr);
+  })();
+  function announceCrisis(msg) {
+    var el = document.getElementById('allo-live-safety-crisis');
+    if (el) { el.textContent = ''; setTimeout(function() { el.textContent = msg; }, 50); }
+  }
+  // Reduced motion CSS (WCAG 2.3.3)
+  (function() {
+    if (document.getElementById('allo-safety-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-safety-a11y-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { .selh-safety *, .selh-safety *::before, .selh-safety *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
+  // ══════════════════════════════════════════════════════════════
   // ── Sound Effects Engine (Web Audio API) ──
   // ══════════════════════════════════════════════════════════════
   var _audioCtx = null;
@@ -81,7 +124,10 @@ window.SelHub = window.SelHub || {
   var CRISIS_RESOURCES = [
     { name: '988 Suicide & Crisis Lifeline', contact: 'Call or text 988', desc: 'Free, confidential, 24/7 support', icon: '\uD83D\uDCDE' },
     { name: 'Crisis Text Line', contact: 'Text HOME to 741741', desc: 'Free crisis counseling via text', icon: '\uD83D\uDCF1' },
-    { name: 'Childhelp National Child Abuse Hotline', contact: '1-800-422-4453', desc: 'Professional crisis counselors 24/7', icon: '\u2764\uFE0F' }
+    { name: 'Childhelp National Child Abuse Hotline', contact: '1-800-422-4453', desc: 'Professional crisis counselors 24/7', icon: '\u2764\uFE0F' },
+    { name: 'NAMI HelpLine', contact: '1-800-950-NAMI (6264)', desc: 'Mental health info, support, referrals. Mon–Fri 10am–10pm ET.', icon: '\uD83E\uDDE0' },
+    { name: 'SAMHSA National Helpline', contact: '1-800-662-HELP (4357)', desc: 'Treatment referrals, mental health + substance use. Free, confidential, 24/7.', icon: '\uD83D\uDC9A' },
+    { name: 'Trans Lifeline', contact: '1-877-565-8860', desc: 'Peer support by and for trans people. No active rescue policy.', icon: '\uD83C\uDF08' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -712,8 +758,7 @@ window.SelHub = window.SelHub || {
           { id: 'badges',    label: '\uD83C\uDFC5 Badges' }
         ];
 
-        var tabBar = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-          role: 'tablist', 'aria-label': 'Safety & Wellbeing tabs',
+        var tabBar = h('div', {           role: 'tablist', 'aria-label': 'Safety & Wellbeing tabs',
           style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
         },
           tabs.map(function(t) {
@@ -744,18 +789,51 @@ window.SelHub = window.SelHub || {
           // Sound toggle
           h('button', { 'aria-label': popBadge.icon,
             onClick: function() { upd('soundEnabled', !soundEnabled); },
-            style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#64748b' },
+            style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#94a3b8' },
             title: soundEnabled ? 'Mute sounds' : 'Enable sounds'
           }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
         );
+
+        // ── Topic-accent hero band per tab ──
+        var heroBand = (function() {
+          var TAB_META = {
+            learn:     { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83D\uDCDA', title: 'Learn \u2014 the foundations',                          hint: 'Personal safety = body autonomy + boundaries + reading situations + naming what feels off. The 5-finger trick: people on each finger you can talk to. Knowing words for the situation IS half the safety.' },
+            digital:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83D\uDD10', title: 'Digital \u2014 online has different rules',              hint: 'Things to never share: address, school name, photos with location, real-time location. Strangers age + claim friends; \u201Cdon\u2019t tell your parents\u201D = the loudest red flag. NCMEC + Common Sense Media research-backed.' },
+            circle:    { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDC9A', title: 'My Circle \u2014 trusted adults are EVERYTHING',          hint: 'Pick 5 adults you can go to. List them BEFORE you need them \u2014 finding someone in crisis is too late. The Circle of Trust idea (Ross Greene) underpins most safe-school programs.' },
+            scenarios: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios \u2014 walk through it before it happens',     hint: 'Behavioral rehearsal (Bandura) lowers in-the-moment freezing. Going through what-ifs with a trusted adult \u2014 lost in store, separated from group, online stranger \u2014 builds the script you\u2019ll use under stress.' },
+            assertive: { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '\uD83D\uDCAA', title: 'Assertive \u2014 your NO matters',                       hint: 'Passive (\u201Cmaybe\u201D), aggressive (\u201Cback off!\u201D), assertive (\u201CI\u2019m not okay with that\u201D). Assertive is the only one that reliably keeps both safety and relationships intact. Practice loud + neutral.' },
+            quiz:      { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83E\uDDE0', title: 'Quiz \u2014 self-knowledge check',                       hint: 'When do you tend to override gut feelings? When do you tend to go along to be polite? Both are normal responses; both have safer alternatives. The pattern recognition is the work.' },
+            flags:     { accent: '#ef4444', soft: 'rgba(239,68,68,0.14)',  icon: '\uD83D\uDEA9', title: 'Flags \u2014 the patterns that mean LEAVE',              hint: 'Isolation, secrets, age gaps, gifts that come with strings, \u201Cnobody understands you like I do.\u201D Naming patterns lets the gut feeling become a checklist. Trust the discomfort even before you can articulate why.' },
+            emergency: { accent: '#b91c1c', soft: 'rgba(185,28,28,0.14)',  icon: '\uD83D\uDE92', title: 'Emergency \u2014 what to do RIGHT NOW',                  hint: '911 (US), 988 (Suicide + Crisis Lifeline), text HOME to 741741 (Crisis Text Line), 1-800-422-4453 (Childhelp). Knowing the number IS half the work \u2014 the other half is permission to dial.' },
+            plan:      { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83D\uDCCB', title: 'Plan \u2014 your written safety steps',                  hint: 'Pre-commit (Gollwitzer 1999): \u201CIf X happens, I\u2019ll do Y, then call Z.\u201D Doubles follow-through over good intentions alone. Suicide-prevention safety plans use the same template (Stanley + Brown 2012).' },
+            badges:    { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83C\uDFC5', title: 'Badges \u2014 milestones in self-protection',           hint: 'Skill-of-the-week, scenarios completed, trusted-adult conversations had. Acknowledges competence without coercion (Deci + Ryan 1985). The badges are the side effect; the conversations are the point.' }
+          };
+          var meta = TAB_META[activeTab] || TAB_META.learn;
+          return h('div', {
+            style: {
+              margin: '8px 12px 12px',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })();
 
         // ── Badge Popup ──
         var badgePopup = null;
         if (showBadgePopup) {
           var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
           if (popBadge) {
-            badgePopup = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-              style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' },
+            badgePopup = h('div', {               style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' },
               onClick: function() { upd('showBadgePopup', null); }
             },
               h('div', {
@@ -781,20 +859,19 @@ window.SelHub = window.SelHub || {
           },
             h('div', { style: { fontWeight: 700, color: '#fca5a5', fontSize: 13, marginBottom: 6 } }, '\uD83D\uDCDE If you need help RIGHT NOW:'),
             CRISIS_RESOURCES.map(function(cr, i) {
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, style: { padding: '4px 0', fontSize: 12, color: '#fde2e2' } },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 600 } }, cr.icon + ' ' + cr.name + ': '),
+              return h('div', { key: i, style: { padding: '4px 0', fontSize: 12, color: '#fde2e2' } },
+          h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+                h('span', { style: { fontWeight: 600 } }, cr.icon + ' ' + cr.name + ': '),
                 h('span', null, cr.contact)
               );
             }),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 8, fontSize: 11, color: '#fca5a5', fontStyle: 'italic' } }, 'You can ALWAYS tell a trusted adult. You will NOT get in trouble.')
+            h('div', { style: { marginTop: 8, fontSize: 11, color: '#fca5a5', fontStyle: 'italic' } }, 'You can ALWAYS tell a trusted adult. You will NOT get in trouble.')
           );
 
           var topicCards = topics.map(function(topic) {
             var isExpanded = expandedTopic === topic.id;
             var isViewed = !!viewedTopics[topic.id];
-            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-              key: topic.id,
+            return h('div', {               key: topic.id,
               onClick: function() {
                 upd('expandedTopic', isExpanded ? null : topic.id);
                 if (!isViewed) {
@@ -816,17 +893,17 @@ window.SelHub = window.SelHub || {
                 transition: 'all 0.2s'
               }
             },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 10 } },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 24 } }, topic.icon),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1 } },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 600, color: '#f1f5f9', fontSize: 14 } }, topic.title),
-                  !isExpanded && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#64748b', marginTop: 2 } }, isViewed ? '\u2705 Read' : 'Tap to learn')
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
+                h('span', { style: { fontSize: 24 } }, topic.icon),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontWeight: 600, color: '#f1f5f9', fontSize: 14 } }, topic.title),
+                  !isExpanded && h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, isViewed ? '\u2705 Read' : 'Tap to learn')
                 )
               ),
-              isExpanded && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 12 } },
+              isExpanded && h('div', { style: { marginTop: 12 } },
                 h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: '1.6', margin: '0 0 10px' } }, topic.desc),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: '10px 12px', borderRadius: 8, background: ACCENT_DIM, border: '1px solid ' + ACCENT_MED } },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, fontWeight: 600, color: ACCENT, marginBottom: 4 } }, '\uD83D\uDCA1 ' + topic.tip)
+                h('div', { style: { padding: '10px 12px', borderRadius: 8, background: ACCENT_DIM, border: '1px solid ' + ACCENT_MED } },
+                  h('div', { style: { fontSize: 12, fontWeight: 600, color: ACCENT, marginBottom: 4 } }, '\uD83D\uDCA1 ' + topic.tip)
                 ),
                 callTTS && h('button', { 'aria-label': 'Read aloud',
                   onClick: function(e) { e.stopPropagation(); speak(topic.title + '. ' + topic.desc + '. ' + topic.tip); },
@@ -837,10 +914,10 @@ window.SelHub = window.SelHub || {
           });
 
           // ── Boundary Types Lesson Section ──
-          var boundarySection = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { margin: '16px 0 0' } },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: '0 16px 10px' } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700, color: '#f1f5f9', fontSize: 15, marginBottom: 4 } }, '\uD83D\uDEE1\uFE0F Types of Boundaries'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#94a3b8' } },
+          var boundarySection = h('div', { style: { margin: '16px 0 0' } },
+            h('div', { style: { padding: '0 16px 10px' } },
+              h('div', { style: { fontWeight: 700, color: '#f1f5f9', fontSize: 15, marginBottom: 4 } }, '\uD83D\uDEE1\uFE0F Types of Boundaries'),
+              h('div', { style: { fontSize: 12, color: '#94a3b8' } },
                 band === 'elementary'
                   ? 'Boundaries are like invisible fences that help keep you safe and comfortable. There are different kinds!'
                   : 'Understanding different types of boundaries helps you protect yourself in all areas of your life.'
@@ -849,8 +926,7 @@ window.SelHub = window.SelHub || {
             BOUNDARY_TYPES.map(function(bt) {
               var isExpanded = expandedBoundary === bt.id;
               var isViewed = !!viewedBoundaryTypes[bt.id];
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-                key: bt.id,
+              return h('div', {                 key: bt.id,
                 onClick: function() {
                   upd('expandedBoundary', isExpanded ? null : bt.id);
                   if (!isViewed) {
@@ -876,18 +952,18 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
                   h('span', { style: { fontSize: 24 } }, bt.icon),
                   h('div', { style: { flex: 1 } },
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 600, color: '#f1f5f9', fontSize: 14 } }, bt.title),
-                    !isExpanded && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#64748b', marginTop: 2 } }, isViewed ? '\u2705 Read' : 'Tap to learn')
+                    h('div', { style: { fontWeight: 600, color: '#f1f5f9', fontSize: 14 } }, bt.title),
+                    !isExpanded && h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, isViewed ? '\u2705 Read' : 'Tap to learn')
                   )
                 ),
-                isExpanded && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 12 } },
+                isExpanded && h('div', { style: { marginTop: 12 } },
                   h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: '1.6', margin: '0 0 10px' } }, bt.desc),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: '10px 12px', borderRadius: 8, background: '#6366f115', border: '1px solid #6366f133', marginBottom: 8 } },
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, fontWeight: 600, color: '#818cf8', marginBottom: 4 } }, '\uD83D\uDCA1 Example:'),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#cbd5e1', lineHeight: '1.5' } }, band === 'elementary' ? bt.elementary_example : bt.middle_example)
+                  h('div', { style: { padding: '10px 12px', borderRadius: 8, background: '#6366f115', border: '1px solid #6366f133', marginBottom: 8 } },
+                    h('div', { style: { fontSize: 11, fontWeight: 600, color: '#818cf8', marginBottom: 4 } }, '\uD83D\uDCA1 Example:'),
+                    h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: '1.5' } }, band === 'elementary' ? bt.elementary_example : bt.middle_example)
                   ),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: '10px 12px', borderRadius: 8, background: '#22c55e15', border: '1px solid #22c55e33' } },
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, fontWeight: 600, color: '#4ade80', marginBottom: 4 } }, '\uD83D\uDDE3\uFE0F ' + bt.practice)
+                  h('div', { style: { padding: '10px 12px', borderRadius: 8, background: '#22c55e15', border: '1px solid #22c55e33' } },
+                    h('div', { style: { fontSize: 11, fontWeight: 600, color: '#4ade80', marginBottom: 4 } }, '\uD83D\uDDE3\uFE0F ' + bt.practice)
                   ),
                   callTTS && h('button', { 'aria-label': 'Read aloud',
                     onClick: function(e) { e.stopPropagation(); speak(bt.title + '. ' + bt.desc + '. ' + (band === 'elementary' ? bt.elementary_example : bt.middle_example) + '. ' + bt.practice); },
@@ -937,8 +1013,8 @@ window.SelHub = window.SelHub || {
               h('span', null, '\uD83E\uDDE0 Already knew: ' + dsKnewCount),
               h('span', null, '\uD83D\uDCA1 Learned something new: ' + dsLearnedCount)
             ),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { height: 6, borderRadius: 3, background: '#1e293b' } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { height: '100%', borderRadius: 3, background: '#3b82f6', width: Math.round((dsViewedCount / 8) * 100) + '%', transition: 'width 0.3s' } })
+            h('div', { style: { height: 6, borderRadius: 3, background: '#1e293b' } },
+              h('div', { style: { height: '100%', borderRadius: 3, background: '#3b82f6', width: Math.round((dsViewedCount / 8) * 100) + '%', transition: 'width 0.3s' } })
             )
           );
 
@@ -946,8 +1022,7 @@ window.SelHub = window.SelHub || {
             var isExpanded = dsExpanded === card.id;
             var isViewed = !!dsViewed[card.id];
             var isTracked = !!dsTracked[card.id];
-            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-              key: card.id,
+            return h('div', {               key: card.id,
               onClick: function() {
                 upd('dsExpanded', isExpanded ? null : card.id);
                 if (!isViewed) {
@@ -968,19 +1043,19 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
                 h('span', { style: { fontSize: 24 } }, card.icon),
                 h('div', { style: { flex: 1 } },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 600, color: '#f1f5f9', fontSize: 14 } }, card.title),
-                  !isExpanded && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#64748b', marginTop: 2 } }, isViewed ? '\u2705 Read' : 'Tap to learn')
+                  h('div', { style: { fontWeight: 600, color: '#f1f5f9', fontSize: 14 } }, card.title),
+                  !isExpanded && h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, isViewed ? '\u2705 Read' : 'Tap to learn')
                 )
               ),
-              isExpanded && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 12 } },
+              isExpanded && h('div', { style: { marginTop: 12 } },
                 h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: '1.6', margin: '0 0 10px' } },
                   band === 'elementary' ? card.elementary : card.middle
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: '10px 12px', borderRadius: 8, background: '#3b82f615', border: '1px solid #3b82f633', marginBottom: 10 } },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, fontWeight: 600, color: '#60a5fa', marginBottom: 4 } }, '\uD83D\uDCA1 ' + (band === 'elementary' ? card.tip_elementary : card.tip_middle))
+                h('div', { style: { padding: '10px 12px', borderRadius: 8, background: '#3b82f615', border: '1px solid #3b82f633', marginBottom: 10 } },
+                  h('div', { style: { fontSize: 12, fontWeight: 600, color: '#60a5fa', marginBottom: 4 } }, '\uD83D\uDCA1 ' + (band === 'elementary' ? card.tip_elementary : card.tip_middle))
                 ),
                 // "I knew this" / "I learned something new" tracking
-                !isTracked && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, marginTop: 8 } },
+                !isTracked && h('div', { style: { display: 'flex', gap: 8, marginTop: 8 } },
                   h('button', { 'aria-label': 'Toggle sound',
                     onClick: function(e) {
                       e.stopPropagation();
@@ -1003,7 +1078,7 @@ window.SelHub = window.SelHub || {
                     style: { flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid #3b82f644', background: '#3b82f615', color: '#60a5fa', fontSize: 12, cursor: 'pointer' }
                   }, '\uD83D\uDCA1 I learned something new')
                 ),
-                isTracked && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 8, fontSize: 11, color: '#4ade80' } },
+                isTracked && h('div', { style: { marginTop: 8, fontSize: 11, color: '#4ade80' } },
                   dsTracked[card.id] === 'knew' ? '\u2705 You already knew this \u2014 great awareness!' : '\u2705 New learning unlocked!'
                 ),
                 callTTS && h('button', { 'aria-label': 'Read aloud',
@@ -1046,15 +1121,14 @@ window.SelHub = window.SelHub || {
           var categories = ['family', 'school', 'community', 'hotline'];
 
           // Crisis resources section
-          var crisisSection = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-            style: { margin: '0 16px 14px', padding: '14px 16px', borderRadius: 12, background: '#7f1d1d', border: '1px solid #dc2626' }
+          var crisisSection = h('div', {             style: { margin: '0 16px 14px', padding: '14px 16px', borderRadius: 12, background: '#7f1d1d', border: '1px solid #dc2626' }
           },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700, color: '#fca5a5', fontSize: 13, marginBottom: 8 } }, '\uD83D\uDCDE Crisis Resources \u2014 Always Available'),
+            h('div', { style: { fontWeight: 700, color: '#fca5a5', fontSize: 13, marginBottom: 8 } }, '\uD83D\uDCDE Crisis Resources \u2014 Always Available'),
             CRISIS_RESOURCES.map(function(cr, i) {
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, style: { padding: '6px 0', borderBottom: i < CRISIS_RESOURCES.length - 1 ? '1px solid #991b1b' : 'none' } },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 600, fontSize: 13, color: '#fde2e2' } }, cr.icon + ' ' + cr.name),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#fca5a5' } }, cr.contact),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#fca5a588' } }, cr.desc)
+              return h('div', { key: i, style: { padding: '6px 0', borderBottom: i < CRISIS_RESOURCES.length - 1 ? '1px solid #991b1b' : 'none' } },
+                h('div', { style: { fontWeight: 600, fontSize: 13, color: '#fde2e2' } }, cr.icon + ' ' + cr.name),
+                h('div', { style: { fontSize: 12, color: '#fca5a5' } }, cr.contact),
+                h('div', { style: { fontSize: 11, color: '#fca5a588' } }, cr.desc)
               );
             }),
             !crisisViewed && h('button', { 'aria-label': 'I have seen these resources',
@@ -1087,7 +1161,7 @@ window.SelHub = window.SelHub || {
                 style: { flex: 1, minWidth: 120, padding: '8px 10px', borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#f1f5f9', fontSize: 13 }
               })
             ),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
+            h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
               categories.filter(function(c) { return c !== 'hotline'; }).map(function(cat) {
                 var isActive = newAdultCat === cat;
                 return h('button', { 'aria-label': 'Add to My Circle',
@@ -1124,25 +1198,25 @@ window.SelHub = window.SelHub || {
               return h('div', { key: cat, style: { margin: '0 16px 10px' } },
                 h('div', { style: { fontWeight: 600, color: '#94a3b8', fontSize: 12, marginBottom: 6 } }, catLabels[cat]),
                 CRISIS_RESOURCES.map(function(cr, i) {
-                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', marginBottom: 4, fontSize: 12, color: '#cbd5e1' } },
+                  return h('div', { key: i, style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', marginBottom: 4, fontSize: 12, color: '#cbd5e1' } },
                     cr.icon + ' ' + cr.name + ' \u2014 ' + cr.contact
                   );
                 })
               );
             }
             if (inCat.length === 0) return null;
-            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: cat, style: { margin: '0 16px 10px' } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 600, color: '#94a3b8', fontSize: 12, marginBottom: 6 } }, catLabels[cat]),
+            return h('div', { key: cat, style: { margin: '0 16px 10px' } },
+              h('div', { style: { fontWeight: 600, color: '#94a3b8', fontSize: 12, marginBottom: 6 } }, catLabels[cat]),
               inCat.map(function(adult, i) {
-                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 } },
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#f1f5f9', fontWeight: 500 } }, adult.name),
-                  adult.role && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#64748b' } }, '(' + adult.role + ')'),
+                return h('div', { key: i, style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 } },
+                  h('span', { style: { fontSize: 12, color: '#f1f5f9', fontWeight: 500 } }, adult.name),
+                  adult.role && h('span', { style: { fontSize: 11, color: '#94a3b8' } }, '(' + adult.role + ')'),
                   h('button', { 'aria-label': 'elementary',
                     onClick: function() {
                       var filtered = trustedAdults.filter(function(_, idx) { return idx !== trustedAdults.indexOf(adult); });
                       upd('trustedAdults', filtered);
                     },
-                    style: { marginLeft: 'auto', background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 12 }
+                    style: { marginLeft: 'auto', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 12 }
                   }, '\u2716')
                 );
               })
@@ -1208,38 +1282,36 @@ window.SelHub = window.SelHub || {
           var scen = scenarios[scenIdx];
           var completedCount = Object.keys(scenCompleted).length;
 
-          var scenNav = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-            style: { display: 'flex', alignItems: 'center', gap: 8, padding: '0 16px 10px' }
+          var scenNav = h('div', {             style: { display: 'flex', alignItems: 'center', gap: 8, padding: '0 16px 10px' }
           },
             h('button', { 'aria-label': 'Prev',
               onClick: function() { upd({ scenIdx: Math.max(0, scenIdx - 1), scenChoice: null }); if (soundEnabled) sfxClick(); },
               disabled: scenIdx === 0,
               style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: scenIdx === 0 ? '#334155' : '#94a3b8', cursor: scenIdx === 0 ? 'default' : 'pointer', fontSize: 12 }
             }, '\u25C0 Prev'),
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#94a3b8' } }, (scenIdx + 1) + ' / ' + scenarios.length),
+            h('span', { style: { fontSize: 12, color: '#94a3b8' } }, (scenIdx + 1) + ' / ' + scenarios.length),
             h('button', { 'aria-label': 'Next',
               onClick: function() { upd({ scenIdx: Math.min(scenarios.length - 1, scenIdx + 1), scenChoice: null }); if (soundEnabled) sfxClick(); },
               disabled: scenIdx === scenarios.length - 1,
               style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: scenIdx === scenarios.length - 1 ? '#334155' : '#94a3b8', cursor: scenIdx === scenarios.length - 1 ? 'default' : 'pointer', fontSize: 12 }
             }, 'Next \u25B6'),
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginLeft: 'auto', fontSize: 11, color: '#64748b' } }, '\u2705 ' + completedCount + '/' + scenarios.length + ' completed')
+            h('span', { style: { marginLeft: 'auto', fontSize: 11, color: '#94a3b8' } }, '\u2705 ' + completedCount + '/' + scenarios.length + ' completed')
           );
 
-          var scenCard = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-            style: { margin: '0 16px', padding: '16px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155' }
+          var scenCard = h('div', {             style: { margin: '0 16px', padding: '16px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155' }
           },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700, color: '#f1f5f9', fontSize: 16, marginBottom: 4 } }, scen.title),
+            h('div', { style: { fontWeight: 700, color: '#f1f5f9', fontSize: 16, marginBottom: 4 } }, scen.title),
             h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: '1.6', margin: '8px 0 14px' } }, scen.setup),
             callTTS && h('button', { 'aria-label': 'Read aloud',
               onClick: function() { speak(scen.title + '. ' + scen.setup); },
               style: { marginBottom: 12, background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer' }
             }, '\uD83D\uDD0A Read aloud'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 600, color: '#94a3b8', fontSize: 12, marginBottom: 8 } }, 'What would you do?'),
+            h('div', { style: { fontWeight: 600, color: '#94a3b8', fontSize: 12, marginBottom: 8 } }, 'What would you do?'),
             scen.choices.map(function(choice, i) {
               var isSelected = scenChoice === i;
               var isCompleted = scenCompleted[scen.id] != null;
               var ratingColors = { 1: '#ef4444', 2: '#f59e0b', 3: '#22c55e' };
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i },
+              return h('div', { key: i },
                 h('button', { 'aria-label': 'Toggle sound',
                   onClick: function() {
                     if (isCompleted) return;
@@ -1273,11 +1345,10 @@ window.SelHub = window.SelHub || {
                     transition: 'all 0.2s'
                   }
                 }, choice.label),
-                isSelected && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-                  style: { padding: '10px 14px', marginBottom: 8, borderRadius: 8, background: ratingColors[choice.rating] + '15', border: '1px solid ' + ratingColors[choice.rating] + '44' }
+                isSelected && h('div', {                   style: { padding: '10px 14px', marginBottom: 8, borderRadius: 8, background: ratingColors[choice.rating] + '15', border: '1px solid ' + ratingColors[choice.rating] + '44' }
                 },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, fontWeight: 700, color: ratingColors[choice.rating] } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
+                    h('span', { style: { fontSize: 11, fontWeight: 700, color: ratingColors[choice.rating] } },
                       choice.rating === 3 ? '\u2B50 Great choice!' : choice.rating === 2 ? '\uD83D\uDCA1 Good thinking, but...' : '\u26A0\uFE0F Let\u2019s think about this...'
                     )
                   ),
@@ -1356,8 +1427,8 @@ window.SelHub = window.SelHub || {
                 )
               ),
               h('div', { style: { flex: 1, minWidth: 100, padding: '10px', borderRadius: 8, background: '#f59e0b15', border: '1px solid #f59e0b33' } },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, fontWeight: 600, color: '#fbbf24', marginBottom: 4 } }, '\u2B50 Aggressive (1 star)'),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#cbd5e1', lineHeight: '1.4' } },
+                h('div', { style: { fontSize: 12, fontWeight: 600, color: '#fbbf24', marginBottom: 4 } }, '\u2B50 Aggressive (1 star)'),
+                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: '1.4' } },
                   band === 'elementary'
                     ? 'Yelling, name-calling, or being mean back. Fighting back in a way that could make things worse.'
                     : 'Expressing anger through insults, threats, or hostility. May escalate the situation and damage relationships.'
@@ -1366,41 +1437,39 @@ window.SelHub = window.SelHub || {
             )
           );
 
-          var assertNav = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-            style: { display: 'flex', alignItems: 'center', gap: 8, padding: '0 16px 10px' }
+          var assertNav = h('div', {             style: { display: 'flex', alignItems: 'center', gap: 8, padding: '0 16px 10px' }
           },
             h('button', { 'aria-label': 'Prev',
               onClick: function() { upd({ assertIdx: Math.max(0, assertIdx - 1), assertChoice: null }); if (soundEnabled) sfxClick(); },
               disabled: assertIdx === 0,
               style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: assertIdx === 0 ? '#334155' : '#94a3b8', cursor: assertIdx === 0 ? 'default' : 'pointer', fontSize: 12 }
             }, '\u25C0 Prev'),
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#94a3b8' } }, (assertIdx + 1) + ' / ' + assertScenarios.length),
+            h('span', { style: { fontSize: 12, color: '#94a3b8' } }, (assertIdx + 1) + ' / ' + assertScenarios.length),
             h('button', { 'aria-label': 'Next',
               onClick: function() { upd({ assertIdx: Math.min(assertScenarios.length - 1, assertIdx + 1), assertChoice: null }); if (soundEnabled) sfxClick(); },
               disabled: assertIdx === assertScenarios.length - 1,
               style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: 'transparent', color: assertIdx === assertScenarios.length - 1 ? '#334155' : '#94a3b8', cursor: assertIdx === assertScenarios.length - 1 ? 'default' : 'pointer', fontSize: 12 }
             }, 'Next \u25B6'),
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginLeft: 'auto', fontSize: 11, color: '#64748b' } }, '\u2705 ' + assertCompletedCount + '/' + assertScenarios.length + ' completed')
+            h('span', { style: { marginLeft: 'auto', fontSize: 11, color: '#94a3b8' } }, '\u2705 ' + assertCompletedCount + '/' + assertScenarios.length + ' completed')
           );
 
-          var assertCard = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-            style: { margin: '0 16px', padding: '16px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155' }
+          var assertCard = h('div', {             style: { margin: '0 16px', padding: '16px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155' }
           },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700, color: '#f1f5f9', fontSize: 16, marginBottom: 4 } }, assertScen.title),
+            h('div', { style: { fontWeight: 700, color: '#f1f5f9', fontSize: 16, marginBottom: 4 } }, assertScen.title),
             h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: '1.6', margin: '8px 0 14px' } }, assertScen.setup),
             callTTS && h('button', { 'aria-label': 'Read aloud',
               onClick: function() { speak(assertScen.title + '. ' + assertScen.setup); },
               style: { marginBottom: 12, background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer' }
             }, '\uD83D\uDD0A Read aloud'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 600, color: '#94a3b8', fontSize: 12, marginBottom: 8 } }, 'How would you respond?'),
+            h('div', { style: { fontWeight: 600, color: '#94a3b8', fontSize: 12, marginBottom: 8 } }, 'How would you respond?'),
             assertScen.responses.map(function(resp, i) {
               var isSelected = assertChoice === i;
               var isCompleted = assertCompleted[assertScen.id] != null;
               var styleColors = { passive: '#ef4444', assertive: '#22c55e', aggressive: '#f59e0b' };
-              var rColor = styleColors[resp.style] || '#64748b';
+              var rColor = styleColors[resp.style] || '#94a3b8';
               var starStr = '';
               for (var si = 0; si < resp.stars; si++) starStr += '\u2B50';
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i },
+              return h('div', { key: i },
                 h('button', { 'aria-label': 'Toggle sound',
                   onClick: function() {
                     if (isCompleted) return;
@@ -1430,11 +1499,10 @@ window.SelHub = window.SelHub || {
                   ),
                   resp.label
                 ),
-                isSelected && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-                  style: { padding: '10px 14px', marginBottom: 8, borderRadius: 8, background: rColor + '15', border: '1px solid ' + rColor + '44' }
+                isSelected && h('div', {                   style: { padding: '10px 14px', marginBottom: 8, borderRadius: 8, background: rColor + '15', border: '1px solid ' + rColor + '44' }
                 },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, fontWeight: 700, color: rColor } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
+                    h('span', { style: { fontSize: 11, fontWeight: 700, color: rColor } },
                       starStr + ' ' + (resp.stars === 3 ? 'Assertive \u2014 Great choice!' : resp.style === 'passive' ? 'Passive \u2014 Let\u2019s think about this...' : 'Aggressive \u2014 There is a better way...')
                     )
                   ),
@@ -1496,7 +1564,7 @@ window.SelHub = window.SelHub || {
                   ? 'Test what you know about staying safe! Answer each question.'
                   : 'Challenge your safety knowledge. Choose the best answer for each question.'
               ),
-              h('div', { style: { fontSize: 11, color: '#64748b' } },
+              h('div', { style: { fontSize: 11, color: '#94a3b8' } },
                 quizBest > 0 ? '\uD83C\uDFC6 Best: ' + quizBest + '/' + totalQ : ''
               )
             ),
@@ -1582,29 +1650,27 @@ window.SelHub = window.SelHub || {
               });
             }
 
-            quizCard = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-              style: { margin: '0 16px', padding: '16px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155' }
+            quizCard = h('div', {               style: { margin: '0 16px', padding: '16px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155' }
             },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#64748b', marginBottom: 4 } }, 'Question ' + (quizIdx + 1) + ' of ' + totalQ),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 600, color: '#f1f5f9', fontSize: 15, marginBottom: 14, lineHeight: '1.5' } }, currentQ.q),
+              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, 'Question ' + (quizIdx + 1) + ' of ' + totalQ),
+              h('div', { style: { fontWeight: 600, color: '#f1f5f9', fontSize: 15, marginBottom: 14, lineHeight: '1.5' } }, currentQ.q),
               callTTS && h('button', { 'aria-label': 'Read aloud',
                 onClick: function() { speak(currentQ.q); },
                 style: { marginBottom: 10, background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer' }
               }, '\uD83D\uDD0A Read aloud'),
               currentQ.type === 'tf'
-                ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 10 } }, choiceButtons)
+                ? h('div', { style: { display: 'flex', gap: 10 } }, choiceButtons)
                 : h('div', null, choiceButtons),
               // Explanation after answering
-              isAnsweredQ && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-                style: { marginTop: 12, padding: '12px 14px', borderRadius: 8, background: quizAnswered[quizIdx].correct ? '#22c55e15' : '#ef444415', border: '1px solid ' + (quizAnswered[quizIdx].correct ? '#22c55e44' : '#ef444444') }
+              isAnsweredQ && h('div', {                 style: { marginTop: 12, padding: '12px 14px', borderRadius: 8, background: quizAnswered[quizIdx].correct ? '#22c55e15' : '#ef444415', border: '1px solid ' + (quizAnswered[quizIdx].correct ? '#22c55e44' : '#ef444444') }
               },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, fontWeight: 700, color: quizAnswered[quizIdx].correct ? '#4ade80' : '#f87171', marginBottom: 4 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: quizAnswered[quizIdx].correct ? '#4ade80' : '#f87171', marginBottom: 4 } },
                   quizAnswered[quizIdx].correct ? '\u2B50 Correct!' : '\uD83D\uDCA1 Not quite \u2014 here is why:'
                 ),
                 h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: '1.5', margin: 0 } }, currentQ.explain)
               ),
               // Navigation
-              isAnsweredQ && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', justifyContent: 'flex-end', marginTop: 12 } },
+              isAnsweredQ && h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: 12 } },
                 quizIdx < totalQ - 1 && h('button', { 'aria-label': 'Next Question',
                   onClick: function() { upd({ quizIdx: quizIdx + 1, quizAnswer: null }); if (soundEnabled) sfxClick(); },
                   style: { padding: '8px 18px', borderRadius: 8, border: 'none', background: ACCENT, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }
@@ -1618,14 +1684,13 @@ window.SelHub = window.SelHub || {
           if (quizDone) {
             var pct = Math.round((quizScore / totalQ) * 100);
             var msg = pct >= 80 ? 'Outstanding! You really know your stuff!' : pct >= 60 ? 'Great job! You are learning important safety skills.' : 'Every question is a chance to learn. You are getting stronger!';
-            quizResults = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-              style: { margin: '0 16px', padding: '20px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155', textAlign: 'center' }
+            quizResults = h('div', {               style: { margin: '0 16px', padding: '20px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155', textAlign: 'center' }
             },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48, marginBottom: 8 } }, pct >= 80 ? '\uD83C\uDFC6' : pct >= 60 ? '\u2B50' : '\uD83D\uDCAA'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 22, fontWeight: 700, color: '#f1f5f9', marginBottom: 4 } }, 'Score: ' + quizScore + ' / ' + totalQ),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 14, color: '#94a3b8', marginBottom: 4 } }, pct + '% correct'),
-              quizBest > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#64748b', marginBottom: 10 } }, '\uD83C\uDFC6 Personal best: ' + quizBest + '/' + totalQ),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, color: '#cbd5e1', marginBottom: 16, lineHeight: '1.5' } }, msg),
+              h('div', { style: { fontSize: 48, marginBottom: 8 } }, pct >= 80 ? '\uD83C\uDFC6' : pct >= 60 ? '\u2B50' : '\uD83D\uDCAA'),
+              h('div', { style: { fontSize: 22, fontWeight: 700, color: '#f1f5f9', marginBottom: 4 } }, 'Score: ' + quizScore + ' / ' + totalQ),
+              h('div', { style: { fontSize: 14, color: '#94a3b8', marginBottom: 4 } }, pct + '% correct'),
+              quizBest > 0 && h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 10 } }, '\uD83C\uDFC6 Personal best: ' + quizBest + '/' + totalQ),
+              h('div', { style: { fontSize: 13, color: '#cbd5e1', marginBottom: 16, lineHeight: '1.5' } }, msg),
               h('button', { 'aria-label': 'Try Again',
                 onClick: function() { upd({ quizIdx: 0, quizAnswer: null, quizAnswered: {}, quizScore: 0, quizDone: false }); if (soundEnabled) sfxClick(); },
                 style: { padding: '10px 22px', borderRadius: 10, border: 'none', background: ACCENT, color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer' }
@@ -1670,24 +1735,23 @@ window.SelHub = window.SelHub || {
             ),
             !flagDone && h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
               h('div', { style: { flex: 1, height: 6, borderRadius: 3, background: '#1e293b' } },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { height: '100%', borderRadius: 3, background: ACCENT, width: Math.round((Object.keys(flagAnswered).length / totalFlags) * 100) + '%', transition: 'width 0.3s' } })
+                h('div', { style: { height: '100%', borderRadius: 3, background: ACCENT, width: Math.round((Object.keys(flagAnswered).length / totalFlags) * 100) + '%', transition: 'width 0.3s' } })
               ),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8' } }, Object.keys(flagAnswered).length + '/' + totalFlags)
+              h('span', { style: { fontSize: 11, color: '#94a3b8' } }, Object.keys(flagAnswered).length + '/' + totalFlags)
             )
           );
 
           var flagCard = null;
           if (!flagDone) {
-            flagCard = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-              style: { margin: '0 16px', padding: '16px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155' }
+            flagCard = h('div', {               style: { margin: '0 16px', padding: '16px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155' }
             },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#64748b', marginBottom: 4 } }, 'Card ' + (flagIdx + 1) + ' of ' + totalFlags),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 600, color: '#f1f5f9', fontSize: 14, marginBottom: 14, lineHeight: '1.5', padding: '8px 0' } }, currentFlag.text),
+              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, 'Card ' + (flagIdx + 1) + ' of ' + totalFlags),
+              h('div', { style: { fontWeight: 600, color: '#f1f5f9', fontSize: 14, marginBottom: 14, lineHeight: '1.5', padding: '8px 0' } }, currentFlag.text),
               callTTS && h('button', { 'aria-label': 'Read aloud',
                 onClick: function() { speak(currentFlag.text); },
                 style: { marginBottom: 10, background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer' }
               }, '\uD83D\uDD0A Read aloud'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 10 } },
+              h('div', { style: { display: 'flex', gap: 10 } },
                 ['green', 'red'].map(function(flag) {
                   var isSelected = isFlagAnswered && flagAnswered[flagIdx].picked === flag;
                   var isCorrectAnswer = flag === currentFlag.flag;
@@ -1728,13 +1792,13 @@ window.SelHub = window.SelHub || {
                   border: '1px solid ' + (flagAnswered[flagIdx].correct ? '#22c55e44' : '#f59e0b44')
                 }
               },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, fontWeight: 700, color: flagAnswered[flagIdx].correct ? '#4ade80' : '#fbbf24', marginBottom: 4 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: flagAnswered[flagIdx].correct ? '#4ade80' : '#fbbf24', marginBottom: 4 } },
                   flagAnswered[flagIdx].correct ? '\u2705 You got it!' : '\uD83D\uDCA1 Actually, this is a ' + (currentFlag.flag === 'red' ? 'RED flag (unsafe)' : 'GREEN flag (safe)') + ':'
                 ),
                 h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: '1.5', margin: 0 } }, currentFlag.explain)
               ),
               // Next button
-              isFlagAnswered && flagIdx < totalFlags - 1 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', justifyContent: 'flex-end', marginTop: 12 } },
+              isFlagAnswered && flagIdx < totalFlags - 1 && h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: 12 } },
                 h('button', { 'aria-label': 'Next Card',
                   onClick: function() { upd({ flagIdx: flagIdx + 1, flagChoice: null }); if (soundEnabled) sfxClick(); },
                   style: { padding: '8px 18px', borderRadius: 8, border: 'none', background: ACCENT, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }
@@ -1747,12 +1811,11 @@ window.SelHub = window.SelHub || {
           var flagResults = null;
           if (flagDone) {
             var flagPct = Math.round((flagCorrect / totalFlags) * 100);
-            flagResults = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-              style: { margin: '0 16px', padding: '20px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155', textAlign: 'center' }
+            flagResults = h('div', {               style: { margin: '0 16px', padding: '20px', borderRadius: 12, background: '#1e293b', border: '1px solid #334155', textAlign: 'center' }
             },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48, marginBottom: 8 } }, flagPct >= 80 ? '\uD83C\uDFC6' : '\uD83D\uDCAA'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 22, fontWeight: 700, color: '#f1f5f9', marginBottom: 4 } }, flagCorrect + ' / ' + totalFlags + ' correct'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, color: '#cbd5e1', marginBottom: 16, lineHeight: '1.5' } },
+              h('div', { style: { fontSize: 48, marginBottom: 8 } }, flagPct >= 80 ? '\uD83C\uDFC6' : '\uD83D\uDCAA'),
+              h('div', { style: { fontSize: 22, fontWeight: 700, color: '#f1f5f9', marginBottom: 4 } }, flagCorrect + ' / ' + totalFlags + ' correct'),
+              h('div', { style: { fontSize: 13, color: '#cbd5e1', marginBottom: 16, lineHeight: '1.5' } },
                 flagPct >= 80
                   ? 'Excellent instincts! You can spot safe and unsafe behaviors clearly.'
                   : 'You are building important skills. Keep practicing \u2014 your instincts are getting sharper!'
@@ -1797,19 +1860,18 @@ window.SelHub = window.SelHub || {
                 : 'Emergency preparedness is not about fear \u2014 it is about confidence. When you know what to do, you can act quickly and calmly.'
               )
             ),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1, height: 6, borderRadius: 3, background: '#1e293b' } },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { height: '100%', borderRadius: 3, background: '#dc2626', width: Math.round((emViewedCount / emTopics.length) * 100) + '%', transition: 'width 0.3s' } })
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 } },
+              h('div', { style: { flex: 1, height: 6, borderRadius: 3, background: '#1e293b' } },
+                h('div', { style: { height: '100%', borderRadius: 3, background: '#dc2626', width: Math.round((emViewedCount / emTopics.length) * 100) + '%', transition: 'width 0.3s' } })
               ),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#fca5a5' } }, emViewedCount + '/' + emTopics.length + ' topics')
+              h('span', { style: { fontSize: 11, color: '#fca5a5' } }, emViewedCount + '/' + emTopics.length + ' topics')
             )
           );
 
           var emCardList = emTopics.map(function(topic) {
             var isExpanded = emExpanded === topic.id;
             var isViewed = !!emViewed[topic.id];
-            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-              key: topic.id,
+            return h('div', {               key: topic.id,
               onClick: function() {
                 upd('emExpanded', isExpanded ? null : topic.id);
                 if (!isViewed) {
@@ -1830,18 +1892,18 @@ window.SelHub = window.SelHub || {
             },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
                 h('span', { style: { fontSize: 24 } }, topic.icon),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1 } },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 600, color: '#f1f5f9', fontSize: 14 } }, topic.title),
-                  !isExpanded && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#64748b', marginTop: 2 } }, isViewed ? '\u2705 Read' : 'Tap to learn')
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontWeight: 600, color: '#f1f5f9', fontSize: 14 } }, topic.title),
+                  !isExpanded && h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, isViewed ? '\u2705 Read' : 'Tap to learn')
                 )
               ),
-              isExpanded && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 12 } },
+              isExpanded && h('div', { style: { marginTop: 12 } },
                 h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: '1.6', margin: '0 0 10px' } },
                   band === 'elementary' ? topic.elementary : topic.middle
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: '10px 12px', borderRadius: 8, background: '#22c55e15', border: '1px solid #22c55e33' } },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, fontWeight: 600, color: '#4ade80', marginBottom: 4 } }, '\u270D\uFE0F Practice:'),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#cbd5e1', lineHeight: '1.5' } }, topic.practice)
+                h('div', { style: { padding: '10px 12px', borderRadius: 8, background: '#22c55e15', border: '1px solid #22c55e33' } },
+                  h('div', { style: { fontSize: 12, fontWeight: 600, color: '#4ade80', marginBottom: 4 } }, '\u270D\uFE0F Practice:'),
+                  h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: '1.5' } }, topic.practice)
                 ),
                 callTTS && h('button', { 'aria-label': 'Read aloud',
                   onClick: function(e) { e.stopPropagation(); speak(topic.title + '. ' + (band === 'elementary' ? topic.elementary : topic.middle) + '. ' + topic.practice); },
@@ -1965,8 +2027,8 @@ window.SelHub = window.SelHub || {
             ),
 
             // Emergency numbers
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 14 } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: planLabelStyle }, '\uD83D\uDCDE Emergency numbers I know by heart:'),
+            h('div', { style: { marginBottom: 14 } },
+              h('div', { style: planLabelStyle }, '\uD83D\uDCDE Emergency numbers I know by heart:'),
               h('textarea', {
                 value: safetyPlanNums,
                 'aria-label': 'Emergency phone numbers',
@@ -1977,7 +2039,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Save and export
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
+            h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
               !safetyPlanSaved && safetyPlanStep1.trim() && h('button', { 'aria-label': 'Save My Plan',
                 onClick: function() {
                   upd('safetyPlanSaved', true);
@@ -1988,8 +2050,8 @@ window.SelHub = window.SelHub || {
                 },
                 style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: ACCENT, color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }
               }, '\uD83D\uDCBE Save My Plan'),
-              safetyPlanSaved && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 6 } },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#4ade80' } }, '\u2705 Plan saved!'),
+              safetyPlanSaved && h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                h('span', { style: { fontSize: 12, color: '#4ade80' } }, '\u2705 Plan saved!'),
                 h('button', { 'aria-label': 'Edit',
                   onClick: function() { upd('safetyPlanSaved', false); },
                   style: { background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }
@@ -2085,7 +2147,7 @@ window.SelHub = window.SelHub || {
                   style: { padding: 14, borderRadius: 12, background: earned ? '#0f172a' : '#0f172a88', border: '1px solid ' + (earned ? ACCENT_MED : '#1e293b'), textAlign: 'center', opacity: earned ? 1 : 0.5, transition: 'all 0.2s' }
                 },
                   h('div', { style: { fontSize: 30 } }, earned ? b.icon : '\uD83D\uDD12'),
-                  h('div', { style: { fontSize: 12, fontWeight: 600, color: earned ? '#f1f5f9' : '#64748b', marginTop: 6 } }, b.name),
+                  h('div', { style: { fontSize: 12, fontWeight: 600, color: earned ? '#f1f5f9' : '#94a3b8', marginTop: 6 } }, b.name),
                   h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 3 } }, b.desc),
                   earned && h('div', { style: { fontSize: 11, color: '#4ade80', marginTop: 4 } }, '\u2705 Earned ' + new Date(earnedBadges[b.id]).toLocaleDateString())
                 );
@@ -2108,10 +2170,12 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════════
         var content = learnContent || digitalContent || circleContent || scenariosContent || assertiveContent || quizContent || flagsContent || emergencyContent || planContent || badgesContent;
 
-        return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+        return h('div', { className: 'selh-safety', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
           tabBar,
+          heroBand,
           badgePopup,
-          h('div', { style: { flex: 1, overflow: 'auto' } }, content)
+          h('div', { style: { flex: 1, overflow: 'auto' } }, content),
+          window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
         );
       })();
     }

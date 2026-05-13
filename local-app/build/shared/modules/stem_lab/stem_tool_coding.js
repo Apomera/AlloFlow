@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
   // ── Coding Playground Audio ──
   var _codeAC = null;
   function getCodeAC() { if (!_codeAC) { try { _codeAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_codeAC && _codeAC.state === 'suspended') { try { _codeAC.resume(); } catch(e) {} } return _codeAC; }
@@ -171,7 +181,7 @@
             var gridSize = 200;
             var step = 40;
             ctx3d.globalAlpha = 0.15;
-            ctx3d.strokeStyle = '#64748b';
+            ctx3d.strokeStyle = '#94a3b8';
             ctx3d.lineWidth = 0.5;
             for (var gx = -gridSize; gx <= gridSize; gx += step) {
               var p1 = project3D(gx, -gridSize, 0);
@@ -1696,7 +1706,7 @@
             return React.createElement("div", {
               key: (isElse ? 'e' : 'i') + ci,
               className: "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium text-white",
-              style: { backgroundColor: cdef ? cdef.color : '#64748b', opacity: 0.85 }
+              style: { backgroundColor: cdef ? cdef.color : '#94a3b8', opacity: 0.85 }
             },
               React.createElement("span", { className: "flex-1 truncate" },
                 cdef ? cdef.label : child.type,
@@ -1858,8 +1868,7 @@
 
               // AI Assistant buttons
               callGemini && React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-white/20" },
-                React.createElement("button", { "aria-label": "Handle Explain Code",
-                  onClick: handleExplainCode,
+                React.createElement("button", { onClick: handleExplainCode,
                   disabled: aiLoading || blocks.length === 0,
                   title: "AI explains what your code does",
                   className: "px-2.5 py-1.5 text-[11px] font-bold transition-all " +
@@ -1962,6 +1971,33 @@
                 className: "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all"
               }, "❓")
             ),
+
+            // ── Topic-accent hero band per playground mode ──
+            (function() {
+              var MODE_META = {
+                turtle: { accent: '#22c55e', soft: 'rgba(34,197,94,0.14)', icon: '\uD83D\uDC22', title: 'Turtle \u2014 LOGO\u2019s drawing robot, born 1967',           hint: 'Move forward, turn, pen down: a few primitives \u2192 fractals, spirals, polygons. Seymour Papert\u2019s Mindstorms (1980) showed kids could BUILD intuition for math by teaching the turtle, not the other way round.' },
+                robot:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83E\uDD16', title: 'Robot \u2014 navigate the grid, collect, solve',           hint: 'Sequencing \u2192 conditionals \u2192 loops \u2192 functions, wrapped in a maze you can SEE. Mirrors Karel the Robot (Stanford 1981) and modern code.org puzzles. Errors become spatial: \u201Cit walked into a wall.\u201D' }
+              };
+              var meta = MODE_META[playgroundMode] || MODE_META.turtle;
+              return React.createElement('div', {
+                className: 'col-span-2',
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 30, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
 
             // ══════════════════════════
             // ROBOT GRID MODE UI
@@ -2092,8 +2128,7 @@
                         },
                         className: "px-2 py-1 rounded text-[11px] font-bold text-slate-200 hover:text-white bg-slate-700/50 hover:bg-slate-600 transition-all"
                       }, "\u21BA Reset"),
-                      React.createElement("button", { "aria-label": "Handle Robot Run",
-                        onClick: handleRobotRun,
+                      React.createElement("button", { onClick: handleRobotRun,
                         disabled: robotBlocks.length === 0 || robotRunning || robotChallengeIdx < 0,
                         className: "px-3 py-1 rounded text-[11px] font-bold transition-all " +
                           (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-600" : "bg-slate-700 text-slate-600 cursor-not-allowed")
@@ -2106,7 +2141,7 @@
                       robotBlocks.map(function(b, bi) {
                         var bdef = ROBOT_BLOCKS.find(function(rb) { return rb.type === b.type; });
                         return React.createElement("div", { key: bi },
-                          React.createElement("div", { className: "flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-bold text-white", style: { backgroundColor: bdef ? bdef.color : '#64748b' } },
+                          React.createElement("div", { className: "flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-bold text-white", style: { backgroundColor: bdef ? bdef.color : '#94a3b8' } },
                             React.createElement("span", { className: "flex-1" }, bdef ? bdef.label : b.type),
                             b.type === 'repeatR' && React.createElement("input", {
                               type: "number", min: 1, max: 20, value: b.times || 3,
@@ -2259,7 +2294,7 @@
                       React.createElement("div", {
                         className: "flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold text-white transition-all " +
                           (isActive ? 'ring-2 ring-yellow-400 scale-105' : ''),
-                        style: { backgroundColor: def ? def.color : '#64748b' }
+                        style: { backgroundColor: def ? def.color : '#94a3b8' }
                       },
                         // Drag handle
                         React.createElement("span", {
@@ -2340,7 +2375,6 @@
                           React.createElement("span", { className: "text-[11px] text-white/60" }, "+="),
                           React.createElement("input", {
                             type: "number", value: b.varDelta != null ? b.varDelta : 10,
-                            'aria-label': 'Change amount',
                             onChange: function (e) { updateBlockParam(idx, 'varDelta', parseFloat(e.target.value) || 0); },
                             className: "w-12 px-1 py-0.5 rounded text-[11px] bg-white/20 text-white text-center",
                             style: { appearance: 'textfield' }
@@ -2355,8 +2389,8 @@
                           placeholder: "x > 250"
                         }),
                         // Move / Remove buttons
-                        React.createElement("button", { "aria-label": "Move block up", onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[11px]", disabled: idx === 0 }, "▲"),
-                        React.createElement("button", { "aria-label": "Move block down", onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[11px]", disabled: idx === blocks.length - 1 }, "▼"),
+                        React.createElement("button", { onClick: function () { moveBlock(idx, -1); }, className: "text-white/60 hover:text-white text-[11px]", disabled: idx === 0 }, "▲"),
+                        React.createElement("button", { onClick: function () { moveBlock(idx, 1); }, className: "text-white/60 hover:text-white text-[11px]", disabled: idx === blocks.length - 1 }, "▼"),
                         React.createElement("button", { "aria-label": "Remove block", onClick: function () { removeBlock(idx); }, className: "text-white/60 hover:text-red-300 text-sm ml-1" }, "×")
                       ),
                       // ── Repeat children ──
@@ -2400,7 +2434,7 @@
                     value: textCode,
                     onChange: function (e) { handleTextChange(e.target.value); },
                     placeholder: "forward(50)\nright(90)\nbackward(30)\n\nrepeat(4, function() {\n  forward(100)\n  right(90)\n})",
-                    style: { flex: 1, minHeight: '240px', padding: '12px', background: '#0f172a', color: '#4ade80', fontSize: '12px', fontFamily: "'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace", lineHeight: '1.5', border: 'none', outline: 'none', resize: 'none', tabSize: 2, caretColor: '#fbbf24' },
+                    style: { flex: 1, minHeight: '240px', padding: '12px', background: '#0f172a', color: '#4ade80', fontSize: '12px', fontFamily: "'Fira Code', 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace", lineHeight: '1.5', border: 'none', resize: 'none', tabSize: 2, caretColor: '#fbbf24' },
                     spellCheck: false,
                     onKeyDown: function(e) {
                       // Tab inserts 2 spaces instead of changing focus

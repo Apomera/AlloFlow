@@ -66,7 +66,7 @@
               : 'If what you share indicates serious danger \u2014 to yourself or others \u2014 a trusted adult at your school will be notified and may access what you wrote. This applies to situations involving physical harm, weapons, self-harm, or abuse.'
           )
         ),
-        h('p', { style: { fontSize: '13px', lineHeight: 1.7, color: '#6b7280', margin: 0 } },
+        h('p', { style: { fontSize: '13px', lineHeight: 1.7, color: '#475569', margin: 0 } },
           isYoung
             ? 'This is the same rule school counselors follow. It exists because your safety matters more than anything else.'
             : 'This follows the same confidentiality standard as school counseling. We tell you now so you can make an informed choice about what to share.'
@@ -74,6 +74,7 @@
       ),
       h('button', {
         onClick: onConsent,
+        autoFocus: true,
         'aria-label': 'I understand the safety guidelines',
         style: { padding: '12px 32px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '14px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(37,99,235,0.3)' }
       }, isYoung ? 'I Understand \u2014 Let\u2019s Talk' : 'I Understand the Guidelines'),
@@ -220,7 +221,7 @@
 
     // Run coach + safety assessment in parallel
     return Promise.all([
-      callGemini(opts.coachPrompt, true).catch(function() { return null; }),
+      callGemini(opts.coachPrompt, false).catch(function() { return null; }),
       window.SelHub.assessSafety(msg, band, toolId, callGemini)
     ]).then(function(results) {
       var response = results[0];
@@ -290,7 +291,173 @@
     );
   };
 
+  // Fast synchronous safety check for use in Rehearse / role-play tabs
+  // where the student types directly to a multi-turn AI. Unlike safeCoach
+  // (which is async + makes an extra LLM call for nuanced assessment),
+  // this is a pure regex check via SafetyContentChecker so it can gate
+  // the AI's response without latency.
+  //
+  // Returns: { action: 'block' | 'nudge' | 'continue', severity, flag }
+  //   - 'block' → caller should NOT send the message to the AI. Append a
+  //     coach-style break-character response and surface crisis resources.
+  //   - 'nudge' → AI turn can proceed. Caller may append a soft "if this
+  //     is close to real, talk to a trusted adult" reminder after.
+  //   - 'continue' → no safety signal. Proceed normally.
+  //
+  // Also fires onSafetyFlag (writes to localStorage via the same pipeline
+  // as safeCoach), so the flag is visible to a hosting teacher in live
+  // sessions.
+  window.SelHub.safeRehearseCheck = function(message, opts) {
+    opts = opts || {};
+    var result = { action: 'continue', severity: 'none', flag: null };
+    if (!message || typeof message !== 'string') return result;
+    var checker = (window.__alloShared && window.__alloShared.SafetyContentChecker)
+      || window.SafetyContentChecker || null;
+    if (!checker || !checker.check) return result;
+    var flags = checker.check(message);
+    if (!flags || flags.length === 0) return result;
+    // Find the most severe flag.
+    var rank = { low: 1, medium: 2, high: 3, critical: 4 };
+    var top = flags.reduce(function(acc, f) {
+      return (rank[f.severity] || 0) > (rank[acc.severity] || 0) ? f : acc;
+    }, flags[0]);
+    result.flag = top;
+    result.severity = top.severity;
+    // Fire the flag through the same pipeline as safeCoach / adventure /
+    // socratic. In solo mode this writes to localStorage only; in live
+    // session the teacher dashboard can see it.
+    if (opts.onSafetyFlag) {
+      try {
+        opts.onSafetyFlag(Object.assign({}, top, {
+          source: 'sel_rehearse_' + (opts.toolId || 'unknown'),
+          context: message.substring(0, 100),
+          aiGenerated: false
+        }));
+      } catch (_) { /* swallow */ }
+    }
+    // Map severity to action.
+    if (top.severity === 'critical') {
+      result.action = 'block';
+    } else if (top.severity === 'high') {
+      result.action = 'nudge';
+    } else {
+      result.action = 'continue';
+    }
+    return result;
+  };
+
+  // Coach-style break-character response shown in the chat when
+  // safeRehearseCheck returns 'block'. Single source of truth so the
+  // 5 Rehearse tabs all show the same trustworthy text.
+  window.SelHub.rehearseBreakCharacterText = function(severity) {
+    return 'Hey, I want to pause the rehearsal for a second. What you just typed sounds heavy, and your wellbeing matters more than the practice. If any of this is real for you right now, please reach out to a trusted adult (a parent, teacher, school counselor) or one of the crisis lines below. You are not alone in this.';
+  };
+
+  // Conditional, honest disclosure about what actually happens with the
+  // conversation. The old "this space is monitored for your safety" copy
+  // (formerly hardcoded in 5 tools) was misleading in solo mode: no adult
+  // sees the chat, conversation only lives in localStorage. This helper
+  // tells the truth in both modes.
+  //   Solo mode (no activeSessionCode): conversation is local, safety
+  //     keyword-check still runs, real concerns go to a trusted adult.
+  //   Live session (activeSessionCode set): teacher can see submitted work,
+  //     safety keyword-check still runs, real concerns go to a trusted adult.
+  window.SelHub.renderSafetyDisclosure = function(h, band, activeSessionCode) {
+    var live = !!(activeSessionCode && String(activeSessionCode).trim());
+    var body = live
+      ? 'Your teacher is hosting a live session. Anything you save or submit here can be seen by them. We also run safety checks for crisis words and show resources if something serious comes up. For real safety concerns, please talk to a trusted adult.'
+      : 'This conversation stays on your device. We run safety checks for crisis words and show resources if something serious comes up. For real safety concerns, please talk to a trusted adult.';
+    return h('p', {
+      style: { fontSize: '11px', color: '#64748b', margin: '4px 0 0', lineHeight: 1.5 }
+    }, body);
+  };
+
+  // Always-on resource strip for tools that touch sensitive content.
+  // Quieter than renderCrisisResources (no role="alert" / aria-live) so screen
+  // readers don't announce on every render. Use as a persistent footer.
+  window.SelHub.renderResourceFooter = function(h, band) {
+    var isYoung = band === 'elementary';
+    return h('div', {
+      role: 'complementary',
+      'aria-label': 'Crisis support resources',
+      style: { background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 12, padding: '10px 14px', marginTop: 16, fontSize: 12, color: '#7c2d12' }
+    },
+      h('div', { style: { fontWeight: 700, marginBottom: 4 } }, isYoung ? 'You\u2019re not alone. Help is here:' : 'You\u2019re not alone. If you need help, reach out:'),
+      h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px 14px' } },
+        !isYoung && h('span', null, '\uD83D\uDCDE 988 (call or text)'),
+        !isYoung && h('span', null, '\uD83D\uDCF1 Text HOME to 741741'),
+        !isYoung && h('span', null, '\uD83C\uDF08 Trevor (LGBTQ+): 1-866-488-7386'),
+        h('span', null, '\uD83C\uDFEB Trusted adult at school')
+      )
+    );
+  };
+
   window.SelHub.getSessionFlagLog = function() { return _flagLog.slice(); };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Print Packet Helper ──
+  // Renders a clean printable artifact (calm plans, action plans,
+  // weekly summaries, etc.) in a new window. Intended for take-home
+  // use: students bring the printout to a counselor, parent, or IEP
+  // meeting.
+  //
+  // opts: {
+  //   title: string,
+  //   subtitle?: string,
+  //   sections: [{ heading, items?: string[], paragraphs?: string[] }]
+  // }
+  // ══════════════════════════════════════════════════════════════
+
+  function _esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  window.SelHub.printDoc = function(opts) {
+    opts = opts || {};
+    var w;
+    try { w = window.open('', '_blank', 'width=760,height=920'); } catch (e) {}
+    if (!w) { alert('Please allow pop-ups to print this. Then click the button again.'); return; }
+
+    var sectionsHtml = (opts.sections || []).map(function(sec) {
+      var inner = '';
+      if (sec.paragraphs && sec.paragraphs.length) {
+        inner += sec.paragraphs.map(function(p) { return '<p>' + _esc(p) + '</p>'; }).join('');
+      }
+      if (sec.items && sec.items.length) {
+        inner += '<ul>' + sec.items.map(function(it) { return '<li>' + _esc(it) + '</li>'; }).join('') + '</ul>';
+      }
+      if (!inner) inner = '<p class="sel-empty">(nothing recorded yet)</p>';
+      return '<section><h2>' + _esc(sec.heading || '') + '</h2>' + inner + '</section>';
+    }).join('');
+
+    var subtitleHtml = opts.subtitle ? '<p class="sel-sub">' + _esc(opts.subtitle) + '</p>' : '';
+    var dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + _esc(opts.title || 'Print') + '</title>'
+      + '<style>'
+      + 'body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#111;background:#fff;padding:40px;max-width:720px;margin:auto;line-height:1.55}'
+      + 'h1{font-size:24px;margin:0 0 4px}'
+      + '.sel-sub{color:#475569;margin:0 0 20px;font-size:14px}'
+      + 'h2{font-size:15px;color:#1e293b;margin:22px 0 6px;border-bottom:1px solid #e2e8f0;padding-bottom:4px}'
+      + 'ul{margin:6px 0 10px;padding-left:22px}'
+      + 'li{margin-bottom:4px}'
+      + 'p{margin:6px 0}'
+      + '.sel-empty{color:#94a3b8;font-style:italic;font-size:13px}'
+      + '.sel-meta{color:#64748b;font-size:11px;border-top:1px solid #e2e8f0;margin-top:32px;padding-top:8px}'
+      + '@media print{body{padding:24px}}'
+      + '</style></head><body>'
+      + '<h1>' + _esc(opts.title || '') + '</h1>'
+      + subtitleHtml
+      + sectionsHtml
+      + '<div class="sel-meta">Generated ' + _esc(dateStr) + ' • AlloFlow SEL Hub</div>'
+      + '</body></html>';
+
+    w.document.write(html);
+    w.document.close();
+    setTimeout(function() { try { w.focus(); w.print(); } catch (e) {} }, 250);
+  };
 
   console.log('[SelHub] Safety layer v1.1 loaded (Canvas-compatible, in-memory)');
 })();

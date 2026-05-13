@@ -962,11 +962,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 h('div', { className: 'grid grid-cols-3 gap-2' },
                   h('div', null,
                     h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, 'Character Name'),
-                    h('input', { type: 'text', value: characterName, onChange: function(e) { upd('characterName', e.target.value); }, placeholder: 'Your character\'s name...', 'aria-label': 'Character name', className: 'w-full text-sm p-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-violet-300' })
+                    h('input', { type: 'text', value: characterName, onChange: function(e) { upd('characterName', e.target.value); }, placeholder: 'Your character\'s name...', 'aria-label': 'Character name', className: 'w-full text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-violet-300' })
                   ),
                   h('div', null,
                     h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, 'Class / Role'),
-                    h('input', { type: 'text', value: characterClass, onChange: function(e) { upd('characterClass', e.target.value); }, placeholder: 'e.g., Scholar, Explorer...', 'aria-label': 'Character class or role', className: 'w-full text-sm p-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-violet-300' })
+                    h('input', { type: 'text', value: characterClass, onChange: function(e) { upd('characterClass', e.target.value); }, placeholder: 'e.g., Scholar, Explorer...', 'aria-label': 'Character class or role', className: 'w-full text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-violet-300' })
                   ),
                   h('div', null,
                     h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '📚 Grade Level'),
@@ -974,7 +974,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                       value: gradeLevel,
                       onChange: function(e) { upd('playerGradeLevel', e.target.value); },
                       'aria-label': 'Your grade level',
-                      className: 'w-full text-sm p-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-violet-300 bg-white'
+                      className: 'w-full text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-violet-300 bg-white'
                     },
                       GRADE_OPTIONS.map(function(g) {
                         return h('option', { key: g, value: g }, g);
@@ -990,7 +990,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                     onChange: function(e) { upd('characterAppearance', e.target.value); },
                     placeholder: 'Describe what your character looks like with vivid detail — hair, eyes, clothing, accessories, distinguishing features...',
                     'aria-label': 'Character appearance description',
-                    className: 'w-full text-sm p-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-violet-300 resize-none h-16'
+                    className: 'w-full text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-violet-300 resize-none h-16'
                   })
                 ),
                 callImagen && characterAppearance.trim().length > 10 && h('button', { 'aria-label': 'Generate Character Portrait',
@@ -1050,7 +1050,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           ),
 
           // World map (connected rooms)
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border border-slate-200 p-3' },
+          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border border-slate-400 p-3' },
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2' }, '🗺️ Connected Locations'),
             h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-2' },
               room.connections.map(function(connId) {
@@ -1112,7 +1112,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                   h('span', { className: 'text-cyan-600 tracking-widest' }, '💛 Rapport'),
                   h('span', { className: rapport >= 70 ? 'text-green-600' : 'text-slate-600' }, rapport + '%')
                 ),
-                h('div', { className: 'w-full h-2.5 bg-slate-200 rounded-full overflow-hidden border border-slate-300' },
+                h('div', { className: 'w-full h-2.5 bg-slate-200 rounded-full overflow-hidden border border-slate-400' },
                   h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full transition-all duration-500 rounded-full ' +
                     (rapport >= 70 ? 'bg-gradient-to-r from-green-400 to-emerald-500' :
                      rapport >= 40 ? 'bg-gradient-to-r from-amber-400 to-yellow-500' :
@@ -1422,7 +1422,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           ),
 
           // Action log
-          actionLog.length > 0 && h('details', { className: 'bg-white rounded-xl border border-slate-200' },
+          actionLog.length > 0 && h('details', { className: 'bg-white rounded-xl border border-slate-400' },
             h('summary', { className: 'px-4 py-2 text-xs font-bold text-slate-600 cursor-pointer hover:bg-slate-50' }, '📜 Adventure Log (' + actionLog.length + ' actions)'),
             h('div', { className: 'px-4 pb-3 space-y-1.5 max-h-48 overflow-y-auto' },
               actionLog.slice().reverse().map(function(entry, i) {

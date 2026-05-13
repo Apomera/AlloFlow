@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_echolocation.js — Bat Echolocation & Sound Physics Lab
 // See the world through sound: sonar vision, wave physics, Doppler effect,
@@ -32,6 +42,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
 (function() {
   'use strict';
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-echolocation')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-echolocation';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ── MODULE-SCOPED CONSTANTS ──
 
@@ -344,7 +367,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
     c.scale(facing, 1);
     var wa = Math.sin(flapPhase) * 0.5;
     // Body (furry oval)
-    c.fillStyle = isDark ? '#6b7280' : '#374151';
+    c.fillStyle = isDark ? '#94a3b8' : '#374151';
     c.beginPath();
     c.ellipse(0, 0, size * 0.6, size * 0.35, 0, 0, Math.PI * 2);
     c.fill();
@@ -995,9 +1018,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           eng._respawnTimer = 0;
 
           // Controls
+          // preventDefault on flight keys so the page doesn't scroll
+          // out from under the bat. (WASD don't scroll, but Space and
+          // arrow keys do, and the original bug class felt like
+          // "the controls don't work" even when keys were registering.)
           eng.keys = {};
-          eng._keyDown = function(e) { eng.keys[e.code] = true; };
-          eng._keyUp = function(e) { eng.keys[e.code] = false; };
+          var _CAVE_FLIGHT_CODES = { KeyW: 1, KeyA: 1, KeyS: 1, KeyD: 1, KeyE: 1, KeyP: 1, KeyR: 1, Space: 1, ArrowUp: 1, ArrowDown: 1, ArrowLeft: 1, ArrowRight: 1 };
+          eng._keyDown = function(e) {
+            if (_CAVE_FLIGHT_CODES[e.code]) {
+              eng.keys[e.code] = true;
+              e.preventDefault();
+            }
+          };
+          eng._keyUp = function(e) {
+            if (_CAVE_FLIGHT_CODES[e.code]) {
+              eng.keys[e.code] = false;
+              e.preventDefault();
+            }
+          };
           document.addEventListener('keydown', eng._keyDown);
           document.addEventListener('keyup', eng._keyUp);
 
@@ -1437,10 +1475,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         var threeReady = window.THREE;
 
         return h('div', { className: 'space-y-3' },
-          // Header
+          // Header \u2014 clear goal + survival framing.
+          // Bug fix: light-mode subtitle was 'text-slate-200' on both
+          // branches, effectively invisible on a light background.
           h('div', { className: 'text-center' },
             h('h3', { className: 'text-lg font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, '\uD83D\uDD26 3D Cave Echolocation'),
-            h('p', { className: 'text-xs ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, 'Navigate a dark cave using sonar pulses. Press E to emit a pulse. Find all 5 moths!')
+            h('p', { className: 'text-xs ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, 'Survive in the dark using sonar. Catch as many insects as you can before energy runs out. Press E to pulse. WASD to fly.')
+          ),
+          // \u2500\u2500 Pre-flight brief (collapsible) \u2500\u2500
+          // Goal, controls, and the science it teaches in one place.
+          // Default closed once the student has played, so it doesn't
+          // get in the way after the first session.
+          h('details', {
+            open: !cave3dEngineRef.current || (cave3dEngineRef.current.survivalTime || 0) < 1,
+            className: 'rounded-xl ' + (isDark ? 'bg-emerald-900/20 border border-emerald-700/40' : 'bg-emerald-50 border border-emerald-300')
+          },
+            h('summary', { className: 'cursor-pointer text-xs font-bold px-3 py-2 select-none ' + (isDark ? 'text-emerald-300' : 'text-emerald-800') }, '\uD83D\uDCDC How this works (click to toggle)'),
+            h('div', { className: 'px-3 pb-3 space-y-3 text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-700') },
+              h('div', null,
+                h('div', { className: 'font-black mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, '\uD83C\uDFAF Goal'),
+                h('p', { className: 'leading-relaxed' },
+                  'Catch glowing insects to refill energy. Stay airborne as long as you can. There is no "win" screen; the score is your survival time and the insects you caught. Try to beat your high score.')
+              ),
+              h('div', null,
+                h('div', { className: 'font-black mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, '\uD83D\uDD79 Controls'),
+                h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
+                  [
+                    { k: 'WASD', d: 'Fly + steer' },
+                    { k: 'E',    d: 'Emit sonar pulse' },
+                    { k: 'P',    d: 'Perch + recharge' },
+                    { k: 'R',    d: 'Restart after game over' }
+                  ].map(function(c, i) {
+                    return h('div', { key: i, className: 'flex items-center gap-2 rounded p-1.5 ' + (isDark ? 'bg-slate-800/60' : 'bg-white') },
+                      h('span', {
+                        style: {
+                          fontFamily: 'monospace', fontWeight: 700, fontSize: 10,
+                          padding: '2px 6px', borderRadius: 4,
+                          background: isDark ? '#0f172a' : '#f1f5f9',
+                          border: '1px solid ' + (isDark ? '#475569' : '#cbd5e1'),
+                          color: isDark ? '#fbbf24' : '#92400e'
+                        }
+                      }, c.k),
+                      h('span', null, c.d)
+                    );
+                  })
+                )
+              ),
+              h('div', null,
+                h('div', { className: 'font-black mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, '\uD83E\uDDE0 What you\'re learning'),
+                h('ul', { className: 'list-disc list-inside leading-relaxed space-y-0.5' },
+                  h('li', null, 'Sonar reveals geometry that vision cannot. The cave only "exists" at the moments you pulse.'),
+                  h('li', null, 'Echo-return time tells distance: the HUD shows d = v\u00D7t / 2 each pulse.'),
+                  h('li', null, 'Pulsing costs energy. Real bats balance pulse rate against the prey density they\'re chasing.'),
+                  h('li', null, 'Difficulty scales with survival time. Insects appear less often the longer you live.')
+                )
+              )
+            )
           ),
           // Three.js not loaded
           !threeReady && h('div', { className: 'text-center p-8 text-slate-600' },
@@ -1450,12 +1540,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           // 3D Canvas container
           threeReady && h('div', {
             ref: cave3dRef,
+            id: 'echo-cave3d-fs-wrap',
             style: { width: '100%', height: '400px', borderRadius: '12px', overflow: 'hidden', border: '2px solid ' + (isDark ? '#1e3a3a' : '#a7f3d0'), position: 'relative', background: '#020208', cursor: 'crosshair' }
           },
+            // Fullscreen toggle (top-right corner)
+            h('button', {
+              'aria-label': 'Toggle fullscreen for the 3D cave',
+              title: 'Fullscreen',
+              onClick: function() {
+                var el = document.getElementById('echo-cave3d-fs-wrap');
+                if (!el) return;
+                var inFull = document.fullscreenElement === el
+                  || document.webkitFullscreenElement === el
+                  || document.mozFullScreenElement === el;
+                if (inFull) {
+                  var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen;
+                  if (ex) ex.call(document);
+                } else {
+                  var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+                  if (rq) rq.call(el);
+                }
+              },
+              style: {
+                position: 'absolute', top: 8, right: 8, zIndex: 20,
+                width: 32, height: 32, borderRadius: 8,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(0,40,30,0.85)',
+                backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+                border: '1px solid rgba(0,255,170,0.45)',
+                color: '#4ade80',
+                fontSize: 16, fontWeight: 700, cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+              }
+            }, '⛶'),
             // HUD overlay
             h('div', { style: { position: 'absolute', top: '8px', left: '8px', zIndex: 10, pointerEvents: 'none', fontSize: '11px', color: '#4ade80', maxWidth: '200px' } },
               h('div', { style: { fontWeight: 700 } }, '\uD83E\uDD87 3D Echolocation Cave'),
-              h('div', { style: { fontSize: '9px', color: '#64748b' } }, 'WASD=fly \u2022 E=sonar \u2022 P=perch \u2022 R=restart'),
+              h('div', { style: { fontSize: '9px', color: '#94a3b8' } }, 'WASD=fly \u2022 E=sonar \u2022 P=perch \u2022 R=restart'),
               // Energy bar
               cave3dEngineRef.current && h('div', { style: { marginTop: '4px' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' } },
@@ -1475,13 +1596,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('div', { style: { color: '#94a3b8' } }, '\u23F1 ' + Math.round(cave3dEngineRef.current.survivalTime || 0) + 's'),
                 cave3dEngineRef.current.highScore && cave3dEngineRef.current.highScore.score > 0 && h('div', { style: { color: '#7c3aed', fontSize: '9px' } }, '\uD83C\uDFC6 Best: ' + cave3dEngineRef.current.highScore.score + ' (' + (cave3dEngineRef.current.highScore.time || 0) + 's)'),
                 cave3dEngineRef.current.perching && h('div', { style: { color: '#60a5fa', fontWeight: 700, marginTop: '2px' } }, '\uD83E\uDD87 Perching (resting...)'),
-                cave3dEngineRef.current.survivalTime > 5 && h('div', { style: { color: '#64748b', fontSize: '8px', marginTop: '2px' } }, '\u26A0 Difficulty: x' + (1 + (cave3dEngineRef.current.survivalTime / 120) * 0.5).toFixed(1)),
+                cave3dEngineRef.current.survivalTime > 5 && h('div', { style: { color: '#94a3b8', fontSize: '8px', marginTop: '2px' } }, '\u26A0 Difficulty: x' + (1 + (cave3dEngineRef.current.survivalTime / 120) * 0.5).toFixed(1)),
                 // Echolocation distance calculation (educational)
                 cave3dEngineRef.current._lastEchoDistance && h('div', { style: { marginTop: '4px', background: 'rgba(0,40,30,0.8)', borderRadius: '6px', padding: '4px 6px', border: '1px solid rgba(0,255,170,0.2)' } },
                   h('div', { style: { color: '#4ade80', fontSize: '9px', fontWeight: 700 } }, '\uD83D\uDCCF Echo Return:'),
                   h('div', { style: { color: '#94a3b8', fontSize: '8px', fontFamily: 'monospace' } },
                     'd = ' + cave3dEngineRef.current._lastEchoDistance.toFixed(1) + 'm'),
-                  h('div', { style: { color: '#64748b', fontSize: '7px', fontFamily: 'monospace' } },
+                  h('div', { style: { color: '#94a3b8', fontSize: '7px', fontFamily: 'monospace' } },
                     't = ' + cave3dEngineRef.current._lastEchoTime + 's'),
                   h('div', { style: { color: '#475569', fontSize: '7px', fontFamily: 'monospace' } },
                     'd = v\u00d7t/2 = 343\u00d7' + cave3dEngineRef.current._lastEchoTime + '/2')
@@ -1594,7 +1715,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('span', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') },
                 speciesData.emoji + ' ' + speciesData.name + ' (' + speciesData.subtitle + ')'),
               h('button', {
-                'aria-label': 'Change bat species',
                 onClick: function() { upd('playableSpecies', null); },
                 className: 'px-2 py-0.5 rounded text-[11px] font-bold ' + (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-200 text-slate-600 hover:bg-slate-300')
               }, 'Change Species')
@@ -1649,8 +1769,128 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               className: 'px-3 py-1 rounded-lg font-bold bg-indigo-600 text-white hover:bg-indigo-500'
             }, '\uD83E\uDD87 Emit Pulse')
           ),
-          // Canvas
-          sonarCanvasEl,
+          // Canvas (wrapped) + goal banner overlay + fullscreen button
+          // The student looks at the canvas while playing, not at the
+          // HUD strip below it. Surface the goal + progress at the top
+          // of the canvas so it stays in view: "Catch 10 moths \u00B7 3/10"
+          // for prey-eaters, "Catch 10 fruits" for frugivores, and
+          // "Map cave \u00B7 X%" for cave scenes (the secondary win).
+          (function() {
+            var caughtKey = isFrugivore ? 'fruitCollected' : 'mothsCaught';
+            var caught = d[caughtKey] || 0;
+            var preyIcon = isFrugivore ? '\uD83C\uDF4C' : '\uD83E\uDD97';
+            var preyLabel = isFrugivore ? 'Fruit collected' : 'Moths caught';
+            var clarity = Math.round(sonarStateRef.current.clarity || 0);
+            var inCave = sceneIdx === 0 && !isFrugivore;
+            var goalDone = caught >= 10;
+            return h('div', { id: 'echo-sonar-fs-wrap', style: { position: 'relative', background: '#0a0a1a' } },
+              sonarCanvasEl,
+              // Fullscreen toggle (top-right; doesn't overlap the goal
+              // banner which is top-center). Uses the standard
+              // requestFullscreen API with vendor-prefix fallbacks.
+              h('button', {
+                'aria-label': 'Toggle fullscreen for the sonar canvas',
+                title: 'Fullscreen',
+                onClick: function() {
+                  var el = document.getElementById('echo-sonar-fs-wrap');
+                  if (!el) return;
+                  var inFull = document.fullscreenElement === el
+                    || document.webkitFullscreenElement === el
+                    || document.mozFullScreenElement === el;
+                  if (inFull) {
+                    var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen;
+                    if (ex) ex.call(document);
+                  } else {
+                    var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+                    if (rq) rq.call(el);
+                  }
+                },
+                style: {
+                  position: 'absolute', top: 8, right: 8, zIndex: 10,
+                  width: 32, height: 32, borderRadius: 8,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(15,23,42,0.75)',
+                  backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+                  border: '1px solid rgba(99,102,241,0.45)',
+                  color: '#c7d2fe',
+                  fontSize: 16, fontWeight: 700, cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.35)'
+                }
+              }, '\u26F6'),
+              h('div', {
+                'aria-hidden': 'true',
+                style: {
+                  position: 'absolute',
+                  top: 8, left: '50%', transform: 'translateX(-50%)',
+                  display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center',
+                  pointerEvents: 'none', zIndex: 5,
+                  maxWidth: 'calc(100% - 24px)'
+                }
+              },
+                // Primary goal: prey
+                h('div', {
+                  style: {
+                    padding: '5px 12px', borderRadius: 999,
+                    background: goalDone ? 'rgba(16,185,129,0.85)' : 'rgba(15,23,42,0.85)',
+                    backdropFilter: 'blur(6px)',
+                    WebkitBackdropFilter: 'blur(6px)',
+                    border: '1px solid ' + (goalDone ? 'rgba(110,231,183,0.6)' : 'rgba(99,102,241,0.5)'),
+                    color: goalDone ? '#ecfdf5' : '#c7d2fe',
+                    fontSize: 12, fontWeight: 800,
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.35)',
+                    display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap'
+                  }
+                },
+                  h('span', null, (goalDone ? '\u2713 ' : '') + preyIcon + ' ' + preyLabel),
+                  // Mini progress bar
+                  h('span', {
+                    style: { width: 80, height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.4)', overflow: 'hidden' }
+                  },
+                    h('span', {
+                      style: {
+                        display: 'block',
+                        width: Math.min(100, caught * 10) + '%',
+                        height: '100%',
+                        background: goalDone ? '#34d399' : 'linear-gradient(90deg,#a78bfa,#7dd3fc)',
+                        boxShadow: goalDone ? '0 0 6px #34d399' : '0 0 4px rgba(125,211,252,0.6)'
+                      }
+                    })
+                  ),
+                  h('span', { style: { fontFamily: 'monospace' } }, caught + '/10')
+                ),
+                // Secondary goal: map cave (only in cave scene)
+                inCave && h('div', {
+                  style: {
+                    padding: '5px 12px', borderRadius: 999,
+                    background: d.caveMapped ? 'rgba(16,185,129,0.85)' : 'rgba(15,23,42,0.85)',
+                    backdropFilter: 'blur(6px)',
+                    WebkitBackdropFilter: 'blur(6px)',
+                    border: '1px solid ' + (d.caveMapped ? 'rgba(110,231,183,0.6)' : 'rgba(245,158,11,0.5)'),
+                    color: d.caveMapped ? '#ecfdf5' : '#fde68a',
+                    fontSize: 12, fontWeight: 800,
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.35)',
+                    display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap'
+                  }
+                },
+                  h('span', null, (d.caveMapped ? '\u2713 ' : '') + '\uD83D\uDDFA Map cave'),
+                  h('span', {
+                    style: { width: 60, height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.4)', overflow: 'hidden' }
+                  },
+                    h('span', {
+                      style: {
+                        display: 'block',
+                        width: Math.min(100, clarity) + '%',
+                        height: '100%',
+                        background: clarity >= 80 ? '#34d399' : 'linear-gradient(90deg,#fbbf24,#f59e0b)',
+                        boxShadow: clarity >= 80 ? '0 0 6px #34d399' : '0 0 4px rgba(245,158,11,0.6)'
+                      }
+                    })
+                  ),
+                  h('span', { style: { fontFamily: 'monospace' } }, clarity + '%')
+                )
+              )
+            );
+          })(),
           // HUD readouts
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-5 gap-2' },
             renderHudStat('Pulses', sonarStateRef.current.pulseCount, '\uD83D\uDD0A'),
@@ -1738,7 +1978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           ),
 
           // Game Mechanics Panel
-          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/40 border border-slate-700/30' : 'bg-white border border-slate-200') },
+          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/40 border border-slate-700/30' : 'bg-white border border-slate-400') },
             h('div', { className: 'text-xs font-bold mb-2 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83C\uDFAE Flight & Energy Mechanics'),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
               h('div', null,
@@ -1777,7 +2017,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           ),
 
           // Material echo guide
-          h('div', { className: 'rounded-xl p-3 ' + (isDark ? 'bg-slate-800/40 border border-slate-700/30' : 'bg-white border border-slate-200') },
+          h('div', { className: 'rounded-xl p-3 ' + (isDark ? 'bg-slate-800/40 border border-slate-700/30' : 'bg-white border border-slate-400') },
             h('div', { className: 'text-xs font-bold mb-2 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83E\uDDF1 Echo Materials Guide'),
             h('div', { className: 'flex flex-wrap gap-3' },
               [
@@ -1923,11 +2163,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         }
 
         // Key listeners
+        // Bug fix: arrow keys + WASD weren't preventDefault'd, so the
+        // page would scroll under the bat while the student was trying
+        // to fly — felt like the controls were broken even when the
+        // game was reading the keys correctly. Now any flight-control
+        // key swallows its default browser action.
+        var FLIGHT_KEYS = { 'arrowup': 1, 'arrowdown': 1, 'arrowleft': 1, 'arrowright': 1, 'w': 1, 'a': 1, 's': 1, 'd': 1, ' ': 1, 'spacebar': 1 };
         var onKey = function(e) {
-          sonarKeysRef.current[e.key.toLowerCase()] = e.type === 'keydown';
-          if (e.type === 'keydown' && (e.key === ' ' || e.key === 'Spacebar')) {
-            e.preventDefault();
-            emitSonarPulse();
+          var k = (e.key || '').toLowerCase();
+          if (FLIGHT_KEYS[k]) {
+            sonarKeysRef.current[k] = e.type === 'keydown';
+            if (e.type === 'keydown') {
+              e.preventDefault();
+              if (k === ' ' || k === 'spacebar') emitSonarPulse();
+            }
           }
         };
         window.addEventListener('keydown', onKey);
@@ -2471,7 +2720,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
         return h('div', { className: 'space-y-4' },
           // Wave Visualizer
-          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83C\uDF0A'),
               h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Wave Visualizer')),
@@ -2495,7 +2744,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') }, 'Frequency: ' + waveFreq.toLocaleString() + ' Hz' +
                   (isBatRange ? ' \uD83E\uDD87 Bat range!' : isAudible ? ' \uD83D\uDC42 Audible' : waveFreq < 20 ? ' \uD83D\uDC33 Infrasonic' : ' Beyond ultrasonic')),
                 h('input', {
-                  type: 'range', 'aria-label': 'wave freq', min: 20, max: 200000, value: waveFreq, step: 10,
+                  type: 'range', min: 20, max: 200000, value: waveFreq, step: 10,
                   'aria-label': 'Frequency slider, ' + waveFreq + ' hertz',
                   onChange: function(e) { upd('waveFreq', parseInt(e.target.value)); },
                   className: 'w-full accent-indigo-500'
@@ -2510,7 +2759,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('div', null,
                 h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') }, 'Amplitude: ' + (waveAmp * 100).toFixed(0) + '%'),
                 h('input', {
-                  type: 'range', 'aria-label': 'math', min: 0, max: 100, value: Math.round(waveAmp * 100), step: 1,
+                  type: 'range', min: 0, max: 100, value: Math.round(waveAmp * 100), step: 1,
                   'aria-label': 'Amplitude slider, ' + Math.round(waveAmp * 100) + ' percent',
                   onChange: function(e) { upd('waveAmp', parseInt(e.target.value) / 100); },
                   className: 'w-full accent-indigo-500'
@@ -2544,7 +2793,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           ),
 
           // Speed of Sound Calculator
-          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83D\uDCCF'),
               h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Speed of Sound Calculator')),
@@ -2553,7 +2802,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('div', null,
                 h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') }, 'Distance to object: ' + distCalcDist + ' m'),
                 h('input', {
-                  type: 'range', 'aria-label': 'dist calc dist', min: 1, max: 200, value: distCalcDist, step: 1,
+                  type: 'range', min: 1, max: 200, value: distCalcDist, step: 1,
                   'aria-label': 'Distance to object, ' + distCalcDist + ' meters',
                   onChange: function(e) { upd('distCalcDist', parseInt(e.target.value)); },
                   className: 'w-full accent-indigo-500'
@@ -2598,7 +2847,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           ),
 
           // Reflection vs Absorption
-          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83E\uDDF1'),
               h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Reflection vs Absorption')),
@@ -2645,7 +2894,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           ),
 
           // Inverse Square Law
-          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83D\uDCC9'),
               h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Inverse Square Law')),
@@ -2656,7 +2905,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               role: 'img',
               'aria-label': 'Inverse square law visualization showing sound intensity decreasing with distance. Intensity equals 1 over distance squared.',
               tabIndex: 0,
-              onKeyDown: function() {},
               style: { width: '100%', height: 'auto', borderRadius: '8px', display: 'block', background: isDark ? '#0f172a' : '#f8fafc' }
             }),
             h('div', { className: 'mt-2 p-3 rounded-lg ' + (isDark ? 'bg-indigo-900/30 border border-indigo-800/40' : 'bg-indigo-50 border border-indigo-200') },
@@ -2668,7 +2916,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           ),
 
           // How Echolocation Works Step-by-Step
-          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83E\uDD87'),
               h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'How Echolocation Works \u2014 Step by Step')),
@@ -2692,7 +2940,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           ),
 
           // Key Formulas Reference Card
-          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83D\uDCD0'),
               h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Key Formulas \u2014 Sound Physics Reference')),
@@ -2714,7 +2962,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           ),
 
           // Sound Technology Applications
-          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83D\uDEE0\uFE0F'),
               h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Sound in the Real World \u2014 Technology Inspired by Nature')),
@@ -2727,7 +2975,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 { icon: '\uD83C\uDFD7\uFE0F', title: 'Non-Destructive Testing', desc: 'Engineers send ultrasonic pulses through metal bridges, airplane wings, and pipelines to detect internal cracks. The echo pattern reveals hidden flaws before catastrophic failure.', year: '1940s' },
                 { icon: '\uD83D\uDC69\u200D\uD83E\uDDAF', title: 'Assistive Technology', desc: 'Ultrasonic canes and wearable devices help blind individuals navigate by converting sonar echoes into vibrations or audio tones \u2014 giving humans a form of echolocation.', year: '2010s' }
               ].map(function(app, ai) {
-                return h('div', { key: ai, className: 'p-3 rounded-lg ' + (isDark ? 'bg-slate-700/40 border border-slate-600/30' : 'bg-slate-50 border border-slate-200') },
+                return h('div', { key: ai, className: 'p-3 rounded-lg ' + (isDark ? 'bg-slate-700/40 border border-slate-600/30' : 'bg-slate-50 border border-slate-400') },
                   h('div', { className: 'flex items-center justify-between mb-1' },
                     h('div', { className: 'flex items-center gap-2' },
                       h('span', { className: 'text-lg' }, app.icon),
@@ -2982,7 +3230,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         gfx.stroke();
 
         // Axis labels
-        gfx.fillStyle = isDark ? '#94a3b8' : '#64748b';
+        gfx.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
         gfx.font = '8px system-ui';
         gfx.textAlign = 'center';
         gfx.fillText('Distance \u2192', graphX + graphW / 2, graphY + graphH + 14);
@@ -3023,8 +3271,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         var freqDiff = shiftedFreq - dopplerFreq;
 
         return h('div', { className: 'space-y-4' },
+          // Doppler primer \u2014 most students arrive at this tab without
+          // a frame for what compression vs stretching of waves means.
+          // Stating it up front (with the visual mnemonic) before they
+          // see the simulator makes the slider experiment legible.
+          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-indigo-900/30 border border-indigo-700/40' : 'bg-indigo-50 border border-indigo-300') },
+            h('div', { className: 'flex items-center gap-2 mb-2' },
+              h('span', { 'aria-hidden': 'true', style: { fontSize: 20 } }, '\uD83D\uDCDC'),
+              h('span', { className: 'text-sm font-black ' + (isDark ? 'text-indigo-200' : 'text-indigo-900') }, 'How the Doppler effect works')
+            ),
+            h('p', { className: 'text-[11px] leading-relaxed mb-3 ' + (isDark ? 'text-slate-200' : 'text-slate-700') },
+              'When a sound source and a listener move relative to each other, the listener hears a different frequency than what was emitted. Same physics that makes a passing ambulance siren drop in pitch as it goes by, and the same trick a bat uses to read whether prey is approaching or fleeing.'
+            ),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
+              [
+                { icon: '\u27A1\uFE0F\uD83E\uDD97', label: 'Approaching',  color: '#60a5fa', explain: 'Waves get COMPRESSED in front of the moth. Listener hears HIGHER frequency. Blue shift.' },
+                { icon: '\uD83E\uDD97\u27A1\uFE0F', label: 'Receding',     color: '#f87171', explain: 'Waves get STRETCHED behind the moth. Listener hears LOWER frequency. Red shift.' },
+                { icon: '\uD83E\uDD97\u23F8',  label: 'Stationary',   color: '#94a3b8', explain: 'No relative motion. Frequency unchanged. The reference case.' }
+              ].map(function(c, i) {
+                return h('div', { key: i,
+                  className: 'rounded-lg p-2 border-2',
+                  style: {
+                    borderColor: c.color + '88',
+                    background: isDark
+                      ? 'linear-gradient(135deg,' + c.color + '22 0%,rgba(15,23,42,0.5) 100%)'
+                      : 'linear-gradient(135deg,' + c.color + '1a 0%,rgba(255,255,255,0.6) 100%)'
+                  }
+                },
+                  h('div', { className: 'flex items-center gap-1 mb-1' },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, c.icon),
+                    h('span', { className: 'text-[11px] font-black', style: { color: c.color } }, c.label)
+                  ),
+                  h('p', { className: 'text-[10px] leading-tight ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, c.explain)
+                );
+              })
+            ),
+            h('div', { className: 'mt-3 text-[11px] rounded p-2 italic ' + (isDark ? 'bg-slate-900/40 text-slate-300 border border-slate-700/40' : 'bg-white/70 text-slate-700 border border-indigo-200') },
+              h('strong', null, 'Try it: '), 'slide the moth speed below. Watch how the wave spacing on the canvas changes, and how the "Received" frequency readout moves up (toward) or down (away) from the "Emitted" frequency.'
+            )
+          ),
           // Doppler Simulator
-          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83D\uDEA8'),
               h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Doppler Effect Simulator')),
@@ -3049,7 +3336,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') },
                   'Moth speed: ' + mothSpeed + (mothSpeed < 0 ? ' (toward bat)' : mothSpeed > 0 ? ' (away from bat)' : ' (stationary)')),
                 h('input', {
-                  type: 'range', 'aria-label': 'moth speed', min: -10, max: 10, value: mothSpeed, step: 1,
+                  type: 'range', min: -10, max: 10, value: mothSpeed, step: 1,
                   'aria-label': 'Moth speed slider',
                   onChange: function(e) { upd('mothSpeed', parseInt(e.target.value)); },
                   className: 'w-full accent-indigo-500'
@@ -3058,7 +3345,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-indigo-300' : 'text-slate-600') },
                   'Emitted frequency: ' + (dopplerFreq / 1000).toFixed(0) + ' kHz'),
                 h('input', {
-                  type: 'range', 'aria-label': 'doppler freq', min: 20000, max: 100000, value: dopplerFreq, step: 1000,
+                  type: 'range', min: 20000, max: 100000, value: dopplerFreq, step: 1000,
                   'aria-label': 'Emitted frequency slider',
                   onChange: function(e) { upd('dopplerFreq', parseInt(e.target.value)); },
                   className: 'w-full accent-indigo-500'
@@ -3091,7 +3378,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           ),
 
           // Doppler Quiz Challenge
-          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center justify-between mb-3' },
               h('div', { className: 'flex items-center gap-2' },
                 h('span', { className: 'text-xl' }, '\uD83C\uDFAF'),
@@ -3162,7 +3449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           ),
 
           // Real-world examples
-          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83C\uDF0D Real-World Doppler'),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
               [
@@ -3171,7 +3458,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 { icon: '\uD83E\uDD87', title: 'Bat Hunting: Buzz Phase', desc: 'As a bat closes in on prey, it increases pulse rate from ~10/sec to 200/sec. The Doppler shift of each echo tells the bat exactly how fast the moth is moving.' },
                 { icon: '\uD83C\uDFE5', title: 'Medical Ultrasound', desc: 'Doctors use Doppler ultrasound to measure blood flow velocity. The frequency shift of echoes from moving blood cells reveals the speed and direction of blood flow.' }
               ].map(function(ex, i) {
-                return h('div', { key: i, className: 'p-3 rounded-lg ' + (isDark ? 'bg-slate-700/40 border border-slate-600/30' : 'bg-slate-50 border border-slate-200') },
+                return h('div', { key: i, className: 'p-3 rounded-lg ' + (isDark ? 'bg-slate-700/40 border border-slate-600/30' : 'bg-slate-50 border border-slate-400') },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { className: 'text-lg' }, ex.icon),
                     h('span', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, ex.title)),
@@ -3181,7 +3468,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           ),
 
           // Bat Hunting Strategies
-          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83C\uDFAF'),
               h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Bat Hunting Strategy \u2014 The Three Phases')),
@@ -3273,7 +3560,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           ),
 
           // Doppler Math Explainer
-          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
               h('span', { className: 'text-xl' }, '\uD83D\uDCDD'),
               h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'The Math Behind the Doppler Effect')),
@@ -3471,7 +3758,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
           // ANATOMY SECTION
           bioSection === 'anatomy' && h('div', { className: 'space-y-3' },
-            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
               h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83E\uDDA0 Bat Anatomy \u2014 Click a part to learn more'),
               h('canvas', { 'aria-label': 'Echolocation visualization',
                 ref: anatomyCanvasRef,
@@ -3533,7 +3820,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             ),
 
             // Bat vs Bird Flight Comparison
-            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
               h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83E\uDD87 vs \uD83D\uDC26 Bat Wings vs Bird Wings'),
               h('p', { className: 'text-[11px] mb-3 ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
                 'Both bats and birds fly, but their wings evolved completely independently. The differences reveal how evolution solves the same problem in different ways:'),
@@ -3568,7 +3855,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             ),
 
             // Bat Senses Beyond Sonar
-            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
               h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83D\uDC40 Beyond Echolocation \u2014 Bat Superpowers'),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
                 [
@@ -3577,7 +3864,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   { icon: '\uD83C\uDF21\uFE0F', title: 'Heat Detection', desc: 'Vampire bats have infrared-sensing pits on their nose that detect blood vessels under skin from inches away. This is convergent evolution with pit vipers!' },
                   { icon: '\uD83D\uDC43', title: 'Smell', desc: 'Fruit bats locate ripe fruit using an acute sense of smell. Some flower-visiting bats can smell the difference between flowers that still have nectar and those already depleted by other bats.' }
                 ].map(function(sense, si) {
-                  return h('div', { key: si, className: 'p-3 rounded-lg ' + (isDark ? 'bg-slate-700/40 border border-slate-600/30' : 'bg-slate-50 border border-slate-200') },
+                  return h('div', { key: si, className: 'p-3 rounded-lg ' + (isDark ? 'bg-slate-700/40 border border-slate-600/30' : 'bg-slate-50 border border-slate-400') },
                     h('div', { className: 'flex items-center gap-2 mb-1' },
                       h('span', { className: 'text-lg' }, sense.icon),
                       h('span', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, sense.title)),
@@ -3588,7 +3875,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           ),
 
             // Bat Diet Diversity
-            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
               h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83C\uDF7D\uFE0F Bat Diet Diversity \u2014 Not Just Bugs and Fruit!'),
               h('p', { className: 'text-[11px] mb-3 ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
                 'With over 1,400 species, bats have evolved an incredible range of diets. The two playable species in the simulator represent the two largest dietary groups, but bats eat much more:'),
@@ -3613,7 +3900,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             ),
 
             // Echolocation Evolution Timeline
-            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
               h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\u23F0 Evolution of Echolocation \u2014 Timeline'),
               h('div', { className: 'space-y-2' },
                 [
@@ -3651,7 +3938,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   className: 'rounded-lg p-3 cursor-pointer transition-all ' +
                     (expanded
                       ? (isDark ? 'bg-indigo-900/50 border-2 border-indigo-500 ring-2 ring-indigo-400/30' : 'bg-indigo-50 border-2 border-indigo-400')
-                      : (isDark ? 'bg-slate-800/60 border border-slate-700/50 hover:border-indigo-600' : 'bg-white border border-slate-200 hover:border-indigo-300')),
+                      : (isDark ? 'bg-slate-800/60 border border-slate-700/50 hover:border-indigo-600' : 'bg-white border border-slate-400 hover:border-indigo-300')),
                   role: 'button',
                   tabIndex: 0,
                   'aria-label': sp.name + (expanded ? ', expanded' : ', click to expand'),
@@ -3734,7 +4021,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               )
             ),
             // Habitat loss
-            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
               h('div', { className: 'flex items-center gap-2 mb-2' },
                 h('span', { className: 'text-xl' }, '\uD83C\uDFD7\uFE0F'),
                 h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-800') }, 'Habitat Loss')),
@@ -3938,7 +4225,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
           // SOUNDSCAPE
           ecoSection === 'soundscape' && h('div', { className: 'space-y-3' },
-            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
               h('div', { className: 'flex items-center gap-2 mb-3' },
                 h('span', { className: 'text-xl' }, '\uD83C\uDF33'),
                 h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'Night Soundscape \u2014 Toggle animals to hear how they share the frequency space')),
@@ -3950,7 +4237,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 'aria-label': 'Soundscape visualization showing frequency bands used by different animals. Active animals: ' +
                   SOUNDSCAPE_ANIMALS.filter(function(a) { return activeSounds[a.id]; }).map(function(a) { return a.name; }).join(', '),
                 tabIndex: 0,
-                onKeyDown: function() {},
                 style: { width: '100%', height: 'auto', borderRadius: '8px', display: 'block', background: '#050d14' }
               }),
               // Animal toggles
@@ -3982,7 +4268,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-red-400' : 'text-red-600') },
                   '\uD83D\uDE97 Human Noise Level: ' + noiseLevel + '%' + (noiseLevel > 50 ? ' \u2014 Animals going silent!' : '')),
                 h('input', {
-                  type: 'range', 'aria-label': 'noise level', min: 0, max: 100, value: noiseLevel, step: 1,
+                  type: 'range', min: 0, max: 100, value: noiseLevel, step: 1,
                   'aria-label': 'Human noise level, ' + noiseLevel + ' percent',
                   onChange: function(e) { upd('noiseLevel', parseInt(e.target.value)); },
                   className: 'w-full accent-red-500'
@@ -4001,7 +4287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             ),
 
             // Seasonal Soundscape Changes
-            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
               h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83C\uDF43 How Soundscapes Change with Seasons'),
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
                 [
@@ -4022,7 +4308,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             ),
 
             // Decibel Scale Reference
-            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
               h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83D\uDCCA The Decibel Scale \u2014 How Loud Is Loud?'),
               h('div', { className: 'space-y-1' },
                 [
@@ -4053,7 +4339,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('div', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83D\uDD0A Bioacoustics Explorer'),
             h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
               SOUNDSCAPE_ANIMALS.map(function(animal) {
-                return h('div', { key: animal.id, className: 'rounded-lg p-3 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+                return h('div', { key: animal.id, className: 'rounded-lg p-3 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
                   h('div', { className: 'flex items-center justify-between mb-2' },
                     h('div', { className: 'flex items-center gap-2' },
                       h('span', { className: 'text-2xl' }, animal.emoji),
@@ -4103,7 +4389,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('label', { className: 'text-[11px] font-bold ' + (isDark ? 'text-emerald-300' : 'text-slate-600') },
                   'Chirps in 14 seconds: ' + (d.cricketChirps || 30)),
                 h('input', {
-                  type: 'range', 'aria-label': 'd', min: 5, max: 80, value: d.cricketChirps || 30, step: 1,
+                  type: 'range', min: 5, max: 80, value: d.cricketChirps || 30, step: 1,
                   'aria-label': 'Cricket chirps per 14 seconds: ' + (d.cricketChirps || 30),
                   onChange: function(e) { upd('cricketChirps', parseInt(e.target.value)); },
                   className: 'w-full accent-emerald-500'
@@ -4124,7 +4410,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             ),
 
             // Echolocation Comparison Table
-            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
               h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83D\uDD0D Echolocation Across Species'),
               h('p', { className: 'text-[11px] mb-3 ' + (isDark ? 'text-slate-200' : 'text-slate-600') },
                 'Multiple animals have evolved the ability to "see" with sound. Compare their sonar systems:'),
@@ -4164,7 +4450,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             ),
 
             // Speed of Sound comparison
-            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
               h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\u26A1 Speed of Sound in Different Media'),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
                 [
@@ -4184,7 +4470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             ),
 
             // Echolocation vs Human Technology
-            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
               h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83E\uDD16 Nature vs Technology: Sonar Showdown'),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
                 [
@@ -4209,7 +4495,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     'Developed over ~80 years'
                   ]}
                 ].map(function(col, ci) {
-                  return h('div', { key: ci, className: 'p-3 rounded-lg ' + (isDark ? 'bg-slate-700/40 border border-slate-600/30' : 'bg-slate-50 border border-slate-200') },
+                  return h('div', { key: ci, className: 'p-3 rounded-lg ' + (isDark ? 'bg-slate-700/40 border border-slate-600/30' : 'bg-slate-50 border border-slate-400') },
                     h('div', { className: 'text-center mb-2' },
                       h('span', { className: 'text-2xl' }, col.icon),
                       h('div', { className: 'text-xs font-bold ' + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, col.title)),
@@ -4229,7 +4515,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
           // SOUND MAP (AI-powered)
           ecoSection === 'soundmap' && h('div', { className: 'space-y-3' },
-            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
               h('div', { className: 'flex items-center gap-2 mb-3' },
                 h('span', { className: 'text-xl' }, '\uD83D\uDDFA\uFE0F'),
                 h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, 'AI Sound Map Generator')),
@@ -4293,7 +4579,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             ),
 
             // Did You Know? Sound facts
-            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-200') },
+            h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
               h('div', { className: 'text-sm font-bold mb-3 ' + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83D\uDCA1 Did You Know? \u2014 Amazing Sound Facts'),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
                 [
@@ -4587,6 +4873,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             }, h('span', { 'aria-hidden': 'true' }, tb.icon), tb.label);
           })
         ),
+
+        // ── Topic-accent hero band per tab ──
+        (function() {
+          var TAB_META = {
+            sonar:    { accent: '#6366f1', soft: 'rgba(99,102,241,0.10)',  icon: '\uD83E\uDD87', title: 'Sonar Vision \u2014 hearing as imaging',                  hint: 'Bats emit ultrasonic clicks (20\u2013120 kHz, above human hearing) and read echo delay + frequency shift to build a 3D scene at 100+ targets per second. Donald Griffin coined \u201Cecholocation\u201D in 1944.' },
+            cave3d:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',   icon: '\uD83D\uDD26', title: '3D Cave \u2014 map by sound',                            hint: 'Each click bounces off cave walls; differential delay between ear canals plus interaural intensity differences locate a surface to ~1 cm. The bat\u2019s brain solves this geometry in real time on a peanut-sized chip.' },
+            waves:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83C\uDF0A', title: 'Sound Waves \u2014 wavelength meets target size',         hint: '\u03BB = c / f. At 60 kHz in air, \u03BB \u2248 5.7 mm \u2014 fine enough to resolve a moth\u2019s wing. Lower frequencies travel further but resolve coarser; higher = sharper but absorbed quickly. Trade-off baked in.' },
+            doppler:  { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',   icon: '\uD83D\uDEA8', title: 'Doppler Effect \u2014 the moving-prey signature',         hint: 'Moths fluttering toward the bat compress echo frequency; moving away stretches it. Horseshoe bats compensate by lowering their call to KEEP echoes in their auditory sweet spot \u2014 a biological phase-locked loop.' },
+            biology:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\uD83E\uDDA0', title: 'Bat Biology \u2014 the auditory specialist',              hint: 'Larynx fires clicks; outer ear pinnae shape reception; massive auditory cortex parses returns. Bats hear over 8 octaves where humans manage ~10. Tongue-clicking humans (Daniel Kish) use the same trick crudely.' },
+            ecology:  { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83C\uDF33', title: 'Acoustic Ecology \u2014 a soundscape we can\u2019t hear',  hint: 'Tropical rainforests are loud in the ultrasonic. White-nose syndrome has killed 6+ million North American bats since 2006; insect populations downstream are visibly affected. A frequency band we never knew about.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.sonar;
+          return h('div', {
+            style: {
+              margin: '0 0 12px',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)' + (isDark ? ', #0f172a' : ''),
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: (isDark ? '#cbd5e1' : '#475569'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
+        // ── Topic-accent hero band per tab ──
+        (function() {
+          var TAB_META = {
+            sonar:   { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDD87', title: 'Sonar vision \u2014 listen with the bat',  hint: 'Bats "see" by emitting ultrasonic clicks (20\u201380 kHz) and timing the echoes. Time-of-flight \u00d7 speed of sound = distance. Microsecond timing = millimeter resolution.' },
+            cave3d:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDD26', title: '3D cave \u2014 navigate without sight',    hint: 'Steer through a procedural cave using only echolocation feedback. Bats add Doppler-shift compensation to track moving prey while flying.' },
+            waves:   { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83C\uDF0A', title: 'Sound waves \u2014 the physics',          hint: 'Frequency, wavelength, amplitude. Speed of sound in air \u2248 343 m/s. Higher frequency = better resolution but shorter range (atmospheric absorption rises steeply).' },
+            doppler: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDEA8', title: 'Doppler \u2014 motion \u2192 frequency shift', hint: 'Moving source = compressed waves ahead, stretched waves behind. Bats use this to read prey velocity. Same physics powers police radar guns + redshift astronomy.' },
+            biology: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83E\uDDA0', title: 'Bat biology \u2014 evolution of the pinger', hint: 'Echolocation evolved at least twice independently \u2014 in microbats and in oilbirds/swiftlets. Convergent evolution under similar selection pressure (low-light foraging).' },
+            ecology: { accent: '#84cc16', soft: 'rgba(132,204,22,0.10)', icon: '\uD83C\uDF33', title: 'Acoustic ecology',                          hint: 'Bats provide ~$3.7 billion / yr in pest-control value to US agriculture. White-nose syndrome has killed 90%+ of some northeastern populations. Maine\u2019s little brown bats are listed.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.sonar;
+          return h('div', {
+            style: {
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+              marginTop: 8
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: isDark ? '#cbd5e1' : '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
 
         // Tab content
         tab === 'sonar' && renderSonarTab(),

@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_moonmission.js — Apollo Moon Mission Simulator (standalone CDN module)
 // Full mission experience: Launch → Orbit → Transit → Descent → EVA → Return
@@ -340,8 +350,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
   window.StemLab.registerTool('moonMission', {
     icon: '\uD83D\uDE80',
-    label: 'moonMission',
-    desc: '',
+    label: 'Moon Mission',
+    desc: 'Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.',
     color: 'slate',
     category: 'science',
     questHooks: [
@@ -1029,7 +1039,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             // Launch canvas
             h('div', { className: 'relative', style: { height: '400px' } },
-              h('canvas', { 'aria-label': 'Moonmission visualization',
+              h('canvas', { 
                 'data-launch-canvas': 'true',
                 role: 'img',
                 'aria-label': 'Animated Saturn V rocket launch sequence. 5-second countdown followed by ascent through atmosphere to orbit. Shows altitude, velocity, G-force, and stage separations.',
@@ -1529,7 +1539,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         phase === 3 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '280px' } },
-              h('canvas', { 'aria-label': 'Moonmission visualization',
+              h('canvas', { 
                 role: 'img',
                 'aria-label': 'Animated trans-lunar coast. Earth shrinks on the left, Moon grows on the right as the spacecraft travels 384,400 kilometers over 3 days. Shows distance counter and mission communications.',
                 style: { width: '100%', height: '100%', display: 'block' },
@@ -1652,7 +1662,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         phase === 4 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '240px' } },
-              h('canvas', { 'aria-label': 'Moonmission visualization',
+              h('canvas', { 
                 role: 'img',
                 'aria-label': 'Animated view of spacecraft orbiting the Moon at 110 kilometer altitude. Shows the Moon surface with craters, Sea of Tranquility landing site marked in green, and the spacecraft dot orbiting.',
                 style: { width: '100%', height: '100%', display: 'block' },
@@ -1789,7 +1799,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           // Game canvas (after onboarding)
           d.descentStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '420px' } },
-              h('canvas', { 'aria-label': 'Moonmission visualization',
+              h('canvas', { 
                 'data-descent-canvas': 'true',
                 role: 'application',
                 'aria-label': 'Interactive lunar descent piloting game. Use W or Up Arrow for thrust, A and D or Left and Right arrows for lateral movement. Land with vertical speed under 3 meters per second and horizontal speed under 5 meters per second.',
@@ -2088,9 +2098,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
         // ═══ PHASE 6: MOONWALK EVA (3D) ═══
         phase === 6 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
-          h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
+          // Onboarding overlay (before EVA starts) — matches the Phase 5
+          // pattern so the 3D phases feel consistent. Lists the WASD +
+          // Space + F + mouse controls, names the goal (collect 4+ rock
+          // samples), and seeds two Apollo-era surface-ops facts.
+          !d.evaStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-xl p-5 border border-slate-700 text-white text-center' },
+            h('div', { className: 'text-4xl mb-3' }, '👨‍🚀'),
+            h('h4', { className: 'text-lg font-black mb-2' }, 'Moonwalk EVA'),
+            h('p', { className: 'text-xs text-slate-200 mb-4' }, 'You are standing on the lunar surface in a pressurized suit at one-sixth Earth gravity. Walk the regolith, collect rock samples, and earn science points for each unique geological find.'),
+            h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 max-w-2xl mx-auto' },
+              h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
+                h('div', { className: 'text-2xl mb-1' }, '🚶'),
+                h('p', { className: 'text-[11px] font-bold text-sky-300' }, 'WASD'),
+                h('p', { className: 'text-[11px] text-slate-300' }, 'Walk forward/back, strafe')
+              ),
+              h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
+                h('div', { className: 'text-2xl mb-1' }, '🦘'),
+                h('p', { className: 'text-[11px] font-bold text-sky-300' }, 'Space'),
+                h('p', { className: 'text-[11px] text-slate-300' }, 'Jump (low-gravity hop)')
+              ),
+              h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
+                h('div', { className: 'text-2xl mb-1' }, '🪨'),
+                h('p', { className: 'text-[11px] font-bold text-amber-300' }, 'F'),
+                h('p', { className: 'text-[11px] text-slate-300' }, 'Collect rock at your feet')
+              ),
+              h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
+                h('div', { className: 'text-2xl mb-1' }, '🔭'),
+                h('p', { className: 'text-[11px] font-bold text-sky-300' }, 'Mouse'),
+                h('p', { className: 'text-[11px] text-slate-300' }, 'Look around (click canvas first)')
+              )
+            ),
+            h('div', { className: 'bg-amber-500/10 rounded-lg p-3 border border-amber-500/20 mb-4 max-w-xl mx-auto' },
+              h('p', { className: 'text-[11px] text-amber-300 font-bold mb-1' }, '🎯 Mission objective + Apollo facts:'),
+              h('ul', { className: 'text-[11px] text-amber-200 space-y-1 text-left pl-4' },
+                h('li', null, 'Collect at least 4 unique rock samples to satisfy the geology quest hook.'),
+                h('li', null, 'Apollo 11 brought back 47.5 lb of lunar samples; Apollo 17 brought 243 lb.'),
+                h('li', null, 'In one-sixth gravity, a hop covers about six times the horizontal distance for the same effort.'),
+                h('li', null, 'Earth hangs in a fixed spot in the lunar sky because the Moon is tidally locked.')
+              )
+            ),
+            h('button', {
+              'aria-label': 'Begin EVA on the lunar surface',
+              onClick: function() { upd('evaStarted', true); },
+              className: 'px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-lg transition-all hover:scale-[1.02] animate-pulse'
+            }, '👨‍🚀 Step Onto the Moon · Begin EVA')
+          ),
+          d.evaStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '70vh', minHeight: '400px', maxHeight: '700px' } },
-              h('canvas', { 'aria-label': 'Moonmission visualization',
+              h('canvas', {
                 'data-eva-canvas': 'true',
                 role: 'application',
                 'aria-label': 'Interactive 3D lunar surface EVA. Use WASD to walk, Space to jump in one-sixth gravity, F to collect rock samples, mouse to look around. Collect geological samples and explore the Moon surface near the Lunar Module.',
@@ -2109,7 +2164,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     renderer.setSize(W, H2);
                     renderer.setClearColor(0x000000);
 
-                    // ── Lunar sky (black + stars + Earth in sky) ──
+                    // ── Lunar sky (black + stars only — Earth is a separate
+                    // sprite below to avoid the equirectangular wrap distortion
+                    // that turned the marble into a teardrop). Stars are tiny
+                    // dots so the projection stretching is invisible at that scale.
                     var skyGeo = new THREE.SphereGeometry(200, 32, 16);
                     var skyCv = document.createElement('canvas'); skyCv.width = 512; skyCv.height = 256;
                     var sCtx = skyCv.getContext('2d');
@@ -2121,10 +2179,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       sCtx.arc(Math.random() * 512, Math.random() * 256, Math.random() * 1.2, 0, Math.PI * 2);
                       sCtx.fill();
                     }
-                    // Earth in the sky — large detailed marble using drawDetailedEarth
-                    drawDetailedEarth(sCtx, 380, 55, 42, 500);
                     var skyTex = new THREE.CanvasTexture(skyCv);
                     scene.add(new THREE.Mesh(skyGeo, new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide })));
+
+                    // ── Earth as a billboard sprite ──
+                    // Draw the marble onto a 256×256 canvas (centered, square),
+                    // then attach as a Three.js Sprite so it always faces the
+                    // camera and never gets distorted by sphere-projection math.
+                    // Position high in the sky and off to one side, matching the
+                    // actual Apollo EVA view (Earth was a fixed point in the
+                    // lunar sky throughout the surface ops).
+                    var earthCv = document.createElement('canvas'); earthCv.width = 256; earthCv.height = 256;
+                    var eCtx = earthCv.getContext('2d');
+                    eCtx.clearRect(0, 0, 256, 256);
+                    drawDetailedEarth(eCtx, 128, 128, 100, 500);
+                    var earthTex = new THREE.CanvasTexture(earthCv);
+                    var earthSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: earthTex, transparent: true, depthWrite: false }));
+                    earthSprite.position.set(-60, 70, -120);
+                    earthSprite.scale.set(20, 20, 1);
+                    scene.add(earthSprite);
 
                     // ── Lunar terrain (grey regolith with craters) ──
                     var terrainGeo = new THREE.PlaneGeometry(200, 200, 100, 100);
@@ -3072,7 +3145,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         phase === 9 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
           h('div', { className: 'bg-gradient-to-b from-orange-950 to-slate-900 rounded-xl overflow-hidden border border-orange-900/50' },
             h('div', { className: 'relative', style: { height: '320px' } },
-              h('canvas', { 'aria-label': 'Moonmission visualization',
+              h('canvas', { 
                 role: 'img',
                 'aria-label': 'Animated re-entry sequence. Command Module enters atmosphere at 39,900 km/h with plasma heating to 2,760 degrees. Shows radio blackout, drogue chutes, main parachutes, and ocean splashdown.',
                 style: { width: '100%', height: '100%', display: 'block' },
@@ -3429,7 +3502,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         ),
 
         // Mission Log (collapsible)
-        missionLog.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-lg p-2 border border-slate-200' },
+        missionLog.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-lg p-2 border border-slate-400' },
           h('p', { className: 'text-[11px] text-slate-600 font-bold mb-1' }, '\uD83D\uDCCB MISSION LOG (' + missionLog.length + ' entries)'),
           h('div', { className: 'space-y-0.5 max-h-32 overflow-y-auto' },
             missionLog.slice(-8).reverse().map(function(entry, i) {

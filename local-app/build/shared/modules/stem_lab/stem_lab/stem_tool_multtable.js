@@ -575,7 +575,7 @@ window.StemLab = window.StemLab || {
                     : dm.id === 'medium' ? 'bg-blue-700 text-white shadow-sm'
                     : dm.id === 'hard' ? 'bg-red-700 text-white shadow-sm'
                     : 'bg-purple-500 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200')
+                  : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-400')
             }, dm.label + ' (' + dm.range + ')');
           })
         ),

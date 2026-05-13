@@ -29,6 +29,15 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _galAC = null;
@@ -1420,9 +1429,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   var gt = GALAXY_TYPES[key];
 
-                  return React.createElement("button", { "aria-label": "Change galaxy type",
-
-                    key: key,
+                  return React.createElement("button", { key: key,
 
                     onClick: function () {
 
@@ -1533,7 +1540,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     onClick: function () { toggleLayer(lt.key); },
 
-                    className: "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (isOn ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-200')
+                    className: "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (isOn ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-200')
 
                   }, lt.icon + " " + lt.label);
 
@@ -1703,7 +1710,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   ].map(function (m) {
 
-                    return React.createElement("span", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                    return React.createElement("span", { 
 
                       key: m.age,
 
@@ -1876,7 +1883,7 @@ if (!window._galaxyHasLoadedOnce) {
 // ── Quiz mode ──
 
               d.quizMode && d.isGeneratingQuiz && React.createElement("div", { className: "flex flex-col items-center justify-center p-12 mt-6 max-w-2xl mx-auto rounded-2xl bg-indigo-50 border-2 border-indigo-300 animate-pulse"}, React.createElement("h2", {className: "text-lg font-bold text-indigo-600 mb-2"}, "✨ Gemini is Generating Astrophysic Questions..."), React.createElement("p", {className: "text-sm text-indigo-400"}, "Parsing deep space databases...")),
-              d.quizMode && !d.isGeneratingQuiz && quizQ && React.createElement("div", { className: "mt-6 max-w-2xl mx-auto bg-white shadow-xl rounded-2xl border border-slate-200 p-8 animate-in fade-in slide-in-from-bottom-4" },
+              d.quizMode && !d.isGeneratingQuiz && quizQ && React.createElement("div", { className: "mt-6 max-w-2xl mx-auto bg-white shadow-xl rounded-2xl border border-slate-400 p-8 animate-in fade-in slide-in-from-bottom-4" },
 
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
@@ -2681,7 +2688,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               // ── OBAFGKM Star Classification Reference ──
 
-              React.createElement("div", { className: "bg-white rounded-2xl border border-slate-200 p-4 shadow-sm" },
+              React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 p-4 shadow-sm" },
 
                 React.createElement("h4", { className: "text-sm font-bold text-slate-800 mb-3 flex items-center gap-2" },
 
@@ -2709,7 +2716,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                       (lifecycleMass >= 16 && st.id === 'O');
 
-                    return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                    return React.createElement("div", { 
 
                       key: st.id,
 
@@ -2819,7 +2826,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               // ── Size Comparison ──
 
-              React.createElement("div", { className: "bg-white rounded-2xl border border-slate-200 p-4 shadow-sm" },
+              React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 p-4 shadow-sm" },
 
                 React.createElement("h4", { className: "text-sm font-bold text-slate-800 mb-3 flex items-center gap-2" },
 

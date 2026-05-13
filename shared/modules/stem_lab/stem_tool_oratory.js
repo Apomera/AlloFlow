@@ -33,6 +33,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-oratory')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-oratory';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ═══════════════════════════════════════════
   // Module-scoped audio processing functions
@@ -139,9 +161,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
    */
   function drawProsodyCurve(canvas, pitchHistory, isDark, modelCurve) {
     if (!canvas) return;
+    if (window.StemLab && window.StemLab.setupHiDPI) {
+      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+    }
     var ctx2d = canvas.getContext('2d');
-    var W = canvas.width;
-    var H = canvas.height;
+    if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
+    var W = canvas._logicalW || canvas.width;
+    var H = canvas._logicalH || canvas.height;
     ctx2d.clearRect(0, 0, W, H);
 
     // Background
@@ -168,7 +194,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       ctx2d.lineTo(W, y);
       ctx2d.stroke();
       ctx2d.setLineDash([]);
-      ctx2d.fillStyle = isDark ? '#94a3b8' : '#64748b';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       ctx2d.fillText(zones[zi].label, W - 4, y - 3);
     }
 
@@ -196,7 +222,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
     // Draw user pitch curve
     if (!pitchHistory || pitchHistory.length < 2) {
-      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       ctx2d.textAlign = 'center';
       ctx2d.font = '13px sans-serif';
       ctx2d.fillText('Start speaking to see your pitch curve', W / 2, H / 2);
@@ -246,9 +272,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
    */
   function drawPacingGauge(canvas, wpm, gradeLevel, isDark) {
     if (!canvas) return;
+    if (window.StemLab && window.StemLab.setupHiDPI) {
+      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+    }
     var ctx2d = canvas.getContext('2d');
-    var W = canvas.width;
-    var H = canvas.height;
+    if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
+    var W = canvas._logicalW || canvas.width;
+    var H = canvas._logicalH || canvas.height;
     ctx2d.clearRect(0, 0, W, H);
 
     var cx = W / 2;
@@ -286,9 +316,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
     // Draw tick marks
     ctx2d.lineWidth = 2;
-    ctx2d.strokeStyle = isDark ? '#64748b' : '#94a3b8';
+    ctx2d.strokeStyle = isDark ? '#94a3b8' : '#94a3b8';
     ctx2d.font = '9px sans-serif';
-    ctx2d.fillStyle = isDark ? '#94a3b8' : '#64748b';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
     ctx2d.textAlign = 'center';
     for (var tick = 0; tick <= maxWpm; tick += 20) {
       var tickAngle = startAngle + (tick / maxWpm) * Math.PI;
@@ -345,9 +375,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
    */
   function drawVolumeMeter(canvas, currentDb, volumeHistory, isDark) {
     if (!canvas) return;
+    if (window.StemLab && window.StemLab.setupHiDPI) {
+      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+    }
     var ctx2d = canvas.getContext('2d');
-    var W = canvas.width;
-    var H = canvas.height;
+    if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
+    var W = canvas._logicalW || canvas.width;
+    var H = canvas._logicalH || canvas.height;
     ctx2d.clearRect(0, 0, W, H);
 
     ctx2d.fillStyle = isDark ? '#1e293b' : '#f8fafc';
@@ -390,7 +424,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     // Zone labels
     ctx2d.font = '8px sans-serif';
     ctx2d.textAlign = 'center';
-    ctx2d.fillStyle = isDark ? '#94a3b8' : '#64748b';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
     ctx2d.fillText('Quiet', barX + (barW * quietEnd) / 2, barY + barH + 12);
     ctx2d.fillText('Good Projection', barX + barW * quietEnd + (barW * (goodEnd - quietEnd)) / 2, barY + barH + 12);
     ctx2d.fillText('Too Loud', barX + barW * goodEnd + (barW * (1 - goodEnd)) / 2, barY + barH + 12);
@@ -419,7 +453,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
       ctx2d.font = '10px sans-serif';
       ctx2d.textAlign = 'left';
-      ctx2d.fillStyle = isDark ? '#94a3b8' : '#64748b';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       ctx2d.fillText('Steadiness:', barX, barY + barH + 28);
       ctx2d.fillStyle = steadyColor;
       ctx2d.font = 'bold 10px sans-serif';
@@ -436,9 +470,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
    */
   function drawPauseIndicator(canvas, isPaused, pauseDuration, pauseRatio, isDark) {
     if (!canvas) return;
+    if (window.StemLab && window.StemLab.setupHiDPI) {
+      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+    }
     var ctx2d = canvas.getContext('2d');
-    var W = canvas.width;
-    var H = canvas.height;
+    if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
+    var W = canvas._logicalW || canvas.width;
+    var H = canvas._logicalH || canvas.height;
     ctx2d.clearRect(0, 0, W, H);
 
     ctx2d.fillStyle = isDark ? '#1e293b' : '#f8fafc';
@@ -465,7 +503,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     // Labels
     ctx2d.font = '9px sans-serif';
     ctx2d.textAlign = 'left';
-    ctx2d.fillStyle = isDark ? '#94a3b8' : '#64748b';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
     ctx2d.fillText('Speech: ' + Math.round(speechPct * 100) + '%', 68, cy - 8);
     ctx2d.fillText('Pauses: ' + Math.round((pauseRatio || 0) * 100) + '%', 68, cy + 4);
 
@@ -484,7 +522,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
     // Ideal range note
     ctx2d.font = '8px sans-serif';
-    ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
     ctx2d.fillText('Ideal pause ratio: 20-30%', 68, H - 4);
   }
 
@@ -588,9 +626,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
    */
   function drawVowelSpace(canvas, vowelMap, currentF1, currentF2, vowelTrail, isDark) {
     if (!canvas) return;
+    if (window.StemLab && window.StemLab.setupHiDPI) {
+      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+    }
     var ctx2d = canvas.getContext('2d');
-    var W = canvas.width;
-    var H = canvas.height;
+    if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
+    var W = canvas._logicalW || canvas.width;
+    var H = canvas._logicalH || canvas.height;
     ctx2d.clearRect(0, 0, W, H);
 
     ctx2d.fillStyle = isDark ? '#1e293b' : '#f8fafc';
@@ -619,7 +661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
     // Axis labels
     ctx2d.font = '10px sans-serif';
-    ctx2d.fillStyle = isDark ? '#94a3b8' : '#64748b';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
     ctx2d.textAlign = 'center';
     ctx2d.fillText('F2 (Hz) — High \u2190 \u2192 Low', W / 2, H - 5);
     ctx2d.save();
@@ -633,7 +675,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     ctx2d.textAlign = 'center';
     for (var f2t = 800; f2t <= 2400; f2t += 400) {
       var tx = f2x(f2t);
-      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       ctx2d.fillText(f2t.toString(), tx, H - pad + 12);
       ctx2d.strokeStyle = isDark ? '#334155' : '#e2e8f0';
       ctx2d.beginPath();
@@ -644,7 +686,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     ctx2d.textAlign = 'right';
     for (var f1t = 300; f1t <= 700; f1t += 100) {
       var ty = f1y(f1t);
-      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       ctx2d.fillText(f1t.toString(), pad - 5, ty + 3);
       ctx2d.strokeStyle = isDark ? '#334155' : '#e2e8f0';
       ctx2d.beginPath();
@@ -735,9 +777,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
    */
   function drawIntonationPattern(canvas, patternPoints, studentCurve, isDark) {
     if (!canvas) return;
+    if (window.StemLab && window.StemLab.setupHiDPI) {
+      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+    }
     var ctx2d = canvas.getContext('2d');
-    var W = canvas.width;
-    var H = canvas.height;
+    if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
+    var W = canvas._logicalW || canvas.width;
+    var H = canvas._logicalH || canvas.height;
     ctx2d.clearRect(0, 0, W, H);
 
     ctx2d.fillStyle = isDark ? '#1e293b' : '#f8fafc';
@@ -822,16 +868,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
    */
   function drawPlaybackProsody(canvas, pitchData, volumeData, playbackProgress, isDark) {
     if (!canvas) return;
+    if (window.StemLab && window.StemLab.setupHiDPI) {
+      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+    }
     var ctx2d = canvas.getContext('2d');
-    var W = canvas.width;
-    var H = canvas.height;
+    if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
+    var W = canvas._logicalW || canvas.width;
+    var H = canvas._logicalH || canvas.height;
     ctx2d.clearRect(0, 0, W, H);
 
     ctx2d.fillStyle = isDark ? '#1e293b' : '#f8fafc';
     ctx2d.fillRect(0, 0, W, H);
 
     if (!pitchData || pitchData.length < 2) {
-      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       ctx2d.textAlign = 'center';
       ctx2d.font = '12px sans-serif';
       ctx2d.fillText('No recording data', W / 2, H / 2);
@@ -924,9 +974,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
    */
   function drawProsodyComparison(canvas, pitchData1, pitchData2, isDark) {
     if (!canvas) return;
+    if (window.StemLab && window.StemLab.setupHiDPI) {
+      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+    }
     var ctx2d = canvas.getContext('2d');
-    var W = canvas.width;
-    var H = canvas.height;
+    if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
+    var W = canvas._logicalW || canvas.width;
+    var H = canvas._logicalH || canvas.height;
     ctx2d.clearRect(0, 0, W, H);
 
     ctx2d.fillStyle = isDark ? '#1e293b' : '#f8fafc';
@@ -976,7 +1030,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     ctx2d.fillText('Recording 2', 6, 26);
 
     if (!pitchData1 && !pitchData2) {
-      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       ctx2d.textAlign = 'center';
       ctx2d.font = '12px sans-serif';
       ctx2d.fillText('Select two recordings to compare', W / 2, H / 2);
@@ -988,16 +1042,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
    */
   function drawFluencyBarChart(canvas, sessions, isDark) {
     if (!canvas) return;
+    if (window.StemLab && window.StemLab.setupHiDPI) {
+      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+    }
     var ctx2d = canvas.getContext('2d');
-    var W = canvas.width;
-    var H = canvas.height;
+    if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
+    var W = canvas._logicalW || canvas.width;
+    var H = canvas._logicalH || canvas.height;
     ctx2d.clearRect(0, 0, W, H);
 
     ctx2d.fillStyle = isDark ? '#1e293b' : '#f8fafc';
     ctx2d.fillRect(0, 0, W, H);
 
     if (!sessions || sessions.length === 0) {
-      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       ctx2d.textAlign = 'center';
       ctx2d.font = '11px sans-serif';
       ctx2d.fillText('No fluency sessions yet', W / 2, H / 2);
@@ -1014,7 +1072,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     // Y-axis (0-5 stars)
     ctx2d.font = '8px sans-serif';
     ctx2d.textAlign = 'right';
-    ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
     for (var si = 0; si <= 5; si++) {
       var sy = pad + plotH - (si / 5) * plotH;
       ctx2d.fillText(si.toString(), pad - 4, sy + 3);
@@ -1048,13 +1106,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
       // Session label
       ctx2d.font = '7px sans-serif';
-      ctx2d.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       ctx2d.fillText('#' + (startIdx + bi + 1), bx + barW / 2, pad + plotH + 12);
     }
 
     // Title
     ctx2d.font = 'bold 10px sans-serif';
-    ctx2d.fillStyle = isDark ? '#94a3b8' : '#64748b';
+    ctx2d.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
     ctx2d.textAlign = 'center';
     ctx2d.fillText('Fluency Score History', W / 2, 12);
   }
@@ -1498,6 +1556,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         // ════════════════════════════════════════
         var mediaRecorderRef = React.useRef(null);
         var recordedChunksRef = React.useRef([]);
+        // Phase 3v.MR.oratory — handle to the shared voice_module recorder
+        // controller when AlloVoice.recordAudioBlob is available. The
+        // analyser/source/audioCtx refs above remain caller-owned in both
+        // the shared path and the inline fallback.
+        var recorderControllerRef = React.useRef(null);
 
         var savedRecordingsState = React.useState([]); // [{blobUrl, timestamp, duration, pitchData, volumeData}]
         var savedRecordings = savedRecordingsState[0];
@@ -1613,6 +1676,164 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         var startRecording = React.useCallback(function() {
           if (isRecording) return;
           setMicError(null);
+
+          // Phase 3v.MR.oratory — prefer the shared voice_module recorder
+          // when available. The analyser pipeline is wired inside onStream
+          // so prosody analysis attaches to the same MediaStream the
+          // recorder will consume. AudioContext + source + analyser stay
+          // caller-owned (we close them in stopRecording / cleanup);
+          // stream + MediaRecorder lifecycle are owned by the controller.
+          var AlloVoice = window.AlloVoice;
+          if (AlloVoice && typeof AlloVoice.recordAudioBlob === 'function') {
+            var controller;
+            try {
+              controller = AlloVoice.recordAudioBlob({
+                maxDurationMs: 60 * 60 * 1000, // 1h cap; oratory was uncapped before
+                preferredMimeType: 'audio/webm;codecs=opus',
+                onStream: function(stream) {
+                  var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                  audioCtxRef.current = audioCtx;
+                  var source = audioCtx.createMediaStreamSource(stream);
+                  sourceRef.current = source;
+                  var analyser = audioCtx.createAnalyser();
+                  analyser.fftSize = 4096;
+                  source.connect(analyser);
+                  analyserRef.current = analyser;
+
+                  setIsRecording(true);
+                  recordingStartRef.current = Date.now();
+                  syllableCountRef.current = 0;
+                  syllableTimestampsRef.current = [];
+                  lastAmplitudeRef.current = 0;
+                  pauseStartRef.current = null;
+                  totalPauseTimeRef.current = 0;
+                  totalSpeechTimeRef.current = 0;
+                  pauseEventsRef.current = [];
+                  syllableIntervalsRef.current = [];
+
+                  if (!sessionStartTime) {
+                    upd('sessionStartTime', Date.now());
+                  }
+
+                  if (announceToSR) announceToSR('Microphone active. Speak now to see your prosody visualized.');
+
+                  var bufLen = analyser.fftSize;
+                  var buf = new Float32Array(bufLen);
+                  var freqBuf = new Float32Array(analyser.frequencyBinCount);
+                  var sampleRate = audioCtx.sampleRate;
+                  var pauseThresholdMs = 300;
+                  var wasSpeaking = false;
+                  var lastSyllableTs = 0;
+
+                  function analyzeLoop() {
+                    analyser.getFloatTimeDomainData(buf);
+                    var rms = calculateRMS(buf);
+                    var db = rmsToDb(rms);
+                    var pitch = autoCorrelate(buf, sampleRate);
+
+                    analyser.getFloatFrequencyData(freqBuf);
+                    var formants = findFormants(freqBuf, sampleRate);
+                    if (formants.f1 > 0 && formants.f2 > 0 && rms > 0.02) {
+                      setCurrentF1(formants.f1);
+                      setCurrentF2(formants.f2);
+                      setVowelTrail(function(prev) {
+                        var next = prev.concat([{ f1: formants.f1, f2: formants.f2 }]);
+                        if (next.length > 80) next = next.slice(-80);
+                        return next;
+                      });
+                    }
+
+                    setCurrentPitch(pitch);
+                    setCurrentDb(db);
+
+                    setPitchHistory(function(prev) {
+                      var next = prev.concat([pitch]);
+                      if (next.length > 300) next = next.slice(-300);
+                      return next;
+                    });
+
+                    setVolumeHistory(function(prev) {
+                      var next = prev.concat([db]);
+                      if (next.length > 300) next = next.slice(-300);
+                      return next;
+                    });
+
+                    var currentAmplitude = rms;
+                    var syllableThreshold = 0.04;
+                    var prevAmp = lastAmplitudeRef.current;
+                    if (currentAmplitude > syllableThreshold && prevAmp <= syllableThreshold) {
+                      syllableCountRef.current += 1;
+                      var syllTs = Date.now();
+                      syllableTimestampsRef.current.push(syllTs);
+                      if (lastSyllableTs > 0) {
+                        syllableIntervalsRef.current.push(syllTs - lastSyllableTs);
+                      }
+                      lastSyllableTs = syllTs;
+                    }
+                    lastAmplitudeRef.current = currentAmplitude;
+
+                    var now = Date.now();
+                    var windowMs = 10000;
+                    var recentSyllables = syllableTimestampsRef.current.filter(function(ts) { return now - ts < windowMs; });
+                    var wordsInWindow = recentSyllables.length / 1.5;
+                    var estimatedWpm = Math.round(wordsInWindow * (60000 / windowMs));
+                    setCurrentWpm(estimatedWpm);
+
+                    var isSilent = rms < 0.015;
+                    if (isSilent) {
+                      if (wasSpeaking) {
+                        pauseStartRef.current = now;
+                        wasSpeaking = false;
+                      }
+                      if (pauseStartRef.current && (now - pauseStartRef.current) > pauseThresholdMs) {
+                        setIsPaused(true);
+                        setPauseDuration((now - pauseStartRef.current) / 1000);
+                      }
+                    } else {
+                      if (!wasSpeaking && pauseStartRef.current) {
+                        var pDur = (now - pauseStartRef.current) / 1000;
+                        totalPauseTimeRef.current += (now - pauseStartRef.current);
+                        if (pDur >= 0.3) {
+                          var pType = 'normal';
+                          if (pDur > 2.0) pType = 'block';
+                          else if (pDur > 0.5) pType = 'extended';
+                          pauseEventsRef.current.push({ type: pType, duration: pDur });
+                        }
+                        pauseStartRef.current = null;
+                      }
+                      wasSpeaking = true;
+                      setIsPaused(false);
+                      setPauseDuration(0);
+                      totalSpeechTimeRef.current = now - (recordingStartRef.current || now) - totalPauseTimeRef.current;
+                    }
+
+                    var totalElapsed = now - (recordingStartRef.current || now);
+                    if (totalElapsed > 1000) {
+                      var currentPauseTime = totalPauseTimeRef.current + (pauseStartRef.current ? (now - pauseStartRef.current) : 0);
+                      setPauseRatio(currentPauseTime / totalElapsed);
+                    }
+
+                    animFrameRef.current = requestAnimationFrame(analyzeLoop);
+                  }
+
+                  analyzeLoop();
+                },
+                onError: function(err) {
+                  console.error('[Oratory] Mic error (shared):', err);
+                  setMicError((err && err.message) || 'Could not access microphone. Please allow microphone permissions and try again.');
+                  if (announceToSR) announceToSR('Microphone access denied. Please allow microphone permissions.');
+                }
+              });
+            } catch (sharedErr) {
+              console.warn('[Oratory] Shared recorder threw at construct; falling through to inline:', sharedErr);
+              controller = null;
+            }
+            if (controller) {
+              recorderControllerRef.current = controller;
+              return;
+            }
+            // else: fall through to inline path below
+          }
 
           navigator.mediaDevices.getUserMedia({ audio: true })
             .then(function(stream) {
@@ -1795,6 +2016,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             animFrameRef.current = null;
           }
 
+          // Phase 3v.MR.oratory — shared-recorder path. Stream + recorder
+          // are owned by the controller; we only clean up our caller-owned
+          // analyser graph here. The .result promise resolves with the
+          // recorded blob; we attach the saved-recordings handler now so
+          // pitchHistory / volumeHistory closures see the latest values.
+          if (recorderControllerRef.current) {
+            var controller = recorderControllerRef.current;
+            recorderControllerRef.current = null;
+            var savedPitchData = pitchHistory.slice();
+            var savedVolumeData = volumeHistory.slice();
+            try { controller.stop(); } catch(e) { /* ignore */ }
+            controller.result.then(function(result) {
+              if (result && result.blob) {
+                var blobUrl = URL.createObjectURL(result.blob);
+                var duration = Math.round((result.durationMs || 0) / 1000);
+                var newRecording = {
+                  blobUrl: blobUrl,
+                  timestamp: Date.now(),
+                  duration: duration,
+                  pitchData: savedPitchData,
+                  volumeData: savedVolumeData
+                };
+                setSavedRecordings(function(prev) {
+                  var next = prev.concat([newRecording]);
+                  if (next.length > 3) {
+                    URL.revokeObjectURL(next[0].blobUrl);
+                    next = next.slice(-3);
+                  }
+                  return next;
+                });
+              }
+            }).catch(function(err) {
+              // Cancelled or errored — no recording to save.
+              if (err && err.message && err.message !== 'cancelled') {
+                console.warn('[Oratory] Shared recorder result error:', err);
+              }
+            });
+
+            if (sourceRef.current) {
+              try { sourceRef.current.disconnect(); } catch(e) { /* ignore */ }
+              sourceRef.current = null;
+            }
+            if (audioCtxRef.current) {
+              audioCtxRef.current.close().catch(function() {});
+              audioCtxRef.current = null;
+            }
+            analyserRef.current = null;
+            setIsRecording(false);
+
+            if (recordingStartRef.current) {
+              var elapsedShared = Math.round((Date.now() - recordingStartRef.current) / 1000);
+              upd('sessionTimeSpent', (sessionTimeSpent || 0) + elapsedShared);
+            }
+
+            if (announceToSR) announceToSR('Microphone stopped.');
+            return;
+          }
+
           // Enhancement 1: Stop MediaRecorder and save recording
           if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
             try {
@@ -1858,6 +2137,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         React.useEffect(function() {
           return function() {
             if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+            // Phase 3v.MR.oratory — cancel the shared recorder controller
+            // (releases mic + drops the in-flight blob without saving).
+            if (recorderControllerRef.current) {
+              try { recorderControllerRef.current.cancel(); } catch(e) { /* ignore */ }
+              recorderControllerRef.current = null;
+            }
             if (streamRef.current) {
               streamRef.current.getTracks().forEach(function(track) { track.stop(); });
             }
@@ -2463,7 +2748,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         // ═══════════════════════════════════════
         var cardClass = isDark
           ? 'bg-slate-800 border border-slate-700 rounded-xl p-4'
-          : 'bg-white border border-slate-200 rounded-xl p-4 shadow-sm';
+          : 'bg-white border border-slate-400 rounded-xl p-4 shadow-sm';
         var headingClass = isDark ? 'text-white font-bold' : 'text-slate-900 font-bold';
         var subTextClass = isDark ? 'text-slate-200 text-xs' : 'text-slate-600 text-xs';
         var btnPrimary = 'px-4 py-2 rounded-lg font-bold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ' +
@@ -2504,7 +2789,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                       h('button', {
                         className: btnSecondary,
                         onClick: function() { setWarmupActive(null); },
-                        'aria-label': 'Cancel warm-up'
+                        
                       }, 'Cancel')))
                 : h('div', { className: 'flex flex-wrap gap-2', role: 'list', 'aria-label': 'Available warm-up exercises' },
                     WARMUPS.map(function(wu) {
@@ -2565,8 +2850,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
                 h('span', null, '\uD83D\uDCC8'), 'Pitch Contour'),
               h('p', { className: subTextClass + ' mb-2' }, 'The melody of your speech. Rising pitch = questions, falling = statements, variation = emphasis.'),
-              h('canvas', { 'aria-label': 'Oratory visualization',
-                ref: pitchCanvasRef,
+              h('canvas', { ref: pitchCanvasRef,
                 width: 600,
                 height: 180,
                 className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
@@ -2596,8 +2880,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
                   h('span', null, '\u23F1\uFE0F'), 'Pacing'),
                 h('p', { className: subTextClass + ' mb-2' }, 'How fast you are speaking in words per minute.'),
-                h('canvas', { 'aria-label': 'Oratory visualization',
-                  ref: pacingCanvasRef,
+                h('canvas', { ref: pacingCanvasRef,
                   width: 280,
                   height: 160,
                   className: 'w-full rounded-lg',
@@ -2610,8 +2893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
                   h('span', null, '\uD83D\uDD0A'), 'Volume'),
                 h('p', { className: subTextClass + ' mb-2' }, 'Your speaking volume and steadiness over time.'),
-                h('canvas', { 'aria-label': 'Oratory visualization',
-                  ref: volumeCanvasRef,
+                h('canvas', { ref: volumeCanvasRef,
                   width: 280,
                   height: 70,
                   className: 'w-full rounded-lg',
@@ -2625,8 +2907,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               h('h3', { className: headingClass + ' text-sm mb-2 flex items-center gap-2' },
                 h('span', null, '\u23F8\uFE0F'), 'Pause Detection'),
               h('p', { className: subTextClass + ' mb-2' }, 'Good speakers use pauses! Aim for 20-30% pauses in your speech.'),
-              h('canvas', { 'aria-label': 'Oratory visualization',
-                ref: pauseCanvasRef,
+              h('canvas', { ref: pauseCanvasRef,
                 width: 600,
                 height: 55,
                 className: 'w-full rounded-lg',
@@ -2698,8 +2979,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 // Session comparison chart
                 fluencySessions.length > 0 && h('div', { className: 'mt-3' },
                   h('h4', { className: headingClass + ' text-xs mb-2' }, 'Session History'),
-                  h('canvas', { 'aria-label': 'Oratory visualization',
-                    ref: fluencyChartCanvasRef,
+                  h('canvas', { ref: fluencyChartCanvasRef,
                     width: 500,
                     height: 150,
                     className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
@@ -2744,8 +3024,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 ),
 
                 // Vowel space canvas
-                h('canvas', { 'aria-label': 'Oratory visualization',
-                  ref: vowelCanvasRef,
+                h('canvas', { ref: vowelCanvasRef,
                   width: 500,
                   height: 400,
                   className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
@@ -2829,8 +3108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
                     // Playback prosody canvas
                     playbackIdx >= 0 && savedRecordings[playbackIdx] && h('div', { className: 'mt-2' },
-                      h('canvas', { 'aria-label': 'Oratory visualization',
-                        ref: playbackCanvasRef,
+                      h('canvas', { ref: playbackCanvasRef,
                         width: 600,
                         height: 120,
                         className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
@@ -2873,8 +3151,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                             })
                           )
                         ),
-                        h('canvas', { 'aria-label': 'Oratory visualization',
-                          ref: compareCanvasRef,
+                        h('canvas', { ref: compareCanvasRef,
                           width: 600,
                           height: 150,
                           className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
@@ -3198,8 +3475,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 // Target pattern canvas
                 h('div', { className: 'mb-3' },
                   h('div', { className: subTextClass + ' mb-1' }, 'Target pitch pattern (green zone = target, orange = your pitch):'),
-                  h('canvas', { 'aria-label': 'Oratory visualization',
-                    ref: patternCanvasRef,
+                  h('canvas', { ref: patternCanvasRef,
                     width: 500,
                     height: 120,
                     className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
@@ -3328,8 +3604,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               }, isRecording ? '\uD83D\uDD34 Stop' : '\uD83C\uDFA4 Start'),
               h('span', { className: subTextClass },
                 isRecording ? 'Listening... speak now!' : 'Click to activate your microphone.')),
-            h('canvas', { 'aria-label': 'Oratory visualization',
-              ref: pitchCanvasRef,
+            h('canvas', { ref: pitchCanvasRef,
               width: 600,
               height: 120,
               className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
@@ -3441,8 +3716,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             (multiMode === 'yourTurn' || multiMode === 'comparing') && h('div', { className: cardClass },
               h('h4', { className: headingClass + ' text-sm mb-2' }, 'Prosody Comparison'),
               h('p', { className: subTextClass + ' mb-2' }, 'Dashed line = model, solid line = your speech. Try to make them match!'),
-              h('canvas', { 'aria-label': 'Oratory visualization',
-                ref: pitchCanvasRef,
+              h('canvas', { ref: pitchCanvasRef,
                 width: 600,
                 height: 180,
                 className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
@@ -3526,7 +3800,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
               reportText && h('pre', {
                 className: 'mt-3 p-3 rounded-lg text-xs leading-relaxed overflow-auto max-h-60 ' +
-                  (isDark ? 'bg-slate-900 text-slate-300 border border-slate-700' : 'bg-slate-50 text-slate-700 border border-slate-200'),
+                  (isDark ? 'bg-slate-900 text-slate-300 border border-slate-700' : 'bg-slate-50 text-slate-700 border border-slate-400'),
                 role: 'textbox',
                 'aria-label': 'Session report text',
                 'aria-readonly': 'true',
@@ -3575,7 +3849,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             className: 'flex items-center gap-3 p-2 rounded-lg ' +
               (achieved
                 ? (isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200')
-                : (isDark ? 'bg-slate-800 border border-slate-700' : 'bg-slate-50 border border-slate-200')),
+                : (isDark ? 'bg-slate-800 border border-slate-700' : 'bg-slate-50 border border-slate-400')),
             role: 'listitem'
           },
             h('span', { className: 'text-lg' }, achieved ? '\u2705' : icon),
@@ -3652,6 +3926,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 }
               }, tab.icon + ' ' + tab.label);
             })),
+
+          // ── Topic-accent hero band (per tab) ──
+          (function() {
+            var TAB_META = {
+              visualizer:   { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎤', title: 'Live visualizer — record + read your delivery', hint: 'Real-time pitch trace + volume meter + filler-word counter. Trained speakers vary pitch ~30% across a sentence; flat delivery loses listener attention within ~20 seconds.' },
+              practice:     { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '📝', title: 'Practice — work through a delivery',          hint: 'Pacing target ~150 wpm. Pauses between ideas (1–2 seconds) carry as much weight as the words. Read your own writing aloud first; awkward sentences reveal themselves immediately.' },
+              multilingual: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '🌐', title: 'Multilingual — same speech, multiple languages', hint: 'Speech rate varies dramatically by language: Spanish + Japanese ~7 syllables/sec; English ~6; Mandarin ~5. Information rate is roughly constant — denser languages talk slower.' },
+              report:       { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '📋', title: 'Report — your delivery analytics',           hint: 'Pace, pitch range, filler-word density, pause timing — each scored against research-backed targets. Click any dimension for a citation + a coaching tip.' }
+            };
+            var meta = TAB_META[activeTab] || TAB_META.visualizer;
+            return h('div', {
+              className: 'mt-2',
+              style: {
+                padding: '12px 14px',
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                border: '1px solid ' + meta.accent + '55',
+                borderLeft: '4px solid ' + meta.accent,
+                display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+              }
+            },
+              h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('p', { style: { margin: '3px 0 0', color: isDark ? '#cbd5e1' : '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              )
+            );
+          })(),
 
           // Tab panels
           h('div', {

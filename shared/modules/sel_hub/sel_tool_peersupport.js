@@ -185,6 +185,7 @@ window.SelHub = window.SelHub || {
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var update = ctx.update;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
       var toolData = (ctx.toolData && ctx.toolData.peersupport) || {};
       var hasAI = !!callGemini;
 
@@ -205,6 +206,9 @@ window.SelHub = window.SelHub || {
       var _peerMood = useState('neutral'); var peerMood = _peerMood[0]; var setPeerMood = _peerMood[1];
       var _oarsUsed = useState({}); var oarsUsed = _oarsUsed[0]; var setOarsUsed = _oarsUsed[1]; // tracks which OARS skills detected
       var _safetyTriggered = useState(false); var safetyTriggered = _safetyTriggered[0]; var setSafetyTriggered = _safetyTriggered[1];
+      // Triangulated assessment of the STUDENT supporter's own messages — distinct
+      // from `safetyTriggered` (which tracks the AI peer's scripted safety reveal).
+      var _userTier = useState(0); var userTier = _userTier[0]; var setUserTier = _userTier[1];
       var chatEndRef = useRef(null);
 
       var scenarios = PRACTICE_SCENARIOS[gradeBand] || PRACTICE_SCENARIOS.elementary;
@@ -240,7 +244,29 @@ window.SelHub = window.SelHub || {
             + '"oarsDetected":["open"|"affirm"|"reflect"|"summarize"|null] (which OARS skills the student used in their message),'
             + '"isSafetyMoment":false (set true ONLY if you just revealed something requiring adult help)}\n\n'
             + 'Rules:\n- Stay in character as a struggling peer\n- React authentically — if they use good OARS skills, open up more\n- If they give unsolicited advice, pull back slightly\n- 1-2 sentences max\n- Do NOT coach or break character';
-          var result = await callGemini(prompt, true);
+          // Triangulated safety assessment of the STUDENT's own message (in case
+          // they start revealing their own distress while practicing supporting
+          // the AI peer). Runs in parallel with the chat call.
+          var _safetyP = (window.SelHub && window.SelHub.assessSafety)
+            ? window.SelHub.assessSafety(userMsg, gradeBand, 'peersupport', callGemini).catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
+            : Promise.resolve({ tier: 0, rationale: '', category: 'none' });
+          var _both = await Promise.all([callGemini(prompt, true), _safetyP]);
+          var result = _both[0];
+          var _safety = _both[1] || { tier: 0 };
+          if (_safety.tier >= 2 && onSafetyFlag) {
+            onSafetyFlag({
+              category: 'ai_peersupport_' + (_safety.category || 'concerning'),
+              match: _safety.rationale || 'SEL peersupport safety concern',
+              severity: _safety.tier >= 3 ? 'critical' : 'medium',
+              source: 'sel_peersupport',
+              context: userMsg.substring(0, 100),
+              timestamp: new Date().toISOString(),
+              aiGenerated: true,
+              confidence: _safety.tier >= 3 ? 0.9 : 0.7,
+              tier: _safety.tier
+            });
+          }
+          setUserTier(_safety.tier || 0);
           if (result) {
             try {
               var parsed = JSON.parse(result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim().replace(/^[^{]*/, '').replace(/[^}]*$/, ''));
@@ -275,7 +301,7 @@ window.SelHub = window.SelHub || {
           var historyText = chatHistory.map(function(m) { return (m.role === 'user' ? 'Student' : aiScenario.peerName) + ': ' + m.text; }).join('\n');
           var oarsSummary = OARS.map(function(s) { return s.label + ': ' + (oarsUsed[s.id] || 0) + ' times'; }).join(', ');
           var prompt = 'You are a warm peer support skills coach evaluating a ' + gradeBand + ' student\'s supportive conversation.\n\n'
-            + 'Scenario: ' + aiScenario.setup + '\nSkill focus: ' + aiScenario.skill + '\nGoal: ' + aiScenario.goal + '\n'
+            + 'Scenario: ' + aiScenario.setup + '\nSkill  ' + aiScenario.skill + '\nGoal: ' + aiScenario.goal + '\n'
             + 'Final rapport: ' + rapport + '/100 (started at 50)\n'
             + 'OARS skills used: ' + oarsSummary + '\n'
             + (safetyTriggered ? 'SAFETY: A safety moment occurred. Did the student recognize it and suggest getting adult help?\n' : '')
@@ -305,7 +331,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '24px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '🤝'),
             h('h2', { style: { fontSize: '24px', fontWeight: 900, color: '#1e293b' } }, 'Peer Support Coach'),
-            h('p', { style: { color: '#64748b', fontSize: '14px', maxWidth: '480px', margin: '0 auto' } },
+            h('p', { style: { color: '#94a3b8', fontSize: '14px', maxWidth: '480px', margin: '0 auto' } },
               'Learn to be a supportive listener. Not a counselor — a better friend. These skills help people find their own answers.')
           ),
           // OARS overview cards
@@ -316,7 +342,7 @@ window.SelHub = window.SelHub || {
                   h('span', { style: { fontSize: '18px' }, 'aria-hidden': 'true' }, skill.icon),
                   h('span', { style: { fontSize: '13px', fontWeight: 800, color: skill.color } }, skill.label)
                 ),
-                h('p', { style: { fontSize: '10px', color: '#6b7280', lineHeight: 1.4, margin: 0 } }, skill.what)
+                h('p', { style: { fontSize: '10px', color: '#94a3b8', lineHeight: 1.4, margin: 0 } }, skill.what)
               );
             })
           ),
@@ -361,7 +387,7 @@ window.SelHub = window.SelHub || {
                   h('span', { style: { fontSize: '20px' } }, sc.hasSafetyTrigger ? '🚨' : '💬'),
                   h('div', null,
                     h('div', { style: { fontWeight: 700, fontSize: '13px', color: '#1e293b' } }, sc.title),
-                    h('div', { style: { fontSize: '10px', color: '#6b7280' } }, sc.setup.substring(0, 60) + '...'),
+                    h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, sc.setup.substring(0, 60) + '...'),
                     sc.hasSafetyTrigger && h('span', { style: { fontSize: '9px', background: '#fee2e2', color: '#991b1b', padding: '1px 6px', borderRadius: '6px', fontWeight: 600 } }, 'Includes safety recognition')
                   )
                 );
@@ -375,7 +401,8 @@ window.SelHub = window.SelHub || {
             'Safety boundary training is integrated throughout — students learn to recognize when situations require adult intervention. ',
             'Evidence base: Teen Mental Health First Aid, Sources of Strength (Wyman et al., 2010), Motivational Interviewing in Schools (Rollnick et al., 2016). ',
             'This tool does NOT train students as counselors — it teaches them to be better listeners and to know their limits.'
-          )
+          ),
+          window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, gradeBand)
         );
       }
 
@@ -430,10 +457,10 @@ window.SelHub = window.SelHub || {
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
             h('button', { onClick: function() { setMode('menu'); }, style: btn('#f1f5f9', '#374151', false) }, '← Back'),
             h('span', { style: { fontSize: '13px', fontWeight: 700, color: '#16a34a' } }, '✅ ' + score + '/' + total),
-            h('span', { style: { fontSize: '12px', color: '#6b7280' } }, (subMode === 'open_vs_closed' ? '❓ Open vs Closed' : '🪞 Reflect vs Advise') + ' · ' + (idx + 1) + '/' + exercises.length)
+            h('span', { style: { fontSize: '12px', color: '#94a3b8' } }, (subMode === 'open_vs_closed' ? '❓ Open vs Closed' : '🪞 Reflect vs Advise') + ' · ' + (idx + 1) + '/' + exercises.length)
           ),
           h('div', { style: { background: '#f8fafc', borderRadius: '14px', padding: '16px', border: '1px solid #e5e7eb', marginBottom: '12px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', marginBottom: '6px' } }, 'Situation'),
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '6px' } }, 'Situation'),
             h('p', { style: { fontSize: '14px', color: '#1e293b', lineHeight: 1.6 } }, current.situation)
           ),
           feedback && h('div', { role: 'status', 'aria-live': 'assertive', style: { padding: '14px', borderRadius: '12px', marginBottom: '12px', background: '#dcfce7', border: '1px solid #86efac', color: '#166534', fontSize: '13px' } },
@@ -442,7 +469,7 @@ window.SelHub = window.SelHub || {
           !feedback && (subMode === 'open_vs_closed' ? (
             // Two-button: which is the open question?
             h('div', null,
-              h('p', { style: { fontSize: '13px', color: '#6b7280', marginBottom: '10px', fontWeight: 600 } }, 'Which is the OPEN question? (invites them to share more)'),
+              h('p', { style: { fontSize: '13px', color: '#94a3b8', marginBottom: '10px', fontWeight: 600 } }, 'Which is the OPEN question? (invites them to share more)'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' }, role: 'group', 'aria-label': 'Choose the open question' },
                 [{ text: current.closed, isCorrect: false }, { text: current.open, isCorrect: true }]
                   .sort(function() { return 0.5 - Math.random(); }) // Shuffle
@@ -460,7 +487,7 @@ window.SelHub = window.SelHub || {
           ) : (
             // Reflect vs Advise
             h('div', null,
-              h('p', { style: { fontSize: '13px', color: '#6b7280', marginBottom: '10px', fontWeight: 600 } }, 'Which response is a REFLECTION? (shows you heard them)'),
+              h('p', { style: { fontSize: '13px', color: '#94a3b8', marginBottom: '10px', fontWeight: 600 } }, 'Which response is a REFLECTION? (shows you heard them)'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' }, role: 'group', 'aria-label': 'Choose the reflection' },
                 [{ text: current.advice, isCorrect: false, label: 'advice' }, { text: current.reflection, isCorrect: true, label: 'reflection' }]
                   .sort(function() { return 0.5 - Math.random(); })
@@ -490,7 +517,7 @@ window.SelHub = window.SelHub || {
             h('button', { onClick: function() { setMode('menu'); }, style: btn('#f1f5f9', '#374151', false) }, '← Back'),
             h('div', { style: { textAlign: 'right' } },
               h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#1e293b' } }, aiScenario.title),
-              h('div', { style: { fontSize: '10px', color: '#6b7280' } }, chatTurns + ' turns')
+              h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, chatTurns + ' turns')
             )
           ),
           // Peer + rapport + OARS tracker
@@ -499,7 +526,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { flex: 1 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '3px' } },
                 h('span', { style: { fontWeight: 700, color: '#1e293b' } }, aiScenario.peerName),
-                h('span', { style: { color: '#6b7280' } }, 'Rapport: ' + rapport + '%')
+                h('span', { style: { color: '#94a3b8' } }, 'Rapport: ' + rapport + '%')
               ),
               h('div', { style: { height: '5px', background: '#e5e7eb', borderRadius: '3px', overflow: 'hidden' }, role: 'progressbar', 'aria-valuenow': rapport, 'aria-label': 'Rapport' },
                 h('div', { style: { height: '100%', width: rapport + '%', background: rapport >= 70 ? '#22c55e' : rapport >= 40 ? '#f59e0b' : '#ef4444', transition: 'all 0.5s', borderRadius: '3px' } })
@@ -513,7 +540,10 @@ window.SelHub = window.SelHub || {
               })
             )
           ),
-          // Safety alert
+          // Crisis resources surfaced when the STUDENT's own message hits Tier 3
+          // (distinct from `safetyTriggered`, which is the AI peer's scripted reveal).
+          (userTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, gradeBand) : null,
+          // Safety alert (AI peer signal recognition)
           safetyTriggered && h('div', { role: 'alert', style: { background: '#fef2f2', border: '2px solid #fca5a5', borderRadius: '10px', padding: '8px 12px', marginBottom: '8px', fontSize: '11px', color: '#991b1b', fontWeight: 700, textAlign: 'center', flexShrink: 0 } },
             '🚨 ' + aiScenario.peerName + ' may need adult help. Consider suggesting a trusted adult.'
           ),
@@ -522,7 +552,7 @@ window.SelHub = window.SelHub || {
             h('strong', null, 'Goal: '), aiScenario.goal
           ),
           // Chat
-          h('div', { style: { flex: 1, overflowY: 'auto', marginBottom: '8px', display: 'flex', flexDirection: 'column', gap: '6px' } },
+          h('div', { role: 'log', 'aria-live': 'polite', 'aria-label': 'Conversation with ' + aiScenario.peerName, 'aria-busy': chatLoading ? 'true' : 'false', style: { flex: 1, overflowY: 'auto', marginBottom: '8px', display: 'flex', flexDirection: 'column', gap: '6px' } },
             chatHistory.map(function(msg, i) {
               var isPeer = msg.role === 'peer';
               return h('div', { key: i, style: { display: 'flex', justifyContent: isPeer ? 'flex-start' : 'flex-end', gap: '6px' } },
@@ -533,7 +563,7 @@ window.SelHub = window.SelHub || {
                 )
               );
             }),
-            chatLoading && h('div', { style: { fontSize: '12px', color: '#6b7280', padding: '4px' } }, aiScenario.peerName + ' is typing...'),
+            chatLoading && h('div', { style: { fontSize: '12px', color: '#94a3b8', padding: '4px' } }, aiScenario.peerName + ' is typing...'),
             h('div', { ref: chatEndRef })
           ),
           // Feedback display
@@ -551,7 +581,7 @@ window.SelHub = window.SelHub || {
                 if (!fb || fb === 'null') return null;
                 return h('div', { key: s.id, style: { background: '#fff', borderRadius: '8px', padding: '8px', border: '1px solid ' + s.color + '33' } },
                   h('div', { style: { fontSize: '10px', fontWeight: 700, color: s.color, marginBottom: '2px' } }, s.icon + ' ' + s.label + ' (' + (oarsUsed[s.id] || 0) + 'x)'),
-                  h('p', { style: { fontSize: '10px', color: '#6b7280', margin: 0, lineHeight: 1.3 } }, fb)
+                  h('p', { style: { fontSize: '10px', color: '#94a3b8', margin: 0, lineHeight: 1.3 } }, fb)
                 );
               })
             ),
@@ -569,7 +599,7 @@ window.SelHub = window.SelHub || {
               }, style: btn('#f1f5f9', '#374151', false) }, '📄 Save')
             )
           ),
-          chatFeedback === 'loading' && h('p', { style: { textAlign: 'center', fontSize: '12px', color: '#6b7280', flexShrink: 0 } }, '⏳ Analyzing your OARS skills...'),
+          chatFeedback === 'loading' && h('p', { style: { textAlign: 'center', fontSize: '12px', color: '#94a3b8', flexShrink: 0 } }, '⏳ Analyzing your OARS skills...'),
           // Input
           !chatFeedback && h('div', { style: { display: 'flex', gap: '6px', flexShrink: 0 } },
             h('input', { type: 'text', value: chatInput, onChange: function(ev) { setChatInput(ev.target.value); },
@@ -578,9 +608,20 @@ window.SelHub = window.SelHub || {
               style: { flex: 1, padding: '10px 14px', border: '2px solid #d1d5db', borderRadius: '12px', fontSize: '13px', outline: 'none' },
               'aria-label': 'Your response using OARS skills' }),
             ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) && h('button', { onClick: function() {
+              // Phase 3v.M — shared module path with inline fallback
+              var append = function(t) { setChatInput(function(p) { return p ? p + ' ' + t : t; }); };
+              if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === 'function') {
+                var ctrl = window.AlloFlowVoice.initWebSpeechCapture({
+                  lang: 'en-US', continuous: false, interimResults: false,
+                  onTranscript: append
+                });
+                if (ctrl.supported) ctrl.start();
+                addToast && addToast('Listening...', 'info');
+                return;
+              }
               var SR = window.SpeechRecognition || window.webkitSpeechRecognition; var rec = new SR();
               rec.lang = 'en-US'; rec.interimResults = false;
-              rec.onresult = function(ev) { setChatInput(function(p) { return p ? p + ' ' + ev.results[0][0].transcript : ev.results[0][0].transcript; }); };
+              rec.onresult = function(ev) { append(ev.results[0][0].transcript); };
               rec.start(); addToast && addToast('Listening...', 'info');
             }, style: btn('#f1f5f9', '#374151', chatLoading), 'aria-label': 'Voice input' }, '🎤'),
             h('button', { onClick: function() { if (chatInput.trim()) sendChat(chatInput); }, disabled: !chatInput.trim() || chatLoading,

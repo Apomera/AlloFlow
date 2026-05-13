@@ -555,7 +555,7 @@ window.SelHub = window.SelHub || {
     label: 'Coping Toolkit',
     desc: 'Explore and practice coping strategies \u2014 breathing, grounding, movement, and more.',
     color: 'teal',
-    category: 'self-management',
+    category: 'self-regulation',
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -568,6 +568,7 @@ window.SelHub = window.SelHub || {
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
       var t = ctx.t;
       var band = ctx.gradeBand || 'elementary';
 
@@ -581,6 +582,18 @@ window.SelHub = window.SelHub || {
       // Navigation
       var activeTab     = d.activeTab || 'library';
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
+
+      // Rehearse-mode state — AI plays a TRIGGER (anxious voice, escalating
+      // parent, distant friend, sensory overload). Student practices
+      // applying a coping strategy in the moment. Clinically distinct from
+      // peer-conversation role-play: the AI is the stressor, not a peer.
+      var cpRpScenarioId = d.cpRpScenarioId || '';
+      var cpRpHistory    = d.cpRpHistory || [];
+      var cpRpInput      = d.cpRpInput || '';
+      var cpRpLoading    = !!d.cpRpLoading;
+      var cpRpStarting   = !!d.cpRpStarting;
+      var cpRpEnded      = !!d.cpRpEnded;
+      var cpRpReflection = d.cpRpReflection || '';
 
       // Library state
       var selectedType    = d.selectedType || null;    // filter by strategy type
@@ -624,6 +637,7 @@ window.SelHub = window.SelHub || {
       var matcherFeeling  = d.matcherFeeling || '';
       var matcherResult   = d.matcherResult || null;
       var matcherLoading  = d.matcherLoading || false;
+      var _matcherTier    = d._matcherTier || 0;
 
       // Practice log state
       var practiceLog     = d.practiceLog || []; // { strategyId, type, timestamp, rating, note }
@@ -753,13 +767,13 @@ window.SelHub = window.SelHub || {
       var tabs = [
         { id: 'library',  label: '\uD83D\uDCDA Library' },
         { id: 'practice', label: '\uD83C\uDFAF Practice' },
+        { id: 'rehearse', label: '\uD83C\uDFAD Rehearse' },
         { id: 'plan',     label: '\uD83D\uDCCB My Calm Plan' },
         { id: 'matcher',  label: '\u2728 Matcher' },
         { id: 'log',      label: '\uD83D\uDCCA Practice Log' }
       ];
 
-      var tabBar = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-        role: 'tablist', 'aria-label': 'Coping Skills tabs',
+      var tabBar = h('div', {         role: 'tablist', 'aria-label': 'Coping Skills tabs',
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
         tabs.map(function(tab) {
@@ -779,13 +793,45 @@ window.SelHub = window.SelHub || {
         h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
           onClick: function() { upd('soundEnabled', !soundEnabled); },
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
-          style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: '#64748b', fontSize: 14, flexShrink: 0 }
+          style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: '#94a3b8', fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
-          style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#14b8a633' : 'transparent', color: '#64748b', fontSize: 14, flexShrink: 0 }
+          style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#14b8a633' : 'transparent', color: '#94a3b8', fontSize: 14, flexShrink: 0 }
         }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length)
       );
+
+      // ══════════════════════════════════════════════════════════
+      // ── Topic-accent hero band per tab ──
+      // ══════════════════════════════════════════════════════════
+      var heroBand = (function() {
+        var TAB_META = {
+          library:  { accent: '#14b8a6', soft: 'rgba(20,184,166,0.14)',  icon: '\uD83D\uDCDA', title: 'Library \u2014 the coping toolkit',                hint: 'Cognitive (reframe, name it to tame it), behavioral (move, breathe, ground), social (call a friend, share). Multiple strategies in your back pocket beats one silver bullet \u2014 different stress states need different tools.' },
+          practice: { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)',  icon: '\uD83C\uDFAF', title: 'Practice \u2014 box breathing, 5-4-3-2-1, body scan',  hint: 'Box breathing (4-4-4-4) is what Navy SEALs use to manage acute stress. 5-4-3-2-1 grounding pulls anxious attention back into the present via the senses. Both work because they change physiology, not thoughts.' },
+          rehearse: { accent: '#f97316', soft: 'rgba(249,115,22,0.14)',  icon: '\uD83C\uDFAD', title: 'Rehearse \u2014 apply a coping skill in a hard moment', hint: 'Mental rehearsal (Driskell et al., 1994) builds the same neural pathways as practiced response. The AI plays the trigger (anxious voice, escalating parent, distant friend, overwhelming environment); you practice what you would do in your body and your mind.' },
+          plan:     { accent: '#10b981', soft: 'rgba(16,185,129,0.14)',  icon: '\uD83D\uDCCB', title: 'My Calm Plan \u2014 your personalized go-to list',     hint: 'Pre-commit to specific responses BEFORE you\u2019re activated. Implementation intentions (Gollwitzer 1999): \u201Cif X happens, then I\u2019ll do Y\u201D \u2014 doubles follow-through compared to vague intentions to cope.' },
+          matcher:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)',  icon: '\u2728',         title: 'Matcher \u2014 right tool for the right zone',         hint: 'Yellow-zone overwhelm needs different strategies than red-zone shutdown. Zones of Regulation (Kuypers) gives a shared language; this matcher gives the strategy. Self-knowledge IS regulation.' },
+          log:      { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',   icon: '\uD83D\uDCCA', title: 'Practice Log \u2014 what worked and when',             hint: 'Tracking turns coping from reactive to deliberate. Patterns emerge over weeks: which strategy works for which trigger. The log itself becomes a self-knowledge artifact you can show a counselor or trusted adult.' }
+        };
+        var meta = TAB_META[activeTab] || TAB_META.library;
+        return h('div', {
+          style: {
+            margin: '8px 12px 12px',
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+            border: '1px solid ' + meta.accent + '55',
+            borderLeft: '4px solid ' + meta.accent,
+            display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+          }
+        },
+          h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+          h('div', { style: { flex: 1, minWidth: 220 } },
+            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+          )
+        );
+      })();
 
       // ══════════════════════════════════════════════════════════
       // ── Badge Popup ──
@@ -794,12 +840,10 @@ window.SelHub = window.SelHub || {
       if (showBadgePopup) {
         var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
         if (popBadge) {
-          badgePopup = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-            style: { position: 'fixed', inset: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)' },
+          badgePopup = h('div', {             style: { position: 'fixed', inset: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)' },
             onClick: function() { upd('showBadgePopup', null); }
           },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-              style: { background: 'linear-gradient(135deg, #042f2e 0%, #134e4a 100%)', borderRadius: 20, padding: '32px 40px', textAlign: 'center', border: '2px solid #14b8a6', maxWidth: 320 },
+            h('div', {               style: { background: 'linear-gradient(135deg, #042f2e 0%, #134e4a 100%)', borderRadius: 20, padding: '32px 40px', textAlign: 'center', border: '2px solid #14b8a6', maxWidth: 320 },
               onClick: function(e) { e.stopPropagation(); }
             },
               h('div', { style: { fontSize: 56, marginBottom: 12 } }, popBadge.icon),
@@ -820,16 +864,15 @@ window.SelHub = window.SelHub || {
           tabBar, badgePopup,
           h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 } },
               BADGES.map(function(badge) {
                 var earned = !!earnedBadges[badge.id];
-                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-                  key: badge.id, title: badge.name + ': ' + badge.desc,
+                return h('div', {                   key: badge.id, title: badge.name + ': ' + badge.desc,
                   style: { textAlign: 'center', padding: 12, borderRadius: 12, background: earned ? '#042f2e' : '#1e293b', border: '1px solid ' + (earned ? '#14b8a6' : '#334155'), opacity: earned ? 1 : 0.4 }
                 },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, fontWeight: 600, color: earned ? '#e2e8f0' : '#64748b' } }, badge.name),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#64748b', marginTop: 2 } }, badge.desc)
+                  h('div', { style: { fontSize: 28, marginBottom: 4 } }, badge.icon),
+                  h('div', { style: { fontSize: 10, fontWeight: 600, color: earned ? '#e2e8f0' : '#94a3b8' } }, badge.name),
+                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, badge.desc)
                 );
               })
             ),
@@ -849,7 +892,7 @@ window.SelHub = window.SelHub || {
         var filteredStrats = selectedType === '_fav' ? STRATEGIES.filter(function(s) { return favorites[s.id]; }) :
           selectedType ? STRATEGIES.filter(function(s) { return s.type === selectedType; }) : STRATEGIES;
 
-        libraryContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20 } },
+        libraryContent = h('div', { style: { padding: 20 } },
           h('h3', { style: { textAlign: 'center', marginBottom: 8, color: '#f1f5f9', fontSize: 18 } },
             band === 'elementary' ? 'Ways to Feel Better!' : 'Coping Strategy Library'
           ),
@@ -859,7 +902,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Type filter chips
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 20 } },
+          h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 20 } },
             h('button', { 'aria-label': 'All',
               onClick: function() { upd('selectedType', null); if (soundEnabled) sfxClick(); },
               style: {
@@ -891,7 +934,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Strategy cards
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
             filteredStrats.map(function(strat) {
               var typeObj = STRATEGY_TYPES.find(function(t) { return t.id === strat.type; });
               var isExpanded = expandedStrat === strat.id;
@@ -899,8 +942,7 @@ window.SelHub = window.SelHub || {
               var wasViewed = viewedStrats[strat.id];
               var zoneColors = { blue: '#3b82f6', green: '#22c55e', yellow: '#eab308', red: '#ef4444' };
 
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-                key: strat.id,
+              return h('div', {                 key: strat.id,
                 style: { borderRadius: 14, border: '1px solid ' + (typeObj ? typeObj.color + '44' : '#334155'), background: '#1e293b', overflow: 'hidden' }
               },
                 // Header (always visible)
@@ -924,26 +966,26 @@ window.SelHub = window.SelHub || {
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 } },
                       h('span', { style: { fontWeight: 700, fontSize: 14 } }, strat.name[band] || strat.name.elementary),
                       strat.practiceable && h('span', { style: { fontSize: 10, padding: '1px 6px', borderRadius: 6, background: '#14b8a622', color: '#14b8a6', fontWeight: 600 } }, 'Interactive'),
-                      wasViewed && h('span', { style: { fontSize: 10, color: '#64748b' } }, '\u2713')
+                      wasViewed && h('span', { style: { fontSize: 10, color: '#94a3b8' } }, '\u2713')
                     ),
                     h('p', { style: { margin: 0, fontSize: 11, color: '#94a3b8', lineHeight: 1.3 } }, strat.desc[band] || strat.desc.elementary)
                   ),
-                  h('span', { style: { color: '#64748b', fontSize: 16, flexShrink: 0, transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' } }, '\u25BC')
+                  h('span', { style: { color: '#94a3b8', fontSize: 16, flexShrink: 0, transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' } }, '\u25BC')
                 ),
                 // Expanded content
                 isExpanded && h('div', { style: { padding: '0 16px 16px', borderTop: '1px solid #334155' } },
                   // Best-for zones
                   h('div', { style: { display: 'flex', gap: 6, marginTop: 12, marginBottom: 12, flexWrap: 'wrap' } },
-                    h('span', { style: { fontSize: 11, color: '#64748b', marginRight: 4 } }, 'Best for:'),
+                    h('span', { style: { fontSize: 11, color: '#94a3b8', marginRight: 4 } }, 'Best for:'),
                     strat.bestFor.map(function(zoneId) {
-                      return h('span', { key: zoneId, style: { fontSize: 10, padding: '2px 8px', borderRadius: 6, background: (zoneColors[zoneId] || '#64748b') + '22', color: zoneColors[zoneId] || '#64748b', fontWeight: 600 } },
+                      return h('span', { key: zoneId, style: { fontSize: 10, padding: '2px 8px', borderRadius: 6, background: (zoneColors[zoneId] || '#94a3b8') + '22', color: zoneColors[zoneId] || '#94a3b8', fontWeight: 600 } },
                         zoneId.charAt(0).toUpperCase() + zoneId.slice(1) + ' Zone'
                       );
                     }),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, padding: '2px 8px', borderRadius: 6, background: (typeObj ? typeObj.color : '#64748b') + '22', color: typeObj ? typeObj.color : '#64748b' } }, typeObj ? typeObj.label : strat.type)
+                    h('span', { style: { fontSize: 10, padding: '2px 8px', borderRadius: 6, background: (typeObj ? typeObj.color : '#94a3b8') + '22', color: typeObj ? typeObj.color : '#94a3b8' } }, typeObj ? typeObj.label : strat.type)
                   ),
                   // Steps
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 12 } },
+                  h('div', { style: { marginBottom: 12 } },
                     h('p', { style: { fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 } }, 'How to do it:'),
                     h('ol', { style: { margin: 0, paddingLeft: 20 } },
                       steps.map(function(step, i) {
@@ -974,7 +1016,7 @@ window.SelHub = window.SelHub || {
                     }
                   }, '\uD83C\uDFAF Practice This Strategy'),
                   // Log it + Favorite
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 6, marginTop: 6 } },
+                  h('div', { style: { display: 'flex', gap: 6, marginTop: 6 } },
                     h('button', { 'aria-label': 'Log it',
                       onClick: function() {
                         logPractice(strat.id, strat.type);
@@ -991,7 +1033,7 @@ window.SelHub = window.SelHub || {
                       style: {
                         padding: '8px 14px', borderRadius: 8, border: '1px solid #334155',
                         background: favorites[strat.id] ? '#ef444418' : 'transparent',
-                        color: favorites[strat.id] ? '#ef4444' : '#64748b', fontSize: 14, cursor: 'pointer'
+                        color: favorites[strat.id] ? '#ef4444' : '#94a3b8', fontSize: 14, cursor: 'pointer'
                       }
                     }, favorites[strat.id] ? '\u2764\uFE0F' : '\u2661')
                   )
@@ -1017,7 +1059,7 @@ window.SelHub = window.SelHub || {
             h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 20 } },
               'Choose a guided activity to practice'
             ),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
               [
                 { id: 'breathing', icon: '\uD83C\uDF2C\uFE0F', title: 'Guided Breathing', desc: 'Follow animated breathing patterns to calm your body', color: '#3b82f6' },
                 { id: 'pmr', icon: '\uD83E\uDDD8', title: 'Progressive Muscle Relaxation', desc: 'Tense and release muscle groups to melt away stress', color: '#22c55e' },
@@ -1056,7 +1098,7 @@ window.SelHub = window.SelHub || {
 
           practiceContent = h('div', { style: { padding: 20, maxWidth: 500, margin: '0 auto', textAlign: 'center' } },
             h('h3', { style: { color: '#f1f5f9', fontSize: 18, marginBottom: 4 } }, 'Progressive Muscle Relaxation'),
-            !pmrDone && h('p', { style: { color: '#64748b', fontSize: 12, marginBottom: 8 } },
+            !pmrDone && h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 8 } },
               'Muscle group ' + (pmrStep + 1) + ' of ' + PMR_GROUPS.length
             ),
             // Progress bar
@@ -1083,12 +1125,12 @@ window.SelHub = window.SelHub || {
                     ? (group.tense[band] || group.tense.elementary)
                     : (group.release[band] || group.release.elementary)
                 ),
-                h('p', { style: { fontSize: 12, color: '#64748b', marginTop: 8 } },
+                h('p', { style: { fontSize: 12, color: '#94a3b8', marginTop: 8 } },
                   pmrPhase === 'tense' ? 'Hold for 5-10 seconds...' : 'Notice the difference. Enjoy the relaxation.'
                 )
               ),
               // Controls
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 10, justifyContent: 'center' } },
+              h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
                 pmrPhase === 'tense' && h('button', { 'aria-label': 'Release',
                   onClick: function() {
                     upd('pmrPhase', 'release');
@@ -1116,8 +1158,8 @@ window.SelHub = window.SelHub || {
                   style: { padding: '12px 20px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, cursor: 'pointer' }
                 }, '\u2190 Back')
               )
-            ) : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 30 } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48, marginBottom: 12 } }, '\uD83C\uDF1F'),
+            ) : h('div', { style: { padding: 30 } },
+              h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83C\uDF1F'),
               h('p', { style: { fontWeight: 700, color: '#22c55e', fontSize: 18, marginBottom: 8 } },
                 band === 'elementary' ? 'You did it! Your body should feel like jelly!' : 'PMR Complete!'
               ),
@@ -1125,7 +1167,7 @@ window.SelHub = window.SelHub || {
                 band === 'elementary' ? 'Notice how relaxed your body feels now.' :
                 'Scan your body. Notice the warmth, heaviness, and relaxation. This is your parasympathetic nervous system at work.'
               ),
-              h('p', { style: { color: '#64748b', fontSize: 12 } }, 'Sessions completed: ' + (pmrComplete + 1)),
+              h('p', { style: { color: '#94a3b8', fontSize: 12 } }, 'Sessions completed: ' + (pmrComplete + 1)),
               h('button', { 'aria-label': 'Back to Practice Menu',
                 onClick: function() { upd({ practiceMode: null, pmrStep: 0, pmrPhase: 'tense' }); },
                 style: { marginTop: 16, padding: '10px 24px', borderRadius: 8, border: 'none', background: '#14b8a6', color: '#fff', fontWeight: 700, cursor: 'pointer' }
@@ -1142,15 +1184,15 @@ window.SelHub = window.SelHub || {
           var circleScale = breathPhase === 'inhale' ? 1.0 : breathPhase === 'hold' ? 1.0 : breathPhase === 'exhale' ? 0.5 : breathPhase === 'holdOut' ? 0.5 : 0.7;
           var phaseTime = breathPhase === 'inhale' ? bp.inhale : breathPhase === 'hold' ? bp.hold : breathPhase === 'exhale' ? bp.exhale : breathPhase === 'holdOut' ? bp.holdOut : 0;
 
-          practiceContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, maxWidth: 500, margin: '0 auto', textAlign: 'center' } },
+          practiceContent = h('div', { style: { padding: 20, maxWidth: 500, margin: '0 auto', textAlign: 'center' } },
             h('h3', { style: { color: '#f1f5f9', fontSize: 18, marginBottom: 4 } }, '\uD83C\uDF2C\uFE0F Guided Breathing'),
             h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'Follow the circle and breathe along!' : 'Select a pattern and follow the visual guide'
             ),
 
             // Pattern selector (only when not active)
-            !breathActive && breathPhase !== 'done' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 24 } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 } },
+            !breathActive && breathPhase !== 'done' && h('div', { style: { marginBottom: 24 } },
+              h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 } },
                 BREATH_PATTERNS.map(function(pat, idx) {
                   var isSel = breathPatternIdx === idx;
                   return h('button', { 'aria-label': pat.name,
@@ -1162,9 +1204,9 @@ window.SelHub = window.SelHub || {
                       background: isSel ? pat.color + '18' : '#1e293b', cursor: 'pointer'
                     }
                   },
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700, color: isSel ? pat.color : '#f1f5f9', fontSize: 13, marginBottom: 2 } }, pat.name),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#94a3b8' } }, pat.desc),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#64748b', marginTop: 4 } },
+                    h('div', { style: { fontWeight: 700, color: isSel ? pat.color : '#f1f5f9', fontSize: 13, marginBottom: 2 } }, pat.name),
+                    h('div', { style: { fontSize: 10, color: '#94a3b8' } }, pat.desc),
+                    h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } },
                       pat.inhale + 's in / ' + (pat.hold > 0 ? pat.hold + 's hold / ' : '') + pat.exhale + 's out' + (pat.holdOut > 0 ? ' / ' + pat.holdOut + 's hold' : '') + ' \u00D7 ' + pat.cycles
                     )
                   );
@@ -1213,7 +1255,7 @@ window.SelHub = window.SelHub || {
 
             // Active breathing display
             breathActive && h('div', null,
-              h('p', { style: { fontSize: 12, color: '#64748b', marginBottom: 4 } },
+              h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 4 } },
                 'Cycle ' + breathCycle + ' of ' + bp.cycles + ' \u2022 ' + bp.name
               ),
               // Animated circle
@@ -1228,9 +1270,9 @@ window.SelHub = window.SelHub || {
                     display: 'flex', alignItems: 'center', justifyContent: 'center'
                   }
                 },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { textAlign: 'center' } },
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 36, fontWeight: 800, color: phaseColors[breathPhase] || '#14b8a6' } }, breathTimeLeft),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 14, fontWeight: 600, color: phaseColors[breathPhase] || '#14b8a6', marginTop: 4 } }, phaseLabels[breathPhase] || '')
+                  h('div', { style: { textAlign: 'center' } },
+                    h('div', { style: { fontSize: 36, fontWeight: 800, color: phaseColors[breathPhase] || '#14b8a6' } }, breathTimeLeft),
+                    h('div', { style: { fontSize: 14, fontWeight: 600, color: phaseColors[breathPhase] || '#14b8a6', marginTop: 4 } }, phaseLabels[breathPhase] || '')
                   )
                 )
               ),
@@ -1241,8 +1283,8 @@ window.SelHub = window.SelHub || {
             ),
 
             // Done state
-            breathPhase === 'done' && !breathActive && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 30 } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48, marginBottom: 12 } }, '\uD83C\uDF1F'),
+            breathPhase === 'done' && !breathActive && h('div', { style: { padding: 30 } },
+              h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83C\uDF1F'),
               h('p', { style: { fontWeight: 700, color: '#22c55e', fontSize: 18, marginBottom: 8 } },
                 band === 'elementary' ? 'Amazing breathing!' : 'Breathing session complete!'
               ),
@@ -1250,14 +1292,14 @@ window.SelHub = window.SelHub || {
                 band === 'elementary' ? 'Your body is so calm right now. Nice job!' :
                 'Notice how your body feels. Your heart rate has slowed and your nervous system is calmer.'
               ),
-              h('p', { style: { color: '#64748b', fontSize: 12 } }, 'Total sessions: ' + breathSessions),
+              h('p', { style: { color: '#94a3b8', fontSize: 12 } }, 'Total sessions: ' + breathSessions),
               h('button', { 'aria-label': 'Try Another Pattern',
                 onClick: function() { upd({ breathPhase: null }); },
                 style: { marginTop: 12, padding: '10px 24px', borderRadius: 8, border: 'none', background: '#14b8a6', color: '#fff', fontWeight: 700, cursor: 'pointer' }
               }, 'Try Another Pattern')
             ),
 
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 20 } },
+            h('div', { style: { marginTop: 20 } },
               h('button', { 'aria-label': 'Back to Practice Menu',
                 onClick: function() { stopBreathTimer(); upd({ practiceMode: null, breathActive: false, breathPhase: null }); },
                 style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, cursor: 'pointer' }
@@ -1274,15 +1316,15 @@ window.SelHub = window.SelHub || {
           var isLastMoveStep = moveStep >= exSteps.length - 1;
           var moveDone = moveStep >= exSteps.length;
 
-          practiceContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, maxWidth: 500, margin: '0 auto', textAlign: 'center' } },
+          practiceContent = h('div', { style: { padding: 20, maxWidth: 500, margin: '0 auto', textAlign: 'center' } },
             h('h3', { style: { color: '#f1f5f9', fontSize: 18, marginBottom: 4 } }, '\uD83C\uDFC3 Guided Movement'),
             h('p', { style: { color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'Move your body to feel better!' : 'Follow the guided movement exercise'
             ),
 
             // Exercise selector (only before starting)
-            !moveActive && !moveDone && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 20 } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 } },
+            !moveActive && !moveDone && h('div', { style: { marginBottom: 20 } },
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 } },
                 MOVEMENT_EXERCISES.map(function(ex, idx) {
                   var isSel = moveExIdx === idx;
                   return h('button', { 'aria-label': ex.icon,
@@ -1294,10 +1336,10 @@ window.SelHub = window.SelHub || {
                       background: isSel ? ex.color + '18' : '#1e293b', cursor: 'pointer'
                     }
                   },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 28 } }, ex.icon),
+                    h('span', { style: { fontSize: 28 } }, ex.icon),
                     h('div', null,
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700, color: isSel ? ex.color : '#f1f5f9', fontSize: 14 } }, ex.name),
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8' } }, (ex.steps[band] || ex.steps.elementary).length + ' steps')
+                      h('div', { style: { fontWeight: 700, color: isSel ? ex.color : '#f1f5f9', fontSize: 14 } }, ex.name),
+                      h('div', { style: { fontSize: 11, color: '#94a3b8' } }, (ex.steps[band] || ex.steps.elementary).length + ' steps')
                     )
                   );
                 })
@@ -1313,7 +1355,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { height: 4, borderRadius: 2, background: '#1e293b', marginBottom: 16, overflow: 'hidden' } },
                 h('div', { style: { height: '100%', width: ((moveStep + 1) / exSteps.length * 100) + '%', background: exercise.color, transition: 'width 0.3s' } })
               ),
-              h('p', { style: { fontSize: 12, color: '#64748b', marginBottom: 8 } }, exercise.icon + ' ' + exercise.name + ' \u2022 Step ' + (moveStep + 1) + '/' + exSteps.length),
+              h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8 } }, exercise.icon + ' ' + exercise.name + ' \u2022 Step ' + (moveStep + 1) + '/' + exSteps.length),
 
               h('div', {
                 style: {
@@ -1323,16 +1365,16 @@ window.SelHub = window.SelHub || {
               },
                 curStep.timed && curStep.label && h('p', { style: { fontSize: 11, fontWeight: 700, color: exercise.color, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, curStep.label),
                 h('p', { style: { fontSize: 16, color: '#f1f5f9', lineHeight: 1.6, fontWeight: 500 } }, curStep.instruction),
-                curStep.timed && moveTimeLeft !== null && moveTimeLeft > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 16 } },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 40, fontWeight: 800, color: exercise.color } }, moveTimeLeft),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { height: 4, borderRadius: 2, background: '#1e293b33', marginTop: 8, overflow: 'hidden' } },
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { height: '100%', width: (moveTimeLeft / curStep.seconds * 100) + '%', background: exercise.color, transition: 'width 1s linear' } })
+                curStep.timed && moveTimeLeft !== null && moveTimeLeft > 0 && h('div', { style: { marginTop: 16 } },
+                  h('div', { style: { fontSize: 40, fontWeight: 800, color: exercise.color } }, moveTimeLeft),
+                  h('div', { style: { height: 4, borderRadius: 2, background: '#1e293b33', marginTop: 8, overflow: 'hidden' } },
+                    h('div', { style: { height: '100%', width: (moveTimeLeft / curStep.seconds * 100) + '%', background: exercise.color, transition: 'width 1s linear' } })
                   )
                 ),
                 curStep.timed && moveTimeLeft === 0 && h('p', { style: { marginTop: 12, fontSize: 14, fontWeight: 700, color: '#22c55e' } }, '\u2705 Done!')
               ),
 
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 10, justifyContent: 'center' } },
+              h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
                 curStep.timed && moveTimeLeft === null && h('button', { 'aria-label': 'Start Timer',
                   onClick: function() {
                     upd('moveTimeLeft', curStep.seconds);
@@ -1372,8 +1414,8 @@ window.SelHub = window.SelHub || {
             ),
 
             // Done state
-            moveDone && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 30 } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 48, marginBottom: 12 } }, '\uD83C\uDF1F'),
+            moveDone && h('div', { style: { padding: 30 } },
+              h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83C\uDF1F'),
               h('p', { style: { fontWeight: 700, color: '#22c55e', fontSize: 18, marginBottom: 8 } },
                 band === 'elementary' ? 'You moved your body! Great job!' : 'Exercise complete!'
               ),
@@ -1381,14 +1423,14 @@ window.SelHub = window.SelHub || {
                 band === 'elementary' ? 'Notice how your body feels different now!' :
                 'Your body has released physical tension. Notice the shift in your energy and focus.'
               ),
-              h('p', { style: { color: '#64748b', fontSize: 12 } }, 'Sessions completed: ' + moveSessions),
+              h('p', { style: { color: '#94a3b8', fontSize: 12 } }, 'Sessions completed: ' + moveSessions),
               h('button', { 'aria-label': 'Try Another Exercise',
                 onClick: function() { upd({ moveStep: 0, moveActive: false, moveTimeLeft: null }); },
                 style: { marginTop: 12, padding: '10px 24px', borderRadius: 8, border: 'none', background: '#14b8a6', color: '#fff', fontWeight: 700, cursor: 'pointer' }
               }, 'Try Another Exercise')
             ),
 
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 20 } },
+            h('div', { style: { marginTop: 20 } },
               h('button', { 'aria-label': 'Back to Practice Menu',
                 onClick: function() { stopMoveTimer(); upd({ practiceMode: null, moveActive: false, moveStep: 0, moveTimeLeft: null }); },
                 style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, cursor: 'pointer' }
@@ -1413,16 +1455,15 @@ window.SelHub = window.SelHub || {
             h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 4 } },
               band === 'elementary' ? 'Turn mean thoughts into kind thoughts!' : 'Identify and restructure negative thinking patterns'
             ),
-            h('p', { style: { textAlign: 'center', color: '#64748b', fontSize: 11, marginBottom: 20 } }, 'Thoughts flipped: ' + tfFlipCount),
+            h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 11, marginBottom: 20 } }, 'Thoughts flipped: ' + tfFlipCount),
 
             // Negative thought card
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 24, borderRadius: 14, background: '#ef444418', border: '1px solid #ef444444', marginBottom: 16, textAlign: 'center' } },
+            h('div', { style: { padding: 24, borderRadius: 14, background: '#ef444418', border: '1px solid #ef444444', marginBottom: 16, textAlign: 'center' } },
               h('p', { style: { fontSize: 11, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 } },
                 band === 'elementary' ? 'Mean Thought' : 'Negative Thought'
               ),
               h('p', { style: { fontSize: 17, color: '#fca5a5', fontWeight: 500, lineHeight: 1.5, fontStyle: 'italic' } }, '"' + currentThought.thought + '"'),
-              band !== 'elementary' && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-                style: { display: 'inline-block', marginTop: 8, fontSize: 10, padding: '3px 10px', borderRadius: 8, background: (distortionColors[currentThought.distortion] || '#64748b') + '22', color: distortionColors[currentThought.distortion] || '#64748b', fontWeight: 600 }
+              band !== 'elementary' && h('span', {                 style: { display: 'inline-block', marginTop: 8, fontSize: 10, padding: '3px 10px', borderRadius: 8, background: (distortionColors[currentThought.distortion] || '#94a3b8') + '22', color: distortionColors[currentThought.distortion] || '#94a3b8', fontWeight: 600 }
               }, 'Distortion: ' + currentThought.distortion)
             ),
 
@@ -1438,7 +1479,7 @@ window.SelHub = window.SelHub || {
                   },
                   style: { display: 'block', width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: '#8b5cf6', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 16 }
                 }, '\uD83D\uDD04 Flip This Thought!')
-              : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 24, borderRadius: 14, background: '#22c55e18', border: '1px solid #22c55e44', marginBottom: 16, textAlign: 'center' } },
+              : h('div', { style: { padding: 24, borderRadius: 14, background: '#22c55e18', border: '1px solid #22c55e44', marginBottom: 16, textAlign: 'center' } },
                   h('p', { style: { fontSize: 11, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 } },
                     band === 'elementary' ? 'Kind Thought' : 'Balanced Thought'
                   ),
@@ -1455,7 +1496,7 @@ window.SelHub = window.SelHub || {
             }, 'Next Thought \u2192'),
 
             // Custom thought input
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
+            h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', marginBottom: 16 } },
               h('p', { style: { fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 } },
                 band === 'elementary' ? 'Or type your own mean thought to flip:' : 'Or enter your own thought:'
               ),
@@ -1468,13 +1509,24 @@ window.SelHub = window.SelHub || {
               }),
               callGemini && tfCustomThought.trim() && h('button', { 'aria-label': 'Toggle sound',
                 onClick: function() {
+                  // Safety pre-check on the student's typed thought before
+                  // sending to the AI. Critical content (self-harm, harm-to-
+                  // others) halts and surfaces crisis resources instead of
+                  // an AI-generated "reframe" of something that needs a person.
+                  var tfSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                    ? window.SelHub.safeRehearseCheck(tfCustomThought, { toolId: 'coping_tf', onSafetyFlag: onSafetyFlag })
+                    : { action: 'continue' };
+                  if (tfSafety.action === 'block') {
+                    upd({ tfCustomFlip: window.SelHub.rehearseBreakCharacterText(tfSafety.severity), stLoading: false, _lastTier: 3 });
+                    return;
+                  }
                   upd({ stLoading: true, tfCustomFlip: null });
                   var prompt = 'A ' + band + ' school student has this negative thought: "' + tfCustomThought + '". ' +
                     'Provide a balanced, realistic reframe of this thought (not just a positive spin). ' +
                     'Use ' + (band === 'elementary' ? 'simple, warm language for a young child' : band === 'middle' ? 'relatable language for a teen' : 'mature, evidence-based language') + '. ' +
                     'Respond with ONLY the reframed thought in 1-2 sentences. No quotes.';
                   callGemini(prompt).then(function(resp) {
-                    upd({ tfCustomFlip: resp, stLoading: false });
+                    upd({ tfCustomFlip: resp, stLoading: false, _lastTier: tfSafety.action === 'nudge' ? 2 : 0 });
                     var newCount = tfFlipCount + 1;
                     upd('tfFlipCount', newCount);
                     if (newCount >= 5) tryAwardBadge('thought_flip_5');
@@ -1489,9 +1541,11 @@ window.SelHub = window.SelHub || {
                 Sparkles ? h(Sparkles, { size: 14 }) : '\u2728',
                 stLoading ? 'Thinking...' : 'AI Flip It'
               ),
-              tfCustomFlip && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 10, padding: 12, borderRadius: 10, background: '#22c55e18', border: '1px solid #22c55e44', fontSize: 13, color: '#86efac', lineHeight: 1.5 } },
+              tfCustomFlip && h('div', { style: { marginTop: 10, padding: 12, borderRadius: 10, background: '#22c55e18', border: '1px solid #22c55e44', fontSize: 13, color: '#86efac', lineHeight: 1.5 } },
                 '\uD83D\uDD04 ' + tfCustomFlip
-              )
+              ),
+              // Surface 988 / Crisis Text Line block when last thought was tier-3.
+              (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band)
             ),
             h('button', { 'aria-label': 'Back to Practice Menu',
               onClick: function() { upd('practiceMode', null); },
@@ -1513,15 +1567,15 @@ window.SelHub = window.SelHub || {
             ),
 
             // Live preview
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '2px solid #f9731644', marginBottom: 20, textAlign: 'center' } },
+            h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '2px solid #f9731644', marginBottom: 20, textAlign: 'center' } },
               h('p', { style: { fontSize: 10, color: '#f97316', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Your I-Statement'),
               h('p', { style: { fontSize: 16, color: '#f1f5f9', fontWeight: 500, lineHeight: 1.6, fontStyle: 'italic' } }, '"' + preview + '"')
             ),
 
             // Feeling picker
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 16 } },
+            h('div', { style: { marginBottom: 16 } },
               h('label', { style: { display: 'block', fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 } }, '1. I feel...'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 } },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 } },
                 feelings.map(function(f) {
                   return h('button', { 'aria-label': 'Select feeling ' + f,
                     key: f,
@@ -1542,9 +1596,9 @@ window.SelHub = window.SelHub || {
             ),
 
             // Situation picker
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 16 } },
+            h('div', { style: { marginBottom: 16 } },
               h('label', { style: { display: 'block', fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 } }, '2. When...'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 } },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 } },
                 situations.map(function(s) {
                   return h('button', { 'aria-label': 'Select situation',
                     key: s,
@@ -1575,7 +1629,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Need (optional)
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 20 } },
+            h('div', { style: { marginBottom: 20 } },
               h('label', { style: { display: 'block', fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 } }, '4. I would like... (optional)'),
               h('input', {
                 type: 'text', value: iNeed, 'aria-label': 'I need...', onChange: function(e) { upd('iNeed', e.target.value); },
@@ -1599,10 +1653,10 @@ window.SelHub = window.SelHub || {
             }, '\u2705 Save This I-Statement'),
 
             // History
-            iHistory.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 12, marginBottom: 12 } },
+            iHistory.length > 0 && h('div', { style: { marginTop: 12, marginBottom: 12 } },
               h('p', { style: { fontSize: 12, fontWeight: 700, color: '#94a3b8', marginBottom: 8 } }, 'Your I-Statements (' + iHistory.length + ')'),
               iHistory.slice().reverse().slice(0, 5).map(function(entry, i) {
-                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', border: '1px solid #334155', marginBottom: 6, fontSize: 12, color: '#cbd5e1', fontStyle: 'italic' } },
+                return h('div', { key: i, style: { padding: '8px 12px', borderRadius: 8, background: '#0f172a', border: '1px solid #334155', marginBottom: 6, fontSize: 12, color: '#cbd5e1', fontStyle: 'italic' } },
                   '"' + entry.statement + '"'
                 );
               })
@@ -1628,8 +1682,8 @@ window.SelHub = window.SelHub || {
             // Count display
             countCurrent === null
               ? h('div', null,
-                  h('p', { style: { color: '#64748b', fontSize: 13, marginBottom: 12 } }, 'Count from:'),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 20 } },
+                  h('p', { style: { color: '#94a3b8', fontSize: 13, marginBottom: 12 } }, 'Count from:'),
+                  h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 20 } },
                     [10, 20, 50].map(function(n) {
                       return h('button', { 'aria-label': 'Count from ' + n,
                         key: n,
@@ -1642,7 +1696,7 @@ window.SelHub = window.SelHub || {
                       }, n);
                     })
                   ),
-                  band === 'high' && h('p', { style: { fontSize: 11, color: '#64748b', marginBottom: 16 } }, 'Challenge: count by 3s (50, 47, 44...)'),
+                  band === 'high' && h('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 16 } }, 'Challenge: count by 3s (50, 47, 44...)'),
                   h('button', { 'aria-label': 'Start',
                     onClick: function() {
                       upd({ countCurrent: countFrom, countActive: true });
@@ -1661,7 +1715,7 @@ window.SelHub = window.SelHub || {
                       display: 'flex', alignItems: 'center', justifyContent: 'center'
                     }
                   },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 56, fontWeight: 800, color: countCurrent <= 0 ? '#22c55e' : '#60a5fa' } },
+                    h('span', { style: { fontSize: 56, fontWeight: 800, color: countCurrent <= 0 ? '#22c55e' : '#60a5fa' } },
                       countCurrent <= 0 ? '\u2705' : countCurrent
                     )
                   ),
@@ -1693,7 +1747,7 @@ window.SelHub = window.SelHub || {
                       band === 'elementary' ? 'Take 3 more deep breaths. How do you feel?' :
                       'Notice: your heart rate has slowed. Your prefrontal cortex is back in charge.'
                     ),
-                    h('p', { style: { color: '#64748b', fontSize: 12 } }, 'Sessions completed: ' + countComplete)
+                    h('p', { style: { color: '#94a3b8', fontSize: 12 } }, 'Sessions completed: ' + countComplete)
                   ),
                   h('button', { 'aria-label': 'Reset',
                     onClick: function() { upd({ countCurrent: null, countActive: false }); },
@@ -1701,7 +1755,7 @@ window.SelHub = window.SelHub || {
                   }, '\u2190 Reset')
                 ),
 
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 20 } },
+            h('div', { style: { marginTop: 20 } },
               h('button', { 'aria-label': 'Back to Practice Menu',
                 onClick: function() { upd({ practiceMode: null, countCurrent: null, countActive: false }); },
                 style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, cursor: 'pointer' }
@@ -1735,6 +1789,16 @@ window.SelHub = window.SelHub || {
             // Generate button
             callGemini && stInput.trim() && h('button', { 'aria-label': 'Generate button',
               onClick: function() {
+                // Safety pre-check on student's typed inner-critic statement.
+                // If it contains critical-tier content, surface crisis
+                // resources instead of generating "self-talk replacements."
+                var stSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                  ? window.SelHub.safeRehearseCheck(stInput, { toolId: 'coping_st', onSafetyFlag: onSafetyFlag })
+                  : { action: 'continue' };
+                if (stSafety.action === 'block') {
+                  upd({ stGenerated: window.SelHub.rehearseBreakCharacterText(stSafety.severity), stLoading: false, _lastTier: 3 });
+                  return;
+                }
                 upd({ stLoading: true, stGenerated: null });
                 var prompt = 'A ' + band + ' school student is being harsh on themselves. Their inner critic says: "' + stInput + '". ' +
                   'Generate 3 compassionate, realistic self-talk replacements (not toxic positivity \u2014 acknowledge the difficulty). ' +
@@ -1743,7 +1807,7 @@ window.SelHub = window.SelHub || {
                             'mature, evidence-based language rooted in self-compassion theory.') + ' ' +
                   'Format: number each one (1. 2. 3.) on separate lines.';
                 callGemini(prompt).then(function(resp) {
-                  upd({ stGenerated: resp, stLoading: false });
+                  upd({ stGenerated: resp, stLoading: false, _lastTier: stSafety.action === 'nudge' ? 2 : 0 });
                   if (soundEnabled) sfxCorrect();
                   tryAwardBadge('ai_match');
                 }).catch(function() {
@@ -1756,8 +1820,10 @@ window.SelHub = window.SelHub || {
               Sparkles ? h(Sparkles, { size: 14 }) : '\u2728',
               stLoading ? 'Generating kind words...' : 'Generate Kind Self-Talk'
             ),
+            // Surface 988 / Crisis Text Line block when last self-talk input was tier-3.
+            (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
             // Result
-            stGenerated && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 16, borderRadius: 14, background: '#ec489918', border: '1px solid #ec489944', marginBottom: 16 } },
+            stGenerated && h('div', { style: { padding: 16, borderRadius: 14, background: '#ec489918', border: '1px solid #ec489944', marginBottom: 16 } },
               h('p', { style: { fontSize: 11, color: '#ec4899', fontWeight: 700, marginBottom: 8 } }, 'Your Inner Coach Says:'),
               h('p', { style: { fontSize: 13, color: '#f1f5f9', lineHeight: 1.7, whiteSpace: 'pre-line' } }, stGenerated),
               h('button', { 'aria-label': 'Save This',
@@ -1771,10 +1837,10 @@ window.SelHub = window.SelHub || {
               }, '\uD83D\uDCBE Save This')
             ),
             // Saved collection
-            stSaved.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 16 } },
+            stSaved.length > 0 && h('div', { style: { marginBottom: 16 } },
               h('p', { style: { fontSize: 12, fontWeight: 700, color: '#94a3b8', marginBottom: 8 } }, 'Saved Self-Talk (' + stSaved.length + ')'),
               stSaved.slice().reverse().slice(0, 3).map(function(entry, i) {
-                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', marginBottom: 6 } },
+                return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155', marginBottom: 6 } },
                   h('p', { style: { fontSize: 11, color: '#ef4444', marginBottom: 4 } }, '\u274C "' + entry.critic + '"'),
                   h('p', { style: { fontSize: 11, color: '#22c55e' } }, '\u2705 ' + entry.coach.split('\n')[0])
                 );
@@ -1787,6 +1853,350 @@ window.SelHub = window.SelHub || {
             }, '\u2190 Back to Practice Menu')
           );
         }
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // ── TAB: Rehearse — Coping-skill application in a simulated stress moment ──
+      // The AI plays the trigger (an anxious voice, an escalating parent, a
+      // distant friend, or sensory overload). The student practices what
+      // they would actually do — say, think, or shift in their body —
+      // while the trigger persists. Multi-turn back-and-forth, coach break,
+      // end-and-reflect. Mirrors the proven Upstander / Restorative scaffold
+      // but with the AI as stressor rather than peer.
+      var rehearseContent = null;
+      if (activeTab === 'rehearse') {
+        var COPING_TRIGGERS = {
+          anxious_voice: {
+            label: 'The anxious voice in your head before something hard',
+            icon: '🌀',
+            blurb: 'Before a presentation, a test, a hard conversation. AI plays the voice in your head ("you\'re going to mess up, everyone will notice"). You practice talking back, defusing, or letting it pass.',
+            charName: 'Anxious voice',
+            charDesc: 'You are the worried voice in this student\'s head right before they do something hard (a class presentation, a test, asking out a crush). You speak in 2nd person ("you\'re going to forget everything"), short catastrophizing thoughts in 1-2 sentences. You are NOT cruel — you are FEARFUL. You get LOUDER if the student ignores or argues with you. You get QUIETER if the student names you ("that\'s my anxiety talking"), accepts you without believing you ("hi anxiety, thanks for trying to protect me"), or grounds in something physical ("I notice my feet on the floor").',
+            fallbackScene: 'You are about to present a project in front of your whole class. Your hands are sweating. You\'re next.',
+            fallbackOpener: 'You\'re going to mess this up. Everyone is going to see you panic. You should have prepared more. Why did you even sign up for this?'
+          },
+          parent_escalating: {
+            label: 'A parent escalating an argument',
+            icon: '🔥',
+            blurb: 'A parent who is getting more frustrated, raising volume, repeating the same point. You practice de-escalating without shutting down, without matching their energy, without giving up your own perspective.',
+            charName: 'Parent',
+            charDesc: 'You are a parent who is frustrated and escalating an argument with their kid (about screen time, grades, an unmade bed, plans for the weekend — pick something realistic). You speak in 1-2 sentences. You repeat your point louder when not heard. You may make small "you always..." overgeneralizations. You are NOT abusive — you are stressed and human. You de-escalate when the student validates your underlying concern WITHOUT folding ("I hear you\'re worried about X, AND I still see it this way"), uses a calm tone, or asks a curious question. You stay escalated if they roll their eyes, mirror your volume, or stonewall.',
+            fallbackScene: 'You\'re in the kitchen after dinner. The conversation about grades has been going for ten minutes. Your parent just raised their voice for the third time.',
+            fallbackOpener: 'This is exactly what I mean. You don\'t take any of this seriously. Do you even WANT to graduate?'
+          },
+          friend_bailing: {
+            label: 'A friend bailing on plans (last minute, vague)',
+            icon: '📵',
+            blurb: 'A friend texts to cancel and is being weird about it. Your brain starts the rejection spiral. You practice NOT spiraling, NOT lashing out, asking what\'s actually going on.',
+            charName: 'Friend',
+            charDesc: 'You are a teenager texting your friend (the student) to cancel plans last-minute. You are vague and a little distant. The REAL reason (which you do not volunteer at first) is realistic and not about the student — you\'re fighting with your mom, you\'re overwhelmed with homework, you\'re going through something. You speak in short text-like 1-sentence replies ("sorry I can\'t make it tonight" / "I just can\'t" / "it\'s complicated"). You open up IF the student doesn\'t spiral, doesn\'t accuse, and asks a kind direct question. You close back down if the student gets passive-aggressive, sarcastic, or guilt-trips you.',
+            fallbackScene: 'It\'s Friday afternoon. You and your closest friend have been planning to hang out tonight all week. They just texted: "hey so I can\'t come anymore."',
+            fallbackOpener: 'sorry I can\'t make it tonight'
+          },
+          sensory_overload: {
+            label: 'Sensory overload at a school event',
+            icon: '🎆',
+            blurb: 'Pep rally, lunchroom, dance, fire drill. AI plays the environment getting louder, brighter, more chaotic. You practice grounding skills — noticing your body, finding the exit, asking for what you need.',
+            charName: 'The environment',
+            charDesc: 'You are NOT a person. You are the SETTING — a sensory environment that is getting more overwhelming for this student (pep rally / lunchroom / dance / crowded hallway). You speak in 2nd-person observational sentences describing what is happening AROUND the student ("the bass drops; the bleachers shake; someone whoops behind you; the lights pulse red"). Each turn, the environment gets a little more intense if the student does nothing, OR levels off / quiets down if the student names a grounding move ("I\'m putting in my earplugs", "I notice my feet on the floor", "I\'m walking to the exit"). Keep each turn 1-2 sentences, sensory, present tense. NO dialogue — you are the environment, not a person.',
+            fallbackScene: 'You\'re at the school pep rally in the gym. The whole school is here. The band is warming up.',
+            fallbackOpener: 'The pep band hits its first crashing chord. The cheerleaders run out screaming. The bleachers behind you start stomping in unison — your sternum vibrates with it.'
+          }
+        };
+        var TRIG_ORDER = ['anxious_voice', 'parent_escalating', 'friend_bailing', 'sensory_overload'];
+        var trigCfg = cpRpScenarioId && COPING_TRIGGERS[cpRpScenarioId];
+
+        var bandLabel = band === 'elementary' ? 'upper elementary (3-5)' : (band === 'middle' ? 'middle school (6-8)' : 'high school (9-12)');
+
+        function cpStartRolePlay(trigId) {
+          var cfg = COPING_TRIGGERS[trigId];
+          if (!cfg) return;
+          if (!callGemini) {
+            upd({ cpRpScenarioId: trigId, cpRpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener, scene: cfg.fallbackScene }], cpRpInput: '', cpRpEnded: false, cpRpReflection: '', cpRpStarting: false });
+            return;
+          }
+          upd({ cpRpScenarioId: trigId, cpRpHistory: [], cpRpInput: '', cpRpEnded: false, cpRpReflection: '', cpRpStarting: true });
+          var prompt =
+            'You are setting up a brief in-vivo coping-skill rehearsal for an SEL tool. Build a fresh, realistic mini-scene + opening trigger line. ' +
+            'Return STRICT JSON only (no markdown, no fences, no preamble):\n' +
+            '{"scene":"1-2 sentence scene-setter in 2nd person (\\"you\\") naming WHERE the student is, WHAT just happened, and WHAT is starting to come up — present tense, observational","opener":"the FIRST trigger line — the words / sounds / pressure the student is now facing in 1-2 sentences. Match the character described below."}\n\n' +
+            'YOUR CHARACTER: ' + cfg.charDesc + '\n' +
+            'AUDIENCE: ' + bandLabel + ' student. Age-appropriate stressors only.\n\n' +
+            'RULES:\n' +
+            '- Vary the specifics (subject of argument, what test, which friend) each playthrough — do not default to "math test" or "messy room".\n' +
+            '- Scene is in 2nd person, observational, neutral.\n' +
+            '- Opener is in the character\'s voice (or environment\'s sensory voice for sensory_overload).\n' +
+            '- NO violence, NO sexual content, NO self-harm or suicidal content, NO slurs.\n' +
+            '- For parent_escalating: keep it stressful but NOT abusive. Frustrated, not cruel.\n' +
+            '- For anxious_voice: catastrophizing thoughts, NOT suicidal ideation.\n' +
+            '- For friend_bailing: ambiguous, NOT a serious crisis on the friend\'s side.\n' +
+            '- For sensory_overload: sensory description, no dialogue or people speaking.\n\n' +
+            'Return ONLY the JSON object.';
+          callGemini(prompt, true).then(function(r) {
+            try {
+              var clean = (r || '').replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim().replace(/^[^{]*/, '').replace(/[^}]*$/, '');
+              var parsed = JSON.parse(clean);
+              if (!parsed || !parsed.scene || !parsed.opener) throw new Error('shape');
+              upd({
+                cpRpHistory: [{ speaker: 'ai', text: String(parsed.opener).trim().replace(/^"|"$/g, ''), scene: String(parsed.scene).trim() }],
+                cpRpStarting: false
+              });
+            } catch (e) {
+              upd({ cpRpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener, scene: cfg.fallbackScene }], cpRpStarting: false });
+            }
+          }).catch(function() {
+            upd({ cpRpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener, scene: cfg.fallbackScene }], cpRpStarting: false });
+          });
+        }
+
+        function cpSendTurn() {
+          if (!callGemini || !cpRpInput.trim() || !trigCfg) return;
+          var studentTurn = cpRpInput.trim();
+          // Safety pre-check (see sel_safety_layer.js:safeRehearseCheck).
+          // Coping is the highest-content-risk Rehearse — students simulate
+          // distress moments and may type real feelings. Block + show crisis
+          // resources for critical content; nudge for high-severity.
+          var safety = (window.SelHub && window.SelHub.safeRehearseCheck)
+            ? window.SelHub.safeRehearseCheck(studentTurn, { toolId: 'coping', onSafetyFlag: onSafetyFlag })
+            : { action: 'continue' };
+          if (safety.action === 'block') {
+            upd({
+              cpRpHistory: cpRpHistory.concat([
+                { speaker: 'student', text: studentTurn },
+                { speaker: 'coach', text: window.SelHub.rehearseBreakCharacterText(safety.severity) },
+                { speaker: '_crisis', text: '' }
+              ]),
+              cpRpInput: '', cpRpLoading: false
+            });
+            return;
+          }
+          var newHist = cpRpHistory.concat([{ speaker: 'student', text: studentTurn }]);
+          upd({ cpRpHistory: newHist, cpRpInput: '', cpRpLoading: true });
+          var scene = (cpRpHistory[0] && cpRpHistory[0].scene) || trigCfg.fallbackScene;
+          var historyText = newHist.map(function(t) {
+            if (t.speaker === 'student') return 'STUDENT (what they say / do / notice): "' + t.text.replace(/"/g, '\\"') + '"';
+            if (t.speaker === 'coach') return 'COACH (out of character): ' + t.text;
+            return 'TRIGGER (' + trigCfg.charName + '): "' + t.text.replace(/"/g, '\\"') + '"';
+          }).join('\n');
+          var turnN = newHist.filter(function(t) { return t.speaker === 'student'; }).length;
+          var prompt =
+            'You are role-playing a TRIGGER for an SEL coping-skill rehearsal. The student practices applying a coping technique in real time.\n\n' +
+            'YOUR ROLE: ' + trigCfg.charDesc + '\n' +
+            'SCENE (constant): ' + scene + '\n' +
+            'AUDIENCE: ' + bandLabel + ' student.\n\n' +
+            'STRICT RULES:\n' +
+            '- Stay in role. Reply with 1-2 sentences, matching your character voice.\n' +
+            '- NO slurs, NO violence, NO sexual content, NO self-harm content, NO suicidal ideation.\n' +
+            '- Track the student\'s coping attempt this turn (did they name the trigger? ground physically? validate without folding? walk away? defuse the thought? regulate their breath?). React accordingly:\n' +
+            '   * If they used a recognized coping skill effectively → ease off (parent quieter, voice softer, friend opens up, environment levels)\n' +
+            '   * If they did NOT cope effectively (argued, escalated, stonewalled, suppressed) → stay consistent or slightly escalate appropriately\n' +
+            '- This is turn ' + turnN + '. By turn 4-5, the trigger should resolve (calm down, quiet, soften, fade) if the student has done ANY reasonable coping.\n' +
+            '- Do NOT moralize, break character, or narrate the student\'s feelings. Just deliver the next trigger line.\n\n' +
+            'CONVERSATION SO FAR:\n' + historyText + '\n\n' +
+            'Respond as the trigger in 1-2 sentences. Just the line.';
+          callGemini(prompt, false).then(function(r) {
+            var reply = (r || '').trim().replace(/^"|"$/g, '');
+            var afterTurn = newHist.concat([{ speaker: 'ai', text: reply || '...' }]);
+            if (safety.action === 'nudge') {
+              afterTurn = afterTurn.concat([{ speaker: 'coach', text: 'Quick check-in: if any of what you just typed is close to real life, talking to a trusted adult is always an option.' }]);
+            }
+            upd({ cpRpHistory: afterTurn, cpRpLoading: false });
+          }).catch(function() {
+            upd({ cpRpHistory: newHist.concat([{ speaker: 'ai', text: '(AI not reachable — take a real breath. Try again in a moment.)' }]), cpRpLoading: false });
+          });
+        }
+
+        function cpCoachBreak() {
+          if (!callGemini || cpRpHistory.length === 0 || !trigCfg) return;
+          upd('cpRpLoading', true);
+          var scene = (cpRpHistory[0] && cpRpHistory[0].scene) || trigCfg.fallbackScene;
+          var historyText = cpRpHistory.map(function(t) {
+            if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
+            if (t.speaker === 'coach') return 'COACH: ' + t.text;
+            return 'TRIGGER: "' + t.text.replace(/"/g, '\\"') + '"';
+          }).join('\n');
+          var prompt =
+            'You are a kind coping-skills coach watching a student practice applying a coping technique in a simulated stress moment. ' +
+            'OUT OF CHARACTER NOW. Briefly tell the student two things, under 80 words total:\n' +
+            '1) What is happening to their nervous system right now in this scene — what the body is probably doing.\n' +
+            '2) One concrete coping skill they could try in this moment — name a specific technique (e.g. box breathing, 5-4-3-2-1 grounding, naming the thought, defusion, asking one curious question, walking to a different room). Give an example phrasing or action.\n\n' +
+            'No moralizing. No "great job" filler. Warm, grounded tone. Plain English.\n\n' +
+            'TRIGGER TYPE: ' + trigCfg.charDesc + '\n' +
+            'SCENE: ' + scene + '\n' +
+            'CONVERSATION:\n' + historyText;
+          callGemini(prompt, false).then(function(r) {
+            var coachText = (r || 'Take a real breath. What\'s one thing you notice in your body right now? Name it out loud or in your head before you do anything else.').trim();
+            upd({ cpRpHistory: cpRpHistory.concat([{ speaker: 'coach', text: coachText }]), cpRpLoading: false });
+          }).catch(function() {
+            upd('cpRpLoading', false);
+          });
+        }
+
+        function cpEndReflect() {
+          if (!callGemini || !trigCfg) return;
+          upd('cpRpLoading', true);
+          var scene = (cpRpHistory[0] && cpRpHistory[0].scene) || trigCfg.fallbackScene;
+          var historyText = cpRpHistory.map(function(t) {
+            if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
+            if (t.speaker === 'coach') return 'COACH: ' + t.text;
+            return 'TRIGGER: "' + t.text.replace(/"/g, '\\"') + '"';
+          }).join('\n');
+          var prompt =
+            'You are a kind coping-skills coach reflecting on a brief simulated stress rehearsal. ' +
+            'In 2-3 sentences (under 70 words), name:\n' +
+            '1) One specific coping skill the student used in this practice (reference their actual words/actions).\n' +
+            '2) One coping skill they did NOT try yet that might help next time. Name it concretely.\n\n' +
+            'Be real and specific. No empty praise. Frame coping as a skill the student is BUILDING, not a test they\'re taking.\n\n' +
+            'TRIGGER TYPE: ' + trigCfg.charDesc + '\n' +
+            'SCENE: ' + scene + '\n' +
+            'CONVERSATION:\n' + historyText;
+          callGemini(prompt, false).then(function(r) {
+            var reflectText = (r || 'You stayed in the moment instead of bailing. That\'s the rep that matters. Next time, try naming the feeling out loud in one short sentence ("I notice I\'m anxious") before doing anything else.').trim();
+            upd({ cpRpEnded: true, cpRpReflection: reflectText, cpRpLoading: false });
+            // Reward the rep — small XP bump for completing a rehearsal.
+            if (ctx.awardXP) ctx.awardXP('coping', 5);
+          }).catch(function() {
+            upd({ cpRpEnded: true, cpRpReflection: 'Rehearsal complete. The act of staying in the moment IS the coping skill. Next time, try naming the feeling out loud in one short sentence before reacting.', cpRpLoading: false });
+          });
+        }
+
+        function cpResetRp() {
+          upd({ cpRpScenarioId: '', cpRpHistory: [], cpRpInput: '', cpRpEnded: false, cpRpReflection: '', cpRpStarting: false });
+        }
+
+        var sceneLine = cpRpHistory[0] && cpRpHistory[0].scene;
+        rehearseContent = h('div', { style: { padding: 20, maxWidth: 680, margin: '0 auto' } },
+          // Picker
+          !cpRpScenarioId && h('div', null,
+            h('h3', { style: { textAlign: 'center', marginBottom: 8, color: '#f1f5f9', fontSize: 18 } }, 'Rehearse coping in a hard moment'),
+            h('p', { style: { textAlign: 'center', marginBottom: 20, color: '#94a3b8', fontSize: 13, lineHeight: 1.5 } },
+              'Pick a trigger. The AI plays it. You practice what you would actually do — say, think, or shift in your body. The trigger eases if your coping lands. This is rehearsal, not performance.'),
+            h('div', { style: { display: 'grid', gap: 10 } },
+              TRIG_ORDER.map(function(tid) {
+                var cfg = COPING_TRIGGERS[tid];
+                return h('button', {
+                  key: tid,
+                  onClick: function() { cpStartRolePlay(tid); if (soundEnabled) sfxClick(); },
+                  disabled: !callGemini || cpRpStarting,
+                  style: {
+                    padding: '12px 14px', textAlign: 'left',
+                    background: 'rgba(249,115,22,0.08)', border: '2px solid rgba(249,115,22,0.35)',
+                    borderRadius: 10, color: '#f1f5f9', cursor: (callGemini && !cpRpStarting) ? 'pointer' : 'not-allowed',
+                    display: 'flex', alignItems: 'flex-start', gap: 12,
+                    opacity: cpRpStarting ? 0.6 : 1, fontSize: 14
+                  }
+                },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 26, marginTop: 2 } }, cfg.icon),
+                  h('div', { style: { flex: 1 } },
+                    h('div', { style: { fontWeight: 700, marginBottom: 6, color: '#fed7aa' } }, cfg.label),
+                    h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } }, cfg.blurb)
+                  )
+                );
+              })
+            ),
+            cpRpStarting && h('p', { 'aria-live': 'polite', style: { textAlign: 'center', marginTop: 14, fontSize: 12, color: '#fdba74', fontStyle: 'italic' } }, 'Setting the scene…'),
+            !callGemini && h('p', { style: { textAlign: 'center', marginTop: 14, fontSize: 12, color: '#fdba74', fontStyle: 'italic' } }, 'AI features need a connection. Try the Practice tab while offline.')
+          ),
+          // Conversation
+          cpRpScenarioId && trigCfg && h('div', null,
+            h('div', { style: { padding: '8px 12px', marginBottom: 12, background: 'rgba(249,115,22,0.14)', borderRadius: 8, fontSize: 12, color: '#fed7aa', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+              h('span', { style: { fontWeight: 700 } }, trigCfg.icon + ' ' + trigCfg.label),
+              h('button', {
+                onClick: cpResetRp,
+                style: { padding: '4px 10px', background: 'rgba(15,23,42,0.4)', color: '#fed7aa', border: '1px solid rgba(253,186,116,0.4)', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+              }, '← Different trigger')
+            ),
+            // Scene
+            sceneLine && h('div', { style: { padding: '10px 12px', marginBottom: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(148,163,184,0.25)', borderLeft: '3px solid #f97316', borderRadius: 8, fontSize: 13, lineHeight: 1.5, color: '#cbd5e1', fontStyle: 'italic' } },
+              h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: '#fdba74', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene:'),
+              sceneLine
+            ),
+            // Chat
+            h('div', { 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '40vh', overflowY: 'auto', padding: 4 } },
+              cpRpHistory.map(function(turn, ti) {
+                if (turn.speaker === '_crisis') {
+                  return h('div', { key: 'cp-rp-' + ti, style: { alignSelf: 'stretch' } },
+                    window.SelHub && window.SelHub.renderCrisisResources && window.SelHub.renderCrisisResources(h, band)
+                  );
+                }
+                var isStudent = turn.speaker === 'student';
+                var isCoach = turn.speaker === 'coach';
+                return h('div', {
+                  key: 'cp-rp-' + ti,
+                  style: {
+                    alignSelf: isStudent ? 'flex-end' : 'flex-start',
+                    maxWidth: '85%',
+                    padding: '10px 13px',
+                    borderRadius: 12,
+                    fontSize: 13, lineHeight: 1.5, whiteSpace: 'pre-wrap',
+                    background: isStudent ? 'rgba(20,184,166,0.18)' : (isCoach ? 'rgba(245,158,11,0.18)' : 'rgba(249,115,22,0.18)'),
+                    border: '1px solid ' + (isStudent ? 'rgba(45,212,191,0.5)' : (isCoach ? 'rgba(252,211,77,0.5)' : 'rgba(253,186,116,0.45)')),
+                    color: '#f1f5f9'
+                  }
+                },
+                  h('div', { style: { fontSize: 10, fontWeight: 700, color: isStudent ? '#5eead4' : (isCoach ? '#fcd34d' : '#fdba74'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
+                    isStudent ? 'You' : (isCoach ? '🪶 Coach (out of character)' : '🎭 ' + trigCfg.charName)),
+                  h('div', null, turn.text)
+                );
+              })
+            ),
+            // Input
+            !cpRpEnded && h('div', { style: { marginTop: 10 } },
+              h('textarea', {
+                id: 'cp-rp-input', value: cpRpInput,
+                onChange: function(e) { upd('cpRpInput', e.target.value); },
+                placeholder: 'What would you actually say / do / notice? You can describe an action ("I take a slow breath"), say something out loud, or both.',
+                rows: 2,
+                disabled: cpRpLoading,
+                style: { width: '100%', padding: 10, fontSize: 13, background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(148,163,184,0.4)', borderRadius: 8, color: '#f1f5f9', fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', marginBottom: 8 }
+              }),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                h('button', {
+                  onClick: cpSendTurn,
+                  disabled: cpRpLoading || !cpRpInput.trim() || !callGemini,
+                  'aria-busy': cpRpLoading ? 'true' : 'false',
+                  style: {
+                    padding: '10px 16px',
+                    background: (cpRpLoading || !cpRpInput.trim() || !callGemini) ? 'rgba(148,163,184,0.3)' : '#f97316',
+                    color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700,
+                    cursor: (cpRpLoading || !cpRpInput.trim() || !callGemini) ? 'not-allowed' : 'pointer',
+                    fontSize: 13
+                  }
+                }, cpRpLoading ? 'Thinking…' : 'Send →'),
+                h('button', {
+                  onClick: cpCoachBreak,
+                  disabled: cpRpLoading || !callGemini || cpRpHistory.length === 0,
+                  style: { padding: '10px 14px', background: 'rgba(245,158,11,0.15)', color: '#fcd34d', border: '1px solid rgba(252,211,77,0.5)', borderRadius: 8, fontWeight: 600, cursor: (cpRpLoading || !callGemini || cpRpHistory.length === 0) ? 'not-allowed' : 'pointer', fontSize: 13 }
+                }, '🪶 Pause — coach me'),
+                cpRpHistory.filter(function(t) { return t.speaker === 'student'; }).length >= 2 && h('button', {
+                  onClick: cpEndReflect,
+                  disabled: cpRpLoading || !callGemini,
+                  style: { padding: '10px 14px', background: 'rgba(15,23,42,0.6)', color: '#cbd5e1', border: '1px solid rgba(148,163,184,0.4)', borderRadius: 8, fontWeight: 600, cursor: (cpRpLoading || !callGemini) ? 'not-allowed' : 'pointer', fontSize: 13 }
+                }, 'End & reflect')
+              )
+            ),
+            // Reflection
+            cpRpEnded && cpRpReflection && h('div', { style: { marginTop: 12, padding: 14, background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(45,212,191,0.4)', borderRadius: 10 } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: '#5eead4', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'How that went'),
+              h('p', { style: { margin: '0 0 12px', fontSize: 14, lineHeight: 1.55, color: '#f1f5f9', whiteSpace: 'pre-wrap' } }, cpRpReflection),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                h('button', {
+                  onClick: function() { cpStartRolePlay(cpRpScenarioId); },
+                  style: { padding: '8px 14px', background: '#f97316', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: 13 }
+                }, 'Try again'),
+                h('button', {
+                  onClick: cpResetRp,
+                  style: { padding: '8px 14px', background: 'rgba(15,23,42,0.6)', color: '#cbd5e1', border: '1px solid rgba(148,163,184,0.4)', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 13 }
+                }, 'Different trigger')
+              )
+            ),
+            h('p', { style: { margin: '10px 0 0', fontSize: 11, color: '#fdba74', fontStyle: 'italic' } },
+              'AI-generated trigger simulation. If anything brings up something real that needs support, talk to a trusted adult — coping rehearsal is practice, not therapy.'),
+            // Always-on help strip. Coping is the highest-content-risk Rehearse;
+            // resources stay visible throughout the practice.
+            window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
+          )
+        );
       }
 
       // ══════════════════════════════════════════════════════════
@@ -1806,15 +2216,15 @@ window.SelHub = window.SelHub || {
           ),
 
           // Warning signs
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 20, padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155' } },
+          h('div', { style: { marginBottom: 20, padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155' } },
             h('h4', { style: { margin: '0 0 8px 0', fontSize: 14, color: '#eab308', display: 'flex', alignItems: 'center', gap: 6 } },
               '\u26A0\uFE0F',
               band === 'elementary' ? 'I know I\'m getting upset when...' : 'My Warning Signs'
             ),
             (plan.warningSigns || []).map(function(sign, i) {
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { color: '#eab308', fontSize: 14 } }, '\u2022'),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1, fontSize: 13, color: '#e2e8f0' } }, sign),
+              return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                h('span', { style: { color: '#eab308', fontSize: 14 } }, '\u2022'),
+                h('span', { style: { flex: 1, fontSize: 13, color: '#e2e8f0' } }, sign),
                 h('button', { 'aria-label': 'Add a warning sign...',
                   onClick: function() {
                     var newSigns = (plan.warningSigns || []).filter(function(_, j) { return j !== i; });
@@ -1824,7 +2234,7 @@ window.SelHub = window.SelHub || {
                 }, '\u2715')
               );
             }),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 6, marginTop: 8 } },
+            h('div', { style: { display: 'flex', gap: 6, marginTop: 8 } },
               h('input', {
                 type: 'text', id: 'cp-warning', 'aria-label': 'Warning sign',
                 placeholder: band === 'elementary' ? 'My fists get tight, my face gets hot...' : 'Add a warning sign...',
@@ -1845,15 +2255,15 @@ window.SelHub = window.SelHub || {
           ),
 
           // Calm-down steps
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginBottom: 20, padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155' } },
+          h('div', { style: { marginBottom: 20, padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155' } },
             h('h4', { style: { margin: '0 0 8px 0', fontSize: 14, color: '#14b8a6', display: 'flex', alignItems: 'center', gap: 6 } },
               '\uD83D\uDCCB',
               band === 'elementary' ? 'My calm-down steps (in order):' : 'My Regulation Steps'
             ),
             (plan.steps || []).map(function(step, i) {
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { width: 24, height: 24, borderRadius: '50%', background: '#14b8a633', color: '#14b8a6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 } }, i + 1),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1, fontSize: 13, color: '#e2e8f0' } }, step),
+              return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                h('span', { style: { width: 24, height: 24, borderRadius: '50%', background: '#14b8a633', color: '#14b8a6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 } }, i + 1),
+                h('span', { style: { flex: 1, fontSize: 13, color: '#e2e8f0' } }, step),
                 h('button', { 'aria-label': 'Add a step...',
                   onClick: function() {
                     var newSteps = (plan.steps || []).filter(function(_, j) { return j !== i; });
@@ -1863,7 +2273,7 @@ window.SelHub = window.SelHub || {
                 }, '\u2715')
               );
             }),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 6, marginTop: 8 } },
+            h('div', { style: { display: 'flex', gap: 6, marginTop: 8 } },
               h('input', {
                 type: 'text', id: 'cp-step', 'aria-label': 'Coping step',
                 placeholder: band === 'elementary' ? 'Take 5 deep breaths, go to calm corner...' : 'Add a step...',
@@ -1885,8 +2295,8 @@ window.SelHub = window.SelHub || {
               }, '+')
             ),
             // Quick-add from strategies
-            h('p', { style: { fontSize: 11, color: '#64748b', marginTop: 10, marginBottom: 6 } }, 'Quick-add:'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+            h('p', { style: { fontSize: 11, color: '#94a3b8', marginTop: 10, marginBottom: 6 } }, 'Quick-add:'),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
               ['Take 5 deep breaths', 'Count backwards from 10', 'Squeeze a stress ball', 'Walk away from the situation', 'Talk to a trusted adult', 'Use an I-statement'].map(function(quick) {
                 return h('button', { 'aria-label': 'Quick add: ' + quick,
                   key: quick,
@@ -1903,15 +2313,15 @@ window.SelHub = window.SelHub || {
           ),
 
           // Trusted adults
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155' } },
+          h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #334155' } },
             h('h4', { style: { margin: '0 0 8px 0', fontSize: 14, color: '#f97316', display: 'flex', alignItems: 'center', gap: 6 } },
               '\uD83D\uDE4B',
               band === 'elementary' ? 'My safe grown-ups:' : 'My Trusted Adults'
             ),
             (plan.trustedAdults || []).map(function(adult, i) {
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 16 } }, '\uD83E\uDDD1'),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1, fontSize: 13, color: '#e2e8f0' } }, adult),
+              return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                h('span', { style: { fontSize: 16 } }, '\uD83E\uDDD1'),
+                h('span', { style: { flex: 1, fontSize: 13, color: '#e2e8f0' } }, adult),
                 h('button', { 'aria-label': 'Name and relationship...',
                   onClick: function() {
                     var newAdults = (plan.trustedAdults || []).filter(function(_, j) { return j !== i; });
@@ -1921,7 +2331,7 @@ window.SelHub = window.SelHub || {
                 }, '\u2715')
               );
             }),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 6, marginTop: 8 } },
+            h('div', { style: { display: 'flex', gap: 6, marginTop: 8 } },
               h('input', {
                 type: 'text', id: 'cp-adult', 'aria-label': 'Trusted adult',
                 placeholder: band === 'elementary' ? 'Mom, Mr. Smith, Counselor Jones...' : 'Name and relationship...',
@@ -1942,10 +2352,10 @@ window.SelHub = window.SelHub || {
           ),
 
           // ── AI Calm Plan Suggestions ──
-          callGemini && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 20, padding: 16, borderRadius: 14, background: 'linear-gradient(135deg, #14b8a612 0%, #8b5cf612 100%)', border: '1px solid #14b8a633' } },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
+          callGemini && h('div', { style: { marginTop: 20, padding: 16, borderRadius: 14, background: 'linear-gradient(135deg, #14b8a612 0%, #8b5cf612 100%)', border: '1px solid #14b8a633' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
               Sparkles ? h(Sparkles, { size: 14 }) : h('span', null, '\u2728'),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700, color: '#f1f5f9', fontSize: 13 } },
+              h('span', { style: { fontWeight: 700, color: '#f1f5f9', fontSize: 13 } },
                 band === 'elementary' ? 'Need help with your plan?' : 'AI Plan Assistant'
               )
             ),
@@ -1953,7 +2363,7 @@ window.SelHub = window.SelHub || {
               band === 'elementary' ? 'I can help you think of warning signs and calm-down steps!' :
               'Generate personalized suggestions based on your practice history and preferences.'
             ),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
               h('button', { 'aria-label': 'Suggest warning signs',
                 onClick: function() {
                   upd('planEditing', true);
@@ -2001,6 +2411,26 @@ window.SelHub = window.SelHub || {
                 style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#14b8a6', color: '#fff', fontWeight: 700, cursor: planEditing ? 'wait' : 'pointer', fontSize: 12 }
               }, '\uD83D\uDCCB ' + (planEditing ? 'Generating...' : 'Suggest Steps'))
             )
+          ),
+
+          // ── Print my calm plan (take-home artifact) ──
+          h('div', { style: { marginTop: 16, textAlign: 'center' } },
+            h('button', {
+              'aria-label': 'Print my calm plan',
+              onClick: function() {
+                if (!window.SelHub || !window.SelHub.printDoc) return;
+                window.SelHub.printDoc({
+                  title: band === 'elementary' ? 'My Calm-Down Plan' : 'My Personal Calm Plan',
+                  subtitle: 'Bring this with you. Share it with a counselor, parent, or trusted adult so they can help you follow it.',
+                  sections: [
+                    { heading: band === 'elementary' ? 'How I know I’m getting upset' : 'My warning signs', items: plan.warningSigns || [] },
+                    { heading: band === 'elementary' ? 'Steps that help me calm down' : 'My calming steps (in order)', items: plan.steps || [] },
+                    { heading: 'Trusted adults I can talk to', items: plan.trustedAdults || [] }
+                  ]
+                });
+              },
+              style: { padding: '8px 18px', borderRadius: 10, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+            }, '🖨 Print my calm plan')
           )
         );
       }
@@ -2045,11 +2475,30 @@ window.SelHub = window.SelHub || {
                 '3. Give one quick tip to get started\n\n' +
                 'Use ' + (band === 'elementary' ? 'simple, warm language for ages 5-10' : band === 'middle' ? 'relatable teen language' : 'mature, evidence-based language') + '. ' +
                 'Format each as a numbered item. Be specific to their situation, not generic.';
-              callGemini(prompt).then(function(resp) {
-                upd({ matcherResult: resp, matcherLoading: false });
+              // Route student input through SelHub.safeCoach (assesses Tier 0–3,
+              // pushes flags for Tier 2+, attaches crisis info to Tier 3 response).
+              // Falls back to direct callGemini when safety layer isn't loaded.
+              var matchFn = (window.SelHub && window.SelHub.safeCoach)
+                ? function() {
+                    return window.SelHub.safeCoach({
+                      studentMessage: matcherFeeling,
+                      coachPrompt: prompt,
+                      toolId: 'coping',
+                      band: band,
+                      callGemini: callGemini,
+                      codename: ctx.studentCodename || 'student',
+                      conversationHistory: [],
+                      onSafetyFlag: onSafetyFlag
+                    });
+                  }
+                : function() {
+                    return callGemini(prompt).then(function(r) { return { response: r, tier: 0, showCrisis: false }; });
+                  };
+              matchFn().then(function(result) {
+                upd({ matcherResult: result.response, matcherLoading: false, _matcherTier: result.tier || 0 });
                 if (soundEnabled) sfxCorrect();
               }).catch(function() {
-                upd({ matcherResult: 'I couldn\'t match strategies right now. Try browsing the Library tab and picking what feels right!', matcherLoading: false });
+                upd({ matcherResult: 'I couldn\'t match strategies right now. Try browsing the Library tab and picking what feels right!', matcherLoading: false, _matcherTier: 0 });
               });
             },
             disabled: matcherLoading,
@@ -2058,6 +2507,9 @@ window.SelHub = window.SelHub || {
             Sparkles ? h(Sparkles, { size: 16 }) : '\u2728',
             matcherLoading ? 'Finding the best strategies...' : 'Match Me!'
           ),
+
+          // Surface crisis resources inline when triangulated assessment hits Tier 3
+          (_matcherTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
 
           matcherResult && h('div', { style: { padding: 20, borderRadius: 14, background: '#14b8a611', border: '1px solid #14b8a633' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 } },
@@ -2081,7 +2533,7 @@ window.SelHub = window.SelHub || {
         logContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, '\uD83D\uDCCA Practice Log'),
           pLog.length === 0
-            ? h('div', { style: { textAlign: 'center', padding: 40, color: '#64748b' } },
+            ? h('div', { style: { textAlign: 'center', padding: 40, color: '#94a3b8' } },
                 h('p', { style: { fontSize: 32, marginBottom: 8 } }, '\uD83D\uDCDD'),
                 h('p', { style: { fontWeight: 600 } }, 'No practices logged yet'),
                 h('p', { style: { fontSize: 12 } }, 'Try a strategy from the Library or Practice tab!')
@@ -2094,7 +2546,7 @@ window.SelHub = window.SelHub || {
                   var avgRating = ratedEntries.length > 0 ? (ratedEntries.reduce(function(sum, e) { return sum + e.rating; }, 0) / ratedEntries.length) : null;
                   return h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 } },
                     h('div', { style: { textAlign: 'center', padding: 14, borderRadius: 12, background: streak >= 3 ? '#f9731618' : '#1e293b', border: '1px solid ' + (streak >= 3 ? '#f9731644' : '#334155') } },
-                      h('div', { style: { fontSize: 24, fontWeight: 800, color: streak >= 3 ? '#f97316' : '#64748b' } }, streak),
+                      h('div', { style: { fontSize: 24, fontWeight: 800, color: streak >= 3 ? '#f97316' : '#94a3b8' } }, streak),
                       h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Day Streak'),
                       streak >= 3 && h('div', { style: { fontSize: 12, marginTop: 2 } }, '\uD83D\uDD25')
                     ),
@@ -2103,7 +2555,7 @@ window.SelHub = window.SelHub || {
                       h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Total Practices')
                     ),
                     h('div', { style: { textAlign: 'center', padding: 14, borderRadius: 12, background: avgRating ? '#eab30818' : '#1e293b', border: '1px solid ' + (avgRating ? '#eab30844' : '#334155') } },
-                      h('div', { style: { fontSize: 24, fontWeight: 800, color: avgRating ? '#eab308' : '#64748b' } }, avgRating ? avgRating.toFixed(1) : '-'),
+                      h('div', { style: { fontSize: 24, fontWeight: 800, color: avgRating ? '#eab308' : '#94a3b8' } }, avgRating ? avgRating.toFixed(1) : '-'),
                       h('div', { style: { fontSize: 10, color: '#94a3b8' } }, 'Avg Rating'),
                       avgRating && h('div', { style: { display: 'flex', justifyContent: 'center', gap: 1, marginTop: 2 } },
                         Array.from({ length: 5 }, function(_, i) {
@@ -2147,8 +2599,8 @@ window.SelHub = window.SelHub || {
                       })
                     ),
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 4 } },
-                      h('span', { style: { fontSize: 11, color: '#64748b' } }, 'Oldest'),
-                      h('span', { style: { fontSize: 11, color: '#64748b' } }, 'Recent')
+                      h('span', { style: { fontSize: 11, color: '#94a3b8' } }, 'Oldest'),
+                      h('span', { style: { fontSize: 11, color: '#94a3b8' } }, 'Recent')
                     )
                   );
                 })(),
@@ -2161,12 +2613,12 @@ window.SelHub = window.SelHub || {
                       style: { textAlign: 'center', padding: '8px 14px', borderRadius: 10, background: count > 0 ? type.color + '18' : '#1e293b', border: '1px solid ' + (count > 0 ? type.color + '44' : '#334155'), minWidth: 70 }
                     },
                       h('div', { style: { fontSize: 18 } }, type.icon),
-                      h('div', { style: { fontSize: 14, fontWeight: 700, color: count > 0 ? type.color : '#64748b' } }, count),
+                      h('div', { style: { fontSize: 14, fontWeight: 700, color: count > 0 ? type.color : '#94a3b8' } }, count),
                       h('div', { style: { fontSize: 11, color: '#94a3b8' } }, type.label)
                     );
                   })
                 ),
-                h('p', { style: { textAlign: 'center', color: '#64748b', fontSize: 12, marginBottom: 16 } },
+                h('p', { style: { textAlign: 'center', color: '#94a3b8', fontSize: 12, marginBottom: 16 } },
                   pLog.length + ' total practice' + (pLog.length !== 1 ? 's' : '') + ' logged'
                 ),
                 // Log entries (newest first)
@@ -2182,17 +2634,17 @@ window.SelHub = window.SelHub || {
                   },
                     h('span', { style: { fontSize: 20, flexShrink: 0 } }, strat ? strat.icon : (typeObj ? typeObj.icon : '\uD83C\uDFAF')),
                     h('div', { style: { flex: 1 } },
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
-                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700, color: '#f1f5f9', fontSize: 13 } },
+                      h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
+                        h('span', { style: { fontWeight: 700, color: '#f1f5f9', fontSize: 13 } },
                           strat ? (strat.name[band] || strat.name.elementary) : entry.strategyId
                         ),
-                        typeObj && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, padding: '2px 6px', borderRadius: 6, background: typeObj.color + '22', color: typeObj.color } }, typeObj.label),
-                        h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#64748b' } }, time.toLocaleDateString() + ' ' + time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+                        typeObj && h('span', { style: { fontSize: 11, padding: '2px 6px', borderRadius: 6, background: typeObj.color + '22', color: typeObj.color } }, typeObj.label),
+                        h('span', { style: { fontSize: 10, color: '#94a3b8' } }, time.toLocaleDateString() + ' ' + time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
                       ),
                       // Effectiveness rating
                       !hasRating
-                        ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 } },
-                            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#64748b', marginRight: 4 } }, 'How helpful was it?'),
+                        ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 } },
+                            h('span', { style: { fontSize: 10, color: '#94a3b8', marginRight: 4 } }, 'How helpful was it?'),
                             [1, 2, 3, 4, 5].map(function(star) {
                               return h('button', { 'aria-label': 'Rate ' + star + ' stars',
                                 key: star,
@@ -2207,7 +2659,7 @@ window.SelHub = window.SelHub || {
                                   var ratedCount = newLog.filter(function(e) { return e.rating != null; }).length;
                                   if (ratedCount >= 3) tryAwardBadge('rate_3');
                                 },
-                                style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, padding: 0, color: '#64748b' }
+                                style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, padding: 0, color: '#94a3b8' }
                               }, '\u2606');
                             })
                           )
@@ -2215,7 +2667,7 @@ window.SelHub = window.SelHub || {
                             Array.from({ length: 5 }, function(_, j) {
                               return h('span', { key: j, style: { fontSize: 14, color: j < entry.rating ? '#eab308' : '#334155' } }, '\u2605');
                             }),
-                            h('span', { style: { fontSize: 10, color: '#64748b', marginLeft: 4 } }, entry.rating + '/5')
+                            h('span', { style: { fontSize: 10, color: '#94a3b8', marginLeft: 4 } }, entry.rating + '/5')
                           )
                     )
                   );
@@ -2229,19 +2681,18 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       var dailyCheckin = null;
       if (!checkinDoneToday && !showBadgesPanel) {
-        dailyCheckin = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-          style: { padding: '12px 16px', margin: '10px 12px', borderRadius: 14, background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', border: '1px solid #334155' }
+        dailyCheckin = h('div', {           style: { padding: '12px 16px', margin: '10px 12px', borderRadius: 14, background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', border: '1px solid #334155' }
         },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, fontWeight: 700, color: '#f1f5f9' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+            h('span', { style: { fontSize: 13, fontWeight: 700, color: '#f1f5f9' } },
               band === 'elementary' ? '\uD83C\uDF24\uFE0F How are you feeling right now?' : '\uD83C\uDF24\uFE0F Quick Check-In'
             ),
             h('button', { 'aria-label': 'Toggle sound',
               onClick: function() { upd({ dailyMoodDate: todayStr, dailyMood: 'skip' }); },
-              style: { background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 12 }
+              style: { background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 12 }
             }, '\u2715')
           ),
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, justifyContent: 'center' } },
+          h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
             CHECKIN_MOODS.map(function(mood) {
               return h('button', { 'aria-label': 'info',
                 key: mood.id,
@@ -2281,12 +2732,11 @@ window.SelHub = window.SelHub || {
       var dailyRecBanner = null;
       if (checkinDoneToday && dailyMood && dailyMood !== 'skip' && dailyRec) {
         var moodObj = CHECKIN_MOODS.find(function(m) { return m.id === dailyMood; });
-        dailyRecBanner = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-          style: { padding: '10px 16px', margin: '10px 12px 0', borderRadius: 12, background: (moodObj ? moodObj.color : '#14b8a6') + '12', border: '1px solid ' + (moodObj ? moodObj.color : '#14b8a6') + '33' }
+        dailyRecBanner = h('div', {           style: { padding: '10px 16px', margin: '10px 12px 0', borderRadius: 12, background: (moodObj ? moodObj.color : '#14b8a6') + '12', border: '1px solid ' + (moodObj ? moodObj.color : '#14b8a6') + '33' }
         },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 18, flexShrink: 0 } }, moodObj ? moodObj.emoji : '\u2728'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1 } },
+          h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
+            h('span', { style: { fontSize: 18, flexShrink: 0 } }, moodObj ? moodObj.emoji : '\u2728'),
+            h('div', { style: { flex: 1 } },
               h('p', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5, margin: 0 } }, dailyRec),
               h('button', { 'aria-label': 'Dismiss',
                 onClick: function() { upd({ dailyRec: null }); },
@@ -2311,7 +2761,7 @@ window.SelHub = window.SelHub || {
         if (document.getElementById('sel-coping-keyframes')) return;
         var s = document.createElement('style');
         s.id = 'sel-coping-keyframes';
-        s.textContent = '@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }';
+        s.textContent = '@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } } @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
         document.head.appendChild(s);
         return function() { var el = document.getElementById('sel-coping-keyframes'); if (el) el.remove(); };
       }, []);
@@ -2320,15 +2770,19 @@ window.SelHub = window.SelHub || {
       // ── Final Render ──
       // ══════════════════════════════════════════════════════════
       return h('div', { style: { minHeight: '100%' } },
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('coping', h, ctx) : null),
         tabBar,
+        heroBand,
         dailyCheckin,
         dailyRecBanner,
         badgePopup,
         libraryContent,
         practiceContent,
+        rehearseContent,
         planContent,
         matcherContent,
-        logContent
+        logContent,
+        window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
       );
     }
   });

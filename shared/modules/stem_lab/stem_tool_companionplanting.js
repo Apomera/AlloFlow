@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_companionplanting.js — Companion Planting Lab (standalone CDN module)
 // Three Sisters garden simulator with Sims-style management, seasons, soil science
@@ -1639,9 +1649,14 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Season-aware Sky (smooth time-based sun arc) ──
-
-              var dayPhase = (Math.sin(elapsed * 0.18) + 1) / 2; // ~35s full cycle, smooth regardless of frame rate
+              // ── Day/night cycle (sawtooth: sun rises east, sets west, then night) ──
+              // Total cycle ≈ 40s: ~28s day + ~12s night. Sun travels one direction only.
+              var cycleProgress = ((elapsed * 0.025) % 1);  // 0..1 looping
+              var DAY_FRACTION = 0.7;
+              var isNight = cycleProgress >= DAY_FRACTION;
+              var dayPhase = isNight ? 0 : (cycleProgress / DAY_FRACTION);     // 0..1 across daytime, used for sun position
+              var nightPhase = isNight ? ((cycleProgress - DAY_FRACTION) / (1 - DAY_FRACTION)) : 0;  // 0..1 across nighttime
+              var dayBrightness = isNight ? 0 : Math.sin(dayPhase * Math.PI);  // 0 at dawn/dusk, 1 at noon
 
               var seasonSkies = [
 
@@ -1653,6 +1668,15 @@ var d = (labToolData.companionPlanting) || {};
 
                 { topH: 215, topS: 25, topL: 40, botH: 220, botS: 15, botL: 65 }   // winter — gray-blue
 
+              ];
+
+              // Ground gradient stops per season — declared here (not at first paint pass below)
+              // because the cached-gradient block reads it before the original declaration site.
+              var groundColors = [
+                ['#7CB342', '#558B2F', '#33691E'],  // spring
+                ['#8BC34A', '#689F38', '#33691E'],  // summer
+                ['#A1887F', '#795548', '#4E342E'],  // autumn
+                ['#B0BEC5', '#78909C', '#546E7A']   // winter
               ];
 
               var ssky = seasonSkies[_season];
@@ -1668,38 +1692,61 @@ var d = (labToolData.companionPlanting) || {};
                 _cachedGroundGrad = ctx.createLinearGradient(0, cH * 0.4, 0, cH);
                 _cachedGroundGrad.addColorStop(0, gc2[0]); _cachedGroundGrad.addColorStop(0.3, gc2[1]); _cachedGroundGrad.addColorStop(1, gc2[2]);
               }
-              // Apply subtle dayPhase brightness shift via globalAlpha overlay (cheaper than new gradient)
+              // Apply day/night overlay on top of cached season sky gradient
               ctx.fillStyle = _cachedSkyGrad;
               ctx.fillRect(0, 0, cW, cH * 0.45);
-              // Subtle brightness variation from day phase (avoids recreating gradient)
-              ctx.fillStyle = 'rgba(255,255,200,' + (dayPhase * 0.06) + ')';
-              ctx.fillRect(0, 0, cW, cH * 0.45);
+              if (!isNight) {
+                // Warm noon tint, peaks at noon, fades at dawn/dusk
+                ctx.fillStyle = 'rgba(255,255,200,' + (dayBrightness * 0.06) + ')';
+                ctx.fillRect(0, 0, cW, cH * 0.45);
+              } else {
+                // Dark blue overlay deepens toward midnight, lifts toward dawn
+                var nightDark = Math.sin(nightPhase * Math.PI) * 0.55 + 0.25;
+                ctx.fillStyle = 'rgba(15,20,55,' + nightDark + ')';
+                ctx.fillRect(0, 0, cW, cH * 0.45);
+                // Stars (twinkle)
+                for (var st = 0; st < 14; st++) {
+                  var sxs = (st * 73.3) % cW;
+                  var sys = ((st * 41.7) % (cH * 0.35)) + 6;
+                  var twinkle = 0.35 + 0.55 * Math.sin(tick * 0.05 + st * 1.7);
+                  ctx.fillStyle = 'rgba(255,255,255,' + (twinkle * nightDark * 1.3) + ')';
+                  ctx.beginPath(); ctx.arc(sxs, sys, 0.9, 0, Math.PI * 2); ctx.fill();
+                }
+              }
 
 
 
-              // Sun (smaller in winter, bigger in summer)
-
-              var sunSize = _season === 1 ? 18 : _season === 3 ? 10 : 14;
-
-              var sunX = cW * 0.15 + cW * 0.7 * dayPhase;
-
-              var sunY = cH * 0.05 + Math.sin(dayPhase * Math.PI) * cH * -0.12 + cH * 0.15;
-
-              var sunGlow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunSize * 3);
-
-              sunGlow.addColorStop(0, _season === 3 ? 'rgba(200,210,230,0.7)' : 'rgba(255,235,59,0.9)');
-
-              sunGlow.addColorStop(0.5, _season === 3 ? 'rgba(180,195,220,0.2)' : 'rgba(255,193,7,0.3)');
-
-              sunGlow.addColorStop(1, 'rgba(255,193,7,0)');
-
-              ctx.fillStyle = sunGlow;
-
-              ctx.fillRect(sunX - sunSize * 4, sunY - sunSize * 4, sunSize * 8, sunSize * 8);
-
-              ctx.fillStyle = _season === 3 ? '#B0BEC5' : '#FDD835';
-
-              ctx.beginPath(); ctx.arc(sunX, sunY, sunSize, 0, Math.PI * 2); ctx.fill();
+              // Sun (day) or Moon (night) — same arc east → west, only one visible at a time
+              if (!isNight) {
+                // Sun: smaller in winter, bigger in summer; tinted gray-blue in winter
+                var sunSize = _season === 1 ? 18 : _season === 3 ? 10 : 14;
+                var sunX = cW * 0.15 + cW * 0.7 * dayPhase;
+                var sunY = cH * 0.05 + Math.sin(dayPhase * Math.PI) * cH * -0.12 + cH * 0.15;
+                var sunGlow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunSize * 3);
+                sunGlow.addColorStop(0, _season === 3 ? 'rgba(200,210,230,0.7)' : 'rgba(255,235,59,0.9)');
+                sunGlow.addColorStop(0.5, _season === 3 ? 'rgba(180,195,220,0.2)' : 'rgba(255,193,7,0.3)');
+                sunGlow.addColorStop(1, 'rgba(255,193,7,0)');
+                ctx.fillStyle = sunGlow;
+                ctx.fillRect(sunX - sunSize * 4, sunY - sunSize * 4, sunSize * 8, sunSize * 8);
+                ctx.fillStyle = _season === 3 ? '#B0BEC5' : '#FDD835';
+                ctx.beginPath(); ctx.arc(sunX, sunY, sunSize, 0, Math.PI * 2); ctx.fill();
+              } else {
+                // Moon: traverses east → west during night, with crescent shadow
+                var moonSize = 12;
+                var moonX = cW * 0.15 + cW * 0.7 * nightPhase;
+                var moonY = cH * 0.05 + Math.sin(nightPhase * Math.PI) * cH * -0.12 + cH * 0.15;
+                var moonGlow = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonSize * 3);
+                moonGlow.addColorStop(0, 'rgba(220,220,240,0.85)');
+                moonGlow.addColorStop(0.5, 'rgba(200,200,220,0.2)');
+                moonGlow.addColorStop(1, 'rgba(200,200,220,0)');
+                ctx.fillStyle = moonGlow;
+                ctx.fillRect(moonX - moonSize * 4, moonY - moonSize * 4, moonSize * 8, moonSize * 8);
+                ctx.fillStyle = '#E8E8F0';
+                ctx.beginPath(); ctx.arc(moonX, moonY, moonSize, 0, Math.PI * 2); ctx.fill();
+                // Subtle crescent shadow
+                ctx.fillStyle = 'rgba(60,70,100,0.4)';
+                ctx.beginPath(); ctx.arc(moonX + moonSize * 0.4, moonY - moonSize * 0.1, moonSize * 0.85, 0, Math.PI * 2); ctx.fill();
+              }
 
 
 
@@ -1754,18 +1801,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
               // ── Ground (season-tinted) ──
-
-              var groundColors = [
-
-                ['#7CB342', '#558B2F', '#33691E'],  // spring
-
-                ['#8BC34A', '#689F38', '#33691E'],  // summer
-
-                ['#A1887F', '#795548', '#4E342E'],  // autumn
-
-                ['#B0BEC5', '#78909C', '#546E7A']   // winter
-
-              ];
+              // groundColors declared earlier alongside seasonSkies (cached-gradient block reads it).
 
               ctx.fillStyle = _cachedGroundGrad || '#5a7040';
 
@@ -2807,19 +2843,25 @@ var d = (labToolData.companionPlanting) || {};
 
           // ── CG: plant in cell ──
           function cgPlantCell(idx) {
-            if (!cgSelectedPlant || cgPhase !== 'plan') return;
+            if (!cgSelectedPlant || cgPhase !== 'plan') return false;
             var plant = CG_PLANTS[cgSelectedPlant];
-            if (!plant) return;
+            if (!plant) return false;
             // Economics: deduct seed cost from budget
             var seedCost = plant.cost ? plant.cost * 0.10 : 0.50; // cost field is points; convert to dollars
             if (cgBudget < seedCost) {
               if (addToast) addToast('\uD83D\uDCB0 Not enough budget! Need $' + seedCost.toFixed(2) + ' (have $' + cgBudget.toFixed(2) + ')', 'info');
-              return;
+              return false;
             }
             var newGrid = cgGrid.slice();
             newGrid[idx] = { plantId: cgSelectedPlant, growthDay: 0, health: 100, watered: false, pests: 0 };
             cgUpd({ grid: newGrid, budget: Math.round((cgBudget - seedCost) * 100) / 100, expenses: cgExpenses + seedCost });
             if (awardStemXP) awardStemXP(5);
+            // Visible success feedback (UDL: confirm the action across modalities)
+            var plantEmoji = plant.emoji || '\uD83C\uDF31';
+            var plantName = plant.label || plant.name || cgSelectedPlant;
+            if (addToast) addToast(plantEmoji + ' Planted ' + plantName + '! \u2212$' + seedCost.toFixed(2) + ' \u00B7 +5 XP', 'success');
+            if (stemBeep) { try { stemBeep('plant'); } catch (e) {} }
+            return true;
           }
 
           // ── CG: remove plant from cell ──
@@ -2830,10 +2872,22 @@ var d = (labToolData.companionPlanting) || {};
             cgUpd({ grid: newGrid });
           }
 
+          // Trigger a visual action-burst on the garden canvas.
+          // Safe no-op if the canvas is not mounted yet.
+          function cgFireActionBurst(kind) {
+            try {
+              var el = window.__cgCanvasEl;
+              if (el) { el._actionBurst = { kind: kind, t0: performance.now() }; }
+            } catch (e) { /* silent */ }
+          }
+
           // ── CG: water action ──
           function cgWater() {
             cgUpd({ moisture: Math.min(100, cgMoisture + 25) });
             if (awardStemXP) awardStemXP(3);
+            cgFireActionBurst("water");
+            if (stemBeep) { try { stemBeep("water"); } catch (e) {} }
+            if (addToast) addToast("💧 Watered the garden! +25% moisture · +3 XP", "success");
           }
 
           // ── CG: weed action ──
@@ -2844,6 +2898,9 @@ var d = (labToolData.companionPlanting) || {};
             });
             cgUpd({ grid: newGrid });
             if (awardStemXP) awardStemXP(3);
+            cgFireActionBurst("weed");
+            if (stemBeep) { try { stemBeep("weed"); } catch (e) {} }
+            if (addToast) addToast("🌿 Weeded! Pests reduced on all plants · +3 XP", "success");
           }
 
           // ── CG: compost action (enhanced: adds NPK + OM) ──
@@ -2855,6 +2912,8 @@ var d = (labToolData.companionPlanting) || {};
               organicMatter: Math.min(10, cgOrganicMatter + 0.3)
             });
             if (awardStemXP) awardStemXP(3);
+            cgFireActionBurst("compost");
+            if (stemBeep) { try { stemBeep("compost"); } catch (e) {} }
             if (addToast) addToast('\u267B\uFE0F Compost added: +15N +8P +5K +0.3% OM', 'success');
           }
 
@@ -3643,7 +3702,7 @@ var d = (labToolData.companionPlanting) || {};
                       placeholder: 'Write your reflection here...',
                       rows: 3,
                       'aria-label': 'Your reflection',
-                      className: 'w-full text-sm border border-slate-200 rounded-lg p-2 outline-none focus:ring-2 focus:ring-violet-300 resize-none'
+                      className: 'w-full text-sm border border-slate-400 rounded-lg p-2 outline-none focus:ring-2 focus:ring-violet-300 resize-none'
                     })),
                   h('div', { className: 'flex gap-2' },
                     h('button', { onClick: cgSubmitReflection, disabled: !cgReflectionResponse.trim(), className: 'px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-700 disabled:opacity-40' }, '📝 Save to Journal'),
@@ -3749,7 +3808,7 @@ var d = (labToolData.companionPlanting) || {};
                       'aria-label': p.label + (selected ? ' (selected)' : '') + ': ' + p.desc + '. ' + p.days + ' days to harvest. Water: ' + p.water + '/3. Sun: ' + p.sun + '/3.' + (p.nEffect > 0 ? ' Fixes nitrogen.' : p.nEffect < 0 ? ' Heavy feeder.' : '') + (p.pollinator ? ' Attracts pollinators.' : '') + (p.needsPoll ? ' Needs pollinators.' : ''),
                       'aria-pressed': selected ? 'true' : 'false',
                       title: p.label + ': ' + p.desc + ' (' + p.days + ' days)',
-                      className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold transition-all ' + (selected ? 'bg-emerald-700 text-white ring-2 ring-emerald-400' : 'bg-white text-slate-700 border border-slate-200 hover:border-emerald-400')
+                      className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold transition-all ' + (selected ? 'bg-emerald-700 text-white ring-2 ring-emerald-400' : 'bg-white text-slate-700 border border-slate-400 hover:border-emerald-400')
                     }, h('span', { 'aria-hidden': 'true' }, p.emoji), p.label);
                   })),
                 // Selected plant info card
@@ -3859,7 +3918,7 @@ var d = (labToolData.companionPlanting) || {};
                   var rect = e.currentTarget.getBoundingClientRect();
                   var mx = (e.clientX - rect.left) * (e.currentTarget.width / rect.width);
                   var my = (e.clientY - rect.top) * (e.currentTarget.height / rect.height);
-                  var isoOX2 = e.currentTarget.width / 2; var isoOY2 = 180; var iTW2 = 90; var iTH2 = 50;
+                  var isoOX2 = e.currentTarget.width / 2; var isoOY2 = 180; var iTW2 = 240; var iTH2 = 130; // must match draw-code constants
                   var relX2 = mx - isoOX2; var relY2 = my - isoOY2;
                   var hCol = Math.floor((relX2 / (iTW2 / 2) + relY2 / (iTH2 / 2)) / 2);
                   var hRow = Math.floor((relY2 / (iTH2 / 2) - relX2 / (iTW2 / 2)) / 2);
@@ -3871,9 +3930,11 @@ var d = (labToolData.companionPlanting) || {};
                   var rect = e.currentTarget.getBoundingClientRect();
                   var mx = (e.clientX - rect.left) * (e.currentTarget.width / rect.width);
                   var my = (e.clientY - rect.top) * (e.currentTarget.height / rect.height);
+                  // Record click location for the ripple effect (drawn in drawCG)
+                  e.currentTarget._clickRipple = { x: mx, y: my, t0: performance.now() };
                   // Iso grid params (must match draw code)
                   var isoOX = e.currentTarget.width / 2; var isoOY = 180;
-                  var iTW = 90; var iTH = 50;
+                  var iTW = 240; var iTH = 130; // must match draw-code constants in canvas ref below
                   // Reverse isometric transform
                   var relX = mx - isoOX; var relY = my - isoOY;
                   var iCol = Math.floor((relX / (iTW / 2) + relY / (iTH / 2)) / 2);
@@ -3881,7 +3942,21 @@ var d = (labToolData.companionPlanting) || {};
                   if (iRow >= 0 && iRow < 4 && iCol >= 0 && iCol < 4) {
                     var cellIdx = iRow * 4 + iCol;
                     if (cgPhase === 'plan') {
-                      if (cgSelectedPlant && !cgGrid[cellIdx].plantId) { cgPlantCell(cellIdx); }
+                      if (cgSelectedPlant && !cgGrid[cellIdx].plantId) {
+                        var plantedOk = cgPlantCell(cellIdx);
+                        // Trigger burst animation only on successful plant
+                        if (plantedOk) {
+                          var pl = CG_PLANTS[cgSelectedPlant];
+                          e.currentTarget._plantBurst = {
+                            idx: cellIdx,
+                            t0: performance.now(),
+                            emoji: (pl && pl.emoji) || '🌱',
+                            label: (pl && pl.label) || cgSelectedPlant
+                          };
+                          // Suppress the generic click ripple so the burst is the only feedback
+                          e.currentTarget._clickRipple = null;
+                        }
+                      }
                       else if (cgGrid[cellIdx].plantId && !cgSelectedPlant) { cgRemoveCell(cellIdx); }
                     } else if (cgPhase === 'grow' && cgGrid[cellIdx].plantId) {
                       cgUpd({ microscopeCell: cellIdx, microscopeLayer: 'roots' });
@@ -3889,7 +3964,11 @@ var d = (labToolData.companionPlanting) || {};
                   }
                 },
                 ref: function(cvEl) {
-                  if (!cvEl || cvEl._cgCanvasInit) return;
+                  if (!cvEl) return;
+                  // Always expose the most recent canvas to action handlers
+                  // (cgWater/cgWeed/cgCompost are called from buttons outside the canvas)
+                  window.__cgCanvasEl = cvEl;
+                  if (cvEl._cgCanvasInit) return;
                   cvEl._cgCanvasInit = true;
                   var gctx = cvEl.getContext('2d');
                   var W = cvEl.width = cvEl.offsetWidth * 2;
@@ -3897,7 +3976,15 @@ var d = (labToolData.companionPlanting) || {};
                   var startT = performance.now();
                   // Isometric tile parameters
                   var isoOX = W / 2; var isoOY = 180; // origin (center-top of grid)
-                  var iTW = 90; var iTH = 50; // tile width/height in iso space
+                  // Tile width/height in iso space. Bumped from 90/50 → 240/130
+                  // (~2.7×) so the 4×4 garden actually fills a meaningful share
+                  // of the canvas instead of looking like a pinpoint in the
+                  // background. Plant draws use iTW/iTH-relative offsets so they
+                  // scale proportionally; absolute plant heights (35-50 px) read
+                  // fine at this tile scale. If you change these here, also
+                  // update the matching constants in onClick + onMouseMove
+                  // handlers above so click hit-testing stays aligned.
+                  var iTW = 240; var iTH = 130;
                   // Convert grid (row,col) to screen (x,y) center of diamond
                   function isoToScreen(row, col) {
                     return { x: isoOX + (col - row) * iTW / 2, y: isoOY + (col + row) * iTH / 2 };
@@ -3928,19 +4015,77 @@ var d = (labToolData.companionPlanting) || {};
                     var sSeason = cgSeason; // read directly (canvas re-mounts on state change)
                     var grid2 = cgGrid;
 
+                    // ── Time-of-day cycle (~120s per "day") ──
+                    // todPhase 0..1 = continuous loop; map to: dawn (0-0.1), morning (0.1-0.3),
+                    // day (0.3-0.6), afternoon (0.6-0.7), dusk (0.7-0.8), night (0.8-1.0).
+                    var DAY_SECONDS = 120;
+                    var todPhase = ((t / DAY_SECONDS) % 1 + 1) % 1;
+                    var isNight = todPhase >= 0.8 || todPhase < 0.05;
+                    var isDusk = todPhase >= 0.7 && todPhase < 0.8;
+                    var isDawn = todPhase >= 0.05 && todPhase < 0.15;
+                    var nightStrength = isNight ? Math.min(1, Math.abs(todPhase < 0.05 ? (0.05 - todPhase) * 5 : (todPhase - 0.8) * 5)) : 0;
+                    var sunArcT = todPhase < 0.8 ? (todPhase - 0.05) / 0.75 : 0;  // 0..1 across the visible-sun portion (5%-80% of cycle)
+
                     // Clear
                     gctx.clearRect(0, 0, W, H);
 
-                    // ── Sky ──
+                    // ── Sky (season gradient + time-of-day overlay) ──
                     gctx.fillStyle = skyGrads[sSeason] || skyGrads[0]; gctx.fillRect(0, 0, W, H * 0.25);
-                    // Sun
-                    var sunX = W * 0.82 + Math.sin(t * 0.3) * 15;
-                    var sunY = 50 + Math.sin(t * 0.2) * 8;
-                    gctx.fillStyle = '#ffd700'; gctx.beginPath(); gctx.arc(sunX, sunY, 20, 0, Math.PI * 2); gctx.fill();
-                    gctx.globalAlpha = 0.12; gctx.beginPath(); gctx.arc(sunX, sunY, 35, 0, Math.PI * 2); gctx.fill(); gctx.globalAlpha = 1;
-                    // Clouds
-                    if (sSeason !== 3) {
-                      gctx.fillStyle = 'rgba(255,255,255,0.2)';
+                    // Time-of-day tint overlay
+                    if (isDawn) {
+                      gctx.fillStyle = 'rgba(255,180,120,0.35)';
+                      gctx.fillRect(0, 0, W, H * 0.25);
+                    } else if (isDusk) {
+                      gctx.fillStyle = 'rgba(255,120,80,0.45)';
+                      gctx.fillRect(0, 0, W, H * 0.25);
+                    } else if (isNight) {
+                      // Dark blue overlay covers whole canvas, deeper at midnight
+                      gctx.fillStyle = 'rgba(15,20,55,' + (0.55 * nightStrength) + ')';
+                      gctx.fillRect(0, 0, W, H);
+                      // Stars
+                      gctx.fillStyle = 'rgba(255,255,255,' + (0.7 * nightStrength) + ')';
+                      for (var sti = 0; sti < 25; sti++) {
+                        var sStarX = (sti * 73.3) % W;
+                        var sStarY = (sti * 41.7) % (H * 0.22) + 8;
+                        var twink = 0.5 + 0.5 * Math.sin(t * 2 + sti * 1.7);
+                        gctx.globalAlpha = twink * nightStrength;
+                        gctx.beginPath(); gctx.arc(sStarX, sStarY, 0.8, 0, Math.PI * 2); gctx.fill();
+                      }
+                      gctx.globalAlpha = 1;
+                    }
+
+                    // ── Sun OR Moon (depending on time-of-day) ──
+                    if (!isNight) {
+                      // Sun arcs east → west across the sky
+                      var sunX = W * 0.08 + sunArcT * W * 0.84;
+                      var sunY = 60 + Math.sin(sunArcT * Math.PI) * -25;  // peak at noon
+                      // Color shifts warmer at dawn/dusk
+                      var sunColor = isDawn ? '#ff9966' : isDusk ? '#ff6644' : '#ffd700';
+                      var glowColor = isDawn || isDusk ? 'rgba(255,150,100,0.18)' : 'rgba(255,215,0,0.12)';
+                      gctx.fillStyle = glowColor;
+                      gctx.beginPath(); gctx.arc(sunX, sunY, 35, 0, Math.PI * 2); gctx.fill();
+                      gctx.fillStyle = sunColor;
+                      gctx.beginPath(); gctx.arc(sunX, sunY, 20, 0, Math.PI * 2); gctx.fill();
+                    } else {
+                      // Moon arcs east → west during night portion of cycle
+                      var moonArcT = ((todPhase - 0.8) / 0.25 + 0.04) % 1;
+                      if (moonArcT < 0) moonArcT += 1;
+                      var moonX = W * 0.1 + moonArcT * W * 0.8;
+                      var moonY = 50 + Math.sin(moonArcT * Math.PI) * -20;
+                      // Glow
+                      gctx.fillStyle = 'rgba(220,220,240,' + (0.18 * nightStrength) + ')';
+                      gctx.beginPath(); gctx.arc(moonX, moonY, 28, 0, Math.PI * 2); gctx.fill();
+                      // Moon
+                      gctx.fillStyle = '#e8e8f0';
+                      gctx.beginPath(); gctx.arc(moonX, moonY, 14, 0, Math.PI * 2); gctx.fill();
+                      // Crescent shadow (subtle)
+                      gctx.fillStyle = 'rgba(60,70,100,0.35)';
+                      gctx.beginPath(); gctx.arc(moonX + 5, moonY - 1, 12, 0, Math.PI * 2); gctx.fill();
+                    }
+
+                    // ── Clouds ──
+                    if (sSeason !== 3 && !isNight) {
+                      gctx.fillStyle = isDusk ? 'rgba(255,160,120,0.3)' : isDawn ? 'rgba(255,200,180,0.3)' : 'rgba(255,255,255,0.2)';
                       for (var cl2 = 0; cl2 < 3; cl2++) {
                         var clx2 = (t * 10 + cl2 * W * 0.35) % (W + 120) - 60;
                         var cly2 = 25 + cl2 * 18;
@@ -3954,6 +4099,94 @@ var d = (labToolData.companionPlanting) || {};
                     grassG.addColorStop(0, sSeason === 3 ? '#8899aa' : sSeason === 2 ? '#8a7a40' : '#5a8a3e');
                     grassG.addColorStop(1, sSeason === 3 ? '#667788' : sSeason === 2 ? '#6a5a30' : '#3a6a28');
                     gctx.fillStyle = grassG; gctx.fillRect(0, H * 0.22, W, H);
+
+                    // ── Ground texture: grass tufts scattered around the garden ──
+                    // Deterministic positions (seeded by index) so tufts don't jitter each frame.
+                    // Skipped in winter (sSeason === 3).
+                    if (sSeason !== 3) {
+                      var tuftColors = sSeason === 2
+                        ? ['rgba(120,90,30,0.55)', 'rgba(140,110,50,0.5)']  // autumn dry tones
+                        : ['rgba(50,110,40,0.55)', 'rgba(70,140,50,0.5)', 'rgba(40,90,30,0.55)']; // spring/summer
+                      for (var tf = 0; tf < 80; tf++) {
+                        // Pseudo-random scatter via cheap hash
+                        var tfx = (tf * 173 + 47) % W;
+                        var tfy = H * 0.24 + ((tf * 91 + 13) % (H * 0.74));
+                        // Skip the garden footprint (rough diamond bounds)
+                        var dx = tfx - isoOX;
+                        var dy = tfy - isoOY;
+                        if (Math.abs(dx) / (iTW * 2.2) + Math.abs(dy) / (iTH * 2.2) < 1) continue;
+                        var tfCol = tuftColors[tf % tuftColors.length];
+                        gctx.strokeStyle = tfCol;
+                        gctx.lineWidth = 1;
+                        // Tiny tuft: 3 short vertical lines
+                        gctx.beginPath();
+                        gctx.moveTo(tfx, tfy);     gctx.lineTo(tfx - 1, tfy - 3);
+                        gctx.moveTo(tfx + 1, tfy); gctx.lineTo(tfx + 1, tfy - 4);
+                        gctx.moveTo(tfx + 2, tfy); gctx.lineTo(tfx + 3, tfy - 3);
+                        gctx.stroke();
+                      }
+                      // Wildflower dots (spring/summer only)
+                      if (sSeason === 0 || sSeason === 1) {
+                        var flowerPalette = sSeason === 0
+                          ? ['#fbbf24', '#f9a8d4', '#fde047', '#fff', '#fb923c']  // spring pastels
+                          : ['#dc2626', '#f59e0b', '#8b5cf6', '#fff', '#fbbf24']; // summer brights
+                        for (var fl = 0; fl < 28; fl++) {
+                          var flx = (fl * 251 + 23) % W;
+                          var fly = H * 0.26 + ((fl * 137 + 19) % (H * 0.7));
+                          var fdx = flx - isoOX, fdy = fly - isoOY;
+                          if (Math.abs(fdx) / (iTW * 2.4) + Math.abs(fdy) / (iTH * 2.4) < 1) continue;
+                          gctx.fillStyle = flowerPalette[fl % flowerPalette.length];
+                          gctx.beginPath(); gctx.arc(flx, fly, 1.6, 0, Math.PI * 2); gctx.fill();
+                          // Tiny stem
+                          gctx.strokeStyle = 'rgba(40,90,30,0.55)';
+                          gctx.lineWidth = 0.6;
+                          gctx.beginPath(); gctx.moveTo(flx, fly + 1); gctx.lineTo(flx, fly + 4); gctx.stroke();
+                        }
+                      }
+                    }
+
+                    // ── Soft stone border around the garden diamond ──
+                    // Scatter small flat stones along the perimeter to frame the
+                    // garden so it doesn't float on plain green.
+                    (function() {
+                      var topPos = isoToScreen(-0.3, -0.3);
+                      var rightPos = isoToScreen(-0.3, 4.3);
+                      var botPos = isoToScreen(4.3, 4.3);
+                      var leftPos = isoToScreen(4.3, -0.3);
+                      var corners = [topPos, rightPos, botPos, leftPos, topPos];
+                      // Stroke a faint outline (almost invisible — sets the bounds)
+                      gctx.strokeStyle = 'rgba(120,110,90,0.18)';
+                      gctx.lineWidth = 1;
+                      gctx.beginPath();
+                      gctx.moveTo(corners[0].x, corners[0].y);
+                      for (var ci = 1; ci < corners.length; ci++) {
+                        gctx.lineTo(corners[ci].x, corners[ci].y);
+                      }
+                      gctx.stroke();
+                      // Stones at intervals along each edge
+                      var stoneColors = ['#9a9088', '#807870', '#a8a098', '#706860'];
+                      for (var edge = 0; edge < 4; edge++) {
+                        var a = corners[edge], b = corners[edge + 1];
+                        var STONES_PER_EDGE = 9;
+                        for (var st = 1; st <= STONES_PER_EDGE; st++) {
+                          var tFrac = st / (STONES_PER_EDGE + 1);
+                          // Wobble each stone slightly off the line so it looks natural
+                          var wobX = (((edge * 7 + st * 13) % 5) - 2) * 1.5;
+                          var wobY = (((edge * 11 + st * 17) % 5) - 2) * 1.2;
+                          var sx = a.x + (b.x - a.x) * tFrac + wobX;
+                          var sy = a.y + (b.y - a.y) * tFrac + wobY;
+                          gctx.fillStyle = stoneColors[(edge + st) % stoneColors.length];
+                          gctx.beginPath();
+                          gctx.ellipse(sx, sy, 3.5 + ((edge + st) % 3), 2.4, 0, 0, Math.PI * 2);
+                          gctx.fill();
+                          // Tiny highlight
+                          gctx.fillStyle = 'rgba(255,255,255,0.18)';
+                          gctx.beginPath();
+                          gctx.ellipse(sx - 0.8, sy - 0.6, 1.4, 0.8, 0, 0, Math.PI * 2);
+                          gctx.fill();
+                        }
+                      }
+                    })();
 
                     // ── Background trees (behind garden) ──
                     var treeLine = isoOY - 40;
@@ -3977,6 +4210,181 @@ var d = (labToolData.companionPlanting) || {};
                     gctx.fillStyle = '#6a4a2a'; // roof
                     gctx.beginPath(); gctx.moveTo(shedPos.x - 22, shedPos.y - 30); gctx.lineTo(shedPos.x, shedPos.y - 42); gctx.lineTo(shedPos.x + 22, shedPos.y - 30); gctx.fill();
                     gctx.fillStyle = '#5a3a1a'; gctx.fillRect(shedPos.x - 4, shedPos.y - 18, 8, 12); // door
+                    // Tiny window on shed (lit warm at night, daylight blue otherwise)
+                    var windowLit = isNight || isDusk;
+                    gctx.fillStyle = windowLit ? '#fbbf24' : '#a8d4f0';
+                    gctx.fillRect(shedPos.x - 14, shedPos.y - 26, 6, 6);
+                    if (windowLit) {
+                      // Soft warm glow extending into the night
+                      gctx.fillStyle = 'rgba(251,191,36,' + (0.2 * (nightStrength + (isDusk ? 0.5 : 0))) + ')';
+                      gctx.beginPath(); gctx.arc(shedPos.x - 11, shedPos.y - 23, 14, 0, Math.PI * 2); gctx.fill();
+                    }
+                    gctx.strokeStyle = '#5a3a1a'; gctx.lineWidth = 0.5;
+                    gctx.beginPath(); gctx.moveTo(shedPos.x - 11, shedPos.y - 26); gctx.lineTo(shedPos.x - 11, shedPos.y - 20); gctx.stroke();
+                    gctx.beginPath(); gctx.moveTo(shedPos.x - 14, shedPos.y - 23); gctx.lineTo(shedPos.x - 8, shedPos.y - 23); gctx.stroke();
+                    // Chimney (so smoke wisps from earlier render through a real chimney shape)
+                    gctx.fillStyle = '#5a3a1a'; gctx.fillRect(shedPos.x + 8, shedPos.y - 44, 5, 8);
+
+                    // ── Wind chime hanging from shed eave (sways slightly) ──
+                    var chSway = Math.sin(t * 1.2) * 1.5;
+                    var chBaseX = shedPos.x - 22;
+                    var chBaseY = shedPos.y - 30;
+                    gctx.strokeStyle = 'rgba(120,90,60,0.7)'; gctx.lineWidth = 0.6;
+                    gctx.beginPath(); gctx.moveTo(chBaseX, chBaseY); gctx.lineTo(chBaseX + chSway, chBaseY + 4); gctx.stroke();
+                    // 4 hanging tubes
+                    var chTubeColors = ['#cbd5e1', '#94a3b8', '#cbd5e1', '#94a3b8'];
+                    for (var chi = 0; chi < 4; chi++) {
+                      var chTubeX = chBaseX + chSway * (1 + chi * 0.15) - 3 + chi * 2;
+                      gctx.strokeStyle = chTubeColors[chi]; gctx.lineWidth = 1;
+                      gctx.beginPath();
+                      gctx.moveTo(chTubeX, chBaseY + 4);
+                      gctx.lineTo(chTubeX + chSway * 0.3, chBaseY + 9 + chi);
+                      gctx.stroke();
+                    }
+
+                    // ── Wheelbarrow (parked just left of shed, ground level) ──
+                    var wbX = shedPos.x - 50;
+                    var wbY = shedPos.y - 4;
+                    // Tray (parallelogram in iso)
+                    gctx.fillStyle = '#9a3a2a';
+                    gctx.beginPath();
+                    gctx.moveTo(wbX - 12, wbY - 6);
+                    gctx.lineTo(wbX + 12, wbY - 6);
+                    gctx.lineTo(wbX + 14, wbY);
+                    gctx.lineTo(wbX - 10, wbY);
+                    gctx.closePath();
+                    gctx.fill();
+                    // Wheel
+                    gctx.fillStyle = '#3a2a1a';
+                    gctx.beginPath(); gctx.arc(wbX - 8, wbY + 4, 4, 0, Math.PI * 2); gctx.fill();
+                    gctx.fillStyle = '#5a3a2a';
+                    gctx.beginPath(); gctx.arc(wbX - 8, wbY + 4, 1.5, 0, Math.PI * 2); gctx.fill();
+                    // Handles
+                    gctx.strokeStyle = '#7a5a3a'; gctx.lineWidth = 1.5;
+                    gctx.beginPath(); gctx.moveTo(wbX + 12, wbY - 4); gctx.lineTo(wbX + 22, wbY); gctx.stroke();
+
+                    // ── Watering can leaning at shed door ──
+                    var wcX = shedPos.x + 16;
+                    var wcY = shedPos.y - 8;
+                    gctx.fillStyle = '#16a085';
+                    gctx.fillRect(wcX, wcY - 8, 7, 9);  // body
+                    gctx.beginPath();
+                    gctx.moveTo(wcX + 7, wcY - 6);
+                    gctx.lineTo(wcX + 13, wcY - 8);
+                    gctx.lineTo(wcX + 13, wcY - 5);
+                    gctx.lineTo(wcX + 7, wcY - 3);
+                    gctx.closePath();
+                    gctx.fill();
+                    // Handle
+                    gctx.strokeStyle = '#0e6655'; gctx.lineWidth = 1;
+                    gctx.beginPath(); gctx.arc(wcX + 3, wcY - 9, 3, Math.PI, 0); gctx.stroke();
+
+                    // ── Stack of terracotta pots at shed door ──
+                    var potsX = shedPos.x - 12;
+                    var potsY = shedPos.y - 4;
+                    for (var pti = 0; pti < 3; pti++) {
+                      var ptScale = 1 - pti * 0.18;
+                      var ptW = 8 * ptScale;
+                      var ptH = 6 * ptScale;
+                      var ptY = potsY - pti * 5;
+                      // Pot body (trapezoid)
+                      gctx.fillStyle = pti === 2 ? '#c97557' : '#b85a3c';
+                      gctx.beginPath();
+                      gctx.moveTo(potsX - ptW, ptY);
+                      gctx.lineTo(potsX + ptW, ptY);
+                      gctx.lineTo(potsX + ptW * 0.78, ptY - ptH);
+                      gctx.lineTo(potsX - ptW * 0.78, ptY - ptH);
+                      gctx.closePath();
+                      gctx.fill();
+                      // Rim line
+                      gctx.strokeStyle = '#8a3a20'; gctx.lineWidth = 0.6;
+                      gctx.beginPath(); gctx.moveTo(potsX - ptW, ptY); gctx.lineTo(potsX + ptW, ptY); gctx.stroke();
+                    }
+
+                    // ── Rain barrel at right corner of shed ──
+                    var rbX = shedPos.x + 26;
+                    var rbY = shedPos.y - 4;
+                    // Barrel body (vertical wood-stave look)
+                    gctx.fillStyle = '#3a5a8a';
+                    gctx.fillRect(rbX - 6, rbY - 18, 12, 18);
+                    // Stave lines
+                    gctx.strokeStyle = 'rgba(20,40,70,0.4)'; gctx.lineWidth = 0.5;
+                    for (var stv = 1; stv < 4; stv++) {
+                      gctx.beginPath(); gctx.moveTo(rbX - 6 + stv * 3, rbY - 18); gctx.lineTo(rbX - 6 + stv * 3, rbY); gctx.stroke();
+                    }
+                    // Metal hoops
+                    gctx.strokeStyle = '#5a5a5a'; gctx.lineWidth = 1;
+                    gctx.beginPath(); gctx.moveTo(rbX - 6, rbY - 14); gctx.lineTo(rbX + 6, rbY - 14); gctx.stroke();
+                    gctx.beginPath(); gctx.moveTo(rbX - 6, rbY - 4); gctx.lineTo(rbX + 6, rbY - 4); gctx.stroke();
+                    // Open top with water inside (visible water only when moisture is high — recently rained)
+                    gctx.fillStyle = '#1a3a5a';
+                    gctx.beginPath(); gctx.ellipse(rbX, rbY - 18, 6, 1.5, 0, 0, Math.PI * 2); gctx.fill();
+                    if (cgMoisture > 60) {
+                      gctx.fillStyle = '#4a7aaa';
+                      gctx.beginPath(); gctx.ellipse(rbX, rbY - 17.5, 5, 1.2, 0, 0, Math.PI * 2); gctx.fill();
+                      // Tiny ripple
+                      if (Math.sin(t * 0.8) > 0.3) {
+                        gctx.strokeStyle = 'rgba(255,255,255,0.3)'; gctx.lineWidth = 0.4;
+                        gctx.beginPath(); gctx.ellipse(rbX, rbY - 17.5, 2, 0.5, 0, 0, Math.PI * 2); gctx.stroke();
+                      }
+                    }
+                    // Spigot at bottom (small detail)
+                    gctx.fillStyle = '#5a5a5a';
+                    gctx.fillRect(rbX + 5, rbY - 3, 3, 1.5);
+
+                    // ── Compost bin (front-left of garden, outside fence) ──
+                    var cbPos = isoToScreen(4.6, 0.2);
+                    // 3-sided wood box (front + two sides, no top)
+                    gctx.fillStyle = '#7a5a3a';
+                    // Front board
+                    gctx.fillRect(cbPos.x - 14, cbPos.y - 12, 28, 12);
+                    // Left side (perspective slant)
+                    gctx.beginPath();
+                    gctx.moveTo(cbPos.x - 14, cbPos.y - 12);
+                    gctx.lineTo(cbPos.x - 18, cbPos.y - 14);
+                    gctx.lineTo(cbPos.x - 18, cbPos.y - 2);
+                    gctx.lineTo(cbPos.x - 14, cbPos.y);
+                    gctx.closePath();
+                    gctx.fillStyle = '#6a4a2a';
+                    gctx.fill();
+                    // Right side
+                    gctx.beginPath();
+                    gctx.moveTo(cbPos.x + 14, cbPos.y - 12);
+                    gctx.lineTo(cbPos.x + 18, cbPos.y - 14);
+                    gctx.lineTo(cbPos.x + 18, cbPos.y - 2);
+                    gctx.lineTo(cbPos.x + 14, cbPos.y);
+                    gctx.closePath();
+                    gctx.fillStyle = '#6a4a2a';
+                    gctx.fill();
+                    // Slat lines on front board
+                    gctx.strokeStyle = '#5a3a1a'; gctx.lineWidth = 0.5;
+                    for (var sli = 1; sli < 4; sli++) {
+                      gctx.beginPath(); gctx.moveTo(cbPos.x - 14, cbPos.y - 12 + sli * 3); gctx.lineTo(cbPos.x + 14, cbPos.y - 12 + sli * 3); gctx.stroke();
+                    }
+                    // Compost pile inside (visible above the front board)
+                    gctx.fillStyle = '#3a2a1a';
+                    gctx.beginPath();
+                    gctx.ellipse(cbPos.x, cbPos.y - 13, 14, 4, 0, 0, Math.PI);
+                    gctx.fill();
+                    // Compost flecks (organic matter visible)
+                    var compostColors = ['#5a3a1a', '#7a5a2a', '#4a3a1a', '#8a6a3a', '#5a4a2a'];
+                    for (var cfi = 0; cfi < 8; cfi++) {
+                      var cfx = cbPos.x - 12 + (cfi * 3);
+                      var cfy = cbPos.y - 14 + Math.sin(cfi * 1.3) * 1;
+                      gctx.fillStyle = compostColors[cfi % compostColors.length];
+                      gctx.fillRect(cfx, cfy, 2, 1.2);
+                    }
+                    // Steam wisp (compost is alive — decomposition releases heat)
+                    if (sSeason !== 3) {
+                      var stPhase = (t * 0.4) % 2;
+                      if (stPhase < 1.5) {
+                        var stA = (1 - stPhase / 1.5) * 0.25;
+                        gctx.fillStyle = 'rgba(220,220,200,' + stA + ')';
+                        gctx.beginPath();
+                        gctx.arc(cbPos.x + Math.sin(stPhase * 3) * 2, cbPos.y - 16 - stPhase * 8, 2 + stPhase, 0, Math.PI * 2);
+                        gctx.fill();
+                      }
+                    }
 
                     // ── Isometric stone paths (between rows) ──
                     gctx.fillStyle = 'rgba(160,150,130,0.2)';
@@ -4010,6 +4418,100 @@ var d = (labToolData.companionPlanting) || {};
                     gctx.lineTo(corners[2].x, corners[2].y - 6); gctx.lineTo(corners[3].x, corners[3].y - 6);
                     gctx.closePath(); gctx.stroke();
 
+                    // ── Birdbath (front-left of garden, just outside fence) ──
+                    var bbPos = isoToScreen(4.4, -0.8);
+                    // Pedestal (stone)
+                    gctx.fillStyle = '#8a8a90';
+                    gctx.fillRect(bbPos.x - 4, bbPos.y - 14, 8, 14);
+                    gctx.fillStyle = 'rgba(0,0,0,0.18)';  // pedestal shadow
+                    gctx.fillRect(bbPos.x - 4, bbPos.y - 8, 8, 2);
+                    // Bowl
+                    gctx.fillStyle = '#9a9aa0';
+                    gctx.beginPath(); gctx.ellipse(bbPos.x, bbPos.y - 14, 12, 4, 0, 0, Math.PI * 2); gctx.fill();
+                    // Water (lighter, with subtle ripple)
+                    gctx.fillStyle = '#6cb4d8';
+                    gctx.beginPath(); gctx.ellipse(bbPos.x, bbPos.y - 15, 9, 2.5, 0, 0, Math.PI * 2); gctx.fill();
+                    // Tiny ripple every few seconds
+                    var ripPhase = (t * 0.4) % 3;
+                    if (ripPhase < 1) {
+                      gctx.strokeStyle = 'rgba(255,255,255,' + (1 - ripPhase) * 0.4 + ')';
+                      gctx.lineWidth = 0.6;
+                      gctx.beginPath(); gctx.ellipse(bbPos.x + Math.sin(ripPhase * 6) * 2, bbPos.y - 15, 2 + ripPhase * 4, 0.6 + ripPhase * 1.5, 0, 0, Math.PI * 2); gctx.stroke();
+                    }
+
+                    // ── Garden gnome (decorative; near front-right corner) ──
+                    var gnPos = isoToScreen(4.3, 3.6);
+                    // Hat (red cone)
+                    gctx.fillStyle = '#dc2626';
+                    gctx.beginPath();
+                    gctx.moveTo(gnPos.x, gnPos.y - 18);
+                    gctx.lineTo(gnPos.x - 5, gnPos.y - 8);
+                    gctx.lineTo(gnPos.x + 5, gnPos.y - 8);
+                    gctx.closePath();
+                    gctx.fill();
+                    // Hat band
+                    gctx.fillStyle = '#b91c1c';
+                    gctx.fillRect(gnPos.x - 5, gnPos.y - 9, 10, 1.5);
+                    // Face
+                    gctx.fillStyle = '#fde2c8';
+                    gctx.beginPath(); gctx.arc(gnPos.x, gnPos.y - 5, 3.5, 0, Math.PI * 2); gctx.fill();
+                    // Beard
+                    gctx.fillStyle = '#e5e7eb';
+                    gctx.beginPath(); gctx.ellipse(gnPos.x, gnPos.y - 2, 4, 5, 0, 0, Math.PI * 2); gctx.fill();
+                    // Body
+                    gctx.fillStyle = '#1d4ed8';
+                    gctx.beginPath();
+                    gctx.moveTo(gnPos.x - 5, gnPos.y);
+                    gctx.lineTo(gnPos.x + 5, gnPos.y);
+                    gctx.lineTo(gnPos.x + 6, gnPos.y + 6);
+                    gctx.lineTo(gnPos.x - 6, gnPos.y + 6);
+                    gctx.closePath();
+                    gctx.fill();
+                    // Eyes (tiny)
+                    gctx.fillStyle = '#1f2937';
+                    gctx.fillRect(gnPos.x - 1.5, gnPos.y - 5, 0.8, 0.8);
+                    gctx.fillRect(gnPos.x + 0.7, gnPos.y - 5, 0.8, 0.8);
+
+                    // ── Wooden bench (community gathering spot, front-right outside fence) ──
+                    var bnPos = isoToScreen(4.6, 2.6);
+                    // Bench seat (wooden plank)
+                    gctx.fillStyle = '#8a6a3a';
+                    gctx.fillRect(bnPos.x - 18, bnPos.y - 10, 36, 4);
+                    // Backrest
+                    gctx.fillStyle = '#7a5a2a';
+                    gctx.fillRect(bnPos.x - 17, bnPos.y - 22, 34, 2);
+                    // Backrest vertical supports
+                    for (var bvi = 0; bvi < 4; bvi++) {
+                      gctx.fillRect(bnPos.x - 14 + bvi * 9.3, bnPos.y - 20, 1.5, 11);
+                    }
+                    // Legs (4 — front pair visible, back pair offset for iso)
+                    gctx.fillStyle = '#5a3a1a';
+                    gctx.fillRect(bnPos.x - 16, bnPos.y - 6, 2, 8);
+                    gctx.fillRect(bnPos.x + 14, bnPos.y - 6, 2, 8);
+                    // Wood grain lines on seat
+                    gctx.strokeStyle = 'rgba(70,50,20,0.3)';
+                    gctx.lineWidth = 0.4;
+                    gctx.beginPath(); gctx.moveTo(bnPos.x - 18, bnPos.y - 8); gctx.lineTo(bnPos.x + 18, bnPos.y - 8); gctx.stroke();
+
+                    // ── Sign post: "COMMUNITY GARDEN" (front-left of fence) ──
+                    var spPos = isoToScreen(4.5, -0.5);
+                    // Post
+                    gctx.fillStyle = '#7a5a3a';
+                    gctx.fillRect(spPos.x - 1.5, spPos.y - 24, 3, 24);
+                    // Sign board
+                    gctx.fillStyle = '#fbe4a3';
+                    gctx.fillRect(spPos.x - 22, spPos.y - 30, 44, 14);
+                    // Sign border
+                    gctx.strokeStyle = '#7a5a3a'; gctx.lineWidth = 1;
+                    gctx.strokeRect(spPos.x - 22, spPos.y - 30, 44, 14);
+                    // Sign text
+                    gctx.fillStyle = '#5a3a1a';
+                    gctx.font = 'bold 7px system-ui';
+                    gctx.textAlign = 'center';
+                    gctx.fillText('COMMUNITY', spPos.x, spPos.y - 23);
+                    gctx.fillText('GARDEN', spPos.x, spPos.y - 17);
+                    gctx.textAlign = 'left';  // reset
+
                     // ── Isometric 4×4 Grid (diamond tiles) ──
                     var hoverCell2 = cvEl._hoverCell;
                     var polCount2 = 0;
@@ -4024,14 +4526,55 @@ var d = (labToolData.companionPlanting) || {};
                         var isHovered = hoverCell2 === ci4;
 
                         // ── Soil tile (isometric diamond) ──
-                        var soilDark2 = cgMoisture > 50 ? 15 : 0;
-                        gctx.fillStyle = hasPlant ? 'rgba(' + (100 - soilDark2) + ',' + (65 - soilDark2 * 0.4) + ',30,0.85)' : 'rgba(110,75,35,0.6)';
+                        // Smooth moisture darkening: dry soil is light brown, saturated is dark + slightly cooler
+                        var moisFactor = Math.min(1, Math.max(0, cgMoisture / 100));
+                        var soilDark2 = Math.round(moisFactor * 25);
+                        var moisBlue = Math.round(moisFactor * 8);  // damp soil reads slightly cooler
+                        gctx.fillStyle = hasPlant
+                          ? 'rgba(' + (100 - soilDark2) + ',' + (65 - soilDark2 * 0.4) + ',' + (30 + moisBlue) + ',0.85)'
+                          : 'rgba(' + (110 - soilDark2) + ',' + (75 - soilDark2 * 0.5) + ',' + (35 + moisBlue) + ',0.6)';
                         gctx.beginPath();
                         gctx.moveTo(pos.x, pos.y - iTH / 2); // top
                         gctx.lineTo(pos.x + iTW / 2, pos.y);   // right
                         gctx.lineTo(pos.x, pos.y + iTH / 2); // bottom
                         gctx.lineTo(pos.x - iTW / 2, pos.y);   // left
                         gctx.closePath(); gctx.fill();
+                        // ── Soil tile texture: deterministic pebbles + speckles ──
+                        // 5 pebbles + 7 grain-speckles per tile, positioned by tile
+                        // index so they stay stable across frames. Skipped on tiles
+                        // that have a plant (plant draws on top).
+                        if (!hasPlant) {
+                          for (var sp = 0; sp < 5; sp++) {
+                            var spAng = (ci4 * 2.1 + sp * 1.7) % (Math.PI * 2);
+                            var spDist = 6 + ((ci4 * 11 + sp * 7) % 22);
+                            var spX = pos.x + Math.cos(spAng) * spDist;
+                            var spY = pos.y + Math.sin(spAng) * spDist * (iTH / iTW);
+                            // Keep pebbles inside the diamond
+                            var spDiam = Math.abs(spX - pos.x) / (iTW / 2) + Math.abs(spY - pos.y) / (iTH / 2);
+                            if (spDiam > 0.78) continue;
+                            var spShade = (ci4 + sp) % 3;
+                            gctx.fillStyle = ['rgba(90,60,30,0.55)', 'rgba(140,110,80,0.5)', 'rgba(70,45,25,0.6)'][spShade];
+                            gctx.beginPath();
+                            gctx.ellipse(spX, spY, 1.4 + (sp % 2) * 0.6, 0.9, 0, 0, Math.PI * 2);
+                            gctx.fill();
+                            gctx.fillStyle = 'rgba(255,240,200,0.18)';
+                            gctx.beginPath();
+                            gctx.ellipse(spX - 0.5, spY - 0.4, 0.7, 0.4, 0, 0, Math.PI * 2);
+                            gctx.fill();
+                          }
+                          for (var sk = 0; sk < 7; sk++) {
+                            var skAng = (ci4 * 3.3 + sk * 2.7 + 1.2) % (Math.PI * 2);
+                            var skDist = 4 + ((ci4 * 13 + sk * 9 + 5) % 28);
+                            var skX = pos.x + Math.cos(skAng) * skDist;
+                            var skY = pos.y + Math.sin(skAng) * skDist * (iTH / iTW);
+                            var skDiam = Math.abs(skX - pos.x) / (iTW / 2) + Math.abs(skY - pos.y) / (iTH / 2);
+                            if (skDiam > 0.82) continue;
+                            gctx.fillStyle = (sk % 2 === 0) ? 'rgba(50,30,15,0.4)' : 'rgba(60,40,20,0.35)';
+                            gctx.beginPath();
+                            gctx.arc(skX, skY, 0.7, 0, Math.PI * 2);
+                            gctx.fill();
+                          }
+                        }
                         // Tile border + hover highlight
                         gctx.strokeStyle = isHovered ? 'rgba(251,191,36,0.6)' : hasPlant ? 'rgba(80,50,20,0.4)' : 'rgba(80,50,20,0.2)';
                         gctx.lineWidth = isHovered ? 2 : 1; gctx.stroke();
@@ -4060,19 +4603,109 @@ var d = (labToolData.companionPlanting) || {};
                         gctx.lineTo(pos.x, pos.y + iTH / 2 + depth);
                         gctx.closePath(); gctx.fill();
 
+                        // ── Weeds in empty plots (grow phase only) ──
+                        // 3-4 small weed sprigs per empty cell, positioned deterministically by cell index.
+                        // Subtle wind sway. Tells the player the plot needs attention.
+                        if (!hasPlant && cgPhase === 'grow' && sSeason !== 3) {
+                          var weedColor = sSeason === 2 ? 'rgba(140,120,60,0.55)' : 'rgba(110,150,80,0.55)';
+                          gctx.strokeStyle = weedColor;
+                          gctx.lineWidth = 0.8;
+                          for (var wdi = 0; wdi < 4; wdi++) {
+                            var wdAngle = (ci4 * 1.7 + wdi * 1.9) % (Math.PI * 2);
+                            var wdR = 18 + ((ci4 + wdi) % 5) * 4;
+                            var wdBaseX = pos.x + Math.cos(wdAngle) * wdR * 0.5;
+                            var wdBaseY = pos.y + Math.sin(wdAngle) * wdR * 0.25;
+                            var wdSway = Math.sin(t * 1.5 + ci4 + wdi) * 1.2;
+                            var wdH = 4 + ((ci4 + wdi) % 3) * 2;
+                            gctx.beginPath();
+                            gctx.moveTo(wdBaseX, wdBaseY);
+                            gctx.quadraticCurveTo(wdBaseX + wdSway * 0.5, wdBaseY - wdH * 0.5, wdBaseX + wdSway, wdBaseY - wdH);
+                            gctx.stroke();
+                            // Tiny weed leaf (occasional)
+                            if (wdi % 2 === 0) {
+                              gctx.fillStyle = weedColor;
+                              gctx.beginPath();
+                              gctx.ellipse(wdBaseX + wdSway * 0.7, wdBaseY - wdH * 0.6, 1.2, 0.6, wdAngle, 0, Math.PI * 2);
+                              gctx.fill();
+                            }
+                          }
+                        }
+
                         // ── Plant rendering (isometric) ──
                         if (hasPlant) {
                           var vis2 = PLANT_VISUALS[cell4.plantId] || defVis;
                           var gp2 = Math.min(1, cell4.growthDay / pl3.days);
-                          var sw2 = Math.sin(t * 1.2 + ci4 * 0.7) * gp2 * 3;
+                          // ── Droop factor: thirsty plants visibly wilt ──
+                          // 0 = healthy turgor; 1 = severely wilted (compresses height, exaggerates lean)
+                          var droopFactor = cgMoisture < 30 ? Math.max(0, (30 - cgMoisture) / 30) : 0;
+                          var sw2 = Math.sin(t * 1.2 + ci4 * 0.7) * gp2 * 3 + droopFactor * 4 * gp2;
                           // Drop shadow (isometric ellipse on soil surface)
                           var shadowAlpha = 0.1 + gp2 * 0.08;
                           gctx.fillStyle = 'rgba(0,0,0,' + shadowAlpha + ')';
                           gctx.beginPath();
                           gctx.ellipse(pos.x + 3, pos.y + 2, 8 + gp2 * 10, 4 + gp2 * 4, 0.3, 0, Math.PI * 2);
                           gctx.fill();
+                          // ── Harvest-ready glow (soft pulsing aura on mature plants) ──
+                          // Lets the player spot which crops are ready to pick at a glance.
+                          if (gp2 >= 0.98 && !pl3.isStructure) {
+                            var harvestPulse = 0.5 + 0.5 * Math.sin(t * 2.5 + ci4 * 0.7);
+                            gctx.fillStyle = 'rgba(254,240,138,' + (0.18 + harvestPulse * 0.18) + ')';
+                            gctx.beginPath();
+                            gctx.ellipse(pos.x, pos.y - iTH / 4, 16 + harvestPulse * 4, 9 + harvestPulse * 2.5, 0, 0, Math.PI * 2);
+                            gctx.fill();
+                            // Sparkle dots
+                            for (var hsp = 0; hsp < 3; hsp++) {
+                              var spA = (hsp + ci4 * 0.3 + t * 1.5) % 1;
+                              if (spA < 0.4) {
+                                var spX = pos.x + Math.cos(hsp * 2.1 + ci4) * 14;
+                                var spY = pos.y - iTH / 4 - 8 + Math.sin(hsp * 2.1 + ci4) * 6 - spA * 8;
+                                gctx.fillStyle = 'rgba(254,240,138,' + (1 - spA / 0.4) * 0.85 + ')';
+                                gctx.beginPath(); gctx.arc(spX, spY, 1.2, 0, Math.PI * 2); gctx.fill();
+                              }
+                            }
+                          }
                           var baseX = pos.x; var baseY = pos.y - iTH / 2 - 2;
+                          // sH2 reduced by droop (wilting plants slump)
                           var sH2 = gp2 * (vis2.tall ? 50 : vis2.bushy ? 18 : vis2.wide ? 25 : 35);
+                          sH2 *= (1 - droopFactor * 0.28);
+
+                          // ── Support structures (trellis / cage / stake) — drawn BEFORE plant so plant climbs/sits in front ──
+                          if (gp2 > 0.15 && !pl3.isStructure) {
+                            var supportType = null;
+                            if (cell4.plantId === 'beans' || cell4.plantId === 'peas') supportType = 'trellis';
+                            else if (cell4.plantId === 'tomato') supportType = 'cage';
+                            else if (cell4.plantId === 'sunflower' || cell4.plantId === 'corn') supportType = 'stake';
+                            if (supportType === 'trellis') {
+                              // Bamboo A-frame trellis (3 verticals + 2 horizontal crosses)
+                              gctx.strokeStyle = 'rgba(180,140,90,0.65)'; gctx.lineWidth = 1.2;
+                              gctx.beginPath(); gctx.moveTo(baseX - 9, baseY); gctx.lineTo(baseX - 3, baseY - sH2 * 1.15); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX + 9, baseY); gctx.lineTo(baseX + 3, baseY - sH2 * 1.15); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX, baseY); gctx.lineTo(baseX, baseY - sH2 * 1.2); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX - 3, baseY - sH2 * 1.15); gctx.lineTo(baseX + 3, baseY - sH2 * 1.15); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX - 6, baseY - sH2 * 0.7); gctx.lineTo(baseX + 6, baseY - sH2 * 0.7); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX - 7.5, baseY - sH2 * 0.4); gctx.lineTo(baseX + 7.5, baseY - sH2 * 0.4); gctx.stroke();
+                            } else if (supportType === 'cage') {
+                              // Tomato cage (4 wire verticals + 3 horizontal rings)
+                              gctx.strokeStyle = 'rgba(110,110,130,0.55)'; gctx.lineWidth = 1;
+                              var cageH = sH2 * 1.05;
+                              gctx.beginPath(); gctx.moveTo(baseX - 7, baseY); gctx.lineTo(baseX - 7, baseY - cageH); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX + 7, baseY); gctx.lineTo(baseX + 7, baseY - cageH); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX - 4, baseY); gctx.lineTo(baseX - 4, baseY - cageH); gctx.stroke();
+                              gctx.beginPath(); gctx.moveTo(baseX + 4, baseY); gctx.lineTo(baseX + 4, baseY - cageH); gctx.stroke();
+                              for (var ringI = 1; ringI <= 3; ringI++) {
+                                gctx.beginPath(); gctx.ellipse(baseX, baseY - cageH * (ringI / 4), 7, 1.5, 0, 0, Math.PI * 2); gctx.stroke();
+                              }
+                            } else if (supportType === 'stake') {
+                              // Single bamboo stake behind plant + tie point at midstem
+                              gctx.strokeStyle = 'rgba(160,120,70,0.75)'; gctx.lineWidth = 1.5;
+                              gctx.beginPath(); gctx.moveTo(baseX + 2.5, baseY); gctx.lineTo(baseX + 2.5, baseY - sH2 * 1.18); gctx.stroke();
+                              if (gp2 > 0.5) {
+                                gctx.strokeStyle = 'rgba(80,60,30,0.7)'; gctx.lineWidth = 0.8;
+                                gctx.beginPath(); gctx.moveTo(baseX, baseY - sH2 * 0.5); gctx.lineTo(baseX + 5, baseY - sH2 * 0.5); gctx.stroke();
+                                gctx.beginPath(); gctx.moveTo(baseX, baseY - sH2 * 0.85); gctx.lineTo(baseX + 5, baseY - sH2 * 0.85); gctx.stroke();
+                              }
+                            }
+                          }
 
                           if (pl3.isStructure) {
                             // Structure icons (geometric)
@@ -4165,16 +4798,581 @@ var d = (labToolData.companionPlanting) || {};
                       }
                     }
 
-                    // ── Pollinators (bees/butterflies) ──
-                    for (var bi3 = 0; bi3 < Math.min(5, polCount2); bi3++) {
-                      var bx3 = (t * 20 + bi3 * 100) % (W + 60) - 30;
-                      var by3 = isoOY - 20 + Math.sin(t * 1.5 + bi3 * 2.5) * 25;
-                      gctx.fillStyle = bi3 % 2 === 0 ? '#fbbf24' : '#f97316';
-                      gctx.beginPath(); gctx.arc(bx3, by3, 2.5, 0, Math.PI * 2); gctx.fill();
-                      gctx.fillStyle = 'rgba(255,255,255,0.5)';
-                      var wA2 = Math.sin(t * 8 + bi3) * 0.5;
-                      gctx.beginPath(); gctx.ellipse(bx3 - 2.5, by3 - 1.5, 3, 1.8, wA2, 0, Math.PI * 2); gctx.fill();
-                      gctx.beginPath(); gctx.ellipse(bx3 + 2.5, by3 - 1.5, 3, 1.8, -wA2, 0, Math.PI * 2); gctx.fill();
+                    // ═══════════════════════════════════════════════════════
+                    // AMBIENT WILDLIFE — makes the garden feel alive year-round
+                    // not just when the player has planted pollinator-attracting crops.
+                    // Each species respects season; counts boosted by polCount2.
+                    // ═══════════════════════════════════════════════════════
+
+                    // ── Bees (ambient + boosted by pollinator plants; daytime only) ──
+                    // Bees periodically VISIT flowering plants (pause + emit pollen burst on departure)
+                    // instead of just hovering generically. Builds a deterministic visit cycle per bee.
+                    if (sSeason !== 3 && !isNight) {  // skip in winter and at night
+                      // Find flowering plants (target candidates for landings)
+                      var floweringCells = [];
+                      for (var fci = 0; fci < 16; fci++) {
+                        var fcCell = grid2[fci];
+                        if (!fcCell || !fcCell.plantId) continue;
+                        var fcPlant = CG_PLANTS[fcCell.plantId];
+                        var fcVis = PLANT_VISUALS[fcCell.plantId];
+                        if (fcPlant && fcVis && fcVis.flowerColor && (fcCell.growthDay / fcPlant.days) > 0.5) {
+                          floweringCells.push(fci);
+                        }
+                      }
+                      var beeCount = (sSeason === 2 ? 1 : 2) + Math.min(4, polCount2);
+                      for (var bi3 = 0; bi3 < beeCount; bi3++) {
+                        // Each bee has a 14-second cycle: travel (0-50%) → land (50-75%) → leave w/ pollen burst (75-100%)
+                        var beeCycle = 14;
+                        var beePhase = ((t + bi3 * 3.5) % beeCycle) / beeCycle;
+                        var bx3, by3, isLanded = false, isLeaving = false;
+                        if (floweringCells.length > 0 && beePhase >= 0.5) {
+                          // Pick a target flowering plant deterministically per cycle
+                          var beeStage = Math.floor((t + bi3 * 3.5) / beeCycle);
+                          var tgtCell = floweringCells[(beeStage + bi3) % floweringCells.length];
+                          var tgtPos = isoToScreen(Math.floor(tgtCell / 4), tgtCell % 4);
+                          var tgtVis = PLANT_VISUALS[grid2[tgtCell].plantId];
+                          var tgtGp = Math.min(1, grid2[tgtCell].growthDay / CG_PLANTS[grid2[tgtCell].plantId].days);
+                          var tgtFlowerY = tgtPos.y - iTH / 2 - 2 - (tgtVis.tall ? 50 : 35) * tgtGp - 3;
+                          if (beePhase < 0.75) {
+                            // Landed at the flower (slight bobbing)
+                            isLanded = true;
+                            bx3 = tgtPos.x + Math.sin(t * 4) * 1;
+                            by3 = tgtFlowerY + Math.cos(t * 4) * 0.8;
+                          } else {
+                            // Leaving with a pollen burst — interpolate away from flower
+                            isLeaving = true;
+                            var leaveT = (beePhase - 0.75) / 0.25;
+                            bx3 = tgtPos.x + leaveT * (40 + bi3 * 20);
+                            by3 = tgtFlowerY - leaveT * 25;
+                            // Pollen burst (yellow particles trailing)
+                            for (var pbi = 0; pbi < 5; pbi++) {
+                              var pbT = (leaveT + pbi * 0.15) % 1;
+                              if (pbT < 0.6) {
+                                var pbX = tgtPos.x + Math.cos(pbi * 1.3) * (5 + pbT * 15);
+                                var pbY = tgtFlowerY + Math.sin(pbi * 1.3) * (5 + pbT * 12) - pbT * 8;
+                                gctx.fillStyle = 'rgba(252,211,77,' + (1 - pbT / 0.6) * 0.85 + ')';
+                                gctx.beginPath(); gctx.arc(pbX, pbY, 1 + pbT * 0.8, 0, Math.PI * 2); gctx.fill();
+                              }
+                            }
+                          }
+                        } else {
+                          // Generic ambient travel (drifting across the canvas)
+                          bx3 = (t * 20 + bi3 * 100) % (W + 60) - 30;
+                          by3 = isoOY - 20 + Math.sin(t * 1.5 + bi3 * 2.5) * 25;
+                        }
+                        // Bee body
+                        gctx.fillStyle = bi3 % 2 === 0 ? '#fbbf24' : '#f97316';
+                        gctx.beginPath(); gctx.arc(bx3, by3, 2.5, 0, Math.PI * 2); gctx.fill();
+                        // Wings (faster flap when hovering/landing)
+                        gctx.fillStyle = 'rgba(255,255,255,0.5)';
+                        var wingSpeed = isLanded ? 16 : 8;
+                        var wA2 = Math.sin(t * wingSpeed + bi3) * 0.5;
+                        gctx.beginPath(); gctx.ellipse(bx3 - 2.5, by3 - 1.5, 3, 1.8, wA2, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(bx3 + 2.5, by3 - 1.5, 3, 1.8, -wA2, 0, Math.PI * 2); gctx.fill();
+                        // Tiny pollen dot on bee's back when leaving (it picked up pollen!)
+                        if (isLeaving) {
+                          gctx.fillStyle = '#fde047';
+                          gctx.beginPath(); gctx.arc(bx3, by3 - 1, 1, 0, Math.PI * 2); gctx.fill();
+                        }
+                      }
+                    }
+
+                    // ── Butterflies (spring/summer; lazy figure-8 path; daytime only) ──
+                    if ((sSeason === 0 || sSeason === 1) && !isNight) {
+                      var btColors = ['#fda4af', '#a78bfa', '#fbbf24'];
+                      var btCount = 2 + Math.min(2, polCount2);
+                      for (var bti = 0; bti < btCount; bti++) {
+                        var btPhase = t * 0.4 + bti * 2.1;
+                        var btCx = W * (0.2 + (bti / btCount) * 0.7) + Math.sin(btPhase) * 70;
+                        var btCy = H * 0.42 + Math.sin(btPhase * 2) * 28;
+                        var wingPh = Math.sin(t * 14 + bti) * 0.55 + 0.45;
+                        var btCol = btColors[bti % btColors.length];
+                        gctx.fillStyle = btCol;
+                        // 4 wings (paired fore + hind)
+                        gctx.beginPath(); gctx.ellipse(btCx - 2.5, btCy - 1.8, 3 * wingPh, 3.5, -0.3, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(btCx + 2.5, btCy - 1.8, 3 * wingPh, 3.5, 0.3, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(btCx - 2.5, btCy + 1.5, 2.2 * wingPh, 2.6, 0.3, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(btCx + 2.5, btCy + 1.5, 2.2 * wingPh, 2.6, -0.3, 0, Math.PI * 2); gctx.fill();
+                        // Body
+                        gctx.fillStyle = '#1f2937';
+                        gctx.fillRect(btCx - 0.5, btCy - 2.5, 1, 5);
+                      }
+                    }
+
+                    // ── Birds (seasonal: V-formation migration in autumn, scattered swoop spring/summer; daytime only) ──
+                    if (sSeason !== 3 && !isNight) {
+                      gctx.strokeStyle = 'rgba(40,40,50,0.6)';
+                      gctx.lineWidth = 1.5;
+                      if (sSeason === 2) {
+                        // Autumn: V-formation migrating south
+                        var leadX = ((t * 25) % (W + 240)) - 120;
+                        var leadY = 35;
+                        var formation = [[0,0], [12,7], [-12,7], [24,14], [-24,14]];
+                        for (var fi = 0; fi < formation.length; fi++) {
+                          var bx = leadX + formation[fi][0];
+                          var by = leadY + formation[fi][1];
+                          var flap = Math.sin(t * 6 + fi * 0.4) * 2;
+                          gctx.beginPath();
+                          gctx.moveTo(bx - 5, by + flap);
+                          gctx.quadraticCurveTo(bx, by - 1.5, bx + 5, by + flap);
+                          gctx.stroke();
+                        }
+                      } else {
+                        // Spring/Summer: 3 birds scattered, swooping individually
+                        for (var bi4 = 0; bi4 < 3; bi4++) {
+                          var bcx = ((t * 18 + bi4 * W * 0.4) % (W + 100)) - 50;
+                          var bcy = 28 + Math.sin(t * 0.7 + bi4 * 1.7) * 20 + bi4 * 8;
+                          var flap2 = Math.sin(t * 7.5 + bi4 * 0.5) * 2.5;
+                          gctx.beginPath();
+                          gctx.moveTo(bcx - 6, bcy + flap2);
+                          gctx.quadraticCurveTo(bcx, bcy - 1.5, bcx + 6, bcy + flap2);
+                          gctx.stroke();
+                        }
+                      }
+                    }
+
+                    // ── Hopping rabbit cameo (every ~22s, spring/summer/autumn only) ──
+                    if (sSeason !== 3) {
+                      var rabCycle = 22;
+                      var rabPhase = (t % rabCycle) / rabCycle;
+                      if (rabPhase < 0.45) {
+                        var rabT = rabPhase / 0.45;
+                        var rx = W * 0.05 + rabT * (W * 0.9);
+                        var hopY = Math.abs(Math.sin(rabT * 16)) * -10;
+                        var ry = H * 0.93 + hopY;
+                        gctx.fillStyle = 'rgba(170,140,110,0.85)';
+                        // body
+                        gctx.beginPath(); gctx.ellipse(rx, ry, 8, 5, 0, 0, Math.PI * 2); gctx.fill();
+                        // head
+                        gctx.beginPath(); gctx.ellipse(rx + 6, ry - 4, 4, 4, 0, 0, Math.PI * 2); gctx.fill();
+                        // ears (two upright)
+                        gctx.fillStyle = 'rgba(170,140,110,0.7)';
+                        gctx.beginPath(); gctx.ellipse(rx + 5, ry - 9, 1.2, 3.5, 0, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(rx + 7, ry - 9, 1.2, 3.5, 0, 0, Math.PI * 2); gctx.fill();
+                        // cottontail
+                        gctx.fillStyle = 'rgba(255,255,255,0.8)';
+                        gctx.beginPath(); gctx.arc(rx - 7, ry - 1, 2.2, 0, Math.PI * 2); gctx.fill();
+                        // eye
+                        gctx.fillStyle = '#1f2937';
+                        gctx.beginPath(); gctx.arc(rx + 7, ry - 4.5, 0.6, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Falling leaves (autumn only) ──
+                    if (sSeason === 2) {
+                      var leafCols = ['#dc2626', '#ea580c', '#eab308', '#ca8a04', '#b45309'];
+                      for (var li = 0; li < 14; li++) {
+                        var lx = (li * 67 + Math.sin(t * 0.6 + li) * 35) % W;
+                        var ly = ((li * 53 + t * 28) % (H + 30)) - 15;
+                        var lr = Math.sin(t * 0.8 + li) * 0.5 + t * 0.4;
+                        gctx.fillStyle = leafCols[li % leafCols.length];
+                        gctx.save();
+                        gctx.translate(lx, ly);
+                        gctx.rotate(lr);
+                        gctx.beginPath(); gctx.ellipse(0, 0, 3, 1.5, 0, 0, Math.PI * 2); gctx.fill();
+                        gctx.restore();
+                      }
+                    }
+
+                    // ── Wildflower tufts in foreground meadow (wind sway, spring/summer/autumn) ──
+                    if (sSeason !== 3) {
+                      var flowCols = ['#fbbf24', '#fda4af', '#a78bfa', '#ffffff', '#f472b6'];
+                      for (var fwi = 0; fwi < 22; fwi++) {
+                        var sway = Math.sin(t * 0.9 + fwi * 0.4) * 1.8;
+                        var fwx = ((fwi * 79) % W) + sway;
+                        var fwy = H * (0.86 + (fwi % 4) * 0.025);
+                        if (fwy > H * 0.97) continue;
+                        // Stem
+                        gctx.strokeStyle = 'rgba(80,120,60,0.55)';
+                        gctx.lineWidth = 0.8;
+                        gctx.beginPath(); gctx.moveTo(fwx - sway * 0.5, fwy + 5); gctx.lineTo(fwx, fwy); gctx.stroke();
+                        // Bloom
+                        gctx.fillStyle = sSeason === 2 ? 'rgba(202,138,4,0.7)' : flowCols[fwi % flowCols.length];
+                        gctx.beginPath(); gctx.arc(fwx, fwy, 1.7, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Shed chimney smoke (cold months — winter + chilly autumn evenings) ──
+                    if (sSeason === 3 || sSeason === 2) {
+                      for (var smi = 0; smi < 4; smi++) {
+                        var smPhase = ((t * 0.35 + smi * 0.6) % 2);
+                        if (smPhase > 1.6) continue;
+                        var smX = shedPos.x + 12 + Math.sin(smPhase * 4 + smi) * 3.5;
+                        var smY = shedPos.y - 42 - smPhase * 28;
+                        var smA = Math.max(0, (1 - smPhase / 1.6)) * 0.45;
+                        gctx.fillStyle = 'rgba(220,220,220,' + smA + ')';
+                        gctx.beginPath(); gctx.arc(smX, smY, 2.5 + smPhase * 2.2, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Squirrel cameo (climbs the side of the shed every ~30s, all seasons) ──
+                    var sqCycle = 30;
+                    var sqPhase = (t % sqCycle) / sqCycle;
+                    if (sqPhase > 0.15 && sqPhase < 0.55) {
+                      // Climbs up (15-35%) then back down (35-55%)
+                      var climbT = sqPhase < 0.35 ? (sqPhase - 0.15) / 0.2 : 1 - (sqPhase - 0.35) / 0.2;
+                      var sqX = shedPos.x - 22;  // left side of shed
+                      var sqY = shedPos.y - 6 - climbT * 24;  // up along shed wall
+                      var sqWiggle = Math.sin(t * 12) * 0.6;
+                      // Body (gray ellipse)
+                      gctx.fillStyle = 'rgba(120,110,100,0.95)';
+                      gctx.beginPath(); gctx.ellipse(sqX + sqWiggle, sqY, 4, 5, 0, 0, Math.PI * 2); gctx.fill();
+                      // Head
+                      gctx.beginPath(); gctx.arc(sqX + sqWiggle, sqY - 4, 2.5, 0, Math.PI * 2); gctx.fill();
+                      // Bushy tail (curved up)
+                      gctx.fillStyle = 'rgba(140,130,120,0.95)';
+                      gctx.beginPath();
+                      gctx.ellipse(sqX + sqWiggle - 4, sqY - 2, 3, 5, -0.5, 0, Math.PI * 2);
+                      gctx.fill();
+                      // Eye
+                      gctx.fillStyle = '#1f2937';
+                      gctx.beginPath(); gctx.arc(sqX + sqWiggle + 1.5, sqY - 4, 0.5, 0, Math.PI * 2); gctx.fill();
+                    }
+
+                    // ── Perched birds on fence (always-2 in spring/summer, 1 in autumn; daytime only — they roost at night) ──
+                    if (sSeason !== 3 && !isNight) {
+                      var perchCount = sSeason === 2 ? 1 : 2;
+                      for (var pbi = 0; pbi < perchCount; pbi++) {
+                        // Position along the front fence (corner 2 → corner 3)
+                        var perchT = 0.25 + pbi * 0.35 + Math.sin(t * 0.3 + pbi) * 0.05;
+                        var pbX = corners[2].x + (corners[3].x - corners[2].x) * perchT;
+                        var pbY = corners[2].y + (corners[3].y - corners[2].y) * perchT - 8;
+                        // Occasionally hop in place
+                        var hopBoost = Math.max(0, Math.sin(t * 0.5 + pbi * 2) - 0.92) * 12;
+                        pbY -= hopBoost;
+                        // Body
+                        gctx.fillStyle = pbi === 0 ? 'rgba(190,80,60,0.9)' : 'rgba(80,90,140,0.9)';  // robin red + bluebird
+                        gctx.beginPath(); gctx.ellipse(pbX, pbY, 3.5, 2.5, 0, 0, Math.PI * 2); gctx.fill();
+                        // Head
+                        gctx.beginPath(); gctx.arc(pbX + 2.5, pbY - 1.5, 1.8, 0, Math.PI * 2); gctx.fill();
+                        // Beak
+                        gctx.fillStyle = '#fbbf24';
+                        gctx.beginPath();
+                        gctx.moveTo(pbX + 4.2, pbY - 1.5);
+                        gctx.lineTo(pbX + 5.5, pbY - 1.2);
+                        gctx.lineTo(pbX + 4.2, pbY - 0.8);
+                        gctx.closePath();
+                        gctx.fill();
+                        // Tail (small triangle)
+                        gctx.fillStyle = pbi === 0 ? 'rgba(150,60,40,0.9)' : 'rgba(50,60,110,0.9)';
+                        gctx.beginPath();
+                        gctx.moveTo(pbX - 3.5, pbY);
+                        gctx.lineTo(pbX - 6, pbY - 1.5);
+                        gctx.lineTo(pbX - 6, pbY + 1.5);
+                        gctx.closePath();
+                        gctx.fill();
+                      }
+                    }
+
+                    // ── Bird sitting on the birdbath edge (occasional, spring/summer) ──
+                    if ((sSeason === 0 || sSeason === 1) && (t % 18) < 6) {
+                      var bbBirdX = bbPos.x - 8;
+                      var bbBirdY = bbPos.y - 16;
+                      gctx.fillStyle = 'rgba(80,120,170,0.9)';
+                      gctx.beginPath(); gctx.ellipse(bbBirdX, bbBirdY, 3, 2.2, 0, 0, Math.PI * 2); gctx.fill();
+                      gctx.beginPath(); gctx.arc(bbBirdX + 2.2, bbBirdY - 1.4, 1.6, 0, Math.PI * 2); gctx.fill();
+                      gctx.fillStyle = '#fbbf24';
+                      gctx.beginPath();
+                      gctx.moveTo(bbBirdX + 3.6, bbBirdY - 1.4);
+                      gctx.lineTo(bbBirdX + 4.6, bbBirdY - 1.2);
+                      gctx.lineTo(bbBirdX + 3.6, bbBirdY - 0.8);
+                      gctx.closePath();
+                      gctx.fill();
+                      // Tiny splash if bird is moving
+                      if (Math.sin(t * 5) > 0.7) {
+                        gctx.fillStyle = 'rgba(255,255,255,0.6)';
+                        gctx.beginPath(); gctx.arc(bbPos.x + 3, bbPos.y - 15, 1, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Fireflies (dusk + early night, spring/summer only) ──
+                    if ((isDusk || (isNight && nightStrength < 0.7)) && (sSeason === 0 || sSeason === 1)) {
+                      var ffStrength = isDusk ? 0.5 : (1 - nightStrength);
+                      for (var ffi = 0; ffi < 12; ffi++) {
+                        var ffx = (ffi * 87 + Math.sin(t * 0.6 + ffi) * 30) % W;
+                        var ffy = H * (0.55 + (ffi % 5) * 0.06) + Math.cos(t * 0.4 + ffi) * 12;
+                        var ffBlink = Math.max(0, Math.sin(t * 1.5 + ffi * 1.3));
+                        if (ffBlink < 0.4) continue;
+                        gctx.fillStyle = 'rgba(254,240,138,' + (ffBlink * 0.85 * ffStrength) + ')';
+                        gctx.beginPath(); gctx.arc(ffx, ffy, 1.8, 0, Math.PI * 2); gctx.fill();
+                        // Glow
+                        gctx.fillStyle = 'rgba(254,240,138,' + (ffBlink * 0.25 * ffStrength) + ')';
+                        gctx.beginPath(); gctx.arc(ffx, ffy, 4.5, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Snail crossing the foreground in early morning (dawn only, slow + leaves a wet trail) ──
+                    if (isDawn && sSeason !== 3) {
+                      // Calculate snail position based on time-of-day (slow march across the foreground)
+                      var snProgress = (todPhase - 0.05) / 0.1;  // 0..1 across dawn
+                      var snX = W * 0.1 + snProgress * W * 0.5;
+                      var snY = H * 0.94;
+                      // Wet trail behind snail
+                      gctx.strokeStyle = 'rgba(180,200,220,0.45)';
+                      gctx.lineWidth = 2;
+                      gctx.beginPath();
+                      var trailLen = 60;
+                      for (var tri = 0; tri < trailLen; tri += 4) {
+                        var trX = snX - tri;
+                        var trY = snY + Math.sin(tri * 0.3) * 0.8;
+                        if (tri === 0) gctx.moveTo(trX, trY);
+                        else gctx.lineTo(trX, trY);
+                      }
+                      gctx.stroke();
+                      // Snail body (foot)
+                      gctx.fillStyle = 'rgba(180,160,140,0.9)';
+                      gctx.beginPath(); gctx.ellipse(snX, snY, 6, 2, 0, 0, Math.PI * 2); gctx.fill();
+                      // Spiral shell on top
+                      gctx.fillStyle = '#a87a4a';
+                      gctx.beginPath(); gctx.arc(snX, snY - 2.5, 4, 0, Math.PI * 2); gctx.fill();
+                      gctx.strokeStyle = '#7a4a20'; gctx.lineWidth = 0.6;
+                      // Spiral lines
+                      for (var spi = 0; spi < 3; spi++) {
+                        gctx.beginPath();
+                        gctx.arc(snX - spi * 0.3, snY - 2.5, 3.5 - spi * 1, -Math.PI * 0.7, Math.PI * 0.3);
+                        gctx.stroke();
+                      }
+                      // Eye stalks (two thin antennae with little eyes on top)
+                      gctx.strokeStyle = 'rgba(120,100,80,0.85)'; gctx.lineWidth = 0.6;
+                      gctx.beginPath(); gctx.moveTo(snX + 4, snY - 1); gctx.lineTo(snX + 6, snY - 4); gctx.stroke();
+                      gctx.beginPath(); gctx.moveTo(snX + 5, snY - 1); gctx.lineTo(snX + 7, snY - 4); gctx.stroke();
+                      gctx.fillStyle = '#1f2937';
+                      gctx.beginPath(); gctx.arc(snX + 6, snY - 4, 0.5, 0, Math.PI * 2); gctx.fill();
+                      gctx.beginPath(); gctx.arc(snX + 7, snY - 4, 0.5, 0, Math.PI * 2); gctx.fill();
+                    }
+
+                    // ── Cricket "song" — musical notes float up at night (synesthetic visual for cricket sound) ──
+                    if (isNight && nightStrength > 0.4 && sSeason !== 3) {
+                      var noteCols = ['rgba(168,85,247,', 'rgba(96,165,250,', 'rgba(244,114,182,'];
+                      for (var nti = 0; nti < 5; nti++) {
+                        var ntCycle = 5;
+                        var ntPhase = ((t + nti * 1) % ntCycle) / ntCycle;  // 0..1 rise
+                        if (ntPhase > 0.85) continue;  // pause between rises
+                        var ntX = W * (0.18 + (nti / 5) * 0.65) + Math.sin(t * 0.5 + nti * 1.7) * 8;
+                        var ntY = H * 0.85 - ntPhase * 50;
+                        var ntA = (1 - ntPhase / 0.85) * 0.65 * nightStrength;
+                        gctx.fillStyle = noteCols[nti % noteCols.length] + ntA + ')';
+                        // Eighth-note glyph: stem + flag + filled head
+                        gctx.fillRect(ntX + 1, ntY - 5, 0.8, 6);  // stem
+                        gctx.beginPath(); gctx.ellipse(ntX, ntY, 1.8, 1.2, -0.3, 0, Math.PI * 2); gctx.fill();  // head
+                        // Flag
+                        gctx.beginPath();
+                        gctx.moveTo(ntX + 1.8, ntY - 5);
+                        gctx.quadraticCurveTo(ntX + 4, ntY - 4, ntX + 3, ntY - 1.5);
+                        gctx.lineTo(ntX + 1.8, ntY - 2);
+                        gctx.closePath();
+                        gctx.fill();
+                      }
+                    }
+
+                    // ── Owl in background tree at night (silhouette + glowing eyes) ──
+                    if (isNight && nightStrength > 0.5 && sSeason !== 3) {
+                      var owlX = W * 0.32;
+                      var owlY = isoOY - 50;
+                      // Body silhouette
+                      gctx.fillStyle = 'rgba(20,15,30,0.85)';
+                      gctx.beginPath(); gctx.ellipse(owlX, owlY, 6, 8, 0, 0, Math.PI * 2); gctx.fill();
+                      // Head
+                      gctx.beginPath(); gctx.arc(owlX, owlY - 6, 4.5, 0, Math.PI * 2); gctx.fill();
+                      // Ear tufts
+                      gctx.beginPath();
+                      gctx.moveTo(owlX - 3, owlY - 9); gctx.lineTo(owlX - 4.5, owlY - 12); gctx.lineTo(owlX - 1.5, owlY - 9);
+                      gctx.closePath(); gctx.fill();
+                      gctx.beginPath();
+                      gctx.moveTo(owlX + 3, owlY - 9); gctx.lineTo(owlX + 4.5, owlY - 12); gctx.lineTo(owlX + 1.5, owlY - 9);
+                      gctx.closePath(); gctx.fill();
+                      // Eyes (glowing yellow, blink occasionally)
+                      var eyeBlink = Math.sin(t * 0.3) > 0.95 ? 0 : 1;
+                      gctx.fillStyle = 'rgba(251,191,36,' + (0.9 * eyeBlink * nightStrength) + ')';
+                      gctx.beginPath(); gctx.arc(owlX - 1.8, owlY - 6, 1, 0, Math.PI * 2); gctx.fill();
+                      gctx.beginPath(); gctx.arc(owlX + 1.8, owlY - 6, 1, 0, Math.PI * 2); gctx.fill();
+                    }
+
+                    // ── Dragonflies (summer, daytime; iridescent wings, fast straight-line zips) ──
+                    if (sSeason === 1 && !isNight) {
+                      var dfCount = 2;
+                      for (var dfi = 0; dfi < dfCount; dfi++) {
+                        // Each dragonfly does a 12s loop: zip across, pause, zip back
+                        var dfLoop = 12;
+                        var dfPhase = ((t + dfi * 6) % dfLoop) / dfLoop;  // 0..1
+                        var direction = Math.floor((t + dfi * 6) / dfLoop) % 2 === 0 ? 1 : -1;
+                        var dfx, dfy;
+                        if (dfPhase < 0.4) {
+                          // Zipping across
+                          var zipT = dfPhase / 0.4;
+                          dfx = direction > 0 ? zipT * W : (1 - zipT) * W;
+                          dfy = H * 0.45 + dfi * 35 + Math.sin(t * 4 + dfi) * 8;
+                        } else if (dfPhase < 0.55) {
+                          // Hovering
+                          dfx = direction > 0 ? W : 0;
+                          dfy = H * 0.45 + dfi * 35 + Math.sin(t * 4 + dfi) * 12;
+                          continue;  // off-screen during hover
+                        } else {
+                          continue;
+                        }
+                        // Long thin body (segments)
+                        var bodyAng = direction > 0 ? 0 : Math.PI;
+                        gctx.save();
+                        gctx.translate(dfx, dfy);
+                        gctx.rotate(bodyAng);
+                        // Iridescent wings (4 wings, fast flap)
+                        var wingFlap = Math.abs(Math.sin(t * 30 + dfi)) * 0.6 + 0.4;
+                        gctx.fillStyle = 'rgba(180,220,255,' + (0.45 * wingFlap) + ')';
+                        gctx.beginPath(); gctx.ellipse(-2, -3, 7 * wingFlap, 2, -0.1, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(2, -3, 7 * wingFlap, 2, 0.1, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(-2, 3, 6 * wingFlap, 1.7, 0.1, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.ellipse(2, 3, 6 * wingFlap, 1.7, -0.1, 0, Math.PI * 2); gctx.fill();
+                        // Body (3 segments — thorax + abdomen)
+                        gctx.fillStyle = '#0e7490';
+                        gctx.fillRect(-2, -1, 4, 2);
+                        gctx.fillStyle = '#0891b2';
+                        gctx.fillRect(2, -0.6, 8, 1.3);
+                        // Head
+                        gctx.fillStyle = '#155e75';
+                        gctx.beginPath(); gctx.arc(-3, 0, 1.6, 0, Math.PI * 2); gctx.fill();
+                        // Eyes (large, compound)
+                        gctx.fillStyle = '#1f2937';
+                        gctx.beginPath(); gctx.arc(-3.3, -0.8, 0.6, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.arc(-3.3, 0.8, 0.6, 0, Math.PI * 2); gctx.fill();
+                        gctx.restore();
+                      }
+                    }
+
+                    // ── Ladybug on a random leaf (periodic, all non-winter seasons; sits ~6s then moves) ──
+                    if (sSeason !== 3 && !isNight) {
+                      var lbCycle = 14;
+                      var lbStage = Math.floor(t / lbCycle);
+                      var lbPhase = (t % lbCycle) / lbCycle;
+                      // Pick a target tile that has a plant (deterministic by stage)
+                      var plantedCells = [];
+                      for (var pci = 0; pci < 16; pci++) { if (grid2[pci] && grid2[pci].plantId) plantedCells.push(pci); }
+                      if (plantedCells.length > 0 && lbPhase < 0.45) {
+                        var targetCell = plantedCells[lbStage % plantedCells.length];
+                        var lbPos = isoToScreen(Math.floor(targetCell / 4), targetCell % 4);
+                        var lbX = lbPos.x + Math.sin(lbStage * 1.7) * 6;
+                        var lbY = lbPos.y - iTH / 2 - 18 + Math.cos(lbStage * 2.3) * 4;
+                        // Body (red dome)
+                        gctx.fillStyle = '#dc2626';
+                        gctx.beginPath(); gctx.ellipse(lbX, lbY, 2.5, 2, 0, 0, Math.PI * 2); gctx.fill();
+                        // Head (small black)
+                        gctx.fillStyle = '#1f2937';
+                        gctx.beginPath(); gctx.arc(lbX - 2, lbY, 1, 0, Math.PI * 2); gctx.fill();
+                        // Center line down the back
+                        gctx.strokeStyle = '#1f2937'; gctx.lineWidth = 0.6;
+                        gctx.beginPath(); gctx.moveTo(lbX - 1, lbY); gctx.lineTo(lbX + 2.5, lbY); gctx.stroke();
+                        // 6 spots (3 per side)
+                        gctx.fillStyle = '#1f2937';
+                        gctx.beginPath(); gctx.arc(lbX, lbY - 0.8, 0.4, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.arc(lbX + 1.4, lbY - 0.5, 0.4, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.arc(lbX + 0.5, lbY + 0.8, 0.4, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.arc(lbX, lbY + 0.8, 0.4, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.arc(lbX + 1.4, lbY + 0.5, 0.4, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Garden cat (orange tabby; sleeps near birdbath most of the time, walks occasionally) ──
+                    if (sSeason !== 3) {  // cat is indoors in winter
+                      var catCycle = 60;  // 60-second loop
+                      var catPhase = (t % catCycle) / catCycle;
+                      var catX, catY, catSleeping;
+                      if (catPhase < 0.7) {
+                        // Sleeping curled up next to birdbath
+                        catX = bbPos.x - 22;
+                        catY = bbPos.y - 4;
+                        catSleeping = true;
+                      } else {
+                        // Walking from birdbath toward fence and back (30% of the time)
+                        var walkT = (catPhase - 0.7) / 0.3;
+                        var walkProgress = walkT < 0.5 ? walkT * 2 : (1 - walkT) * 2;  // out then back
+                        catX = bbPos.x - 22 + walkProgress * 60;
+                        catY = bbPos.y - 4 + Math.abs(Math.sin(walkT * 24)) * -1.5;  // tiny step bounce
+                        catSleeping = false;
+                      }
+                      var catColor = '#d97706';  // orange tabby
+                      var catStripe = '#92400e';
+                      if (catSleeping) {
+                        // Curled body (loaf shape)
+                        gctx.fillStyle = catColor;
+                        gctx.beginPath(); gctx.ellipse(catX, catY, 9, 5, 0, 0, Math.PI * 2); gctx.fill();
+                        // Tail wrapped around (curve)
+                        gctx.beginPath();
+                        gctx.ellipse(catX + 6, catY + 1, 4, 2, 0.3, 0, Math.PI * 2);
+                        gctx.fill();
+                        // Head tucked
+                        gctx.beginPath(); gctx.arc(catX - 6, catY - 1, 3.5, 0, Math.PI * 2); gctx.fill();
+                        // Stripes (3 dark bands)
+                        gctx.fillStyle = catStripe;
+                        gctx.fillRect(catX - 3, catY - 3, 1.2, 4);
+                        gctx.fillRect(catX, catY - 3.5, 1.2, 4.5);
+                        gctx.fillRect(catX + 3, catY - 3, 1.2, 4);
+                        // Closed eye (just a line)
+                        gctx.strokeStyle = catStripe; gctx.lineWidth = 0.8;
+                        gctx.beginPath(); gctx.moveTo(catX - 7, catY - 1.5); gctx.lineTo(catX - 5, catY - 1.5); gctx.stroke();
+                        // Ears (two triangles)
+                        gctx.fillStyle = catColor;
+                        gctx.beginPath();
+                        gctx.moveTo(catX - 8, catY - 4); gctx.lineTo(catX - 6.5, catY - 6); gctx.lineTo(catX - 5.5, catY - 3.5);
+                        gctx.closePath(); gctx.fill();
+                        gctx.beginPath();
+                        gctx.moveTo(catX - 6, catY - 4); gctx.lineTo(catX - 4.5, catY - 6); gctx.lineTo(catX - 3.5, catY - 3.5);
+                        gctx.closePath(); gctx.fill();
+                      } else {
+                        // Walking pose (side view)
+                        gctx.fillStyle = catColor;
+                        // Body
+                        gctx.beginPath(); gctx.ellipse(catX, catY, 8, 4, 0, 0, Math.PI * 2); gctx.fill();
+                        // Head
+                        gctx.beginPath(); gctx.arc(catX + 7, catY - 2, 3.5, 0, Math.PI * 2); gctx.fill();
+                        // Ears
+                        gctx.beginPath();
+                        gctx.moveTo(catX + 5, catY - 5); gctx.lineTo(catX + 6, catY - 7); gctx.lineTo(catX + 7, catY - 4.5);
+                        gctx.closePath(); gctx.fill();
+                        gctx.beginPath();
+                        gctx.moveTo(catX + 7, catY - 5); gctx.lineTo(catX + 8, catY - 7); gctx.lineTo(catX + 9, catY - 4.5);
+                        gctx.closePath(); gctx.fill();
+                        // Tail (raised, slightly curved, swishing)
+                        var tailSwish = Math.sin(t * 4) * 1.5;
+                        gctx.strokeStyle = catColor; gctx.lineWidth = 2.5;
+                        gctx.beginPath();
+                        gctx.moveTo(catX - 7, catY - 1);
+                        gctx.quadraticCurveTo(catX - 11, catY - 5 + tailSwish, catX - 12, catY - 7);
+                        gctx.stroke();
+                        // Legs (4, stepping)
+                        var stepPhase = Math.sin(t * 8);
+                        gctx.lineWidth = 1.8;
+                        gctx.beginPath(); gctx.moveTo(catX + 5, catY + 2); gctx.lineTo(catX + 5, catY + 5 + Math.max(0, stepPhase) * -1); gctx.stroke();
+                        gctx.beginPath(); gctx.moveTo(catX + 2, catY + 2); gctx.lineTo(catX + 2, catY + 5 + Math.max(0, -stepPhase) * -1); gctx.stroke();
+                        gctx.beginPath(); gctx.moveTo(catX - 3, catY + 2); gctx.lineTo(catX - 3, catY + 5 + Math.max(0, stepPhase) * -1); gctx.stroke();
+                        gctx.beginPath(); gctx.moveTo(catX - 6, catY + 2); gctx.lineTo(catX - 6, catY + 5 + Math.max(0, -stepPhase) * -1); gctx.stroke();
+                        // Eyes (two yellow dots)
+                        gctx.fillStyle = '#eab308';
+                        gctx.beginPath(); gctx.arc(catX + 8.5, catY - 2, 0.7, 0, Math.PI * 2); gctx.fill();
+                        gctx.beginPath(); gctx.arc(catX + 9.5, catY - 2, 0.7, 0, Math.PI * 2); gctx.fill();
+                        // Stripes on body
+                        gctx.fillStyle = catStripe;
+                        gctx.fillRect(catX - 3, catY - 2.5, 1, 3);
+                        gctx.fillRect(catX, catY - 3, 1, 3.5);
+                        gctx.fillRect(catX + 3, catY - 2.5, 1, 3);
+                      }
+                    }
+
+                    // ── Spider web in fence corner (subtle, top-left) — small decorative detail ──
+                    var webX = corners[0].x + 8;
+                    var webY = corners[0].y - 4;
+                    gctx.strokeStyle = 'rgba(220,220,230,0.18)';
+                    gctx.lineWidth = 0.6;
+                    for (var wsi = 0; wsi < 6; wsi++) {
+                      var ang = wsi * Math.PI / 3;
+                      gctx.beginPath();
+                      gctx.moveTo(webX, webY);
+                      gctx.lineTo(webX + Math.cos(ang) * 7, webY + Math.sin(ang) * 7);
+                      gctx.stroke();
+                    }
+                    // Concentric web threads
+                    for (var wsj = 1; wsj <= 3; wsj++) {
+                      gctx.beginPath();
+                      gctx.arc(webX, webY, wsj * 2.3, 0, Math.PI * 2);
+                      gctx.stroke();
                     }
 
                     // ── Weather ──
@@ -4189,6 +5387,260 @@ var d = (labToolData.companionPlanting) || {};
                       gctx.fillStyle = 'rgba(255,255,255,0.45)';
                       for (var si4 = 0; si4 < 25; si4++) {
                         gctx.beginPath(); gctx.arc((si4 * 41 + t * 6) % W, (si4 * 23 + t * 12) % H, 1.2 + Math.sin(si4 + t * 0.4) * 0.5, 0, Math.PI * 2); gctx.fill();
+                      }
+                    }
+
+                    // ── Click ripple effect (1.2-second expanding circle on player click) ──
+                    if (cvEl._clickRipple) {
+                      var rDur = 1.2;  // seconds
+                      var rElapsed = (performance.now() - cvEl._clickRipple.t0) / 1000;
+                      if (rElapsed < rDur) {
+                        var rT = rElapsed / rDur;
+                        var rR = 5 + rT * 50;
+                        var rA = (1 - rT) * 0.55;
+                        // Outer ring
+                        gctx.strokeStyle = 'rgba(251,191,36,' + rA + ')';
+                        gctx.lineWidth = 2 * (1 - rT) + 0.5;
+                        gctx.beginPath(); gctx.arc(cvEl._clickRipple.x, cvEl._clickRipple.y, rR, 0, Math.PI * 2); gctx.stroke();
+                        // Inner softer ring
+                        gctx.strokeStyle = 'rgba(254,240,138,' + (rA * 0.6) + ')';
+                        gctx.lineWidth = 1;
+                        gctx.beginPath(); gctx.arc(cvEl._clickRipple.x, cvEl._clickRipple.y, rR * 0.6, 0, Math.PI * 2); gctx.stroke();
+                      } else {
+                        cvEl._clickRipple = null;
+                      }
+                    }
+
+                    // ── Plant burst (1.6-second celebration on successful plant) ──
+                    // Expanding green/yellow rings + sparkle particles + emoji + label
+                    // popping up briefly above the cell. UDL: high-visibility
+                    // confirmation that the planting action actually happened.
+                    if (cvEl._plantBurst) {
+                      var pbDur = 1.6;
+                      var pbElapsed = (performance.now() - cvEl._plantBurst.t0) / 1000;
+                      if (pbElapsed < pbDur) {
+                        var pbT = pbElapsed / pbDur;          // 0→1
+                        var pbCell = isoToScreen(Math.floor(cvEl._plantBurst.idx / 4), cvEl._plantBurst.idx % 4);
+                        // Three staggered expanding rings (green → yellow → green)
+                        var ringColors = ['rgba(74,222,128,', 'rgba(253,224,71,', 'rgba(34,197,94,'];
+                        for (var pri = 0; pri < 3; pri++) {
+                          var ringStart = pri * 0.12;
+                          if (pbT < ringStart) continue;
+                          var ringT = (pbT - ringStart) / (1 - ringStart);
+                          if (ringT > 1) continue;
+                          var ringR = 6 + ringT * 65;
+                          var ringA = (1 - ringT) * 0.65;
+                          gctx.strokeStyle = ringColors[pri] + ringA + ')';
+                          gctx.lineWidth = 2.5 * (1 - ringT) + 0.4;
+                          gctx.beginPath();
+                          gctx.ellipse(pbCell.x, pbCell.y, ringR, ringR * 0.55, 0, 0, Math.PI * 2);
+                          gctx.stroke();
+                        }
+                        // Sparkle particles flying outward + up
+                        var pCount = 8;
+                        for (var pp = 0; pp < pCount; pp++) {
+                          var pAng = (pp / pCount) * Math.PI * 2 + pbT * 0.5;
+                          var pDist = pbT * 55;
+                          var pPx = pbCell.x + Math.cos(pAng) * pDist;
+                          var pPy = pbCell.y - 5 + Math.sin(pAng) * pDist * 0.55 - pbT * 18; // arc up
+                          var pAlpha = (1 - pbT) * 0.85;
+                          gctx.fillStyle = (pp % 2 === 0) ? 'rgba(253,224,71,' + pAlpha + ')' : 'rgba(74,222,128,' + pAlpha + ')';
+                          gctx.beginPath(); gctx.arc(pPx, pPy, 2 + (1 - pbT) * 1.5, 0, Math.PI * 2); gctx.fill();
+                        }
+                        // Floating emoji + "Planted!" label rising above the cell (first 0.85s)
+                        if (pbT < 0.85) {
+                          var labelT = pbT / 0.85;
+                          var labelY = pbCell.y - 40 - labelT * 40;
+                          var labelA = labelT < 0.15 ? labelT / 0.15 : (1 - (labelT - 0.15) / 0.85);
+                          gctx.globalAlpha = Math.max(0, labelA);
+                          // Backdrop pill
+                          var labelText = cvEl._plantBurst.emoji + ' Planted!';
+                          gctx.font = 'bold 22px system-ui, sans-serif';
+                          var labelW = gctx.measureText(labelText).width + 22;
+                          gctx.fillStyle = 'rgba(20,40,15,0.78)';
+                          gctx.beginPath();
+                          if (gctx.roundRect) {
+                            gctx.roundRect(pbCell.x - labelW / 2, labelY - 18, labelW, 28, 14);
+                            gctx.fill();
+                          } else {
+                            gctx.fillRect(pbCell.x - labelW / 2, labelY - 18, labelW, 28);
+                          }
+                          // Text
+                          gctx.fillStyle = '#fef9c3';
+                          gctx.textAlign = 'center';
+                          gctx.textBaseline = 'middle';
+                          gctx.fillText(labelText, pbCell.x, labelY - 4);
+                          gctx.globalAlpha = 1;
+                          gctx.textAlign = 'start';
+                          gctx.textBaseline = 'alphabetic';
+                        }
+                      } else {
+                        cvEl._plantBurst = null;
+                      }
+                    }
+
+                    // ── Hover preview while a plant is selected (plan phase) ──
+                    // Empty tile + selected plant → ghost silhouette + green "Plant here" badge.
+                    // Occupied tile + selected plant → red "Already planted" badge.
+                    // UDL: lets the student preview placement before committing the action.
+                    if (cgPhase === 'plan' && cgSelectedPlant && hoverCell2 >= 0 && hoverCell2 < 16) {
+                      var pvCell = grid2[hoverCell2];
+                      var pvPos = isoToScreen(Math.floor(hoverCell2 / 4), hoverCell2 % 4);
+                      var pvOccupied = !!(pvCell && pvCell.plantId);
+                      var pvVis = PLANT_VISUALS[cgSelectedPlant] || defVis;
+                      var pvSelected = CG_PLANTS[cgSelectedPlant];
+                      // Gentle breathing pulse so the student sees this is a live preview
+                      var pvPulse = 0.55 + 0.25 * Math.sin(t * 5);
+
+                      if (!pvOccupied) {
+                        // Ghost plant silhouette (transparent, no fruit detail — keeps it simple)
+                        gctx.globalAlpha = 0.45 * pvPulse;
+                        // Stem
+                        gctx.strokeStyle = pvVis.stemColor;
+                        gctx.lineWidth = 2;
+                        gctx.beginPath();
+                        gctx.moveTo(pvPos.x, pvPos.y);
+                        gctx.lineTo(pvPos.x, pvPos.y - 22);
+                        gctx.stroke();
+                        // Leaves: 2 small ovals
+                        gctx.fillStyle = pvVis.leafColor;
+                        gctx.beginPath();
+                        gctx.ellipse(pvPos.x - 5, pvPos.y - 14, 6, 3.5, -0.4, 0, Math.PI * 2);
+                        gctx.fill();
+                        gctx.beginPath();
+                        gctx.ellipse(pvPos.x + 5, pvPos.y - 18, 6, 3.5, 0.4, 0, Math.PI * 2);
+                        gctx.fill();
+                        // Tiny crown / fruit hint
+                        gctx.fillStyle = pvVis.fruitColor || pvVis.flowerColor || pvVis.leafColor;
+                        gctx.beginPath();
+                        gctx.arc(pvPos.x, pvPos.y - 24, 4, 0, Math.PI * 2);
+                        gctx.fill();
+                        gctx.globalAlpha = 1;
+
+                        // Green "Plant here" badge above the tile
+                        var pvLabel = (pvSelected && pvSelected.emoji ? pvSelected.emoji + ' ' : '') + 'Plant here';
+                        gctx.font = 'bold 13px system-ui, sans-serif';
+                        var pvLW = gctx.measureText(pvLabel).width + 16;
+                        var pvBadgeY = pvPos.y - iTH * 0.5 - 14;
+                        gctx.fillStyle = 'rgba(22,101,52,0.92)';
+                        if (gctx.roundRect) {
+                          gctx.beginPath();
+                          gctx.roundRect(pvPos.x - pvLW / 2, pvBadgeY - 10, pvLW, 20, 10);
+                          gctx.fill();
+                        } else {
+                          gctx.fillRect(pvPos.x - pvLW / 2, pvBadgeY - 10, pvLW, 20);
+                        }
+                        gctx.fillStyle = '#dcfce7';
+                        gctx.textAlign = 'center';
+                        gctx.textBaseline = 'middle';
+                        gctx.fillText(pvLabel, pvPos.x, pvBadgeY);
+                        gctx.textAlign = 'start';
+                        gctx.textBaseline = 'alphabetic';
+                      } else {
+                        // Red "Already planted" badge
+                        var pvOccLabel = '⛔ Already planted';
+                        gctx.font = 'bold 12px system-ui, sans-serif';
+                        var pvOccLW = gctx.measureText(pvOccLabel).width + 14;
+                        var pvOccBadgeY = pvPos.y - iTH * 0.5 - 14;
+                        gctx.fillStyle = 'rgba(127,29,29,0.92)';
+                        if (gctx.roundRect) {
+                          gctx.beginPath();
+                          gctx.roundRect(pvPos.x - pvOccLW / 2, pvOccBadgeY - 10, pvOccLW, 20, 10);
+                          gctx.fill();
+                        } else {
+                          gctx.fillRect(pvPos.x - pvOccLW / 2, pvOccBadgeY - 10, pvOccLW, 20);
+                        }
+                        gctx.fillStyle = '#fecaca';
+                        gctx.textAlign = 'center';
+                        gctx.textBaseline = 'middle';
+                        gctx.fillText(pvOccLabel, pvPos.x, pvOccBadgeY);
+                        gctx.textAlign = 'start';
+                        gctx.textBaseline = 'alphabetic';
+                      }
+                    }
+
+                    // ── Action burst (water / weed / compost feedback) ──
+                    // Triggered by cgWater/cgWeed/cgCompost via window.__cgCanvasEl._actionBurst.
+                    // Each action gets its own color palette and particle behavior, but they
+                    // share the same 1.4s expanding-rings-and-particles pattern.
+                    if (cvEl._actionBurst) {
+                      var abDur = 1.4;
+                      var abElapsed = (performance.now() - cvEl._actionBurst.t0) / 1000;
+                      if (abElapsed < abDur) {
+                        var abT = abElapsed / abDur;
+                        var abKind = cvEl._actionBurst.kind || 'water';
+                        // Garden center as the origin
+                        var abCenter = isoToScreen(1.5, 1.5);
+                        // Palette per action
+                        var abPalette = {
+                          water:   { ring1: 'rgba(56,189,248,', ring2: 'rgba(186,230,253,', dot1: 'rgba(14,165,233,', dot2: 'rgba(125,211,252,', labelBg: 'rgba(7,89,133,0.85)', labelFg: '#e0f2fe', text: '💧 Watered!' },
+                          weed:    { ring1: 'rgba(74,222,128,', ring2: 'rgba(254,202,202,', dot1: 'rgba(34,197,94,',  dot2: 'rgba(248,113,113,', labelBg: 'rgba(20,83,45,0.85)',  labelFg: '#dcfce7', text: '🌿 Weeded!' },
+                          compost: { ring1: 'rgba(180,140,90,', ring2: 'rgba(202,138,4,',  dot1: 'rgba(120,80,40,',   dot2: 'rgba(252,211,77,',  labelBg: 'rgba(69,26,3,0.85)',  labelFg: '#fef3c7', text: '♻️ Composted!' }
+                        }[abKind] || { ring1: 'rgba(255,255,255,', ring2: 'rgba(255,255,255,', dot1: 'rgba(255,255,255,', dot2: 'rgba(255,255,255,', labelBg: 'rgba(0,0,0,0.7)', labelFg: '#fff', text: 'Action!' };
+                        // 2 expanding rings (large, scaled across whole garden footprint)
+                        for (var abr = 0; abr < 2; abr++) {
+                          var abrStart = abr * 0.14;
+                          if (abT < abrStart) continue;
+                          var abrT = (abT - abrStart) / (1 - abrStart);
+                          if (abrT > 1) continue;
+                          var abrR = 30 + abrT * 180;
+                          var abrA = (1 - abrT) * 0.6;
+                          gctx.strokeStyle = (abr === 0 ? abPalette.ring1 : abPalette.ring2) + abrA + ')';
+                          gctx.lineWidth = 3 * (1 - abrT) + 0.6;
+                          gctx.beginPath();
+                          gctx.ellipse(abCenter.x, abCenter.y, abrR, abrR * 0.5, 0, 0, Math.PI * 2);
+                          gctx.stroke();
+                        }
+                        // 16 particles flying outward (or raining down for water)
+                        var abP = 16;
+                        for (var abp = 0; abp < abP; abp++) {
+                          var abpAng = (abp / abP) * Math.PI * 2 + abp * 0.31;
+                          var abpDist = abT * 130;
+                          var abpX = abCenter.x + Math.cos(abpAng) * abpDist;
+                          var abpY;
+                          if (abKind === 'water') {
+                            // Water droplets arc inward + downward (rain pattern)
+                            abpY = abCenter.y - 80 + Math.sin(abpAng) * 40 + abT * 95;
+                          } else if (abKind === 'compost') {
+                            // Compost crumbs fall + spread
+                            abpY = abCenter.y + Math.sin(abpAng) * abpDist * 0.45 + abT * 30;
+                          } else {
+                            // Weed particles fly up + out
+                            abpY = abCenter.y + Math.sin(abpAng) * abpDist * 0.5 - abT * 35;
+                          }
+                          var abpA = (1 - abT) * 0.85;
+                          gctx.fillStyle = (abp % 2 === 0 ? abPalette.dot1 : abPalette.dot2) + abpA + ')';
+                          var abpR = (abKind === 'water' ? 2.5 : 1.8) + (1 - abT) * 1.4;
+                          gctx.beginPath();
+                          gctx.arc(abpX, abpY, abpR, 0, Math.PI * 2);
+                          gctx.fill();
+                        }
+                        // Floating action label
+                        if (abT < 0.78) {
+                          var albT = abT / 0.78;
+                          var albY = abCenter.y - 70 - albT * 36;
+                          var albA = albT < 0.18 ? albT / 0.18 : (1 - (albT - 0.18) / 0.82);
+                          gctx.globalAlpha = Math.max(0, albA);
+                          gctx.font = 'bold 24px system-ui, sans-serif';
+                          var albW = gctx.measureText(abPalette.text).width + 28;
+                          gctx.fillStyle = abPalette.labelBg;
+                          if (gctx.roundRect) {
+                            gctx.beginPath();
+                            gctx.roundRect(abCenter.x - albW / 2, albY - 20, albW, 32, 16);
+                            gctx.fill();
+                          } else {
+                            gctx.fillRect(abCenter.x - albW / 2, albY - 20, albW, 32);
+                          }
+                          gctx.fillStyle = abPalette.labelFg;
+                          gctx.textAlign = 'center';
+                          gctx.textBaseline = 'middle';
+                          gctx.fillText(abPalette.text, abCenter.x, albY - 4);
+                          gctx.globalAlpha = 1;
+                          gctx.textAlign = 'start';
+                          gctx.textBaseline = 'alphabetic';
+                        }
+                      } else {
+                        cvEl._actionBurst = null;
                       }
                     }
 
@@ -4257,7 +5709,7 @@ var d = (labToolData.companionPlanting) || {};
                 if (allBonuses.some(function(b) { return b.bonus > 0; }) && !cgSeenReflections.companion_discovery) {
                   setTimeout(function() { cgTriggerReflection('companion_discovery'); }, 500);
                 }
-                return h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-3' },
+                return h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-3' },
                   h('div', { className: 'text-xs font-bold text-slate-700 mb-2' }, '🔬 Active Companion Interactions (' + allBonuses.length + ')'),
                   h('div', { className: 'space-y-1' },
                     allBonuses.map(function(p, i) {
@@ -4286,7 +5738,7 @@ var d = (labToolData.companionPlanting) || {};
                 if (guide.length === 0) return null;
                 var friends = guide.filter(function(g) { return g.comp.bonus > 0; });
                 var enemies = guide.filter(function(g) { return g.comp.bonus < 0; });
-                return h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3' },
+                return h('div', { className: 'bg-white rounded-xl border border-slate-400 p-3' },
                   h('div', { className: 'text-xs font-bold text-slate-700 mb-2' }, '📖 Companion Planting Guide'),
                   friends.length > 0 && h('div', { className: 'mb-2' },
                     h('div', { className: 'text-[11px] font-bold text-emerald-700 mb-1' }, '✅ Good Companions (' + friends.length + ')'),
@@ -4325,7 +5777,7 @@ var d = (labToolData.companionPlanting) || {};
                         cgUpd(patch);
                         if (addToast) addToast('🎯 Challenge started: ' + ch.title, 'info');
                       },
-                      className: 'text-left p-2 rounded-lg border transition-all ' + (completed ? 'bg-emerald-50 border-emerald-300 opacity-60' : 'bg-white border-slate-200 hover:border-indigo-400 hover:shadow-sm')
+                      className: 'text-left p-2 rounded-lg border transition-all ' + (completed ? 'bg-emerald-50 border-emerald-600 opacity-60' : 'bg-white border-slate-200 hover:border-indigo-400 hover:shadow-sm')
                     },
                       h('div', { className: 'flex items-center gap-1.5' },
                         h('span', null, ch.emoji),
@@ -4364,11 +5816,11 @@ var d = (labToolData.companionPlanting) || {};
                 h('button', { onClick: function() { cgUpd({ grid: cgGrid.map(function() { return { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 }; }), day: 0, score: 0, totalHarvested: 0, phase: 'plan', activeChallenge: null }); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, '🗑️ Clear All')),
 
               cgPhase === 'grow' && h('div', { className: 'flex gap-2 flex-wrap items-center' },
-                h('button', { onClick: cgAdvanceDay, 'aria-label': 'Advance one day', className: 'px-4 py-2 bg-sky-600 text-white rounded-lg font-bold text-sm hover:bg-sky-700' }, '⏩ Next Day'),
+                h('button', { onClick: cgAdvanceDay, className: 'px-4 py-2 bg-sky-600 text-white rounded-lg font-bold text-sm hover:bg-sky-700' }, '⏩ Next Day'),
                 h('button', { onClick: function() { for(var i=0;i<5;i++) cgAdvanceDay(); }, className: 'px-3 py-2 bg-sky-100 text-sky-700 rounded-lg text-sm font-bold hover:bg-sky-200' }, '⏭️ +5 Days'),
-                h('button', { onClick: cgWater, 'aria-label': 'Water the garden', className: 'px-3 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-200' }, '💧 Water'),
-                h('button', { onClick: cgWeed, 'aria-label': 'Weed the garden', className: 'px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-bold hover:bg-green-200' }, '🧹 Weed'),
-                h('button', { onClick: cgCompost, 'aria-label': 'Add compost', className: 'px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-sm font-bold hover:bg-amber-200' }, '🧱 Compost'),
+                h('button', { onClick: cgWater, className: 'px-3 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-200' }, '💧 Water'),
+                h('button', { onClick: cgWeed, className: 'px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-bold hover:bg-green-200' }, '🧹 Weed'),
+                h('button', { onClick: cgCompost, className: 'px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-sm font-bold hover:bg-amber-200' }, '🧱 Compost'),
                 h('button', { onClick: cgHarvest, 'aria-label': 'Harvest ready crops', className: 'px-3 py-2 bg-yellow-100 text-yellow-700 rounded-lg text-sm font-bold hover:bg-yellow-200' }, '🌾 Harvest Ready'),
                 h('button', { onClick: function() { cgUpd({ phase: 'plan' }); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200' }, '\u270F\uFE0F Edit Garden')),
 
@@ -4440,7 +5892,7 @@ var d = (labToolData.companionPlanting) || {};
                 callGemini && h('button', {
                   onClick: cgAskAdvisor,
                   disabled: cgAdvisorCooldown > 0,
-                  className: 'flex-1 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ' + (cgAdvisorCooldown > 0 ? 'bg-slate-100 text-slate-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-300')
+                  className: 'flex-1 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ' + (cgAdvisorCooldown > 0 ? 'bg-slate-100 text-slate-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-600')
                 }, cgAdvisorCooldown > 0 ? '\uD83E\uDDD1\u200D\uD83C\uDF3E Advisor (wait ' + cgAdvisorCooldown + ' days)' : '\uD83E\uDDD1\u200D\uD83C\uDF3E Ask Garden Advisor')
               ),
 
@@ -4535,14 +5987,14 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("button", {
                   onClick: function () { upd('gardenMode', 'community'); },
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-300"
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-600"
                 }, "🏡 Community Garden"),
 
                 React.createElement("button", {
 
                   onClick: function () { upd('showCulture', !showCulture); },
 
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showCulture ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-600 hover:bg-amber-50'),
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showCulture ? 'bg-amber-100 text-amber-800 border border-amber-600' : 'bg-slate-100 text-slate-600 hover:bg-amber-50'),
 
                   "aria-label": "Cultural context"
 
@@ -4552,7 +6004,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   onClick: function () { upd('compareMode', !compareMode); },
 
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (compareMode ? 'bg-blue-100 text-blue-800 border border-blue-300' : 'bg-slate-100 text-slate-600 hover:bg-blue-50')
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (compareMode ? 'bg-blue-100 text-blue-800 border border-blue-600' : 'bg-slate-100 text-slate-600 hover:bg-blue-50')
 
                 }, "🔬 Compare"),
 
@@ -4560,7 +6012,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   onClick: function () { upd('showSoilDetail', !showSoilDetail); },
 
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showSoilDetail ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showSoilDetail ? 'bg-emerald-100 text-emerald-800 border border-emerald-600' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
 
                 }, "🧪 Soil Science")
 
@@ -4752,9 +6204,7 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("h4", { className: "text-sm font-bold text-indigo-900 flex items-center gap-2" }, eventPopup.emoji + ' ' + eventPopup.title),
 
-                React.createElement("button", { "aria-label": "Change event popup",
-
-                  onClick: function () { upd('eventPopup', null); },
+                React.createElement("button", { onClick: function () { upd('eventPopup', null); },
 
                   className: "text-indigo-400 hover:text-indigo-700 text-lg font-bold"
 
@@ -4782,7 +6232,7 @@ var d = (labToolData.companionPlanting) || {};
 
               phase === 'plant' && React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
 
-                React.createElement("div", { className: "flex items-center gap-2 bg-white rounded-xl border border-slate-200 p-2" },
+                React.createElement("div", { className: "flex items-center gap-2 bg-white rounded-xl border border-slate-400 p-2" },
 
                   React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase px-1" }, "Plant:"),
 
@@ -4802,7 +6252,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     },
 
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (cornPlanted ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' : 'bg-slate-50 text-slate-600 hover:bg-yellow-50 border border-slate-200')
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (cornPlanted ? 'bg-yellow-100 text-yellow-800 border border-yellow-600' : 'bg-slate-50 text-slate-600 hover:bg-yellow-50 border border-slate-400')
 
                   }, "🌽 Corn" + (cornPlanted ? ' ✓' : '')),
 
@@ -4822,7 +6272,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     },
 
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (beansPlanted ? 'bg-green-100 text-green-800 border border-green-300' : 'bg-slate-50 text-slate-600 hover:bg-green-50 border border-slate-200')
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (beansPlanted ? 'bg-green-100 text-green-800 border border-green-600' : 'bg-slate-50 text-slate-600 hover:bg-green-50 border border-slate-400')
 
                   }, "🫘 Beans" + (beansPlanted ? ' ✓' : '')),
 
@@ -4842,7 +6292,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     },
 
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (squashPlanted ? 'bg-orange-100 text-orange-800 border border-orange-300' : 'bg-slate-50 text-slate-600 hover:bg-orange-50 border border-slate-200')
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (squashPlanted ? 'bg-orange-100 text-orange-800 border border-orange-600' : 'bg-slate-50 text-slate-600 hover:bg-orange-50 border border-slate-400')
 
                   }, "🎃 Squash" + (squashPlanted ? ' ✓' : ''))
 
@@ -4880,9 +6330,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     [1, 2, 5].map(function (s) {
 
-                      return React.createElement("button", { "aria-label": "Change grow speed",
-
-                        key: s,
+                      return React.createElement("button", { key: s,
 
                         onClick: function () { upd('growSpeed', s); },
 
@@ -5422,9 +6870,7 @@ var d = (labToolData.companionPlanting) || {};
 
               quizFeedback && React.createElement("div", { className: "text-xs leading-relaxed p-3 rounded-lg " + (quizAnswer === currentQuiz.correct ? 'bg-green-100 text-green-800' : 'bg-red-50 text-red-700') }, quizFeedback),
 
-              quizFeedback && React.createElement("button", { "aria-label": "Change quiz q",
-
-                onClick: function () { upd('quizQ', (quizQ + 1)); upd('quizAnswer', ''); upd('quizFeedback', ''); },
+              quizFeedback && React.createElement("button", { onClick: function () { upd('quizQ', (quizQ + 1)); upd('quizAnswer', ''); upd('quizFeedback', ''); },
 
                 className: "px-4 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all"
 
@@ -5448,8 +6894,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-green-800" }, "\u2696\uFE0F Sustainable Farming: Industrial vs Regenerative"),
-                React.createElement("button", { "aria-label": "Change show farm compare",
-                  onClick: function() { upd('showFarmCompare', !d.showFarmCompare); },
+                React.createElement("button", { onClick: function() { upd('showFarmCompare', !d.showFarmCompare); },
                   className: "text-[11px] text-green-600 hover:text-green-800 font-bold"
                 }, d.showFarmCompare ? 'Hide' : 'Compare \u2192')
               ),
@@ -5459,7 +6904,7 @@ var d = (labToolData.companionPlanting) || {};
                 React.createElement("div", { className: "flex gap-1 mb-3" },
                   FARMING_SYSTEMS.map(function(sys) {
                     var isActive = (d.farmSystemIdx || 'industrial') === sys.id;
-                    return React.createElement("button", { "aria-label": "Change farm system idx", key: sys.id,
+                    return React.createElement("button", { key: sys.id,
                       onClick: function() { upd('farmSystemIdx', sys.id); },
                       className: "flex-1 py-2 px-2 rounded-xl border-2 text-center transition-all " + (isActive ? 'scale-105 shadow-md' : 'hover:scale-[1.02]'),
                       style: { borderColor: isActive ? sys.color : sys.color + '30', background: isActive ? sys.color + '10' : '#fff' }
@@ -5546,8 +6991,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-blue-800" }, "\uD83D\uDE9A Food Miles & Carbon Calculator"),
-                React.createElement("button", { "aria-label": "Change show food miles",
-                  onClick: function() { upd('showFoodMiles', !d.showFoodMiles); },
+                React.createElement("button", { onClick: function() { upd('showFoodMiles', !d.showFoodMiles); },
                   className: "text-[11px] text-blue-600 hover:text-blue-800 font-bold"
                 }, d.showFoodMiles ? 'Hide' : 'Calculate \u2192')
               ),
@@ -5604,8 +7048,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-cyan-800" }, "\uD83D\uDCA7 Water Footprint of Food"),
-                React.createElement("button", { "aria-label": "Change show water foot",
-                  onClick: function() { upd('showWaterFoot', !d.showWaterFoot); },
+                React.createElement("button", { onClick: function() { upd('showWaterFoot', !d.showWaterFoot); },
                   className: "text-[11px] text-cyan-600 hover:text-cyan-800 font-bold"
                 }, d.showWaterFoot ? 'Hide' : 'View \u2192')
               ),
@@ -5636,8 +7079,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-violet-800" }, "\uD83C\uDF00 12 Permaculture Principles"),
-                React.createElement("button", { "aria-label": "Change show permaculture",
-                  onClick: function() { upd('showPermaculture', !d.showPermaculture); },
+                React.createElement("button", { onClick: function() { upd('showPermaculture', !d.showPermaculture); },
                   className: "text-[11px] text-violet-600 hover:text-violet-800 font-bold"
                 }, d.showPermaculture ? 'Hide' : 'Explore \u2192')
               ),
@@ -5665,8 +7107,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, "\uD83C\uDF31 Regenerative Practices"),
-                React.createElement("button", { "aria-label": "Change show regen",
-                  onClick: function() { upd('showRegen', !d.showRegen); },
+                React.createElement("button", { onClick: function() { upd('showRegen', !d.showRegen); },
                   className: "text-[11px] text-emerald-600 hover:text-emerald-800 font-bold"
                 }, d.showRegen ? 'Hide' : 'Learn \u2192')
               ),
@@ -5720,7 +7161,7 @@ var d = (labToolData.companionPlanting) || {};
                       var cls = !answered ? 'border-rose-100 bg-white hover:border-rose-400 cursor-pointer' :
                         isRight ? 'border-green-400 bg-green-50' :
                         isSelected && !isRight ? 'border-red-400 bg-red-50' : 'border-slate-200 bg-white opacity-40';
-                      return React.createElement("button", { "aria-label": "Companionplanting action", key: oi,
+                      return React.createElement("button", { key: oi,
                         onClick: function() {
                           if (answered) return;
                           upd('gardenScenarioAnswer', oi);
@@ -5786,8 +7227,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-teal-800" }, "\uD83D\uDCCB Quick Reference Cards"),
-                React.createElement("button", { "aria-label": "Change show garden ref",
-                  onClick: function() { upd('showGardenRef', !d.showGardenRef); },
+                React.createElement("button", { onClick: function() { upd('showGardenRef', !d.showGardenRef); },
                   className: "text-[11px] text-teal-600 hover:text-teal-800 font-bold"
                 }, d.showGardenRef ? 'Hide' : 'View \u2192')
               ),
@@ -5814,8 +7254,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-blue-800" }, "\u267B\uFE0F The Nitrogen Cycle"),
-                React.createElement("button", { "aria-label": "Change show nitrogen",
-                  onClick: function() { upd('showNitrogen', !d.showNitrogen); },
+                React.createElement("button", { onClick: function() { upd('showNitrogen', !d.showNitrogen); },
                   className: "text-[11px] text-blue-600 hover:text-blue-800 font-bold"
                 }, d.showNitrogen ? 'Hide' : 'Explore \u2192')
               ),
@@ -5825,8 +7264,7 @@ var d = (labToolData.companionPlanting) || {};
                   NITROGEN_CYCLE.map(function(step, si) {
                     var isActive = (d.nitroCycleIdx || 0) === si;
                     return React.createElement("div", { key: si, className: "flex items-center" },
-                      React.createElement("button", { "aria-label": "Change nitro cycle idx",
-                        onClick: function() { upd('nitroCycleIdx', si); },
+                      React.createElement("button", { onClick: function() { upd('nitroCycleIdx', si); },
                         className: "flex flex-col items-center px-2 py-1.5 rounded-xl border-2 transition-all " + (isActive ? 'scale-110 shadow-md' : 'hover:scale-105'),
                         style: { borderColor: isActive ? step.color : step.color + '30', background: isActive ? step.color + '10' : '#fff' }
                       },
@@ -5891,8 +7329,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, "\uD83D\uDCC5 Seasonal Planting Calendar"),
-                React.createElement("button", { "aria-label": "Change show calendar",
-                  onClick: function() { upd('showCalendar', !d.showCalendar); },
+                React.createElement("button", { onClick: function() { upd('showCalendar', !d.showCalendar); },
                   className: "text-[11px] text-emerald-600 hover:text-emerald-800 font-bold"
                 }, d.showCalendar ? 'Hide' : 'Plan \u2192')
               ),
@@ -5928,8 +7365,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-purple-800" }, "\u2696\uFE0F Soil pH & Plant Preferences"),
-                React.createElement("button", { "aria-label": "Change show p h",
-                  onClick: function() { upd('showPH', !d.showPH); },
+                React.createElement("button", { onClick: function() { upd('showPH', !d.showPH); },
                   className: "text-[11px] text-purple-600 hover:text-purple-800 font-bold"
                 }, d.showPH ? 'Hide' : 'View \u2192')
               ),
@@ -5977,8 +7413,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-green-800" }, "\uD83C\uDF31 Companion Planting Guide (" + COMPANION_PAIRS.length + " pairs)"),
-                React.createElement("button", { "aria-label": "Change show pairs",
-                  onClick: function() { upd('showPairs', !d.showPairs); },
+                React.createElement("button", { onClick: function() { upd('showPairs', !d.showPairs); },
                   className: "text-[11px] text-green-600 hover:text-green-800 font-bold"
                 }, d.showPairs ? 'Hide' : 'Explore \u2192')
               ),
@@ -5986,7 +7421,7 @@ var d = (labToolData.companionPlanting) || {};
                 // Filter
                 React.createElement("div", { className: "flex gap-1 mb-2" },
                   ['all', 'friend', 'enemy'].map(function(f) {
-                    return React.createElement("button", { "aria-label": "Change pair filter", key: f,
+                    return React.createElement("button", { key: f,
                       onClick: function() { upd('pairFilter', f); },
                       className: "px-2 py-0.5 rounded-full text-[11px] font-bold " + ((d.pairFilter || 'all') === f ? 'bg-green-700 text-white' : 'bg-white text-green-700 border border-green-200')
                     }, f === 'all' ? 'All' : f === 'friend' ? '\u2705 Friends' : '\u274C Enemies');
@@ -6021,8 +7456,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-violet-800" }, "\uD83C\uDF3E Plant Families & Crop Rotation"),
-                React.createElement("button", { "aria-label": "Change show families",
-                  onClick: function() { upd('showFamilies', !d.showFamilies); },
+                React.createElement("button", { onClick: function() { upd('showFamilies', !d.showFamilies); },
                   className: "text-[11px] text-violet-600 hover:text-violet-800 font-bold"
                 }, d.showFamilies ? 'Hide' : 'Learn \u2192')
               ),
@@ -6055,8 +7489,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-amber-800" }, "\uD83E\uDEA8 Soil Types Guide"),
-                React.createElement("button", { "aria-label": "Change show soil types",
-                  onClick: function() { upd('showSoilTypes', !d.showSoilTypes); },
+                React.createElement("button", { onClick: function() { upd('showSoilTypes', !d.showSoilTypes); },
                   className: "text-[11px] text-amber-600 hover:text-amber-800 font-bold"
                 }, d.showSoilTypes ? 'Hide' : 'Explore \u2192')
               ),
@@ -6088,8 +7521,7 @@ var d = (labToolData.companionPlanting) || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-sm font-bold text-red-800" }, "\uD83D\uDC1E Garden Pests & Allies"),
-                React.createElement("button", { "aria-label": "Change show pests",
-                  onClick: function() { upd('showPests', !d.showPests); },
+                React.createElement("button", { onClick: function() { upd('showPests', !d.showPests); },
                   className: "text-[11px] text-red-600 hover:text-red-800 font-bold"
                 }, d.showPests ? 'Hide' : 'Identify \u2192')
               ),

@@ -38,6 +38,15 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio System (auto-injected) ──
   var _phyAC = null;
@@ -1215,7 +1224,7 @@ const d = labToolData.physics;
 
               mbGrad.addColorStop(0.7, '#cbd5e1');
 
-              mbGrad.addColorStop(1, '#64748b');
+              mbGrad.addColorStop(1, '#94a3b8');
 
               ctx.fillStyle = mbGrad;
 
@@ -1568,7 +1577,29 @@ const d = labToolData.physics;
 
             ),
 
-            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: { height: "420px" } },
+            React.createElement("div", { id: "physics-fs-wrap", className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: { height: "420px" } },
+
+              // Fullscreen toggle (top-right) — wrapper is already
+              // position:relative, so absolute placement works directly.
+              React.createElement("button", {
+                'aria-label': 'Toggle fullscreen for the physics canvas',
+                title: 'Fullscreen',
+                onClick: function() {
+                  var el = document.getElementById('physics-fs-wrap');
+                  if (!el) return;
+                  var inFull = document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el;
+                  if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) ex.call(document); }
+                  else { var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen; if (rq) rq.call(el); }
+                },
+                style: {
+                  position: 'absolute', top: 8, right: 8, zIndex: 10,
+                  width: 32, height: 32, borderRadius: 8,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+                  border: '1px solid rgba(125,211,252,0.5)', color: '#bae6fd',
+                  fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
+                }
+              }, '⛶'),
 
               React.createElement("canvas", {
 
@@ -1634,7 +1665,9 @@ const d = labToolData.physics;
 
               }, "\uD83D\uDE80 Launch!"),
 
-              React.createElement("button", { "aria-label": "Air Drag",
+              React.createElement("button", { "aria-label": "Air drag, currently " + (d.airResist ? "on" : "off") + ". Click to toggle.",
+
+                "aria-pressed": !!d.airResist,
 
                 onClick: function () { upd('airResist', !d.airResist); },
 
@@ -1642,31 +1675,33 @@ const d = labToolData.physics;
 
               }, "\uD83C\uDF2C\uFE0F Air Drag " + (d.airResist ? 'ON' : 'OFF')),
 
-              React.createElement("button", { "aria-label": "Vectors",
+              React.createElement("button", { "aria-label": "Force vectors, currently " + (d.showVectors ? "on" : "off") + ". Click to toggle.",
+                "aria-pressed": !!d.showVectors,
                 onClick: function () { upd('showVectors', !d.showVectors); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showVectors ? 'bg-purple-700 text-white shadow-md' : 'bg-purple-50 text-purple-700 border border-purple-200')
               }, "\u2197\uFE0F Vectors " + (d.showVectors ? 'ON' : 'OFF')),
 
-              React.createElement("button", { "aria-label": "Learn",
+              React.createElement("button", { "aria-label": "Energy display, currently " + (d.showEnergy ? "on" : "off") + ". Click to toggle.",
+                "aria-pressed": !!d.showEnergy,
                 onClick: function () { upd('showEnergy', !d.showEnergy); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showEnergy ? 'bg-blue-700 text-white shadow-md' : 'bg-blue-50 text-blue-700 border border-blue-200')
               }, "\u26A1 Energy " + (d.showEnergy ? 'ON' : 'OFF')),
 
-              React.createElement("button", { "aria-label": "Learn",
+              React.createElement("button", { "aria-label": "Learn panel, currently " + (d.showLearn ? "on" : "off") + ". Click to toggle.",
+                "aria-pressed": !!d.showLearn,
                 onClick: function () { upd('showLearn', !d.showLearn); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showLearn ? 'bg-emerald-700 text-white shadow-md' : 'bg-emerald-50 text-emerald-700 border border-emerald-200')
               }, "\uD83D\uDCD6 Learn"),
 
-              React.createElement("button", { "aria-label": "Data",
+              React.createElement("button", { "aria-label": "Flight data, currently " + (d.showFlightData ? "on" : "off") + ". Click to toggle.",
+                "aria-pressed": !!d.showFlightData,
                 onClick: function () { upd('showFlightData', !d.showFlightData); },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showFlightData ? 'bg-cyan-700 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-200')
               }, "\uD83D\uDCCA Data " + (d.showFlightData ? 'ON' : 'OFF')),
 
               PRESETS.map(function (p) {
 
-                return React.createElement("button", { "aria-label": "Change gravity",
-
-                  key: p.label, onClick: function () { upd('gravity', p.gravity); },
+                return React.createElement("button", { key: p.label, onClick: function () { upd('gravity', p.gravity); },
 
                   className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.gravity === p.gravity ? 'bg-sky-600 text-white' : 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100')
 
@@ -1689,7 +1724,7 @@ const d = labToolData.physics;
 
                   React.createElement("span", { className: "text-sm font-bold block " + (isLocked ? 'text-red-700' : 'text-slate-700') }, d[s.k]),
 
-                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], disabled: isLocked, onChange: function (e) {
+                  React.createElement("input", { type: "range", "aria-label": s.label, min: s.min, max: s.max, step: s.step, value: d[s.k], disabled: isLocked, onChange: function (e) {
                     if (!isLocked) {
                       var newVal = parseFloat(e.target.value);
                       upd(s.k, newVal);
@@ -1889,8 +1924,7 @@ const d = labToolData.physics;
                 ].map(function(ch) {
                   var active = d.challengeTier === ch.tier;
                   var completed = d['challenge' + ch.tier + 'Done'];
-                  return React.createElement("button", { "aria-label": "Change challenge tier",
-                    key: ch.tier,
+                  return React.createElement("button", { key: ch.tier,
                     onClick: function() {
                       upd('challengeTier', ch.tier);
                       upd('challengeActive', true);
@@ -1899,7 +1933,7 @@ const d = labToolData.physics;
                       addToast('\uD83C\uDFC6 ' + ch.desc + ' — fire away!', 'info');
                     },
                     className: "p-2 rounded-lg text-center transition-all border-2 " +
-                      (completed ? 'bg-emerald-100 border-emerald-400' : active ? 'bg-violet-100 border-violet-400 shadow-md' : 'bg-white border-slate-200 hover:border-violet-300')
+                      (completed ? 'bg-emerald-100 border-emerald-400' : active ? 'bg-violet-100 border-violet-400 shadow-md' : 'bg-white border-slate-200 hover:border-violet-600')
                   },
                     React.createElement("p", { className: "text-xs font-bold " + (completed ? 'text-emerald-700' : 'text-violet-700') }, completed ? '\u2705 ' + ch.label : ch.label),
                     React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, ch.desc),
@@ -2047,9 +2081,7 @@ const d = labToolData.physics;
 
                     var wrong = picked && !correct;
 
-                    return React.createElement("button", { "aria-label": "Change quiz picked",
-
-                      key: oi, disabled: d.quizPicked !== null,
+                    return React.createElement("button", { key: oi, disabled: d.quizPicked !== null,
 
                       onClick: function () {
 
@@ -2113,7 +2145,7 @@ const d = labToolData.physics;
                   upd('aiLoading', false); upd('aiError', 'Could not reach AI tutor. Try again in a moment.');
                 });
               }
-              return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", "aria-label": "AI physics tutor" },
+              return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", },
                 React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
                   React.createElement("span", { className: "text-sm font-bold text-purple-700" }, "\u2728 Explain at my level"),
                   React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },
@@ -2137,7 +2169,7 @@ const d = labToolData.physics;
                 ),
                 aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
                 aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
-                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, "Click \u201CExplain\u201D for the AI tutor to describe what happens at the current angle, velocity, and gravity settings.")
+                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-300" }, "Click \u201CExplain\u201D for the AI tutor to describe what happens at the current angle, velocity, and gravity settings.")
               );
             })()
 

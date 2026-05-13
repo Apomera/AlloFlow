@@ -229,14 +229,14 @@
             h('span', { className: 'text-sm font-medium text-slate-600' },
               'Item ' + (currentIndex + 1) + ' of ' + totalItems)
           ),
-          h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-4' },
+          h('div', { className: 'flex items-center gap-4' },
             // Score tally
-            h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 text-sm font-bold' },
-              h('span', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-green-600' }, '\u2705 ' + correctCount),
-              h('span', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-red-500' }, '\u274C ' + incorrectCount)
+            h('div', { className: 'flex items-center gap-3 text-sm font-bold' },
+              h('span', { className: 'text-green-600' }, '\u2705 ' + correctCount),
+              h('span', { className: 'text-red-500' }, '\u274C ' + incorrectCount)
             ),
             // Timer
-            timer !== undefined && h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+            timer !== undefined && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
               className: 'flex items-center gap-2 px-4 py-2 rounded-xl text-lg font-black tabular-nums ' +
                 (isTimeLow ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'),
               'aria-live': 'polite'
@@ -262,16 +262,15 @@
           })
         ),
         // Instruction
-        instruction && h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+        instruction && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
           className: 'text-center py-2 text-xs text-slate-600 font-semibold uppercase tracking-wider bg-slate-50/50 shrink-0'
         }, instruction),
         // Main content area (probe-specific content)
-        h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 flex items-center justify-center p-8 overflow-auto' },
+        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 flex items-center justify-center p-8 overflow-auto' },
           children
         ),
         // Bottom scoring bar (for teacher-scored probes)
-        showScoreButtons && h('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-          className: 'flex items-center justify-center gap-6 px-6 py-5 bg-slate-50 border-t border-slate-200 shrink-0'
+        showScoreButtons && h('div', { className: 'flex items-center justify-center gap-6 px-6 py-5 bg-slate-50 border-t border-slate-200 shrink-0'
         },
           h('button', { "aria-label": "Correct",
             onClick: onCorrect,
@@ -1224,7 +1223,7 @@
         var adequacy = weeklyGrowth >= expectedRate * 1.5 ? 'strong' : weeklyGrowth >= expectedRate * 0.75 ? 'adequate' : weeklyGrowth >= 0 ? 'insufficient' : 'declining';
         var growthColor = { strong: '#16a34a', adequate: '#65a30d', insufficient: '#d97706', declining: '#dc2626' };
         var growthLabel = { strong: 'Strong Growth', adequate: 'Adequate Growth', insufficient: 'Insufficient Growth', declining: 'Declining' };
-        sections.push(React.createElement("div", { key: type, className: "bg-white rounded-lg border border-slate-200 p-3" },
+        sections.push(React.createElement("div", { key: type, className: "bg-white rounded-lg border border-slate-400 p-3" },
           React.createElement("div", { className: "flex items-center justify-between mb-2" },
             React.createElement("h5", { className: "text-xs font-bold text-slate-700" }, typeLabels[type] || type),
             React.createElement("span", { className: "text-[11px] px-2 py-0.5 rounded-full font-bold", style: { background: growthColor[adequacy] + '15', color: growthColor[adequacy] } }, growthLabel[adequacy])
@@ -1243,7 +1242,7 @@
         ));
       });
       if (sections.length === 0) return null;
-      return React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4 mt-4" },
+      return React.createElement("div", { className: "bg-white rounded-xl border border-slate-400 p-4 mt-4" },
         React.createElement("h5", { className: "text-xs font-bold text-slate-600 uppercase mb-3" }, "\uD83D\uDCC8 Progress Monitoring Summary"),
         React.createElement("div", { className: "space-y-3" }, ...sections)
       );
@@ -1448,7 +1447,7 @@
       const insights = generateStudentInsights(studentName);
       if (insights.insufficient) {
         return React.createElement('div', {
-          className: 'mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-center'
+          className: 'mt-4 p-4 bg-slate-50 rounded-xl border border-slate-400 text-center'
         }, React.createElement('p', {
           className: 'text-sm text-slate-600'
         }, '\u{1F4CA} Need at least 2 progress snapshots to generate insights. Currently: ' + insights.snapshots + ' snapshot(s), ' + insights.probes + ' probe(s).'), React.createElement('p', {
@@ -1477,7 +1476,7 @@
       }, 'Practice-to-Outcome Insights'), React.createElement('span', {
         className: 'text-xs bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-medium'
       }, insights.snapshots + ' snapshots')), React.createElement('div', {
-        className: 'bg-white rounded-xl border border-slate-200 p-4'
+        className: 'bg-white rounded-xl border border-slate-400 p-4'
       }, React.createElement('h5', {
         className: 'text-xs font-bold text-slate-600 uppercase mb-3'
       }, 'Domain Profile'), React.createElement('div', {
@@ -1507,7 +1506,7 @@
       }, '⭐ Strength: ' + (DOMAIN_LABELS[insights.strength] || insights.strength)), React.createElement('span', {
         className: 'text-amber-600'
       }, '⚠️ Watch: ' + (DOMAIN_LABELS[insights.weakness] || insights.weakness))) : null), React.createElement('div', {
-        className: 'bg-white rounded-xl border border-slate-200 p-4'
+        className: 'bg-white rounded-xl border border-slate-400 p-4'
       }, React.createElement('h5', {
         className: 'text-xs font-bold text-slate-600 uppercase mb-3'
       }, 'Growth Since First Snapshot'), React.createElement('div', {
@@ -1520,7 +1519,7 @@
       }, (val > 0 ? '+' : '') + Math.round(val) + unit), React.createElement('div', {
         className: 'text-[11px] text-slate-600 mt-0.5'
       }, label))))), insights.correlations.practiceToQuiz && !insights.correlations.practiceToQuiz.insufficient ? React.createElement('div', {
-        className: 'bg-white rounded-xl border border-slate-200 p-4'
+        className: 'bg-white rounded-xl border border-slate-400 p-4'
       }, React.createElement('h5', {
         className: 'text-xs font-bold text-slate-600 uppercase mb-2'
       }, 'Practice ↔ Outcome Correlation'), React.createElement('div', {
@@ -1532,7 +1531,7 @@
       }, insights.correlations.practiceToQuiz.strength.charAt(0).toUpperCase() + insights.correlations.practiceToQuiz.strength.slice(1) + ' correlation'), React.createElement('div', {
         className: 'text-[11px] text-slate-600'
       }, 'Based on ' + insights.correlations.practiceToQuiz.n + ' data points (Word Sounds accuracy ↔ Quiz performance)')))) : null, insights.growthTrajectory.length > 1 ? React.createElement('div', {
-        className: 'bg-white rounded-xl border border-slate-200 p-4'
+        className: 'bg-white rounded-xl border border-slate-400 p-4'
       }, React.createElement('h5', {
         className: 'text-xs font-bold text-slate-600 uppercase mb-2'
       }, 'Growth Trajectory'), React.createElement('div', {
@@ -1561,7 +1560,7 @@
       }, Math.round(row.quizAvg) + '%'), React.createElement('td', {
         className: 'py-1.5 text-right font-medium text-emerald-700'
       }, Math.round(row.fluencyWCPM)))))))) : null, insights.dosage.totalInterventions > 0 ? React.createElement('div', {
-        className: 'bg-white rounded-xl border border-slate-200 p-4'
+        className: 'bg-white rounded-xl border border-slate-400 p-4'
       }, React.createElement('h5', {
         className: 'text-xs font-bold text-slate-600 uppercase mb-2'
       }, 'Intervention Dosage'), React.createElement('div', {
@@ -1583,7 +1582,7 @@
     const renderClassInsights = () => {
       const classData = generateClassInsights();
       if (!classData) return React.createElement('div', {
-        className: 'mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-center'
+        className: 'mt-4 p-4 bg-slate-50 rounded-xl border border-slate-400 text-center'
       }, React.createElement('p', {
         className: 'text-sm text-slate-600'
       }, '\u{1F4CA} Import student data with multiple snapshots to see class-wide insights.'));
@@ -1760,7 +1759,7 @@
         MAP: ['RIT Score', 'Percentile'],
         Other: ['Custom']
       };
-      return React.createElement('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200'
       }, React.createElement('div', {
         className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full border-2 border-indigo-200',
@@ -1773,7 +1772,7 @@
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'Student'), React.createElement('select', {
         'aria-label': 'Select student',
-        className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+        className: 'w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm',
         value: cbmForm.student,
         onChange: e => setCBMForm(p => ({
           ...p,
@@ -1788,7 +1787,7 @@
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'CBM Source'), React.createElement('select', {
         'aria-label': 'CBM source',
-        className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+        className: 'w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm',
         value: cbmForm.source,
         onChange: e => setCBMForm(p => ({
           ...p,
@@ -1802,7 +1801,7 @@
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'Measure'), React.createElement('select', {
         'aria-label': 'CBM measure',
-        className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+        className: 'w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm',
         value: cbmForm.measure,
         onChange: e => setCBMForm(p => ({
           ...p,
@@ -1820,7 +1819,7 @@
       }, 'Score'), React.createElement('input', {
         'aria-label': 'CBM score',
         type: 'number',
-        className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+        className: 'w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm',
         value: cbmForm.score,
         onChange: e => setCBMForm(p => ({
           ...p,
@@ -1832,7 +1831,7 @@
       }, 'Date'), React.createElement('input', {
         'aria-label': 'CBM date',
         type: 'date',
-        className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+        className: 'w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm',
         value: cbmForm.date,
         onChange: e => setCBMForm(p => ({
           ...p,
@@ -1845,7 +1844,7 @@
       }, 'Percentile (optional)'), React.createElement('input', {
         'aria-label': 'CBM percentile',
         type: 'number',
-        className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+        className: 'w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm',
         value: cbmForm.percentile,
         onChange: e => setCBMForm(p => ({
           ...p,
@@ -1856,7 +1855,7 @@
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'Benchmark Status'), React.createElement('select', {
         'aria-label': 'Benchmark status',
-        className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+        className: 'w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm',
         value: cbmForm.benchmark,
         onChange: e => setCBMForm(p => ({
           ...p,
@@ -2044,7 +2043,7 @@
       const questions = SURVEY_QUESTIONS[showSurveyModal] || [];
       const typeLabel = showSurveyModal.charAt(0).toUpperCase() + showSurveyModal.slice(1);
       const allAnswered = questions.every(q => surveyAnswers[q.id] !== undefined);
-      return React.createElement('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200'
       }, React.createElement('div', {
         className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full border-2 border-purple-200 max-h-[85vh] overflow-y-auto',
@@ -2060,7 +2059,7 @@
       }, showSurveyModal === 'student' ? 'Student Name' : showSurveyModal === 'teacher' ? 'Teacher Name' : 'Parent/Guardian Name'), React.createElement('input', {
         'aria-label': 'Survey respondent name',
         type: 'text',
-        className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+        className: 'w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm',
         value: surveyRespondent,
         onChange: e => setSurveyRespondent(e.target.value),
         placeholder: 'Enter name...'
@@ -2072,7 +2071,7 @@
         className: 'flex gap-2 mt-1'
       }, ...['pre', 'mid', 'post'].map(tp => React.createElement('button', {
         key: tp,
-        className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ' + (surveyTimepoint === tp ? 'bg-indigo-600 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-indigo-50'),
+        className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ' + (surveyTimepoint === tp ? 'bg-indigo-600 text-white shadow-md' : 'bg-white border border-slate-400 text-slate-600 hover:bg-indigo-50'),
         onClick: () => setSurveyTimepoint(tp)
       }, tp === 'pre' ? 'Pre-Study' : tp === 'mid' ? 'Mid-Study' : 'Post-Study')))), React.createElement('div', {
         className: 'space-y-4'
@@ -2085,7 +2084,7 @@
         className: 'flex gap-1'
       }, ...q.labels.map((label, idx) => React.createElement('button', {
         key: idx,
-        className: 'flex-1 py-2 px-1 rounded-lg text-xs font-medium transition-all ' + (surveyAnswers[q.id] === idx + 1 ? 'bg-purple-600 text-white shadow-md scale-105' : 'bg-white border border-slate-200 text-slate-600 hover:bg-purple-50 hover:border-purple-300'),
+        className: 'flex-1 py-2 px-1 rounded-lg text-xs font-medium transition-all ' + (surveyAnswers[q.id] === idx + 1 ? 'bg-purple-600 text-white shadow-md scale-105' : 'bg-white border border-slate-400 text-slate-600 hover:bg-purple-50 hover:border-purple-600'),
         onClick: () => setSurveyAnswers(p => ({
           ...p,
           [q.id]: idx + 1
@@ -2139,7 +2138,7 @@
       const trendY1 = slope * xMin + intercept,
         trendY2 = slope * xMax + intercept;
       return React.createElement('div', {
-        className: 'bg-white rounded-xl border border-slate-200 p-4 mt-4'
+        className: 'bg-white rounded-xl border border-slate-400 p-4 mt-4'
       }, React.createElement('h5', {
         className: 'text-xs font-bold text-slate-600 uppercase mb-2'
       }, 'Practice vs Outcome Scatter Plot'), React.createElement('svg', {
@@ -2232,7 +2231,7 @@
     const renderResearchToolbar = () => {
       const surveyCount = Object.values(surveyResponses).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);
       const cbmCount = Object.values(externalCBMScores).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);
-      return React.createElement('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: 'mt-4 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl border border-indigo-200 p-3'
       }, React.createElement('div', {
         className: 'flex items-center gap-2 mb-2'
@@ -2256,27 +2255,27 @@
       }, researchMode && researchMode.active ? '\u{23F9} End Study' : '\u{1F52C} Start Study')), React.createElement('div', {
         className: 'grid grid-cols-2 gap-2'
       }, React.createElement('button', {
-        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all text-xs font-medium text-slate-700',
+        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-indigo-400 hover:bg-indigo-50 transition-all text-xs font-medium text-slate-700',
         onClick: exportResearchCSV
       }, React.createElement('span', null, '\u{1F4C4}'), 'Export Research CSV'), React.createElement('button', {
-        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all text-xs font-medium text-slate-700',
+        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-blue-400 hover:bg-blue-50 transition-all text-xs font-medium text-slate-700',
         onClick: exportSessionLogCSV
       }, React.createElement('span', null, '\u{1F4C5}'), 'Session Log CSV'), React.createElement('button', {
-        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-violet-400 hover:bg-violet-50 transition-all text-xs font-medium text-slate-700',
+        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-violet-400 hover:bg-violet-50 transition-all text-xs font-medium text-slate-700',
         onClick: exportSurveyCSV
       }, React.createElement('span', null, '\u{1F4DD}'), 'Survey CSV'), React.createElement('button', {
-        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50 transition-all text-xs font-medium text-slate-700',
+        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-emerald-400 hover:bg-emerald-50 transition-all text-xs font-medium text-slate-700',
         onClick: () => setShowCBMModal(true)
       }, React.createElement('span', null, '\u{1F4CB}'), 'Import CBM Score', cbmCount > 0 ? React.createElement('span', {
         className: 'bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full text-[11px] font-bold'
       }, cbmCount) : null), React.createElement('button', {
-        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-purple-400 hover:bg-purple-50 transition-all text-xs font-medium text-slate-700',
+        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-purple-400 hover:bg-purple-50 transition-all text-xs font-medium text-slate-700',
         onClick: () => setShowSurveyModal('student')
       }, React.createElement('span', null, '\u{1F9D2}'), 'Student Survey'), React.createElement('button', {
-        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all text-xs font-medium text-slate-700',
+        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-blue-400 hover:bg-blue-50 transition-all text-xs font-medium text-slate-700',
         onClick: () => setShowSurveyModal('teacher')
       }, React.createElement('span', null, '\u{1F468}\u{200D}\u{1F3EB}'), 'Teacher Survey'), React.createElement('button', {
-        className: 'col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-pink-400 hover:bg-pink-50 transition-all text-xs font-medium text-slate-700',
+        className: 'col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-pink-400 hover:bg-pink-50 transition-all text-xs font-medium text-slate-700',
         onClick: () => setShowSurveyModal('parent')
       }, React.createElement('span', null, '\u{1F46A}'), 'Parent/Guardian Survey', surveyCount > 0 ? React.createElement('span', {
         className: 'bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full text-[11px] font-bold'
@@ -2352,7 +2351,7 @@
     });
     const renderResearchSetupModal = () => {
       if (!showResearchSetup) return null;
-      return React.createElement('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200'
       }, React.createElement('div', {
         className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full border-2 border-emerald-200',
@@ -2368,7 +2367,7 @@
       }, 'Study Name'), React.createElement('input', {
         'aria-label': 'Study name',
         type: 'text',
-        className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+        className: 'w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm',
         value: researchSetupForm.studyName,
         onChange: e => setResearchSetupForm(p => ({
           ...p,
@@ -2379,7 +2378,7 @@
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'Auto-Survey Frequency'), React.createElement('select', {
         'aria-label': 'Auto-survey frequency',
-        className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+        className: 'w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm',
         value: researchSetupForm.surveyFrequency,
         onChange: e => setResearchSetupForm(p => ({
           ...p,
@@ -2400,7 +2399,7 @@
       }, 'IRB Number (optional)'), React.createElement('input', {
         'aria-label': 'IRB number',
         type: 'text',
-        className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm',
+        className: 'w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm',
         value: researchSetupForm.irb,
         onChange: e => setResearchSetupForm(p => ({
           ...p,
@@ -2411,7 +2410,7 @@
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'Notes'), React.createElement('textarea', {
         'aria-label': 'Research notes',
-        className: 'w-full mt-1 px-3 py-2 border border-slate-300 rounded-lg text-sm resize-none',
+        className: 'w-full mt-1 px-3 py-2 border border-slate-400 rounded-lg text-sm resize-none',
         rows: 2,
         value: researchSetupForm.notes,
         onChange: e => setResearchSetupForm(p => ({
@@ -2446,7 +2445,7 @@
     };
     const renderAutoSurveyPrompt = () => {
       if (!showAutoSurveyPrompt) return null;
-      return React.createElement('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200'
       }, React.createElement('div', {
         className: 'bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full border-2 border-purple-200 text-center'
@@ -2491,7 +2490,7 @@
       const expectedSurveys = researchMode.surveyFrequency && researchMode.surveyFrequency !== '0' ? Math.floor(sessionCounter / parseInt(researchMode.surveyFrequency)) : 0;
       const studentSurveys = Object.entries(surveyResponses).filter(([k]) => k.startsWith('student_')).reduce((s, [, arr]) => s + arr.length, 0);
       const responseRate = expectedSurveys > 0 ? Math.round(studentSurveys / expectedSurveys * 100) : null;
-      return React.createElement('div', { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: 'mt-4 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-xl border-2 border-emerald-300 p-4'
       }, React.createElement('div', {
         className: 'flex items-center justify-between mb-3'
@@ -2585,7 +2584,7 @@
       }, entry.weekday + ' ' + new Date(entry.date).toLocaleDateString()))))) : null, React.createElement('div', {
         className: 'mt-3 flex gap-2'
       }, React.createElement('button', {
-        className: 'flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-200 hover:bg-emerald-50 hover:border-emerald-300 font-medium text-slate-600 transition-colors',
+        className: 'flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-400 hover:bg-emerald-50 hover:border-emerald-600 font-medium text-slate-600 transition-colors',
         onClick: () => {
           const headers = ['Date', 'Weekday', 'Student', 'Activity', 'Duration_Min', 'Study'];
           const rows = fidelityLog.map(e => [e.date, e.weekday, e.student, e.activity, e.duration, e.researchStudy].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','));
@@ -2602,7 +2601,7 @@
           URL.revokeObjectURL(link.href);
         }
       }, '\u{1F4C4} Export Fidelity Log'), React.createElement('button', {
-        className: 'flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-200 hover:bg-purple-50 hover:border-purple-300 font-medium text-slate-600 transition-colors',
+        className: 'flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-400 hover:bg-purple-50 hover:border-purple-600 font-medium text-slate-600 transition-colors',
         onClick: () => {
           const allResponses = [];
           Object.entries(surveyResponses).forEach(([key, arr]) => {
@@ -3521,7 +3520,7 @@
       if (addToast) addToast('\u{1F4CA} Your progress report has been downloaded!', 'success');
     };
     if (!isOpen) return null;
-    return ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+    return ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
       className: "fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 animate-in fade-in"
     }, /*#__PURE__*/React.createElement("div", {
       className: "bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col"
@@ -3598,7 +3597,7 @@
               setProbeTargetStudent(val);
               setMathProbeStudent(val);
             },
-            className: "text-sm font-bold border-2 border-indigo-300 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 min-w-[200px]"
+            className: "text-sm font-bold border-2 border-indigo-600 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 min-w-[200px]"
           },
             React.createElement("option", { value: "" }, '\uD83C\uDFAF Practice Mode (No Student)'),
             importedStudents.map(function(s) {
@@ -3649,7 +3648,7 @@
               setScreeningQueueActive(true);
               addToast('Screening queue started with ' + names.length + ' students', 'info');
             },
-            className: "text-xs px-3 py-2 bg-white border border-indigo-300 text-indigo-700 rounded-lg font-bold hover:bg-indigo-50 transition-colors flex items-center gap-1"
+            className: "text-xs px-3 py-2 bg-white border border-indigo-600 text-indigo-700 rounded-lg font-bold hover:bg-indigo-50 transition-colors flex items-center gap-1"
           }, '\uD83D\uDCCB Start Screening Queue')
         )
       ),
@@ -3689,7 +3688,7 @@
     }, history.length), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-600 font-semibold"
     }, "Activities"))), /*#__PURE__*/React.createElement("div", {
-      className: "mt-4 p-3 bg-white/80 rounded-xl border border-slate-200"
+      className: "mt-4 p-3 bg-white/80 rounded-xl border border-slate-400"
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-xs font-bold text-slate-600 uppercase mb-2"
     }, "\uD83D\uDCC5 Report Date Range (optional)"), /*#__PURE__*/React.createElement("div", {
@@ -3698,7 +3697,7 @@
       type: "date",
       value: reportStartDate,
       onChange: e => setReportStartDate(e.target.value),
-      className: "flex-1 text-xs px-2 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700",
+      className: "flex-1 text-xs px-2 py-1.5 rounded-lg border border-slate-400 bg-white text-slate-700",
       placeholder: "Start",
       "aria-label": "Report start date"
     }), /*#__PURE__*/React.createElement("span", {
@@ -3707,7 +3706,7 @@
       type: "date",
       value: reportEndDate,
       onChange: e => setReportEndDate(e.target.value),
-      className: "flex-1 text-xs px-2 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700",
+      className: "flex-1 text-xs px-2 py-1.5 rounded-lg border border-slate-400 bg-white text-slate-700",
       placeholder: "End",
       "aria-label": "Report end date"
     }), (reportStartDate || reportEndDate) && /*#__PURE__*/React.createElement("button", {
@@ -3904,7 +3903,7 @@
     }, classSummary.totalStudents, " students"), /*#__PURE__*/React.createElement("button", {
       "aria-label": t('common.configure_rti_thresholds'),
       onClick: () => setShowRTISettings(true),
-      className: "p-1.5 rounded-lg hover:bg-white/80 text-slate-600 hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-200",
+      className: "p-1.5 rounded-lg hover:bg-white/80 text-slate-600 hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-600",
       title: t('common.configure_rti_thresholds')
     }, /*#__PURE__*/React.createElement(Settings, {
       size: 14
@@ -4143,14 +4142,14 @@
     }, "Done")))), importedStudents.length > 0 && /*#__PURE__*/React.createElement("div", {
       className: "grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"
     }, /*#__PURE__*/React.createElement("div", {
-      className: "bg-white border border-slate-200 rounded-xl p-4",
+      className: "bg-white border border-slate-400 rounded-xl p-4",
       style: {
         minHeight: '200px'
       }
     }, /*#__PURE__*/React.createElement("canvas", {
       ref: quizChartRef
     })), classSummary?.totalFlags > 0 && /*#__PURE__*/React.createElement("div", {
-      className: "bg-white border border-slate-200 rounded-xl p-4",
+      className: "bg-white border border-slate-400 rounded-xl p-4",
       style: {
         minHeight: '200px'
       }
@@ -4158,7 +4157,7 @@
       ref: flagsChartRef
     }))),
     /* ── Assessment Workflow Guide ── */
-    React.createElement("div", { className: "mb-4 bg-gradient-to-br from-slate-50 to-indigo-50/50 rounded-xl border border-slate-200 overflow-hidden" },
+    React.createElement("div", { className: "mb-4 bg-gradient-to-br from-slate-50 to-indigo-50/50 rounded-xl border border-slate-400 overflow-hidden" },
       React.createElement("button", { onClick: function() { setShowAssessmentGuide(function(p) { return !p; }); }, className: "w-full px-4 py-3 flex items-center justify-between hover:bg-white/50 transition-colors", "aria-expanded": showAssessmentGuide ? "true" : "false" },
         React.createElement("div", { className: "flex items-center gap-2" },
           React.createElement("span", { className: "text-base" }, "\uD83E\uDDED"),
@@ -4247,7 +4246,7 @@
         };
         setProbeActivity(batteries[g] || 'segmentation');
       },
-      className: "text-xs font-bold border border-violet-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-300"
+      className: "text-xs font-bold border border-violet-600 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "K"
     }, t('probes.grade_k')), /*#__PURE__*/React.createElement("option", {
@@ -4260,7 +4259,7 @@
       "aria-label": t('common.probe_form'),
       value: mathProbeForm,
       onChange: e => setMathProbeForm(e.target.value),
-      className: "text-xs font-bold border border-violet-200 rounded-lg px-3 py-2 bg-violet-50 text-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-300"
+      className: "text-xs font-bold border border-violet-600 rounded-lg px-3 py-2 bg-violet-50 text-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
     }, "Form A (Fall)"), /*#__PURE__*/React.createElement("option", {
@@ -4271,7 +4270,7 @@
       "aria-label": t('common.probe_student'),
       value: probeTargetStudent || '',
       onChange: e => setProbeTargetStudent(e.target.value || null),
-      className: "text-xs font-bold border border-slate-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-300"
+      className: "text-xs font-bold border border-slate-400 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: ""
     }, "\uD83C\uDFAF Practice Mode (No Student)"), importedStudents.map(s => /*#__PURE__*/React.createElement("option", {
@@ -4306,7 +4305,7 @@
       "aria-label": "Math probe grade",
       value: mathProbeGrade || "1",
       onChange: e => setMathProbeGrade(e.target.value),
-      className: "text-xs font-bold border border-orange-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
+      className: "text-xs font-bold border border-orange-600 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "K"
     }, t('probes.grade_k')), /*#__PURE__*/React.createElement("option", {
@@ -4323,7 +4322,7 @@
       "aria-label": "Math probe form",
       value: mathProbeForm || "A",
       onChange: e => setMathProbeForm(e.target.value),
-      className: "text-xs font-bold border border-orange-200 rounded-lg px-3 py-2 bg-orange-50 text-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
+      className: "text-xs font-bold border border-orange-600 rounded-lg px-3 py-2 bg-orange-50 text-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
     }, "Form A (Fall)"), /*#__PURE__*/React.createElement("option", {
@@ -4334,7 +4333,7 @@
       "aria-label": "Math probe student",
       value: mathProbeStudent || "",
       onChange: e => setMathProbeStudent(e.target.value || null),
-      className: "text-xs font-bold border border-slate-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
+      className: "text-xs font-bold border border-slate-400 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: ""
     }, "\uD83C\uDFAF Practice Mode (No Student)"), importedStudents.map(s => /*#__PURE__*/React.createElement("option", {
@@ -4420,7 +4419,7 @@
         // Timer starts after ProbeOverlay countdown completes (via onCountdownDone)
         setProbeTimerPending({ type: 'nwf', timeLimit: data.timeLimit || 60 });
       },
-      className: "flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-200 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
+      className: "flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-600 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-base"
     }, "\uD83D\uDD24"), /*#__PURE__*/React.createElement("div", {
@@ -4451,7 +4450,7 @@
         setLnfProbeActive(true);
         setProbeTimerPending({ type: 'lnf', timeLimit: data.timeLimit || 60 });
       },
-      className: "flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-200 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
+      className: "flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-600 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-base"
     }, "\uD83C\uDD70\uFE0F"), /*#__PURE__*/React.createElement("div", {
@@ -4484,7 +4483,7 @@
         setRanProbeActive(true);
         setProbeTimerPending({ type: 'ran' });
       },
-      className: "flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-200 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
+      className: "flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-600 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-base"
     }, "\u26A1"), /*#__PURE__*/React.createElement("div", {
@@ -4565,7 +4564,7 @@
           setNwfProbeActive(false);
         }
       };
-      return /*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return /*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: "text-center"
       }, /*#__PURE__*/React.createElement("p", {
         className: "text-xs text-slate-600 mb-2 font-semibold uppercase tracking-wider"
@@ -5202,7 +5201,7 @@
       "aria-label": "Assign probe to student",
       value: mathProbeStudent || "",
       onChange: e => setMathProbeStudent(e.target.value),
-      className: "text-xs font-bold border border-purple-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
+      className: "text-xs font-bold border border-purple-600 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: ""
     }, "Select Student..."), importedStudents.map(s => /*#__PURE__*/React.createElement("option", {
@@ -5214,7 +5213,7 @@
       "aria-label": "Missing number probe grade",
       value: mnGrade || "1",
       onChange: e => setMnGrade(e.target.value),
-      className: "text-xs font-bold border border-purple-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
+      className: "text-xs font-bold border border-purple-600 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "K"
     }, t('probes.grade_k')), /*#__PURE__*/React.createElement("option", {
@@ -5225,7 +5224,7 @@
       "aria-label": "Missing number form",
       value: mnForm || "A",
       onChange: e => setMnForm(e.target.value),
-      className: "text-xs font-bold border border-purple-200 rounded-lg px-3 py-2 bg-purple-50 text-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
+      className: "text-xs font-bold border border-purple-600 rounded-lg px-3 py-2 bg-purple-50 text-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
     }, "Form A (Fall)"), /*#__PURE__*/React.createElement("option", {
@@ -5351,7 +5350,7 @@
             }
           }
         },
-        className: "w-24 text-center text-2xl font-bold border-2 border-purple-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400",
+        className: "w-24 text-center text-2xl font-bold border-2 border-purple-600 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400",
         placeholder: "?",
         autoFocus: true
       }), /*#__PURE__*/React.createElement("button", {
@@ -5457,7 +5456,7 @@
       "aria-label": "QD probe grade",
       value: qdGrade || "K",
       onChange: e => setQdGrade(e.target.value),
-      className: "text-xs font-bold border border-cyan-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+      className: "text-xs font-bold border border-cyan-600 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "K"
     }, t('probes.grade_k')), /*#__PURE__*/React.createElement("option", {
@@ -5466,7 +5465,7 @@
       "aria-label": "QD form",
       value: qdForm || "A",
       onChange: e => setQdForm(e.target.value),
-      className: "text-xs font-bold border border-cyan-200 rounded-lg px-3 py-2 bg-cyan-50 text-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+      className: "text-xs font-bold border border-cyan-600 rounded-lg px-3 py-2 bg-cyan-50 text-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
     }, "Form A (Fall)"), /*#__PURE__*/React.createElement("option", {
@@ -5546,7 +5545,7 @@
       }
     })), qdProbeTimer > 0 && qdProbeIndex < qdProbeProblems.length ? (() => {
       const problem = qdProbeProblems[qdProbeIndex];
-      return /*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, 'aria-label': 'Close dialog', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+      return /*#__PURE__*/React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: "text-center"
       }, /*#__PURE__*/React.createElement("p", {
         className: "text-sm text-slate-600 mb-4 font-medium"
@@ -5579,7 +5578,7 @@
             setQdProbeActive(false);
           }
         },
-        className: "w-28 h-28 text-4xl font-bold rounded-2xl border-4 border-cyan-200 bg-white hover:border-cyan-500 hover:bg-cyan-50 hover:scale-110 transition-all shadow-lg cursor-pointer"
+        className: "w-28 h-28 text-4xl font-bold rounded-2xl border-4 border-cyan-600 bg-white hover:border-cyan-500 hover:bg-cyan-50 hover:scale-110 transition-all shadow-lg cursor-pointer"
       }, num))));
     })() : /*#__PURE__*/React.createElement("div", {
       className: "text-center py-4"
@@ -5655,7 +5654,7 @@
       "aria-label": "NWF grade",
       value: nwfGrade || "K",
       onChange: e => setNwfGrade(e.target.value),
-      className: "text-xs font-bold border border-emerald-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+      className: "text-xs font-bold border border-emerald-600 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "K"
     }, t('probes.grade_k')), /*#__PURE__*/React.createElement("option", {
@@ -5664,7 +5663,7 @@
       "aria-label": "NWF form",
       value: nwfForm || "A",
       onChange: e => setNwfForm(e.target.value),
-      className: "text-xs font-bold border border-emerald-200 rounded-lg px-3 py-2 bg-emerald-50 text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+      className: "text-xs font-bold border border-emerald-600 rounded-lg px-3 py-2 bg-emerald-50 text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
     }, "Form A (Fall)"), /*#__PURE__*/React.createElement("option", {
@@ -5691,7 +5690,7 @@
       "aria-label": "LNF form",
       value: lnfForm || "A",
       onChange: e => setLnfForm(e.target.value),
-      className: "text-xs font-bold border border-rose-200 rounded-lg px-3 py-2 bg-rose-50 text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
+      className: "text-xs font-bold border border-rose-600 rounded-lg px-3 py-2 bg-rose-50 text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
     }, "Form A (Fall)"), /*#__PURE__*/React.createElement("option", {
@@ -5718,7 +5717,7 @@
       "aria-label": "RAN grade",
       value: ranGrade || "K",
       onChange: e => setRanGrade(e.target.value),
-      className: "text-xs font-bold border border-amber-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
+      className: "text-xs font-bold border border-amber-600 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "K"
     }, "Grade K (Colors)"), /*#__PURE__*/React.createElement("option", {
@@ -5729,7 +5728,7 @@
       "aria-label": "RAN form",
       value: ranForm || "A",
       onChange: e => setRanForm(e.target.value),
-      className: "text-xs font-bold border border-amber-200 rounded-lg px-3 py-2 bg-amber-50 text-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
+      className: "text-xs font-bold border border-amber-600 rounded-lg px-3 py-2 bg-amber-50 text-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
     }, "Form A (Fall)"), /*#__PURE__*/React.createElement("option", {
@@ -6239,7 +6238,7 @@
       }, rti.recommendations.map((r, i) => /*#__PURE__*/React.createElement("li", {
         key: i
       }, r)))), /*#__PURE__*/React.createElement("div", {
-        className: "mt-3 p-3 bg-white rounded-lg border border-slate-200"
+        className: "mt-3 p-3 bg-white rounded-lg border border-slate-400"
       }, /*#__PURE__*/React.createElement("div", {
         style: {
           fontSize: '11px',
@@ -6406,7 +6405,7 @@
           }
         }, "\uD83D\uDFE2 On track toward goal")));
       })()), /*#__PURE__*/React.createElement("div", {
-        className: "mt-3 p-3 bg-white rounded-lg border border-slate-200"
+        className: "mt-3 p-3 bg-white rounded-lg border border-slate-400"
       }, /*#__PURE__*/React.createElement("div", {
         style: {
           fontSize: "11px",
@@ -6479,7 +6478,7 @@
           fontStyle: "italic"
         }
       }, t('rti.ncii_recommended')))), /*#__PURE__*/React.createElement("div", {
-        className: "mt-3 p-3 bg-white rounded-lg border border-slate-200"
+        className: "mt-3 p-3 bg-white rounded-lg border border-slate-400"
       }, /*#__PURE__*/React.createElement("div", {
         style: {
           fontSize: '11px',
@@ -6785,12 +6784,14 @@
         className: `px-2 py-0.5 rounded-full font-medium ${rr.accuracy >= 95 ? 'bg-emerald-100 text-emerald-700' : rr.accuracy >= 90 ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'}`
       }, rr.accuracy >= 95 ? t('fluency.independent') || 'Independent' : rr.accuracy >= 90 ? t('fluency.instructional') || 'Instructional' : t('fluency.frustrational') || 'Frustrational', " (", rr.accuracy, "%)")));
     })(), selectedStudent.data.fluencyAssessments.length >= 2 && /*#__PURE__*/React.createElement("div", {
-      className: "bg-white border border-slate-200 rounded-xl p-4",
+      className: "bg-white border border-slate-400 rounded-xl p-4",
       style: {
         height: '220px'
       }
     }, /*#__PURE__*/React.createElement("canvas", {
-      ref: trendChartRef
+      ref: trendChartRef,
+      role: "img",
+      "aria-label": "Reading fluency trend chart for selected student showing words per minute over time"
     })), (() => {
       const latest = selectedStudent.data.fluencyAssessments[selectedStudent.data.fluencyAssessments.length - 1];
       if (!latest?.wcpm) return null;
@@ -6972,7 +6973,7 @@
       className: "font-medium text-xs text-slate-600 mb-1"
     }, msg.role === 'user' ? 'Student' : 'Socratic Tutor'), msg.content || msg.text)))), selectedStudent.data.personaState?.chatHistory?.length > 0 ? /*#__PURE__*/React.createElement("div", {
       "data-help-key": "dashboard_detail_transcript",
-      className: "border border-slate-200 rounded-xl overflow-hidden"
+      className: "border border-slate-400 rounded-xl overflow-hidden"
     }, /*#__PURE__*/React.createElement("div", {
       className: "bg-slate-100 p-3 font-bold text-slate-700"
     }, t('class_analytics.view_transcript')), /*#__PURE__*/React.createElement("div", {
@@ -7026,7 +7027,7 @@
           type: "text", placeholder: t('class_analytics.search_placeholder') || 'Search students...',
           "aria-label": "Search students", value: searchQuery,
           onChange: e => setSearchQuery(e.target.value),
-          className: "w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 focus:outline-none transition-all text-sm"
+          className: "w-full px-4 py-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 focus:outline-none transition-all text-sm"
         })
       ),
       // Summary cards
@@ -7078,15 +7079,15 @@
       ),
       // Charts
       importedStudents.length > 0 && React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4 mb-4" },
-        React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-4", style: { minHeight: '200px' } },
-          React.createElement("canvas", { ref: quizChartRef })
+        React.createElement("div", { className: "bg-white border border-slate-400 rounded-xl p-4", style: { minHeight: '200px' } },
+          React.createElement("canvas", { ref: quizChartRef, role: "img", "aria-label": "Quiz performance chart showing class average and student trends" })
         ),
-        classSummary && classSummary.totalFlags > 0 && React.createElement("div", { className: "bg-white border border-slate-200 rounded-xl p-4", style: { minHeight: '200px' } },
-          React.createElement("canvas", { ref: flagsChartRef })
+        classSummary && classSummary.totalFlags > 0 && React.createElement("div", { className: "bg-white border border-slate-400 rounded-xl p-4", style: { minHeight: '200px' } },
+          React.createElement("canvas", { ref: flagsChartRef, role: "img", "aria-label": "Flagged students chart showing distribution of student-flag categories" })
         )
       ),
       // Student table
-      sortedAndFiltered.length > 0 && React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 overflow-hidden" },
+      sortedAndFiltered.length > 0 && React.createElement("div", { className: "bg-white rounded-xl border border-slate-400 overflow-hidden" },
         React.createElement("div", { className: "px-4 py-3 bg-slate-50 border-b border-slate-200 text-sm font-bold text-slate-600" },
           '\uD83D\uDCCB ' + sortedAndFiltered.length + ' Student' + (sortedAndFiltered.length !== 1 ? 's' : '') + ' Loaded'
         ),
@@ -7096,7 +7097,7 @@
       ),
       // Empty state
       importedStudents.length === 0 && React.createElement("div", {
-        className: "bg-slate-50 rounded-xl p-8 text-center border border-slate-200"
+        className: "bg-slate-50 rounded-xl p-8 text-center border border-slate-400"
       },
         React.createElement("div", { className: "text-4xl mb-3" }, '\uD83D\uDCCB'),
         React.createElement("h3", { className: "text-lg font-bold text-slate-700 mb-2" }, 'Import Student Data'),
@@ -7122,7 +7123,7 @@
     }, "Longitudinal analytics, growth tracking, and practice-to-outcome correlations")), importedStudents.length > 0 && /*#__PURE__*/React.createElement("select", {
       value: researchStudent || '',
       onChange: e => setResearchStudent(e.target.value || null),
-      className: "px-3 py-1.5 text-sm border border-slate-200 rounded-lg",
+      className: "px-3 py-1.5 text-sm border border-slate-400 rounded-lg",
       "aria-label": "Select student"
     }, /*#__PURE__*/React.createElement("option", {
       value: ""
@@ -7130,18 +7131,18 @@
       key: s.name || s,
       value: s.name || s
     }, s.name || s)))), typeof renderResearchToolbar === 'function' && /*#__PURE__*/React.createElement("div", {
-      className: "bg-white rounded-xl border border-slate-200 p-3"
+      className: "bg-white rounded-xl border border-slate-400 p-3"
     }, renderResearchToolbar()), /*#__PURE__*/React.createElement("div", {
       className: "flex flex-wrap gap-2"
     }, /*#__PURE__*/React.createElement("button", {
       onClick: () => setShowCBMImport(true),
-      className: "px-3 py-1.5 text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-all flex items-center gap-1"
+      className: "px-3 py-1.5 text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 rounded-lg hover:bg-emerald-100 transition-all flex items-center gap-1"
     }, "\uD83D\uDCC2 Import CBM Data"), /*#__PURE__*/React.createElement("button", {
       onClick: () => setShowSurveyModal(true),
-      className: "px-3 py-1.5 text-xs font-bold bg-violet-50 text-violet-700 border border-violet-200 rounded-lg hover:bg-violet-100 transition-all flex items-center gap-1"
+      className: "px-3 py-1.5 text-xs font-bold bg-violet-50 text-violet-700 border border-violet-600 rounded-lg hover:bg-violet-100 transition-all flex items-center gap-1"
     }, "\uD83D\uDCDD Teacher Survey"), /*#__PURE__*/React.createElement("button", {
       onClick: () => setShowResearchSetup(true),
-      className: "px-3 py-1.5 text-xs font-bold bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all flex items-center gap-1"
+      className: "px-3 py-1.5 text-xs font-bold bg-slate-50 text-slate-600 border border-slate-400 rounded-lg hover:bg-slate-100 transition-all flex items-center gap-1"
     }, "\u2699\uFE0F Settings")), typeof renderAutoSurveyPrompt === 'function' && renderAutoSurveyPrompt(), importedStudents.length === 0 ? React.createElement("div", { className: "space-y-4" },
       React.createElement("div", { className: "bg-gradient-to-br from-indigo-50 via-violet-50 to-purple-50 rounded-xl p-6 border border-indigo-200" },
         React.createElement("div", { className: "flex items-start gap-4" },
@@ -7153,24 +7154,24 @@
         )
       ),
       React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3" },
-        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200 shadow-sm" },
+        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400 shadow-sm" },
           React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCCA"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Research Mode")),
           React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "Start a named study with auto-session logging, configurable survey prompts, and IRB tracking.")
         ),
-        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200 shadow-sm" },
+        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400 shadow-sm" },
           React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCDD"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Built-In Surveys")),
           React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "Student, teacher, and parent surveys with pre/mid/post timepoints. Responses export as CSV for analysis.")
         ),
-        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200 shadow-sm" },
+        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400 shadow-sm" },
           React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCC8"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Growth Tracking & Insights")),
           React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "Import student data to unlock longitudinal growth, practice-to-outcome correlations, and RTI tier recommendations.")
         ),
-        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200 shadow-sm" },
+        React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400 shadow-sm" },
           React.createElement("div", { className: "flex items-center gap-2 mb-2" }, React.createElement("span", { className: "text-lg" }, "\uD83D\uDCC4"), React.createElement("h5", { className: "text-sm font-bold text-slate-700" }, "Data Export")),
           React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, "Three CSV exports: student-level research data, session-level fidelity log, and survey responses with timepoints. Plus CBM import.")
         )
       ),
-      React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200" },
+      React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400" },
         React.createElement("h5", { className: "text-sm font-bold text-slate-700 mb-3" }, "\uD83D\uDE80 Getting Started"),
         React.createElement("div", { className: "space-y-2" },
           React.createElement("div", { className: "flex items-start gap-3" }, React.createElement("span", { className: "flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold" }, "1"), React.createElement("p", { className: "text-xs text-slate-600" }, React.createElement("strong", null, "Start Research Mode"), " above to begin tracking sessions automatically.")),
@@ -7181,8 +7182,8 @@
       ),
       React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" },
         React.createElement("button", { onClick: function() { if (!(researchMode && researchMode.active)) setShowResearchSetup(true); }, className: "px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg text-sm hover:bg-indigo-700 transition-all" }, researchMode && researchMode.active ? '\u2705 Research Mode Active' : '\uD83D\uDD2C Start Research Mode'),
-        React.createElement("button", { onClick: function() { setAssessmentCenterTab('assessments'); }, className: "px-4 py-2 bg-white text-indigo-700 font-bold rounded-lg text-sm border border-indigo-200 hover:bg-indigo-50 transition-all" }, "\uD83C\uDFAF Run Probes"),
-        React.createElement("button", { onClick: function() { setAssessmentCenterTab('students'); }, className: "px-4 py-2 bg-white text-indigo-700 font-bold rounded-lg text-sm border border-indigo-200 hover:bg-indigo-50 transition-all" }, "\uD83D\uDCCB Import Student Data")
+        React.createElement("button", { onClick: function() { setAssessmentCenterTab('assessments'); }, className: "px-4 py-2 bg-white text-indigo-700 font-bold rounded-lg text-sm border border-indigo-600 hover:bg-indigo-50 transition-all" }, "\uD83C\uDFAF Run Probes"),
+        React.createElement("button", { onClick: function() { setAssessmentCenterTab('students'); }, className: "px-4 py-2 bg-white text-indigo-700 font-bold rounded-lg text-sm border border-indigo-600 hover:bg-indigo-50 transition-all" }, "\uD83D\uDCCB Import Student Data")
       )
     ) : /*#__PURE__*/React.createElement("div", {
       className: "space-y-4"
@@ -7198,7 +7199,7 @@
     }, researchStudent),
     React.createElement("button", { onClick: function() { printMeetingSummary(researchStudent); }, className: "ml-auto px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-lg text-xs font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm flex items-center gap-1" }, "\uD83D\uDCCB Meeting Summary")),
     renderInsightsPanel(researchStudent), renderProbeProgressSummary(researchStudent), typeof renderScatterPlot === 'function' && /*#__PURE__*/React.createElement("div", {
-      className: "mt-4 bg-white rounded-xl border border-slate-200 p-4"
+      className: "mt-4 bg-white rounded-xl border border-slate-400 p-4"
     }, /*#__PURE__*/React.createElement("h5", {
       className: "text-xs font-bold text-slate-600 uppercase mb-3"
     }, "\uD83D\uDCC8 Practice vs Outcome"), renderScatterPlot())) : /*#__PURE__*/React.createElement("div", null,
@@ -7211,7 +7212,7 @@
       return /*#__PURE__*/React.createElement("button", {
         key: name,
         onClick: () => setResearchStudent(name),
-        className: "p-3 bg-white rounded-xl border border-slate-200 hover:border-indigo-300 hover:shadow-md transition-all text-left group"
+        className: "p-3 bg-white rounded-xl border border-slate-400 hover:border-indigo-600 hover:shadow-md transition-all text-left group"
       }, /*#__PURE__*/React.createElement("div", {
         className: "font-bold text-sm text-slate-700 group-hover:text-indigo-700"
       }, name), anomalyFlags.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -7224,7 +7225,7 @@
         className: "text-xs text-slate-600 mt-1"
       }, "View insights \u2192"));
     }))), typeof renderResearchDashboard === 'function' && /*#__PURE__*/React.createElement("div", {
-      className: "mt-6 bg-slate-50 rounded-xl p-4 border border-slate-200"
+      className: "mt-6 bg-slate-50 rounded-xl p-4 border border-slate-400"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "text-sm font-bold text-slate-600 mb-3"
     }, "\uD83D\uDCC8 Research Dashboard"), renderResearchDashboard()), showCBMImport && typeof renderCBMImportModal === 'function' && renderCBMImportModal(), showSurveyModal && typeof renderSurveyModal === 'function' && renderSurveyModal(), showResearchSetup && typeof renderResearchSetupModal === 'function' && renderResearchSetupModal(),

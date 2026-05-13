@@ -270,8 +270,8 @@ const StudentQuizOverlay = React.memo(({
     const isSelected = selectedOptionIndex === idx;
     const letter = String.fromCharCode(65 + idx);
     const isDisabled = hasAnswered || phase !== 'answering';
-    let btnClass = 'bg-white text-slate-800 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50';
-    let letterClass = 'bg-indigo-100 text-indigo-600 border-indigo-200 group-hover:bg-white group-hover:border-indigo-300';
+    let btnClass = 'bg-white text-slate-800 border-slate-200 hover:border-indigo-600 hover:bg-indigo-50';
+    let letterClass = 'bg-indigo-100 text-indigo-600 border-indigo-200 group-hover:bg-white group-hover:border-indigo-600';
     if (isRevealed) {
       if (idx === correctAnswerIndex) {
         btnClass = 'bg-green-700 text-white border-green-800 ring-4 ring-green-700/30 z-10 scale-[1.02] shadow-xl';
@@ -341,7 +341,7 @@ const StudentQuizOverlay = React.memo(({
   }, /*#__PURE__*/React.createElement("div", {
     className: `
                             w-full px-8 py-6 rounded-3xl font-black text-2xl shadow-2xl flex items-center justify-center gap-6 border-4 transform transition-transform hover:scale-105
-                            ${isCorrect ? 'bg-green-700 border-green-500 text-white ring-4 ring-green-700/30' : 'bg-red-500 border-red-300 text-white ring-4 ring-red-500/30'}
+                            ${isCorrect ? 'bg-green-700 border-green-500 text-white ring-4 ring-green-700/30' : 'bg-red-500 border-red-600 text-white ring-4 ring-red-500/30'}
                         `
   }, isCorrect ? /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 40,
@@ -560,7 +560,7 @@ const RoleSelectionModal = React.memo(({
     "aria-label": t('common.confirm'),
     onClick: handleMicCheck,
     disabled: micStatus === 'granted' || micStatus === 'requesting',
-    className: `flex items-center justify-center gap-2 w-full py-2 rounded-lg text-xs font-bold transition-all ${micStatus === 'granted' ? 'bg-green-100 text-green-700 cursor-default' : micStatus === 'denied' ? 'bg-red-50 text-red-500 border border-red-100' : micStatus === 'requesting' ? 'bg-slate-100 text-slate-600' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-indigo-600'}`
+    className: `flex items-center justify-center gap-2 w-full py-2 rounded-lg text-xs font-bold transition-all ${micStatus === 'granted' ? 'bg-green-100 text-green-700 cursor-default' : micStatus === 'denied' ? 'bg-red-50 text-red-500 border border-red-100' : micStatus === 'requesting' ? 'bg-slate-100 text-slate-600' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50 hover:text-indigo-600'}`
   }, micStatus === 'granted' ? /*#__PURE__*/React.createElement(CheckCircle, {
     size: 14
   }) : micStatus === 'denied' ? /*#__PURE__*/React.createElement(XCircle, {
@@ -679,7 +679,7 @@ const StudentEntryModal = React.memo(({
     "aria-label": t('common.upload'),
     onClick: () => handleConfirm('load'),
     disabled: !selectedAdj || !selectedAnimal,
-    className: "w-full bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600 font-bold py-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed",
+    className: "w-full bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-600 hover:text-indigo-600 font-bold py-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed",
     "data-help-key": "entry_load_exist"
   }, /*#__PURE__*/React.createElement(Upload, {
     size: 16

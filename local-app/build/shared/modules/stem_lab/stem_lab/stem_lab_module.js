@@ -2175,7 +2175,7 @@
         }].map(m => /*#__PURE__*/React.createElement("button", { "aria-label": m.label.replace(/[^\w\s]/g, '').trim() + ' mode',
           key: m.id,
           onClick: () => setStemLabCreateMode(m.id),
-          className: `px-4 py-2 rounded-xl text-sm font-bold transition-all ${stemLabCreateMode === m.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600'}`
+          className: `px-4 py-2 rounded-xl text-sm font-bold transition-all ${stemLabCreateMode === m.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border border-slate-400 text-slate-600 hover:border-indigo-300 hover:text-indigo-600'}`
         }, m.label)), /*#__PURE__*/React.createElement("div", {
           className: "flex-1"
         }), /*#__PURE__*/React.createElement("button", { "aria-label": "Open assessment builder",
@@ -2197,14 +2197,14 @@
         }].map(s => /*#__PURE__*/React.createElement("button", { "aria-label": s.label + ' style',
           key: s.val,
           onClick: () => setMathMode(s.val),
-          className: `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${mathMode === s.val ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-white border border-slate-200 text-slate-500 hover:border-blue-200'}`
+          className: `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${mathMode === s.val ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-white border border-slate-400 text-slate-500 hover:border-blue-200'}`
         }, s.label))), /*#__PURE__*/React.createElement("div", {
-          className: "bg-slate-50 rounded-xl p-4 border border-slate-200"
+          className: "bg-slate-50 rounded-xl p-4 border border-slate-400"
         }, /*#__PURE__*/React.createElement("textarea", {
           value: mathInput,
           onChange: e => setMathInput(e.target.value),
           placeholder: stemLabCreateMode === 'solve' ? 'Enter a math problem to solve step-by-step...' : stemLabCreateMode === 'content' ? 'Paste or describe content to generate math problems from...' : 'Enter topic, standard, or description (e.g. "3rd grade multiplication word problems")...',
-          className: "w-full h-28 px-4 py-3 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none resize-none bg-white",
+          className: "w-full h-28 px-4 py-3 text-sm border border-slate-400 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none resize-none bg-white",
           "aria-label": "Math problem input"
         }), stemLabCreateMode !== 'solve' && /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-4 mt-3"
@@ -2263,7 +2263,7 @@
             setStemLabTab('explore');
             setStemLabTool(tool.id);
           },
-          className: "px-2 py-1 text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all flex items-center gap-1"
+          className: "px-2 py-1 text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all flex items-center gap-1"
         }, tool.icon, " ", tool.label)))), stemLabTab === 'create' && showAssessmentBuilder && /*#__PURE__*/React.createElement("div", {
           className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200"
         }, /*#__PURE__*/React.createElement("div", {
@@ -2312,7 +2312,7 @@
             nb[idx].type = e.target.value;
             setAssessmentBlocks(nb);
           },
-          className: "px-3 py-1.5 text-sm font-bold border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none",
+          className: "px-3 py-1.5 text-sm font-bold border border-slate-400 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none",
           "aria-label": "Block type"
         }, /*#__PURE__*/React.createElement("option", {
           value: "computation"
@@ -2344,7 +2344,7 @@
             nb[idx].quantity = Math.max(1, parseInt(e.target.value) || 1);
             setAssessmentBlocks(nb);
           },
-          className: "w-14 px-2 py-1.5 text-sm font-mono border border-slate-200 rounded-lg text-center",
+          className: "w-14 px-2 py-1.5 text-sm font-mono border border-slate-400 rounded-lg text-center",
           "aria-label": "Quantity"
         }), block.type === 'fluency' && /*#__PURE__*/React.createElement("span", {
           className: "px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-700 rounded-full"
@@ -2503,7 +2503,7 @@
             className: "grid grid-cols-2 gap-2"
           }, toolSnapshots.map((snap, si) => /*#__PURE__*/React.createElement("div", {
             key: snap.id,
-            className: "bg-white rounded-lg p-2.5 border border-slate-200 hover:border-indigo-300 transition-all group"
+            className: "bg-white rounded-lg p-2.5 border border-slate-400 hover:border-indigo-300 transition-all group"
           }, /*#__PURE__*/React.createElement("div", {
             className: "flex items-center gap-2"
           }, /*#__PURE__*/React.createElement("span", {
@@ -2983,7 +2983,7 @@
               value: _stemToolSearch,
               onChange: function (e) { _setStemToolSearch(e.target.value); },
               placeholder: "\uD83D\uDD0D Search tools...",
-              className: "w-full px-4 py-2.5 pl-10 text-sm border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all",
+              className: "w-full px-4 py-2.5 pl-10 text-sm border border-slate-400 rounded-xl bg-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all",
               'aria-label': 'Search STEM Lab tools'
             }),
             /*#__PURE__*/React.createElement("span", { className: "absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" }, "\uD83D\uDD0D"),
@@ -3057,7 +3057,7 @@
                   if (addToast) addToast('\uD83C\uDFAF Station loaded: ' + (st ? st.name : ''), 'success');
                 }
               },
-              className: "px-2 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700 font-bold"
+              className: "px-2 py-1.5 text-xs border border-slate-400 rounded-lg bg-white text-slate-700 font-bold"
             },
               React.createElement("option", { value: "" }, "\uD83D\uDCCB Load Station..."),
               _savedStations.map(function(st) {
@@ -3588,7 +3588,7 @@
               }, "\uD83D\uDCCC Save Station"),
               React.createElement("button", { "aria-label": "Cancel",
                 onClick: function() { _setShowStationBuilder(false); },
-                className: "px-4 py-2 rounded-lg text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50"
+                className: "px-4 py-2 rounded-lg text-sm font-bold text-slate-600 bg-white border border-slate-400 hover:bg-slate-50"
               }, "Cancel")
             ),
 

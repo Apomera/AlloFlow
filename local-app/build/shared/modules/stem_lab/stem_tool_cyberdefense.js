@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 /**
  * stem_tool_cyberdefense.js - Cyber Defense Lab
  *
@@ -358,7 +368,7 @@
 
           // â”€â”€ Detective Rank System â”€â”€
           var detectiveRanks = [
-            { min: 0, rank: 'Rookie Analyst', icon: '\uD83D\uDD30', color: '#64748b' },
+            { min: 0, rank: 'Rookie Analyst', icon: '\uD83D\uDD30', color: '#94a3b8' },
             { min: 3, rank: 'Junior Detective', icon: '\uD83D\uDD0D', color: '#22c55e' },
             { min: 6, rank: 'Cyber Detective', icon: '\uD83D\uDD75\uFE0F', color: '#3b82f6' },
             { min: 10, rank: 'Senior Agent', icon: '\u2B50', color: '#f59e0b' },
@@ -996,7 +1006,7 @@
           }
 
           var warStages = [
-            { num: 1, id: 'recon',       name: 'Reconnaissance',         icon: '\uD83D\uDD0D', color: '#64748b' },
+            { num: 1, id: 'recon',       name: 'Reconnaissance',         icon: '\uD83D\uDD0D', color: '#94a3b8' },
             { num: 2, id: 'delivery',    name: 'Weaponization/Delivery', icon: '\uD83D\uDCE8', color: '#f59e0b' },
             { num: 3, id: 'exploit',     name: 'Exploitation',            icon: '\uD83D\uDCA5', color: '#ef4444' },
             { num: 4, id: 'persist',     name: 'Installation/Persistence', icon: '\uD83D\uDD27', color: '#a855f7' },
@@ -1979,7 +1989,7 @@
 
           // ── Compute a retrospective letter grade from a history entry (approximates live grade) ──
           function computeHistoryGrade(h) {
-            if (!h) return { letter: '?', color: '#64748b', score: 0 };
+            if (!h) return { letter: '?', color: '#94a3b8', score: 0 };
             var rounds = (h.chain && h.chain.length) || 6;
             var scale = 6 / Math.max(1, rounds);
             var raw = (h.detections || 0) * 8 * scale
@@ -2467,7 +2477,7 @@
           }, 0);
           var warRoomRank = (function() {
             var det = warRoomDetections;
-            if (warRoomVerdict !== 'won') return { label: 'SOC Trainee', icon: '\uD83D\uDD30', color: '#64748b' };
+            if (warRoomVerdict !== 'won') return { label: 'SOC Trainee', icon: '\uD83D\uDD30', color: '#94a3b8' };
             if (det >= 6) return { label: 'CISO', icon: '\uD83C\uDFC6', color: '#f59e0b' };
             if (det >= 5) return { label: 'Incident Commander', icon: '\u2B50', color: '#a855f7' };
             if (det >= 4) return { label: 'Incident Responder', icon: '\uD83D\uDEE1\uFE0F', color: '#3b82f6' };
@@ -2481,13 +2491,13 @@
               el('div', { style: { fontSize: 28, filter: 'drop-shadow(0 0 8px rgba(244,63,94,0.6))' } }, '\uD83D\uDEE1\uFE0F'),
               el('div', null,
                 el('h2', { style: { margin: 0, fontSize: 20, fontWeight: 900, background: 'linear-gradient(90deg, #f43f5e, #a855f7, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } }, 'Cyber Defense Lab'),
-                el('p', { style: { margin: 0, fontSize: 11, color: '#64748b', fontWeight: 600 } }, 'Digital Citizenship \u2022 Cybersecurity Fundamentals')
+                el('p', { style: { margin: 0, fontSize: 11, color: '#94a3b8', fontWeight: 600 } }, 'Digital Citizenship \u2022 Cybersecurity Fundamentals')
               ),
               el('div', { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 } },
-                el('span', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, textTransform: 'uppercase' } }, 'Level:'),
+                el('span', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, 'Level:'),
                 ['easy', 'medium', 'hard'].map(function(dl) {
                   return el('button', { key: dl, onClick: function() { upd({ difficulty: dl, phishIdx: 0, phishAnswer: null }); },
-                    style: { padding: '4px 10px', borderRadius: 6, border: difficulty === dl ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: difficulty === dl ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.05)', color: difficulty === dl ? '#a5b4fc' : '#64748b', fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'capitalize' } }, dl);
+                    style: { padding: '4px 10px', borderRadius: 6, border: difficulty === dl ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: difficulty === dl ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.05)', color: difficulty === dl ? '#a5b4fc' : '#94a3b8', fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'capitalize' } }, dl);
                 }),
                 el('div', { style: { marginLeft: 12, padding: '4px 12px', borderRadius: 20, background: 'linear-gradient(135deg, #f59e0b, #eab308)', fontSize: 11, fontWeight: 900, color: '#1e293b' } }, '\u2B50 ' + ctx.getXP('cyberDefense') + ' XP')
               )
@@ -2498,7 +2508,7 @@
               [{ id: 'phish', icon: '\uD83D\uDD75\uFE0F', label: 'Cyber Detective' }, { id: 'password', icon: '\uD83D\uDD10', label: 'Password Forge' }, { id: 'cipher', icon: '\uD83D\uDD11', label: 'Cipher Lab' }, { id: 'network', icon: '\uD83D\uDCE1', label: 'Traffic Analyzer' }, { id: 'social', icon: '\uD83C\uDFAD', label: 'Social Engineering' }, { id: 'warroom', icon: '\u2694\uFE0F', label: 'SOC War Room' }].map(function(tab) {
                 var isActive = cyberTab === tab.id;
                 return el('button', { key: tab.id, onClick: function() { upd('cyberTab', tab.id); },
-                  style: { padding: '12px 20px', border: 'none', borderBottom: isActive ? '2px solid #6366f1' : '2px solid transparent', background: 'none', color: isActive ? '#a5b4fc' : '#64748b', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' } },
+                  style: { padding: '12px 20px', border: 'none', borderBottom: isActive ? '2px solid #6366f1' : '2px solid transparent', background: 'none', color: isActive ? '#a5b4fc' : '#94a3b8', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' } },
                   el('span', null, tab.icon), tab.label);
               })
             ),
@@ -2516,7 +2526,7 @@
                     el('span', { style: { fontSize: 22, filter: 'drop-shadow(0 0 6px ' + currentRank.color + ')' } }, currentRank.icon),
                     el('div', null,
                       el('div', { style: { color: currentRank.color, fontSize: 13, fontWeight: 900 } }, currentRank.rank),
-                      el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 600 } }, casesClosed + ' case' + (casesClosed !== 1 ? 's' : '') + ' closed' + (nextRank ? ' \u2022 ' + (nextRank.min - casesClosed) + ' to ' + nextRank.rank : ' \u2022 MAX RANK!'))
+                      el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 600 } }, casesClosed + ' case' + (casesClosed !== 1 ? 's' : '') + ' closed' + (nextRank ? ' \u2022 ' + (nextRank.min - casesClosed) + ' to ' + nextRank.rank : ' \u2022 MAX RANK!'))
                     )
                   ),
                   // Stats
@@ -2529,10 +2539,10 @@
                 // Mode Toggle
                 el('div', { style: { display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' } },
                   el('button', { onClick: function() { upd({ phishMode: 'investigate', triageActive: false, cluesFound: [], phishAnswer: null }); upd('cluesFound', []); upd('phishAnswer', null); },
-                    style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: phishMode === 'investigate' ? '2px solid #6366f1' : '2px solid rgba(255,255,255,0.1)', background: phishMode === 'investigate' ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.04)', color: phishMode === 'investigate' ? '#a5b4fc' : '#64748b', fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' } },
+                    style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: phishMode === 'investigate' ? '2px solid #6366f1' : '2px solid rgba(255,255,255,0.1)', background: phishMode === 'investigate' ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.04)', color: phishMode === 'investigate' ? '#a5b4fc' : '#94a3b8', fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' } },
                     el('span', null, '\uD83D\uDD0D'), 'Investigation Mode'),
                   el('button', { onClick: function() { setPhishMode('triage'); upd('cluesFound', []); upd('phishAnswer', null); upd('triageTimeLeft', 15); setTriageActive(true); },
-                    style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: phishMode === 'triage' ? '2px solid #f59e0b' : '2px solid rgba(255,255,255,0.1)', background: phishMode === 'triage' ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.04)', color: phishMode === 'triage' ? '#fbbf24' : '#64748b', fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' } },
+                    style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: phishMode === 'triage' ? '2px solid #f59e0b' : '2px solid rgba(255,255,255,0.1)', background: phishMode === 'triage' ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.04)', color: phishMode === 'triage' ? '#fbbf24' : '#94a3b8', fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' } },
                     el('span', null, '\u23F1\uFE0F'), 'Inbox Triage'),
                   // AI Case Generator Button
                   el('button', { onClick: generateAIEmail, disabled: aiEmailLoading,
@@ -2569,11 +2579,11 @@
                             var found = cluesFound.indexOf(ci) !== -1;
                             return el('button', { key: 'clue-s-' + ci, onClick: function() { handleClueClick(ci); },
                               title: 'Investigate sender',
-                              style: { background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#64748b', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
+                              style: { background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
                               '\uD83D\uDD0D');
                           })
                         ),
-                        el('div', { style: { color: '#64748b', fontSize: 11, fontFamily: 'monospace' } }, '<' + activeEmail.from + '>')
+                        el('div', { style: { color: '#94a3b8', fontSize: 11, fontFamily: 'monospace' } }, '<' + activeEmail.from + '>')
                       )
                     ),
                     el('div', { style: { color: '#cbd5e1', fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 } },
@@ -2584,7 +2594,7 @@
                         var found = cluesFound.indexOf(ci) !== -1;
                         return el('button', { key: 'clue-sub-' + ci, onClick: function() { handleClueClick(ci); },
                           title: 'Investigate subject',
-                          style: { background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#64748b', flexShrink: 0, transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
+                          style: { background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', flexShrink: 0, transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
                           '\uD83D\uDD0D');
                       })
                     )
@@ -2598,7 +2608,7 @@
                       var found = cluesFound.indexOf(ci) !== -1;
                       return el('button', { key: 'clue-b-' + ci, onClick: function() { handleClueClick(ci); },
                         title: 'Investigate this',
-                        style: { marginLeft: 6, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#64748b', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite', verticalAlign: 'middle' } },
+                        style: { marginLeft: 6, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite', verticalAlign: 'middle' } },
                         '\uD83D\uDD0D');
                     }),
                     activeEmail.link && el('div', { style: { marginTop: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', fontFamily: 'monospace', fontSize: 11, color: '#818cf8', wordBreak: 'break-all', display: 'flex', alignItems: 'center', gap: 6 } },
@@ -2609,7 +2619,7 @@
                         var found = cluesFound.indexOf(ci) !== -1;
                         return el('button', { key: 'clue-l-' + ci, onClick: function() { handleClueClick(ci); },
                           title: 'Investigate link',
-                          style: { marginLeft: 'auto', flexShrink: 0, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#64748b', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
+                          style: { marginLeft: 'auto', flexShrink: 0, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
                           '\uD83D\uDD0D');
                       })
                     )
@@ -2650,7 +2660,7 @@
 
                 // Investigation hint (need more clues)
                 !phishAnswer && phishMode === 'investigate' && cluesFound.length < 2 && el('div', { style: { marginTop: 12, padding: '10px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(99,102,241,0.3)', textAlign: 'center' } },
-                  el('span', { style: { color: '#64748b', fontSize: 12, fontWeight: 600 } },
+                  el('span', { style: { color: '#94a3b8', fontSize: 12, fontWeight: 600 } },
                     '\uD83D\uDD0D Click the magnifying glasses to investigate \u2022 Find at least 2 clues to unlock your verdict')
                 ),
 
@@ -2659,7 +2669,7 @@
                   // Case File Header
                   el('div', { style: { padding: '14px 18px', background: phishAnswer === 'correct' ? 'rgba(34,197,94,0.12)' : phishAnswer === 'timeout' ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)' } },
                     el('div', null,
-                      el('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, '\uD83D\uDCC1 Case File #' + casesClosed),
+                      el('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, '\uD83D\uDCC1 Case File #' + casesClosed),
                       el('div', { style: { fontSize: 16, fontWeight: 900, color: phishAnswer === 'correct' ? '#4ade80' : phishAnswer === 'timeout' ? '#fbbf24' : '#f87171' } },
                         phishAnswer === 'correct' ? '\u2705 Verdict: CORRECT' : phishAnswer === 'timeout' ? '\u23F0 Time Expired' : '\u274C Verdict: INCORRECT')
                     ),
@@ -2668,7 +2678,7 @@
                   ),
                   // Agent Notes
                   el('div', { style: { padding: '14px 18px' } },
-                    el('div', { style: { color: '#64748b', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, '\uD83D\uDD75\uFE0F Agent Notes:'),
+                    el('div', { style: { color: '#94a3b8', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, '\uD83D\uDD75\uFE0F Agent Notes:'),
                     activeEmail.flags.map(function(flag, fi) {
                       return el('div', { key: fi, style: { color: '#94a3b8', fontSize: 12, padding: '3px 0', display: 'flex', alignItems: 'flex-start', gap: 6 } },
                         el('span', { style: { color: activeEmail.isPhish ? '#f87171' : '#4ade80', fontSize: 10, marginTop: 2 } }, activeEmail.isPhish ? '\u26A0' : '\u2714'),
@@ -2686,7 +2696,7 @@
                       )
                     ),
                     // Evidence collected
-                    phishMode === 'investigate' && el('div', { style: { marginTop: 8, color: '#64748b', fontSize: 11 } },
+                    phishMode === 'investigate' && el('div', { style: { marginTop: 8, color: '#94a3b8', fontSize: 11 } },
                       '\uD83D\uDCCB Evidence collected: ' + cluesFound.length + '/' + (activeEmail.clues || []).length + ' clues'),
                     // Next case button
                     el('button', { onClick: advanceCase,
@@ -2710,7 +2720,7 @@
                           style: { width: '100%', padding: '12px 40px 12px 14px', borderRadius: 10, border: '2px solid ' + (pwInput ? pwStrength.color : 'rgba(255,255,255,0.1)'), background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', fontSize: 14, fontWeight: 600, boxSizing: 'border-box', fontFamily: pwShowPassword ? 'monospace' : 'inherit' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                         el('button', { onClick: function() { upd('pwShowPassword', !pwShowPassword); },
                           'aria-label': pwShowPassword ? 'Hide password' : 'Show password',
-                          style: { position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', fontSize: 16, padding: 4 } },
+                          style: { position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 16, padding: 4 } },
                           pwShowPassword ? '\uD83D\uDC41\uFE0F' : '\uD83D\uDEE1\uFE0F')
                       ),
                       el('button', { onClick: function() { var gp = generatePassword(pwGenLength, pwGenInclude); upd({ pwInput: gp, pwShowPassword: true, pwBruteAnim: null, pwBreachResult: null }); },
@@ -2719,25 +2729,25 @@
                     ),
                     // Generator config
                     el('div', { style: { display: 'flex', gap: 8, marginTop: 8, alignItems: 'center', flexWrap: 'wrap' } },
-                      el('span', { style: { color: '#64748b', fontSize: 10, fontWeight: 700 } }, 'LENGTH:'),
+                      el('span', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700 } }, 'LENGTH:'),
                       [8, 12, 16, 20, 24].map(function(len) {
                         return el('button', { key: len, onClick: function() { upd('pwGenLength', len); },
-                          style: { padding: '3px 8px', borderRadius: 6, border: pwGenLength === len ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.08)', background: pwGenLength === len ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.03)', color: pwGenLength === len ? '#a5b4fc' : '#64748b', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, String(len));
+                          style: { padding: '3px 8px', borderRadius: 6, border: pwGenLength === len ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.08)', background: pwGenLength === len ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.03)', color: pwGenLength === len ? '#a5b4fc' : '#94a3b8', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, String(len));
                       }),
                       el('span', { style: { color: '#475569', margin: '0 4px' } }, '|'),
                       ['upper', 'lower', 'digits', 'symbols'].map(function(cat) {
                         var labels = { upper: 'A-Z', lower: 'a-z', digits: '0-9', symbols: '!@#' };
                         var on = pwGenInclude[cat];
                         return el('button', { key: cat, onClick: function() { var ni = Object.assign({}, pwGenInclude); ni[cat] = !ni[cat]; upd('pwGenInclude', ni); },
-                          style: { padding: '3px 8px', borderRadius: 6, border: on ? '1px solid #22c55e' : '1px solid rgba(255,255,255,0.08)', background: on ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.03)', color: on ? '#4ade80' : '#64748b', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, labels[cat]);
+                          style: { padding: '3px 8px', borderRadius: 6, border: on ? '1px solid #22c55e' : '1px solid rgba(255,255,255,0.08)', background: on ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.03)', color: on ? '#4ade80' : '#94a3b8', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, labels[cat]);
                       })
                     )
                   ),
                   // Strength display
                   pwInput && el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                     el('span', { style: { fontSize: 16, fontWeight: 900, color: pwStrength.color } }, pwStrength.label),
-                    el('span', { style: { color: '#64748b', fontSize: 11, fontWeight: 600 } }, pwStrength.entropy + ' bits entropy'),
-                    el('span', { style: { color: '#64748b', fontSize: 11 } }, '\u2022 Pool: ' + (pwStrength.checks.poolSize || 0) + ' chars')
+                    el('span', { style: { color: '#94a3b8', fontSize: 11, fontWeight: 600 } }, pwStrength.entropy + ' bits entropy'),
+                    el('span', { style: { color: '#94a3b8', fontSize: 11 } }, '\u2022 Pool: ' + (pwStrength.checks.poolSize || 0) + ' chars')
                   ),
                   // Strength bar
                   el('div', { style: { width: '100%', height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
@@ -2745,7 +2755,7 @@
                   ),
                   // Crack time
                   el('div', { style: { marginTop: 12, padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' } },
-                    el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '\u231B Time to crack (10B guesses/sec):'),
+                    el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '\u231B Time to crack (10B guesses/sec):'),
                     el('div', { style: { color: pwStrength.color, fontSize: 18, fontWeight: 900 } }, pwStrength.crackTime)
                   ),
                   // Checklist
@@ -2761,7 +2771,7 @@
                     ].map(function(check, ci) {
                       return el('div', { key: ci, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 6, background: check.ok ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (check.ok ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)') } },
                         el('span', { style: { fontSize: 12, color: check.ok ? '#4ade80' : '#475569' } }, check.ok ? '\u2714' : '\u25CB'),
-                        el('span', { style: { fontSize: 11, fontWeight: 600, color: check.ok ? '#86efac' : '#64748b' } }, check.label));
+                        el('span', { style: { fontSize: 11, fontWeight: 600, color: check.ok ? '#86efac' : '#94a3b8' } }, check.label));
                     })
                   ),
                   // Action buttons
@@ -2778,7 +2788,7 @@
                     el('div', { style: { color: '#fb7185', fontSize: 13, fontWeight: 900, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 } }, '\u26A1 Brute Force Attack Simulation'),
                     el('div', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 8 } },
                       pwBruteAnim.entropy + ' bits entropy \u2022 Character sets: ' + pwBruteAnim.charSets.join(', ')),
-                    el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Attack Speed Comparison:'),
+                    el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Attack Speed Comparison:'),
                     pwBruteAnim.speeds.map(function(spd, si) {
                       var secs = pwBruteAnim.totalGuesses / spd.rate;
                       var timeStr = formatSeconds(secs);
@@ -2787,7 +2797,7 @@
                       return el('div', { key: si, style: { marginBottom: 8, padding: '8px 10px', borderRadius: 8, background: 'rgba(0,0,0,0.2)' } },
                         el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 } },
                           el('span', { style: { color: '#94a3b8', fontSize: 11, fontWeight: 700 } }, spd.icon + ' ' + spd.label),
-                          el('span', { style: { color: '#64748b', fontSize: 11, fontWeight: 600 } }, spd.rate.toExponential(0) + ' guesses/sec')
+                          el('span', { style: { color: '#94a3b8', fontSize: 11, fontWeight: 600 } }, spd.rate.toExponential(0) + ' guesses/sec')
                         ),
                         el('div', { style: { width: '100%', height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
                           el('div', { style: { width: barPct + '%', height: '100%', borderRadius: 3, background: barColor, transition: 'width 0.8s ease-out' } })
@@ -2837,15 +2847,15 @@
                 el('div', { style: { display: 'flex', gap: 8, marginBottom: 20 } },
                   [{ id: 'caesar', label: 'Caesar Cipher', icon: '\uD83D\uDD04' }, { id: 'atbash', label: 'Atbash Cipher', icon: '\uD83D\uDD00' }, { id: 'xor', label: 'XOR Cipher', icon: '\u2295' }].map(function(c) {
                     return el('button', { key: c.id, onClick: function() { upd('cipherMode', c.id); },
-                      style: { flex: 1, padding: '10px 14px', borderRadius: 10, border: cipherMode === c.id ? '2px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: cipherMode === c.id ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.04)', color: cipherMode === c.id ? '#a5b4fc' : '#64748b', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } },
+                      style: { flex: 1, padding: '10px 14px', borderRadius: 10, border: cipherMode === c.id ? '2px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: cipherMode === c.id ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.04)', color: cipherMode === c.id ? '#a5b4fc' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } },
                       el('span', null, c.icon), c.label);
                   })
                 ),
                 // Encode/Decode toggle
                 el('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 16 } },
                   el('div', { style: { display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' } },
-                    el('button', { onClick: function() { upd('cipherEncode', true); }, style: { padding: '6px 18px', border: 'none', background: cipherEncode ? '#6366f1' : 'rgba(255,255,255,0.04)', color: cipherEncode ? 'white' : '#64748b', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD12 Encode'),
-                    el('button', { onClick: function() { upd('cipherEncode', false); }, style: { padding: '6px 18px', border: 'none', background: !cipherEncode ? '#6366f1' : 'rgba(255,255,255,0.04)', color: !cipherEncode ? 'white' : '#64748b', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD13 Decode')
+                    el('button', { onClick: function() { upd('cipherEncode', true); }, style: { padding: '6px 18px', border: 'none', background: cipherEncode ? '#6366f1' : 'rgba(255,255,255,0.04)', color: cipherEncode ? 'white' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD12 Encode'),
+                    el('button', { onClick: function() { upd('cipherEncode', false); }, style: { padding: '6px 18px', border: 'none', background: !cipherEncode ? '#6366f1' : 'rgba(255,255,255,0.04)', color: !cipherEncode ? 'white' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD13 Decode')
                   )
                 ),
                 // Caesar shift control
@@ -2857,7 +2867,7 @@
                 ),
                 // Letter mapping visualization
                 cipherMode !== 'xor' && el('div', { style: { marginBottom: 16, padding: 12, borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden' } },
-                  el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Letter Mapping'),
+                  el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Letter Mapping'),
                   el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' } },
                     'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(function(letter, li) {
                       var mapped;
@@ -2874,12 +2884,12 @@
                 // Input/Output
                 el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 } },
                   el('div', null,
-                    el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, cipherEncode ? 'Plain Text' : 'Encoded Text'),
+                    el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, cipherEncode ? 'Plain Text' : 'Encoded Text'),
                     el('textarea', { value: cipherInput, onChange: function(e) { upd('cipherInput', e.target.value.toUpperCase()); }, placeholder: cipherEncode ? 'Type your message...' : 'Paste encoded text...', 'aria-label': cipherEncode ? 'Plain text to encode' : 'Encoded text to decode',
                       style: { width: '100%', height: 100, padding: 12, borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, resize: 'none', boxSizing: 'border-box' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' })
                   ),
                   el('div', null,
-                    el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, cipherEncode ? 'Encoded Output' : 'Decoded Output'),
+                    el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, cipherEncode ? 'Encoded Output' : 'Decoded Output'),
                     el('div', { style: { width: '100%', height: 100, padding: 12, borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.08)', color: '#a5b4fc', fontSize: 13, fontFamily: 'monospace', fontWeight: 700, overflowY: 'auto', boxSizing: 'border-box', wordBreak: 'break-all' } },
                       cipherOutput || el('span', { style: { color: '#475569', fontStyle: 'italic', fontWeight: 400 } }, 'Output will appear here...'))
                   )
@@ -2914,7 +2924,7 @@
                 el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 } },
                   el('div', null,
                     el('div', { style: { color: '#a5b4fc', fontSize: 14, fontWeight: 900 } }, '\uD83D\uDCE1 Network Traffic Analyzer'),
-                    el('div', { style: { color: '#64748b', fontSize: 11, marginTop: 2 } }, 'Inspect packets and flag suspicious traffic')
+                    el('div', { style: { color: '#94a3b8', fontSize: 11, marginTop: 2 } }, 'Inspect packets and flag suspicious traffic')
                   ),
                   el('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
                     el('div', { style: { padding: '4px 10px', borderRadius: 8, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#4ade80', fontSize: 11, fontWeight: 700 } }, '\u2705 ' + netScore + ' correct'),
@@ -2936,7 +2946,7 @@
                   // Packet rows
                   netPackets.map(function(pkt, pi) {
                     var isFlagged = netFlagged.indexOf(pkt.id) !== -1;
-                    var protoColors = { HTTPS: '#22c55e', HTTP: '#f97316', DNS: '#60a5fa', TCP: '#a78bfa', SMTP: '#f472b6', FTP: '#fbbf24', ICMP: '#94a3b8', NTP: '#64748b' };
+                    var protoColors = { HTTPS: '#22c55e', HTTP: '#f97316', DNS: '#60a5fa', TCP: '#a78bfa', SMTP: '#f472b6', FTP: '#fbbf24', ICMP: '#94a3b8', NTP: '#94a3b8' };
                     var pColor = protoColors[pkt.proto] || '#94a3b8';
                     return el('div', { key: pi, onClick: function() {
                         if (netShowAnswer) return;
@@ -2952,7 +2962,7 @@
                       ),
                       el('span', { style: { color: '#94a3b8', fontSize: 10, fontFamily: 'monospace' } }, pkt.src),
                       el('span', { style: { color: '#94a3b8', fontSize: 10, fontFamily: 'monospace' } }, pkt.dst),
-                      el('span', { style: { color: '#64748b', fontSize: 10, fontFamily: 'monospace' } }, String(pkt.port)),
+                      el('span', { style: { color: '#94a3b8', fontSize: 10, fontFamily: 'monospace' } }, String(pkt.port)),
                       el('div', null,
                         el('div', { style: { color: '#cbd5e1', fontSize: 10, fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, pkt.payload),
                         netShowAnswer && el('div', { style: { color: pkt.suspicious ? '#fca5a5' : '#6ee7b7', fontSize: 11, marginTop: 2, fontWeight: 600 } }, pkt.reason)
@@ -2962,7 +2972,7 @@
                 ),
                 // Submit / Results
                 netPackets.length > 0 && !netShowAnswer && el('div', { style: { marginTop: 14, textAlign: 'center' } },
-                  el('div', { style: { color: '#64748b', fontSize: 11, marginBottom: 8 } }, 'Click packets you think are suspicious, then submit your analysis'),
+                  el('div', { style: { color: '#94a3b8', fontSize: 11, marginBottom: 8 } }, 'Click packets you think are suspicious, then submit your analysis'),
                   el('button', { onClick: function() {
                       var correct = 0;
                       netPackets.forEach(function(pkt) {
@@ -2992,7 +3002,7 @@
                 // Empty state
                 netPackets.length === 0 && el('div', { style: { textAlign: 'center', padding: '40px 20px' } },
                   el('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDCE1'),
-                  el('div', { style: { color: '#64748b', fontSize: 13, fontWeight: 600 } }, 'Click "Start Capture" to intercept network packets'),
+                  el('div', { style: { color: '#94a3b8', fontSize: 13, fontWeight: 600 } }, 'Click "Start Capture" to intercept network packets'),
                   el('div', { style: { color: '#475569', fontSize: 11, marginTop: 4 } }, 'Analyze traffic and identify threats like a SOC analyst')
                 )
               ),
@@ -3002,7 +3012,7 @@
                 el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 } },
                   el('div', null,
                     el('div', { style: { color: '#a5b4fc', fontSize: 14, fontWeight: 900 } }, '\uD83C\uDFAD Social Engineering Defense'),
-                    el('div', { style: { color: '#64748b', fontSize: 11, marginTop: 2 } }, 'Scenario ' + (seQuizIdx + 1) + ' of ' + seScenarios.length)
+                    el('div', { style: { color: '#94a3b8', fontSize: 11, marginTop: 2 } }, 'Scenario ' + (seQuizIdx + 1) + ' of ' + seScenarios.length)
                   ),
                   el('div', { style: { display: 'flex', gap: 8 } },
                     el('div', { style: { padding: '4px 10px', borderRadius: 8, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)', color: '#fbbf24', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDD25 Streak: ' + seQuizStreak),
@@ -3151,7 +3161,7 @@
                         if (!answered) { bg = 'rgba(30,41,59,0.7)'; bd = 'rgba(148,163,184,0.2)'; color = '#cbd5e1'; }
                         else if (isCorrect) { bg = warOutcomeColors.mitigated + '1f'; bd = warOutcomeColors.mitigated + '80'; color = warOutcomeColors.mitigatedSoft; }
                         else if (isPicked) { bg = warOutcomeColors.succeeded + '1a'; bd = warOutcomeColors.succeeded + '59'; color = warOutcomeColors.succeededSoft; }
-                        else { bg = 'rgba(30,41,59,0.4)'; bd = 'rgba(148,163,184,0.15)'; color = '#64748b'; }
+                        else { bg = 'rgba(30,41,59,0.4)'; bd = 'rgba(148,163,184,0.15)'; color = '#94a3b8'; }
                         return el('button', { key: i, onClick: function() { submitQuizAnswer(i); }, disabled: answered,
                           'aria-label': (i + 1) + '. ' + card.label + (answered ? (isCorrect ? ' — correct answer' : (isPicked ? ' — your answer (wrong)' : '')) : ''),
                           style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, borderRadius: 6, border: '1px solid ' + bd, background: bg, color: color, cursor: answered ? 'default' : 'pointer', textAlign: 'left' } },
@@ -3273,7 +3283,7 @@
                         warRoomReplay.playing ? '\u23F8 Pause' : '\u25B6 Play'),
                       el('button', { onClick: function() { if (idx < chain.length - 1) goStep(idx + 1); }, disabled: idx >= chain.length - 1, 'aria-label': 'Next round',
                         style: { padding: '6px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.3)', background: idx >= chain.length - 1 ? 'rgba(30,41,59,0.3)' : 'rgba(30,41,59,0.6)', color: idx >= chain.length - 1 ? '#475569' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: idx >= chain.length - 1 ? 'not-allowed' : 'pointer' } }, 'Next \u23ED'),
-                      el('div', { style: { flex: 1, fontSize: 10, color: '#64748b', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right', letterSpacing: 0.5 } }, warRoomReplay.playing ? 'Auto-playing \u2014 2.6s per round' : 'Paused')
+                      el('div', { style: { flex: 1, fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right', letterSpacing: 0.5 } }, warRoomReplay.playing ? 'Auto-playing \u2014 2.6s per round' : 'Paused')
                     )
                   );
                 })(),
@@ -3533,7 +3543,7 @@
                             return el('div', { key: did, style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, marginBottom: 4, color: '#cbd5e1' } },
                               el('span', { style: { minWidth: 80, fontWeight: 700 } }, labelMap[did]),
                               el('span', { style: { flex: 1 } }, s.c + ' played'),
-                              el('span', { style: { color: s.w > 0 ? '#86efac' : '#64748b', fontWeight: 800 } }, s.w + ' won (' + pct + '%)')
+                              el('span', { style: { color: s.w > 0 ? '#86efac' : '#94a3b8', fontWeight: 800 } }, s.w + ' won (' + pct + '%)')
                             );
                           })
                         ),
@@ -3544,7 +3554,7 @@
                             return el('div', { key: tid, style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, marginBottom: 4, color: '#cbd5e1' } },
                               el('span', { style: { flex: 1, fontWeight: 700 } }, label),
                               el('span', { style: { color: '#94a3b8' } }, s.c + ' played'),
-                              el('span', { style: { color: s.w > 0 ? '#86efac' : '#64748b', fontWeight: 800, minWidth: 50, textAlign: 'right' } }, s.w + ' won')
+                              el('span', { style: { color: s.w > 0 ? '#86efac' : '#94a3b8', fontWeight: 800, minWidth: 50, textAlign: 'right' } }, s.w + ' won')
                             );
                           })
                         )
@@ -3586,7 +3596,7 @@
                                 style: { aspectRatio: '1', height: 16, borderRadius: 3, background: bg, border: '1px solid rgba(148,163,184,0.1)' } });
                             })
                           ),
-                          el('div', { style: { marginTop: 6, fontSize: 10, color: '#64748b', fontStyle: 'italic' } }, 'Older \u2190  \u2192 Today')
+                          el('div', { style: { marginTop: 6, fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, 'Older \u2190  \u2192 Today')
                         );
                       })(),
                       // Grade trend strip (last 12 campaigns as letter badges)
@@ -3699,7 +3709,7 @@
                               el('span', { style: { fontSize: 10, fontWeight: 800, padding: '1px 6px', borderRadius: 3, background: 'rgba(59,130,246,0.15)', color: '#93c5fd', minWidth: 70, textAlign: 'center' } }, r.anyPct + '% any')
                             );
                           }),
-                          el('div', { style: { marginTop: 6, fontSize: 10, color: '#64748b', fontStyle: 'italic' } }, '"% fully" = rounds where this card led to a full mitigation. "% any" = detected or mitigated.')
+                          el('div', { style: { marginTop: 6, fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '"% fully" = rounds where this card led to a full mitigation. "% any" = detected or mitigated.')
                         );
                       })()
                     );
@@ -3838,12 +3848,12 @@
                       el('div', { style: { padding: 6, background: 'rgba(30,41,59,0.6)', borderRadius: 4 } },
                         el('div', { style: { color: '#94a3b8', fontSize: 9, fontWeight: 700, textTransform: 'uppercase' } }, 'Win rate'),
                         el('div', { style: { color: '#86efac', fontSize: 15, fontWeight: 900 } }, total > 0 ? Math.round(wins / total * 100) + '%' : '\u2014'),
-                        el('div', { style: { color: '#64748b', fontSize: 10 } }, wins + ' / ' + total)
+                        el('div', { style: { color: '#94a3b8', fontSize: 10 } }, wins + ' / ' + total)
                       ),
                       el('div', { style: { padding: 6, background: 'rgba(30,41,59,0.6)', borderRadius: 4 } },
                         el('div', { style: { color: '#94a3b8', fontSize: 9, fontWeight: 700, textTransform: 'uppercase' } }, 'Avg detections'),
                         el('div', { style: { color: '#93c5fd', fontSize: 15, fontWeight: 900 } }, avgDet),
-                        el('div', { style: { color: '#64748b', fontSize: 10 } }, 'per campaign')
+                        el('div', { style: { color: '#94a3b8', fontSize: 10 } }, 'per campaign')
                       ),
                       el('div', { style: { padding: 6, background: 'rgba(30,41,59,0.6)', borderRadius: 4 } },
                         el('div', { style: { color: '#94a3b8', fontSize: 9, fontWeight: 700, textTransform: 'uppercase' } }, 'Rookie / Analyst / Hunter'),
@@ -4008,7 +4018,7 @@
                   (function() {
                     var q = (warRoomGlossaryFilter || '').toLowerCase().trim();
                     var filtered = q ? warGlossary.filter(function(g) { return g.term.toLowerCase().indexOf(q) !== -1 || g.defn.toLowerCase().indexOf(q) !== -1; }) : warGlossary;
-                    if (filtered.length === 0) return el('div', { style: { color: '#64748b', fontSize: 11, fontStyle: 'italic', padding: '8px 0' } }, 'No terms match "' + warRoomGlossaryFilter + '".');
+                    if (filtered.length === 0) return el('div', { style: { color: '#94a3b8', fontSize: 11, fontStyle: 'italic', padding: '8px 0' } }, 'No terms match "' + warRoomGlossaryFilter + '".');
                     return filtered.map(function(g) {
                       return el('div', { key: g.term, style: { padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' } },
                         el('span', { style: { color: '#fca5a5', fontSize: 12, fontWeight: 800, marginRight: 8 } }, g.term),
@@ -4170,7 +4180,7 @@
                         el('span', { style: { fontSize: 15 } }, perk.icon),
                         el('div', { style: { flex: 1 } },
                           el('div', { style: { color: '#d9f99d', fontWeight: 800 } }, perk.label, el('span', { style: { color: '#86efac', fontWeight: 600, marginLeft: 6 } }, perk.perk)),
-                          el('div', { style: { color: '#64748b', fontSize: 10, fontStyle: 'italic' } }, perk.source)
+                          el('div', { style: { color: '#94a3b8', fontSize: 10, fontStyle: 'italic' } }, perk.source)
                         )
                       );
                     })
@@ -4219,7 +4229,7 @@
                         return el('button', { key: tid, role: 'radio', 'aria-checked': selected, disabled: isLocked,
                           'aria-label': t.label + (isLocked ? ' (locked — ' + (t.unlockHint || 'keep playing to unlock') + ')' : ''),
                           onClick: function() { if (!isLocked) { upd('warRoomCampaignTheme', tid); sfxCyberdClick(); } },
-                          style: { padding: '10px 12px', borderRadius: 8, border: '1px solid ' + (selected ? 'rgba(99,102,241,0.6)' : 'rgba(148,163,184,0.2)'), background: selected ? 'rgba(99,102,241,0.12)' : 'rgba(15,23,42,0.45)', color: selected ? '#a5b4fc' : (isLocked ? '#64748b' : '#cbd5e1'), cursor: isLocked ? 'not-allowed' : 'pointer', textAlign: 'left', opacity: isLocked ? 0.55 : 1 } },
+                          style: { padding: '10px 12px', borderRadius: 8, border: '1px solid ' + (selected ? 'rgba(99,102,241,0.6)' : 'rgba(148,163,184,0.2)'), background: selected ? 'rgba(99,102,241,0.12)' : 'rgba(15,23,42,0.45)', color: selected ? '#a5b4fc' : (isLocked ? '#94a3b8' : '#cbd5e1'), cursor: isLocked ? 'not-allowed' : 'pointer', textAlign: 'left', opacity: isLocked ? 0.55 : 1 } },
                           el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
                             el('span', { style: { fontSize: 16, filter: isLocked ? 'grayscale(1)' : 'none' } }, isLocked ? '\uD83D\uDD12' : t.icon),
                             el('span', { style: { fontSize: 13, fontWeight: 800 } }, t.label)
@@ -4364,7 +4374,7 @@
                         'Play Seed \u2192')
                     )
                   ),
-                  el('div', { style: { color: '#64748b', fontSize: 11, fontStyle: 'italic', textAlign: 'center', marginBottom: 14 } },
+                  el('div', { style: { color: '#94a3b8', fontSize: 11, fontStyle: 'italic', textAlign: 'center', marginBottom: 14 } },
                     warRoomCampaignsCompleted > 0 ? ('Campaigns completed: ' + warRoomCampaignsCompleted + (d.warRoomWonAnalyst ? ' \u2022 Analyst victory \uD83C\uDF96\uFE0F' : '') + (d.warRoomPerfectDefense ? ' \u2022 Perfect defense \uD83D\uDEE1\uFE0F' : '')) : 'Your first campaign awaits.'
                   ),
                   // Onboarding checklist (hidden once all 5 milestones are complete)
@@ -4411,9 +4421,9 @@
                           style: { padding: 8, borderRadius: 8, background: earned ? 'rgba(245,158,11,0.08)' : 'rgba(15,23,42,0.6)', border: '1px solid ' + (earned ? 'rgba(245,158,11,0.3)' : 'rgba(148,163,184,0.15)'), opacity: earned ? 1 : 0.65 } },
                           el('div', { style: { display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 } },
                             el('span', { style: { fontSize: 15, filter: earned ? 'none' : 'grayscale(1)' } }, a.icon),
-                            el('span', { style: { fontSize: 11, fontWeight: 800, color: earned ? '#fde68a' : '#64748b', flex: 1 } }, a.label)
+                            el('span', { style: { fontSize: 11, fontWeight: 800, color: earned ? '#fde68a' : '#94a3b8', flex: 1 } }, a.label)
                           ),
-                          el('div', { style: { fontSize: 10, color: earned ? '#94a3b8' : '#64748b', lineHeight: 1.3 } }, a.desc),
+                          el('div', { style: { fontSize: 10, color: earned ? '#94a3b8' : '#94a3b8', lineHeight: 1.3 } }, a.desc),
                           !earned && prog && el('div', { style: { marginTop: 5 } },
                             el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#94a3b8', fontWeight: 700, marginBottom: 2 } },
                               el('span', null, prog.label),
@@ -4465,7 +4475,7 @@
                         el('div', { style: { fontSize: 10, color: '#cbd5e1', fontStyle: 'italic' } }, grade.desc)
                       )
                     ),
-                    warRoomCampaignId && el('div', { style: { marginTop: 8, fontSize: 10, color: '#64748b', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Campaign #' + warRoomCampaignId)
+                    warRoomCampaignId && el('div', { style: { marginTop: 8, fontSize: 10, color: '#94a3b8', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Campaign #' + warRoomCampaignId)
                   ),
                   el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 16 } },
                     [
@@ -4561,8 +4571,8 @@
                         el('button', { onClick: function() { var o = {}; o[expandedKey] = !isExpanded; upd(o); sfxCyberdClick(); },
                           'aria-expanded': !!isExpanded, 'aria-controls': 'round-detail-' + i,
                           style: { width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' } },
-                          el('span', { style: { fontSize: 10, color: '#64748b', fontWeight: 700 } }, isExpanded ? '\u25BC' : '\u25B6'),
-                          el('span', { style: { fontSize: 11, color: '#64748b', fontWeight: 700, minWidth: 28 } }, 'R' + (i + 1)),
+                          el('span', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700 } }, isExpanded ? '\u25BC' : '\u25B6'),
+                          el('span', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, minWidth: 28 } }, 'R' + (i + 1)),
                           el('span', { style: { fontSize: 12, color: '#cbd5e1', flex: 1 } }, r.red.title),
                           el('span', { style: { fontSize: 10, fontWeight: 800, color: oc.c, background: oc.c + '22', padding: '2px 8px', borderRadius: 4 } }, oc.label)
                         ),
@@ -4604,7 +4614,7 @@
                         upd({ warRoomReflection: text, warRoomCampaignHistory: newHistory });
                       },
                       style: { width: '100%', minHeight: 80, padding: 8, borderRadius: 6, border: '1px solid rgba(148,163,184,0.25)', background: 'rgba(15,23,42,0.7)', color: '#e2e8f0', fontSize: 12, lineHeight: 1.5, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } }),
-                    el('div', { style: { marginTop: 4, fontSize: 10, color: '#64748b', textAlign: 'right' } }, warRoomReflection.length + ' / 1000')
+                    el('div', { style: { marginTop: 4, fontSize: 10, color: '#94a3b8', textAlign: 'right' } }, warRoomReflection.length + ' / 1000')
                   ),
                   // After-action report
                   el('div', { style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(168,85,247,0.04))', border: '1px solid rgba(99,102,241,0.2)', marginBottom: 14 } },
@@ -4841,7 +4851,7 @@
                     'aria-label': 'Ready to play, ' + warRoomHotSeatPlayers[warRoomHotSeatCurrentIdx],
                     style: { padding: '14px 32px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #a855f7, #6366f1)', color: 'white', fontSize: 15, fontWeight: 800, cursor: 'pointer' } },
                     '\uD83D\uDC4A I\'m Ready'),
-                  el('div', { style: { marginTop: 16, fontSize: 10.5, color: '#64748b', fontStyle: 'italic' } }, 'Other players: look away until the active player confirms.')
+                  el('div', { style: { marginTop: 16, fontSize: 10.5, color: '#94a3b8', fontStyle: 'italic' } }, 'Other players: look away until the active player confirms.')
                 ),
 
                 // Active campaign (not ended, and past the pass screen)
@@ -4897,7 +4907,7 @@
                       return el('div', { key: (m.at || 0) + '-' + i, style: { padding: '4px 0', borderBottom: i < warRoomChatMessages.length - 1 ? '1px solid rgba(148,163,184,0.1)' : 'none', fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.4 } },
                         el('span', { style: { color: '#d8b4fe', fontWeight: 700, marginRight: 6 } }, (m.from || 'Observer') + ':'),
                         el('span', null, m.text),
-                        t && el('span', { style: { marginLeft: 6, fontSize: 9, color: '#64748b' } }, t)
+                        t && el('span', { style: { marginLeft: 6, fontSize: 9, color: '#94a3b8' } }, t)
                       );
                     })
                   ),
@@ -4907,7 +4917,7 @@
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
                       el('span', { style: { fontSize: 20 } }, warRoomCurrentStage.icon),
                       el('div', null,
-                        el('div', { style: { fontSize: 10, color: '#64748b', fontWeight: 700, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' } },
+                        el('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' } },
                           el('span', null, 'Round ' + warRoomRound + ' / ' + warRoomRoundsTotal + ' \u2022 ' + (warRoomIsBossMode ? '\uD83D\uDC79 BOSS ' : '') + (campaignThemes[warRoomCampaignTheme] ? campaignThemes[warRoomCampaignTheme].icon + ' ' + campaignThemes[warRoomCampaignTheme].label : '')),
                           warRoomCampaignId && el('button', {
                             onClick: function() {
@@ -5179,7 +5189,7 @@
                       // Alerts panel
                       el('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(99,102,241,0.2)', marginBottom: 10 } },
                         el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 8, letterSpacing: 0.5 } }, '\uD83D\uDEA8 ALERT INTEL (' + warRoomAlerts.length + ')'),
-                        warRoomAlerts.length === 0 && el('div', { style: { color: '#64748b', fontSize: 12, fontStyle: 'italic' } }, 'No alerts received this round.'),
+                        warRoomAlerts.length === 0 && el('div', { style: { color: '#94a3b8', fontSize: 12, fontStyle: 'italic' } }, 'No alerts received this round.'),
                         warRoomAlerts.map(function(a, i) {
                           var seen = warRoomAlertsSeen.indexOf(a.id) !== -1;
                           var investigated = seen && warRoomBluePlays.indexOf('investigate') !== -1;
@@ -5206,7 +5216,7 @@
                       ),
                       // Campaign log
                       el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.4)', border: '1px solid rgba(148,163,184,0.15)', maxHeight: 140, overflowY: 'auto', marginBottom: 8 } },
-                        el('div', { style: { color: '#64748b', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', marginBottom: 4, letterSpacing: 0.5 } }, 'Campaign Log'),
+                        el('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', marginBottom: 4, letterSpacing: 0.5 } }, 'Campaign Log'),
                         warRoomLog.map(function(line, i) {
                           return el('div', { key: i, style: { fontSize: 11, color: '#94a3b8', padding: '2px 0', lineHeight: 1.5 } }, '\u203A ' + line);
                         })
@@ -5229,7 +5239,7 @@
                               upd('warRoomScratchpad', (ev.target.value || '').slice(0, 2000));
                             },
                             style: { width: '100%', marginTop: 6, minHeight: 70, padding: 8, borderRadius: 6, border: '1px solid rgba(234,179,8,0.25)', background: 'rgba(15,23,42,0.7)', color: '#fde68a', fontSize: 11.5, lineHeight: 1.5, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } }),
-                          el('div', { style: { marginTop: 3, fontSize: 9, color: '#64748b', textAlign: 'right' } }, warRoomScratchpad.length + ' / 2000')
+                          el('div', { style: { marginTop: 3, fontSize: 9, color: '#94a3b8', textAlign: 'right' } }, warRoomScratchpad.length + ' / 2000')
                         )
                       )
                     ),
@@ -5258,7 +5268,7 @@
                             el('span', { style: { fontSize: 12.5, fontWeight: 800, flex: 1 } }, card.label),
                             isFreeAvail && !played && el('span', { style: { fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: 'rgba(34,197,94,0.25)', color: '#86efac', letterSpacing: 0.3 } }, 'FREE'),
                             el('span', { style: { fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', textDecoration: isFreeAvail && !played ? 'line-through' : 'none' } }, card.cost + ' \u26A1'),
-                            hint && el('span', { style: { fontSize: 9, color: '#64748b', fontStyle: 'italic' } }, hint)
+                            hint && el('span', { style: { fontSize: 9, color: '#94a3b8', fontStyle: 'italic' } }, hint)
                           ),
                           el('div', { style: { fontSize: 10.5, color: played ? '#86efac' : '#94a3b8', lineHeight: 1.4 } },
                             (warRoomPlainLanguage && plainBlueDescriptions[card.id]) || card.description)
@@ -5317,7 +5327,7 @@
                           }
                         },
                         'aria-label': 'Quit this campaign',
-                        style: { width: '100%', marginTop: 6, padding: '6px 10px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.2)', background: 'transparent', color: '#64748b', fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
+                        style: { width: '100%', marginTop: 6, padding: '6px 10px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.2)', background: 'transparent', color: '#94a3b8', fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
                         'Quit Campaign')
                     )
                   )

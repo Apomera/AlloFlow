@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_migration.js — Migration & Wind Patterns Lab
 // V-formation aerodynamics, wind currents, bird migration routes & flight physics
@@ -18,6 +28,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
 (function() {
   'use strict';
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-migration')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-migration';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ── Audio + WCAG (auto-injected) ──
   var _migrAC = null;
@@ -52,7 +75,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     c.closePath();
     c.fill();
     // Wings
-    c.fillStyle = color || (isDark ? '#64748b' : '#334155');
+    c.fillStyle = color || (isDark ? '#94a3b8' : '#334155');
     c.save(); c.rotate(-wa);
     c.beginPath();
     c.moveTo(-size * 0.2, 0);
@@ -179,11 +202,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       c.beginPath();
       c.moveTo(Math.cos(a) * (radius - 6), Math.sin(a) * (radius - 6));
       c.lineTo(Math.cos(a) * (radius - 1), Math.sin(a) * (radius - 1));
-      c.strokeStyle = isDark ? '#94a3b8' : '#64748b';
+      c.strokeStyle = isDark ? '#94a3b8' : '#94a3b8';
       c.lineWidth = 1;
       c.stroke();
       // Label
-      c.fillStyle = isDark ? '#94a3b8' : '#64748b';
+      c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       c.fillText(dirs[di], Math.cos(a) * (radius - 12), Math.sin(a) * (radius - 12));
     }
 
@@ -638,7 +661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.textAlign = 'left';
             c.fillText('Formation Efficiency: ' + eff + '%', 14, 26);
             c.font = '10px system-ui';
-            c.fillStyle = isDark ? '#94a3b8' : '#64748b';
+            c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
             c.fillText('Energy Savings: ' + Math.round(eff * 0.65) + '%', 14, 40);
             c.fillText('Leader Rotations: ' + (leaderRotations || 0), 14, 52);
 
@@ -1919,7 +1942,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               var fwColor = FLYWAY_COLORS[sp.flyway];
               return h('button', {
                 key: sp.id,
-                className: 'p-2 rounded-lg text-left transition-all border ' + (active ? 'ring-2 ring-sky-400 border-sky-400 ' + accentBg : borderCol + ' ' + cardBg + ' hover:border-sky-300'),
+                className: 'p-2 rounded-lg text-left transition-all border ' + (active ? 'ring-2 ring-sky-400 border-sky-400 ' + accentBg : borderCol + ' ' + cardBg + ' hover:border-sky-600'),
                 'aria-label': sp.name + ', ' + sp.flyway + ' flyway, ' + sp.distance + ' miles',
                 'aria-pressed': active ? 'true' : 'false',
                 onClick: function() {
@@ -2233,7 +2256,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.closePath();
             c.fillStyle = isDark ? '#475569' : '#94a3b8';
             c.fill();
-            c.strokeStyle = isDark ? '#64748b' : '#64748b';
+            c.strokeStyle = isDark ? '#94a3b8' : '#94a3b8';
             c.lineWidth = 1.5;
             c.stroke();
 
@@ -2386,7 +2409,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.strokeRect(graphX - 5, graphY - 5, graphW + 10, graphH + 30);
 
             // Axes
-            c.strokeStyle = isDark ? '#64748b' : '#94a3b8';
+            c.strokeStyle = isDark ? '#94a3b8' : '#94a3b8';
             c.lineWidth = 1;
             c.beginPath();
             c.moveTo(graphX, graphY + graphH);
@@ -2440,7 +2463,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.setLineDash([]);
 
             // Graph labels
-            c.fillStyle = isDark ? '#94a3b8' : '#64748b';
+            c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
             c.font = '8px system-ui';
             c.textAlign = 'center';
             c.fillText('Angle of Attack (\u00B0)', graphX + graphW / 2, graphY + graphH + 22);
@@ -2453,13 +2476,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             // Legend
             c.fillStyle = '#3b82f6';
             c.fillRect(graphX + 4, graphY + 4, 8, 2);
-            c.fillStyle = isDark ? '#94a3b8' : '#64748b';
+            c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
             c.font = '8px system-ui';
             c.textAlign = 'left';
             c.fillText('Lift (C\u2097)', graphX + 16, graphY + 8);
             c.fillStyle = '#ef4444';
             c.fillRect(graphX + 4, graphY + 16, 8, 2);
-            c.fillStyle = isDark ? '#94a3b8' : '#64748b';
+            c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
             c.fillText('Drag (C\u2091)', graphX + 16, graphY + 20);
 
             // Best L/D marker
@@ -2540,7 +2563,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 var active = selectedWing === wt.id;
                 return h('button', {
                   key: wt.id,
-                  className: 'p-3 rounded-xl text-left transition-all border ' + (active ? 'ring-2 ring-sky-400 border-sky-400 ' + accentBg : borderCol + ' ' + cardBg + ' hover:border-sky-300'),
+                  className: 'p-3 rounded-xl text-left transition-all border ' + (active ? 'ring-2 ring-sky-400 border-sky-400 ' + accentBg : borderCol + ' ' + cardBg + ' hover:border-sky-600'),
                   'aria-label': wt.name + ' wing type. Aspect ratio: ' + wt.aspectRatio + '. ' + wt.desc,
                   'aria-pressed': active ? 'true' : 'false',
                   onClick: function() { upd('selectedWing', wt.id); }
@@ -3287,6 +3310,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       else if (tab === 'aero') tabContent = renderAero();
       else if (tab === 'navigate') tabContent = renderNavigate();
 
+      // Topic-accent hero band per tab
+      var TAB_META = {
+        vformation: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83E\uDEBF', title: 'V-formation flying',         hint: 'Trailing birds catch the upwash from the bird ahead \u2014 20\u201330% energy savings. Lead position rotates because the front bird does the most work.' },
+        wind:       { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',   icon: '\uD83C\uDF2C\uFE0F', title: 'Wind currents + thermals',   hint: 'Birds read pressure gradients we cannot feel. Updrafts, ridge lift, and thermal columns are how raptors fly hundreds of miles burning almost no calories.' },
+        routes:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83D\uDDFA\uFE0F', title: 'Migration routes + flyways',  hint: 'Four major North American flyways (Pacific, Central, Mississippi, Atlantic) channel billions of birds twice yearly. Maine sits at the top of the Atlantic Flyway.' },
+        aero:       { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '\u2708\uFE0F', title: 'Aerodynamics of bird flight', hint: 'Wing shape (aspect ratio + camber) tunes lift vs drag. Soaring birds = high aspect ratio, slow wingbeat. Hummingbirds = low AR, 60+ Hz wingbeat.' },
+        navigate:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '\uD83E\uDDED', title: 'Weather + navigation',       hint: 'Birds use multiple cues simultaneously \u2014 sun compass, magnetic field via cryptochrome in the eye, star patterns, and learned landmarks. Robust against losing any single cue.' }
+      };
+      var meta = TAB_META[tab] || TAB_META.vformation;
+      var tabHero = h('div', {
+        style: {
+          padding: '12px 14px',
+          borderRadius: 12,
+          background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%)',
+          border: '1px solid ' + meta.accent + '55',
+          borderLeft: '4px solid ' + meta.accent,
+          display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+        }
+      },
+        h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+        h('div', { style: { flex: 1, minWidth: 220 } },
+          h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+          h('p', { style: { margin: '3px 0 0', color: isDark ? '#cbd5e1' : '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+        )
+      );
+
       return h('div', { className: 'space-y-3 p-3 ' + bg + ' rounded-2xl' },
         // Header
         h('div', { className: 'flex items-center justify-between' },
@@ -3300,6 +3349,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           )
         ),
         tabBar,
+        tabHero,
         h('div', { role: 'tabpanel', 'aria-label': (function() { for (var i = 0; i < TABS.length; i++) { if (TABS[i].id === tab) return TABS[i].label; } return 'Tab'; })() },
           tabContent
         )

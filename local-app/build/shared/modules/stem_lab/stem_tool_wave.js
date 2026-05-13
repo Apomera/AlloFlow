@@ -11,6 +11,15 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-wave')) return;
@@ -1400,6 +1409,36 @@ const d = labToolData.wave;
 
             ),
 
+            // ── Topic-accent hero band per wave mode ──
+            (function() {
+              var MODE_META = {
+                free:         { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '\uD83C\uDF0A', title: 'Free Wave \u2014 sine, square, triangle, sawtooth',  hint: 'Pure sine = single frequency; square / triangle / sawtooth are sine sums (Fourier 1822). Each waveform sounds different at the same pitch \u2014 timbre IS the harmonic content.' },
+                standing:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83C\uDFB8', title: 'Standing \u2014 nodes + antinodes on a string',     hint: 'Two waves traveling opposite directions interfere into a stationary pattern. Guitar / violin strings vibrate at fundamental + integer harmonics. Length, tension, density set the pitch.' },
+                ripple:       { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCA7', title: 'Ripple Tank \u2014 two sources, interference',     hint: 'Where crests meet crests \u2192 bright (constructive); crests meet troughs \u2192 dark (destructive). Young\u2019s 1801 double-slit experiment proved light is a wave; same physics here.' },
+                longitudinal: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\u2261',         title: 'Longitudinal \u2014 compression + rarefaction',      hint: 'Sound is longitudinal: air molecules push and pull along the direction of travel, not perpendicular. P-waves in earthquakes are longitudinal too \u2014 they arrive first, hence the P (primary).' },
+                doppler:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDE97', title: 'Doppler \u2014 the moving siren effect',             hint: 'Source approaching = compressed wavelengths = higher pitch. Moving away = stretched wavelengths = lower pitch. Christian Doppler 1842; redshift in cosmology is the same idea, with light.' },
+                spectrum:     { accent: '#10b981', soft: 'rgba(16,185,129,0.10)', icon: '\uD83D\uDCCA', title: 'Spectrum \u2014 FFT decomposition',                  hint: 'Any periodic signal = sum of sines (Fourier transform). Music DAWs, JPEG, MRI, MP3 \u2014 all rest on this. Cooley + Tukey 1965 FFT made it computationally cheap; modern signal processing was born.' }
+              };
+              var meta = MODE_META[waveMode] || MODE_META.free;
+              return React.createElement('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
             // Canvas
 
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-cyan-300 shadow-lg mb-3", style: { height: "400px" } },
@@ -1460,11 +1499,9 @@ const d = labToolData.wave;
 
               ['sine', 'square', 'triangle', 'sawtooth'].map(wt =>
 
-                React.createElement("button", { "aria-label": "Upd",
+                React.createElement("button", { key: wt, onClick: () => upd('waveType', wt),
 
-                  key: wt, onClick: () => upd('waveType', wt),
-
-                  className: "px-2.5 py-1 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-cyan-700 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100')
+                  className: "px-2.5 py-1 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-cyan-700 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-600 hover:bg-cyan-100')
 
                 }, wt.charAt(0).toUpperCase() + wt.slice(1))
 
@@ -1480,7 +1517,7 @@ const d = labToolData.wave;
 
               [1, 2, 3, 4, 5, 6].map(function (h) {
 
-                return React.createElement("button", { "aria-label": "Change harmonic", key: h, onClick: function () { upd('harmonic', h); }, className: "w-9 h-9 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-700 text-white shadow-md scale-110' : 'bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100') }, h);
+                return React.createElement("button", { key: h, onClick: function () { upd('harmonic', h); }, className: "w-9 h-9 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-700 text-white shadow-md scale-110' : 'bg-cyan-50 text-cyan-700 border border-cyan-600 hover:bg-cyan-100') }, h);
 
               }),
 
@@ -1776,9 +1813,7 @@ const d = labToolData.wave;
 
             React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-              React.createElement("button", { "aria-label": "Wave action",
-
-                onClick: function () {
+              React.createElement("button", { onClick: function () {
 
                   var q = WAVE_QUIZ[Math.floor(Math.random() * WAVE_QUIZ.length)];
 
@@ -1788,9 +1823,7 @@ const d = labToolData.wave;
 
               }, d.quiz ? "\uD83D\uDD04 Next Question" : "\uD83E\uDDE0 Quiz Mode"),
 
-              React.createElement("button", { "aria-label": "Wave action",
-
-                onClick: function () {
+              React.createElement("button", { onClick: function () {
 
                   var tAmps = [20, 30, 40, 50, 60, 70];
 
@@ -1810,9 +1843,7 @@ const d = labToolData.wave;
 
               }, d.matchTarget && !d.matchTarget.isEquation ? "\uD83D\uDD04 New Target" : "\uD83C\uDFAF Match Waveform"),
 
-              React.createElement("button", { "aria-label": "Change match target",
-
-                onClick: function () {
+              React.createElement("button", { onClick: function () {
 
                   var tAmps = [20, 30, 40, 50, 60, 70];
 
@@ -1856,7 +1887,7 @@ const d = labToolData.wave;
 
                   var wasChosen = d.quiz.chosen === opt;
 
-                  var cls = !d.quiz.answered ? 'bg-white border-slate-200 hover:border-cyan-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
+                  var cls = !d.quiz.answered ? 'bg-white border-slate-200 hover:border-cyan-400' : isCorrect ? 'bg-emerald-100 border-emerald-600' : wasChosen ? 'bg-red-100 border-red-600' : 'bg-slate-50 border-slate-200 opacity-50';
 
                   return React.createElement("button", { "aria-label": "Select answer: " + opt,
 
@@ -1914,7 +1945,7 @@ const d = labToolData.wave;
               function setAiLevel(id) {
                 setLabToolData(function (prev) { return Object.assign({}, prev, { wave: Object.assign({}, prev.wave, { aiLevel: id }) }); });
               }
-              return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", "aria-label": "AI wave tutor" },
+              return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", },
                 React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
                   React.createElement("span", { className: "text-sm font-bold text-purple-700" }, "\u2728 Explain at my level"),
                   React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": "Reading level" },
@@ -1925,7 +1956,7 @@ const d = labToolData.wave;
                         onClick: function () { setAiLevel(L.id); },
                         "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
                         "aria-pressed": active,
-                        className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100')
+                        className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-600 hover:bg-purple-100')
                       }, L.label);
                     })
                   ),
@@ -1938,7 +1969,7 @@ const d = labToolData.wave;
                 ),
                 aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
                 aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
-                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, "Click \u201CExplain\u201D for the AI tutor to describe the current wave at your chosen reading level.")
+                !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-300" }, "Click \u201CExplain\u201D for the AI tutor to describe the current wave at your chosen reading level.")
               );
             })()
 

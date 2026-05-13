@@ -16,6 +16,32 @@ window.SelHub = window.SelHub || {
 (function() {
   'use strict';
 
+  // ── Accessibility scaffolding (WCAG 2.1 AA) ──
+  // Live region for SR announcements + reduced-motion CSS guard.
+  (function() {
+    if (document.getElementById('allo-live-cultureexplorer')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-cultureexplorer';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0';
+    document.body.appendChild(lr);
+  })();
+  function announceSR(msg) {
+    var el = document.getElementById('allo-live-cultureexplorer');
+    if (el) { el.textContent = ''; setTimeout(function() { el.textContent = msg; }, 50); }
+  }
+  // Reduced motion CSS (WCAG 2.3.3) — guards image fade-ins, transitions
+  (function() {
+    if (document.getElementById('allo-cultureexplorer-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-cultureexplorer-a11y-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { .selh-cultureexplorer *, .selh-cultureexplorer *::before, .selh-cultureexplorer *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   var REGIONS = [
     { id: 'africa', label: 'Africa', emoji: '\uD83C\uDF0D', cultures: ['Maasai (Kenya/Tanzania)', 'Yoruba (Nigeria)', 'Zulu (South Africa)', 'Amazigh/Berber (North Africa)', 'Ashanti (Ghana)', 'Hausa (West Africa)', 'Swahili Coast', 'Ethiopian Highlands', 'San/Bushmen (Southern Africa)', 'Wolof (Senegal)'] },
     { id: 'asia', label: 'Asia', emoji: '\uD83C\uDF0F', cultures: ['Japanese', 'Korean', 'Han Chinese', 'Tamil (South India/Sri Lanka)', 'Balinese (Indonesia)', 'Hmong (Southeast Asia)', 'Mongolian', 'Tibetan', 'Filipino/Tagalog', 'Kurdish', 'Bengali', 'Vietnamese', 'Thai', 'Punjabi'] },
@@ -649,6 +675,14 @@ window.SelHub = window.SelHub || {
       // ── Ask a follow-up question ──
       var askFollowUp = function(question) {
         if (!callGemini || !question) return;
+        // Safety pre-check on free-text follow-up question.
+        var ceSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+          ? window.SelHub.safeRehearseCheck(question, { toolId: 'cultureexplorer', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+          : { action: 'continue' };
+        if (ceSafety.action === 'block') {
+          updMulti({ followUpAnswer: window.SelHub.rehearseBreakCharacterText(ceSafety.severity), aiLoading: false, _lastTier: 3 });
+          return;
+        }
         upd('aiLoading', true);
         var prompt = 'A ' + (gradeLevel || '5th grade') + ' student is learning about ' + selectedCulture + '. They ask: "' + question + '"\n\n' +
           'Answer respectfully and accurately in 2-3 paragraphs. Acknowledge complexity. ' +
@@ -864,7 +898,7 @@ window.SelHub = window.SelHub || {
       // ═══ RENDER ═══
       var badgesEarned = d.badgesEarned || [];
 
-      return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
+      return h('div', { className: 'selh-cultureexplorer space-y-4 animate-in fade-in duration-200' },
           h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
 
         // Header
@@ -877,6 +911,7 @@ window.SelHub = window.SelHub || {
           exploredCultures.length > 0 && h('span', { className: 'bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-xs font-bold' }, exploredCultures.length + ' explored')
         ),
 
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('cultureExplorer', h, ctx) : null),
         // Tabs (expanded)
         h('div', { role: 'tablist', 'aria-label': 'Culture Explorer tabs', className: 'flex flex-wrap gap-1 bg-cyan-50 rounded-xl p-1 border border-cyan-200' },
           [
@@ -899,6 +934,42 @@ window.SelHub = window.SelHub || {
           })
         ),
 
+        // ── Topic-accent hero band per tab ──
+        (function() {
+          var TAB_META = {
+            choose:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDDFA', title: 'Cultures \u2014 explore by region',                       hint: 'Curiosity beats checklist. Every culture holds wisdom worth meeting on its own terms (Geertz 1973). Start with one that interests you, not one assigned. Depth > breadth in this work.' },
+            worldmap: { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83C\uDF0E', title: 'World Map \u2014 culture meets geography',               hint: 'Climate, terrain, trade routes shape what people eat, build, sing, and worship. Diamond 1997 (\u201CGuns, Germs, and Steel\u201D) traces it; modern critiques refine it. Geography matters; it isn\u2019t destiny.' },
+            recipes:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDF72', title: 'Recipes \u2014 food carries memory',                     hint: 'Fischler 1988: food is identity made edible. Every diaspora keeps its grandmother\u2019s dishes longer than its grandmother\u2019s language. The taste IS the inheritance.' },
+            music:    { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83C\uDFB5', title: 'Music \u2014 cross-cultural patterns',                  hint: 'Pentatonic scales appear independently in Chinese, West African, Celtic, Andean, and Native American traditions \u2014 evidence that some musical patterns are nearly universal. Different keys, shared math.' },
+            stories:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDCDA', title: 'Stories \u2014 the inheritances we tell',                hint: 'Campbell 1949 hero\u2019s journey is one frame; many cultures center community-not-individual heroism (Vogler critiques). Read folklore as both human-universal AND culture-specific \u2014 both are true at the same time.' },
+            calendar: { accent: '#10b981', soft: 'rgba(16,185,129,0.10)', icon: '\uD83D\uDCC5', title: 'Calendar \u2014 holidays + sacred time',                  hint: 'Lunar (Hijri, Hebrew, Chinese), solar (Gregorian, Persian), lunisolar (Hindu) \u2014 different cultures count time differently. Ramadan shifts 11 days/year because it follows the moon. Every calendar is a values statement.' },
+            language: { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83D\uDDE3', title: 'Languages \u2014 ~7,000 spoken worldwide',                hint: 'Sapir-Whorf weak version: language shapes thought (modern fMRI evidence: Boroditsky 2009). Hello in 100 languages is a starting move; learning the polite forms is where actual cross-cultural respect lives.' },
+            compare:  { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83D\uDD0D', title: 'Compare \u2014 across and within',                       hint: 'Within-culture variation often exceeds between-culture variation. Stereotyping = treating a culture\u2019s mode as the whole distribution. Compare carefully \u2014 differences exist + are interesting; people are individuals first.' },
+            explore:  { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDD2C', title: 'Explore \u2014 your guided deep-dive',                    hint: 'Pick a culture, follow the through-line: history \u2192 daily life \u2192 art \u2192 modern moment. Reading 30 minutes about a place beats 5 minutes each on six. Curiosity rewards depth.' },
+            quiz:     { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '\uD83C\uDFC6', title: 'Quiz \u2014 retrieval-practice on what you\u2019ve met',  hint: 'Roediger + Karpicke 2006: testing IS learning, not just measuring. Pulling the answer out of memory strengthens it more than re-reading. Misses are diagnostic, not failure \u2014 they show what to revisit.' },
+            journal:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCD3', title: 'Journal \u2014 your reflections',                       hint: 'Pennebaker 1986: writing about what you\u2019re learning embeds it. \u201CWhat surprised me?\u201D + \u201CWhat will I read next?\u201D + \u201CWho can I ask about this?\u201D \u2014 simple prompts, surprising depth.' },
+            badges:   { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFC5', title: 'Badges \u2014 milestones across cultures explored',     hint: 'Acknowledges sustained curiosity \u2014 not encyclopedic mastery. The badges are the side effect; the conversations + foods + music + people you\u2019ve actually met are the point. Show the streak; the streak shows the practice.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.choose;
+          return h('div', {
+            style: {
+              margin: '12px 0 0',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // ═══ CHOOSE CULTURE ═══
         tab === 'choose' && h('div', { className: 'space-y-4' },
 
@@ -916,7 +987,7 @@ window.SelHub = window.SelHub || {
             h('div', { className: 'flex gap-2' },
               h('input', { type: 'text', value: customCulture, onChange: function(e) { upd('customCulture', e.target.value); },
                 placeholder: 'e.g., Hmong, Somali diaspora, Deaf culture, Cajun...',
-                className: 'flex-1 text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
+                className: 'flex-1 text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
                 onKeyDown: function(e) { if (e.key === 'Enter' && customCulture.trim()) { updMulti({ culture: customCulture.trim(), tab: 'explore', aspect: 'traditions', cultureData: null, cultureImage: null }); exploreCulture(customCulture.trim(), 'traditions'); } },
                 'aria-label': 'Search for a culture'
               }),
@@ -929,17 +1000,17 @@ window.SelHub = window.SelHub || {
 
           // Region grid
           REGIONS.map(function(region) {
-            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: region.id, className: 'bg-white rounded-2xl border border-slate-200 overflow-hidden' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-4 py-3 bg-gradient-to-r from-cyan-50 to-teal-50 border-b border-slate-200' },
+            return h('div', {  key: region.id, className: 'bg-white rounded-2xl border border-slate-400 overflow-hidden' },
+              h('div', {  className: 'px-4 py-3 bg-gradient-to-r from-cyan-50 to-teal-50 border-b border-slate-200' },
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, region.emoji, ' ', region.label)
               ),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'p-3 flex flex-wrap gap-2' },
+              h('div', {  className: 'p-3 flex flex-wrap gap-2' },
                 region.cultures.map(function(culture) {
                   var isExplored = exploredCultures.indexOf(culture) >= 0;
                   return h('button', { 'aria-label': 'Explore', key: culture,
                     onClick: function() { updMulti({ culture: culture, tab: 'explore', aspect: 'traditions', cultureData: null, cultureImage: null }); exploreCulture(culture, 'traditions'); },
                     className: 'px-3 py-1.5 rounded-full text-xs font-bold border transition-all hover:scale-105 ' +
-                      (isExplored ? 'bg-cyan-100 border-cyan-300 text-cyan-700' : 'bg-white border-slate-200 text-slate-600 hover:border-cyan-300 hover:bg-cyan-50')
+                      (isExplored ? 'bg-cyan-100 border-cyan-600 text-cyan-700' : 'bg-white border-slate-200 text-slate-600 hover:border-cyan-600 hover:bg-cyan-50')
                   }, (isExplored ? '\u2713 ' : '') + culture);
                 })
               )
@@ -948,14 +1019,14 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ WORLD MAP EXPLORER ═══
-        tab === 'worldmap' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
+        tab === 'worldmap' && h('div', {  className: 'space-y-4' },
+          h('div', {  className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDF0E World Map Explorer'),
             h('p', { className: 'text-sm text-slate-600' }, 'Select a region to discover cultural highlights from around the world')
           ),
 
           // Region selector grid
-          !mapRegion && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-2 sm:grid-cols-3 gap-3' },
+          !mapRegion && h('div', {  className: 'grid grid-cols-2 sm:grid-cols-3 gap-3' },
             Object.keys(WORLD_MAP_DATA).map(function(key) {
               var reg = WORLD_MAP_DATA[key];
               var visited = mapRegionsVisited.indexOf(key) >= 0;
@@ -968,15 +1039,15 @@ window.SelHub = window.SelHub || {
                 className: 'bg-white rounded-2xl border-2 p-4 text-center transition-all hover:scale-105 hover:shadow-md ' +
                   (visited ? 'border-cyan-400 bg-cyan-50' : 'border-slate-200')
               },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-3xl mb-2' }, reg.emoji),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-slate-800' }, reg.label),
-                visited && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-cyan-600 font-bold mt-1' }, '\u2713 Visited')
+                h('div', {  className: 'text-3xl mb-2' }, reg.emoji),
+                h('div', {  className: 'text-sm font-bold text-slate-800' }, reg.label),
+                visited && h('div', {  className: 'text-[10px] text-cyan-600 font-bold mt-1' }, '\u2713 Visited')
               );
             })
           ),
 
           // Region detail view
-          mapRegion && WORLD_MAP_DATA[mapRegion] && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
+          mapRegion && WORLD_MAP_DATA[mapRegion] && h('div', {  className: 'space-y-4' },
             h('button', { 'aria-label': 'All Regions', onClick: function() { upd('mapRegion', null); }, className: 'text-xs text-cyan-500 hover:text-cyan-700 font-bold' }, '\u2190 All Regions'),
             h('div', { className: 'bg-gradient-to-r from-cyan-50 to-teal-50 rounded-2xl border border-cyan-200 p-4 text-center' },
               h('div', { className: 'text-3xl mb-1' }, WORLD_MAP_DATA[mapRegion].emoji),
@@ -986,15 +1057,15 @@ window.SelHub = window.SelHub || {
 
             WORLD_MAP_DATA[mapRegion].highlights.map(function(hl, idx) {
               var depthLabel = gradeBand === 'high' ? 'Historical Significance' : gradeBand === 'middle' ? 'Cultural Context' : 'Fun Fact';
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: idx, className: 'bg-white rounded-2xl border border-slate-200 overflow-hidden' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-4 py-3 bg-gradient-to-r from-cyan-600 to-teal-600 text-white' },
+              return h('div', {  key: idx, className: 'bg-white rounded-2xl border border-slate-400 overflow-hidden' },
+                h('div', {  className: 'px-4 py-3 bg-gradient-to-r from-cyan-600 to-teal-600 text-white' },
                   h('h4', { className: 'font-bold' }, hl.name)
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'p-4 space-y-3' },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-start gap-2' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm shrink-0' }, '\uD83D\uDC4B'),
+                h('div', {  className: 'p-4 space-y-3' },
+                  h('div', {  className: 'flex items-start gap-2' },
+                    h('span', {  className: 'text-sm shrink-0' }, '\uD83D\uDC4B'),
                     h('div', null,
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-600 uppercase' }, 'Greeting'),
+                      h('span', {  className: 'text-[10px] font-bold text-slate-600 uppercase' }, 'Greeting'),
                       h('p', { className: 'text-sm font-bold text-slate-800' }, hl.greeting),
                       callTTS && h('button', { 'aria-label': '},', onClick: function() { callTTS(hl.greeting.split('(')[0].trim()); }, className: 'text-[10px] text-cyan-500 hover:text-cyan-700 font-bold' }, '\uD83D\uDD0A Hear it')
                     )
@@ -1014,16 +1085,16 @@ window.SelHub = window.SelHub || {
                     )
                   ),
                   h('div', { className: 'flex items-start gap-2' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm shrink-0' }, '\uD83C\uDF89'),
+                    h('span', {  className: 'text-sm shrink-0' }, '\uD83C\uDF89'),
                     h('div', null,
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-600 uppercase' }, 'Festival'),
+                      h('span', {  className: 'text-[10px] font-bold text-slate-600 uppercase' }, 'Festival'),
                       h('p', { className: 'text-sm text-slate-700' }, hl.festival)
                     )
                   ),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-start gap-2 bg-amber-50 rounded-lg p-2' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm shrink-0' }, '\u2728'),
+                  h('div', {  className: 'flex items-start gap-2 bg-amber-50 rounded-lg p-2' },
+                    h('span', {  className: 'text-sm shrink-0' }, '\u2728'),
                     h('div', null,
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-amber-600 uppercase' }, depthLabel),
+                      h('span', {  className: 'text-[10px] font-bold text-amber-600 uppercase' }, depthLabel),
                       h('p', { className: 'text-sm text-amber-800' }, hl.funFact)
                     )
                   ),
@@ -1048,15 +1119,15 @@ window.SelHub = window.SelHub || {
           ),
 
           // Want-to-try tracker
-          recipesWantToTry.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 border border-amber-200 rounded-xl p-3 text-center' },
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-amber-700' }, '\uD83C\uDF1F Your food bucket list: ' + recipesWantToTry.length + ' / ' + CULTURAL_RECIPES.length + ' dishes')
+          recipesWantToTry.length > 0 && h('div', {  className: 'bg-amber-50 border border-amber-200 rounded-xl p-3 text-center' },
+            h('span', {  className: 'text-xs font-bold text-amber-700' }, '\uD83C\uDF1F Your food bucket list: ' + recipesWantToTry.length + ' / ' + CULTURAL_RECIPES.length + ' dishes')
           ),
 
           // Recipe cards
           CULTURAL_RECIPES.map(function(recipe) {
             var isExpanded = recipeExpanded === recipe.id;
             var wantToTry = recipesWantToTry.indexOf(recipe.id) >= 0;
-            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: recipe.id, className: 'bg-white rounded-2xl border-2 overflow-hidden transition-all ' + (wantToTry ? 'border-amber-300' : 'border-slate-200') },
+            return h('div', {  key: recipe.id, className: 'bg-white rounded-2xl border-2 overflow-hidden transition-all ' + (wantToTry ? 'border-amber-300' : 'border-slate-200') },
               // Header
               h('button', { 'aria-label': 'recipeExpanded', onClick: function() { upd('recipeExpanded', isExpanded ? null : recipe.id); },
                 className: 'w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-slate-50 transition-colors'
@@ -1067,26 +1138,26 @@ window.SelHub = window.SelHub || {
                   h('div', { className: 'text-[10px] text-slate-600' }, recipe.origin + ' \u2022 ' + recipe.difficulty)
                 ),
                 wantToTry && h('span', { className: 'text-amber-500 text-sm' }, '\u2764\uFE0F'),
-                h('span', { className: 'text-slate-500 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
+                h('span', { className: 'text-slate-300 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
               ),
 
               // Expanded content
-              isExpanded && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-4 pb-4 space-y-3 border-t border-slate-100 pt-3' },
+              isExpanded && h('div', {  className: 'px-4 pb-4 space-y-3 border-t border-slate-100 pt-3' },
                 h('div', null,
                   h('p', { className: 'text-xs font-bold text-slate-600 uppercase mb-1' }, 'About This Dish'),
                   h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, recipe.description)
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-cyan-50 border border-cyan-200 rounded-lg p-3' },
+                h('div', {  className: 'bg-cyan-50 border border-cyan-200 rounded-lg p-3' },
                   h('p', { className: 'text-xs font-bold text-cyan-600 uppercase mb-1' }, '\uD83C\uDF0D Cultural Significance'),
                   h('p', { className: 'text-sm text-cyan-800 leading-relaxed' }, recipe.significance)
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 border border-amber-200 rounded-lg p-3' },
+                h('div', {  className: 'bg-amber-50 border border-amber-200 rounded-lg p-3' },
                   h('p', { className: 'text-xs font-bold text-amber-600 uppercase mb-1' }, '\u2728 Fun Fact'),
                   h('p', { className: 'text-sm text-amber-800 leading-relaxed' }, recipe.funFact)
                 ),
                 h('button', { 'aria-label': 'Toggle option', onClick: function() { toggleRecipeTry(recipe.id); },
                   className: 'w-full px-4 py-2.5 rounded-lg text-sm font-bold transition-all ' +
-                    (wantToTry ? 'bg-amber-100 border-2 border-amber-300 text-amber-700 hover:bg-amber-200' : 'bg-amber-700 text-white hover:bg-amber-600')
+                    (wantToTry ? 'bg-amber-100 border-2 border-amber-600 text-amber-700 hover:bg-amber-200' : 'bg-amber-700 text-white hover:bg-amber-600')
                 }, wantToTry ? '\u2764\uFE0F On My List!' : '\uD83D\uDE0B I Want to Try This!')
               )
             );
@@ -1109,15 +1180,15 @@ window.SelHub = window.SelHub || {
           ),
 
           // Progress
-          musicExplored.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-center' },
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-indigo-700' }, '\uD83C\uDFB6 ' + musicExplored.length + ' / ' + MUSIC_DANCE_DATA.length + ' traditions explored')
+          musicExplored.length > 0 && h('div', {  className: 'bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-center' },
+            h('span', {  className: 'text-xs font-bold text-indigo-700' }, '\uD83C\uDFB6 ' + musicExplored.length + ' / ' + MUSIC_DANCE_DATA.length + ' traditions explored')
           ),
 
           // Music cards
           MUSIC_DANCE_DATA.map(function(trad) {
             var isExpanded = musicExpanded === trad.id;
             var explored = musicExplored.indexOf(trad.id) >= 0;
-            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: trad.id, className: 'bg-white rounded-2xl border-2 overflow-hidden transition-all ' + (explored ? 'border-indigo-300' : 'border-slate-200') },
+            return h('div', {  key: trad.id, className: 'bg-white rounded-2xl border-2 overflow-hidden transition-all ' + (explored ? 'border-indigo-300' : 'border-slate-200') },
               // Header
               h('button', { 'aria-label': 'Header', onClick: function() {
                   upd('musicExpanded', isExpanded ? null : trad.id);
@@ -1131,7 +1202,7 @@ window.SelHub = window.SelHub || {
                   h('div', { className: 'text-[10px] text-slate-600' }, trad.origin)
                 ),
                 explored && h('span', { className: 'text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713'),
-                h('span', { className: 'text-slate-500 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
+                h('span', { className: 'text-slate-300 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
               ),
 
               // Expanded content
@@ -1148,22 +1219,22 @@ window.SelHub = window.SelHub || {
                   h('p', { className: 'text-sm text-cyan-800 leading-relaxed' }, trad.significance)
                 ),
 
-                h('div', { className: 'bg-slate-50 border border-slate-200 rounded-lg p-3' },
+                h('div', { className: 'bg-slate-50 border border-slate-400 rounded-lg p-3' },
                   h('p', { className: 'text-xs font-bold text-slate-600 uppercase mb-1' }, '\uD83C\uDFB8 Instruments / Elements'),
                   h('p', { className: 'text-sm text-slate-700' }, trad.instruments)
                 ),
 
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 border border-amber-200 rounded-lg p-3' },
+                h('div', {  className: 'bg-amber-50 border border-amber-200 rounded-lg p-3' },
                   h('p', { className: 'text-xs font-bold text-amber-600 uppercase mb-1' }, '\u2728 Fun Fact'),
                   h('p', { className: 'text-sm text-amber-800 leading-relaxed' }, trad.funFact)
                 ),
 
                 // Rhythm Explorer
-                trad.beatPattern && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-3' },
+                trad.beatPattern && h('div', {  className: 'bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-3' },
                   h('p', { className: 'text-xs font-bold text-purple-600 uppercase mb-2' }, '\uD83E\uDD41 Rhythm Explorer'),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 mb-2 justify-center flex-wrap' },
+                  h('div', {  className: 'flex gap-1 mb-2 justify-center flex-wrap' },
                     trad.beatPattern.map(function(hit, i) {
-                      return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'w-5 h-5 rounded ' + (hit ? 'bg-purple-500' : 'bg-purple-200'), title: hit ? 'Hit' : 'Rest' });
+                      return h('div', {  key: i, className: 'w-5 h-5 rounded ' + (hit ? 'bg-purple-500' : 'bg-purple-200'), title: hit ? 'Hit' : 'Rest' });
                     })
                   ),
                   h('button', { 'aria-label': 'Play rhythm', onClick: function() { playRhythm(trad.beatPattern, trad.id); },
@@ -1172,12 +1243,12 @@ window.SelHub = window.SelHub || {
                       (rhythmPlaying && rhythmId === trad.id ? 'bg-purple-300 text-purple-700' : 'bg-purple-600 text-white hover:bg-purple-700') +
                       (rhythmPlaying ? ' opacity-70' : '')
                   }, rhythmPlaying && rhythmId === trad.id ? '\uD83C\uDFB5 Playing...' : '\u25B6 Play This Beat'),
-                  rhythmsTried.indexOf(trad.id) >= 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-purple-600 font-bold text-center mt-1' }, '\u2713 Beat explored!')
+                  rhythmsTried.indexOf(trad.id) >= 0 && h('div', {  className: 'text-[10px] text-purple-600 font-bold text-center mt-1' }, '\u2713 Beat explored!')
                 ),
 
                 // TTS button
                 callTTS && h('button', { 'aria-label': 'Read aloud', onClick: function() { callTTS(trad.name + '. ' + trad.description); },
-                  className: 'w-full px-3 py-2 bg-indigo-50 border border-indigo-200 rounded-lg text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors'
+                  className: 'w-full px-3 py-2 bg-indigo-50 border border-indigo-600 rounded-lg text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors'
                 }, '\uD83D\uDD0A Listen to Description')
               )
             );
@@ -1197,7 +1268,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Grade band selector info
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-50 border border-slate-200 rounded-xl p-3 text-center' },
+          h('div', {  className: 'bg-slate-50 border border-slate-400 rounded-xl p-3 text-center' },
             h('p', { className: 'text-xs text-slate-600' }, 'Showing stories for: ',
               h('strong', null, gradeBand === 'middle' || gradeBand === 'high' ? 'Middle School' : 'Elementary'),
               ' level')
@@ -1209,29 +1280,29 @@ window.SelHub = window.SelHub || {
             return storyList.map(function(story) {
               var isExpanded = storyExpanded === story.id;
               var isRead = storiesRead.indexOf(story.id) >= 0;
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: story.id, className: 'bg-white rounded-2xl border-2 overflow-hidden transition-all ' + (isRead ? 'border-emerald-300' : 'border-slate-200') },
+              return h('div', {  key: story.id, className: 'bg-white rounded-2xl border-2 overflow-hidden transition-all ' + (isRead ? 'border-emerald-300' : 'border-slate-200') },
                 // Header
                 h('button', { 'aria-label': 'storyExpanded', onClick: function() { upd('storyExpanded', isExpanded ? null : story.id); },
                   className: 'w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-slate-50 transition-colors'
                 },
                   h('span', { className: 'text-2xl' }, story.emoji),
                   h('div', { className: 'flex-1' },
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-slate-800' }, story.name),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, story.origin)
+                    h('div', {  className: 'text-sm font-bold text-slate-800' }, story.name),
+                    h('div', {  className: 'text-[10px] text-slate-600' }, story.origin)
                   ),
-                  isRead && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713 Read'),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-500 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
+                  isRead && h('span', {  className: 'text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713 Read'),
+                  h('span', {  className: 'text-slate-300 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
                 ),
 
                 // Expanded content
-                isExpanded && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-4 pb-4 space-y-3 border-t border-slate-100 pt-3' },
+                isExpanded && h('div', {  className: 'px-4 pb-4 space-y-3 border-t border-slate-100 pt-3' },
                   // The story
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 border border-amber-200 rounded-lg p-4' },
+                  h('div', {  className: 'bg-amber-50 border border-amber-200 rounded-lg p-4' },
                     h('p', { className: 'text-xs font-bold text-amber-600 uppercase mb-2' }, '\uD83D\uDCDC The Story'),
                     h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, story.summary),
                     // TTS narration
                     callTTS && h('button', { 'aria-label': 'Read aloud', onClick: function() { callTTS(story.summary); },
-                      className: 'mt-2 px-3 py-1.5 bg-amber-100 border border-amber-300 rounded-lg text-[10px] font-bold text-amber-700 hover:bg-amber-200 transition-colors'
+                      className: 'mt-2 px-3 py-1.5 bg-amber-100 border border-amber-600 rounded-lg text-[10px] font-bold text-amber-700 hover:bg-amber-200 transition-colors'
                     }, '\uD83D\uDD0A Listen to This Story')
                   ),
 
@@ -1248,12 +1319,12 @@ window.SelHub = window.SelHub || {
                   ),
 
                   // Discussion questions
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-indigo-50 border border-indigo-200 rounded-lg p-3' },
+                  h('div', {  className: 'bg-indigo-50 border border-indigo-200 rounded-lg p-3' },
                     h('p', { className: 'text-xs font-bold text-indigo-600 uppercase mb-2' }, '\u2753 Discussion Questions'),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-1.5' },
+                    h('div', {  className: 'space-y-1.5' },
                       story.questions.map(function(q, qi) {
                         return h('p', { key: qi, className: 'text-sm text-indigo-800 flex items-start gap-2' },
-                          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-indigo-400 font-bold shrink-0' }, (qi + 1) + '.'),
+                          h('span', {  className: 'text-indigo-400 font-bold shrink-0' }, (qi + 1) + '.'),
                           h('span', null, q)
                         );
                       })
@@ -1272,7 +1343,7 @@ window.SelHub = window.SelHub || {
           })(),
 
           // Closing thought
-          h('div', { className: 'bg-slate-50 border border-slate-200 rounded-xl p-4 text-center' },
+          h('div', { className: 'bg-slate-50 border border-slate-400 rounded-xl p-4 text-center' },
             h('p', { className: 'text-xs text-slate-600 italic leading-relaxed' },
               '"Stories are the creative conversion of life itself into a more powerful, clearer, more meaningful experience." \u2014 Robert McKee'
             )
@@ -1287,12 +1358,12 @@ window.SelHub = window.SelHub || {
           ),
 
           // Progress
-          calendarMonthsViewed.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-rose-50 border border-rose-200 rounded-xl p-3 text-center' },
-            h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-rose-700' }, '\uD83D\uDCC5 ' + calendarMonthsViewed.length + ' / 12 months explored')
+          calendarMonthsViewed.length > 0 && h('div', {  className: 'bg-rose-50 border border-rose-200 rounded-xl p-3 text-center' },
+            h('span', {  className: 'text-xs font-bold text-rose-700' }, '\uD83D\uDCC5 ' + calendarMonthsViewed.length + ' / 12 months explored')
           ),
 
           // Month grid
-          !calendarMonth && calendarMonth !== 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
+          !calendarMonth && calendarMonth !== 0 && h('div', {  className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
             CULTURAL_CALENDAR.map(function(m, idx) {
               var currentMonth = new Date().getMonth();
               var isCurrent = idx === currentMonth;
@@ -1306,41 +1377,41 @@ window.SelHub = window.SelHub || {
                   (isCurrent ? 'border-rose-400 bg-rose-50 ring-2 ring-rose-300' :
                    isViewed ? 'border-cyan-300 bg-cyan-50' : 'border-slate-200 bg-white')
               },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold ' + (isCurrent ? 'text-rose-700' : 'text-slate-800') }, m.month.substring(0, 3)),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-600 mt-0.5' }, m.celebrations.length + ' events'),
-                isCurrent && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-rose-500 font-bold mt-0.5' }, 'This Month'),
-                isViewed && !isCurrent && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-cyan-500 font-bold mt-0.5' }, '\u2713')
+                h('div', {  className: 'text-sm font-bold ' + (isCurrent ? 'text-rose-700' : 'text-slate-800') }, m.month.substring(0, 3)),
+                h('div', {  className: 'text-[11px] text-slate-600 mt-0.5' }, m.celebrations.length + ' events'),
+                isCurrent && h('div', {  className: 'text-[10px] text-rose-500 font-bold mt-0.5' }, 'This Month'),
+                isViewed && !isCurrent && h('div', {  className: 'text-[10px] text-cyan-500 font-bold mt-0.5' }, '\u2713')
               );
             })
           ),
 
           // Month detail view
-          (calendarMonth !== null && calendarMonth !== undefined && CULTURAL_CALENDAR[calendarMonth]) && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
+          (calendarMonth !== null && calendarMonth !== undefined && CULTURAL_CALENDAR[calendarMonth]) && h('div', {  className: 'space-y-3' },
             h('button', { 'aria-label': 'calendarEventExpanded', onClick: function() { upd('calendarMonth', null); upd('calendarEventExpanded', null); },
               className: 'text-xs text-cyan-500 hover:text-cyan-700 font-bold' }, '\u2190 All Months'),
 
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl border border-rose-200 p-4 text-center' },
+            h('div', {  className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl border border-rose-200 p-4 text-center' },
               h('h4', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCC5 ' + CULTURAL_CALENDAR[calendarMonth].month),
               h('p', { className: 'text-xs text-slate-600' }, CULTURAL_CALENDAR[calendarMonth].celebrations.length + ' celebrations from around the world')
             ),
 
             CULTURAL_CALENDAR[calendarMonth].celebrations.map(function(event, ei) {
               var isEventExpanded = calendarEventExpanded === ei;
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: ei, className: 'bg-white rounded-xl border border-slate-200 overflow-hidden' },
+              return h('div', {  key: ei, className: 'bg-white rounded-xl border border-slate-400 overflow-hidden' },
                 h('button', { 'aria-label': 'calendarEventExpanded', onClick: function() { upd('calendarEventExpanded', isEventExpanded ? null : ei); },
                   className: 'w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-slate-50 transition-colors'
                 },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-sm font-bold text-rose-600 shrink-0' }, String(ei + 1)),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1' },
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-slate-800' }, event.name),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600' }, event.origin)
+                  h('div', {  className: 'w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-sm font-bold text-rose-600 shrink-0' }, String(ei + 1)),
+                  h('div', {  className: 'flex-1' },
+                    h('div', {  className: 'text-sm font-bold text-slate-800' }, event.name),
+                    h('div', {  className: 'text-[10px] text-slate-600' }, event.origin)
                   ),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-500 text-xs' }, isEventExpanded ? '\u25B2' : '\u25BC')
+                  h('span', {  className: 'text-slate-300 text-xs' }, isEventExpanded ? '\u25B2' : '\u25BC')
                 ),
-                isEventExpanded && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-4 pb-4 border-t border-slate-100 pt-3' },
+                isEventExpanded && h('div', {  className: 'px-4 pb-4 border-t border-slate-100 pt-3' },
                   h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, event.desc),
                   callTTS && h('button', { 'aria-label': 'Read aloud', onClick: function() { callTTS(event.name + '. ' + event.desc); },
-                    className: 'mt-2 px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-lg text-[10px] font-bold text-rose-700 hover:bg-rose-100 transition-colors'
+                    className: 'mt-2 px-3 py-1.5 bg-rose-50 border border-rose-600 rounded-lg text-[10px] font-bold text-rose-700 hover:bg-rose-100 transition-colors'
                   }, '\uD83D\uDD0A Hear about this celebration')
                 )
               );
@@ -1359,26 +1430,26 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             LANGUAGE_DATA.map(function(lang) {
               var practiced = langPracticed.indexOf(lang.language) >= 0;
-              return h('div', { key: lang.language, className: 'bg-white rounded-xl border border-slate-200 p-3 ' + (practiced ? 'ring-2 ring-cyan-300' : '') },
+              return h('div', { key: lang.language, className: 'bg-white rounded-xl border border-slate-400 p-3 ' + (practiced ? 'ring-2 ring-cyan-300' : '') },
                 h('div', { className: 'flex items-center justify-between mb-2' },
                   h('span', { className: 'text-sm font-bold text-slate-800' }, lang.language),
                   practiced && h('span', { className: 'text-[10px] bg-cyan-100 text-cyan-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713 Practiced')
                 ),
                 h('div', { className: 'space-y-1' },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-600 w-14' }, 'Hello:'),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold text-cyan-700' }, lang.hello)
+                  h('div', {  className: 'flex items-center gap-2' },
+                    h('span', {  className: 'text-[10px] font-bold text-slate-600 w-14' }, 'Hello:'),
+                    h('span', {  className: 'text-sm font-bold text-cyan-700' }, lang.hello)
                   ),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-600 w-14' }, 'Thanks:'),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm text-slate-700' }, lang.thanks)
+                  h('div', {  className: 'flex items-center gap-2' },
+                    h('span', {  className: 'text-[10px] font-bold text-slate-600 w-14' }, 'Thanks:'),
+                    h('span', {  className: 'text-sm text-slate-700' }, lang.thanks)
                   ),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-600 w-14' }, 'Friend:'),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm text-slate-700' }, lang.friend)
+                  h('div', {  className: 'flex items-center gap-2' },
+                    h('span', {  className: 'text-[10px] font-bold text-slate-600 w-14' }, 'Friend:'),
+                    h('span', {  className: 'text-sm text-slate-700' }, lang.friend)
                   )
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-2 text-[10px] text-slate-600 italic' }, '\uD83D\uDD09 ' + lang.pronunciation),
+                h('div', {  className: 'mt-2 text-[10px] text-slate-600 italic' }, '\uD83D\uDD09 ' + lang.pronunciation),
                 callTTS && h('button', { 'aria-label': 'Read aloud', onClick: function() {
                     callTTS(lang.hello + '. ' + lang.thanks + '. ' + lang.friend);
                     if (langPracticed.indexOf(lang.language) < 0) {
@@ -1388,14 +1459,14 @@ window.SelHub = window.SelHub || {
                       checkBadges({ langPracticed: newPracticed });
                     }
                   },
-                  className: 'mt-2 w-full px-3 py-1.5 bg-cyan-50 border border-cyan-200 rounded-lg text-xs font-bold text-cyan-700 hover:bg-cyan-100 transition-colors'
+                  className: 'mt-2 w-full px-3 py-1.5 bg-cyan-50 border border-cyan-600 rounded-lg text-xs font-bold text-cyan-700 hover:bg-cyan-100 transition-colors'
                 }, '\uD83D\uDD0A Hear Pronunciation')
               );
             })
           ),
 
           // Language Match Game section
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border border-indigo-200 p-5' },
+          h('div', {  className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border border-indigo-200 p-5' },
             h('h4', { className: 'text-sm font-bold text-indigo-700 mb-1' }, '\uD83C\uDFAE Language Matching Game'),
             h('p', { className: 'text-xs text-indigo-600 mb-3' }, 'Match each greeting to its language! Tap two cards to find pairs.'),
 
@@ -1403,12 +1474,12 @@ window.SelHub = window.SelHub || {
               className: 'w-full px-4 py-3 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition-colors'
             }, '\u25B6 Start Matching Game'),
 
-            langMatchActive && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex justify-between text-xs font-bold' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-indigo-600' }, 'Matched: ' + langMatchMatched.length + '/6'),
-                langMatchWon && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-green-600' }, '\u2713 Complete!')
+            langMatchActive && h('div', {  className: 'space-y-3' },
+              h('div', {  className: 'flex justify-between text-xs font-bold' },
+                h('span', {  className: 'text-indigo-600' }, 'Matched: ' + langMatchMatched.length + '/6'),
+                langMatchWon && h('span', {  className: 'text-green-600' }, '\u2713 Complete!')
               ),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
+              h('div', {  className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
                 langMatchPairs.map(function(card) {
                   var isMatched = langMatchMatched.indexOf(card.match + '_done') >= 0;
                   var isSelected = langMatchSelected && langMatchSelected.id === card.id;
@@ -1416,9 +1487,9 @@ window.SelHub = window.SelHub || {
                     onClick: function() { if (!isMatched && !langMatchWon) handleLangMatchSelect(card); },
                     disabled: isMatched,
                     className: 'p-2 rounded-lg text-xs font-bold border-2 transition-all min-h-[48px] ' +
-                      (isMatched ? 'bg-green-100 border-green-300 text-green-700 opacity-60' :
+                      (isMatched ? 'bg-green-100 border-green-600 text-green-700 opacity-60' :
                        isSelected ? 'bg-indigo-200 border-indigo-500 text-indigo-800 scale-105' :
-                       'bg-white border-slate-200 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50')
+                       'bg-white border-slate-200 text-slate-700 hover:border-indigo-600 hover:bg-indigo-50')
                   }, isMatched ? '\u2713 ' + card.text : card.text);
                 })
               ),
@@ -1442,19 +1513,19 @@ window.SelHub = window.SelHub || {
           ),
 
           // Culture inputs
-          h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4 space-y-3' },
+          h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 space-y-3' },
             h('div', { className: 'grid grid-cols-2 gap-3' },
               h('div', null,
                 h('label', { className: 'text-[10px] font-bold text-slate-600 uppercase block mb-1' }, 'Culture 1'),
                 h('input', { type: 'text', value: compCulture1, onChange: function(e) { upd('compCulture1', e.target.value); },
-                  placeholder: 'e.g., Japanese', className: 'w-full text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
+                  placeholder: 'e.g., Japanese', className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
                   'aria-label': 'First culture to compare'
                 })
               ),
               h('div', null,
                 h('label', { className: 'text-[10px] font-bold text-slate-600 uppercase block mb-1' }, 'Culture 2'),
                 h('input', { type: 'text', value: compCulture2, onChange: function(e) { upd('compCulture2', e.target.value); },
-                  placeholder: 'e.g., Mexican', className: 'w-full text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
+                  placeholder: 'e.g., Mexican', className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
                   'aria-label': 'Second culture to compare'
                 })
               )
@@ -1463,11 +1534,11 @@ window.SelHub = window.SelHub || {
             // Topic selector
             h('div', null,
               h('label', { className: 'text-[10px] font-bold text-slate-600 uppercase block mb-1' }, 'Topic'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-2' },
+              h('div', {  className: 'flex flex-wrap gap-2' },
                 COMPARISON_TOPICS.map(function(topic) {
                   return h('button', { 'aria-label': 'compTopic', key: topic.id, onClick: function() { upd('compTopic', topic.id); },
                     className: 'px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ' +
-                      (compTopic === topic.id ? 'bg-cyan-700 text-white border-cyan-600' : 'bg-white border-slate-200 text-slate-600 hover:border-cyan-300')
+                      (compTopic === topic.id ? 'bg-cyan-700 text-white border-cyan-600' : 'bg-white border-slate-200 text-slate-600 hover:border-cyan-600')
                   }, topic.emoji + ' ' + topic.label);
                 })
               )
@@ -1538,50 +1609,50 @@ window.SelHub = window.SelHub || {
               h('p', { className: 'text-xs font-bold text-teal-600 mb-1' }, '\uD83E\uDD14 Reflect'),
               h('p', { className: 'text-sm text-teal-800 italic' }, compResult.reflection),
               h('textarea', { value: d.compReflection || '', onChange: function(e) { upd('compReflection', e.target.value); },
-                placeholder: 'Write your thoughts...', className: 'mt-2 w-full text-sm p-3 border border-teal-200 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-teal-300',
+                placeholder: 'Write your thoughts...', className: 'mt-2 w-full text-sm p-3 border border-teal-600 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-teal-300',
                 'aria-label': 'Comparison reflection'
               })
             ),
 
             // Compare completed count
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center text-xs text-slate-600' },
+            h('div', {  className: 'text-center text-xs text-slate-600' },
               '\uD83D\uDCCA ' + comparisonsCompleted + ' comparison' + (comparisonsCompleted !== 1 ? 's' : '') + ' completed'
             )
           )
         ),
 
         // ═══ EXPLORE ═══
-        tab === 'explore' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
+        tab === 'explore' && h('div', {  className: 'space-y-4' },
 
           // Culture header + back
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
+          h('div', {  className: 'flex items-center gap-2' },
             h('button', { 'aria-label': 'All Cultures', onClick: function() { upd('tab', 'choose'); }, className: 'text-xs text-cyan-500 hover:text-cyan-700 font-bold' }, '\u2190 All Cultures'),
             h('h3', { className: 'text-lg font-black text-slate-800' }, selectedCulture || 'Select a culture')
           ),
 
           // Aspect selector
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-2' },
+          h('div', {  className: 'flex flex-wrap gap-2' },
             EXPLORE_ASPECTS.map(function(aspect) {
               return h('button', { 'aria-label': 'Select culture', key: aspect.id,
                 onClick: function() { updMulti({ aspect: aspect.id, cultureData: null, cultureImage: null, followUpAnswer: null }); exploreCulture(selectedCulture, aspect.id); },
                 className: 'px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ' +
-                  (selectedAspect === aspect.id ? 'bg-cyan-700 text-white border-cyan-600 shadow-md' : 'bg-white border-slate-200 text-slate-600 hover:border-cyan-300')
+                  (selectedAspect === aspect.id ? 'bg-cyan-700 text-white border-cyan-600 shadow-md' : 'bg-white border-slate-200 text-slate-600 hover:border-cyan-600')
               }, aspect.emoji + ' ' + aspect.label);
             })
           ),
 
           // Loading
-          aiLoading && !cultureData && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-cyan-50 border border-cyan-200 rounded-2xl p-12 text-center' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-4xl mb-3 animate-pulse' }, '\uD83C\uDF0D'),
+          aiLoading && !cultureData && h('div', { role: 'status', 'aria-live': 'polite', 'aria-busy': 'true', className: 'bg-cyan-50 border border-cyan-200 rounded-2xl p-12 text-center' },
+            h('div', { className: 'text-4xl mb-3 animate-pulse', 'aria-hidden': 'true' }, '\uD83C\uDF0D'),
             h('p', { className: 'text-cyan-700 font-bold' }, 'Discovering ' + selectedCulture + '...')
           ),
 
           // Culture data display
-          cultureData && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
+          cultureData && h('div', {  className: 'space-y-4' },
 
             // Greeting
-            greeting && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-cyan-50 to-teal-50 rounded-xl border border-cyan-200 p-4 text-center' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-cyan-600 uppercase tracking-widest mb-1' }, 'Greeting'),
+            greeting && h('div', {  className: 'bg-gradient-to-r from-cyan-50 to-teal-50 rounded-xl border border-cyan-200 p-4 text-center' },
+              h('div', {  className: 'text-xs font-bold text-cyan-600 uppercase tracking-widest mb-1' }, 'Greeting'),
               h('p', { className: 'text-lg font-black text-slate-800' }, greeting),
               callTTS && h('button', { 'aria-label': 'Hear pronunciation', onClick: function() { callTTS(greeting); }, className: 'mt-1 text-[10px] text-cyan-500 hover:text-cyan-700 font-bold' }, '\uD83D\uDD0A Hear pronunciation')
             ),
@@ -1599,20 +1670,20 @@ window.SelHub = window.SelHub || {
             ),
 
             // Key Facts
-            cultureData.keyFacts && h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4' },
+            cultureData.keyFacts && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4' },
               h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-widest mb-2' }, '\u2728 Key Facts'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
+              h('div', {  className: 'space-y-2' },
                 cultureData.keyFacts.map(function(fact, i) {
-                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'flex items-start gap-2 text-xs text-slate-700' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-cyan-500 font-bold mt-0.5 shrink-0' }, '\u2022'),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'leading-relaxed' }, fact)
+                  return h('div', {  key: i, className: 'flex items-start gap-2 text-xs text-slate-700' },
+                    h('span', {  className: 'text-cyan-500 font-bold mt-0.5 shrink-0' }, '\u2022'),
+                    h('span', {  className: 'leading-relaxed' }, fact)
                   );
                 })
               )
             ),
 
             // Voice from the culture
-            cultureData.voices && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 border border-amber-200 rounded-xl p-4' },
+            cultureData.voices && h('div', {  className: 'bg-amber-50 border border-amber-200 rounded-xl p-4' },
               h('p', { className: 'text-sm text-amber-800 italic leading-relaxed' }, '\uD83D\uDCAC ', cultureData.voices),
               callTTS && h('button', { 'aria-label': '},', onClick: function() { callTTS(cultureData.voices); }, className: 'mt-1 text-[10px] text-amber-500 hover:text-amber-700 font-bold' }, '\uD83D\uDD0A Hear this')
             ),
@@ -1622,7 +1693,7 @@ window.SelHub = window.SelHub || {
               h('p', { className: 'text-xs font-bold text-teal-600 mb-1' }, '\uD83E\uDD14 Reflect'),
               h('p', { className: 'text-sm text-teal-800 italic' }, cultureData.reflection),
               h('textarea', { value: d.reflectionText || '', onChange: function(e) { upd('reflectionText', e.target.value); },
-                placeholder: 'Write your reflection...', className: 'mt-2 w-full text-sm p-3 border border-teal-200 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-teal-300', 'aria-label': 'Culture reflection' })
+                placeholder: 'Write your reflection...', className: 'mt-2 w-full text-sm p-3 border border-teal-600 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-teal-300', 'aria-label': 'Culture reflection' })
             ),
 
             // Learn more
@@ -1631,13 +1702,13 @@ window.SelHub = window.SelHub || {
             ),
 
             // Follow-up question
-            h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4' },
+            h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4' },
               h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '\u2753 Ask a follow-up question:'),
               h('div', { className: 'flex gap-2' },
                 h('input', { type: 'text', value: d.followUpQ || '', onChange: function(e) { upd('followUpQ', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter' && d.followUpQ && d.followUpQ.trim()) { askFollowUp(d.followUpQ); upd('followUpQ', ''); } },
                   placeholder: 'What else would you like to know?',
-                  className: 'flex-1 text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
+                  className: 'flex-1 text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
                   'aria-label': 'Follow-up question'
                 }),
                 h('button', { 'aria-label': 'followUpQ', onClick: function() { if (d.followUpQ && d.followUpQ.trim()) { askFollowUp(d.followUpQ); upd('followUpQ', ''); } },
@@ -1647,8 +1718,8 @@ window.SelHub = window.SelHub || {
             ),
 
             // Follow-up answer
-            d.followUpAnswer && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-cyan-50 border border-cyan-200 rounded-xl p-4' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-start gap-2' },
+            d.followUpAnswer && h('div', {  className: 'bg-cyan-50 border border-cyan-200 rounded-xl p-4' },
+              h('div', {  className: 'flex items-start gap-2' },
                 h(Sparkles, { size: 14, className: 'text-cyan-500 mt-0.5 shrink-0' }),
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed whitespace-pre-line' }, d.followUpAnswer)
               )
@@ -1664,15 +1735,15 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ CULTURE QUIZ ═══
-        tab === 'quiz' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
+        tab === 'quiz' && h('div', {  className: 'space-y-4' },
+          h('div', {  className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDFC6 Culture Quiz'),
             h('p', { className: 'text-sm text-slate-600' }, '10 questions about cultures around the world (' + gradeBand + ' level)')
           ),
 
           // Quiz not started
-          !quizActive && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-2xl border-2 border-cyan-200 p-8 text-center space-y-4' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-5xl' }, '\uD83C\uDF0D'),
+          !quizActive && h('div', {  className: 'bg-white rounded-2xl border-2 border-cyan-200 p-8 text-center space-y-4' },
+            h('div', {  className: 'text-5xl' }, '\uD83C\uDF0D'),
             h('p', { className: 'text-sm text-slate-600' }, 'Test your knowledge of world cultures! Answer 10 multiple-choice questions.'),
             quizBestScore > 0 && h('p', { className: 'text-xs text-cyan-600 font-bold' }, '\uD83C\uDFC6 Best score: ' + quizBestScore + '/10'),
             h('button', { 'aria-label': 'Start quiz', onClick: startQuiz,
@@ -1711,7 +1782,7 @@ window.SelHub = window.SelHub || {
                   } else if (answered) {
                     btnClass += 'bg-slate-50 border-slate-200 text-slate-400';
                   } else {
-                    btnClass += 'bg-white border-slate-200 text-slate-700 hover:border-cyan-300 hover:bg-cyan-50';
+                    btnClass += 'bg-white border-slate-200 text-slate-700 hover:border-cyan-600 hover:bg-cyan-50';
                   }
                   return h('button', { 'aria-label': 'Select answer', key: oi, onClick: function() { handleQuizAnswer(oi); }, disabled: answered,
                     className: btnClass
@@ -1727,8 +1798,8 @@ window.SelHub = window.SelHub || {
           ),
 
           // Quiz done
-          quizActive && quizDone && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-2xl border-2 border-cyan-200 p-8 text-center space-y-4' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-5xl' }, quizScore >= 8 ? '\uD83C\uDFC6' : quizScore >= 5 ? '\u2B50' : '\uD83D\uDCDA'),
+          quizActive && quizDone && h('div', {  className: 'bg-white rounded-2xl border-2 border-cyan-200 p-8 text-center space-y-4' },
+            h('div', {  className: 'text-5xl' }, quizScore >= 8 ? '\uD83C\uDFC6' : quizScore >= 5 ? '\u2B50' : '\uD83D\uDCDA'),
             h('h4', { className: 'text-lg font-black text-slate-800' }, 'Quiz Complete!'),
             h('p', { className: 'text-3xl font-black ' + (quizScore >= 8 ? 'text-green-600' : quizScore >= 5 ? 'text-amber-600' : 'text-slate-600') }, quizScore + '/10'),
             h('p', { className: 'text-sm text-slate-600' },
@@ -1737,8 +1808,8 @@ window.SelHub = window.SelHub || {
               quizScore >= 5 ? 'Good effort! Keep exploring to learn more!' :
               'Keep exploring! Every culture has something to teach us.'
             ),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-3 justify-center' },
-              h('button', { 'aria-label': 'Start quiz', onClick: startQuiz,
+            h('div', {  className: 'flex gap-3 justify-center' },
+              h('button', { onClick: startQuiz,
                 className: 'px-4 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors'
               }, '\uD83D\uDD04 Try Again'),
               h('button', { 'aria-label': 'choose', onClick: function() { upd('tab', 'choose'); },
@@ -1782,8 +1853,8 @@ window.SelHub = window.SelHub || {
                 return h('div', { key: jp.id, className: 'bg-white rounded-xl border border-amber-200 p-3 ' + (completed ? 'ring-1 ring-amber-300' : '') },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', null, jp.emoji),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-slate-700 flex-1' }, jp.prompt),
-                    completed && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-amber-600 font-bold' }, '\u2713')
+                    h('span', {  className: 'text-xs font-bold text-slate-700 flex-1' }, jp.prompt),
+                    completed && h('span', {  className: 'text-[10px] text-amber-600 font-bold' }, '\u2713')
                   ),
                   h('textarea', { value: entryVal, onChange: function(e) {
                       var newEntries = {};
@@ -1793,7 +1864,7 @@ window.SelHub = window.SelHub || {
                       upd('journalEntries', newEntries);
                     },
                     placeholder: 'Write your thoughts...',
-                    className: 'w-full text-sm p-2 border border-slate-200 rounded-lg resize-none h-14 outline-none focus:ring-2 focus:ring-amber-300',
+                    className: 'w-full text-sm p-2 border border-slate-400 rounded-lg resize-none h-14 outline-none focus:ring-2 focus:ring-amber-300',
                     'aria-label': jp.prompt
                   }),
                   entryVal.length > 20 && !completed && h('button', { 'aria-label': 've Explored:', onClick: function() {
@@ -1810,28 +1881,28 @@ window.SelHub = window.SelHub || {
               })
             ),
             // Progress
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-3 text-center text-xs text-amber-600 font-bold' },
+            h('div', {  className: 'mt-3 text-center text-xs text-amber-600 font-bold' },
               journalPromptsCompleted.length + '/' + JOURNAL_PROMPTS.length + ' prompts completed')
           ),
 
           // Explored cultures list
-          exploredCultures.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border border-slate-200 p-4' },
+          exploredCultures.length > 0 && h('div', {  className: 'bg-white rounded-xl border border-slate-400 p-4' },
             h('h4', { className: 'text-xs font-bold text-slate-600 mb-2' }, 'Cultures You\'ve Explored:'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-2' },
+            h('div', {  className: 'flex flex-wrap gap-2' },
               exploredCultures.map(function(c) {
                 return h('button', { 'aria-label': 'traditions', key: c, onClick: function() { updMulti({ culture: c, tab: 'explore', aspect: 'traditions', cultureData: null, cultureImage: null }); exploreCulture(c, 'traditions'); },
-                  className: 'px-3 py-1.5 bg-cyan-100 border border-cyan-300 rounded-full text-xs font-bold text-cyan-700 hover:bg-cyan-200 transition-colors'
+                  className: 'px-3 py-1.5 bg-cyan-100 border border-cyan-600 rounded-full text-xs font-bold text-cyan-700 hover:bg-cyan-200 transition-colors'
                 }, '\u2713 ' + c);
               })
             )
           ),
 
           // Big free-form reflection
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-cyan-50 to-teal-50 rounded-2xl border border-cyan-200 p-5' },
+          h('div', {  className: 'bg-gradient-to-r from-cyan-50 to-teal-50 rounded-2xl border border-cyan-200 p-5' },
             h('h4', { className: 'text-sm font-bold text-cyan-700 mb-2' }, '\uD83C\uDF0D What have you learned about the world \u2014 and about yourself?'),
             h('textarea', { value: d.journalEntry || '', onChange: function(e) { upd('journalEntry', e.target.value); },
               placeholder: 'What surprised you? What connections did you find between cultures? How does learning about others change how you see yourself?',
-              className: 'w-full text-sm p-3 border border-cyan-200 rounded-lg resize-none h-32 outline-none focus:ring-2 focus:ring-cyan-300', 'aria-label': 'Culture journal entry'
+              className: 'w-full text-sm p-3 border border-cyan-600 rounded-lg resize-none h-32 outline-none focus:ring-2 focus:ring-cyan-300', 'aria-label': 'Culture journal entry'
             }),
             d.journalEntry && d.journalEntry.length > 30 && h('button', { 'aria-label': 'Save entry',
               onClick: function() {
@@ -1847,7 +1918,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Closing thought
-          h('div', { className: 'bg-slate-50 border border-slate-200 rounded-xl p-4 text-center' },
+          h('div', { className: 'bg-slate-50 border border-slate-400 rounded-xl p-4 text-center' },
             h('p', { className: 'text-sm text-slate-600 italic leading-relaxed' },
               '"The beauty of the world lies in the diversity of its people." \u2014 Unknown'
             ),
@@ -1877,8 +1948,8 @@ window.SelHub = window.SelHub || {
                 },
                 h('div', { className: 'text-2xl' }, earned ? badge.emoji : '\uD83D\uDD12'),
                 h('div', { className: 'flex-1' },
-                  h('div', { className: 'text-sm font-bold ' + (earned ? 'text-slate-800' : 'text-slate-500') }, badge.label),
-                  h('div', { className: 'text-[10px] ' + (earned ? 'text-amber-700' : 'text-slate-500') }, badge.desc)
+                  h('div', { className: 'text-sm font-bold ' + (earned ? 'text-slate-800' : 'text-slate-300') }, badge.label),
+                  h('div', { className: 'text-[10px] ' + (earned ? 'text-amber-700' : 'text-slate-300') }, badge.desc)
                 ),
                 earned && h('span', { className: 'text-green-500 text-lg font-bold' }, '\u2713')
               );

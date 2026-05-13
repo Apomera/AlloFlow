@@ -1237,7 +1237,7 @@ window.StemLab = window.StemLab || {
             return h('button', { 'aria-label': 'Select intervention strategy',
               key: st.id,
               onClick: function() { updMulti({ tab: st.id, hoverDay: null }); announceToSR('Switched to ' + st.label); },
-              className: 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all ' + (active ? 'bg-indigo-600 text-white shadow-md' : 'bg-white/70 text-slate-600 hover:bg-indigo-50 border border-slate-200'),
+              className: 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all ' + (active ? 'bg-indigo-600 text-white shadow-md' : 'bg-white/70 text-slate-600 hover:bg-indigo-50 border border-slate-400'),
               role: 'tab', 'aria-selected': active
             }, st.icon + ' ' + st.label);
           })
@@ -1253,7 +1253,7 @@ window.StemLab = window.StemLab || {
               return h('button', { 'aria-label': 'Apply Preset',
                 key: p.name,
                 onClick: function() { applyPreset(idx); },
-                className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ' + (active ? 'text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'),
+                className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ' + (active ? 'text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-400'),
                 style: active ? { backgroundColor: p.color } : {}
               }, p.name);
             })
@@ -1305,7 +1305,7 @@ window.StemLab = window.StemLab || {
             ),
             h('canvas', { 'aria-label': 'Epidemic visualization', 
               ref: particleRef,
-              className: 'w-full rounded-xl border border-slate-200',
+              className: 'w-full rounded-xl border border-slate-400',
               style: { height: '200px', background: 'rgba(15,23,42,0.85)' }
             })
           ),
@@ -1617,7 +1617,7 @@ window.StemLab = window.StemLab || {
                 return h('button', { 'aria-label': 'Change map running',
                   key: sc.name,
                   onClick: function() { updMulti({ mapScenario: idx, mapGrid: null, mapHistory: [] }); },
-                  className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ' + (active ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-200')
+                  className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ' + (active ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-400')
                 }, sc.name);
               })
             ),
@@ -1879,7 +1879,7 @@ window.StemLab = window.StemLab || {
                       )
                     ),
                     // Expanded details
-                    expanded && h('div', { className: 'mt-2 p-4 bg-white rounded-xl border border-slate-200 space-y-3' },
+                    expanded && h('div', { className: 'mt-2 p-4 bg-white rounded-xl border border-slate-400 space-y-3' },
                       // Grade-appropriate summary
                       h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, p.gradeSummary[gradeBand] || p.gradeSummary['3-5']),
                       // Stats grid
@@ -2031,7 +2031,7 @@ window.StemLab = window.StemLab || {
                 return h('button', { 'aria-label': 'Change chal answer',
                   key: t,
                   onClick: function() { updMulti({ chalTier: t, chalIdx: 0, chalFeedback: '', chalAnswer: '', chalUseAI: null }); },
-                  className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold ' + (chalTier === t ? colors[t] + ' ring-2 ring-offset-1' : 'bg-white text-slate-500 border border-slate-200')
+                  className: 'px-3 py-1.5 rounded-lg text-[10px] font-bold ' + (chalTier === t ? colors[t] + ' ring-2 ring-offset-1' : 'bg-white text-slate-500 border border-slate-400')
                 }, labels[t]);
               })
             ),
@@ -2054,7 +2054,7 @@ window.StemLab = window.StemLab || {
                 onChange: function(e) { upd('chalAnswer', e.target.value); },
                 onKeyDown: function(e) { if (e.key === 'Enter') chalCheck(); },
                 placeholder: 'Type your answer...',
-                className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:border-indigo-400 outline-none',
+                className: 'w-full px-4 py-2 border border-slate-400 rounded-xl text-sm focus:border-indigo-400 outline-none',
                 'aria-label': 'Challenge answer'
               }),
               h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
@@ -2129,7 +2129,7 @@ window.StemLab = window.StemLab || {
                 return h('div', { className: 'space-y-3' },
                   battleUseAI && h('span', { className: 'px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[8px] font-bold rounded-full' }, '\uD83E\uDDE0 AI-GENERATED'),
                   h('p', { className: 'text-sm font-medium text-slate-700' }, q.q),
-                  h('input', { type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: 'Type your answer...', className: 'w-full px-4 py-2 border border-slate-200 rounded-xl text-sm font-mono focus:border-red-400 outline-none', 'aria-label': 'Battle answer' }),
+                  h('input', { type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: 'Type your answer...', className: 'w-full px-4 py-2 border border-slate-400 rounded-xl text-sm font-mono focus:border-red-400 outline-none', 'aria-label': 'Battle answer' }),
                   h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
                     h('button', { 'aria-label': 'Attack!', onClick: battleAttack, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all' }, '\u2694\uFE0F Attack!'),
                     h('button', { 'aria-label': 'Hint', onClick: function() { updMulti({ battleFeedback: '\uD83D\uDCA1 ' + (q.h || 'No hint') }); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, '\uD83D\uDCA1 Hint')
@@ -2171,7 +2171,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3' },
             EPI_BADGES.map(function(b) {
               var earned = d.badges && d.badges[b.id];
-              return h('div', { key: b.id, className: 'flex items-center gap-2 p-2 rounded-lg ' + (earned ? 'bg-amber-50 border border-amber-200' : 'bg-slate-50 border border-slate-200 opacity-50') },
+              return h('div', { key: b.id, className: 'flex items-center gap-2 p-2 rounded-lg ' + (earned ? 'bg-amber-50 border border-amber-200' : 'bg-slate-50 border border-slate-400 opacity-50') },
                 h('span', { className: 'text-lg' + (earned ? '' : ' grayscale') }, b.icon),
                 h('div', null,
                   h('p', { className: 'text-[10px] font-bold ' + (earned ? 'text-amber-700' : 'text-slate-500') }, b.name),

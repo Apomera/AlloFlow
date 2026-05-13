@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AlloFlow Community Catalog</title>
+<meta name="description" content="Browse community-submitted lessons and STEM Lab tools for AlloFlow. All entries are open-license and free to download." />
+<style>
+  :root {
+    --navy: #1e3a5f; --slate: #475569; --soft: #f1f5f9; --rule: #cbd5e1;
+    --accent: #0c7a8a; --error: #b91c1c; --warn: #b45309; --ok: #047857;
+  }
+  * { box-sizing: border-box; }
+  body { font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; color: #0f172a; margin: 0; background: #fff; }
+  header { background: var(--navy); color: #fff; padding: 18px 28px; }
+  header h1 { font-size: 22px; margin: 0 0 4px; font-weight: 700; }
+  header p { font-size: 14px; margin: 0; opacity: 0.9; }
+  header .links { font-size: 13px; margin-top: 6px; }
+  header a { color: #cbd5e1; text-decoration: underline; margin-right: 14px; }
+  header a:hover { color: #fff; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 28px 60px; }
+  .filters { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 14px; margin-bottom: 22px; padding: 14px; background: var(--soft); border-radius: 8px; border: 1px solid var(--rule); }
+  .filters label { display: block; font-size: 12px; color: var(--slate); margin-bottom: 4px; font-weight: 600; }
+  .filters select, .filters input { width: 100%; padding: 8px 10px; border: 1px solid var(--rule); border-radius: 6px; font: inherit; background: #fff; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .card { border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; background: #fff; display: flex; flex-direction: column; }
+  .card h3 { font-size: 16px; color: var(--navy); margin: 0 0 6px; }
+  .card .chips { margin-bottom: 8px; }
+  .chip { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 12px; background: #e2e8f0; color: #334155; margin-right: 4px; margin-bottom: 4px; font-weight: 600; }
+  .chip.subj { background: #dbeafe; color: #1e40af; }
+  .chip.grade { background: #dcfce7; color: #166534; }
+  .card .credit { font-size: 13px; color: var(--slate); margin-bottom: 6px; }
+  .card .desc-tags { font-size: 13px; color: var(--slate); flex-grow: 1; margin-bottom: 10px; }
+  .card .license { font-size: 11px; color: var(--slate); margin-bottom: 10px; font-family: ui-monospace, monospace; }
+  .card .actions { display: flex; gap: 8px; margin-top: auto; }
+  .card button { font: inherit; padding: 7px 12px; border-radius: 6px; border: 1px solid var(--accent); background: #fff; color: var(--accent); cursor: pointer; font-size: 13px; flex: 1; font-weight: 600; }
+  .card button.primary { background: var(--accent); color: #fff; }
+  .card button:hover { opacity: 0.85; }
+  .empty { padding: 60px 20px; text-align: center; color: var(--slate); border: 1px dashed var(--rule); border-radius: 8px; }
+  .empty a { color: var(--accent); font-weight: 600; }
+  .meta-bar { font-size: 13px; color: var(--slate); margin-bottom: 10px; }
+  footer { max-width: 1100px; margin: 40px auto 0; padding: 18px 28px; font-size: 12px; color: var(--slate); border-top: 1px solid var(--rule); }
+  footer a { color: var(--accent); }
+  @media (max-width: 640px) {
+    .filters { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>AlloFlow Community Catalog</h1>
+  <p>Browse lessons and STEM Lab tools shared by educators and students. Every entry is open-licensed.</p>
+  <div class="links">
+    <a href="/">AlloFlow main app</a>
+    <a href="/contribute">Contribute a lesson</a>
+    <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</header>
+
+<main>
+  <div class="filters">
+    <div>
+      <label for="filterSubject">Subject</label>
+      <select id="filterSubject">
+        <option value="">All subjects</option>
+        <option>Math</option>
+        <option>Science</option>
+        <option>ELA / Literacy</option>
+        <option>Social Studies</option>
+        <option>SEL / Character</option>
+        <option>Art / Music</option>
+        <option>World Languages</option>
+        <option>STEM (cross-disciplinary)</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div>
+      <label for="filterGrade">Grade level</label>
+      <input type="text" id="filterGrade" placeholder="e.g., 6, K-2" />
+    </div>
+    <div>
+      <label for="filterSearch">Search title or tags</label>
+      <input type="text" id="filterSearch" placeholder="photosynthesis, peer teaching..." />
+    </div>
+  </div>
+
+  <div class="meta-bar" id="metaBar">Loading catalog...</div>
+
+  <div id="catalogGrid" class="grid"></div>
+</main>
+
+<footer>
+  AlloFlow is a free, open-source UDL platform. All catalog entries are user-submitted and open-licensed. To submit your own work, visit <a href="/contribute">/contribute</a>. Source: <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener">github.com/Apomera/AlloFlow</a>.
+</footer>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+  import { getFirestore, collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+  let allEntries = [];
+
+  async function init() {
+    try {
+      const cfg = await (await fetch("/__/firebase/init.json")).json();
+      const app = initializeApp(cfg);
+      const db = getFirestore(app);
+      const q = query(collection(db, "catalog_published"), orderBy("published_at", "desc"));
+      const snap = await getDocs(q);
+      allEntries = [];
+      snap.forEach(d => allEntries.push({ id: d.id, ...d.data() }));
+      render();
+    } catch (e) {
+      const grid = document.getElementById("catalogGrid");
+      grid.innerHTML = '';
+      document.getElementById("metaBar").textContent = "";
+      grid.appendChild(emptyNode("Could not load the catalog: " + e.message + ". This page must be served from Firebase Hosting."));
+    }
+  }
+
+  function emptyNode(msg) {
+    const div = document.createElement("div");
+    div.className = "empty";
+    div.textContent = msg;
+    return div;
+  }
+
+  function render() {
+    const subj = document.getElementById("filterSubject").value;
+    const grade = document.getElementById("filterGrade").value.trim().toLowerCase();
+    const search = document.getElementById("filterSearch").value.trim().toLowerCase();
+
+    const filtered = allEntries.filter(e => {
+      const m = e.metadata || {};
+      if (subj && m.subject !== subj) return false;
+      if (grade && !(m.grade_level || "").toLowerCase().includes(grade)) return false;
+      if (search) {
+        const hay = [
+          m.title || "",
+          (m.tags || []).join(" "),
+        ].join(" ").toLowerCase();
+        if (!hay.includes(search)) return false;
+      }
+      return true;
+    });
+
+    const meta = document.getElementById("metaBar");
+    if (allEntries.length === 0) {
+      meta.textContent = "";
+    } else {
+      meta.textContent = filtered.length + " of " + allEntries.length + " entries";
+    }
+
+    const grid = document.getElementById("catalogGrid");
+    grid.innerHTML = "";
+    if (allEntries.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "empty";
+      empty.innerHTML = 'No published lessons yet. Be the first: <a href="/contribute">Contribute a lesson</a>.';
+      grid.appendChild(empty);
+      return;
+    }
+    if (filtered.length === 0) {
+      grid.appendChild(emptyNode("No entries match these filters."));
+      return;
+    }
+    filtered.forEach(entry => grid.appendChild(renderCard(entry)));
+  }
+
+  function renderCard(entry) {
+    const m = entry.metadata || {};
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const h3 = document.createElement("h3");
+    h3.textContent = m.title || "(untitled)";
+    card.appendChild(h3);
+
+    const chips = document.createElement("div");
+    chips.className = "chips";
+    if (m.subject) {
+      const c = document.createElement("span");
+      c.className = "chip subj";
+      c.textContent = m.subject;
+      chips.appendChild(c);
+    }
+    if (m.grade_level) {
+      const c = document.createElement("span");
+      c.className = "chip grade";
+      c.textContent = "Grade " + m.grade_level;
+      chips.appendChild(c);
+    }
+    (m.tags || []).slice(0, 4).forEach(t => {
+      const c = document.createElement("span");
+      c.className = "chip";
+      c.textContent = t;
+      chips.appendChild(c);
+    });
+    card.appendChild(chips);
+
+    if (m.credit) {
+      const credit = document.createElement("div");
+      credit.className = "credit";
+      credit.textContent = "Credit: " + m.credit;
+      card.appendChild(credit);
+    }
+
+    if (m.description) {
+      const desc = document.createElement("div");
+      desc.className = "desc-tags";
+      desc.textContent = m.description;
+      card.appendChild(desc);
+    }
+
+    const lic = document.createElement("div");
+    lic.className = "license";
+    lic.textContent = "License: " + (m.license || "(unspecified)");
+    card.appendChild(lic);
+
+    const actions = document.createElement("div");
+    actions.className = "actions";
+
+    const dlBtn = document.createElement("button");
+    dlBtn.textContent = "Download JSON";
+    dlBtn.addEventListener("click", () => downloadJson(entry));
+    actions.appendChild(dlBtn);
+
+    const loadBtn = document.createElement("button");
+    loadBtn.className = "primary";
+    loadBtn.textContent = "Load in AlloFlow";
+    loadBtn.addEventListener("click", () => loadInAlloFlow(entry));
+    actions.appendChild(loadBtn);
+
+    card.appendChild(actions);
+    return card;
+  }
+
+  function downloadJson(entry) {
+    const m = entry.metadata || {};
+    const payload = {
+      schema_version: entry.schema_version || "1.0",
+      metadata: m,
+      payload: entry.json_payload || {},
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = slugify(m.title || "alloflow-entry") + ".json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function loadInAlloFlow(entry) {
+    try {
+      const payload = {
+        schema_version: entry.schema_version || "1.0",
+        metadata: entry.metadata || {},
+        payload: entry.json_payload || {},
+      };
+      localStorage.setItem("alloflow_catalog_import", JSON.stringify(payload));
+      localStorage.setItem("alloflow_catalog_import_pending", "true");
+      window.location.href = "/?import=catalog";
+    } catch (e) {
+      alert("Could not stage entry for AlloFlow: " + e.message);
+    }
+  }
+
+  function slugify(s) {
+    return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48) || "entry";
+  }
+
+  document.getElementById("filterSubject").addEventListener("change", render);
+  document.getElementById("filterGrade").addEventListener("input", render);
+  document.getElementById("filterSearch").addEventListener("input", render);
+
+  init();
+</script>
+</body>
+</html>

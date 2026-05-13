@@ -29,6 +29,15 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-cell')) return;
@@ -3337,13 +3346,40 @@ var d = labToolData.cell;
 
                 ["observe", "play", "quiz"].map(function (m) {
 
-                  return React.createElement("button", { "aria-label": "Change mode", key: m, onClick: function () { upd("mode", m); if (m === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizStreak", 0); upd("quizFeedback", null); } else { upd("quizMode", false); } if (m !== 'play') { upd("playAsOrganism", null); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetPlayAs) cv._cellSimSetPlayAs(null); } }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (d.mode === m ? 'bg-green-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, m);
+                  return React.createElement("button", { key: m, onClick: function () { upd("mode", m); if (m === 'quiz') { upd("quizMode", true); upd("quizIdx", 0); upd("quizScore", 0); upd("quizStreak", 0); upd("quizFeedback", null); } else { upd("quizMode", false); } if (m !== 'play') { upd("playAsOrganism", null); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetPlayAs) cv._cellSimSetPlayAs(null); } }, className: "px-3 py-1 rounded-lg text-xs font-bold capitalize " + (d.mode === m ? 'bg-green-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, m);
 
                 })
 
               )
 
             ),
+
+            // ── Topic-accent hero band (per mode) ──
+            (function() {
+              var MODE_META = {
+                observe: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '👁️', title: 'Observe — explore the cell',         hint: 'Click any organelle to see its structure, function, and how it talks to its neighbors. Cells are factories: every organelle has a job and a delivery route.' },
+                play:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎮', title: 'Play — be the organism',           hint: 'Steer the cell yourself. Bacteria swim with flagella; protists pseudopod; humans push fluid via pumps. Movement reveals what each cell is built for.' },
+                quiz:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🧠', title: 'Quiz — concepts in context',        hint: 'Multi-choice items on organelle function, transport, signaling, and life cycle. Each question links back to what you saw in the simulator.' }
+              };
+              var meta = MODE_META[d.mode] || MODE_META.observe;
+              return React.createElement('div', {
+                style: {
+                  margin: '12px 0',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
 
 
 
@@ -3499,7 +3535,7 @@ var d = labToolData.cell;
 
                             ["W/\u2191", "A/\u2190", "S/\u2193", "D/\u2192"].map(function (k) {
 
-                              return React.createElement("span", { key: k, className: "px-1.5 py-0.5 bg-slate-100 rounded text-[11px] font-mono font-bold text-slate-600 border border-slate-200" }, k);
+                              return React.createElement("span", { key: k, className: "px-1.5 py-0.5 bg-slate-100 rounded text-[11px] font-mono font-bold text-slate-600 border border-slate-400" }, k);
 
                             })
 
@@ -3561,9 +3597,7 @@ var d = labToolData.cell;
 
               ORGANISMS.map(function (org) {
 
-                return React.createElement("button", { "aria-label": "Change selected organism",
-
-                  key: org.id,
+                return React.createElement("button", { key: org.id,
 
                   onClick: function () {
 
@@ -3851,13 +3885,13 @@ var d = labToolData.cell;
             d._cellShowBadges && React.createElement("div", { className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-xs font-bold text-amber-700" }, "\uD83C\uDFC5 Badges (" + ext.badges.length + "/" + Object.keys(cellBadges).length + ")"),
-                React.createElement("button", { "aria-label": "Change _cell show badges", onClick: function () { upd('_cellShowBadges', false); }, className: "text-amber-400 hover:text-amber-600" }, React.createElement(X, { size: 14 }))
+                React.createElement("button", { onClick: function () { upd('_cellShowBadges', false); }, className: "text-amber-400 hover:text-amber-600" }, React.createElement(X, { size: 14 }))
               ),
               React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                 Object.keys(cellBadges).map(function (key) {
                   var b = cellBadges[key];
                   var earned = ext.badges.indexOf(b.id) !== -1;
-                  return React.createElement("div", { key: b.id, className: "flex items-center gap-2 p-2 rounded-lg " + (earned ? "bg-amber-100 border border-amber-300" : "bg-white/60 border border-slate-200 opacity-50") },
+                  return React.createElement("div", { key: b.id, className: "flex items-center gap-2 p-2 rounded-lg " + (earned ? "bg-amber-100 border border-amber-300" : "bg-white/60 border border-slate-400 opacity-50") },
                     React.createElement("span", { className: "text-lg" }, earned ? b.icon : "\uD83D\uDD12"),
                     React.createElement("div", null,
                       React.createElement("p", { className: "text-[11px] font-bold " + (earned ? "text-amber-800" : "text-slate-600") }, b.label),
@@ -3872,16 +3906,17 @@ var d = labToolData.cell;
             d._cellShowAI && React.createElement("div", { className: "mt-3 bg-blue-50 rounded-xl border-2 border-blue-200 p-4 animate-in fade-in" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-xs font-bold text-blue-700" }, "\uD83E\uDD16 AI Biology Tutor"),
-                React.createElement("button", { "aria-label": "Change _cell show a i", onClick: function () { upd('_cellShowAI', false); }, className: "text-blue-400 hover:text-blue-600" }, React.createElement(X, { size: 14 }))
+                React.createElement("button", { onClick: function () { upd('_cellShowAI', false); }, className: "text-blue-400 hover:text-blue-600" }, React.createElement(X, { size: 14 }))
               ),
               React.createElement("div", { className: "flex gap-2" },
                 React.createElement("input", {
                   type: "text", placeholder: "Ask about cells, organisms...", value: d._cellAIQ || '',
+                  'aria-label': 'Ask the cell biology AI tutor',
                   onChange: function (e) { upd('_cellAIQ', e.target.value); },
                   onKeyDown: function (e) { if (e.key === 'Enter') askAI(d._cellAIQ); },
-                  className: "flex-1 px-3 py-1.5 text-xs rounded-lg border border-blue-200 focus:outline-none focus:border-blue-400"
+                  className: "flex-1 px-3 py-1.5 text-xs rounded-lg border border-blue-200 focus:border-blue-400"
                 }),
-                React.createElement("button", { "aria-label": "Ask A I", onClick: function () { askAI(d._cellAIQ); }, className: "px-3 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700", disabled: d._cellAILoading }, d._cellAILoading ? '...' : 'Ask')
+                React.createElement("button", { onClick: function () { askAI(d._cellAIQ); }, 'aria-busy': d._cellAILoading, 'aria-label': d._cellAILoading ? 'Asking AI tutor' : 'Ask AI tutor', className: "px-3 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700", disabled: d._cellAILoading }, d._cellAILoading ? '...' : 'Ask')
               ),
               d._cellAIResp && React.createElement("div", { className: "mt-2 p-2 bg-white rounded-lg text-xs text-slate-700 leading-relaxed border border-blue-100" }, d._cellAIResp)
             ),
@@ -3892,7 +3927,7 @@ var d = labToolData.cell;
 
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
 
-              React.createElement("button", { "aria-label": "AI Tutor", onClick: function () { upd('_cellShowBadges', !d._cellShowBadges); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowBadges ? "bg-amber-700 text-white" : "bg-amber-100 text-amber-700 hover:bg-amber-200") }, "\uD83C\uDFC5 Badges " + ext.badges.length + "/" + Object.keys(cellBadges).length),
+              React.createElement("button", { onClick: function () { upd('_cellShowBadges', !d._cellShowBadges); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowBadges ? "bg-amber-700 text-white" : "bg-amber-100 text-amber-700 hover:bg-amber-200") }, "\uD83C\uDFC5 Badges " + ext.badges.length + "/" + Object.keys(cellBadges).length),
               React.createElement("button", { "aria-label": "AI Tutor", onClick: function () { upd('_cellShowAI', !d._cellShowAI); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowAI ? "bg-blue-700 text-white" : "bg-blue-100 text-blue-700 hover:bg-blue-200") }, "\uD83E\uDD16 AI Tutor"),
 
               React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ce-' + Date.now(), tool: 'cell', label: 'Cell Simulator' + (d.selectedOrganism ? ': ' + d.selectedOrganism : ''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")

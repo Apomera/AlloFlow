@@ -55,6 +55,7 @@ window.SelHub = window.SelHub || {
       '.sel-btn:active { transform: translateY(0); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }',
       '.sel-glow { animation: selGlow 2s ease-in-out infinite; }',
       '.sel-shimmer { background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.1) 50%, transparent 75%); background-size: 200% 100%; animation: selShimmer 2s linear infinite; }',
+      '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }',
     ].join('\n');
     document.head.appendChild(style);
   })();
@@ -217,7 +218,7 @@ window.SelHub = window.SelHub || {
     label: 'Growth Mindset Workshop',
     desc: 'Discover how your brain grows through effort \u2014 learn to transform "I can\u2019t" into "I can\u2019t yet."',
     color: 'emerald',
-    category: 'self-management',
+    category: 'self-direction',
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -326,7 +327,7 @@ window.SelHub = window.SelHub || {
               style: {
                 padding: '6px 14px', borderRadius: '10px', border: active ? 'none' : '1px solid ' + (explored ? '#a7f3d0' : 'transparent'),
                 background: active ? 'linear-gradient(135deg, ' + EMERALD + ', #047857)' : explored ? 'rgba(5,150,105,0.08)' : 'transparent',
-                color: active ? '#fff' : explored ? '#065f46' : '#6b7280',
+                color: active ? '#fff' : explored ? '#065f46' : '#94a3b8',
                 fontWeight: active ? 700 : 500, fontSize: '12px',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px',
                 whiteSpace: 'nowrap',
@@ -352,6 +353,37 @@ window.SelHub = window.SelHub || {
           }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
         )
       );
+
+      // ── Topic-accent hero band per tab ──
+      var heroBand = (function() {
+        var TAB_META = {
+          brain:    { accent: '#059669', soft: 'rgba(5,150,105,0.10)',   icon: '\uD83E\uDDE0', title: 'Brain Science \u2014 neurons grow with effort',           hint: 'Neuroplasticity: dendrites branch, synapses strengthen, myelin thickens with practice. Eric Kandel won the 2000 Nobel for proving learning physically changes neurons. \u201CSmart\u201D is built, not born.' },
+          reframe:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\uD83D\uDD04', title: 'Reframe It \u2014 fixed thought \u2192 growth thought',     hint: 'Carol Dweck (Mindset, 2006): \u201CI can\u2019t do this\u201D \u2192 \u201CI can\u2019t do this YET.\u201D Single word, decades of research behind it. The reframe doesn\u2019t make hard easy \u2014 it makes hard worth attempting.' },
+          stories:  { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)',  icon: '\uD83C\uDF1F', title: 'Yet Stories \u2014 the world\u2019s late bloomers',         hint: 'Edison\u2019s 10,000 light-bulb attempts, J.K. Rowling\u2019s 12 rejections, Michael Jordan cut from varsity, Einstein didn\u2019t speak till 4. Survivor narratives \u2014 but the pattern (struggle \u2192 persistence \u2192 mastery) is real research too.' },
+          map:      { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',   icon: '\uD83D\uDDFA', title: 'My Growth Map \u2014 your own then-now-next',              hint: 'Pick something you can do now that you couldn\u2019t a year ago. That\u2019s your living evidence of growth-mindset working. Bandura: vicarious self-efficacy is real, but personal mastery experience is the strongest source.' },
+          coach:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '\uD83E\uDD16', title: 'AI Coach \u2014 reframe partner on demand',                hint: 'Type a stuck thought; the coach helps you find the growth-language version. Repeated exposure builds the habit. NOT a substitute for therapy or hard conversations \u2014 a rehearsal space for the easier reframes.' },
+          letter:   { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)',  icon: '\u2709',         title: 'Future Me \u2014 letter to who you\u2019re becoming',     hint: 'Write to yourself 1 / 5 / 10 years from now. Specifying who you want to become makes the path more visible. Implementation intentions (Gollwitzer 1999): naming the future doubles follow-through.' },
+          educator: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',   icon: '\uD83C\uDFEB', title: 'Educator Lens \u2014 growth-mindset for teachers',         hint: 'Praise PROCESS not ability (Mueller + Dweck 1998). \u201CYou worked hard\u201D > \u201CYou\u2019re smart.\u201D Avoids the fixed-mindset trap that praise-for-ability creates. Critical for IEP language too \u2014 \u201Capproaching\u201D not \u201Cnot yet meeting.\u201D' }
+        };
+        var meta = TAB_META[activeTab] || TAB_META.brain;
+        return h('div', {
+          style: {
+            margin: '8px 12px 12px',
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+            border: '1px solid ' + meta.accent + '55',
+            borderLeft: '4px solid ' + meta.accent,
+            display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+          }
+        },
+          h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+          h('div', { style: { flex: 1, minWidth: 220 } },
+            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+          )
+        );
+      })();
 
       // ══════════════════════════════════════════════════════════
       // ── Section: Brain Science ──
@@ -380,7 +412,7 @@ window.SelHub = window.SelHub || {
             ),
             h('div', { className: 'sel-hero-icon', style: { fontSize: '56px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(5,150,105,0.3))' } }, '\uD83E\uDDE0'),
             h('h3', { style: { fontSize: '20px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 6px', letterSpacing: '-0.3px' } }, 'Your Brain is Amazing'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0, maxWidth: '400px', marginLeft: 'auto', marginRight: 'auto' } },
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0, maxWidth: '400px', marginLeft: 'auto', marginRight: 'auto' } },
               band === 'elementary' ? 'Discover how your brain grows stronger every day!'
               : band === 'middle' ? 'The neuroscience behind why effort changes your brain.'
               : 'How mindset research is reshaping our understanding of human potential.')
@@ -420,7 +452,7 @@ window.SelHub = window.SelHub || {
               },
               style: { padding: '10px 20px', background: '#fff', border: '2px solid #a7f3d0', borderRadius: '12px', cursor: 'pointer', fontWeight: 700, fontSize: '13px', color: EMERALD, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }
             }, '\u2190 Previous'),
-            h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: '#6b7280', fontWeight: 600, background: '#f0fdf4', padding: '4px 12px', borderRadius: '8px' } },
+            h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: '#94a3b8', fontWeight: 600, background: '#f0fdf4', padding: '4px 12px', borderRadius: '8px' } },
               (brainFactIdx % facts.length + 1) + ' / ' + facts.length
             ),
             h('button', {
@@ -471,7 +503,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(5,150,105,0.3))' } }, '\uD83D\uDD04'),
             h('h3', { style: { fontSize: '20px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 6px', letterSpacing: '-0.3px' } }, 'The Reframe Engine'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Transform fixed mindset thoughts into growth mindset power.')
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Transform fixed mindset thoughts into growth mindset power.')
           ),
           // Score with visual progress ring
           reframeTotal > 0 && h('div', { className: 'sel-card', style: { display: 'flex', justifyContent: 'center', gap: '16px', marginBottom: '20px' } },
@@ -529,7 +561,7 @@ window.SelHub = window.SelHub || {
                 },
                 style: { padding: '10px 24px', background: 'linear-gradient(135deg, ' + EMERALD + ', #047857)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 16px rgba(5,150,105,0.3)' }
               }, '\u2728 Show Growth Version'),
-              h('p', { style: { fontSize: '11px', color: '#6b7280', margin: 0, display: 'flex', alignItems: 'center', gap: '4px' } }, '\uD83D\uDCA1 ', h('em', null, current.hint))
+              h('p', { style: { fontSize: '11px', color: '#94a3b8', margin: 0, display: 'flex', alignItems: 'center', gap: '4px' } }, '\uD83D\uDCA1 ', h('em', null, current.hint))
             )
           ),
           // Revealed growth mindset version
@@ -566,7 +598,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83C\uDF1F'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 4px' } }, 'The Power of Yet'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Real people who didn\u2019t give up \u2014 and changed the world.')
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Real people who didn\u2019t give up \u2014 and changed the world.')
           ),
           // Story card
           h('div', { style: { background: '#fff', borderRadius: '16px', padding: '24px', border: '1px solid #e5e7eb', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: '16px' } },
@@ -592,7 +624,7 @@ window.SelHub = window.SelHub || {
               },
               style: { padding: '8px 16px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#374151' }
             }, '\u2190 Previous'), // a11y: label set via visible text
-            h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: '#6b7280' } },
+            h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: '#94a3b8' } },
               (storyIdx % stories.length + 1) + ' / ' + stories.length +
               ' \u00b7 ' + totalStories + ' read'
             ),
@@ -620,12 +652,12 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83D\uDDFA\uFE0F'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 4px' } }, 'My Growth Map'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Set goals using "I can\u2019t... YET" framing. Track your growth journey.')
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Set goals using "I can\u2019t... YET" framing. Track your growth journey.')
           ),
           // Add goal form
           h('div', { style: { display: 'flex', gap: '8px', marginBottom: '16px' } },
             h('div', { style: { flex: 1 } },
-              h('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '3px' } }, 'I can\u2019t __________ YET.'),
+              h('div', { style: { fontSize: '11px', fontWeight: 600, color: '#94a3b8', marginBottom: '3px' } }, 'I can\u2019t __________ YET.'),
               h('input', {
                 type: 'text', value: newGoalText,
                 onChange: function(ev) { upd('newGoalText', ev.target.value); },
@@ -656,7 +688,7 @@ window.SelHub = window.SelHub || {
           ),
           // Goal list
           growthGoals.length === 0
-            ? h('div', { style: { textAlign: 'center', padding: '30px', color: '#6b7280' } },
+            ? h('div', { style: { textAlign: 'center', padding: '30px', color: '#94a3b8' } },
                 h('div', { style: { fontSize: '32px', marginBottom: '8px' } }, '\uD83C\uDF3F'),
                 h('p', { style: { fontSize: '13px' } }, 'No goals planted yet. What can\u2019t you do YET?')
               )
@@ -676,7 +708,7 @@ window.SelHub = window.SelHub || {
                         h('span', { style: { fontSize: '14px', fontWeight: 800, color: AMBER, background: '#fef3c7', padding: '1px 6px', borderRadius: '4px' } }, 'YET')
                       ),
                       h('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
-                        h('span', { style: { fontSize: '10px', color: '#6b7280' } }, daysSince === 0 ? 'today' : daysSince + 'd ago'),
+                        h('span', { style: { fontSize: '10px', color: '#94a3b8' } }, daysSince === 0 ? 'today' : daysSince + 'd ago'),
                         h('button', {
                           onClick: function() { upd('growthGoals', growthGoals.filter(function(g) { return g.id !== goal.id; })); },
                           'aria-label': 'Remove goal', style: { background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '4px', cursor: 'pointer', color: '#991b1b', fontSize: '12px', padding: '2px 4px' }
@@ -684,7 +716,7 @@ window.SelHub = window.SelHub || {
                       )
                     ),
                     // Steps I've taken
-                    h('div', { style: { fontSize: '11px', color: '#6b7280', marginBottom: '4px' } },
+                    h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '4px' } },
                       '\uD83D\uDC63 Steps I\u2019ve taken (' + stepsCount + '):'
                     ),
                     (goal.steps || []).map(function(step, si) {
@@ -735,10 +767,13 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83E\uDD16'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 4px' } }, 'AI Growth Coach'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Share a struggle or a fixed mindset thought. Your coach will help you reframe it. Conversations are monitored for your safety.')
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Share a struggle or a fixed mindset thought. Your coach will help you reframe it.'),
+            window.SelHub && window.SelHub.renderSafetyDisclosure && window.SelHub.renderSafetyDisclosure(h, band, ctx.activeSessionCode)
           ),
+          // Surface 988 / Crisis Text Line block when last turn was tier-3.
+          (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
           // Chat history
-          coachHistory.length > 0 && h('div', { role: 'log', 'aria-label': 'Conversation with Growth Coach', 'aria-live': 'polite', style: { maxHeight: '300px', overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
+          coachHistory.length > 0 && h('div', { role: 'log', 'aria-label': 'Conversation with Growth Coach', 'aria-live': 'polite', 'aria-busy': coachLoading ? 'true' : 'false', style: { maxHeight: '300px', overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
             coachHistory.map(function(msg, i) {
               var isUser = msg.role === 'user';
               return h('div', { key: i, style: { display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' } },
@@ -786,12 +821,16 @@ window.SelHub = window.SelHub || {
                       onSafetyFlag: onSafetyFlag
                     });
                   } : function() {
-                    return callGemini(prompt, true).then(function(r) { return { response: r, tier: 0, showCrisis: false }; });
+                    var preFallback = (window.SelHub && window.SelHub.safeRehearseCheck)
+                      ? window.SelHub.safeRehearseCheck(userMsg, { toolId: 'growthmindset', onSafetyFlag: onSafetyFlag })
+                      : { action: 'continue' };
+                    return callGemini(prompt, false).then(function(r) { return { response: r, tier: preFallback.action === 'block' ? 3 : 0, showCrisis: preFallback.action === 'block' }; });
                   };
                   safeSend().then(function(result) {
                     upd({
                       coachHistory: newHistory.concat([{ role: 'coach', text: result.response }]),
-                      coachLoading: false
+                      coachLoading: false,
+                      _lastTier: result.tier || 0
                     });
                     if (awardXP) awardXP(5, 'Talked with Growth Coach!');
                   }).catch(function() {
@@ -838,12 +877,16 @@ window.SelHub = window.SelHub || {
                     onSafetyFlag: onSafetyFlag
                   });
                 } : function() {
-                  return callGemini(prompt, true).then(function(r) { return { response: r, tier: 0, showCrisis: false }; });
+                  var preFallback = (window.SelHub && window.SelHub.safeRehearseCheck)
+                    ? window.SelHub.safeRehearseCheck(userMsg, { toolId: 'growthmindset', onSafetyFlag: onSafetyFlag })
+                    : { action: 'continue' };
+                  return callGemini(prompt, false).then(function(r) { return { response: r, tier: preFallback.action === 'block' ? 3 : 0, showCrisis: preFallback.action === 'block' }; });
                 };
                 safeSend().then(function(result) {
                   upd({
                     coachHistory: newHistory.concat([{ role: 'coach', text: result.response }]),
-                    coachLoading: false
+                    coachLoading: false,
+                    _lastTier: result.tier || 0
                   });
                   if (awardXP) awardXP(5, 'Talked with Growth Coach!');
                 }).catch(function() {
@@ -859,7 +902,7 @@ window.SelHub = window.SelHub || {
           ),
           // Starter prompts
           coachHistory.length === 0 && h('div', { style: { marginTop: '16px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px' } }, 'Try saying:'),
+            h('div', { style: { fontSize: '11px', fontWeight: 600, color: '#94a3b8', marginBottom: '6px' } }, 'Try saying:'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
               [
                 band === 'elementary' ? 'I\u2019m bad at math' : band === 'middle' ? 'I\u2019ll never be good at writing' : 'I\u2019m not smart enough for this class',
@@ -892,7 +935,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\u2709\uFE0F'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 4px' } }, 'Letter to Future Me'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } },
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } },
               band === 'elementary' ? 'Write a letter to yourself. One day you\u2019ll read it and see how much you\u2019ve grown!'
               : 'Document where you are right now. Your future self will read this and see the distance traveled.')
           ),
@@ -941,7 +984,7 @@ window.SelHub = window.SelHub || {
                   style: { background: '#fff', border: '1px solid #e5e7eb', borderRadius: '14px', padding: '16px', position: 'relative' }
                 },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
-                    h('div', { style: { fontSize: '11px', color: '#6b7280' } }, letter.date + ' \u00b7 ' + timeLabel),
+                    h('div', { style: { fontSize: '11px', color: '#94a3b8' } }, letter.date + ' \u00b7 ' + timeLabel),
                     h('button', {
                       onClick: function() { upd('savedLetters', savedLetters.filter(function(l) { return l.id !== letter.id; })); },
                       'aria-label': 'Delete this letter',
@@ -961,7 +1004,7 @@ window.SelHub = window.SelHub || {
             )
           ),
           // Empty state
-          savedLetters.length === 0 && h('div', { style: { textAlign: 'center', padding: '20px', color: '#6b7280' } },
+          savedLetters.length === 0 && h('div', { style: { textAlign: 'center', padding: '20px', color: '#94a3b8' } },
             h('p', { style: { fontSize: '13px', fontStyle: 'italic' } },
               band === 'elementary' ? 'When you write a letter, it gets sealed and saved here. One day you\u2019ll open it and be amazed at how far you\u2019ve come!'
               : 'Your letters create a time capsule of your growth journey. The most powerful evidence of growth is your own words looking back at where you started.')
@@ -1000,7 +1043,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83C\uDFEB'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 4px' } }, 'Educator Lens'),
-            h('p', { style: { fontSize: '13px', color: '#6b7280', margin: 0 } }, 'Growth mindset isn\u2019t just for students. The language adults use shapes the mindset culture of the classroom.')
+            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Growth mindset isn\u2019t just for students. The language adults use shapes the mindset culture of the classroom.')
           ),
           // Teacher reframe card
           h('div', { style: { marginBottom: '20px' } },
@@ -1022,7 +1065,7 @@ window.SelHub = window.SelHub || {
                 onClick: function() { upd('tReframeIdx', (tReframeIdx - 1 + TEACHER_REFRAMES.length) % TEACHER_REFRAMES.length); },
                 style: { padding: '6px 14px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: '#374151' }
               }, '\u2190 Prev'),
-              h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '11px', color: '#6b7280' } }, (tReframeIdx % TEACHER_REFRAMES.length + 1) + ' / ' + TEACHER_REFRAMES.length),
+              h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '11px', color: '#94a3b8' } }, (tReframeIdx % TEACHER_REFRAMES.length + 1) + ' / ' + TEACHER_REFRAMES.length),
               h('button', {
                 onClick: function() { upd('tReframeIdx', (tReframeIdx + 1) % TEACHER_REFRAMES.length); },
                 style: { padding: '6px 14px', background: EMERALD, border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: '#fff' }
@@ -1038,13 +1081,13 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { flex: 1 } },
                     h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '4px' } },
                       h('span', { style: { fontSize: '10px', background: '#fef2f2', color: '#dc2626', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 } }, 'Instead of'),
-                      h('span', { style: { fontSize: '12px', color: '#6b7280', fontStyle: 'italic' } }, '"' + fp.instead + '"')
+                      h('span', { style: { fontSize: '12px', color: '#94a3b8', fontStyle: 'italic' } }, '"' + fp.instead + '"')
                     ),
                     h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '4px' } },
                       h('span', { style: { fontSize: '10px', background: EMERALD_LIGHT, color: EMERALD, padding: '1px 6px', borderRadius: '4px', fontWeight: 600 } }, 'Try'),
                       h('span', { style: { fontSize: '12px', color: '#1f2937', fontWeight: 600 } }, '"' + fp.try + '"')
                     ),
-                    h('p', { style: { fontSize: '11px', color: '#6b7280', margin: '2px 0 0', lineHeight: 1.4 } }, fp.why)
+                    h('p', { style: { fontSize: '11px', color: '#94a3b8', margin: '2px 0 0', lineHeight: 1.4 } }, fp.why)
                   )
                 );
               })
@@ -1057,7 +1100,7 @@ window.SelHub = window.SelHub || {
       // ── Progress Summary (shown at bottom of every tab) ──
       // ══════════════════════════════════════════════════════════
       var progressBar = (totalFacts + totalReframes + totalStories) > 0
-        ? h('div', { style: { padding: '8px 16px', borderTop: '1px solid #d1fae5', background: '#f0fdf4', display: 'flex', gap: '16px', alignItems: 'center', fontSize: '10px', color: '#6b7280', flexShrink: 0 } },
+        ? h('div', { style: { padding: '8px 16px', borderTop: '1px solid #d1fae5', background: '#f0fdf4', display: 'flex', gap: '16px', alignItems: 'center', fontSize: '10px', color: '#94a3b8', flexShrink: 0 } },
             h('span', null, '\uD83E\uDDE0 ' + totalFacts + ' facts'),
             h('span', null, '\uD83D\uDD04 ' + totalReframes + ' reframed'),
             h('span', null, '\uD83C\uDF1F ' + totalStories + ' stories'),
@@ -1073,7 +1116,9 @@ window.SelHub = window.SelHub || {
       var content = brainContent || reframeContent || storiesContent || mapContent || coachContent || letterContent || educatorContent;
 
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('growthmindset', h, ctx) : null),
         tabBar,
+        heroBand,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content),
         progressBar
       );

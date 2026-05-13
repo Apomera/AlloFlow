@@ -559,7 +559,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'grid grid-cols-3 sm:grid-cols-4 gap-2' },
             badgeDefs.map(function(badge) {
               var earned = !!earnedBadges[badge.id];
-              return h('div', { key: badge.id, className: 'flex items-center gap-2 p-1.5 rounded-lg ' + (earned ? 'bg-amber-100 border border-amber-300' : 'bg-white border border-slate-200 opacity-40') },
+              return h('div', { key: badge.id, className: 'flex items-center gap-2 p-1.5 rounded-lg ' + (earned ? 'bg-amber-100 border border-amber-300' : 'bg-white border border-slate-400 opacity-40') },
                 h('span', { className: 'text-base', style: earned ? {} : { filter: 'grayscale(1)' } }, badge.icon),
                 h('div', null,
                   h('div', { className: 'text-[10px] font-bold ' + (earned ? 'text-amber-800' : 'text-slate-500') }, badge.name),
@@ -650,7 +650,7 @@ window.StemLab = window.StemLab || {
             h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500' }, 'Difficulty:'),
             [{ id: 'ones', label: '1\u20139', color: '#ea580c' }, { id: 'tens', label: '10\u201399', color: '#059669' }, { id: 'hundreds', label: '100\u2013999', color: '#2563eb' }, { id: 'thousands', label: '1K\u20139K', color: '#db2777' }, { id: 'any', label: 'Any', color: '#64748b' }].map(function(dl) {
               return h('button', { 'aria-label': 'Expanded Form', key: dl.id, onClick: function() { upd({ diffLevel: dl.id }); },
-                className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ' + (diffLevel === dl.id ? 'text-white shadow' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'),
+                className: 'px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ' + (diffLevel === dl.id ? 'text-white shadow' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50'),
                 style: diffLevel === dl.id ? { backgroundColor: dl.color } : {}
               }, dl.label);
             }),

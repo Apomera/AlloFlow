@@ -266,7 +266,7 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
                                 <select aria-label={t('common.selection')}
                                     value={item.type}
                                     onChange={(e) => handleTypeChange(idx, e.target.value)}
-                                    className="w-full text-xs font-bold text-slate-700 bg-white border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
+                                    className="w-full text-xs font-bold text-slate-700 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
                                 >
                                     {toolOptions.map(opt => (
                                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -278,7 +278,7 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
                                     type="text"
                                     value={item.directive}
                                     onChange={(e) => handleDirectiveChange(idx, e.target.value)}
-                                    className="w-full text-xs text-slate-600 bg-white border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none placeholder:italic"
+                                    className="w-full text-xs text-slate-600 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none placeholder:italic"
                                     placeholder={t('blueprint.placeholder_instruction')}
                                 />
                             </div>
@@ -305,7 +305,7 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
           <div className="space-y-3 mb-6">
               {items.map((item, idx) => (
                   <div key={item.id} className="flex gap-3 items-start p-3 bg-slate-50 rounded-lg border border-slate-100">
-                      <div className="bg-white border border-slate-200 text-slate-600 font-bold w-6 h-6 flex items-center justify-center rounded-full text-xs shrink-0 mt-0.5">
+                      <div className="bg-white border border-slate-400 text-slate-600 font-bold w-6 h-6 flex items-center justify-center rounded-full text-xs shrink-0 mt-0.5">
                           {idx + 1}
                       </div>
                       <div className="flex-grow">
@@ -420,7 +420,7 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
                 <span>{t('persona.rapport_label')}</span>
                 <span className={`${character.rapport >= 70 ? 'text-green-600' : 'text-slate-600'}`}>{character.rapport || 30}%</span>
             </div>
-            <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden border border-slate-300">
+            <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden border border-slate-400">
                 <div
                     className={`h-full transition-all duration-500 ${side === 'left' ? 'bg-indigo-500' : 'bg-rose-500'}`}
                     style={{ width: `${character.rapport || 30}%` }}

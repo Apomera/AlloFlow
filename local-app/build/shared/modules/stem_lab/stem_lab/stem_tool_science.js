@@ -571,7 +571,7 @@ var _isCircuit = stemLabTab === 'explore' && stemLabTool === 'circuit'; if (!_is
 
                   var compLabel = comp.type === 'resistor' ? 'R' : comp.type === 'bulb' ? 'Bulb' : comp.type === 'switch' ? (comp.closed ? 'ON' : 'OFF') : comp.type === 'led' ? 'LED' : comp.type === 'ammeter' ? 'Ammeter' : 'Voltmeter';
 
-                  return React.createElement("div", { key: comp.id, className: "flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2 border border-slate-200" },
+                  return React.createElement("div", { key: comp.id, className: "flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2 border border-slate-400" },
 
                     React.createElement("span", null, compIcon),
 

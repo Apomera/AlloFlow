@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // =================================================================
 // stem_tool_rocks.js - Rocks & Minerals + Rock Cycle tools
 // Extracted from stem_tool_science.js for modular loading
@@ -124,7 +134,7 @@ const d = labToolData.rocks || {};
 
             { id: 'diorite', type: 'igneous', label: t('stem.rocks.diorite'), hardness: 6, texture: 'coarse-grained', grainColors: ['#1e1e1e', '#fafafa', '#4b5563', '#e5e7eb'], desc: 'Intrusive igneous rock with a "salt and pepper" appearance. Intermediate composition between granite and gabbro. Contains plagioclase feldspar and hornblende.', uses: 'Building stone, cobblestones, ancient sculptures (Inca)' },
 
-            { id: 'andesite', type: 'igneous', label: t('stem.rocks.andesite'), hardness: 6, texture: 'fine-grained', grainColors: ['#6b7280', '#9ca3af', '#4b5563', '#d1d5db'], desc: 'Intermediate volcanic rock named after the Andes Mountains. Common at convergent plate boundaries. Often contains visible phenocrysts in a fine matrix (porphyritic texture).', uses: 'Construction aggregate, monuments' },
+            { id: 'andesite', type: 'igneous', label: t('stem.rocks.andesite'), hardness: 6, texture: 'fine-grained', grainColors: ['#94a3b8', '#9ca3af', '#4b5563', '#d1d5db'], desc: 'Intermediate volcanic rock named after the Andes Mountains. Common at convergent plate boundaries. Often contains visible phenocrysts in a fine matrix (porphyritic texture).', uses: 'Construction aggregate, monuments' },
 
             { id: 'tuff', type: 'igneous', label: t('stem.rocks.tuff'), hardness: 4, texture: 'vesicular', grainColors: ['#fde68a', '#d6d3d1', '#a8a29e', '#e7e5e4'], desc: 'Consolidated volcanic ash. Formed when explosive eruptions blast fine particles into the air, which settle and lithify. Can contain pumice fragments and glass shards.', uses: 'Building stone (ancient Rome), lightweight concrete, water filtration' },
 
@@ -132,7 +142,7 @@ const d = labToolData.rocks || {};
 
             { id: 'limestone', type: 'sedimentary', label: t('stem.rocks.limestone'), hardness: 3, texture: 'bioclastic', grainColors: ['#e5e7eb', '#d1d5db', '#f3f4f6', '#fef9c3'], desc: 'Composed mainly of calcite (CaCO\u2083). Often contains fossils. Fizzes with acid!', uses: 'Cement, lime, building stone, chalk' },
 
-            { id: 'shale', type: 'sedimentary', label: t('stem.rocks.shale'), hardness: 3, texture: 'fine-layered', grainColors: ['#6b7280', '#4b5563', '#9ca3af', '#374151'], desc: 'Made of compressed clay and silt. Splits into thin layers (fissile). Most common sedimentary rock.', uses: 'Bricks, pottery, oil/gas source rock' },
+            { id: 'shale', type: 'sedimentary', label: t('stem.rocks.shale'), hardness: 3, texture: 'fine-layered', grainColors: ['#94a3b8', '#4b5563', '#9ca3af', '#374151'], desc: 'Made of compressed clay and silt. Splits into thin layers (fissile). Most common sedimentary rock.', uses: 'Bricks, pottery, oil/gas source rock' },
 
             { id: 'conglom', type: 'sedimentary', label: t('stem.rocks.conglomerate'), hardness: 6, texture: 'clastic-coarse', grainColors: ['#92400e', '#a16207', '#d4d4d8', '#78716c'], desc: 'Contains large rounded pebbles cemented in a fine matrix. Tells us about ancient fast-flowing rivers.', uses: 'Construction aggregate, decorative stone' },
 
@@ -146,11 +156,11 @@ const d = labToolData.rocks || {};
 
             { id: 'quartzite', type: 'metamorphic', label: t('stem.rocks.quartzite'), hardness: 7, texture: 'non-foliated', grainColors: ['#f5f5f4', '#fafaf9', '#e7e5e4', '#e0f2fe'], desc: 'Metamorphosed sandstone. Extremely hard \u2014 even harder than granite. Quartz grains fuse together.', uses: 'Railroad ballast, decorative stone' },
 
-            { id: 'gneiss', type: 'metamorphic', label: t('stem.rocks.gneiss'), hardness: 7, texture: 'banded', grainColors: ['#1e1e1e', '#fafafa', '#6b7280', '#d4d4d8'], desc: 'Shows distinct light and dark mineral banding. Forms under extreme heat and pressure deep in the crust.', uses: 'Decorative stone, construction' },
+            { id: 'gneiss', type: 'metamorphic', label: t('stem.rocks.gneiss'), hardness: 7, texture: 'banded', grainColors: ['#1e1e1e', '#fafafa', '#94a3b8', '#d4d4d8'], desc: 'Shows distinct light and dark mineral banding. Forms under extreme heat and pressure deep in the crust.', uses: 'Decorative stone, construction' },
 
             { id: 'schist', type: 'metamorphic', label: t('stem.rocks.schist'), hardness: 5, texture: 'foliated', grainColors: ['#78716c', '#a8a29e', '#57534e', '#d6d3d1'], desc: 'Medium-grade metamorphic rock with visible, aligned mica flakes that give it a sparkly, shiny appearance. Forms from shale under moderate heat and pressure. Named for its tendency to split (Greek "schizein" = to split).', uses: 'Decorative landscaping, flagstone, historical millstones' },
 
-            { id: 'phyllite', type: 'metamorphic', label: t('stem.rocks.phyllite'), hardness: 4, texture: 'foliated', grainColors: ['#4b5563', '#6b7280', '#374151', '#9ca3af'], desc: 'Between slate and schist in metamorphic grade. Has a distinctive silky, satiny sheen from microscopic mica crystals. Crinkled foliation surface (crenulations). The stepping stone between low and medium metamorphism.', uses: 'Decorative stone, garden paths, grave markers' }
+            { id: 'phyllite', type: 'metamorphic', label: t('stem.rocks.phyllite'), hardness: 4, texture: 'foliated', grainColors: ['#4b5563', '#94a3b8', '#374151', '#9ca3af'], desc: 'Between slate and schist in metamorphic grade. Has a distinctive silky, satiny sheen from microscopic mica crystals. Crinkled foliation surface (crenulations). The stepping stone between low and medium metamorphism.', uses: 'Decorative stone, garden paths, grave markers' }
 
           ];
 
@@ -186,7 +196,7 @@ const d = labToolData.rocks || {};
 
             { id: 'fluorite', label: t('stem.rocks.fluorite'), hardness: 4, streak: 'White', luster: 'Vitreous', crystal: 'Cubic (Isometric)', color: '#7c3aed', formula: 'CaF\u2082', desc: 'Known as the "most colorful mineral in the world" \u2014 comes in virtually every color: purple, green, blue, yellow, pink, and even colorless. Forms perfect cubic and octahedral crystals. Often fluorescent under UV light (the word "fluorescence" comes from fluorite!). Four directions of perfect cleavage.', uses: 'Steelmaking flux, hydrofluoric acid production, optical lenses, gemstone, decorative carvings', funFact: 'Fluorite literally invented the word "fluorescence"! In 1852, George Stokes described the glow of fluorite under UV light and coined the term from the name of the mineral. The element fluorine is also named after fluorite!', occurrence: 'Hydrothermal veins, limestone cavities. Major deposits in China, Mexico, South Africa, Derbyshire (England \u2014 "Blue John"), and Illinois (USA).' },
 
-            { id: 'galena', label: t('stem.rocks.galena'), hardness: 2.5, streak: 'Lead-gray', luster: 'Metallic', crystal: 'Cubic (Isometric)', color: '#6b7280', formula: 'PbS', desc: 'Primary ore of lead. Very dense (heavy for its size) with perfect cubic cleavage \u2014 fractures into tiny cubes. Bright metallic silver color when fresh, tarnishes to dull gray. Lead-gray streak. Often found with silver as an impurity, making it a source of silver too.', uses: 'Lead production, ammunition, batteries, radiation shielding, early radio crystal detectors', funFact: 'Before transistors were invented, galena crystals were used in "crystal radio" sets! A thin wire ("cat\u2019s whisker") touching a galena crystal could detect radio signals without any battery or electricity. Galena was also used by ancient Egyptians as kohl eyeliner!', occurrence: 'Hydrothermal veins, limestone replacement deposits. Missouri (USA \u2014 largest lead deposit), Broken Hill (Australia), Germany, Mexico.' },
+            { id: 'galena', label: t('stem.rocks.galena'), hardness: 2.5, streak: 'Lead-gray', luster: 'Metallic', crystal: 'Cubic (Isometric)', color: '#94a3b8', formula: 'PbS', desc: 'Primary ore of lead. Very dense (heavy for its size) with perfect cubic cleavage \u2014 fractures into tiny cubes. Bright metallic silver color when fresh, tarnishes to dull gray. Lead-gray streak. Often found with silver as an impurity, making it a source of silver too.', uses: 'Lead production, ammunition, batteries, radiation shielding, early radio crystal detectors', funFact: 'Before transistors were invented, galena crystals were used in "crystal radio" sets! A thin wire ("cat\u2019s whisker") touching a galena crystal could detect radio signals without any battery or electricity. Galena was also used by ancient Egyptians as kohl eyeliner!', occurrence: 'Hydrothermal veins, limestone replacement deposits. Missouri (USA \u2014 largest lead deposit), Broken Hill (Australia), Germany, Mexico.' },
 
             { id: 'gypsum', label: t('stem.rocks.gypsum'), hardness: 2, streak: 'White', luster: 'Vitreous/Silky/Pearly', crystal: 'Monoclinic', color: '#faf5ff', formula: 'CaSO\u2084\u00B72H\u2082O', desc: 'A very soft evaporite mineral (can be scratched with a fingernail). Forms in a variety of habits: tabular crystals (selenite), fibrous masses (satin spar), and granular masses (alabaster). Transparent selenite crystals can be enormous. Contains water in its crystal structure.', uses: 'Drywall/plasterboard, plaster of Paris, cement, fertilizer, alabaster carvings', funFact: 'The Naica Mine in Mexico contains selenite gypsum crystals up to 12 meters (39 feet) long and weighing 55 tons \u2014 the largest crystals ever discovered on Earth! The cave is so hot (58\u00B0C/136\u00B0F) that humans can only survive inside for about 10 minutes!', occurrence: 'Evaporite deposits, desert roses (sand-included crystals), cave formations. Major deposits in USA, Mexico, Spain, Italy, and Nova Scotia.' },
 
@@ -560,7 +570,7 @@ const d = labToolData.rocks || {};
 
               mtGrad.addColorStop(0.2, '#d1d5db');
 
-              mtGrad.addColorStop(0.5, '#6b7280');
+              mtGrad.addColorStop(0.5, '#94a3b8');
 
               mtGrad.addColorStop(1, '#374151');
 
@@ -1242,6 +1252,35 @@ const d = labToolData.rocks || {};
 
             ),
 
+            // ── Topic-accent hero band per mode ──
+            (function() {
+              var MODE_META = {
+                landscape: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '🗺️', title: 'Landscape \u2014 the geology you can SEE',           hint: 'Volcano, river delta, mountain face. Surface features tell you what\u2019s underneath. Plate tectonics + erosion + time = every landscape. The Hawaiian volcanoes are 30+ million years old; Mt. Etna is 500K.' },
+                rocks:     { accent: '#92400e', soft: 'rgba(146,64,14,0.10)',  icon: '🪨', title: 'Rocks \u2014 igneous, sedimentary, metamorphic',     hint: 'Igneous (cooled magma: granite, basalt), sedimentary (compressed layers: sandstone, limestone), metamorphic (heat + pressure: marble, slate). The rock cycle moves stones between all three over millions of years.' },
+                minerals:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '💎', title: 'Minerals \u2014 the building blocks of rocks',         hint: 'Mohs scale 1-10: talc soft, diamond hardest. Streak, luster, cleavage, hardness, color = the 5 ID tests. Quartz is 12% of Earth\u2019s crust; you carry it in every grain of sand.' },
+                mystery:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '🔍', title: 'Mystery Rock \u2014 detective ID',                  hint: 'Real geology workflow: observe (color, crystals, layers), test (hardness, streak, fizz with HCl for carbonate), classify. The fizz test alone separates limestone from a pile of look-alikes.' },
+                quiz:      { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '🧠', title: 'Quiz \u2014 graded ID + classification',              hint: 'NGSS MS-ESS2-1: rock cycle as material system. AP ES practice: matching rocks to environment of formation. Builds the visual library so you can ID a rock at the Grand Canyon by sight.' }
+              };
+              var meta = MODE_META[mode] || MODE_META.landscape;
+              return React.createElement('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
 
 
             // ── Landscape mode ──
@@ -1320,9 +1359,7 @@ const d = labToolData.rocks || {};
 
                 ['all', 'igneous', 'sedimentary', 'metamorphic'].map(function (t) {
 
-                  return React.createElement("button", { "aria-label": "Change selected type",
-
-                    key: t, onClick: function () { upd("selectedType", t === 'all' ? null : t); },
+                  return React.createElement("button", { key: t, onClick: function () { upd("selectedType", t === 'all' ? null : t); },
 
                     className: "px-3 py-1 rounded-full text-xs font-bold transition-all " +
 
@@ -1344,9 +1381,7 @@ const d = labToolData.rocks || {};
 
                   const rt = ROCK_TYPES[rock.type];
 
-                  return React.createElement("button", { "aria-label": "Change selected rock",
-
-                    key: rock.id, onClick: function () { upd("selectedRock", d.selectedRock === rock.id ? null : rock.id); upd("selectedMineral", null); },
+                  return React.createElement("button", { key: rock.id, onClick: function () { upd("selectedRock", d.selectedRock === rock.id ? null : rock.id); upd("selectedMineral", null); },
 
                     className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
 
@@ -1900,7 +1935,7 @@ const d = labToolData.rocks || {};
 
                 csCtx.fillText('Streak', panelX + csW * 0.12, csH * 0.16);
 
-                var streakColors = { 'White': '#f8fafc', 'Greenish-black': '#1a3a1a', 'Black': '#1e1e1e', 'Red-brown': '#8b3a2a', 'Lead-gray': '#6b7280', 'White-yellow': '#fef9c3', 'None (too hard)': '#94a3b8' };
+                var streakColors = { 'White': '#f8fafc', 'Greenish-black': '#1a3a1a', 'Black': '#1e1e1e', 'Red-brown': '#8b3a2a', 'Lead-gray': '#94a3b8', 'White-yellow': '#fef9c3', 'None (too hard)': '#94a3b8' };
 
                 var streakC = streakColors[selMineral.streak] || '#e2e8f0';
 
@@ -2011,13 +2046,12 @@ const d = labToolData.rocks || {};
                 // Mineral grid
                 React.createElement("div", { className: "grid grid-cols-4 gap-2 mb-3" },
                   MINERALS.map(function (mineral) {
-                    return React.createElement("button", { "aria-label": "Change selected mineral",
-                      key: mineral.id, onClick: function () { upd("selectedMineral", d.selectedMineral === mineral.id ? null : mineral.id); upd("selectedRock", null); },
+                    return React.createElement("button", { key: mineral.id, onClick: function () { upd("selectedMineral", d.selectedMineral === mineral.id ? null : mineral.id); upd("selectedRock", null); },
                       className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
                         (d.selectedMineral === mineral.id ? 'bg-white shadow-lg border-violet-400' : 'bg-slate-50 border-slate-200 hover:border-violet-200'),
                       style: d.selectedMineral === mineral.id ? { borderColor: '#8b5cf6', color: '#6d28d9' } : {}
                     },
-                      React.createElement("div", { className: "w-5 h-5 rounded-full mx-auto mb-1 border border-slate-200", style: { background: mineral.color } }),
+                      React.createElement("div", { className: "w-5 h-5 rounded-full mx-auto mb-1 border border-slate-400", style: { background: mineral.color } }),
                       mineral.label);
                   })
                 ),
@@ -2375,7 +2409,7 @@ const d = labToolData.rocks || {};
 
                           className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
 
-                            (wasWrong ? "bg-red-50 border-red-300 text-red-700" : "bg-slate-50 border-slate-200 text-slate-700 hover:border-amber-400")
+                            (wasWrong ? "bg-red-50 border-red-600 text-red-700" : "bg-slate-50 border-slate-200 text-slate-700 hover:border-amber-400")
 
                         },
 
@@ -3437,9 +3471,7 @@ const d = labToolData.rockCycle;
 
               ROCKS.map(function (rock) {
 
-                return React.createElement("button", { "aria-label": "Change selected rock",
-
-                  key: rock.id, onClick: function () { upd('selectedRock', rock.id); },
+                return React.createElement("button", { key: rock.id, onClick: function () { upd('selectedRock', rock.id); },
 
                   className: "px-3 py-2 rounded-lg text-xs font-bold transition-all " + (d.selectedRock === rock.id ? 'text-white shadow-md scale-105' : 'border hover:opacity-80'),
 
@@ -3515,9 +3547,7 @@ const d = labToolData.rockCycle;
 
                   var isActive = d.selectedProcess && d.selectedProcess.label === proc.label && d.selectedProcess.from === proc.from;
 
-                  return React.createElement("button", { "aria-label": "Change selected process",
-
-                    key: i, onClick: function () { upd('selectedProcess', proc); },
+                  return React.createElement("button", { key: i, onClick: function () { upd('selectedProcess', proc); },
 
                     className: "p-2 rounded-lg text-left border transition-all " + (isActive ? 'bg-orange-100 border-orange-400 shadow-md' : 'bg-slate-50 border-slate-200 hover:bg-orange-50')
 
@@ -3593,7 +3623,7 @@ const d = labToolData.rockCycle;
 
                     var wasChosen = d.rcQuiz.chosen === opt;
 
-                    var cls = !d.rcQuiz.answered ? 'bg-white border-slate-200 hover:border-orange-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
+                    var cls = !d.rcQuiz.answered ? 'bg-white border-slate-200 hover:border-orange-400' : isCorrect ? 'bg-emerald-100 border-emerald-600' : wasChosen ? 'bg-red-100 border-red-600' : 'bg-slate-50 border-slate-200 opacity-50';
 
                     return React.createElement("button", { "aria-label": "Select answer: " + opt,
 

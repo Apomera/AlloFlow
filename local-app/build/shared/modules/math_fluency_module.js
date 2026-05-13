@@ -27,6 +27,24 @@
       '.fixed.inset-0 button:focus-visible, .fixed.inset-0 input:focus-visible, .fixed.inset-0 [tabindex]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; border-radius: 4px; }',
       '.fixed.inset-0 :focus:not(:focus-visible) { outline: none !important; }',
       '.fixed.inset-0 .text-slate-400 { color: #64748b !important; }',
+      // Gate feedback animations — wrong-answer shake + correct-answer
+      // open-flash. The transform combines the centered translate (so the
+      // gate stays anchored to the maze midpoint) with the keyframe shake.
+      '@keyframes alloGateShake { 0%,100% { transform: translate(-50%,-50%); } 15% { transform: translate(calc(-50% - 8px), -50%); } 30% { transform: translate(calc(-50% + 8px), -50%); } 45% { transform: translate(calc(-50% - 6px), -50%); } 60% { transform: translate(calc(-50% + 6px), -50%); } 75% { transform: translate(calc(-50% - 3px), -50%); } 90% { transform: translate(calc(-50% + 3px), -50%); } }',
+      '.allo-gate-shake { animation: alloGateShake 480ms cubic-bezier(.36,.07,.19,.97) both; }',
+      '@keyframes alloGateOpen { 0% { transform: translate(-50%,-50%) scale(1); filter: brightness(1); } 35% { transform: translate(-50%,-50%) scale(1.06); filter: brightness(1.4); } 100% { transform: translate(-50%,-50%) scale(1.04); filter: brightness(1.2); } }',
+      '.allo-gate-open { animation: alloGateOpen 220ms ease-out forwards; }',
+      '@keyframes alloStreakPulse { 0% { transform: translateX(-50%) scale(0.8); opacity: 0; } 18% { transform: translateX(-50%) scale(1.08); opacity: 1; } 35% { transform: translateX(-50%) scale(1); opacity: 1; } 80% { transform: translateX(-50%) scale(1); opacity: 1; } 100% { transform: translateX(-50%) scale(0.94); opacity: 0; } }',
+      '@keyframes alloVolumeRotate { from { transform: rotateX(-22deg) rotateY(-32deg); } to { transform: rotateX(-22deg) rotateY(328deg); } }',
+      '.allo-volume-rotate { animation: alloVolumeRotate 12s linear infinite; }',
+      '@media (prefers-reduced-motion: reduce) { .allo-volume-rotate { animation: none !important; } }',
+      '@media (prefers-reduced-motion: reduce) { .allo-gate-shake, .allo-gate-open { animation: none !important; } [style*="alloStreakPulse"] { animation-duration: 0.01ms !important; } }',
+      // Confetti burst on the win screen — pieces fall from above the
+      // viewport with random hue/duration/delay. Pointer-events:none so
+      // they never block the Play Again button. Hidden under reduced-motion.
+      '@keyframes alloConfettiFall { 0% { transform: translateY(-20vh) rotate(0deg); opacity: 0; } 8% { opacity: 1; } 92% { opacity: 0.9; } 100% { transform: translateY(115vh) rotate(720deg); opacity: 0; } }',
+      '.allo-confetti-piece { position: absolute; top: 0; border-radius: 2px; animation-name: alloConfettiFall; animation-timing-function: cubic-bezier(.55,.05,.45,.99); animation-fill-mode: forwards; pointer-events: none; }',
+      '@media (prefers-reduced-motion: reduce) { .allo-confetti-piece { display: none !important; } }',
     ].join('\n');
     document.head.appendChild(mfA11yStyle);
   }
@@ -118,7 +136,17 @@
     return _audioCtx;
   }
 
+  // Module-level mute flag. UI toggles set both this in-memory cell
+  // and the localStorage record so cross-tab reloads stay consistent.
+  var _mfMuted = false;
+  try { _mfMuted = localStorage.getItem('fluency_maze_muted') === '1'; } catch (e) {}
+  function _mfSetMuted(v) {
+    _mfMuted = !!v;
+    try { localStorage.setItem('fluency_maze_muted', _mfMuted ? '1' : '0'); } catch (e) {}
+  }
+
   function playTone(freq, duration, type, vol) {
+    if (_mfMuted) return;
     var ctx = getAudioCtx();
     if (!ctx) return;
     try {
@@ -483,9 +511,8 @@
                 padding: '8px 0', margin: '0 auto', display: 'block', borderTop: 'none', borderLeft: 'none', borderRight: 'none'
               }
             }),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '12px', marginTop: '1.5rem', justifyContent: 'center' } },
-              h('button', { "aria-label": "Enter",
-                type: 'submit',
+            h('div', { style: { display: 'flex', gap: '12px', marginTop: '1.5rem', justifyContent: 'center' } },
+              h('button', {  type: 'submit',
                 style: {
                   padding: '12px 32px', background: 'linear-gradient(to right, #10b981, #22c55e)',
                   color: '#fff', fontWeight: 800, borderRadius: '12px', fontSize: '1.1rem',
@@ -502,7 +529,7 @@
               }, 'Skip \u2192')
             )
           ),
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: '12px', fontSize: '11px', color: '#64748b' } },
+          h('div', { style: { marginTop: '12px', fontSize: '11px', color: '#64748b' } },
             'Tab = Skip \u2022 Esc = End Early' + (autoAdvance ? ' \u2022 Auto-advance ON' : ''))
         ),
         // End early button
@@ -519,19 +546,17 @@
       var ea = results.errorAnalysis;
       var maxDcpm = Math.max.apply(null, history.map(function (x) { return x.dcpm; }).concat([1]));
 
-      return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-        style: {
+      return h('div', { style: {
           background: 'linear-gradient(135deg, #fffbeb, #fff7ed)', borderRadius: '16px',
           border: '2px solid #fde68a', padding: '24px', marginBottom: '24px',
           animation: 'fadeIn 0.3s ease-out'
         }
       },
         // Header
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
           h('h3', { style: { fontSize: '18px', fontWeight: 900, color: '#92400e', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 } },
-            '\ud83d\udcca Fluency Probe Results'),
-          h('button', { "aria-label": "math_fluency action",
-            onClick: function () { setResults(null); },
+            h('span', { 'aria-hidden': 'true' }, '\ud83d\udcca '), 'Fluency Probe Results'),
+          h('button', { onClick: function () { setResults(null); },
             style: { color: '#64748b', cursor: 'pointer', background: 'none', border: 'none', padding: '4px' }
           }, h(X, { size: 18 }))
         ),
@@ -652,7 +677,7 @@
         })() : null,
 
         // Actions
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '8px', marginTop: '16px' } },
+        h('div', { style: { display: 'flex', gap: '8px', marginTop: '16px' } },
           h('button', { "aria-label": "Clear History",
             onClick: startProbe,
             style: {
@@ -675,19 +700,18 @@
     }
 
     // ── Config UI (default state) ──
-    return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-      style: {
+    return h('div', { style: {
         padding: '16px', background: 'linear-gradient(135deg, #fffbeb, #fff7ed)',
         borderRadius: '12px', border: '1px solid #fde68a'
       }
     },
       // Header
-      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' } },
-        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+      h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
           h(Zap, { size: 16 }),
-          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 800, fontSize: '14px', color: '#92400e' } }, '\u26a1 Math Fluency Probe')
+          h('span', { style: { fontWeight: 800, fontSize: '14px', color: '#92400e' } }, '\u26a1 Math Fluency Probe')
         ),
-        h('div', { 'aria-expanded': String(soundEnabled), role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: '6px' } },
+        h('div', { 'aria-expanded': String(soundEnabled), style: { display: 'flex', gap: '6px' } },
           h('button', { 'aria-expanded': String(soundEnabled),
             onClick: function () { setSoundEnabled(!soundEnabled); },
             title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
@@ -772,13 +796,12 @@
       // Grade benchmark preview
       (function () {
         var bm = getBenchmark(gradeLevel, operation);
-        return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-          style: { background: '#fff', borderRadius: '8px', padding: '8px 12px', marginBottom: '12px',
+        return h('div', { style: { background: '#fff', borderRadius: '8px', padding: '8px 12px', marginBottom: '12px',
             border: '1px solid #fef3c7', fontSize: '12px', color: '#64748b' }
         },
-          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 700 } }, '\ud83c\udfaf Grade ' + bm.grade + ' ' + bm.season + ' target: '),
-          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontWeight: 800, color: '#d97706' } }, bm.target + ' DCPM'),
-          h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginLeft: '8px', fontSize: '11px' } },
+          h('span', { style: { fontWeight: 700 } }, '\ud83c\udfaf Grade ' + bm.grade + ' ' + bm.season + ' target: '),
+          h('span', { style: { fontWeight: 800, color: '#d97706' } }, bm.target + ' DCPM'),
+          h('span', { style: { marginLeft: '8px', fontSize: '11px' } },
             '(\ud83d\udfe2\u2265' + bm.target + ' \ud83d\udfe1\u2265' + bm.strategic + ' \ud83d\udd34<' + bm.strategic + ')')
         );
       })(),
@@ -925,6 +948,68 @@
     return grid;
   }
 
+  // Daily streak — counts consecutive calendar days the maze was
+  // played. Stored as { lastPlayedDate: 'YYYY-MM-DD', current: N,
+  // longest: N }. Computed lazily so the streak record updates on
+  // first render, not on first move.
+  function _mfDailyStreak() {
+    try {
+      var today = new Date().toISOString().slice(0, 10);
+      var rec = JSON.parse(localStorage.getItem('fluency_maze_daily') || '{}');
+      if (rec.lastPlayedDate === today) return rec; // already counted today
+      var yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      var newCurrent = rec.lastPlayedDate === yesterday ? (rec.current || 0) + 1 : 1;
+      var next = {
+        lastPlayedDate: today,
+        current: newCurrent,
+        longest: Math.max(rec.longest || 0, newCurrent),
+      };
+      localStorage.setItem('fluency_maze_daily', JSON.stringify(next));
+      return next;
+    } catch (e) { return { current: 0, longest: 0 }; }
+  }
+  // Mastery counts — gates unlocked per operation (add / sub / mul /
+  // div). Used to award bronze / silver / gold badges per fact family
+  // so students see steady progress in each op even when total score
+  // is dominated by mixed-mode runs.
+  function _mfBumpOpCount(opLabel) {
+    try {
+      var cur = JSON.parse(localStorage.getItem('fluency_maze_op_counts') || '{}');
+      cur[opLabel] = (cur[opLabel] || 0) + 1;
+      localStorage.setItem('fluency_maze_op_counts', JSON.stringify(cur));
+    } catch (e) {}
+  }
+  function _mfMasteryTier(n) {
+    if (n >= 500) return { tier: 'gold',   emoji: '\uD83E\uDD47', label: 'Gold' };
+    if (n >= 200) return { tier: 'silver', emoji: '\uD83E\uDD48', label: 'Silver' };
+    if (n >= 50)  return { tier: 'bronze', emoji: '\uD83E\uDD49', label: 'Bronze' };
+    return null;
+  }
+  // Lifetime stats — accumulates across all sessions, persisted via
+  // localStorage. Used to render the "since you started playing" stats
+  // strip on the setup screen so students see their long-term progress.
+  function _mfBumpLifetime(patch) {
+    try {
+      var cur = JSON.parse(localStorage.getItem('fluency_maze_lifetime') || '{}');
+      var next = {
+        gatesUnlocked: (cur.gatesUnlocked || 0) + (patch.gatesUnlocked || 0),
+        mazesCompleted: (cur.mazesCompleted || 0) + (patch.mazesCompleted || 0),
+        longestStreak: Math.max(cur.longestStreak || 0, patch.longestStreak || 0),
+        totalSeconds: (cur.totalSeconds || 0) + (patch.totalSeconds || 0),
+      };
+      localStorage.setItem('fluency_maze_lifetime', JSON.stringify(next));
+    } catch (e) {}
+  }
+  // Aria-live announcer — pipes maze state to the global polite live
+  // region (allo-live-math-fluency, created at module init) so screen-
+  // reader users hear "Gate opens", "Wrong combination", "Key collected",
+  // "Maze complete" without having to watch the canvas.
+  function _mfAnnounce(msg) {
+    try {
+      var lr = document.getElementById('allo-live-math-fluency');
+      if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 30); }
+    } catch (e) { /* live region is optional polish */ }
+  }
   function FluencyMazePanel(props) {
     var React = props.React || window.React;
     var h = React.createElement;
@@ -939,16 +1024,61 @@
     var _s = useState;
     var mode = _s('setup')[0], setMode = _s[1]; // actually use individual calls
     // Re-declare properly
+    // Settings persistence — restore last-used prefs so returning
+    // students don't have to re-pick. Falls back to current defaults
+    // if no record (or storage blocked).
+    function _loadPrefs() {
+      try {
+        var raw = localStorage.getItem('fluency_maze_prefs');
+        if (raw) return JSON.parse(raw);
+      } catch (e) {}
+      return null;
+    }
+    function _savePrefs(patch) {
+      try {
+        var cur = _loadPrefs() || {};
+        localStorage.setItem('fluency_maze_prefs', JSON.stringify(Object.assign({}, cur, patch)));
+      } catch (e) {}
+    }
+    var _prefs = _loadPrefs() || {};
     var modeState = useState('setup');
     var mode = modeState[0], setMode = modeState[1];
-    var opState = useState('mul');
-    var operation = opState[0], setOperation = opState[1];
-    var diffState = useState('single');
-    var difficulty = diffState[0], setDifficulty = diffState[1];
-    var chaseState = useState(false);
-    var chaseMode = chaseState[0], setChaseMode = chaseState[1];
-    var mazeSizeState = useState('medium');
-    var mazeSize = mazeSizeState[0], setMazeSize = mazeSizeState[1];
+    var opState = useState(_prefs.operation || 'mul');
+    var operation = opState[0];
+    var setOperation = function(v) { opState[1](v); _savePrefs({ operation: v }); };
+    var diffState = useState(_prefs.difficulty || 'single');
+    var difficulty = diffState[0];
+    var setDifficulty = function(v) { diffState[1](v); _savePrefs({ difficulty: v }); };
+    var chaseState = useState(!!_prefs.chaseMode);
+    var chaseMode = chaseState[0];
+    var setChaseMode = function(v) { chaseState[1](v); _savePrefs({ chaseMode: v }); };
+    var mazeSizeState = useState(_prefs.mazeSize || 'medium');
+    var mazeSize = mazeSizeState[0];
+    var setMazeSize = function(v) { mazeSizeState[1](v); _savePrefs({ mazeSize: v }); };
+    // Player avatar — emoji rendered on the 2D minimap / fallback. Persists
+    // to _prefs so each student keeps their chosen character across runs.
+    // Stored as the literal emoji string (canvas fillText draws it).
+    var avatarState = useState(_prefs.playerAvatar || '🐱'); // default cat
+    var playerAvatar = avatarState[0];
+    var setPlayerAvatar = function(v) { avatarState[1](v); _savePrefs({ playerAvatar: v }); };
+    // Control mode — 'classic' (every step is a new gate, fluency drill)
+    // or 'explorer' (each wall-passage gates once, then opens both ways +
+    // free-look 3D camera + stricter minimap fog). Toggle on setup screen.
+    var controlModeState = useState(_prefs.controlMode || 'classic');
+    var controlMode = controlModeState[0];
+    var setControlMode = function(v) { controlModeState[1](v); _savePrefs({ controlMode: v }); };
+    var isExplorer = controlMode === 'explorer';
+    // Fullscreen toggle — when true the playing-mode wrapper switches to
+    // position:fixed inset:0 so the maze fills the viewport. Toggle button
+    // sits in the HUD; F key bound below. Persisted to _prefs so a teacher
+    // who runs every drill in fullscreen doesn't have to re-toggle each run.
+    var fullscreenState = useState(!!_prefs.fullscreen);
+    var isFullscreen = fullscreenState[0];
+    var setFullscreen = function(v) {
+      var next = typeof v === 'function' ? v(fullscreenState[0]) : v;
+      fullscreenState[1](next);
+      _savePrefs({ fullscreen: !!next });
+    };
     var mazeState = useState(null);
     var maze = mazeState[0], setMaze = mazeState[1];
     var posState = useState({ r: 0, c: 0 });
@@ -1001,6 +1131,14 @@
     // scale with maze size. Surfaces on the results screen.
     var medalState = useState(null);
     var medal = medalState[0], setMedal = medalState[1];
+    // Snapshot of the prior personal-best for the current (op, size,
+    // difficulty) at the moment the player wins. Captured once in the
+    // win handler so the results screen can render an honest "X seconds
+    // faster than your previous best" pill (the bestStore has already
+    // been mutated by the time results renders, so reading it back
+    // there would always show the current run as the best).
+    var priorBestState = useState(null);
+    var priorBestSnapshot = priorBestState[0], setPriorBestSnapshot = priorBestState[1];
     var canvasRef = useRef(null);
     var playerPosRef = useRef({ r: 0, c: 0 });
     var timerRef = useRef(null);
@@ -1020,11 +1158,91 @@
     // the move handler) rather than state (would trigger extra renders and
     // race with the correct-answer -> move sequence).
     var visitedCellsRef = useRef({ '0,0': true });
+    // Explorer Mode — paths (wall-passages between two cells) that have been
+    // solved this run. Once a path is in here, walking it again skips the
+    // gate. Keyed by canonical "minRC|maxRC" so direction-of-travel is
+    // irrelevant (solving R→L opens L→R too). Reset in startMaze.
+    var solvedPathsRef = useRef({});
+    // Camera yaw offset (radians) for Explorer Mode free-look. 0 = facing the
+    // last-move direction (Classic behavior). Mutated by mouse/touch drag
+    // listeners attached in init3D; read in the camera lookAt loop.
+    var lookYawRef = useRef(0);
+    // Target yaw the camera is easing toward. Q/E keyboard rotate sets this
+    // and lets the per-frame lerp animate to it; mouse/touch drag sets BOTH
+    // refs so the camera tracks the cursor 1:1 without lerp lag.
+    var lookYawTargetRef = useRef(0);
+    // Snapshot of the maze grid + key position from the last startMaze call,
+    // used by the "Same Maze" replay button on results so a student can
+    // retry the same layout to beat their time.
+    var lastRunRef = useRef(null);
+    // Per-fact accuracy log for THIS run only — keyed by problem.text
+    // (e.g. "7 × 8"), value is { correct, wrong }. Reset in startMaze.
+    // Surfaced on results as a "Facts to Practice" panel so the student
+    // (or teacher) sees which facts caused stumbles. Visual-volume gates
+    // skipped because their .text isn't a clean fact key.
+    var factStatsRef = useRef({});
+    // Mirror of `isExplorer` so listeners attached once in init3D always see
+    // the current value without a stale closure.
+    var isExplorerRef = useRef(isExplorer);
+    isExplorerRef.current = isExplorer;
     // Animation-time tick used only to nudge the minimap redraw when the
     // you-are-here pulse / breadcrumb trail needs a frame-accurate update.
     var minimapTickRef = useRef(0);
     // Bump when we want the "wrong answer" screen shake to fire.
     var shakeRef = useRef(0);
+    // Dust-particle queue — radial puffs spawned in submitAnswer's
+    // correct path at the cell the player just left, decayed per
+    // draw frame in the canvas useEffect. Kept as a ref because
+    // particles are pure visual fluff and shouldn't trigger renders.
+    var dustParticlesRef = useRef([]);
+    // Per-gate wrong-attempt counter — surfaces "Attempt 2" / "Attempt 3"
+    // on the gate so retries feel acknowledged. Resets to 0 in tryMove
+    // when a new problem appears.
+    var attemptCountState = useState(0);
+    var attemptCount = attemptCountState[0], setAttemptCount = attemptCountState[1];
+    // First-run tutorial overlay — shown once per browser per device.
+    // Dismissed on first move or by clicking the overlay. Persistent
+    // localStorage flag prevents repeat exposure for returning students.
+    var tutorialSeenState = useState(function() {
+      try { return localStorage.getItem('fluency_maze_tutorial_seen') === '1'; }
+      catch (e) { return true; /* if localStorage blocked, skip tutorial */ }
+    });
+    var tutorialSeen = tutorialSeenState[0], setTutorialSeen = tutorialSeenState[1];
+    function _dismissTutorial() {
+      try { localStorage.setItem('fluency_maze_tutorial_seen', '1'); } catch (e) {}
+      setTutorialSeen(true);
+    }
+    // Streak milestone banner — text shown briefly when streak hits a
+    // multiple of 3 (3, 6, 9...). Cleared by setTimeout so it doesn't
+    // linger. Lives in maze view, not the gate, so it survives gate
+    // dismissal on correct.
+    var streakBannerState = useState('');
+    var streakBanner = streakBannerState[0], setStreakBanner = streakBannerState[1];
+    // Paused state — toggled by P key or pause button. While paused,
+    // the elapsed timer is held, tryMove/submitAnswer no-op, and a
+    // dim overlay covers the maze. Useful for interruptions.
+    var pausedState = useState(false);
+    var paused = pausedState[0], setPaused = pausedState[1];
+    // Keyboard help overlay — toggled by ? key. Local state, doesn't
+    // persist. Shows all the keyboard shortcuts in a parchment card.
+    var helpOpenState = useState(false);
+    var helpOpen = helpOpenState[0], setHelpOpen = helpOpenState[1];
+    // Mute state — local mirror of the module-level _mfMuted so the HUD
+    // button re-renders on toggle. Initialized from the module flag (which
+    // already read from localStorage at module load).
+    var mutedLocalState = useState(_mfMuted);
+    var mutedLocal = mutedLocalState[0], setMutedLocal = mutedLocalState[1];
+    function _toggleMute() {
+      var next = !mutedLocal;
+      _mfSetMuted(next);
+      setMutedLocal(next);
+      _mfAnnounce(next ? 'Sound off' : 'Sound on');
+    }
+    // Mirror paused into a ref so the timer interval (closed over the
+    // initial state value) reads the current pause status without
+    // needing to be torn down + recreated on every toggle.
+    var pausedRef = useRef(false);
+    useEffect(function() { pausedRef.current = paused; }, [paused]);
 
     function makeProblem() {
       var a, b, op = operation === 'mixed' ? ['add','sub','mul','div'][Math.floor(Math.random() * 4)] : operation;
@@ -1033,6 +1251,26 @@
       if (op === 'sub') { a = Math.floor(Math.random() * maxN) + 1; b = Math.floor(Math.random() * a) + 1; return { text: a + ' − ' + b, answer: a - b, op: op }; }
       if (op === 'mul') { a = Math.floor(Math.random() * 12) + 1; b = Math.floor(Math.random() * 12) + 1; return { text: a + ' × ' + b, answer: a * b, op: op }; }
       if (op === 'div') { b = Math.floor(Math.random() * 11) + 2; var ans = Math.floor(Math.random() * 12) + 1; a = b * ans; return { text: a + ' ÷ ' + b, answer: ans, op: op }; }
+      if (op === 'volume') {
+        // Visual volume gate. Pick L,W,H so the prism stays readable
+        // (no axis larger than 6 single / 8 double) and total volume
+        // stays manageable to count by hand.
+        var maxAxis = difficulty === 'single' ? 6 : 8;
+        var L = Math.floor(Math.random() * (maxAxis - 1)) + 2;
+        var W = Math.floor(Math.random() * (maxAxis - 1)) + 2;
+        var H = Math.floor(Math.random() * (maxAxis - 1)) + 2;
+        // 25% chance of L-block — only when each axis is at least 3,
+        // so we have room to carve a notch without collapsing the prism.
+        var asLBlock = (L >= 3 && W >= 3 && H >= 3 && Math.random() < 0.25);
+        if (asLBlock) {
+          var nL = Math.max(1, Math.floor(L / 3));
+          var nW = Math.max(1, Math.floor(W / 3));
+          var nH = Math.max(1, Math.floor(H / 3));
+          var vol = (L * W * H) - (nL * nW * nH);
+          return { text: 'V = ?', answer: vol, op: 'volume', type: 'visual', shape: 'lblock', dims: { l: L, w: W, h: H }, notch: { l: nL, w: nW, h: nH } };
+        }
+        return { text: 'V = ?', answer: L * W * H, op: 'volume', type: 'visual', shape: 'rect', dims: { l: L, w: W, h: H } };
+      }
       return { text: '1 + 1', answer: 2, op: 'add' };
     }
 
@@ -1098,13 +1336,33 @@
       setTimeout(function() { setHintDir(null); }, 2200);
     }
 
-    function startMaze() {
-      var sz = getMazeSize();
-      var newMaze = generateMaze(sz.rows, sz.cols);
+    function startMaze(replay) {
+      var newMaze, keyPos, sz;
+      // Replay branch — reuse the previous run's grid + key cell so a
+      // student can retry the same layout. Falls back to a fresh maze if
+      // there's no last-run cached (e.g., first session).
+      if (replay && lastRunRef.current && lastRunRef.current.maze) {
+        newMaze = lastRunRef.current.maze;
+        keyPos = lastRunRef.current.keyPos;
+        sz = { rows: newMaze.length, cols: newMaze[0].length };
+      } else {
+        sz = getMazeSize();
+        newMaze = generateMaze(sz.rows, sz.cols);
+      }
       setMaze(newMaze);
       setPlayerPos({ r: 0, c: 0 }); playerPosRef.current = { r: 0, c: 0 };
       // Reset breadcrumb trail — each new maze starts with only the origin lit.
       visitedCellsRef.current = { '0,0': true };
+      // Reset Explorer-mode state. solvedPathsRef accumulates over a run; a
+      // fresh maze means no paths solved yet. lookYawRef + lookYawTargetRef
+      // keep the camera aimed at the start orientation rather than wherever
+      // the previous maze ended.
+      solvedPathsRef.current = {};
+      lookYawRef.current = 0;
+      lookYawTargetRef.current = 0;
+      // Per-fact accuracy log resets every run so the "Facts to Practice"
+      // panel reflects only the current attempt, not lifetime stumbles.
+      factStatsRef.current = {};
       setMonsterPos({ r: 0, c: 0 });
       setCurrentProblem(null);
       setScore(0); setCorrect(0); setWrong(0); setMoveCount(0); setElapsed(0);
@@ -1112,28 +1370,34 @@
       setStreak(0); setHintDir(null);
       setKeyCollected(false);
       setMedal(null);
-      // Pick a random cell for the key that isn't the start OR the exit, and
-      // prefer cells at least 1/3 of the way from origin so the key detour
-      // feels meaningful rather than incidental.
-      var minDist = Math.floor((sz.rows + sz.cols) / 3);
-      var candidates = [];
-      for (var kr = 0; kr < sz.rows; kr++) {
-        for (var kc = 0; kc < sz.cols; kc++) {
-          if (kr === 0 && kc === 0) continue;
-          if (kr === sz.rows - 1 && kc === sz.cols - 1) continue;
-          if ((kr + kc) >= minDist) candidates.push({ r: kr, c: kc });
+      if (keyPos) {
+        keyPosRef.current = keyPos;
+      } else {
+        // Pick a random cell for the key that isn't the start OR the exit, and
+        // prefer cells at least 1/3 of the way from origin so the key detour
+        // feels meaningful rather than incidental.
+        var minDist = Math.floor((sz.rows + sz.cols) / 3);
+        var candidates = [];
+        for (var kr = 0; kr < sz.rows; kr++) {
+          for (var kc = 0; kc < sz.cols; kc++) {
+            if (kr === 0 && kc === 0) continue;
+            if (kr === sz.rows - 1 && kc === sz.cols - 1) continue;
+            if ((kr + kc) >= minDist) candidates.push({ r: kr, c: kc });
+          }
+        }
+        if (candidates.length === 0) {
+          // Tiny 2x2-ish fallback — just drop it in the middle.
+          keyPosRef.current = { r: Math.floor(sz.rows / 2), c: Math.floor(sz.cols / 2) };
+        } else {
+          keyPosRef.current = candidates[Math.floor(Math.random() * candidates.length)];
         }
       }
-      if (candidates.length === 0) {
-        // Tiny 2x2-ish fallback — just drop it in the middle.
-        keyPosRef.current = { r: Math.floor(sz.rows / 2), c: Math.floor(sz.cols / 2) };
-      } else {
-        keyPosRef.current = candidates[Math.floor(Math.random() * candidates.length)];
-      }
+      // Stash the layout for the "Same Maze" replay button on results.
+      lastRunRef.current = { maze: newMaze, keyPos: keyPosRef.current };
       setMode('playing');
       // Timer
       if (timerRef.current) clearInterval(timerRef.current);
-      timerRef.current = setInterval(function() { setElapsed(function(p) { return p + 1; }); }, 1000);
+      timerRef.current = setInterval(function() { if (!pausedRef.current) setElapsed(function(p) { return p + 1; }); }, 1000);
       // Monster chase timer (moves every 4 seconds)
       if (monsterTimerRef.current) clearInterval(monsterTimerRef.current);
       if (chaseMode) {
@@ -1153,8 +1417,16 @@
       }
     }
 
+    // Canonical key for the wall-passage between two grid cells. Sorted by
+    // (row,col) so traversal direction is irrelevant — solving R→L opens
+    // the same key as L→R. Used by Explorer Mode's once-per-path gating.
+    function _pathKey(r1, c1, r2, c2) {
+      var a = r1 * 1000 + c1, b = r2 * 1000 + c2;
+      return (a < b) ? (a + '|' + b) : (b + '|' + a);
+    }
+
     function tryMove(dir) {
-      if (gameOver || won) return;
+      if (gameOver || won || paused) return;
       var cell = maze[playerPos.r][playerPos.c];
       var canMove = false;
       var newR = playerPos.r, newC = playerPos.c;
@@ -1162,10 +1434,45 @@
       if (dir === 'down' && !cell.walls.bottom) { newR++; canMove = true; }
       if (dir === 'left' && !cell.walls.left) { newC--; canMove = true; }
       if (dir === 'right' && !cell.walls.right) { newC++; canMove = true; }
-      if (!canMove) { setFeedback('wall'); setTimeout(function() { setFeedback(''); }, 300); return; }
+      if (!canMove) { setFeedback('wall'); playTone(140, 0.08, 'triangle', 0.06); setTimeout(function() { setFeedback(''); }, 300); return; }
+      // Explorer Mode: if this path-passage was already solved this run,
+      // walk through silently — no gate. Mirrors the correct-path side of
+      // submitAnswer so the player still gets the visited / camera updates.
+      if (isExplorer) {
+        var pk = _pathKey(playerPos.r, playerPos.c, newR, newC);
+        if (solvedPathsRef.current[pk]) {
+          var newPos = { r: newR, c: newC };
+          playerPosRef.current = newPos;
+          visitedCellsRef.current[newR + ',' + newC] = true;
+          setPlayerPos(newPos);
+          setMoveCount(function(p) { return p + 1; });
+          // Step tone — soft footstep so the move still has audio feedback.
+          playTone(420, 0.04, 'sine', 0.025);
+          // Key pickup still triggers if walking onto the key cell.
+          var kpE = keyPosRef.current;
+          if (!keyCollected && kpE && newR === kpE.r && newC === kpE.c) {
+            setKeyCollected(true);
+            _mfAnnounce('You picked up the golden key. The exit portal is now unlocked.');
+            if (addToast) addToast('🗝️ Golden key collected! The exit is unlocked.', 'success');
+            playTone(880, 0.08, 'sine', 0.06);
+            setTimeout(function() { playTone(1175, 0.08, 'sine', 0.06); }, 90);
+            setTimeout(function() { playTone(1568, 0.12, 'sine', 0.06); }, 180);
+          }
+          return;
+        }
+      }
       // Show a problem to solve before moving
-      setCurrentProblem({ dir: dir, targetR: newR, targetC: newC, problem: makeProblem() });
+      var _prob = makeProblem();
+      setCurrentProblem({ dir: dir, targetR: newR, targetC: newC, problem: _prob });
       setUserInput('');
+      setAttemptCount(0);
+      if (_prob.type === 'visual') {
+        var d = _prob.dims;
+        var msg = (_prob.shape === 'lblock')
+          ? 'L block prism gate. Base ' + d.l + ' by ' + d.w + ' by ' + d.h + ', with a ' + _prob.notch.l + ' by ' + _prob.notch.w + ' by ' + _prob.notch.h + ' corner removed. Solve for total cubes.'
+          : 'Volume gate. ' + d.l + ' by ' + d.w + ' by ' + d.h + '. Solve for total cubes.';
+        _mfAnnounce(msg);
+      }
       setTimeout(function() { if (inputRef.current) inputRef.current.focus(); }, 50);
     }
 
@@ -1176,11 +1483,33 @@
         // Correct — move to new cell
         var newPos = { r: currentProblem.targetR, c: currentProblem.targetC };
         setPlayerPos(newPos); playerPosRef.current = newPos;
+        // Per-fact accuracy log: count this as a correct attempt for the
+        // current fact text. Skip visual gates (no clean fact key).
+        if (currentProblem.problem.type !== 'visual') {
+          var _ftxt = currentProblem.problem.text;
+          var _fs = factStatsRef.current[_ftxt] || { correct: 0, wrong: 0 };
+          _fs.correct++;
+          factStatsRef.current[_ftxt] = _fs;
+        }
+        // Explorer Mode: record this path-passage as solved so re-walking
+        // it (or returning through it) skips the gate for the rest of the
+        // run. Direction-agnostic via canonical _pathKey.
+        if (isExplorer) {
+          solvedPathsRef.current[_pathKey(playerPos.r, playerPos.c, newPos.r, newPos.c)] = true;
+        }
         // Mark the cell we just left AND the new one as visited so both show
         // on the breadcrumb/fog-of-war minimap. Using a ref (not state) so
         // there's no extra re-render and no race with the playerPos update.
         visitedCellsRef.current[playerPos.r + ',' + playerPos.c] = true;
         visitedCellsRef.current[newPos.r + ',' + newPos.c] = true;
+        if (!tutorialSeen) _dismissTutorial();
+        // Spawn dust puff at the cell we just left so movement feels
+        // physical. Particles fade over ~0.6s in the draw loop.
+        try {
+          var dustList = dustParticlesRef.current;
+          dustList.push({ r: playerPos.r, c: playerPos.c, age: 0, life: 0.6 });
+          if (dustList.length > 12) dustList.shift();
+        } catch (e) {}
         // Streak bump. Every 3 in a row = bonus score + a little fanfare,
         // reinforcing sustained fluency rather than just isolated correct
         // answers. Captured here synchronously so the milestone check fires
@@ -1190,6 +1519,8 @@
         var streakBonus = 0;
         if (nextStreak > 0 && nextStreak % 3 === 0) {
           streakBonus = 5 + nextStreak; // 8 @3, 11 @6, 14 @9, …
+          setStreakBanner('\uD83D\uDD25 STREAK x' + nextStreak + '! +' + streakBonus + ' bonus');
+          setTimeout(function() { setStreakBanner(''); }, 1500);
           if (addToast) addToast('\uD83D\uDD25 Streak x' + nextStreak + '! +' + streakBonus + ' bonus', 'success');
           // Quick ascending chime for the milestone
           playTone(880, 0.06, 'sine', 0.05);
@@ -1199,11 +1530,46 @@
         setCorrect(function(p) { return p + 1; });
         setScore(function(p) { return p + 10 + streakBonus; });
         setMoveCount(function(p) { return p + 1; });
+        _mfBumpLifetime({ gatesUnlocked: 1, longestStreak: nextStreak });
+        (function() {
+          var ptxt = (currentProblem.problem.text || '');
+          var opK = currentProblem.problem.type === 'visual' ? 'volume'
+            : ptxt.indexOf('\u00D7') >= 0 || ptxt.indexOf('x') >= 0 || ptxt.indexOf('*') >= 0 ? 'mul'
+            : ptxt.indexOf('\u00F7') >= 0 || ptxt.indexOf('/') >= 0 ? 'div'
+            : ptxt.indexOf('+') >= 0 ? 'add'
+            : (ptxt.indexOf('\u2212') >= 0 || ptxt.indexOf('-') >= 0) ? 'sub'
+            : null;
+          if (opK) {
+            // Detect tier crossing — read pre-bump value, compute the
+            // tier of (n) and (n+1); if they differ, fire celebration.
+            try {
+              var preCounts = JSON.parse(localStorage.getItem('fluency_maze_op_counts') || '{}');
+              var pre = preCounts[opK] || 0;
+              var preTier = _mfMasteryTier(pre);
+              var postTier = _mfMasteryTier(pre + 1);
+              if (postTier && (!preTier || postTier.tier !== preTier.tier)) {
+                var opNice = { add: 'Addition', sub: 'Subtraction', mul: 'Multiplication', div: 'Division', volume: 'Volume' }[opK] || opK;
+                if (addToast) addToast(postTier.emoji + ' ' + postTier.label + ' ' + opNice + ' Mastery unlocked!', 'success');
+                _mfAnnounce(postTier.label + ' ' + opNice + ' mastery earned. ' + (pre + 1) + ' gates.');
+                // Triple-tone fanfare layered on top of the existing
+                // streak chime — distinct enough to register as a
+                // separate event.
+                playTone(660, 0.08, 'sine', 0.05);
+                setTimeout(function() { playTone(990, 0.08, 'sine', 0.05); }, 90);
+                setTimeout(function() { playTone(1320, 0.12, 'sine', 0.05); }, 180);
+              }
+            } catch (e) {}
+            _mfBumpOpCount(opK);
+          }
+        })();
         setFeedback('correct');
+        _mfAnnounce('Gate opens. ' + currentProblem.problem.text + ' equals ' + currentProblem.problem.answer + '.');
         // Clear any active hint — reward for solving without it
         setHintDir(null);
         playTone(880, 0.05, 'sine', 0.06);
         setTimeout(function() { playTone(1320, 0.05, 'sine', 0.05); }, 50);
+        // Soft stone-footfall layered under the correct chime
+        setTimeout(function() { playTone(180, 0.06, 'triangle', 0.035); }, 110);
         // 3D feedback: green ambient flash + gem drop at the cell we just left
         var eng3d = maze3dEngRef.current;
         if (eng3d) {
@@ -1246,6 +1612,7 @@
         var kp = keyPosRef.current;
         if (!keyCollected && kp && newPos.r === kp.r && newPos.c === kp.c) {
           setKeyCollected(true);
+          _mfAnnounce('Golden key collected. The exit is now unlocked.');
           if (addToast) addToast('\uD83D\uDDDD\uFE0F Key collected! Portal unlocked', 'success');
           playTone(1175, 0.08, 'sine', 0.06);
           setTimeout(function() { playTone(1568, 0.1, 'sine', 0.05); }, 80);
@@ -1291,6 +1658,18 @@
           setWon(true); setMode('results');
           if (timerRef.current) clearInterval(timerRef.current);
           if (monsterTimerRef.current) clearInterval(monsterTimerRef.current);
+          // Win fanfare — rising C major arpeggio + sustained C-E-G chord.
+          // Layered with the existing maze-complete tones in the surrounding
+          // path so the celebration is distinctly bigger than a gate-unlock.
+          playTone(523, 0.14, 'sine', 0.08);
+          setTimeout(function() { playTone(659, 0.14, 'sine', 0.08); }, 110);
+          setTimeout(function() { playTone(784, 0.14, 'sine', 0.08); }, 220);
+          setTimeout(function() { playTone(1047, 0.22, 'sine', 0.09); }, 330);
+          setTimeout(function() {
+            playTone(1047, 0.45, 'sine', 0.06);
+            playTone(1319, 0.45, 'sine', 0.05);
+            playTone(1568, 0.45, 'sine', 0.05);
+          }, 600);
           // Medal thresholds scale with maze size — baseline is 2 seconds per
           // cell, which is a sprinter's pace. Gold = 60% of that, silver =
           // 100%, bronze = 180%. Beyond that, no medal (still a valid win).
@@ -1306,12 +1685,30 @@
             var medalEmoji = { gold: '\uD83E\uDD47', silver: '\uD83E\uDD48', bronze: '\uD83E\uDD49' }[medalKind];
             addToast(medalEmoji + ' ' + medalKind.toUpperCase() + ' TIME! +' + medalBonus + ' bonus', 'success');
           }
+          _mfAnnounce('Maze complete! ' + (correct + 1) + ' gates unlocked in ' + elapsed + ' seconds.');
           if (addToast) addToast('\uD83C\uDFC6 Maze complete! ' + (correct + 1) + ' correct in ' + elapsed + 's', 'success');
           if (handleScoreUpdate) handleScoreUpdate(Math.round((correct + 1) / Math.max(1, elapsed) * 60) + medalBonus, 'Fluency Maze Complete', 'fluency-maze');
-          // Save high score
+          _mfBumpLifetime({ mazesCompleted: 1, totalSeconds: elapsed });
+          // Save high score — keyed per (operation, size, difficulty) so
+          // distinct practice modes don't overwrite each other's bests.
+          // Legacy 'fluency_maze_best' (single global) is preserved as a
+          // fallback so existing students don't lose their prior best.
           try {
-            var hs = JSON.parse(localStorage.getItem('fluency_maze_best') || '{}');
-            if (!hs.score || finalScore > hs.score) {
+            var bestKey = operation + '|' + mazeSize + '|' + difficulty;
+            var bestStore = JSON.parse(localStorage.getItem('fluency_maze_bests') || '{}');
+            var prior = bestStore[bestKey];
+            // Stash a frozen copy so the results screen can compare against
+            // the pre-win record. Stored as a plain object so a stale
+            // closure can't see further mutations of bestStore.
+            setPriorBestSnapshot(prior ? { score: prior.score, time: prior.time, correct: prior.correct, wrong: prior.wrong } : null);
+            if (!prior || finalScore > prior.score) {
+              bestStore[bestKey] = { score: finalScore, correct: correct + 1, wrong: wrong, time: elapsed, op: operation, size: mazeSize, difficulty: difficulty, savedAt: Date.now() };
+              localStorage.setItem('fluency_maze_bests', JSON.stringify(bestStore));
+              if (prior) _mfAnnounce('New personal best for this mode: ' + finalScore + ' points.');
+            }
+            // Keep legacy global record in sync so the old key still works
+            var legacy = JSON.parse(localStorage.getItem('fluency_maze_best') || '{}');
+            if (!legacy.score || finalScore > legacy.score) {
               localStorage.setItem('fluency_maze_best', JSON.stringify({ score: finalScore, correct: correct + 1, wrong: wrong, time: elapsed, op: operation, size: mazeSize }));
             }
           } catch(e) {}
@@ -1376,20 +1773,44 @@
           }
         }
       } else {
-        // Wrong — don't move, penalty, streak broken
+        // Wrong — don't move, penalty, streak broken. KEEP the gate open
+        // so the student can retry the same fact (was: dismiss + force
+        // re-navigation). Just clear the input, shake the gate visually,
+        // and re-focus the hidden input for keyboard users.
         setWrong(function(p) { return p + 1; });
         setScore(function(p) { return Math.max(0, p - 3); });
         setStreak(0);
+        // Per-fact accuracy log: count this as a wrong attempt for the
+        // current fact text. Used by the results "Facts to Practice"
+        // panel; visual gates are skipped (no clean fact key).
+        if (currentProblem.problem.type !== 'visual') {
+          var _wtxt = currentProblem.problem.text;
+          var _ws = factStatsRef.current[_wtxt] || { correct: 0, wrong: 0 };
+          _ws.wrong++;
+          factStatsRef.current[_wtxt] = _ws;
+        }
         setFeedback('wrong');
+        _mfAnnounce('Wrong combination. The gate stays locked. Try again.');
+        setAttemptCount(function(p) { return p + 1; });
         playTone(220, 0.1, 'triangle', 0.04);
-        // Screen shake + red ambient flash. shakeRef decays inside the animate
-        // loop so the effect is short and non-nauseating.
+        // Lower harmonic clang so the wrong-answer audio reads as a locked
+        // gate rejecting the wrong combination.
+        setTimeout(function() { playTone(165, 0.18, 'triangle', 0.05); }, 80);
         shakeRef.current = 1;
         var eng3dW = maze3dEngRef.current;
         if (eng3dW) { eng3dW._feedbackFlash = 1; eng3dW.scene.children.forEach(function(c) { if (c.isAmbientLight) c.color.setHex(0xaa2222); c.intensity = 0.8; }); }
+        // Keep the wrong answer visible during the shake so the student
+        // sees what they typed — clears with the feedback flag at 600ms.
+        setTimeout(function() { if (inputRef.current) inputRef.current.focus(); }, 50);
+        setTimeout(function() { setFeedback(''); setUserInput(''); }, 600);
+        return;  // skip the dismiss-gate path below
       }
-      setCurrentProblem(null);
-      setTimeout(function() { setFeedback(''); }, 400);
+      // Correct path: dismiss the gate after a brief beat so the green
+      // flash + key-turn audio register before the overlay disappears.
+      setTimeout(function() {
+        setCurrentProblem(null);
+        setFeedback('');
+      }, 220);
     }
 
     // Check monster catch
@@ -1410,6 +1831,27 @@
           if (e.key === 'Enter') { e.preventDefault(); submitAnswer(); }
           return;
         }
+        // WCAG 2.1.4 — character-key shortcuts (P/M/F/H/?/WASD) must not
+        // fire when focus is in any editable element on the host page.
+        // The maze's own answer input only mounts inside currentProblem
+        // (handled above), so here we can safely skip on any editable.
+        var ae = (typeof document !== 'undefined') ? document.activeElement : null;
+        if (ae && ae !== document.body && ae.matches && ae.matches('input, textarea, select, [contenteditable="true"]')) return;
+        if (e.key === 'p' || e.key === 'P') { setPaused(function(v) { return !v; }); return; }
+        if (e.key === '?' || (e.shiftKey && e.key === '/')) { setHelpOpen(function(v) { return !v; }); return; }
+        if (e.key === 'm' || e.key === 'M') { _toggleMute(); return; }
+        if (e.key === 'f' || e.key === 'F') { setFullscreen(function(v) { return !v; }); return; }
+        if (paused) return;
+        // Explorer Mode keyboard rotate — Q/E nudge the look-yaw target
+        // 30° per press; the animate loop lerps the actual camera yaw
+        // toward it so the rotation feels smooth instead of snapping.
+        // Classic ignores these keys (yaw stays at 0 there anyway).
+        if (isExplorer && (e.key === 'q' || e.key === 'Q')) { lookYawTargetRef.current -= Math.PI / 6; return; }
+        if (isExplorer && (e.key === 'e' || e.key === 'E')) { lookYawTargetRef.current += Math.PI / 6; return; }
+        // R restarts the SAME maze layout (reuses lastRunRef) so a
+        // student can retry mid-run without trekking back to results.
+        // Only fires when there's a cached layout to reuse.
+        if ((e.key === 'r' || e.key === 'R') && lastRunRef.current) { startMaze(true); return; }
         if (e.key === 'ArrowUp' || e.key === 'w') tryMove('up');
         if (e.key === 'ArrowDown' || e.key === 's') tryMove('down');
         if (e.key === 'ArrowLeft' || e.key === 'a') tryMove('left');
@@ -1432,9 +1874,28 @@
       var ctx = cv.getContext('2d');
       var W = MAZE_COLS * CELL_SIZE;
       var H = MAZE_ROWS * CELL_SIZE;
-      cv.width = W; cv.height = H;
+      // High-DPI scaling — internal resolution is bumped so the canvas
+      // stays crisp when CSS-stretched into the wider container. Higher
+      // multiplier in fullscreen since the canvas displays larger.
+      // Setting cv.width/height resets ctx state per spec, so apply the
+      // scale via setTransform BEFORE any save/translate calls below.
+      var DRAW_SCALE = isFullscreen ? 3 : 2;
+      cv.width = W * DRAW_SCALE; cv.height = H * DRAW_SCALE;
+      ctx.setTransform(DRAW_SCALE, 0, 0, DRAW_SCALE, 0, 0);
       var visited = visitedCellsRef.current || { '0,0': true };
       var pulse = Math.sin(minimapTickRef.current * 0.12) * 0.5 + 0.5; // 0..1
+      // Wrong-answer screen shake — shakeRef is set to 1 in submitAnswer's
+      // wrong path and decayed here each frame. Applies a small random
+      // offset to the entire canvas so the maze visibly jolts when the
+      // gate rejects a bad answer. Decay rate keeps it under ~600ms.
+      var shake = shakeRef.current || 0;
+      if (shake > 0.02) {
+        ctx.save();
+        ctx.translate((Math.random() - 0.5) * shake * 12, (Math.random() - 0.5) * shake * 12);
+        shakeRef.current = shake * 0.86;
+      } else {
+        shakeRef.current = 0;
+      }
 
       // A cell is "seen" if visited OR any 4-neighbor is visited — gives the
       // player a little peek-ahead so corridors aren't completely opaque.
@@ -1443,8 +1904,15 @@
         return !!(visited[(r - 1) + ',' + c] || visited[(r + 1) + ',' + c] || visited[r + ',' + (c - 1)] || visited[r + ',' + (c + 1)]);
       }
 
-      // Background
-      ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+      // Background — warm parchment-stone tone instead of slate-900, so
+      // the dungeon reads like a torchlit corridor rather than a void.
+      ctx.fillStyle = '#3a2e26'; ctx.fillRect(0, 0, W, H);
+
+      // Soft amber base wash to evoke torchlight
+      var grad = ctx.createRadialGradient(W * 0.5, H * 0.5, 10, W * 0.5, H * 0.5, Math.max(W, H) * 0.7);
+      grad.addColorStop(0, 'rgba(251,191,36,0.05)');
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
 
       // Draw cells
       for (var r = 0; r < MAZE_ROWS; r++) {
@@ -1453,29 +1921,101 @@
           var x = c * CELL_SIZE, y = r * CELL_SIZE;
           var isVisited = !!visited[r + ',' + c];
           var isSeen = seen(r, c);
-          // Fog-of-war: unseen cells get a heavy dark overlay even though
-          // the wall skeleton underneath keeps the map legible as a shape.
+          // Explorer Mode — stricter fog of war: unseen cells render as
+          // solid black with NO walls drawn, so the player has to actually
+          // explore to learn the maze layout. Seen-but-not-visited cells
+          // (4-neighbor of visited) still render normally as a peek-ahead.
+          if (isExplorer && !isSeen) {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+            continue;
+          }
+          // Floor tint — warm tan for visible corridor floor (was near-black).
+          if (isSeen) {
+            ctx.fillStyle = 'rgba(217,180,140,0.18)';
+            ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+          }
+          // Fog-of-war (Classic): lighter warm-brown overlay. Keeps the
+          // unexplored region distinct without making it feel oppressive.
           if (!isSeen) {
-            ctx.fillStyle = 'rgba(2,6,20,0.85)';
+            ctx.fillStyle = 'rgba(58,46,38,0.55)';
             ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
           }
           // Cell floor
-          if (r === 0 && c === 0) { ctx.fillStyle = 'rgba(34,197,94,0.15)'; ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE); } // start
-          else if (r === MAZE_ROWS - 1 && c === MAZE_COLS - 1) { ctx.fillStyle = 'rgba(251,191,36,0.2)'; ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE); } // exit
-          // Breadcrumb tint for visited non-special cells
+          if (r === 0 && c === 0) { ctx.fillStyle = 'rgba(34,197,94,0.28)'; ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE); } // start
+          else if (r === MAZE_ROWS - 1 && c === MAZE_COLS - 1) { ctx.fillStyle = 'rgba(251,191,36,0.32)'; ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE); } // exit
+          // Breadcrumb tint for visited non-special cells — warm amber so it
+          // reads like dwindling torchlight rather than a cold blue trail.
           else if (isVisited) {
-            ctx.fillStyle = 'rgba(99,102,241,0.12)';
+            ctx.fillStyle = 'rgba(251,191,36,0.10)';
             ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
           }
-          // Walls — dim for unseen cells so the map still reads as a whole.
-          ctx.strokeStyle = isSeen ? '#475569' : '#1e293b';
+          // Walls — warmer stone tone, brighter for seen cells.
+          ctx.strokeStyle = isSeen ? '#a8957d' : '#5b4d3f';
           ctx.lineWidth = 2;
           if (cell.walls.top) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + CELL_SIZE, y); ctx.stroke(); }
           if (cell.walls.right) { ctx.beginPath(); ctx.moveTo(x + CELL_SIZE, y); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE); ctx.stroke(); }
           if (cell.walls.bottom) { ctx.beginPath(); ctx.moveTo(x, y + CELL_SIZE); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE); ctx.stroke(); }
           if (cell.walls.left) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + CELL_SIZE); ctx.stroke(); }
+          // Explorer Mode — highlight solved passages with a small gold
+          // dot at the midpoint of each opened doorway. Builds a visible
+          // trail of "doors I've already unlocked" without revealing
+          // unexplored layout. Only checks the right/bottom passages so
+          // each shared passage is drawn exactly once.
+          if (isExplorer) {
+            var solved = solvedPathsRef.current;
+            if (!cell.walls.right && c < MAZE_COLS - 1) {
+              if (solved[_pathKey(r, c, r, c + 1)]) {
+                ctx.fillStyle = 'rgba(251,191,36,0.85)';
+                ctx.beginPath();
+                ctx.arc(x + CELL_SIZE, y + CELL_SIZE / 2, 3, 0, Math.PI * 2);
+                ctx.fill();
+              }
+            }
+            if (!cell.walls.bottom && r < MAZE_ROWS - 1) {
+              if (solved[_pathKey(r, c, r + 1, c)]) {
+                ctx.fillStyle = 'rgba(251,191,36,0.85)';
+                ctx.beginPath();
+                ctx.arc(x + CELL_SIZE / 2, y + CELL_SIZE, 3, 0, Math.PI * 2);
+                ctx.fill();
+              }
+            }
+          }
         }
       }
+
+      // ── Torches ────────────────────────────────────────────────────────
+      // Place a flickering torch every ~4 cells along the corridor walls so
+      // the dungeon reads as lit, not abandoned. Position is deterministic
+      // by cell coords so torches don't dance around between renders, but
+      // each torch's intensity flickers using minimapTickRef + a phase
+      // offset derived from the cell so neighboring torches aren't in sync.
+      ctx.save();
+      for (var tr = 0; tr < MAZE_ROWS; tr++) {
+        for (var tc = 0; tc < MAZE_COLS; tc++) {
+          // Sparse placement — every 4th cell along a stable hash, only
+          // where the cell is seen (don't reveal unexplored corridors).
+          if ((tr * 5 + tc * 3) % 4 !== 0) continue;
+          if (!seen(tr, tc)) continue;
+          var tcx = (tc + 0.5) * CELL_SIZE;
+          var tcy = (tr + 0.5) * CELL_SIZE;
+          var phase = (tr * 17 + tc * 31) * 0.05;
+          var flicker = 0.7 + 0.3 * Math.sin(minimapTickRef.current * 0.18 + phase);
+          // Halo
+          var torchGrad = ctx.createRadialGradient(tcx, tcy, 1, tcx, tcy, CELL_SIZE * 1.1);
+          torchGrad.addColorStop(0, 'rgba(255,200,80,' + (0.40 * flicker) + ')');
+          torchGrad.addColorStop(0.5, 'rgba(255,140,40,' + (0.18 * flicker) + ')');
+          torchGrad.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = torchGrad;
+          ctx.fillRect(tcx - CELL_SIZE * 1.1, tcy - CELL_SIZE * 1.1, CELL_SIZE * 2.2, CELL_SIZE * 2.2);
+          // Flame core
+          ctx.fillStyle = 'rgba(255,220,120,' + (0.85 * flicker) + ')';
+          ctx.beginPath();
+          ctx.arc(tcx, tcy, 3 + flicker * 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.restore();
 
       // Breadcrumb dots on each visited cell (excluding current position, which
       // gets its own cat emoji below) — reinforces the trail even when many
@@ -1521,9 +2061,59 @@
         ctx.fillText('\uD83D\uDC7E', (monsterPos.c + 0.5) * CELL_SIZE, (monsterPos.r + 0.5) * CELL_SIZE + 6);
       }
 
-      // Player — animated "you are here" ring first, then the cat on top.
+      // Drifting dust puffs — particles spawned at cells we just left
+      // on each successful move. Render before the lantern so they sit
+      // on the corridor floor; decay age each draw frame and reap.
+      var _dustList = dustParticlesRef.current;
+      for (var dpi = _dustList.length - 1; dpi >= 0; dpi--) {
+        var pp = _dustList[dpi];
+        pp.age += 0.05;
+        if (pp.age >= pp.life) { _dustList.splice(dpi, 1); continue; }
+        var dprog = pp.age / pp.life;       // 0..1
+        var dpcx = (pp.c + 0.5) * CELL_SIZE;
+        var dpcy = (pp.r + 0.5) * CELL_SIZE;
+        var dpr = 4 + dprog * 14;            // grows
+        var dpalpha = (1 - dprog) * 0.45;
+        var dustGrad = ctx.createRadialGradient(dpcx, dpcy, 1, dpcx, dpcy, dpr);
+        dustGrad.addColorStop(0, 'rgba(252,232,205,' + dpalpha + ')');
+        dustGrad.addColorStop(1, 'rgba(252,232,205,0)');
+        ctx.fillStyle = dustGrad;
+        ctx.beginPath(); ctx.arc(dpcx, dpcy, dpr, 0, Math.PI * 2); ctx.fill();
+      }
+      // Player-carried lantern light — soft amber radial glow centered on
+      // the player's cell. Sits over fog/breadcrumbs but under the player
+      // marker so the player feels like they're carrying their own light
+      // source through the dungeon. Pulse-coupled with the existing player
+      // ring so the lantern subtly breathes with each draw.
       var pcx = (playerPos.c + 0.5) * CELL_SIZE;
       var pcy = (playerPos.r + 0.5) * CELL_SIZE;
+      ctx.save();
+      // Golden aura — appears once the key is collected. Slightly larger
+      // than the lantern, pulses on a different phase so the two layers
+      // create a visible double-glow that rewards key pickup for the
+      // remainder of the run.
+      if (keyCollected) {
+        var auraRadius = CELL_SIZE * (2.4 + pulse * 0.4);
+        var auraPulse = 0.6 + 0.4 * Math.sin(minimapTickRef.current * 0.18 + 1.5);
+        var auraGrad = ctx.createRadialGradient(pcx, pcy, 6, pcx, pcy, auraRadius);
+        auraGrad.addColorStop(0, 'rgba(253,224,71,' + (0.55 * auraPulse) + ')');
+        auraGrad.addColorStop(0.4, 'rgba(251,191,36,' + (0.30 * auraPulse) + ')');
+        auraGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = auraGrad;
+        ctx.fillRect(pcx - auraRadius, pcy - auraRadius, auraRadius * 2, auraRadius * 2);
+        ctx.globalCompositeOperation = 'source-over';
+      }
+      var lanternRadius = CELL_SIZE * (1.7 + pulse * 0.25);
+      var lanternGrad = ctx.createRadialGradient(pcx, pcy, 4, pcx, pcy, lanternRadius);
+      lanternGrad.addColorStop(0, 'rgba(255,235,170,0.55)');
+      lanternGrad.addColorStop(0.45, 'rgba(255,180,80,0.25)');
+      lanternGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.globalCompositeOperation = 'lighter'; // additive blend → reads as light
+      ctx.fillStyle = lanternGrad;
+      ctx.fillRect(pcx - lanternRadius, pcy - lanternRadius, lanternRadius * 2, lanternRadius * 2);
+      ctx.restore();
+      // Player — animated "you are here" ring first, then the cat on top.
       ctx.strokeStyle = 'rgba(99,102,241,' + (0.35 + pulse * 0.45) + ')';
       ctx.lineWidth = 2 + pulse * 2;
       ctx.beginPath(); ctx.arc(pcx, pcy, CELL_SIZE * 0.32 + pulse * 4, 0, Math.PI * 2); ctx.stroke();
@@ -1543,12 +2133,42 @@
       }
       ctx.font = '22px sans-serif'; ctx.textAlign = 'center';
       ctx.fillStyle = '#fff';
-      ctx.fillText('\uD83D\uDC31', pcx, pcy + 6);
+      ctx.fillText(playerAvatar || '\uD83D\uDC31', pcx, pcy + 6);
+
+      // Explorer Mode - draw a small yaw indicator (filled triangle)
+      // pointing in the direction the camera is currently facing, so the
+      // player can ground their orientation against the minimap. Yaw is
+      // read from lookYawRef; 0 = facing +z (down on the map).
+      if (isExplorer) {
+        var yawA = lookYawRef.current;
+        var triR = CELL_SIZE * 0.42;
+        var tipX = pcx + Math.sin(yawA) * triR;
+        var tipY = pcy + Math.cos(yawA) * triR;
+        var baseR = triR * 0.55;
+        var spread = 0.45;
+        var leftX = pcx + Math.sin(yawA + Math.PI - spread) * baseR;
+        var leftY = pcy + Math.cos(yawA + Math.PI - spread) * baseR;
+        var rightX = pcx + Math.sin(yawA + Math.PI + spread) * baseR;
+        var rightY = pcy + Math.cos(yawA + Math.PI + spread) * baseR;
+        ctx.fillStyle = 'rgba(167,139,250,0.92)';
+        ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(tipX, tipY);
+        ctx.lineTo(leftX, leftY);
+        ctx.lineTo(rightX, rightY);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
 
       // Feedback flash
       if (feedback === 'correct') { ctx.fillStyle = 'rgba(34,197,94,0.2)'; ctx.fillRect(playerPos.c * CELL_SIZE, playerPos.r * CELL_SIZE, CELL_SIZE, CELL_SIZE); }
       if (feedback === 'wrong') { ctx.fillStyle = 'rgba(239,68,68,0.2)'; ctx.fillRect(playerPos.c * CELL_SIZE, playerPos.r * CELL_SIZE, CELL_SIZE, CELL_SIZE); }
       if (feedback === 'wall') { ctx.fillStyle = 'rgba(148,163,184,0.15)'; ctx.fillRect(playerPos.c * CELL_SIZE, playerPos.r * CELL_SIZE, CELL_SIZE, CELL_SIZE); }
+      // Pair the conditional ctx.save() at the top of this draw — only
+      // call restore() if we actually pushed the shake transform.
+      if (shake > 0.02) ctx.restore();
     });
 
     // Minimap pulse RAF — bumps minimapTickState on a throttled cadence
@@ -1608,7 +2228,61 @@
       container.appendChild(cnv);
       eng.renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true });
       eng.renderer.setSize(container.clientWidth, container.clientHeight);
-      eng.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+      eng.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+      // Explorer Mode free-look listeners. Mouse/touch drag on the 3D
+      // container rotates lookYawRef (radians); the camera-update loop
+      // below adds it to the base look-direction. Listeners are attached
+      // once here; staleness avoided via isExplorerRef. mousemove sits on
+      // window so a drag started on the container can follow the cursor
+      // outside the box, but it's gated by `dragging` set on container
+      // mousedown so we never grab pointer events without the user's
+      // explicit intent. Cleanup on unmount removes everything.
+      var dragging = false, lastX = 0;
+      function _onMouseDown(e) { if (!isExplorerRef.current) return; dragging = true; lastX = e.clientX; }
+      function _onMouseMove(e) {
+        if (!dragging || !isExplorerRef.current) return;
+        var delta = (e.clientX - lastX) * 0.005;
+        // Drag is direct: set both refs so the camera tracks 1:1 without
+        // the lerp lag. Q/E only sets target so its motion is animated.
+        lookYawRef.current -= delta;
+        lookYawTargetRef.current -= delta;
+        lastX = e.clientX;
+      }
+      function _onMouseUp() { dragging = false; }
+      var touchActive = false, lastTouchX = 0;
+      function _onTouchStart(e) {
+        if (!isExplorerRef.current || !e.touches || e.touches.length !== 1) return;
+        touchActive = true; lastTouchX = e.touches[0].clientX;
+      }
+      function _onTouchMove(e) {
+        if (!touchActive || !isExplorerRef.current || !e.touches || e.touches.length !== 1) return;
+        var x = e.touches[0].clientX;
+        var d = (x - lastTouchX) * 0.005;
+        lookYawRef.current -= d;
+        lookYawTargetRef.current -= d;
+        lastTouchX = x;
+        // preventDefault keeps the page from scrolling under a 1-finger drag
+        // on the maze, but only when we're actually using it for look.
+        if (e.cancelable) { try { e.preventDefault(); } catch (_) {} }
+      }
+      function _onTouchEnd() { touchActive = false; }
+      container.addEventListener('mousedown', _onMouseDown);
+      window.addEventListener('mousemove', _onMouseMove);
+      window.addEventListener('mouseup', _onMouseUp);
+      container.addEventListener('touchstart', _onTouchStart, { passive: true });
+      container.addEventListener('touchmove', _onTouchMove, { passive: false });
+      container.addEventListener('touchend', _onTouchEnd);
+      container.addEventListener('touchcancel', _onTouchEnd);
+      eng._lookCleanup = function() {
+        container.removeEventListener('mousedown', _onMouseDown);
+        window.removeEventListener('mousemove', _onMouseMove);
+        window.removeEventListener('mouseup', _onMouseUp);
+        container.removeEventListener('touchstart', _onTouchStart);
+        container.removeEventListener('touchmove', _onTouchMove);
+        container.removeEventListener('touchend', _onTouchEnd);
+        container.removeEventListener('touchcancel', _onTouchEnd);
+      };
 
       // Lighting — torch sprite adds a soft glow card so the flame reads as
       // bright even without a post-processing bloom pass.
@@ -1871,6 +2545,26 @@
           eng.camera.position.y += (Math.random() - 0.5) * 0.12 * s;
           shakeRef.current = Math.max(0, s - 0.04);
         }
+        // Explorer Mode free-look: lookAt is recomputed every frame from
+        // camera position + a forward unit vector rotated by lookYawRef.
+        // Classic Mode keeps the per-move lookAt set in the useEffect
+        // below, so we only override here when Explorer is active.
+        if (isExplorerRef.current) {
+          // Lerp the actual yaw toward target so Q/E rotates feel smooth.
+          // Drag sets both refs so this is a no-op for direct mouse input.
+          var _diff = lookYawTargetRef.current - lookYawRef.current;
+          if (Math.abs(_diff) > 0.0005) {
+            lookYawRef.current += _diff * 0.18;
+          } else {
+            lookYawRef.current = lookYawTargetRef.current;
+          }
+          var _ya = lookYawRef.current;
+          eng.camera.lookAt(
+            eng.camera.position.x + Math.sin(_ya),
+            eng.camera.position.y,
+            eng.camera.position.z + Math.cos(_ya)
+          );
+        }
 
         // Exit portal — ring spins one axis, swirl spins the other, glow pulses.
         if (eng.exitPortal) {
@@ -2059,8 +2753,29 @@
       }
       animate();
 
+      // Resize observer — keeps WebGL canvas matching container size when
+      // fullscreen toggles or the viewport reflows. Without this the maze
+      // renders at the original 320px-height and stretches blurry.
+      var ro = null;
+      try {
+        if (typeof ResizeObserver !== 'undefined') {
+          ro = new ResizeObserver(function() {
+            if (!container || !eng.renderer || !eng.camera) return;
+            var w = container.clientWidth, hpx = container.clientHeight;
+            if (w > 0 && hpx > 0) {
+              eng.renderer.setSize(w, hpx, false);
+              eng.camera.aspect = w / hpx;
+              eng.camera.updateProjectionMatrix();
+            }
+          });
+          ro.observe(container);
+        }
+      } catch (e) {}
+
       return function() {
         cancelAnimationFrame(maze3dAnimRef.current);
+        try { if (ro) ro.disconnect(); } catch (e) {}
+        try { if (eng._lookCleanup) eng._lookCleanup(); } catch (e) {}
         if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
         maze3dEngRef.current = null;
       };
@@ -2076,54 +2791,326 @@
       eng.camera.lookAt(lookX, 1.2, lookZ);
     }, [playerPos]);
 
+    // Native browser Fullscreen API — sync our isFullscreen state with
+    // document.fullscreenElement so the OS chrome hides too. Best-effort:
+    // failures (iframe without allowfullscreen, user permission denial)
+    // are swallowed since the in-page wrapper still covers the viewport.
+    // Also auto-exits when mode leaves 'playing' so the results screen
+    // isn't trapped in a small box on a black native-fullscreen page.
+    useEffect(function() {
+      var shouldBeFs = isFullscreen && mode === 'playing';
+      try {
+        if (shouldBeFs && !document.fullscreenElement && !document.webkitFullscreenElement) {
+          var docEl = document.documentElement;
+          var req = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+          if (req) {
+            var p = req.call(docEl);
+            if (p && p.catch) p.catch(function() {});
+          }
+        } else if (!shouldBeFs && (document.fullscreenElement || document.webkitFullscreenElement)) {
+          var ex = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+          if (ex) {
+            var px = ex.call(document);
+            if (px && px.catch) px.catch(function() {});
+          }
+        }
+      } catch (e) {}
+    }, [isFullscreen, mode]);
+
+    // Listen for native fullscreenchange (Esc key, browser button) so our
+    // state syncs back when the user exits via the browser instead of the
+    // in-app toggle.
+    useEffect(function() {
+      function onFsChange() {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+          setFullscreen(false);
+        }
+      }
+      document.addEventListener('fullscreenchange', onFsChange);
+      document.addEventListener('webkitfullscreenchange', onFsChange);
+      return function() {
+        document.removeEventListener('fullscreenchange', onFsChange);
+        document.removeEventListener('webkitfullscreenchange', onFsChange);
+      };
+    }, []);
+
+    // Auto-pause when the window loses focus or the tab goes hidden, so
+    // the timer + monster don't tick while the student is in another
+    // window / talking to a teacher / on a screen-share. They resume
+    // explicitly via P key, click, or the Pause chip.
+    useEffect(function() {
+      if (mode !== 'playing') return;
+      function pauseIfPlaying() {
+        // Respect explicit gate state — if a problem is showing, the
+        // existing gate already blocks movement, no need to pause too.
+        if (currentProblem) return;
+        setPaused(true);
+      }
+      function onVisChange() { if (document.hidden) pauseIfPlaying(); }
+      window.addEventListener('blur', pauseIfPlaying);
+      document.addEventListener('visibilitychange', onVisChange);
+      return function() {
+        window.removeEventListener('blur', pauseIfPlaying);
+        document.removeEventListener('visibilitychange', onVisChange);
+      };
+    }, [mode, currentProblem]);
+
     // ── Render ──
     if (mode === 'setup') {
-      return h('div', { style: { maxWidth: 420, margin: '0 auto', padding: '20px', textAlign: 'center' } },
+      // Parchment-card aesthetic — sits inside the outer amber gradient
+      // wrapper from AlloFlowContent and reads like an unrolled scroll on
+      // a torchlit table. Replaces the previous slate/violet palette which
+      // clashed with the warm dungeon visuals on the canvas.
+      // Read prior personal-best for this exact (op, size, difficulty).
+      // Falls back to the legacy global record so students see something
+      // even before they've completed a run in the new keyed-store era.
+      var bestRecord = null;
+      try {
+        var bestKey = operation + '|' + mazeSize + '|' + difficulty;
+        var keyed = JSON.parse(localStorage.getItem('fluency_maze_bests') || '{}');
+        bestRecord = keyed[bestKey] || JSON.parse(localStorage.getItem('fluency_maze_best') || 'null');
+      } catch (e) { bestRecord = null; }
+      return h('div', { style: { maxWidth: 460, margin: '0 auto', padding: '20px 24px', textAlign: 'center', background: 'linear-gradient(180deg, #fef3c7 0%, #fed7aa 100%)', borderRadius: '14px', border: '2px solid #d97706', boxShadow: '0 8px 24px rgba(146,64,14,0.15), inset 0 0 32px rgba(217,119,6,0.08)' } },
         h('div', { style: { fontSize: '36px', marginBottom: '8px' } }, '\uD83C\uDFAF'),
-        h('h2', { style: { fontSize: '20px', fontWeight: 800, color: '#1e293b', marginBottom: '4px' } }, 'Fluency Maze'),
-        h('p', { style: { fontSize: '12px', color: '#64748b', marginBottom: '16px' } }, 'Solve math problems to navigate through the maze. Reach the exit!'),
+        h('h2', { style: { fontSize: '22px', fontWeight: 900, color: '#78350f', marginBottom: '2px', letterSpacing: '0.04em' } }, 'Fluency Maze'),
+        h('p', { style: { fontSize: '12px', color: '#92400e', marginBottom: '12px', fontStyle: 'italic' } }, 'Each gate is locked by a math fact. Solve it to pass. Find the golden key to unlock the exit.'),
+        bestRecord && bestRecord.score && h('div', {
+          style: {
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+            color: '#7c2d12', fontSize: '11px', fontWeight: 800,
+            padding: '4px 10px', borderRadius: '999px',
+            marginBottom: '14px', border: '1px solid #b45309',
+            boxShadow: '0 2px 6px rgba(180,83,9,0.25)'
+          },
+          'aria-label': 'Personal best: ' + bestRecord.score + ' points in ' + bestRecord.time + ' seconds'
+        }, '\uD83C\uDFC6 Best (this mode): ' + bestRecord.score + ' pts ' + (bestRecord.time ? '(' + bestRecord.time + 's)' : '')),
+        (function() {
+          var lt = null;
+          try { lt = JSON.parse(localStorage.getItem('fluency_maze_lifetime') || 'null'); } catch (e) {}
+          if (!lt || !lt.gatesUnlocked) return null;
+          var mins = Math.floor((lt.totalSeconds || 0) / 60);
+          return h('div', {
+            style: {
+              display: 'flex', justifyContent: 'center', gap: '14px',
+              fontSize: '10px', fontWeight: 700, color: '#92400e',
+              marginBottom: '14px', letterSpacing: '0.04em',
+              background: 'rgba(254,243,199,0.6)',
+              border: '1px solid #fcd34d',
+              borderRadius: '8px',
+              padding: '6px 10px'
+            },
+            'aria-label': 'Lifetime stats: ' + (lt.gatesUnlocked || 0) + ' gates, ' + (lt.mazesCompleted || 0) + ' mazes, longest streak ' + (lt.longestStreak || 0) + ', ' + mins + ' minutes total'
+          },
+            h('span', null, '\uD83D\uDDDD ' + (lt.gatesUnlocked || 0) + ' gates'),
+            h('span', null, '\uD83C\uDFC1 ' + (lt.mazesCompleted || 0) + ' mazes'),
+            h('span', null, '\uD83D\uDD25 x' + (lt.longestStreak || 0)),
+            h('span', null, '\u23F1 ' + mins + 'm')
+          );
+        })(),
+        // Daily-streak pill — drives habit formation. Shown only when
+        // current streak > 0 (i.e., student has played today).
+        (function() {
+          var dr = _mfDailyStreak();
+          if (!dr.current) return null;
+          return h('div', {
+            style: {
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              background: 'linear-gradient(135deg, #fb923c, #b91c1c)',
+              color: '#fef3c7', fontSize: '11px', fontWeight: 800,
+              padding: '4px 12px', borderRadius: '999px',
+              marginBottom: '12px', border: '1px solid #7c2d12',
+              boxShadow: '0 2px 8px rgba(124,45,18,0.3), inset 0 1px 0 rgba(255,235,170,0.25)',
+              letterSpacing: '0.04em'
+            },
+            'aria-label': 'Daily streak: ' + dr.current + ' consecutive days. Longest: ' + (dr.longest || dr.current) + ' days.'
+          }, '\uD83D\uDD25 Day ' + dr.current + (dr.longest > dr.current ? ' (best: ' + dr.longest + ')' : ''));
+        })(),
+        // Mastery badges per operation — bronze (50+), silver (200+),
+        // gold (500+) per fact family. Renders only operations the
+        // student has earned at least bronze in.
+        (function() {
+          var counts = null;
+          try { counts = JSON.parse(localStorage.getItem('fluency_maze_op_counts') || '{}'); } catch (e) { counts = {}; }
+          var opNames = { add: 'Add', sub: 'Sub', mul: 'Mul', div: 'Div', volume: 'Volume' };
+          var tiered = ['add', 'sub', 'mul', 'div', 'volume'].map(function(k) {
+            var n = counts[k] || 0;
+            var t = _mfMasteryTier(n);
+            return t ? { op: k, name: opNames[k], n: n, t: t } : null;
+          }).filter(Boolean);
+          if (!tiered.length) return null;
+          return h('div', {
+            style: {
+              display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px',
+              marginBottom: '14px'
+            },
+            'aria-label': 'Mastery badges earned: ' + tiered.map(function(x) { return x.t.label + ' in ' + x.name + ' (' + x.n + ')'; }).join(', ')
+          }, tiered.map(function(x) {
+            return h('span', {
+              key: x.op,
+              style: {
+                display: 'inline-flex', alignItems: 'center', gap: '4px',
+                background: x.t.tier === 'gold' ? 'linear-gradient(135deg,#fef3c7,#fde68a)'
+                          : x.t.tier === 'silver' ? 'linear-gradient(135deg,#f8fafc,#e2e8f0)'
+                          : 'linear-gradient(135deg,#fed7aa,#fdba74)',
+                color: x.t.tier === 'gold' ? '#78350f' : x.t.tier === 'silver' ? '#475569' : '#9a3412',
+                border: '1px solid ' + (x.t.tier === 'gold' ? '#f59e0b' : x.t.tier === 'silver' ? '#94a3b8' : '#c2410c'),
+                fontSize: '10px', fontWeight: 800, padding: '3px 9px', borderRadius: '999px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+                letterSpacing: '0.04em'
+              },
+              title: x.t.label + ' ' + x.name + ': ' + x.n + ' gates'
+            }, x.t.emoji + ' ' + x.name);
+          }));
+        })(),
+        // Avatar picker — small row of emoji buttons. The chosen one
+        // renders as the player on the 2D minimap / fallback canvas.
+        // Persisted via _savePrefs so each student keeps their pick.
+        (function() {
+          var avatars = ['🐱', '🐶', '🦊', '🐉', '🤖', '👻', '🦁', '🐼'];
+          return h('div', {
+            style: { display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'center', marginBottom: '12px' },
+            'aria-label': 'Choose your character'
+          }, avatars.map(function(av) {
+            var sel = playerAvatar === av;
+            return h('button', {
+              key: 'av-' + av,
+              onClick: function() { setPlayerAvatar(av); },
+              'aria-pressed': sel,
+              'aria-label': 'Character ' + av,
+              style: {
+                width: '36px', height: '36px', fontSize: '20px',
+                borderRadius: '8px', cursor: 'pointer',
+                background: sel ? 'linear-gradient(135deg,#fbbf24,#f59e0b)' : 'rgba(254,243,199,0.85)',
+                border: '2px solid ' + (sel ? '#b45309' : '#fcd34d'),
+                boxShadow: sel ? '0 0 8px rgba(245,158,11,0.5)' : 'none',
+                transition: 'transform 120ms',
+                transform: sel ? 'scale(1.08)' : 'scale(1)'
+              }
+            }, av);
+          }));
+        })(),
+        // Control mode — Classic (every step is a question, fluency drill)
+        // vs Explorer (each path is a question, free-look 3D camera, fog of
+        // war on minimap). Toggle persisted via _prefs.controlMode.
+        (function() {
+          var modes = [
+            { id: 'classic',  label: '🎯 Classic',  hint: 'Every step is a question — fluency drill' },
+            { id: 'explorer', label: '🎮 Explorer', hint: 'Each path is a question — adventure with free look + fog of war' }
+          ];
+          return h('div', {
+            style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginBottom: '14px' },
+            'aria-label': 'Control mode'
+          },
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' } },
+              modes.map(function(m) {
+                var sel = controlMode === m.id;
+                return h('button', {
+                  key: 'cm-' + m.id,
+                  onClick: function() { setControlMode(m.id); },
+                  'aria-pressed': sel,
+                  title: m.hint,
+                  style: {
+                    padding: '6px 14px', borderRadius: '999px', fontSize: '11px', fontWeight: 800, cursor: 'pointer',
+                    background: sel ? 'linear-gradient(135deg, #7c3aed, #5b21b6)' : 'rgba(254,243,199,0.85)',
+                    color: sel ? '#fff' : '#78350f',
+                    border: '1px solid ' + (sel ? '#6d28d9' : '#fcd34d'),
+                    boxShadow: sel ? '0 0 8px rgba(124,58,237,0.45)' : 'none',
+                    letterSpacing: '0.04em'
+                  }
+                }, m.label);
+              })
+            ),
+            h('div', { style: { fontSize: '10px', color: '#92400e', fontStyle: 'italic', marginTop: '2px' } },
+              isExplorer
+                ? 'Each path requires one math fact. Drag to look around.'
+                : 'Every step requires a math fact. Classic fluency drill.'
+            )
+          );
+        })(),
+        // Quick-Start presets — one-tap setup for the most common modes.
+        // Each preset writes all three dimensions (op + difficulty + size)
+        // so a younger student doesn't have to click through every selector
+        // before they can start. Highlighted when current settings match.
+        (function() {
+          var presets = [
+            { id: 'easy',   label: '🌱 Easy',   op: 'add',   diff: 'single', size: 'small'  },
+            { id: 'medium', label: '🪜 Medium', op: 'mul',   diff: 'single', size: 'medium' },
+            { id: 'hard',   label: '🔥 Hard',   op: 'mul',   diff: 'double', size: 'large'  },
+            { id: 'mixed',  label: '🎲 Mixed',  op: 'mixed', diff: 'single', size: 'medium' }
+          ];
+          return h('div', {
+            style: { display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center', marginBottom: '14px' },
+            'aria-label': 'Quick-start presets'
+          }, presets.map(function(p) {
+            var match = operation === p.op && difficulty === p.diff && mazeSize === p.size;
+            return h('button', {
+              key: p.id,
+              onClick: function() { setOperation(p.op); setDifficulty(p.diff); setMazeSize(p.size); },
+              'aria-pressed': match,
+              title: p.op + ' / ' + p.diff + ' / ' + p.size,
+              style: {
+                padding: '5px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 800, cursor: 'pointer',
+                background: match ? 'linear-gradient(135deg, #15803d, #166534)' : 'rgba(254,243,199,0.85)',
+                color: match ? '#fff' : '#78350f',
+                border: '1px solid ' + (match ? '#22c55e' : '#fcd34d'),
+                boxShadow: match ? '0 0 8px rgba(34,197,94,0.35)' : 'none',
+                letterSpacing: '0.04em'
+              }
+            }, p.label);
+          }));
+        })(),
         // Operation selector
         h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px', flexWrap: 'wrap' } },
-          ['add', 'sub', 'mul', 'div', 'mixed'].map(function(op) {
-            var labels = { add: '➕ Add', sub: '➖ Sub', mul: '✖️ Mul', div: '➗ Div', mixed: '🔀 Mixed' };
+          ['add', 'sub', 'mul', 'div', 'mixed', 'volume'].map(function(op) {
+            var labels = { add: '➕ Add', sub: '➖ Sub', mul: '✖️ Mul', div: '➗ Div', mixed: '🔀 Mixed', volume: '🧊 Volume' };
+            var opSel = operation === op;
             return h('button', { key: op, onClick: function() { setOperation(op); },
+              'aria-pressed': opSel,
               style: { padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
-                background: operation === op ? '#7c3aed' : '#f1f5f9', color: operation === op ? '#fff' : '#475569',
-                border: operation === op ? '2px solid #7c3aed' : '2px solid #e2e8f0' }
+                background: opSel ? 'linear-gradient(135deg, #d97706, #b45309)' : '#fef3c7',
+                color: opSel ? '#fff' : '#78350f',
+                border: opSel ? '2px solid #92400e' : '2px solid #fcd34d' }
             }, labels[op]);
           })
         ),
         // Difficulty
         h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px' } },
           ['single', 'double'].map(function(d) {
+            var diffSel = difficulty === d;
             return h('button', { key: d, onClick: function() { setDifficulty(d); },
+              'aria-pressed': diffSel,
               style: { padding: '6px 14px', borderRadius: '8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
-                background: difficulty === d ? '#f59e0b' : '#f1f5f9', color: difficulty === d ? '#fff' : '#475569',
-                border: difficulty === d ? '2px solid #f59e0b' : '2px solid #e2e8f0' }
+                background: diffSel ? 'linear-gradient(135deg, #ea580c, #c2410c)' : '#fef3c7',
+                color: diffSel ? '#fff' : '#78350f',
+                border: diffSel ? '2px solid #9a3412' : '2px solid #fcd34d' }
             }, d === 'single' ? 'Single Digit (0-12)' : 'Double Digit (0-20)');
           })
         ),
         // Maze size selector
         h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '12px' } },
           ['small', 'medium', 'large'].map(function(sz) {
+            var szSel = mazeSize === sz;
             return h('button', { key: sz, onClick: function() { setMazeSize(sz); },
+              'aria-pressed': szSel,
               style: { padding: '6px 14px', borderRadius: '8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
-                background: mazeSize === sz ? '#6366f1' : '#f1f5f9', color: mazeSize === sz ? '#fff' : '#475569',
-                border: mazeSize === sz ? '2px solid #6366f1' : '2px solid #e2e8f0' }
+                background: szSel ? 'linear-gradient(135deg, #b45309, #92400e)' : '#fef3c7',
+                color: szSel ? '#fff' : '#78350f',
+                border: szSel ? '2px solid #78350f' : '2px solid #fcd34d' }
             }, MAZE_SIZES[sz].label);
           })
         ),
         // Chase mode toggle
-        h('label', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px', fontSize: '12px', color: '#475569', cursor: 'pointer' } },
-          h('input', { type: 'checkbox', checked: chaseMode, onChange: function() { setChaseMode(!chaseMode); } }),
+        h('label', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px', fontSize: '12px', color: '#78350f', fontWeight: 600, cursor: 'pointer' } },
+          h('input', { type: 'checkbox', checked: chaseMode, onChange: function() { setChaseMode(!chaseMode); }, style: { accentColor: '#b45309' } }),
           '\uD83D\uDC7E Chase Mode', h('span', { style: { fontSize: '10px', color: '#94a3b8' } }, '(monster pursues you!)')
         ),
         // Start button
         h('button', { onClick: startMaze,
-          style: { padding: '12px 32px', background: 'linear-gradient(135deg, #7c3aed, #6366f1)', color: '#fff',
-            border: 'none', borderRadius: '12px', fontSize: '16px', fontWeight: 800, cursor: 'pointer',
-            boxShadow: '0 4px 15px rgba(124,58,237,0.3)' }
-        }, '\u25B6\uFE0F Start Maze')
+          style: { padding: '12px 32px', background: 'linear-gradient(135deg, #b45309, #7c2d12)', color: '#fef3c7',
+            border: '2px solid #78350f', borderRadius: '12px', fontSize: '16px', fontWeight: 800, cursor: 'pointer',
+            boxShadow: '0 4px 15px rgba(120,53,15,0.4), inset 0 1px 0 rgba(255,235,170,0.3)', letterSpacing: '0.04em' }
+        }, '\uD83D\uDD25 Light the Torches')
       );
     }
 
@@ -2134,10 +3121,101 @@
         silver: { emoji: '\uD83E\uDD48', label: 'Silver Time', color: '#64748b', bg: 'linear-gradient(135deg,#f8fafc,#e2e8f0)', border: '#94a3b8' },
         bronze: { emoji: '\uD83E\uDD49', label: 'Bronze Time', color: '#92400e', bg: 'linear-gradient(135deg,#fed7aa,#fdba74)', border: '#c2410c' }
       }[medal] : null;
-      return h('div', { style: { maxWidth: 420, margin: '0 auto', padding: '20px', textAlign: 'center' } },
-        h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, won ? '\uD83C\uDFC6' : '\uD83D\uDC7E'),
-        h('h2', { style: { fontSize: '20px', fontWeight: 800, color: won ? '#22c55e' : '#ef4444', marginBottom: '12px' } },
-          won ? 'Maze Complete!' : (gameOver ? 'Caught by the monster!' : 'Game Over')),
+      return h('div', { style: { maxWidth: 460, margin: '0 auto', padding: '24px 24px 20px', textAlign: 'center', background: won ? 'linear-gradient(180deg, #fef3c7 0%, #fed7aa 100%)' : 'linear-gradient(180deg, #fee2e2 0%, #fecaca 100%)', borderRadius: '14px', border: '2px solid ' + (won ? '#d97706' : '#b91c1c'), boxShadow: '0 8px 24px rgba(146,64,14,0.18), inset 0 0 32px rgba(217,119,6,0.08)', position: 'relative' } },
+        won && h('div', { style: { position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 9999 }, 'aria-hidden': 'true' },
+          (function() {
+            var pieces = [];
+            for (var i = 0; i < 36; i++) {
+              var hue = (i * 47) % 360;
+              var startX = (i * 2.78 + Math.random() * 6) % 100;
+              var dur = 1.7 + Math.random() * 1.6;
+              var delay = Math.random() * 0.4;
+              var w = 8 + Math.floor(Math.random() * 7);
+              var hh = 10 + Math.floor(Math.random() * 9);
+              pieces.push(h('div', {
+                key: 'cf-' + i,
+                className: 'allo-confetti-piece',
+                style: {
+                  left: startX + '%',
+                  width: w + 'px',
+                  height: hh + 'px',
+                  background: 'hsl(' + hue + ', 78%, 58%)',
+                  animationDuration: dur.toFixed(2) + 's',
+                  animationDelay: delay.toFixed(2) + 's',
+                  boxShadow: '0 0 6px hsla(' + hue + ',70%,55%,0.55)'
+                }
+              }));
+            }
+            return pieces;
+          })()
+        ),
+        h('div', { style: { fontSize: '54px', marginBottom: '4px', filter: 'drop-shadow(0 3px 6px rgba(146,64,14,0.4))' } }, won ? '\uD83C\uDFC6' : '\uD83D\uDC7E'),
+        h('h2', { style: { fontSize: '24px', fontWeight: 900, color: won ? '#78350f' : '#7f1d1d', marginBottom: '12px', letterSpacing: '0.04em' } },
+          won ? 'You Escaped the Maze!' : (gameOver ? 'A Shadow Caught You' : 'Game Over')),
+        // Personal-best comparison for THIS exact mode (op|size|difficulty).
+        // Renders only on wins where a prior best for the same settings
+        // existed pre-run. Diff is signed so we phrase it correctly when
+        // the student matched or fell short of their last attempt.
+        won && priorBestSnapshot && (function() {
+          var prior = priorBestSnapshot;
+          if (!prior.time) return null;
+          var diff = prior.time - elapsed;
+          var medalBonusNow = medal === 'gold' ? 20 : medal === 'silver' ? 10 : medal === 'bronze' ? 5 : 0;
+          var newBest = (typeof prior.score === 'number') && (score + 10 + medalBonusNow) > prior.score;
+          var faster = diff > 0;
+          var msg = newBest
+            ? 'New personal best! ' + (faster ? diff + 's faster than your previous (' + prior.time + 's)' : 'Beat your prior score of ' + prior.score)
+            : (faster
+                ? diff + 's faster than your prior best (' + prior.time + 's), same score range'
+                : diff === 0
+                  ? 'Matched your prior time (' + prior.time + 's)'
+                  : (-diff) + 's slower than your prior best of ' + prior.time + 's');
+          return h('div', {
+            style: {
+              fontSize: '11px', fontWeight: 800,
+              color: newBest ? '#fff' : (faster ? '#14532d' : '#7c2d12'),
+              background: newBest ? 'linear-gradient(135deg, #f59e0b, #b45309)' : (faster ? 'rgba(220,252,231,0.7)' : 'rgba(254,243,199,0.7)'),
+              border: '1px solid ' + (newBest ? '#fbbf24' : faster ? '#86efac' : '#fcd34d'),
+              boxShadow: newBest ? '0 0 12px rgba(251,191,36,0.5)' : 'none',
+              borderRadius: '999px', padding: '4px 14px',
+              marginBottom: '12px', display: 'inline-block'
+            },
+            'aria-label': msg
+          }, (newBest ? '🏅 ' : faster ? '⚡ ' : '⏱ ') + msg);
+        })(),
+        // Lifetime-average comparison — visible for wins after at least
+        // one prior completed maze. Computes avg = totalSeconds /
+        // mazesCompleted (excluding this run, since the lifetime bump
+        // happens before render). Phrasing depends on direction.
+        won && (function() {
+          try {
+            var lt = JSON.parse(localStorage.getItem('fluency_maze_lifetime') || '{}');
+            var prior = (lt.mazesCompleted || 0) - 1;
+            if (prior < 1) return null;
+            var avg = Math.round(((lt.totalSeconds || 0) - elapsed) / prior);
+            if (avg <= 0) return null;
+            var diff = avg - elapsed;
+            var faster = diff > 0;
+            var msg = faster
+              ? 'Faster than your average by ' + diff + 's (avg: ' + avg + 's)'
+              : diff === 0
+                ? 'Right on your average pace (' + avg + 's)'
+                : (-diff) + 's slower than your average (avg: ' + avg + 's)';
+            return h('div', {
+              style: {
+                fontSize: '11px', fontWeight: 700,
+                color: faster ? '#15803d' : (diff === 0 ? '#92400e' : '#a16207'),
+                background: faster ? 'rgba(220,252,231,0.7)' : 'rgba(254,243,199,0.7)',
+                border: '1px solid ' + (faster ? '#86efac' : '#fcd34d'),
+                borderRadius: '999px',
+                padding: '4px 12px',
+                marginBottom: '12px',
+                display: 'inline-block'
+              },
+              'aria-label': msg
+            }, (faster ? '\u26A1 ' : '\u23F1 ') + msg);
+          } catch (e) { return null; }
+        })(),
         // Medal banner — only on wins that beat one of the three time thresholds.
         won && medalInfo && h('div', {
           style: {
@@ -2161,22 +3239,79 @@
           )
         ),
         h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' } },
-          h('div', { style: { background: '#f0fdf4', borderRadius: '10px', padding: '10px' } },
-            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#22c55e' } }, String(correct)),
-            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Correct')),
-          h('div', { style: { background: '#fef2f2', borderRadius: '10px', padding: '10px' } },
-            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#ef4444' } }, String(wrong)),
-            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Wrong')),
-          h('div', { style: { background: '#f5f3ff', borderRadius: '10px', padding: '10px' } },
-            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#7c3aed' } }, String(dcpm)),
-            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Facts/Min')),
-          h('div', { style: { background: '#fffbeb', borderRadius: '10px', padding: '10px' } },
-            h('div', { style: { fontSize: '24px', fontWeight: 800, color: '#f59e0b' } }, elapsed + 's'),
-            h('div', { style: { fontSize: '10px', color: '#64748b' } }, 'Time'))
+          h('div', { style: { background: 'rgba(254,243,199,0.7)', borderRadius: '10px', padding: '10px', border: '1px solid #fcd34d' } },
+            h('div', { style: { fontSize: '26px', fontWeight: 900, color: '#15803d' } }, String(correct)),
+            h('div', { style: { fontSize: '10px', color: '#92400e', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' } }, 'Gates Unlocked')),
+          h('div', { style: { background: 'rgba(254,243,199,0.7)', borderRadius: '10px', padding: '10px', border: '1px solid #fcd34d' } },
+            h('div', { style: { fontSize: '26px', fontWeight: 900, color: '#b91c1c' } }, String(wrong)),
+            h('div', { style: { fontSize: '10px', color: '#92400e', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' } }, 'Wrong Tries')),
+          h('div', { style: { background: 'rgba(254,243,199,0.7)', borderRadius: '10px', padding: '10px', border: '1px solid #fcd34d' } },
+            h('div', { style: { fontSize: '26px', fontWeight: 900, color: '#7c2d12' } }, String(dcpm)),
+            h('div', { style: { fontSize: '10px', color: '#92400e', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' } }, 'Facts/Min')),
+          h('div', { style: { background: 'rgba(254,243,199,0.7)', borderRadius: '10px', padding: '10px', border: '1px solid #fcd34d' } },
+            h('div', { style: { fontSize: '26px', fontWeight: 900, color: '#a16207' } }, elapsed + 's'),
+            h('div', { style: { fontSize: '10px', color: '#92400e', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' } }, 'Time'))
         ),
-        h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
-          h('button', { onClick: startMaze, style: { padding: '10px 24px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD04 Play Again'),
-          h('button', { onClick: function() { setMode('setup'); }, style: { padding: '10px 20px', background: '#f1f5f9', color: '#475569', border: '2px solid #e2e8f0', borderRadius: '10px', fontSize: '12px', cursor: 'pointer' } }, 'Settings')
+        // Facts to Practice — surfaces the top 3 facts the student got
+        // wrong this run, sorted by wrong count then by wrong rate.
+        // Pedagogical signal: the run wasn't just "X correct / Y wrong",
+        // it was "you stumbled on these specific facts." Hidden if
+        // there were no wrong answers (the student crushed it).
+        (function() {
+          var stats = factStatsRef.current || {};
+          var rows = [];
+          for (var k in stats) if (stats.hasOwnProperty(k)) {
+            var s = stats[k];
+            if (s.wrong > 0) rows.push({ text: k, wrong: s.wrong, correct: s.correct });
+          }
+          if (rows.length === 0) return null;
+          rows.sort(function(a, b) {
+            if (b.wrong !== a.wrong) return b.wrong - a.wrong;
+            return (b.wrong / Math.max(1, b.wrong + b.correct)) - (a.wrong / Math.max(1, a.wrong + a.correct));
+          });
+          rows = rows.slice(0, 3);
+          return h('div', {
+            style: { background: 'rgba(254,226,226,0.55)', border: '1px dashed #f87171', borderRadius: '10px', padding: '10px 12px', marginBottom: '14px' },
+            'aria-label': 'Facts to practice: ' + rows.map(function(r) { return r.text + ' missed ' + r.wrong + ' time' + (r.wrong > 1 ? 's' : ''); }).join(', ')
+          },
+            h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#7f1d1d', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '6px' } }, '📚 Facts to Practice'),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' } },
+              rows.map(function(rw, i) {
+                return h('span', {
+                  key: i,
+                  style: { fontSize: '12px', fontWeight: 700, fontFamily: 'monospace', color: '#7f1d1d', background: '#fff', border: '1px solid #fca5a5', padding: '3px 10px', borderRadius: '6px' }
+                }, rw.text + (rw.wrong > 1 ? ' (×' + rw.wrong + ')' : ''));
+              })
+            )
+          );
+        })(),
+        h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
+          h('button', { onClick: function() { startMaze(false); }, style: { padding: '10px 24px', background: 'linear-gradient(135deg, #b45309, #7c2d12)', color: '#fef3c7', border: '2px solid #78350f', borderRadius: '10px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(120,53,15,0.35)' } }, '\uD83D\uDD04 Play Again'),
+          // Same-Maze replay - reuses the cached layout + key cell so the
+          // student can retry the exact run to beat their time.
+          lastRunRef.current && h('button', { onClick: function() { startMaze(true); }, title: 'Replay the same maze layout', style: { padding: '10px 18px', background: '#fef3c7', color: '#78350f', border: '2px solid #fcd34d', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, '\u21A9 Same Maze'),
+          h('button', { onClick: function() {
+            try {
+              var opLabel = { add: 'Addition', sub: 'Subtraction', mul: 'Multiplication', div: 'Division', mixed: 'Mixed', volume: 'Volume' }[operation] || operation;
+              var sizeLabel = (MAZE_SIZES[mazeSize] && MAZE_SIZES[mazeSize].label) || mazeSize;
+              var medalIcon = medal === 'gold' ? '\uD83E\uDD47' : medal === 'silver' ? '\uD83E\uDD48' : medal === 'bronze' ? '\uD83E\uDD49' : '';
+              var card = (won ? '\uD83C\uDFC6 Math Fluency Maze' : '\uD83D\uDC7E Math Fluency Maze') + '\n'
+                + '\u2705 ' + correct + ' gates  ·  \u274C ' + wrong + ' wrong\n'
+                + '\u23F1 ' + elapsed + 's  ·  \uD83C\uDFAF ' + score + ' pts' + (medalIcon ? '  ·  ' + medalIcon + ' ' + medal.toUpperCase() : '') + '\n'
+                + 'Mode: ' + opLabel + ' / ' + (difficulty === 'single' ? 'Single-digit' : 'Double-digit') + ' / ' + sizeLabel;
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(card).then(function() {
+                  if (addToast) addToast('\uD83D\uDCCB Result copied to clipboard', 'success');
+                  else _mfAnnounce('Result copied to clipboard.');
+                }, function() {
+                  if (addToast) addToast('Could not copy — try selecting + Ctrl+C', 'error');
+                });
+              } else if (addToast) {
+                addToast('Clipboard not available in this browser', 'error');
+              }
+            } catch (e) { if (addToast) addToast('Copy failed: ' + e.message, 'error'); }
+          }, style: { padding: '10px 18px', background: '#fef3c7', color: '#78350f', border: '2px solid #fcd34d', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDCCB Copy Result'),
+          h('button', { onClick: function() { setMode('setup'); }, style: { padding: '10px 20px', background: '#fef3c7', color: '#78350f', border: '2px solid #fcd34d', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, '\u2699 Settings')
         )
       );
     }
@@ -2184,12 +3319,18 @@
     var has3D = !!window.THREE;
 
     // Playing mode
-    return h('div', { style: { maxWidth: 500, margin: '0 auto', position: 'relative' } },
-      // HUD — scores + streak combo meter + hint button
-      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: '#f1f5f9', borderRadius: '10px', marginBottom: '6px', fontSize: '11px', flexWrap: 'wrap', gap: '6px' } },
-        h('span', { style: { color: '#22c55e', fontWeight: 700 } }, '\u2705 ' + correct),
-        h('span', { style: { color: '#ef4444', fontWeight: 700 } }, '\u274C ' + wrong),
-        h('span', { style: { color: '#7c3aed', fontWeight: 700 } }, '\uD83C\uDFAF ' + score),
+    return h('div', {
+      style: isFullscreen
+        ? { position: 'fixed', inset: 0, zIndex: 9999, padding: '14px clamp(14px, 4vw, 48px)', background: 'linear-gradient(180deg, #1a0e08 0%, #2a1810 60%, #1a0e08 100%)', overflowY: 'auto', display: 'flex', flexDirection: 'column' }
+        : { maxWidth: 720, margin: '0 auto', position: 'relative' }
+    },
+      // HUD — scores + streak combo meter + hint button. Warm leather/stone
+      // band so the HUD reads as part of the dungeon, not a separate cool-
+      // slate strip floating above it.
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isFullscreen ? '10px 14px' : '7px 10px', background: 'linear-gradient(180deg, #5b4d3f 0%, #3a2e26 100%)', borderRadius: '10px', marginBottom: '6px', fontSize: isFullscreen ? '13px' : '11px', flexWrap: 'wrap', gap: isFullscreen ? '12px' : '8px', border: '1px solid #78350f', boxShadow: 'inset 0 1px 0 rgba(255,235,170,0.15), 0 2px 6px rgba(58,46,38,0.3)' } },
+        h('span', { style: { color: '#86efac', fontWeight: 700 } }, '\u2705 ' + correct),
+        h('span', { style: { color: '#fca5a5', fontWeight: 700 } }, '\u274C ' + wrong),
+        h('span', { style: { color: '#fde68a', fontWeight: 700 } }, '\uD83C\uDFAF ' + score),
         // Streak pill — grows / glows at milestones so fluency runs feel earned.
         streak > 0 && h('span', {
           style: {
@@ -2203,8 +3344,90 @@
             transition: 'all 0.2s'
           }
         }, '\uD83D\uDD25 x' + streak),
-        h('span', { style: { color: '#64748b' } }, '\u23F1 ' + elapsed + 's'),
+        h('span', { style: { color: '#fde68a' } }, '\u23F1 ' + elapsed + 's'),
+        // Goal compass - 8-direction bearing toward the current goal
+        // (key while uncollected, exit afterward). General-direction only
+        // (no shortest-path), so it gives orientation without spoiling
+        // the maze logic. Hidden when the player is on the goal cell.
+        (function() {
+          var goal = !keyCollected && keyPosRef.current
+            ? { r: keyPosRef.current.r, c: keyPosRef.current.c, label: 'Key', icon: '\uD83D\uDDDD' }
+            : { r: MAZE_ROWS - 1, c: MAZE_COLS - 1, label: 'Exit', icon: keyCollected ? '\u2B50' : '\uD83D\uDD12' };
+          var dr = goal.r - playerPos.r, dc = goal.c - playerPos.c;
+          if (dr === 0 && dc === 0) return null;
+          var deg = (Math.atan2(dr, dc) * 180 / Math.PI + 360) % 360;
+          var dirsByDeg = ['E','SE','S','SW','W','NW','N','NE'];
+          var sector = Math.round(deg / 45) % 8;
+          var label = dirsByDeg[sector];
+          return h('span', {
+            style: { color: '#fde68a', fontWeight: 700, fontSize: '11px', background: 'rgba(254,243,199,0.12)', border: '1px solid rgba(254,243,199,0.28)', padding: '2px 8px', borderRadius: '999px', letterSpacing: '0.04em' },
+            'aria-label': goal.label + ' is to the ' + label
+          }, goal.icon + ' ' + label);
+        })(),
         chaseMode && h('span', { style: { color: '#f59e0b', fontWeight: 700 } }, '\uD83D\uDC7E CHASE!'),
+        // Explorer-mode chip - visible only in Explorer so the player
+        // knows the rules differ (each path gates once, free-look camera).
+        isExplorer && h('span', {
+          style: { color: '#ddd6fe', fontWeight: 700, background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(167,139,250,0.45)', padding: '2px 8px', borderRadius: '999px', letterSpacing: '0.04em' },
+          'aria-label': 'Explorer mode active'
+        }, '\uD83C\uDFAE Explorer'),
+        // Help button — opens the keyboard-shortcut overlay (also bound
+        // to ?). Tucked first so the order reads Help → Mute → Pause → Hint.
+        h('button', {
+          onClick: function() { setHelpOpen(true); },
+          'aria-label': 'Keyboard shortcuts',
+          title: 'Keyboard shortcuts (? key)',
+          style: {
+            marginLeft: 'auto', padding: '4px 8px', fontSize: '11px', fontWeight: 700,
+            background: 'rgba(254,243,199,0.18)', color: '#fef3c7',
+            border: '1px solid rgba(254,243,199,0.35)', borderRadius: '999px',
+            cursor: 'pointer'
+          }
+        }, '?'),
+        // Mute button — gates all playTone calls. Persists via localStorage
+        // so a teacher who silences the classroom doesn't have to re-mute
+        // every time a student opens the maze.
+        h('button', {
+          onClick: _toggleMute,
+          'aria-pressed': mutedLocal,
+          'aria-label': mutedLocal ? 'Sound off. Press to unmute.' : 'Sound on. Press to mute.',
+          title: 'Mute / unmute (M key)',
+          style: {
+            padding: '4px 8px', fontSize: '11px', fontWeight: 700,
+            background: mutedLocal ? '#fbbf24' : 'rgba(254,243,199,0.18)',
+            color: mutedLocal ? '#7c2d12' : '#fef3c7',
+            border: '1px solid ' + (mutedLocal ? '#fbbf24' : 'rgba(254,243,199,0.35)'),
+            borderRadius: '999px', cursor: 'pointer'
+          }
+        }, mutedLocal ? '\uD83D\uDD07' : '\uD83D\uDD0A'),
+        // Pause button — quick toggle, no score cost. Mirrors the P
+        // keyboard shortcut so touch-only users can pause too.
+        h('button', {
+          onClick: function() { setPaused(function(v) { return !v; }); },
+          'aria-label': paused ? 'Resume game' : 'Pause game',
+          'aria-pressed': paused,
+          title: 'Pause / resume (P key)',
+          style: {
+            padding: '4px 10px', fontSize: '11px', fontWeight: 700,
+            background: paused ? '#fbbf24' : 'rgba(254,243,199,0.18)',
+            color: paused ? '#7c2d12' : '#fef3c7',
+            border: '1px solid ' + (paused ? '#fbbf24' : 'rgba(254,243,199,0.35)'),
+            borderRadius: '999px', cursor: 'pointer'
+          }
+        }, paused ? '\u25B6 Resume' : '\u23F8 Pause'),
+        h('button', {
+          onClick: function() { setFullscreen(function(v) { return !v; }); },
+          'aria-label': isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen',
+          'aria-pressed': isFullscreen,
+          title: 'Fullscreen (F key)',
+          style: {
+            padding: '4px 10px', fontSize: '11px', fontWeight: 700,
+            background: isFullscreen ? '#fbbf24' : 'rgba(254,243,199,0.18)',
+            color: isFullscreen ? '#7c2d12' : '#fef3c7',
+            border: '1px solid ' + (isFullscreen ? '#fbbf24' : 'rgba(254,243,199,0.35)'),
+            borderRadius: '999px', cursor: 'pointer'
+          }
+        }, isFullscreen ? '\u2922 Exit' : '\u26F6 Fullscreen'),
         // Hint button — costs 5 points, resets streak. Uses BFS to find the
         // direction of the next step along the shortest path to the exit.
         h('button', {
@@ -2212,40 +3435,438 @@
           disabled: !!hintDir,
           title: 'Show direction toward exit (H key) — costs 5 points, resets streak',
           style: {
-            marginLeft: 'auto', padding: '4px 10px', fontSize: '11px', fontWeight: 700,
-            background: hintDir ? '#fbbf24' : '#6366f1', color: '#fff',
+            padding: '4px 10px', fontSize: '11px', fontWeight: 700,
+            background: hintDir ? '#fbbf24' : 'linear-gradient(135deg, #b45309, #7c2d12)', color: '#fff',
             border: 'none', borderRadius: '999px', cursor: hintDir ? 'default' : 'pointer',
             opacity: hintDir ? 0.8 : 1
           }
         }, '\uD83D\uDCA1 Hint (-5)')
       ),
-      // 3D View (or 2D fallback)
-      has3D ? h('div', { ref: maze3dRef, style: { width: '100%', height: '320px', borderRadius: '10px', overflow: 'hidden', border: '2px solid #7c3aed', position: 'relative', background: '#0a0a1a' } }) :
-      h('canvas', { ref: canvasRef, style: { width: '100%', height: 'auto', borderRadius: '10px', border: '2px solid #e2e8f0', display: 'block' } }),
-      // 2D minimap overlay (top-right of 3D view)
-      has3D && maze && h('canvas', { ref: canvasRef, style: { position: 'absolute', top: '44px', right: '4px', width: '100px', height: '100px', borderRadius: '8px', border: '1px solid rgba(100,116,139,0.3)', opacity: 0.8 } }),
-      // Problem overlay (when at junction)
-      currentProblem && h('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: 'rgba(15,23,42,0.95)', backdropFilter: 'blur(8px)', borderRadius: '16px', padding: '20px 28px', textAlign: 'center', border: '2px solid #7c3aed', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', zIndex: 10 } },
-        h('div', { style: { fontSize: '28px', fontWeight: 800, color: '#e2e8f0', marginBottom: '12px', fontFamily: 'monospace' } }, currentProblem.problem.text + ' = ?'),
-        h('input', { ref: inputRef, type: 'number', value: userInput, onChange: function(e) { setUserInput(e.target.value); },
-          onKeyDown: function(e) { if (e.key === 'Enter') submitAnswer(); },
-          style: { width: '120px', padding: '8px 12px', fontSize: '24px', fontWeight: 800, textAlign: 'center', borderRadius: '10px', border: '2px solid #7c3aed', background: '#1e293b', color: '#fff', fontFamily: 'monospace', outline: 'none' },
-          inputMode: 'numeric', autoFocus: true
-        }),
-        h('div', { style: { marginTop: '8px' } },
-          h('button', { onClick: submitAnswer, style: { padding: '8px 20px', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, '\u2705 Submit')
+      // Exploration progress bar - visited cells / total cells. Visual
+      // gauge of how much of the maze the student has uncovered. Does not
+      // reveal direction info, just progress. Label flips to 'Key in hand'
+      // once collected so the student knows the exit is now unlocked.
+      (function() {
+        var visited = visitedCellsRef.current || {};
+        var visitedCount = 0;
+        for (var k in visited) if (visited.hasOwnProperty(k)) visitedCount++;
+        var totalCells = MAZE_COLS * MAZE_ROWS;
+        var pct = Math.min(100, Math.round((visitedCount / totalCells) * 100));
+        var label = keyCollected
+          ? '\uD83D\uDDDD\uFE0F Key in hand · ' + pct + '% explored'
+          : '\uD83D\uDDFA · ' + pct + '% explored · find the \uD83D\uDDDD\uFE0F';
+        return h('div', {
+          role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, 'aria-label': label,
+          style: {
+            position: 'relative', height: isFullscreen ? '14px' : '10px',
+            background: 'rgba(58,46,38,0.55)', border: '1px solid #78350f',
+            borderRadius: '999px', marginBottom: '6px', overflow: 'hidden',
+            boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4)'
+          }
+        },
+          h('div', {
+            style: {
+              width: pct + '%', height: '100%',
+              background: keyCollected
+                ? 'linear-gradient(90deg, #f59e0b 0%, #fde68a 50%, #f59e0b 100%)'
+                : 'linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #7c3aed 100%)',
+              transition: 'width 240ms cubic-bezier(.5,.05,.5,.95)',
+              boxShadow: keyCollected ? '0 0 8px rgba(251,191,36,0.55)' : '0 0 6px rgba(168,85,247,0.45)'
+            }
+          }),
+          h('div', {
+            style: {
+              position: 'absolute', inset: 0, display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+              fontSize: isFullscreen ? '11px' : '9px', fontWeight: 800,
+              color: '#fef3c7', letterSpacing: '0.04em',
+              textShadow: '0 1px 2px rgba(0,0,0,0.7)',
+              pointerEvents: 'none'
+            }
+          }, label)
+        );
+      })(),
+      // 3D View (or 2D fallback). Heights bumped for clarity; in fullscreen
+      // the 3D view fills nearly the whole viewport. The ResizeObserver in
+      // the init effect keeps the WebGL canvas matched to the container.
+      has3D ? h('div', { ref: maze3dRef, style: { width: '100%', height: isFullscreen ? 'min(78vh, 900px)' : '440px', borderRadius: '10px', overflow: 'hidden', border: '2px solid #7c3aed', position: 'relative', background: '#0a0a1a', flex: isFullscreen ? '1 1 auto' : 'none' } }) :
+      h('canvas', { ref: canvasRef, style: { width: '100%', height: 'auto', maxHeight: isFullscreen ? '78vh' : 'none', borderRadius: '10px', border: '3px solid #78350f', display: 'block', boxShadow: '0 4px 16px rgba(58,46,38,0.4)', objectFit: 'contain' } }),
+      // Streak milestone banner — center-top of the maze area, fades in
+      // and out via opacity transition. Pointer-events:none so it never
+      // blocks the gate or arrow buttons underneath.
+      streakBanner && h('div', {
+        role: 'status', 'aria-live': 'polite',
+        style: {
+          position: 'absolute', top: '52px', left: '50%', transform: 'translateX(-50%)',
+          background: 'linear-gradient(135deg, #f59e0b, #b91c1c)', color: '#fef3c7',
+          padding: '8px 18px', borderRadius: '999px', fontWeight: 900, fontSize: '13px',
+          letterSpacing: '0.08em', textTransform: 'uppercase',
+          border: '2px solid #fbbf24',
+          boxShadow: '0 0 28px rgba(251,191,36,0.6), inset 0 1px 0 rgba(255,255,255,0.25)',
+          pointerEvents: 'none', zIndex: 12,
+          animation: 'alloStreakPulse 1500ms ease-out forwards'
+        }
+      }, streakBanner),
+      // Pause overlay — shown while paused, covers the maze with a
+      // dim parchment card. Clicking or pressing P/Escape resumes.
+      paused && h('div', {
+        onClick: function() { setPaused(false); },
+        role: 'button', tabIndex: 0,
+        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ' || e.key === 'p' || e.key === 'P' || e.key === 'Escape') { e.preventDefault(); setPaused(false); } },
+        'aria-label': 'Game paused. Press Enter or click to resume.',
+        style: {
+          position: 'absolute', inset: 0, zIndex: 13,
+          background: 'rgba(58,46,38,0.78)', backdropFilter: 'blur(2px)',
+          borderRadius: '10px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer'
+        }
+      },
+        h('div', {
+          style: {
+            background: 'linear-gradient(180deg, #fef3c7 0%, #fed7aa 100%)',
+            border: '2px solid #d97706', borderRadius: '12px',
+            padding: '20px 28px', textAlign: 'center',
+            boxShadow: '0 12px 40px rgba(58,46,38,0.5)'
+          }
+        },
+          h('div', { style: { fontSize: '40px', marginBottom: '6px' } }, '\u23F8\uFE0F'),
+          h('div', { style: { fontSize: '16px', fontWeight: 900, color: '#78350f', marginBottom: '8px', letterSpacing: '0.04em' } }, 'Paused'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '10px', minWidth: '260px' } },
+            h('div', { style: { background: 'rgba(255,255,255,0.55)', borderRadius: '8px', padding: '6px 4px', border: '1px solid #fcd34d' } },
+              h('div', { style: { fontSize: '20px', fontWeight: 900, color: '#15803d' } }, String(correct)),
+              h('div', { style: { fontSize: '9px', color: '#92400e', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' } }, 'Correct')),
+            h('div', { style: { background: 'rgba(255,255,255,0.55)', borderRadius: '8px', padding: '6px 4px', border: '1px solid #fcd34d' } },
+              h('div', { style: { fontSize: '20px', fontWeight: 900, color: '#b91c1c' } }, String(wrong)),
+              h('div', { style: { fontSize: '9px', color: '#92400e', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' } }, 'Wrong')),
+            h('div', { style: { background: 'rgba(255,255,255,0.55)', borderRadius: '8px', padding: '6px 4px', border: '1px solid #fcd34d' } },
+              h('div', { style: { fontSize: '20px', fontWeight: 900, color: '#c2410c' } }, '\uD83D\uDD25' + streak),
+              h('div', { style: { fontSize: '9px', color: '#92400e', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' } }, 'Streak')),
+            h('div', { style: { background: 'rgba(255,255,255,0.55)', borderRadius: '8px', padding: '6px 4px', border: '1px solid #fcd34d' } },
+              h('div', { style: { fontSize: '20px', fontWeight: 900, color: '#a16207' } }, elapsed + 's'),
+              h('div', { style: { fontSize: '9px', color: '#92400e', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' } }, 'Time'))
+          ),
+          h('div', { style: { fontSize: '11px', color: '#92400e', fontStyle: 'italic' } }, 'Tap, press P, or Escape to resume')
         )
       ),
-      // Arrow buttons (mobile friendly)
-      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', maxWidth: '160px', margin: '8px auto 0' } },
-        h('div'),
-        h('button', { onClick: function() { tryMove('up'); }, style: { padding: '10px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '18px', cursor: 'pointer' } }, '\u25B2'),
-        h('div'),
-        h('button', { onClick: function() { tryMove('left'); }, style: { padding: '10px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '18px', cursor: 'pointer' } }, '\u25C0'),
-        h('button', { onClick: function() { tryMove('down'); }, style: { padding: '10px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '18px', cursor: 'pointer' } }, '\u25BC'),
-        h('button', { onClick: function() { tryMove('right'); }, style: { padding: '10px', borderRadius: '8px', background: '#e2e8f0', border: 'none', fontSize: '18px', cursor: 'pointer' } }, '\u25B6')
+      // Keyboard-shortcut help overlay — toggled by ? key. Click,
+      // Enter/Space, ?, or Escape dismisses.
+      helpOpen && h('div', {
+        onClick: function() { setHelpOpen(false); },
+        role: 'button', tabIndex: 0,
+        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ' || e.key === '?' || e.key === 'Escape') { e.preventDefault(); setHelpOpen(false); } },
+        'aria-label': 'Keyboard shortcuts. Press Escape or click to dismiss.',
+        style: {
+          position: 'absolute', inset: 0, zIndex: 14,
+          background: 'rgba(58,46,38,0.78)', backdropFilter: 'blur(2px)',
+          borderRadius: '10px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: 'linear-gradient(180deg, #fef3c7 0%, #fed7aa 100%)',
+            border: '2px solid #d97706', borderRadius: '12px',
+            padding: '20px 22px', maxWidth: '320px', textAlign: 'left',
+            boxShadow: '0 12px 40px rgba(58,46,38,0.5)'
+          }
+        },
+          h('h3', { style: { fontSize: '14px', fontWeight: 900, color: '#78350f', margin: '0 0 10px', letterSpacing: '0.04em', textAlign: 'center' } }, '\u2328\uFE0F Keyboard Shortcuts'),
+          h('div', { style: { fontSize: '12px', color: '#92400e', lineHeight: '1.7' } },
+            ['Move: Arrow Keys or WASD',
+             'Submit answer: Enter',
+             'Clear answer: Escape (in gate)',
+             'Hint (direction): H',
+             'Pause / Resume: P',
+             'Mute / unmute: M',
+             'Fullscreen: F',
+             'Look around (Explorer): Drag',
+             'Rotate camera (Explorer): Q / E',
+             'Restart same maze: R',
+             'This help: ?'].map(function(line, i) {
+              var parts = line.split(': ');
+              return h('div', { key: i, style: { display: 'flex', justifyContent: 'space-between', gap: '12px', borderBottom: i < 10 ? '1px dashed rgba(217,119,6,0.3)' : 'none', padding: '3px 0' } },
+                h('span', { style: { fontWeight: 700 } }, parts[0]),
+                h('span', { style: { fontFamily: 'monospace', color: '#78350f' } }, parts[1])
+              );
+            })
+          ),
+          h('div', { style: { textAlign: 'center', fontSize: '10px', color: '#a16207', fontStyle: 'italic', marginTop: '10px' } }, 'Click anywhere or press Esc to close')
+        )
       ),
-      h('p', { style: { fontSize: '10px', color: '#94a3b8', textAlign: 'center', marginTop: '6px' } }, 'Arrow keys or WASD to move \u2022 H for hint \u2022 Solve each problem to advance \u2022 3-in-a-row for bonus')
+      // First-time tutorial overlay — shown on the very first run only.
+      // Dismissed by click anywhere on the overlay or auto-dismissed when
+      // the student successfully solves their first gate.
+      !tutorialSeen && h('div', {
+        onClick: _dismissTutorial,
+        role: 'button', tabIndex: 0,
+        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { e.preventDefault(); _dismissTutorial(); } },
+        'aria-label': 'Tutorial. Press Enter or click to dismiss.',
+        style: {
+          position: 'absolute', inset: 0, zIndex: 14,
+          background: 'rgba(58,46,38,0.78)', backdropFilter: 'blur(2px)',
+          borderRadius: '10px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: 'linear-gradient(180deg, #fef3c7 0%, #fed7aa 100%)',
+            border: '2px solid #d97706', borderRadius: '12px',
+            padding: '18px 22px', maxWidth: '340px', textAlign: 'center',
+            boxShadow: '0 12px 40px rgba(58,46,38,0.5), inset 0 0 24px rgba(217,119,6,0.12)'
+          }
+        },
+          h('div', { style: { fontSize: '36px', marginBottom: '4px' } }, '\uD83D\uDDDD\uFE0F'),
+          h('h3', { style: { fontSize: '16px', fontWeight: 900, color: '#78350f', margin: '0 0 10px', letterSpacing: '0.04em' } }, 'Welcome, Adventurer'),
+          h('p', { style: { fontSize: '12px', color: '#92400e', lineHeight: '1.5', margin: '0 0 8px' } },
+            'Use ',
+            h('kbd', { style: { background: '#fef3c7', border: '1px solid #d97706', borderRadius: '4px', padding: '0 4px', fontFamily: 'monospace', fontWeight: 700 } }, '\u2190 \u2191 \u2192 \u2193'),
+            ' or ',
+            h('kbd', { style: { background: '#fef3c7', border: '1px solid #d97706', borderRadius: '4px', padding: '0 4px', fontFamily: 'monospace', fontWeight: 700 } }, 'WASD'),
+            ' to explore.'
+          ),
+          h('p', { style: { fontSize: '12px', color: '#92400e', lineHeight: '1.5', margin: '0 0 8px' } },
+            'Each gate is locked by a math fact. Solve it to pass.'
+          ),
+          h('p', { style: { fontSize: '12px', color: '#92400e', lineHeight: '1.5', margin: '0 0 12px' } },
+            'Find the \uD83D\uDDDD\uFE0F key to unlock the \u2B50 exit.'
+          ),
+          h('div', {
+            style: { fontSize: '11px', fontWeight: 800, color: '#fef3c7', background: 'linear-gradient(135deg, #b45309, #7c2d12)', border: '2px solid #78350f', borderRadius: '8px', padding: '6px 14px', display: 'inline-block', letterSpacing: '0.06em' }
+          }, 'Tap anywhere to begin')
+        )
+      ),
+      // 2D minimap overlay (top-right of 3D view)
+      has3D && maze && h('canvas', { ref: canvasRef, style: { position: 'absolute', top: isFullscreen ? '64px' : '44px', right: isFullscreen ? '24px' : '4px', width: isFullscreen ? '160px' : '100px', height: isFullscreen ? '160px' : '100px', borderRadius: '8px', border: '1px solid rgba(100,116,139,0.4)', opacity: 0.85, boxShadow: isFullscreen ? '0 4px 16px rgba(0,0,0,0.5)' : 'none' } }),
+      // Gate overlay (when at junction). Styled as a stone-gate with a
+      // lock and a 3x4 number pad \u2014 the math problem is the gate's
+      // combination, the pad is how you enter it. Border + glow shift
+      // by feedback state: red shake on wrong, green flash on correct.
+      currentProblem && h('div', {
+        key: 'gate-' + (currentProblem.problem.text), // remount when problem changes so animations replay
+        className: feedback === 'wrong' ? 'allo-gate-shake' : (feedback === 'correct' ? 'allo-gate-open' : ''),
+        style: {
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+          background: feedback === 'correct'
+            ? 'linear-gradient(180deg, #14532d 0%, #052e16 100%)'
+            : 'linear-gradient(180deg, #3a2e26 0%, #2a221c 100%)',
+          backdropFilter: 'blur(8px)',
+          borderRadius: '14px',
+          padding: '18px 22px 14px',
+          textAlign: 'center',
+          border: feedback === 'wrong'
+            ? '3px solid #ef4444'
+            : (feedback === 'correct' ? '3px solid #22c55e' : '3px solid #a8957d'),
+          boxShadow: feedback === 'correct'
+            ? '0 0 32px rgba(34,197,94,0.7), inset 0 0 32px rgba(34,197,94,0.25)'
+            : feedback === 'wrong'
+              ? '0 0 24px rgba(239,68,68,0.55), inset 0 0 16px rgba(239,68,68,0.2)'
+              : '0 0 0 2px rgba(58,46,38,0.6), 0 12px 40px rgba(0,0,0,0.6), inset 0 0 24px rgba(255,180,80,0.10)',
+          zIndex: 10,
+          width: isFullscreen ? 'min(460px, calc(100vw - 48px))' : 'min(320px, calc(100vw - 24px))',
+          maxWidth: '92vw',
+          transition: 'background 200ms, border-color 200ms, box-shadow 200ms'
+        }
+      },
+        // Header row: "GATE" label + lock glyph (changes to unlocked on correct)
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '10px', color: feedback === 'correct' ? '#bbf7d0' : '#fbbf24', fontSize: '11px', fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase' } },
+          h('span', { style: { fontSize: '18px' } }, feedback === 'correct' ? '\ud83d\udd13' : '\ud83d\udd12'),
+          h('span', null, feedback === 'correct' ? 'Gate Opens!' : (feedback === 'wrong' ? 'Wrong Combination \u2014 Try Again' : 'Locked Gate')),
+          h('span', { style: { fontSize: '18px' } }, feedback === 'correct' ? '\ud83d\udd13' : '\ud83d\udd12')
+        ),
+        // Operation tag — small pill showing which fact family this gate
+        // tests (e.g. "MULTIPLICATION" / "DIVISION"). Detected from the
+        // operator characters in the problem text so it stays accurate
+        // even when operation === 'mixed'.
+        (function() {
+          var ptxt = (currentProblem.problem.text || '');
+          var opLabel = currentProblem.problem.type === 'visual'
+              ? (currentProblem.problem.shape === 'lblock' ? 'L-Block' : 'Volume')
+            : ptxt.indexOf('\u00D7') >= 0 || ptxt.indexOf('x') >= 0 || ptxt.indexOf('*') >= 0 ? 'Multiplication'
+            : ptxt.indexOf('\u00F7') >= 0 || ptxt.indexOf('/') >= 0 ? 'Division'
+            : ptxt.indexOf('+') >= 0 ? 'Addition'
+            : (ptxt.indexOf('\u2212') >= 0 || ptxt.indexOf('-') >= 0) ? 'Subtraction'
+            : 'Math';
+          return h('div', {
+            style: {
+              display: 'inline-block', fontSize: '9px', fontWeight: 800,
+              letterSpacing: '0.14em', textTransform: 'uppercase',
+              color: '#fbbf24', background: 'rgba(251,191,36,0.12)',
+              border: '1px solid rgba(251,191,36,0.35)',
+              padding: '2px 8px', borderRadius: '999px', marginBottom: '6px'
+            }
+          }, opLabel + ' Gate');
+        })(),
+        // The "combination" \u2014 math problem
+        // Visual-volume prism (CSS-3D unit-cube grid) OR text equation.
+        // Renders a small rotating prism made of individual unit cubes
+        // when the gate problem is a visual one, so the math fact is
+        // literally a structure to count. Falls back to the original
+        // text math display for arithmetic gates.
+        currentProblem.problem.type === 'visual'
+          ? (function() {
+              var d = currentProblem.problem.dims;
+              var notch = currentProblem.problem.notch;
+              var isLBlock = currentProblem.problem.shape === 'lblock';
+              // Cube edge sized so the longest axis fits in ~140px.
+              var maxAx = Math.max(d.l, d.w, d.h);
+              var unit = Math.max(14, Math.min(28, 140 / maxAx));
+              var cubes = [];
+              for (var z = 0; z < d.h; z++) {
+                for (var y = 0; y < d.w; y++) {
+                  for (var x = 0; x < d.l; x++) {
+                    if (isLBlock && x < notch.l && y < notch.w && z < notch.h) continue;
+                    var hue = 38 + z * 7;
+                    var face = 'hsl(' + hue + ', 78%, 58%)';
+                    var faceDim = 'hsl(' + hue + ', 60%, 38%)';
+                    cubes.push(h('div', {
+                      key: x + ',' + y + ',' + z,
+                      style: {
+                        position: 'absolute',
+                        width: unit + 'px', height: unit + 'px',
+                        transform: 'translate3d(' + (x * unit) + 'px, ' + (-z * unit) + 'px, ' + (y * unit) + 'px)',
+                        transformStyle: 'preserve-3d'
+                      }
+                    },
+                      // 6 cube faces, positioned via translateZ + rotate
+                      h('div', { style: { position: 'absolute', inset: 0, background: face, border: '1px solid #b45309', transform: 'translateZ(' + (unit/2) + 'px)' } }),
+                      h('div', { style: { position: 'absolute', inset: 0, background: faceDim, border: '1px solid #78350f', transform: 'rotateY(180deg) translateZ(' + (unit/2) + 'px)' } }),
+                      h('div', { style: { position: 'absolute', inset: 0, background: face, border: '1px solid #b45309', transform: 'rotateY(90deg) translateZ(' + (unit/2) + 'px)' } }),
+                      h('div', { style: { position: 'absolute', inset: 0, background: faceDim, border: '1px solid #78350f', transform: 'rotateY(-90deg) translateZ(' + (unit/2) + 'px)' } }),
+                      h('div', { style: { position: 'absolute', inset: 0, background: 'hsl(' + hue + ', 80%, 70%)', border: '1px solid #b45309', transform: 'rotateX(90deg) translateZ(' + (unit/2) + 'px)' } }),
+                      h('div', { style: { position: 'absolute', inset: 0, background: 'hsl(' + hue + ', 50%, 30%)', border: '1px solid #78350f', transform: 'rotateX(-90deg) translateZ(' + (unit/2) + 'px)' } })
+                    ));
+                  }
+                }
+              }
+              var totalW = d.l * unit;
+              var totalD = d.w * unit;
+              var totalH = d.h * unit;
+              return h('div', {
+                'aria-label': isLBlock
+                  ? ('L-block prism, base ' + d.l + ' by ' + d.w + ' by ' + d.h + ' with ' + notch.l + ' by ' + notch.w + ' by ' + notch.h + ' corner removed')
+                  : ('Rectangular prism, ' + d.l + ' by ' + d.w + ' by ' + d.h),
+                style: { perspective: '600px', height: '180px', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }
+              },
+                h('div', {
+                  className: 'allo-volume-rotate',
+                  style: {
+                    position: 'relative', width: totalW + 'px', height: totalH + 'px',
+                    transformStyle: 'preserve-3d',
+                    transform: 'translateZ(' + (-totalD / 2) + 'px) rotateX(-22deg) rotateY(-32deg)',
+                    transformOrigin: 'center'
+                  }
+                }, cubes),
+                // Dimension caption — small text above so the visual
+                // problem still has a label that matches the aria.
+                h('div', {
+                  style: { position: 'absolute', bottom: '-2px', left: '50%', transform: 'translateX(-50%)', fontSize: '11px', color: '#fbbf24', fontWeight: 700, letterSpacing: '0.08em', fontFamily: 'monospace', whiteSpace: 'nowrap' }
+                }, isLBlock ? (d.l + '×' + d.w + '×' + d.h + '  −  ' + notch.l + '×' + notch.w + '×' + notch.h) : (d.l + ' × ' + d.w + ' × ' + d.h))
+              );
+            })()
+          : h('div', { style: { fontSize: isFullscreen ? '42px' : '30px', fontWeight: 800, color: '#fef3c7', marginBottom: '10px', fontFamily: 'monospace', textShadow: '0 0 12px rgba(251,191,36,0.45)' } }, currentProblem.problem.text + ' = ?'),
+        // Answer display (read-only echo of userInput so taps on numpad show).
+        // Highlights red on wrong / green on correct so the student gets
+        // direct visual feedback on the answer they actually entered.
+        h('div', {
+          style: {
+            display: 'inline-block', minWidth: isFullscreen ? '160px' : '120px', padding: isFullscreen ? '10px 16px' : '8px 12px', marginBottom: '10px',
+            fontSize: isFullscreen ? '36px' : '26px', fontWeight: 800, fontFamily: 'monospace', textAlign: 'center',
+            color: feedback === 'wrong' ? '#fee2e2' : (feedback === 'correct' ? '#bbf7d0' : '#fff'),
+            background: feedback === 'wrong' ? '#7f1d1d' : (feedback === 'correct' ? '#14532d' : '#2a221c'),
+            border: '2px solid ' + (feedback === 'wrong' ? '#ef4444' : (feedback === 'correct' ? '#22c55e' : '#a8957d')),
+            borderRadius: '8px',
+            letterSpacing: '0.08em',
+            transition: 'background 200ms, color 200ms, border-color 200ms'
+          }
+        }, userInput || '\u2014'),
+        // Hidden input still present for keyboard users + autofocus + Enter handling
+        h('input', { ref: inputRef, type: 'number', value: userInput, onChange: function(e) { setUserInput(e.target.value); },
+          'aria-label': 'Type your answer to ' + currentProblem.problem.text,
+          onKeyDown: function(e) { if (e.key === 'Enter') submitAnswer(); else if (e.key === 'Escape') setUserInput(''); },
+          style: { position: 'absolute', opacity: 0, pointerEvents: 'none', width: '1px', height: '1px' },
+          inputMode: 'numeric', autoFocus: true
+        }),
+        // \u2500\u2500 Number pad (3 cols x 4 rows) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: isFullscreen ? '8px' : '6px', maxWidth: isFullscreen ? '320px' : '220px', margin: '0 auto' } },
+          ['1','2','3','4','5','6','7','8','9'].map(function(d) {
+            return h('button', {
+              key: 'pad-' + d,
+              onClick: function() { setUserInput(function(prev) { return (prev || '') + d; }); if (inputRef.current) inputRef.current.focus(); },
+              'aria-label': 'Enter digit ' + d,
+              style: {
+                padding: isFullscreen ? '16px 0' : '12px 0', fontSize: isFullscreen ? '26px' : '20px', fontWeight: 700, fontFamily: 'monospace',
+                background: '#5b4d3f', color: '#fef3c7', border: '2px solid #a8957d',
+                borderRadius: '8px', cursor: 'pointer', minHeight: '44px',
+                boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.3)'
+              }
+            }, d);
+          }),
+          // Bottom row: Clear, 0, Submit
+          h('button', {
+            key: 'pad-clear',
+            onClick: function() { setUserInput(''); if (inputRef.current) inputRef.current.focus(); },
+            'aria-label': 'Clear answer',
+            style: {
+              padding: '12px 0', fontSize: '13px', fontWeight: 700,
+              background: '#7c2d12', color: '#fef3c7', border: '2px solid #a8957d',
+              borderRadius: '8px', cursor: 'pointer', minHeight: '44px'
+            }
+          }, '\u2716 Clear'),
+          h('button', {
+            key: 'pad-0',
+            onClick: function() { setUserInput(function(prev) { return (prev || '') + '0'; }); if (inputRef.current) inputRef.current.focus(); },
+            'aria-label': 'Enter digit 0',
+            style: {
+              padding: '12px 0', fontSize: '20px', fontWeight: 700, fontFamily: 'monospace',
+              background: '#5b4d3f', color: '#fef3c7', border: '2px solid #a8957d',
+              borderRadius: '8px', cursor: 'pointer', minHeight: '44px',
+              boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.3)'
+            }
+          }, '0'),
+          h('button', {
+            key: 'pad-submit',
+            onClick: submitAnswer,
+            'aria-label': 'Submit answer to unlock the gate',
+            style: {
+              padding: '12px 0', fontSize: '13px', fontWeight: 800,
+              background: '#15803d', color: '#fff', border: '2px solid #22c55e',
+              borderRadius: '8px', cursor: 'pointer', minHeight: '44px',
+              boxShadow: '0 0 8px rgba(34,197,94,0.4)'
+            }
+          }, '\ud83d\udd11 Unlock')
+        ),
+        attemptCount > 0 && h('div', { style: { marginTop: '8px', fontSize: '11px', fontWeight: 700, color: '#fbbf24', letterSpacing: '0.06em', textTransform: 'uppercase' }, 'aria-live': 'off' }, 'Attempt ' + (attemptCount + 1)),
+        // Adaptive answer reveal \u2014 after 3 wrong attempts on the same
+        // gate, surface the correct answer so a stuck student isn't
+        // trapped. They still have to type it to advance so the muscle-
+        // memory drill stays intact. Skipped for visual-volume gates
+        // (those already display the prism \u2014 students count cubes).
+        attemptCount >= 3 && currentProblem.problem.type !== 'visual' && h('div', {
+          'aria-live': 'polite',
+          style: {
+            marginTop: '10px', padding: '6px 12px', display: 'inline-block',
+            fontSize: '12px', fontWeight: 800,
+            color: '#bbf7d0', background: 'rgba(20,83,45,0.55)',
+            border: '1px dashed #22c55e', borderRadius: '8px',
+            letterSpacing: '0.04em'
+          }
+        }, '\ud83d\udca1 Answer: ' + currentProblem.problem.answer + ' \u2014 type it to continue'),
+        h('p', { style: { fontSize: '10px', color: '#a8957d', marginTop: attemptCount > 0 ? '4px' : '10px', marginBottom: 0 } }, 'Tap pad or use keyboard \u2022 Enter to submit \u2022 Esc to clear')
+      ),
+      // Arrow buttons (mobile friendly)
+      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: isFullscreen ? '8px' : '4px', maxWidth: isFullscreen ? '240px' : '160px', margin: isFullscreen ? '14px auto 0' : '8px auto 0' } },
+        h('div'),
+        h('button', { onClick: function() { tryMove('up'); }, 'aria-label': 'Move up', title: 'Move up (up arrow or W key)', style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25B2'),
+        h('div'),
+        h('button', { onClick: function() { tryMove('left'); }, 'aria-label': 'Move left', title: 'Move left (left arrow or A key)', style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25C0'),
+        h('button', { onClick: function() { tryMove('down'); }, 'aria-label': 'Move down', title: 'Move down (down arrow or S key)', style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25BC'),
+        h('button', { onClick: function() { tryMove('right'); }, 'aria-label': 'Move right', title: 'Move right (right arrow or D key)', style: { padding: isFullscreen ? '18px' : '12px', borderRadius: '8px', background: 'linear-gradient(180deg, #a8957d 0%, #78350f 100%)', color: '#fef3c7', border: '2px solid #78350f', fontSize: isFullscreen ? '28px' : '20px', fontWeight: 700, cursor: 'pointer', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.25)', minHeight: isFullscreen ? '64px' : '44px' } }, '\u25B6')
+      ),
+      h('p', { style: { fontSize: isFullscreen ? '13px' : '10px', color: isFullscreen ? '#fbbf24' : '#92400e', textAlign: 'center', marginTop: isFullscreen ? '12px' : '8px', fontStyle: 'italic' } }, 'Arrow keys or WASD to move \u2022 H for hint \u2022 F for fullscreen \u2022 3-in-a-row for bonus')
     );
   }
 

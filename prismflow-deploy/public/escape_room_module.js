@@ -133,6 +133,14 @@
     var safeGetItem = shared.safeGetItem || function(k) { try { return localStorage.getItem(k); } catch(e) { return null; } };
     var safeSetItem = shared.safeSetItem || function(k,v) { try { localStorage.setItem(k,v); } catch(e) {} };
     var warnLog = shared.warnLog || function() { console.warn.apply(console, arguments); };
+    // Optional host wiring for embedding the escape room into the
+    // active exit ticket / quiz resource so the config travels with
+    // the file (instead of only living in teacher-local storage).
+    // setHistory mutates the resource history array; getCurrentResourceId
+    // returns the id of the resource currently being viewed (e.g.
+    // generatedContent?.id). Both are no-ops if not wired.
+    var setHistoryDep = deps.setHistory || null;
+    var getCurrentResourceId = deps.getCurrentResourceId || function() { return null; };
 
     // ── generateEscapeRoom ──
     var generateEscapeRoom = async function() {
@@ -918,6 +926,24 @@ inputText.substring(0, 6000) + '\n' +
           sourceTextHash: inputText.substring(0, 100)
         };
         safeSetItem('allo_saved_escape_room', JSON.stringify(saveData));
+        // Embed into the active exit ticket / quiz resource so the
+        // config travels with the file. Going-forward only — if
+        // setHistory + getCurrentResourceId aren't wired (older
+        // host), this is a no-op and the localStorage save above is
+        // still the source of truth for the teacher's own device.
+        try {
+          var parentId = getCurrentResourceId && getCurrentResourceId();
+          if (parentId && setHistoryDep) {
+            setHistoryDep(function(prev) {
+              if (!Array.isArray(prev)) return prev;
+              return prev.map(function(item) {
+                if (!item || item.id !== parentId) return item;
+                var nextData = Object.assign({}, item.data || {}, { escapeRoomConfig: saveData });
+                return Object.assign({}, item, { data: nextData });
+              });
+            });
+          }
+        } catch (eEmbed) { warnLog('Failed to embed escape room into parent resource:', eEmbed); }
         addToast(t('escape_room.config_saved') || '\uD83D\uDCBE Escape Room saved! Load it anytime from settings.', 'success');
       } catch (e) {
         warnLog('Failed to save escape room config:', e);
@@ -925,7 +951,87 @@ inputText.substring(0, 6000) + '\n' +
       }
     };
 
+    // ── _hydrateConfig (shared helper) ──
+    // Pushes a parsed escape-room config into escapeRoomState. Used
+    // by both loadSavedEscapeRoom (localStorage path) and
+    // loadEscapeRoomFromConfig (resource-embedded path). Random
+    // shuffle on every call — by design; repeat plays vary.
+    var _hydrateConfig = function(config, difficulty) {
+      if (!config || !config.room || !config.puzzles) {
+        addToast(t('escape_room.invalid_save') || 'Saved data is corrupted', 'error');
+        return false;
+      }
+      var processedPuzzles = config.puzzles.map(function(p, i) {
+        var processed = Object.assign({}, p, {
+          linkedObject: (config.objects && config.objects.find(function(o) { return o.id === p.linkedObjectId; })) || (config.objects && config.objects[i]) || { emoji: '\uD83D\uDD2E', name: 'Puzzle ' + (i+1) }
+        });
+        if (p.type === 'sequence' && p.items) {
+          var indices = p.items.map(function(_, idx) { return idx; });
+          processed.shuffledItems = derangeShuffle(indices);
+        }
+        if (p.type === 'scramble' && p.scrambledWord) {
+          processed.displayLetters = derangeShuffle(p.scrambledWord.split('').filter(function(c) { return c.trim(); }));
+        }
+        if (p.type === 'matching' && p.pairs) {
+          processed.leftColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.left; }));
+          processed.rightColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.right; }));
+        }
+        if (p.type === 'fillin' && p.wordbank) {
+          processed.wordbank = derangeShuffle(p.wordbank);
+        }
+        if (p.type === 'cipher' && p.wordbank) {
+          processed.wordbank = derangeShuffle(p.wordbank);
+        }
+        return processed;
+      });
+      var processedFinalDoor = config.finalDoor || null;
+      if (processedFinalDoor && processedFinalDoor.wordbank) {
+        processedFinalDoor = Object.assign({}, processedFinalDoor, { wordbank: derangeShuffle(processedFinalDoor.wordbank) });
+      }
+      var diffPresets = {
+        easy: { timePerPuzzle: 45, lives: 99, hints: 5, xpMultiplier: 0.5 },
+        normal: { timePerPuzzle: 30, lives: 3, hints: 3, xpMultiplier: 1.0 },
+        hard: { timePerPuzzle: 20, lives: 1, hints: 1, xpMultiplier: 2.0 }
+      };
+      var diff = difficulty || 'normal';
+      var preset = diffPresets[diff] || diffPresets.normal;
+      var totalTime = processedPuzzles.length * preset.timePerPuzzle;
+      setState.setEscapeRoomState(function(prev) {
+        return Object.assign({}, prev, {
+          isActive: false,
+          isPreview: true,
+          isGenerating: false,
+          showSettings: false,
+          room: config.room,
+          puzzles: processedPuzzles,
+          objects: config.objects,
+          totalPuzzles: processedPuzzles.length,
+          finalDoorPuzzle: processedFinalDoor,
+          savedEscapeRoom: config,
+          solvedPuzzles: new Set(),
+          isEscaped: false,
+          timeRemaining: totalTime,
+          maxTime: totalTime,
+          difficulty: diff,
+          lives: preset.lives,
+          maxLives: preset.lives,
+          hintsRemaining: preset.hints,
+          maxHints: preset.hints,
+          xpMultiplier: preset.xpMultiplier,
+          streak: 0,
+          wrongAttempts: 0,
+          isGameOver: false,
+          timerPaused: true
+        });
+      });
+      setState.setEscapeTimeLeft(totalTime);
+      setState.setIsEscapeTimerRunning(false);
+      return true;
+    };
+
     // ── loadSavedEscapeRoom ──
+    // localStorage path — the teacher's own browser-local saves
+    // (independent of any specific exit ticket).
     var loadSavedEscapeRoom = function() {
       try {
         var saved = safeGetItem('allo_saved_escape_room');
@@ -934,81 +1040,34 @@ inputText.substring(0, 6000) + '\n' +
           return;
         }
         var saveData = JSON.parse(saved);
-        var config = saveData.config;
-        if (!config || !config.room || !config.puzzles) {
-          addToast(t('escape_room.invalid_save') || 'Saved data is corrupted', 'error');
-          return;
+        if (_hydrateConfig(saveData.config, saveData.difficulty)) {
+          playSound('correct');
+          addToast(t('escape_room.loaded_saved') || '\uD83D\uDCC2 Saved Escape Room loaded! Review and launch when ready.', 'success');
         }
-        var processedPuzzles = config.puzzles.map(function(p, i) {
-          var processed = Object.assign({}, p, {
-            linkedObject: (config.objects && config.objects.find(function(o) { return o.id === p.linkedObjectId; })) || (config.objects && config.objects[i]) || { emoji: '\uD83D\uDD2E', name: 'Puzzle ' + (i+1) }
-          });
-          if (p.type === 'sequence' && p.items) {
-            var indices = p.items.map(function(_, idx) { return idx; });
-            processed.shuffledItems = derangeShuffle(indices);
-          }
-          if (p.type === 'scramble' && p.scrambledWord) {
-            processed.displayLetters = derangeShuffle(p.scrambledWord.split('').filter(function(c) { return c.trim(); }));
-          }
-          if (p.type === 'matching' && p.pairs) {
-            processed.leftColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.left; }));
-            processed.rightColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.right; }));
-          }
-          if (p.type === 'fillin' && p.wordbank) {
-            processed.wordbank = derangeShuffle(p.wordbank);
-          }
-          if (p.type === 'cipher' && p.wordbank) {
-            processed.wordbank = derangeShuffle(p.wordbank);
-          }
-          return processed;
-        });
-        var processedFinalDoor = config.finalDoor || null;
-        if (processedFinalDoor && processedFinalDoor.wordbank) {
-          processedFinalDoor = Object.assign({}, processedFinalDoor, { wordbank: derangeShuffle(processedFinalDoor.wordbank) });
-        }
-        var diffPresets = {
-          easy: { timePerPuzzle: 45, lives: 99, hints: 5, xpMultiplier: 0.5 },
-          normal: { timePerPuzzle: 30, lives: 3, hints: 3, xpMultiplier: 1.0 },
-          hard: { timePerPuzzle: 20, lives: 1, hints: 1, xpMultiplier: 2.0 }
-        };
-        var diff = saveData.difficulty || 'normal';
-        var preset = diffPresets[diff];
-        var totalTime = processedPuzzles.length * preset.timePerPuzzle;
-        setState.setEscapeRoomState(function(prev) {
-          return Object.assign({}, prev, {
-            isActive: false,
-            isPreview: true,
-            isGenerating: false,
-            showSettings: false,
-            room: config.room,
-            puzzles: processedPuzzles,
-            objects: config.objects,
-            totalPuzzles: processedPuzzles.length,
-            finalDoorPuzzle: processedFinalDoor,
-            savedEscapeRoom: config,
-            solvedPuzzles: new Set(),
-            isEscaped: false,
-            timeRemaining: totalTime,
-            maxTime: totalTime,
-            difficulty: diff,
-            lives: preset.lives,
-            maxLives: preset.lives,
-            hintsRemaining: preset.hints,
-            maxHints: preset.hints,
-            xpMultiplier: preset.xpMultiplier,
-            streak: 0,
-            wrongAttempts: 0,
-            isGameOver: false,
-            timerPaused: true
-          });
-        });
-        setState.setEscapeTimeLeft(totalTime);
-        setState.setIsEscapeTimerRunning(false);
-        playSound('correct');
-        addToast(t('escape_room.loaded_saved') || '\uD83D\uDCC2 Saved Escape Room loaded! Review and launch when ready.', 'success');
       } catch (e) {
         warnLog('Failed to load saved escape room:', e);
         addToast(t('errors.load_failed') || 'Failed to load saved config', 'error');
+      }
+    };
+
+    // ── loadEscapeRoomFromConfig (new) ──
+    // Resource-embedded path — hydrates from a config object stored
+    // inside an exit ticket / quiz resource (resource.data.escapeRoomConfig).
+    // No localStorage involvement, so a student opening the same
+    // file on a different device gets the same content.
+    // saveData shape matches saveEscapeRoomConfig output:
+    //   { config, difficulty, puzzleCount, timestamp, sourceTextHash }
+    var loadEscapeRoomFromConfig = function(saveData, opts) {
+      if (!saveData) return false;
+      try {
+        var ok = _hydrateConfig(saveData.config, saveData.difficulty);
+        if (ok && opts && opts.silent !== true) {
+          addToast(t('escape_room.loaded_from_resource') || '\uD83D\uDCC2 Escape Room loaded from this exit ticket.', 'success');
+        }
+        return ok;
+      } catch (e) {
+        warnLog('Failed to hydrate escape room from resource:', e);
+        return false;
       }
     };
 
@@ -1042,6 +1101,7 @@ inputText.substring(0, 6000) + '\n' +
       updateEscapeRoomFinalDoor: updateEscapeRoomFinalDoor,
       saveEscapeRoomConfig: saveEscapeRoomConfig,
       loadSavedEscapeRoom: loadSavedEscapeRoom,
+      loadEscapeRoomFromConfig: loadEscapeRoomFromConfig,
       hasSavedEscapeRoom: hasSavedEscapeRoom
     };
   }
@@ -1435,7 +1495,7 @@ inputText.substring(0, 6000) + '\n' +
               value: escapeRoomState.textInput || '',
               onChange: function(e) { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { textInput: e.target.value }); }); },
               placeholder: t('escape_room.enter_answer'),
-              className: 'w-full p-4 bg-slate-700 rounded-xl text-white font-medium border-2 border-slate-600 focus:border-purple-400 outline-none'
+              className: 'w-full p-4 bg-slate-700 rounded-xl text-white font-medium border-2 border-slate-600 focus:border-purple-400'
             })
           );
         }
@@ -1666,7 +1726,7 @@ inputText.substring(0, 6000) + '\n' +
       return h('div', { className: 'fixed bottom-8 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 duration-500' },
         h('button', {
           onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { showFinalDoor: true, textInput: '' }); }); },
-          className: 'flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-500 text-slate-900 font-bold rounded-2xl shadow-2xl hover:scale-105 transition-transform animate-pulse border-4 border-yellow-300 focus:outline-none focus:ring-4 focus:ring-yellow-200',
+          className: 'flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-500 text-slate-900 font-bold rounded-2xl shadow-2xl hover:scale-105 transition-transform animate-pulse border-4 border-yellow-600 focus:outline-none focus:ring-4 focus:ring-yellow-200',
           'aria-label': t('escape_room.approach_door') || 'Approach the final door'
         },
           h(DoorOpen, { size: 28, className: 'animate-bounce', 'aria-hidden': 'true' }),
@@ -1873,7 +1933,6 @@ inputText.substring(0, 6000) + '\n' +
         escapeRoomState.selectedObject
           ? h('div', {
               role: 'button',
-              'aria-label': 'Close dialog',
               tabIndex: 0,
               onKeyDown: function(e) { if (e.key === 'Escape') e.currentTarget.click(); },
               className: 'fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4',
@@ -1914,7 +1973,6 @@ inputText.substring(0, 6000) + '\n' +
       var hasSaved = typeof handlers.hasSavedEscapeRoom === 'function' ? handlers.hasSavedEscapeRoom() : false;
       settingsDialog = h('div', {
         role: 'button',
-        'aria-label': 'Close dialog',
         tabIndex: 0,
         onKeyDown: function(e) { if (e.key === 'Escape') e.currentTarget.click(); },
         className: 'fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300',
@@ -1988,7 +2046,7 @@ inputText.substring(0, 6000) + '\n' +
               ? h('button', {
                   'aria-label': t('common.load_saved_escape_room'),
                   onClick: handlers.loadSavedEscapeRoom,
-                  className: 'flex-1 py-3 rounded-xl border-2 border-emerald-300 text-emerald-700 font-bold hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2'
+                  className: 'flex-1 py-3 rounded-xl border-2 border-emerald-600 text-emerald-700 font-bold hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2'
                 }, '\uD83D\uDCC2 ' + (t('escape_room.load_saved') || 'Load Saved'))
               : null,
             h('button', {
@@ -1998,6 +2056,7 @@ inputText.substring(0, 6000) + '\n' +
             }, t('common.cancel')),
             h('button', {
               'aria-label': t('common.launch_escape_room'),
+              'aria-busy': !!escapeRoomState.isGenerating,
               onClick: handlers.launchEscapeRoomWithSettings,
               disabled: !hasSourceOrAnalysis,
               className: 'flex-1 py-3 rounded-xl bg-amber-700 text-white font-bold hover:bg-amber-600 transition-all shadow-lg hover:shadow-amber-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'
@@ -2037,7 +2096,7 @@ inputText.substring(0, 6000) + '\n' +
           ),
           // Room theme banner
           h('div', { className: 'mb-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200' },
-            h('h3', { className: 'font-bold text-amber-800 text-lg' }, '\uD83C\uDFF0 ' + escapeRoomState.room.theme),
+            h('h3', { className: 'font-bold text-amber-800 text-lg' }, h('span', { 'aria-hidden': 'true' }, '\uD83C\uDFF0 '), escapeRoomState.room.theme),
             h('p', { className: 'text-amber-700 text-sm mt-1' }, escapeRoomState.room.description)
           ),
           // Puzzles list
@@ -2072,7 +2131,7 @@ inputText.substring(0, 6000) + '\n' +
                     onChange: function(e) {
                       handlers.updateEscapeRoomPuzzle(idx, editField, e.target.value);
                     },
-                    className: 'w-full mt-1 p-2 text-sm border border-slate-200 rounded-lg focus:border-amber-400 focus:ring-1 focus:ring-amber-200 outline-none transition-colors'
+                    className: 'w-full mt-1 p-2 text-sm border border-slate-400 rounded-lg focus:border-amber-400 focus:ring-1 focus:ring-amber-200 outline-none transition-colors'
                   })
                 )
               );
@@ -2091,7 +2150,7 @@ inputText.substring(0, 6000) + '\n' +
                           value: opt,
                           onChange: function(e) { handlers.updateEscapeRoomPuzzle(idx, 'options', { index: optIdx, text: e.target.value }); },
                           className: 'flex-1 p-1.5 text-xs border rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1 transition-colors ' +
-                            (optIdx === puzzle.correctIndex ? 'border-green-300 bg-green-50' : 'border-slate-200')
+                            (optIdx === puzzle.correctIndex ? 'border-green-600 bg-green-50' : 'border-slate-200')
                         })
                       );
                     })
@@ -2139,7 +2198,7 @@ inputText.substring(0, 6000) + '\n' +
                       type: 'text',
                       value: puzzle.hint,
                       onChange: function(e) { handlers.updateEscapeRoomPuzzle(idx, 'hint', e.target.value); },
-                      className: 'w-full mt-1 p-2 text-xs border border-slate-200 rounded-lg focus:border-amber-400 focus:ring-1 focus:ring-amber-200 outline-none'
+                      className: 'w-full mt-1 p-2 text-xs border border-slate-400 rounded-lg focus:border-amber-400 focus:ring-1 focus:ring-amber-200 outline-none'
                     })
                   )
                 );
@@ -2147,7 +2206,7 @@ inputText.substring(0, 6000) + '\n' +
 
               return h('div', {
                 key: (puzzle.id || idx),
-                className: 'p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-amber-300 transition-colors'
+                className: 'p-4 bg-slate-50 rounded-xl border border-slate-400 hover:border-amber-300 transition-colors'
               },
                 h('div', { className: 'space-y-2' }, puzzleChildren)
               );
@@ -2156,12 +2215,12 @@ inputText.substring(0, 6000) + '\n' +
           // Final door puzzle
           escapeRoomState.finalDoorPuzzle
             ? h('div', { className: 'mb-6 p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl border border-red-200' },
-                h('h4', { className: 'font-bold text-red-800 mb-2' }, '\uD83D\uDEAA Final Door Puzzle'),
+                h('h4', { className: 'font-bold text-red-800 mb-2' }, h('span', { 'aria-hidden': 'true' }, '\uD83D\uDEAA '), 'Final Door Puzzle'),
                 h('input', {
                   type: 'text',
                   value: escapeRoomState.finalDoorPuzzle.sentence || '',
                   onChange: function(e) { handlers.updateEscapeRoomFinalDoor('sentence', e.target.value); },
-                  className: 'w-full p-2 text-sm border border-red-200 rounded-lg focus:border-red-400 outline-none mb-2'
+                  className: 'w-full p-2 text-sm border border-red-200 rounded-lg focus:border-red-400 mb-2'
                 }),
                 h('p', { className: 'text-xs text-red-600' },
                   '\u2705 Answer: ', h('strong', null, escapeRoomState.finalDoorPuzzle.answer)

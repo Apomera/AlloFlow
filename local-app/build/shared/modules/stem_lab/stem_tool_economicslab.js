@@ -34,6 +34,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _ecoAC = null;
@@ -756,7 +765,7 @@ var d = labToolData || {};
 
               var remaining = Math.max(0, pfIncome - totalExp);
 
-              if (remaining > 0) expenses.push({ name: 'Remaining', val: remaining, color: '#64748b' });
+              if (remaining > 0) expenses.push({ name: 'Remaining', val: remaining, color: '#94a3b8' });
 
               var total = expenses.reduce(function (s, e) { return s + e.val; }, 0);
 
@@ -1196,7 +1205,7 @@ var d = labToolData || {};
 
                 ctx.fillStyle = '#ef4444'; ctx.fillText('--- Inflation', mhX + 110, mhY + 15);
 
-                ctx.fillStyle = '#64748b';
+                ctx.fillStyle = '#94a3b8';
 
                 ctx.fillText('Year ' + (macroHistory[0].year || 2025), mhX, mhY + mhH + 15);
 
@@ -1204,7 +1213,7 @@ var d = labToolData || {};
 
               } else {
 
-                ctx.font = '14px Inter, system-ui'; ctx.fillStyle = '#64748b'; ctx.textAlign = 'center';
+                ctx.font = '14px Inter, system-ui'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
 
                 ctx.fillText('Click "Next Year" to simulate national economic policy changes', W / 2, H / 2);
 
@@ -1388,7 +1397,7 @@ var d = labToolData || {};
 
               React.createElement('span', { className: 'text-[11px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200' }, '\uD83D\uDCDA AI-Powered Learning'),
 
-              econAchievements.length > 0 && React.createElement('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+              econAchievements.length > 0 && React.createElement('span', { 
 
                 className: 'text-[11px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 cursor-pointer',
 
@@ -1396,7 +1405,7 @@ var d = labToolData || {};
 
               }, '\uD83C\uDFC6 ' + econAchievements.length + ' achievements'),
 
-              React.createElement('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+              React.createElement('span', { 
 
                 className: 'text-[11px] text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200 cursor-pointer',
 
@@ -1426,7 +1435,7 @@ var d = labToolData || {};
 
                 onChange: function (e) { upd('econDifficulty', e.target.value); if (addToast) addToast('Difficulty: ' + e.target.value.toUpperCase(), 'info'); },
 
-                className: 'text-[11px] bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5 text-slate-600 outline-none cursor-pointer'
+                className: 'text-[11px] bg-slate-100 border border-slate-400 rounded-full px-2 py-0.5 text-slate-600 cursor-pointer'
 
               },
 
@@ -1473,6 +1482,35 @@ var d = labToolData || {};
               })
 
             ),
+
+            // ── Topic-accent hero band per tab ──
+            (function() {
+              var TAB_META = {
+                supplyDemand:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDCC9', title: 'Supply & Demand \u2014 the price-discovery engine',     hint: 'Demand slopes down (cheap = buy more); supply slopes up (expensive = produce more). Equilibrium price + quantity is where they cross. Adam Smith\u2019s 1776 Wealth of Nations is still the foundation.' },
+                personalFinance: { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83C\uDFE6', title: 'Personal Finance \u2014 budgeting, saving, credit',     hint: '50/30/20: needs / wants / save. Compound interest is the eighth wonder; a 30-year head start at 7% turns $1 into $7.61. Pay credit cards in full \u2014 19% APR is mafia rates.' },
+                stockMarket:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83D\uDCC8', title: 'Stock Market \u2014 ownership at fractional scale',     hint: 'Buy a share = own a slice of the company. S&P 500 has averaged ~10% annual returns over 100 years. Diversify (don\u2019t bet on one ticker), hold long (time in market beats timing it).' },
+                entrepreneur:    { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFEA', title: 'Business Sim \u2014 you\u2019re the founder',           hint: 'Revenue \u2212 costs = profit. Break-even point is when fixed costs are covered. Most small businesses fail in year 5; the survivors found product-market fit. Customer acquisition cost (CAC) vs lifetime value (LTV) is the founder\u2019s daily math.' },
+                macro:           { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFDB', title: 'National Economy \u2014 GDP, inflation, unemployment',  hint: 'GDP measures total output; CPI measures inflation; unemployment U-3 is the headline rate. The Fed sets interest rates to balance growth vs inflation \u2014 the dual mandate Congress gave it in 1977.' }
+              };
+              var meta = TAB_META[econTab] || TAB_META.supplyDemand;
+              return React.createElement('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
 
             // Achievement panel
 
@@ -1704,7 +1742,7 @@ var d = labToolData || {};
 
                   placeholder: 'Ask any economics question...',
 
-                  className: 'flex-1 px-3 py-2 border-2 border-sky-200 rounded-xl text-xs focus:border-sky-400 outline-none'
+                  className: 'flex-1 px-3 py-2 border-2 border-sky-200 rounded-xl text-xs focus:border-sky-400'
 
                 }),
 
@@ -1849,7 +1887,7 @@ var d = labToolData || {};
             ),
 
             // === HISTORIC ECONOMIC EVENTS TIMELINE ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-slate-50 to-zinc-50 rounded-xl p-4 border border-slate-200 mb-4' },
+            React.createElement('div', { className: 'bg-gradient-to-r from-slate-50 to-zinc-50 rounded-xl p-4 border border-slate-400 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                 React.createElement('h4', { className: 'text-sm font-bold text-slate-800' }, '\uD83D\uDCC5 Economic History Timeline'),
                 React.createElement('button', {
@@ -1932,12 +1970,12 @@ var d = labToolData || {};
                     React.createElement('label', { className: 'text-[11px] font-bold text-red-600 block mb-0.5' }, 'Amount ($)'),
                     React.createElement('input', { type: 'number', value: d.inflationAmt || 100,
                       onChange: function(e) { upd('inflationAmt', parseFloat(e.target.value) || 100); },
-                      className: 'w-full px-2 py-1.5 border border-red-200 rounded-lg text-xs focus:border-red-400 outline-none'
+                      className: 'w-full px-2 py-1.5 border border-red-200 rounded-lg text-xs focus:border-red-400'
                     })
                   ),
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-red-600 block mb-0.5' }, 'Inflation Rate (%)'),
-                    React.createElement('input', { type: 'range', 'aria-label': 'd', min: 0.5, max: 15, step: 0.5, value: d.inflationRate || 3,
+                    React.createElement('input', { type: 'range', 'aria-label': 'Inflation rate, percent', min: 0.5, max: 15, step: 0.5, value: d.inflationRate || 3,
                       onChange: function(e) { upd('inflationRate', parseFloat(e.target.value)); },
                       className: 'w-full accent-red-500'
                     }),
@@ -2039,21 +2077,21 @@ var d = labToolData || {};
                 React.createElement('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-emerald-600 block mb-0.5' }, 'Starting Amount: $' + (d.pfPrincipal || 1000).toLocaleString()),
-                    React.createElement('input', { type: 'range', 'aria-label': 'd', min: 100, max: 50000, step: 100, value: d.pfPrincipal || 1000,
+                    React.createElement('input', { type: 'range', 'aria-label': 'Starting amount in dollars', min: 100, max: 50000, step: 100, value: d.pfPrincipal || 1000,
                       onChange: function(e) { upd('pfPrincipal', parseInt(e.target.value)); },
                       className: 'w-full accent-emerald-500'
                     })
                   ),
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-emerald-600 block mb-0.5' }, 'Annual Return: ' + (d.pfRate || 7) + '%'),
-                    React.createElement('input', { type: 'range', 'aria-label': 'd', min: 1, max: 15, step: 0.5, value: d.pfRate || 7,
+                    React.createElement('input', { type: 'range', 'aria-label': 'Annual return, percent', min: 1, max: 15, step: 0.5, value: d.pfRate || 7,
                       onChange: function(e) { upd('pfRate', parseFloat(e.target.value)); },
                       className: 'w-full accent-emerald-500'
                     })
                   ),
                   React.createElement('div', null,
                     React.createElement('label', { className: 'text-[11px] font-bold text-emerald-600 block mb-0.5' }, 'Years: ' + (d.pfYears || 30)),
-                    React.createElement('input', { type: 'range', 'aria-label': 'd', min: 1, max: 50, value: d.pfYears || 30,
+                    React.createElement('input', { type: 'range', 'aria-label': 'Years', min: 1, max: 50, value: d.pfYears || 30,
                       onChange: function(e) { upd('pfYears', parseInt(e.target.value)); },
                       className: 'w-full accent-emerald-500'
                     })
@@ -2150,7 +2188,7 @@ var d = labToolData || {};
                   ECON_SCHOOLS.map(function(school, si) {
                     var isActive = d.econSchoolIdx === si;
                     return React.createElement('div', { key: si },
-                      React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                      React.createElement('div', { 
                         className: 'grid grid-cols-4 cursor-pointer transition-all ' + (isActive ? '' : 'hover:bg-purple-50') + (si % 2 === 0 ? ' bg-white' : ' bg-slate-50'),
                         onClick: function() { upd('econSchoolIdx', isActive ? null : si); },
                         style: isActive ? { background: school.color + '10', borderLeft: '3px solid ' + school.color } : {}
@@ -2423,7 +2461,7 @@ var d = labToolData || {};
 
               'aria-label': 'Interactive economics lab supply and demand visualization', tabIndex: 0,
 
-              className: 'w-full rounded-xl border border-slate-200',
+              className: 'w-full rounded-xl border border-slate-400',
 
               style: { height: '250px', background: '#0f172a' }
 
@@ -2910,7 +2948,7 @@ var d = labToolData || {};
 
                 ].map(function (s) {
 
-                  return React.createElement('div', { key: s.label, className: 'bg-white rounded-xl p-3 border border-slate-200 text-center' },
+                  return React.createElement('div', { key: s.label, className: 'bg-white rounded-xl p-3 border border-slate-400 text-center' },
 
                     React.createElement('div', { className: 'text-lg' }, s.icon),
 
@@ -3002,7 +3040,7 @@ var d = labToolData || {};
 
                       className: 'flex-1 p-2 rounded-lg text-center transition-all border-2 ' +
 
-                        ((d.pfHousing || 'renting') === h.id ? 'border-orange-400 bg-orange-100' : 'border-slate-200 bg-white hover:border-orange-300')
+                        ((d.pfHousing || 'renting') === h.id ? 'border-orange-400 bg-orange-100' : 'border-slate-200 bg-white hover:border-orange-600')
 
                     },
 
@@ -3040,7 +3078,7 @@ var d = labToolData || {};
 
                   React.createElement('input', {
 
-                    type: 'range', 'aria-label': 'd', min: 0, max: 50, value: d.pfInvestPct || 0,
+                    type: 'range', 'aria-label': 'Investment percent of salary', min: 0, max: 50, value: d.pfInvestPct || 0,
 
                     onChange: function (e) { upd('pfInvestPct', parseInt(e.target.value)); },
 
@@ -3092,7 +3130,7 @@ var d = labToolData || {};
 
               // History log
 
-              (d.pfHistory || []).length > 0 && React.createElement('div', { className: 'mt-4 bg-white rounded-xl border border-slate-200 p-3 max-h-40 overflow-y-auto' },
+              (d.pfHistory || []).length > 0 && React.createElement('div', { className: 'mt-4 bg-white rounded-xl border border-slate-400 p-3 max-h-40 overflow-y-auto' },
 
                 React.createElement('h4', { className: 'text-xs font-bold text-slate-600 mb-2' }, '\uD83D\uDCDC Life History'),
 
@@ -3118,7 +3156,7 @@ var d = labToolData || {};
 
                 onClick: function () { upd('pfAge', 22); upd('pfCash', 2000); upd('pfDebt', 0); upd('pfSalary', 35000); upd('pfHappiness', 70); upd('pfCredit', 650); upd('pfCareer', null); upd('pfInsurance', false); upd('pfHistory', []); upd('lifeEvent', null); if (addToast) addToast('\u267B Starting over at age 22!', 'info'); },
 
-                className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200'
+                className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-400'
 
               }, '\u267B New Life')
 
@@ -3237,7 +3275,7 @@ var d = labToolData || {};
 
                   // Selected company detail
 
-                  smCompanies[smSelected] && React.createElement('div', { className: 'bg-gradient-to-r from-slate-50 to-gray-50 rounded-xl p-3 border border-slate-200 mb-3' },
+                  smCompanies[smSelected] && React.createElement('div', { className: 'bg-gradient-to-r from-slate-50 to-gray-50 rounded-xl p-3 border border-slate-400 mb-3' },
 
                     React.createElement('div', { className: 'flex justify-between items-center' },
 
@@ -3509,7 +3547,7 @@ var d = labToolData || {};
 
                   // Portfolio summary
 
-                  React.createElement('div', { className: 'bg-white rounded-xl border border-slate-200 p-3 text-xs' },
+                  React.createElement('div', { className: 'bg-white rounded-xl border border-slate-400 p-3 text-xs' },
 
                     React.createElement('div', { className: 'flex justify-between mb-2' },
 
@@ -3535,7 +3573,7 @@ var d = labToolData || {};
 
                     // Portfolio Analytics
 
-                    smDay > 0 && React.createElement('div', { className: 'mt-3 bg-slate-50 rounded-xl p-3 border border-slate-200' },
+                    smDay > 0 && React.createElement('div', { className: 'mt-3 bg-slate-50 rounded-xl p-3 border border-slate-400' },
 
                       React.createElement('h4', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDCC8 Portfolio Analytics'),
 
@@ -3581,7 +3619,7 @@ var d = labToolData || {};
 
                       onClick: function () { upd('smCompanies', null); upd('smPortfolio', {}); upd('smCash', 10000); upd('smDay', 0); upd('smInput', ''); upd('smNewsEvent', null); if (addToast) addToast('\u267B Market reset! Create a new one.', 'info'); },
 
-                      className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200'
+                      className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-400'
 
                     }, '\u267B Reset Market & Generate New Companies')
 
@@ -3897,7 +3935,7 @@ var d = labToolData || {};
 
               // Stats + History
 
-              (d.enBizHistory || []).length > 0 && React.createElement('div', { className: 'bg-white rounded-xl border border-slate-200 p-3' },
+              (d.enBizHistory || []).length > 0 && React.createElement('div', { className: 'bg-white rounded-xl border border-slate-400 p-3' },
 
                 React.createElement('h4', { className: 'text-xs font-bold text-slate-600 mb-2' }, '\uD83D\uDCC8 Business History'),
 
@@ -3925,7 +3963,7 @@ var d = labToolData || {};
 
                 onClick: function () { upd('enBusiness', null); upd('enInput', ''); if (addToast) addToast('Business closed. Start a new one!', 'info'); },
 
-                className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200'
+                className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-400'
 
               }, '\u267B Close Business & Start New')
 

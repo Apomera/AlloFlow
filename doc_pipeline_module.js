@@ -129,23 +129,29 @@ var createDocPipeline = function(deps) {
   var t = deps.t;
   var isRtlLang = deps.isRtlLang || function() { return false; };
   var updateExportPreview = deps.updateExportPreview || function() {};
+  // generateResourceHTML at line 12106 uses getDefaultTitle(item.type)
+  // for resources without an explicit title. Threaded via deps from
+  // host scope (host const at AlloFlowANTI.txt:15623).
+  var getDefaultTitle = deps.getDefaultTitle || function() { return ''; };
   // Proxy all state access through window.__docPipelineState
   var _s = function() { return window.__docPipelineState || {}; };
   // Re-expose state vars as getters so existing code works unchanged
   var exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage,
       selectedFont, responses, history, inputText, gradeLevel,
       projectName, studentNickname, isTeacherMode, generatedContent,
+      currentUiLanguage, isIndependentMode, isParentMode,
       pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
       pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount,
       pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
-      pdfBatchQueue, pdfExperimentMode, pdfExperimentRuns,
+      pdfBatchQueue, pdfBatchSummary, pdfExperimentMode, pdfExperimentRuns,
       customExportCSS, exportStylePrompt, pdfFixModeRef, pdfPreviewRef, pdfTargetScore,
       setPdfAuditResult, setPdfAuditLoading, setPdfFixResult, setPdfFixLoading,
       setPdfFixStep, setPendingPdfBase64, setPendingPdfFile,
       setPdfBatchQueue, setPdfBatchProcessing, setPdfBatchCurrentIndex,
       setPdfBatchStep, setPdfBatchSummary, setIsGeneratingStyle,
       setCustomExportCSS, setInputText, setGenerationStep, setIsExtracting,
-      exportAuditResult, setExportAuditLoading, setExportAuditResult;
+      exportAuditResult, setExportAuditLoading, setExportAuditResult,
+      setError;
   // Bind all vars from the state bag before each public function call
   var _bindState = function() {
     var s = _s();
@@ -155,13 +161,16 @@ var createDocPipeline = function(deps) {
     inputText = s.inputText; gradeLevel = s.gradeLevel;
     projectName = s.projectName; studentNickname = s.studentNickname;
     isTeacherMode = s.isTeacherMode; generatedContent = s.generatedContent;
+    currentUiLanguage = s.currentUiLanguage || 'English';
+    isIndependentMode = s.isIndependentMode; isParentMode = s.isParentMode;
     pendingPdfBase64 = s.pendingPdfBase64; pendingPdfFile = s.pendingPdfFile;
     pdfFixResult = s.pdfFixResult; pdfAuditResult = s.pdfAuditResult;
     pdfAutoFixPasses = s.pdfAutoFixPasses; pdfPolishPasses = s.pdfPolishPasses;
     pdfAuditorCount = s.pdfAuditorCount;
     pdfPreviewTheme = s.pdfPreviewTheme; pdfPreviewFontSize = s.pdfPreviewFontSize;
     pdfPreviewA11yInspect = s.pdfPreviewA11yInspect;
-    pdfBatchQueue = s.pdfBatchQueue; pdfExperimentMode = s.pdfExperimentMode;
+    pdfBatchQueue = s.pdfBatchQueue; pdfBatchSummary = s.pdfBatchSummary;
+    pdfExperimentMode = s.pdfExperimentMode;
     pdfExperimentRuns = s.pdfExperimentRuns;
     customExportCSS = s.customExportCSS; exportStylePrompt = s.exportStylePrompt;
     pdfFixModeRef = s.pdfFixModeRef; pdfPreviewRef = s.pdfPreviewRef; pdfTargetScore = s.pdfTargetScore || 90;
@@ -177,6 +186,7 @@ var createDocPipeline = function(deps) {
     setIsExtracting = s.setIsExtracting;
     exportAuditResult = s.exportAuditResult;
     setExportAuditLoading = s.setExportAuditLoading; setExportAuditResult = s.setExportAuditResult;
+    setError = s.setError;
   };
 
   // ── IndexedDB chunk progress persistence ──
@@ -783,6 +793,176 @@ var createDocPipeline = function(deps) {
       // the intended emoji glyph. Safe for typical doc_pipeline output (no legit
       // `\uXXXX` text content exists in remediated educational documents).
       .replace(/\\u([0-9a-fA-F]{4})/g, function(_, hex) { return String.fromCharCode(parseInt(hex, 16)); });
+  };
+
+  // ──────────────────────────────────────────────────────────────────────
+  // Legend re-extraction pipeline
+  //
+  // The first-pass JSON extraction (single-pass at ~7898 / chunked at ~7949)
+  // can mis-handle figure legends and color-coded keys. Gemini sees a legend
+  // image with N specific entries, decides "this is tabular data," picks K
+  // broad category names as headers, and DROPS the N specific items. The
+  // output: a table with mostly-empty cells.
+  //
+  // Two-tier defense:
+  //   1. Improved first-pass prompts with explicit legend guidance (lower
+  //      false-positive rate; not bulletproof).
+  //   2. This validator + reflow pipeline: detect suspect blocks AFTER the
+  //      first pass parses, fire a focused vision call with a legend-specific
+  //      prompt that demands verbatim enumeration, replace the suspect block
+  //      with a `definition_list` block. Falls back to the original if the
+  //      second call also fails.
+  //
+  // Diagnostics surface to `window._legendDiagnostic` so misfires are
+  // inspectable post-hoc instead of disappearing into the build output.
+  // ──────────────────────────────────────────────────────────────────────
+
+  const _legendDiag = (entry) => {
+    try {
+      if (typeof window === 'undefined') return;
+      window._legendDiagnostic = window._legendDiagnostic || [];
+      window._legendDiagnostic.push(Object.assign({ ts: new Date().toISOString() }, entry || {}));
+      if (window._legendDiagnostic.length > 200) window._legendDiagnostic.splice(0, window._legendDiagnostic.length - 200);
+    } catch (_) {}
+  };
+
+  const _isSuspectExtraction = (block) => {
+    if (!block || !block.type) return null;
+    if (block.type === 'table' && Array.isArray(block.rows)) {
+      const allCells = [];
+      block.rows.forEach(r => { if (Array.isArray(r)) r.forEach(c => allCells.push(c)); else allCells.push(r); });
+      const total = allCells.length;
+      const empty = allCells.filter(c => !c || (typeof c === 'string' && c.trim().length === 0)).length;
+      if (total > 0 && empty / total > 0.5) return 'table-mostly-empty (' + empty + '/' + total + ')';
+      // Small "categorized" tables with a legend/key/figure caption — Gemini
+      // grouped specific items into abstract categories then ran out of cells.
+      const hdrCount = Array.isArray(block.headers) ? block.headers.length : 0;
+      if (hdrCount >= 1 && hdrCount <= 4 && block.rows.length <= 6 && total <= 16) {
+        const cap = String(block.caption || '');
+        if (/\b(legend|key|figure\b)/i.test(cap)) return 'small-table-with-legend-caption';
+      }
+    }
+    if (block.type === 'image') {
+      const desc = String((block.description || '') + ' ' + (block.alt || ''));
+      if (/\b(legend|key|color[- ]?coded|colour[- ]?coded|map\s+(?:legend|key))\b/i.test(desc)) {
+        // Legend keyword present; check whether description actually enumerates entries.
+        // Heuristic: needs a colon followed by ≥3 comma-separated tokens, or a list of
+        // bullet/dash markers, or "and" enumerating multiple items.
+        const enumerated =
+          /:\s*[\w\- ]+(?:[,;]\s*[\w\- ]+){2,}/.test(desc)
+          || /(?:•|•|—|–|\d+\.)/.test(desc)
+          || /(?:[\w\- ]+,\s*){3,}/.test(desc);
+        if (!enumerated) return 'image-mentions-legend-but-not-enumerated';
+      }
+    }
+    return null;
+  };
+
+  const _reextractAsLegend = async (originalBlock, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn) => {
+    if (!callGeminiVisionFn) return null;
+    const pageHint = pageRange && pageRange.length === 2
+      ? 'Focus on pages ' + pageRange[0] + ' through ' + pageRange[1] + ' of the PDF. '
+      : '';
+    const captionHint = originalBlock.caption
+      ? 'The original figure caption (use this as a hint for which legend to find): "' + String(originalBlock.caption).slice(0, 200) + '". '
+      : '';
+    const descHint = originalBlock.description
+      ? 'A prior pass described the visual as: "' + String(originalBlock.description).slice(0, 200) + '". '
+      : '';
+    const prompt =
+      pageHint + captionHint + descHint + '\n\n' +
+      'You are extracting a LEGEND or KEY from a document figure. A legend pairs visual markers (color swatches, symbols, patterns, icons) with their meanings.\n\n' +
+      'Locate the legend/key on the specified pages. Enumerate EVERY visible entry verbatim. Do NOT summarize. Do NOT group entries into abstract categories. Do NOT skip items. If you see 21 entries, return 21.\n\n' +
+      'Output a single JSON object with this exact shape:\n' +
+      '{\n' +
+      '  "type": "definition_list",\n' +
+      '  "caption": "<short caption describing what the legend is for; may be empty>",\n' +
+      '  "intro": "<optional 1-sentence intro; may be empty>",\n' +
+      '  "sections": [\n' +
+      '    {\n' +
+      '      "title": "<group heading if the legend has visible subgroupings (e.g. \'Shelf & Slope\'); otherwise empty string>",\n' +
+      '      "entries": [\n' +
+      '        { "marker": "dark olive green filled square", "label": "Shelf - high profile" },\n' +
+      '        { "marker": "medium blue filled square", "label": "Hadal" }\n' +
+      '      ]\n' +
+      '    }\n' +
+      '  ]\n' +
+      '}\n\n' +
+      'CRITICAL RULES:\n' +
+      '- Preserve labels VERBATIM (capitalization, hyphens, exact wording from the source).\n' +
+      '- "marker" describes the visual swatch — name the color (or pattern/symbol) and shape. Screen-reader users use this to mentally connect the label to color references in surrounding prose.\n' +
+      '- If the legend has visible subheadings/groupings, put those entries in a section with that title. If flat, use a single section with empty title.\n' +
+      '- Output ONLY the JSON object. No code fence. No commentary.\n' +
+      '- If you cannot find a legend on the specified pages, output exactly: null';
+
+    let raw;
+    try {
+      raw = await callGeminiVisionFn(prompt, pdfBase64, pdfMimeType);
+    } catch (e) {
+      _legendDiag({ phase: 'reextract-error', error: e && e.message ? e.message : String(e), pageRange });
+      return null;
+    }
+    if (!raw) { _legendDiag({ phase: 'reextract-empty-response', pageRange }); return null; }
+    let cleaned = _stripCodeFence(raw).trim();
+    if (!cleaned || cleaned === 'null') { _legendDiag({ phase: 'reextract-said-no-legend', pageRange }); return null; }
+    // Trim to JSON-object boundaries so a stray prefix/suffix doesn't break parsing.
+    const fi = cleaned.indexOf('{'); if (fi >= 0) cleaned = cleaned.substring(fi);
+    const li = cleaned.lastIndexOf('}'); if (li > 0) cleaned = cleaned.substring(0, li + 1);
+    let parsed = null;
+    try { parsed = JSON.parse(cleaned); }
+    catch (e) {
+      // One-shot repair: trailing commas, single-quoted strings.
+      try {
+        const repaired = cleaned.replace(/,\s*([}\]])/g, '$1').replace(/'([^']*)'/g, '"$1"');
+        parsed = JSON.parse(repaired);
+      } catch (e2) {
+        _legendDiag({ phase: 'reextract-json-parse-failed', pageRange, snippet: cleaned.slice(0, 200) });
+        return null;
+      }
+    }
+    if (!parsed || parsed.type !== 'definition_list' || !Array.isArray(parsed.sections)) {
+      _legendDiag({ phase: 'reextract-wrong-shape', pageRange, gotType: parsed && parsed.type });
+      return null;
+    }
+    const totalEntries = parsed.sections.reduce(function(sum, s) {
+      return sum + (Array.isArray(s.entries) ? s.entries.length : 0);
+    }, 0);
+    if (totalEntries === 0) {
+      _legendDiag({ phase: 'reextract-empty-sections', pageRange });
+      return null;
+    }
+    _legendDiag({ phase: 'reextract-success', pageRange, sections: parsed.sections.length, totalEntries });
+    return parsed;
+  };
+
+  const detectAndRepairLegends = async (blocks, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn) => {
+    if (!Array.isArray(blocks) || blocks.length === 0) return blocks;
+    if (!callGeminiVisionFn || !pdfBase64) return blocks;
+    const out = [];
+    for (let i = 0; i < blocks.length; i++) {
+      const block = blocks[i];
+      const reason = _isSuspectExtraction(block);
+      if (!reason) { out.push(block); continue; }
+      _legendDiag({ phase: 'flagged-suspect', pageRange, reason, originalType: block.type, caption: block.caption || null });
+      const replacement = await _reextractAsLegend(block, pdfBase64, pdfMimeType, pageRange, callGeminiVisionFn);
+      if (replacement) { out.push(replacement); }
+      else {
+        // Reflow the original block to a more honest representation: if it was a
+        // broken table, downgrade to an image with a description that explicitly
+        // names the failure mode so SR users hear something coherent.
+        if (block.type === 'table') {
+          out.push({
+            type: 'image',
+            description: (block.caption || 'Figure legend') + '. Automatic extraction could not enumerate every entry; refer to the source PDF image for the full legend.',
+            alt: block.caption ? String(block.caption).slice(0, 120) : 'Figure legend (full content in source image)'
+          });
+          _legendDiag({ phase: 'fallback-table-to-image', pageRange });
+        } else {
+          out.push(block);
+        }
+      }
+    }
+    return out;
   };
 
   // ── Heuristic text structuring (RECITATION fallback) ──
@@ -1499,8 +1679,12 @@ var createDocPipeline = function(deps) {
       fn: function(html) {
         if (/<header[\s>]/i.test(html)) return html;
         // Wrap a leading <h1> + any sibling tagline div in <header>.
+        // NOTE: do NOT add role="banner" here. <header> at the body's top level
+        // already exposes the banner landmark by default per ARIA spec, and
+        // adding role="banner" inside generated content can collide with the
+        // host page's own banner landmark when the document is embedded.
         return html.replace(/(<body[^>]*>\s*)((?:<h1[^>]*>[\s\S]*?<\/h1>\s*)(?:<(?:p|div)[^>]*class="[^"]*(?:tagline|subtitle)[^"]*"[^>]*>[\s\S]*?<\/(?:p|div)>\s*)?)/i,
-          '$1<header role="banner">$2</header>');
+          '$1<header>$2</header>');
       }
     },
     fix_add_footer: {
@@ -2255,8 +2439,10 @@ var createDocPipeline = function(deps) {
       if (gapEnd >= gapStart) {
         return '\n<hr data-multi-session-boundary="pages ' + prevEnd + '\u2192' + nextStart +
           '" data-gap="pages ' + gapStart + '-' + gapEnd + ' not yet remediated" ' +
-          'aria-label="Section break — pages ' + gapStart + ' to ' + gapEnd + ' not yet remediated">\n' +
-          '<p data-multi-session-gap="' + gapStart + '-' + gapEnd + '" style="background:#fef3c7;border-left:4px solid #fbbf24;padding:0.75em 1em;margin:1em 0;font-style:italic;color:#78350f">' +
+          'aria-label="Section break">\n' +
+          '<p data-multi-session-gap="' + gapStart + '-' + gapEnd + '" role="note" ' +
+          'aria-label="Pages ' + gapStart + ' to ' + gapEnd + ' have not yet been remediated in this session. Re-upload this PDF and select that range to add them." ' +
+          'style="background:#fef3c7;border-left:4px solid #fbbf24;padding:0.75em 1em;margin:1em 0;font-style:italic;color:#78350f">' +
           'Pages ' + gapStart + '\u2013' + gapEnd + ' have not yet been remediated in this session. ' +
           'Re-upload this PDF and select that range to add them.' +
           '</p>\n';
@@ -2284,7 +2470,9 @@ var createDocPipeline = function(deps) {
       const remStart = lastRange.pages[1] + 1;
       trailingNotice = '\n<hr data-multi-session-boundary="end-of-completed" ' +
         'aria-label="End of completed pages">\n' +
-        '<p data-multi-session-gap="' + remStart + '-' + totalPages + '" style="background:#fef3c7;border-left:4px solid #fbbf24;padding:0.75em 1em;margin:1em 0;font-style:italic;color:#78350f">' +
+        '<p data-multi-session-gap="' + remStart + '-' + totalPages + '" role="note" ' +
+        'aria-label="Pages ' + remStart + ' to ' + totalPages + ' remain to be remediated. Re-upload this PDF in a future session to continue." ' +
+        'style="background:#fef3c7;border-left:4px solid #fbbf24;padding:0.75em 1em;margin:1em 0;font-style:italic;color:#78350f">' +
         'Pages ' + remStart + '\u2013' + totalPages + ' remain to be remediated. ' +
         'Re-upload this PDF in a future session to continue.' +
         '</p>\n';
@@ -3452,7 +3640,7 @@ Return ONLY valid JSON (no markdown, no backticks): {"score":N,"summary":"1-2 se
           batchDocStyle = { ...batchDocStyle, ...JSON.parse(sc) };
           log('Extracted brand colors from original PDF');
         }
-      } catch(e) {}
+      } catch(e) { warnLog && warnLog('[batchDocStyle] PDF brand-color extraction failed; falling back to defaults:', e); }
     }
 
     // ── Boring-palette detection: if the source document has minimal color variation,
@@ -6024,6 +6212,13 @@ HTML section ${chunkNum}/${chunks.length}:
           try { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-start', { detail: { totalChunks: 1, chunkSizes: [currentHtml.length], timestamp: Date.now() } })); } catch(e) {}
           try { window.dispatchEvent(new CustomEvent('alloflow:chunk-start', { detail: { index: 0, total: 1, sizeKB: Math.round(currentHtml.length / 1000), timestamp: Date.now() } })); } catch(e) {}
 
+          // Snapshot the BEFORE state so the Live Remediation diff has something
+          // to show in its "BEFORE (original)" column. currentHtml is mutated
+          // below if the fix is accepted (line ~6230) — without this snapshot,
+          // the diff would attach the mutated post-fix HTML to both columns,
+          // which is why the BEFORE panel rendered empty / identical to AFTER.
+          const _origHtmlForDiff = currentHtml;
+
           const fixedHtml = await callGemini(`You are an accessibility remediation expert. Fix the SPECIFIC WCAG violations listed below in this HTML document.
 
 VIOLATIONS TO FIX:
@@ -6055,7 +6250,7 @@ Return ONLY the complete fixed HTML.`, true);
             }
           }
           // Emit single-pass completion so Live UI updates
-          try { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: { index: 0, total: 1, originalHtml: '', fixedHtml: currentHtml, score: 0, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(currentHtml.length / 1000), timestamp: Date.now() } })); } catch(e) {}
+          try { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: { index: 0, total: 1, originalHtml: _origHtmlForDiff, fixedHtml: currentHtml, score: 0, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(currentHtml.length / 1000), timestamp: Date.now() } })); } catch(e) {}
           try { window.dispatchEvent(new CustomEvent('alloflow:chunk-session-complete', { detail: { totalChunks: 1, failedCount: 0, retriedCount: 0, timestamp: Date.now() } })); } catch(e) {}
         } else {
           // ── Large document: chunked remediation ──
@@ -7703,6 +7898,26 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               }).join('');
               return `<table style="width:100%;border-collapse:collapse;margin:1em 0">`+cap+hdr+`<tbody>`+rows+`</tbody></table>`;
             }
+            case 'definition_list': {
+              // Semantic match for legends/keys: each entry pairs a marker description
+              // (color/symbol) with its label. SR users navigate <dl> as "term/definition"
+              // pairs which is what a legend semantically IS — better than a flat table.
+              // Sections (with optional <h4> heading) preserve any visible subgroupings.
+              const _legCap = block.caption ? `<figcaption style="font-weight:bold;color:${docStyle.headingColor};margin-bottom:0.5rem;font-size:1em">`+sanitizeField(block.caption)+`</figcaption>` : '';
+              const _legIntro = block.intro ? `<p style="margin:0 0 0.75rem;color:${docStyle.bodyColor};font-size:0.95em;line-height:1.6">`+sanitizeField(block.intro)+`</p>` : '';
+              const _legSections = (Array.isArray(block.sections) ? block.sections : []).map(sec => {
+                const _heading = sec && sec.title ? `<h4 style="margin:1em 0 0.4em;color:${docStyle.headingColor};font-size:1em;font-weight:bold">`+sanitizeField(sec.title)+`</h4>` : '';
+                const _entries = (Array.isArray(sec && sec.entries) ? sec.entries : []).map(e => {
+                  const _marker = e && e.marker ? sanitizeField(e.marker) : '';
+                  const _label = e && e.label ? sanitizeField(e.label) : '';
+                  return `<dt style="font-weight:600;color:${docStyle.bodyColor};margin-top:0.4em">`+_marker+`</dt>`
+                       + `<dd style="margin:0 0 0.4em 1.5em;color:${docStyle.bodyColor};line-height:1.5">`+_label+`</dd>`;
+                }).join('');
+                return _heading + (_entries ? `<dl style="margin:0">`+_entries+`</dl>` : '');
+              }).join('');
+              return `<figure role="group" aria-label="${(block.caption ? sanitizeField(block.caption).replace(/"/g,'&quot;') : 'Figure legend')}" style="margin:1em 0;padding:1em 1.25em;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px">`
+                + _legCap + _legIntro + _legSections + `</figure>`;
+            }
             case 'image': {
               // Uploadable placeholder: even when extractedImages is empty (no extraction happened),
               // users can still upload their own image in the preview. The deferred-image block
@@ -7728,7 +7943,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                 + `else{target=document.createElement('img');target.src=dataUrl;target.alt=altText||'Image';target.style.cssText='max-width:100%;border-radius:8px;border:1px solid #e2e8f0';c.appendChild(target);}`
                 + `c.style.background='none';c.style.border='none';c.style.padding='0';c.style.minHeight='0';`
                 + `Array.from(c.children).forEach(function(ch){if(ch!==target)ch.remove();});`
-                + `c.removeAttribute('ondragover');c.removeAttribute('ondragleave');c.removeAttribute('ondrop');}`;
+                + `c.removeAttribute('ondragover');c.removeAttribute('ondragleave');c.removeAttribute('ondrop');`
+                // Notify the parent app that the iframe DOM was mutated so it can
+                // sync the new outerHTML into pdfFixResult.accessibleHtml. Without
+                // this, image swaps live only in the iframe and get wiped by any
+                // updatePdfPreview() call (theme/font/a11y/auto-fix/etc.).
+                + `try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}}`;
               const _dragOver = `event.preventDefault();this.style.borderColor='#4f46e5';this.style.background='#eef2ff';`;
               const _dragLeave = `this.style.borderColor='#64748b';this.style.background='#f1f5f9';`;
               const _dropHandler = `(function(c,ev){ev.preventDefault();c.style.borderColor='#64748b';c.style.background='#f1f5f9';try{var raw=ev.dataTransfer.getData('text/x-alloflow-image');if(raw){var d=JSON.parse(raw);if(d&&d.src){(${_insertFn})(c,d.src,d.alt||'${_imgAltSafe}');return;}}var f=ev.dataTransfer.files&&ev.dataTransfer.files[0];if(f){var r=new FileReader();r.onload=function(e){(${_insertFn})(c,e.target.result,'${_imgAltSafe}');};r.readAsDataURL(f);}}catch(_){}})(this,event)`;
@@ -7878,6 +8098,10 @@ ACCESSIBILITY RULES (WCAG 2.1 AA):
 - For tables: ALWAYS include a caption that describes what data the table presents.
   Headers must be real column/row labels, not just the first row of data.
   For complex tables with merged cells, split into simpler tables if possible.
+- For LEGENDS, KEYS, color-coded chart references, infographics, and visual reference panels (any image whose purpose is to pair visual markers — colors, swatches, symbols, patterns — with their meanings):
+  Emit as {"type":"image","description":"<thorough enumeration of EVERY label visible: e.g. 'Color-coded categories. Shelf - high profile (dark olive square); Shelf - medium profile (olive square); Shelf - low profile; Slope; Abyss - mountains; Abyss - hills; Abyss - plains; Hadal; canyon; ...'>"}
+  DO NOT emit legends as tables. DO NOT abstract specific entries into broad category headers. If the legend has 21 entries, the description must list all 21 verbatim.
+  A downstream pass will re-extract these into structured definition lists if needed; your job is to preserve the data, not to structure it.
 - For links: link text must describe the destination.
   BAD: <a href="url">click here</a> / <a href="url">link</a>
   GOOD: <a href="url">Download the 2024 Annual Report (PDF)</a>
@@ -7908,8 +8132,19 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           };
           const blocks = repairSingle(cleaned);
           if (!blocks) throw new Error('JSON repair failed');
-          bodyContent = _stripJsonWrapperArtifacts(renderJsonToHtml(blocks));
-          warnLog(`[PDF Fix] JSON pipeline: ${blocks.length} blocks rendered`);
+          // Legend re-extraction pass: catches images→empty-tables that the
+          // first pass produced when it abstracted legends into broad
+          // categories. Only fires on flagged blocks; no-op for documents
+          // without legend issues. See _isSuspectExtraction for the criteria.
+          let _legendRepairedBlocks = blocks;
+          try {
+            _legendRepairedBlocks = await detectAndRepairLegends(blocks, _base64, _mimeType, null, callGeminiVision);
+          } catch (legendErr) {
+            warnLog('[PDF Fix] Legend repair pass threw; using first-pass blocks unchanged:', legendErr && legendErr.message);
+            _legendRepairedBlocks = blocks;
+          }
+          bodyContent = _stripJsonWrapperArtifacts(renderJsonToHtml(_legendRepairedBlocks));
+          warnLog(`[PDF Fix] JSON pipeline: ${_legendRepairedBlocks.length} blocks rendered (${_legendRepairedBlocks.length - blocks.length === 0 ? 'no legend repairs' : 'legend repair applied'})`);
         } catch(jsonErr) {
           // Fallback: direct HTML generation if JSON parsing fails
           warnLog('[PDF Fix] JSON extraction failed, falling back to direct HTML:', jsonErr);
@@ -7957,6 +8192,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               `- Include ALL content. ALL table rows (not just samples).\n` +
               `- LINKS: Preserve ALL hyperlinks as <a href='URL'>text</a> inside text fields. If text is blue/underlined, include it as a link.\n` +
               `- Describe all images thoroughly for alt text.\n` +
+              `- LEGENDS / KEYS / color-coded references: emit as {"type":"image","description":"<verbatim enumeration of EVERY label visible>"}. NEVER as a table. Do NOT abstract specific entries into broad category headers. If the legend has 21 entries, list all 21.\n` +
               `- Generate slug IDs for h2/h3 headings.\n` +
               `- Use <strong> for bold text and <em> for italic within text fields.\n\n` +
               `Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`,
@@ -8006,6 +8242,14 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
 
               let parsed = repairAndParseJson(cleaned);
               if (parsed && Array.isArray(parsed)) {
+                // Legend re-extraction per chunk. The pageRange hint helps the
+                // second vision call zoom in on the right page (the full PDF
+                // is still passed; the prompt narrows attention).
+                try {
+                  parsed = await detectAndRepairLegends(parsed, _base64, _mimeType, [startPg, endPg], callGeminiVision);
+                } catch (legendErr) {
+                  warnLog('[PDF Fix] Chunk ' + (i + 1) + ' legend repair threw; using parsed blocks unchanged:', legendErr && legendErr.message);
+                }
                 return parsed;
               } else {
                 warnLog(`[PDF Fix] JSON parse failed for chunk ${i + 1}, attempting object-by-object recovery`);
@@ -8167,7 +8411,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           const failed = !blocks || blocks.length === 0;
           chunkMeta.push({ index: ci, startPage: startPg, endPage: endPg, blockCount: blocks ? blocks.length : 0, status: failed ? 'failed' : 'success' });
           if (failed) {
-            allBlocks.push({ type: 'rawhtml', html: '<div data-chunk-fail="' + ci + '" style="background:#fef2f2;border:2px dashed #ef4444;border-radius:12px;padding:16px;margin:1em 0;text-align:center"><p style="color:#991b1b;font-weight:bold;font-size:0.9em">\u26a0\ufe0f Section ' + (ci + 1) + ' (pages ' + startPg + '-' + endPg + ') failed to process</p><button onclick="window.__retryPdfChunk && window.__retryPdfChunk(' + ci + ')" style="margin-top:8px;padding:6px 16px;background:#dc2626;color:white;border:none;border-radius:8px;font-weight:bold;font-size:12px;cursor:pointer">\ud83d\udd04 Retry This Section</button></div>' });
+            allBlocks.push({ type: 'rawhtml', html: '<div data-chunk-fail="' + ci + '" role="alert" aria-live="assertive" aria-atomic="true" style="background:#fef2f2;border:2px dashed #ef4444;border-radius:12px;padding:16px;margin:1em 0;text-align:center"><p style="color:#991b1b;font-weight:bold;font-size:0.9em"><span aria-hidden="true">\u26a0\ufe0f </span>Section ' + (ci + 1) + ' (pages ' + startPg + '-' + endPg + ') failed to process</p><button onclick="window.__retryPdfChunk && window.__retryPdfChunk(' + ci + ')" aria-label="Retry processing section ' + (ci + 1) + ', pages ' + startPg + ' through ' + endPg + '" style="margin-top:8px;padding:6px 16px;background:#dc2626;color:white;border:none;border-radius:8px;font-weight:bold;font-size:12px;cursor:pointer"><span aria-hidden="true">\ud83d\udd04 </span>Retry This Section</button></div>' });
           } else {
             allBlocks.push({ type: 'rawhtml', html: '<div data-chunk-start="' + ci + '" style="display:none"></div>' });
             allBlocks = allBlocks.concat(blocks);
@@ -8407,7 +8651,11 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               + `else{target=document.createElement('img');target.src=dataUrl;target.alt=altText||'Image';target.style.cssText='max-width:100%;border-radius:8px;border:1px solid #e2e8f0';c.appendChild(target);}`
               + `c.style.background='none';c.style.border='none';c.style.padding='0';c.style.minHeight='0';`
               + `Array.from(c.children).forEach(function(ch){if(ch!==target)ch.remove();});`
-              + `c.removeAttribute('ondragover');c.removeAttribute('ondragleave');c.removeAttribute('ondrop');}`;
+              + `c.removeAttribute('ondragover');c.removeAttribute('ondragleave');c.removeAttribute('ondrop');`
+              // Notify parent app of the swap so it can persist iframe state to
+              // pdfFixResult.accessibleHtml — see _insertFn note above for the
+              // full rationale.
+              + `try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}}`;
             const _dragOver2 = `event.preventDefault();this.style.borderColor='#4f46e5';this.style.background='#eef2ff';`;
             const _dragLeave2 = `this.style.borderColor='#cbd5e1';this.style.background='#f1f5f9';`;
             const _dropHandler2 = `(function(c,ev){ev.preventDefault();c.style.borderColor='#cbd5e1';c.style.background='#f1f5f9';try{var raw=ev.dataTransfer.getData('text/x-alloflow-image');if(raw){var d=JSON.parse(raw);if(d&&d.src){(${_insertFn2})(c,d.src,d.alt||'${_altSafe}');return;}}var f=ev.dataTransfer.files&&ev.dataTransfer.files[0];if(f){var r=new FileReader();r.onload=function(e){(${_insertFn2})(c,e.target.result,'${_altSafe}');};r.readAsDataURL(f);}}catch(_){}})(this,event)`;
@@ -9073,8 +9321,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
 
           warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI ${newAiScore}/100, axe ${newAxeViolations} violations`);
 
-          // Emit per-pass completion for live UI
-          try { var _cfDetail = { index: fixPass, total: maxFixPasses, originalHtml: '', fixedHtml: accessibleHtml, score: newAiScore, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: _cfDetail })); }, 0); } catch(e) {}
+          // Emit per-pass completion for live UI. snapshotHtml (line ~9224)
+          // captured the BEFORE state of this pass; passing it as originalHtml
+          // gives the diff view something to compare against.
+          try { var _cfDetail = { index: fixPass, total: maxFixPasses, originalHtml: snapshotHtml, fixedHtml: accessibleHtml, score: newAiScore, deterministicFixCount: 0, surgicalFixCount: 0, integrityPassed: true, aiVerified: true, wasRetried: false, usedOriginal: false, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() }; setTimeout(function() { window.dispatchEvent(new CustomEvent('alloflow:chunk-fixed', { detail: _cfDetail })); }, 0); } catch(e) {}
 
           // If BOTH engines report 0 actionable issues, stop regardless of score
           if (newAxeViolations === 0 && (!reVerify || !reVerify.issues || reVerify.issues.length === 0)) {
@@ -9760,7 +10010,7 @@ tr { page-break-inside: avoid; }
           });
           html += `</tbody></table>`;
         } else {
-          html += `<div style="background:#dcfce7;border:2px solid #16a34a;border-radius:8px;padding:16px;text-align:center;margin:1rem 0"><div style="font-size:1.5rem;font-weight:900;color:#16a34a">&#10003; No AI-Detected Issues Remaining</div><div style="font-size:13px;color:#166534;margin-top:4px">All WCAG 2.1 AA checks passed in AI verification</div></div>`;
+          html += `<div role="status" aria-live="polite" aria-atomic="true" aria-label="No AI-detected issues remaining. All WCAG 2.1 AA checks passed in AI verification." style="background:#dcfce7;border:2px solid #16a34a;border-radius:8px;padding:16px;text-align:center;margin:1rem 0"><div style="font-size:1.5rem;font-weight:900;color:#16a34a"><span aria-hidden="true">&#10003; </span>No AI-Detected Issues Remaining</div><div style="font-size:13px;color:#166534;margin-top:4px">All WCAG 2.1 AA checks passed in AI verification</div></div>`;
         }
         // Show verified passes from AI audit
         const afterPasses = afterAiAudit.passes || [];
@@ -9911,6 +10161,58 @@ tr { page-break-inside: avoid; }
     // that we don't have any "suspect" (incomplete) marked content.
     const markInfo = context.obj({ Marked: true, Suspects: false });
     catalog.set(PDFName.of('MarkInfo'), markInfo);
+    // ── PDF/UA-1 conformance declaration via XMP metadata ──
+    // PDF/UA-1 (ISO 14289-1) requires the doc to identify itself as
+    // PDF/UA-1 conformant. Without the pdfuaid:part="1" entry, validators
+    // (Adobe Acrobat Pro Accessibility Checker, PAC 3, axe DevTools PDF)
+    // see a tagged PDF but won't say "this declares PDF/UA-1 conformance"
+    // — they'll show "tagged PDF" but flag missing conformance metadata.
+    // We embed an XMP packet covering the standard Dublin Core, PDF, and
+    // pdfuaid namespaces so the doc reads as a properly declared
+    // PDF/UA-1 file in any spec-compliant validator.
+    try {
+      const pdfTitle = (meta.title || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+      const pdfSubject = (meta.subject || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+      const pdfLang = lang.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+      const _now = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+      const xmp = `<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="AlloFlow PDF/UA-1 Pipeline">
+  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <rdf:Description rdf:about=""
+        xmlns:dc="http://purl.org/dc/elements/1.1/"
+        xmlns:pdf="http://ns.adobe.com/pdf/1.3/"
+        xmlns:xmp="http://ns.adobe.com/xap/1.0/"
+        xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/">
+      <dc:format>application/pdf</dc:format>
+      <dc:title><rdf:Alt><rdf:li xml:lang="x-default">${pdfTitle}</rdf:li></rdf:Alt></dc:title>
+      <dc:description><rdf:Alt><rdf:li xml:lang="x-default">${pdfSubject}</rdf:li></rdf:Alt></dc:description>
+      <dc:language><rdf:Bag><rdf:li>${pdfLang}</rdf:li></rdf:Bag></dc:language>
+      <pdf:Producer>AlloFlow Accessibility Pipeline</pdf:Producer>
+      <xmp:CreatorTool>AlloFlow Accessibility Pipeline</xmp:CreatorTool>
+      <xmp:ModifyDate>${_now}</xmp:ModifyDate>
+      <pdfuaid:part>1</pdfuaid:part>
+    </rdf:Description>
+  </rdf:RDF>
+</x:xmpmeta>
+<?xpacket end="w"?>`;
+      // Build a metadata stream and attach to Catalog. pdf-lib doesn't
+      // expose a high-level API for raw metadata streams, so we construct
+      // it via the low-level context: a stream with /Type Metadata,
+      // /Subtype XML, raw bytes are the XMP packet.
+      const PDFRawStream = window.PDFLib.PDFRawStream;
+      const PDFDict = window.PDFLib.PDFDict;
+      if (PDFRawStream && PDFDict) {
+        const metaDict = PDFDict.fromMapWithContext(new Map([
+          [PDFName.of('Type'), PDFName.of('Metadata')],
+          [PDFName.of('Subtype'), PDFName.of('XML')],
+        ]), context);
+        const metaStream = PDFRawStream.of(metaDict, new TextEncoder().encode(xmp));
+        const metaRef = context.register(metaStream);
+        catalog.set(PDFName.of('Metadata'), metaRef);
+      }
+    } catch (xmpErr) {
+      try { warnLog('[createTaggedPdf] XMP metadata failed (non-fatal): ' + (xmpErr && xmpErr.message)); } catch(_) {}
+    }
     // ── Build the StructTreeRoot from fixResult.accessibleHtml ──
     // Parse the remediated HTML to get the semantic outline (headings,
     // images with alt, tables, lists), then map those to PDF StructElems.
@@ -9931,7 +10233,15 @@ tr { page-break-inside: avoid; }
       p: 'P', ul: 'L', ol: 'L', li: 'LI', img: 'Figure', figure: 'Figure',
       table: 'Table', tr: 'TR', th: 'TH', td: 'TD', caption: 'Caption',
       thead: 'THead', tbody: 'TBody', tfoot: 'TFoot',
-      blockquote: 'BlockQuote', a: 'Link', header: 'Sect', footer: 'Sect',
+      blockquote: 'BlockQuote', a: 'Link',
+      // Artifact-style tagging: header/footer carry page numbers, branding,
+      // and other "boilerplate" content that screen readers should skip.
+      // PDF spec requires content-stream-level Artifact BMC/EMC to fully
+      // exclude — we don't rewrite content streams here, but emitting these
+      // as `/NonStruct` (PDF 1.7 standard structure type for non-content)
+      // gets most screen readers to de-emphasize them. Closest practical
+      // approximation without rasterizing.
+      header: 'NonStruct', footer: 'NonStruct',
       section: 'Sect', nav: 'Sect', aside: 'Sect', main: 'Sect',
     };
     // ── Stage 5: table semantic pre-pass ──
@@ -10141,10 +10451,13 @@ tr { page-break-inside: avoid; }
     // a TH with a data-struct-id. We read this after the tree is built to
     // construct the StructTreeRoot /IDTree name tree.
     const idTreeEntries = [];
+    // Hoisted to the outer closure so the post-build summary can count
+    // headings/paragraphs/tables/etc. without repeating the DOM walk.
+    let _outlineItems = [];
     const _buildOutlineStructElems = () => {
       const body = htmlDoc.body || htmlDoc.documentElement;
       // Walk once collecting ordered {role, text, alt, isDecorative, level}.
-      const items = [];
+      const items = _outlineItems;
       const walker = htmlDoc.createTreeWalker(body, NodeFilter.SHOW_ELEMENT, null);
       while (walker.nextNode()) {
         const el = walker.currentNode;
@@ -10173,11 +10486,50 @@ tr { page-break-inside: avoid; }
           // switching on multilingual content (bilingual worksheets,
           // loanwords, quoted foreign passages).
           lang: (el.getAttribute('lang') || '').trim(),
+          // Capture <a href> so we can put the destination URL in the Link
+          // StructElem's /Alt attribute. Without this, screen readers
+          // announce only the link text ("click here") with no destination.
+          href: tag === 'a' ? (el.getAttribute('href') || '').trim() : '',
+          // Capture LI label data so we can emit a proper /Lbl + /LBody
+          // child structure (PDF/UA-1 prefers this 3-level pattern over a
+          // bare /LI with the bullet baked into the text). Use the LI's
+          // position among its siblings for ordered lists.
+          isOrdered: tag === 'li' ? !!el.closest('ol') : false,
+          liIndex: tag === 'li' ? (function() {
+              try {
+                  const parent = el.parentNode;
+                  if (!parent) return 1;
+                  let n = 0;
+                  for (const sib of parent.children) {
+                      if (sib.tagName && sib.tagName.toLowerCase() === 'li') {
+                          n++;
+                          if (sib === el) return n;
+                      }
+                  }
+                  return n || 1;
+              } catch (_) { return 1; }
+          })() : 0,
         });
       }
       // Build a leaf StructElem (not a Sect) and register it. The parentRef
       // is the immediate parent — Sect or the StructTreeRoot.
       const buildLeaf = (item, parentRef) => {
+        // Special-case LI: PDF/UA-1 prefers a 3-level <LI><Lbl/><LBody/></LI>
+        // structure where the bullet/number is its own /Lbl child rather
+        // than baked into the LI's ActualText. Many SR readers parse this
+        // pattern as "list item, label '1.', body 'first item'", which
+        // gives blind users explicit confirmation of the list position.
+        if (item.role === 'LI') {
+          const liRef = context.nextRef();
+          const lblText = item.isOrdered ? (item.liIndex + '.') : '•';
+          const lblD = { Type: PDFName.of('StructElem'), S: PDFName.of('Lbl'), P: liRef, ActualText: PDFString.of(lblText) };
+          const lBodyD = { Type: PDFName.of('StructElem'), S: PDFName.of('LBody'), P: liRef, ActualText: PDFString.of(item.text || '') };
+          if (item.lang) { lBodyD.Lang = PDFString.of(item.lang); }
+          const lblRef = context.register(context.obj(lblD));
+          const lBodyRef = context.register(context.obj(lBodyD));
+          context.assign(liRef, context.obj({ Type: PDFName.of('StructElem'), S: PDFName.of('LI'), P: parentRef, K: context.obj([lblRef, lBodyRef]) }));
+          return liRef;
+        }
         const d = { Type: PDFName.of('StructElem'), S: PDFName.of(item.role), P: parentRef };
         if (item.role === 'Figure') {
           if (item.isDecorative) {
@@ -10191,7 +10543,20 @@ tr { page-break-inside: avoid; }
             d.Alt = PDFString.of(item.alt || '(image)');
           }
         }
-        if (['H1','H2','H3','H4','H5','H6','P','LI','Caption','BlockQuote'].includes(item.role) && item.text) {
+        // Link: emit /Alt with the destination URL so screen readers
+        // announce "Link: https://example.com" rather than just the link
+        // text. Real Link annotations (with OBJR + URI action) would
+        // require coordinates we don't have post-hoc; the /Alt approach
+        // gets the destination signal across without that machinery.
+        if (item.role === 'Link') {
+          if (item.href) {
+            const isExternal = /^https?:\/\//i.test(item.href);
+            d.Alt = PDFString.of(isExternal ? ('Link to ' + item.href) : ('Link: ' + item.href));
+          } else if (item.text) {
+            d.Alt = PDFString.of('Link: ' + item.text);
+          }
+        }
+        if (['H1','H2','H3','H4','H5','H6','P','Caption','BlockQuote'].includes(item.role) && item.text) {
           d.ActualText = PDFString.of(item.text);
         }
         // Stage 6a: /Lang overrides the document-level language for this
@@ -10384,6 +10749,13 @@ tr { page-break-inside: avoid; }
     const parentTreeNums = [];
     for (let pi = 0; pi < pages.length; pi++) {
       const page = pages[pi];
+      // PDF/UA-1 §7.18 — /Tabs=/S forces tab order to follow the structure
+      // tree (the order screen readers traverse) instead of the default
+      // coordinate-based order. Without this, Tab-key navigation in
+      // multi-column or wrap-around layouts jumps around erratically.
+      // Setting it on every page is one line and a real keyboard-only
+      // accessibility win.
+      try { page.node.set(PDFName.of('Tabs'), PDFName.of('S')); } catch (_) {}
       // Path B — invisible OCR text layer for scanned PDFs. opacity:0 keeps
       // it invisible to sighted users while SR readers still pick it up via
       // the content stream. Wrapped later by the BDC/EMC pass below.
@@ -10590,6 +10962,138 @@ tr { page-break-inside: avoid; }
     const structRootDict = context.obj(structRootDictBody);
     context.assign(structRootRef, structRootDict);
     catalog.set(PDFName.of('StructTreeRoot'), structRootRef);
+    // ── Document Outline (Bookmarks panel) ──
+    // Walks the heading items and emits a /Outlines dict on the Catalog so
+    // the PDF's Bookmarks panel (every major reader supports it) shows the
+    // heading hierarchy. Big UX win for documents over a few pages —
+    // students can jump directly to the section they need rather than
+    // scrolling. Each outline entry's Dest points to page 1 with /XYZ
+    // null null null (open at top of page) — ideally each heading would
+    // point to its own page, but mapping headings → page numbers post-hoc
+    // requires content-stream coordinate analysis we don't have. Page-1
+    // fallback is honest: the visible hierarchy is the value, the precise
+    // page jump is a stretch goal for a future pass.
+    let outlineRootRef = null;
+    // Tracks how many bookmarks landed on a specific (mapped) page vs how
+    // many fell back to page 1. Surfaced in the toast so the user can see
+    // whether per-heading mapping actually ran (e.g. a 0/8 result signals
+    // pdfjs failed to load or the AI rewrote heading text past the matcher).
+    let _bookmarksMappedToPages = 0;
+    try {
+      // Filter outline items down to headings only and build a tree by
+      // level. Stack-based — pop lower-or-equal levels off the stack
+      // when a new heading comes in, then push.
+      const headingItems = [];
+      if (Array.isArray(_outlineItems)) {
+        for (const it of _outlineItems) {
+          if (it.level >= 1 && it.level <= 6 && it.text) headingItems.push(it);
+        }
+      }
+      if (headingItems.length > 0 && pages.length > 0) {
+        outlineRootRef = context.nextRef();
+        const firstPageRef = pages[0].ref;
+        // ── Per-heading page mapping ──
+        // Reuse pdfjsDocForTagging (already loaded earlier in this function
+        // for content-stream tagging). For each page, concatenate all
+        // pdf.js text items into a normalized blob, then for each heading,
+        // find the first page whose blob contains the heading text. This
+        // makes bookmarks actually navigate — clicking "Chapter 3" lands
+        // on the chapter, not on page 1. Fully best-effort: any failure
+        // falls through to firstPageRef so bookmarks still work, just
+        // generically.
+        const pageTexts = new Array(pages.length).fill('');
+        try {
+          if (pdfjsDocForTagging) {
+            const numPages = Math.min(pages.length, pdfjsDocForTagging.numPages || 0);
+            for (let _p = 0; _p < numPages; _p++) {
+              const items = await _stage4_extractPdfjsItems(pdfjsDocForTagging, _p);
+              // Lowercase + collapse whitespace so heading match is robust
+              // against rendering / wrapping differences in the original.
+              pageTexts[_p] = items.map(it => it.str || '').join(' ').toLowerCase().replace(/\s+/g, ' ');
+            }
+          }
+        } catch (textErr) {
+          try { warnLog('[createTaggedPdf] per-page text extract failed (non-fatal): ' + (textErr && textErr.message)); } catch(_) {}
+        }
+        const _findPageForHeading = (text) => {
+          if (!text) return -1;
+          // Normalize the same way the page text was: lowercase, collapsed
+          // whitespace. Take the first 60 chars so we tolerate small
+          // discrepancies (trailing colons, trademark glyphs, etc.).
+          const needle = text.toLowerCase().replace(/\s+/g, ' ').trim().substring(0, 60);
+          if (needle.length < 3) return -1;
+          for (let _p = 0; _p < pageTexts.length; _p++) {
+            if (pageTexts[_p] && pageTexts[_p].indexOf(needle) !== -1) return _p;
+          }
+          return -1;
+        };
+        // Each node tracked as { ref, parentRef, level, kids, pageIdx }
+        const rootKids = [];
+        const stack = [];
+        for (const h of headingItems) {
+          // Pop until we find a strictly lower-level node (or root).
+          while (stack.length > 0 && stack[stack.length - 1].level >= h.level) stack.pop();
+          const parent = stack.length > 0 ? stack[stack.length - 1] : null;
+          const pageIdx = _findPageForHeading(h.text);
+          if (pageIdx >= 0) _bookmarksMappedToPages++;
+          const node = { ref: context.nextRef(), parentRef: parent ? parent.ref : outlineRootRef, level: h.level, title: h.text.substring(0, 200), kids: [], pageIdx };
+          (parent ? parent.kids : rootKids).push(node);
+          stack.push(node);
+        }
+        // Recursive emit. Each outline-item dict needs /Title, /Parent,
+        // /First, /Last, /Next, /Prev (sibling chain), /Count (descendants),
+        // and /Dest (the action target).
+        const emit = (siblings) => {
+          for (let i = 0; i < siblings.length; i++) {
+            const node = siblings[i];
+            const destPageRef = (node.pageIdx >= 0 && node.pageIdx < pages.length) ? pages[node.pageIdx].ref : firstPageRef;
+            const dictBody = {
+              Title: PDFString.of(node.title),
+              Parent: node.parentRef,
+              Dest: context.obj([destPageRef, PDFName.of('XYZ'), null, null, null]),
+            };
+            if (i > 0) dictBody.Prev = siblings[i - 1].ref;
+            if (i < siblings.length - 1) dictBody.Next = siblings[i + 1].ref;
+            if (node.kids.length > 0) {
+              dictBody.First = node.kids[0].ref;
+              dictBody.Last = node.kids[node.kids.length - 1].ref;
+              // Negative count = closed by default. Positive = open.
+              // Default closed for cleaner first impression on long docs.
+              const descendants = (function countDesc(n) {
+                let c = n.kids.length;
+                for (const k of n.kids) c += countDesc(k);
+                return c;
+              })(node);
+              dictBody.Count = PDFNumber.of(-descendants);
+            }
+            context.assign(node.ref, context.obj(dictBody));
+            if (node.kids.length > 0) emit(node.kids);
+          }
+        };
+        emit(rootKids);
+        const outlineRootBody = { Type: PDFName.of('Outlines') };
+        if (rootKids.length > 0) {
+          outlineRootBody.First = rootKids[0].ref;
+          outlineRootBody.Last = rootKids[rootKids.length - 1].ref;
+          // Top-level Count is positive (open) so the panel is expanded
+          // to show top-level headings on first open. Children stay
+          // closed per their negative Count above.
+          const totalDescendants = (function totalDesc(arr) {
+            let c = arr.length;
+            for (const n of arr) c += (function rec(n2) { let r = n2.kids.length; for (const k of n2.kids) r += rec(k); return r; })(n);
+            return c;
+          })(rootKids);
+          outlineRootBody.Count = PDFNumber.of(totalDescendants);
+        }
+        context.assign(outlineRootRef, context.obj(outlineRootBody));
+        catalog.set(PDFName.of('Outlines'), outlineRootRef);
+        // PageMode=UseOutlines makes the Bookmarks panel open by default
+        // when the PDF is first viewed. Most readers honor this.
+        catalog.set(PDFName.of('PageMode'), PDFName.of('UseOutlines'));
+      }
+    } catch (outlineErr) {
+      try { warnLog('[createTaggedPdf] outline build failed (non-fatal): ' + (outlineErr && outlineErr.message)); } catch(_) {}
+    }
     // ── ViewerPreferences: DisplayDocTitle ──
     // PDF/UA-1 §7.1 requires this so the window title bar shows the doc
     // title rather than the filename.
@@ -10599,10 +11103,116 @@ tr { page-break-inside: avoid; }
     } else {
       catalog.set(PDFName.of('ViewerPreferences'), context.obj({ DisplayDocTitle: true }));
     }
-    // ── Return tagged bytes ──
+    // ── Tag summary for visible proof of tagging ──
+    // Most PDF readers don't surface "is this tagged?" to the user, so a
+    // user clicking "Tagged PDF" downloads a file that visually looks
+    // identical to the original (visual layer is preserved byte-identical
+    // by design) and reasonably wonders if anything actually happened.
+    // Returning a struct-element summary alongside the bytes lets the
+    // caller surface "3 headings · 28 paragraphs · 1 table tagged" in a
+    // toast, so tagging is demonstrably real.
+    //
+    // Counts are computed from the same `items` list `_buildOutlineStructElems`
+    // already walks (no second DOM pass) plus the page count from the doc.
+    const _summary = (() => {
+        let headings = 0, paragraphs = 0, tables = 0, lists = 0, images = 0, tableCells = 0, langTagged = 0, links = 0;
+        // Heading hierarchy linter: detect skipped levels (e.g. h1 -> h3
+        // without an h2 in between). Doesn't fail the export — just
+        // reports a count so the toast can warn the user. Skipped levels
+        // are valid HTML but hurt screen-reader navigation predictability.
+        let headingHierarchyIssues = 0;
+        let lastHeadingLevel = 0;
+        const headingPath = [];
+        // Quality lints — surface the most common a11y misses so the user
+        // can fix the source HTML and re-tag rather than ship a tagged PDF
+        // that's structurally complete but content-poor. All are computed
+        // from the same items walk so cost is ~zero.
+        let imagesMissingAlt = 0;       // <img> with no alt or alt="" but not marked decorative
+        let imagesTrivialAlt = 0;       // alt looks like a filename or generic stub
+        let thWithoutScope = 0;         // <th> missing scope (TH cells need /Scope for SR header announcement)
+        let linksGenericText = 0;       // "click here", "read more", "here", etc. — WCAG 2.4.4
+        const _trivialAltRe = /^(image|img|icon|picture|photo|untitled|graphic|figure)\s*\d*$/i;
+        const _filenameAltRe = /\.(png|jpe?g|gif|svg|webp|bmp|tiff?)\s*$/i;
+        const _genericLinkRe = /^\s*(click here|read more|more|here|link|this|continue|learn more|details)\s*\.?\s*$/i;
+        try {
+            if (Array.isArray(_outlineItems)) {
+                for (const it of _outlineItems) {
+                    if (it.lang) langTagged++;
+                    if (/^H[1-6]$/.test(it.role)) {
+                        headings++;
+                        const level = parseInt(it.role.slice(1), 10);
+                        // Only flag jumps DOWN the hierarchy (toward more
+                        // specific) where you skip a level. Going back up
+                        // (h3 -> h2) is fine.
+                        if (lastHeadingLevel > 0 && level > lastHeadingLevel + 1) {
+                            headingHierarchyIssues++;
+                            headingPath.push('H' + lastHeadingLevel + ' -> H' + level);
+                        }
+                        lastHeadingLevel = level;
+                    }
+                    else if (it.role === 'P') paragraphs++;
+                    else if (it.role === 'Table') tables++;
+                    else if (it.role === 'L') lists++;
+                    else if (it.role === 'Figure') {
+                        images++;
+                        // Decorative images intentionally have no alt and are
+                        // marked role="presentation" / aria-hidden — those are
+                        // correctly handled and shouldn't be flagged.
+                        if (!it.isDecorative) {
+                            const altRaw = (it.alt || '').trim();
+                            if (!altRaw) imagesMissingAlt++;
+                            else if (_trivialAltRe.test(altRaw) || _filenameAltRe.test(altRaw)) imagesTrivialAlt++;
+                        }
+                    }
+                    else if (it.role === 'Link') {
+                        links++;
+                        const linkText = (it.text || '').trim();
+                        if (linkText && _genericLinkRe.test(linkText)) linksGenericText++;
+                    }
+                    else if (it.role === 'TH') {
+                        tableCells++;
+                        if (!it.scope || (it.scope.toLowerCase() !== 'col' && it.scope.toLowerCase() !== 'row' && it.scope.toLowerCase() !== 'colgroup' && it.scope.toLowerCase() !== 'rowgroup')) {
+                            thWithoutScope++;
+                        }
+                    }
+                    else if (it.role === 'TD') tableCells++;
+                }
+            }
+        } catch(_) {}
+        return {
+            headings, paragraphs, tables, lists, images, tableCells, links, langTagged,
+            pages: pages.length,
+            structElems: (typeof structElemRefs !== 'undefined' && Array.isArray(structElemRefs)) ? structElemRefs.length : 0,
+            fields: (typeof fieldElemRefs !== 'undefined' && Array.isArray(fieldElemRefs)) ? fieldElemRefs.length : 0,
+            // True when /Outlines was successfully built — UI can announce
+            // "bookmarks generated from N headings" in the toast.
+            bookmarks: outlineRootRef ? headings : 0,
+            // How many of those bookmarks actually point to a specific page
+            // (rather than falling back to page 1). Lets the toast show a
+            // concrete "8 mapped to specific pages, 0 fell back" line so
+            // the user sees navigation actually works.
+            bookmarksMappedToPages: _bookmarksMappedToPages,
+            // PDF/UA-1 declared via XMP packet (see XMP block above). True
+            // unless XMP write threw, in which case the doc still carries
+            // MarkInfo + struct tree but doesn't formally declare PDF/UA.
+            pdfUaDeclared: !!catalog.get(PDFName.of('Metadata')),
+            headingHierarchyIssues,
+            headingHierarchyPath: headingPath.slice(0, 5),
+            // Quality lints — surface in toasts so the user knows what to
+            // fix in the SOURCE HTML to make the next tag pass richer.
+            // These aren't errors (the PDF is still tagged); they're
+            // accessibility-quality issues the structural pass can't fix.
+            imagesMissingAlt,
+            imagesTrivialAlt,
+            thWithoutScope,
+            linksGenericText,
+        };
+    })();
+    // ── Return tagged bytes + summary ──
     // useObjectStreams=false produces slightly larger PDFs but more
     // compatible with older readers and validators.
-    return await doc.save({ useObjectStreams: false, addDefaultPage: false });
+    const _bytes = await doc.save({ useObjectStreams: false, addDefaultPage: false });
+    return { bytes: _bytes, summary: _summary };
   };
 
   // ── Download Accessible PDF from HTML ──
@@ -10621,11 +11231,11 @@ tr { page-break-inside: avoid; }
     // Add print instructions
     const printBanner = printWindow.document.createElement('div');
     printBanner.id = 'print-banner';
-    printBanner.innerHTML = `<div style="background:#2563eb;color:white;padding:12px 20px;font-family:system-ui;display:flex;align-items:center;justify-content:between;gap:12px;position:sticky;top:0;z-index:9999">
-      <span style="font-weight:bold">♿ Accessible Document Ready</span>
+    printBanner.innerHTML = `<div role="status" aria-live="polite" aria-atomic="true" aria-label="Accessible document ready. Use Control P or Command P, then Save as PDF, to download as a tagged PDF." style="background:#2563eb;color:white;padding:12px 20px;font-family:system-ui;display:flex;align-items:center;justify-content:between;gap:12px;position:sticky;top:0;z-index:9999">
+      <span style="font-weight:bold"><span aria-hidden="true">♿ </span>Accessible Document Ready</span>
       <span style="font-size:13px;opacity:0.9">Use <strong>Ctrl+P</strong> (or ⌘+P on Mac) → <strong>Save as PDF</strong> to download as a tagged PDF</span>
-      <button onclick="document.getElementById('print-banner').remove();window.print()" style="margin-left:auto;background:white;color:#2563eb;border:none;padding:8px 16px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:13px">📥 Save as PDF</button>
-      <button onclick="document.getElementById('print-banner').remove()" style="background:transparent;color:white;border:1px solid rgba(255,255,255,0.3);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13px">✕</button>
+      <button onclick="document.getElementById('print-banner').remove();window.print()" aria-label="Save as PDF" style="margin-left:auto;background:white;color:#2563eb;border:none;padding:8px 16px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:13px"><span aria-hidden="true">📥 </span>Save as PDF</button>
+      <button onclick="document.getElementById('print-banner').remove()" aria-label="Dismiss this banner" style="background:transparent;color:white;border:1px solid rgba(255,255,255,0.3);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13px"><span aria-hidden="true">✕</span></button>
     </div>`;
     printWindow.document.body.insertBefore(printBanner, printWindow.document.body.firstChild);
     // Add print CSS to hide banner
@@ -10706,7 +11316,25 @@ tr { page-break-inside: avoid; }
     const useTheme = overrideTheme !== undefined ? overrideTheme : pdfPreviewTheme;
     const useFontSize = overrideFontSize !== undefined ? overrideFontSize : pdfPreviewFontSize;
     const useA11y = overrideA11y !== undefined ? overrideA11y : pdfPreviewA11yInspect;
-    const themed = applyThemeToPdfHtml(pdfFixResult.accessibleHtml, useTheme, useFontSize);
+    // Belt-and-suspenders: before applying a new theme/font/a11y view, snapshot
+    // the iframe's current outerHTML and prefer that over the (possibly stale)
+    // accessibleHtml in React state. This catches user image swaps and any
+    // other iframe DOM edits made via designMode='on' that the React state
+    // hasn't synced yet — without this, theme/font toggles wipe those edits.
+    let sourceHtml = pdfFixResult.accessibleHtml;
+    try {
+      const liveDoc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (liveDoc && liveDoc.body) {
+        const liveText = liveDoc.body.textContent || '';
+        if (liveText.trim().length >= 50) {
+          // Strip transient overlay CSS so it doesn't get baked into the export source.
+          const inspect = liveDoc.getElementById('a11y-inspect-css');
+          if (inspect) inspect.remove();
+          sourceHtml = '<!DOCTYPE html>\n' + liveDoc.documentElement.outerHTML;
+        }
+      }
+    } catch (_) { /* fall through to accessibleHtml */ }
+    const themed = applyThemeToPdfHtml(sourceHtml, useTheme, useFontSize);
     const doc = iframe.contentDocument || iframe.contentWindow?.document;
     if (!doc) return;
     doc.open();
@@ -11852,6 +12480,24 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   };
   const generateResourceHTML = (item, isTeacher, responses = {}, config = null) => {
       const cfg = config || exportConfig;
+      // ── Worksheet (paper) mode helpers ──
+      // When cfg.isWorksheet is true, the export is being rendered for paper
+      // (cut, write by hand). Replace interactive inputs with handwriting
+      // affordances: textareas → ruled lines, radios → fillable circles,
+      // text inputs → underlined blanks, audio players → hidden.
+      // When false (default), keep the existing interactive HTML so the
+      // student can type on screen.
+      const isWorksheet = cfg.isWorksheet === true;
+      const ruledLines = (numLines = 4, label = '') => {
+          const lines = Array.from({length: Math.max(1, numLines)}, () =>
+              '<div style="border-bottom: 1px solid #94a3b8; height: 28px; margin-bottom: 4px; break-inside: avoid;"></div>'
+          ).join('');
+          return `<div style="margin-top: 8px; break-inside: avoid;">${label ? `<div style="font-size: 0.85em; color: #64748b; margin-bottom: 6px; font-weight: 600;">${label}</div>` : ''}${lines}</div>`;
+      };
+      const fillableCircle = () =>
+          '<span aria-hidden="true" style="display: inline-block; width: 14px; height: 14px; border: 2px solid #475569; border-radius: 50%; vertical-align: middle; margin-right: 6px; background: white;"></span>';
+      const fillableBlank = (widthPx = 150) =>
+          `<span aria-hidden="true" style="display: inline-block; width: ${widthPx}px; border-bottom: 1.5px solid #475569; height: 1.4em; vertical-align: middle; margin: 0 4px;"></span>`;
       // Resource type filtering — configurable via export preview modal.
       // Teacher-only resources (analysis, udl-advice, brainstorm) handled separately
       // below so they appear in teacher copy unconditionally but are toggleable for student copy.
@@ -11932,6 +12578,65 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           }
           const hasAnyImages = item.data.some(gItem => gItem.image);
           const hasAnyTranslations = item.data.some(gItem => gItem.translations && Object.keys(gItem.translations).length > 0);
+          // Glossary display modes (May 11 2026):
+          //   'table'       — default, term + def in tabular rows (existing)
+          //   'flash-cards' — fold-and-cut cards for print, click-to-flip for digital
+          //   'language-cards' — same as flash-cards but emphasizes translations
+          //     (renders translations on the flip side instead of definitions)
+          const glossaryMode = cfg.glossaryDisplayMode || 'table';
+          if (glossaryMode === 'flash-cards' || glossaryMode === 'language-cards') {
+              const showTranslations = glossaryMode === 'language-cards' && hasAnyTranslations;
+              const cardsHtml = `
+                  <div role="list" aria-label="Glossary flash cards" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px;">
+                      ${item.data.map((gItem, idx) => {
+                          const translationsHtml = (gItem.translations && Object.keys(gItem.translations).length > 0)
+                              ? Object.entries(gItem.translations).map(([k, v]) => `<div style="margin-top:4px;font-size:0.85em;"><strong>${k}:</strong> ${v}</div>`).join('')
+                              : '';
+                          const imageHtml = gItem.image
+                              ? `<img loading="lazy" src="${gItem.image}" alt="${gItem.term}" style="max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; margin-bottom: 8px;"/>`
+                              : '';
+                          // For language-cards mode, the "back" emphasizes translations; the def is collapsed beneath.
+                          const backContent = showTranslations
+                              ? `<div style="font-size:0.95em;color:#1e293b;font-weight:600;">${translationsHtml || `<span style="font-style:italic;color:#94a3b8;">(no translations)</span>`}</div><div style="margin-top:8px;font-size:0.8em;color:#64748b;line-height:1.4;">${gItem.def}</div>`
+                              : `<div style="font-size:0.95em;line-height:1.5;color:#1e293b;">${gItem.def}</div>${translationsHtml ? `<div style="margin-top:8px;color:#64748b;">${translationsHtml}</div>` : ''}`;
+                          return `
+                              <div role="listitem" class="alloflow-glossary-card" data-card-idx="${idx}" style="border:2px dashed #94a3b8; border-radius:12px; overflow:hidden; background:white; break-inside:avoid; page-break-inside:avoid;">
+                                  <div class="alloflow-glossary-card-front" style="padding:16px 14px; text-align:center; min-height:110px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                                      ${imageHtml}
+                                      <strong style="font-size:1.15em; color:#1e293b; line-height:1.3;">${gItem.term}</strong>
+                                      ${gItem.term_en && gItem.term_en !== gItem.term ? `<div style="font-size:0.8em; color:#64748b; margin-top:4px;">(${gItem.term_en})</div>` : ''}
+                                  </div>
+                                  <div class="alloflow-glossary-card-fold" aria-hidden="true" style="border-top:2px dashed #cbd5e1; padding:3px 0; text-align:center; font-family:monospace; font-size:0.65em; color:#94a3b8; letter-spacing:0.1em; background:#f8fafc;">▼ fold here / click to flip ▼</div>
+                                  <div class="alloflow-glossary-card-back" style="padding:14px; background:#f8fafc; min-height:90px;">
+                                      ${backContent}
+                                  </div>
+                              </div>
+                          `;
+                      }).join('')}
+                  </div>
+              `;
+              // Teacher tip for paper use; on digital, JS hides the back side until clicked.
+              const instructionsHtml = isWorksheet
+                  ? `<div style="background:#fefce8; border-left:4px solid #eab308; padding:12px 16px; border-radius:4px; margin-bottom:16px; font-size:0.9em; color:#713f12; break-inside:avoid;">
+                       <strong>How to use:</strong> Cut around each card's dashed border. Fold along the middle dashed line so the term shows on one side and the ${showTranslations ? 'translation' : 'definition'} on the other.${hasAnyImages ? ' Cards with images give visual learners an extra cue.' : ''}
+                     </div>`
+                  : `<div style="background:#eff6ff; border-left:4px solid #2563eb; padding:10px 14px; border-radius:4px; margin-bottom:14px; font-size:0.88em; color:#1e40af;">
+                       💡 Click any card to flip and reveal the ${showTranslations ? 'translation' : 'definition'}. Use the controls below to flip all at once.
+                     </div>
+                     <div style="display:flex; gap:8px; margin-bottom:12px;">
+                       <button type="button" class="alloflow-glossary-show-all" style="padding:6px 14px; background:#dbeafe; color:#1e40af; border:1px solid #93c5fd; border-radius:6px; font-size:0.85em; font-weight:600; cursor:pointer;">Show all</button>
+                       <button type="button" class="alloflow-glossary-hide-all" style="padding:6px 14px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85em; font-weight:600; cursor:pointer;">Hide all</button>
+                       <button type="button" class="alloflow-glossary-shuffle" style="padding:6px 14px; background:#fef3c7; color:#92400e; border:1px solid #fcd34d; border-radius:6px; font-size:0.85em; font-weight:600; cursor:pointer;">🔀 Shuffle</button>
+                     </div>`;
+              return `
+                  <div class="section" id="${item.id}" style="border-left:4px solid #059669;border-radius:12px;">
+                      ${enhancedHeader}
+                      ${instructionsHtml}
+                      ${cardsHtml}
+                      ${wordSearchHtml}
+                  </div>
+              `;
+          }
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid #059669;border-radius:12px;">
                   ${enhancedHeader}
@@ -11961,158 +12666,626 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       } else if (item.type === 'outline') {
           const { main, main_en, branches, structureType } = item.data;
           const type = structureType || 'Structured Outline';
+          // WCAG-AA categorical palette for pair-coding multi-branch diagrams
+          // (Cause-Effect, Mind Map, Flow Chart). Each entry's `border` and
+          // `accent` colors clear 4.5:1 against white per WCAG 2.1 1.4.3.
+          // We keep the existing (cause)/(effect) text labels and add ordinal
+          // aria-labels so color-blind users still get the relationship
+          // signal — color is supplementary, not the only carrier (1.4.1).
+          const _PAIR_PALETTE = [
+              { border: '#0f766e', bg: '#f0fdfa', accent: '#134e4a', soft: '#ccfbf1' }, // teal
+              { border: '#b45309', bg: '#fffbeb', accent: '#78350f', soft: '#fde68a' }, // amber
+              { border: '#4338ca', bg: '#eef2ff', accent: '#312e81', soft: '#c7d2fe' }, // indigo
+              { border: '#be123c', bg: '#fff1f2', accent: '#881337', soft: '#fecdd3' }, // rose
+              { border: '#047857', bg: '#ecfdf5', accent: '#064e3b', soft: '#a7f3d0' }, // emerald
+              { border: '#6d28d9', bg: '#f5f3ff', accent: '#4c1d95', soft: '#ddd6fe' }, // violet
+              { border: '#0369a1', bg: '#f0f9ff', accent: '#0c4a6e', soft: '#bae6fd' }, // sky
+              { border: '#c2410c', bg: '#fff7ed', accent: '#7c2d12', soft: '#fed7aa' }, // orange
+          ];
+          const _pairColor = (i) => _PAIR_PALETTE[i % _PAIR_PALETTE.length];
           let innerContent = '';
           if (type === 'Venn Diagram') {
                const setA = branches[0] || { title: 'Set A', items: [] };
                const setB = branches[1] || { title: 'Set B', items: [] };
                const shared = branches[2] || { title: 'Shared', items: [] };
-               const renderList = (items, items_en, limit = 8) => items.slice(0, limit).map((it, i) =>
-                   `<li style="margin-bottom: 6px; font-size: 10pt; line-height: 1.3;">
-                       &bull; ${it} ${items_en?.[i] ? `<br><span style="font-size:0.85em;opacity:0.8;font-style:italic;">(${items_en[i]})</span>` : ''}
-                    </li>`
-               ).join('');
+               const sharedCount = (shared.items || []).length;
+               const sharedFontSize = sharedCount > 6 ? '0.78em' : sharedCount > 4 ? '0.85em' : '0.95em';
+               const sharedItemPad = sharedCount > 6 ? '4px 10px' : '6px 12px';
+               const sharedItemMargin = sharedCount > 6 ? '5px' : '7px';
+               // Color-coded item card per circle: light tint background + colored left border
+               // so each item visually belongs to its circle even when scanned from a distance.
+               const renderItem = (it, en, opts) => `<li style="margin-bottom: ${opts.mb}; font-size: ${opts.fs}; line-height: 1.4; background: ${opts.bg}; color: ${opts.text}; padding: ${opts.pad}; border-radius: 10px; border-left: 4px solid ${opts.accent}; box-shadow: 0 1px 2px rgba(0,0,0,0.04); text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                       <span style="font-weight: 600;">${it}</span>${en ? `<br><span style="font-size:0.85em;opacity:0.8;font-style:italic;font-weight:normal;">(${en})</span>` : ''}
+                    </li>`;
+               const renderListA = (items, items_en, limit = 8) => items.slice(0, limit).map((it, i) => renderItem(it, items_en?.[i], { fs: '0.9em', pad: '7px 12px', mb: '7px', bg: '#fff1f2', text: '#881337', accent: '#fb7185' })).join('');
+               const renderListB = (items, items_en, limit = 8) => items.slice(0, limit).map((it, i) => renderItem(it, items_en?.[i], { fs: '0.9em', pad: '7px 12px', mb: '7px', bg: '#eff6ff', text: '#1e3a8a', accent: '#60a5fa' })).join('');
+               const renderListShared = (items, items_en, limit = 5) => items.slice(0, limit).map((it, i) => renderItem(it, items_en?.[i], { fs: sharedFontSize, pad: sharedItemPad, mb: sharedItemMargin, bg: '#f5f3ff', text: '#5b21b6', accent: '#a78bfa' })).join('');
+               // Overflow list: extra shared items beyond the diagram fit
+               const sharedOverflow = (shared.items || []).slice(5);
+               const sharedOverflowHtml = sharedOverflow.length > 0
+                 ? `<div class="venn-overflow" style="max-width: 720px; margin: 18px auto 0; padding: 14px 18px; background: linear-gradient(to bottom, #faf5ff, #f5f3ff); border: 2px solid #ddd6fe; border-radius: 14px; -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-inside: avoid; box-shadow: 0 2px 6px rgba(124, 58, 237, 0.08);">
+                      <div style="font-size: 0.8em; font-weight: 800; color: #6d28d9; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span style="display: inline-block; width: 18px; height: 2px; background: #c4b5fd;"></span>
+                        Shared (continued)
+                        <span style="display: inline-block; width: 18px; height: 2px; background: #c4b5fd;"></span>
+                      </div>
+                      <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 7px; justify-content: center;">
+                        ${sharedOverflow.map(it => `<li style="font-size: 0.85em; font-weight: 600; color: #5b21b6; background: white; padding: 5px 12px; border-radius: 999px; border: 1.5px solid #c4b5fd; box-shadow: 0 1px 2px rgba(124,58,237,0.06);">${it}</li>`).join('')}
+                      </ul>
+                    </div>`
+                 : '';
                innerContent = `
-                  <div style="text-align:center; margin-bottom: 40px;">
-                      <h3 style="margin:0; font-size: 1.8em; color: #2c3e50;">${main}</h3>
-                      ${main_en ? `<div style="font-size:1em; color:#666; font-style:italic; margin-top:5px;">(${main_en})</div>` : ''}
+                  <style>
+                    .venn-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; padding: 32px 24px; border-radius: 16px; }
+                    .venn-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    @media print {
+                      .venn-print-wrapper { page-break-inside: avoid; break-inside: avoid; padding: 16px; }
+                      .venn-print-wrapper [data-venn-circle] { box-shadow: none !important; }
+                      .venn-print-wrapper li { box-shadow: none !important; }
+                      .venn-print-wrapper h3, .venn-print-wrapper h4 { color: #000 !important; }
+                    }
+                  </style>
+                  <div class="venn-print-wrapper">
+                  <div style="text-align:center; margin-bottom: 32px;">
+                      <h3 style="margin:0; font-size: 1.9em; color: #1e293b; font-weight: 800; letter-spacing: -0.02em;">${main}</h3>
+                      ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:6px;">(${main_en})</div>` : ''}
+                      <div style="display: inline-flex; align-items: center; gap: 8px; margin-top: 12px;">
+                        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#fb7185;"></span>
+                        <span style="font-size: 0.7em; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.08em;">Compare and Contrast</span>
+                        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#60a5fa;"></span>
+                      </div>
                   </div>
-                  <div role="img" aria-label="Venn diagram comparing ${setA.title} and ${setB.title}" style="position: relative; width: 750px; height: 480px; margin: 0 auto; font-family: sans-serif;">
+                  <div role="img" aria-label="Venn diagram comparing ${setA.title} and ${setB.title}" style="position: relative; width: 720px; height: 500px; margin: 0 auto; font-family: 'Inter', system-ui, sans-serif; page-break-inside: avoid; break-inside: avoid;">
                       <!-- Set A (Left Circle) -->
-                      <div style="position: absolute; top: 0; left: 0; width: 400px;">
-                          <!-- Header Outside Circle -->
-                          <div style="text-align: center; margin-bottom: 10px;">
-                              <h4 style="margin: 0; color: #9f1239; font-size: 1.2em; font-weight: bold; background: #fff1f2; display: inline-block; padding: 6px 16px; border-radius: 20px; border: 2px solid #fecaca;">
+                      <div style="position: absolute; top: 0; left: 0; width: 440px;">
+                          <!-- Header pill -->
+                          <div style="text-align: center; margin-bottom: 14px; padding-right: 120px;">
+                              <h4 style="margin: 0; color: #9f1239; font-size: 1.2em; font-weight: 800; background: white; display: inline-block; padding: 8px 22px; border-radius: 999px; border: 2px solid #fda4af; box-shadow: 0 4px 10px -2px rgba(244,63,94,0.18); position: relative; z-index: 20; letter-spacing: 0.01em;">
                                   ${setA.title}
                               </h4>
-                              ${setA.title_en ? `<div style="font-size:0.9em; color:#991b1b; margin-top:2px;">(${setA.title_en})</div>` : ''}
+                              ${setA.title_en ? `<div style="font-size:0.85em; color:#991b1b; margin-top:6px; font-style: italic;">(${setA.title_en})</div>` : ''}
                           </div>
-                          <!-- Circle Body with Increased Right Padding (110px) -->
-                          <div style="width: 400px; height: 400px; border-radius: 50%; background-color: rgba(254, 226, 226, 0.4); border: 3px solid #fecaca; box-sizing: border-box; padding: 60px 110px 40px 40px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word;">
-                              <ul style="list-style: none; padding: 0; margin: 0; color: #881337; width: 100%;">
-                                  ${renderList(setA.items, setA.items_en)}
+                          <!-- Circle Body — solid fill so backdrop never bleeds through; radial gradient adds soft depth -->
+                          <div data-venn-circle="A" style="width: 440px; height: 440px; border-radius: 50%; background: radial-gradient(circle at 30% 35%, #ffe4e6 0%, #fecdd3 100%); border: 4px solid #fb7185; box-sizing: border-box; padding: 60px 140px 40px 50px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 12px 28px -8px rgba(244,63,94,0.28); z-index: 1; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                              <ul style="list-style: none; padding: 0; margin: 0; width: 100%;">
+                                  ${renderListA(setA.items, setA.items_en, 8)}
                               </ul>
                           </div>
                       </div>
                       <!-- Set B (Right Circle) -->
-                      <div style="position: absolute; top: 0; right: 0; width: 400px;">
-                          <!-- Header Outside Circle -->
-                          <div style="text-align: center; margin-bottom: 10px;">
-                              <h4 style="margin: 0; color: #1e40af; font-size: 1.2em; font-weight: bold; background: #eff6ff; display: inline-block; padding: 6px 16px; border-radius: 20px; border: 2px solid #bfdbfe;">
+                      <div style="position: absolute; top: 0; right: 0; width: 440px;">
+                          <!-- Header pill -->
+                          <div style="text-align: center; margin-bottom: 14px; padding-left: 120px;">
+                              <h4 style="margin: 0; color: #1e40af; font-size: 1.2em; font-weight: 800; background: white; display: inline-block; padding: 8px 22px; border-radius: 999px; border: 2px solid #93c5fd; box-shadow: 0 4px 10px -2px rgba(59,130,246,0.18); position: relative; z-index: 20; letter-spacing: 0.01em;">
                                   ${setB.title}
                               </h4>
-                              ${setB.title_en ? `<div style="font-size:0.9em; color:#1e40af; margin-top:2px;">(${setB.title_en})</div>` : ''}
+                              ${setB.title_en ? `<div style="font-size:0.85em; color:#1e40af; margin-top:6px; font-style: italic;">(${setB.title_en})</div>` : ''}
                           </div>
-                          <!-- Circle Body with Increased Left Padding (110px) -->
-                          <div style="width: 400px; height: 400px; border-radius: 50%; background-color: rgba(219, 234, 254, 0.4); border: 3px solid #bfdbfe; box-sizing: border-box; padding: 60px 40px 40px 110px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word;">
-                              <ul style="list-style: none; padding: 0; margin: 0; color: #1e3a8a; width: 100%;">
-                                  ${renderList(setB.items, setB.items_en)}
+                          <!-- Circle Body -->
+                          <div data-venn-circle="B" style="width: 440px; height: 440px; border-radius: 50%; background: radial-gradient(circle at 70% 35%, #dbeafe 0%, #bfdbfe 100%); border: 4px solid #60a5fa; box-sizing: border-box; padding: 60px 50px 40px 140px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 12px 28px -8px rgba(59,130,246,0.28); z-index: 2; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                              <ul style="list-style: none; padding: 0; margin: 0; width: 100%;">
+                                  ${renderListB(setB.items, setB.items_en, 8)}
                               </ul>
                           </div>
                       </div>
-                      <!-- Shared Region (Absolute Center) -->
-                      <div style="position: absolute; top: 140px; left: 50%; transform: translateX(-50%); width: 180px; text-align: center; z-index: 10;">
-                          <h4 style="font-size: 0.8em; font-weight: bold; text-transform: uppercase; color: #6b21a8; margin: 0 0 10px 0; background: rgba(255,255,255,0.9); display: inline-block; padding: 2px 8px; border-radius: 4px; border: 1px solid #e9d5ff;">
-                              ${shared.title || 'Shared'}
-                              ${shared.title_en ? `<span style="font-weight:normal; opacity:0.8;"> (${shared.title_en})</span>` : ''}
+                      <!-- Shared Region (Absolute Center, in the lens overlap) -->
+                      <div style="position: absolute; top: 90px; left: 50%; transform: translateX(-50%); width: 180px; text-align: center; z-index: 15;">
+                          <!-- Prominent SHARED badge -->
+                          <h4 style="font-size: 0.95em; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #6d28d9; margin: 0 0 14px 0; background: linear-gradient(to bottom, white, #faf5ff); display: inline-block; padding: 7px 18px; border-radius: 999px; border: 2px solid #c4b5fd; box-shadow: 0 4px 10px -2px rgba(124,58,237,0.25); position: relative;">
+                              <span style="display: inline-flex; align-items: center; gap: 6px;">
+                                <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#a78bfa;"></span>
+                                ${shared.title || 'Shared'}
+                                <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#a78bfa;"></span>
+                              </span>
+                              ${shared.title_en ? `<br><span style="font-weight:normal; opacity:0.85; font-size: 0.85em; text-transform: none; letter-spacing: normal; color: #6d28d9;"> (${shared.title_en})</span>` : ''}
                           </h4>
-                          <ul style="list-style: none; padding: 0; margin: 0; color: #581c87; font-weight: bold; font-size: 0.9em;">
-                               ${renderList(shared.items, shared.items_en, 5)}
+                          <ul style="list-style: none; padding: 0; margin: 0;">
+                               ${renderListShared(shared.items, shared.items_en, 5)}
                           </ul>
                       </div>
                   </div>
+                  ${sharedOverflowHtml}
+                  </div>
                `;
           } else if (type === 'Flow Chart' || type === 'Process Flow / Sequence') {
-              innerContent = `<div role="img" aria-label="Flow chart: ${main}" style="display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 700px; margin: 0 auto; font-family: sans-serif;">
-                      <div style="background: white; color: #1e293b; padding: 15px 40px; border-radius: 50px; text-align: center; border: 2px solid #cbd5e1; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 20; position: relative;"><h3 style="margin:0; font-size:1.2em; font-weight: 800;">${main}</h3>${main_en ? `<div style="font-size:0.8em; color:#64748b; font-weight: normal; margin-top:4px;">(${main_en})</div>` : ''}</div>
+              // Pair-coded flow chart: each step uses one palette entry. The
+              // connector line (vertical bar + downward triangle) above the
+              // step inherits the next step's border color, so the visual
+              // relationship "this connector leads into the green step"
+              // reads at a glance even on dense flows. Decision diamonds
+              // get the same palette color but with the diamond's classic
+              // amber background overridden to the palette's `soft` tint
+              // for visual continuity within the same step.
+              const total = branches.length;
+              innerContent = `
+                <style>
+                  .flowchart-print-wrapper { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; padding: 24px 16px; border-radius: 16px; }
+                  .flowchart-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                  .flowchart-step { page-break-inside: avoid; break-inside: avoid; }
+                  @media print {
+                    .flowchart-print-wrapper { padding: 12px; }
+                    .flowchart-print-wrapper .flowchart-step { box-shadow: none !important; }
+                  }
+                </style>
+                <div class="flowchart-print-wrapper">
+                <div role="img" aria-label="Flow chart: ${main}" style="display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 700px; margin: 0 auto; font-family: sans-serif;">
+                      <div style="background: linear-gradient(135deg, white 0%, #f8fafc 100%); color: #1e293b; padding: 16px 40px; border-radius: 50px; text-align: center; border: 2px solid #475569; margin-bottom: 20px; box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.12); z-index: 20; position: relative;"><h3 style="margin:0; font-size:1.4em; font-weight: 800; letter-spacing: -0.01em;">${main}</h3>${main_en ? `<div style="font-size:0.85em; color:#64748b; font-weight: normal; margin-top:4px; font-style:italic;">(${main_en})</div>` : ''}</div>
                       <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-                      ${branches.map(b => {
+                      ${branches.map((b, idx) => {
+                          const c = _pairColor(idx);
                           const isDecision = b.title.includes("?") || b.title.toLowerCase().includes("decision");
                           const hasBranches = b.items && b.items.length > 1;
-                          return `<div style="height: 32px; width: 2px; background: #94a3b8;"></div><div aria-hidden="true" style="color: #94a3b8; font-size: 16px; line-height: 1; margin-top: -4px; margin-bottom: 4px;">&#9660;</div>
-                              <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                          const stepLabel = `Step ${idx + 1} of ${total}: ${b.title}`;
+                          return `<div aria-hidden="true" style="height: 32px; width: 3px; background: ${c.border};"></div><div aria-hidden="true" style="color: ${c.border}; font-size: 16px; line-height: 1; margin-top: -4px; margin-bottom: 4px;">&#9660;</div>
+                              <div class="flowchart-step" role="group" aria-label="${stepLabel}" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
                                   ${isDecision
                     ? `<div style="position: relative; width: 130px; height: 130px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center;">` +
-                      `<div style="position: absolute; inset: 0; top:0; left:0; right:0; bottom:0; background: #fefce8; border: 2px solid #facc15; transform: rotate(45deg); border-radius: 4px; z-index: 1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></div>` +
+                      `<div aria-hidden="true" style="position: absolute; inset: 0; top:0; left:0; right:0; bottom:0; background: ${c.soft}; border: 2px solid ${c.border}; transform: rotate(45deg); border-radius: 4px; z-index: 1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></div>` +
                       `<div style="position: relative; z-index: 2; text-align: center; width: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center;">` +
-                      `<span style="font-weight: bold; font-size: 0.75rem; color: #713f12; line-height: 1.25; word-wrap: break-word;">${b.title}</span>` +
-                      `${b.title_en ? `<span style="font-size: 0.65rem; color: #a16207; line-height: 1.25; margin-top: 4px;">(${b.title_en})</span>` : ''}` +
+                      `<span style="font-weight: bold; font-size: 0.75rem; color: ${c.accent}; line-height: 1.25; word-wrap: break-word;">${idx + 1}. ${b.title}</span>` +
+                      `${b.title_en ? `<span style="font-size: 0.65rem; color: ${c.accent}; opacity: 0.85; line-height: 1.25; margin-top: 4px;">(${b.title_en})</span>` : ''}` +
                       `</div></div>`
-                    : `<div style="background: white; border: 2px solid #3b82f6; border-radius: 8px; padding: 16px; text-align: center; width: 256px; min-height: 60px; display: flex; flex-direction: column; justify-content: center; z-index: 10; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">` +
-                      `<span style="font-weight: bold; font-size: 0.875rem; color: #1e3a8a;">${b.title}</span>` +
-                      `${b.title_en ? `<span style="font-size: 0.75rem; color: #3b82f6; margin-top: 4px;">(${b.title_en})</span>` : ''}` +
+                    : `<div style="background: ${c.bg}; border: 2px solid ${c.border}; border-radius: 8px; padding: 16px; text-align: center; width: 256px; min-height: 60px; display: flex; flex-direction: column; justify-content: center; z-index: 10; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">` +
+                      `<span style="font-weight: bold; font-size: 0.875rem; color: ${c.accent};">${idx + 1}. ${b.title}</span>` +
+                      `${b.title_en ? `<span style="font-size: 0.75rem; color: ${c.accent}; opacity: 0.85; margin-top: 4px;">(${b.title_en})</span>` : ''}` +
                       `</div>`}
-                                  ${hasBranches ? `<div style="display: flex; justify-content: center; gap: 16px; margin-top: 8px; width: 100%; position: relative; align-items: stretch;"><div style="position: absolute; top: 0; left: 40px; right: 40px; height: 16px; border-top: 2px solid #cbd5e1; border-left: 2px solid #cbd5e1; border-right: 2px solid #cbd5e1; border-radius: 12px 12px 0 0;"></div>
-                                      ${b.items.map((item, k) => `<div style="display: flex; flex-direction: column; align-items: center; padding-top: 16px; flex: 1; max-width: 150px;"><div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; font-size: 0.75rem; color: #334155; text-align: center; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); width: 100%; height: 100%; flex: 1; display: flex; flex-direction: column; justify-content: center;">${item}${b.items_en?.[k] ? `<div style="font-size: 0.65rem; color: #64748b; margin-top: 4px;">(${b.items_en[k]})</div>` : ''}</div></div>`).join('')}</div>` : `
-                                      ${b.items && b.items.length === 1 && b.items[0] ? `<div style="margin-top: 8px; background: #eff6ff; color: #1e40af; font-size: 0.75rem; padding: 4px 12px; border-radius: 9999px; border: 1px solid #dbeafe;">${b.items[0]} ${b.items_en?.[0] ? `<span style="opacity: 0.7;">(${b.items_en[0]})</span>` : ''}</div>` : ''}`}
+                                  ${hasBranches ? `<div style="display: flex; justify-content: center; gap: 16px; margin-top: 8px; width: 100%; position: relative; align-items: stretch;"><div aria-hidden="true" style="position: absolute; top: 0; left: 40px; right: 40px; height: 16px; border-top: 2px solid ${c.border}; border-left: 2px solid ${c.border}; border-right: 2px solid ${c.border}; border-radius: 12px 12px 0 0;"></div>
+                                      ${b.items.map((item, k) => `<div style="display: flex; flex-direction: column; align-items: center; padding-top: 16px; flex: 1; max-width: 150px;"><div style="background: white; border: 1px solid ${c.border}; padding: 8px; border-radius: 4px; font-size: 0.75rem; color: ${c.accent}; text-align: center; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); width: 100%; height: 100%; flex: 1; display: flex; flex-direction: column; justify-content: center;">${item}${b.items_en?.[k] ? `<div style="font-size: 0.65rem; color: ${c.accent}; opacity: 0.85; margin-top: 4px;">(${b.items_en[k]})</div>` : ''}</div></div>`).join('')}</div>` : `
+                                      ${b.items && b.items.length === 1 && b.items[0] ? `<div style="margin-top: 8px; background: ${c.bg}; color: ${c.accent}; font-size: 0.75rem; padding: 4px 12px; border-radius: 9999px; border: 1px solid ${c.border};">${b.items[0]} ${b.items_en?.[0] ? `<span style="opacity: 0.85;">(${b.items_en[0]})</span>` : ''}</div>` : ''}`}
                               </div>`;
                       }).join('')}
-                      <div style="height: 32px; width: 2px; background: #94a3b8;"></div><div style="background: #1e293b; color: white; font-size: 0.8em; font-weight: bold; padding: 8px 24px; border-radius: 9999px; border: 2px solid #475569;">${t('organizer.labels.end')}</div></div></div>`;
+                      <div aria-hidden="true" style="height: 32px; width: 3px; background: #475569;"></div><div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; font-size: 0.85em; font-weight: bold; padding: 10px 28px; border-radius: 9999px; border: 2px solid #475569; box-shadow: 0 4px 8px -2px rgba(0,0,0,0.2); letter-spacing: 0.04em; text-transform: uppercase;">${t('organizer.labels.end')}</div></div></div></div>`;
           } else {
               if (type === 'Cause and Effect') {
-                  innerContent = `<div style="text-align:center; margin-bottom: 30px;"><h3 style="margin:0;">${main}</h3></div>` +
-                    `<div style="display: flex; flex-direction: column; gap: 20px; max-width: 800px; margin: 0 auto;">` +
-                    `${branches.map(b => `<div style="display: flex; align-items: center; gap: 20px;">` +
-                      `<div style="flex: 1; background: #fef2f2; border: 1px solid #fee2e2; padding: 20px; border-radius: 8px; text-align: center;">` +
-                      `<div style="color: #991b1b; font-weight: bold; font-size: 0.8em; text-transform: uppercase; margin-bottom: 5px;">${t('organizer.labels.cause')}</div>` +
-                      `<div style="color: #7f1d1d; font-weight: bold;">${b.title}</div>` +
-                      `${b.title_en ? `<div style="font-size:0.8em; color:#ef4444;">(${b.title_en})</div>` : ''}</div>` +
-                      `<div aria-hidden="true" style="font-size: 30px; color: #cbd5e1;">&#8594;</div>` +
-                      `<div style="flex: 1; background: #eff6ff; border: 1px solid #dbeafe; padding: 20px; border-radius: 8px; text-align: center;">` +
-                      `<div style="color: #1e40af; font-weight: bold; font-size: 0.8em; text-transform: uppercase; margin-bottom: 5px;">${t('organizer.labels.effect')}</div>` +
-                      `<div style="color: #1e3a8a; font-weight: bold;">${b.items[0] || ''}</div>` +
-                      `${b.items_en?.[0] ? `<div style="font-size:0.8em; color:#3b82f6;">(${b.items_en[0]})</div>` : ''}</div>` +
-                      `</div>`).join('')}</div>`;
+                  // Pair-coded color rotation: each cause+effect pair shares
+                  // one palette entry so the relationship reads at a glance.
+                  // The `(cause)`/`(effect)` text labels and ordinal aria-label
+                  // remain so color-blind users still get the pairing signal.
+                  const total = branches.length;
+                  const causeLabel = t('organizer.labels.cause') || 'Cause';
+                  const effectLabel = t('organizer.labels.effect') || 'Effect';
+                  innerContent = `
+                    <style>
+                      .ce-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; padding: 28px 20px; border-radius: 16px; }
+                      .ce-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      .ce-pair { page-break-inside: avoid; break-inside: avoid; }
+                      @media print {
+                        .ce-print-wrapper { padding: 12px; }
+                        .ce-print-wrapper .ce-card { box-shadow: none !important; }
+                        .ce-print-wrapper h3 { color: #000 !important; }
+                      }
+                    </style>
+                    <div class="ce-print-wrapper">
+                      <div style="text-align:center; margin-bottom: 28px;">
+                        <h3 style="margin:0; font-size: 1.7em; color: #1e293b; font-weight: 800; letter-spacing: -0.01em;">${main}</h3>
+                        ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:6px;">(${main_en})</div>` : ''}
+                        <div style="display:inline-flex; align-items:center; gap:8px; margin-top:10px; font-size:0.7em; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.08em;">
+                          <span>${causeLabel}</span>
+                          <span aria-hidden="true" style="color:#94a3b8;">&rarr;</span>
+                          <span>${effectLabel}</span>
+                        </div>
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 18px; max-width: 860px; margin: 0 auto;">
+                        ${branches.map((b, i) => {
+                          const c = _pairColor(i);
+                          // Render ALL items as effects, not just b.items[0] (was a long-standing bug).
+                          const effectItems = (b.items || []).filter(it => (typeof it === 'object' ? it.text : it));
+                          const effectsHtml = effectItems.length === 0
+                            ? `<div style="color:${c.accent}; opacity:0.6; font-style:italic; font-size:0.9em;">(no effects listed)</div>`
+                            : effectItems.map((it, k) => {
+                                const text = typeof it === 'object' ? (it.text || '') : String(it);
+                                const trans = b.items_en?.[k];
+                                return `<div style="background:white; border-left:3px solid ${c.border}; padding:8px 12px; border-radius:6px; margin-bottom:6px; color:${c.accent}; font-weight:600; font-size:0.92em; box-shadow:0 1px 2px rgba(0,0,0,0.04);">${text}${trans ? `<div style="font-weight:normal; font-style:italic; opacity:0.8; font-size:0.85em; margin-top:2px;">(${trans})</div>` : ''}</div>`;
+                              }).join('');
+                          return `<div class="ce-pair" role="group" aria-label="Cause and effect pair ${i + 1} of ${total}" style="display: flex; align-items: stretch; gap: 14px;">
+                            <div class="ce-card" style="flex: 1; background: linear-gradient(135deg, ${c.bg} 0%, white 100%); border: 2px solid ${c.border}; padding: 16px 18px; border-radius: 12px; box-shadow: 0 2px 6px -2px rgba(0,0,0,0.08); position:relative;">
+                              <div style="display:inline-flex; align-items:center; gap:6px; background:${c.border}; color:white; font-weight:800; font-size:0.7em; text-transform:uppercase; letter-spacing:0.08em; padding:3px 10px; border-radius:999px; margin-bottom:10px;">
+                                <span style="display:inline-block; width:18px; height:18px; border-radius:50%; background:white; color:${c.accent}; font-weight:800; display:inline-flex; align-items:center; justify-content:center; font-size:0.75em;">${i + 1}</span>
+                                ${causeLabel}
+                              </div>
+                              <div style="color: ${c.accent}; font-weight: 700; font-size:0.98em; line-height:1.3;">${b.title}</div>
+                              ${b.title_en ? `<div style="font-size:0.82em; color:${c.accent}; opacity: 0.8; font-style:italic; margin-top:3px;">(${b.title_en})</div>` : ''}
+                            </div>
+                            <div aria-hidden="true" style="display:flex; align-items:center; flex-shrink:0; color: ${c.border};">
+                              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));">
+                                <path d="M5 12h14m0 0l-6-6m6 6l-6 6" stroke="${c.border}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                              </svg>
+                            </div>
+                            <div class="ce-card" style="flex: 1.3; background: linear-gradient(135deg, ${c.soft} 0%, white 100%); border: 2px solid ${c.border}; padding: 16px 18px; border-radius: 12px; box-shadow: 0 2px 6px -2px rgba(0,0,0,0.08); position:relative;">
+                              <div style="display:inline-flex; align-items:center; gap:6px; background:${c.accent}; color:white; font-weight:800; font-size:0.7em; text-transform:uppercase; letter-spacing:0.08em; padding:3px 10px; border-radius:999px; margin-bottom:10px;">
+                                ${effectLabel}${effectItems.length > 1 ? `s (${effectItems.length})` : ''}
+                              </div>
+                              ${effectsHtml}
+                            </div>
+                          </div>`;
+                        }).join('')}
+                      </div>
+                    </div>`;
               } else if (type === 'Problem Solution') {
-                  innerContent = `<div style="max-width: 800px; margin: 0 auto;">` +
-                    `<div style="background: #fef2f2; border-left: 5px solid #ef4444; padding: 20px; margin-bottom: 40px; border-radius: 0 8px 8px 0;">` +
-                    `<div style="color: #ef4444; font-weight: bold; font-size: 0.8em; text-transform: uppercase;">${t('organizer.labels.problem_label')}</div>` +
-                    `<h3 style="margin: 10px 0; color: #7f1d1d;">${main}</h3>` +
-                    `${main_en ? `<div style="color: #991b1b; font-style: italic;">(${main_en})</div>` : ''}</div>` +
-                    `<div aria-hidden="true" style="text-align: center; font-size: 30px; color: #cbd5e1; margin-bottom: 20px;">&#8595;</div>` +
-                    `<h4 style="text-align: center; color: #166534; margin-bottom: 20px;">${t('organizer.labels.solutions')}</h4>` +
-                    `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">` +
-                    `${branches.map(b => `<div style="background: #f0fdf4; border: 1px solid #dcfce7; padding: 20px; border-radius: 8px;">` +
-                      `<h4 style="color: #166534; margin: 0 0 10px 0;">${b.title}</h4>` +
-                      `${b.title_en ? `<div style="color: #22c55e; font-size: 0.8em; margin-bottom: 10px;">(${b.title_en})</div>` : ''}` +
-                      `<ul style="margin: 0; padding-left: 20px; color: #15803d;">` +
-                      `${b.items.map((it, i) => `<li style="margin-bottom: 5px;">${it} ${b.items_en?.[i] ? `<span style="opacity: 0.7; font-size: 0.9em;">(${b.items_en[i]})</span>` : ''}</li>`).join('')}` +
-                      `</ul></div>`).join('')}</div></div>`;
-              } else if (type === 'Mind Map') {
+                  // Detect Outcome branch by title keyword (matches view_renderers logic)
+                  const psOutcomeIdx = branches.findIndex(b =>
+                      (b.title || '').toLowerCase().includes('outcome') ||
+                      (b.title || '').toLowerCase().includes('result') ||
+                      (b.title || '').toLowerCase().includes('evaluation')
+                  );
+                  const psOutcome = psOutcomeIdx !== -1 ? branches[psOutcomeIdx] : null;
+                  const psSolutions = branches.filter((_, i) => i !== psOutcomeIdx);
+                  const problemLabel = t('organizer.labels.problem_label') || 'Problem';
+                  const solutionsLabel = t('organizer.labels.solutions') || 'Solutions';
+                  // Solutions grid: 2 cols if <= 4, otherwise auto-fit
+                  const psGridCols = psSolutions.length <= 4 ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(220px, 1fr))';
+                  innerContent = `
+                    <style>
+                      .ps-print-wrapper { page-break-inside: auto; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; padding: 28px 20px; border-radius: 16px; }
+                      .ps-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      .ps-card { page-break-inside: avoid; break-inside: avoid; }
+                      @media print {
+                        .ps-print-wrapper { padding: 12px; }
+                        .ps-print-wrapper .ps-card { box-shadow: none !important; }
+                      }
+                    </style>
+                    <div class="ps-print-wrapper" style="max-width: 860px; margin: 0 auto;">
+                      <div class="ps-card" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border: 2px solid #fca5a5; border-left: 6px solid #dc2626; padding: 22px 26px; margin-bottom: 24px; border-radius: 14px; box-shadow: 0 4px 10px -2px rgba(220,38,38,0.15); position: relative;">
+                        <div style="display:inline-flex; align-items:center; gap:8px; background:#dc2626; color:white; font-weight:800; font-size:0.7em; text-transform:uppercase; letter-spacing:0.1em; padding:4px 12px; border-radius:999px; margin-bottom:12px;">
+                          <span aria-hidden="true">!</span> ${problemLabel}
+                        </div>
+                        <h3 style="margin: 0; color: #7f1d1d; font-size: 1.4em; font-weight: 800; line-height:1.3;">${main}</h3>
+                        ${main_en ? `<div style="color: #991b1b; font-style: italic; margin-top:6px; font-size:0.9em;">(${main_en})</div>` : ''}
+                      </div>
+                      <div aria-hidden="true" style="text-align: center; margin: -6px 0 18px;">
+                        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1));">
+                          <path d="M12 5v14m0 0l-7-7m7 7l7-7" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                      <div style="text-align:center; margin-bottom: 16px;">
+                        <h4 style="display:inline-block; margin:0; padding:6px 18px; color: #166534; font-size:0.9em; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; background:#f0fdf4; border:2px solid #86efac; border-radius:999px;">${solutionsLabel}</h4>
+                      </div>
+                      <div style="display: grid; grid-template-columns: ${psGridCols}; gap: 14px;">
+                        ${psSolutions.map((b, i) => `<div class="ps-card" style="background: linear-gradient(135deg, #f0fdf4 0%, white 100%); border: 2px solid #86efac; border-left: 5px solid #16a34a; padding: 16px 18px; border-radius: 12px; box-shadow: 0 2px 6px -2px rgba(22,163,74,0.12); position:relative;">
+                          <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:8px;">
+                            <span style="display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:24px; height:24px; border-radius:50%; background:#16a34a; color:white; font-weight:800; font-size:0.85em;">${i + 1}</span>
+                            <h4 style="color: #166534; margin: 0; font-size:1em; font-weight:700; line-height:1.3;">${b.title}${b.title_en ? `<div style="color: #16a34a; font-size: 0.78em; margin-top:2px; font-style:italic; font-weight:normal;">(${b.title_en})</div>` : ''}</h4>
+                          </div>
+                          <ul style="margin: 0; padding: 0; list-style: none; color: #14532d;">
+                            ${(b.items || []).map((it, k) => {
+                              const text = typeof it === 'object' ? (it.text || '') : String(it);
+                              const trans = b.items_en?.[k];
+                              return `<li style="display:flex; align-items:flex-start; gap:6px; margin-bottom: 5px; font-size:0.88em; line-height:1.4;"><span style="color:#16a34a; flex-shrink:0; margin-top:2px;" aria-hidden="true">&#10003;</span><span>${text}${trans ? ` <em style="opacity: 0.75; font-size: 0.9em; color:#16a34a;">(${trans})</em>` : ''}</span></li>`;
+                            }).join('')}
+                          </ul>
+                        </div>`).join('')}
+                      </div>
+                      ${psOutcome ? `<div class="ps-card" style="margin-top: 22px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2px solid #93c5fd; border-left: 6px solid #2563eb; padding: 20px 24px; border-radius: 14px; box-shadow: 0 3px 8px -2px rgba(37,99,235,0.15);">
+                        <div style="display:inline-flex; align-items:center; gap:8px; background:#2563eb; color:white; font-weight:800; font-size:0.7em; text-transform:uppercase; letter-spacing:0.1em; padding:4px 12px; border-radius:999px; margin-bottom:10px;">
+                          ${psOutcome.title || 'Outcome'}
+                        </div>
+                        ${psOutcome.title_en ? `<div style="color: #1e40af; font-style: italic; font-size:0.85em; margin-bottom:8px;">(${psOutcome.title_en})</div>` : ''}
+                        <ul style="margin: 0; padding: 0; list-style: none; color: #1e3a8a;">
+                          ${(psOutcome.items || []).map((it, k) => {
+                            const text = typeof it === 'object' ? (it.text || '') : String(it);
+                            const trans = psOutcome.items_en?.[k];
+                            return `<li style="display:flex; align-items:flex-start; gap:8px; margin-bottom: 6px; font-size:0.92em;"><span style="color:#2563eb; flex-shrink:0; margin-top:2px;" aria-hidden="true">&#9656;</span><span>${text}${trans ? ` <em style="opacity: 0.75; font-size: 0.9em; color:#2563eb;">(${trans})</em>` : ''}</span></li>`;
+                          }).join('')}
+                        </ul>
+                      </div>` : ''}
+                    </div>`;
+              } else if (type === 'T-Chart') {
+                  const left = branches[0] || { title: 'Column A', items: [] };
+                  const right = branches[1] || { title: 'Column B', items: [] };
+                  const renderTChartItems = (items, items_en, color) => (items || []).map((it, i) => {
+                      const text = typeof it === 'object' ? (it.text || '') : String(it);
+                      const trans = items_en?.[i];
+                      return `<li style="margin-bottom: 8px; padding: 8px 14px; background: white; border-left: 4px solid ${color}; border-radius: 8px; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.05); -webkit-print-color-adjust: exact; print-color-adjust: exact;">${text}${trans ? `<div style="font-weight: normal; font-style: italic; opacity: 0.75; font-size: 0.85em; margin-top: 2px;">(${trans})</div>` : ''}</li>`;
+                  }).join('');
+                  innerContent = `
+                    <style>
+                      .tchart-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      .tchart-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      @media print {
+                        .tchart-print-wrapper { page-break-inside: avoid; break-inside: avoid; }
+                        .tchart-print-wrapper li { box-shadow: none !important; }
+                        .tchart-print-wrapper h3, .tchart-print-wrapper h4 { color: #000 !important; }
+                      }
+                    </style>
+                    <div class="tchart-print-wrapper">
+                    <div style="text-align:center; margin-bottom: 30px;">
+                      <h3 style="margin:0; font-size: 1.6em; color: #2c3e50; font-weight: 800;">${main}</h3>
+                      ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:4px;">(${main_en})</div>` : ''}
+                    </div>
+                    <div role="img" aria-label="T-Chart comparing ${left.title} and ${right.title}" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0; max-width: 800px; margin: 0 auto; border: 2px solid #cbd5e1; border-radius: 12px; overflow: hidden; background: white;">
+                      <div style="padding: 20px; border-right: 2px solid #cbd5e1; background: linear-gradient(to bottom, rgba(207, 250, 254, 0.3), white);">
+                        <h4 style="margin: 0 0 12px 0; padding: 10px; background: #cffafe; color: #155e75; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; border-radius: 8px; border: 1px solid #67e8f9; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                          ${left.title}${left.title_en ? `<div style="font-size: 0.75em; font-weight: normal; opacity: 0.85; text-transform: none; letter-spacing: normal;">(${left.title_en})</div>` : ''}
+                        </h4>
+                        <ul style="list-style: none; padding: 0; margin: 0; color: #155e75;">
+                          ${renderTChartItems(left.items, left.items_en, '#22d3ee')}
+                        </ul>
+                      </div>
+                      <div style="padding: 20px; background: linear-gradient(to bottom, rgba(224, 231, 255, 0.3), white);">
+                        <h4 style="margin: 0 0 12px 0; padding: 10px; background: #e0e7ff; color: #3730a3; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; border-radius: 8px; border: 1px solid #a5b4fc; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                          ${right.title}${right.title_en ? `<div style="font-size: 0.75em; font-weight: normal; opacity: 0.85; text-transform: none; letter-spacing: normal;">(${right.title_en})</div>` : ''}
+                        </h4>
+                        <ul style="list-style: none; padding: 0; margin: 0; color: #3730a3;">
+                          ${renderTChartItems(right.items, right.items_en, '#818cf8')}
+                        </ul>
+                      </div>
+                    </div>
+                    </div>`;
+              } else if (type === 'Fishbone') {
+                  // Fishbone (Ishikawa) — central effect + angled "bones" with cause categories.
+                  const VIEW_W = 900, VIEW_H = 360, SPINE_Y = VIEW_H / 2;
+                  const HEAD_X = VIEW_W - 130, TAIL_X = 50;
+                  const visibleBranches = branches.slice(0, 6);
+                  const slotCount = Math.ceil(visibleBranches.length / 2);
+                  const boneSvg = visibleBranches.map((b, i) => {
+                      const isTop = i % 2 === 0;
+                      const slotIdx = Math.floor(i / 2);
+                      const xFrac = (slotIdx + 1) / (slotCount + 1);
+                      const startX = TAIL_X + 60 + (HEAD_X - TAIL_X - 100) * xFrac;
+                      const endX = startX - 40;
+                      const endY = isTop ? 60 : VIEW_H - 60;
+                      const labelY = isTop ? endY - 8 : endY + 16;
+                      return `<g><line x1="${startX}" y1="${SPINE_Y}" x2="${endX}" y2="${endY}" stroke="#a78bfa" stroke-width="3" stroke-linecap="round" /><circle cx="${endX}" cy="${endY}" r="6" fill="#7c3aed" /><text x="${endX - 6}" y="${labelY}" text-anchor="end" fill="#5b21b6" font-weight="800" font-size="13" font-family="Inter, sans-serif">${b.title || `Category ${i + 1}`}</text></g>`;
+                  }).join('');
+                  const cardsHtml = branches.map((branch, bi) => {
+                      const items = (branch.items || []).map((it, k) => {
+                          const text = typeof it === 'object' ? (it.text || '') : String(it);
+                          const trans = branch.items_en?.[k];
+                          return `<li style="margin-bottom: 6px; padding: 6px 10px; background: #faf5ff; border-left: 3px solid #c4b5fd; border-radius: 6px; color: #5b21b6; font-size: 0.9em; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${text}${trans ? `<div style="font-style: italic; opacity: 0.75; font-size: 0.85em;">(${trans})</div>` : ''}</li>`;
+                      }).join('');
+                      return `<div style="background: white; border: 2px solid #ddd6fe; border-radius: 12px; overflow: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-inside: avoid;">
+                        <div style="background: linear-gradient(to right, #ede9fe, #fae8ff); padding: 10px 14px; border-bottom: 2px solid #ddd6fe;">
+                          <div style="color: #581c87; font-weight: 800; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.05em;">${branch.title || `Category ${bi + 1}`}</div>
+                          ${branch.title_en ? `<div style="font-size: 0.75em; color: #7c3aed; font-style: italic;">(${branch.title_en})</div>` : ''}
+                        </div>
+                        <ul style="list-style: none; padding: 12px; margin: 0;">${items || '<li style="font-style: italic; color: #94a3b8; font-size: 0.85em; text-align: center;">No causes</li>'}</ul>
+                      </div>`;
+                  }).join('');
+                  innerContent = `
+                    <style>
+                      .fishbone-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      .fishbone-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      @media print { .fishbone-print-wrapper { page-break-inside: avoid; break-inside: avoid; } .fishbone-cards { page-break-inside: auto; } }
+                    </style>
+                    <div class="fishbone-print-wrapper">
+                      <div style="text-align:center; margin-bottom: 20px;">
+                        <h3 style="margin:0; font-size: 1.5em; color: #2c3e50; font-weight: 800;">${main}</h3>
+                        ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:4px;">(${main_en})</div>` : ''}
+                      </div>
+                      <div style="background: white; border: 2px solid #e9d5ff; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                        <svg role="img" aria-label="Fishbone diagram for ${main}" viewBox="0 0 ${VIEW_W} ${VIEW_H}" style="width: 100%; height: auto; max-width: 900px;" xmlns="http://www.w3.org/2000/svg">
+                          <polygon points="${TAIL_X},${SPINE_Y - 20} ${TAIL_X + 30},${SPINE_Y} ${TAIL_X},${SPINE_Y + 20}" fill="#a78bfa" opacity="0.5" />
+                          <line x1="${TAIL_X + 30}" y1="${SPINE_Y}" x2="${HEAD_X}" y2="${SPINE_Y}" stroke="#7c3aed" stroke-width="6" stroke-linecap="round" />
+                          <rect x="${HEAD_X}" y="${SPINE_Y - 40}" width="120" height="80" rx="12" fill="#7c3aed" />
+                          <text x="${HEAD_X + 60}" y="${SPINE_Y + 5}" text-anchor="middle" fill="white" font-weight="800" font-size="11" font-family="Inter, sans-serif">${(main || 'Effect').slice(0, 16)}</text>
+                          ${boneSvg}
+                        </svg>
+                      </div>
+                      <div class="fishbone-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">${cardsHtml}</div>
+                    </div>`;
+              } else if (type === 'Key Concept Map') {
+                  // Concept map: central hub + radiating branches with attribute lists.
                   const half = Math.ceil(branches.length / 2);
                   const leftBranches = branches.slice(0, half);
                   const rightBranches = branches.slice(half);
-                  innerContent = `<div role="img" aria-label="Mind map: ${main}" style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 900px; margin: 0 auto; padding: 20px;">` +
-                    `<div style="display: flex; flex-direction: column; gap: 30px; align-items: flex-end; flex: 1;">` +
-                    `${leftBranches.map(b => `<div style="background: white; border: 3px solid #e9d5ff; padding: 15px; border-radius: 20px; text-align: center; min-width: 150px; position: relative;">` +
-                      `<div style="color: #581c87; font-weight: bold;">${b.title}</div>` +
-                      `${b.title_en ? `<div style="font-size: 0.8em; color: #a855f7;">(${b.title_en})</div>` : ''}` +
-                      `<div style="position: absolute; top: 50%; right: -43px; width: 40px; height: 2px; background: #e9d5ff;"></div></div>`).join('')}</div>` +
-                    `<div style="width: 200px; height: 200px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #4f46e5); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border: 5px solid #f3e8ff; z-index: 2;">` +
-                    `<h3 style="margin: 0; font-size: 1.2em;">${main}</h3>` +
-                    `${main_en ? `<div style="font-size: 0.8em; opacity: 0.8; margin-top: 5px;">(${main_en})</div>` : ''}</div>` +
-                    `<div style="display: flex; flex-direction: column; gap: 30px; align-items: flex-start; flex: 1;">` +
-                    `${rightBranches.map(b => `<div style="background: white; border: 3px solid #e9d5ff; padding: 15px; border-radius: 20px; text-align: center; min-width: 150px; position: relative;">` +
-                      `<div style="color: #581c87; font-weight: bold;">${b.title}</div>` +
-                      `${b.title_en ? `<div style="font-size: 0.8em; color: #a855f7;">(${b.title_en})</div>` : ''}` +
-                      `<div style="position: absolute; top: 50%; left: -43px; width: 40px; height: 2px; background: #e9d5ff;"></div></div>`).join('')}</div></div>`;
+                  const renderBranchCard = (b, side) => {
+                      const lineStyle = side === 'left'
+                        ? 'position: absolute; top: 50%; right: -43px; width: 40px; height: 2px; background: #99f6e4;'
+                        : 'position: absolute; top: 50%; left: -43px; width: 40px; height: 2px; background: #99f6e4;';
+                      const itemsHtml = (b.items || []).map((it, i) => {
+                          const text = typeof it === 'object' ? (it.text || '') : String(it);
+                          return `<li style="margin: 2px 0; font-size: 0.85em; color: #134e4a;">${text}${b.items_en?.[i] ? ` <span style="color: #5eead4; font-style: italic;">(${b.items_en[i]})</span>` : ''}</li>`;
+                      }).join('');
+                      return `<div style="background: white; border: 3px solid #99f6e4; padding: 14px; border-radius: 16px; text-align: ${side === 'left' ? 'right' : 'left'}; min-width: 180px; max-width: 240px; position: relative; -webkit-print-color-adjust: exact; print-color-adjust: exact;">` +
+                          `<div style="color: #134e4a; font-weight: 800;">${b.title}</div>` +
+                          (b.title_en ? `<div style="font-size: 0.8em; color: #14b8a6; font-style: italic;">(${b.title_en})</div>` : '') +
+                          (itemsHtml ? `<ul style="list-style: none; padding: 0; margin: 6px 0 0 0; ${side === 'left' ? 'text-align: right;' : 'text-align: left;'}">${itemsHtml}</ul>` : '') +
+                          `<div style="${lineStyle}"></div></div>`;
+                  };
+                  innerContent = `
+                    <style>
+                      .cmap-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      .cmap-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      @media print {
+                        .cmap-print-wrapper { page-break-inside: avoid; break-inside: avoid; }
+                      }
+                    </style>
+                    <div class="cmap-print-wrapper" role="img" aria-label="Concept map: ${main}" style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 1000px; margin: 0 auto; padding: 20px;">
+                      <div style="display: flex; flex-direction: column; gap: 20px; align-items: flex-end; flex: 1;">
+                        ${leftBranches.map(b => renderBranchCard(b, 'left')).join('')}
+                      </div>
+                      <div style="width: 200px; height: 200px; border-radius: 50%; background: linear-gradient(135deg, #14b8a6, #059669); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15); border: 5px solid #ccfbf1; flex-shrink: 0; z-index: 2;">
+                        <h3 style="margin: 0; font-size: 1.2em;">${main}</h3>
+                        ${main_en ? `<div style="font-size: 0.8em; opacity: 0.85; margin-top: 5px;">(${main_en})</div>` : ''}
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 20px; align-items: flex-start; flex: 1;">
+                        ${rightBranches.map(b => renderBranchCard(b, 'right')).join('')}
+                      </div>
+                    </div>`;
+              } else if (type === 'Mind Map') {
+                  // Pair-coded mind map: each branch gets its own palette entry,
+                  // and the connector line inherits that branch's border color
+                  // so the visual relationship between center → branch is
+                  // unambiguous even when there are 6+ branches.
+                  // Now also renders branch.items inside each card (was a long-
+                  // standing bug — printable mind maps lost all item detail).
+                  const half = Math.ceil(branches.length / 2);
+                  const leftBranches = branches.slice(0, half);
+                  const rightBranches = branches.slice(half);
+                  const total = branches.length;
+                  const renderBranch = (b, side, globalIdx) => {
+                      const c = _pairColor(globalIdx);
+                      const connectorPos = side === 'left' ? `right: -43px;` : `left: -43px;`;
+                      const itemAlign = side === 'left' ? 'right' : 'left';
+                      const itemsHtml = (b.items || []).map((it, k) => {
+                          const text = typeof it === 'object' ? (it.text || '') : String(it);
+                          const trans = b.items_en?.[k];
+                          return `<li style="margin: 3px 0; font-size: 0.82em; color: ${c.accent}; line-height: 1.35;">${text}${trans ? ` <em style="opacity: 0.75; font-size: 0.9em;">(${trans})</em>` : ''}</li>`;
+                      }).join('');
+                      return `<div class="mindmap-branch" role="group" aria-label="Mind map branch ${globalIdx + 1} of ${total}: ${b.title}" style="background: linear-gradient(135deg, ${c.bg} 0%, white 100%); border: 3px solid ${c.border}; padding: 14px 18px; border-radius: 18px; text-align: ${itemAlign}; min-width: 180px; max-width: 240px; position: relative; box-shadow: 0 3px 8px -2px rgba(0,0,0,0.08);">
+                          <div style="color: ${c.accent}; font-weight: 800; font-size: 0.95em; line-height: 1.25;">${b.title}</div>
+                          ${b.title_en ? `<div style="font-size: 0.78em; color: ${c.accent}; opacity: 0.8; font-style: italic; margin-top: 2px;">(${b.title_en})</div>` : ''}
+                          ${itemsHtml ? `<ul style="list-style: none; padding: 0; margin: 8px 0 0 0; border-top: 1px solid ${c.soft}; padding-top: 8px;">${itemsHtml}</ul>` : ''}
+                          <div aria-hidden="true" style="position: absolute; top: 50%; ${connectorPos} width: 40px; height: 3px; background: ${c.border}; border-radius: 2px;"></div>
+                        </div>`;
+                  };
+                  innerContent = `
+                    <style>
+                      .mindmap-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; padding: 24px 16px; border-radius: 16px; }
+                      .mindmap-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      .mindmap-branch { page-break-inside: avoid; break-inside: avoid; }
+                      @media print {
+                        .mindmap-print-wrapper { padding: 12px; }
+                        .mindmap-print-wrapper .mindmap-branch { box-shadow: none !important; }
+                      }
+                    </style>
+                    <div class="mindmap-print-wrapper">
+                      <div role="img" aria-label="Mind map: ${main}" style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 1000px; margin: 0 auto;">
+                        <div style="display: flex; flex-direction: column; gap: 22px; align-items: flex-end; flex: 1;">
+                          ${leftBranches.map((b, i) => renderBranch(b, 'left', i)).join('')}
+                        </div>
+                        <div style="width: 210px; height: 210px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #818cf8 0%, #6366f1 50%, #4f46e5 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 24px; box-shadow: 0 12px 28px -6px rgba(99,102,241,0.45), inset 0 -8px 20px rgba(30,27,75,0.25); border: 5px solid #eef2ff; flex-shrink: 0; z-index: 2;">
+                          <h3 style="margin: 0; font-size: 1.25em; font-weight: 800; line-height: 1.2; text-shadow: 0 1px 2px rgba(30,27,75,0.3);">${main}</h3>
+                          ${main_en ? `<div style="font-size: 0.78em; opacity: 0.9; margin-top: 6px; font-style: italic;">(${main_en})</div>` : ''}
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 22px; align-items: flex-start; flex: 1;">
+                          ${rightBranches.map((b, i) => renderBranch(b, 'right', half + i)).join('')}
+                        </div>
+                      </div>
+                    </div>`;
               } else {
-                  innerContent = `<div style="max-width: 800px; margin: 0 auto; text-align: center;">` +
-                    `<div style="background: #4f46e5; color: white; padding: 20px 40px; border-radius: 15px; display: inline-block; margin-bottom: 30px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">` +
-                    `<h3 style="margin: 0;">${main}</h3>` +
-                    `${main_en ? `<div style="opacity: 0.8; font-size: 0.9em;">(${main_en})</div>` : ''}</div>` +
-                    `<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">` +
-                    `${branches.map(b => `<div style="flex: 1; min-width: 200px; max-width: 300px; background: white; border: 2px solid #e0e7ff; border-radius: 10px; overflow: hidden; text-align: left;">` +
-                      `<div style="background: #eef2ff; padding: 10px; font-weight: bold; color: #3730a3; text-align: center; border-bottom: 2px solid #e0e7ff;">` +
-                      `${b.title}${b.title_en ? `<div style="font-weight: normal; font-size: 0.8em; color: #6366f1;">(${b.title_en})</div>` : ''}</div>` +
-                      `<ul style="padding: 15px 25px; margin: 0; color: #475569;">` +
-                      `${b.items.map((it, i) => `<li style="margin-bottom: 5px;">${it} ${b.items_en?.[i] ? `<span style="color: #94a3b8; font-size: 0.9em;">(${b.items_en[i]})</span>` : ''}</li>`).join('')}` +
-                      `</ul></div>`).join('')}</div></div>`;
+                  // Generic fallback: pair-coded branch cards rotating through
+                  // _PAIR_PALETTE so each section reads as a distinct chunk
+                  // even when there are 6+ branches.
+                  innerContent = `
+                    <style>
+                      .outline-print-wrapper { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; padding: 28px 20px; border-radius: 16px; }
+                      .outline-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      .outline-card { page-break-inside: avoid; break-inside: avoid; }
+                      @media print {
+                        .outline-print-wrapper { padding: 12px; }
+                        .outline-print-wrapper .outline-card { box-shadow: none !important; }
+                      }
+                    </style>
+                    <div class="outline-print-wrapper" style="max-width: 900px; margin: 0 auto; text-align: center;">
+                      <div style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #4338ca 100%); color: white; padding: 22px 44px; border-radius: 18px; display: inline-block; margin-bottom: 28px; box-shadow: 0 8px 20px -4px rgba(79,70,229,0.35); position: relative;">
+                        <h3 style="margin: 0; font-size: 1.5em; font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 1px 2px rgba(30,27,75,0.25);">${main}</h3>
+                        ${main_en ? `<div style="opacity: 0.9; font-size: 0.9em; margin-top: 6px; font-style: italic;">(${main_en})</div>` : ''}
+                      </div>
+                      <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 16px;">
+                        ${branches.map((b, i) => {
+                          const c = _pairColor(i);
+                          return `<div class="outline-card" style="flex: 1; min-width: 220px; max-width: 320px; background: white; border: 2px solid ${c.border}; border-radius: 12px; overflow: hidden; text-align: left; box-shadow: 0 3px 8px -2px rgba(0,0,0,0.08);">
+                            <div style="background: linear-gradient(135deg, ${c.bg} 0%, ${c.soft} 100%); padding: 12px 16px; font-weight: 800; color: ${c.accent}; text-align: center; border-bottom: 2px solid ${c.border}; font-size: 0.95em; letter-spacing: -0.01em;">
+                              ${b.title}${b.title_en ? `<div style="font-weight: normal; font-size: 0.78em; color: ${c.accent}; opacity: 0.8; margin-top: 3px; font-style: italic;">(${b.title_en})</div>` : ''}
+                            </div>
+                            <ul style="padding: 14px 18px; margin: 0; list-style: none; color: ${c.accent};">
+                              ${(b.items || []).map((it, k) => {
+                                const text = typeof it === 'object' ? (it.text || '') : String(it);
+                                const trans = b.items_en?.[k];
+                                return `<li style="display:flex; gap:8px; align-items:flex-start; margin-bottom: 6px; font-size:0.9em; line-height:1.4;"><span style="color:${c.border}; flex-shrink:0; margin-top:2px;" aria-hidden="true">&#9656;</span><span>${text}${trans ? ` <em style="color: ${c.accent}; opacity: 0.7; font-size: 0.9em;">(${trans})</em>` : ''}</span></li>`;
+                              }).join('')}
+                            </ul>
+                          </div>`;
+                        }).join('')}
+                      </div>
+                    </div>`;
               }
           }
+          // Text-only fallback for screen readers and printable PDFs.
+          // Diagrams (Venn, Flow Chart, Mind Map, Cause-Effect, Problem
+          // Solution, default) all use absolutely-positioned visual layouts
+          // that screen readers can't traverse meaningfully — they just hear
+          // the role="img" aria-label, which is a one-line summary at best.
+          // The collapsible "View as text" section below renders the same
+          // content as a structured plain-text outline so screen-reader
+          // users get the actual relationships, and so the diagram is
+          // legible if someone prints to a small page where the visual
+          // layout breaks. Inspired by WCAG 1.1.1 long descriptions.
+          const _textFallback = (() => {
+              const escape = (s) => String(s == null ? '' : s).replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+              const renderItems = (items, items_en) => {
+                  if (!Array.isArray(items) || items.length === 0) return '';
+                  return '<ul>' + items.map((it, i) => {
+                      const en = items_en && items_en[i] ? ` <em style="color:#64748b;font-size:0.9em;">(${escape(items_en[i])})</em>` : '';
+                      return `<li>${escape(it)}${en}</li>`;
+                  }).join('') + '</ul>';
+              };
+              // Per-type framing so the relationships read sensibly aloud.
+              let body = '';
+              if (type === 'Venn Diagram') {
+                  const setA = branches[0] || { title: 'Set A', items: [] };
+                  const setB = branches[1] || { title: 'Set B', items: [] };
+                  const shared = branches[2] || { title: 'Shared', items: [] };
+                  body = `
+                      <h4>${escape(setA.title)} only</h4>${renderItems(setA.items, setA.items_en)}
+                      <h4>${escape(setB.title)} only</h4>${renderItems(setB.items, setB.items_en)}
+                      <h4>${escape(shared.title || 'Shared')}</h4>${renderItems(shared.items, shared.items_en)}
+                  `;
+              } else if (type === 'Cause and Effect') {
+                  // Each branch's title is the cause; items[0] is the effect.
+                  // Format the fallback as "Cause N: <title> → Effect: <items[0]>"
+                  // so screen readers hear the relationship in reading order.
+                  body = branches.map((b, i) => `
+                      <p><strong>Cause ${i + 1}:</strong> ${escape(b.title)}${b.title_en ? ` <em style="color:#64748b;font-size:0.9em;">(${escape(b.title_en)})</em>` : ''}</p>
+                      <p style="margin-left:1.5rem;"><strong>Effect:</strong> ${escape(b.items[0] || '')}${b.items_en && b.items_en[0] ? ` <em style="color:#64748b;font-size:0.9em;">(${escape(b.items_en[0])})</em>` : ''}</p>
+                  `).join('');
+              } else if (type === 'Problem Solution') {
+                  body = `
+                      <p><strong>Problem:</strong> ${escape(main)}</p>
+                      <h4>Solutions</h4>
+                      ${branches.map(b => `<p><strong>${escape(b.title)}</strong></p>${renderItems(b.items, b.items_en)}`).join('')}
+                  `;
+              } else if (type === 'Mind Map') {
+                  body = `
+                      <p><strong>Center:</strong> ${escape(main)}</p>
+                      ${branches.map(b => `<p><strong>${escape(b.title)}</strong></p>${renderItems(b.items, b.items_en)}`).join('')}
+                  `;
+              } else if (type === 'T-Chart') {
+                  const left = branches[0] || { title: 'Column A', items: [] };
+                  const right = branches[1] || { title: 'Column B', items: [] };
+                  body = `
+                      <h4>${escape(left.title)}</h4>${renderItems(left.items, left.items_en)}
+                      <h4>${escape(right.title)}</h4>${renderItems(right.items, right.items_en)}
+                  `;
+              } else if (type === 'Key Concept Map') {
+                  body = `
+                      <p><strong>Central concept:</strong> ${escape(main)}</p>
+                      ${branches.map(b => `<p><strong>${escape(b.title)}</strong></p>${renderItems(b.items, b.items_en)}`).join('')}
+                  `;
+              } else if (type === 'Fishbone') {
+                  body = `
+                      <p><strong>Effect being analyzed:</strong> ${escape(main)}</p>
+                      <p>Cause categories:</p>
+                      ${branches.map(b => `<p><strong>${escape(b.title)}</strong> (cause category)</p>${renderItems(b.items, b.items_en)}`).join('')}
+                  `;
+              } else if (type === 'Flow Chart' || type === 'Process Flow / Sequence') {
+                  body = '<ol>' + branches.map(b => {
+                      const isDecision = (b.title || '').includes('?') || (b.title || '').toLowerCase().includes('decision');
+                      const tag = isDecision ? '<em>(decision)</em> ' : '';
+                      return `<li>${tag}<strong>${escape(b.title)}</strong>${b.title_en ? ` <em>(${escape(b.title_en)})</em>` : ''}${renderItems(b.items, b.items_en)}</li>`;
+                  }).join('') + '</ol>';
+              } else {
+                  body = branches.map(b => `
+                      <h4>${escape(b.title)}${b.title_en ? ` <em style="color:#64748b;font-size:0.9em;">(${escape(b.title_en)})</em>` : ''}</h4>
+                      ${renderItems(b.items, b.items_en)}
+                  `).join('');
+              }
+              return `
+                  <details class="diagram-text-fallback" style="margin-top:1rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.5rem 0.75rem;">
+                      <summary style="cursor:pointer;font-weight:700;color:#475569;font-size:0.9rem;">📋 View as text</summary>
+                      <div style="margin-top:0.5rem;color:#1e293b;font-size:0.95rem;line-height:1.5;">
+                          <p style="margin:0 0 0.5rem 0;font-weight:700;">${escape(main)}${main_en ? ` <em style="color:#64748b;font-size:0.9em;font-weight:normal;">(${escape(main_en)})</em>` : ''}</p>
+                          ${body}
+                      </div>
+                  </details>
+              `;
+          })();
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   ${innerContent}
+                  ${_textFallback}
               </div>
           `;
       } else if (item.type === 'image') {
@@ -12126,6 +13299,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               </div>
           `;
       } else if (item.type === 'quiz') {
+          const reflectionInputHtml = (text) => isWorksheet
+              ? ruledLines(4)
+              : `<textarea class="interactive-textarea" aria-label="${text}" placeholder="${t('common.type_answer_here')}"></textarea>`;
           const reflectionHtml = Array.isArray(item.data.reflections)
               ? item.data.reflections.map(r => {
                   const text = typeof r === 'string' ? r : r.text;
@@ -12133,31 +13309,142 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   return `
                       <div class="reflection-block">
                           <p><strong>${text}</strong>${textEn ? `<br><span style="font-weight:normal; font-style:italic; color:#666">(${textEn})</span>` : ''}</p>
-                          <textarea class="interactive-textarea" aria-label="${text}" placeholder="${t('common.type_answer_here')}"></textarea>
+                          ${reflectionInputHtml(text)}
                       </div>
                   `;
                 }).join('')
               : `
                   <div class="reflection-block">
                       <p><strong>${item.data.reflection}</strong></p>
-                      <textarea class="interactive-textarea" aria-label="${item.data.reflection}" placeholder="${t('common.type_answer_here')}"></textarea>
+                      ${reflectionInputHtml(item.data.reflection)}
                   </div>
               `;
+          // Resolve each question's correct option to an INDEX (the radio value)
+          // so the in-iframe Check button can compare user input directly.
+          // q.correctAnswer can be a number, a string matching an option, or an
+          // A/B/C/D letter — handle all three. -1 means we couldn't resolve it,
+          // and that question gets skipped by the checker rather than scored wrong.
+          const _resolveCorrectIdx = (q) => {
+              if (q == null || !Array.isArray(q.options)) return -1;
+              const ca = q.correctAnswer;
+              if (typeof ca === 'number' && ca >= 0 && ca < q.options.length) return ca;
+              if (typeof ca === 'string') {
+                  const trimmed = ca.trim();
+                  // Letter form (A, B, C, D, …)
+                  if (/^[A-Za-z]$/.test(trimmed)) {
+                      const letterIdx = trimmed.toUpperCase().charCodeAt(0) - 65;
+                      if (letterIdx >= 0 && letterIdx < q.options.length) return letterIdx;
+                  }
+                  // Numeric string ("0", "1", …)
+                  if (/^\d+$/.test(trimmed)) {
+                      const numIdx = parseInt(trimmed, 10);
+                      if (numIdx >= 0 && numIdx < q.options.length) return numIdx;
+                  }
+                  // Match by literal option text (loose: lowercase + trim)
+                  const norm = (s) => String(s == null ? '' : s).trim().toLowerCase();
+                  const target = norm(trimmed);
+                  const found = q.options.findIndex(opt => norm(opt) === target);
+                  if (found !== -1) return found;
+              }
+              return -1;
+          };
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
-                  <div class="quiz-box">
+                  <div class="quiz-box" data-quiz-id="${item.id}">
                       <h3>${t('output.quiz_mcq')}</h3>
-                      ${item.data.questions.map((q, i) => `
-                          <div class="question">
-                              <p>
-                                <strong>${i+1}. ${q.question}</strong>
-                                ${q.question_en ? `<br><span style="font-weight:normal; font-style:italic; color:#666">(${q.question_en})</span>` : ''}
-                              </p>
+                      ${item.data.questions.map((q, i) => {
+                          const itemType = q.type || 'mcq';
+                          // Plan S Slice 5+: type-aware export rendering. Each item type
+                          // gets a printable form. Teacher view shows answer keys/rubrics;
+                          // student view shows blank space for response.
+                          const stem = `<p><strong>${i+1}. ${q.question || ''}</strong>${q.question_en ? `<br><span style="font-weight:normal; font-style:italic; color:#666">(${q.question_en})</span>` : ''}</p>`;
+                          if (itemType === 'fill-blank') {
+                              return `
+                              <div class="question">
+                                  ${stem}
+                                  <div style="margin:0.5rem 0;">
+                                      <input type="text" placeholder="Type the missing word…" style="width:100%;max-width:300px;padding:6px 10px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem"/>
+                                  </div>
+                                  ${isTeacher && q.expectedFill ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${q.expectedFill}${Array.isArray(q.acceptableAlternatives) && q.acceptableAlternatives.length > 0 ? ' <span style="font-weight:normal;font-style:italic">(also: ' + q.acceptableAlternatives.join(', ') + ')</span>' : ''}</p>` : ''}
+                              </div>`;
+                          }
+                          if (itemType === 'short-answer') {
+                              return `
+                              <div class="question">
+                                  ${stem}
+                                  ${isWorksheet
+                                      ? ruledLines(3)
+                                      : '<textarea placeholder="Type your 1-2 sentence response…" rows="3" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>'}
+                                  ${isTeacher && q.expectedAnswer ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: <span style="font-weight:normal">${q.expectedAnswer}</span></p>` : ''}
+                              </div>`;
+                          }
+                          if (itemType === 'self-explanation') {
+                              return `
+                              <div class="question">
+                                  ${stem}
+                                  ${isWorksheet
+                                      ? ruledLines(5)
+                                      : '<textarea placeholder="Explain in your own words (3-5 sentences)…" rows="5" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>'}
+                                  ${isTeacher && q.rubric ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">Rubric: <span style="font-weight:normal;font-style:italic">${q.rubric}</span></p>` : ''}
+                              </div>`;
+                          }
+                          if (itemType === 'sequence-sense') {
+                              const items = Array.isArray(q.items) ? q.items : [];
+                              const presentedOrder = Array.isArray(q.presentedOrder) && q.presentedOrder.length === items.length ? q.presentedOrder : items.map((_, idx) => idx);
+                              const principleOpts = Array.isArray(q.principleOptions) ? q.principleOptions : ['chronological','cause-effect','process','size','hierarchy'];
+                              return `
+                              <div class="question">
+                                  ${stem}
+                                  <p style="font-style:italic;color:#475569;font-size:0.9rem;margin:0.25rem 0;">Below is a sequence — verify and explain.</p>
+                                  <ol style="margin:0.5rem 0 0.75rem 1.5rem;">
+                                      ${presentedOrder.map(canonIdx => `<li style="padding:4px 0;">${items[canonIdx] || ''}</li>`).join('')}
+                                  </ol>
+                                  <div style="margin:0.5rem 0;">
+                                      <strong style="font-size:0.9rem;">1. Is this order correct?</strong>
+                                      ${isWorksheet
+                                          ? `<label style="margin-left:1rem;">${fillableCircle()}Yes</label><label style="margin-left:0.5rem;">${fillableCircle()}No, item # ___ is misplaced</label>`
+                                          : `<label style="margin-left:1rem;"><input type="radio" name="ss_${item.id}_${i}_v"/> Yes</label><label style="margin-left:0.5rem;"><input type="radio" name="ss_${item.id}_${i}_v"/> No, item # ___ is misplaced</label>`}
+                                  </div>
+                                  <div style="margin:0.5rem 0;">
+                                      <strong style="font-size:0.9rem;">2. What's the ordering principle?</strong>
+                                      <span style="margin-left:0.5rem;color:#475569;">${principleOpts.join(' / ')}</span>
+                                  </div>
+                                  ${isTeacher ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${q.intentionallyWrongIndex === null || q.intentionallyWrongIndex === undefined ? 'order is correct' : 'item #' + (q.intentionallyWrongIndex + 1) + ' is misplaced'} · principle: <em>${q.orderingPrinciple || ''}</em></p>` : ''}
+                              </div>`;
+                          }
+                          if (itemType === 'relation-mismatch') {
+                              const pairs = Array.isArray(q.pairs) ? q.pairs : [];
+                              const candidates = Array.isArray(q.candidatePartners) ? q.candidatePartners : [];
+                              return `
+                              <div class="question">
+                                  ${stem}
+                                  <p style="font-style:italic;color:#475569;font-size:0.9rem;margin:0.25rem 0;">One of these pairs is wrong. Find it and pick the correct partner.</p>
+                                  <table style="width:100%;border-collapse:collapse;margin:0.5rem 0;">
+                                      ${pairs.map((pair, idx) => `<tr><td style="padding:6px 8px;border:1px solid #cbd5e1;background:#f8fafc;font-weight:600;">${idx+1}. ${pair.left || ''}</td><td style="padding:6px 8px;border:1px solid #cbd5e1;">↔ ${pair.right || ''}</td></tr>`).join('')}
+                                  </table>
+                                  <div style="margin:0.5rem 0;">
+                                      <strong style="font-size:0.9rem;">Wrong pair: # ___</strong>
+                                  </div>
+                                  ${candidates.length > 0 ? `<div style="margin:0.5rem 0;"><strong style="font-size:0.9rem;">Correct partner:</strong> ${candidates.map(c => isWorksheet ? `<label style="margin-left:0.5rem;">${fillableCircle()}${c}</label>` : `<label style="margin-left:0.5rem;"><input type="radio" name="rm_${item.id}_${i}_p"/> ${c}</label>`).join('')}</div>` : ''}
+                                  ${isTeacher ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: pair #${(q.wrongPairIndex || 0) + 1} is wrong · correct partner: <em>${q.correctPartnerForWrong || ''}</em></p>` : ''}
+                              </div>`;
+                          }
+                          // Default: MCQ render (existing behavior preserved)
+                          const correctIdx = _resolveCorrectIdx(q);
+                          const correctAttr = correctIdx >= 0 ? ` data-correct="${correctIdx}"` : '';
+                          const optsArr = Array.isArray(q.options) ? q.options : [];
+                          return `
+                          <div class="question"${correctAttr}>
+                              ${stem}
+                              ${q.imageUrl ? `<img src="${q.imageUrl}" alt="${q.question || 'Question image'}" style="max-width:100%;max-height:300px;object-fit:contain;border-radius:8px;border:1px solid #e2e8f0;margin:0.5rem 0;background:#f8fafc"/>` : ''}
                               <div class="options">
-                                  ${q.options.map((opt, optIdx) => `
+                                  ${optsArr.map((opt, optIdx) => `
                                       <label class="mcq-label">
-                                          <input aria-label={t('common.text_field')} type="radio" name="q_${item.id}_${i}" value="${optIdx}">
+                                          ${isWorksheet
+                                              ? fillableCircle()
+                                              : `<input aria-label={t('common.text_field')} type="radio" name="q_${item.id}_${i}" value="${optIdx}">`}
+                                          ${Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] ? `<img src="${q.optionImageUrls[optIdx]}" alt="${opt}" style="display:block;max-width:140px;max-height:80px;object-fit:contain;border-radius:4px;border:1px solid #e2e8f0;margin-bottom:4px;background:#fff"/>` : ''}
                                           <span>${opt} ${q.options_en && q.options_en[optIdx] ? `<span style="color:#888; font-size:0.9em;">(${q.options_en[optIdx]})</span>` : ''}</span>
                                       </label>
                                   `).join('')}
@@ -12165,7 +13452,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               ${isTeacher ? `<p class="answer-key" style="color: #16a34a; font-weight: bold; margin-top: 10px;">${t('output.quiz_answer')}: ${q.correctAnswer}</p>` : ''}
                               ${isTeacher && q.factCheck ? `<div style="background:#fffbeb; padding:10px; border:1px solid #fcd34d; border-radius:4px; font-size:0.9em; margin-top:10px; white-space: pre-line; color:#92400e;"><strong>AI Verification:</strong><br/>${parseMarkdownToHTML(q.factCheck)}</div>` : ''}
                           </div>
-                      `).join('')}
+                      `;
+                      }).join('')}
+                      ${isTeacher || isWorksheet ? '' : `
+                          <div class="quiz-controls" style="margin:1rem 0;display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
+                              <button type="button" class="quiz-check-btn" style="padding:8px 16px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9rem">🎯 Check my answers</button>
+                              <button type="button" class="quiz-reset-btn" style="padding:8px 16px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85rem">↻ Reset</button>
+                              <div class="quiz-results" role="status" aria-live="polite" aria-atomic="true" style="font-size:0.95rem;font-weight:700;color:#1e293b;margin-left:0.5rem"></div>
+                          </div>
+                      `}
                       <h3>${t('output.quiz_reflection')}</h3>
                       ${reflectionHtml}
                   </div>
@@ -12223,6 +13518,60 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           `;
       } else if (item.type === 'brainstorm') {
           if (!isTeacher) return '';
+          const brainstormMode = cfg.brainstormDisplayMode || 'grid';
+          if (brainstormMode === 'mindmap' && Array.isArray(item.data) && item.data.length > 0) {
+              // Mind-map graphic organizer: central topic bubble + radiating
+              // spoke bubbles for each idea. CSS-only layout (no SVG connectors
+              // in v1). In worksheet mode, spokes are empty for students to
+              // fill; in interactive mode, spoke clicks expand to show details.
+              const centerLabel = (sourceTopic || pageTitle || 'Topic').slice(0, 60);
+              const spokeColors = ['#dc2626','#2563eb','#059669','#d97706','#7c3aed','#be185d','#0891b2','#ca8a04'];
+              const spokesHtml = item.data.map((idea, idx) => {
+                  const color = spokeColors[idx % spokeColors.length];
+                  if (isWorksheet) {
+                      return `
+                          <div class="alloflow-mindmap-spoke" role="listitem" style="border:2px solid ${color}; border-radius:50%; background:${color}11; min-height:120px; aspect-ratio:1.4 / 1; display:flex; align-items:center; justify-content:center; padding:14px; text-align:center; break-inside:avoid; page-break-inside:avoid;">
+                              <div>
+                                  <div style="font-size:0.7em; text-transform:uppercase; letter-spacing:0.05em; color:${color}; font-weight:bold;">Idea ${idx + 1}</div>
+                                  <div style="margin-top:6px; border-bottom:1.5px solid ${color}99; min-height:1.6em; min-width:120px;"></div>
+                              </div>
+                          </div>
+                      `;
+                  }
+                  return `
+                      <div class="alloflow-mindmap-spoke" role="listitem" data-spoke-idx="${idx}" tabindex="0" style="border:2px solid ${color}; border-radius:18px; background:${color}11; padding:14px; cursor:pointer; transition:box-shadow 0.15s; break-inside:avoid; page-break-inside:avoid;">
+                          <div style="font-size:0.7em; text-transform:uppercase; letter-spacing:0.05em; color:${color}; font-weight:bold; margin-bottom:4px;">Idea ${idx + 1}</div>
+                          <div style="font-weight:bold; color:#1e293b; line-height:1.3;">${idea.title || ''}</div>
+                          <div class="alloflow-mindmap-detail" style="display:none; margin-top:10px; padding-top:10px; border-top:1px dashed ${color}55; font-size:0.9em; color:#475569; text-align:left;">
+                              ${idea.description ? `<p style="margin:0 0 6px 0;"><strong>Activity:</strong> ${idea.description}</p>` : ''}
+                              ${idea.connection ? `<p style="margin:0 0 6px 0; font-style:italic;"><strong>Connection:</strong> ${idea.connection}</p>` : ''}
+                              ${idea.guide ? `<div style="margin-top:8px; padding-top:8px; border-top:1px dashed ${color}44; font-size:0.9em;"><strong>Step-by-Step Guide:</strong><br/>${parseMarkdownToHTML(idea.guide)}</div>` : ''}
+                          </div>
+                      </div>
+                  `;
+              }).join('');
+              const interactiveHint = isWorksheet
+                  ? `<div style="background:#fefce8; border-left:4px solid #eab308; padding:12px 16px; border-radius:4px; margin-bottom:20px; font-size:0.9em; color:#713f12; break-inside:avoid;">
+                       <strong>How to use:</strong> The central bubble names the topic. Fill in each surrounding bubble with one idea, activity, or connection you can think of. The colored borders are just for reference — write your own thoughts.
+                     </div>`
+                  : `<div style="background:#eff6ff; border-left:4px solid #2563eb; padding:10px 14px; border-radius:4px; margin-bottom:14px; font-size:0.88em; color:#1e40af;">
+                       💡 Click any bubble to expand or collapse its details.
+                     </div>`;
+              return `
+                  <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+                      ${enhancedHeader}
+                      ${interactiveHint}
+                      <div style="display:flex; justify-content:center; margin-bottom:24px; break-inside:avoid;">
+                          <div style="background:linear-gradient(135deg, #6366f1, #8b5cf6); color:white; padding:22px 32px; border-radius:50%; font-weight:bold; font-size:1.15em; text-align:center; min-width:160px; box-shadow:0 4px 12px rgba(99,102,241,0.3);">
+                              ${centerLabel}
+                          </div>
+                      </div>
+                      <div class="alloflow-mindmap-spokes" role="list" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px;">
+                          ${spokesHtml}
+                      </div>
+                  </div>
+              `;
+          }
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
@@ -12244,8 +13593,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           if (mode === 'list') {
               contentHtml = `<ul style="list-style:none;padding:0;">${items.map((i, idx) => {
                   const savedVal = responses[item.id]?.[idx] || '';
+                  const inputHtml = isWorksheet
+                      ? ruledLines(2)
+                      : `<textarea class="interactive-textarea" style="height: 60px;border-left:3px solid #4f46e5;" aria-label="${i.text}" placeholder="${t('common.complete_sentence')}">${savedVal}</textarea>`;
                   return `
-                  <li style="margin-bottom:15px; font-size: 1.1em;">
+                  <li style="margin-bottom:15px; font-size: 1.1em; break-inside: avoid;">
                       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:5px;">
                           <span style="background:#4f46e5;color:white;font-weight:800;font-size:11px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${idx+1}</span>
                           <div>
@@ -12253,7 +13605,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               ${i.text_en ? `<span style="font-size:0.8em; color:#666; margin-left: 5px;">(${i.text_en})</span>` : ''}
                           </div>
                       </div>
-                      <textarea class="interactive-textarea" style="height: 60px;border-left:3px solid #4f46e5;" aria-label="${i.text}" placeholder="${t('common.complete_sentence')}">${savedVal}</textarea>
+                      ${inputHtml}
                   </li>`;
               }).join('')}</ul>`;
           } else {
@@ -12261,7 +13613,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               const filledText = text.replace(/\[.*?\]/g, (match) => {
                    const savedVal = responses[item.id]?.[`paragraph-${pIdx}`] || '';
                    pIdx++;
-                   return `<input aria-label="___________" type="text" class="interactive-blank" placeholder="___________" value="${savedVal}">`;
+                   return isWorksheet
+                       ? fillableBlank(150)
+                       : `<input aria-label="___________" type="text" class="interactive-blank" placeholder="___________" value="${savedVal}">`;
               });
               contentHtml = `
                   <div style="line-height: 2.5; border: 1px solid #ddd; padding: 20px; border-radius: 8px; background: #fafafa;">
@@ -12284,7 +13638,98 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               realWorld: item.data.realWorld
           }];
           const graphData = item.data.graphData;
-          const formatMath = (t) => `<span class="math-symbol">${processMathHTML(t)}</span>`;
+          // Build a screen-reader-speakable form of a LaTeX expression. The
+          // visual span class="math-symbol" produces stylized HTML (fractions,
+          // superscripts, etc.) that NVDA/JAWS would otherwise read character
+          // by character ("a 1 b" for "a over b"). Wrapping each math span in
+          // role="math" + aria-label="<spoken form>" gives screen readers a
+          // sentence to announce that matches the visual meaning.
+          //
+          // We don't generate full MathML markup — that'd be a 500-line lift
+          // for marginal gain over a well-formed aria-label. The label below
+          // converts the most common LaTeX operators to plain English.
+          const _latexToSpeakable = (raw) => {
+              if (raw == null || raw === '') return '';
+              let s = String(raw);
+              // Strip math-mode delimiters
+              s = s.replace(/^\$\$/, '').replace(/\$\$$/, '').replace(/^\$/, '').replace(/\$$/, '');
+              // Structural commands first (these contain other math)
+              s = s.replace(/\\frac\s*\{([^}]+)\}\s*\{([^}]+)\}/g, '$1 over $2');
+              s = s.replace(/\\sqrt\s*\[([^\]]+)\]\s*\{([^}]+)\}/g, '$1th root of $2');
+              s = s.replace(/\\sqrt\s*\{([^}]+)\}/g, 'square root of $1');
+              s = s.replace(/\\binom\s*\{([^}]+)\}\s*\{([^}]+)\}/g, '$1 choose $2');
+              s = s.replace(/\\overline\{([^}]+)\}/g, 'the negation of $1');
+              s = s.replace(/\\underline\{([^}]+)\}/g, '$1');
+              s = s.replace(/\\(text|textit|textrm|mathrm|operatorname|textbf|mathbf|mathit|mathbb)\{([^}]+)\}/g, '$2');
+              // Powers and subscripts (longest first so {^...{n}} is caught before {^n})
+              s = s.replace(/\^\{([^}]+)\}/g, ' to the power $1 ');
+              s = s.replace(/\^([0-9a-zA-Z+\-])/g, ' to the power $1 ');
+              s = s.replace(/_\{([^}]+)\}/g, ' sub $1 ');
+              s = s.replace(/_([0-9a-zA-Z])/g, ' sub $1 ');
+              // Big operators
+              s = s.replace(/\\sum/g, 'the sum of');
+              s = s.replace(/\\prod/g, 'the product of');
+              s = s.replace(/\\int/g, 'the integral of');
+              s = s.replace(/\\(iint|iiint)/g, 'the multiple integral of');
+              s = s.replace(/\\oint/g, 'the contour integral of');
+              s = s.replace(/\\lim/g, 'the limit of');
+              s = s.replace(/\\(min|max|sup|inf)/g, '$1 of');
+              // Comparison + arithmetic
+              const phraseMap = {
+                  'leq': 'less than or equal to', 'le': 'less than or equal to',
+                  'geq': 'greater than or equal to', 'ge': 'greater than or equal to',
+                  'neq': 'not equal to', 'ne': 'not equal to',
+                  'approx': 'approximately equal to', 'equiv': 'equivalent to',
+                  'cong': 'congruent to', 'sim': 'similar to', 'simeq': 'similar to',
+                  'propto': 'proportional to',
+                  'times': 'times', 'div': 'divided by', 'cdot': 'times',
+                  'pm': 'plus or minus', 'mp': 'minus or plus',
+                  'rightarrow': 'goes to', 'to': 'goes to',
+                  'Rightarrow': 'implies', 'Leftrightarrow': 'if and only if',
+                  'mapsto': 'maps to',
+                  'in': 'in', 'notin': 'not in', 'subset': 'a subset of', 'supset': 'a superset of',
+                  'subseteq': 'a subset of or equal to', 'cup': 'union', 'cap': 'intersection',
+                  'forall': 'for all', 'exists': 'there exists', 'nexists': 'there does not exist',
+                  'neg': 'not', 'lnot': 'not', 'land': 'and', 'lor': 'or',
+                  'wedge': 'and', 'vee': 'or',
+                  'infty': 'infinity', 'partial': 'partial', 'nabla': 'gradient of',
+                  'angle': 'angle', 'perp': 'perpendicular to', 'parallel': 'parallel to',
+                  'therefore': 'therefore', 'because': 'because',
+                  'ldots': 'and so on', 'cdots': 'and so on', 'dots': 'and so on',
+                  'prime': 'prime', 'degree': 'degrees',
+                  'sin': 'sine', 'cos': 'cosine', 'tan': 'tangent',
+                  'arcsin': 'arc sine', 'arccos': 'arc cosine', 'arctan': 'arc tangent',
+                  'log': 'log', 'ln': 'natural log', 'exp': 'e to the',
+                  // Greek letters keep their Greek names; screen readers handle these well.
+                  'alpha': 'alpha', 'beta': 'beta', 'gamma': 'gamma', 'delta': 'delta',
+                  'epsilon': 'epsilon', 'theta': 'theta', 'lambda': 'lambda', 'mu': 'mu',
+                  'pi': 'pi', 'rho': 'rho', 'sigma': 'sigma', 'tau': 'tau', 'phi': 'phi',
+                  'chi': 'chi', 'psi': 'psi', 'omega': 'omega',
+                  'Gamma': 'capital gamma', 'Delta': 'capital delta', 'Theta': 'capital theta',
+                  'Lambda': 'capital lambda', 'Sigma': 'capital sigma', 'Pi': 'capital pi',
+                  'Phi': 'capital phi', 'Psi': 'capital psi', 'Omega': 'capital omega',
+              };
+              const sortedKeys = Object.keys(phraseMap).sort((a, b) => b.length - a.length);
+              sortedKeys.forEach(cmd => {
+                  const re = new RegExp('\\\\' + cmd + '(?![a-zA-Z])', 'g');
+                  s = s.replace(re, ' ' + phraseMap[cmd] + ' ');
+              });
+              // Strip remaining LaTeX bookkeeping: backslashes, braces, &, \\
+              s = s.replace(/\\\\/g, ', ');
+              s = s.replace(/[{}\\]/g, ' ');
+              s = s.replace(/&/g, ' ');
+              // Operators in raw form become words
+              s = s.replace(/\+/g, ' plus ').replace(/(?<=[\d\w\)])\s*-\s*(?=[\d\w\(])/g, ' minus ').replace(/=/g, ' equals ');
+              // Collapse whitespace
+              s = s.replace(/\s+/g, ' ').trim();
+              // Quote-safe for HTML attribute
+              return s.replace(/"/g, '&quot;');
+          };
+          const formatMath = (t) => {
+              const speakable = _latexToSpeakable(t);
+              const labelAttr = speakable ? ` aria-label="${speakable}"` : '';
+              return `<span class="math-symbol" role="math"${labelAttr}>${processMathHTML(t)}</span>`;
+          };
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
@@ -12328,7 +13773,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                   </div>
                               ` : `
                                   <!-- Student Worksheet View -->
-                                  <div style="margin-left: 25px; min-height: 150px; border: 1px solid #cbd5e1; border-radius: 8px; background: white;"></div>
+                                  ${isWorksheet
+                                      ? `<div style="margin-left:25px; border:1px solid #cbd5e1; border-radius:8px; background:white; padding:14px 16px;">
+                                            ${ruledLines(4, 'Show your work:')}
+                                            <div style="margin-top:14px; display:flex; align-items:center; gap:10px;">
+                                                <span style="font-size:0.8em; text-transform:uppercase; font-weight:bold; color:#475569;">Answer:</span>
+                                                ${fillableBlank(180)}
+                                            </div>
+                                         </div>`
+                                      : `<div style="margin-left: 25px; min-height: 150px; border: 1px solid #cbd5e1; border-radius: 8px; background: white;"></div>`}
                               `}
                           </div>
                       `).join('')}
@@ -12338,6 +13791,60 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       } else if (item.type === 'timeline') {
           const rawItems = Array.isArray(item.data) ? item.data : (item.data?.items || []);
           const progression = (!Array.isArray(item.data) && item.data?.progressionLabel) || '';
+          const timelineMode = cfg.timelineDisplayMode || 'list';
+          if (timelineMode === 'cuttable-strips' && rawItems.length > 1) {
+              // Cuttable chronology strips: shuffled event cards students arrange
+              // in order. Answer key on a fresh page so teacher can withhold it.
+              // Indices stamped onto each strip so kids can reference them
+              // ("strip #3 goes after strip #1") and so teachers can call them out.
+              const stripsHtml = `
+                  <div role="list" aria-label="Timeline events to sequence" style="margin-top:8px;">
+                      ${rawItems.map((te, idx) => `
+                          <div role="listitem" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px dashed #94a3b8;border-radius:8px;margin-bottom:10px;background:white;break-inside:avoid;page-break-inside:avoid;">
+                              <div style="font-family:monospace;font-size:0.75em;color:#94a3b8;min-width:28px;" aria-hidden="true">✂ ${idx + 1}</div>
+                              ${te.image ? `<img src="${te.image}" alt="" style="width:60px;height:60px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;flex-shrink:0;" />` : ''}
+                              <div style="flex:1;font-size:1em;line-height:1.5;color:#1e293b;">
+                                  ${te.event}
+                                  ${te.event_en ? `<div style="color:#64748b;font-size:0.85em;margin-top:4px;font-style:italic;">${te.event_en}</div>` : ''}
+                              </div>
+                              <div style="border:1px solid #cbd5e1;border-radius:6px;padding:6px 10px;font-size:0.75em;color:#94a3b8;text-align:center;min-width:80px;background:#f8fafc;">date:<br/><span style="display:inline-block;border-bottom:1.5px solid #475569;height:1.2em;min-width:60px;margin-top:2px;"></span></div>
+                          </div>
+                      `).join('')}
+                  </div>
+              `;
+              // Sort chronologically for the answer key. We'd ideally parse dates,
+              // but timeline event dates can be free-form text ("late 1800s",
+              // "circa 1492 CE"), so we preserve the AI's original order as
+              // canonical — the AI generates timelines in chronological order
+              // by default.
+              const answerKeyHtml = `
+                  <div style="margin-top:28px;padding-top:20px;border-top:2px dashed #cbd5e1;break-inside:avoid;page-break-before:always;">
+                      <h3 style="margin:0 0 12px 0;font-size:1.05em;color:#334155;">Answer Key (teacher reference) — chronological order</h3>
+                      <ol style="margin:0;padding-left:28px;line-height:1.7;color:#475569;">
+                          ${rawItems.map((te) => `
+                              <li style="margin-bottom:8px;break-inside:avoid;">
+                                  <strong style="color:#4338ca;">${te.date}</strong> — ${te.event}
+                                  ${te.event_en ? ` <em style="color:#94a3b8;font-size:0.9em;">(${te.event_en})</em>` : ''}
+                              </li>
+                          `).join('')}
+                      </ol>
+                  </div>
+              `;
+              const instructionsHtml = `
+                  <div style="background:#fefce8;border-left:4px solid #eab308;padding:12px 16px;border-radius:4px;margin-bottom:20px;font-size:0.9em;color:#713f12;break-inside:avoid;page-break-inside:avoid;">
+                      <strong>How to use:</strong> Cut along the dashed lines to separate each event. Mix them up and have students arrange them in chronological order. Each strip has a blank line where students can fill in the date once they figure out the sequence.
+                  </div>
+              `;
+              return `
+                  <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+                      ${enhancedHeader}
+                      ${progression ? `<div style="display:inline-block;background:#4338ca;color:white;padding:4px 12px;border-radius:999px;font-size:0.85em;font-weight:700;margin-bottom:12px;">${progression}</div>` : ''}
+                      ${instructionsHtml}
+                      ${stripsHtml}
+                      ${answerKeyHtml}
+                  </div>
+              `;
+          }
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
@@ -12368,27 +13875,81 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const categories = item.data.categories || [];
           const sortItems = item.data.items || [];
           const catColors = ['#dc2626','#2563eb','#059669','#d97706','#7c3aed','#be185d','#0891b2','#ca8a04'];
-          return `
-              <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
-                  ${enhancedHeader}
-                  <div style="display: flex; flex-wrap: wrap; gap: 20px;" role="list">
+          const hasAnyImage = sortItems.some(ci => ci.image);
+
+          const categoryCardsHtml = `
+              <div class="alloflow-cs-categories" data-cs-section="${item.id}" style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;" role="list" aria-label="Sorting categories">
+                  ${categories.map((cat, catIdx) => {
+                      const catColor = catColors[catIdx % catColors.length];
+                      return `
+                          <div role="listitem" class="alloflow-cs-dropzone" data-category-id="${cat.id}" data-category-color="${catColor}" style="flex: 1; min-width: 160px; border: 2px solid ${catColor}; border-radius: 12px; background: ${catColor}11; padding: 14px 12px; text-align: center; break-inside: avoid; page-break-inside: avoid;">
+                              <div style="font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.05em; color: ${catColor}; font-weight: bold; margin-bottom: 4px;">Category</div>
+                              <div style="font-size: 1.05em; font-weight: bold; color: #1e293b;">${cat.label}</div>
+                              <div class="alloflow-cs-dropzone-target" data-dropzone-for="${cat.id}" style="margin-top: 10px; min-height: 36px; border: 2px dashed transparent; border-radius: 6px; transition: border-color 0.15s; display: none;"></div>
+                          </div>
+                      `;
+                  }).join('')}
+              </div>
+          `;
+
+          const instructionsHtml = `
+              <div style="background: #fefce8; border-left: 4px solid #eab308; padding: 12px 16px; border-radius: 4px; margin-bottom: 20px; font-size: 0.9em; color: #713f12; break-inside: avoid; page-break-inside: avoid;">
+                  <strong>How to use:</strong> Cut along the dashed lines to separate the strips. Mix them up and have students sort each strip into the matching category above.${hasAnyImage ? ' Strips with images give visual learners a non-text entry point.' : ''}
+              </div>
+          `;
+
+          const stripsHtml = `
+              <div role="list" aria-label="Sortable items" class="alloflow-cs-strips" data-cs-section="${item.id}">
+                  ${sortItems.map((ci, idx) => {
+                      const imageHtml = ci.image
+                          ? `<div style="flex-shrink: 0; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; background: #f8fafc; border-radius: 6px; overflow: hidden;"><img src="${ci.image}" alt="" style="max-width: 100%; max-height: 100%; object-fit: contain;"/></div>`
+                          : '';
+                      return `
+                          <div role="listitem" class="alloflow-cs-strip" data-strip-idx="${idx}" data-category-id="${ci.categoryId || ''}" style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 2px dashed #94a3b8; border-radius: 8px; margin-bottom: 10px; background: white; break-inside: avoid; page-break-inside: avoid;">
+                              <div style="font-family: monospace; font-size: 0.75em; color: #94a3b8; min-width: 28px;" aria-hidden="true">✂ ${idx + 1}</div>
+                              ${imageHtml}
+                              <div style="flex: 1; font-size: 1em; line-height: 1.5; color: #1e293b;">${ci.content}</div>
+                          </div>
+                      `;
+                  }).join('')}
+              </div>
+          `;
+
+          const answerKeyHtml = `
+              <div style="margin-top: 28px; padding-top: 20px; border-top: 2px dashed #cbd5e1; break-inside: avoid; page-break-before: always;">
+                  <h3 style="margin: 0 0 12px 0; font-size: 1.05em; color: #334155;">Answer Key (teacher reference)</h3>
+                  <div style="display: flex; flex-wrap: wrap; gap: 12px;">
                       ${categories.map((cat, catIdx) => {
                           const catItems = sortItems.filter(i => i.categoryId === cat.id);
                           const catColor = catColors[catIdx % catColors.length];
                           return `
-                              <div role="listitem" style="flex: 1; min-width: 200px; border: 2px solid ${catColor}33; border-radius: 12px; overflow: hidden;">
-                                  <h3 style="margin:0;font-size:1em;background:${catColor};color:white; padding: 10px; font-weight: bold; text-align: center;">
-                                      ${cat.label}
-                                  </h3>
-                                  <div style="padding: 10px;">
-                                      <ul style="margin: 0; padding-left: 8px; color: #475569; list-style: none;">
-                                          ${catItems.map(ci => `<li style="margin-bottom: 5px;">&#9744; ${ci.content}</li>`).join('')}
-                                      </ul>
-                                  </div>
+                              <div style="flex: 1; min-width: 200px; border: 1px solid ${catColor}55; border-radius: 6px; overflow: hidden; break-inside: avoid; page-break-inside: avoid;">
+                                  <div style="background: ${catColor}; color: white; font-size: 0.9em; font-weight: bold; padding: 8px 12px;">${cat.label}</div>
+                                  <ul style="margin: 0; padding: 10px 12px 10px 28px; color: #475569; font-size: 0.9em;">
+                                      ${catItems.map(ci => `<li style="margin-bottom: 4px;">${ci.content}</li>`).join('')}
+                                  </ul>
                               </div>
                           `;
                       }).join('')}
                   </div>
+              </div>
+          `;
+
+          const interactiveControlsHtml = (cfg.conceptSortInteractive !== false && !isWorksheet) ? `
+              <div class="alloflow-cs-controls" data-cs-section="${item.id}" style="display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 6px; align-items:center;">
+                  <button type="button" class="alloflow-cs-check-btn" style="padding:8px 16px; background:#4f46e5; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9em;">🎯 Check my sort</button>
+                  <button type="button" class="alloflow-cs-reset-btn" style="padding:8px 16px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-weight:600; cursor:pointer; font-size:0.85em;">↻ Reset</button>
+                  <div class="alloflow-cs-results" role="status" aria-live="polite" aria-atomic="true" style="font-size:0.95em; font-weight:700; color:#1e293b; margin-left:0.5rem;"></div>
+              </div>
+          ` : '';
+          return `
+              <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+                  ${enhancedHeader}
+                  ${instructionsHtml}
+                  ${categoryCardsHtml}
+                  ${interactiveControlsHtml}
+                  ${stripsHtml}
+                  ${answerKeyHtml}
               </div>
           `;
       } else if (item.type === 'dbq') {
@@ -12406,13 +13967,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           </div>
                           <div style="padding:16px;">
                               <div style="background:#fefce8;border-left:4px solid #eab308;padding:12px;border-radius:4px;margin-bottom:12px;font-size:0.95em;line-height:1.6;">${doc.excerpt || ''}</div>
-                              ${doc.sourcingQuestions?.length > 0 ? `<div style="margin-bottom:8px;"><strong style="color:#7c3aed;font-size:0.85em;">Sourcing Questions:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.sourcingQuestions.map(q => `<li style="margin-bottom:4px;">${q}</li>`).join('')}</ol></div>` : ''}
-                              ${doc.analysisQuestions?.length > 0 ? `<div><strong style="color:#2563eb;font-size:0.85em;">Analysis Questions:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.analysisQuestions.map(q => `<li style="margin-bottom:4px;">${q}</li>`).join('')}</ol></div>` : ''}
+                              ${doc.sourcingQuestions?.length > 0 ? `<div style="margin-bottom:8px;"><strong style="color:#7c3aed;font-size:0.85em;">Sourcing Questions:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.sourcingQuestions.map(q => `<li style="margin-bottom:4px;break-inside:avoid;">${q}${isWorksheet ? ruledLines(2) : ''}</li>`).join('')}</ol></div>` : ''}
+                              ${doc.analysisQuestions?.length > 0 ? `<div><strong style="color:#2563eb;font-size:0.85em;">Analysis Questions:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.analysisQuestions.map(q => `<li style="margin-bottom:4px;break-inside:avoid;">${q}${isWorksheet ? ruledLines(2) : ''}</li>`).join('')}</ol></div>` : ''}
                           </div>
                       </div>
                   `).join('')}
-                  ${item.data.synthesisPrompt ? `<div style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:8px;padding:20px;margin-bottom:20px;"><strong style="font-size:1.1em;color:#166534;">📝 Synthesis Essay Prompt:</strong><p style="margin-top:8px;font-size:1em;line-height:1.7;color:#1e293b;">${item.data.synthesisPrompt}</p></div>` : ''}
-                  ${rubric.length > 0 ? `<div style="margin-top:20px;"><strong>Rubric:</strong><table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:0.85em;"><tr><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f1f5f9;text-align:left;">Criteria</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fef2f2;text-align:center;">1</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fefce8;text-align:center;">2</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f0fdf4;text-align:center;">3</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#eff6ff;text-align:center;">4</th></tr>${rubric.map(r => `<tr><td style="border:1px solid #e2e8f0;padding:8px;font-weight:bold;">${r.criteria}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['1'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['2'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['3'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['4'] || ''}</td></tr>`).join('')}</table></div>` : ''}
+                  ${item.data.synthesisPrompt ? `<div style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:8px;padding:20px;margin-bottom:20px;break-inside:avoid;"><strong style="font-size:1.1em;color:#166534;">📝 Synthesis Essay Prompt:</strong><p style="margin-top:8px;font-size:1em;line-height:1.7;color:#1e293b;">${item.data.synthesisPrompt}</p>${isWorksheet ? `<div style="margin-top:16px;">${ruledLines(12, 'Your essay:')}</div>` : ''}</div>` : ''}
+                  ${rubric.length > 0 ? `<div class="alloflow-dbq-rubric-wrap" style="margin-top:20px;break-inside:avoid;"><strong>Rubric:</strong><style>.alloflow-dbq-rubric-wrap table{word-break:break-word;}@media (max-width:600px){.alloflow-dbq-rubric-wrap table{font-size:0.7em;}.alloflow-dbq-rubric-wrap th,.alloflow-dbq-rubric-wrap td{padding:4px !important;}}@media print{.alloflow-dbq-rubric-wrap table{font-size:0.72em;}.alloflow-dbq-rubric-wrap th,.alloflow-dbq-rubric-wrap td{padding:5px 6px !important;}}</style><table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:0.85em;table-layout:fixed;"><tr><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f1f5f9;text-align:left;width:22%;">Criteria</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fef2f2;text-align:center;">⭐ 1</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fefce8;text-align:center;">⭐⭐ 2</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f0fdf4;text-align:center;">⭐⭐⭐ 3</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#eff6ff;text-align:center;">⭐⭐⭐⭐ 4</th></tr>${rubric.map(r => `<tr><td style="border:1px solid #e2e8f0;padding:8px;font-weight:bold;">${r.criteria}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['1'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['2'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['3'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['4'] || ''}</td></tr>`).join('')}</table></div>` : ''}
                   ${item.data.teacherNotes ? `<div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;margin-top:16px;font-size:0.85em;color:#6b21a8;"><strong>Teacher Notes:</strong> ${item.data.teacherNotes}</div>` : ''}
               </div>
           `;
@@ -12447,12 +14008,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         <div style="font-size: 2em; font-weight: 900; color: #1e3a8a;">${metrics.wcpm}</div>
                     </div>
                 </div>
-                <!-- Audio Player -->
-                ${audioRecording ? `
+                <!-- Audio Player (omitted in worksheet/paper mode) -->
+                ${isWorksheet
+                    ? ''
+                    : (audioRecording ? `
                     <div style="margin-bottom: 20px; background: #f8fafc; padding: 10px; border-radius: 50px; border: 1px solid #e2e8f0;">
                         <audio controls src="data:${mimeType};base64,${audioRecording}" style="width: 100%;"></audio>
                     </div>
-                ` : '<p style="font-style:italic; color: #94a3b8;">No audio recording available.</p>'}
+                ` : '<p style="font-style:italic; color: #94a3b8;">No audio recording available.</p>')}
                 <!-- AI Feedback -->
                 <div style="background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fcd34d; margin-bottom: 20px; font-style: italic; color: #92400e;">
                     <strong>AI Feedback:</strong> "${feedback}"
@@ -12627,6 +14190,174 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       } else if (item.type === 'alignment-report') {
           if (!isTeacher) return '';
           const reports = item.data.reports || [];
+          // Plan O: render the comprehensive block in print/PDF/HTML exports too.
+          const comprehensiveHTML = (() => {
+              const comp = item.data.comprehensive;
+              if (!comp || !comp.overall || comp.overall.dimensionsEvaluated === 0) return '';
+              const o = comp.overall;
+              const score = typeof o.score === 'number' ? o.score : 0;
+              let bgColor, ringColor, textColor, tierLetter;
+              if (o.blockingIssues && o.blockingIssues.length > 0) { bgColor = '#fef2f2'; ringColor = '#dc2626'; textColor = '#991b1b'; tierLetter = '⚠'; }
+              else if (score >= 90) { bgColor = '#ecfdf5'; ringColor = '#059669'; textColor = '#065f46'; tierLetter = 'A'; }
+              else if (score >= 70) { bgColor = '#f7fee7'; ringColor = '#65a30d'; textColor = '#365314'; tierLetter = 'B'; }
+              else if (score >= 50) { bgColor = '#fffbeb'; ringColor = '#d97706'; textColor = '#92400e'; tierLetter = 'C'; }
+              else { bgColor = '#fef2f2'; ringColor = '#dc2626'; textColor = '#991b1b'; tierLetter = 'D'; }
+              const statusBadge = (status) => {
+                  const bg = status === 'Aligned' ? '#dcfce7' : status === 'Not Aligned' ? '#fee2e2' : '#fef3c7';
+                  const fg = status === 'Aligned' ? '#166534' : status === 'Not Aligned' ? '#991b1b' : '#92400e';
+                  return `<span style="font-size:0.7em; font-weight:700; text-transform:uppercase; padding:3px 8px; background:${bg}; color:${fg}; border-radius:4px; white-space:nowrap;">${status || 'N/A'}</span>`;
+              };
+              const labelMap = { vocabulary: 'Vocab', engagement: 'Engagement', accessibility: 'Access', udl: 'UDL', accuracy: 'Accuracy' };
+              const dimChips = ['vocabulary', 'engagement', 'accessibility', 'udl', 'accuracy'].map(dim => {
+                  const dimData = (o.dimensionScores || {})[dim];
+                  if (!dimData) return '';
+                  const pct = (o.perDimensionPercent || {})[dim] || 0;
+                  const chipBg = dimData.status === 'Aligned' ? '#dcfce7' : dimData.status === 'Not Aligned' ? '#fee2e2' : '#fef3c7';
+                  const chipFg = dimData.status === 'Aligned' ? '#166534' : dimData.status === 'Not Aligned' ? '#991b1b' : '#92400e';
+                  return `<span style="display:inline-block; margin:2px 4px 2px 0; padding:3px 10px; background:${chipBg}; color:${chipFg}; border-radius:999px; font-size:0.75em; font-weight:600;">${labelMap[dim] || dim} ${pct}%</span>`;
+              }).join('');
+              const banner = `
+                  <div style="background:${bgColor}; border:2px solid ${ringColor}; border-radius:12px; padding:16px; margin-bottom:20px; page-break-inside: avoid;">
+                      <div style="display:flex; align-items:center; gap:20px;">
+                          <div style="flex-shrink:0; width:84px; height:84px; border-radius:50%; border:6px solid ${ringColor}; display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:900; color:${textColor};" aria-label="Tier ${tierLetter}, score ${score}"><div style="font-size:1.55em; line-height:1;">${score}</div><div style="font-size:0.65em; letter-spacing:0.05em; opacity:0.8; margin-top:1px;">TIER ${tierLetter}</div></div>
+                          <div style="flex:1; min-width:0;">
+                              <div style="font-size:0.7em; font-weight:bold; text-transform:uppercase; letter-spacing:0.05em; color:${textColor}; opacity:0.7; margin-bottom:4px;">Curriculum Readiness Score</div>
+                              <div style="font-size:1.1em; font-weight:900; color:${textColor}; margin-bottom:8px;">${o.label || ''}</div>
+                              <div>${dimChips}</div>
+                              ${o.blockingIssues && o.blockingIssues.length > 0 ? `
+                                  <div style="margin-top:8px; padding:6px 8px; background:white; border:1px solid #fca5a5; border-radius:4px; font-size:0.8em;">
+                                      <strong style="color:#991b1b;">Blocking issues:</strong>
+                                      <ul style="margin:4px 0 0 18px; color:#991b1b;">
+                                          ${o.blockingIssues.map(b => `<li><strong>${b.dimension}:</strong> ${b.issue}</li>`).join('')}
+                                      </ul>
+                                  </div>` : ''}
+                          </div>
+                      </div>
+                      ${o.notes ? `<div style="margin-top:8px; font-size:0.75em; font-style:italic; color:${textColor}; opacity:0.65;">${o.notes}</div>` : ''}
+                  </div>`;
+              const recList = (items) => items && items.length ? `
+                  <div style="background:#fffbeb; border:1px solid #fde68a; padding:8px 10px; border-radius:6px; margin:8px 0; font-size:0.85em;">
+                      <strong style="color:#92400e;">Heuristic recommendations:</strong>
+                      <ul style="margin:4px 0 0 18px; color:#92400e;">${items.slice(0, 5).map(r => `<li>${r}</li>`).join('')}</ul>
+                  </div>` : '';
+              const llmBlock = (review, label) => review ? `
+                  <div style="background:#eef2ff; border:1px solid #c7d2fe; padding:8px 10px; border-radius:6px; margin:8px 0; font-size:0.85em; color:#3730a3;">
+                      <strong>${label} (AI):</strong>
+                      ${review.narrative ? `<p style="margin:4px 0;">${review.narrative}</p>` : ''}
+                      ${review.fixes && review.fixes.length ? `<div><em>Suggested fixes:</em><ul style="margin:4px 0 0 18px;">${review.fixes.slice(0, 5).map(f => `<li>${f}</li>`).join('')}</ul></div>` : ''}
+                  </div>` : '';
+              const v = comp.vocabulary;
+              const vocabHTML = v ? `
+                  <div style="border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:14px; background:white; page-break-inside: avoid;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                          <h4 style="margin:0; font-size:1em; color:#334155;">Vocabulary fit</h4>
+                          ${statusBadge(v.status)}
+                      </div>
+                      <table style="width:100%; font-size:0.85em; border-collapse:collapse; margin-bottom:8px;">
+                          <tr>
+                              <td style="padding:4px;"><strong>${v.totalWords}</strong> total words</td>
+                              <td style="padding:4px;"><strong>${v.tier2Count}</strong> Tier 2 (expected ~${v.expected && v.expected.tier2})</td>
+                              <td style="padding:4px;"><strong>${v.tier3Count}</strong> Tier 3 (expected ~${v.expected && v.expected.tier3})</td>
+                              <td style="padding:4px;"><strong>${v.glossaryTermsCount}</strong> glossary terms</td>
+                          </tr>
+                      </table>
+                      ${recList(v.recommendations)}
+                      ${llmBlock(v.llmReview, 'Literacy-coach review')}
+                      ${v.notes ? `<div style="font-size:0.75em; font-style:italic; color:#64748b;">${v.notes}</div>` : ''}
+                  </div>` : '';
+              const e = comp.engagement;
+              const engHTML = e ? `
+                  <div style="border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:14px; background:white; page-break-inside: avoid;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                          <h4 style="margin:0; font-size:1em; color:#334155;">Engagement variety</h4>
+                          ${statusBadge(e.status)}
+                      </div>
+                      <table style="width:100%; font-size:0.85em; border-collapse:collapse; margin-bottom:8px;">
+                          <tr>
+                              <td style="padding:4px;"><strong>${e.distinctTypeCount}</strong> distinct types</td>
+                              <td style="padding:4px;"><strong>${e.totalArtifacts}</strong> total artifacts</td>
+                              <td style="padding:4px;"><strong>${Math.round((e.diversityScore || 0) * 100)}%</strong> diversity</td>
+                              <td style="padding:4px;"><strong>${(e.multimodalCoverage && e.multimodalCoverage.present || []).length}/4</strong> modalities</td>
+                          </tr>
+                      </table>
+                      ${recList(e.recommendations)}
+                      ${llmBlock(e.llmReview, 'UDL + DOK review')}
+                      ${e.notes ? `<div style="font-size:0.75em; font-style:italic; color:#64748b;">${e.notes}</div>` : ''}
+                  </div>` : '';
+              const ax = comp.accessibility;
+              const accHTML = ax ? `
+                  <div style="border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:14px; background:white; page-break-inside: avoid;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                          <h4 style="margin:0; font-size:1em; color:#334155;">Content accessibility</h4>
+                          ${statusBadge(ax.status)}
+                      </div>
+                      <table style="width:100%; font-size:0.85em; border-collapse:collapse; margin-bottom:8px;">
+                          <tr>
+                              <td style="padding:4px;"><strong>${ax.totalImages}</strong> images</td>
+                              <td style="padding:4px;"><strong>${ax.altCoveragePct === null ? 'n/a' : ax.altCoveragePct + '%'}</strong> alt-text coverage</td>
+                              <td style="padding:4px;"><strong>${ax.colorOnlyCount}</strong> color-only refs</td>
+                              <td style="padding:4px;"><strong>${ax.longestUnbrokenPassage}</strong> longest passage (words)</td>
+                          </tr>
+                      </table>
+                      ${recList(ax.recommendations)}
+                      ${llmBlock(ax.llmReview, 'Accessibility-specialist review')}
+                      ${ax.notes ? `<div style="font-size:0.75em; font-style:italic; color:#64748b;">${ax.notes}</div>` : ''}
+                  </div>` : '';
+              const u = comp.udl;
+              const renderPillar = (pillar, pillarTitle) => pillar ? `
+                  <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:8px 10px; border-radius:6px; margin-bottom:6px; font-size:0.85em;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                          <strong>${pillarTitle}</strong>
+                          ${statusBadge(pillar.status)}
+                      </div>
+                      ${pillar.evidence ? `<div style="margin-bottom:2px;"><em>Evidence:</em> ${pillar.evidence}</div>` : ''}
+                      ${pillar.gaps ? `<div style="margin-bottom:2px;"><em>Gaps:</em> ${pillar.gaps}</div>` : ''}
+                      ${pillar.recommendation ? `<div><em>Recommendation:</em> ${pillar.recommendation}</div>` : ''}
+                  </div>` : '';
+              const udlHTML = u ? `
+                  <div style="border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:14px; background:white; page-break-inside: avoid;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                          <h4 style="margin:0; font-size:1em; color:#334155;">UDL principles (CAST Guidelines v3.0)</h4>
+                          ${statusBadge(u.status)}
+                      </div>
+                      ${renderPillar(u.representation, 'Representation')}
+                      ${renderPillar(u.engagement, 'Engagement')}
+                      ${renderPillar(u.actionExpression, 'Action & Expression')}
+                      ${u.overallNarrative ? `<div style="background:#eef2ff; border:1px solid #c7d2fe; padding:8px 10px; border-radius:6px; margin:8px 0; font-size:0.85em; color:#3730a3;"><strong>UDL synthesis (AI):</strong> ${u.overallNarrative}</div>` : ''}
+                      ${u.notes ? `<div style="font-size:0.75em; font-style:italic; color:#64748b;">${u.notes}</div>` : ''}
+                  </div>` : '';
+              const acc = comp.accuracy;
+              const accCounts = (acc && acc.accuracyRatingCounts) || { high: 0, medium: 0, low: 0 };
+              const accuracyHTML = acc ? `
+                  <div style="border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:14px; background:white; page-break-inside: avoid;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                          <h4 style="margin:0; font-size:1em; color:#334155;">Content accuracy</h4>
+                          ${statusBadge(acc.status)}
+                      </div>
+                      <table style="width:100%; font-size:0.85em; border-collapse:collapse; margin-bottom:8px;">
+                          <tr>
+                              <td style="padding:4px;"><strong>${acc.totalAnalyses}</strong> analyses</td>
+                              <td style="padding:4px;"><strong>${acc.totalVerifiedFacts}</strong> verified facts</td>
+                              <td style="padding:4px;"><strong>${acc.totalDiscrepancies}</strong> discrepancies</td>
+                              <td style="padding:4px;"><strong>${accCounts.high}H/${accCounts.medium}M/${accCounts.low}L</strong> rating mix</td>
+                          </tr>
+                      </table>
+                      ${recList(acc.recommendations)}
+                      ${llmBlock(acc.llmReview, 'Fact-checker review')}
+                      ${acc.notes ? `<div style="font-size:0.75em; font-style:italic; color:#64748b;">${acc.notes}</div>` : ''}
+                  </div>` : '';
+              return `
+                  <div style="margin-top:24px; padding-top:16px; border-top:3px solid #6366f1;">
+                      <h3 style="margin:0 0 4px 0; font-size:1.15em; color:#1e293b;">Comprehensive Curriculum Audit</h3>
+                      <p style="margin:0 0 12px 0; font-size:0.85em; color:#64748b;">Multi-dimensional analysis beyond standards alignment. Hybrid: deterministic computation + AI review.</p>
+                      ${banner}
+                      ${vocabHTML}
+                      ${engHTML}
+                      ${accHTML}
+                      ${udlHTML}
+                      ${accuracyHTML}
+                  </div>`;
+          })();
           return `
               <div class="section" id="${item.id}">
                   <div class="resource-header">${title} (${item.meta})</div>
@@ -12670,6 +14401,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           </div>
                       </div>
                   `).join('')}
+                  ${comprehensiveHTML}
               </div>
           `;
       }
@@ -12737,7 +14469,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   );
   const generateFullPackHTML = (historyItems, topic, isWorksheet = false, responses = {}, config = null) => {
       if (historyItems.length === 0) return `<p>${t('export_status.no_content')}</p>`;
-      const cfg = config || exportConfig;
+      const cfg = { ...(config || exportConfig), isWorksheet };
       const studentContent = historyItems.map(item => generateResourceHTML(item, false, responses, cfg)).join('');
       const teacherContent = cfg.includeTeacherKey ? historyItems.map(item => generateResourceHTML(item, true, responses, cfg)).join('') : '';
       const isRtl = isRtlLang(leveledTextLanguage);
@@ -12780,6 +14512,125 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             </div>
         </div>
       ` : '';
+      // ── Submission injection (Phase 1, May 11 2026) ──
+      // When the class has set up offline submissions (cfg.classPublicJwk is
+      // a JWK object), inject a "Save my work" button + inline encryption
+      // helper into the exported HTML. Students can complete offline, save
+      // an encrypted submission file, and the teacher batch-uploads to
+      // AlloFlow for AI grading. Disabled in worksheet (paper) mode because
+      // ruled-line worksheets are handed in physically — not as HTML.
+      const _hasSubmission = cfg.classPublicJwk && !isWorksheet;
+      const _submissionPublicKeyJson = _hasSubmission
+          ? `<script type="application/json" id="alloflow-class-public-key">${JSON.stringify(cfg.classPublicJwk).replace(/</g, '\\u003c')}</script>`
+          : '';
+      // INLINE_ENCRYPT_SCRIPT comes from window.AlloModules.SubmissionCrypto.
+      // Lazy lookup per feedback_iife_lazy_lookup.md — SubmissionCrypto loads
+      // separately and is not guaranteed at this module's IIFE-load time.
+      const _getInlineEncryptScript = () => {
+          const sc = (typeof window !== 'undefined' && window.AlloModules) ? window.AlloModules.SubmissionCrypto : null;
+          return (sc && typeof sc.INLINE_ENCRYPT_SCRIPT === 'string') ? sc.INLINE_ENCRYPT_SCRIPT : '';
+      };
+      const _submissionEncryptScript = _hasSubmission ? `<script>${_getInlineEncryptScript()}</script>` : '';
+      // Visible CTA inserted right before the footer.
+      const _submissionSaveButton = _hasSubmission ? `
+        <div id="alloflow-save-cta" style="margin:32px auto 16px;text-align:center;padding:20px;background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:12px;max-width:600px;break-inside:avoid;page-break-inside:avoid;">
+          <p style="margin:0 0 12px 0;font-size:1.05rem;color:#166534;font-weight:700;">Done with your work?</p>
+          <p style="margin:0 0 16px 0;font-size:0.9rem;color:#475569;">Click below to save an encrypted file with your answers. Send the downloaded file to your teacher.</p>
+          <button type="button" id="alloflow-save-submission-btn" style="padding:12px 28px;background:#16a34a;color:white;border:none;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:0 2px 6px rgba(22,163,74,0.3);">📝 Save my work</button>
+          <p style="margin:12px 0 0 0;font-size:0.75rem;color:#94a3b8;">🔐 Your responses are encrypted with your class key. Only your teacher can open the file.</p>
+        </div>
+      ` : '';
+      // Click handler — appended inside the existing DOMContentLoaded block.
+      // Reads ALL localStorage entries auto-saved by the existing textarea
+      // + interactive-blank scripts above, plus the current radio button
+      // state, encrypts the payload, and downloads as <nickname>-<doc>-<date>.alloflow.html.
+      const _submissionSaveHandler = _hasSubmission ? `
+                // ── Save submission button (Phase 1, 2026-05-11) ──
+                (function() {
+                    var btn = document.getElementById('alloflow-save-submission-btn');
+                    var keyEl = document.getElementById('alloflow-class-public-key');
+                    if (!btn || !keyEl) return;
+                    var publicJwk;
+                    try { publicJwk = JSON.parse(keyEl.textContent); }
+                    catch (e) { btn.disabled = true; btn.textContent = 'Save unavailable (key missing)'; return; }
+                    var _esc = function(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+                    var _collectResponses = function() {
+                        var out = {};
+                        var prefixes = ['allo-ta:' + _docKey + ':', 'allo-bx:' + _docKey + ':'];
+                        try {
+                            for (var i = 0; i < localStorage.length; i++) {
+                                var k = localStorage.key(i);
+                                if (!k) continue;
+                                for (var p = 0; p < prefixes.length; p++) {
+                                    if (k.indexOf(prefixes[p]) === 0) {
+                                        out[k] = localStorage.getItem(k);
+                                        break;
+                                    }
+                                }
+                            }
+                        } catch (e) { /* private mode */ }
+                        // Radio MCQ selections (not auto-saved, captured live)
+                        document.querySelectorAll('.question[data-correct]').forEach(function(q, idx) {
+                            var checked = q.querySelector('input[type="radio"]:checked');
+                            if (checked) {
+                                var name = checked.getAttribute('name') || ('q' + idx);
+                                out['allo-mcq:' + name] = checked.value;
+                            }
+                        });
+                        return out;
+                    };
+                    btn.addEventListener('click', async function() {
+                        if (typeof window.__alloflowEncryptSubmission !== 'function') {
+                            alert('Encryption not available in this browser. You may need a more modern browser to save submissions.');
+                            return;
+                        }
+                        var urlParams = new URLSearchParams(window.location.search);
+                        var nicknameFromUrl = urlParams.get('nickname');
+                        var nickname = nicknameFromUrl || prompt('Enter your name or nickname so your teacher knows this is yours:');
+                        if (!nickname) return;
+                        nickname = String(nickname).trim().slice(0, 60);
+                        if (!nickname) return;
+                        btn.disabled = true; btn.textContent = 'Saving…';
+                        try {
+                            var payload = {
+                                nickname: nickname,
+                                docTitle: document.title || 'Worksheet',
+                                timestamp: new Date().toISOString(),
+                                responses: _collectResponses(),
+                                schemaVersion: 1
+                            };
+                            var encrypted = await window.__alloflowEncryptSubmission(payload, publicJwk);
+                            var fileJson = {
+                                schemaVersion: 1,
+                                nickname: payload.nickname,
+                                docTitle: payload.docTitle,
+                                timestamp: payload.timestamp,
+                                wrappedKey: encrypted.wrappedKey,
+                                iv: encrypted.iv,
+                                ciphertext: encrypted.ciphertext
+                            };
+                            var subHtml = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Submission: ' + _esc(nickname) + ' — ' + _esc(payload.docTitle) + '</title><style>body{font-family:system-ui;max-width:600px;margin:3rem auto;padding:2rem;text-align:center;color:#334155}h1{color:#1e3a5f}.card{background:#f1f5f9;border-radius:12px;padding:24px;margin-top:24px}.tag{display:inline-block;background:#dbeafe;color:#1e40af;padding:4px 12px;border-radius:999px;font-size:0.85rem;font-weight:600}</style></head><body><h1>📝 Submission for ' + _esc(nickname) + '</h1><div class="card"><p><strong>Worksheet:</strong> ' + _esc(payload.docTitle) + '</p><p><strong>Saved:</strong> ' + new Date().toLocaleString() + '</p><p class="tag">🔐 Encrypted with class key</p><p style="font-size:0.85rem;color:#64748b;margin-top:16px;">This file contains the student\\'s encrypted responses. Open it in AlloFlow (Document Builder → Import submissions) with the matching class key file to decrypt.</p></div><' + 'script type="application/json" id="alloflow-submission">' + JSON.stringify(fileJson).replace(/</g, '\\\\u003c') + '<' + '/script></body></html>';
+                            var blob = new Blob([subHtml], { type: 'text/html;charset=utf-8' });
+                            var url2 = URL.createObjectURL(blob);
+                            var a = document.createElement('a');
+                            var safeName = nickname.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 40);
+                            var safeTitle = (payload.docTitle || 'worksheet').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 40);
+                            var dateStr = new Date().toISOString().slice(0, 10);
+                            a.href = url2;
+                            a.download = safeName + '-' + safeTitle + '-' + dateStr + '.alloflow.html';
+                            document.body.appendChild(a);
+                            a.click();
+                            setTimeout(function() { URL.revokeObjectURL(url2); if (a.parentNode) a.parentNode.removeChild(a); }, 200);
+                            btn.textContent = '✓ Saved — download started';
+                            setTimeout(function() { btn.disabled = false; btn.textContent = '📝 Save my work again'; }, 1500);
+                        } catch (e) {
+                            btn.disabled = false;
+                            btn.textContent = '📝 Save my work';
+                            alert('Could not save your work: ' + (e && e.message ? e.message : 'unknown error'));
+                        }
+                    });
+                })();
+      ` : '';
       const rawHtml = `
       <!DOCTYPE html>
       <html lang="${({'English':'en','Spanish':'es','French':'fr','German':'de','Italian':'it','Portuguese':'pt','Chinese':'zh','Japanese':'ja','Korean':'ko','Arabic':'ar','Russian':'ru','Hindi':'hi','Vietnamese':'vi','Haitian Creole':'ht','Somali':'so'})[currentUiLanguage] || 'en'}" dir="${direction}">
@@ -12788,6 +14639,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <title>${pageTitle}</title>
+        ${_submissionPublicKeyJson}
+        ${_submissionEncryptScript}
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Lexend:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap');
           ${exportFontImport}
@@ -12797,11 +14650,27 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .section { margin-bottom: 2rem; page-break-inside: avoid; background: ${theme.cardBg}; border-radius: 12px; padding: 1.5rem; border: 1px solid ${theme.cardBorder}; box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow: hidden; }
           .section > .resource-header + * { padding-top: 16px; }
           table { width: 100%; border-collapse: collapse; margin: 1rem 0; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
-          th, td { border: 1px solid ${theme.cardBorder}; padding: 0.7rem 1rem; text-align: ${textAlign}; }
+          /* Border bumped from 1px → 1.5px to clear WCAG 1.4.11 (3:1 non-text
+             contrast) on light card backgrounds — verified across Professional
+             and matchOriginal seeds. Prior 1px borders failed contrast on
+             the lightest extracted PDF palettes. */
+          th, td { border: 1.5px solid ${theme.cardBorder}; padding: 0.7rem 1rem; text-align: ${textAlign}; vertical-align: top; }
           th { background-color: ${theme.cardBg}; font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.04em; color: #475569; }
+          /* Sticky thead for long data tables in the interactive view. The
+             container's overflow:hidden is overridden inline only when
+             scrolling actually engages, so this doesn't break short tables. */
+          thead th { position: sticky; top: 0; z-index: 1; }
+          /* Row headers (<th scope="row">) get a distinct treatment so screen
+             readers and sighted users can both tell the first column is a
+             label, not data. Subtle left accent + slightly heavier text. */
+          tbody th[scope="row"] { background: ${theme.cardBg}; font-weight: 600; text-transform: none; letter-spacing: normal; font-size: 0.95rem; color: ${theme.headingColor}; border-left: 3px solid ${theme.accentColor}; text-align: ${textAlign}; }
           tbody tr:nth-child(even) { background-color: rgba(248,250,252,0.5); }
           tbody tr:hover { background-color: rgba(241,245,249,0.8); }
-          img { max-width: 100%; height: auto; border: 1px solid ${theme.cardBorder}; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+          /* Cap image height in the interactive view so a tall extracted
+             PDF image (e.g. a full-page scan) doesn't push everything else
+             off-screen on small displays. Print rules below remove the cap
+             so PDFs render images at full intended size. */
+          img { max-width: 100%; max-height: 90vh; height: auto; border: 1px solid ${theme.cardBorder}; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
           .math-symbol { font-family: "Times New Roman", serif; display: inline-block; }
           .math-fraction {
               display: inline-flex;
@@ -12885,18 +14754,54 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           a { text-decoration: underline; }
           @media (forced-colors: active) { .section { border: 2px solid CanvasText; } th { border: 1px solid CanvasText; } }
           @media print {
-            body { padding: 0.5in; margin: 0; font-size: 11pt; }
+            body { padding: 0.5in; margin: 0; font-size: 11.5pt; line-height: 1.5; }
+            /* Orphans/widows control — keeps a single word from being orphaned
+               on a new line at the top of a printed page, or stranded at the
+               bottom. Particularly important for dyslexic readers, who lose
+               the line they were on when widows/orphans break the visual
+               flow. CSS spec defaults are 2; bumping to 3 is a common
+               readability practice. */
+            p, li, blockquote { orphans: 3; widows: 3; }
+            /* Hyphenation lets long words wrap at hyphenation points instead
+               of overflowing or creating awkward gaps in justified text.
+               Latin-language docs only — non-Latin scripts ignore this. */
+            p, li, td, dd { hyphens: auto; -webkit-hyphens: auto; }
+            /* Keep headings with their following content so a heading at
+               the bottom of a page doesn't become an orphan above its body. */
+            h1, h2, h3, h4, h5, h6 { page-break-after: avoid; break-after: avoid; }
+            /* Avoid splitting figures and definition pairs across pages. */
+            figure, dl > div, dt + dd { page-break-inside: avoid; break-inside: avoid; }
+            /* Captions stay with their figure so the explanation never
+               orphans above its image on the next page. */
+            figcaption { page-break-before: avoid; break-before: avoid; }
+            /* Definition lists: keep dt + first dd together. CSS doesn't
+               have a direct selector for "term + first definition", so we
+               disallow page breaks immediately after dt and immediately
+               before dd to approximate the desired pairing. */
+            dt { page-break-after: avoid; break-after: avoid; }
+            dd { page-break-before: avoid; break-before: avoid; }
             .page-break { display: block; page-break-before: always; border: none; color: transparent; margin: 0; padding: 0; }
             .page-break:after { content: ""; }
             .section { page-break-inside: avoid; border: 1px solid #ccc; box-shadow: none; margin-bottom: 1.5rem; }
             .resource-header { background: #f5f5f5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .interactive-textarea { border: 1px solid #94a3b8; background-image: linear-gradient(#c0c0c0 1px, transparent 1px); break-inside: avoid; min-height: 100px; }
+            .allo-ta-counter { display: none; } /* counter is interactive-only */
             .interactive-blank { border-bottom: 1px solid #333; }
             .worksheet-header { border: none; padding: 0; margin-bottom: 30px; }
             .line { border-bottom: 1px solid #000; }
             .export-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            img { max-width: 100%; page-break-inside: avoid; }
+            /* Repeat thead on each printed page so column context isn't lost
+               when a long data table spans multiple pages. position:sticky is
+               a viewport concept that has no meaning in print, so disable it
+               there to avoid odd rendering in some browsers. */
+            thead { display: table-header-group; }
+            tbody { display: table-row-group; }
+            tfoot { display: table-footer-group; }
+            thead th { position: static; }
+            tr { page-break-inside: avoid; }
+            /* Print: drop the interactive max-height cap so PDFs print full-size. */
+            img { max-width: 100%; max-height: none; page-break-inside: avoid; }
             h1, h2, h3 { page-break-after: avoid; }
             audio { display: none; }
             a { color: inherit; text-decoration: none; }
@@ -12928,20 +14833,368 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           This document was generated with WCAG 2.1 AA compliance features: semantic HTML structure, proper heading hierarchy, table header scope, landmark regions, language attribute, logical reading order, and print-optimized layout. Created with AlloFlow.
         </div>
         </main>
+        ${_submissionSaveButton}
         <footer role="contentinfo" style="text-align:center;color:#94a3b8;font-size:0.8rem;margin-top:3rem;padding:24px 0;border-top:1px solid #e2e8f0;">
             <p style="margin:0;">${t('output.generated_via')} • <a href="https://Ko-fi.com/aaronpomeranz207" target="_blank" rel="noopener noreferrer" style="color:#94a3b8;text-decoration:underline;">${t('export.support_dev')}</a></p>
         </footer>
         <script>
             document.addEventListener('DOMContentLoaded', () => {
                 const textareas = document.querySelectorAll('.interactive-textarea');
-                textareas.forEach(tx => {
+                // Stable key prefix per document: title + a hash of body text length
+                // makes the autosave bucket unique to this resource without leaking
+                // across docs. Falls back to 'doc' if title is empty.
+                const _docKey = ((document.title || 'doc').slice(0, 40)) + '|' + (document.body.textContent || '').length;
+                // Hash a string to a short stable id for use in storage keys.
+                const _hash = (s) => {
+                    let h = 0; for (let i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
+                    return Math.abs(h).toString(36);
+                };
+                // Default soft cap. Honors any explicit maxlength on the textarea.
+                const _DEFAULT_MAX = 1500;
+                textareas.forEach((tx, idx) => {
+                    // ── Auto-resize (existing behavior) ──
                     tx.style.height = 'auto';
                     tx.style.height = (tx.scrollHeight > 120 ? tx.scrollHeight : 120) + 'px';
+                    // ── Build a stable storage key per textarea ──
+                    const labelKey = (tx.getAttribute('aria-label') || tx.getAttribute('placeholder') || ('ta' + idx)).slice(0, 80);
+                    const storageKey = 'allo-ta:' + _docKey + ':' + _hash(labelKey);
+                    // ── Restore prior value (autosave) ──
+                    try {
+                        const saved = localStorage.getItem(storageKey);
+                        if (saved && !tx.value) {
+                            tx.value = saved;
+                            tx.style.height = 'auto';
+                            tx.style.height = (tx.scrollHeight > 120 ? tx.scrollHeight : 120) + 'px';
+                        }
+                    } catch (e) { /* private mode / quota */ }
+                    // ── Character counter ──
+                    const max = parseInt(tx.getAttribute('maxlength') || '', 10) || _DEFAULT_MAX;
+                    if (!tx.getAttribute('maxlength')) tx.setAttribute('maxlength', String(max));
+                    const counter = document.createElement('div');
+                    counter.className = 'allo-ta-counter';
+                    counter.setAttribute('aria-live', 'polite');
+                    counter.style.cssText = 'font-size:11px;color:#64748b;text-align:right;margin-top:2px;font-variant-numeric:tabular-nums';
+                    const updateCounter = () => {
+                        const len = tx.value.length;
+                        const pct = len / max;
+                        counter.textContent = len + ' / ' + max + (len > 0 ? ' characters' : '');
+                        counter.style.color = pct > 0.9 ? '#dc2626' : pct > 0.75 ? '#ca8a04' : '#64748b';
+                    };
+                    tx.parentNode.insertBefore(counter, tx.nextSibling);
+                    updateCounter();
+                    // ── Debounced autosave on input ──
+                    let saveTimer = null;
                     tx.addEventListener('input', function() {
+                        // auto-resize
                         this.style.height = 'auto';
                         this.style.height = (this.scrollHeight) + 'px';
+                        updateCounter();
+                        // debounce save 400ms — feels instant but avoids a write per keystroke
+                        if (saveTimer) clearTimeout(saveTimer);
+                        saveTimer = setTimeout(() => {
+                            try {
+                                if (tx.value) localStorage.setItem(storageKey, tx.value);
+                                else localStorage.removeItem(storageKey);
+                            } catch (e) { /* swallow */ }
+                        }, 400);
                     });
                 });
+                // ── Quiz check-my-work + reset ──
+                // Walks every .question[data-correct] in each .quiz-box, compares
+                // the chosen radio's value to the data-correct index, and surfaces
+                // a per-question color cue + an aria-live result summary so screen
+                // readers also announce the score. Teachers see the answer key
+                // inline so this UI is only emitted for student-facing exports.
+                document.querySelectorAll('.quiz-box').forEach((quiz) => {
+                    const checkBtn = quiz.querySelector('.quiz-check-btn');
+                    const resetBtn = quiz.querySelector('.quiz-reset-btn');
+                    const resultsEl = quiz.querySelector('.quiz-results');
+                    if (!checkBtn || !resetBtn || !resultsEl) return;
+                    const questions = quiz.querySelectorAll('.question[data-correct]');
+                    const reset = () => {
+                        questions.forEach((q) => {
+                            q.style.borderLeft = '';
+                            q.style.paddingLeft = '';
+                            q.removeAttribute('aria-invalid');
+                            var existing = q.querySelector('.alloflow-quiz-glyph');
+                            if (existing) existing.remove();
+                        });
+                        resultsEl.textContent = '';
+                    };
+                    checkBtn.addEventListener('click', () => {
+                        let correct = 0;
+                        let wrong = 0;
+                        let skipped = 0;
+                        // Glyph fallback so meaning reads without color (WCAG 1.4.1).
+                        // We use a small absolute-positioned badge on each question.
+                        var _setQuizGlyph = function(q, kind) {
+                            var existing = q.querySelector('.alloflow-quiz-glyph');
+                            if (existing) existing.remove();
+                            if (!kind) return;
+                            var glyph = document.createElement('span');
+                            glyph.className = 'alloflow-quiz-glyph';
+                            glyph.setAttribute('aria-hidden', 'true');
+                            glyph.style.cssText = 'display:inline-block;margin-right:8px;font-weight:bold;font-size:1.1em;';
+                            if (kind === 'correct') { glyph.textContent = '✓'; glyph.style.color = '#16a34a'; }
+                            else if (kind === 'wrong') { glyph.textContent = '✗'; glyph.style.color = '#dc2626'; }
+                            else if (kind === 'skipped') { glyph.textContent = '○'; glyph.style.color = '#94a3b8'; }
+                            q.insertBefore(glyph, q.firstChild);
+                        };
+                        questions.forEach((q) => {
+                            const target = parseInt(q.getAttribute('data-correct'), 10);
+                            const checked = q.querySelector('input[type="radio"]:checked');
+                            // Reset prior state first so re-clicking Check redraws cleanly.
+                            q.style.paddingLeft = '0.6rem';
+                            if (!checked) {
+                                q.style.borderLeft = '4px solid #94a3b8';
+                                q.removeAttribute('aria-invalid');
+                                _setQuizGlyph(q, 'skipped');
+                                skipped++;
+                            } else if (parseInt(checked.value, 10) === target) {
+                                q.style.borderLeft = '4px solid #16a34a';
+                                q.removeAttribute('aria-invalid');
+                                _setQuizGlyph(q, 'correct');
+                                correct++;
+                            } else {
+                                q.style.borderLeft = '4px solid #dc2626';
+                                q.setAttribute('aria-invalid', 'true');
+                                _setQuizGlyph(q, 'wrong');
+                                wrong++;
+                            }
+                        });
+                        const total = questions.length;
+                        const parts = [correct + ' of ' + total + ' correct'];
+                        if (wrong > 0) parts.push(wrong + ' to review');
+                        if (skipped > 0) parts.push(skipped + ' unanswered');
+                        resultsEl.textContent = parts.join(' · ');
+                    });
+                    resetBtn.addEventListener('click', () => {
+                        // Also clear the chosen radios so the student can retry honestly.
+                        quiz.querySelectorAll('input[type="radio"]:checked').forEach((r) => { r.checked = false; });
+                        reset();
+                    });
+                });
+                // ── Same behavior for fill-in-the-blank inputs ──
+                document.querySelectorAll('.interactive-blank').forEach((bx, idx) => {
+                    const labelKey = (bx.getAttribute('aria-label') || bx.getAttribute('placeholder') || ('bx' + idx)).slice(0, 80);
+                    const storageKey = 'allo-bx:' + _docKey + ':' + _hash(labelKey);
+                    try {
+                        const saved = localStorage.getItem(storageKey);
+                        if (saved && !bx.value) bx.value = saved;
+                    } catch (e) {}
+                    let saveTimer = null;
+                    bx.addEventListener('input', function() {
+                        if (saveTimer) clearTimeout(saveTimer);
+                        saveTimer = setTimeout(() => {
+                            try {
+                                if (bx.value) localStorage.setItem(storageKey, bx.value);
+                                else localStorage.removeItem(storageKey);
+                            } catch (e) {}
+                        }, 400);
+                    });
+                });
+                // ── Glossary flash-card interactions (May 11 2026) ──
+                // Hide each card's back by default, reveal on click. Master
+                // Show all / Hide all / Shuffle act on the grid. Print uses
+                // @media print to force backs visible so paper output still
+                // shows both sides for fold-and-cut use.
+                (function() {
+                    var cards = document.querySelectorAll('.alloflow-glossary-card');
+                    if (cards.length === 0) return;
+                    var BACK_HIDDEN_CLASS = 'alloflow-glossary-back-hidden';
+                    var styleEl = document.createElement('style');
+                    styleEl.textContent =
+                        '.' + BACK_HIDDEN_CLASS + ' .alloflow-glossary-card-back { display: none; }' +
+                        '.alloflow-glossary-card { cursor: pointer; transition: box-shadow 0.15s; }' +
+                        '.alloflow-glossary-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }' +
+                        '@media print {' +
+                        '  .' + BACK_HIDDEN_CLASS + ' .alloflow-glossary-card-back { display: block !important; }' +
+                        '  .alloflow-glossary-show-all, .alloflow-glossary-hide-all, .alloflow-glossary-shuffle { display: none !important; }' +
+                        '}';
+                    document.head.appendChild(styleEl);
+                    cards.forEach(function(c) {
+                        c.classList.add(BACK_HIDDEN_CLASS);
+                        c.setAttribute('tabindex', '0');
+                        c.setAttribute('role', 'button');
+                        c.setAttribute('aria-pressed', 'false');
+                        var toggle = function() {
+                            var hidden = c.classList.toggle(BACK_HIDDEN_CLASS);
+                            c.setAttribute('aria-pressed', hidden ? 'false' : 'true');
+                        };
+                        c.addEventListener('click', toggle);
+                        c.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+                        });
+                    });
+                    var showBtn = document.querySelector('.alloflow-glossary-show-all');
+                    var hideBtn = document.querySelector('.alloflow-glossary-hide-all');
+                    var shufBtn = document.querySelector('.alloflow-glossary-shuffle');
+                    if (showBtn) showBtn.addEventListener('click', function() {
+                        cards.forEach(function(c) { c.classList.remove(BACK_HIDDEN_CLASS); c.setAttribute('aria-pressed', 'true'); });
+                    });
+                    if (hideBtn) hideBtn.addEventListener('click', function() {
+                        cards.forEach(function(c) { c.classList.add(BACK_HIDDEN_CLASS); c.setAttribute('aria-pressed', 'false'); });
+                    });
+                    if (shufBtn) shufBtn.addEventListener('click', function() {
+                        var grid = cards[0].parentNode;
+                        var nodes = Array.prototype.slice.call(grid.children);
+                        for (var i = nodes.length - 1; i > 0; i--) {
+                            var j = Math.floor(Math.random() * (i + 1));
+                            grid.insertBefore(nodes[i], nodes[j]);
+                            var tmp = nodes[i]; nodes[i] = nodes[j]; nodes[j] = tmp;
+                        }
+                        cards.forEach(function(c) { c.classList.add(BACK_HIDDEN_CLASS); c.setAttribute('aria-pressed', 'false'); });
+                    });
+                })();
+                // ── Concept-sort tap-to-place interaction (May 11 2026) ──
+                // Each section with .alloflow-cs-strips gets:
+                //   1. Click on a strip to select it (visual highlight).
+                //   2. Click on a category dropzone to place the selected strip there.
+                //   3. Strips in the original list pool show subtle hover affordance.
+                //   4. Check button compares each strip's data-category-id to where
+                //      it currently sits (still in pool or in a target) and marks
+                //      correct/wrong/skipped. Reset returns all strips to the pool.
+                // Tap-to-place chosen over native drag-and-drop because it works
+                // identically on desktop and touch (common school iPads/Chromebooks).
+                (function() {
+                    var sections = document.querySelectorAll('.alloflow-cs-controls');
+                    if (sections.length === 0) return;
+                    var csStyle = document.createElement('style');
+                    csStyle.textContent =
+                        '.alloflow-cs-strip { cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }' +
+                        '.alloflow-cs-strip:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }' +
+                        '.alloflow-cs-strip.alloflow-cs-selected { border-color: #4f46e5 !important; background: #eef2ff !important; box-shadow: 0 0 0 3px #c7d2fe; }' +
+                        '.alloflow-cs-dropzone { cursor: pointer; transition: background 0.15s; }' +
+                        '.alloflow-cs-dropzone.alloflow-cs-droptarget { background: rgba(79,70,229,0.08) !important; }' +
+                        '.alloflow-cs-dropzone-target.alloflow-cs-has-strips { display: block !important; border-color: rgba(148,163,184,0.3) !important; }' +
+                        '.alloflow-cs-strip.alloflow-cs-correct { border-color: #16a34a !important; background: #f0fdf4 !important; }' +
+                        '.alloflow-cs-strip.alloflow-cs-wrong { border-color: #dc2626 !important; background: #fef2f2 !important; }' +
+                        '@media print {' +
+                        '  .alloflow-cs-controls { display: none !important; }' +
+                        '  .alloflow-cs-dropzone-target { display: none !important; }' +
+                        '}';
+                    document.head.appendChild(csStyle);
+                    sections.forEach(function(ctrl) {
+                        var sectionId = ctrl.getAttribute('data-cs-section');
+                        var stripsContainer = document.querySelector('.alloflow-cs-strips[data-cs-section="' + sectionId + '"]');
+                        var categoriesContainer = document.querySelector('.alloflow-cs-categories[data-cs-section="' + sectionId + '"]');
+                        var checkBtn = ctrl.querySelector('.alloflow-cs-check-btn');
+                        var resetBtn = ctrl.querySelector('.alloflow-cs-reset-btn');
+                        var resultsEl = ctrl.querySelector('.alloflow-cs-results');
+                        if (!stripsContainer || !categoriesContainer || !checkBtn || !resetBtn) return;
+                        var selectedStrip = null;
+                        var clearSelection = function() {
+                            if (selectedStrip) { selectedStrip.classList.remove('alloflow-cs-selected'); selectedStrip.setAttribute('aria-pressed', 'false'); }
+                            selectedStrip = null;
+                            categoriesContainer.querySelectorAll('.alloflow-cs-dropzone').forEach(function(z) { z.classList.remove('alloflow-cs-droptarget'); });
+                        };
+                        var clearMarks = function() {
+                            stripsContainer.querySelectorAll('.alloflow-cs-strip').forEach(function(s) { s.classList.remove('alloflow-cs-correct', 'alloflow-cs-wrong'); });
+                            categoriesContainer.querySelectorAll('.alloflow-cs-strip').forEach(function(s) { s.classList.remove('alloflow-cs-correct', 'alloflow-cs-wrong'); });
+                        };
+                        // Wire each strip
+                        var allStrips = function() {
+                            return Array.prototype.slice.call(document.querySelectorAll(
+                                '.alloflow-cs-strips[data-cs-section="' + sectionId + '"] .alloflow-cs-strip, ' +
+                                '.alloflow-cs-categories[data-cs-section="' + sectionId + '"] .alloflow-cs-strip'
+                            ));
+                        };
+                        var wireStrip = function(s) {
+                            s.setAttribute('role', 'button');
+                            s.setAttribute('tabindex', '0');
+                            s.setAttribute('aria-pressed', 'false');
+                            var pick = function() {
+                                clearMarks();
+                                if (selectedStrip === s) { clearSelection(); return; }
+                                clearSelection();
+                                selectedStrip = s;
+                                s.classList.add('alloflow-cs-selected');
+                                s.setAttribute('aria-pressed', 'true');
+                                categoriesContainer.querySelectorAll('.alloflow-cs-dropzone').forEach(function(z) { z.classList.add('alloflow-cs-droptarget'); });
+                            };
+                            s.addEventListener('click', pick);
+                            s.addEventListener('keydown', function(e) {
+                                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); }
+                            });
+                        };
+                        stripsContainer.querySelectorAll('.alloflow-cs-strip').forEach(wireStrip);
+                        // Wire each dropzone
+                        categoriesContainer.querySelectorAll('.alloflow-cs-dropzone').forEach(function(z) {
+                            var target = z.querySelector('.alloflow-cs-dropzone-target');
+                            if (!target) return;
+                            z.addEventListener('click', function(e) {
+                                if (e.target.closest('.alloflow-cs-strip')) return;
+                                if (!selectedStrip) return;
+                                target.appendChild(selectedStrip);
+                                target.classList.add('alloflow-cs-has-strips');
+                                clearSelection();
+                            });
+                        });
+                        checkBtn.addEventListener('click', function() {
+                            clearMarks();
+                            var correct = 0, wrong = 0, skipped = 0;
+                            allStrips().forEach(function(s) {
+                                var target = s.parentNode;
+                                var dropzone = target.classList && target.classList.contains('alloflow-cs-dropzone-target')
+                                    ? target.getAttribute('data-dropzone-for')
+                                    : null;
+                                var expected = s.getAttribute('data-category-id') || '';
+                                if (!dropzone) { skipped++; return; }
+                                if (dropzone === expected) { s.classList.add('alloflow-cs-correct'); correct++; }
+                                else { s.classList.add('alloflow-cs-wrong'); wrong++; }
+                            });
+                            var total = correct + wrong + skipped;
+                            var parts = [correct + ' of ' + total + ' correct'];
+                            if (wrong > 0) parts.push(wrong + ' to review');
+                            if (skipped > 0) parts.push(skipped + ' unsorted');
+                            resultsEl.textContent = parts.join(' · ');
+                        });
+                        resetBtn.addEventListener('click', function() {
+                            clearMarks();
+                            // Move all strips back to the original strips container.
+                            // Preserve original strip-idx ordering for fairness.
+                            allStrips().forEach(function(s) {
+                                if (s.parentNode !== stripsContainer) {
+                                    var target = s.parentNode;
+                                    stripsContainer.appendChild(s);
+                                    if (target.classList && target.classList.contains('alloflow-cs-dropzone-target') &&
+                                        !target.querySelector('.alloflow-cs-strip')) {
+                                        target.classList.remove('alloflow-cs-has-strips');
+                                    }
+                                }
+                            });
+                            // Sort strips by data-strip-idx
+                            var pool = Array.prototype.slice.call(stripsContainer.querySelectorAll('.alloflow-cs-strip'));
+                            pool.sort(function(a, b) {
+                                return parseInt(a.getAttribute('data-strip-idx') || '0', 10) - parseInt(b.getAttribute('data-strip-idx') || '0', 10);
+                            });
+                            pool.forEach(function(s) { stripsContainer.appendChild(s); });
+                            clearSelection();
+                            resultsEl.textContent = '';
+                        });
+                    });
+                })();
+                // ── Brainstorm mind-map spoke expand/collapse (May 11 2026) ──
+                (function() {
+                    var spokes = document.querySelectorAll('.alloflow-mindmap-spoke[data-spoke-idx]');
+                    if (spokes.length === 0) return;
+                    spokes.forEach(function(s) {
+                        var detail = s.querySelector('.alloflow-mindmap-detail');
+                        if (!detail) return;
+                        s.setAttribute('role', 'button');
+                        s.setAttribute('aria-pressed', 'false');
+                        var toggle = function() {
+                            var isOpen = detail.style.display !== 'none';
+                            detail.style.display = isOpen ? 'none' : 'block';
+                            s.setAttribute('aria-pressed', isOpen ? 'false' : 'true');
+                        };
+                        s.addEventListener('click', toggle);
+                        s.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+                        });
+                    });
+                })();
+                ${_submissionSaveHandler}
             });
         </script>
       </body>
@@ -12998,6 +15251,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     proceedWithPdfTransform: _wrapAsync(proceedWithPdfTransform),
     parseAuditJson: _wrap(parseAuditJson),
     remediateSurgicallyThenAI: _wrapAsync(remediateSurgicallyThenAI),
+    downloadBatchResults: _wrapAsync(downloadBatchResults),
   };
 };
 

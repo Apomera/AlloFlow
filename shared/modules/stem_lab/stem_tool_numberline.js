@@ -14,6 +14,15 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-numberline')) return;
@@ -452,7 +461,7 @@ window.StemLab = window.StemLab || {
                   h('input', {
                     type: 'number', value: range.min,
                     onChange: function(e) { upd({ range: { min: parseInt(e.target.value) || 0, max: range.max } }); },
-                    className: 'w-full px-3 py-1.5 text-sm border border-blue-200 rounded-lg'
+                    className: 'w-full px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
                   })
                 ),
                 h('div', { className: 'bg-blue-50 rounded-lg p-3 border border-blue-100' },
@@ -460,18 +469,17 @@ window.StemLab = window.StemLab || {
                   h('input', {
                     type: 'number', value: range.max,
                     onChange: function(e) { upd({ range: { min: range.min, max: parseInt(e.target.value) || 20 } }); },
-                    className: 'w-full px-3 py-1.5 text-sm border border-blue-200 rounded-lg'
+                    className: 'w-full px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
                   })
                 )
               ),
               // Quick range presets
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Presets:'),
+              h('div', { className: 'flex flex-wrap gap-1.5' },
+                h('span', { className: 'text-[11px] font-bold text-slate-600 self-center' }, 'Presets:'),
                 [[0, 10], [0, 20], [0, 100], [-10, 10], [-20, 20], [0, 1000]].map(function(pr) {
-                  return h('button', { 'aria-label': 'Sfx Click',
-                    key: pr.join('-'),
+                  return h('button', { key: pr.join('-'),
                     onClick: function() { sfxClick(); upd({ range: { min: pr[0], max: pr[1] } }); },
-                    className: 'px-2 py-1 rounded-lg text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all'
+                    className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-600 hover:bg-blue-100 transition-all'
                   }, pr[0] + ' to ' + pr[1]);
                 })
               ),
@@ -480,19 +488,19 @@ window.StemLab = window.StemLab || {
                 renderNumberLine(range, null, null)
               ),
               // Add marker
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 items-center' },
+              h('div', { className: 'flex gap-2 items-center' },
                 h('input', {
                   type: 'number', id: 'nlMarkerVal', min: range.min, max: range.max,
                   placeholder: 'Value',
                   'aria-label': 'Marker value',
-                  className: 'w-24 px-3 py-1.5 text-sm border border-blue-200 rounded-lg'
+                  className: 'w-24 px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
                 }),
                 h('input', {
                   type: 'text', id: 'nlMarkerLabel', placeholder: 'Label (optional)',
                   'aria-label': 'Marker label',
-                  className: 'flex-1 px-3 py-1.5 text-sm border border-blue-200 rounded-lg'
+                  className: 'flex-1 px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
                 }),
-                h('input', { type: 'color', id: 'nlMarkerColor', defaultValue: '#ef4444', 'aria-label': 'Marker color', className: 'w-8 h-8 rounded cursor-pointer' }),
+                h('input', { type: 'color', id: 'nlMarkerColor', defaultValue: '#ef4444', className: 'w-8 h-8 rounded cursor-pointer' }),
                 h('button', { 'aria-label': '+ Add',
                   onClick: function() {
                     var valEl = document.getElementById('nlMarkerVal');
@@ -518,27 +526,26 @@ window.StemLab = window.StemLab || {
 
           // ═══ TAB: CHALLENGES ═══
           var renderChallenges = function() {
-            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
+            return h('div', { className: 'space-y-4' },
               // Number line (with challenge arrow)
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border-2 border-blue-200 p-6 flex flex-col items-center' },
+              h('div', { className: 'bg-white rounded-xl border-2 border-blue-200 p-6 flex flex-col items-center' },
                 renderNumberLine(range, challenge ? challenge._arrowValue : null, null)
               ),
               // Challenge section
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-blue-50 rounded-xl p-4 border border-blue-200 space-y-3' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between' },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
+              h('div', { className: 'bg-blue-50 rounded-xl p-4 border border-blue-200 space-y-3' },
+                h('div', { className: 'flex items-center justify-between' },
+                  h('div', { className: 'flex items-center gap-2' },
                     h('h4', { className: 'text-sm font-bold text-blue-800' }, '\uD83C\uDFAF Number Line Challenge'),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-0.5 ml-2' },
+                    h('div', { className: 'flex gap-0.5 ml-2' },
                       ['easy', 'medium', 'hard'].map(function(d) {
-                        return h('button', { 'aria-label': 'Sfx Click',
-                          key: d, onClick: function() { sfxClick(); upd({ difficulty: d }); },
+                        return h('button', { key: d, onClick: function() { sfxClick(); upd({ difficulty: d }); },
                           className: 'text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
-                            (difficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-blue-700 text-white') : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+                            (difficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-blue-700 text-white') : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
                         }, d);
                       })
                     )
                   ),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-slate-500' }, Object.keys(challengeTypesUsed).length + '/6 types')
+                  h('span', { className: 'text-[11px] text-slate-600' }, Object.keys(challengeTypesUsed).length + '/6 types')
                 ),
 
                 !challenge
@@ -559,8 +566,8 @@ window.StemLab = window.StemLab || {
                           onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkAnswer(); },
                           placeholder: 'Your answer',
                           'aria-label': 'Challenge answer',
-                          className: 'flex-1 px-3 py-2 border border-blue-300 rounded-lg text-sm font-mono'
-                        }) : h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 text-sm font-bold text-amber-600 px-2' }, 'Click the number line above to place a marker.'),
+                          className: 'flex-1 px-3 py-2 border border-blue-600 rounded-lg text-sm font-mono'
+                        }) : h('div', { className: 'flex-1 text-sm font-bold text-amber-600 px-2' }, 'Click the number line above to place a marker.'),
                         h('button', { 'aria-label': 'Check Answer',
                           onClick: checkAnswer,
                           disabled: challenge.type === 'place' && !answer,
@@ -596,7 +603,7 @@ window.StemLab = window.StemLab || {
                   h('input', {
                     type: 'number', min: 1, max: 100, value: skipBy,
                     onChange: function(e) { upd({ skipBy: Math.max(1, parseInt(e.target.value) || 1) }); },
-                    className: 'w-full px-3 py-1.5 text-sm border border-violet-200 rounded-lg text-center font-bold'
+                    className: 'w-full px-3 py-1.5 text-sm border border-violet-600 rounded-lg text-center font-bold'
                   })
                 ),
                 h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-100' },
@@ -604,7 +611,7 @@ window.StemLab = window.StemLab || {
                   h('input', {
                     type: 'number', value: skipFrom,
                     onChange: function(e) { upd({ skipFrom: parseInt(e.target.value) || 0 }); },
-                    className: 'w-full px-3 py-1.5 text-sm border border-violet-200 rounded-lg text-center font-bold'
+                    className: 'w-full px-3 py-1.5 text-sm border border-violet-600 rounded-lg text-center font-bold'
                   })
                 ),
                 h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-100' },
@@ -612,19 +619,18 @@ window.StemLab = window.StemLab || {
                   h('input', {
                     type: 'number', min: 2, max: 20, value: skipCount,
                     onChange: function(e) { upd({ skipCount: Math.max(2, Math.min(20, parseInt(e.target.value) || 8)) }); },
-                    className: 'w-full px-3 py-1.5 text-sm border border-violet-200 rounded-lg text-center font-bold'
+                    className: 'w-full px-3 py-1.5 text-sm border border-violet-600 rounded-lg text-center font-bold'
                   })
                 )
               ),
               // Quick skip presets
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-slate-500 self-center' }, 'Count by:'),
+              h('div', { className: 'flex flex-wrap gap-1.5' },
+                h('span', { className: 'text-[11px] font-bold text-slate-600 self-center' }, 'Count by:'),
                 [2, 3, 5, 10, 25, 100].map(function(s) {
-                  return h('button', { 'aria-label': 'Sfx Click',
-                    key: s,
+                  return h('button', { key: s,
                     onClick: function() { sfxClick(); upd({ skipBy: s, skipFrom: 0, skipCount: 8 }); },
                     className: 'px-3 py-1 rounded-lg text-xs font-bold ' +
-                      (skipBy === s ? 'bg-violet-600 text-white' : 'bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100') + ' transition-all'
+                      (skipBy === s ? 'bg-violet-600 text-white' : 'bg-violet-50 text-violet-700 border border-violet-600 hover:bg-violet-100') + ' transition-all'
                   }, '' + s + 's');
                 })
               ),
@@ -642,8 +648,8 @@ window.StemLab = window.StemLab || {
                       className: 'px-3 py-2 rounded-lg border text-center transition-all ' +
                         (i === 0 ? 'bg-violet-200 border-violet-400 shadow-sm' : 'bg-white border-violet-200 hover:bg-violet-50')
                     },
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm font-bold ' + (i === 0 ? 'text-violet-800' : 'text-violet-700') }, val),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-violet-400 block' }, i === 0 ? 'start' : '+' + skipBy)
+                      h('span', { className: 'text-sm font-bold ' + (i === 0 ? 'text-violet-800' : 'text-violet-700') }, val),
+                      h('span', { className: 'text-[11px] text-violet-400 block' }, i === 0 ? 'start' : '+' + skipBy)
                     );
                   })
                 ),
@@ -651,9 +657,8 @@ window.StemLab = window.StemLab || {
                   '\uD83D\uDCA1 Pattern: ' + skipFrom + ', ' + (skipFrom + skipBy) + ', ' + (skipFrom + 2 * skipBy) + ', ... (adding ' + skipBy + ' each time)')
               ),
               // Toggle
-              h('button', { 'aria-label': 'Sfx Click',
-                onClick: function() { sfxClick(); upd({ showSkipMarkers: !showSkipMarkers }); },
-                className: 'text-xs font-bold ' + (showSkipMarkers ? 'text-violet-600' : 'text-slate-500') + ' hover:text-violet-800 transition-colors'
+              h('button', { onClick: function() { sfxClick(); upd({ showSkipMarkers: !showSkipMarkers }); },
+                className: 'text-xs font-bold ' + (showSkipMarkers ? 'text-violet-600' : 'text-slate-600') + ' hover:text-violet-800 transition-colors'
               }, showSkipMarkers ? '\uD83D\uDC41 Hide markers on line' : '\uD83D\uDC41 Show markers on line')
             );
           };
@@ -663,7 +668,7 @@ window.StemLab = window.StemLab || {
             var earned = Object.keys(badges).length;
             if (earned === 0) return null;
             return h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-3' },
-              h('p', { className: 'text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-2' },
+              h('p', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-2' },
                 '\uD83C\uDFC5 Badges (' + earned + '/' + BADGES.length + ')'
               ),
               h('div', { className: 'flex flex-wrap gap-1.5' },
@@ -698,24 +703,23 @@ window.StemLab = window.StemLab || {
                   onChange: function(e) { upd({ aiQuestion: e.target.value }); },
                   onKeyDown: function(e) { if (e.key === 'Enter' && aiQuestion.trim()) askAITutor(); },
                   placeholder: 'Ask about number lines...',
-                  className: 'flex-1 px-3 py-2 border border-sky-300 rounded-lg text-sm'
+                  className: 'flex-1 px-3 py-2 border border-sky-600 rounded-lg text-sm'
                 }),
-                h('button', { 'aria-label': 'Ask A I Tutor',
-                  onClick: askAITutor,
+                h('button', { onClick: askAITutor,
                   disabled: aiLoading || !aiQuestion.trim(),
                   className: 'px-4 py-2 bg-sky-600 text-white font-bold rounded-lg text-sm hover:bg-sky-700 disabled:opacity-50'
                 }, aiLoading ? '\u23F3' : 'Ask')
               ),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
+              h('div', { className: 'flex flex-wrap gap-1.5' },
                 ['What is a number line?', 'How do I round numbers?', 'What is skip counting?', 'How do negative numbers work?'].map(function(q) {
                   return h('button', { 'aria-label': 'Ask question',
                     key: q,
                     onClick: function() { upd({ aiQuestion: q }); },
-                    className: 'px-2 py-1 text-[10px] font-bold bg-sky-100 text-sky-700 rounded-full hover:bg-sky-200 transition-all'
+                    className: 'px-2 py-1 text-[11px] font-bold bg-sky-100 text-sky-700 rounded-full hover:bg-sky-200 transition-all'
                   }, q);
                 })
               ),
-              aiResponse && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap border border-sky-100' }, aiResponse)
+              aiResponse && h('div', { className: 'bg-white rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap border border-sky-100' }, aiResponse)
             );
           };
 
@@ -726,24 +730,23 @@ window.StemLab = window.StemLab || {
             { id: 'skipcount', icon: '\uD83D\uDD22', label: 'Skip Count' }
           ];
 
-          return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
+          return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
             // Header
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-3 mb-2' },
+            h('div', { className: 'flex items-center gap-3 mb-2' },
               h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' },
-                h(ArrowLeft, { size: 18, className: 'text-slate-500' })),
+                h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
               h('h3', { className: 'text-lg font-bold text-blue-800' }, '\uD83D\uDCCF Number Line'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-auto flex items-center gap-3' },
-                streak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
-                bestStreak > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-500' }, 'Best: ' + bestStreak),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-blue-600' }, score.correct + '/' + score.total)
+              h('div', { className: 'ml-auto flex items-center gap-3' },
+                streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
+                bestStreak > 0 && h('span', { className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak),
+                h('span', { className: 'text-xs font-bold text-blue-600' }, score.correct + '/' + score.total)
               )
             ),
 
             // Tab bar
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 bg-blue-50 rounded-xl p-1 border border-blue-200', role: 'tablist', 'aria-label': 'Number Line sections' },
+            h('div', { className: 'flex gap-1 bg-blue-50 rounded-xl p-1 border border-blue-200', role: 'tablist', 'aria-label': 'Number Line sections' },
               tabs.map(function(t2) {
-                return h('button', { 'aria-label': 'Sfx Click',
-                  key: t2.id,
+                return h('button', { key: t2.id,
                   onClick: function() { sfxClick(); upd({ tab: t2.id }); },
                   role: 'tab', 'aria-selected': tab === t2.id,
                   className: 'flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all ' +
@@ -751,6 +754,33 @@ window.StemLab = window.StemLab || {
                 }, t2.icon + ' ' + t2.label);
               })
             ),
+
+            // ── Topic-accent hero band per tab ──
+            (function() {
+              var TAB_META = {
+                explore:    { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '\uD83D\uDCCF', title: 'Explore \u2014 the visual home for number sense',  hint: 'Numbers as positions on a line, not just symbols. Negatives mirror across zero. Fractions sit BETWEEN integers; decimals are the same idea finer-grained. Common Core 2.MD.6, 3.NF.2, 6.NS.6.' },
+                challenges: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)', icon: '\uD83C\uDFAF', title: 'Challenges \u2014 estimate, locate, compare',          hint: 'Where does 7/8 sit? What about \u22122.4? Estimation builds magnitude sense. Studies (Siegler 2009) show number-line precision predicts later math success better than rote facts.' },
+                skipcount:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83D\uDD22', title: 'Skip Count \u2014 the bridge to multiplication',     hint: '2, 4, 6, 8\u2026 = the 2 times table walking. Skip counting by 5s and 10s pre-builds money and time. Counting backward by 3s pre-builds subtraction and division. The line shows the rhythm.' }
+              };
+              var meta = TAB_META[tab] || TAB_META.explore;
+              return h('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                h('div', { style: { flex: 1, minWidth: 220 } },
+                  h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
 
             // Active tab
             tab === 'explore' && renderExplore(),
@@ -761,16 +791,16 @@ window.StemLab = window.StemLab || {
             renderBadges(),
 
             // AI Tutor toggle + panel
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
+            h('div', { className: 'flex gap-2' },
               !showAITutor && h('button', { 'aria-label': 'AI Tutor',
                 onClick: function() { sfxClick(); upd({ showAITutor: true }); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 transition-all'
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-600 hover:bg-sky-100 transition-all'
               }, '\uD83E\uDD16 AI Tutor')
             ),
             renderAITutor(),
 
             // Keyboard hints
-            h('div', { className: 'text-center text-[11px] text-slate-500 mt-2' },
+            h('div', { className: 'text-center text-[11px] text-slate-600 mt-2' },
               '\u2328\uFE0F 1-3: tabs | N: new challenge | ?: AI tutor'
             )
           );

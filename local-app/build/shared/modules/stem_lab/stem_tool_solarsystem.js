@@ -32,6 +32,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('solarSystem'))
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-solarsystem')) return;
@@ -1821,29 +1830,76 @@ const d = labToolData.solarSystem;
   var shadowMd = isDark ? "0 4px 12px rgba(0,0,0,0.5)" : "0 4px 12px rgba(0,0,0,0.1)";
 
   // ── Inject CSS for hover/focus effects (once per mount) ──
-  if (!document.getElementById("orrery-css")) {
+  // Re-inject when theme flips so cosmic gradients pick up the right palette.
+  var orrCssId = "orrery-css-" + (isDark ? "dark" : "light");
+  // Drop the OPPOSITE theme's stylesheet if it's still around from a prior render.
+  var stale = document.getElementById("orrery-css-" + (isDark ? "light" : "dark"));
+  if (stale) stale.remove();
+  if (!document.getElementById(orrCssId)) {
     var css = document.createElement("style");
-    css.id = "orrery-css";
+    css.id = orrCssId;
     css.textContent = [
       ".orr-btn{transition:all .18s ease!important}",
-      ".orr-btn:hover{transform:translateY(-1px);filter:brightness(1.08)}",
+      ".orr-btn:hover{transform:translateY(-1px);filter:brightness(1.10)}",
       ".orr-btn:active{transform:translateY(0);filter:brightness(0.95)}",
-      ".orr-btn-active{box-shadow:0 2px 10px rgba(74,144,217,0.35)!important}",
-      ".orr-card{transition:box-shadow .2s,transform .2s}",
-      ".orr-card:hover{box-shadow:" + (isDark ? "0 6px 20px rgba(0,0,0,0.5)" : "0 6px 20px rgba(0,0,0,0.1)") + ";transform:translateY(-1px)}",
+      ".orr-btn-active{box-shadow:0 2px 14px rgba(74,144,217,0.42)!important}",
+      // Cosmic card — subtle gradient surface + inner highlight + glow on hover
+      ".orr-card{position:relative;transition:box-shadow .22s ease, transform .22s ease, border-color .22s ease}",
+      ".orr-card::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:" +
+        (isDark
+          ? "radial-gradient(140% 90% at 0% 0%,rgba(99,102,241,0.10),transparent 55%),radial-gradient(120% 80% at 100% 100%,rgba(56,189,248,0.06),transparent 55%)"
+          : "radial-gradient(140% 90% at 0% 0%,rgba(99,102,241,0.07),transparent 60%)") +
+        "}",
+      ".orr-card:hover{transform:translateY(-1px);box-shadow:" +
+        (isDark
+          ? "0 8px 28px rgba(15,23,42,0.55),0 0 0 1px rgba(99,102,241,0.25),inset 0 1px 0 rgba(255,255,255,0.05)"
+          : "0 10px 26px rgba(15,23,42,0.10),0 0 0 1px rgba(99,102,241,0.22)") +
+        ";border-color:" + (isDark ? "rgba(99,102,241,0.35)" : "rgba(99,102,241,0.30)") + "}",
       ".orr-input:focus{outline:none;border-color:" + accent + "!important;box-shadow:0 0 0 3px " + accent + "33!important}",
-      ".orr-tr:hover{background:" + (isDark ? "rgba(74,144,217,0.08)" : "rgba(74,144,217,0.05)") + "!important}",
+      ".orr-tr:hover{background:" + (isDark ? "rgba(74,144,217,0.10)" : "rgba(74,144,217,0.05)") + "!important}",
       ".orr-tr:nth-child(even){background:" + (isDark ? "#252535" : "#f4f6f9") + "}",
       // Custom range slider styling
       "input[type=range].orr-slider{-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;outline:none;transition:all .2s}",
       "input[type=range].orr-slider::-webkit-slider-track{height:6px;border-radius:3px;background:" + (isDark ? "linear-gradient(90deg,#1e293b,#334155)" : "linear-gradient(90deg,#e2e8f0,#cbd5e1)") + "}",
       "input[type=range].orr-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg," + accent + "," + accentLight + ");cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.3);border:2px solid #fff;transition:transform .15s}",
-      "input[type=range].orr-slider::-webkit-slider-thumb:hover{transform:scale(1.2);box-shadow:0 0 8px " + accent + "44}",
+      "input[type=range].orr-slider::-webkit-slider-thumb:hover{transform:scale(1.2);box-shadow:0 0 10px " + accent + "55}",
       "input[type=range].orr-slider::-moz-range-track{height:6px;border-radius:3px;background:" + (isDark ? "#334155" : "#cbd5e1") + "}",
       "input[type=range].orr-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:" + accent + ";cursor:pointer;border:2px solid #fff}",
       // Section header accent line
       ".orr-section-hdr{position:relative;display:flex;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:10px}",
-      ".orr-section-hdr::after{content:'';position:absolute;bottom:0;left:0;width:40px;height:3px;border-radius:2px;background:linear-gradient(90deg," + accent + "," + accentLight + ")}"
+      ".orr-section-hdr::after{content:'';position:absolute;bottom:0;left:0;width:40px;height:3px;border-radius:2px;background:linear-gradient(90deg," + accent + "," + accentLight + ")}",
+      // Cosmic tab strip — subtle starfield-style sheen
+      ".orr-tab-strip{position:relative;background:" +
+        (isDark
+          ? "linear-gradient(180deg,#0f172a 0%,#16213a 100%)"
+          : "linear-gradient(180deg,#eef2fb 0%,#dde3f3 100%)") +
+        ";box-shadow:" +
+        (isDark
+          ? "inset 0 1px 0 rgba(99,102,241,0.18),inset 0 -1px 0 rgba(15,23,42,0.6),0 8px 24px -16px rgba(15,23,42,0.65)"
+          : "inset 0 1px 0 rgba(255,255,255,0.7),inset 0 -1px 0 rgba(15,23,42,0.04),0 4px 16px -10px rgba(15,23,42,0.10)") +
+        "}",
+      ".orr-tab-strip::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:" + (isDark ? "0.5" : "0.35") + ";" +
+        "background:" +
+        // Tiny radial dots simulate distant stars without the cost of a real starfield canvas
+        "radial-gradient(1px 1px at 10% 30%," + (isDark ? "rgba(255,255,255,0.7)" : "rgba(99,102,241,0.45)") + ",transparent 60%)," +
+        "radial-gradient(1px 1px at 75% 45%," + (isDark ? "rgba(165,243,252,0.55)" : "rgba(56,189,248,0.40)") + ",transparent 60%)," +
+        "radial-gradient(1px 1px at 40% 70%," + (isDark ? "rgba(255,255,255,0.4)" : "rgba(99,102,241,0.30)") + ",transparent 60%)," +
+        "radial-gradient(1px 1px at 88% 18%," + (isDark ? "rgba(254,240,138,0.5)" : "rgba(245,158,11,0.35)") + ",transparent 60%)," +
+        "radial-gradient(1px 1px at 22% 85%," + (isDark ? "rgba(255,255,255,0.55)" : "rgba(99,102,241,0.32)") + ",transparent 60%)" +
+        "}",
+      // Cosmic hero band — radial accent glow + faint star dust
+      ".orr-tab-hero{position:relative;overflow:hidden}",
+      ".orr-tab-hero::before{content:'';position:absolute;top:-40%;right:-10%;width:240px;height:240px;border-radius:50%;pointer-events:none;background:radial-gradient(circle,var(--orr-accent,#7c3aed)33 0%,transparent 70%);filter:blur(8px)}",
+      ".orr-tab-hero::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:" + (isDark ? "0.35" : "0.20") + ";" +
+        "background:" +
+        "radial-gradient(1.5px 1.5px at 12% 60%," + (isDark ? "rgba(255,255,255,0.7)" : "rgba(15,23,42,0.45)") + ",transparent 60%)," +
+        "radial-gradient(1px 1px at 35% 25%," + (isDark ? "rgba(165,243,252,0.55)" : "rgba(56,189,248,0.35)") + ",transparent 60%)," +
+        "radial-gradient(1px 1px at 60% 80%," + (isDark ? "rgba(254,240,138,0.55)" : "rgba(245,158,11,0.40)") + ",transparent 60%)," +
+        "radial-gradient(0.8px 0.8px at 85% 35%," + (isDark ? "rgba(255,255,255,0.5)" : "rgba(15,23,42,0.30)") + ",transparent 60%)" +
+        "}",
+      // Cosmic stat badge — subtle inner glow lifts it off the card surface
+      ".orr-stat{position:relative;transition:transform .15s ease,box-shadow .15s ease}",
+      ".orr-stat:hover{transform:translateY(-1px);box-shadow:0 4px 10px " + (isDark ? "rgba(15,23,42,0.5)" : "rgba(15,23,42,0.10)") + "}"
     ].join("\n");
     document.head.appendChild(css);
   }
@@ -1870,15 +1926,25 @@ const d = labToolData.solarSystem;
     }, extra || {}), label);
   }
 
+  // Cosmic card surface — diagonal gradient + cosmic-tinted border. The
+  // ::before pseudo (in orr-css) layers a low-opacity indigo/cyan radial
+  // wash over the corners so the card feels lit from above-left, like a
+  // polished panel under starlight rather than a flat slab.
+  var cardBgGradient = isDark
+    ? "linear-gradient(135deg,#1f2440 0%,#262a45 55%,#1c1e35 100%)"
+    : "linear-gradient(135deg,#ffffff 0%,#f4f7ff 65%,#ecf0fb 100%)";
+  var cardBorder = isDark ? "rgba(99,102,241,0.18)" : "rgba(99,102,241,0.16)";
   function card(children, style) {
     return h("div", {
       className: "orr-card",
       style: Object.assign({
-        background: cardBg,
-        borderRadius: "12px",
+        background: cardBgGradient,
+        borderRadius: "14px",
         padding: "16px",
-        border: "1px solid " + border,
-        boxShadow: shadowSm
+        border: "1px solid " + cardBorder,
+        boxShadow: isDark
+          ? "0 4px 14px rgba(7,11,24,0.45),inset 0 1px 0 rgba(255,255,255,0.04)"
+          : "0 2px 10px rgba(15,23,42,0.06),inset 0 1px 0 rgba(255,255,255,0.65)"
       }, style || {})
     }, children);
   }
@@ -1953,10 +2019,11 @@ const d = labToolData.solarSystem;
    * ==================================================================== */
   var TAB_ICONS = ["\uD83C\uDF0C", "I", "II", "III", "\uD83D\uDD27", "\uD83D\uDE80", "\uD83C\uDFC6", "\u2753"];
   var tabHeader = h("div", {
+    className: "orr-tab-strip",
     style: {
+      position: "relative",
       display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "14px",
-      padding: "6px", background: isDark ? "#1a1a2e" : "#eef1f6", borderRadius: "12px",
-      boxShadow: "inset " + (isDark ? "0 1px 4px rgba(0,0,0,0.4)" : "0 1px 4px rgba(0,0,0,0.06)")
+      padding: "8px", borderRadius: "14px"
     },
     role: "tablist",
     onKeyDown: function(ev) {
@@ -1972,17 +2039,22 @@ const d = labToolData.solarSystem;
       className: "orr-btn" + (isActive ? " orr-btn-active" : ""),
       onClick: function() { setTab(i); },
       style: {
+        position: "relative",
+        zIndex: 1,
         padding: "8px 14px",
-        borderRadius: "8px",
+        borderRadius: "9px",
         border: isActive ? "none" : "1px solid transparent",
         background: isActive
           ? "linear-gradient(135deg, " + accent + ", " + accentLight + ")"
           : "transparent",
-        color: isActive ? "#fff" : mutedFg,
+        color: isActive ? "#fff" : (isDark ? "#cbd5e1" : "#475569"),
         cursor: "pointer",
-        fontWeight: isActive ? 700 : 500,
+        fontWeight: isActive ? 700 : 600,
         fontSize: "13px",
-        boxShadow: isActive ? shadowMd : "none",
+        boxShadow: isActive
+          ? "0 4px 14px rgba(74,144,217,0.45),inset 0 1px 0 rgba(255,255,255,0.18)"
+          : "none",
+        textShadow: isActive ? "0 1px 1px rgba(15,23,42,0.35)" : "none",
         transition: "all 0.2s ease",
         letterSpacing: "0.01em"
       }
@@ -2089,12 +2161,36 @@ const d = labToolData.solarSystem;
         cv.addEventListener("pointerleave", onLeave);
       }
 
+      var clickHandler = null;
       if (props.onClick || clickRef.current) {
-        cv.addEventListener("click", function(ev) {
+        clickHandler = function(ev) {
           var rect = cv.getBoundingClientRect();
           if (clickRef.current) clickRef.current(ev.clientX - rect.left, ev.clientY - rect.top, st);
-        });
+        };
+        cv.addEventListener("click", clickHandler);
       }
+
+      // Keyboard accessibility (WCAG 2.1.1): arrow-key pan, +/- zoom, Home reset, Enter/Space click at center.
+      function onKey(ev) {
+        var key = ev.key;
+        var step = ev.shiftKey ? 60 : 20;
+        if (props.panZoom) {
+          if (key === 'ArrowLeft')  { st.cx += step; ev.preventDefault(); return; }
+          if (key === 'ArrowRight') { st.cx -= step; ev.preventDefault(); return; }
+          if (key === 'ArrowUp')    { st.cy += step; ev.preventDefault(); return; }
+          if (key === 'ArrowDown')  { st.cy -= step; ev.preventDefault(); return; }
+          if (key === '+' || key === '=') { st.scale = clamp(st.scale * 1.15, (props.minScale || 0.1), (props.maxScale || 200)); ev.preventDefault(); return; }
+          if (key === '-' || key === '_') { st.scale = clamp(st.scale * 0.87, (props.minScale || 0.1), (props.maxScale || 200)); ev.preventDefault(); return; }
+          if (key === 'Home' || key === '0') { st.cx = props.width / 2; st.cy = props.height / 2; st.scale = (props.initScale || 1); ev.preventDefault(); return; }
+        }
+        if ((key === 'Enter' || key === ' ') && clickRef.current) {
+          var cxLocal = props.width / 2;
+          var cyLocal = props.height / 2;
+          clickRef.current(cxLocal, cyLocal, st);
+          ev.preventDefault();
+        }
+      }
+      cv.addEventListener('keydown', onKey);
 
       return function() {
         running = false;
@@ -2106,6 +2202,8 @@ const d = labToolData.solarSystem;
           window.removeEventListener("pointerup", onUp);
           cv.removeEventListener("pointerleave", onLeave);
         }
+        if (clickHandler) cv.removeEventListener("click", clickHandler);
+        cv.removeEventListener('keydown', onKey);
       };
     }, [props.redrawKey || 0]);
 
@@ -2113,6 +2211,11 @@ const d = labToolData.solarSystem;
       ref: ref,
       width: props.width,
       height: props.height,
+      tabIndex: 0,
+      role: props.panZoom ? 'application' : 'img',
+      'aria-label': props.ariaLabel || (props.panZoom
+        ? 'Solar system visualization. Keyboard: arrow keys to pan, plus and minus to zoom, Home to reset, Enter or Space to interact at center.'
+        : 'Solar system visualization.'),
       style: Object.assign({
         border: isDark ? "1px solid rgba(74,144,217,0.2)" : "1px solid " + border,
         borderRadius: "12px",
@@ -2157,14 +2260,26 @@ const d = labToolData.solarSystem;
         var aph = sb.a * (1 + sb.e);
         var vPeri = visViva(peri, sb.a);
         var vAph = visViva(aph, sb.a);
+        // Stat badges pick up the planet's color as a faint accent — Mars
+        // gets a rust glow, Neptune gets blue, etc. — so the panel reads
+        // as "this body" rather than a generic stat block.
         var statBadge = function(label, value, icon) {
-          return h("div", { style: {
-            display: "inline-flex", alignItems: "center", gap: "6px",
-            padding: "4px 10px", borderRadius: "6px", fontSize: "12px",
-            background: isDark ? "#1e2a3e" : "#eef2f7", border: "1px solid " + border,
-            marginBottom: "4px", marginRight: "4px"
-          } },
-            h("span", { style: { opacity: 0.6 } }, icon || ""),
+          return h("div", {
+            className: "orr-stat",
+            style: {
+              display: "inline-flex", alignItems: "center", gap: "6px",
+              padding: "5px 11px", borderRadius: "8px", fontSize: "12px",
+              background: isDark
+                ? "linear-gradient(135deg,#1c2438 0%,#222a42 100%)"
+                : "linear-gradient(135deg,#f4f7ff 0%,#ecf0fb 100%)",
+              border: "1px solid " + sb.color + "33",
+              boxShadow: isDark
+                ? "0 1px 3px rgba(7,11,24,0.4),inset 0 1px 0 rgba(255,255,255,0.04)"
+                : "0 1px 3px rgba(15,23,42,0.06),inset 0 1px 0 rgba(255,255,255,0.6)",
+              marginBottom: "4px", marginRight: "4px"
+            }
+          },
+            h("span", { style: { opacity: 0.75, color: sb.color } }, icon || ""),
             h("span", { style: { color: mutedFg, fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" } }, label),
             h("span", { style: { fontFamily: "monospace", fontWeight: 700, color: fg } }, value)
           );
@@ -5053,8 +5168,63 @@ const d = labToolData.solarSystem;
     default: content = h("div", null, "Unknown tab");
   }
 
+  // Topic-accent hero band per tab
+  var TAB_META = [
+    { accent: "#7c3aed", soft: "rgba(124,58,237,0.10)", title: "Full orrery — animated solar system",     hint: "All 8 planets to scale (size + orbit). Watch Mercury lap Earth ~4× per Earth-year. Inner planets cluster tight; outer ones sweep huge orbits." },
+    { accent: "#0ea5e9", soft: "rgba(14,165,233,0.10)", title: "Kepler I — orbits are ellipses",          hint: "Every planet orbits in an ellipse with the Sun at one focus. The other focus is empty space. Earth's orbit is barely-eccentric (e ≈ 0.017)." },
+    { accent: "#22c55e", soft: "rgba(34,197,94,0.10)",  title: "Kepler II — equal areas in equal times",  hint: "A line from planet to Sun sweeps equal areas in equal times — meaning planets move FASTER near the Sun (perihelion) and SLOWER far away (aphelion)." },
+    { accent: "#f59e0b", soft: "rgba(245,158,11,0.10)", title: "Kepler III — period² ∝ semi-major-axis³", hint: "T² = a³ when T is in years and a is in AU. Earth's T=1, a=1 makes the math beautifully clean. Doubling orbit size multiplies period by ~2.83." },
+    { accent: "#06b6d4", soft: "rgba(6,182,212,0.10)",  title: "Workshop — build your own orbit",         hint: "Set semi-major axis + eccentricity; the orrery shows the orbit in real time. Try e=0.9 — that's comet territory. Try e=0 — perfect circle." },
+    { accent: "#dc2626", soft: "rgba(220,38,38,0.10)",  title: "Hohmann transfers — actual rocket math",  hint: "The minimum-energy way to travel between two circular orbits. Two burns: leave the inner orbit at perihelion of transfer, arrive at the outer orbit at aphelion." },
+    { accent: "#fbbf24", soft: "rgba(251,191,36,0.10)", title: "Challenges — apply Kepler's laws",        hint: "Multi-step problems: predict periods from semi-major axis, identify perihelion vs aphelion speeds, compute transfer-orbit Δv. AP Physics 1 + 2 territory." },
+    { accent: "#8b5cf6", soft: "rgba(139,92,246,0.10)", title: "True / False — concept check",            hint: "Quick discrimination quiz on common Kepler misconceptions. Targets the orbital myths (\"closer = slower,\" \"orbits are circles,\" \"all orbits go the same direction\")." }
+  ];
+  var meta = TAB_META[stab] || TAB_META[0];
+  // Cosmic hero band: radial accent glow + faint star dust (CSS pseudos in
+  // orr-tab-hero). The CSS variable --orr-accent feeds the glow color so
+  // each tab gets its own personality (Kepler I = cyan, II = green, etc.)
+  // without re-rendering CSS rules.
+  var tabHero = h("div", {
+    className: "orr-tab-hero",
+    style: {
+      "--orr-accent": meta.accent,
+      padding: "14px 16px",
+      borderRadius: "14px",
+      background: isDark
+        ? "linear-gradient(135deg," + meta.soft + " 0%,rgba(15,23,42,0.55) 100%)"
+        : "linear-gradient(135deg," + meta.soft + " 0%,rgba(255,255,255,0.92) 100%)",
+      border: "1px solid " + meta.accent + "44",
+      borderLeft: "4px solid " + meta.accent,
+      display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap",
+      marginBottom: "14px",
+      boxShadow: isDark
+        ? "0 4px 16px rgba(7,11,24,0.35), inset 0 1px 0 rgba(255,255,255,0.05)"
+        : "0 2px 10px rgba(15,23,42,0.06), inset 0 1px 0 rgba(255,255,255,0.6)"
+    }
+  },
+    // Icon disc — accent-colored ring with the tab icon centered
+    h("div", {
+      style: {
+        position: "relative", zIndex: 1,
+        width: 46, height: 46, borderRadius: "50%", flexShrink: 0,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: "radial-gradient(circle," + meta.accent + "33 0%," + meta.accent + "11 60%,transparent 100%)",
+        border: "1px solid " + meta.accent + "55",
+        boxShadow: "0 0 14px " + meta.accent + "33, inset 0 0 8px " + meta.accent + "22",
+        fontSize: 22, fontWeight: 900, color: meta.accent,
+        textShadow: "0 0 8px " + meta.accent + "55"
+      },
+      "aria-hidden": "true"
+    }, TAB_ICONS[stab]),
+    h("div", { style: { flex: 1, minWidth: "220px", position: "relative", zIndex: 1 } },
+      h("h3", { style: { color: meta.accent, fontSize: "15px", fontWeight: 900, margin: 0, lineHeight: 1.2, letterSpacing: "0.01em" } }, meta.title),
+      h("p", { style: { margin: "4px 0 0", color: isDark ? "#cbd5e1" : "#475569", fontSize: "12px", lineHeight: 1.5, fontStyle: "italic" } }, meta.hint)
+    )
+  );
+
   return h("div", { className: "space-y-3" },
     tabHeader,
+    tabHero,
     content
   );
 
@@ -5193,14 +5363,55 @@ const d = labToolData.solarSystem;
             ),
 
             // â"€â"€ Planet Info Card (Enhanced with Close-Up & Drone) â"€â"€
+            // Cosmic chrome pass: the card surface picks up the selected
+            // planet's color as a faint radial glow at top-right + a thicker
+            // accent border along the left, so selecting Mars vs Neptune
+            // produces visibly different panel mood. Mirrors the orrery's
+            // body info card treatment.
 
-            !d.orreryMode && sel && React.createElement("div", { className: "mt-3 bg-slate-50 rounded-xl border border-slate-200 p-4 animate-in slide-in-from-bottom duration-300" },
+            // Light-toned gradient kept for both modes so the existing fixed
+            // slate-800 / slate-600 header text inside stays readable. The
+            // planet-color glow + accent border do the cosmic-mood lift.
+            !d.orreryMode && sel && React.createElement("div", {
+              className: "mt-3 rounded-2xl p-4 animate-in slide-in-from-bottom duration-300",
+              style: {
+                position: "relative",
+                overflow: "hidden",
+                background: "linear-gradient(135deg,#ffffff 0%,#f6f9ff 65%,#eef2fb 100%)",
+                borderLeft: "4px solid " + sel.color,
+                borderTop: "1px solid " + sel.color + "33",
+                borderRight: "1px solid " + sel.color + "22",
+                borderBottom: "1px solid " + sel.color + "22",
+                boxShadow: "0 6px 22px rgba(15,23,42,0.10), 0 0 22px " + sel.color + "1a, inset 0 1px 0 rgba(255,255,255,0.7)"
+              }
+            },
+
+              // Planet-colored radial glow at top-right (decorative)
+              React.createElement("div", {
+                "aria-hidden": "true",
+                style: {
+                  position: "absolute",
+                  top: "-60px", right: "-60px",
+                  width: "220px", height: "220px",
+                  borderRadius: "50%",
+                  background: "radial-gradient(circle," + sel.color + "33 0%," + sel.color + "11 55%,transparent 100%)",
+                  filter: "blur(8px)",
+                  pointerEvents: "none"
+                }
+              }),
 
               // Planet header
 
-              React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+              React.createElement("div", { className: "flex items-center gap-3 mb-3", style: { position: "relative", zIndex: 1 } },
 
-                React.createElement("div", { className: "w-12 h-12 rounded-xl flex items-center justify-center text-2xl", style: { backgroundColor: sel.color + '20', border: '2px solid ' + sel.color } }, sel.emoji),
+                React.createElement("div", {
+                  className: "w-12 h-12 rounded-xl flex items-center justify-center text-2xl",
+                  style: {
+                    background: "radial-gradient(circle," + sel.color + "44 0%," + sel.color + "11 60%,transparent 100%)",
+                    border: "2px solid " + sel.color,
+                    boxShadow: "0 0 14px " + sel.color + "55, inset 0 0 12px " + sel.color + "33"
+                  }
+                }, sel.emoji),
 
                 React.createElement("div", { className: "flex-1" },
 
@@ -5244,9 +5455,13 @@ const d = labToolData.solarSystem;
                         }
                       },
 
-                      className: "px-3 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all " +
+                      className: "px-3 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all hover:-translate-y-0.5 " +
 
-                        ((d.viewTab || 'overview') === tab ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-md shadow-indigo-500/25 ring-1 ring-indigo-400/30' : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 shadow-sm'))
+                        ((d.viewTab || 'overview') === tab
+                          ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/40 ring-1 ring-indigo-400/40'
+                          : (isDark ? 'bg-gradient-to-br from-slate-700 to-slate-800 text-slate-300 hover:from-slate-600 hover:to-slate-700 hover:text-white border border-slate-600/50' : 'bg-gradient-to-br from-white to-slate-100 text-slate-700 hover:from-slate-50 hover:to-slate-200 hover:text-indigo-700 border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300')),
+
+                      style: ((d.viewTab || 'overview') === tab) ? { textShadow: '0 1px 1px rgba(15,23,42,0.4)' } : {}
 
                     }, tabLabels[tab]);
 
@@ -5271,13 +5486,23 @@ const d = labToolData.solarSystem;
                   ].map(function (item) {
 
                     return React.createElement("div", { key: item[1],
-                      className: "rounded-xl p-2.5 text-center border transition-all hover:shadow-md hover:-translate-y-0.5 " + (isDark ? 'bg-slate-800 border-slate-700 hover:border-indigo-500/40' : 'bg-gradient-to-br from-white to-slate-50 border-slate-200 hover:border-indigo-300'),
-                      style: { boxShadow: isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' }
+                      className: "rounded-xl p-2.5 text-center border transition-all hover:shadow-lg hover:-translate-y-0.5",
+                      style: {
+                        background: isDark
+                          ? "linear-gradient(135deg,#1f2440 0%,#262a45 60%,#1c1e35 100%)"
+                          : "linear-gradient(135deg,#ffffff 0%,#f6f9ff 70%,#eef2fb 100%)",
+                        borderColor: sel.color + "33",
+                        borderTopWidth: "2px",
+                        borderTopColor: sel.color + "88",
+                        boxShadow: isDark
+                          ? "0 2px 6px rgba(7,11,24,0.45),inset 0 1px 0 rgba(255,255,255,0.04)"
+                          : "0 2px 6px rgba(15,23,42,0.06),inset 0 1px 0 rgba(255,255,255,0.65)"
+                      }
                     },
 
-                      React.createElement("p", { className: "text-[11px] font-bold uppercase tracking-wider " + (isDark ? 'text-slate-200' : 'text-slate-200') }, item[0] + ' ' + item[1]),
+                      React.createElement("p", { className: "text-[11px] font-bold uppercase tracking-wider " + (isDark ? 'text-slate-300' : 'text-slate-600') }, item[0] + ' ' + item[1]),
 
-                      React.createElement("p", { className: "text-xs font-bold mt-0.5 " + (isDark ? 'text-slate-200' : 'text-slate-800') }, item[2])
+                      React.createElement("p", { className: "text-xs font-bold mt-0.5 " + (isDark ? 'text-white' : 'text-slate-800') }, item[2])
 
                     );
 
@@ -5287,24 +5512,51 @@ const d = labToolData.solarSystem;
 
                 // Visual comparison bars — gravity and size relative to Earth
                 React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-3" },
-                  // Gravity bar
-                  React.createElement("div", { className: "rounded-xl p-3 border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-br from-white to-slate-50 border-slate-200'), style: { boxShadow: isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } },
+                  // Gravity bar \u2014 fill takes the planet's color so the eye
+                  // ties bar to body. Card surface matches the 8-tile grid.
+                  React.createElement("div", {
+                    className: "rounded-xl p-3 border",
+                    style: {
+                      background: isDark
+                        ? "linear-gradient(135deg,#1f2440 0%,#262a45 60%,#1c1e35 100%)"
+                        : "linear-gradient(135deg,#ffffff 0%,#f6f9ff 70%,#eef2fb 100%)",
+                      borderColor: sel.color + "33",
+                      borderTopWidth: "2px",
+                      borderTopColor: sel.color + "88",
+                      boxShadow: isDark
+                        ? "0 2px 6px rgba(7,11,24,0.45),inset 0 1px 0 rgba(255,255,255,0.04)"
+                        : "0 2px 6px rgba(15,23,42,0.06),inset 0 1px 0 rgba(255,255,255,0.65)"
+                    }
+                  },
                     React.createElement("div", { className: "flex justify-between items-center mb-1.5" },
-                      React.createElement("span", { className: "text-[11px] font-bold uppercase " + (isDark ? 'text-slate-200' : 'text-slate-600') }, "\u2696\uFE0F Gravity vs Earth"),
-                      React.createElement("span", { className: "text-[11px] font-bold text-indigo-500", style: { fontFamily: 'monospace' } }, (GRAVITY_MAP[sel.name] || 1).toFixed(2) + 'g')
+                      React.createElement("span", { className: "text-[11px] font-bold uppercase " + (isDark ? 'text-slate-300' : 'text-slate-600') }, "\u2696\uFE0F Gravity vs Earth"),
+                      React.createElement("span", { className: "text-[11px] font-bold", style: { fontFamily: 'monospace', color: sel.color } }, (GRAVITY_MAP[sel.name] || 1).toFixed(2) + 'g')
                     ),
-                    React.createElement("div", { className: "w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' } },
-                      React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, (GRAVITY_MAP[sel.name] || 1) * 42) + '%', background: 'linear-gradient(90deg, #6366f1, #818cf8)' } })
+                    React.createElement("div", { className: "w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.15)' } },
+                      React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, (GRAVITY_MAP[sel.name] || 1) * 42) + '%', background: 'linear-gradient(90deg,' + sel.color + 'cc,' + sel.color + ')', boxShadow: '0 0 10px ' + sel.color + '88' } })
                     )
                   ),
                   // Size bar
-                  React.createElement("div", { className: "rounded-xl p-3 border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-br from-white to-slate-50 border-slate-200'), style: { boxShadow: isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } },
+                  React.createElement("div", {
+                    className: "rounded-xl p-3 border",
+                    style: {
+                      background: isDark
+                        ? "linear-gradient(135deg,#1f2440 0%,#262a45 60%,#1c1e35 100%)"
+                        : "linear-gradient(135deg,#ffffff 0%,#f6f9ff 70%,#eef2fb 100%)",
+                      borderColor: sel.color + "33",
+                      borderTopWidth: "2px",
+                      borderTopColor: sel.color + "88",
+                      boxShadow: isDark
+                        ? "0 2px 6px rgba(7,11,24,0.45),inset 0 1px 0 rgba(255,255,255,0.04)"
+                        : "0 2px 6px rgba(15,23,42,0.06),inset 0 1px 0 rgba(255,255,255,0.65)"
+                    }
+                  },
                     React.createElement("div", { className: "flex justify-between items-center mb-1.5" },
-                      React.createElement("span", { className: "text-[11px] font-bold uppercase " + (isDark ? 'text-slate-200' : 'text-slate-600') }, "\uD83D\uDCCF Radius vs Earth"),
-                      React.createElement("span", { className: "text-[11px] font-bold text-emerald-500", style: { fontFamily: 'monospace' } }, ((PLANET_RADII[sel.name] || 6371) / 6371).toFixed(2) + '\u00d7')
+                      React.createElement("span", { className: "text-[11px] font-bold uppercase " + (isDark ? 'text-slate-300' : 'text-slate-600') }, "\uD83D\uDCCF Radius vs Earth"),
+                      React.createElement("span", { className: "text-[11px] font-bold", style: { fontFamily: 'monospace', color: sel.color } }, ((PLANET_RADII[sel.name] || 6371) / 6371).toFixed(2) + '\u00d7')
                     ),
-                    React.createElement("div", { className: "w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' } },
-                      React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, ((PLANET_RADII[sel.name] || 6371) / 6371) * 9) + '%', background: 'linear-gradient(90deg, #10b981, #34d399)' } })
+                    React.createElement("div", { className: "w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.15)' } },
+                      React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, ((PLANET_RADII[sel.name] || 6371) / 6371) * 9) + '%', background: 'linear-gradient(90deg,' + sel.color + 'cc,' + sel.color + ')', boxShadow: '0 0 10px ' + sel.color + '88' } })
                     )
                   )
                 ),
@@ -5367,19 +5619,39 @@ const d = labToolData.solarSystem;
 
               (d.viewTab) === 'surface' && React.createElement("div", { className: "space-y-3" },
 
-                React.createElement("div", { className: "bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl p-4 text-white" },
+                React.createElement("div", {
+                  className: "rounded-xl p-4 text-white",
+                  style: {
+                    position: "relative",
+                    overflow: "hidden",
+                    background: "linear-gradient(135deg," + sel.color + "44 0%,#0f172a 60%,#070b18 100%)",
+                    border: "1px solid " + sel.color + "55",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06),0 0 24px " + sel.color + "22,0 6px 18px rgba(7,11,24,0.55)"
+                  }
+                },
 
-                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                  // Decorative planet-color glow at top-right
+                  React.createElement("div", {
+                    "aria-hidden": "true",
+                    style: {
+                      position: "absolute", top: "-50px", right: "-50px",
+                      width: "180px", height: "180px", borderRadius: "50%",
+                      background: "radial-gradient(circle," + sel.color + "44 0%,transparent 70%)",
+                      filter: "blur(8px)", pointerEvents: "none"
+                    }
+                  }),
 
-                    React.createElement("span", { className: "text-lg" }, "\uD83C\uDF0D"),
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2", style: { position: "relative", zIndex: 1 } },
 
-                    React.createElement("h5", { className: "font-bold text-sm" }, sel.name + " Surface Conditions")
+                    React.createElement("span", { className: "text-lg", style: { textShadow: "0 0 8px " + sel.color + "88" } }, "\uD83C\uDF0D"),
+
+                    React.createElement("h5", { className: "font-bold text-sm", style: { color: "#ffffff", textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, sel.name + " Surface Conditions")
 
                   ),
 
-                  React.createElement("p", { className: "text-xs text-slate-300 leading-relaxed mb-3" }, sel.surfaceDesc || 'Surface data unavailable.'),
+                  React.createElement("p", { className: "text-xs text-slate-300 leading-relaxed mb-3", style: { position: "relative", zIndex: 1 } }, sel.surfaceDesc || 'Surface data unavailable.'),
 
-                  React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-2" },
+                  React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-2", style: { position: "relative", zIndex: 1 } },
 
                     [
 
@@ -5408,7 +5680,7 @@ const d = labToolData.solarSystem;
                     if (!gVal || sel.name === 'Earth') return null;
                     var earthWeight = 70; // kg reference
                     var planetWeight = Math.round(earthWeight * gVal);
-                    return React.createElement("div", { className: "bg-white/5 rounded-lg p-2 flex items-center gap-2 border border-white/10" },
+                    return React.createElement("div", { className: "bg-white/5 rounded-lg p-2 flex items-center gap-2 border border-white/10", style: { position: "relative", zIndex: 1 } },
                       React.createElement("span", { className: "text-sm" }, "\uD83C\uDFCB\uFE0F"),
                       React.createElement("div", { className: "flex-1" },
                         React.createElement("p", { className: "text-[11px] text-slate-200" }, "If you weigh 70 kg on Earth:"),
@@ -5436,6 +5708,17 @@ const d = labToolData.solarSystem;
 
                       if (!cvEl || cvEl._surfInit === sel.name) return;
 
+                      // Memory-leak fix: switching planets re-runs this init block on
+                      // the same canvas element. Detach any leftover handlers from a
+                      // previous planet before re-attaching, otherwise each switch
+                      // multiplies listener count (and stale closures fire forever).
+                      if (cvEl._surfHandlers) {
+                        Object.keys(cvEl._surfHandlers).forEach(function (ev) {
+                          cvEl.removeEventListener(ev, cvEl._surfHandlers[ev]);
+                        });
+                      }
+                      var _surfH = cvEl._surfHandlers = {};
+
                       cvEl._surfInit = sel.name;
 
                       var ctx = cvEl.getContext('2d');
@@ -5461,7 +5744,7 @@ const d = labToolData.solarSystem;
 
                       // Click handler for canvas interactions
                       cvEl.style.cursor = 'default';
-                      cvEl.addEventListener('click', function(e) {
+                      cvEl.addEventListener('click', _surfH.click = function(e) {
                         var rect = cvEl.getBoundingClientRect();
                         var mx = (e.clientX - rect.left) * (cvEl.width / 2 / rect.width);
                         var my = (e.clientY - rect.top) * (cvEl.height / 2 / rect.height);
@@ -5490,7 +5773,7 @@ const d = labToolData.solarSystem;
                       });
 
                       // Mousemove for hover cursor + drag-to-rotate
-                      cvEl.addEventListener('mousedown', function(e) {
+                      cvEl.addEventListener('mousedown', _surfH.mousedown = function(e) {
                         var rect = cvEl.getBoundingClientRect();
                         var mx = (e.clientX - rect.left) * (cvEl.width / 2 / rect.width);
                         var my = (e.clientY - rect.top) * (cvEl.height / 2 / rect.height);
@@ -5501,9 +5784,9 @@ const d = labToolData.solarSystem;
                           cvEl.style.cursor = 'grabbing';
                         }
                       });
-                      cvEl.addEventListener('mouseup', function() { _isDragging = false; });
-                      cvEl.addEventListener('mouseleave', function() { _isDragging = false; });
-                      cvEl.addEventListener('mousemove', function(e) {
+                      cvEl.addEventListener('mouseup', _surfH.mouseup = function() { _isDragging = false; });
+                      cvEl.addEventListener('mouseleave', _surfH.mouseleave = function() { _isDragging = false; });
+                      cvEl.addEventListener('mousemove', _surfH.mousemove = function(e) {
                         if (_isDragging) {
                           _dragRotation += (e.clientX - _dragStartX) * 0.008;
                           _dragStartX = e.clientX;
@@ -6060,7 +6343,7 @@ const d = labToolData.solarSystem;
                             // moon body
                             var moonGrad = ctx.createRadialGradient(mx - 1, my - 1, 0, mx, my, moonR);
                             moonGrad.addColorStop(0, isHovered ? '#c7d2fe' : '#e2e8f0');
-                            moonGrad.addColorStop(1, isHovered ? '#818cf8' : '#64748b');
+                            moonGrad.addColorStop(1, isHovered ? '#818cf8' : '#94a3b8');
                             ctx.fillStyle = moonGrad;
                             ctx.beginPath();
                             ctx.arc(mx, my, isHovered ? moonR + 1 : moonR, 0, Math.PI * 2);
@@ -6652,7 +6935,7 @@ const d = labToolData.solarSystem;
                           ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white border-indigo-400/50 shadow-lg shadow-indigo-500/25 scale-[1.03] ring-1 ring-indigo-400/30'
                           : (isDark
                             ? 'bg-slate-800 text-slate-300 border-slate-600 hover:border-indigo-500/50 hover:bg-slate-700 hover:text-indigo-300'
-                            : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 shadow-sm'))
+                            : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 shadow-sm'))
                     }, btn.icon + ' ' + btn.label);
                   })
                 ),
@@ -6850,18 +7133,45 @@ const d = labToolData.solarSystem;
 
               // ── INTERIOR VIEW TAB ──
               (d.viewTab) === 'interior' && sel && React.createElement("div", { className: "space-y-3" },
-                React.createElement("div", { className: "bg-gradient-to-r from-orange-900 to-red-900 rounded-xl p-4 text-white" },
-                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                    React.createElement("span", { className: "text-lg" }, "\uD83C\uDF0B"),
-                    React.createElement("h5", { className: "font-bold text-sm" }, sel.name + " Interior Structure")
-                  ),
-                  React.createElement("p", { className: "text-xs text-orange-200 leading-relaxed" },
-                    sel.terrainType === 'gasgiant' ? "Gas giants have no solid surface. Layers of gas compress into liquid and eventually metallic hydrogen." :
-                    sel.terrainType === 'icegiant' ? "Ice giants have a rocky core surrounded by exotic ices, superionic water, and possibly diamond rain." :
-                    sel.terrainType === 'iceworld' ? "Pluto has a thin nitrogen/methane atmosphere, a water-ice crust over a rocky core, and possibly a subsurface ocean." :
-                    "Rocky planets have a layered structure: a metal core, a rocky mantle, and a thin crust."
-                  )
-                ),
+                // Hero band: palette matches the planet type. Rocky worlds
+                // get lava (orange / red), ice giants get ice-blue, Pluto gets
+                // pale violet, gas giants get amber. Was always lava
+                // regardless, which read wrong for Uranus / Neptune / Pluto.
+                (function() {
+                  var ttype = sel.terrainType;
+                  var palette = ttype === 'icegiant' ? { from: 'rgba(56,189,248,0.45)', to: 'rgba(15,23,42,0.95)', accent: '#7dd3fc', textTint: '#bae6fd', icon: "\u2744" }
+                              : ttype === 'iceworld' ? { from: 'rgba(167,139,250,0.40)', to: 'rgba(15,23,42,0.95)', accent: '#c4b5fd', textTint: '#ddd6fe', icon: "\u2744" }
+                              : ttype === 'gasgiant' ? { from: 'rgba(245,158,11,0.45)', to: 'rgba(127,29,29,0.85)', accent: '#fbbf24', textTint: '#fde68a', icon: "\uD83C\uDF2A\uFE0F" }
+                              :                         { from: 'rgba(239,68,68,0.55)', to: 'rgba(127,29,29,0.92)', accent: '#fb923c', textTint: '#fed7aa', icon: "\uD83C\uDF0B" };
+                  var copy = ttype === 'gasgiant' ? "Gas giants have no solid surface. Layers of gas compress into liquid and eventually metallic hydrogen."
+                           : ttype === 'icegiant' ? "Ice giants have a rocky core surrounded by exotic ices, superionic water, and possibly diamond rain."
+                           : ttype === 'iceworld' ? "Pluto has a thin nitrogen/methane atmosphere, a water-ice crust over a rocky core, and possibly a subsurface ocean."
+                           : "Rocky planets have a layered structure: a metal core, a rocky mantle, and a thin crust.";
+                  return React.createElement("div", {
+                    className: "rounded-xl p-4 text-white",
+                    style: {
+                      position: "relative", overflow: "hidden",
+                      background: "linear-gradient(135deg," + palette.from + " 0%," + palette.to + " 100%)",
+                      border: "1px solid " + palette.accent + "55",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08),0 0 24px " + palette.accent + "22,0 6px 18px rgba(7,11,24,0.55)"
+                    }
+                  },
+                    React.createElement("div", {
+                      "aria-hidden": "true",
+                      style: {
+                        position: "absolute", top: "-50px", right: "-50px",
+                        width: "180px", height: "180px", borderRadius: "50%",
+                        background: "radial-gradient(circle," + palette.accent + "44 0%,transparent 70%)",
+                        filter: "blur(8px)", pointerEvents: "none"
+                      }
+                    }),
+                    React.createElement("div", { className: "flex items-center gap-2 mb-2", style: { position: "relative", zIndex: 1 } },
+                      React.createElement("span", { className: "text-lg", style: { textShadow: "0 0 8px " + palette.accent + "88" } }, palette.icon),
+                      React.createElement("h5", { className: "font-bold text-sm", style: { color: "#ffffff", textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, sel.name + " Interior Structure")
+                    ),
+                    React.createElement("p", { className: "text-xs leading-relaxed", style: { position: "relative", zIndex: 1, color: palette.textTint } }, copy)
+                  );
+                })(),
                 // Cutaway canvas
                 React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-orange-300 shadow-lg", style: { height: '420px' } },
                   React.createElement("canvas", {
@@ -7099,19 +7409,44 @@ const d = labToolData.solarSystem;
                     return interiorLayers.map(function(layer, li) {
                       return React.createElement("div", {
                         key: li,
-                        className: "flex items-start gap-3 rounded-lg p-3 border transition-all hover:shadow-md",
-                        style: { background: layer.color + '15', borderColor: layer.color + '40' }
+                        className: "flex items-stretch gap-0 rounded-xl overflow-hidden border transition-all hover:-translate-y-0.5",
+                        style: {
+                          background: "linear-gradient(135deg," + layer.color + "1f 0%," + layer.color + "0a 60%,rgba(15,23,42,0.4) 100%)",
+                          borderColor: layer.color + '40',
+                          boxShadow: "0 2px 6px rgba(15,23,42,0.30),inset 0 1px 0 rgba(255,255,255,0.04)"
+                        }
                       },
+                        // Left accent strip — same pattern as descent layer cards
                         React.createElement("div", {
-                          className: "w-8 h-8 rounded-full flex items-center justify-center text-lg flex-shrink-0 mt-0.5",
-                          style: { background: layer.color, boxShadow: '0 2px 8px ' + layer.color + '80' }
-                        }, layer.icon),
-                        React.createElement("div", { className: "flex-1 min-w-0" },
-                          React.createElement("div", { className: "flex items-center gap-2 mb-0.5" },
-                            React.createElement("span", { className: "text-xs font-bold text-white" }, layer.label),
-                            React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full bg-white/10 text-slate-300 font-mono" }, layer.thick)
-                          ),
-                          React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, layer.desc)
+                          "aria-hidden": "true",
+                          style: {
+                            width: 5, flexShrink: 0,
+                            background: "linear-gradient(180deg," + layer.color + " 0%," + layer.color + "aa 100%)",
+                            boxShadow: "0 0 6px " + layer.color + "aa"
+                          }
+                        }),
+                        React.createElement("div", { className: "flex items-start gap-3 flex-1 p-3" },
+                          React.createElement("div", {
+                            className: "w-8 h-8 rounded-full flex items-center justify-center text-lg flex-shrink-0 mt-0.5",
+                            style: {
+                              background: "radial-gradient(circle," + layer.color + " 0%," + layer.color + "cc 70%," + layer.color + "33 100%)",
+                              boxShadow: "0 0 12px " + layer.color + "aa,inset 0 0 6px " + layer.color + "55"
+                            }
+                          }, layer.icon),
+                          React.createElement("div", { className: "flex-1 min-w-0" },
+                            React.createElement("div", { className: "flex items-center gap-2 mb-1 flex-wrap" },
+                              React.createElement("span", { className: "text-xs font-bold", style: { color: "#ffffff", textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, layer.label),
+                              React.createElement("span", {
+                                className: "text-[10px] px-1.5 py-0.5 rounded font-mono",
+                                style: {
+                                  color: layer.color,
+                                  background: layer.color + '22',
+                                  border: '1px solid ' + layer.color + '55'
+                                }
+                              }, layer.thick)
+                            ),
+                            React.createElement("p", { className: "text-[11px] leading-relaxed", style: { color: '#e2e8f0' } }, layer.desc)
+                          )
                         )
                       );
                     });
@@ -7244,36 +7579,88 @@ const d = labToolData.solarSystem;
                     React.createElement("span", { className: "text-[11px] text-white/70 font-bold" }, "\u2B07 Deep")
                   )
                 ),
-                // Layer detail cards
-                React.createElement("div", { className: "space-y-2" },
+                // Layer detail cards. Cosmic-chrome pass: each card now has
+                // a gradient surface tinted by the layer color, a thick left
+                // accent strip (acts as "altitude bar"), color-coded chips
+                // for altitude / temp / pressure, and a stronger active state
+                // (lifted + outer ring + inner highlight). Click anywhere to
+                // jump the probe to that layer.
+                React.createElement("div", { className: "space-y-2.5" },
                   DESCENT_LAYERS[sel.name].map(function(layer, li) {
                     var isActive = d._descentProbeY != null && Math.floor(d._descentProbeY * DESCENT_LAYERS[sel.name].length) === li;
                     return React.createElement("div", {
                       key: li,
-                      className: "flex items-center gap-3 rounded-lg p-3 border transition-all cursor-pointer hover:shadow-md",
+                      className: "flex items-stretch gap-0 rounded-xl overflow-hidden border transition-all cursor-pointer",
                       style: {
-                        background: isActive ? layer.color + '30' : layer.color + '10',
-                        borderColor: isActive ? layer.color : layer.color + '30',
-                        boxShadow: isActive ? '0 0 12px ' + layer.color + '40' : 'none'
+                        background: isActive
+                          ? "linear-gradient(135deg," + layer.color + "44 0%," + layer.color + "1a 60%,rgba(15,23,42,0.6) 100%)"
+                          : "linear-gradient(135deg," + layer.color + "1f 0%," + layer.color + "0a 60%,rgba(15,23,42,0.4) 100%)",
+                        borderColor: isActive ? layer.color : layer.color + '40',
+                        boxShadow: isActive
+                          ? "0 0 0 2px " + layer.color + "55, 0 6px 18px " + layer.color + "33, inset 0 1px 0 rgba(255,255,255,0.08)"
+                          : "0 1px 3px rgba(15,23,42,0.25), inset 0 1px 0 rgba(255,255,255,0.04)",
+                        transform: isActive ? "translateY(-1px)" : "translateY(0)"
                       },
-                      onClick: function() { upd('_descentProbeY', li / DESCENT_LAYERS[sel.name].length); tryAward('atmosphere_descent'); }
+                      onClick: function() { upd('_descentProbeY', li / DESCENT_LAYERS[sel.name].length); tryAward('atmosphere_descent'); },
+                      role: "button", "aria-pressed": isActive ? "true" : "false",
+                      "aria-label": layer.name + " at " + (layer.alt >= 0 ? '+' : '') + layer.alt + " km. " + layer.desc + " Temperature " + layer.temp + ". Pressure " + layer.pressure + "."
                     },
+                      // Left accent strip — wider on active, glows on hover
                       React.createElement("div", {
-                        className: "w-3 h-3 rounded-full flex-shrink-0",
-                        style: { background: layer.color, boxShadow: isActive ? '0 0 8px ' + layer.color : 'none' }
+                        "aria-hidden": "true",
+                        style: {
+                          width: isActive ? 6 : 4, flexShrink: 0,
+                          background: "linear-gradient(180deg," + layer.color + " 0%," + layer.color + "aa 100%)",
+                          boxShadow: isActive ? "0 0 10px " + layer.color : "none",
+                          transition: "width .18s ease"
+                        }
                       }),
-                      React.createElement("div", { className: "flex-1 min-w-0" },
-                        React.createElement("div", { className: "flex items-center gap-2" },
-                          React.createElement("span", { className: "text-xs font-bold", style: { color: isActive ? '#fff' : '#cbd5e1' } }, layer.name),
-                          React.createElement("span", { className: "text-[11px] font-mono px-1.5 py-0.5 rounded bg-white/10", style: { color: '#94a3b8' } },
-                            (layer.alt >= 0 ? '+' : '') + layer.alt + ' km'
-                          )
+                      // Body
+                      React.createElement("div", { className: "flex items-center gap-3 flex-1 p-3 min-w-0" },
+                        // Layer dot — bigger when active, with halo
+                        React.createElement("div", {
+                          "aria-hidden": "true",
+                          style: {
+                            width: isActive ? 14 : 10, height: isActive ? 14 : 10,
+                            borderRadius: "50%", flexShrink: 0,
+                            background: "radial-gradient(circle," + layer.color + " 0%," + layer.color + "cc 70%,transparent 100%)",
+                            boxShadow: isActive ? "0 0 12px " + layer.color + ", 0 0 4px " + layer.color : "0 0 4px " + layer.color + "55",
+                            transition: "all .18s ease"
+                          }
+                        }),
+                        React.createElement("div", { className: "flex-1 min-w-0" },
+                          React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
+                            React.createElement("span", { className: "text-xs font-bold", style: { color: isActive ? '#ffffff' : '#e2e8f0', textShadow: isActive ? "0 1px 2px rgba(0,0,0,0.4)" : "none" } }, layer.name),
+                            React.createElement("span", {
+                              className: "text-[10px] font-mono px-1.5 py-0.5 rounded",
+                              style: {
+                                color: layer.color, background: layer.color + '22', border: '1px solid ' + layer.color + '55'
+                              }
+                            }, (layer.alt >= 0 ? '+' : '') + layer.alt + ' km')
+                          ),
+                          React.createElement("p", { className: "text-[11px] mt-1 leading-relaxed", style: { color: isActive ? '#f1f5f9' : '#94a3b8' } }, layer.desc)
                         ),
-                        React.createElement("p", { className: "text-[11px] mt-0.5", style: { color: isActive ? '#e2e8f0' : '#64748b' } }, layer.desc)
-                      ),
-                      React.createElement("div", { className: "text-right flex-shrink-0" },
-                        React.createElement("div", { className: "text-[11px] font-bold", style: { color: '#f59e0b' } }, layer.temp),
-                        React.createElement("div", { className: "text-[11px]", style: { color: '#60a5fa' } }, layer.pressure)
+                        // Right side: temp + pressure chips with subtle glow
+                        React.createElement("div", { className: "flex flex-col gap-1 flex-shrink-0 items-end" },
+                          React.createElement("div", {
+                            className: "text-[10px] font-bold px-2 py-0.5 rounded-md",
+                            style: {
+                              color: '#fbbf24',
+                              background: 'rgba(251,191,36,0.12)',
+                              border: '1px solid rgba(251,191,36,0.35)',
+                              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)'
+                            }
+                          }, '🌡 ' + layer.temp),
+                          React.createElement("div", {
+                            className: "text-[10px] font-bold px-2 py-0.5 rounded-md",
+                            style: {
+                              color: '#60a5fa',
+                              background: 'rgba(96,165,250,0.12)',
+                              border: '1px solid rgba(96,165,250,0.35)',
+                              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)'
+                            }
+                          }, '🜨 ' + layer.pressure)
+                        )
                       )
                     );
                   })
@@ -9108,9 +9495,15 @@ const d = labToolData.solarSystem;
 
                         canvasEl.tabIndex = 0;
 
-                        canvasEl.addEventListener('keydown', function (e) { onKey(e, true); });
+                        // Memory-leak fix: stash every listener by name so _droneCleanup
+                        // can detach them on unmount. Without this, fullscreenchange
+                        // and canvas keydown/mouseup handlers leak forever after the
+                        // user navigates away from the drone scene.
+                        var _droneH = canvasEl._droneHandlers = {};
 
-                        canvasEl.addEventListener('keyup', function (e) { onKey(e, false); });
+                        canvasEl.addEventListener('keydown', _droneH.keydown = function (e) { onKey(e, true); });
+
+                        canvasEl.addEventListener('keyup', _droneH.keyup = function (e) { onKey(e, false); });
 
 
 
@@ -9118,9 +9511,9 @@ const d = labToolData.solarSystem;
 
                         var isLooking = false;
 
-                        canvasEl.addEventListener('mousedown', function (e) { isLooking = true; canvasEl.requestPointerLock && canvasEl.requestPointerLock(); });
+                        canvasEl.addEventListener('mousedown', _droneH.mousedown = function (e) { isLooking = true; canvasEl.requestPointerLock && canvasEl.requestPointerLock(); });
 
-                        canvasEl.addEventListener('mouseup', function () { isLooking = false; });
+                        canvasEl.addEventListener('mouseup', _droneH.mouseup = function () { isLooking = false; });
 
                         function onMouseMove(e) {
 
@@ -9155,7 +9548,7 @@ const d = labToolData.solarSystem;
 
                         hud.className = 'rover-hud';
 
-                        hud.style.cssText = 'position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);border-radius:12px;padding:10px 14px;color:#38bdf8;font-family:monospace;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.3);max-width:290px;transition:opacity 0.3s';
+                        hud.style.cssText = 'position:absolute;top:8px;left:8px;background:linear-gradient(180deg,rgba(15,23,42,0.86) 0%,rgba(7,11,24,0.92) 100%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:12px;padding:10px 14px;color:#38bdf8;font-family:monospace;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.35);max-width:290px;transition:opacity 0.3s;box-shadow:inset 0 1px 0 rgba(56,189,248,0.30),0 0 22px rgba(56,189,248,0.10),0 6px 18px rgba(7,11,24,0.55)';
 
                         var modeLabel = isOcean ? '\uD83D\uDEA4 DEEP-SEA SUBMERSIBLE' : isGas ? '\uD83D\uDEF8 ATMOSPHERIC PROBE' : '\uD83D\uDE97 SURFACE ROVER';
 
@@ -9266,6 +9659,8 @@ const d = labToolData.solarSystem;
                           camera.updateProjectionMatrix();
                           renderer.setSize(w, h2);
                         }
+                        // Track on a separate doc map so cleanup can target the right node.
+                        var _droneDocH = canvasEl._droneDocHandlers = { fullscreenchange: resizeDroneCanvas, webkitfullscreenchange: resizeDroneCanvas, mozfullscreenchange: resizeDroneCanvas };
                         document.addEventListener('fullscreenchange', resizeDroneCanvas);
                         document.addEventListener('webkitfullscreenchange', resizeDroneCanvas);
                         document.addEventListener('mozfullscreenchange', resizeDroneCanvas);
@@ -9384,7 +9779,7 @@ const d = labToolData.solarSystem;
 
                         var hazardEl = document.createElement('div');
 
-                        hazardEl.style.cssText = 'position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(220,38,38,0.85);backdrop-filter:blur(4px);border-radius:8px;padding:5px 16px;color:#fff;font-family:monospace;font-size:10px;font-weight:bold;pointer-events:none;z-index:11;border:1px solid rgba(255,100,100,0.4);text-align:center;opacity:0;transition:opacity 0.5s;letter-spacing:0.5px';
+                        hazardEl.style.cssText = 'position:absolute;top:8px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,rgba(239,68,68,0.92) 0%,rgba(185,28,28,0.92) 100%);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:8px;padding:5px 16px;color:#fff;font-family:monospace;font-size:10px;font-weight:bold;pointer-events:none;z-index:11;border:1px solid rgba(255,140,140,0.55);text-align:center;opacity:0;transition:opacity 0.5s;letter-spacing:0.5px;box-shadow:inset 0 1px 0 rgba(255,200,200,0.40),0 0 18px rgba(239,68,68,0.40),0 4px 14px rgba(7,11,24,0.50);text-shadow:0 1px 2px rgba(0,0,0,0.5)';
 
                         var hazardMsgs = {
 
@@ -9688,7 +10083,7 @@ const d = labToolData.solarSystem;
 
                         var missionCard = document.createElement('div');
 
-                        missionCard.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.9);backdrop-filter:blur(12px);border-radius:16px;padding:24px;color:#fff;font-family:sans-serif;font-size:12px;pointer-events:auto;z-index:15;border:1px solid rgba(56,189,248,0.3);max-width:380px;width:90%;opacity:0;transition:opacity 0.3s;display:none';
+                        missionCard.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,rgba(15,23,42,0.94) 0%,rgba(7,11,24,0.96) 100%);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:16px;padding:24px;color:#fff;font-family:sans-serif;font-size:12px;pointer-events:auto;z-index:15;border:1px solid rgba(56,189,248,0.40);max-width:380px;width:90%;opacity:0;transition:opacity 0.3s;display:none;box-shadow:inset 0 1px 0 rgba(56,189,248,0.30),0 0 32px rgba(56,189,248,0.18),0 12px 32px rgba(7,11,24,0.70)';
 
                         var missionIcon = isOcean ? '\uD83D\uDEA4' : isGas ? '\uD83D\uDEF8' : '\uD83D\uDE97';
 
@@ -9761,7 +10156,7 @@ const d = labToolData.solarSystem;
 
                         var ticker = document.createElement('div');
 
-                        ticker.style.cssText = 'position:absolute;bottom:8px;left:8px;right:8px;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);border-radius:8px;padding:6px 12px;color:#fbbf24;font-family:sans-serif;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(251,191,36,0.2);text-align:center;transition:opacity 0.5s';
+                        ticker.style.cssText = 'position:absolute;bottom:8px;left:8px;right:8px;background:linear-gradient(180deg,rgba(15,23,42,0.80) 0%,rgba(7,11,24,0.90) 100%);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:8px;padding:6px 12px;color:#fbbf24;font-family:sans-serif;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(251,191,36,0.35);text-align:center;transition:opacity 0.5s;box-shadow:inset 0 1px 0 rgba(251,191,36,0.20),0 0 16px rgba(251,191,36,0.08),0 4px 12px rgba(7,11,24,0.50)';
 
                         // Categorized facts with icons
 
@@ -9827,7 +10222,7 @@ const d = labToolData.solarSystem;
 
                         var compass = document.createElement('div');
 
-                        compass.style.cssText = 'position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#38bdf8;font-size:18px;font-weight:bold;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.3)';
+                        compass.style.cssText = 'position:absolute;top:8px;right:8px;background:radial-gradient(circle,rgba(15,23,42,0.85) 0%,rgba(7,11,24,0.92) 100%);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#38bdf8;font-size:18px;font-weight:bold;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.40);box-shadow:inset 0 1px 0 rgba(56,189,248,0.35),0 0 16px rgba(56,189,248,0.15),0 4px 12px rgba(7,11,24,0.50)';
 
                         compass.innerHTML = '\uD83E\uDDED';
 
@@ -10111,7 +10506,7 @@ const d = labToolData.solarSystem;
 
                         var navCard = document.createElement('div');
 
-                        navCard.style.cssText = 'position:absolute;bottom:56px;left:8px;background:rgba(0,0,0,0.88);backdrop-filter:blur(10px);border-radius:12px;padding:14px 18px;color:#fff;font-family:sans-serif;font-size:11px;pointer-events:none;z-index:12;border:1px solid rgba(167,139,250,0.4);max-width:280px;opacity:0;transition:opacity 0.4s;display:none';
+                        navCard.style.cssText = 'position:absolute;bottom:56px;left:8px;background:linear-gradient(180deg,rgba(15,23,42,0.92) 0%,rgba(7,11,24,0.95) 100%);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:12px;padding:14px 18px;color:#fff;font-family:sans-serif;font-size:11px;pointer-events:none;z-index:12;border:1px solid rgba(167,139,250,0.50);max-width:280px;opacity:0;transition:opacity 0.4s;display:none;box-shadow:inset 0 1px 0 rgba(167,139,250,0.35),0 0 22px rgba(167,139,250,0.12),0 6px 18px rgba(7,11,24,0.60)';
 
                         canvasEl.parentElement.appendChild(navCard);
 
@@ -12026,6 +12421,24 @@ const d = labToolData.solarSystem;
 
                           document.removeEventListener('mousemove', onMouseMove);
 
+                          // Memory-leak fix: detach every drone listener tracked on
+                          // canvasEl._droneHandlers / canvasEl._droneDocHandlers and
+                          // disconnect the drone-canvas ResizeObserver, none of which
+                          // were torn down before this commit.
+                          if (canvasEl._droneHandlers) {
+                            Object.keys(canvasEl._droneHandlers).forEach(function (ev) {
+                              canvasEl.removeEventListener(ev, canvasEl._droneHandlers[ev]);
+                            });
+                            canvasEl._droneHandlers = null;
+                          }
+                          if (canvasEl._droneDocHandlers) {
+                            Object.keys(canvasEl._droneDocHandlers).forEach(function (ev) {
+                              document.removeEventListener(ev, canvasEl._droneDocHandlers[ev]);
+                            });
+                            canvasEl._droneDocHandlers = null;
+                          }
+                          if (droneRO) { try { droneRO.disconnect(); } catch (e) {} }
+
                           if (document.pointerLockElement === canvasEl) document.exitPointerLock();
 
                           ro3d.disconnect();
@@ -12120,7 +12533,7 @@ const d = labToolData.solarSystem;
                       }, "\uD83D\uDCDD I have a prediction!"),
                       React.createElement("button", {
                         onClick: function() { upd('poe_seen_' + sel.name, 'skipped'); var seen = (d.poeSeen || []).concat([sel.name]); upd('poeSeen', seen); },
-                        className: "px-3 py-2 text-xs font-bold rounded-lg bg-white text-amber-700 border border-amber-300 hover:bg-amber-50 transition-all"
+                        className: "px-3 py-2 text-xs font-bold rounded-lg bg-white text-amber-700 border border-amber-600 hover:bg-amber-50 transition-all"
                       }, "Skip for now"))
                   ),
 
@@ -12159,8 +12572,8 @@ const d = labToolData.solarSystem;
                         React.createElement("span", { className: "text-[11px] font-black tracking-wide " + (isDark ? 'text-purple-300' : 'text-purple-700') }, "TRUE OR FALSE?")),
                       React.createElement("p", { className: "text-xs font-bold mb-2 " + (isDark ? 'text-purple-200' : 'text-purple-900') }, '"' + mc.statement + '"'),
                       !d['mc_choice_' + mcTrigger] ? React.createElement("div", { className: "flex gap-2" },
-                        React.createElement("button", { onClick: function() { upd('mc_choice_' + mcTrigger, true); upd('mc_answered_' + mcTrigger, mc.answer === true); }, className: "flex-1 px-3 py-1.5 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-emerald-900/30 text-emerald-300 border-emerald-700/50 hover:bg-emerald-800/40' : 'bg-emerald-100 text-emerald-700 border-emerald-300 hover:bg-emerald-200') }, "\u2705 True"),
-                        React.createElement("button", { onClick: function() { upd('mc_choice_' + mcTrigger, false); upd('mc_answered_' + mcTrigger, mc.answer === false); }, className: "flex-1 px-3 py-1.5 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-red-900/30 text-red-300 border-red-700/50 hover:bg-red-800/40' : 'bg-red-100 text-red-700 border-red-300 hover:bg-red-200') }, "\u274C False")
+                        React.createElement("button", { onClick: function() { upd('mc_choice_' + mcTrigger, true); upd('mc_answered_' + mcTrigger, mc.answer === true); }, className: "flex-1 px-3 py-1.5 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-emerald-900/30 text-emerald-300 border-emerald-700/50 hover:bg-emerald-800/40' : 'bg-emerald-100 text-emerald-700 border-emerald-600 hover:bg-emerald-200') }, "\u2705 True"),
+                        React.createElement("button", { onClick: function() { upd('mc_choice_' + mcTrigger, false); upd('mc_answered_' + mcTrigger, mc.answer === false); }, className: "flex-1 px-3 py-1.5 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-red-900/30 text-red-300 border-red-700/50 hover:bg-red-800/40' : 'bg-red-100 text-red-700 border-red-600 hover:bg-red-200') }, "\u274C False")
                       ) : React.createElement("div", null,
                         React.createElement("p", { className: "text-xs font-bold " + (d['mc_choice_' + mcTrigger] === mc.answer ? 'text-emerald-600' : 'text-red-600') }, d['mc_choice_' + mcTrigger] === mc.answer ? '\u2705 Correct!' : '\u274C Not quite!'),
                         React.createElement("p", { className: "text-xs text-purple-700 mt-1 leading-relaxed" }, mc.explanation),
@@ -12227,9 +12640,9 @@ const d = labToolData.solarSystem;
                           var cls = !d.quiz.answered
                             ? (isDark ? 'bg-slate-700 text-slate-200 border-slate-600 hover:border-indigo-400 hover:bg-slate-600' : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50')
                             : isCorrect
-                              ? (isDark ? 'bg-emerald-900/30 text-emerald-300 border-emerald-700/50' : 'bg-emerald-100 text-emerald-800 border-emerald-300')
+                              ? (isDark ? 'bg-emerald-900/30 text-emerald-300 border-emerald-700/50' : 'bg-emerald-100 text-emerald-800 border-emerald-600')
                               : wasChosen && !isCorrect
-                                ? (isDark ? 'bg-red-900/30 text-red-300 border-red-700/50' : 'bg-red-100 text-red-800 border-red-300')
+                                ? (isDark ? 'bg-red-900/30 text-red-300 border-red-700/50' : 'bg-red-100 text-red-800 border-red-600')
                                 : (isDark ? 'bg-slate-800 text-slate-200 border-slate-700' : 'bg-slate-50 text-slate-600 border-slate-200');
 
                           return React.createElement("button", { "aria-label": "Select answer: " + opt,
@@ -12557,7 +12970,7 @@ const d = labToolData.solarSystem;
                             var cv2 = document.querySelector('[data-kepler-canvas]');
                             if (cv2) { cv2._keplerBody = body.id; cv2._keplerTrail = []; }
                           },
-                          className: "px-1.5 py-0.5 rounded text-[11px] font-bold transition-all " + (isActive ? 'bg-indigo-600 text-white' : (isDark ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-white text-slate-600 hover:bg-indigo-50 border border-slate-200'))
+                          className: "px-1.5 py-0.5 rounded text-[11px] font-bold transition-all " + (isActive ? 'bg-indigo-600 text-white' : (isDark ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-white text-slate-600 hover:bg-indigo-50 border border-slate-400'))
                         }, body.emoji + ' ' + body.name);
                       })
                     ),
@@ -12569,7 +12982,7 @@ const d = labToolData.solarSystem;
                         return React.createElement("button", {
                           key: tog.id,
                           onClick: function() { upd('_keplerShow_' + tog.id, !on); },
-                          className: "px-1.5 py-0.5 rounded text-[11px] font-bold transition-all " + (on ? 'bg-purple-600 text-white' : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-white text-slate-200 border border-slate-200'))
+                          className: "px-1.5 py-0.5 rounded text-[11px] font-bold transition-all " + (on ? 'bg-purple-600 text-white' : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-white text-slate-200 border border-slate-400'))
                         }, tog.label);
                       })
                     ),
@@ -13244,7 +13657,7 @@ const d = labToolData.solarSystem;
                         hctx.font = '8px system-ui';
                         hctx.textAlign = 'left';
                         hctx.fillText('Earth \u2192 ' + sel.name + ' transfer orbit', HW * 0.65, 15);
-                        hctx.fillStyle = '#64748b';
+                        hctx.fillStyle = '#94a3b8';
                         hctx.fillText(HOHMANN[sel.name].travelDays + ' days', HW * 0.65, 27);
                         requestAnimationFrame(drawHohmann);
                       }
@@ -13325,7 +13738,7 @@ const d = labToolData.solarSystem;
                     type: "number", placeholder: "Your weight (kg)", value: d.gravWeight || '',
                     'aria-label': 'Your weight in kilograms',
                     onChange: function(e) { updMulti({ gravWeight: e.target.value, gravCalcUsed: true }); setTimeout(checkChallenges, 50); },
-                    className: "orr-input flex-1 px-3 py-1.5 rounded-lg text-sm outline-none border " + (isDark ? 'bg-slate-800 border-orange-700/50 text-slate-200' : 'bg-white border-orange-300')
+                    className: "orr-input flex-1 px-3 py-1.5 rounded-lg text-sm border " + (isDark ? 'bg-slate-800 border-orange-700/50 text-slate-200' : 'bg-white border-orange-600')
                   }),
                   React.createElement("span", { className: "text-sm font-bold " + (isDark ? 'text-orange-400' : 'text-orange-600'), style: { fontFamily: 'monospace' } },
                     d.gravWeight ? (Math.round(parseFloat(d.gravWeight) * (GRAVITY_MAP[sel.name] || 1) * 10) / 10) + ' kg on ' + sel.name : '...'
@@ -13377,7 +13790,7 @@ const d = labToolData.solarSystem;
                     'aria-label': 'Ask the AI space tutor a question',
                     onChange: function(e) { upd('aiQuestion', e.target.value); },
                     onKeyDown: function(e) { if (e.key === 'Enter') askSpaceTutor(d.aiQuestion); },
-                    className: "orr-input flex-1 px-3 py-1.5 rounded-lg text-sm outline-none border " + (isDark ? 'bg-slate-800 border-violet-700/50 text-slate-200' : 'bg-white border-violet-300')
+                    className: "orr-input flex-1 px-3 py-1.5 rounded-lg text-sm border " + (isDark ? 'bg-slate-800 border-violet-700/50 text-slate-200' : 'bg-white border-violet-600')
                   }),
                   React.createElement("button", { "aria-label": "Ask Space Tutor",
                     onClick: function() { askSpaceTutor(d.aiQuestion); },
@@ -13484,7 +13897,7 @@ const d = labToolData.solarSystem;
               ),
 
               // === TUTORIAL OVERLAY (first visit) ===
-              !d.tutorialDismissed && React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+              !d.tutorialDismissed && React.createElement("div", { 
                 className: "fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50",
                 onClick: function(e) { if (e.target === e.currentTarget) upd('tutorialDismissed', true); }
               },
@@ -13529,7 +13942,7 @@ const d = labToolData.solarSystem;
                     var lp = LEARNING_PATHS[k];
                     var active = d.learningPath === k;
                     return React.createElement("button", { key: k, onClick: function() { upd('learningPath', active ? null : k); },
-                      className: "p-2 rounded-lg border text-left transition-all " + (active ? (isDark ? 'bg-indigo-900/30 border-indigo-600/50 shadow-sm' : 'bg-indigo-50 border-indigo-300 shadow-sm') : (isDark ? 'bg-slate-800 border-slate-700 hover:border-indigo-500/50' : 'bg-white border-slate-200 hover:border-indigo-300'))
+                      className: "p-2 rounded-lg border text-left transition-all " + (active ? (isDark ? 'bg-indigo-900/30 border-indigo-600/50 shadow-sm' : 'bg-indigo-50 border-indigo-600 shadow-sm') : (isDark ? 'bg-slate-800 border-slate-700 hover:border-indigo-500/50' : 'bg-white border-slate-200 hover:border-indigo-600'))
                     },
                       React.createElement("div", { className: "text-sm mb-0.5" }, lp.icon),
                       React.createElement("div", { className: "text-[11px] font-bold " + (active ? (isDark ? 'text-indigo-300' : 'text-indigo-700') : (isDark ? 'text-slate-300' : 'text-slate-700')) }, lp.name),
@@ -13556,7 +13969,7 @@ const d = labToolData.solarSystem;
                 ),
                 React.createElement("button", {
                   onClick: function() { upd('showJournal', !d.showJournal); },
-                  className: "w-full px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (d.showJournal ? (isDark ? 'bg-amber-900/30 text-amber-300 border border-amber-700/50' : 'bg-amber-100 text-amber-700 border border-amber-300') : (isDark ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-amber-700 text-white hover:bg-amber-600'))
+                  className: "w-full px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (d.showJournal ? (isDark ? 'bg-amber-900/30 text-amber-300 border border-amber-700/50' : 'bg-amber-100 text-amber-700 border border-amber-600') : (isDark ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-amber-700 text-white hover:bg-amber-600'))
                 }, d.showJournal ? 'Close Journal' : (sel ? 'Write about ' + sel.name : 'Open Journal')),
                 d.showJournal && React.createElement("div", { className: "mt-2 space-y-2" },
                   // New entry form
@@ -13564,19 +13977,19 @@ const d = labToolData.solarSystem;
                     React.createElement("div", { className: "text-[11px] font-bold " + (isDark ? 'text-amber-300' : 'text-amber-800') }, "\uD83D\uDCDD New Entry: " + sel.name),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-amber-600 block mb-0.5" }, "What I predicted:"),
-                      React.createElement("textarea", { id: 'journal-predict', rows: 2, placeholder: "Before exploring, I thought...", className: "w-full text-[11px] p-2 rounded border border-amber-200 resize-none", style: { fontSize: '11px' } })
+                      React.createElement("textarea", { id: 'journal-predict', rows: 2, placeholder: "Before exploring, I thought...", className: "w-full text-[11px] p-2 rounded border border-amber-600 resize-none", style: { fontSize: '11px' } })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-amber-600 block mb-0.5" }, "What I observed:"),
-                      React.createElement("textarea", { id: 'journal-observe', rows: 2, placeholder: "I noticed that...", className: "w-full text-[11px] p-2 rounded border border-amber-200 resize-none", style: { fontSize: '11px' } })
+                      React.createElement("textarea", { id: 'journal-observe', rows: 2, placeholder: "I noticed that...", className: "w-full text-[11px] p-2 rounded border border-amber-600 resize-none", style: { fontSize: '11px' } })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-amber-600 block mb-0.5" }, "What surprised me:"),
-                      React.createElement("textarea", { id: 'journal-surprise', rows: 1, placeholder: "I was surprised that...", className: "w-full text-[11px] p-2 rounded border border-amber-200 resize-none", style: { fontSize: '11px' } })
+                      React.createElement("textarea", { id: 'journal-surprise', rows: 1, placeholder: "I was surprised that...", className: "w-full text-[11px] p-2 rounded border border-amber-600 resize-none", style: { fontSize: '11px' } })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-amber-600 block mb-0.5" }, "One question I still have:"),
-                      React.createElement("textarea", { id: 'journal-question', rows: 1, placeholder: "I wonder...", className: "w-full text-[11px] p-2 rounded border border-amber-200 resize-none", style: { fontSize: '11px' } })
+                      React.createElement("textarea", { id: 'journal-question', rows: 1, placeholder: "I wonder...", className: "w-full text-[11px] p-2 rounded border border-amber-600 resize-none", style: { fontSize: '11px' } })
                     ),
                     React.createElement("button", {
                       onClick: function() {
@@ -13684,10 +14097,10 @@ const d = labToolData.solarSystem;
                 // Quick stats summary
                 React.createElement("div", { className: "mt-2 grid grid-cols-4 gap-1" },
                   [
-                    { label: 'Planets', value: planetsVisited.length + '/9', color: planetsVisited.length >= 9 ? '#22c55e' : '#64748b' },
-                    { label: 'Quiz', value: (d.quiz ? d.quiz.score : 0) + '', color: (d.quiz && d.quiz.score >= 5) ? '#22c55e' : '#64748b' },
-                    { label: 'Journal', value: journalEntries.length + '', color: journalEntries.length > 0 ? '#22c55e' : '#64748b' },
-                    { label: 'Vocab', value: (d.vocabLookedUp || []).length + '/' + Object.keys(VOCAB).length, color: '#64748b' }
+                    { label: 'Planets', value: planetsVisited.length + '/9', color: planetsVisited.length >= 9 ? '#22c55e' : '#94a3b8' },
+                    { label: 'Quiz', value: (d.quiz ? d.quiz.score : 0) + '', color: (d.quiz && d.quiz.score >= 5) ? '#22c55e' : '#94a3b8' },
+                    { label: 'Journal', value: journalEntries.length + '', color: journalEntries.length > 0 ? '#22c55e' : '#94a3b8' },
+                    { label: 'Vocab', value: (d.vocabLookedUp || []).length + '/' + Object.keys(VOCAB).length, color: '#94a3b8' }
                   ].map(function(stat) {
                     return React.createElement("div", { key: stat.label, className: "text-center p-1.5 rounded border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100') },
                       React.createElement("div", { className: "text-sm font-bold", style: { color: stat.color, fontFamily: 'monospace' } }, stat.value),

@@ -20,6 +20,10 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
     brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions,
     visualCustomInstructions, lessonCustomAdditions, timelineTopic, fillInTheBlank,
     resourceCount, fullPackTargetGroup, expandedTools, dokOptions, audioBank, voiceMap,
+    // Latent-bug fix from auditor: STATE_QUERY intent ("what's my voice speed?")
+    // references these as bare refs in the settings-summary builder.
+    HELP_STRINGS, includeSourceCitations, selectedVoice, textFormat,
+    voiceSpeed, voiceVolume,
     // Refs
     uiDispatch,
     // State setters
@@ -118,7 +122,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                             Parameters to Extract:
                             1. topic: The main subject matter.
                             2. grade: The target grade level (e.g. "Kindergarten", "5th Grade", "College"). Infer from complexity if not stated.
-                            3. tone: The writing style (options: "Informative", "Narrative", "Persuasive", "Humorous", "Step-by-Step").
+                            3. tone: The writing style (options: "Informative", "Narrative", "Dialogue", "Persuasive", "Humorous", "Step-by-Step"). Use "Dialogue" only when the user explicitly asks for a conversation, dialogue script, or back-and-forth between two characters.
                             4. length: Approximate word count based on depth (e.g. 200 for simple, 800 for detail).
                             5. dok: Webb's Depth of Knowledge (e.g. "Level 1" to "Level 4").
                             Return JSON: { "topic": "...", "grade": "...", "tone": "...", "length": "...", "dok": "..." }

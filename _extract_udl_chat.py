@@ -21,6 +21,11 @@ DEPS = [
     'activeBlueprint', 'activeView', 'alloBotRef', 'currentUiLanguage',
     'guidedFlowState', 'isAutoFillMode', 'sourceTopic', 'udlMessages', 'udlInput',
     'leveledTextLanguage', 'persistedLessonDNA',
+    # Latent-bug fix from auditor: STATE_QUERY intent ("what's my voice speed?")
+    # references these as bare refs in the settings-summary builder. None had
+    # been triggered before the hardened auditor caught them.
+    'HELP_STRINGS', 'includeSourceCitations', 'selectedVoice', 'textFormat',
+    'voiceSpeed', 'voiceVolume',
     # Refs
     'uiDispatch',
     # State setters

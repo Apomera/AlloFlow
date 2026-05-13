@@ -30,6 +30,28 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-molecule')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-molecule';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _molAC = null;
@@ -810,6 +832,35 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
             ),
 
+            // ── Topic-accent hero band per mode ──
+            (function() {
+              var MODE_META = {
+                viewer:    { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83D\uDD2C', title: 'Viewer \u2014 ball-and-stick + space-filling',         hint: 'Each atom\u2019s color follows CPK (carbon black, oxygen red, nitrogen blue, hydrogen white). Bond lengths are not arbitrary \u2014 covalent radii from quantum chemistry tables, ~70-150 picometers.' },
+                creator:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\u2697',         title: 'Compound Creator \u2014 valence + bonding rules',     hint: 'Octet rule: most atoms want 8 valence electrons. C bonds 4 ways, N 3, O 2, H 1. Lewis dot structures (1916) still drive 90% of intro chemistry intuition.' },
+                build:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83E\uDDF1', title: 'Build \u2014 drag atoms, draw bonds',                  hint: 'Single, double, triple bonds = 1, 2, 3 shared electron pairs. Triple bonds are shorter and stronger (N\u2261N at 110pm vs N\u2013N at 145pm). Geometry follows VSEPR: pairs repel.' },
+                table:     { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDDC2', title: 'Periodic Table \u2014 Mendeleev\u2019s 1869 grid',     hint: 'Periods (rows) = electron shells; groups (columns) = valence electrons. Mendeleev predicted gallium and germanium\u2019s properties before discovery \u2014 the table predicted reality.' },
+                reactions: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2697',         title: 'Reactions \u2014 reactants \u2192 products + ΔH',      hint: 'Conservation of mass (Lavoisier 1789): atoms in = atoms out. Balance the equation, predict the product, classify (synthesis / decomposition / single-replace / double-replace / combustion).' }
+              };
+              var meta = MODE_META[mode] || MODE_META.viewer;
+              return React.createElement('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
             // â”€â”€ Viewer Mode â”€â”€
 
             mode === 'viewer' && React.createElement("div", null,
@@ -822,7 +873,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 (d.atoms || []).map((a, i) => React.createElement("g", { key: i },
 
-                  React.createElement("circle", { cx: a.x, cy: a.y, r: 24, fill: a.color || '#64748b', stroke: '#fff', strokeWidth: 3, style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', cursor: 'grab' }, onMouseDown: e => { e.preventDefault(); upd('dragging', i); } }),
+                  React.createElement("circle", { cx: a.x, cy: a.y, r: 24, fill: a.color || '#94a3b8', stroke: '#fff', strokeWidth: 3, style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', cursor: 'grab' }, onMouseDown: e => { e.preventDefault(); upd('dragging', i); } }),
 
                   React.createElement("text", { x: a.x, y: a.y + 5, textAnchor: "middle", fill: "white", style: { fontSize: '14px', fontWeight: 'bold' } }, a.el)
 
@@ -883,7 +934,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     return React.createElement("div", { key: sym, className: "flex items-center gap-1 bg-slate-50 rounded-lg px-2 py-1 border" },
 
-                      React.createElement("span", { className: "w-8 h-8 rounded-md flex items-center justify-center text-white font-bold text-sm", style: { backgroundColor: el?.c || '#64748b' } }, sym),
+                      React.createElement("span", { className: "w-8 h-8 rounded-md flex items-center justify-center text-white font-bold text-sm", style: { backgroundColor: el?.c || '#94a3b8' } }, sym),
 
                       React.createElement("span", { className: "text-lg font-black text-slate-700" }, "\u00D7" + count),
 
@@ -899,7 +950,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
               React.createElement("div", { className: "flex gap-2 mb-4" },
 
-                React.createElement("button", { "aria-label": "Combine!", onClick: tryCraft, disabled: Object.keys(selectedEls).length === 0, className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-teal-600 shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed" }, "\u2697\uFE0F Combine!"),
+                React.createElement("button", { onClick: tryCraft, disabled: Object.keys(selectedEls).length === 0, className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-teal-600 shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed" }, "\u2697\uFE0F Combine!"),
 
                 React.createElement("button", { "aria-label": "Clear", onClick: clearElements, className: "px-4 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors" }, "\uD83D\uDD04 Clear")
 
@@ -1133,7 +1184,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                     React.createElement("circle", {
 
-                      cx: a.x, cy: a.y, r: 22, fill: a.color || '#64748b', stroke: isSelected ? '#3b82f6' : '#fff', strokeWidth: isSelected ? 3 : 2.5,
+                      cx: a.x, cy: a.y, r: 22, fill: a.color || '#94a3b8', stroke: isSelected ? '#3b82f6' : '#fff', strokeWidth: isSelected ? 3 : 2.5,
 
                       style: { filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', cursor: 'grab' },
 
@@ -1245,7 +1296,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   },
 
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all " + (d.buildBondFrom !== null && d.buildBondFrom !== undefined ? 'bg-blue-100 text-blue-700 border-blue-300' : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200')
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all " + (d.buildBondFrom !== null && d.buildBondFrom !== undefined ? 'bg-blue-100 text-blue-700 border-blue-600' : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200')
 
                 }, "\u{1F517} " + (d.buildBondFrom !== null && d.buildBondFrom !== undefined ? 'Cancel Bond' : 'Draw Bond')),
 
@@ -1275,7 +1326,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   onClick: () => { upd('buildAtoms', []); upd('buildBonds', []); upd('buildBondFrom', null); upd('buildCheckResult', null); },
 
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all ml-auto"
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 border border-red-600 hover:bg-red-100 transition-all ml-auto"
 
                 }, "\uD83D\uDDD1\uFE0F Clear All")
 
@@ -1299,7 +1350,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                 const formulaStr = sorted.map(k => k + (counts[k] > 1 ? counts[k] : '')).join('');
 
-                return React.createElement("div", { className: "mt-3 bg-slate-50 rounded-xl p-3 border border-slate-200 flex items-center justify-between" },
+                return React.createElement("div", { className: "mt-3 bg-slate-50 rounded-xl p-3 border border-slate-400 flex items-center justify-between" },
 
                   React.createElement("div", null,
 
@@ -1522,7 +1573,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                         React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                          (detail.uses || []).map((use, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[11px] font-medium text-slate-700 border border-slate-200/80" }, use))
+                          (detail.uses || []).map((use, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[11px] font-medium text-slate-700 border border-slate-400/80" }, use))
 
                         )
 
@@ -1534,7 +1585,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                         React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                          (detail.compounds || []).map((comp, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[11px] font-medium text-slate-700 border border-slate-200/80" }, comp))
+                          (detail.compounds || []).map((comp, i) => React.createElement("span", { key: i, className: "px-2 py-0.5 bg-white/60 rounded-full text-[11px] font-medium text-slate-700 border border-slate-400/80" }, comp))
 
                         )
 
@@ -1548,7 +1599,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                        relatedCompounds.map((comp, i) => React.createElement("button", { "aria-label": "Open " + comp.name + " in Compound Creator", key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[11px] font-bold text-emerald-700 border border-emerald-200 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")"))
+                        relatedCompounds.map((comp, i) => React.createElement("button", { "aria-label": "Open " + comp.name + " in Compound Creator", key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[11px] font-bold text-emerald-700 border border-emerald-600 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")"))
 
                       )
 
@@ -1570,7 +1621,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                         React.createElement("canvas", { width: 220, height: 220,
 
-                          className: "rounded-xl border border-slate-200 bg-slate-900 flex-shrink-0",
+                          className: "rounded-xl border border-slate-400 bg-slate-900 flex-shrink-0",
 
                           key: 'bohr-' + d.selectedElement.n,
 
@@ -1610,9 +1661,14 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                             }
 
+                            // PL7 HiDPI: crisp rendering on retina displays.
+                            if (window.StemLab && window.StemLab.setupHiDPI) {
+                              window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+                            }
                             var ctx = canvas.getContext('2d');
+                            if (canvas._dpr) ctx.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
 
-                            var W = canvas.width, H = canvas.height;
+                            var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
 
                             var cx = W / 2, cy = H / 2;
 
@@ -2154,10 +2210,11 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
                     React.createElement("input", {
                       type: "text",
                       value: aiQuestion,
+                      "aria-label": "Ask the chemistry tutor about elements, compounds, or reactions",
                       onChange: (e) => upd('aiQuestion', e.target.value),
                       onKeyDown: (e) => { if (e.key === 'Enter') askChemTutor(aiQuestion); },
                       placeholder: "Ask about any element, compound, or reaction...",
-                      className: "flex-1 px-3 py-2 rounded-lg border border-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                      className: "flex-1 px-3 py-2 rounded-lg border border-slate-400 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-300"
                     }),
                     React.createElement("button", { "aria-label": "Ask Chem Tutor",
                       onClick: () => askChemTutor(aiQuestion),
@@ -2190,7 +2247,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
               )
             ),
 // ═══ Tutorial Overlay ═══
-            !tutorialDismissed && React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+            !tutorialDismissed && React.createElement("div", { 
               className: "fixed inset-0 z-50 flex items-center justify-center bg-black/40",
               onClick: (e) => { if (e.target === e.currentTarget) dismissTutorial(); }
             },

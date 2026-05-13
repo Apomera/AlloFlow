@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // stem_tool_dissection.js — Virtual Dissection Lab
 // Extracted from stem_tool_science.js as a standalone module
 // Uses window.StemLab.registerTool() plugin architecture
@@ -179,7 +189,7 @@ var d = labToolData.dissection || {};
 
                 { id: 'organs', name: 'Organs', icon: '\uD83E\uDEC1', color: '#fbbf24', accent: '#d97706', desc: 'Digestive, respiratory, circulatory, and urogenital organs.' },
 
-                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: '#e2e8f0', accent: '#64748b', desc: 'Endoskeleton adapted for jumping.' },
+                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: '#e2e8f0', accent: '#94a3b8', desc: 'Endoskeleton adapted for jumping.' },
 
                 { id: 'nervous', name: 'Nervous', icon: '\u26A1', color: '#c084fc', accent: '#7c3aed', desc: 'CNS and peripheral nerves.' }
 
@@ -400,7 +410,7 @@ var d = labToolData.dissection || {};
 
                 { id: 'organs', name: 'Visceral Organs', icon: '\uD83E\uDEC1', color: '#fbbf24', accent: '#d97706', desc: 'Complete mammalian organs \u2014 closest lab animal to human.' },
 
-                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: '#e2e8f0', accent: '#64748b', desc: 'Largely cartilaginous fetal skeleton.' },
+                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: '#e2e8f0', accent: '#94a3b8', desc: 'Largely cartilaginous fetal skeleton.' },
 
                 { id: 'nervous', name: 'Nervous', icon: '\u26A1', color: '#c084fc', accent: '#7c3aed', desc: 'Complex mammalian CNS with cerebral cortex.' }
 
@@ -512,7 +522,7 @@ var d = labToolData.dissection || {};
 
                 { id: 'organs', name: 'Internal Organs', icon: '\uD83E\uDEC1', color: '#fbbf24', accent: '#d97706', desc: 'Swim bladder, gills, 2-chambered heart, pyloric ceca.' },
 
-                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: '#e2e8f0', accent: '#64748b', desc: 'Ossified skeleton with fin rays and operculum.' }
+                { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: '#e2e8f0', accent: '#94a3b8', desc: 'Ossified skeleton with fin rays and operculum.' }
 
               ],
 
@@ -919,9 +929,14 @@ var d = labToolData.dissection || {};
 
             if (canvas._dissAnim) return;
 
+            // PL7 HiDPI: crisp rendering on retina displays.
+            if (window.StemLab && window.StemLab.setupHiDPI) {
+              window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+            }
             var ctx = canvas.getContext('2d');
+            if (canvas._dpr) ctx.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
 
-            var W = canvas.width, H = canvas.height;
+            var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
 
             var dissTick = 0;
 
@@ -1143,7 +1158,7 @@ var d = labToolData.dissection || {};
 
               var layerColor = curLayer.color || '#94a3b8';
 
-              var layerStroke = curLayer.accent || '#64748b';
+              var layerStroke = curLayer.accent || '#94a3b8';
 
               // cx, cy declared at top of drawDissectionFrame
 
@@ -5784,31 +5799,31 @@ var d = labToolData.dissection || {};
                     upd('specimen', sk); upd('currentLayer', 0); upd('selectedOrgan', null);
                     if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'specimenSelect', 'Selected ' + sp.name + '. ' + sp.desc, { debounce: 500 });
                   },
-                  className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all " + (isActive ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200')
+                  className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all " + (isActive ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-400')
                 }, sp.icon + ' ' + sp.name);
               })
             ),
 
 
             // ── Toolbar ── collapsible dropdown groups
-            React.createElement("div", { className: "flex flex-wrap items-center gap-1 bg-slate-50 rounded-xl p-1.5 border border-slate-200" },
+            React.createElement("div", { className: "flex flex-wrap items-center gap-1 bg-slate-50 rounded-xl p-1.5 border border-slate-400" },
 
               // ── View toggle ──
               React.createElement("button", { "aria-label": "Toggle View toolbar",
                 onClick: function () { upd('toolbarViewOpen', !d.toolbarViewOpen); upd('toolbarToolsOpen', false); upd('toolbarStudyOpen', false); },
-                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarViewOpen ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-blue-50')
+                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarViewOpen ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-400 hover:bg-blue-50')
               }, '\uD83D\uDC41 View ' + (d.toolbarViewOpen ? '\u25B2' : '\u25BC')),
 
               // ── Tools toggle ──
               React.createElement("button", { "aria-label": "Toggle Tools toolbar",
                 onClick: function () { upd('toolbarToolsOpen', !d.toolbarToolsOpen); upd('toolbarViewOpen', false); upd('toolbarStudyOpen', false); },
-                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarToolsOpen ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50')
+                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarToolsOpen ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50')
               }, '\uD83D\uDEE0 Tools ' + (d.toolbarToolsOpen ? '\u25B2' : '\u25BC')),
 
               // ── Study toggle ──
               React.createElement("button", { "aria-label": "Toggle Study toolbar",
                 onClick: function () { upd('toolbarStudyOpen', !d.toolbarStudyOpen); upd('toolbarViewOpen', false); upd('toolbarToolsOpen', false); },
-                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarStudyOpen ? 'bg-amber-700 text-white shadow-md' : (d.quizMode || d.flashcardMode || d.guidedMode || d.compareMode || d.practicalMode ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-white text-slate-600 border border-slate-200 hover:bg-amber-50'))
+                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarStudyOpen ? 'bg-amber-700 text-white shadow-md' : (d.quizMode || d.flashcardMode || d.guidedMode || d.compareMode || d.practicalMode ? 'bg-amber-100 text-amber-700 border border-amber-600' : 'bg-white text-slate-600 border border-slate-400 hover:bg-amber-50'))
               }, '\uD83D\uDCDA Study ' + (d.toolbarStudyOpen ? '\u25B2' : '\u25BC'))
 
             ),
@@ -6039,22 +6054,22 @@ var d = labToolData.dissection || {};
 
                   width: 500, height: 600,
 
-                  className: "w-full rounded-xl border border-slate-200 cursor-crosshair",
+                  className: "w-full rounded-xl border border-slate-400 cursor-crosshair",
 
                   style: { aspectRatio: '5/6', background: '#0f172a' }
 
                 }),
 
                 // Zoom control bar
-                React.createElement("div", { className: "flex items-center justify-center gap-2 mt-1.5 py-1 px-2 rounded-lg bg-slate-100 border border-slate-200" },
+                React.createElement("div", { className: "flex items-center justify-center gap-2 mt-1.5 py-1 px-2 rounded-lg bg-slate-100 border border-slate-400" },
                   React.createElement("button", { "aria-label": "Zoom out canvas",
                     onClick: function () { var z = Math.max(0.5, (d.canvasZoom || 1) - 0.25); upd('canvasZoom', z); },
-                    className: "px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-300 hover:bg-slate-50"
+                    className: "px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-400 hover:bg-slate-50"
                   }, '\u2796'),
                   React.createElement("span", { className: "text-[11px] font-mono text-slate-600 min-w-[40px] text-center" }, Math.round((d.canvasZoom || 1) * 100) + '%'),
                   React.createElement("button", { "aria-label": "Zoom in canvas",
                     onClick: function () { var z = Math.min(3, (d.canvasZoom || 1) + 0.25); upd('canvasZoom', z); },
-                    className: "px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-300 hover:bg-slate-50"
+                    className: "px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-400 hover:bg-slate-50"
                   }, '\u2795'),
                   (d.canvasZoom || 1) !== 1 ? React.createElement("button", { "aria-label": "100%",
                     onClick: function () { upd('canvasZoom', 1); upd('canvasPanX', 0); upd('canvasPanY', 0); },
@@ -6089,7 +6104,7 @@ var d = labToolData.dissection || {};
 
                 React.createElement("div", { className: "text-center" },
 
-                  React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                  React.createElement("div", { 
 
                     onClick: function () { upd('flashcardFlipped', !d.flashcardFlipped); },
 
@@ -6205,7 +6220,7 @@ var d = labToolData.dissection || {};
 
                       key: sk,
 
-                      className: "p-2 rounded-lg text-xs " + (isCurrent ? 'bg-cyan-100 border border-cyan-300' : 'bg-white border border-slate-200')
+                      className: "p-2 rounded-lg text-xs " + (isCurrent ? 'bg-cyan-100 border border-cyan-300' : 'bg-white border border-slate-400')
 
                     },
 
@@ -6353,7 +6368,7 @@ var d = labToolData.dissection || {};
 
                     Object.keys(weightMap).forEach(function (k) { if (sn.indexOf(k) >= 0) w = weightMap[k]; });
 
-                    return w ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200 mr-1 mb-1" }, '\u2696\uFE0F ' + w + ' ' + 'Human') : null;
+                    return w ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-400 mr-1 mb-1" }, '\u2696\uFE0F ' + w + ' ' + 'Human') : null;
 
                   })(),
 
@@ -6477,9 +6492,7 @@ var d = labToolData.dissection || {};
 
                   React.createElement("div", { className: "mt-2 flex gap-1" },
 
-                    React.createElement("button", { "aria-label": "Dissection action",
-
-                      onClick: function () {
+                    React.createElement("button", { onClick: function () {
 
                         if (typeof callGemini === 'function') {
 
@@ -6502,9 +6515,7 @@ var d = labToolData.dissection || {};
 
                     }, '\uD83E\uDD16 ' + 'AI Explain'),
 
-                    React.createElement("button", { "aria-label": "Dissection action",
-
-                      onClick: function () {
+                    React.createElement("button", { onClick: function () {
 
                         var text = sel.name + '\n' + sel.fn;
 
@@ -6538,11 +6549,13 @@ var d = labToolData.dissection || {};
 
                     placeholder: 'Search organs...',
 
+                    "aria-label": "Search organs in this layer",
+
                     value: d.organSearch || '',
 
                     onChange: function (e) { upd('organSearch', e.target.value); },
 
-                    className: "w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs mb-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    className: "w-full px-2 py-1.5 rounded-lg border border-slate-400 text-xs mb-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
 
                   }),
 
@@ -6586,9 +6599,7 @@ var d = labToolData.dissection || {};
 
                       var isExplored = (d.exploredOrgans || {})[specimen + '|' + org.id];
 
-                      return React.createElement("button", { "aria-label": "Change selected organ",
-
-                        key: org.id,
+                      return React.createElement("button", { key: org.id,
 
                         id: 'diss-organ-' + org.id,
 
@@ -6643,9 +6654,7 @@ var d = labToolData.dissection || {};
 
                       var isWrong = isChosen && !isCorrect;
 
-                      return React.createElement("button", { "aria-label": "Dissection action",
-
-                        key: opt.id, disabled: !!fb,
+                      return React.createElement("button", { key: opt.id, disabled: !!fb,
 
                         onClick: function () {
 
@@ -6792,7 +6801,7 @@ var d = labToolData.dissection || {};
 
                   React.createElement("div", { className: "w-full h-2 bg-blue-100 rounded-full overflow-hidden" },
 
-                    React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100", className: "h-full rounded-full transition-all duration-500 " + (progressPct >= 100 ? 'bg-green-500' : 'bg-blue-500'), style: { width: progressPct + '%' } })
+                    React.createElement("div", { role: "progressbar", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": progressPct, "aria-label": "Structures examined: " + exploredCount + " of " + totalOrgansInSpecimen, className: "h-full rounded-full transition-all duration-500 " + (progressPct >= 100 ? 'bg-green-500' : 'bg-blue-500'), style: { width: progressPct + '%' } })
 
                   ),
 
@@ -6848,7 +6857,7 @@ var d = labToolData.dissection || {};
 
                 // Specimen stats card
 
-                React.createElement("div", { className: "bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl border border-slate-200 p-3 mb-2" },
+                React.createElement("div", { className: "bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl border border-slate-400 p-3 mb-2" },
 
                   React.createElement("div", { className: "text-[11px] font-bold text-slate-700 mb-1" }, '\uD83D\uDCC8 ' + 'Specimen Stats'),
 
@@ -6900,7 +6909,7 @@ var d = labToolData.dissection || {};
 
                 React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-3 mb-2" },
 
-                  React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                  React.createElement("div", { 
 
                     className: "text-[11px] font-bold text-emerald-700 mb-1 cursor-pointer",
 
@@ -6930,7 +6939,7 @@ var d = labToolData.dissection || {};
 
                       var isComplete = (d.completedObjectives || {})[oi];
 
-                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                      return React.createElement("div", { 
 
                         key: oi,
 
@@ -6964,7 +6973,7 @@ var d = labToolData.dissection || {};
 
                 React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl border border-violet-200 p-3" },
 
-                  React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                  React.createElement("div", { 
 
                     className: "text-[11px] font-bold text-violet-700 mb-1 cursor-pointer",
 

@@ -5756,53 +5756,37 @@ var d = labToolData.dissection || {};
               SPEC_KEYS.map(function (sk) {
                 var sp = SPECIMENS[sk];
                 var isActive = sk === specimen;
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_dissection.js
-                return React.createElement("button", { "aria-label": "Change specimen",
-=======
                 return React.createElement("button", { "aria-label": "Select specimen: " + sp.name,
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_dissection.js
                   key: sk,
                   onClick: function () {
                     upd('specimen', sk); upd('currentLayer', 0); upd('selectedOrgan', null);
                     if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'specimenSelect', 'Selected ' + sp.name + '. ' + sp.desc, { debounce: 500 });
                   },
-                  className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all " + (isActive ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200')
+                  className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all " + (isActive ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-400')
                 }, sp.icon + ' ' + sp.name);
               })
             ),
 
 
             // ── Toolbar ── collapsible dropdown groups
-            React.createElement("div", { className: "flex flex-wrap items-center gap-1 bg-slate-50 rounded-xl p-1.5 border border-slate-200" },
+            React.createElement("div", { className: "flex flex-wrap items-center gap-1 bg-slate-50 rounded-xl p-1.5 border border-slate-400" },
 
               // ── View toggle ──
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_dissection.js
-              React.createElement("button", { "aria-label": "View",
-=======
               React.createElement("button", { "aria-label": "Toggle View toolbar",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_dissection.js
                 onClick: function () { upd('toolbarViewOpen', !d.toolbarViewOpen); upd('toolbarToolsOpen', false); upd('toolbarStudyOpen', false); },
-                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarViewOpen ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-blue-50')
+                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarViewOpen ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-400 hover:bg-blue-50')
               }, '\uD83D\uDC41 View ' + (d.toolbarViewOpen ? '\u25B2' : '\u25BC')),
 
               // ── Tools toggle ──
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_dissection.js
-              React.createElement("button", { "aria-label": "Tools",
-=======
               React.createElement("button", { "aria-label": "Toggle Tools toolbar",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_dissection.js
                 onClick: function () { upd('toolbarToolsOpen', !d.toolbarToolsOpen); upd('toolbarViewOpen', false); upd('toolbarStudyOpen', false); },
-                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarToolsOpen ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50')
+                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarToolsOpen ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50')
               }, '\uD83D\uDEE0 Tools ' + (d.toolbarToolsOpen ? '\u25B2' : '\u25BC')),
 
               // ── Study toggle ──
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_dissection.js
-              React.createElement("button", { "aria-label": "Study",
-=======
               React.createElement("button", { "aria-label": "Toggle Study toolbar",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_dissection.js
                 onClick: function () { upd('toolbarStudyOpen', !d.toolbarStudyOpen); upd('toolbarViewOpen', false); upd('toolbarToolsOpen', false); },
-                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarStudyOpen ? 'bg-amber-700 text-white shadow-md' : (d.quizMode || d.flashcardMode || d.guidedMode || d.compareMode || d.practicalMode ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-white text-slate-600 border border-slate-200 hover:bg-amber-50'))
+                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarStudyOpen ? 'bg-amber-700 text-white shadow-md' : (d.quizMode || d.flashcardMode || d.guidedMode || d.compareMode || d.practicalMode ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-white text-slate-600 border border-slate-400 hover:bg-amber-50'))
               }, '\uD83D\uDCDA Study ' + (d.toolbarStudyOpen ? '\u25B2' : '\u25BC'))
 
             ),
@@ -5810,41 +5794,25 @@ var d = labToolData.dissection || {};
             // ── View group expanded ──
             d.toolbarViewOpen && React.createElement("div", { className: "flex flex-wrap gap-1 bg-blue-50 rounded-xl p-2 border border-blue-200 animate-[fadeIn_0.2s_ease-out]" },
 
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_dissection.js
-              React.createElement("button", { "aria-label": "Labels",
-=======
               React.createElement("button", { "aria-label": "Toggle organ name labels",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_dissection.js
                 onClick: function () { var m = d.labelMode === 'show' ? 'hidden' : 'show'; upd('labelMode', m); },
                 title: 'Labels' + ' — Toggle organ name labels on the canvas',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.labelMode !== 'hidden' ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200 hover:bg-blue-100')
               }, '\uD83C\uDFF7 ' + 'Labels'),
 
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_dissection.js
-              React.createElement("button", { "aria-label": "Hi-Con",
-=======
               React.createElement("button", { "aria-label": "Toggle high contrast mode",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_dissection.js
                 onClick: function () { upd('highContrast', !d.highContrast); },
                 title: 'Hi-Con' + ' — Enhance colors for accessibility',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.highContrast ? 'bg-yellow-500 text-black' : 'bg-white text-blue-700 border border-blue-200 hover:bg-blue-100')
               }, '\u2600 ' + 'Hi-Con'),
 
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_dissection.js
-              React.createElement("button", { "aria-label": "Fullscreen",
-=======
               React.createElement("button", { "aria-label": "Switch anatomical view: dorsal or ventral",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_dissection.js
                 onClick: function () { upd('viewDorsal', !d.viewDorsal); },
                 title: (d.viewDorsal ? 'Ventral' : 'Dorsal') + ' — Switch anatomical view orientation',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.viewDorsal ? 'bg-indigo-500 text-white' : 'bg-white text-blue-700 border border-blue-200 hover:bg-blue-100')
               }, d.viewDorsal ? '\uD83D\uDD04 Ventral' : '\uD83D\uDD04 Dorsal'),
 
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_dissection.js
-              React.createElement("button", { "aria-label": "Fullscreen",
-=======
               React.createElement("button", { "aria-label": "Enter fullscreen canvas mode",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_dissection.js
                 onClick: function () { try { var c = document.querySelector('[data-diss-canvas]'); if (c && c.requestFullscreen) c.requestFullscreen(); } catch (e) {} },
                 title: 'Fullscreen' + ' — Expand canvas to full screen',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all"
@@ -5890,11 +5858,7 @@ var d = labToolData.dissection || {};
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all"
               }, '\uD83D\uDCF8 ' + 'Screenshot'),
 
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_dissection.js
-              React.createElement("button", { "aria-label": "Change current layer",
-=======
               React.createElement("button", { "aria-label": "Copy lab report to clipboard",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_dissection.js
                 onClick: function () {
                   var report = '\uD83E\uDD9A Lab Report: ' + spec.name + '\n';
                   report += '\u2500'.repeat(30) + '\n';
@@ -5910,11 +5874,7 @@ var d = labToolData.dissection || {};
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all"
               }, '\uD83D\uDCCB ' + 'Lab Report'),
 
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_dissection.js
-              React.createElement("button", { "aria-label": "Reset",
-=======
               React.createElement("button", { "aria-label": "Reset dissection view",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_dissection.js
                 onClick: function () {
                   upd('currentLayer', 0); upd('selectedOrgan', null); upd('exploredOrgans', {});
                   upd('canvasZoom', 1); upd('canvasPanX', 0); upd('canvasPanY', 0);
@@ -5956,11 +5916,7 @@ var d = labToolData.dissection || {};
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.compareMode ? 'bg-cyan-700 text-white' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-100')
               }, '\uD83D\uDD0D ' + 'Compare'),
 
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_dissection.js
-              React.createElement("button", { "aria-label": "Action",
-=======
               React.createElement("button", { "aria-label": "Toggle practical exam mode",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_dissection.js
                 onClick: function () {
                   if (!d.practicalMode) {
                     upd('practicalMode', true);
@@ -6061,30 +6017,22 @@ var d = labToolData.dissection || {};
 
                   width: 500, height: 600,
 
-                  className: "w-full rounded-xl border border-slate-200 cursor-crosshair",
+                  className: "w-full rounded-xl border border-slate-400 cursor-crosshair",
 
                   style: { aspectRatio: '5/6', background: '#0f172a' }
 
                 }),
 
                 // Zoom control bar
-                React.createElement("div", { className: "flex items-center justify-center gap-2 mt-1.5 py-1 px-2 rounded-lg bg-slate-100 border border-slate-200" },
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_dissection.js
-                  React.createElement("button", { "aria-label": "Change canvas zoom",
-=======
+                React.createElement("div", { className: "flex items-center justify-center gap-2 mt-1.5 py-1 px-2 rounded-lg bg-slate-100 border border-slate-400" },
                   React.createElement("button", { "aria-label": "Zoom out canvas",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_dissection.js
                     onClick: function () { var z = Math.max(0.5, (d.canvasZoom || 1) - 0.25); upd('canvasZoom', z); },
-                    className: "px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-300 hover:bg-slate-50"
+                    className: "px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-400 hover:bg-slate-50"
                   }, '\u2796'),
                   React.createElement("span", { className: "text-[11px] font-mono text-slate-600 min-w-[40px] text-center" }, Math.round((d.canvasZoom || 1) * 100) + '%'),
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_dissection.js
-                  React.createElement("button", { "aria-label": "Change canvas zoom",
-=======
                   React.createElement("button", { "aria-label": "Zoom in canvas",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_dissection.js
                     onClick: function () { var z = Math.min(3, (d.canvasZoom || 1) + 0.25); upd('canvasZoom', z); },
-                    className: "px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-300 hover:bg-slate-50"
+                    className: "px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-400 hover:bg-slate-50"
                   }, '\u2795'),
                   (d.canvasZoom || 1) !== 1 ? React.createElement("button", { "aria-label": "100%",
                     onClick: function () { upd('canvasZoom', 1); upd('canvasPanX', 0); upd('canvasPanY', 0); },
@@ -6093,11 +6041,7 @@ var d = labToolData.dissection || {};
                 ),
 
 
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_dissection.js
-                React.createElement("button", { "aria-label": "Change trace nervous",
-=======
                 React.createElement("button", { "aria-label": "Toggle nervous system trace overlay",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_dissection.js
 
                   onClick: function () { upd('traceNervous', !d.traceNervous); upd('traceDigestion', false); upd('traceRespiration', false); upd('traceCirculation', false); upd('traceExcretory', false); upd('showEndocrine', false); },
 
@@ -6105,11 +6049,7 @@ var d = labToolData.dissection || {};
 
                 }, d.traceNervous ? '\u23F9 ' + 'Stop Trace' : '\u26A1 ' + 'Trace Nervous'),
 
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_dissection.js
-                React.createElement("button", { "aria-label": "Change show endocrine",
-=======
                 React.createElement("button", { "aria-label": "Toggle endocrine system overlay",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_dissection.js
 
                   onClick: function () { upd('showEndocrine', !d.showEndocrine); upd('traceNervous', false); upd('traceDigestion', false); upd('traceRespiration', false); upd('traceCirculation', false); upd('traceExcretory', false); },
 
@@ -6159,11 +6099,7 @@ var d = labToolData.dissection || {};
 
                   React.createElement("div", { className: "flex items-center justify-between mt-3" },
 
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_dissection.js
-                    React.createElement("button", { "aria-label": "Change flashcard idx",
-=======
                     React.createElement("button", { "aria-label": "Previous flashcard",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_dissection.js
 
                       onClick: function () { upd('flashcardIdx', Math.max(0, (d.flashcardIdx || 0) - 1)); upd('flashcardFlipped', false); },
 
@@ -6247,7 +6183,7 @@ var d = labToolData.dissection || {};
 
                       key: sk,
 
-                      className: "p-2 rounded-lg text-xs " + (isCurrent ? 'bg-cyan-100 border border-cyan-300' : 'bg-white border border-slate-200')
+                      className: "p-2 rounded-lg text-xs " + (isCurrent ? 'bg-cyan-100 border border-cyan-300' : 'bg-white border border-slate-400')
 
                     },
 
@@ -6283,11 +6219,7 @@ var d = labToolData.dissection || {};
 
                     React.createElement("div", { className: "flex gap-1" },
 
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_dissection.js
-                      React.createElement("button", { "aria-label": "Dissection action",
-=======
                       React.createElement("button", { "aria-label": "Previous organ",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_dissection.js
 
                         onClick: function () {
 
@@ -6301,11 +6233,7 @@ var d = labToolData.dissection || {};
 
                       }, '\u25C0'),
 
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_dissection.js
-                      React.createElement("button", { "aria-label": "Dissection action",
-=======
                       React.createElement("button", { "aria-label": "Next organ",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_dissection.js
 
                         onClick: function () {
 
@@ -6403,7 +6331,7 @@ var d = labToolData.dissection || {};
 
                     Object.keys(weightMap).forEach(function (k) { if (sn.indexOf(k) >= 0) w = weightMap[k]; });
 
-                    return w ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200 mr-1 mb-1" }, '\u2696\uFE0F ' + w + ' ' + 'Human') : null;
+                    return w ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-400 mr-1 mb-1" }, '\u2696\uFE0F ' + w + ' ' + 'Human') : null;
 
                   })(),
 
@@ -6592,7 +6520,7 @@ var d = labToolData.dissection || {};
 
                     onChange: function (e) { upd('organSearch', e.target.value); },
 
-                    className: "w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs mb-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    className: "w-full px-2 py-1.5 rounded-lg border border-slate-400 text-xs mb-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
 
                   }),
 
@@ -6858,11 +6786,7 @@ var d = labToolData.dissection || {};
 
                     ),
 
-<<<<<<< HEAD:prismflow-deploy/public/shared/modules/stem_lab/stem_tool_dissection.js
-                    React.createElement("button", { "aria-label": "Action",
-=======
                     React.createElement("button", { "aria-label": "Generate dissection certificate",
->>>>>>> upstream/main:prismflow-deploy/public/stem_tool_dissection.js
 
                       onClick: function () {
 
@@ -6902,7 +6826,7 @@ var d = labToolData.dissection || {};
 
                 // Specimen stats card
 
-                React.createElement("div", { className: "bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl border border-slate-200 p-3 mb-2" },
+                React.createElement("div", { className: "bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl border border-slate-400 p-3 mb-2" },
 
                   React.createElement("div", { className: "text-[10px] font-bold text-slate-700 mb-1" }, '\uD83D\uDCC8 ' + 'Specimen Stats'),
 

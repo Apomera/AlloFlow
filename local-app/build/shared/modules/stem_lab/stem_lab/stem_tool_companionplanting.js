@@ -3634,7 +3634,7 @@ var d = (labToolData.companionPlanting) || {};
                       placeholder: 'Write your reflection here...',
                       rows: 3,
                       'aria-label': 'Your reflection',
-                      className: 'w-full text-sm border border-slate-200 rounded-lg p-2 outline-none focus:ring-2 focus:ring-violet-300 resize-none'
+                      className: 'w-full text-sm border border-slate-400 rounded-lg p-2 outline-none focus:ring-2 focus:ring-violet-300 resize-none'
                     })),
                   h('div', { className: 'flex gap-2' },
                     h('button', { onClick: cgSubmitReflection, disabled: !cgReflectionResponse.trim(), className: 'px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-700 disabled:opacity-40' }, '📝 Save to Journal'),
@@ -3740,7 +3740,7 @@ var d = (labToolData.companionPlanting) || {};
                       'aria-label': p.label + (selected ? ' (selected)' : '') + ': ' + p.desc + '. ' + p.days + ' days to harvest. Water: ' + p.water + '/3. Sun: ' + p.sun + '/3.' + (p.nEffect > 0 ? ' Fixes nitrogen.' : p.nEffect < 0 ? ' Heavy feeder.' : '') + (p.pollinator ? ' Attracts pollinators.' : '') + (p.needsPoll ? ' Needs pollinators.' : ''),
                       'aria-pressed': selected ? 'true' : 'false',
                       title: p.label + ': ' + p.desc + ' (' + p.days + ' days)',
-                      className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold transition-all ' + (selected ? 'bg-emerald-700 text-white ring-2 ring-emerald-400' : 'bg-white text-slate-700 border border-slate-200 hover:border-emerald-400')
+                      className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold transition-all ' + (selected ? 'bg-emerald-700 text-white ring-2 ring-emerald-400' : 'bg-white text-slate-700 border border-slate-400 hover:border-emerald-400')
                     }, h('span', { 'aria-hidden': 'true' }, p.emoji), p.label);
                   })),
                 // Selected plant info card
@@ -4274,7 +4274,7 @@ var d = (labToolData.companionPlanting) || {};
                 if (allBonuses.some(function(b) { return b.bonus > 0; }) && !cgSeenReflections.companion_discovery) {
                   setTimeout(function() { cgTriggerReflection('companion_discovery'); }, 500);
                 }
-                return h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-3' },
+                return h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-3' },
                   h('div', { className: 'text-xs font-bold text-slate-700 mb-2' }, '🔬 Active Companion Interactions (' + allBonuses.length + ')'),
                   h('div', { className: 'space-y-1' },
                     allBonuses.map(function(p, i) {
@@ -4303,7 +4303,7 @@ var d = (labToolData.companionPlanting) || {};
                 if (guide.length === 0) return null;
                 var friends = guide.filter(function(g) { return g.comp.bonus > 0; });
                 var enemies = guide.filter(function(g) { return g.comp.bonus < 0; });
-                return h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3' },
+                return h('div', { className: 'bg-white rounded-xl border border-slate-400 p-3' },
                   h('div', { className: 'text-xs font-bold text-slate-700 mb-2' }, '📖 Companion Planting Guide'),
                   friends.length > 0 && h('div', { className: 'mb-2' },
                     h('div', { className: 'text-[10px] font-bold text-emerald-700 mb-1' }, '✅ Good Companions (' + friends.length + ')'),
@@ -4799,7 +4799,7 @@ var d = (labToolData.companionPlanting) || {};
 
               phase === 'plant' && React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
 
-                React.createElement("div", { className: "flex items-center gap-2 bg-white rounded-xl border border-slate-200 p-2" },
+                React.createElement("div", { className: "flex items-center gap-2 bg-white rounded-xl border border-slate-400 p-2" },
 
                   React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase px-1" }, "Plant:"),
 
@@ -4819,7 +4819,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     },
 
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (cornPlanted ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' : 'bg-slate-50 text-slate-600 hover:bg-yellow-50 border border-slate-200')
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (cornPlanted ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' : 'bg-slate-50 text-slate-600 hover:bg-yellow-50 border border-slate-400')
 
                   }, "🌽 Corn" + (cornPlanted ? ' ✓' : '')),
 
@@ -4839,7 +4839,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     },
 
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (beansPlanted ? 'bg-green-100 text-green-800 border border-green-300' : 'bg-slate-50 text-slate-600 hover:bg-green-50 border border-slate-200')
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (beansPlanted ? 'bg-green-100 text-green-800 border border-green-300' : 'bg-slate-50 text-slate-600 hover:bg-green-50 border border-slate-400')
 
                   }, "🫘 Beans" + (beansPlanted ? ' ✓' : '')),
 
@@ -4859,7 +4859,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     },
 
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (squashPlanted ? 'bg-orange-100 text-orange-800 border border-orange-300' : 'bg-slate-50 text-slate-600 hover:bg-orange-50 border border-slate-200')
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (squashPlanted ? 'bg-orange-100 text-orange-800 border border-orange-300' : 'bg-slate-50 text-slate-600 hover:bg-orange-50 border border-slate-400')
 
                   }, "🎃 Squash" + (squashPlanted ? ' ✓' : ''))
 

@@ -32,6 +32,15 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _datastAC = null;
@@ -352,7 +361,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
           var _accent = isDark || isContrast ? '#22d3ee' : '#0891b2';
 
-          var _muted = isDark || isContrast ? '#94a3b8' : '#64748b';
+          var _muted = isDark || isContrast ? '#94a3b8' : '#94a3b8';
 
           var _btnBg = isDark || isContrast ? '#0891b2' : '#06b6d4';
 
@@ -384,9 +393,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               React.createElement("div", { className: "flex gap-2" },
 
-                React.createElement("button", { "aria-label": "Upd D S",
-
-                  onClick: function () { updDS('showStats', !showStats); },
+                React.createElement("button", { onClick: function () { updDS('showStats', !showStats); },
 
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold",
 
@@ -416,9 +423,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               CHART_TYPES.map(function (ct) {
 
-                return React.createElement("button", { "aria-label": "Datastudio action",
-
-                  key: ct.id,
+                return React.createElement("button", { key: ct.id,
 
                   onClick: function () { if (ct.id !== chartType) { updDS('chartType', ct.id); if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 3, ct.label + ' explored'); } },
 
@@ -865,9 +870,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                 var labels = { none: '— None', asc: '↑ Asc', desc: '↓ Desc' };
 
-                return React.createElement("button", { "aria-label": "Upd D S",
-
-                  key: s,
+                return React.createElement("button", { key: s,
 
                   onClick: function () { updDS('sortOrder', s); },
 
@@ -925,9 +928,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               // Trendline toggle (for line/scatter)
 
-              (chartType === 'line' || chartType === 'scatter') && React.createElement("button", { "aria-label": "Upd D S",
-
-                onClick: function () { updDS('showTrendline', !showTrendline); },
+              (chartType === 'line' || chartType === 'scatter') && React.createElement("button", { onClick: function () { updDS('showTrendline', !showTrendline); },
 
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-bold ml-auto transition-all",
 
@@ -947,9 +948,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
               PRESETS.map(function (p, i) {
 
-                return React.createElement("button", { "aria-label": "Upd D S",
-
-                  key: i,
+                return React.createElement("button", { key: i,
 
                   onClick: function () { updDS('dataRows', p.data); updDS('chartTitle', p.title); if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 3, 'Preset: ' + p.title); },
 
@@ -1121,9 +1120,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                     React.createElement("span", { className: "font-mono", style: { color: _muted } }, row.value),
 
-                    React.createElement("button", { "aria-label": "Upd D S",
-
-                      onClick: function () { updDS('dataRows', dataRows.filter(function (_, j) { return j !== i; })); },
+                    React.createElement("button", { onClick: function () { updDS('dataRows', dataRows.filter(function (_, j) { return j !== i; })); },
 
                       className: "text-red-400 hover:text-red-600 font-bold text-xs"
 

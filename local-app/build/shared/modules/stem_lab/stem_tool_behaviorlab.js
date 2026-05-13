@@ -33,6 +33,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-behaviorlab')) return;
@@ -49,8 +58,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
 
   window.StemLab.registerTool('behaviorLab', {
     icon: '\uD83E\uDDEC',
-    label: 'behaviorLab',
-    desc: '',
+    label: 'BehaviorLab',
+    desc: 'Operant conditioning theory through a virtual Skinner box. 9 progressive levels: positive reinforcement, schedule effects (FR / VR / FI / VI), chained sequences, DRO timers, and classical conditioning (Pavlov). Plus a Schedule Sleuth (read cumulative-response curves) and Function Sleuth (FBA vignettes: attention / escape / tangible / sensory). Sister tool to PetsLab, which applies these mechanics to real-world pet training.',
     color: 'slate',
     category: 'science',
     questHooks: [
@@ -849,7 +858,7 @@ var d = labToolData || {};
 
             pressLever: '#f59e0b', turnLeft: '#f472b6', turnRight: '#f472b6',
 
-            rearUp: '#fb923c', freeze: '#94a3b8', spin: '#c084fc', touchWall: '#6b7280'
+            rearUp: '#fb923c', freeze: '#94a3b8', spin: '#c084fc', touchWall: '#94a3b8'
 
           };
 
@@ -1695,7 +1704,7 @@ var d = labToolData || {};
             // ─ Light indicator (top-left, enlarged + pulsing glow) ─
 
             if (blLevel === 5 || blLevel === 6) {
-              var lightCol = blLightColor === 'green' ? '#22c55e' : (blLightColor === 'red' ? '#ef4444' : '#6b7280');
+              var lightCol = blLightColor === 'green' ? '#22c55e' : (blLightColor === 'red' ? '#ef4444' : '#94a3b8');
               var glowPulse = 0.3 + Math.sin(Date.now() / 400) * 0.15;
               // Pulsing outer glow ring
               ctx.save();
@@ -1740,7 +1749,7 @@ var d = labToolData || {};
 
             // Lever base
 
-            ctx.fillStyle = '#64748b';
+            ctx.fillStyle = '#94a3b8';
 
             ctx.fillRect(leverX - 4, leverY + 25, 16, 8);
 
@@ -1798,7 +1807,7 @@ var d = labToolData || {};
 
             ctx.fillRect(trayX - 15, trayY, 30, 12);
 
-            ctx.strokeStyle = '#64748b';
+            ctx.strokeStyle = '#94a3b8';
 
             ctx.lineWidth = 1;
 
@@ -2012,7 +2021,7 @@ var d = labToolData || {};
               var pdArr = blProxDelta > 0 ? '\u2191' : '\u2193';
               ctx.fillStyle = pdCol; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'left';
               ctx.fillText(pdArr + ' ' + Math.abs(blProxDelta).toFixed(1) + 'px', 25, 35);
-              ctx.fillStyle = '#64748b'; ctx.font = '7px sans-serif';
+              ctx.fillStyle = '#94a3b8'; ctx.font = '7px sans-serif';
               ctx.fillText('distance \u0394', 25, 44);
             }
 
@@ -2204,7 +2213,7 @@ var d = labToolData || {};
 
             ctx.fill();
 
-            ctx.strokeStyle = '#6b7280';
+            ctx.strokeStyle = '#94a3b8';
 
             ctx.lineWidth = 0.8;
 
@@ -2256,7 +2265,7 @@ var d = labToolData || {};
 
             ctx.fill();
 
-            ctx.strokeStyle = '#6b7280';
+            ctx.strokeStyle = '#94a3b8';
 
             ctx.lineWidth = 0.6;
 
@@ -2564,7 +2573,7 @@ var d = labToolData || {};
 
             ctx.rotate(-Math.PI / 2);
 
-            ctx.fillStyle = '#64748b';
+            ctx.fillStyle = '#94a3b8';
 
             ctx.font = '8px sans-serif';
 
@@ -2578,7 +2587,7 @@ var d = labToolData || {};
 
             // X-axis label
 
-            ctx.fillStyle = '#64748b';
+            ctx.fillStyle = '#94a3b8';
 
             ctx.font = '8px sans-serif';
 
@@ -3593,9 +3602,7 @@ var d = labToolData || {};
 
               }, "\uD83D\uDD14 Use the Classical Conditioning panel below") :
 
-                React.createElement("button", { "aria-label": "Reinforce action",
-
-                  onClick: function () {
+                React.createElement("button", { onClick: function () {
 
                     if (blLevel === 3 && blExtinctionPhase) {
 
@@ -3827,7 +3834,7 @@ var d = labToolData || {};
 
                       background: isActive ? 'rgba(225,29,72,0.35)' : 'rgba(30,41,59,0.5)',
 
-                      color: isActive ? '#fda4af' : '#64748b',
+                      color: isActive ? '#fda4af' : '#94a3b8',
 
                       border: '1px solid ' + (isActive ? 'rgba(225,29,72,0.5)' : 'rgba(71,85,105,0.3)')
 
@@ -4382,8 +4389,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h3", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCA1 Four Functions of Behavior (FBA)"),
-                React.createElement("button", { "aria-label": "Change bl show functions",
-                  onClick: function() { upd('blShowFunctions', !d.blShowFunctions); },
+                React.createElement("button", { onClick: function() { upd('blShowFunctions', !d.blShowFunctions); },
                   className: "text-[11px] text-blue-400 hover:text-blue-300"
                 }, d.blShowFunctions ? 'Hide' : 'Learn \u2192')
               ),
@@ -4419,8 +4425,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCDA Famous Behaviorists"),
-                React.createElement("button", { "aria-label": "Change bl show behaviorists",
-                  onClick: function() { upd('blShowBehaviorists', !d.blShowBehaviorists); },
+                React.createElement("button", { onClick: function() { upd('blShowBehaviorists', !d.blShowBehaviorists); },
                   className: "text-[11px] text-amber-400 hover:text-amber-300"
                 }, d.blShowBehaviorists ? 'Hide' : 'Explore \u2192')
               ),
@@ -4448,8 +4453,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83C\uDF0D ABA in the Real World"),
-                React.createElement("button", { "aria-label": "Change bl show apps",
-                  onClick: function() { upd('blShowApps', !d.blShowApps); },
+                React.createElement("button", { onClick: function() { upd('blShowApps', !d.blShowApps); },
                   className: "text-[11px] text-green-400 hover:text-green-300"
                 }, d.blShowApps ? 'Hide' : 'Explore \u2192')
               ),
@@ -4476,8 +4480,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCCA Behavior Measurement Methods"),
-                React.createElement("button", { "aria-label": "Change bl show measure",
-                  onClick: function() { upd('blShowMeasure', !d.blShowMeasure); },
+                React.createElement("button", { onClick: function() { upd('blShowMeasure', !d.blShowMeasure); },
                   className: "text-[11px] text-cyan-400 hover:text-cyan-300"
                 }, d.blShowMeasure ? 'Hide' : 'Learn \u2192')
               ),
@@ -4512,8 +4515,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\u2696 Ethics in Applied Behavior Analysis"),
-                React.createElement("button", { "aria-label": "Change bl show ethics",
-                  onClick: function() { upd('blShowEthics', !d.blShowEthics); },
+                React.createElement("button", { onClick: function() { upd('blShowEthics', !d.blShowEthics); },
                   className: "text-[11px] text-purple-400 hover:text-purple-300"
                 }, d.blShowEthics ? 'Hide' : 'View \u2192')
               ),
@@ -4538,8 +4540,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCC8 Schedule Comparison"),
-                React.createElement("button", { "aria-label": "Change bl sched canvas",
-                  onClick: function() { upd('blSchedCanvas', !blSchedCanvas); },
+                React.createElement("button", { onClick: function() { upd('blSchedCanvas', !blSchedCanvas); },
                   className: "text-[11px] text-amber-400 hover:text-amber-300"
                 }, blSchedCanvas ? 'Hide' : 'Compare Schedules \u2192')
               ),
@@ -4669,6 +4670,419 @@ var d = labToolData || {};
               )
             ),
 
+            // === SCHEDULE SLEUTH (net-new mini-game) ===
+            // Show ONE unlabeled cumulative-response curve. Player picks which schedule
+            // produced it. Tests the same pedagogy as the Comparison canvas above, but
+            // requires reasoning *about* the curve shape rather than passively viewing it.
+            React.createElement("div", {
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(245,158,11,0.25)' }, glass)
+            },
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDD75\uFE0F Schedule Sleuth \u2014 identify the schedule from its curve"),
+                React.createElement("button", {
+                  onClick: function() { upd('blShowSleuth', !d.blShowSleuth); },
+                  className: "text-[11px] text-amber-400 hover:text-amber-300"
+                }, d.blShowSleuth ? 'Hide' : 'Play \u2192')
+              ),
+              d.blShowSleuth && (function() {
+                var sleuthIdx = (d.blSleuthIdx == null) ? -1 : d.blSleuthIdx;
+                var sleuthSeed = d.blSleuthSeed || 0;
+                var sleuthAnswered = !!d.blSleuthAnswered;
+                var sleuthPick = d.blSleuthPick;
+                var sleuthScore = d.blSleuthScore || 0;
+                var sleuthRounds = d.blSleuthRounds || 0;
+                var sleuthBestStreak = d.blSleuthBest || 0;
+                var sleuthStreak = d.blSleuthStreak || 0;
+                // Start a new round if not initialized
+                function startRound() {
+                  var nextSeed = ((sleuthSeed * 16807 + 11) % 2147483647) || 7;
+                  var nextIdx = nextSeed % SCHEDULE_TYPES.length;
+                  upd('blSleuthIdx', nextIdx);
+                  upd('blSleuthSeed', nextSeed);
+                  upd('blSleuthAnswered', false);
+                  upd('blSleuthPick', null);
+                }
+                if (sleuthIdx < 0) {
+                  return React.createElement("div", { className: "text-center py-4" },
+                    React.createElement("p", { className: "text-[11px] text-slate-300 mb-3 italic" }, "You will see one unlabeled cumulative-response curve. Pick which schedule produced it. The curve shape is the only clue."),
+                    React.createElement("button", {
+                      onClick: startRound,
+                      "aria-label": "Start Schedule Sleuth",
+                      className: "px-4 py-2 rounded-lg bg-amber-600 text-white font-bold text-[11px] hover:bg-amber-500 focus:outline-none focus:ring-2 ring-amber-300"
+                    }, "\uD83D\uDD75\uFE0F Start the game")
+                  );
+                }
+                var sch = SCHEDULE_TYPES[sleuthIdx];
+                // Generate cumulative-response curve points deterministically from seed.
+                var WIDTH = 320, HEIGHT = 110, MARGIN_X = 20, MARGIN_Y = 8;
+                var T_MAX = 200, R_MAX = 60;
+                var rngSeed = sleuthSeed * 31 + 13;
+                function prng() { rngSeed = (rngSeed * 16807 + 11) % 2147483647; return (rngSeed % 1000) / 1000; }
+                var points = [];
+                var cumResp = 0;
+                if (sch.pattern === 'high-pause') {
+                  for (var t = 0; t < T_MAX; t++) {
+                    var localT = cumResp % sch.ratio;
+                    if (!(localT < 1 && cumResp > 0)) {
+                      if (prng() > 0.25) cumResp++;
+                    }
+                    points.push(cumResp);
+                  }
+                } else if (sch.pattern === 'high-steady') {
+                  for (var t2 = 0; t2 < T_MAX; t2++) {
+                    if (prng() > 0.2) cumResp++;
+                    points.push(cumResp);
+                  }
+                } else if (sch.pattern === 'scallop') {
+                  var lastR = 0;
+                  for (var t3 = 0; t3 < T_MAX; t3++) {
+                    var inInt = (t3 - lastR) / sch.interval;
+                    var prob = inInt * inInt * 0.7;
+                    if (prng() < prob) {
+                      cumResp++;
+                      if ((t3 - lastR) >= sch.interval) lastR = t3;
+                    }
+                    points.push(cumResp);
+                  }
+                } else { // low-steady
+                  for (var t4 = 0; t4 < T_MAX; t4++) {
+                    if (prng() > 0.55) cumResp++;
+                    points.push(cumResp);
+                  }
+                }
+                var pointsScaled = points.map(function(c, i) {
+                  var px = MARGIN_X + (i / T_MAX) * (WIDTH - 2 * MARGIN_X);
+                  var py = HEIGHT - MARGIN_Y - (c / R_MAX) * (HEIGHT - 2 * MARGIN_Y);
+                  return px.toFixed(1) + ',' + py.toFixed(1);
+                }).join(' ');
+                // Choices: when answered, color the picked + correct buttons. Otherwise neutral.
+                function pick(idx) {
+                  if (sleuthAnswered) return;
+                  var correct = idx === sleuthIdx;
+                  var newScore = sleuthScore + (correct ? 1 : 0);
+                  var newStreak = correct ? (sleuthStreak + 1) : 0;
+                  var newBest = Math.max(sleuthBestStreak, newStreak);
+                  upd('blSleuthAnswered', true);
+                  upd('blSleuthPick', idx);
+                  upd('blSleuthScore', newScore);
+                  upd('blSleuthRounds', sleuthRounds + 1);
+                  upd('blSleuthStreak', newStreak);
+                  upd('blSleuthBest', newBest);
+                  if (addToast) addToast(correct ? '\u2705 Correct \u2014 ' + sch.name : '\u274C Not quite \u2014 it was ' + sch.name, correct ? 'success' : 'info');
+                }
+                var pct = sleuthRounds > 0 ? Math.round((sleuthScore / sleuthRounds) * 100) : 0;
+                return React.createElement("div", null,
+                  // Score header
+                  React.createElement("div", { className: "flex items-center justify-between mb-2 text-[11px] flex-wrap gap-2" },
+                    React.createElement("div", { className: "flex gap-3 items-center" },
+                      React.createElement("span", { className: "text-slate-300" }, "Round ", React.createElement("strong", { className: "text-white" }, sleuthRounds + (sleuthAnswered ? '' : '+1'))),
+                      React.createElement("span", { className: "text-slate-300" }, "Streak ", React.createElement("strong", { className: "text-amber-400" }, sleuthStreak)),
+                      React.createElement("span", { className: "text-slate-300" }, "Best ", React.createElement("strong", { className: "text-emerald-400" }, sleuthBestStreak)),
+                      sleuthRounds > 0 && React.createElement("span", { className: "text-slate-300" }, "Accuracy ", React.createElement("strong", { className: "text-cyan-400" }, pct + '%'))
+                    )
+                  ),
+                  // ── Primer: how to read a cumulative-response curve ──
+                  // Auto-opens on round 0; collapses once the student has
+                  // played at least one round. Re-openable via the summary.
+                  React.createElement("details", {
+                    open: sleuthRounds === 0,
+                    style: { background: 'rgba(15,23,42,0.5)', borderRadius: 10, border: '1px solid rgba(100,116,139,0.3)', marginBottom: 10 }
+                  },
+                    React.createElement("summary", { className: "cursor-pointer text-[11px] font-bold px-3 py-2 select-none text-cyan-300 select-none" }, '📜 How to read this curve (click to toggle)'),
+                    React.createElement("div", { className: "px-3 pb-3 space-y-2 text-[11px] text-slate-300" },
+                      React.createElement("p", { className: "leading-relaxed" },
+                        React.createElement("strong", null, "Cumulative-response curve"), ': each reinforced response adds one to the y-axis. Flat segments = no responding. Steep segments = rapid responding. Bumps where the curve briefly flattens = post-reinforcement pauses.'
+                      ),
+                      React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-1.5" },
+                        [
+                          { abbrev: 'FR', name: 'Fixed Ratio',     pattern: 'High rate with predictable pause after each reinforcer.', color: '#f59e0b' },
+                          { abbrev: 'VR', name: 'Variable Ratio',  pattern: 'High and steady. No pauses. Resistant to extinction.',    color: '#ef4444' },
+                          { abbrev: 'FI', name: 'Fixed Interval',  pattern: 'Scallop shape: slow after reinforcer, fast near the end.', color: '#3b82f6' },
+                          { abbrev: 'VI', name: 'Variable Interval', pattern: 'Low and steady. Predictable but slow.',                color: '#10b981' }
+                        ].map(function(s, i) {
+                          return React.createElement('div', { key: i, style: { background: 'rgba(30,41,59,0.6)', border: '1px solid ' + s.color + '55', borderRadius: 6, padding: '6px 8px' } },
+                            React.createElement('div', { style: { color: s.color, fontWeight: 800, fontSize: 10 } }, s.abbrev + ' · ' + s.name),
+                            React.createElement('div', { className: 'text-[10px] text-slate-300 leading-tight' }, s.pattern)
+                          );
+                        })
+                      ),
+                      React.createElement('p', { className: 'text-[10px] italic text-slate-400 pt-1 border-t border-slate-700' },
+                        'Tip: focus on shape, not absolute height. The curve below is unlabeled until you guess.'
+                      )
+                    )
+                  ),
+                  // SVG curve (the puzzle)
+                  React.createElement("div", { style: { background: '#0f172a', borderRadius: 10, padding: 8, border: '1px solid rgba(100,116,139,0.3)' } },
+                    React.createElement("svg", {
+                      viewBox: '0 0 ' + WIDTH + ' ' + HEIGHT,
+                      width: '100%', height: HEIGHT,
+                      role: 'img',
+                      'aria-label': sleuthAnswered ? 'Cumulative-response curve for ' + sch.name : 'Unlabeled cumulative-response curve. Identify the schedule from its shape.',
+                      style: { display: 'block' }
+                    },
+                      // Grid
+                      [25, 50, 75].map(function(g) { return React.createElement('line', { key: 'gy' + g, x1: MARGIN_X, x2: WIDTH - MARGIN_X, y1: g, y2: g, stroke: 'rgba(100,116,139,0.18)', strokeWidth: 0.5 }); }),
+                      [80, 160, 240].map(function(g) { return React.createElement('line', { key: 'gx' + g, x1: g, x2: g, y1: MARGIN_Y, y2: HEIGHT - MARGIN_Y, stroke: 'rgba(100,116,139,0.18)', strokeWidth: 0.5 }); }),
+                      // Axes labels
+                      React.createElement('text', { x: MARGIN_X, y: 12, fontSize: 8, fill: '#94a3b8', fontFamily: 'monospace' }, 'Cumulative responses'),
+                      React.createElement('text', { x: WIDTH - 36, y: HEIGHT - 1, fontSize: 8, fill: '#94a3b8', fontFamily: 'monospace' }, 'Time \u2192'),
+                      // The curve \u2014 color reveals only after answered
+                      React.createElement('polyline', {
+                        points: pointsScaled, fill: 'none',
+                        stroke: sleuthAnswered ? sch.color : '#cbd5e1',
+                        strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round'
+                      })
+                    )
+                  ),
+                  // Picker buttons
+                  React.createElement("div", { className: "grid grid-cols-2 gap-2 mt-3", role: 'radiogroup', 'aria-label': 'Pick the schedule' },
+                    SCHEDULE_TYPES.map(function(opt, oi) {
+                      var isPicked = sleuthAnswered && sleuthPick === oi;
+                      var isCorrect = sleuthAnswered && oi === sleuthIdx;
+                      var bg, border, color;
+                      if (sleuthAnswered) {
+                        if (isCorrect) { bg = '#064e3b'; border = '#22c55e'; color = '#bbf7d0'; }
+                        else if (isPicked) { bg = '#7f1d1d'; border = '#ef4444'; color = '#fecaca'; }
+                        else { bg = 'rgba(30,41,59,0.5)'; border = 'rgba(100,116,139,0.4)'; color = '#94a3b8'; }
+                      } else {
+                        bg = 'rgba(30,41,59,0.7)'; border = opt.color + '60'; color = '#e2e8f0';
+                      }
+                      return React.createElement('button', {
+                        key: oi, role: 'radio',
+                        'aria-checked': isPicked ? 'true' : 'false',
+                        'aria-label': opt.name + ' (' + opt.abbrev + ')',
+                        disabled: sleuthAnswered,
+                        onClick: function() { pick(oi); },
+                        style: { padding: '8px 10px', borderRadius: 8, background: bg, color: color, border: '2px solid ' + border, cursor: sleuthAnswered ? 'default' : 'pointer', fontSize: 11, fontWeight: 700, textAlign: 'left', transition: 'all 0.15s' }
+                      },
+                        React.createElement('div', { style: { fontFamily: 'monospace', fontSize: 11, color: opt.color, marginBottom: 2, fontWeight: 800 } }, opt.abbrev),
+                        React.createElement('div', { style: { fontSize: 11, fontWeight: 800 } }, opt.name)
+                      );
+                    })
+                  ),
+                  // Feedback
+                  sleuthAnswered && React.createElement("div", {
+                    className: "mt-3 rounded-lg p-3",
+                    style: {
+                      background: sleuthPick === sleuthIdx ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)',
+                      border: '1px solid ' + (sleuthPick === sleuthIdx ? 'rgba(34,197,94,0.45)' : 'rgba(239,68,68,0.45)')
+                    }
+                  },
+                    React.createElement("div", { className: "text-[11px] font-bold mb-1", style: { color: sleuthPick === sleuthIdx ? '#86efac' : '#fca5a5' } },
+                      sleuthPick === sleuthIdx ? '\u2705 Correct \u2014 ' + sch.name : '\u274C Not quite \u2014 it was ' + sch.name + (sleuthPick != null ? ' (you picked ' + SCHEDULE_TYPES[sleuthPick].abbrev + ')' : '')
+                    ),
+                    React.createElement("div", { className: "text-[11px] text-slate-200 leading-relaxed mb-2" },
+                      sch.pattern === 'high-pause' ? 'Fixed Ratio creates a *post-reinforcement pause* after each delivery, then a rapid burst of responses to reach the next reinforcer. Look for the staircase shape with brief flat plateaus.'
+                      : sch.pattern === 'high-steady' ? 'Variable Ratio produces the *steepest, smoothest* climb because the next reinforcer could come at any moment. This is the slot-machine pattern \u2014 most resistant to extinction.'
+                      : sch.pattern === 'scallop' ? 'Fixed Interval produces a *scallop*: slow responding right after reinforcement, then accelerating as the interval ends and the next reinforcer becomes available. Look for repeating concave curves.'
+                      : 'Variable Interval produces a *low, steady* rate. The next reinforcer arrives at unpredictable times, so a moderate steady rate maximizes the chance of catching it. Look for the lowest, smoothest line.'
+                    ),
+                    React.createElement("button", {
+                      onClick: startRound,
+                      "aria-label": "Next round",
+                      className: "px-4 py-1.5 rounded-lg bg-amber-600 text-white font-bold text-[11px] hover:bg-amber-500 focus:outline-none focus:ring-2 ring-amber-300"
+                    }, "\u27A1\uFE0F Next round")
+                  )
+                );
+              })()
+            ),
+
+            // === FUNCTION SLEUTH (net-new — sister mini-game to Schedule Sleuth) ===
+            // 12 behavior vignettes. Player picks the function (ATT / ESC / TAN / AUT)
+            // that the behavior is most likely serving. Tests the FBA reasoning that
+            // sits underneath every BIP — figure out what the behavior is GETTING for
+            // the kid before you try to change it. Coaching after each pick names what
+            // makes this function more likely than the others.
+            React.createElement("div", {
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(59,130,246,0.25)' }, glass)
+            },
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🔍 Function Sleuth — what is the behavior getting?"),
+                React.createElement("button", {
+                  onClick: function() { upd('blShowFnSleuth', !d.blShowFnSleuth); },
+                  className: "text-[11px] text-blue-400 hover:text-blue-300"
+                }, d.blShowFnSleuth ? 'Hide' : 'Play →')
+              ),
+              d.blShowFnSleuth && (function() {
+                var FN_VIGNETTES = [
+                  { id: 1, scenario: 'Maya calls out across the classroom whenever the teacher is talking to another student. The teacher usually pauses to redirect Maya, then resumes with the other student. Maya stops calling out for a minute, then does it again.', correct: 'Attention',
+                    why: 'The behavior reliably pulls the teacher\'s attention away from someone else and onto Maya — even though it is corrective attention. The pause-then-redirect cycle is the giveaway. Negative attention still reinforces.' },
+                  { id: 2, scenario: 'Devin starts crumpling his math worksheet and tearing the corners off as soon as it is placed on his desk. The teacher gives him a quiet warning and tells him to come back to the work after a "break" at the calm-down corner.', correct: 'Escape',
+                    why: 'The behavior consistently postpones or removes the math demand. The "break" is the consequence the kid is working for. Escape from math is being negatively reinforced — even though the teacher meant it as a calm-down.' },
+                  { id: 3, scenario: 'Every time Aria walks past the prize bin in the resource room, she grabs at the box and then lays on the floor crying until staff hand her a fidget. Staff have started giving her one quickly to keep the hallway calm.', correct: 'Tangible',
+                    why: 'The crying produces access to a preferred item (the fidget). The hallway-calm rationale matters less than the contingency: cry → get fidget. That is positive reinforcement of the behavior by the tangible item.' },
+                  { id: 4, scenario: 'During independent reading, Jordan rocks rhythmically in his chair and hums quietly. He continues whether or not anyone is around or paying attention. He stops on his own when the bell rings.', correct: 'Sensory',
+                    why: 'The behavior happens regardless of who is around or what is in front of him. No attention payoff, no demand to escape, no item being chased. The behavior itself is the reward — vestibular/proprioceptive input. May not need intervention.' },
+                  { id: 5, scenario: 'When the cafeteria runs out of pizza on Wednesday, Sam slams his tray, screams, and refuses to move from the line until staff find him a pizza slice from the staff lounge.', correct: 'Tangible',
+                    why: 'Specific item → behavior → access to that specific item. Staff sourcing pizza from the lounge is the smoking-gun reinforcer. Different from a generic escape (he is not avoiding lunch — he wants a specific thing).' },
+                  { id: 6, scenario: 'When asked to read aloud, Priya immediately drops to the floor and lies face-down. Staff usually skip her and ask the next student. She returns to her seat once the read-aloud is over.', correct: 'Escape',
+                    why: 'The behavior reliably gets her out of reading aloud. The "skip her" response is the reinforcer. She returns to baseline once the demand is gone — clean evidence the demand itself was what she was avoiding.' },
+                  { id: 7, scenario: 'During free play, Theo flicks his fingers in front of his eyes near the window. He does it whether the teacher is watching, with peers, or alone. It seems to happen more on bright sunny days.', correct: 'Sensory',
+                    why: 'Independent of social context, increases with bright light (a sensory variable). The behavior is producing visual stimulation that the kid finds reinforcing. Common in autistic students; often does not need intervention unless interfering with learning.' },
+                  { id: 8, scenario: 'In the lunch line, Alex pinches the kid in front whenever a staff member walks by. The staff member always intervenes, asks Alex what is going on, and walks Alex to a separate table to "talk." Alex stops pinching for the rest of lunch.', correct: 'Attention',
+                    why: 'The pinching reliably gets a 1-on-1 conversation with an adult. The "separate table" intervention is functioning as adult-attention payoff, not as a consequence. Hidden attention reinforcement is one of the most-missed FBA findings.' },
+                  { id: 9, scenario: 'When his teacher asks Eli to put away his iPad, Eli starts flopping on the floor and screaming. The screaming stops the moment Eli sees the iPad placed back in his hands.', correct: 'Tangible',
+                    why: 'Direct cause-and-effect with a specific item. Behavior stops the moment the item returns. That instant-stop is the diagnostic giveaway — it tells you what the behavior was working for.' },
+                  { id: 10, scenario: 'Carla tears up her worksheet, throws it in the trash, and asks the teacher for a fresh one. She does this on every assignment, regardless of subject or difficulty. After tearing it up, she always completes the new copy without further issue.', correct: 'Sensory',
+                    why: 'No attention payoff (teacher just hands her a new sheet, no extended interaction). No escape (she completes the work). No specific tangible (she gets back the same item). The tearing itself appears to be the reinforcer — likely tactile/auditory sensory input.' },
+                  { id: 11, scenario: 'Whenever the lights are turned off for a video, Marco starts loudly humming a song. The teacher pauses the video, asks Marco to be quiet, then restarts. Marco hums again 30 seconds later.', correct: 'Attention',
+                    why: 'Pattern: behavior → teacher attention (pause + redirect) → repeat. The 30-second cycle is suspicious — that is reinforcer-driven repetition, not random vocalizing. If it were sensory, it would not pause when noticed.' },
+                  { id: 12, scenario: 'In gym, when the teacher announces a running drill, Sasha immediately complains of stomach pain and asks to sit out. She is fine for the rest of class, including the basketball drill that follows.', correct: 'Escape',
+                    why: 'Behavior precedes the aversive demand and is specific to it. She is not avoiding gym in general — just the run. The selective onset + selective relief is the giveaway. Reinforcer = removal of the running demand.' }
+                ];
+                var FN_OPTIONS = [
+                  { id: 'Attention', label: 'Attention',         color: '#3b82f6', icon: '👀' },
+                  { id: 'Escape',    label: 'Escape / Avoidance', color: '#ef4444', icon: '🏃' },
+                  { id: 'Tangible',  label: 'Tangible',          color: '#f59e0b', icon: '🎮' },
+                  { id: 'Sensory',   label: 'Sensory / Automatic', color: '#8b5cf6', icon: '✨' }
+                ];
+                var fnIdx = d.blFnIdx == null ? -1 : d.blFnIdx;
+                var fnSeed = d.blFnSeed || 1;
+                var fnAnswered = !!d.blFnAnswered;
+                var fnPick = d.blFnPick;
+                var fnScore = d.blFnScore || 0;
+                var fnRounds = d.blFnRounds || 0;
+                var fnStreak = d.blFnStreak || 0;
+                var fnBest = d.blFnBest || 0;
+                var fnShown = d.blFnShown || [];
+                function startFn() {
+                  var pool = [];
+                  for (var i = 0; i < FN_VIGNETTES.length; i++) if (fnShown.indexOf(i) < 0) pool.push(i);
+                  if (pool.length === 0) { pool = []; for (var j = 0; j < FN_VIGNETTES.length; j++) pool.push(j); fnShown = []; }
+                  var seedNext = ((fnSeed * 16807 + 11) % 2147483647) || 7;
+                  var pick = pool[seedNext % pool.length];
+                  upd('blFnSeed', seedNext);
+                  upd('blFnIdx', pick);
+                  upd('blFnAnswered', false);
+                  upd('blFnPick', null);
+                  upd('blFnShown', fnShown.concat([pick]));
+                }
+                function pickFn(fnId) {
+                  if (fnAnswered) return;
+                  var v = FN_VIGNETTES[fnIdx];
+                  var correct = fnId === v.correct;
+                  var newScore = fnScore + (correct ? 1 : 0);
+                  var newStreak = correct ? (fnStreak + 1) : 0;
+                  var newBest = Math.max(fnBest, newStreak);
+                  upd('blFnAnswered', true);
+                  upd('blFnPick', fnId);
+                  upd('blFnScore', newScore);
+                  upd('blFnRounds', fnRounds + 1);
+                  upd('blFnStreak', newStreak);
+                  upd('blFnBest', newBest);
+                  if (addToast) addToast(correct ? '✅ Correct — ' + v.correct : '❌ Not quite — it was ' + v.correct, correct ? 'success' : 'info');
+                }
+                if (fnIdx < 0) {
+                  return React.createElement("div", { className: "py-3" },
+                    React.createElement("p", { className: "text-[11px] text-slate-300 italic mb-3 leading-relaxed text-center" }, "12 vignettes. For each, pick the function the behavior is most likely serving. Coaching after each pick names what makes this function more likely than the other three."),
+                    // ── Four-functions primer ──
+                    // FBA categorizes behavior reinforcement into 4
+                    // canonical functions. Students new to ABA / behavior
+                    // analysis often haven't seen these definitions in
+                    // class yet, so the vignettes feel like guessing
+                    // without this scaffolding.
+                    React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-1.5 mb-3" },
+                      [
+                        { id: 'Attention', icon: '👀', color: '#3b82f6', name: 'Attention', def: 'Behavior produces interaction (positive OR corrective) from someone.' },
+                        { id: 'Escape',    icon: '🏃', color: '#ef4444', name: 'Escape',    def: 'Behavior postpones, reduces, or removes a demand the kid wants to avoid.' },
+                        { id: 'Tangible',  icon: '🎮', color: '#f59e0b', name: 'Tangible',  def: 'Behavior produces access to a specific item or activity.' },
+                        { id: 'Sensory',   icon: '✨', color: '#8b5cf6', name: 'Sensory',   def: 'Behavior produces stimulation that is itself the reinforcer. No social or material payoff needed.' }
+                      ].map(function(f, i) {
+                        return React.createElement('div', { key: i, style: { background: 'rgba(30,41,59,0.6)', border: '1px solid ' + f.color + '55', borderRadius: 6, padding: '6px 8px' } },
+                          React.createElement('div', { style: { color: f.color, fontWeight: 800, fontSize: 11 } }, f.icon + ' ' + f.name),
+                          React.createElement('div', { className: 'text-[10px] text-slate-300 leading-tight mt-0.5' }, f.def)
+                        );
+                      })
+                    ),
+                    React.createElement('p', { className: 'text-[10px] italic text-slate-400 mb-3 text-center' },
+                      'A behavior can have more than one function in reality. For these vignettes, pick the most-likely primary function based on the contingency described.'
+                    ),
+                    React.createElement("div", { className: "text-center" },
+                      React.createElement("button", {
+                        onClick: startFn,
+                        "aria-label": "Start Function Sleuth",
+                        className: "px-4 py-2 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500 focus:outline-none focus:ring-2 ring-blue-300"
+                      }, "🔍 Start the game")
+                    )
+                  );
+                }
+                var v = FN_VIGNETTES[fnIdx];
+                var pickedCorrect = fnAnswered && fnPick === v.correct;
+                var pct = fnRounds > 0 ? Math.round((fnScore / fnRounds) * 100) : 0;
+                var allDone = fnShown.length >= FN_VIGNETTES.length && fnAnswered;
+                return React.createElement("div", null,
+                  React.createElement("div", { className: "flex items-center flex-wrap gap-3 mb-2 text-[11px]" },
+                    React.createElement("span", { className: "text-slate-300" }, "Round ", React.createElement("strong", { className: "text-white" }, fnShown.length)),
+                    React.createElement("span", { className: "text-slate-300" }, "Streak ", React.createElement("strong", { className: "text-amber-400" }, fnStreak)),
+                    React.createElement("span", { className: "text-slate-300" }, "Best ", React.createElement("strong", { className: "text-emerald-400" }, fnBest)),
+                    fnRounds > 0 && React.createElement("span", { className: "text-slate-300" }, "Accuracy ", React.createElement("strong", { className: "text-cyan-400" }, pct + '%'))
+                  ),
+                  React.createElement("div", { style: { background: '#0f172a', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(100,116,139,0.3)', marginBottom: 10 } },
+                    React.createElement("div", { className: "text-[10px] font-bold text-blue-300 uppercase tracking-widest mb-1" }, 'Vignette ' + fnShown.length + ' of ' + FN_VIGNETTES.length),
+                    React.createElement("p", { className: "text-[12px] text-slate-100 leading-relaxed", style: { margin: 0 } }, v.scenario)
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2", role: 'radiogroup', 'aria-label': 'Pick the function' },
+                    FN_OPTIONS.map(function(opt) {
+                      var picked = fnAnswered && fnPick === opt.id;
+                      var isRight = fnAnswered && opt.id === v.correct;
+                      var bg, border, color;
+                      if (fnAnswered) {
+                        if (isRight) { bg = '#064e3b'; border = '#22c55e'; color = '#bbf7d0'; }
+                        else if (picked) { bg = '#7f1d1d'; border = '#ef4444'; color = '#fecaca'; }
+                        else { bg = 'rgba(30,41,59,0.5)'; border = 'rgba(100,116,139,0.4)'; color = '#94a3b8'; }
+                      } else {
+                        bg = opt.color + '20'; border = opt.color + '60'; color = '#e2e8f0';
+                      }
+                      return React.createElement('button', {
+                        key: opt.id, role: 'radio',
+                        'aria-checked': picked ? 'true' : 'false',
+                        'aria-label': opt.label,
+                        disabled: fnAnswered,
+                        onClick: function() { pickFn(opt.id); },
+                        style: { padding: '10px 12px', borderRadius: 8, background: bg, color: color, border: '2px solid ' + border, cursor: fnAnswered ? 'default' : 'pointer', fontSize: 12, fontWeight: 700, textAlign: 'left', minHeight: 50, transition: 'all 0.15s' }
+                      },
+                        React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 } },
+                          React.createElement('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, opt.icon),
+                          React.createElement('span', { style: { color: fnAnswered ? color : opt.color, fontSize: 12, fontWeight: 800 } }, opt.label)
+                        )
+                      );
+                    })
+                  ),
+                  fnAnswered && React.createElement("div", {
+                    style: {
+                      padding: '10px 12px', borderRadius: 8,
+                      background: pickedCorrect ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)',
+                      border: '1px solid ' + (pickedCorrect ? 'rgba(34,197,94,0.45)' : 'rgba(239,68,68,0.40)')
+                    }
+                  },
+                    React.createElement("div", { className: "text-[12px] font-bold mb-1", style: { color: pickedCorrect ? '#86efac' : '#fca5a5' } },
+                      pickedCorrect ? '✅ Correct — ' + v.correct : '❌ The function is ' + v.correct + (fnPick ? ' (you picked ' + fnPick + ')' : '')
+                    ),
+                    React.createElement("p", { className: "text-[11px] text-slate-200 leading-relaxed", style: { margin: '0 0 8px' } }, v.why),
+                    allDone
+                      ? React.createElement("div", { style: { padding: '8px 10px', borderRadius: 8, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.45)' } },
+                          React.createElement("div", { className: "text-[12px] font-bold text-blue-300 mb-1" }, '🏆 All 12 vignettes complete'),
+                          React.createElement("div", { className: "text-[11px] text-slate-100 leading-relaxed" },
+                            'Final: ', React.createElement('strong', null, fnScore + ' / ' + FN_VIGNETTES.length + ' (' + Math.round((fnScore / FN_VIGNETTES.length) * 100) + '%)'),
+                            fnScore === FN_VIGNETTES.length ? ' — every function correctly identified. Ready for real FBA case work.' :
+                            fnScore >= 10 ? ' — strong FBA reasoning. The most-confused pair is usually attention vs escape (when adult intervention happens to coincide with demand removal — both can co-occur).' :
+                            fnScore >= 7 ? ' — solid baseline. Re-read the rationales on misses; look specifically for what the behavior consistently produces vs prevents.' :
+                            ' — these distinctions take many examples. Re-read the FOUR_FUNCTIONS reference card above + the rationales on each miss, then retake.'
+                          ),
+                          React.createElement("button", {
+                            onClick: function() { upd('blFnIdx', -1); upd('blFnShown', []); upd('blFnScore', 0); upd('blFnRounds', 0); upd('blFnStreak', 0); },
+                            className: "mt-2 px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500"
+                          }, '🔄 Restart')
+                        )
+                      : React.createElement("button", {
+                          onClick: startFn,
+                          className: "px-4 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500 focus:outline-none focus:ring-2 ring-blue-300"
+                        }, '➡️ Next vignette')
+                  )
+                );
+              })()
+            ),
+
             // === REINFORCEMENT / PUNISHMENT 2x2 MATRIX ===
             React.createElement("div", {
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(139,92,246,0.2)' }, glass)
@@ -4759,7 +5173,7 @@ var d = labToolData || {};
                 React.createElement("div", { className: "text-[11px] font-bold text-emerald-400 uppercase tracking-wider mb-1" }, '\u2B06 Earn Tokens'),
                 React.createElement("div", { className: "grid grid-cols-2 gap-1" },
                   TOKEN_ITEMS.map(function(item) {
-                    return React.createElement("button", { "aria-label": "Change bl token balance", key: item.id,
+                    return React.createElement("button", { key: item.id,
                       onClick: function() {
                         upd('blTokenBalance', blTokenBalance + item.tokens);
                         var newLog = (blTokenLog || []).slice();
@@ -4785,7 +5199,7 @@ var d = labToolData || {};
                 React.createElement("div", { className: "grid grid-cols-2 gap-1" },
                   TOKEN_REWARDS.map(function(rew) {
                     var canAfford = blTokenBalance >= rew.cost;
-                    return React.createElement("button", { "aria-label": "Behaviorlab action", key: rew.id,
+                    return React.createElement("button", { key: rew.id,
                       onClick: function() {
                         if (!canAfford) { if (addToast) addToast('\u274C Need ' + (rew.cost - blTokenBalance) + ' more tokens!', 'info'); return; }
                         upd('blTokenBalance', blTokenBalance - rew.cost);
@@ -4863,8 +5277,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCCB Behavior Intervention Plan (BIP) Builder"),
-                React.createElement("button", { "aria-label": "Change bl show bip planner",
-                  onClick: function() { upd('blShowBipPlanner', !blShowBipPlanner); },
+                React.createElement("button", { onClick: function() { upd('blShowBipPlanner', !blShowBipPlanner); },
                   className: "text-[11px] text-red-400 hover:text-red-300"
                 }, blShowBipPlanner ? 'Hide' : 'Build a BIP \u2192')
               ),
@@ -5006,7 +5419,7 @@ var d = labToolData || {};
                       var bgClass = !answered ? 'bg-slate-800/40 border-slate-600 hover:border-slate-400 cursor-pointer' :
                         isRight ? 'bg-emerald-900/30 border-emerald-500' :
                         isSelected && !isRight ? 'bg-red-900/30 border-red-500' : 'bg-slate-800/20 border-slate-700 opacity-40';
-                      return React.createElement("button", { "aria-label": "Behaviorlab action", key: oi,
+                      return React.createElement("button", { key: oi,
                         onClick: function() {
                           if (answered) return;
                           upd('blScenarioAnswer', oi);
@@ -5062,8 +5475,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCC5 ABA History Timeline"),
-                React.createElement("button", { "aria-label": "Change bl show timeline",
-                  onClick: function() { upd('blShowTimeline', !blShowTimeline); },
+                React.createElement("button", { onClick: function() { upd('blShowTimeline', !blShowTimeline); },
                   className: "text-[11px] text-blue-400 hover:text-blue-300"
                 }, blShowTimeline ? 'Hide' : 'Explore \u2192')
               ),
@@ -5110,8 +5522,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCCB Quick Reference Cards"),
-                React.createElement("button", { "aria-label": "Change bl show quick ref",
-                  onClick: function() { upd('blShowQuickRef', !blShowQuickRef); },
+                React.createElement("button", { onClick: function() { upd('blShowQuickRef', !blShowQuickRef); },
                   className: "text-[11px] text-emerald-400 hover:text-emerald-300"
                 }, blShowQuickRef ? 'Hide' : 'View \u2192')
               ),
@@ -5138,8 +5549,7 @@ var d = labToolData || {};
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCD6 ABA Glossary (" + ABA_GLOSSARY.length + " terms)"),
-                React.createElement("button", { "aria-label": "Change bl show glossary",
-                  onClick: function() { upd('blShowGlossary', !d.blShowGlossary); },
+                React.createElement("button", { onClick: function() { upd('blShowGlossary', !d.blShowGlossary); },
                   className: "text-[11px] text-slate-200 hover:text-slate-100"
                 }, d.blShowGlossary ? 'Hide' : 'Browse \u2192')
               ),

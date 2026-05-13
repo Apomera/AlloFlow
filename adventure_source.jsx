@@ -865,7 +865,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                                         </div>
                                     ) : (
                                         <>
-                                            <button onClick={() => setEditIdx(i)} className="text-xs px-3 py-1 bg-slate-100 text-slate-600 rounded-full hover:bg-slate-200 transition-all font-medium border border-slate-200" title={t('adventure.edit_nanobanana')}>
+                                            <button onClick={() => setEditIdx(i)} className="text-xs px-3 py-1 bg-slate-100 text-slate-600 rounded-full hover:bg-slate-200 transition-all font-medium border border-slate-400" title={t('adventure.edit_nanobanana')}>
                                                 ✏️ Refine
                                             </button>
                                             <button onClick={() => {

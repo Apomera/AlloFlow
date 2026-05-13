@@ -330,6 +330,21 @@ window.SelHub = window.SelHub || {
       // ── AI Chat Send ──
       var sendChat = useCallback(async function(userMsg) {
         if (!callGemini || !aiScenario || !userMsg.trim()) return;
+        // Safety pre-check on student's typed peer-roleplay message. If
+        // critical-tier content, halt the AI peer's response and surface
+        // a coach-style break + crisis resources.
+        var slSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+          ? window.SelHub.safeRehearseCheck(userMsg, { toolId: 'sociallab', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+          : { action: 'continue' };
+        if (slSafety.action === 'block') {
+          setChatHistory(chatHistory.concat([
+            { role: 'user', text: userMsg.trim() },
+            { role: 'coach', text: window.SelHub.rehearseBreakCharacterText(slSafety.severity) }
+          ]));
+          setChatInput('');
+          setChatLoading(false);
+          return;
+        }
         var newHistory = chatHistory.concat([{ role: 'user', text: userMsg.trim() }]);
         setChatHistory(newHistory);
         setChatInput('');
@@ -406,10 +421,11 @@ window.SelHub = window.SelHub || {
       // ── Menu ──
       if (mode === 'menu') {
         return h('div', { style: { maxWidth: '650px', margin: '0 auto', padding: '20px' } },
+          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('sociallab', h, ctx) : null),
           h('div', { style: { textAlign: 'center', marginBottom: '24px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '🎭'),
             h('h2', { style: { fontSize: '24px', fontWeight: 900, color: '#1e293b' } }, 'Social Skills Lab'),
-            h('p', { style: { color: '#64748b', fontSize: '14px', maxWidth: '450px', margin: '0 auto' } },
+            h('p', { style: { color: '#94a3b8', fontSize: '14px', maxWidth: '450px', margin: '0 auto' } },
               'Practice real social situations. Choose how you\'d respond in scenarios, or have a real conversation with an AI peer.')
           ),
           // Badges
@@ -424,7 +440,7 @@ window.SelHub = window.SelHub || {
           // Mode 1: Static Scenarios
           h('div', { style: Object.assign({}, card, { border: '2px solid #c4b5fd', background: '#faf5ff' }) },
             h('h3', { style: { fontSize: '16px', fontWeight: 800, color: PURPLE, marginBottom: '6px' } }, '📋 Scenario Practice'),
-            h('p', { style: { fontSize: '12px', color: '#6b7280', marginBottom: '12px' } }, 'Read a situation, choose the best response. Works without AI.'),
+            h('p', { style: { fontSize: '12px', color: '#94a3b8', marginBottom: '12px' } }, 'Read a situation, choose the best response. Works without AI.'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '6px' } },
               SKILL_CATEGORIES.map(function(cat) {
                 var scenarios = scenarioBank[cat.id];
@@ -442,7 +458,7 @@ window.SelHub = window.SelHub || {
           // Mode 2: AI Roleplay
           h('div', { style: Object.assign({}, card, { border: '2px solid ' + (hasAI ? '#86efac' : '#fca5a5'), background: hasAI ? '#f0fdf4' : '#fef2f2' }) },
             h('h3', { style: { fontSize: '16px', fontWeight: 800, color: hasAI ? '#166534' : '#991b1b', marginBottom: '6px' } }, '🤖 AI Peer Roleplay' + (hasAI ? '' : ' (AI Required)')),
-            h('p', { style: { fontSize: '12px', color: '#6b7280', marginBottom: '12px' } }, hasAI ? 'Have a real conversation with an AI playing the role of a peer. Practice using your own words.' : 'AI roleplay requires API access. Use Scenario Practice above, or ask your teacher to enable AI.'),
+            h('p', { style: { fontSize: '12px', color: '#94a3b8', marginBottom: '12px' } }, hasAI ? 'Have a real conversation with an AI playing the role of a peer. Practice using your own words.' : 'AI roleplay requires API access. Use Scenario Practice above, or ask your teacher to enable AI.'),
             hasAI && h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               aiScenarioBank.map(function(sc) {
                 return h('button', { key: sc.id, onClick: function() {
@@ -459,7 +475,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { width: '36px', height: '36px', borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 } }, SKILL_CATEGORIES.find(function(c) { return c.id === sc.skill; })?.icon || '🎭'),
                   h('div', null,
                     h('div', { style: { fontWeight: 700, fontSize: '13px', color: '#1e293b' } }, sc.title),
-                    h('div', { style: { fontSize: '11px', color: '#6b7280' } }, sc.setup.substring(0, 60) + '...')
+                    h('div', { style: { fontSize: '11px', color: '#94a3b8' } }, sc.setup.substring(0, 60) + '...')
                   )
                 );
               })
@@ -488,7 +504,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
             h('button', { onClick: function() { setMode('menu'); }, style: btn('#f1f5f9', '#374151', false) }, '← Back'),
             h('span', { style: { fontSize: '13px', fontWeight: 700, color: '#16a34a' } }, '✅ ' + score + '/' + total),
-            h('span', { style: { fontSize: '12px', color: '#6b7280' } }, cat ? cat.icon + ' ' + cat.label : skill)
+            h('span', { style: { fontSize: '12px', color: '#94a3b8' } }, cat ? cat.icon + ' ' + cat.label : skill)
           ),
           // Skill Teaching Card (collapsible — always available)
           h('div', { style: { background: '#eff6ff', border: '2px solid #bfdbfe', borderRadius: '14px', overflow: 'hidden', marginBottom: '12px' } },
@@ -602,7 +618,7 @@ window.SelHub = window.SelHub || {
                 },
                 style: { display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '14px', background: '#fff', border: '2px solid #e5e7eb', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s', fontSize: '13px', lineHeight: 1.5 }
               },
-                h('span', { style: { background: '#f1f5f9', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '12px', color: '#6b7280', flexShrink: 0 } }, String.fromCharCode(65 + oi)),
+                h('span', { style: { background: '#f1f5f9', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '12px', color: '#94a3b8', flexShrink: 0 } }, String.fromCharCode(65 + oi)),
                 h('span', null, opt.text)
               );
             })
@@ -629,7 +645,7 @@ window.SelHub = window.SelHub || {
             h('button', { onClick: function() { setMode('menu'); }, style: btn('#f1f5f9', '#374151', false) }, '← Back'),
             h('div', { style: { textAlign: 'right' } },
               h('div', { style: { fontSize: '13px', fontWeight: 700, color: '#1e293b' } }, aiScenario.title),
-              h('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'Talking to ' + aiScenario.peerName + ' · ' + chatTurns + ' turns')
+              h('div', { style: { fontSize: '10px', color: '#94a3b8' } }, 'Talking to ' + aiScenario.peerName + ' · ' + chatTurns + ' turns')
             )
           ),
           // Peer profile + rapport bar
@@ -644,11 +660,11 @@ window.SelHub = window.SelHub || {
             h('div', { style: { flex: 1 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' } },
                 h('span', { style: { fontSize: '13px', fontWeight: 700, color: '#1e293b' } }, aiScenario.peerName),
-                h('span', { style: { fontSize: '10px', color: '#6b7280' } }, peerGesture ? '*' + peerGesture + '*' : '')
+                h('span', { style: { fontSize: '10px', color: '#94a3b8' } }, peerGesture ? '*' + peerGesture + '*' : '')
               ),
               // Rapport bar
               h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
-                h('span', { style: { fontSize: '9px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase' } }, 'Rapport'),
+                h('span', { style: { fontSize: '9px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' } }, 'Rapport'),
                 h('div', { style: { flex: 1, height: '6px', background: '#e5e7eb', borderRadius: '3px', overflow: 'hidden' }, role: 'progressbar', 'aria-valuenow': rapport, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-label': 'Rapport with ' + aiScenario.peerName + ': ' + rapport + ' percent' },
                   h('div', { style: { height: '100%', width: rapport + '%', background: rapport >= 70 ? '#22c55e' : rapport >= 40 ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : '#ef4444', borderRadius: '3px', transition: 'all 0.5s' } })
                 ),
@@ -665,7 +681,7 @@ window.SelHub = window.SelHub || {
               } catch (err) {}
               setPortraitLoading(false);
             }, style: { fontSize: '9px', background: '#f1f5f9', border: '1px solid #d1d5db', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer', flexShrink: 0 }, 'aria-label': 'Generate portrait' }, portraitLoading ? '⏳' : '🎨'),
-            portraitLoading && h('span', { style: { fontSize: '9px', color: '#6b7280' } }, '⏳')
+            portraitLoading && h('span', { style: { fontSize: '9px', color: '#94a3b8' } }, '⏳')
           ),
           // Goal banner
           h('div', { style: { background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '10px 14px', marginBottom: '8px', fontSize: '12px', color: '#1e40af', flexShrink: 0 } },
@@ -675,7 +691,7 @@ window.SelHub = window.SelHub || {
           rapport >= 70 && chatTurns >= 2 && h('div', { style: { background: '#dcfce7', border: '1px solid #86efac', borderRadius: '8px', padding: '6px 12px', marginBottom: '8px', fontSize: '11px', color: '#166534', fontWeight: 600, textAlign: 'center', flexShrink: 0 } }, '🤝 ' + aiScenario.peerName + ' trusts you! Great social skills!'),
           rapport <= 20 && chatTurns >= 2 && h('div', { style: { background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '8px', padding: '6px 12px', marginBottom: '8px', fontSize: '11px', color: '#991b1b', fontWeight: 600, textAlign: 'center', flexShrink: 0 } }, '⚠️ ' + aiScenario.peerName + ' seems uncomfortable. Try being more empathetic.'),
           // Chat messages
-          h('div', { style: { flex: 1, overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
+          h('div', { role: 'log', 'aria-live': 'polite', 'aria-label': 'Conversation with ' + aiScenario.peerName, 'aria-busy': chatLoading ? 'true' : 'false', style: { flex: 1, overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
             chatHistory.map(function(msg, i) {
               var isPeer = msg.role === 'peer';
               return h('div', { key: i, style: { display: 'flex', justifyContent: isPeer ? 'flex-start' : 'flex-end', gap: '8px' } },
@@ -692,7 +708,7 @@ window.SelHub = window.SelHub || {
             }),
             chatLoading && h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
               h('div', { style: { width: '32px', height: '32px', borderRadius: '50%', background: '#e0e7ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' } }, '🗣️'),
-              h('div', { style: { background: '#e0e7ff', borderRadius: '12px', padding: '10px 14px', fontSize: '12px', color: '#6b7280' } }, aiScenario.peerName + ' is typing...')
+              h('div', { style: { background: '#e0e7ff', borderRadius: '12px', padding: '10px 14px', fontSize: '12px', color: '#94a3b8' } }, aiScenario.peerName + ' is typing...')
             ),
             h('div', { ref: chatEndRef })
           ),
@@ -708,7 +724,7 @@ window.SelHub = window.SelHub || {
             chatFeedback.improvements && h('div', { style: { marginBottom: '6px' } }, h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#d97706' } }, '🤔 Try Next Time'), h('ul', { style: { margin: '4px 0 0 16px', fontSize: '12px', color: '#92400e' } }, chatFeedback.improvements.map(function(s, i) { return h('li', { key: i }, s); }))),
             chatFeedback.skillTip && h('div', { style: { background: '#eff6ff', borderRadius: '8px', padding: '8px 12px', fontSize: '12px', color: '#1e40af', border: '1px solid #bfdbfe' } }, h('strong', null, '💡 Skill Tip: '), chatFeedback.skillTip)
           ),
-          chatFeedback === 'loading' && h('p', { style: { textAlign: 'center', fontSize: '12px', color: '#6b7280' } }, '⏳ Analyzing your conversation...'),
+          chatFeedback === 'loading' && h('p', { style: { textAlign: 'center', fontSize: '12px', color: '#94a3b8' } }, '⏳ Analyzing your conversation...'),
           chatFeedback && chatFeedback.error && h('p', { style: { color: '#dc2626', fontSize: '12px' } }, chatFeedback.error),
           // Input bar
           !chatFeedback && h('div', { style: { display: 'flex', gap: '8px', flexShrink: 0 } },
@@ -717,13 +733,26 @@ window.SelHub = window.SelHub || {
               placeholder: 'Type what you would say...', disabled: chatLoading,
               style: { flex: 1, padding: '10px 14px', border: '2px solid #d1d5db', borderRadius: '12px', fontSize: '14px', outline: 'none' },
               'aria-label': 'Your response' }),
-            // Speech-to-text button
+            // Speech-to-text button — Phase 3v.M migrated to shared
+            // window.AlloFlowVoice.initWebSpeechCapture when available;
+            // inline fallback retained for race-tolerance on first paint.
             ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) && h('button', { onClick: function() {
+              var appendTranscript = function(t) { setChatInput(function(prev) { return prev ? prev + ' ' + t : t; }); };
+              var onErr = function() { addToast && addToast('Voice input failed. Try typing instead.', 'info'); };
+              if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === 'function') {
+                var ctrl = window.AlloFlowVoice.initWebSpeechCapture({
+                  lang: 'en-US', continuous: false, interimResults: false,
+                  onTranscript: appendTranscript, onError: onErr
+                });
+                if (ctrl.supported) ctrl.start();
+                addToast && addToast('Listening... speak now!', 'info');
+                return;
+              }
               var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
               var rec = new SpeechRec();
               rec.lang = 'en-US'; rec.interimResults = false; rec.maxAlternatives = 1;
-              rec.onresult = function(ev) { var t = ev.results[0][0].transcript; setChatInput(function(prev) { return prev ? prev + ' ' + t : t; }); };
-              rec.onerror = function() { addToast && addToast('Voice input failed. Try typing instead.', 'info'); };
+              rec.onresult = function(ev) { appendTranscript(ev.results[0][0].transcript); };
+              rec.onerror = onErr;
               rec.start();
               addToast && addToast('Listening... speak now!', 'info');
             }, disabled: chatLoading, style: btn('#f1f5f9', '#374151', chatLoading), 'aria-label': 'Voice input' }, '🎤'),
@@ -745,7 +774,7 @@ window.SelHub = window.SelHub || {
               var url = URL.createObjectURL(blob);
               var a = document.createElement('a'); a.href = url; a.download = 'sociallab_transcript_' + aiScenario.id + '.txt'; a.click(); URL.revokeObjectURL(url);
               addToast && addToast('Transcript saved!', 'success');
-            }, style: { fontSize: '12px', color: '#6b7280', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '6px 14px', cursor: 'pointer' } }, '📄 Save Transcript')
+            }, style: { fontSize: '12px', color: '#94a3b8', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '6px 14px', cursor: 'pointer' } }, '📄 Save Transcript')
           ),
           // Also show export after feedback
           chatFeedback && typeof chatFeedback === 'object' && !chatFeedback.error && h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '8px', flexShrink: 0 } },

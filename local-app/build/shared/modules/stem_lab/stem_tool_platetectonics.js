@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ── Plate Tectonics Plugin (extracted from stem_tool_science.js) ──
   // Audio system
   var _tectAC = null;
@@ -203,9 +213,16 @@ var d = labToolData.plateTectonics || {};
 
             if (!canvasEl) {
 
-              if (canvasRef._last && canvasRef._last._ptAnim) {
+              if (canvasRef._last) {
 
-                cancelAnimationFrame(canvasRef._last._ptAnim);
+                if (canvasRef._last._ptAnim) cancelAnimationFrame(canvasRef._last._ptAnim);
+
+                // Memory-leak fix: remove every listener attached during init.
+                var _h = canvasRef._last._ptHandlers;
+
+                if (_h) Object.keys(_h).forEach(function(ev) { canvasRef._last.removeEventListener(ev, _h[ev]); });
+
+                canvasRef._last._ptHandlers = null;
 
                 canvasRef._last._ptInit = false;
 
@@ -222,6 +239,8 @@ var d = labToolData.plateTectonics || {};
             canvasEl._ptInit = true;
 
             canvasRef._last = canvasEl;
+
+            var _ptHandlers = canvasEl._ptHandlers = {};
 
 
 
@@ -287,7 +306,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-            canvasEl.addEventListener('mousedown', function(e) {
+            canvasEl.addEventListener('mousedown', _ptHandlers.mousedown = function(e) {
 
               var rect = canvasEl.getBoundingClientRect();
 
@@ -313,7 +332,7 @@ var d = labToolData.plateTectonics || {};
 
             });
 
-            canvasEl.addEventListener('mousemove', function(e) {
+            canvasEl.addEventListener('mousemove', _ptHandlers.mousemove = function(e) {
 
               if (dragIdx < 0) return;
 
@@ -376,15 +395,15 @@ var d = labToolData.plateTectonics || {};
 
             };
 
-            canvasEl.addEventListener('mouseup', mouseUp);
+            _ptHandlers.mouseup = mouseUp; canvasEl.addEventListener('mouseup', mouseUp);
 
-            canvasEl.addEventListener('mouseleave', mouseUp);
+            _ptHandlers.mouseleave = mouseUp; canvasEl.addEventListener('mouseleave', mouseUp);
 
 
 
             // Touch support
 
-            canvasEl.addEventListener('touchstart', function(e) {
+            canvasEl.addEventListener('touchstart', _ptHandlers.touchstart = function(e) {
 
               e.preventDefault();
 
@@ -410,7 +429,7 @@ var d = labToolData.plateTectonics || {};
 
             }, { passive: false });
 
-            canvasEl.addEventListener('touchmove', function(e) {
+            canvasEl.addEventListener('touchmove', _ptHandlers.touchmove = function(e) {
 
               if (dragIdx < 0) return; e.preventDefault();
 
@@ -424,7 +443,7 @@ var d = labToolData.plateTectonics || {};
 
             }, { passive: false });
 
-            canvasEl.addEventListener('touchend', mouseUp);
+            _ptHandlers.touchend = mouseUp; canvasEl.addEventListener('touchend', mouseUp);
 
 
 
@@ -1026,7 +1045,7 @@ var d = labToolData.plateTectonics || {};
 
 
             // Listen for eruption trigger from button
-            canvasEl.addEventListener('triggerEruption', function() {
+            canvasEl.addEventListener('triggerEruption', _ptHandlers.triggerEruption = function() {
               if (!eruptState.active) {
                 triggerEruption(cW * 0.5);
               }
@@ -1155,7 +1174,7 @@ var d = labToolData.plateTectonics || {};
           }
 
           return React.createElement("div", {
-              className: "max-w-4xl mx-auto outline-none",
+              className: "max-w-4xl mx-auto",
               role: "region",
               "aria-label": "Plate Tectonics. Keyboard shortcuts: 1 through 4 switch tabs, L toggles labels, C toggles convection currents.",
               tabIndex: 0,
@@ -1208,6 +1227,19 @@ var d = labToolData.plateTectonics || {};
 
             simTab === 'sim' && React.createElement("div", { className: "space-y-4" },
 
+              React.createElement("div", {
+                role: "note",
+                style: {
+                  padding: '10px 14px', borderRadius: 12,
+                  background: 'linear-gradient(135deg, rgba(220,38,38,0.14) 0%, rgba(220,38,38,0.04) 100%)',
+                  border: '1px solid rgba(220,38,38,0.5)', borderLeft: '3px solid #dc2626',
+                  color: '#7f1d1d', fontSize: 13, lineHeight: 1.55
+                }
+              },
+                React.createElement("strong", { style: { color: '#b91c1c' } }, "Goal: "),
+                "drag plates toward each other (convergent), apart (divergent), or sideways past each other (transform), and watch which boundary produces volcanoes, trenches, mid-ocean ridges, or earthquakes. Convection currents show why plates move; toggle them off (C key) to focus on surface features."
+              ),
+
               React.createElement("div", { className: "rounded-2xl overflow-hidden border-2 border-red-200 shadow-lg" },
 
                 React.createElement("canvas", {
@@ -1230,7 +1262,7 @@ var d = labToolData.plateTectonics || {};
 
                 React.createElement("label", { className: "text-xs font-bold text-red-700" }, "\u23F1 Speed:"),
 
-                React.createElement("input", { type: "range", min: "0.5", max: "4", step: "0.5", value: speed, onChange: function(e) { upd({ speed: parseFloat(e.target.value) }); }, className: "w-24 accent-red-500" }),
+                React.createElement("input", { type: "range", "aria-label": "Simulation speed multiplier", min: "0.5", max: "4", step: "0.5", value: speed, onChange: function(e) { upd({ speed: parseFloat(e.target.value) }); }, className: "w-24 accent-red-500" }),
 
                 React.createElement("span", { className: "text-xs font-bold text-red-500" }, speed + "\u00D7"),
 
@@ -1319,7 +1351,7 @@ var d = labToolData.plateTectonics || {};
                   ),
                   aiError && React.createElement("p", { className: "text-[11px] text-rose-600", role: "alert" }, aiError),
                   aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-3 border border-purple-100" }, aiText),
-                  !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-500" }, "Click \u201CExplain\u201D for the AI tutor to describe the current simulation at your chosen reading level.")
+                  !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[11px] italic text-slate-300" }, "Click \u201CExplain\u201D for the AI tutor to describe the current simulation at your chosen reading level.")
                 );
               })()
 
@@ -1330,6 +1362,19 @@ var d = labToolData.plateTectonics || {};
             // â•â•â• TAB 2: EARTHQUAKE LAB â•â•â•
 
             simTab === 'earthquake' && React.createElement("div", { className: "space-y-4" },
+
+              React.createElement("div", {
+                role: "note",
+                style: {
+                  padding: '10px 14px', borderRadius: 12,
+                  background: 'linear-gradient(135deg, rgba(245,158,11,0.14) 0%, rgba(245,158,11,0.04) 100%)',
+                  border: '1px solid rgba(245,158,11,0.5)', borderLeft: '3px solid #f59e0b',
+                  color: '#78350f', fontSize: 13, lineHeight: 1.55
+                }
+              },
+                React.createElement("strong", { style: { color: '#b45309' } }, "Goal: "),
+                "feel the Richter scale. It is logarithmic: each whole number is 10x more shaking and about 32x more energy. A 7.0 is not twice a 3.5, it is over 100,000x more energy. Slide through magnitudes and watch the damage tier flip from green to amber to red. P-waves arrive first, S-waves second, surface waves do most of the damage."
+              ),
 
               React.createElement("div", { className: "p-5 rounded-2xl border-2 border-red-200", style: { background: _gCard } },
 
@@ -1347,7 +1392,7 @@ var d = labToolData.plateTectonics || {};
 
                   React.createElement("span", { className: "text-xs font-bold text-red-600 w-20" }, "Magnitude:"),
 
-                  React.createElement("input", { type: "range", min: "1", max: "9", step: "0.1", value: eqMagnitude, onChange: function(e) { upd({ eqMagnitude: parseFloat(e.target.value) }); }, className: "flex-1 accent-red-500" }),
+                  React.createElement("input", { type: "range", "aria-label": "Earthquake magnitude (Richter scale)", min: "1", max: "9", step: "0.1", value: eqMagnitude, onChange: function(e) { upd({ eqMagnitude: parseFloat(e.target.value) }); }, className: "flex-1 accent-red-500" }),
 
                   React.createElement("span", { className: "text-lg font-black px-3 py-1 rounded-lg", style: { background: eqMagnitude >= 7 ? '#dc2626' : eqMagnitude >= 5 ? '#f59e0b' : '#22c55e', color: 'white' } }, eqMagnitude.toFixed(1))
 
@@ -1590,9 +1635,14 @@ var d = labToolData.plateTectonics || {};
 
                 if (canvas._geoAnim) cancelAnimationFrame(canvas._geoAnim);
 
+                // PL7 HiDPI: crisp rendering on retina displays.
+                if (window.StemLab && window.StemLab.setupHiDPI) {
+                  window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+                }
                 var ctx = canvas.getContext('2d');
+                if (canvas._dpr) ctx.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
 
-                var W = canvas.width, H = canvas.height;
+                var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
 
                 var cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 30;
 
@@ -1967,9 +2017,7 @@ var d = labToolData.plateTectonics || {};
 
                   qz.opts.map(function(opt, oi) {
 
-                    return React.createElement("button", { "aria-label": "Platetectonics action",
-
-                      key: oi,
+                    return React.createElement("button", { key: oi,
 
                       onClick: function() {
 

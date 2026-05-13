@@ -3,6 +3,30 @@
 // Narration, Grading, and Storybook Export
 // ═══════════════════════════════════════════════════════════════
 
+// ── WCAG 2.4.7 Focus Visible — inject scoped focus-ring CSS once per page ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-sf-focus-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-sf-focus-css';
+  st.textContent = '[data-sf-focusable]:focus-visible{outline:3px solid #fbbf24!important;outline-offset:2px!important;border-radius:6px}';
+  if (document.head) document.head.appendChild(st);
+})();
+
+// ── WCAG 4.1.3 Status Messages — debounced polite-announcer for ephemeral status text ──
+let _sfAnnounceTimer = null;
+function sfAnnounce(text) {
+  if (typeof document === 'undefined') return;
+  const lr = document.getElementById('allo-live-storyforge');
+  if (!lr) return;
+  if (_sfAnnounceTimer) clearTimeout(_sfAnnounceTimer);
+  lr.textContent = '';
+  _sfAnnounceTimer = setTimeout(() => {
+    lr.textContent = String(text || '');
+    _sfAnnounceTimer = null;
+  }, 25);
+}
+
 // ── Utilities ──
 const cleanJson = (str) => {
   if (!str) return '{}';
@@ -33,11 +57,38 @@ const escapeHtml = (str) => {
 const useAudioRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
+  const sharedResultPromiseRef = useRef(null); // Phase 3v.MR — shared-path result promise
   const chunksRef = useRef([]);
   const startRecording = async () => {
+    // Phase 3v.MR — shared module path with inline fallback. The shared
+    // controller exposes result as a Promise that resolves on stop().
+    // We store the promise on a ref so stopRecording can await it.
+    if (window.AlloFlowVoice && typeof window.AlloFlowVoice.recordAudioBlob === 'function') {
+      const ctrl = window.AlloFlowVoice.recordAudioBlob({
+        // No maxDurationMs — caller drives stop. The shared default
+        // (60s) would change behavior for callers that expect arbitrary
+        // length recording. Use a generous 10-minute cap as a safety net.
+        maxDurationMs: 10 * 60 * 1000,
+        preferredMimeType: 'audio/webm;codecs=opus',
+        onError: (err) => {
+          console.warn('Microphone access denied:', err);
+          setIsRecording(false);
+        }
+      });
+      if (!ctrl.supported) {
+        console.warn('MediaRecorder not supported');
+        return;
+      }
+      mediaRecorderRef.current = ctrl;
+      sharedResultPromiseRef.current = ctrl.result;
+      setIsRecording(true);
+      return;
+    }
+    // Inline fallback (pre-3v.MR behavior, identical)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
+      sharedResultPromiseRef.current = null;
       chunksRef.current = [];
       mediaRecorderRef.current.ondataavailable = (event) => {
         if (event.data.size > 0) chunksRef.current.push(event.data);
@@ -51,6 +102,37 @@ const useAudioRecorder = () => {
   const stopRecording = () => {
     return new Promise((resolve) => {
       if (!mediaRecorderRef.current) return resolve(null);
+      // Shared-module path: controller has isRecording() + .result Promise
+      if (sharedResultPromiseRef.current && typeof mediaRecorderRef.current.isRecording === 'function') {
+        const ctrl = mediaRecorderRef.current;
+        const promise = sharedResultPromiseRef.current;
+        try { ctrl.stop(); } catch (e) { /* ignore */ }
+        promise.then(async (rec) => {
+          if (!rec || !rec.base64) { setIsRecording(false); return resolve(null); }
+          const dataUri = rec.base64;
+          const bare = dataUri.split(',')[1] || dataUri;
+          const mimeType = rec.mimeType || 'audio/webm';
+          // Reconstruct a Blob URL via fetch() so callers that revoke
+          // it later (or pipe it into <audio src=blob:...>) get the
+          // same blob-URL flavor the legacy path produced.
+          let url;
+          try {
+            const blob = await fetch(dataUri).then((r) => r.blob());
+            url = URL.createObjectURL(blob);
+          } catch (e) {
+            // If fetch on a data URI fails for any reason, the data URI
+            // itself works as <audio src> in modern browsers.
+            url = dataUri;
+          }
+          setIsRecording(false);
+          resolve({ url, base64: bare, mimeType });
+        }).catch(() => {
+          setIsRecording(false);
+          resolve(null);
+        });
+        return;
+      }
+      // Inline-fallback path
       mediaRecorderRef.current.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         const url = URL.createObjectURL(blob);
@@ -75,6 +157,51 @@ const useDictation = (onTranscript, lang) => {
   const isDictatingRef = useRef(false);
   const recognitionRef = useRef(null);
   const startDictation = () => {
+    // Phase 3v.M — shared module path with inline fallback. The shared
+    // path uses restartOnEnd:true so the recursive restart (legacy
+    // line: recognitionRef.current.start() in onend) is handled inside
+    // the controller. The onRichResult callback forwards only final
+    // text via onTranscript, matching the original useDictation
+    // contract that callers rely on.
+    if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === 'function') {
+      // Note: NOT using restartOnEnd:true here — that would restart even
+      // after user-initiated stop. We replicate the legacy manual-restart
+      // pattern: on natural end (browser silence timeout) we re-start
+      // ourselves only if the user hasn't called stopDictation; on user
+      // stop we let the controller stay stopped.
+      let ctrlRef = null;
+      const handleEnd = () => {
+        if (ctrlRef && recognitionRef.current === ctrlRef && isDictatingRef.current) {
+          try { ctrlRef.start(); }
+          catch (e) {
+            isDictatingRef.current = false;
+            setIsDictating(false);
+          }
+        }
+      };
+      const ctrl = window.AlloFlowVoice.initWebSpeechCapture({
+        lang: lang || 'en-US',
+        continuous: true,
+        interimResults: true,
+        onRichResult: ({ final }) => {
+          if (final && onTranscript) onTranscript(final);
+        },
+        onError: () => {
+          isDictatingRef.current = false;
+          setIsDictating(false);
+        },
+        onEnd: handleEnd
+      });
+      if (!ctrl.supported) return;
+      ctrlRef = ctrl;
+      if (ctrl.start()) {
+        recognitionRef.current = ctrl;
+        isDictatingRef.current = true;
+        setIsDictating(true);
+      }
+      return;
+    }
+    // Inline fallback (pre-3v.M behavior, identical)
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) return;
     const recognition = new SR();
@@ -102,8 +229,13 @@ const useDictation = (onTranscript, lang) => {
   const stopDictation = () => {
     isDictatingRef.current = false;
     if (recognitionRef.current) {
-      recognitionRef.current.onend = null;
-      recognitionRef.current.stop();
+      // The shared-module controller handles its own end cleanup;
+      // the inline-fallback rec needs the legacy onend-clearing trick
+      // to prevent the restart-on-end recursion from re-entering.
+      if (recognitionRef.current.onend !== undefined) {
+        try { recognitionRef.current.onend = null; } catch (e) { /* shared ctrl: noop */ }
+      }
+      try { recognitionRef.current.stop(); } catch (e) { /* ignore */ }
       recognitionRef.current = null;
     }
     setIsDictating(false);
@@ -154,6 +286,18 @@ const GENRE_TEMPLATES = {
 };
 
 const SAVE_KEY = 'alloflow_storyforge_draft';
+
+// Narrative beat options for the per-paragraph Plot Structure dropdown.
+// Empty value means "unset" — students can leave blank.
+const PLOT_BEATS = [
+  { value: '', label: '— Choose beat —' },
+  { value: 'setup', label: 'Setup' },
+  { value: 'inciting', label: 'Inciting Incident' },
+  { value: 'rising', label: 'Rising Action' },
+  { value: 'climax', label: 'Climax' },
+  { value: 'falling', label: 'Falling Action' },
+  { value: 'resolution', label: 'Resolution' },
+];
 
 const STORY_STARTERS = {
   'adventure': [
@@ -284,7 +428,7 @@ const StoryForge = React.memo(({
   const [maxParagraphs] = useState(8);
 
   // ── Write state ──
-  const [paragraphs, setParagraphs] = useState([{ id: 'p-0', text: '', scaffoldFrame: '' }]);
+  const [paragraphs, setParagraphs] = useState([{ id: 'p-0', text: '', scaffoldFrame: '', plotBeat: '' }]);
   const [scaffoldsGenerated, setScaffoldsGenerated] = useState(false);
   const [helpMeResult, setHelpMeResult] = useState(null);
   const [helpMeParagraphIdx, setHelpMeParagraphIdx] = useState(-1);
@@ -573,14 +717,37 @@ const StoryForge = React.memo(({
     if (dictation.isDictating) {
       dictation.stopDictation();
       setDictatingParagraphIdx(-1);
+      sfAnnounce('Dictation stopped');
     } else {
       setDictatingParagraphIdx(idx);
       dictation.startDictation();
+      sfAnnounce(`Dictation started for paragraph ${idx + 1}`);
     }
   };
 
   // ── Review state ──
   const [gradingResult, setGradingResult] = useState(null);
+  // Senses Check (sensory imagery audit, ported from PoetTree)
+  const [sensesResult, setSensesResult] = useState(null);
+  const [sensesLoading, setSensesLoading] = useState(false);
+  // Pre-grade Self-Assessment — student rates self before AI grade for metacognition
+  const [selfAssessment, setSelfAssessment] = useState({});
+  const [selfAssessmentSubmitted, setSelfAssessmentSubmitted] = useState(false);
+  // Mentor Match — Serper-grounded recommendation of a public-domain short-story excerpt
+  const [mentorMatch, setMentorMatch] = useState(null);
+  const [mentorLoading, setMentorLoading] = useState(false);
+  // Show-Don't-Tell coach — flags sentences that name emotion/state outright
+  const [showTellResult, setShowTellResult] = useState(null);
+  const [showTellLoading, setShowTellLoading] = useState(false);
+  // Character Arc Tracker — per-character introduction/want/change/resolution audit
+  const [arcReport, setArcReport] = useState(null);
+  const [arcLoading, setArcLoading] = useState(false);
+  // Revision Plan — synthesizes whichever helpers ran into one prioritized to-do list
+  const [revisionPlan, setRevisionPlan] = useState(null);
+  const [revisionPlanLoading, setRevisionPlanLoading] = useState(false);
+  // Dialogue Tag Tune-Up — counts tag usage, flags overuse of "said", proposes context-aware swaps
+  const [dialogueReport, setDialogueReport] = useState(null);
+  const [dialogueLoading, setDialogueLoading] = useState(false);
   const [draftCount, setDraftCount] = useState(1);
 
   // ── Init vocab from glossary ──
@@ -787,6 +954,7 @@ const StoryForge = React.memo(({
     if (d.language) setLanguage(d.language);
     setShowRestorePrompt(false);
     if (addToast) addToast('Draft restored!', 'success');
+    sfAnnounce('Draft restored');
   };
 
   const discardDraft = () => {
@@ -807,7 +975,7 @@ const StoryForge = React.memo(({
       if (initialConfig.rubricText) setRubricText(initialConfig.rubricText);
       if (initialConfig.language) setLanguage(initialConfig.language);
       if (initialConfig.minParagraphs) {
-        setParagraphs(Array.from({ length: initialConfig.minParagraphs }, (_, i) => ({ id: `p-${i}`, text: '', scaffoldFrame: '' })));
+        setParagraphs(Array.from({ length: initialConfig.minParagraphs }, (_, i) => ({ id: `p-${i}`, text: '', scaffoldFrame: '', plotBeat: '' })));
       }
       if (addToast) addToast('Assignment loaded from teacher!', 'success');
     }
@@ -872,7 +1040,7 @@ const StoryForge = React.memo(({
     } else if (resource.type === 'sentence-frames') {
       const frames = typeof resource.data === 'string' ? resource.data.split('\n').filter(Boolean) : [];
       if (frames.length > 0) {
-        setParagraphs(frames.slice(0, 8).map((f, i) => ({ id: `p-${i}`, text: '', scaffoldFrame: f.replace(/^[\d.)\-\s]+/, '').trim() })));
+        setParagraphs(frames.slice(0, 8).map((f, i) => ({ id: `p-${i}`, text: '', scaffoldFrame: f.replace(/^[\d.)\-\s]+/, '').trim(), plotBeat: '' })));
         setScaffoldsGenerated(true);
         if (addToast) addToast(`Imported ${frames.length} scaffold frames!`, 'success');
       }
@@ -886,7 +1054,7 @@ const StoryForge = React.memo(({
       const timelineText = typeof resource.data === 'string' ? resource.data : '';
       if (timelineText) {
         const events = timelineText.split('\n').filter(l => l.trim().length > 10).slice(0, 8);
-        setParagraphs(events.map((e, i) => ({ id: `p-${i}`, text: '', scaffoldFrame: e.trim() })));
+        setParagraphs(events.map((e, i) => ({ id: `p-${i}`, text: '', scaffoldFrame: e.trim(), plotBeat: '' })));
         setScaffoldsGenerated(true);
         if (addToast) addToast(`Imported ${events.length} timeline events as scaffolds!`, 'success');
       }
@@ -928,13 +1096,17 @@ const StoryForge = React.memo(({
 
   const addVocabTerm = () => {
     if (!newTerm.trim()) return;
-    setVocabTerms(prev => [...prev, { term: newTerm.trim(), definition: newDef.trim() }]);
+    const t = newTerm.trim();
+    setVocabTerms(prev => [...prev, { term: t, definition: newDef.trim() }]);
     setNewTerm('');
     setNewDef('');
+    sfAnnounce(`Term added: ${t}`);
   };
 
   const removeVocabTerm = (idx) => {
+    const removed = vocabTerms[idx];
     setVocabTerms(prev => prev.filter((_, i) => i !== idx));
+    if (removed) sfAnnounce(`Term removed: ${removed.term}`);
   };
 
   // ═══════════════════════════════════════════════════════════
@@ -946,10 +1118,15 @@ const StoryForge = React.memo(({
     if (!isDirty) setIsDirty(true);
   };
 
+  const updateParagraphBeat = (idx, beat) => {
+    setParagraphs(prev => prev.map((p, i) => i === idx ? { ...p, plotBeat: beat } : p));
+    if (!isDirty) setIsDirty(true);
+  };
+
   const addParagraph = () => {
     if (paragraphs.length >= maxParagraphs) return;
     const newId = `p-${Date.now()}`;
-    setParagraphs(prev => [...prev, { id: newId, text: '', scaffoldFrame: '' }]);
+    setParagraphs(prev => [...prev, { id: newId, text: '', scaffoldFrame: '', plotBeat: '' }]);
     if (!isDirty) setIsDirty(true);
     // Auto-scroll to new paragraph after render
     setTimeout(() => {
@@ -1484,7 +1661,427 @@ Return ONLY JSON:
     setRevisionSnapshot({ words: totalWords, vocabUsed: vocabUsedCount, paragraphCount: paragraphs.length, grade: readingLevel?.grade || null });
     setDraftCount(d => d + 1);
     setGradingResult(null);
+    setSelfAssessment({});
+    setSelfAssessmentSubmitted(false);
+    setSensesResult(null);
+    setMentorMatch(null);
+    setShowTellResult(null);
+    setArcReport(null);
+    setRevisionPlan(null);
+    setDialogueReport(null);
     changePhase('write');
+  };
+
+  // ── Mentor Match: pair the student's story with a public-domain master excerpt ──
+  // Same proven pattern as PoetTree (commit 574767a):
+  //   1. Gemini extracts 3-5 keywords from the student's draft
+  //   2. WebSearchProvider (Serper → SearXNG → DDG) fetches real PD candidates
+  //   3. Gemini picks the best mentor, anchored to a real sourceUrl
+  // Anti-fabrication: hard-restricts to authors-died-pre-1929 + traditional/anonymous;
+  // uncertain flag asks Gemini to skip text rather than invent.
+  const findMentorStory = async () => {
+    if (!onCallGemini) return;
+    const fullText = paragraphs.map(p => p.text.trim()).filter(Boolean).join('\n\n');
+    if (fullText.length < 80) {
+      if (addToast) addToast('Write a bit more before finding a mentor', 'info');
+      return;
+    }
+    setMentorLoading(true);
+    setMentorMatch(null);
+    try {
+      // Stage 1 — extract keywords
+      let keywords = '';
+      try {
+        const queryPrompt = `Extract 3-5 keywords from this story draft that would help find a similar PUBLIC-DOMAIN master short story online. Focus on concrete images, themes, setting, character archetype, and emotional tone, not function words. Return JSON: {"keywords":["...","..."]}\n\nStory:\n"""\n${fullText.slice(0, 2400)}\n"""`;
+        const queryResult = await onCallGemini(queryPrompt, true);
+        const queryParsed = JSON.parse(cleanJson(queryResult));
+        keywords = (queryParsed.keywords || []).slice(0, 5).join(' ');
+      } catch (e) { console.warn('Mentor keyword extract failed:', e && e.message); }
+
+      // Stage 2 — Serper-grounded web search for real PD short fiction
+      let searchContext = '';
+      let searchResults = [];
+      if (window.WebSearchProvider && keywords) {
+        try {
+          const genreLabel = GENRE_TEMPLATES[genre]?.label || '';
+          const searchQuery = `${keywords} ${genreLabel ? genreLabel + ' ' : ''}famous public domain short story excerpt gutenberg`;
+          sfAnnounce('Searching for similar master stories…');
+          const searchResult = await window.WebSearchProvider.search(searchQuery, 8);
+          if (searchResult && searchResult.results && searchResult.results.length > 0) {
+            searchResults = searchResult.results.slice(0, 8);
+            searchContext = '\n\nWeb search results for similar public-domain short fiction. Treat these as your candidate set — strongly prefer suggesting a story from this list because the URL anchors the recommendation in something the student can actually read. Reject results that are clearly behind a paywall, modern (post-1929), or not actually fiction (e.g. study guides, summaries).\n\n'
+              + searchResults.map((r, i) =>
+                `${i + 1}. ${r.title || 'Untitled'}\n   URL: ${r.url || r.link || ''}\n   ${String(r.snippet || '').slice(0, 220)}`
+              ).join('\n\n');
+          }
+        } catch (e) {
+          console.warn('Mentor web search failed, falling back to Gemini-only:', e && e.message);
+        }
+      }
+
+      // Stage 3 — Gemini picks the best mentor, ideally from the real results
+      const genreLabel = GENRE_TEMPLATES[genre]?.label || 'creative';
+      const targetGrade = gradeLevel || '5th grade';
+      const prompt = `You are a writing mentor for a ${targetGrade} student. Pair their story with ONE public-domain master short-story excerpt that they could study alongside their own work.
+
+Student story (${genreLabel}):
+"""
+${fullText}
+"""${searchContext}
+
+CRITICAL anti-fabrication rules:
+- ONLY suggest authors who died before 1929 (US PD-safe), anonymous traditional folk tales, or canonical translations of pre-modern works (Aesop, Grimm Brothers, Hans Christian Andersen, Andrew Lang fairy tale collections, etc.).
+- Safe bets by genre: Adventure → Twain, Stevenson, Conan Doyle (early), Kipling (early). Mystery → Poe, Conan Doyle (early). Fairy tale → Grimms, Andersen, Lang. Sci-fi → H.G. Wells, Jules Verne. Historical → Hawthorne, Dickens. Persuasive → Aesop's fables.
+${searchContext ? '- Strongly prefer one of the search results above. Include its URL in "sourceUrl".\n' : ''}- Choose ONE short, vivid excerpt (40-150 words), not a summary. If you cannot supply an exact attributed excerpt, set "uncertain":true and LEAVE THE TEXT FIELD BLANK — describe the story in prose. Never fabricate.
+
+Return JSON:
+{
+  "mentor": {
+    "title": "<title>",
+    "author": "<author>",
+    "year": <number or null>,
+    "text": "<exact excerpt with line breaks as \\\\n; BLANK if uncertain>",
+    "sourceUrl": "<URL from search results, or null>",
+    "uncertain": false
+  },
+  "sharedTheme": "<one sentence on what your two stories share — image, conflict, character type, mood>",
+  "craftToBorrow": "<one specific craft move from the master worth trying — sentence rhythm, dialogue tag, sensory detail, etc.>",
+  "studentEcho": "<where the student is already doing something similar, with a quoted phrase from their own story>"
+}
+
+Match register and reading level to a ${targetGrade} student. Be specific, be honest, never invent.`;
+
+      const result = await onCallGemini(prompt, true);
+      const parsed = JSON.parse(cleanJson(result));
+      parsed._grounding = { searchUsed: searchResults.length > 0, resultCount: searchResults.length, keywords: keywords };
+      setMentorMatch(parsed);
+      if (addToast) addToast('Mentor story found!', 'success');
+      sfAnnounce('Mentor story found: ' + (parsed.mentor && parsed.mentor.title) + ' by ' + (parsed.mentor && parsed.mentor.author) + (searchResults.length > 0 ? ' — verified via web search.' : '.'));
+      awardXP(8, 'Studied a mentor text');
+    } catch (err) {
+      console.warn('Mentor match failed:', err && err.message);
+      setMentorMatch({ error: "Couldn't find a mentor story right now. Try again in a moment." });
+      if (addToast) addToast('Mentor search failed — try again', 'error');
+    }
+    setMentorLoading(false);
+  };
+
+  // ── Senses & Imagery Checker (ported from PoetTree, retargeted for prose) ──
+  const checkSenses = async () => {
+    if (!onCallGemini) return;
+    const fullText = paragraphs.map(p => p.text.trim()).filter(Boolean).join('\n\n');
+    if (fullText.length < 30) {
+      if (addToast) addToast('Write a bit more before checking senses', 'info');
+      return;
+    }
+    setSensesLoading(true);
+    try {
+      const prompt = `You are a writing coach analyzing sensory imagery in a student's story.
+
+Story:
+"""
+${fullText}
+"""
+
+Count concrete sensory details across all paragraphs combined for each of these categories:
+- sight (visual descriptions: color, shape, light)
+- sound (heard things: noises, voices, music, silence)
+- smell (scents, odors)
+- taste (flavors, textures in the mouth)
+- touch (physical textures, temperature, pressure on skin)
+- motion (movement, kinesthetic action)
+- emotion (named feelings: fear, joy, embarrassment)
+
+Then identify the strongest sense (most-used) and the weakest/missing sense (under-used).
+Offer ONE specific, kind, concrete revision suggestion that names a paragraph and a sense ("In paragraph 3, what does the bedroom actually smell like?").
+
+Return ONLY JSON in this shape:
+{
+  "counts": {"sight": N, "sound": N, "smell": N, "taste": N, "touch": N, "motion": N, "emotion": N},
+  "strongest": "sight",
+  "missing": "smell",
+  "suggestion": "Specific, concrete revision tip naming a paragraph and a sense."
+}`;
+      const result = await onCallGemini(prompt, true);
+      const data = JSON.parse(cleanJson(result));
+      setSensesResult(data);
+      if (addToast) addToast('Senses check ready!', 'success');
+      sfAnnounce('Senses check complete. Strongest sense: ' + (data.strongest || 'unknown') + '. Missing: ' + (data.missing || 'unknown'));
+      awardXP(5, 'Used senses checker');
+    } catch (err) {
+      console.warn('Senses check failed:', err);
+      if (addToast) addToast('Senses check failed — try again', 'error');
+    }
+    setSensesLoading(false);
+  };
+
+  // ── Show, Don't Tell coach ──
+  // Flags sentences that name an emotion/state outright ("she was scared")
+  // and offers a concrete sensory/action revision ("she pressed her back to
+  // the wall, holding her breath"). Foundational craft move for grades 4-8.
+  const analyzeShowTell = async () => {
+    if (!onCallGemini) return;
+    const fullText = paragraphs.map(p => p.text.trim()).filter(Boolean).join('\n\n');
+    if (fullText.length < 60) {
+      if (addToast) addToast('Write a bit more before checking show vs tell', 'info');
+      return;
+    }
+    setShowTellLoading(true);
+    try {
+      const targetGrade = gradeLevel || '5th grade';
+      const prompt = `You are a writing coach for a ${targetGrade} student. Analyze their story for "telling" sentences that could be revised into "showing" sentences.
+
+A "telling" sentence names an emotion, state, or trait outright (e.g. "She was scared", "He felt happy", "It was cold").
+A "showing" sentence reveals the same idea through sensory details, action, or dialogue (e.g. "Her knuckles whitened on the doorframe", "He spun on the spot, arms wide", "Frost crackled across the window pane").
+
+Story:
+"""
+${fullText}
+"""
+
+Find up to 4 of the most fixable "telling" sentences. For each, propose ONE concrete "showing" revision that fits the story's tone and the student's grade level. If the story is already strong on showing, return an empty list and a celebratory note.
+
+Return ONLY JSON:
+{
+  "tellings": [
+    { "telling": "<exact telling sentence from the student>", "showing": "<concrete sensory/action revision>", "why": "<one short sentence on what changed>" }
+  ],
+  "summary": "<one short sentence — encouraging if list is empty, gentle if not>"
+}`;
+
+      const result = await onCallGemini(prompt, true);
+      const data = JSON.parse(cleanJson(result));
+      setShowTellResult(data);
+      if (addToast) addToast('Show vs Tell ready!', 'success');
+      const count = (data.tellings || []).length;
+      sfAnnounce(count === 0 ? 'Show vs tell check: no telling sentences found.' : `Show vs tell check: ${count} sentence${count === 1 ? '' : 's'} could become more vivid.`);
+      awardXP(5, 'Used show-don\'t-tell coach');
+    } catch (err) {
+      console.warn('Show-don\'t-tell failed:', err);
+      if (addToast) addToast('Show vs Tell failed — try again', 'error');
+    }
+    setShowTellLoading(false);
+  };
+
+  // ── Character Arc Tracker ──
+  // Builds on detectCharacters: evaluates each named character on the four-beat
+  // arc (introduction → want/conflict → change → resolution) and surfaces one
+  // specific revision suggestion per character. Skips arc analysis for stories
+  // with no named characters (returns an encouraging note instead).
+  const analyzeCharacterArcs = async () => {
+    if (!onCallGemini) return;
+    const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join('\n\n');
+    const wordCount = fullText.split(/\s+/).filter(Boolean).length;
+    if (wordCount < 80) {
+      if (addToast) addToast('Write a bit more before tracking arcs', 'info');
+      return;
+    }
+    setArcLoading(true);
+    try {
+      const targetGrade = gradeLevel || '5th grade';
+      const prompt = `You are a writing coach analyzing character arcs for a ${targetGrade} student.
+
+A complete narrative character arc has four beats:
+1. INTRODUCTION — the character is established (name, role, defining trait).
+2. WANT — what the character wants, fears, or has at stake (the engine of the story for them).
+3. CHANGE — how the character is tested, learns, or shifts because of the story's events.
+4. RESOLUTION — how their arc lands (succeed, fail, transform, hold steady on purpose).
+
+Story:
+"""
+${fullText}
+"""
+
+Identify up to 3 named characters who are *important enough* to deserve an arc (skip walk-on names). For each, score the four beats as "strong" / "partial" / "missing", quote one paragraph reference for each beat that exists, and propose ONE specific revision suggestion that would strengthen the weakest beat at this student's grade level. If the story has no named characters at all, return an empty array and an encouraging note.
+
+Return ONLY JSON:
+{
+  "characters": [
+    {
+      "name": "<character name>",
+      "role": "<protagonist | supporting | antagonist | other>",
+      "beats": {
+        "introduction": { "status": "strong|partial|missing", "evidence": "<paragraph N quote or empty>" },
+        "want":         { "status": "strong|partial|missing", "evidence": "<paragraph N quote or empty>" },
+        "change":       { "status": "strong|partial|missing", "evidence": "<paragraph N quote or empty>" },
+        "resolution":   { "status": "strong|partial|missing", "evidence": "<paragraph N quote or empty>" }
+      },
+      "suggestion": "<one specific, kind, concrete revision idea>"
+    }
+  ],
+  "summary": "<one short overall sentence>"
+}`;
+
+      const result = await onCallGemini(prompt, true);
+      const data = JSON.parse(cleanJson(result));
+      data.characters = (data.characters || []).slice(0, 3);
+      setArcReport(data);
+      const count = data.characters.length;
+      if (addToast) addToast('Character arcs analyzed!', 'success');
+      sfAnnounce(count === 0 ? 'No named characters found in the story.' : `Character arc tracker: ${count} character${count === 1 ? '' : 's'} analyzed.`);
+      awardXP(8, 'Tracked character arcs');
+    } catch (err) {
+      console.warn('Character arc analysis failed:', err);
+      if (addToast) addToast('Arc tracker failed — try again', 'error');
+    }
+    setArcLoading(false);
+  };
+
+  // ── Dialogue Tag Tune-Up ──
+  // Surfaces dialogue mechanics issues that middle-school writers commonly miss:
+  // overuse of a single tag (especially "said"), untagged dialogue where the
+  // speaker is unclear, and lack of action beats around long exchanges.
+  // Returns concrete in-context tag replacements rather than a generic word list.
+  const analyzeDialogue = async () => {
+    if (!onCallGemini) return;
+    const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join('\n\n');
+    if (!fullText.includes('"') && !fullText.includes('“') && !fullText.includes('”')) {
+      if (addToast) addToast('No dialogue detected — try adding a quoted line', 'info');
+      setDialogueReport({ tagCounts: {}, overusedTag: null, issues: [], summary: 'No dialogue found yet.' });
+      return;
+    }
+    setDialogueLoading(true);
+    try {
+      const targetGrade = gradeLevel || '5th grade';
+      const prompt = `You are a writing coach analyzing dialogue mechanics for a ${targetGrade} student.
+
+Story:
+"""
+${fullText}
+"""
+
+Tasks:
+1. Count occurrences of each dialogue tag verb (said, asked, replied, whispered, shouted, etc.). Treat "said" specially — it's invisible and grade-appropriate, but using it more than ~70% of the time signals overuse. List counts in descending order.
+2. Identify up to 3 specific dialogue lines where the tag could be more precise (offer ONE concrete in-context swap per line — match tone, don't go thesaurus-purple). Include the original line verbatim and the proposed revision.
+3. Flag up to 2 lines where the speaker is unclear (untagged dialogue with no nearby attribution).
+4. If there is no dialogue at all, return empty arrays and an encouraging note that adding even one line of dialogue can make characters come alive.
+
+Return ONLY JSON:
+{
+  "tagCounts": { "<tag verb>": <count>, ... },
+  "overusedTag": "<tag string or null>",
+  "issues": [
+    { "type": "tag-swap", "line": "<exact dialogue line>", "suggestion": "<replacement with new tag>", "why": "<short reason>" },
+    { "type": "missing-tag", "line": "<exact dialogue line>", "suggestion": "<add tag/action beat>", "why": "<short reason>" }
+  ],
+  "summary": "<one short sentence — encouraging if dialogue is strong, gentle if not>"
+}`;
+
+      const result = await onCallGemini(prompt, true);
+      const data = JSON.parse(cleanJson(result));
+      setDialogueReport(data);
+      if (addToast) addToast('Dialogue tune-up ready!', 'success');
+      const issueCount = (data.issues || []).length;
+      sfAnnounce(issueCount === 0 ? 'Dialogue mechanics check: no issues found.' : `Dialogue mechanics check: ${issueCount} suggestion${issueCount === 1 ? '' : 's'}.`);
+      awardXP(5, 'Tuned up dialogue');
+    } catch (err) {
+      console.warn('Dialogue analysis failed:', err);
+      if (addToast) addToast('Dialogue tune-up failed — try again', 'error');
+    }
+    setDialogueLoading(false);
+  };
+
+  // ── Revision Plan synthesizer ──
+  // Pulls together whichever helpers have run (Senses, Show-vs-Tell, Character
+  // Arcs, Mentor Match, Self-Assessment) into a single prioritized 3-item
+  // revision plan. Pedagogical aim: teach synthesis as its own meta-skill.
+  // Only available when ≥2 helpers have produced output (not before).
+  const synthesizeRevisionPlan = async () => {
+    if (!onCallGemini) return;
+    setRevisionPlanLoading(true);
+    try {
+      const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join('\n\n');
+      // Compact the helper outputs to keep the prompt small.
+      const helperContext = [];
+      if (sensesResult && !sensesResult.error) {
+        helperContext.push(`SENSES CHECK:\n  strongest: ${sensesResult.strongest || 'unknown'}\n  missing: ${sensesResult.missing || 'unknown'}\n  suggestion: ${sensesResult.suggestion || ''}`);
+      }
+      if (showTellResult && (showTellResult.tellings || []).length > 0) {
+        const top = showTellResult.tellings.slice(0, 3).map(t => `  - "${t.telling}" → "${t.showing}"`).join('\n');
+        helperContext.push(`SHOW vs TELL:\n${top}`);
+      }
+      if (arcReport && (arcReport.characters || []).length > 0) {
+        const top = arcReport.characters.slice(0, 3).map(c => {
+          const weak = Object.entries(c.beats || {}).filter(([, v]) => v.status !== 'strong').map(([k]) => k).join(', ');
+          return `  - ${c.name}: weakest beats: ${weak || 'none'} | suggestion: ${c.suggestion || ''}`;
+        }).join('\n');
+        helperContext.push(`CHARACTER ARCS:\n${top}`);
+      }
+      if (mentorMatch && !mentorMatch.error && mentorMatch.craftToBorrow) {
+        helperContext.push(`MENTOR MATCH:\n  reading: ${mentorMatch.mentor?.title || 'unknown'} by ${mentorMatch.mentor?.author || 'unknown'}\n  craft to borrow: ${mentorMatch.craftToBorrow}`);
+      }
+      if (dialogueReport && (dialogueReport.issues || []).length > 0) {
+        const top = dialogueReport.issues.slice(0, 3).map(i => `  - ${i.type}: "${i.line}" → ${i.suggestion}`).join('\n');
+        helperContext.push(`DIALOGUE TUNE-UP:\n  overused tag: ${dialogueReport.overusedTag || 'none'}\n${top}`);
+      }
+      if (selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0) {
+        const lowest = Object.entries(selfAssessment).sort((a, b) => a[1] - b[1]).slice(0, 2);
+        helperContext.push(`STUDENT SELF-ASSESSMENT (lowest ratings):\n${lowest.map(([k, v]) => `  - ${k}: ${v}/5`).join('\n')}`);
+      }
+      const helpersBlock = helperContext.length > 0
+        ? `\n\nHelpers the student has already run:\n${helperContext.join('\n\n')}`
+        : '';
+
+      const targetGrade = gradeLevel || '5th grade';
+      const prompt = `You are a kind, specific writing coach helping a ${targetGrade} student plan their next revision pass.
+
+Story:
+"""
+${fullText}
+"""${helpersBlock}
+
+Build a prioritized revision plan with EXACTLY 3 tasks. Each task should:
+- Be small enough to do in a single revision session.
+- Be specific (name a paragraph, character, or sentence when possible).
+- Pull from the helper outputs above when relevant — don't repeat what the helpers said, *synthesize* across them.
+- Be ranked by impact (most-impactful first).
+- Include a one-sentence "why" so the student understands the craft reason.
+
+Tone: warm, concrete, never scolding. Treat the student as a capable writer who's iterating, not a beginner being corrected.
+
+Return ONLY JSON:
+{
+  "tasks": [
+    { "title": "<short imperative title, e.g. 'Add a smell to paragraph 3'>", "detail": "<one or two specific sentences on what to do>", "why": "<one short sentence on the craft reason>", "source": "<which helper this builds on, or 'overall'>" }
+  ],
+  "encouragement": "<one short, specific compliment on something the draft is already doing well>"
+}`;
+
+      const result = await onCallGemini(prompt, true);
+      const data = JSON.parse(cleanJson(result));
+      setRevisionPlan(data);
+      if (addToast) addToast('Revision plan ready!', 'success');
+      sfAnnounce(`Revision plan ready with ${(data.tasks || []).length} prioritized tasks.`);
+      awardXP(10, 'Built a revision plan');
+    } catch (err) {
+      console.warn('Revision plan synthesis failed:', err);
+      if (addToast) addToast('Revision plan failed — try again', 'error');
+    }
+    setRevisionPlanLoading(false);
+  };
+
+  // True when the student has at least 2 helper outputs available to synthesize.
+  const helpersAvailableForPlan = () => {
+    let n = 0;
+    if (sensesResult && !sensesResult.error) n++;
+    if (showTellResult && Array.isArray(showTellResult.tellings)) n++;
+    if (arcReport && Array.isArray(arcReport.characters)) n++;
+    if (mentorMatch && !mentorMatch.error) n++;
+    if (dialogueReport && Array.isArray(dialogueReport.issues)) n++;
+    if (selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0) n++;
+    return n >= 2;
+  };
+
+  // Pull criteria names out of the rubric markdown table; fall back to defaults.
+  const getRubricCriteria = () => {
+    const fallback = ['Vocabulary Usage', 'Story Structure', 'Creativity & Detail', 'Grammar & Mechanics'];
+    const text = rubricText || '';
+    if (!text.trim()) return fallback;
+    const rows = text.split('\n').filter(l => l.includes('|') && !/^\s*\|?\s*-{3,}/.test(l));
+    const names = rows
+      .map(r => r.split('|').map(s => s.trim()).filter(Boolean)[0])
+      .filter(n => n && n.toLowerCase() !== 'criteria' && !/^[-:]+$/.test(n));
+    return names.length >= 2 ? names.slice(0, 6) : fallback;
   };
 
   // ═══════════════════════════════════════════════════════════
@@ -1508,24 +2105,46 @@ Return ONLY JSON:
       const audio = audioSegments[p.id];
       const safeText = escapeHtml(p.text);
       if (isComic) {
-        chaptersHtml += `<div class="panel">`;
-        if (img) chaptersHtml += `<img src="${img}" class="panel-img" loading="lazy" alt="Panel ${idx + 1}" />`;
-        chaptersHtml += `<div class="speech-bubble">${safeText.length > 200 ? safeText.substring(0, 200) + '...' : safeText.replace(/\n/g, '<br/>')}</div>`;
-        chaptersHtml += `</div>`;
+        // Pull dialogue/sticker overlay data — these were rendered in-app but previously dropped on export.
+        const panel = panelDialogue[p.id] || {};
+        const safeSpeaker = panel.speaker ? escapeHtml(panel.speaker) : '';
+        const safeSpeech = panel.speech ? escapeHtml(panel.speech) : '';
+        const safeThought = panel.thought ? escapeHtml(panel.thought) : '';
+        const safeSfx = panel.sfx ? escapeHtml(panel.sfx) : '';
+        const sticker = panelStickers[p.id] || '';
+        chaptersHtml += `<article class="panel" aria-label="Comic panel ${idx + 1}">`;
+        if (img) chaptersHtml += `<div class="panel-img-wrap">`;
+        if (img) chaptersHtml += `<img src="${img}" class="panel-img" loading="lazy" alt="Comic panel ${idx + 1} illustration" />`;
+        if (img && safeSfx) chaptersHtml += `<span class="sfx-tag" aria-label="Sound effect: ${safeSfx}">${safeSfx}</span>`;
+        if (img && sticker) chaptersHtml += `<span class="panel-sticker" aria-hidden="true">${escapeHtml(sticker)}</span>`;
+        if (img) chaptersHtml += `</div>`;
+        if (safeSpeech) {
+          chaptersHtml += `<div class="dialogue-bubble">`;
+          if (safeSpeaker) chaptersHtml += `<div class="dialogue-speaker">${safeSpeaker}:</div>`;
+          chaptersHtml += `<div class="dialogue-speech">${safeSpeech}</div>`;
+          chaptersHtml += `</div>`;
+        }
+        if (safeThought) chaptersHtml += `<div class="thought-bubble" aria-label="Inner thought">💭 ${safeThought}</div>`;
+        chaptersHtml += `<div class="speech-bubble panel-caption">${safeText.length > 200 ? safeText.substring(0, 200) + '...' : safeText.replace(/\n/g, '<br/>')}</div>`;
+        chaptersHtml += `</article>`;
       } else {
-        chaptersHtml += `<div class="chapter">`;
+        chaptersHtml += `<article class="chapter" aria-label="Paragraph ${idx + 1}">`;
         if (img) chaptersHtml += `<img src="${img}" class="scene-img" loading="lazy" alt="Illustration for paragraph ${idx + 1}" />`;
+        const beatLabel = (PLOT_BEATS.find(b => b.value === p.plotBeat) || {}).label;
+        if (beatLabel && p.plotBeat) {
+          chaptersHtml += `<div class="beat-label" aria-label="Narrative beat: ${escapeHtml(beatLabel)}">${escapeHtml(beatLabel)}</div>`;
+        }
         chaptersHtml += `<p class="story-text">${safeText.replace(/\n/g, '<br/>')}</p>`;
         if (audio?.studentAudioBase64) {
-          chaptersHtml += `<audio controls src="data:audio/webm;base64,${audio.studentAudioBase64}" style="width:100%;margin-top:8px;"></audio>`;
+          chaptersHtml += `<audio controls src="data:audio/webm;base64,${audio.studentAudioBase64}" style="width:100%;margin-top:8px;" aria-label="Audio narration for paragraph ${idx + 1}"></audio>`;
         }
-        chaptersHtml += `</div>`;
-        if (idx < paragraphs.length - 1) chaptersHtml += `<div class="separator">&mdash;</div>`;
+        chaptersHtml += `</article>`;
+        if (idx < paragraphs.length - 1) chaptersHtml += `<div class="separator" aria-hidden="true">&mdash;</div>`;
       }
     });
     if (isComic) chaptersHtml += '</div>';
 
-    let vocabHtml = '<div class="vocab-section"><h3>Vocabulary Terms Used</h3><div class="vocab-grid">';
+    let vocabHtml = '<div class="vocab-section"><h2 id="vocab-heading">Vocabulary Terms Used</h2><div class="vocab-grid">';
     vocabTerms.forEach(v => {
       const used = vocabUsage[v.term];
       vocabHtml += `<div class="vocab-chip ${used ? 'used' : 'unused'}">${used ? '✓' : '✗'} ${escapeHtml(v.term)}</div>`;
@@ -1535,8 +2154,8 @@ Return ONLY JSON:
     let feedbackHtml = '';
     if (gradingResult) {
       feedbackHtml = `<div class="feedback-section">
-        <h3>Teacher Feedback</h3>
-        <div class="score-badge">${escapeHtml(gradingResult.totalScore || '')}</div>
+        <h2 id="feedback-heading">Teacher Feedback</h2>
+        <div class="score-badge" aria-label="Score: ${escapeHtml(gradingResult.totalScore || '')}">${escapeHtml(gradingResult.totalScore || '')}</div>
         <div class="glow-grow">
           <div class="glow"><strong>✨ Glow:</strong> ${escapeHtml(gradingResult.feedback?.glow || '')}</div>
           <div class="grow"><strong>🌱 Grow:</strong> ${escapeHtml(gradingResult.feedback?.grow || '')}</div>
@@ -1545,15 +2164,21 @@ Return ONLY JSON:
     }
 
     const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title>
+<meta name="author" content="${author}">
+<meta name="description" content="A storybook by ${author}, made with StoryForge.">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
+.skip-link{position:absolute;left:-9999px;top:0;padding:8px 14px;background:#0f172a;color:#fff;text-decoration:none;font-weight:700}
+.skip-link:focus{left:0;top:0;z-index:1000}
 body{font-family:Georgia,'Times New Roman',serif;line-height:1.8;color:#1e293b;max-width:800px;margin:0 auto;padding:40px 20px;background:#fefce8}
+main{display:block}
 .cover{text-align:center;padding:60px 20px;border:4px double #d4af37;border-radius:12px;margin-bottom:40px;background:linear-gradient(135deg,#fffbeb,#fef3c7)}
 .cover h1{font-size:2.5em;color:#92400e;margin-bottom:8px}
 .cover .meta{color:#78716c;font-size:0.9em;font-style:italic}
 .chapter{margin:30px 0;padding:20px;background:white;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06);border-left:4px solid #d4af37}
 .scene-img{width:100%;max-width:600px;display:block;margin:0 auto 16px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
 .story-text{font-size:1.1em;text-indent:2em}
+.beat-label{display:inline-block;font-size:0.7em;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4338ca;background:#eef2ff;border:1px solid #c7d2fe;padding:3px 10px;border-radius:999px;margin-bottom:10px}
 .separator{text-align:center;color:#d4af37;font-size:1.5em;margin:20px 0}
 .vocab-section{margin-top:40px;padding:20px;background:#f0fdf4;border-radius:12px;border:2px solid #bbf7d0}
 .vocab-section h3{color:#166534;margin-bottom:12px}
@@ -1567,26 +2192,41 @@ body{font-family:Georgia,'Times New Roman',serif;line-height:1.8;color:#1e293b;m
 .glow-grow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .glow{background:#f0fdf4;padding:12px;border-radius:8px;border:1px solid #bbf7d0;font-size:0.9em}
 .grow{background:#fffbeb;padding:12px;border-radius:8px;border:1px solid #fde68a;font-size:0.9em}
-.footer{text-align:center;margin-top:40px;color:#94a3b8;font-size:0.8em}
+.colophon{text-align:center;margin-top:40px;color:#475569;font-size:0.8em;padding-top:20px;border-top:1px solid #e5e7eb}
 .print-btn{position:fixed;top:16px;right:16px;padding:8px 20px;background:#4f46e5;color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:0.9em;box-shadow:0 2px 8px rgba(79,70,229,0.3);z-index:100}
 .print-btn:hover{background:#4338ca}
+.print-btn:focus{outline:3px solid #fbbf24;outline-offset:2px}
 .comic-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:20px;background:#1e293b;border-radius:8px}
-.panel{background:white;border:3px solid #0f172a;border-radius:8px;overflow:hidden}
-.panel-img{width:100%;aspect-ratio:1;object-fit:cover}
-.speech-bubble{padding:12px;font-size:0.95em;line-height:1.5;border-top:2px solid #e2e8f0;position:relative}
-@media print{.print-btn{display:none}.chapter,.panel{break-inside:avoid}}
+.panel{background:white;border:3px solid #0f172a;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.panel-img-wrap{position:relative}
+.panel-img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.sfx-tag{position:absolute;top:8px;right:8px;background:#fbbf24;color:#7c2d12;font-weight:900;font-style:italic;padding:4px 12px;border-radius:8px;border:2px solid #7c2d12;font-family:'Comic Sans MS','Marker Felt',sans-serif;font-size:0.95em;transform:rotate(-6deg);box-shadow:2px 2px 0 #7c2d12;text-transform:uppercase;letter-spacing:0.05em}
+.panel-sticker{position:absolute;bottom:8px;left:8px;font-size:2em;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3))}
+.dialogue-bubble{margin:8px;padding:10px 14px;background:#fff;border:2px solid #1e293b;border-radius:14px;font-size:0.92em;line-height:1.4;position:relative}
+.dialogue-speaker{font-weight:bold;color:#1d4ed8;font-size:0.78em;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px}
+.dialogue-speech{color:#1e293b}
+.thought-bubble{margin:8px;padding:8px 12px;background:#f0f9ff;border:2px dashed #7c3aed;border-radius:14px;color:#5b21b6;font-style:italic;font-size:0.88em;line-height:1.4}
+.panel-caption{font-size:0.85em;color:#475569;font-style:italic}
+.speech-bubble{padding:12px;font-size:0.95em;line-height:1.5;border-top:2px solid #e2e8f0;position:relative;background:#fff}
+@media print{.skip-link,.print-btn{display:none}.chapter,.panel{break-inside:avoid}body{background:#fff !important}.cover{background:#fffbeb !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.comic-grid{background:#1e293b !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 </style></head><body>
-<button class="print-btn" onclick="window.print()">🖨️ Print</button>
-<div class="cover">
-  ${coverArt ? `<img src="${coverArt}" style="max-width:300px;border-radius:12px;margin:0 auto 16px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15)" alt="Book cover" />` : ''}
-  <h1>${title}</h1>
+<a class="skip-link" href="#story-content">Skip to story</a>
+<button class="print-btn" onclick="window.print()" aria-label="Print this storybook or save as PDF">🖨️ Print</button>
+<header class="cover" role="banner">
+  ${coverArt ? `<img src="${coverArt}" style="max-width:300px;border-radius:12px;margin:0 auto 16px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15)" alt="Cover illustration for ${title}" />` : ''}
+  <h1 id="story-title">${title}</h1>
   <p class="meta">Written by ${author}</p>
   <p class="meta">${escapeHtml(date)} · ${escapeHtml(GENRE_TEMPLATES[genre]?.label || 'Creative Writing')} · Art style: ${escapeHtml(artStyle)}</p>
-</div>
+</header>
+<main id="story-content" role="main" aria-labelledby="story-title">
 ${chaptersHtml}
+</main>
+<aside class="vocab-aside" aria-labelledby="vocab-heading">
 ${vocabHtml}
-${feedbackHtml}
-<div class="footer">Created with StoryForge · AlloFlow</div>
+</aside>
+${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${feedbackHtml}</aside>` : ''}
+<footer class="colophon" role="contentinfo">Created with StoryForge · AlloFlow</footer>
 </body></html>`;
 
     try {
@@ -1619,8 +2259,13 @@ ${feedbackHtml}
     // Content slides
     paragraphs.forEach((p, idx) => {
       const img = illustrations[p.id]?.imageUrl;
+      const beatLabel = (PLOT_BEATS.find(b => b.value === p.plotBeat) || {}).label;
+      const beatHtml = (beatLabel && p.plotBeat)
+        ? `<div class="beat-label" aria-label="Narrative beat: ${escapeHtml(beatLabel)}">${escapeHtml(beatLabel)}</div>`
+        : '';
       slidesHtml += `<div class="slide">
         ${img ? `<img src="${img}" class="slide-img" alt="Scene ${idx + 1}" />` : ''}
+        ${beatHtml}
         <div class="slide-text">${escapeHtml(p.text).replace(/\n/g, '<br/>')}</div>
         <div class="slide-num">${idx + 1} / ${paragraphs.length}</div>
       </div>`;
@@ -1657,7 +2302,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f172a;color:white;
 .cover-img{max-width:300px;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,0.4)}
 .slide-img{max-height:50vh;max-width:80%;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,0.3);margin-bottom:24px}
 .slide-text{font-size:1.4em;line-height:1.8;max-width:700px;text-indent:2em;text-align:left}
-.slide-num{position:absolute;bottom:20px;right:30px;color:#475569;font-size:0.8em}
+.beat-label{display:inline-block;font-size:0.75em;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#fde68a;background:rgba(67,56,202,0.5);border:1px solid #a78bfa;padding:4px 14px;border-radius:999px;margin-bottom:12px}
+.slide-num{position:absolute;bottom:20px;right:30px;color:#cbd5e1;font-size:0.8em}
 .vocab-slide h2,.feedback-slide h2{font-size:2em;margin-bottom:24px;color:#fbbf24}
 .vocab-flex{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
 .v-chip{padding:8px 20px;border-radius:30px;font-weight:bold;background:#334155;border:2px solid #475569}
@@ -1670,7 +2316,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f172a;color:white;
 .nav button{padding:10px 24px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:1em}
 .nav .prev{background:#334155;color:white}
 .nav .next{background:#e11d48;color:white}
-.nav button:hover{opacity:0.85}
+.nav button:hover{outline:2px solid #fbbf24;outline-offset:2px}
+.nav button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}
 </style></head><body>
 ${slidesHtml}
 <div class="nav">
@@ -1866,7 +2513,7 @@ show();
   const phaseIcons = [Sparkles, Type, ImageIcon, Volume2, Star, Download];
 
   return (
-    <div className={`fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-sm flex flex-col ${animClass}`} role="dialog" aria-modal="true" aria-label="StoryForge Creative Writing Studio">
+    <div className={`sf-modal-root fixed inset-0 z-[200] bg-slate-900/95 backdrop-blur-sm flex flex-col ${animClass}`} role="dialog" aria-modal="true" aria-label="StoryForge Creative Writing Studio">
       {/* Hidden audio element for playback */}
       <audio ref={audioRef} onEnded={handleAudioEnded} className="hidden" />
       {/* Screen reader playback announcements */}
@@ -1875,17 +2522,21 @@ show();
           `Now reading paragraph ${playbackIdx + 1}${audioSegments[paragraphs[playbackIdx].id]?.sentences?.[sentenceIdx] ? ': ' + audioSegments[paragraphs[playbackIdx].id].sentences[sentenceIdx] : ''}`
         ) : ''}
       </div>
+      {/* WCAG 4.1.3 — top-level announcer for ephemeral status messages (sfAnnounce target) */}
+      <div id="allo-live-storyforge" aria-live="polite" aria-atomic="true" className="sr-only" />
+      {/* WCAG 2.3.3 — reduced-motion safety net: kills persistent animations within StoryForge under prefers-reduced-motion */}
+      <style>{`@media (prefers-reduced-motion: reduce){ .sf-modal-root .animate-pulse,.sf-modal-root .animate-spin,.sf-modal-root .animate-bounce{animation:none!important} }`}</style>
 
       {/* ── Restore Draft Prompt ── */}
       {showRestorePrompt && (
-        <div className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200" role="dialog" aria-modal="true" aria-labelledby="sf-restore-title">
           <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center">
-            <div className="text-3xl mb-3">📖</div>
-            <h3 className="text-lg font-black text-slate-800 mb-2">Continue Where You Left Off?</h3>
+            <div className="text-3xl mb-3" aria-hidden="true">📖</div>
+            <h3 id="sf-restore-title" className="text-lg font-black text-slate-800 mb-2">Continue Where You Left Off?</h3>
             <p className="text-sm text-slate-600 mb-4">A saved draft was found. Would you like to restore it?</p>
             <div className="flex gap-3 justify-center">
-              <button onClick={discardDraft} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">Start Fresh</button>
-              <button onClick={restoreDraft} className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors">Restore Draft</button>
+              <button data-sf-focusable onClick={discardDraft} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">Start Fresh</button>
+              <button data-sf-focusable onClick={restoreDraft} className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors">Restore Draft</button>
             </div>
           </div>
         </div>
@@ -1893,15 +2544,15 @@ show();
 
       {/* ── Unsaved changes confirmation ── */}
       {showCloseConfirm && (
-        <div className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200" role="dialog" aria-modal="true" aria-labelledby="sf-close-confirm-title">
           <div className="bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center">
             <div className="text-3xl mb-3">{'\u270F\uFE0F'}</div>
-            <h3 className="text-lg font-black text-slate-800 mb-2">You Have Unsaved Changes</h3>
+            <h3 id="sf-close-confirm-title" className="text-lg font-black text-slate-800 mb-2">You Have Unsaved Changes</h3>
             <p className="text-sm text-slate-600 mb-4">Your story progress hasn't been exported or saved. Are you sure you want to close?</p>
             <div className="flex gap-3 justify-center">
-              <button onClick={() => setShowCloseConfirm(false)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">Keep Writing</button>
-              <button onClick={() => { setShowCloseConfirm(false); try { const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language }; localStorage.setItem(SAVE_KEY, JSON.stringify(draft)); } catch(e) {} onClose(); }} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 transition-colors">Save Draft & Close</button>
-              <button onClick={() => { setShowCloseConfirm(false); onClose(); }} className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors">Close Anyway</button>
+              <button data-sf-focusable onClick={() => setShowCloseConfirm(false)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">Keep Writing</button>
+              <button data-sf-focusable onClick={() => { setShowCloseConfirm(false); try { const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language }; localStorage.setItem(SAVE_KEY, JSON.stringify(draft)); } catch(e) {} onClose(); }} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 transition-colors">Save Draft & Close</button>
+              <button data-sf-focusable onClick={() => { setShowCloseConfirm(false); onClose(); }} className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors">Close Anyway</button>
             </div>
           </div>
         </div>
@@ -1937,6 +2588,7 @@ show();
             </div>
           )}
           <button
+            data-sf-focusable
             onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }}
             className="hover:bg-white/20 p-2 rounded-full transition-colors flex items-center gap-1"
             aria-label="Toggle theme"
@@ -1944,7 +2596,7 @@ show();
           >
             <span className="text-sm">{(() => { try { return document.querySelector('.theme-contrast') ? '\uD83D\uDC41' : document.querySelector('.theme-dark') ? '\uD83C\uDF19' : '\u2600\uFE0F'; } catch(e) { return '\u2600\uFE0F'; } })()}</span>
           </button>
-          <button onClick={safeClose} className="hover:bg-white/20 p-2 rounded-full transition-colors" aria-label="Close StoryForge">
+          <button data-sf-focusable onClick={safeClose} className="hover:bg-white/20 p-2 rounded-full transition-colors" aria-label="Close StoryForge">
             <X size={24} />
           </button>
         </div>
@@ -1960,11 +2612,12 @@ show();
             <React.Fragment key={p}>
               {i > 0 && <div className={`w-8 h-0.5 ${isDone ? 'bg-rose-400' : 'bg-slate-200'}`} aria-hidden="true" />}
               <button
+                data-sf-focusable
                 onClick={() => { if (isDone || isCurrent) changePhase(p); }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                   isCurrent ? 'bg-rose-600 text-white shadow-lg shadow-rose-200' :
                   isDone ? 'bg-rose-100 text-rose-700 hover:bg-rose-200' :
-                  'bg-slate-100 text-slate-400'
+                  'bg-slate-100 text-slate-600'
                 }`}
                 disabled={!isDone && !isCurrent}
                 aria-current={isCurrent ? 'step' : undefined}
@@ -2031,15 +2684,15 @@ show();
                       id="sf-title"
                       type="text" value={storyTitle} onChange={(e) => setStoryTitle(e.target.value)}
                       placeholder="Give your story a title..."
-                      className="w-full text-sm p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none font-bold"
+                      className="w-full text-sm p-2.5 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none font-bold"
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Pen Name</label>
-                    <div className="w-full text-sm p-2.5 border border-slate-200 rounded-lg bg-slate-50 font-bold text-slate-700 flex items-center gap-2">
+                    <div className="w-full text-sm p-2.5 border border-slate-400 rounded-lg bg-slate-50 font-bold text-slate-700 flex items-center gap-2">
                       <span className="text-base">✍️</span> {authorName}
                     </div>
-                    <p className="text-[11px] text-slate-400 mt-1">Your codename is your pen name — it keeps your identity private</p>
+                    <p className="text-[11px] text-slate-500 mt-1">Your codename is your pen name — it keeps your identity private</p>
                   </div>
                 </div>
               </div>
@@ -2073,13 +2726,13 @@ show();
                   {vocabTerms.map((v, i) => (
                     <div key={i} className="bg-rose-50 border border-rose-200 rounded-full px-3 py-1 text-sm font-bold text-rose-800 flex items-center gap-2 group">
                       <span>{v.term}</span>
-                      <button onClick={() => removeVocabTerm(i)} className="text-rose-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity" aria-label={`Remove ${v.term}`}>
+                      <button onClick={() => removeVocabTerm(i)} className="text-rose-400 hover:text-rose-600 opacity-60 group-hover:opacity-100 focus:opacity-100 transition-opacity" aria-label={`Remove ${v.term}`}>
                         <X size={12} />
                       </button>
                     </div>
                   ))}
                   {vocabTerms.length === 0 && (
-                    <p className="text-slate-400 text-sm italic">No vocabulary terms yet — add some below or they'll come from your glossary</p>
+                    <p className="text-slate-500 text-sm italic">No vocabulary terms yet — add some below or they'll come from your glossary</p>
                   )}
                 </div>
                 <div className="flex gap-2">
@@ -2088,14 +2741,14 @@ show();
                     onKeyDown={(e) => e.key === 'Enter' && addVocabTerm()}
                     placeholder="Add a term..."
                     aria-label="Vocabulary term"
-                    className="flex-1 text-sm p-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none"
+                    className="flex-1 text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none"
                   />
                   <input
                     type="text" value={newDef} onChange={(e) => setNewDef(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && addVocabTerm()}
                     placeholder="Definition (optional)"
                     aria-label="Term definition"
-                    className="flex-1 text-sm p-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none"
+                    className="flex-1 text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none"
                   />
                   <button onClick={addVocabTerm} disabled={!newTerm.trim()} className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 disabled:opacity-50 transition-colors flex items-center gap-1">
                     <Plus size={14} /> Add
@@ -2147,7 +2800,7 @@ show();
                     type="text" value={customArtStyle} onChange={(e) => setCustomArtStyle(e.target.value)}
                     placeholder="Describe your custom art style..."
                     aria-label="Custom art style description"
-                    className="mt-3 w-full text-sm p-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none"
+                    className="mt-3 w-full text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none"
                   />
                 )}
               </div>
@@ -2175,7 +2828,7 @@ show();
                     type="text" value={customLanguage} onChange={(e) => setCustomLanguage(e.target.value)}
                     placeholder="Type your language (e.g., Swahili, Haitian Creole, Hmong...)"
                     aria-label="Custom writing language"
-                    className="mt-3 w-full text-sm p-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-300 outline-none"
+                    className="mt-3 w-full text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-teal-300 outline-none"
                   />
                 )}
                 {language !== 'en' && <p className="mt-2 text-[11px] text-teal-500 font-medium">AI scaffolds, coaching, grading, and dictation will use {langLabel}</p>}
@@ -2190,7 +2843,7 @@ show();
                   value={storyPrompt} onChange={(e) => setStoryPrompt(e.target.value)}
                   placeholder="Give your students a theme or starting scenario... e.g., 'Write about a scientist who discovers something unexpected'"
                   aria-label="Story prompt"
-                  className="w-full text-sm p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none resize-none h-20"
+                  className="w-full text-sm p-3 border border-slate-400 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none resize-none h-20"
                 />
 
                 {/* Story Starters */}
@@ -2224,7 +2877,7 @@ show();
                   id="sf-rubric"
                   value={rubricText} onChange={(e) => setRubricText(e.target.value)}
                   placeholder={"| Criteria | 1 - Beginning | 3 - Developing | 5 - Exemplary |\n|----------|---------------|----------------|---------------|\n| Vocabulary | Few terms used | Some terms used | All terms used correctly |"}
-                  className="w-full text-xs p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-300 outline-none resize-none h-24 font-mono"
+                  className="w-full text-xs p-3 border border-slate-400 rounded-lg focus:ring-2 focus:ring-emerald-300 outline-none resize-none h-24 font-mono"
                   aria-label="Custom grading rubric"
                 />
               </div>
@@ -2352,7 +3005,7 @@ show();
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-slate-800 text-white rounded-xl p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none">
                           <div className="text-xs font-bold text-amber-300 mb-1">{v.term}</div>
                           {v.definition && <div className="text-[11px] text-slate-300 leading-relaxed mb-1">{v.definition}</div>}
-                          <div className="text-[11px] text-slate-400 italic">Click to copy · Paste into your paragraph</div>
+                          <div className="text-[11px] text-slate-300 italic">Click to copy · Paste into your paragraph</div>
                           <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-slate-800" />
                         </div>
                       </div>
@@ -2421,8 +3074,8 @@ show();
                       <span className="text-xs font-bold text-slate-600">Paragraph {idx + 1}</span>
                       {/* Reorder buttons */}
                       <div className="flex gap-0.5">
-                        <button onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-400 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label="Move paragraph up" title="Move up">▲</button>
-                        <button onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-400 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label="Move paragraph down" title="Move down">▼</button>
+                        <button onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label="Move paragraph up" title="Move up">▲</button>
+                        <button onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label="Move paragraph down" title="Move down">▼</button>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -2446,7 +3099,7 @@ show();
                         <Sparkles size={10} /> Help Me
                       </button>
                       {paragraphs.length > 1 && (
-                        <button onClick={() => removeParagraph(idx)} className="text-slate-400 hover:text-red-500 focus:text-red-500 p-1 rounded transition-colors" aria-label={`Remove paragraph ${idx + 1}`}>
+                        <button onClick={() => removeParagraph(idx)} className="text-slate-500 hover:text-red-500 focus:text-red-500 p-1 rounded transition-colors" aria-label={`Remove paragraph ${idx + 1}`}>
                           <Trash2 size={14} />
                         </button>
                       )}
@@ -2455,6 +3108,28 @@ show();
                   {p.scaffoldFrame && (
                     <div className="px-4 py-2 bg-amber-50 border-b border-amber-100 text-xs text-amber-700 italic flex items-center gap-2">
                       <HelpCircle size={12} className="shrink-0" /> {p.scaffoldFrame}
+                    </div>
+                  )}
+                  {/* ── Plot Structure beat (optional narrative-arc tag) ── */}
+                  {genre !== 'free' && (
+                    <div className="px-4 py-2 bg-indigo-50/60 border-b border-indigo-100 flex items-center gap-2">
+                      <label htmlFor={`sf-beat-${p.id}`} className="text-[11px] font-bold text-indigo-700 uppercase tracking-widest shrink-0">
+                        📐 Plot Beat
+                      </label>
+                      <select
+                        id={`sf-beat-${p.id}`}
+                        value={p.plotBeat || ''}
+                        onChange={(e) => updateParagraphBeat(idx, e.target.value)}
+                        className="text-xs px-2 py-1 rounded-md border border-indigo-200 bg-white text-indigo-800 font-medium outline-none focus:border-indigo-500"
+                        aria-label={`Plot beat for paragraph ${idx + 1} (optional)`}
+                      >
+                        {PLOT_BEATS.map(b => (
+                          <option key={b.value || 'none'} value={b.value}>{b.label}</option>
+                        ))}
+                      </select>
+                      {p.plotBeat && (
+                        <span className="text-[11px] text-indigo-600 italic">tagged</span>
+                      )}
                     </div>
                   )}
                   {/* Help Me Write suggestions */}
@@ -2593,7 +3268,7 @@ show();
                         className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ${
                           hwPenmanshipOn
                             ? (layoutMode === 'dark' ? 'bg-cyan-900 border-cyan-600 text-cyan-300' : 'bg-violet-100 border-violet-300 text-violet-700')
-                            : (layoutMode === 'dark' ? 'bg-slate-800 border-slate-600 text-slate-600 hover:border-cyan-600' : 'bg-slate-50 border-slate-200 text-slate-400 hover:border-violet-300 hover:text-violet-500')
+                            : (layoutMode === 'dark' ? 'bg-slate-800 border-slate-600 text-slate-300 hover:border-cyan-600' : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-violet-300 hover:text-violet-500')
                         }`}
                       >
                         ✏️ Penmanship Tips {hwPenmanshipOn ? 'ON' : 'OFF'}
@@ -2617,25 +3292,25 @@ show();
                             <div className={`text-sm font-black ${(hwResult.penmanship[key] || 0) >= 18 ? 'text-green-600' : (hwResult.penmanship[key] || 0) >= 12 ? 'text-amber-600' : 'text-slate-600'}`}>
                               {hwResult.penmanship[key] || 0}<span className="text-[11px] opacity-60">/25</span>
                             </div>
-                            <div className="text-[11px] text-slate-400 font-bold uppercase">{label}</div>
+                            <div className="text-[11px] text-slate-500 font-bold uppercase">{label}</div>
                           </div>
                         ))}
                       </div>
                       {hwResult.penmanship.strengths && <p className="text-xs text-green-700 font-medium mb-1">💪 {hwResult.penmanship.strengths}</p>}
                       {hwResult.penmanship.tips && <p className={`text-xs font-medium ${layoutMode === 'dark' ? 'text-cyan-400' : 'text-violet-600'}`}>💡 {hwResult.penmanship.tips}</p>}
-                      <button onClick={() => setHwResult(null)} className="text-[11px] text-slate-400 hover:text-slate-600 font-bold mt-1" aria-label="Dismiss penmanship feedback">Dismiss</button>
+                      <button onClick={() => setHwResult(null)} className="text-[11px] text-slate-500 hover:text-slate-600 font-bold mt-1" aria-label="Dismiss penmanship feedback">Dismiss</button>
                     </div>
                   )}
                   {/* Per-paragraph strength indicator + vocab reminder */}
                   {p.text.length > 0 && (
                     <div className={`px-4 py-1.5 border-t flex flex-wrap items-center gap-3 text-[11px] font-medium ${
-                      layoutMode === 'dark' ? 'bg-slate-900 border-slate-700 text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-400'
+                      layoutMode === 'dark' ? 'bg-slate-900 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-100 text-slate-500'
                     }`}>
                       <span>{paragraphStats[idx]?.wordCount || 0} words</span>
                       <span>·</span>
                       <span>{paragraphStats[idx]?.sentenceCount || 0} sentences</span>
                       <span>·</span>
-                      <span className={paragraphStats[idx]?.vocabUsed > 0 ? 'text-green-500' : 'text-slate-400'}>{paragraphStats[idx]?.vocabUsed || 0} vocab terms</span>
+                      <span className={paragraphStats[idx]?.vocabUsed > 0 ? 'text-green-500' : 'text-slate-500'}>{paragraphStats[idx]?.vocabUsed || 0} vocab terms</span>
                       {overusedWords.length > 0 && p.text.toLowerCase().split(/\s+/).some(w => overusedWords.includes(w.replace(/[^a-z'-]/g, ''))) && (
                         <span className="text-amber-500" title={`Overused: ${overusedWords.join(', ')}`}>· Repeated words</span>
                       )}
@@ -2680,7 +3355,7 @@ show();
                             'bg-slate-100 text-slate-600'
                           }`}>{issue.type === 'show_dont_tell' ? 'show' : issue.type?.replace('_', ' ') || 'tip'}</span>
                           <div className="flex-1">
-                            {issue.original && <span className="line-through text-slate-400 mr-1">"{issue.original}"</span>}
+                            {issue.original && <span className="line-through text-slate-500 mr-1">"{issue.original}"</span>}
                             {issue.suggestion && <span className="text-emerald-700 font-bold">→ "{issue.suggestion}"</span>}
                             {issue.tip && <div className="text-slate-600 mt-0.5">{issue.tip}</div>}
                           </div>
@@ -2706,7 +3381,7 @@ show();
               ))}
 
               {!focusMode && paragraphs.length < maxParagraphs && (
-                <button onClick={addParagraph} className="w-full p-3 border-2 border-dashed border-slate-300 rounded-2xl text-slate-400 font-bold text-sm hover:border-rose-400 hover:text-rose-500 transition-colors flex items-center justify-center gap-2">
+                <button onClick={addParagraph} className="w-full p-3 border-2 border-dashed border-slate-300 rounded-2xl text-slate-500 font-bold text-sm hover:border-rose-400 hover:text-rose-500 transition-colors flex items-center justify-center gap-2">
                   <Plus size={16} /> Add Paragraph
                 </button>
               )}
@@ -2782,7 +3457,7 @@ show();
                   <div className="flex items-start gap-4">
                     <div className="flex-1">
                       <div className="text-xs font-bold text-purple-600 mb-1">Paragraph {idx + 1}</div>
-                      <p className="text-sm text-slate-700 leading-relaxed">{p.text || <span className="italic text-slate-400">Empty paragraph</span>}</p>
+                      <p className="text-sm text-slate-700 leading-relaxed">{p.text || <span className="italic text-slate-500">Empty paragraph</span>}</p>
                       {/* Show the prompt used */}
                       {illustrations[p.id]?.prompt && !illustrations[p.id]?.isLoading && (
                         <div className="mt-2 text-[11px] text-purple-400 italic truncate" title={illustrations[p.id].prompt}>
@@ -2931,7 +3606,7 @@ show();
                     {characters.map((c, i) => (
                       <div key={i} className="bg-white border border-indigo-200 rounded-xl px-3 py-2 text-xs">
                         <span className="font-bold text-indigo-800">{c.name}</span>
-                        <span className="text-slate-400 ml-2">Voice: {c.voice}</span>
+                        <span className="text-slate-500 ml-2">Voice: {c.voice}</span>
                       </div>
                     ))}
                   </div>
@@ -3042,7 +3717,7 @@ show();
                               {[{k:'pacing',l:'Pace'},{k:'expression',l:'Expr'},{k:'phrasing',l:'Phrase'}].map(({k,l}) => (
                                 <div key={k} className="text-center">
                                   <div className="text-sm font-bold text-slate-700">{fluencyResult.prosody[k]}/5</div>
-                                  <div className="text-[11px] text-slate-400">{l}</div>
+                                  <div className="text-[11px] text-slate-500">{l}</div>
                                 </div>
                               ))}
                             </div>
@@ -3073,7 +3748,7 @@ show();
                         {fluencyResult.feedback && (
                           <div className="mt-2 text-xs text-teal-800 bg-white rounded-lg p-2 border border-teal-200">{fluencyResult.feedback}</div>
                         )}
-                        <button onClick={() => setFluencyResult(null)} className="mt-2 text-[11px] text-slate-400 hover:text-slate-600 font-bold">Dismiss</button>
+                        <button onClick={() => setFluencyResult(null)} className="mt-2 text-[11px] text-slate-500 hover:text-slate-600 font-bold">Dismiss</button>
                       </div>
                     )}
                   </div>
@@ -3090,9 +3765,39 @@ show();
                   <h3 className="text-2xl font-black text-slate-800">Review & Feedback</h3>
                   <p className="text-slate-600 text-sm mt-1">Draft #{draftCount} — Get AI feedback on your story</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   {!gradingResult && (
-                    <button onClick={gradeStory} disabled={isProcessing} className="px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2">
+                    <button onClick={checkSenses} disabled={sensesLoading || isProcessing} className="px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200" title="Check sensory imagery (sight, sound, smell, etc.)">
+                      🌈 {sensesLoading ? 'Checking...' : 'Senses Check'}
+                    </button>
+                  )}
+                  {!gradingResult && (
+                    <button onClick={findMentorStory} disabled={mentorLoading || isProcessing} className="px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200" title="Find a public-domain master story to study alongside yours">
+                      🎓 {mentorLoading ? 'Searching...' : (mentorMatch && !mentorMatch.error ? 'Find another' : 'Mentor Match')}
+                    </button>
+                  )}
+                  {!gradingResult && (
+                    <button onClick={analyzeShowTell} disabled={showTellLoading || isProcessing} className="px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200" title="Find sentences that tell instead of show">
+                      🎭 {showTellLoading ? 'Analyzing...' : 'Show vs Tell'}
+                    </button>
+                  )}
+                  {!gradingResult && (
+                    <button onClick={analyzeCharacterArcs} disabled={arcLoading || isProcessing} className="px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200" title="Audit each character's arc: introduction, want, change, resolution">
+                      🎬 {arcLoading ? 'Analyzing...' : 'Character Arcs'}
+                    </button>
+                  )}
+                  {!gradingResult && (
+                    <button onClick={analyzeDialogue} disabled={dialogueLoading || isProcessing} className="px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200" title="Tune up dialogue tag variety and speaker clarity">
+                      💬 {dialogueLoading ? 'Analyzing...' : 'Dialogue Tune-Up'}
+                    </button>
+                  )}
+                  {!gradingResult && helpersAvailableForPlan() && (
+                    <button onClick={synthesizeRevisionPlan} disabled={revisionPlanLoading || isProcessing} className="px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200" title="Synthesize the helpers above into a prioritized 3-task revision plan">
+                      🗺️ {revisionPlanLoading ? 'Synthesizing...' : 'Revision Plan'}
+                    </button>
+                  )}
+                  {!gradingResult && (
+                    <button onClick={gradeStory} disabled={isProcessing || (!selfAssessmentSubmitted)} className="px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2" title={!selfAssessmentSubmitted ? 'Complete or skip self-assessment first' : 'Get AI feedback'}>
                       <Sparkles size={16} /> {isProcessing ? 'Grading...' : 'Get Feedback'}
                     </button>
                   )}
@@ -3103,6 +3808,356 @@ show();
                   )}
                 </div>
               </div>
+
+              {/* ═══ Pre-grade Self-Assessment ═══ */}
+              {!gradingResult && !selfAssessmentSubmitted && (
+                <div className="bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5">
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div>
+                      <h4 className="text-base font-black text-violet-800 flex items-center gap-2">
+                        <Star size={18} /> Self-Assessment First
+                      </h4>
+                      <p className="text-xs text-violet-700 mt-1">Rate your own story on each criterion (1-5) before the AI grades it. This builds reflection skills.</p>
+                    </div>
+                    <button
+                      onClick={() => { setSelfAssessmentSubmitted(true); sfAnnounce('Self-assessment skipped. AI grading is now available.'); }}
+                      className="text-[11px] text-violet-500 hover:text-violet-700 font-bold underline shrink-0"
+                    >
+                      Skip self-assessment
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {getRubricCriteria().map((c) => (
+                      <div key={c} className="flex items-center gap-3 bg-white border border-violet-100 rounded-xl px-3 py-2">
+                        <label htmlFor={`sf-self-${c}`} className="text-xs font-bold text-violet-800 flex-1 min-w-0 truncate">{c}</label>
+                        <input
+                          id={`sf-self-${c}`}
+                          type="range" min="1" max="5" step="1"
+                          value={selfAssessment[c] || 3}
+                          onChange={(e) => setSelfAssessment(prev => ({ ...prev, [c]: parseInt(e.target.value, 10) }))}
+                          className="w-32 accent-violet-600"
+                          aria-label={`Self-rating for ${c}: ${selfAssessment[c] || 3} out of 5`}
+                        />
+                        <div className="bg-violet-100 text-violet-800 text-xs font-black px-2 py-0.5 rounded-full min-w-[2.25rem] text-center">
+                          {selfAssessment[c] || 3}/5
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => {
+                      // Fill any unset criteria with 3 (the slider's visual default) so comparison works.
+                      const filled = {};
+                      getRubricCriteria().forEach(c => { filled[c] = selfAssessment[c] || 3; });
+                      setSelfAssessment(filled);
+                      setSelfAssessmentSubmitted(true);
+                      sfAnnounce('Self-assessment submitted. You can now get AI feedback.');
+                      awardXP(8, 'Completed self-assessment');
+                    }}
+                    className="mt-3 px-4 py-2 bg-violet-600 text-white rounded-full text-xs font-bold hover:bg-violet-700 transition-colors flex items-center gap-2"
+                  >
+                    <CheckCircle2 size={14} /> Submit Self-Assessment
+                  </button>
+                </div>
+              )}
+
+              {/* ═══ Senses Check Result ═══ */}
+              {sensesResult && (
+                <div className="bg-white border-2 border-rose-200 rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-bold text-rose-700 uppercase tracking-wider flex items-center gap-2">🌈 Senses & Imagery</h4>
+                    <button onClick={() => setSensesResult(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss senses result">Dismiss</button>
+                  </div>
+                  {(() => {
+                    const counts = sensesResult.counts || {};
+                    const max = Math.max(1, ...Object.values(counts).map(n => Number(n) || 0));
+                    const SENSE_LABELS = { sight: '👁️ Sight', sound: '👂 Sound', smell: '👃 Smell', taste: '👅 Taste', touch: '✋ Touch', motion: '🏃 Motion', emotion: '💗 Emotion' };
+                    return (
+                      <div className="space-y-1.5">
+                        {Object.entries(SENSE_LABELS).map(([k, label]) => {
+                          const n = Number(counts[k]) || 0;
+                          const pct = (n / max) * 100;
+                          const isStrongest = sensesResult.strongest === k;
+                          const isMissing = sensesResult.missing === k;
+                          return (
+                            <div key={k} className="flex items-center gap-2">
+                              <div className="text-xs font-bold text-slate-700 w-24 shrink-0">{label}</div>
+                              <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
+                                <div className={`h-full rounded-full transition-all ${isStrongest ? 'bg-teal-500' : isMissing ? 'bg-amber-400' : 'bg-rose-300'}`} style={{ width: `${pct}%` }} />
+                              </div>
+                              <div className="text-xs text-slate-700 font-bold w-8 text-right">{n}</div>
+                              {isStrongest && <span className="text-[10px] font-bold text-teal-700 bg-teal-100 px-1.5 py-0.5 rounded-full">strongest</span>}
+                              {isMissing && <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">missing</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                  {sensesResult.suggestion && (
+                    <div className="mt-3 bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-xs text-yellow-900 leading-relaxed">
+                      <strong>Try this:</strong> {sensesResult.suggestion}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ═══ Mentor Match Result ═══ */}
+              {mentorMatch && (
+                <div role="region" aria-label="Mentor story and analysis" className="bg-white border-2 border-fuchsia-200 rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-bold text-fuchsia-700 uppercase tracking-wider flex items-center gap-2">🎓 Mentor Match</h4>
+                    <button onClick={() => setMentorMatch(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss mentor match">Dismiss</button>
+                  </div>
+                  {mentorMatch.error && (
+                    <p className="text-xs text-red-600 italic">{mentorMatch.error}</p>
+                  )}
+                  {!mentorMatch.error && (
+                    <div className="space-y-3">
+                      {mentorMatch.mentor && (
+                        <article className="bg-fuchsia-50/40 border border-fuchsia-100 rounded-xl p-4">
+                          <div className="mb-2">
+                            <h5 className="text-base font-black text-fuchsia-900">{mentorMatch.mentor.title || 'Untitled'}</h5>
+                            <p className="text-[11px] text-slate-600 italic mt-0.5">— {mentorMatch.mentor.author || 'Unknown'}{mentorMatch.mentor.year ? `, ${mentorMatch.mentor.year}` : ''} (public domain)</p>
+                          </div>
+                          {mentorMatch.mentor.uncertain
+                            ? <p className="text-xs text-slate-700 italic leading-relaxed">{mentorMatch.mentor.text || 'Excerpt withheld — open the source link to read in context.'}</p>
+                            : <pre className="whitespace-pre-wrap font-serif text-sm text-slate-800 leading-relaxed bg-white border border-fuchsia-100 rounded-lg p-3">{mentorMatch.mentor.text || ''}</pre>
+                          }
+                          {mentorMatch.mentor.sourceUrl && (
+                            <p className="text-[11px] mt-2">
+                              <a href={mentorMatch.mentor.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-fuchsia-700 hover:text-fuchsia-900 font-bold underline" aria-label={`Open source for ${mentorMatch.mentor.title || 'mentor story'} in a new tab`}>
+                                Read the full story ↗
+                              </a>
+                            </p>
+                          )}
+                          {mentorMatch._grounding && (
+                            <p className="text-[10px] text-slate-500 italic mt-2">
+                              {mentorMatch._grounding.searchUsed
+                                ? `✓ Verified via web search (${mentorMatch._grounding.resultCount} candidates considered, keywords: "${mentorMatch._grounding.keywords}")`
+                                : '⚠ No web search available — recommendation comes from the model\'s memory, please double-check.'}
+                            </p>
+                          )}
+                        </article>
+                      )}
+                      {mentorMatch.sharedTheme && (
+                        <div className="bg-white border border-fuchsia-100 rounded-xl p-3">
+                          <div className="text-[11px] font-bold text-fuchsia-600 uppercase tracking-widest mb-1">Shared theme</div>
+                          <p className="text-xs text-slate-800 leading-relaxed">{mentorMatch.sharedTheme}</p>
+                        </div>
+                      )}
+                      {mentorMatch.craftToBorrow && (
+                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                          <div className="text-[11px] font-bold text-amber-700 uppercase tracking-widest mb-1">Craft to borrow</div>
+                          <p className="text-xs text-amber-900 leading-relaxed">{mentorMatch.craftToBorrow}</p>
+                        </div>
+                      )}
+                      {mentorMatch.studentEcho && (
+                        <div className="bg-green-50 border border-green-200 rounded-xl p-3">
+                          <div className="text-[11px] font-bold text-green-700 uppercase tracking-widest mb-1">You're already doing this</div>
+                          <p className="text-xs text-green-900 leading-relaxed">{mentorMatch.studentEcho}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ═══ Show vs Tell Result ═══ */}
+              {showTellResult && (
+                <div className="bg-white border-2 border-emerald-200 rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-2">🎭 Show vs Tell</h4>
+                    <button onClick={() => setShowTellResult(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss show vs tell result">Dismiss</button>
+                  </div>
+                  {showTellResult.summary && (
+                    <p className="text-xs text-emerald-800 italic mb-3 leading-relaxed">{showTellResult.summary}</p>
+                  )}
+                  {(showTellResult.tellings || []).length === 0 ? (
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-900 leading-relaxed">
+                      ✨ Strong showing throughout — keep it up!
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {showTellResult.tellings.map((t, i) => (
+                        <div key={i} className="bg-emerald-50/40 border border-emerald-100 rounded-xl p-3">
+                          <div className="text-[10px] font-bold text-amber-700 uppercase tracking-widest mb-1">Telling</div>
+                          <p className="text-sm text-slate-800 italic leading-relaxed mb-2">"{t.telling}"</p>
+                          <div className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest mb-1">Try showing</div>
+                          <p className="text-sm text-emerald-900 leading-relaxed">"{t.showing}"</p>
+                          {t.why && (
+                            <p className="text-[11px] text-slate-600 mt-2 italic">{t.why}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ═══ Character Arc Tracker Result ═══ */}
+              {arcReport && (
+                <div className="bg-white border-2 border-sky-200 rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-bold text-sky-700 uppercase tracking-wider flex items-center gap-2">🎬 Character Arcs</h4>
+                    <button onClick={() => setArcReport(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss character arcs result">Dismiss</button>
+                  </div>
+                  {arcReport.summary && (
+                    <p className="text-xs text-sky-800 italic mb-3 leading-relaxed">{arcReport.summary}</p>
+                  )}
+                  {(arcReport.characters || []).length === 0 ? (
+                    <div className="bg-sky-50 border border-sky-200 rounded-xl p-3 text-xs text-sky-900 leading-relaxed">
+                      No named characters yet. If you'd like to track arcs, give your main character a name and try again.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {arcReport.characters.map((c, i) => {
+                        const beatOrder = [
+                          { key: 'introduction', label: 'Intro' },
+                          { key: 'want', label: 'Want' },
+                          { key: 'change', label: 'Change' },
+                          { key: 'resolution', label: 'Resolution' },
+                        ];
+                        const beatColor = (status) =>
+                          status === 'strong' ? 'bg-green-100 border-green-300 text-green-800'
+                          : status === 'partial' ? 'bg-amber-100 border-amber-300 text-amber-800'
+                          : 'bg-slate-100 border-slate-300 text-slate-500';
+                        return (
+                          <article key={i} className="bg-sky-50/40 border border-sky-100 rounded-xl p-4">
+                            <div className="flex items-center justify-between mb-2 gap-2">
+                              <h5 className="text-base font-black text-sky-900 truncate">{c.name}</h5>
+                              {c.role && (
+                                <span className="text-[10px] font-bold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-full uppercase tracking-widest shrink-0">{c.role}</span>
+                              )}
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                              {beatOrder.map(({ key, label }) => {
+                                const beat = c.beats?.[key] || {};
+                                const status = beat.status || 'missing';
+                                return (
+                                  <div key={key} className={`rounded-lg border-2 p-2 ${beatColor(status)}`} title={beat.evidence || `No ${label.toLowerCase()} evidence found`}>
+                                    <div className="text-[10px] font-bold uppercase tracking-widest">{label}</div>
+                                    <div className="text-[11px] font-black mt-0.5">{status}</div>
+                                    {beat.evidence && (
+                                      <div className="text-[10px] mt-1 italic line-clamp-2 opacity-80">"{beat.evidence}"</div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            {c.suggestion && (
+                              <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 text-xs text-amber-900 leading-relaxed">
+                                <strong className="text-amber-700">Try this:</strong> {c.suggestion}
+                              </div>
+                            )}
+                          </article>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ═══ Dialogue Tune-Up Result ═══ */}
+              {dialogueReport && (
+                <div className="bg-white border-2 border-orange-200 rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-bold text-orange-700 uppercase tracking-wider flex items-center gap-2">💬 Dialogue Tune-Up</h4>
+                    <button onClick={() => setDialogueReport(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss dialogue tune-up">Dismiss</button>
+                  </div>
+                  {dialogueReport.summary && (
+                    <p className="text-xs text-orange-800 italic mb-3 leading-relaxed">{dialogueReport.summary}</p>
+                  )}
+                  {/* Tag count chart */}
+                  {dialogueReport.tagCounts && Object.keys(dialogueReport.tagCounts).length > 0 && (
+                    <div className="bg-orange-50/40 border border-orange-100 rounded-xl p-3 mb-3">
+                      <div className="text-[11px] font-bold text-orange-700 uppercase tracking-widest mb-2">Tag usage</div>
+                      <div className="space-y-1.5">
+                        {(() => {
+                          const entries = Object.entries(dialogueReport.tagCounts).sort((a, b) => b[1] - a[1]);
+                          const max = Math.max(1, ...entries.map(([, n]) => n));
+                          return entries.map(([tag, n]) => {
+                            const pct = (n / max) * 100;
+                            const isOverused = dialogueReport.overusedTag === tag;
+                            return (
+                              <div key={tag} className="flex items-center gap-2">
+                                <div className="text-xs font-bold text-slate-700 w-20 shrink-0 truncate">{tag}</div>
+                                <div className="flex-1 h-3.5 bg-slate-100 rounded-full overflow-hidden">
+                                  <div className={`h-full rounded-full ${isOverused ? 'bg-amber-400' : 'bg-orange-300'}`} style={{ width: `${pct}%` }} />
+                                </div>
+                                <div className="text-xs text-slate-700 font-bold w-8 text-right">{n}</div>
+                                {isOverused && <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">overused</span>}
+                              </div>
+                            );
+                          });
+                        })()}
+                      </div>
+                    </div>
+                  )}
+                  {/* Issue list */}
+                  {(dialogueReport.issues || []).length > 0 ? (
+                    <div className="space-y-2">
+                      {dialogueReport.issues.map((iss, i) => (
+                        <div key={i} className="bg-orange-50/40 border border-orange-100 rounded-xl p-3">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[10px] font-bold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full uppercase tracking-widest">
+                              {iss.type === 'tag-swap' ? 'Tag swap' : iss.type === 'missing-tag' ? 'Add tag' : iss.type}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-700 italic leading-relaxed mb-1.5">"{iss.line}"</p>
+                          <div className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">Try</div>
+                          <p className="text-sm text-emerald-900 leading-relaxed">{iss.suggestion}</p>
+                          {iss.why && (
+                            <p className="text-[11px] text-slate-600 mt-1 italic">{iss.why}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    !dialogueReport.tagCounts || Object.keys(dialogueReport.tagCounts).length === 0 ? null : (
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-900 leading-relaxed">
+                        ✨ Dialogue mechanics look strong — no specific suggestions.
+                      </div>
+                    )
+                  )}
+                </div>
+              )}
+
+              {/* ═══ Revision Plan Result (synthesis capstone) ═══ */}
+              {revisionPlan && (
+                <div className="bg-gradient-to-br from-purple-50 to-violet-50 border-2 border-purple-300 rounded-2xl p-5 shadow-md">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-base font-black text-purple-800 flex items-center gap-2">🗺️ Your Revision Plan</h4>
+                    <button onClick={() => setRevisionPlan(null)} className="text-[11px] text-slate-500 hover:text-slate-700 font-bold" aria-label="Dismiss revision plan">Dismiss</button>
+                  </div>
+                  {revisionPlan.encouragement && (
+                    <div className="bg-white border border-green-200 rounded-xl p-3 mb-4 text-xs text-green-900 leading-relaxed">
+                      ✨ {revisionPlan.encouragement}
+                    </div>
+                  )}
+                  <ol className="space-y-3" aria-label="Prioritized revision tasks">
+                    {(revisionPlan.tasks || []).map((t, i) => (
+                      <li key={i} className="bg-white border-2 border-purple-200 rounded-xl p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="bg-purple-600 text-white rounded-full w-7 h-7 shrink-0 flex items-center justify-center font-black text-sm" aria-hidden="true">{i + 1}</div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <h5 className="text-sm font-black text-purple-900">{t.title}</h5>
+                              {t.source && (
+                                <span className="text-[10px] font-bold text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full uppercase tracking-widest shrink-0">{t.source}</span>
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-800 leading-relaxed mb-1">{t.detail}</p>
+                            {t.why && (
+                              <p className="text-[11px] text-slate-600 italic">{t.why}</p>
+                            )}
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
 
               {/* Character Name Consistency */}
               {characterIssues.length > 0 && (
@@ -3129,10 +4184,10 @@ show();
                       const vocabDelta = vocabUsedCount - (revisionSnapshot.vocabUsed || 0);
                       return (
                         <>
-                          <span className={`text-xs font-bold ${wordDelta > 0 ? 'text-green-600' : wordDelta < 0 ? 'text-red-500' : 'text-slate-400'}`}>
+                          <span className={`text-xs font-bold ${wordDelta > 0 ? 'text-green-600' : wordDelta < 0 ? 'text-red-500' : 'text-slate-500'}`}>
                             {wordDelta > 0 ? '+' : ''}{wordDelta} words
                           </span>
-                          <span className={`text-xs font-bold ${vocabDelta > 0 ? 'text-green-600' : vocabDelta < 0 ? 'text-red-500' : 'text-slate-400'}`}>
+                          <span className={`text-xs font-bold ${vocabDelta > 0 ? 'text-green-600' : vocabDelta < 0 ? 'text-red-500' : 'text-slate-500'}`}>
                             {vocabDelta > 0 ? '+' : ''}{vocabDelta} vocab terms
                           </span>
                           {readingLevel && revisionSnapshot.grade && (
@@ -3196,12 +4251,12 @@ show();
                         <div key={p.id} className="flex-1 flex flex-col items-center gap-1">
                           <div className="text-[7px] text-slate-600 font-bold">{wordCount}</div>
                           <div className={`w-full ${bgColor} rounded-t-md transition-all`} style={{ height: `${heightPct}%` }} title={`${barLabel}: ${wordCount} words`} role="img" aria-label={`${barLabel}: ${wordCount} words`} />
-                          <span className="text-[11px] text-slate-400">{idx === 0 ? 'Start' : idx === paragraphs.length - 1 ? 'End' : `P${idx + 1}`}</span>
+                          <span className="text-[11px] text-slate-500">{idx === 0 ? 'Start' : idx === paragraphs.length - 1 ? 'End' : `P${idx + 1}`}</span>
                         </div>
                       );
                     })}
                   </div>
-                  <div className="flex justify-between text-[11px] text-slate-400 mt-1">
+                  <div className="flex justify-between text-[11px] text-slate-500 mt-1">
                     <span>Beginning</span><span>Rising Action</span><span>Climax</span><span>Resolution</span>
                   </div>
                 </div>
@@ -3267,22 +4322,50 @@ show();
                     </div>
                   </div>
 
-                  {/* Per-criteria scores */}
+                  {/* Per-criteria scores (with optional side-by-side Self vs AI) */}
                   {gradingResult.scores && (
                     <div className="bg-white rounded-2xl border-2 border-slate-200 overflow-hidden">
-                      <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
+                      <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                         <h4 className="text-sm font-bold text-slate-700">Score Breakdown</h4>
+                        {Object.keys(selfAssessment).length > 0 && (
+                          <div className="text-[11px] text-slate-500 flex items-center gap-3">
+                            <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-violet-400" /> You</span>
+                            <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-indigo-500" /> AI</span>
+                          </div>
+                        )}
                       </div>
                       <div className="divide-y divide-slate-100">
-                        {gradingResult.scores.map((s, i) => (
-                          <div key={i} className="px-4 py-3 flex items-center justify-between">
-                            <div>
-                              <div className="text-sm font-bold text-slate-800">{s.criteria}</div>
-                              <div className="text-xs text-slate-600">{s.comment}</div>
+                        {gradingResult.scores.map((s, i) => {
+                          const aiScoreNum = (() => {
+                            const m = String(s.score || '').match(/(\d+(?:\.\d+)?)/);
+                            return m ? parseFloat(m[1]) : null;
+                          })();
+                          const selfScore = selfAssessment[s.criteria];
+                          const showCompare = Object.keys(selfAssessment).length > 0 && selfScore != null && aiScoreNum != null;
+                          const delta = showCompare ? (aiScoreNum - selfScore) : null;
+                          return (
+                            <div key={i} className="px-4 py-3 flex items-center justify-between gap-3">
+                              <div className="min-w-0 flex-1">
+                                <div className="text-sm font-bold text-slate-800">{s.criteria}</div>
+                                <div className="text-xs text-slate-600">{s.comment}</div>
+                              </div>
+                              {showCompare ? (
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <div className="bg-violet-100 text-violet-800 px-2 py-0.5 rounded-full text-xs font-bold" title="Your self-rating">{selfScore}/5</div>
+                                  <span className="text-slate-500 text-xs">→</span>
+                                  <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold" title="AI score">{s.score}</div>
+                                  {Math.abs(delta) >= 1 && (
+                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${delta > 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`} title={delta > 0 ? 'AI rated higher than you did' : 'AI rated lower than you did'}>
+                                      {delta > 0 ? '+' : ''}{delta.toFixed(1)}
+                                    </span>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold">{s.score}</div>
+                              )}
                             </div>
-                            <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold">{s.score}</div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -3395,7 +4478,7 @@ show();
                                 <button key={emoji} onClick={() => setPanelStickers(prev => ({ ...prev, [p.id]: prev[p.id] === emoji ? null : emoji }))} className={`text-sm hover:scale-125 transition-transform ${panelStickers[p.id] === emoji ? 'scale-125' : 'opacity-50 hover:opacity-100'}`} title={`Add ${emoji} sticker`}>{emoji}</button>
                               ))}
                             </div>
-                            <span className="text-[11px] text-slate-400 font-bold">Panel {idx + 1}</span>
+                            <span className="text-[11px] text-slate-500 font-bold">Panel {idx + 1}</span>
                           </div>
                         </div>
                       </div>
@@ -3465,7 +4548,7 @@ show();
                   </button>
                 )}
               </div>
-              <p className="text-slate-400 text-xs text-center">Storybook & slideshow open in new tabs — print or save as PDF</p>
+              <p className="text-slate-500 text-xs text-center">Storybook & slideshow open in new tabs — print or save as PDF</p>
 
               {/* ── Class Portfolio Gallery (teacher view) ── */}
               {liveSession && !isCanvasEnv && (
@@ -3513,7 +4596,7 @@ show();
         >
           <ArrowLeft size={16} /> Back
         </button>
-        <div className="text-xs text-slate-400 font-medium">
+        <div className="text-xs text-slate-500 font-medium">
           {PHASE_LABELS[phaseIdx]} · Step {phaseIdx + 1} of {PHASES.length}
         </div>
         {phaseIdx < PHASES.length - 1 ? (

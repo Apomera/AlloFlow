@@ -1540,7 +1540,7 @@ const d = labToolData.waterCycle;
                     upd('wcGradeOverride', gb);
                     addToast('\uD83C\uDF93 Grade set to ' + gb + ' — content complexity updated!', 'success');
                   },
-                  className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (gradeBand === gb ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-indigo-50 border border-slate-200')
+                  className: "px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all " + (gradeBand === gb ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-indigo-50 border border-slate-400')
                 }, gb);
               }),
               React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[11px] font-bold rounded-full border border-indigo-200" },
@@ -1778,7 +1778,7 @@ const d = labToolData.waterCycle;
             ),
 
             // ═══ WATER BUDGET — Live Data Panel ═══
-            React.createElement("div", { className: "bg-gradient-to-r from-slate-50 to-sky-50 rounded-xl p-3 border border-slate-200 mb-3 shadow-sm" },
+            React.createElement("div", { className: "bg-gradient-to-r from-slate-50 to-sky-50 rounded-xl p-3 border border-slate-400 mb-3 shadow-sm" },
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-base" }, "\uD83D\uDCCA"),
                 React.createElement("h4", { className: "text-xs font-bold text-slate-700" }, "Water Budget (Live)"),

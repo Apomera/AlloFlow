@@ -7,7 +7,9 @@
     <title>Cost Savings Calculator | AlloFlow</title>
     <meta name="description"
         content="See how much your school could save by replacing multiple EdTech subscriptions with AlloFlow — the free, open-source AI classroom assistant.">
-    <link rel="stylesheet" href="shared/shared.css">
+    <link rel="icon" type="image/svg+xml" href="allobot.svg">
+    <link rel="apple-touch-icon" href="allobot.png">
+    <link rel="stylesheet" href="shared.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .calc-hero {
@@ -76,7 +78,7 @@
         .savings-label {
             font-size: 0.8rem;
             font-weight: 700;
-            color: #94a3b8;
+            color: #64748b;
             text-transform: uppercase;
             letter-spacing: 0.08em;
         }
@@ -257,7 +259,7 @@
 
         .product-price-note {
             font-size: 0.7rem;
-            color: #94a3b8;
+            color: #64748b;
             font-weight: 600;
         }
 
@@ -277,7 +279,7 @@
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.06em;
-            color: #94a3b8;
+            color: #64748b;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
@@ -344,7 +346,7 @@
             margin: 0 auto;
             padding: 0 24px 40px;
             font-size: 0.7rem;
-            color: #94a3b8;
+            color: #64748b;
             text-align: center;
             line-height: 1.6;
         }
@@ -441,7 +443,7 @@
             <input type="number" id="teacherCount" value="30" min="5" max="500" step="5">
         </div>
         <div
-            style="font-size:0.7rem;color:#94a3b8;font-weight:600;background:#f1f5f9;padding:6px 14px;border-radius:8px;border:1px solid #e2e8f0">
+            style="font-size:0.7rem;color:#64748b;font-weight:600;background:#f1f5f9;padding:6px 14px;border-radius:8px;border:1px solid #e2e8f0">
             💡 Adjust to match your school — costs recalculate automatically
         </div>
     </div>
@@ -743,7 +745,7 @@
 
         // Copy Link
         function copyCanvasLink() {
-            const link = "https://gemini.google.com/share/544cba6b9967";
+            const link = "https://gemini.google.com/share/c8baf80a46cc";
             navigator.clipboard.writeText(link).then(() => {
                 document.querySelectorAll('.btn-primary span').forEach(s => { const orig = s.textContent; s.textContent = "Copied!"; setTimeout(() => s.textContent = orig, 2000); });
             }).catch(() => alert("Failed to copy. Check permissions."));

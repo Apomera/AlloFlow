@@ -14,6 +14,27 @@
     return;
   }
 
+  // ── Live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-litlab')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-litlab';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
+  // Helper to announce dynamic state changes to SR users.
+  function announceLitLab(msg) {
+    try {
+      var lr = document.getElementById('allo-live-litlab');
+      if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 50); }
+    } catch (e) {}
+  }
+
   var warnLog = function () { console.warn.apply(console, ['[LitLab]'].concat(Array.prototype.slice.call(arguments))); };
 
   // ── Constants ─────────────────────────────────────────────────────────
@@ -54,6 +75,10 @@
     var kokoroVoices = props.kokoroVoices || [];
     var studentNickname = props.studentNickname || '';
     var handleScoreUpdate = props.handleScoreUpdate;
+    // Resource-history integration (teacher-scaffold path; mirrors StoryForge / PoetTree)
+    var initialConfig = props.initialConfig || null;
+    var onSaveConfig = props.onSaveConfig || null;        // non-null => teacher mode
+    var onSaveSubmission = props.onSaveSubmission || null; // non-null => save to portfolio enabled
 
     var e = React.createElement;
     var useState = React.useState;
@@ -111,17 +136,48 @@
     var _isPaused = useState(false); var isPaused = _isPaused[0]; var setIsPaused = _isPaused[1];
     var _playbackSpeed = useState(1); var playbackSpeed = _playbackSpeed[0]; var setPlaybackSpeed = _playbackSpeed[1];
     var _myRole = useState(null); var myRole = _myRole[0]; var setMyRole = _myRole[1]; // character id the student "plays"
+    // Reading-friendly text mode (WCAG 1.4.4 / 1.4.12) — persists across sessions
+    var _largeText = useState(function () { try { return localStorage.getItem('alloLitLabReadingMode') === '1'; } catch (e) { return false; } });
+    var largeText = _largeText[0]; var setLargeText = _largeText[1];
     var audioRef = useRef(null);
     var playingRef = useRef(false);
+    var pausedRef = useRef(false);
     var lineContainerRef = useRef(null);
 
     // Analysis state
     var _analysisResponses = useState({}); var analysisResponses = _analysisResponses[0]; var setAnalysisResponses = _analysisResponses[1];
     var _analysisFeedback = useState(null); var analysisFeedback = _analysisFeedback[0]; var setAnalysisFeedback = _analysisFeedback[1];
+    // ── Pre-feedback Self-Assessment + Revision Plan synthesizer (mirrors StoryForge / PoetTree pattern) ──
+    var _selfAssessment = useState({}); var selfAssessment = _selfAssessment[0]; var setSelfAssessment = _selfAssessment[1];
+    var _selfAssessmentSubmitted = useState(false); var selfAssessmentSubmitted = _selfAssessmentSubmitted[0]; var setSelfAssessmentSubmitted = _selfAssessmentSubmitted[1];
+    var _revisionPlan = useState(null); var revisionPlan = _revisionPlan[0]; var setRevisionPlan = _revisionPlan[1];
+    var _revisionPlanLoading = useState(false); var revisionPlanLoading = _revisionPlanLoading[0]; var setRevisionPlanLoading = _revisionPlanLoading[1];
 
     // Saved scripts
     var _savedScripts = useState(function () { return load(STORAGE_SCRIPTS, []); });
     var savedScripts = _savedScripts[0]; var setSavedScripts = _savedScripts[1];
+
+    // Teacher-scaffold field (saved into the resource-history config payload).
+    // teacherPrompt: a focus-note / performance instructions the teacher writes for the assignment.
+    var _teacherPrompt = useState(''); var teacherPrompt = _teacherPrompt[0]; var setTeacherPrompt = _teacherPrompt[1];
+
+    // Hydrate from a saved teacher assignment (initialConfig) the first time it shows up.
+    var _hydratedFromConfig = useRef(false);
+    React.useEffect(function () {
+      if (_hydratedFromConfig.current) return;
+      if (!initialConfig) return;
+      _hydratedFromConfig.current = true;
+      try {
+        if (initialConfig.sourceText) setSourceText(initialConfig.sourceText);
+        if (initialConfig.storyTitle) setStoryTitle(initialConfig.storyTitle);
+        if (initialConfig.teacherPrompt) setTeacherPrompt(initialConfig.teacherPrompt);
+        if (initialConfig.genGenre) setGenGenre(initialConfig.genGenre);
+        if (initialConfig.genLength) setGenLength(initialConfig.genLength);
+        if (initialConfig.genGradeLevel) setGenGradeLevel(initialConfig.genGradeLevel);
+        if (initialConfig.inputMode) setInputMode(initialConfig.inputMode);
+        if (addToast) addToast('Assignment loaded!', 'success');
+      } catch (err) { console.warn('[LitLab] initialConfig hydration failed:', err && err.message); }
+    }, [initialConfig]);
 
     // Scene illustration
     var _sceneImage = useState(null); var sceneImage = _sceneImage[0]; var setSceneImage = _sceneImage[1];
@@ -380,9 +436,15 @@
     var playFromLine = useCallback(async function (startIdx) {
       if (!script || !script.lines) return;
       playingRef.current = true;
+      pausedRef.current = false;
       setIsPlaying(true);
       setIsPaused(false);
       for (var i = startIdx; i < script.lines.length; i++) {
+        if (!playingRef.current) break;
+        // Pause check: when paused, hold here until resumed (or stopped). Pause takes effect AFTER current line finishes.
+        while (pausedRef.current && playingRef.current) {
+          await new Promise(function (r) { setTimeout(r, 100); });
+        }
         if (!playingRef.current) break;
         setCurrentLine(i);
         // Scroll into view
@@ -422,9 +484,24 @@
 
     var stopPlayback = useCallback(function () {
       playingRef.current = false;
+      pausedRef.current = false;
       setIsPlaying(false);
+      setIsPaused(false);
       if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
       if (window.speechSynthesis) window.speechSynthesis.cancel();
+      announceLitLab('Playback stopped.');
+    }, []);
+
+    var pausePlayback = useCallback(function () {
+      pausedRef.current = true;
+      setIsPaused(true);
+      announceLitLab('Paused. Will hold after current line finishes.');
+    }, []);
+
+    var resumePlayback = useCallback(function () {
+      pausedRef.current = false;
+      setIsPaused(false);
+      announceLitLab('Resumed.');
     }, []);
 
     // ── Save/Load Scripts ──
@@ -443,6 +520,47 @@
       setSourceText(entry.sourceText || '');
       setPhase('assign');
     }, []);
+
+    // ── Resource-history hooks (mirror StoryForge / PoetTree) ──
+    // saveAsAssignment: teacher captures source text + title + focus prompt into a
+    // 'litlab-config' resource so students can load it pre-populated.
+    var saveAsAssignment = useCallback(function () {
+      if (!onSaveConfig) return;
+      var config = {
+        storyTitle: storyTitle,
+        sourceText: sourceText,
+        teacherPrompt: teacherPrompt,
+        gradeLevel: gradeLevel,
+        inputMode: inputMode,
+        genGenre: genGenre,
+        genLength: genLength,
+        genGradeLevel: genGradeLevel,
+        savedAt: new Date().toISOString()
+      };
+      onSaveConfig(config);
+      addToast && addToast('LitLab assignment saved!', 'success');
+    }, [onSaveConfig, storyTitle, sourceText, teacherPrompt, gradeLevel, inputMode, genGenre, genLength, genGradeLevel, addToast]);
+
+    // saveSubmissionToPortfolio: student saves their performed/analyzed work as a
+    // 'litlab-submission' resource for portfolio review.
+    var saveSubmissionToPortfolio = useCallback(function () {
+      if (!onSaveSubmission) return;
+      if (!script) { addToast && addToast('Generate or load a script first!', 'info'); return; }
+      var submission = {
+        storyTitle: storyTitle || (script && script.title) || 'My Performance',
+        scriptTitle: script.title || '',
+        characterCount: (script.characters || []).length,
+        lineCount: (script.lines || []).length,
+        characters: (script.characters || []).map(function (c) { return { name: c.name, voice: c.voice, color: c.color }; }),
+        analysisFeedback: analysisFeedback || null,
+        myRole: myRole,
+        author: studentNickname || 'Student',
+        gradeLevel: gradeLevel,
+        savedAt: new Date().toISOString()
+      };
+      onSaveSubmission(submission);
+      addToast && addToast('Performance saved to portfolio!', 'success');
+    }, [onSaveSubmission, script, storyTitle, analysisFeedback, myRole, studentNickname, gradeLevel, addToast]);
 
     // ── Generate Character Portraits ──
     var generatePortrait = useCallback(async function (charId) {
@@ -500,6 +618,99 @@
       }
     }, [onCallGemini, script, storyTitle, gradeLevel, analysisResponses, handleScoreUpdate, addToast]);
 
+    // ── LitLab metacognitive rubric (5 criteria, performance + analysis hybrid) ──
+    var LITLAB_RUBRIC = [
+      { id: 'character',   label: 'Character',       desc: 'How well I described the characters and supported it with the story' },
+      { id: 'theme',       label: 'Theme',           desc: 'How clearly I named a theme and connected it to events in the story' },
+      { id: 'craft',       label: "Author's Craft",  desc: 'How specifically I noticed an author choice (figurative language, pacing, dialogue)' },
+      { id: 'performance', label: 'Performance',     desc: 'How expressively I read aloud — vocal variety, pacing, emotion' },
+      { id: 'reflection',  label: 'Connection',      desc: 'How I connected the story to myself, another book, or the world' }
+    ];
+
+    // True when the student has at least 2 helper outputs available to synthesize.
+    function _helpersAvailableForLitLabPlan() {
+      var n = 0;
+      if (analysisFeedback && typeof analysisFeedback === 'object' && !analysisFeedback.error) n++;
+      if (selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0) n++;
+      if (Object.values(emotionLog || {}).filter(function (v) { return v; }).length >= 3) n++;
+      if (selectedStandard) n++;
+      return n >= 2;
+    }
+
+    // ── Revision Plan synthesizer ──
+    // Pulls together analysisFeedback + self-rating + emotion log into one
+    // prioritized 3-task plan. Pedagogical aim: synthesis as a meta-skill —
+    // the student weaves multiple feedback streams into a coherent next step
+    // for re-reading, re-performing, or revising their analysis responses.
+    var synthesizeRevisionPlan = useCallback(async function () {
+      if (!onCallGemini || !script) return;
+      setRevisionPlanLoading(true);
+      try {
+        var helperContext = [];
+        if (analysisFeedback && typeof analysisFeedback === 'object' && !analysisFeedback.error) {
+          var fb = '';
+          if (analysisFeedback.overallRating) fb += '  rating: ' + analysisFeedback.overallRating + '\n';
+          if (analysisFeedback.strengths && analysisFeedback.strengths.length) fb += '  strengths: ' + analysisFeedback.strengths.slice(0, 2).join(' | ') + '\n';
+          if (analysisFeedback.nudges && analysisFeedback.nudges.length) fb += '  nudges: ' + analysisFeedback.nudges.slice(0, 2).join(' | ') + '\n';
+          if (analysisFeedback.characterInsight) fb += '  character: ' + analysisFeedback.characterInsight + '\n';
+          if (analysisFeedback.themeInsight) fb += '  theme: ' + analysisFeedback.themeInsight + '\n';
+          if (analysisFeedback.craftInsight) fb += '  craft: ' + analysisFeedback.craftInsight;
+          if (fb) helperContext.push('AI ANALYSIS FEEDBACK:\n' + fb);
+        }
+        if (selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0) {
+          var lowest = Object.keys(selfAssessment).map(function (k) { return [k, selfAssessment[k]]; })
+            .sort(function (a, b) { return a[1] - b[1]; }).slice(0, 2);
+          helperContext.push('STUDENT SELF-ASSESSMENT (lowest ratings):\n' + lowest.map(function (pair) {
+            var crit = LITLAB_RUBRIC.find(function (c) { return c.id === pair[0]; });
+            return '  - ' + (crit ? crit.label : pair[0]) + ': ' + pair[1] + '/5';
+          }).join('\n'));
+        }
+        var reactedLines = Object.keys(emotionLog || {}).filter(function (k) { return emotionLog[k]; });
+        if (reactedLines.length >= 3) {
+          var samples = reactedLines.slice(0, 5).map(function (lid) {
+            var line = (script.lines || []).find(function (l) { return l.id === lid; });
+            return '  - ' + emotionLog[lid] + ' at "' + (line ? line.text.substring(0, 40) : '?') + '..."';
+          }).join('\n');
+          helperContext.push('EMOTION LOG (' + reactedLines.length + ' reactions during performance):\n' + samples);
+        }
+        if (selectedStandard) {
+          helperContext.push('FOCUS STANDARD: ' + selectedStandard);
+        }
+        var helpersBlock = helperContext.length > 0
+          ? '\n\nWhat the student already has:\n' + helperContext.join('\n\n')
+          : '';
+
+        var prompt = 'You are a kind, specific ELA teacher helping a ' + gradeLevel + ' student plan their next pass at "' + (script.title || storyTitle || 'this text') + '".\n\n'
+          + 'Story characters: ' + (script.characters || []).filter(function (c) { return c.id !== 'narrator' && c.id !== 'stage'; }).map(function (c) { return c.name; }).join(', ') + '\n'
+          + 'Theme: ' + (script.theme || 'not specified') + '\n'
+          + 'Literary elements: ' + ((script.literaryElements || []).join(', ') || 'none flagged') + helpersBlock + '\n\n'
+          + 'Build a prioritized revision plan with EXACTLY 3 tasks. Each task should:\n'
+          + '- Be small enough to do in a single re-read or re-performance.\n'
+          + '- Be specific (name a character, line, scene, or specific analysis question to revisit).\n'
+          + '- Pull from the helper outputs above when relevant — synthesize across them, don\'t repeat verbatim.\n'
+          + '- Be ranked by impact (most-impactful first).\n'
+          + '- Mix performance tasks (re-read this scene with a different voice for X) with analysis tasks (return to the theme question and try again with text evidence).\n'
+          + '- Include a one-sentence "why" so the student understands the craft / comprehension reason.\n\n'
+          + 'Tone: warm, concrete, never scolding. Treat the student as a capable reader-performer who\'s iterating.\n\n'
+          + 'Return ONLY JSON:\n'
+          + '{\n'
+          + '  "tasks": [\n'
+          + '    { "title": "<short imperative title>", "detail": "<one or two specific sentences on what to do>", "why": "<one short sentence on the craft / comprehension reason>", "source": "<which helper this builds on, or \\"overall\\">" }\n'
+          + '  ],\n'
+          + '  "encouragement": "<one short specific compliment on something the student is already doing well>"\n'
+          + '}';
+        var result = await onCallGemini(prompt, true);
+        var parsed = JSON.parse(cleanJson(result));
+        if (Array.isArray(parsed.tasks)) parsed.tasks = parsed.tasks.slice(0, 3);
+        setRevisionPlan(parsed);
+      } catch (err) {
+        warnLog('Revision plan synthesis failed:', err && err.message);
+        setRevisionPlan({ error: "Couldn't build a revision plan right now. Try again in a moment." });
+      } finally {
+        setRevisionPlanLoading(false);
+      }
+    }, [onCallGemini, script, storyTitle, gradeLevel, analysisFeedback, selfAssessment, selfAssessmentSubmitted, emotionLog, selectedStandard]);
+
     // ── Scene Illustration ──
     var generateSceneImage = useCallback(async function () {
       if (!onCallImagen || !script) return;
@@ -524,6 +735,48 @@
     };
     var pages = script ? getPages() : [];
     var totalPages = pages.length;
+
+    // ── Refine an existing image with a user-provided instruction (uses Gemini image-edit) ──
+    var refineImage = useCallback(async function (currentSrc, instruction, sizePx) {
+      if (!onCallGeminiImageEdit || !currentSrc || !instruction) return null;
+      try {
+        // Strip data: prefix if present (matches the pattern used across other modules).
+        var base64 = String(currentSrc).indexOf(',') !== -1 ? currentSrc.split(',')[1] : currentSrc;
+        var prompt = 'Edit this storybook illustration. Instruction: ' + instruction + '. Maintain the original style and composition. STRICTLY NO TEXT or words in the image.';
+        var refined = await onCallGeminiImageEdit(prompt, base64, sizePx || 600, 0.85);
+        return refined || null;
+      } catch (err) { warnLog('Image refine failed:', err && err.message); return null; }
+    }, [onCallGeminiImageEdit]);
+
+    var refineSceneImage = useCallback(async function () {
+      if (!sceneImage) return;
+      var instruction = window.prompt('How should we change the cover image?\n\nExamples:\n• "make it more colorful"\n• "show more detail in the trees"\n• "use a moodier palette"\n• "add a moon in the sky"');
+      if (!instruction || !instruction.trim()) return;
+      setSceneImageLoading(true);
+      announceLitLab('Refining cover image…');
+      try {
+        var refined = await refineImage(sceneImage, instruction.trim(), 600);
+        if (refined) { setSceneImage(refined); addToast && addToast('Cover refined.', 'success'); announceLitLab('Cover image refined.'); }
+        else { addToast && addToast('Refine failed.', 'error'); }
+      } finally { setSceneImageLoading(false); }
+    }, [sceneImage, refineImage, addToast]);
+
+    var refinePageImage = useCallback(async function (pageIdx) {
+      var current = pageImages[pageIdx];
+      if (!current) return;
+      var instruction = window.prompt('How should we change this page\'s illustration?\n\nExamples:\n• "make it warmer"\n• "show the character\'s face"\n• "add the sunset"\n• "remove the text"');
+      if (!instruction || !instruction.trim()) return;
+      setPageImgLoading(function (prev) { var n = Object.assign({}, prev); n[pageIdx] = true; return n; });
+      announceLitLab('Refining page ' + (pageIdx + 1) + ' illustration…');
+      try {
+        var refined = await refineImage(current, instruction.trim(), 600);
+        if (refined) {
+          setPageImages(function (prev) { var n = Object.assign({}, prev); n[pageIdx] = refined; return n; });
+          addToast && addToast('Page ' + (pageIdx + 1) + ' refined.', 'success');
+          announceLitLab('Page ' + (pageIdx + 1) + ' illustration refined.');
+        } else { addToast && addToast('Refine failed.', 'error'); }
+      } finally { setPageImgLoading(function (prev) { var n = Object.assign({}, prev); n[pageIdx] = false; return n; }); }
+    }, [pageImages, refineImage, addToast]);
 
     // ── Generate illustration for a specific page ──
     var generatePageImage = useCallback(async function (pageIdx) {
@@ -557,65 +810,156 @@
     var exportStorybook = useCallback(function () {
       if (!script) return;
       var chars = script.characters.filter(function (c) { return c.id !== 'stage'; });
-      var html = '<html><head><title>' + storyTitle + ' — Storybook</title>'
+      // HTML escape helper for user content (titles, names, line text). Prevents broken markup AND XSS.
+      var esc = function (s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+      var safeTitle = esc(storyTitle || 'Untitled Story');
+      var safeAuthor = esc(performerName || '');
+      // Document head — lang attribute + charset + structured metadata so the browser's
+      // Print → Save as PDF produces a tagged PDF with proper document language and title.
+      var html = '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+        + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        + '<title>' + safeTitle + ' — LitLab Storybook</title>'
+        + (safeAuthor ? '<meta name="author" content="' + safeAuthor + '">' : '')
+        + '<meta name="description" content="A storybook' + (safeAuthor ? ' performed by ' + safeAuthor : '') + '. Generated with LitLab.">'
         + '<style>'
-        + 'body{font-family:Georgia,serif;margin:0;padding:0;color:#1e293b;background:#fff}'
+        + '.skip-link{position:absolute;left:-9999px;top:0;padding:8px 14px;background:#0f172a;color:#fff;text-decoration:none;font-weight:700}'
+        + '.skip-link:focus{left:0;top:0;z-index:1000}'
+        + 'html,body{margin:0;padding:0}'
+        + 'body{font-family:Georgia,serif;color:#1e293b;background:#fff}'
+        + 'main{display:block}'
+        + 'figure{margin:0}'
         + '.page{page-break-after:always;min-height:100vh;padding:40px 50px;box-sizing:border-box;display:flex;flex-direction:column}'
         + '.page:last-child{page-break-after:auto}'
         + '.page-img{width:100%;max-height:300px;object-fit:cover;border-radius:12px;margin-bottom:20px;box-shadow:0 4px 16px rgba(0,0,0,0.1)}'
         + '.narration{font-style:italic;color:#475569;margin:8px 0;line-height:1.8;font-size:16px}'
         + '.dialogue{margin:8px 0;padding-left:24px;line-height:1.8;font-size:16px}'
-        + '.char-name{font-weight:bold;font-variant:small-caps;margin-right:8px}'
-        + '.stage{font-style:italic;color:#9ca3af;font-size:14px;margin:6px 0 6px 20px}'
-        + '.page-num{text-align:center;color:#9ca3af;font-size:12px;margin-top:auto;padding-top:16px}'
-        + '.cover{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;min-height:100vh}'
-        + '.cover h1{font-size:48px;font-weight:900;margin:0 0 12px}'
-        + '.cover .subtitle{font-size:18px;opacity:0.8}'
+        + '.dialogue .char-name{font-weight:bold;font-variant:small-caps;margin-right:8px}'
+        // Stage directions: bumped #9ca3af (2.85:1, fails AA) → #475569 (7.42:1, AAA pass).
+        + '.stage{font-style:italic;color:#475569;font-size:14px;margin:6px 0 6px 20px}'
+        // Page numbers: same contrast bump.
+        + '.page-num{text-align:center;color:#475569;font-size:12px;margin-top:auto;padding-top:16px}'
+        + '.cover{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;min-height:100vh}'
+        + '.cover h1{font-size:48px;font-weight:900;margin:0 0 12px;line-height:1.1}'
+        + '.cover .subtitle{font-size:18px;opacity:0.92}'
         + '.cast-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:20px 0}'
         + '.cast-card{text-align:center;padding:12px;border-radius:12px;border:2px solid #e5e7eb}'
-        + '@media print{.page{page-break-after:always}.cover{page-break-after:always}}'
-        + '</style></head><body>';
-      // Cover page
-      html += '<div class="page cover">';
-      if (sceneImage) html += '<img src="' + sceneImage + '" style="width:300px;height:300px;border-radius:50%;object-fit:cover;border:6px solid rgba(255,255,255,0.3);margin-bottom:20px" />';
-      html += '<h1>' + storyTitle + '</h1>';
-      if (performerName) html += '<div class="subtitle">Performed by ' + performerName + '</div>';
-      html += '<div class="subtitle" style="margin-top:12px;opacity:0.6">A LitLab Storybook</div>';
-      html += '</div>';
-      // Cast page
-      html += '<div class="page"><h2 style="text-align:center;margin-bottom:20px">Cast of Characters</h2><div class="cast-grid">';
+        + '.cast-card .name{font-weight:bold;font-size:16px}'
+        // Cast description: bumped #6b7280 (4.83:1, marginal) → #475569 (7.42:1).
+        + '.cast-card .desc{font-size:12px;color:#475569;margin-top:4px}'
+        + '.theme-quote{color:#475569;font-style:italic;font-size:18px}'
+        + '.colophon{font-size:12px;color:#475569;margin-top:24px}'
+        + '@media print{.skip-link{display:none}.page{page-break-after:always}.cover{page-break-after:always}html,body{background:#fff !important}}'
+        + '@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}'
+        + '</style></head><body>'
+        + '<a class="skip-link" href="#story-content">Skip to story</a>'
+        // Single <main> wraps the entire storybook for PDF tag-tree clarity.
+        + '<main id="story-content" role="main" aria-labelledby="story-title">'
+        + '<article aria-labelledby="story-title">';
+      // ── Cover page (header landmark) ──
+      html += '<header class="page cover">';
+      if (sceneImage) {
+        html += '<figure><img src="' + esc(sceneImage) + '" alt="' + esc('Cover illustration for ' + safeTitle) + '" style="width:300px;height:300px;border-radius:50%;object-fit:cover;border:6px solid rgba(255,255,255,0.3);margin-bottom:20px" /></figure>';
+      }
+      html += '<h1 id="story-title">' + safeTitle + '</h1>';
+      if (safeAuthor) html += '<p class="subtitle">Performed by ' + safeAuthor + '</p>';
+      html += '<p class="subtitle" style="margin-top:12px;opacity:0.7">A LitLab Storybook</p>';
+      html += '</header>';
+      // ── Cast page ──
+      html += '<section class="page" aria-labelledby="cast-heading">';
+      html += '<h2 id="cast-heading" style="text-align:center;margin-bottom:20px">Cast of Characters</h2>';
+      html += '<ul class="cast-grid" style="list-style:none;padding:0">';
       chars.forEach(function (c) {
-        html += '<div class="cast-card" style="border-color:' + c.color + '">'
-          + (c.portrait ? '<img src="' + c.portrait + '" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:8px" />' : '')
-          + '<div style="font-weight:bold;color:' + c.color + ';font-size:16px">' + c.name + '</div>'
-          + '<div style="font-size:12px;color:#6b7280">' + (c.description || '') + '</div></div>';
+        html += '<li class="cast-card" style="border-color:' + esc(c.color) + '">'
+          + (c.portrait ? '<img src="' + esc(c.portrait) + '" alt="' + esc('Portrait of ' + c.name) + '" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:8px" />' : '')
+          + '<p class="name" style="color:' + esc(c.color) + '">' + esc(c.name) + '</p>'
+          + (c.description ? '<p class="desc">' + esc(c.description) + '</p>' : '')
+          + '</li>';
       });
-      html += '</div></div>';
-      // Story pages
+      html += '</ul></section>';
+      // ── Story pages (one section per page; numbered headings for navigation) ──
       pages.forEach(function (pageLines, pi) {
-        html += '<div class="page">';
-        if (pageImages[pi]) html += '<img class="page-img" src="' + pageImages[pi] + '" alt="Illustration for page ' + (pi + 1) + '" />';
+        html += '<section class="page" aria-labelledby="page-' + (pi + 1) + '-heading">';
+        html += '<h2 id="page-' + (pi + 1) + '-heading" class="visually-hidden" style="position:absolute;left:-9999px">Page ' + (pi + 1) + '</h2>';
+        if (pageImages[pi]) {
+          // Build descriptive alt from the first non-empty line on the page.
+          var firstLine = '';
+          for (var fi = 0; fi < pageLines.length; fi++) { if (pageLines[fi].text && pageLines[fi].text.trim()) { firstLine = pageLines[fi].text.trim().slice(0, 80); break; } }
+          var altText = 'Illustration for page ' + (pi + 1) + (firstLine ? ': ' + firstLine : '');
+          html += '<figure><img class="page-img" src="' + esc(pageImages[pi]) + '" alt="' + esc(altText) + '" /></figure>';
+        }
         pageLines.forEach(function (line) {
           var ch = script.characters.find(function (c) { return c.id === line.speaker; });
           if (line.type === 'stage-direction') {
-            html += '<div class="stage">[' + line.text + ']</div>';
+            // role=note marks asides; SR users get spoken context cue.
+            html += '<p class="stage" role="note">[' + esc(line.text) + ']</p>';
           } else if (line.type === 'narration') {
-            html += '<div class="narration">' + line.text + '</div>';
+            html += '<p class="narration">' + esc(line.text) + '</p>';
           } else {
-            html += '<div class="dialogue"><span class="char-name" style="color:' + (ch ? ch.color : '#374151') + '">' + (ch ? ch.name : '') + ':</span>' + line.text + '</div>';
+            html += '<p class="dialogue"><span class="char-name" style="color:' + esc(ch ? ch.color : '#374151') + '">' + esc(ch ? ch.name : '') + ':</span>' + esc(line.text) + '</p>';
           }
         });
-        html += '<div class="page-num">— ' + (pi + 1) + ' —</div></div>';
+        // Decorative page number — aria-hidden so SR users aren't told "page X" twice.
+        html += '<p class="page-num" aria-hidden="true">— ' + (pi + 1) + ' —</p>';
+        html += '</section>';
       });
-      // Back cover
-      if (script.theme) html += '<div class="page" style="display:flex;align-items:center;justify-content:center;text-align:center"><div><h2>The End</h2><p style="color:#6b7280;font-style:italic">"' + script.theme + '"</p><p style="font-size:12px;color:#9ca3af;margin-top:24px">Created with AlloFlow LitLab</p></div></div>';
-      html += '</body></html>';
+      // ── Back cover (footer landmark) ──
+      if (script.theme) {
+        html += '<footer class="page" role="contentinfo" style="display:flex;align-items:center;justify-content:center;text-align:center"><div>'
+          + '<h2>The End</h2>'
+          + '<p class="theme-quote">"' + esc(script.theme) + '"</p>'
+          + '<p class="colophon">Created with AlloFlow LitLab</p>'
+          + '</div></footer>';
+      }
+      html += '</article></main></body></html>';
       var w = window.open('', '_blank');
-      if (w) { w.document.write(html); w.document.close(); }
+      if (w) { w.document.open(); w.document.write(html); w.document.close(); }
     }, [script, storyTitle, performerName, sceneImage, pages, pageImages]);
 
-    // ── Recording ──
+    // ── Recording (Phase 3v.MR shared-module routed) ──
     var startRecording = useCallback(async function () {
+      // Shared-module path
+      if (window.AlloFlowVoice && typeof window.AlloFlowVoice.recordAudioBlob === 'function') {
+        var ctrl = window.AlloFlowVoice.recordAudioBlob({
+          maxDurationMs: 15 * 60 * 1000, // generous cap; performances run long
+          preferredMimeType: 'audio/webm;codecs=opus',
+          onError: function (err) {
+            addToast && addToast('Microphone access denied. Please allow microphone to record.', 'error');
+            setIsRecording(false);
+          }
+        });
+        if (!ctrl.supported) {
+          addToast && addToast('Recording not supported in this browser.', 'error');
+          return;
+        }
+        mediaRecorderRef.current = ctrl;
+        setIsRecording(true);
+        addToast && addToast('Recording started — read your lines!', 'info');
+        ctrl.result.then(function (rec) {
+          if (!rec || !rec.base64) { setIsRecording(false); return; }
+          // Reconstruct a Blob URL so callers that play back via
+          // <audio src=blob:...> get the same flavor as the legacy path.
+          fetch(rec.base64).then(function (r) { return r.blob(); }).then(function (blob) {
+            var url = URL.createObjectURL(blob);
+            setRecordingUrl(url);
+            setRecordedChunks([blob]); // single-chunk array shape
+            addToast && addToast('Recording saved!', 'success');
+            if (handleScoreUpdate) handleScoreUpdate(15, 'LitLab Recording', 'storystage-record-' + (storyTitle || 'untitled'));
+            setIsRecording(false);
+          }).catch(function () {
+            // Fallback: use the data URI directly as the URL
+            setRecordingUrl(rec.base64);
+            setRecordedChunks([]);
+            addToast && addToast('Recording saved!', 'success');
+            if (handleScoreUpdate) handleScoreUpdate(15, 'LitLab Recording', 'storystage-record-' + (storyTitle || 'untitled'));
+            setIsRecording(false);
+          });
+        }).catch(function (err) {
+          if (err && err.message === 'cancelled') { setIsRecording(false); return; }
+          setIsRecording(false);
+        });
+        return;
+      }
+      // Inline fallback (pre-3v.MR behavior, identical)
       try {
         var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         var mr = new MediaRecorder(stream);
@@ -640,8 +984,18 @@
     }, [storyTitle, handleScoreUpdate, addToast]);
 
     var stopRecording = useCallback(function () {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        mediaRecorderRef.current.stop();
+      var rec = mediaRecorderRef.current;
+      if (!rec) { setIsRecording(false); return; }
+      // Shared controller: has isRecording() + stop()
+      if (typeof rec.isRecording === 'function') {
+        if (rec.isRecording()) {
+          try { rec.stop(); } catch (e) { /* ignore */ }
+        }
+        // setIsRecording(false) happens after the result Promise resolves
+        return;
+      }
+      if (rec.state !== 'inactive') {
+        rec.stop();
       }
       setIsRecording(false);
     }, []);
@@ -703,14 +1057,22 @@
       body: { flex: 1, overflowY: 'auto', padding: '20px' },
       btn: function (bg, fg, dis) { return { padding: '8px 16px', background: dis ? '#e5e7eb' : bg, color: dis ? '#9ca3af' : fg, border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: dis ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }; },
       card: { background: '#f9fafb', borderRadius: '12px', padding: '16px', border: '1px solid #e5e7eb', marginBottom: '12px' },
-      input: { width: '100%', padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '13px', outline: 'none' },
+      input: { width: '100%', padding: '8px 12px', border: '1px solid #94a3b8', borderRadius: '8px', fontSize: '13px', outline: 'none' },
     };
 
     // ═══════════════════════════════════════════════════════════════════
     // RENDER
     // ═══════════════════════════════════════════════════════════════════
 
-    return e('div', { style: S.modal, onClick: function (ev) { if (ev.target === ev.currentTarget) onClose(); } },
+    return e('div', {
+      role: 'dialog', 'aria-modal': 'true', 'aria-label': 'LitLab — story performance workshop',
+      // ESC closes the modal so keyboard users aren't trapped (WCAG 2.1.2).
+      // tabIndex=-1 so the wrapper is focusable for the keydown handler but not in the tab order.
+      tabIndex: -1,
+      onKeyDown: function (ev) { if (ev.key === 'Escape') { ev.preventDefault(); onClose(); } },
+      style: S.modal,
+      onClick: function (ev) { if (ev.target === ev.currentTarget) onClose(); }
+    },
       e('div', { style: S.container, onClick: function (ev) { ev.stopPropagation(); } },
         // Header
         e('div', { style: S.header },
@@ -753,12 +1115,45 @@
                 CN_ANI.map(function (a) { return e('option', { key: a, value: a }, a); })
               ),
               e('button', { onClick: function () { setPerformerName(CN_ADJ[Math.floor(Math.random() * CN_ADJ.length)] + ' ' + CN_ANI[Math.floor(Math.random() * CN_ANI.length)]); },
-                style: { fontSize: '11px', background: '#fff', border: '1px solid #d1d5db', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer' }, 'aria-label': 'Randomize codename' }, '🎲')
+                style: { fontSize: '11px', background: '#fff', border: '1px solid #94a3b8', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer' }, 'aria-label': 'Randomize codename' }, '🎲')
             ),
             e('div', { style: { textAlign: 'center', marginBottom: '24px' } },
               e('h3', { style: { fontSize: '22px', fontWeight: 800, color: '#1e293b' } }, '🎭 Create Your Performance'),
-              e('p', { style: { color: '#64748b', fontSize: '14px' } }, 'Paste a story, import from URL, or let AI write one — then bring it to life with character voices.')
+              e('p', { style: { color: '#475569', fontSize: '14px' } }, 'Paste a story, import from URL, or let AI write one — then bring it to life with character voices.')
             ),
+
+            // ── Assignment prompt banner (visible to students when teacher set a prompt) ──
+            teacherPrompt && !onSaveConfig && e('div', { role: 'note', 'aria-label': 'Assignment prompt from teacher', style: { background: '#fffbeb', border: '2px solid #fde68a', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px' } },
+              e('div', { style: { fontSize: '11px', fontWeight: 800, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' } }, '📋 Assignment'),
+              e('p', { style: { fontSize: '13px', color: '#78350f', margin: 0, lineHeight: 1.6 } }, teacherPrompt)
+            ),
+
+            // ── Teacher Assignment Builder (visible only when onSaveConfig is provided) ──
+            onSaveConfig && e('div', { role: 'region', 'aria-label': 'Teacher Assignment Builder', style: { background: '#eff6ff', border: '2px solid #bfdbfe', borderRadius: '12px', padding: '14px', marginBottom: '16px' } },
+              e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' } },
+                e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#1e40af', margin: 0 } }, '🧑‍🏫 Teacher Assignment Builder'),
+                e('span', { style: { fontSize: '10px', color: '#1e40af', background: '#dbeafe', padding: '2px 8px', borderRadius: '999px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Teacher mode')
+              ),
+              e('p', { style: { fontSize: '11px', color: '#1e3a8a', margin: '0 0 10px', lineHeight: 1.5 } },
+                'Paste or generate the source text below, give it a title, and add a focus prompt. Save it as an assignment so students can load it from My Resources.'
+              ),
+              e('label', { htmlFor: 'll-teacher-prompt', style: { display: 'block', fontSize: '11px', fontWeight: 700, color: '#1e40af', marginBottom: '4px' } }, 'Performance focus / instructions for students'),
+              e('textarea', {
+                id: 'll-teacher-prompt',
+                value: teacherPrompt,
+                onChange: function (ev) { setTeacherPrompt(ev.target.value); },
+                placeholder: 'e.g. "Read aloud with feeling — vary your voice for each character. Pay attention to where the narrator changes mood."',
+                rows: 3,
+                style: { width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #bfdbfe', fontSize: '13px', fontFamily: 'inherit', resize: 'vertical', background: '#fff', boxSizing: 'border-box' }
+              }),
+              e('button', {
+                onClick: saveAsAssignment,
+                disabled: !sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim(),
+                'aria-label': 'Save this LitLab setup as an assignment in My Resources',
+                style: { marginTop: '10px', padding: '8px 16px', background: !sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim() ? '#cbd5e1' : '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: !sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim() ? 'not-allowed' : 'pointer' }
+              }, '💾 Save as Assignment')
+            ),
+
             // Mode selector
             e('div', { style: { display: 'flex', gap: '8px', marginBottom: '16px', justifyContent: 'center' } },
               [['paste', '📋 Paste Text'], ['generate', '✨ AI Generate']].map(function (pair) {
@@ -797,10 +1192,13 @@
                 },
                 placeholder: 'Paste a story, chapter, poem, or play excerpt here...\n\nYou can also paste an image (screenshot of a book page) — the text will be extracted automatically.',
                 rows: 10, style: Object.assign({}, S.input, { resize: 'vertical', fontFamily: 'Georgia, serif', lineHeight: 1.7 }),
+                autoFocus: phase === 'input' && inputMode === 'paste',
                 'aria-label': 'Story text input' }),
               e('div', { style: { display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' } },
                 e('button', { onClick: function () { if (sourceText.trim()) extractScript(sourceText); },
                   disabled: !sourceText.trim() || isLoading,
+                  'aria-busy': isLoading ? 'true' : 'false',
+                  'aria-label': isLoading ? 'Creating script, please wait' : 'Create Script from text',
                   style: S.btn(PURPLE, '#fff', !sourceText.trim() || isLoading) }, isLoading ? '⏳ ' + loadingMsg : '🎭 Create Script'),
                 // URL import
                 e('button', { onClick: async function () {
@@ -854,7 +1252,7 @@
                     style: { padding: '8px', borderRadius: '10px', border: '2px solid ' + (genGenre === g.id ? PURPLE : '#e5e7eb'), background: genGenre === g.id ? LIGHT_PURPLE : '#fff', cursor: 'pointer', textAlign: 'left', fontSize: '11px' }
                   },
                     e('div', { style: { fontWeight: 700, color: genGenre === g.id ? PURPLE : '#374151' } }, g.icon + ' ' + g.label),
-                    e('div', { style: { color: '#9ca3af', fontSize: '10px' } }, g.desc)
+                    e('div', { style: { color: '#64748b', fontSize: '10px' } }, g.desc)
                   );
                 })
               ),
@@ -890,7 +1288,7 @@
                     style: { flex: 1, padding: '6px 10px', borderRadius: '10px', border: '2px solid ' + (genLength === lo.id ? PURPLE : '#e5e7eb'), background: genLength === lo.id ? LIGHT_PURPLE : '#fff', cursor: 'pointer', textAlign: 'center', fontSize: '11px' }
                   },
                     e('div', { style: { fontWeight: 700, color: genLength === lo.id ? PURPLE : '#374151' } }, lo.label),
-                    e('div', { style: { color: '#9ca3af', fontSize: '9px' } }, lo.words ? lo.words + ' words' : 'You choose')
+                    e('div', { style: { color: '#64748b', fontSize: '9px' } }, lo.words ? lo.words + ' words' : 'You choose')
                   );
                 })
               ),
@@ -901,9 +1299,11 @@
                   onChange: function (ev) { setCustomWordCount(ev.target.value); },
                   style: Object.assign({}, S.input, { width: '120px' }),
                   'aria-label': 'Custom word count' }),
-                e('span', { style: { fontSize: '10px', color: '#9ca3af' } }, 'words (50–5000)')
+                e('span', { style: { fontSize: '10px', color: '#64748b' } }, 'words (50–5000)')
               ),
               e('button', { onClick: generateStory, disabled: isLoading,
+                'aria-busy': isLoading ? 'true' : 'false',
+                'aria-label': isLoading ? 'Generating story, please wait' : 'Generate Story with AI',
                 style: S.btn(PURPLE, '#fff', isLoading) }, isLoading ? '⏳ ' + loadingMsg : '✨ Generate Story'),
               sourceText && e('p', { style: { fontSize: '11px', color: '#16a34a', marginTop: '8px', fontWeight: 600 } }, '✅ Story generated! Switch to "Paste Text" tab to review, then click "Create Script".')
             ),
@@ -917,7 +1317,7 @@
                     style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '12px' }
                   },
                     e('span', { style: { fontWeight: 600, color: '#1e293b' } }, s.title),
-                    e('span', { style: { color: '#9ca3af', fontSize: '10px' } }, new Date(s.savedAt).toLocaleDateString())
+                    e('span', { style: { color: '#64748b', fontSize: '10px' } }, new Date(s.savedAt).toLocaleDateString())
                   );
                 })
               )
@@ -928,7 +1328,7 @@
           phase === 'assign' && script && e('div', null,
             e('div', { style: { textAlign: 'center', marginBottom: '20px' } },
               e('h3', { style: { fontSize: '20px', fontWeight: 800, color: '#1e293b' } }, '🎤 Assign Voices'),
-              e('p', { style: { color: '#64748b', fontSize: '13px' } }, 'Choose a distinct voice for each character. Click preview to hear them.')
+              e('p', { style: { color: '#475569', fontSize: '13px' } }, 'Choose a distinct voice for each character. Click preview to hear them.')
             ),
             e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px', marginBottom: '20px' } },
               script.characters.map(function (ch) {
@@ -939,10 +1339,10 @@
                       : e('div', { style: { width: '48px', height: '48px', borderRadius: '50%', background: ch.color || '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', color: '#fff', fontWeight: 800 } }, ch.name.charAt(0)),
                     e('div', { style: { flex: 1 } },
                       e('div', { style: { fontWeight: 800, fontSize: '14px', color: '#1e293b' } }, ch.name),
-                      e('div', { style: { fontSize: '11px', color: '#6b7280' } }, ch.description || '')
+                      e('div', { style: { fontSize: '11px', color: '#475569' } }, ch.description || '')
                     ),
                     onCallImagen && !ch.portrait && e('button', { onClick: function () { generatePortrait(ch.id); },
-                      style: { fontSize: '10px', background: '#f1f5f9', border: '1px solid #d1d5db', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer' },
+                      style: { fontSize: '10px', background: '#f1f5f9', border: '1px solid #94a3b8', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer' },
                       'aria-label': 'Generate portrait' }, '🎨')
                   ),
                   e('select', { value: ch.voice || '',
@@ -965,8 +1365,9 @@
                 );
               })
             ),
-            e('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
+            e('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
               e('button', { onClick: saveScript, style: S.btn('#f1f5f9', '#374151', false) }, '💾 Save Script'),
+              onSaveSubmission && e('button', { onClick: saveSubmissionToPortfolio, 'aria-label': 'Save this performance to your portfolio (My Resources)', style: S.btn('#7c3aed', '#fff', false) }, '📚 Save to Portfolio'),
               e('button', { onClick: function () { setPhase('perform'); setCurrentLine(0); }, style: S.btn(PURPLE, '#fff', false) }, '🎭 Start Performance →')
             )
           ),
@@ -976,20 +1377,38 @@
             // Controls bar
             e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', padding: '12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e5e7eb' } },
               !isPlaying
-                ? e('button', { onClick: function () { playFromLine(currentLine); }, style: S.btn('#22c55e', '#fff', false) }, '▶ Play')
-                : e('button', { onClick: stopPlayback, style: S.btn('#ef4444', '#fff', false) }, '⏹ Stop'),
-              e('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#6b7280' } },
+                ? e('button', { onClick: function () { playFromLine(currentLine); }, autoFocus: true, style: S.btn('#22c55e', '#fff', false) }, '▶ Play')
+                : null,
+              isPlaying && (isPaused
+                ? e('button', { onClick: resumePlayback, style: S.btn('#22c55e', '#fff', false) }, '▶ Resume')
+                : e('button', { onClick: pausePlayback, style: S.btn('#f59e0b', '#fff', false) }, '⏸ Pause')),
+              isPlaying && e('button', { onClick: stopPlayback, 'aria-label': 'Stop playback', style: S.btn('#ef4444', '#fff', false) }, '⏹ Stop'),
+              e('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#475569' } },
                 e('span', null, 'Speed:'),
                 [0.75, 1, 1.25, 1.5].map(function (spd) {
                   return e('button', { key: spd, onClick: function () { setPlaybackSpeed(spd); },
-                    style: { padding: '3px 8px', borderRadius: '6px', border: '1px solid ' + (playbackSpeed === spd ? PURPLE : '#d1d5db'), background: playbackSpeed === spd ? LIGHT_PURPLE : '#fff', color: playbackSpeed === spd ? PURPLE : '#6b7280', fontWeight: 600, fontSize: '11px', cursor: 'pointer' }
+                    'aria-pressed': playbackSpeed === spd ? 'true' : 'false',
+                    'aria-label': 'Playback speed ' + spd + ' times',
+                    style: { padding: '3px 8px', borderRadius: '6px', border: '1px solid ' + (playbackSpeed === spd ? PURPLE : '#d1d5db'), background: playbackSpeed === spd ? LIGHT_PURPLE : '#fff', color: playbackSpeed === spd ? PURPLE : '#475569', fontWeight: 600, fontSize: '11px', cursor: 'pointer' }
                   }, spd + 'x');
                 })
               ),
+              // Reading-friendly text toggle (WCAG 1.4.4 / 1.4.12)
+              e('button', {
+                onClick: function () {
+                  var next = !largeText;
+                  setLargeText(next);
+                  try { localStorage.setItem('alloLitLabReadingMode', next ? '1' : '0'); } catch (e) {}
+                  announceLitLab(next ? 'Reading-friendly text on.' : 'Reading-friendly text off.');
+                },
+                'aria-pressed': largeText ? 'true' : 'false',
+                'aria-label': largeText ? 'Turn off reading-friendly text' : 'Turn on reading-friendly text (larger, sans-serif, more spacing)',
+                style: { padding: '4px 10px', borderRadius: '6px', border: '1px solid ' + (largeText ? PURPLE : '#d1d5db'), background: largeText ? LIGHT_PURPLE : '#fff', color: largeText ? PURPLE : '#475569', fontWeight: 600, fontSize: '11px', cursor: 'pointer' }
+              }, '🔠 ' + (largeText ? 'Reading mode on' : 'Reading mode')),
               e('div', { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' } },
-                e('span', { style: { fontSize: '11px', color: '#6b7280' } }, 'My Role:'),
+                e('span', { style: { fontSize: '11px', color: '#475569' } }, 'My Role:'),
                 e('select', { value: myRole || '', onChange: function (ev) { setMyRole(ev.target.value || null); },
-                  style: { fontSize: '11px', padding: '4px 8px', borderRadius: '6px', border: '1px solid #d1d5db' },
+                  style: { fontSize: '11px', padding: '4px 8px', borderRadius: '6px', border: '1px solid #94a3b8' },
                   'aria-label': 'Select your character role'
                 },
                   e('option', { value: '' }, 'Audience (listen only)'),
@@ -1004,6 +1423,10 @@
               recordingUrl && e('audio', { controls: true, src: recordingUrl, style: { height: '28px', maxWidth: '150px' }, 'aria-label': 'Your recording' }),
               e('button', { onClick: exportScript, style: S.btn('#f1f5f9', '#374151', false) }, '🖨️ Script'),
               e('button', { onClick: exportStorybook, style: S.btn('#f1f5f9', '#374151', false) }, '📖 Storybook'),
+              onCallImagen && !sceneImage && e('button', { onClick: generateSceneImage, disabled: sceneImageLoading,
+                'aria-busy': sceneImageLoading ? 'true' : 'false',
+                'aria-label': sceneImageLoading ? 'Generating cover, please wait' : 'Generate cover image with AI',
+                style: S.btn('#f1f5f9', '#374151', sceneImageLoading) }, sceneImageLoading ? '⏳ Cover…' : '🎨 Cover'),
               onCallImagen && e('button', { onClick: generateAllImages, style: S.btn('#f1f5f9', '#374151', false) }, '🎨 All Art'),
               e('button', { onClick: function () { setPhase('analyze'); }, style: S.btn('#f1f5f9', '#374151', false) }, '📝 Analyze →')
             ),
@@ -1011,23 +1434,41 @@
             totalPages > 1 && e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', justifyContent: 'center' } },
               e('button', { onClick: function () { setCurrentPage(Math.max(0, currentPage - 1)); }, disabled: currentPage === 0,
                 style: S.btn('#f1f5f9', '#374151', currentPage === 0), 'aria-label': 'Previous page' }, '◀'),
-              e('span', { style: { fontSize: '12px', fontWeight: 700, color: '#6b7280' } }, 'Page ' + (currentPage + 1) + ' of ' + totalPages),
+              e('span', { style: { fontSize: '12px', fontWeight: 700, color: '#475569' } }, 'Page ' + (currentPage + 1) + ' of ' + totalPages),
               e('button', { onClick: function () { setCurrentPage(Math.min(totalPages - 1, currentPage + 1)); }, disabled: currentPage >= totalPages - 1,
                 style: S.btn('#f1f5f9', '#374151', currentPage >= totalPages - 1), 'aria-label': 'Next page' }, '▶')
             ),
+            // Cover image (for storybook export header)
+            sceneImage && e('div', { style: { marginBottom: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' } },
+              e('div', { style: { borderRadius: '50%', overflow: 'hidden', border: '3px solid #e5e7eb', width: '120px', height: '120px' } },
+                e('img', { src: sceneImage, alt: 'Story cover illustration', style: { width: '100%', height: '100%', objectFit: 'cover' } })
+              ),
+              onCallGeminiImageEdit && e('button', { onClick: refineSceneImage, disabled: sceneImageLoading,
+                'aria-busy': sceneImageLoading ? 'true' : 'false',
+                'aria-label': sceneImageLoading ? 'Refining cover, please wait' : 'Refine cover image with a custom instruction',
+                style: { fontSize: '11px', color: '#475569', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '4px 10px', cursor: sceneImageLoading ? 'wait' : 'pointer' }
+              }, sceneImageLoading ? '⏳ Refining…' : '✨ Refine Cover')
+            ),
             // Page illustration
-            pageImages[currentPage] && e('div', { style: { marginBottom: '10px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e5e7eb' } },
-              e('img', { src: pageImages[currentPage], alt: 'Illustration for page ' + (currentPage + 1), style: { width: '100%', maxHeight: '200px', objectFit: 'cover' } })
+            pageImages[currentPage] && e('div', { style: { marginBottom: '10px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e5e7eb', position: 'relative' } },
+              e('img', { src: pageImages[currentPage], alt: 'Illustration for page ' + (currentPage + 1), style: { width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' } }),
+              onCallGeminiImageEdit && e('button', { onClick: function () { refinePageImage(currentPage); }, disabled: pageImgLoading[currentPage],
+                'aria-busy': pageImgLoading[currentPage] ? 'true' : 'false',
+                'aria-label': pageImgLoading[currentPage] ? 'Refining illustration, please wait' : 'Refine this page illustration with a custom instruction',
+                style: { position: 'absolute', top: '6px', right: '6px', fontSize: '11px', color: '#374151', background: 'rgba(255,255,255,0.92)', border: '1px solid #94a3b8', borderRadius: '8px', padding: '4px 10px', cursor: pageImgLoading[currentPage] ? 'wait' : 'pointer', fontWeight: 700 }
+              }, pageImgLoading[currentPage] ? '⏳' : '✨ Refine')
             ),
             !pageImages[currentPage] && onCallImagen && e('button', { onClick: function () { generatePageImage(currentPage); }, disabled: pageImgLoading[currentPage],
-              style: { fontSize: '11px', color: '#6b7280', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '6px 12px', cursor: pageImgLoading[currentPage] ? 'wait' : 'pointer', marginBottom: '10px', display: 'block', margin: '0 auto 10px' }
+              'aria-busy': pageImgLoading[currentPage] ? 'true' : 'false',
+              'aria-label': pageImgLoading[currentPage] ? 'Generating illustration, please wait' : 'Illustrate this page with AI',
+              style: { fontSize: '11px', color: '#475569', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '6px 12px', cursor: pageImgLoading[currentPage] ? 'wait' : 'pointer', marginBottom: '10px', display: 'block', margin: '0 auto 10px' }
             }, pageImgLoading[currentPage] ? '⏳ Generating...' : '🎨 Illustrate This Page'),
             // Progress bar
             e('div', { style: { height: '4px', background: '#e5e7eb', borderRadius: '2px', marginBottom: '12px', overflow: 'hidden' } },
               e('div', { style: { height: '100%', width: (script.lines.length > 0 ? Math.round(((currentLine + 1) / script.lines.length) * 100) : 0) + '%', background: 'linear-gradient(90deg, ' + PURPLE + ', #a855f7)', borderRadius: '2px', transition: 'width 0.3s' } })
             ),
             // Script lines — show current page only (or all if single page)
-            e('div', { ref: lineContainerRef, style: { maxHeight: '55vh', overflowY: 'auto', padding: '8px' } },
+            e('div', { ref: lineContainerRef, style: Object.assign({ maxHeight: '55vh', overflowY: 'auto', padding: '8px' }, largeText ? { fontFamily: 'system-ui, -apple-system, "Segoe UI", sans-serif', letterSpacing: '0.02em' } : {}) },
               (totalPages > 1 ? (pages[currentPage] || []) : script.lines).map(function (line) {
                 var idx = script.lines.indexOf(line);
                 var isCurrent = idx === currentLine;
@@ -1040,15 +1481,15 @@
                   style: { padding: line.type === 'stage-direction' ? '4px 16px' : '10px 16px', borderLeft: '4px solid ' + borderColor, background: bgColor, borderRadius: '0 8px 8px 0', marginBottom: '4px', cursor: 'pointer', transition: 'all 0.2s', transform: isCurrent ? 'scale(1.01)' : 'scale(1)' }
                 },
                   line.type === 'stage-direction'
-                    ? e('p', { style: { fontSize: '11px', color: '#9ca3af', fontStyle: 'italic', margin: 0 } }, '[' + line.text + ']')
+                    ? e('p', { style: { fontSize: largeText ? '13px' : '11px', color: '#475569', fontStyle: 'italic', margin: 0, lineHeight: largeText ? 1.85 : 1.4 } }, '[' + line.text + ']')
                     : e('div', null,
                         e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' } },
                           character && character.portrait && e('img', { src: character.portrait, alt: '', style: { width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' } }),
-                          e('span', { style: { fontSize: '11px', fontWeight: 800, color: character ? character.color : '#64748b' } },
+                          e('span', { style: { fontSize: largeText ? '13px' : '11px', fontWeight: 800, color: character ? character.color : '#64748b' } },
                             character ? character.name : 'Unknown'),
                           isMyLine && e('span', { style: { fontSize: '9px', background: '#fef3c7', color: '#92400e', padding: '1px 6px', borderRadius: '8px', fontWeight: 700 } }, '🎤 YOUR LINE')
                         ),
-                        e('p', { style: { fontSize: line.type === 'narration' ? '13px' : '14px', color: '#1e293b', margin: 0, fontStyle: line.type === 'narration' ? 'italic' : 'normal', lineHeight: 1.6 } }, line.text),
+                        e('p', { style: { fontSize: largeText ? (line.type === 'narration' ? '16px' : '17px') : (line.type === 'narration' ? '13px' : '14px'), color: '#1e293b', margin: 0, fontStyle: line.type === 'narration' ? 'italic' : 'normal', lineHeight: largeText ? 1.85 : 1.6 } }, line.text),
                         // Emotion reaction buttons (visible on current/past lines)
                         (isCurrent || idx < currentLine) && e('div', { style: { display: 'flex', gap: '2px', marginTop: '4px' } },
                           EMOTIONS.map(function (em) {
@@ -1068,7 +1509,7 @@
           phase === 'analyze' && script && e('div', { style: { maxWidth: '700px', margin: '0 auto' } },
             e('div', { style: { textAlign: 'center', marginBottom: '20px' } },
               e('h3', { style: { fontSize: '20px', fontWeight: 800, color: '#1e293b' } }, '📝 Literary Analysis'),
-              e('p', { style: { color: '#64748b', fontSize: '13px' } }, 'Reflect on the story, its characters, and the author\'s craft.')
+              e('p', { style: { color: '#475569', fontSize: '13px' } }, 'Reflect on the story, its characters, and the author\'s craft.')
             ),
             // Standards alignment
             e('div', { style: { marginBottom: '16px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '12px', padding: '12px' } },
@@ -1136,9 +1577,76 @@
                 rows: 2, style: Object.assign({}, S.input, { resize: 'vertical' }),
                 'aria-label': 'Personal response' })
             ),
+            // ── Pre-feedback Self-Assessment ──
+            // Optional but encouraged: rate your own work on 5 craft criteria
+            // before the AI weighs in. Builds metacognition + gives the Revision
+            // Plan synthesizer something to triangulate against.
+            !selfAssessmentSubmitted && e('div', { role: 'region', 'aria-label': 'Self-Assessment', style: { background: 'linear-gradient(135deg, #faf5ff, #eef2ff)', border: '2px solid #d8b4fe', borderRadius: '12px', padding: '14px', marginTop: '16px' } },
+              e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' } },
+                e('div', null,
+                  e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#7c3aed', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' } },
+                    e('span', { 'aria-hidden': 'true' }, '⭐'), 'Rate yourself first'
+                  ),
+                  e('p', { style: { fontSize: '11px', color: '#6b21a8', margin: '2px 0 0' } }, 'Score your own performance + analysis on 5 criteria before the AI does. Builds reflection.')
+                ),
+                e('button', {
+                  onClick: function () { setSelfAssessmentSubmitted(true); announceLitLab('Self-assessment skipped.'); },
+                  'aria-label': 'Skip self-assessment',
+                  style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700 }
+                }, 'Skip')
+              ),
+              e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '8px' } },
+                LITLAB_RUBRIC.map(function (c) {
+                  var val = selfAssessment[c.id] || 3;
+                  return e('div', { key: c.id, style: { display: 'flex', alignItems: 'center', gap: '10px', background: '#fff', border: '1px solid #e9d5ff', borderRadius: '8px', padding: '6px 10px', flexWrap: 'wrap' } },
+                    e('div', { style: { flex: 1, minWidth: 0 } },
+                      e('label', { htmlFor: 'll-self-' + c.id, style: { display: 'block', fontSize: '11px', fontWeight: 700, color: '#581c87' } }, c.label),
+                      e('p', { style: { fontSize: '10px', color: '#6b21a8', margin: '1px 0 0', fontStyle: 'italic' } }, c.desc)
+                    ),
+                    e('input', {
+                      id: 'll-self-' + c.id, type: 'range', min: '1', max: '5', step: '1', value: val,
+                      onChange: function (ev) {
+                        var v = parseInt(ev.target.value, 10);
+                        setSelfAssessment(function (prev) { var n = Object.assign({}, prev); n[c.id] = v; return n; });
+                      },
+                      'aria-label': 'Self-rating for ' + c.label + ': ' + val + ' out of 5',
+                      style: { width: '110px', accentColor: '#7c3aed' }
+                    }),
+                    e('div', { style: { background: '#ede9fe', color: '#6b21a8', fontSize: '11px', fontWeight: 800, padding: '2px 8px', borderRadius: '999px', minWidth: '36px', textAlign: 'center' } }, val + '/5')
+                  );
+                })
+              ),
+              e('button', {
+                onClick: function () {
+                  var filled = {};
+                  LITLAB_RUBRIC.forEach(function (c) { filled[c.id] = selfAssessment[c.id] || 3; });
+                  setSelfAssessment(filled);
+                  setSelfAssessmentSubmitted(true);
+                  announceLitLab('Self-assessment submitted.');
+                  if (typeof addToast === 'function') addToast('Self-assessment saved!', 'success');
+                },
+                'aria-label': 'Submit self-assessment',
+                style: { marginTop: '8px', padding: '7px 14px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }
+              }, '✓ Submit Self-Assessment')
+            ),
+            selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0 && e('div', { style: { background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: '10px', padding: '8px 12px', marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' } },
+              e('div', { style: { fontSize: '11px', color: '#6b21a8' } },
+                e('strong', null, '⭐ Your self-rating: '),
+                LITLAB_RUBRIC.map(function (c, i) {
+                  return c.label.split(' ')[0] + ' ' + (selfAssessment[c.id] || 3) + (i < LITLAB_RUBRIC.length - 1 ? ' · ' : '');
+                }).join('')
+              ),
+              e('button', {
+                onClick: function () { setSelfAssessmentSubmitted(false); },
+                'aria-label': 'Edit self-assessment',
+                style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700 }
+              }, 'Edit')
+            ),
             // Submit for feedback
             e('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '16px' } },
               e('button', { onClick: getAnalysisFeedback, disabled: analysisFeedback === 'loading' || !Object.values(analysisResponses).some(function (v) { return v && v.trim(); }),
+                'aria-busy': analysisFeedback === 'loading' ? 'true' : 'false',
+                'aria-label': analysisFeedback === 'loading' ? 'Analyzing your responses, please wait' : 'Get AI feedback on your analysis',
                 style: S.btn('#059669', '#fff', analysisFeedback === 'loading' || !Object.values(analysisResponses).some(function (v) { return v && v.trim(); }))
               }, analysisFeedback === 'loading' ? '⏳ Analyzing...' : '✨ Get Feedback'),
               e('button', { onClick: function () { setPhase('perform'); }, style: S.btn('#f1f5f9', '#374151', false) }, '← Back to Performance')
@@ -1156,7 +1664,53 @@
               analysisFeedback.strengths && analysisFeedback.strengths.length > 0 && e('div', { style: { marginBottom: '8px' } }, e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#16a34a', marginBottom: '4px' } }, '💪 Strengths'), e('ul', { style: { margin: 0, paddingLeft: '16px', fontSize: '12px', color: '#166534' } }, analysisFeedback.strengths.map(function (s, i) { return e('li', { key: i }, s); }))),
               analysisFeedback.nudges && analysisFeedback.nudges.length > 0 && e('div', null, e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#d97706', marginBottom: '4px' } }, '🤔 Think Deeper'), e('ul', { style: { margin: 0, paddingLeft: '16px', fontSize: '12px', color: '#92400e' } }, analysisFeedback.nudges.map(function (s, i) { return e('li', { key: i }, s); })))
             ),
-            analysisFeedback && analysisFeedback.error && e('p', { style: { color: '#dc2626', fontSize: '13px', marginTop: '12px' } }, analysisFeedback.error)
+            analysisFeedback && analysisFeedback.error && e('p', { style: { color: '#dc2626', fontSize: '13px', marginTop: '12px' } }, analysisFeedback.error),
+
+            // ── Revision Plan Capstone (gated on ≥2 helper outputs) ──
+            // Pulls together AI feedback + self-assessment + emotion log + standard
+            // focus into ONE prioritized 3-task plan. Mixes performance tasks
+            // (re-read with different vocal expression) with analysis tasks
+            // (return to a question with text evidence).
+            _helpersAvailableForLitLabPlan() && e('div', { role: 'region', 'aria-label': 'Revision Plan synthesis', style: { marginTop: '16px', background: 'linear-gradient(135deg, #faf5ff, #fff7ed)', border: '2px solid #c4b5fd', borderRadius: '12px', padding: '14px' } },
+              e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', marginBottom: '6px' } },
+                e('div', null,
+                  e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#6d28d9', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' } },
+                    e('span', { 'aria-hidden': 'true' }, '🗺️'), 'Revision Plan'
+                  ),
+                  e('p', { style: { fontSize: '11px', color: '#5b21b6', margin: '2px 0 0' } }, 'Synthesizes your AI feedback, self-rating, and performance reactions into ONE prioritized 3-task plan.')
+                ),
+                e('button', {
+                  onClick: synthesizeRevisionPlan, disabled: revisionPlanLoading,
+                  'aria-busy': revisionPlanLoading ? 'true' : 'false',
+                  'aria-label': revisionPlanLoading ? 'Synthesizing revision plan' : (revisionPlan && !revisionPlan.error ? 'Re-synthesize revision plan' : 'Build a revision plan'),
+                  style: { padding: '7px 14px', background: revisionPlanLoading ? '#cbd5e1' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: revisionPlanLoading ? 'wait' : 'pointer' }
+                }, revisionPlanLoading ? '⏳ Synthesizing…' : (revisionPlan && !revisionPlan.error ? '🔄 Rebuild' : '🗺️ Build plan'))
+              ),
+              revisionPlan && revisionPlan.error && e('p', { style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: '6px 0 0' } }, revisionPlan.error),
+              revisionPlan && !revisionPlan.error && e('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' } },
+                revisionPlan.encouragement && e('div', { style: { background: '#fff', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '8px 10px' } },
+                  e('p', { style: { fontSize: '11px', color: '#166534', margin: 0, lineHeight: 1.6 } }, '✨ ' + revisionPlan.encouragement)
+                ),
+                e('ol', { 'aria-label': 'Prioritized revision tasks', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' } },
+                  (revisionPlan.tasks || []).map(function (t, ti) {
+                    return e('li', { key: ti, style: { background: '#fff', border: '2px solid #d8b4fe', borderRadius: '10px', padding: '10px 12px' } },
+                      e('div', { style: { display: 'flex', gap: '8px', alignItems: 'flex-start' } },
+                        e('div', { 'aria-hidden': 'true', style: { background: '#7c3aed', color: '#fff', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800, flexShrink: 0 } }, ti + 1),
+                        e('div', { style: { minWidth: 0, flex: 1 } },
+                          e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', marginBottom: '4px', flexWrap: 'wrap' } },
+                            e('h5', { style: { fontSize: '12px', fontWeight: 800, color: '#581c87', margin: 0 } }, t.title || 'Task ' + (ti + 1)),
+                            t.source && e('span', { style: { fontSize: '9px', fontWeight: 700, color: '#7c3aed', background: '#ede9fe', padding: '2px 6px', borderRadius: '999px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, t.source)
+                          ),
+                          t.detail && e('p', { style: { fontSize: '12px', color: '#1e293b', margin: 0, lineHeight: 1.55 } }, t.detail),
+                          t.why && e('p', { style: { fontSize: '11px', color: '#6b21a8', margin: '4px 0 0', fontStyle: 'italic' } }, t.why)
+                        )
+                      )
+                    );
+                  })
+                )
+              ),
+              !revisionPlan && e('p', { style: { fontSize: '11px', color: '#5b21b6', fontStyle: 'italic', margin: '6px 0 0' } }, 'Click "Build plan" to weave your inputs into one prioritized next step.')
+            )
           )
         )
       )

@@ -32,6 +32,15 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _artAC = null;
@@ -1357,9 +1366,9 @@ const d = labToolData.artStudio || {};
 
               React.createElement("span", { className: "px-2 py-0.5 bg-pink-100 text-pink-700 text-[11px] font-bold rounded-full" }, "CREATIVE"),
 
-              React.createElement("button", { "aria-label": "3D Builder", onClick: function () { setStemLabTool('archStudio'); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-300 hover:from-amber-200 hover:to-orange-200 transition-all shadow-sm", title: "Launch 3D Architecture Studio" }, "\uD83C\uDFD7\uFE0F 3D Builder \u2192"),
+              React.createElement("button", { onClick: function () { setStemLabTool('archStudio'); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-600 hover:from-amber-200 hover:to-orange-200 transition-all shadow-sm", title: "Launch 3D Architecture Studio" }, "\uD83C\uDFD7\uFE0F 3D Builder \u2192"),
 
-              React.createElement("button", { onClick: function () { upd('showTour', !d.showTour); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.showTour ? "bg-pink-600 text-white" : "bg-pink-50 text-pink-600 border border-pink-200 hover:bg-pink-100") + " transition-all shadow-sm", "aria-label": "Toggle studio tour" }, d.showTour ? "\u2716 Close Tour" : "\uD83C\uDFA8 Tour")
+              React.createElement("button", { onClick: function () { upd('showTour', !d.showTour); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.showTour ? "bg-pink-600 text-white" : "bg-pink-50 text-pink-600 border border-pink-600 hover:bg-pink-100") + " transition-all shadow-sm", "aria-label": "Toggle studio tour" }, d.showTour ? "\u2716 Close Tour" : "\uD83C\uDFA8 Tour")
 
             ),
 
@@ -1401,7 +1410,7 @@ const d = labToolData.artStudio || {};
               React.createElement("button", { onClick: function () { upd('showTour', false); }, className: "mt-3 w-full py-2 bg-pink-600 text-white text-sm font-bold rounded-lg hover:bg-pink-700 transition-colors" }, "Got it \u2014 let\u2019s create! \uD83C\uDFA8")
             ),
 
-            React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-50 p-1 rounded-xl border border-slate-200", role: 'tablist', 'aria-label': 'Art Studio sections' },
+            React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-50 p-1 rounded-xl border border-slate-400", role: 'tablist', 'aria-label': 'Art Studio sections' },
 
               [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: 'Color Wheel' }, { id: 'mixer', icon: '\uD83E\uDDEA', label: 'Color Mixer' }, { id: 'pixel', icon: '\uD83D\uDDBC', label: 'Pixel Art' }, { id: 'symmetry', icon: '\u2728', label: 'Symmetry' }, { id: 'spirograph', icon: '\uD83C\uDF00', label: 'Spirograph' }, { id: 'generative', icon: '\uD83C\uDF86', label: 'Generative' }, { id: 'spinArt', icon: '\uD83C\uDF00', label: 'Spin Art' }, { id: 'stringArt', icon: '\uD83D\uDD78', label: 'String Art' }, { id: 'opArt', icon: '\uD83D\uDC41', label: 'Op Art' }, { id: 'tessellation', icon: '\uD83D\uDD37', label: 'Tessellation' }, { id: 'fractal', icon: '\uD83D\uDD2E', label: 'Fractals' }, { id: 'gradient', icon: '\uD83C\uDF08', label: 'Gradient' }, { id: 'stereogram', icon: '\uD83D\uDC53', label: 'Stereogram' }, { id: 'life', icon: '\uD83E\uDDEC', label: 'Game of Life' }, { id: 'contrast', icon: '\u267F', label: 'Contrast' }].map(function (tb) {
 
@@ -1410,6 +1419,45 @@ const d = labToolData.artStudio || {};
               })
 
             ),
+
+            // ── Topic-accent hero band per tab ──
+            (function() {
+              var TAB_META = {
+                colorWheel:   { accent: '#db2777', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDFA8', title: 'Color Wheel \u2014 HSL/HSV + complementary pairs',           hint: 'Hue (0-360 around the wheel), saturation (purity), lightness (brightness). Complementary across, analogous adjacent, triadic 120\u00b0 apart. Newton put the spectrum on a wheel in 1666.' },
+                mixer:        { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83E\uDDEA', title: 'Color Mixer \u2014 subtractive vs additive',                  hint: 'Paint and print = subtractive (CMY mixes to dark); light and screens = additive (RGB mixes to white). Same world, completely different math \u2014 a printer thinks in K plates, a TV thinks in Hz.' },
+                pixel:        { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDDBC',  title: 'Pixel Art \u2014 bitmap craft at 8\u00d78 to 32\u00d732',          hint: 'Each pixel is a deliberate decision. NES sprites famously fit a hero into 16\u00d716 with a 4-color palette. Bresenham\u2019s line algorithm draws diagonals without floats.' },
+                symmetry:     { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\u2728',         title: 'Symmetry \u2014 reflection, rotation, glide',                hint: 'Bilateral (mirror), rotational (n-fold), point. The 17 wallpaper groups classify every possible repeating 2D pattern \u2014 Escher\u2019s entire body of work.' },
+                spirograph:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83C\uDF00', title: 'Spirograph \u2014 hypotrochoid roulettes',                  hint: 'A small circle rolls inside a big one, pen offset from center. Ratio of radii determines petal count; offset sets thickness. Toy patented 1965, math from 1700s.' },
+                generative:   { accent: '#4f46e5', soft: 'rgba(79,70,229,0.10)',  icon: '\uD83C\uDF86', title: 'Generative \u2014 algorithm + randomness as artist',         hint: 'Sol LeWitt wrote instructions; the wall installer was the executor. Today: Processing, p5.js, Cinder. \u201CThe artist is the rule, not the result.\u201D' },
+                spinArt:      { accent: '#db2777', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDF00', title: 'Spin Art \u2014 centripetal physics in paint',               hint: 'Drop paint, spin, watch it fling outward in spirals. Damien Hirst made millions selling spin paintings. Same physics as a salad spinner; F = m\u03c9\u00b2r.' },
+                stringArt:    { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDD78', title: 'String Art \u2014 curves from straight lines',                hint: 'Connect every n-th nail; an envelope curve emerges. Mary Everest Boole introduced this as classroom math c. 1900. The straight-line cardioid is still hypnotic.' },
+                opArt:        { accent: '#475569', soft: 'rgba(71,85,105,0.10)',  icon: '\uD83D\uDC41', title: 'Op Art \u2014 fooling the visual system',                    hint: 'Bridget Riley\u2019s moir\u00e9 fields, Vasarely\u2019s grids. The brain\u2019s motion-detection edge cells over-fire on rapidly alternating contrast \u2014 the page appears to *vibrate*.' },
+                tessellation: { accent: '#059669', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83D\uDD37', title: 'Tessellation \u2014 the 17 wallpaper groups',                hint: 'Every periodic 2D tiling fits one of 17 symmetry groups. Escher figured this out by visiting the Alhambra in 1936; he then spent 30 years exhausting the catalogue.' },
+                fractal:      { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDD2E', title: 'Fractal \u2014 self-similar at every scale',                  hint: 'Mandelbrot 1975. Cauliflower, coastlines, blood vessels, lightning, lung alveoli \u2014 all fractal. \u201CClouds are not spheres, mountains are not cones, bark is not smooth.\u201D' },
+                gradient:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83C\uDF08', title: 'Gradient \u2014 smooth color transitions',                    hint: 'CSS gives you linear, radial, and conic gradients. Real rainbows have continuous spectra (no discrete bands) \u2014 the 7 \u201Ccolors of the rainbow\u201D were Newton\u2019s arbitrary choice for musical reasons.' },
+                stereogram:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDC53', title: 'Stereogram \u2014 3D from a flat page',                       hint: '90s Magic Eye craze. Each eye sees a slightly shifted version; if you cross or diverge correctly, the brain fuses them into depth. ~5% of people genuinely can\u2019t \u2014 not their fault.' },
+                life:         { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83E\uDDEC', title: 'Game of Life \u2014 4 rules, infinite emergence',             hint: 'Conway, 1970. Born=3, survive=2-3, else die. Gliders glide, oscillators oscillate, glider guns shoot. Conway proved Life is Turing-complete \u2014 you can build a CPU in cells.' },
+                contrast:     { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\u267F',         title: 'Contrast \u2014 WCAG 4.5:1 / 3:1 / APCA',                   hint: 'WCAG 2.1: normal text 4.5:1, large 3:1. Why low contrast hurts low-vision readers, even if you can read it. APCA (the WCAG 3.0 successor) uses perceptual lightness, not raw luminance ratio.' }
+              };
+              var meta = TAB_META[tab] || TAB_META.colorWheel;
+              return React.createElement('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
 
             tab === 'colorWheel' && React.createElement("div", { className: "space-y-4" },
 
@@ -1459,7 +1507,7 @@ const d = labToolData.artStudio || {};
 
                       ['complementary', 'triadic', 'analogous', 'split'].map(function (h) {
 
-                        return React.createElement("button", { "aria-label": "Change harmony", key: h, onClick: function () { upd('harmony', h); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all " + ((d.harmony || 'complementary') === h ? 'bg-pink-600 text-white' : 'bg-slate-50 text-slate-600 hover:bg-pink-50') }, h);
+                        return React.createElement("button", { key: h, onClick: function () { upd('harmony', h); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all " + ((d.harmony || 'complementary') === h ? 'bg-pink-600 text-white' : 'bg-slate-50 text-slate-600 hover:bg-pink-50') }, h);
 
                       })
 
@@ -1537,11 +1585,11 @@ const d = labToolData.artStudio || {};
 
                   }),
 
-                  React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('pixelData', {}); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                  React.createElement("button", { onClick: function () { upd('pixelData', {}); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
 
-                  React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.querySelector('canvas[style*="pixelated"]'); if (!c) return; var link = document.createElement('a'); link.download = 'pixel-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export PNG"),
+                  React.createElement("button", { onClick: function () { var c = document.querySelector('canvas[style*="pixelated"]'); if (!c) return; var link = document.createElement('a'); link.download = 'pixel-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export PNG"),
 
-                  React.createElement("select", { 'aria-label': 'Grid size', value: typeof d.pixelGrid === 'number' ? d.pixelGrid : 16, onChange: function (e) { upd('pixelGrid', parseInt(e.target.value)); upd('pixelData', {}); }, className: "px-2 py-1 text-xs border border-slate-200 rounded-lg" },
+                  React.createElement("select", { 'aria-label': 'Grid size', value: typeof d.pixelGrid === 'number' ? d.pixelGrid : 16, onChange: function (e) { upd('pixelGrid', parseInt(e.target.value)); upd('pixelData', {}); }, className: "px-2 py-1 text-xs border border-slate-400 rounded-lg" },
 
                     [8, 16, 24, 32].map(function (s) { return React.createElement("option", { key: s, value: s }, s + 'x' + s); }))
 
@@ -1551,7 +1599,7 @@ const d = labToolData.artStudio || {};
 
               // Color Palette Presets
 
-              React.createElement("div", { className: "bg-slate-50 rounded-xl p-2 border border-slate-200" },
+              React.createElement("div", { className: "bg-slate-50 rounded-xl p-2 border border-slate-400" },
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
 
@@ -1567,7 +1615,7 @@ const d = labToolData.artStudio || {};
 
                    { id: 'neon', label: '\uD83D\uDCA5 Neon', colors: [[330,100,55],[300,100,55],[280,100,60],[200,100,55],[170,100,50],[120,100,45],[60,100,50],[30,100,55],[0,100,50],[45,100,55]] }].map(function (pal) {
 
-                    return React.createElement("button", { "aria-label": "Change active palette", key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-pink-50') }, pal.label);
+                    return React.createElement("button", { key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-pink-50') }, pal.label);
 
                   })
 
@@ -1615,15 +1663,15 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Mode:"),
 
-                React.createElement("button", { "aria-label": "Solid", onClick: function () { upd('symBrushMode', 'solid'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'solid' ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83D\uDD8C Solid"),
+                React.createElement("button", { onClick: function () { upd('symBrushMode', 'solid'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'solid' ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83D\uDD8C Solid"),
 
-                React.createElement("button", { "aria-label": "Rainbow", onClick: function () { upd('symBrushMode', 'rainbow'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'rainbow' ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83C\uDF08 Rainbow"),
+                React.createElement("button", { onClick: function () { upd('symBrushMode', 'rainbow'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'rainbow' ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83C\uDF08 Rainbow"),
 
-                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('symMirrorOnly', !(d.symMirrorOnly)); upd('symmetryClear', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.symMirrorOnly ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, d.symMirrorOnly ? '\uD83E\uDE9E Mirror \u2714' : '\uD83E\uDE9E Mirror'),
+                React.createElement("button", { onClick: function () { upd('symMirrorOnly', !(d.symMirrorOnly)); upd('symmetryClear', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.symMirrorOnly ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, d.symMirrorOnly ? '\uD83E\uDE9E Mirror \u2714' : '\uD83E\uDE9E Mirror'),
 
-                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('symmetryClear', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                React.createElement("button", { onClick: function () { upd('symmetryClear', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
 
-                React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export PNG"),
+                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export PNG"),
 
                 React.createElement("button", { "aria-label": "Fullscreen", onClick: function () { toggleFullscreen('symmetryCanvasContainer'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all" }, "\uD83D\uDD0D Fullscreen")
 
@@ -1639,7 +1687,7 @@ const d = labToolData.artStudio || {};
 
                   [{ id: 'retro', label: '\uD83D\uDD79 Retro' }, { id: 'nature', label: '\uD83C\uDF3F Nature' }, { id: 'warm', label: '\uD83D\uDD25 Warm' }, { id: 'cool', label: '\u2744 Cool' }, { id: 'neon', label: '\uD83D\uDCA5 Neon' }].map(function (pal) {
 
-                    return React.createElement("button", { "aria-label": "Change active palette", key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-pink-50') }, pal.label);
+                    return React.createElement("button", { key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-pink-50') }, pal.label);
 
                   })
 
@@ -1671,7 +1719,7 @@ const d = labToolData.artStudio || {};
 
               React.createElement("div", { className: "mt-3 bg-gradient-to-br from-violet-50 to-pink-50 rounded-xl p-4 border border-violet-200" },
 
-                React.createElement("button", { "aria-label": "Change show sym info", onClick: function () { upd('showSymInfo', !d.showSymInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-violet-700" },
+                React.createElement("button", { onClick: function () { upd('showSymInfo', !d.showSymInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-violet-700" },
 
                   React.createElement("span", null, "\uD83D\uDD2E Learn About Symmetry"),
 
@@ -1701,7 +1749,7 @@ const d = labToolData.artStudio || {};
 
               React.createElement("div", { className: "grid grid-cols-2 gap-4" },
 
-                React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200" },
+                React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400" },
 
                   React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-3" }, "Foreground (Text)"),
 
@@ -1721,7 +1769,7 @@ const d = labToolData.artStudio || {};
 
                 ),
 
-                React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-200" },
+                React.createElement("div", { className: "bg-white rounded-xl p-4 border border-slate-400" },
 
                   React.createElement("h4", { className: "text-xs font-bold text-slate-600 mb-3" }, "Background"),
 
@@ -1803,9 +1851,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('spiroReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                      React.createElement("button", { onClick: function () { upd('spiroReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
 
-                      React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('spiroCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spirograph-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG"),
+                      React.createElement("button", { onClick: function () { var c = document.getElementById('spiroCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spirograph-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG"),
 
                       React.createElement("button", { "aria-label": "Presets:", onClick: function () { upd('spiroRainbow', !(d.spiroRainbow)); upd('spiroReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.spiroRainbow ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, d.spiroRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
 
@@ -1817,7 +1865,7 @@ const d = labToolData.artStudio || {};
 
                       [{ label: 'Star', R: 120, r: 45, p: 55 }, { label: 'Flower', R: 150, r: 50, p: 25 }, { label: 'Lace', R: 100, r: 73, p: 80 }, { label: 'Atom', R: 180, r: 25, p: 90 }, { label: 'Spiral', R: 140, r: 91, p: 60 }].map(function (pr) {
 
-                        return React.createElement("button", { "aria-label": "Change spiro r", key: pr.label, onClick: function () { upd('spiroR', pr.R); upd('spiror', pr.r); upd('spirop', pr.p); upd('spiroReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('spiroR', pr.R); upd('spiror', pr.r); upd('spirop', pr.p); upd('spiroReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-indigo-600 border border-indigo-600 hover:bg-indigo-50 transition-all" }, pr.label);
 
                       })
 
@@ -1939,9 +1987,9 @@ const d = labToolData.artStudio || {};
 
                 }),
 
-                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('genPaused', !d.genPaused); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.genPaused ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, d.genPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
+                React.createElement("button", { onClick: function () { upd('genPaused', !d.genPaused); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.genPaused ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, d.genPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
 
-                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('genReset', Date.now()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                React.createElement("button", { onClick: function () { upd('genReset', Date.now()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
 
                 React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('genCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'generative-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
 
@@ -2209,17 +2257,17 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("input", { type: "range", min: 2, max: 20, value: d.spinBrush || 6, 'aria-label': 'Spin brush size', onChange: function (e) { upd('spinBrush', parseInt(e.target.value)); }, className: "w-20 accent-orange-600" }),
 
-                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('spinSplatter', !d.spinSplatter); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinSplatter ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, d.spinSplatter ? '\uD83D\uDCA6 Splatter \u2714' : '\uD83D\uDCA6 Splatter'),
+                React.createElement("button", { onClick: function () { upd('spinSplatter', !d.spinSplatter); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinSplatter ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, d.spinSplatter ? '\uD83D\uDCA6 Splatter \u2714' : '\uD83D\uDCA6 Splatter'),
 
-                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('spinDark', !d.spinDark); upd('spinReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-200') }, d.spinDark ? '\uD83C\uDF11 Dark' : '\u2B1C Light'),
+                React.createElement("button", { onClick: function () { upd('spinDark', !d.spinDark); upd('spinReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-400') }, d.spinDark ? '\uD83C\uDF11 Dark' : '\u2B1C Light'),
 
-                React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('spinReset', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                React.createElement("button", { onClick: function () { upd('spinReset', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
 
                 React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('spinCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spin-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
 
               ),
 
-              React.createElement("div", { className: "bg-slate-50 rounded-xl p-2 border border-slate-200" },
+              React.createElement("div", { className: "bg-slate-50 rounded-xl p-2 border border-slate-400" },
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
 
@@ -2227,7 +2275,7 @@ const d = labToolData.artStudio || {};
 
                   [{ id: 'retro', label: '\uD83D\uDD79 Retro' }, { id: 'nature', label: '\uD83C\uDF3F Nature' }, { id: 'warm', label: '\uD83D\uDD25 Warm' }, { id: 'cool', label: '\u2744 Cool' }, { id: 'neon', label: '\uD83D\uDCA5 Neon' }].map(function (pal) {
 
-                    return React.createElement("button", { "aria-label": "Change active palette", key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-orange-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-orange-50') }, pal.label);
+                    return React.createElement("button", { key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-orange-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-orange-50') }, pal.label);
 
                   })
 
@@ -2416,7 +2464,7 @@ const d = labToolData.artStudio || {};
 
               React.createElement("div", { className: "mt-3 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-200" },
 
-                React.createElement("button", { "aria-label": "Change show spin info", onClick: function () { upd('showSpinInfo', !d.showSpinInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-orange-700" },
+                React.createElement("button", { onClick: function () { upd('showSpinInfo', !d.showSpinInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-orange-700" },
 
                   React.createElement("span", null, "\uD83C\uDF00 Physics of Spin Art"),
 
@@ -2458,7 +2506,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'circle', label: '\u25CB Circle' }, { id: 'square', label: '\u25A1 Square' }, { id: 'triangle', label: '\u25B3 Triangle' }, { id: 'star', label: '\u2606 Star' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change str shape", key: s.id, onClick: function () { upd('strShape', s.id); upd('strReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.strShape || 'circle') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-rose-50') }, s.label);
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('strShape', s.id); upd('strReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.strShape || 'circle') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-rose-50') }, s.label);
 
                         })
 
@@ -2486,9 +2534,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('strReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
+                      React.createElement("button", { onClick: function () { upd('strReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
 
-                      React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('stringCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'string-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG"),
+                      React.createElement("button", { onClick: function () { var c = document.getElementById('stringCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'string-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG"),
 
                       React.createElement("button", { "aria-label": "Presets:", onClick: function () { upd('strRainbow', !(d.strRainbow)); upd('strReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.strRainbow ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, d.strRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
 
@@ -2500,7 +2548,7 @@ const d = labToolData.artStudio || {};
 
                       [{ label: 'Cardioid', nails: 100, mult: 2 }, { label: 'Nephroid', nails: 100, mult: 3 }, { label: 'Star Burst', nails: 72, mult: 37 }, { label: 'Lace', nails: 150, mult: 71 }, { label: 'Weave', nails: 60, mult: 23 }].map(function (pr) {
 
-                        return React.createElement("button", { "aria-label": "Change str nails", key: pr.label, onClick: function () { upd('strNails', pr.nails); upd('strMult', pr.mult); upd('strReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('strNails', pr.nails); upd('strMult', pr.mult); upd('strReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-rose-600 border border-rose-600 hover:bg-rose-50 transition-all" }, pr.label);
 
                       })
 
@@ -2702,7 +2750,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'concentric', label: '\u25CE Rings' }, { id: 'checkerboard', label: '\u2593 Checker' }, { id: 'moire', label: '\u2261 Moir\u00E9' }, { id: 'vibrating', label: '\u2248 Vibrate' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change op style", key: s.id, onClick: function () { upd('opStyle', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.opStyle || 'concentric') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-fuchsia-50') }, s.label);
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('opStyle', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.opStyle || 'concentric') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-fuchsia-50') }, s.label);
 
                         })
 
@@ -2732,7 +2780,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": "Export PNG", onClick: function () { upd('opPaused', !(d.opPaused)); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.opPaused ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100' : 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100') }, d.opPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
+                      React.createElement("button", { onClick: function () { upd('opPaused', !(d.opPaused)); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.opPaused ? 'bg-green-50 text-green-700 border border-green-600 hover:bg-green-100' : 'bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100') }, d.opPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
 
                       React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('opArtCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'op-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
 
@@ -2750,7 +2798,7 @@ const d = labToolData.artStudio || {};
 
                        { label: 'Wave Grid', style: 'checkerboard', hA: 10, hB: 190, density: 20, speed: 5 }].map(function (pr) {
 
-                        return React.createElement("button", { "aria-label": "Change op style", key: pr.label, onClick: function () { upd('opStyle', pr.style); upd('opHueA', pr.hA); upd('opHueB', pr.hB); upd('opDensity', pr.density); upd('opSpeed', pr.speed); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-fuchsia-600 border border-fuchsia-200 hover:bg-fuchsia-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('opStyle', pr.style); upd('opHueA', pr.hA); upd('opHueB', pr.hB); upd('opDensity', pr.density); upd('opSpeed', pr.speed); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-fuchsia-600 border border-fuchsia-600 hover:bg-fuchsia-50 transition-all" }, pr.label);
 
                       })
 
@@ -2760,7 +2808,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-3 border border-purple-200" },
 
-                    React.createElement("button", { "aria-label": "Change show op info", onClick: function () { upd('showOpInfo', !d.showOpInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-purple-700" },
+                    React.createElement("button", { onClick: function () { upd('showOpInfo', !d.showOpInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-purple-700" },
 
                       React.createElement("span", null, "\uD83E\uDDE0 The Science of Op Art"),
 
@@ -3052,7 +3100,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'triangle', label: '\u25B3 Triangle' }, { id: 'square', label: '\u25A1 Square' }, { id: 'hexagon', label: '\u2B21 Hexagon' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change tess shape", key: s.id, onClick: function () { upd('tessShape', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.tessShape || 'hexagon') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-teal-50') }, s.label);
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('tessShape', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.tessShape || 'hexagon') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-teal-50') }, s.label);
 
                         })
 
@@ -3086,7 +3134,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'rainbow', label: '\uD83C\uDF08 Rainbow' }, { id: 'warm', label: '\uD83D\uDD25 Warm' }, { id: 'cool', label: '\u2744 Cool' }, { id: 'mono', label: '\u25AB Mono' }, { id: 'custom', label: '\uD83C\uDFA8 Custom' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change tess scheme", key: s.id, onClick: function () { upd('tessScheme', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.tessScheme || 'rainbow') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-teal-50') }, s.label);
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('tessScheme', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.tessScheme || 'rainbow') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-teal-50') }, s.label);
 
                         })
 
@@ -3096,7 +3144,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": "Clear Colors", onClick: function () { upd('tessClickData', {}); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear Colors"),
+                      React.createElement("button", { onClick: function () { upd('tessClickData', {}); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear Colors"),
 
                       React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('tessCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'tessellation-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
 
@@ -3114,7 +3162,7 @@ const d = labToolData.artStudio || {};
 
                        { label: 'Escher Fish', shape: 'square', grid: 6, rot: 0, warp: 35, scheme: 'rainbow' }].map(function (pr) {
 
-                        return React.createElement("button", { "aria-label": "Change tess shape", key: pr.label, onClick: function () { upd('tessShape', pr.shape); upd('tessGrid', pr.grid); upd('tessRotation', pr.rot); upd('tessWarpAmt', pr.warp); upd('tessScheme', pr.scheme); upd('tessClickData', {}); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-teal-600 border border-teal-200 hover:bg-teal-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('tessShape', pr.shape); upd('tessGrid', pr.grid); upd('tessRotation', pr.rot); upd('tessWarpAmt', pr.warp); upd('tessScheme', pr.scheme); upd('tessClickData', {}); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-teal-600 border border-teal-600 hover:bg-teal-50 transition-all" }, pr.label);
 
                       })
 
@@ -3124,7 +3172,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-3 border border-cyan-200" },
 
-                    React.createElement("button", { "aria-label": "Change show tess info", onClick: function () { upd('showTessInfo', !d.showTessInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-cyan-700" },
+                    React.createElement("button", { onClick: function () { upd('showTessInfo', !d.showTessInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-cyan-700" },
 
                       React.createElement("span", null, "\uD83D\uDCCF The Math of Tessellations"),
 
@@ -3490,7 +3538,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'mandelbrot', label: '\uD83C\uDF00 Mandelbrot' }, { id: 'julia', label: '\u2728 Julia' }, { id: 'burningShip', label: '\uD83D\uDD25 Burning Ship' }, { id: 'sierpinski', label: '\u25B3 Sierpinski' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change fractal type", key: s.id, onClick: function () { upd('fractalType', s.id); upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.fractalType || 'mandelbrot') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-violet-50') }, s.label);
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('fractalType', s.id); upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.fractalType || 'mandelbrot') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-violet-50') }, s.label);
 
                         })
 
@@ -3544,7 +3592,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'classic', label: '\uD83C\uDF08 Classic' }, { id: 'fire', label: '\uD83D\uDD25 Fire' }, { id: 'ocean', label: '\uD83C\uDF0A Ocean' }, { id: 'psychedelic', label: '\uD83D\uDC9C Psychedelic' }, { id: 'grayscale', label: '\u25AB Grayscale' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change fractal color", key: s.id, onClick: function () { upd('fractalColor', s.id); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.fractalColor || 'classic') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-violet-50') }, s.label);
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('fractalColor', s.id); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.fractalColor || 'classic') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-violet-50') }, s.label);
 
                         })
 
@@ -3554,7 +3602,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": "Reset View", onClick: function () { upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\u21BA Reset View"),
+                      React.createElement("button", { onClick: function () { upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\u21BA Reset View"),
 
                       React.createElement("button", { "aria-label": "Export PNG", onClick: function () { var c = document.getElementById('fractalCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'fractal-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
 
@@ -3572,7 +3620,7 @@ const d = labToolData.artStudio || {};
 
                        { label: 'Spiral Arm', type: 'julia', panX: 0, panY: 0, zoom: 1, iter: 300, jr: 28, ji: 1 }].map(function (pr) {
 
-                        return React.createElement("button", { "aria-label": "Change fractal type", key: pr.label, onClick: function () { upd('fractalType', pr.type); upd('fractalPanX', pr.panX); upd('fractalPanY', pr.panY); upd('fractalZoom', pr.zoom); upd('fractalIter', pr.iter); if (pr.jr !== undefined) { upd('juliaReal', pr.jr); upd('juliaImag', pr.ji); } upd('fractalReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-violet-600 border border-violet-200 hover:bg-violet-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('fractalType', pr.type); upd('fractalPanX', pr.panX); upd('fractalPanY', pr.panY); upd('fractalZoom', pr.zoom); upd('fractalIter', pr.iter); if (pr.jr !== undefined) { upd('juliaReal', pr.jr); upd('juliaImag', pr.ji); } upd('fractalReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-violet-600 border border-violet-200 hover:bg-violet-50 transition-all" }, pr.label);
 
                       })
 
@@ -3582,7 +3630,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-3 border border-purple-200" },
 
-                    React.createElement("button", { "aria-label": "Change show fractal info", onClick: function () { upd('showFractalInfo', !d.showFractalInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-purple-700" },
+                    React.createElement("button", { onClick: function () { upd('showFractalInfo', !d.showFractalInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-purple-700" },
 
                       React.createElement("span", null, "\uD83D\uDD2C The Math of Fractals"),
 
@@ -3926,7 +3974,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'linear', label: '\u2194 Linear' }, { id: 'radial', label: '\u25CE Radial' }, { id: 'conic', label: '\uD83C\uDF00 Conic' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change grad type", key: s.id, onClick: function () { upd('gradType', s.id); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all " + ((d.gradType || 'linear') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-rose-50') }, s.label);
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('gradType', s.id); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all " + ((d.gradType || 'linear') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-rose-50') }, s.label);
 
                         })
 
@@ -3950,7 +3998,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'smooth', label: 'Smooth' }, { id: 'hard', label: 'Hard Edge' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change grad blend", key: s.id, onClick: function () { upd('gradBlend', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.gradBlend || 'smooth') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-rose-50') }, s.label);
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('gradBlend', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.gradBlend || 'smooth') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-rose-50') }, s.label);
 
                         })
 
@@ -4028,7 +4076,7 @@ const d = labToolData.artStudio || {};
 
                             React.createElement("span", { className: "text-[11px] text-slate-600 w-8 text-right flex-shrink-0" }, stop.pos + '%'),
 
-                            stops.length > 2 && React.createElement("button", { "aria-label": "Artstudio action", onClick: function () {
+                            stops.length > 2 && React.createElement("button", { onClick: function () {
 
                               var newStops3 = (d.gradStops || [{ hue: 330, pos: 0 }, { hue: 45, pos: 100 }]).slice();
 
@@ -4066,7 +4114,7 @@ const d = labToolData.artStudio || {};
 
                        { label: 'Deep Space', stops: [{ hue: 260, pos: 0 }, { hue: 230, pos: 30 }, { hue: 200, pos: 60 }, { hue: 280, pos: 80 }, { hue: 0, pos: 100 }], type: 'radial', angle: 90 }].map(function (pr) {
 
-                        return React.createElement("button", { "aria-label": "Change grad stops", key: pr.label, onClick: function () { upd('gradStops', pr.stops); upd('gradType', pr.type); upd('gradAngle', pr.angle); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('gradStops', pr.stops); upd('gradType', pr.type); upd('gradAngle', pr.angle); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-rose-600 border border-rose-600 hover:bg-rose-50 transition-all" }, pr.label);
 
                       })
 
@@ -4120,7 +4168,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-3 border border-orange-200" },
 
-                    React.createElement("button", { "aria-label": "Change show grad info", onClick: function () { upd('showGradInfo', !d.showGradInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-orange-700" },
+                    React.createElement("button", { onClick: function () { upd('showGradInfo', !d.showGradInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-orange-700" },
 
                       React.createElement("span", null, "\uD83C\uDFA8 The Science of Gradients"),
 
@@ -4402,9 +4450,9 @@ const d = labToolData.artStudio || {};
 
             tab === 'stereogram' && React.createElement("div", { className: "space-y-3" },
 
-              React.createElement("div", { className: "flex gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200 mb-2" },
+              React.createElement("div", { className: "flex gap-1 p-1 bg-slate-100 rounded-xl border border-slate-400 mb-2" },
 
-                React.createElement("button", { "aria-label": "Static", onClick: function() { _stopStereoAnim(); upd('stereoAnimMode', 'static'); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + ((d.stereoAnimMode || 'static') === 'static' ? 'bg-white shadow-md text-cyan-700' : 'text-slate-600 hover:text-slate-700') }, "\uD83D\uDCF8 Static"),
+                React.createElement("button", { onClick: function() { _stopStereoAnim(); upd('stereoAnimMode', 'static'); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + ((d.stereoAnimMode || 'static') === 'static' ? 'bg-white shadow-md text-cyan-700' : 'text-slate-600 hover:text-slate-700') }, "\uD83D\uDCF8 Static"),
 
                 React.createElement("button", { "aria-label": "Animate", onClick: function() { upd('stereoAnimMode', 'animate'); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + ((d.stereoAnimMode || 'static') === 'animate' ? 'bg-white shadow-md text-purple-700' : 'text-slate-600 hover:text-slate-700') }, "\uD83C\uDFAC Animate")
 
@@ -4428,7 +4476,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'near', label: '\u2B1C Near' }, { id: 'mid', label: '\uD83D\uDD18 Mid' }, { id: 'far', label: '\u2B1B Far' }, { id: 'erase', label: '\uD83E\uDDFD Erase' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change stereo depth", key: s.id, onClick: function () { upd('stereoDepth', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoDepth || 'near') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-cyan-50') }, s.label);
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('stereoDepth', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoDepth || 'near') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-cyan-50') }, s.label);
 
                         })
 
@@ -4452,7 +4500,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'bw', label: '\u26AB B&W' }, { id: 'color', label: '\uD83C\uDFA8 Color' }, { id: 'noise', label: '\uD83D\uDCFA Noise' }, { id: 'ai', label: '\u2728 AI' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change stereo pattern", key: s.id, onClick: function () { upd('stereoPattern', s.id); if(s.id === 'ai' && !d.stereoAiPatternImg) { if(typeof addToast === 'function') addToast('Please generate an AI Pattern first!', 'warning'); } }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-cyan-50') }, s.label);
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('stereoPattern', s.id); if(s.id === 'ai' && !d.stereoAiPatternImg) { if(typeof addToast === 'function') addToast('Please generate an AI Pattern first!', 'warning'); } }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-cyan-50') }, s.label);
 
                         })
 
@@ -4498,7 +4546,7 @@ const d = labToolData.artStudio || {};
 
                         placeholder: "Describe an object for a depth map or a texture for a pattern...",
 
-                        className: "w-full text-xs p-2 rounded border border-indigo-200 focus:ring-2 focus:ring-indigo-400 mb-2 h-16 resize-none",
+                        className: "w-full text-xs p-2 rounded border border-indigo-600 focus:ring-2 focus:ring-indigo-400 mb-2 h-16 resize-none",
 
                         disabled: !!d.stereoAiGen
 
@@ -4616,7 +4664,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-2 mt-4" },
 
-                      React.createElement("button", { "aria-label": "Render Stereogram", onClick: function () { upd('stereoGen', Date.now()); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-cyan-500 to-teal-500 text-white hover:from-cyan-600 hover:to-teal-600 shadow-md transition-all" }, "\uD83D\uDC53 Render Stereogram"),
+                      React.createElement("button", { onClick: function () { upd('stereoGen', Date.now()); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-cyan-500 to-teal-500 text-white hover:from-cyan-600 hover:to-teal-600 shadow-md transition-all" }, "\uD83D\uDC53 Render Stereogram"),
 
                       React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('stereoClear', Date.now()); upd('stereoPreset', null); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear")
 
@@ -4628,7 +4676,7 @@ const d = labToolData.artStudio || {};
 
                       [{ label: 'Sphere', id: 'sphere' }, { label: 'Pyramid', id: 'pyramid' }, { label: 'Heart', id: 'heart' }, { label: 'HI Text', id: 'text' }, { label: 'Rings', id: 'rings' }].map(function (pr) {
 
-                        return React.createElement("button", { "aria-label": "Export Stereogram", key: pr.id, onClick: function () { upd('stereoPreset', pr.id); upd('stereoClear', Date.now()); setTimeout(function () { upd('stereoGen', Date.now()); }, 150); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-cyan-600 border border-cyan-200 hover:bg-cyan-50 transition-all" }, pr.label);
+                        return React.createElement("button", { "aria-label": "Export Stereogram", key: pr.id, onClick: function () { upd('stereoPreset', pr.id); upd('stereoClear', Date.now()); setTimeout(function () { upd('stereoGen', Date.now()); }, 150); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white text-cyan-600 border border-cyan-600 hover:bg-cyan-50 transition-all" }, pr.label);
 
                       })
 
@@ -4776,7 +4824,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-3 border border-teal-200" },
 
-                    React.createElement("button", { "aria-label": "Change show stereo info", onClick: function () { upd('showStereoInfo', !d.showStereoInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-teal-700" },
+                    React.createElement("button", { onClick: function () { upd('showStereoInfo', !d.showStereoInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-teal-700" },
 
                       React.createElement("span", null, "\uD83E\uDDE0 The Science of Stereograms"),
 
@@ -5000,9 +5048,9 @@ const d = labToolData.artStudio || {};
 
                       [{ id: 'preset', icon: '\u2728', label: 'Preset' }, { id: 'draw', icon: '\u270F\uFE0F', label: 'Draw' }, { id: 'upload', icon: '\uD83D\uDCC2', label: 'Upload' }, { id: 'transform', icon: '\uD83D\uDD04', label: 'Transform' }, { id: 'ai', icon: '\uD83E\uDD16', label: 'AI Depth' }].map(function(s) {
 
-                        return React.createElement("button", { "aria-label": "Change stereo anim source", key: s.id, onClick: function() { upd('stereoAnimSource', s.id); },
+                        return React.createElement("button", { key: s.id, onClick: function() { upd('stereoAnimSource', s.id); },
 
-                          className: "px-2 py-2 rounded-lg text-[11px] font-bold transition-all text-center " + ((d.stereoAnimSource || 'preset') === s.id ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50')
+                          className: "px-2 py-2 rounded-lg text-[11px] font-bold transition-all text-center " + ((d.stereoAnimSource || 'preset') === s.id ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-400 hover:bg-purple-50')
 
                         }, s.icon + ' ' + s.label);
 
@@ -5024,9 +5072,9 @@ const d = labToolData.artStudio || {};
 
                       [{ id: 'pulseSphere', icon: '\uD83D\uDCAB', label: 'Pulse' }, { id: 'spinCube', icon: '\uD83D\uDD04', label: 'Spin Cube' }, { id: 'waveRipple', icon: '\uD83C\uDF0A', label: 'Wave' }, { id: 'morphHeart', icon: '\uD83D\uDC93', label: 'Heart' }, { id: 'floatText', icon: '\u2702\uFE0F', label: '3D Text' }].map(function(p) {
 
-                        return React.createElement("button", { "aria-label": "Change stereo anim preset", key: p.id, onClick: function() { upd('stereoAnimPreset', p.id); },
+                        return React.createElement("button", { key: p.id, onClick: function() { upd('stereoAnimPreset', p.id); },
 
-                          className: "px-2 py-2 rounded-lg text-[11px] font-bold transition-all text-center " + (d.stereoAnimPreset === p.id ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50')
+                          className: "px-2 py-2 rounded-lg text-[11px] font-bold transition-all text-center " + (d.stereoAnimPreset === p.id ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-400 hover:bg-purple-50')
 
                         }, p.icon + ' ' + p.label);
 
@@ -5050,9 +5098,9 @@ const d = labToolData.artStudio || {};
 
                       [{ id: 'near', label: '\u2B1C Near', c: '#ffffff' }, { id: 'mid', label: '\uD83D\uDD18 Mid', c: '#888888' }, { id: 'far', label: '\u2B1B Far', c: '#222222' }, { id: 'erase', label: '\uD83E\uDDFD Erase', c: '#000000' }].map(function(s2) {
 
-                        return React.createElement("button", { "aria-label": "Change stereo anim draw brush", key: s2.id, onClick: function() { upd('stereoAnimDrawBrush', s2.id); },
+                        return React.createElement("button", { key: s2.id, onClick: function() { upd('stereoAnimDrawBrush', s2.id); },
 
-                          className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimDrawBrush || 'near') === s2.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, s2.label);
+                          className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimDrawBrush || 'near') === s2.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-purple-50') }, s2.label);
 
                       })
 
@@ -5160,9 +5208,9 @@ const d = labToolData.artStudio || {};
 
                       }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200" }, "\uD83D\uDDD1 Clear Canvas"),
 
-                      React.createElement("button", { "aria-label": "Clear All Frames", onClick: function() { upd('stereoAnimKeyframes', []); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\u274C Clear All Frames"),
+                      React.createElement("button", { onClick: function() { upd('stereoAnimKeyframes', []); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\u274C Clear All Frames"),
 
-                      React.createElement("button", { "aria-label": "Save Drawing PNG", onClick: function() { var c = document.getElementById('stereoAnimDrawCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-drawing-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Drawing saved as PNG!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-200 hover:from-indigo-100 hover:to-purple-100 transition-all" }, "\u2B07\uFE0F Save Drawing PNG"),
+                      React.createElement("button", { onClick: function() { var c = document.getElementById('stereoAnimDrawCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-drawing-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Drawing saved as PNG!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-600 hover:from-indigo-100 hover:to-purple-100 transition-all" }, "\u2B07\uFE0F Save Drawing PNG"),
 
                       (d.stereoAnimKeyframes && d.stereoAnimKeyframes.length >= 2) && React.createElement("button", { "aria-label": "Export Depth Map GIF", onClick: function() {
 
@@ -5198,7 +5246,7 @@ const d = labToolData.artStudio || {};
 
                         _exportStereoGif(canvasFrames, 8);
 
-                      }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border border-emerald-200 hover:from-emerald-100 hover:to-teal-100 transition-all" }, "\uD83C\uDFAC Export Depth GIF")
+                      }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border border-emerald-600 hover:from-emerald-100 hover:to-teal-100 transition-all" }, "\uD83C\uDFAC Export Depth GIF")
 
                     ),
 
@@ -5230,7 +5278,7 @@ const d = labToolData.artStudio || {};
 
                             } }),
 
-                            React.createElement("button", { "aria-label": "Artstudio action", onClick: function() {
+                            React.createElement("button", { onClick: function() {
 
                               var kfs = d.stereoAnimKeyframes.slice(); kfs.splice(idx, 1); upd('stereoAnimKeyframes', kfs);
 
@@ -5334,9 +5382,9 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'zoom', label: '\uD83D\uDD0D Zoom' }, { id: 'rotate', label: '\uD83D\uDD04 Rotate' }, { id: 'bounce', label: '\u26A1 Bounce' }, { id: 'slide', label: '\u21C6 Slide' }].map(function(t) {
 
-                          return React.createElement("button", { "aria-label": "Change stereo anim transform", key: t.id, onClick: function() { upd('stereoAnimTransform', t.id); },
+                          return React.createElement("button", { key: t.id, onClick: function() { upd('stereoAnimTransform', t.id); },
 
-                            className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, t.label);
+                            className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-purple-50') }, t.label);
 
                         })
 
@@ -5364,9 +5412,9 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'zoom', label: '\uD83D\uDD0D Zoom' }, { id: 'rotate', label: '\uD83D\uDD04 Rotate' }, { id: 'bounce', label: '\u26A1 Bounce' }, { id: 'slide', label: '\u21C6 Slide' }].map(function(t) {
 
-                          return React.createElement("button", { "aria-label": "Change stereo anim transform", key: t.id, onClick: function() { upd('stereoAnimTransform', t.id); },
+                          return React.createElement("button", { key: t.id, onClick: function() { upd('stereoAnimTransform', t.id); },
 
-                            className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, t.label);
+                            className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-purple-50') }, t.label);
 
                         })
 
@@ -5402,7 +5450,7 @@ const d = labToolData.artStudio || {};
 
                         placeholder: "e.g. A glowing crystal orb floating in space...",
 
-                        className: "w-full text-xs p-2 rounded border border-purple-200 focus:ring-2 focus:ring-purple-400 mb-2 h-16 resize-none",
+                        className: "w-full text-xs p-2 rounded border border-purple-600 focus:ring-2 focus:ring-purple-400 mb-2 h-16 resize-none",
 
                         disabled: !!d.stereoAnimAiGenerating
 
@@ -5490,9 +5538,9 @@ const d = labToolData.artStudio || {};
 
                           [{ id: 'zoom', label: '\uD83D\uDD0D Zoom' }, { id: 'rotate', label: '\uD83D\uDD04 Rotate' }, { id: 'bounce', label: '\u26A1 Bounce' }, { id: 'slide', label: '\u21C6 Slide' }].map(function(t) {
 
-                            return React.createElement("button", { "aria-label": "Change stereo anim transform", key: t.id, onClick: function() { upd('stereoAnimTransform', t.id); },
+                            return React.createElement("button", { key: t.id, onClick: function() { upd('stereoAnimTransform', t.id); },
 
-                              className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, t.label);
+                              className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-purple-50') }, t.label);
 
                           })
 
@@ -5540,9 +5588,9 @@ const d = labToolData.artStudio || {};
 
                       [{ id: 'bw', label: '\u26AB B&W' }, { id: 'color', label: '\uD83C\uDFA8 Color' }, { id: 'noise', label: '\uD83D\uDCFA Noise' }].map(function(s) {
 
-                        return React.createElement("button", { "aria-label": "Change stereo pattern", key: s.id, onClick: function() { upd('stereoPattern', s.id); },
+                        return React.createElement("button", { key: s.id, onClick: function() { upd('stereoPattern', s.id); },
 
-                          className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-purple-50') }, s.label);
+                          className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-purple-50') }, s.label);
 
                       })
 
@@ -5868,7 +5916,7 @@ const d = labToolData.artStudio || {};
 
                       },
 
-                      className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+                      className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 hover:bg-emerald-100"
 
                     }, "\uD83D\uDCE5 Export GIF")
 
@@ -5916,9 +5964,9 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex gap-1 mb-3" },
 
-                      React.createElement("button", { "aria-label": "Step", onClick: function () { upd('lifeRunning', !(d.lifeRunning)); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black transition-all " + (d.lifeRunning ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-600 hover:to-green-600 shadow-md') }, d.lifeRunning ? '\u23F8 Pause' : '\u25B6 Run'),
+                      React.createElement("button", { onClick: function () { upd('lifeRunning', !(d.lifeRunning)); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-black transition-all " + (d.lifeRunning ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-600 hover:to-green-600 shadow-md') }, d.lifeRunning ? '\u23F8 Pause' : '\u25B6 Run'),
 
-                      React.createElement("button", { "aria-label": "Step", onClick: function () { upd('lifeStep', (d.lifeStep || 0) + 1); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200", disabled: d.lifeRunning }, '\u23ED Step'),
+                      React.createElement("button", { onClick: function () { upd('lifeStep', (d.lifeStep || 0) + 1); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200", disabled: d.lifeRunning }, '\u23ED Step'),
 
                       React.createElement("button", { "aria-label": "Clear", onClick: function () { upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); upd('lifePop', 0); upd('lifeChallengeStatus', null); upd('lifeChallengeMsg', null); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, '\uD83D\uDDD1 Clear')
 
@@ -5956,7 +6004,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 40, label: '40\u00D740' }, { id: 60, label: '60\u00D760' }, { id: 80, label: '80\u00D780' }, { id: 120, label: '120\u00D7120' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change life size", key: s.id, onClick: function () { upd('lifeSize', s.id); upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.lifeSize || 60) === s.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, s.label);
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('lifeSize', s.id); upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.lifeSize || 60) === s.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50') }, s.label);
 
                         })
 
@@ -5974,7 +6022,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'draw', label: '\u270F Draw' }, { id: 'erase', label: '\uD83E\uDDFD Erase' }].map(function (s) {
 
-                          return React.createElement("button", { "aria-label": "Change life tool", key: s.id, onClick: function () { upd('lifeTool', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.lifeTool || 'draw') === s.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, s.label);
+                          return React.createElement("button", { key: s.id, onClick: function () { upd('lifeTool', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.lifeTool || 'draw') === s.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50') }, s.label);
 
                         })
 
@@ -5986,7 +6034,7 @@ const d = labToolData.artStudio || {};
 
                     React.createElement("div", { className: "flex items-center gap-2 mb-3" },
 
-                      React.createElement("button", { "aria-label": "Change life wrap", onClick: function () { upd('lifeWrap', d.lifeWrap === false ? true : d.lifeWrap === true ? false : true); }, className: "px-3 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.lifeWrap !== false ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, (d.lifeWrap !== false ? '\u2705' : '\u2B1C') + ' Wrap Edges'),
+                      React.createElement("button", { onClick: function () { upd('lifeWrap', d.lifeWrap === false ? true : d.lifeWrap === true ? false : true); }, className: "px-3 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.lifeWrap !== false ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50') }, (d.lifeWrap !== false ? '\u2705' : '\u2B1C') + ' Wrap Edges'),
 
                       React.createElement("button", { "aria-label": "Random", onClick: function () {
 
@@ -6012,7 +6060,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'normal', label: '\uD83D\uDFE2 Normal' }, { id: 'heatmap', label: '\uD83C\uDF21 Age Map' }, { id: 'xray', label: '\uD83D\uDD2C X-Ray' }].map(function (v) {
 
-                          return React.createElement("button", { "aria-label": "Change life viz mode", key: v.id, onClick: function () { upd('lifeVizMode', v.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.lifeVizMode || 'normal') === v.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-emerald-50') }, v.label);
+                          return React.createElement("button", { key: v.id, onClick: function () { upd('lifeVizMode', v.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.lifeVizMode || 'normal') === v.id ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50') }, v.label);
 
                         })
 
@@ -6032,7 +6080,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'green', label: '\uD83D\uDFE2', hue: 140 }, { id: 'cyan', label: '\uD83D\uDD35', hue: 190 }, { id: 'gold', label: '\uD83D\uDFE1', hue: 45 }, { id: 'pink', label: '\uD83D\uDFE3', hue: 320 }, { id: 'white', label: '\u26AA', hue: -1 }].map(function (c) {
 
-                          return React.createElement("button", { "aria-label": "Change life hue", key: c.id, onClick: function () { upd('lifeHue', c.hue); }, className: "flex-1 px-2 py-1 rounded-lg text-sm transition-all " + ((d.lifeHue || 140) === c.hue ? 'bg-slate-200 ring-2 ring-emerald-400' : 'bg-slate-50 hover:bg-slate-100') }, c.label);
+                          return React.createElement("button", { key: c.id, onClick: function () { upd('lifeHue', c.hue); }, className: "flex-1 px-2 py-1 rounded-lg text-sm transition-all " + ((d.lifeHue || 140) === c.hue ? 'bg-slate-200 ring-2 ring-emerald-400' : 'bg-slate-50 hover:bg-slate-100') }, c.label);
 
                         })
 
@@ -6116,7 +6164,7 @@ const d = labToolData.artStudio || {};
 
                             cat.items.map(function (pr) {
 
-                              return React.createElement("button", { "aria-label": "Change life preset", key: pr.id, onClick: function () { upd('lifePreset', pr.id); upd('lifeClear', Date.now()); upd('lifeGen', 0); upd('lifeMaxPop', 0); var stillLifes = { block:1, beehive:1, loaf:1, boat:1 }; upd('lifeRunning', !stillLifes[pr.id]); }, className: "px-2 py-0.5 rounded text-[11px] font-bold bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50 transition-all", title: pr.desc }, pr.label);
+                              return React.createElement("button", { key: pr.id, onClick: function () { upd('lifePreset', pr.id); upd('lifeClear', Date.now()); upd('lifeGen', 0); upd('lifeMaxPop', 0); var stillLifes = { block:1, beehive:1, loaf:1, boat:1 }; upd('lifeRunning', !stillLifes[pr.id]); }, className: "px-2 py-0.5 rounded text-[11px] font-bold bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-50 transition-all", title: pr.desc }, pr.label);
 
                             })
 
@@ -6144,7 +6192,7 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, 'Birth (B)'),
 
-                        React.createElement("input", { type: "text", value: d.lifeRuleB || '3', 'aria-label': 'Birth rule', onChange: function (e) { upd('lifeRuleB', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-200 rounded-lg", placeholder: '3' })
+                        React.createElement("input", { type: "text", value: d.lifeRuleB || '3', 'aria-label': 'Birth rule', onChange: function (e) { upd('lifeRuleB', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-600 rounded-lg", placeholder: '3' })
 
                       ),
 
@@ -6152,7 +6200,7 @@ const d = labToolData.artStudio || {};
 
                         React.createElement("label", { className: "text-[11px] font-bold text-purple-600 block" }, 'Survival (S)'),
 
-                        React.createElement("input", { type: "text", value: d.lifeRuleS || '23', 'aria-label': 'Survival rule', onChange: function (e) { upd('lifeRuleS', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-200 rounded-lg", placeholder: '23' })
+                        React.createElement("input", { type: "text", value: d.lifeRuleS || '23', 'aria-label': 'Survival rule', onChange: function (e) { upd('lifeRuleS', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-600 rounded-lg", placeholder: '23' })
 
                       )
 
@@ -6176,7 +6224,7 @@ const d = labToolData.artStudio || {};
 
                       ].map(function (rp) {
 
-                        return React.createElement("button", { "aria-label": "Change life rule b", key: rp.label, onClick: function () { upd('lifeRuleB', rp.b); upd('lifeRuleS', rp.s); }, className: "px-2 py-0.5 rounded text-[11px] font-bold bg-white text-purple-600 border border-purple-200 hover:bg-purple-50 transition-all", title: rp.desc }, rp.label);
+                        return React.createElement("button", { key: rp.label, onClick: function () { upd('lifeRuleB', rp.b); upd('lifeRuleS', rp.s); }, className: "px-2 py-0.5 rounded text-[11px] font-bold bg-white text-purple-600 border border-purple-600 hover:bg-purple-50 transition-all", title: rp.desc }, rp.label);
 
                       })
 
@@ -6210,7 +6258,7 @@ const d = labToolData.artStudio || {};
 
                         var isActive = d.lifeChallenge === ch.id;
 
-                        return React.createElement("button", { "aria-label": "Change life challenge", key: ch.id, onClick: function () {
+                        return React.createElement("button", { key: ch.id, onClick: function () {
 
                           upd('lifeChallenge', isActive ? null : ch.id);
 
@@ -6222,7 +6270,7 @@ const d = labToolData.artStudio || {};
 
                           if (!isActive) { upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); upd('lifePop', 0); }
 
-                        }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (isActive ? 'bg-amber-700 text-white ring-2 ring-amber-300' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-50'), title: ch.desc }, ch.label);
+                        }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (isActive ? 'bg-amber-700 text-white ring-2 ring-amber-300' : 'bg-white text-amber-700 border border-amber-600 hover:bg-amber-50'), title: ch.desc }, ch.label);
 
                       })
 
@@ -6256,7 +6304,7 @@ const d = labToolData.artStudio || {};
 
                   React.createElement("div", { className: "bg-gradient-to-br from-lime-50 to-green-50 rounded-xl p-3 border border-lime-200" },
 
-                    React.createElement("button", { "aria-label": "Change show life info", onClick: function () { upd('showLifeInfo', d.showLifeInfo === undefined ? false : !d.showLifeInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-lime-700" },
+                    React.createElement("button", { onClick: function () { upd('showLifeInfo', d.showLifeInfo === undefined ? false : !d.showLifeInfo); }, className: "w-full flex items-center justify-between text-xs font-bold text-lime-700" },
 
                       React.createElement("span", null, '\uD83E\uDDE0 The Science of Cellular Automata'),
 
@@ -7197,1127 +7245,5 @@ const d = labToolData.artStudio || {};
     }
   });
 
-  // ═══ 🔬 dataStudio (dataStudio) ═══
-  window.StemLab.registerTool('dataStudio', {
-    icon: '🔬',
-    label: 'dataStudio',
-    desc: '',
-    color: 'slate',
-    category: 'creative',
-    render: function(ctx) {
-      // Aliases — maps ctx properties to original variable names
-      var React = ctx.React;
-      var h = React.createElement;
-      var labToolData = ctx.toolData;
-      var setLabToolData = ctx.setToolData;
-      var setStemLabTool = ctx.setStemLabTool;
-      var setStemLabTab = ctx.setStemLabTab;
-      var stemLabTab = ctx.stemLabTab || 'explore';
-      var stemLabTool = ctx.stemLabTool;
-      var toolSnapshots = ctx.toolSnapshots;
-      var setToolSnapshots = ctx.setToolSnapshots;
-      var addToast = ctx.addToast;
-      var t = ctx.t;
-      var isDark = ctx.isDark || false;
-      var isContrast = ctx.isContrast || false;
-      var ArrowLeft = ctx.icons.ArrowLeft;
-      var Calculator = ctx.icons.Calculator;
-      var Sparkles = ctx.icons.Sparkles;
-      var X = ctx.icons.X;
-      var GripVertical = ctx.icons.GripVertical;
-      var announceToSR = ctx.announceToSR;
-      var awardStemXP = ctx.awardXP;
-      var getStemXP = ctx.getXP;
-      var stemCelebrate = ctx.celebrate;
-      var stemBeep = ctx.beep;
-      var callGemini = ctx.callGemini;
-      var callTTS = ctx.callTTS;
-      var callImagen = ctx.callImagen;
-      var callGeminiVision = ctx.callGeminiVision;
-      var gradeLevel = ctx.gradeLevel;
-      var srOnly = ctx.srOnly;
-      var a11yClick = ctx.a11yClick;
-      var canvasA11yDesc = ctx.canvasA11yDesc;
-      var props = ctx.props;
-
-      // ── Tool body (dataStudio) ──
-      return (function() {
-var d = (labToolData && labToolData._dataStudio) || {};
-
-          var updDS = function (key, val) {
-
-            setLabToolData(function (prev) {
-
-              var ds = Object.assign({}, (prev && prev._dataStudio) || {});
-
-              ds[key] = val;
-
-              return Object.assign({}, prev, { _dataStudio: ds });
-
-            });
-
-          };
-
-          var chartType = d.chartType || 'bar';
-
-          var dataRows = d.dataRows || [
-
-            { label: 'Apples', value: 45 },
-
-            { label: 'Bananas', value: 30 },
-
-            { label: 'Oranges', value: 55 },
-
-            { label: 'Grapes', value: 25 },
-
-            { label: 'Cherries', value: 40 }
-
-          ];
-
-          var chartTitle = d.chartTitle || 'My Data';
-
-          var editRow = d.editRow || { label: '', value: '' };
-
-          var showStats = d.showStats !== undefined ? d.showStats : true;
-
-          var showTrendline = d.showTrendline || false;
-
-          var sortOrder = d.sortOrder || 'none';  // 'none', 'asc', 'desc'
-
-          var filterMin = typeof d.filterMin === 'number' ? d.filterMin : '';
-
-          var filterMax = typeof d.filterMax === 'number' ? d.filterMax : '';
-
-
-
-          var CHART_TYPES = [
-
-            { id: 'bar', icon: '📊', label: 'Bar Chart' },
-
-            { id: 'pie', icon: '🥧', label: 'Pie Chart' },
-
-            { id: 'line', icon: '📈', label: 'Line Graph' },
-
-            { id: 'scatter', icon: '⚬', label: 'Scatter Plot' },
-
-            { id: 'histogram', icon: '📉', label: 'Histogram' }
-
-          ];
-
-
-
-          var PRESETS = [
-
-            { label: '🍎 Fruit Sales', data: [{ label: 'Apples', value: 45 }, { label: 'Bananas', value: 30 }, { label: 'Oranges', value: 55 }, { label: 'Grapes', value: 25 }, { label: 'Cherries', value: 40 }], title: 'Fruit Sales' },
-
-            { label: '🌡️ Monthly Temps (°F)', data: [{ label: 'Jan', value: 32 }, { label: 'Feb', value: 35 }, { label: 'Mar', value: 45 }, { label: 'Apr', value: 55 }, { label: 'May', value: 65 }, { label: 'Jun', value: 75 }, { label: 'Jul', value: 82 }, { label: 'Aug', value: 80 }, { label: 'Sep', value: 70 }, { label: 'Oct', value: 58 }, { label: 'Nov', value: 45 }, { label: 'Dec', value: 35 }], title: 'Monthly Temperature' },
-
-            { label: '📚 Class Grades', data: [{ label: 'A', value: 8 }, { label: 'B', value: 15 }, { label: 'C', value: 12 }, { label: 'D', value: 5 }, { label: 'F', value: 2 }], title: 'Grade Distribution' },
-
-            { label: '🏀 Sports Points', data: [{ label: 'Game 1', value: 22 }, { label: 'Game 2', value: 18 }, { label: 'Game 3', value: 31 }, { label: 'Game 4', value: 27 }, { label: 'Game 5', value: 35 }, { label: 'Game 6', value: 29 }], title: 'Points Per Game' },
-
-            { label: '🎲 Dice Rolls (50)', data: (function () { var c = [0, 0, 0, 0, 0, 0]; for (var i = 0; i < 50; i++) c[Math.floor(Math.random() * 6)]++; return c.map(function (v, j) { return { label: '' + (j + 1), value: v }; }); })(), title: 'Dice Roll Distribution' }
-
-          ];
-
-
-
-          // CSV import handler
-
-          var handleCSVImport = function (text) {
-
-            try {
-
-              var lines = text.trim().split('\n');
-
-              var rows = [];
-
-              lines.forEach(function (line, idx) {
-
-                var parts = line.split(',').map(function (s) { return s.trim().replace(/^"|"$/g, ''); });
-
-                if (parts.length >= 2) {
-
-                  var val = parseFloat(parts[1]);
-
-                  if (!isNaN(val)) rows.push({ label: parts[0] || ('Row ' + (idx + 1)), value: val });
-
-                }
-
-              });
-
-              if (rows.length > 0) {
-
-                updDS('dataRows', rows);
-
-                if (addToast) addToast('Imported ' + rows.length + ' data points!', 'success');
-
-                if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 5, 'CSV import');
-
-              }
-
-            } catch (e) {
-
-              if (addToast) addToast('CSV import failed. Use format: Label, Value', 'warning');
-
-            }
-
-          };
-
-
-
-          // Apply sort and filter
-
-          var filteredRows = dataRows;
-
-          if (filterMin !== '' && !isNaN(filterMin)) filteredRows = filteredRows.filter(function (r) { return r.value >= filterMin; });
-
-          if (filterMax !== '' && !isNaN(filterMax)) filteredRows = filteredRows.filter(function (r) { return r.value <= filterMax; });
-
-          if (sortOrder === 'asc') filteredRows = filteredRows.slice().sort(function (a, b) { return a.value - b.value; });
-
-          else if (sortOrder === 'desc') filteredRows = filteredRows.slice().sort(function (a, b) { return b.value - a.value; });
-
-          var displayRows = filteredRows;
-
-
-
-          // Statistics (on displayed rows)
-
-          var values = displayRows.map(function (r) { return r.value; });
-
-          var total = values.reduce(function (s, v) { return s + v; }, 0);
-
-          var mean = values.length > 0 ? total / values.length : 0;
-
-          var sorted = values.slice().sort(function (a, b) { return a - b; });
-
-          var median = sorted.length > 0 ? (sorted.length % 2 ? sorted[Math.floor(sorted.length / 2)] : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2) : 0;
-
-          var maxVal = Math.max.apply(null, values.concat([1]));
-
-          var minVal = Math.min.apply(null, values.concat([0]));
-
-          var stdDev = values.length > 0 ? Math.sqrt(values.reduce(function (s, v) { return s + Math.pow(v - mean, 2); }, 0) / values.length) : 0;
-
-          // Mode
-
-          var modeVal = '-';
-
-          if (values.length > 0) {
-
-            var freq = {}; values.forEach(function (v) { freq[v] = (freq[v] || 0) + 1; });
-
-            var maxFreq = Math.max.apply(null, Object.values(freq));
-
-            var modes = Object.keys(freq).filter(function (k) { return freq[k] === maxFreq; }).map(Number);
-
-            modeVal = maxFreq === 1 ? 'None' : modes.join(', ');
-
-          }
-
-          // Quartiles
-
-          var q1 = 0, q3 = 0, iqr = 0;
-
-          if (sorted.length >= 4) {
-
-            var lh = sorted.slice(0, Math.floor(sorted.length / 2));
-
-            var uh = sorted.slice(Math.ceil(sorted.length / 2));
-
-            q1 = lh.length % 2 ? lh[Math.floor(lh.length / 2)] : (lh[lh.length / 2 - 1] + lh[lh.length / 2]) / 2;
-
-            q3 = uh.length % 2 ? uh[Math.floor(uh.length / 2)] : (uh[uh.length / 2 - 1] + uh[uh.length / 2]) / 2;
-
-            iqr = q3 - q1;
-
-          } else if (sorted.length > 0) { q1 = sorted[0]; q3 = sorted[sorted.length - 1]; iqr = q3 - q1; }
-
-          var range = maxVal - minVal;
-
-
-
-          // Linear regression for trendline
-
-          function calcTrendline(rows) {
-
-            var n = rows.length;
-
-            if (n < 2) return null;
-
-            var sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-
-            rows.forEach(function (r, i) { sumX += i; sumY += r.value; sumXY += i * r.value; sumX2 += i * i; });
-
-            var denom = n * sumX2 - sumX * sumX;
-
-            if (denom === 0) return null;
-
-            var slope = (n * sumXY - sumX * sumY) / denom;
-
-            var intercept = (sumY - slope * sumX) / n;
-
-            return { slope: slope, intercept: intercept };
-
-          }
-
-
-
-          // Color palette
-
-          var COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#14b8a6', '#a855f7', '#eab308', '#3b82f6'];
-
-
-
-          // Dark theme
-
-          var _bg = isDark || isContrast ? '#0f172a' : '#f0fdfa';
-
-          var _text = isDark || isContrast ? '#e0e7ff' : '#1e293b';
-
-          var _card = isDark || isContrast ? 'rgba(6,182,212,0.08)' : 'rgba(6,182,212,0.06)';
-
-          var _border = isDark || isContrast ? 'rgba(6,182,212,0.2)' : 'rgba(6,182,212,0.15)';
-
-          var _accent = isDark || isContrast ? '#22d3ee' : '#0891b2';
-
-          var _muted = isDark || isContrast ? '#94a3b8' : '#64748b';
-
-          var _btnBg = isDark || isContrast ? '#0891b2' : '#06b6d4';
-
-          var _svgBg = isDark || isContrast ? '#1e293b' : '#ffffff';
-
-
-
-          // SVG dimensions
-
-          var W = 440, H = 320, pad = 50;
-
-          var chartTop = 45; // extra top margin so title doesn't overlap data
-
-
-
-          return React.createElement("div", { className: "p-4 space-y-4", style: { color: _text } },
-
-            // Header
-
-            React.createElement("div", { className: "flex items-center justify-between mb-2" },
-
-              React.createElement("div", null,
-
-                React.createElement("h3", { className: "text-lg font-bold flex items-center gap-2" }, "📈 Data Studio"),
-
-                React.createElement("p", { className: "text-xs", style: { color: _muted } }, "Create charts, import data & explore statistics")
-
-              ),
-
-              React.createElement("div", { className: "flex gap-2" },
-
-                React.createElement("button", { "aria-label": "Upd D S",
-
-                  onClick: function () { updDS('showStats', !showStats); },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold",
-
-                  style: { background: showStats ? _btnBg : _card, color: showStats ? '#fff' : _text, border: '1px solid ' + _border }
-
-                }, showStats ? '📊 Stats On' : '📊 Stats'),
-
-                React.createElement("button", { "aria-label": "Back",
-
-                  onClick: function () { setStemLabTool(null); },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold",
-
-                  style: { background: _card, border: '1px solid ' + _border, color: _text }
-
-                }, "← Back")
-
-              )
-
-            ),
-
-
-
-            // Chart type selector
-
-            React.createElement("div", { className: "flex gap-2" },
-
-              CHART_TYPES.map(function (ct) {
-
-                return React.createElement("button", { "aria-label": "Artstudio action",
-
-                  key: ct.id,
-
-                  onClick: function () { if (ct.id !== chartType) { updDS('chartType', ct.id); if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 3, ct.label + ' explored'); } },
-
-                  className: "flex-1 p-2 rounded-xl text-center transition-all",
-
-                  style: { background: chartType === ct.id ? _btnBg : _card, color: chartType === ct.id ? '#fff' : _text, border: '1px solid ' + (chartType === ct.id ? _accent : _border) }
-
-                },
-
-                  React.createElement("div", { className: "text-lg" }, ct.icon),
-
-                  React.createElement("div", { className: "text-[11px] font-bold" }, ct.label)
-
-                );
-
-              })
-
-            ),
-
-
-
-            // Chart title
-
-            React.createElement("input", {
-
-              type: "text", value: chartTitle,
-
-              'aria-label': 'Chart title',
-
-              onChange: function (e) { updDS('chartTitle', e.target.value); },
-
-              placeholder: "Chart title...",
-
-              className: "w-full px-3 py-2 rounded-xl text-sm font-bold text-center focus:ring-2 focus:ring-indigo-400",
-
-              style: { background: _card, border: '1px solid ' + _border, color: _text }
-
-            }),
-
-
-
-            // ── SVG Chart Rendering ──
-
-            React.createElement("div", { className: "rounded-2xl overflow-hidden", style: { border: '1px solid ' + _border } },
-
-              React.createElement("svg", { viewBox: '0 0 ' + W + ' ' + H, className: "w-full", style: { background: _svgBg, maxHeight: '340px' } },
-
-                // Title
-
-                React.createElement("text", { x: W / 2, y: 18, textAnchor: "middle", style: { fontSize: '13px', fontWeight: 'bold', fill: _text } }, chartTitle),
-
-
-
-                // ── Bar Chart ──
-
-                chartType === 'bar' && displayRows.length > 0 && (() => {
-
-                  var barW = Math.min(40, (W - 2 * pad) / displayRows.length - 4);
-
-                  var gap = (W - 2 * pad) / displayRows.length;
-
-                  return React.createElement("g", null,
-
-                    // Y axis
-
-                    React.createElement("line", { x1: pad, y1: chartTop, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
-
-                    // X axis
-
-                    React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
-
-                    // Y labels
-
-                    [0, 0.25, 0.5, 0.75, 1].map(function (frac, i) {
-
-                      var yVal = Math.round(maxVal * frac);
-
-                      var yPos = (H - pad) - frac * (H - pad - chartTop);
-
-                      return React.createElement("g", { key: 'yl' + i },
-
-                        React.createElement("text", { x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '11px', fill: _muted } }, yVal),
-
-                        React.createElement("line", { x1: pad, y1: yPos, x2: W - 10, y2: yPos, stroke: _muted, strokeWidth: 0.2, strokeDasharray: "3 3" })
-
-                      );
-
-                    }),
-
-                    // Bars
-
-                    displayRows.map(function (row, i) {
-
-                      var barH = maxVal > 0 ? (row.value / maxVal) * (H - pad - chartTop) : 0;
-
-                      var x = pad + i * gap + (gap - barW) / 2;
-
-                      var y = (H - pad) - barH;
-
-                      return React.createElement("g", { key: 'bar' + i },
-
-                        React.createElement("rect", { x: x, y: y, width: barW, height: barH, rx: 3, fill: COLORS[i % COLORS.length], opacity: 0.85 }),
-
-                        React.createElement("text", { x: x + barW / 2, y: y - 4, textAnchor: "middle", style: { fontSize: '11px', fontWeight: 'bold', fill: _text } }, row.value),
-
-                        React.createElement("text", { x: x + barW / 2, y: H - pad + 12, textAnchor: "middle", style: { fontSize: '8px', fill: _muted } }, row.label.length > 6 ? row.label.substring(0, 5) + '..' : row.label)
-
-                      );
-
-                    })
-
-                  );
-
-                })(),
-
-
-
-                // ── Pie Chart ──
-
-                chartType === 'pie' && displayRows.length > 0 && (() => {
-
-                  var cx = W / 2, cy = (H + 10) / 2, r = Math.min(W, H) / 2.8;
-
-                  var cumAngle = -Math.PI / 2;
-
-                  return React.createElement("g", null,
-
-                    displayRows.map(function (row, i) {
-
-                      var angle = total > 0 ? (row.value / total) * 2 * Math.PI : 0;
-
-                      var startAngle = cumAngle;
-
-                      cumAngle += angle;
-
-                      var endAngle = cumAngle;
-
-                      var largeArc = angle > Math.PI ? 1 : 0;
-
-                      var x1 = cx + r * Math.cos(startAngle);
-
-                      var y1 = cy + r * Math.sin(startAngle);
-
-                      var x2 = cx + r * Math.cos(endAngle);
-
-                      var y2 = cy + r * Math.sin(endAngle);
-
-                      var midAngle = startAngle + angle / 2;
-
-                      var lx = cx + (r + 16) * Math.cos(midAngle);
-
-                      var ly = cy + (r + 16) * Math.sin(midAngle);
-
-                      var pct = total > 0 ? Math.round(row.value / total * 100) : 0;
-
-                      if (displayRows.length === 1) {
-
-                        return React.createElement("g", { key: 'pie' + i },
-
-                          React.createElement("circle", { cx: cx, cy: cy, r: r, fill: COLORS[0], opacity: 0.85 }),
-
-                          React.createElement("text", { x: cx, y: cy + 4, textAnchor: "middle", style: { fontSize: '11px', fontWeight: 'bold', fill: '#fff' } }, '100%')
-
-                        );
-
-                      }
-
-                      return React.createElement("g", { key: 'pie' + i },
-
-                        React.createElement("path", {
-
-                          d: 'M ' + cx + ' ' + cy + ' L ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + ' Z',
-
-                          fill: COLORS[i % COLORS.length], opacity: 0.85, stroke: _svgBg, strokeWidth: 1.5
-
-                        }),
-
-                        pct >= 5 && React.createElement("text", { x: lx, y: ly + 3, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold', fill: _text } }, row.label.substring(0, 5) + ' ' + pct + '%')
-
-                      );
-
-                    })
-
-                  );
-
-                })(),
-
-
-
-                // ── Line Graph ──
-
-                chartType === 'line' && displayRows.length > 0 && (() => {
-
-                  var rangeYLine = maxVal - minVal || 1;
-
-                  var gap = displayRows.length > 1 ? (W - 2 * pad) / (displayRows.length - 1) : 0;
-
-                  var pts = displayRows.map(function (row, i) {
-
-                    var x = displayRows.length === 1 ? W / 2 : pad + i * gap;
-
-                    var y = (H - pad) - ((row.value - minVal) / rangeYLine) * (H - pad - chartTop);
-
-                    return { x: x, y: y, label: row.label, value: row.value };
-
-                  });
-
-                  var pathD = pts.map(function (p, i) { return (i === 0 ? 'M' : 'L') + ' ' + p.x + ' ' + p.y; }).join(' ');
-
-                  // Area fill
-
-                  var areaD = pathD + ' L ' + pts[pts.length - 1].x + ' ' + (H - pad) + ' L ' + pts[0].x + ' ' + (H - pad) + ' Z';
-
-                  // Trendline
-
-                  var trendEls = [];
-
-                  if (showTrendline && displayRows.length >= 2) {
-
-                    var tl = calcTrendline(displayRows);
-
-                    if (tl) {
-
-                      var tlY0 = (H - pad) - ((tl.intercept - minVal) / rangeYLine) * (H - pad - chartTop);
-
-                      var tlY1 = (H - pad) - (((tl.slope * (displayRows.length - 1) + tl.intercept) - minVal) / rangeYLine) * (H - pad - chartTop);
-
-                      trendEls.push(React.createElement("line", { key: 'tl', x1: pad, y1: tlY0, x2: pad + (displayRows.length - 1) * gap, y2: tlY1, stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '6 3', opacity: 0.7 }));
-
-                      trendEls.push(React.createElement("text", { key: 'tl-label', x: W - 12, y: tlY1 - 5, textAnchor: "end", style: { fontSize: '7px', fontWeight: 'bold', fill: '#ef4444' } }, 'y=' + tl.slope.toFixed(1) + 'x+' + tl.intercept.toFixed(1)));
-
-                    }
-
-                  }
-
-                  return React.createElement("g", null,
-
-                    React.createElement("line", { x1: pad, y1: chartTop, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
-
-                    React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
-
-                    [0, 0.25, 0.5, 0.75, 1].map(function (frac, i) {
-
-                      var yVal = (minVal + rangeYLine * frac).toFixed(0);
-
-                      var yPos = (H - pad) - frac * (H - pad - chartTop);
-
-                      return React.createElement("text", { key: 'lyl' + i, x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '11px', fill: _muted } }, yVal);
-
-                    }),
-
-                    React.createElement("path", { d: areaD, fill: _accent, opacity: 0.08 }),
-
-                    React.createElement("path", { d: pathD, fill: "none", stroke: _accent, strokeWidth: 2.5, strokeLinecap: "round", strokeLinejoin: "round" }),
-
-                    trendEls,
-
-                    pts.map(function (p, i) {
-
-                      return React.createElement("g", { key: 'lp' + i },
-
-                        React.createElement("circle", { cx: p.x, cy: p.y, r: 4, fill: _accent, stroke: _svgBg, strokeWidth: 2 }),
-
-                        React.createElement("text", { x: p.x, y: p.y - 8, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold', fill: _text } }, p.value),
-
-                        React.createElement("text", { x: p.x, y: H - pad + 12, textAnchor: "middle", style: { fontSize: '7px', fill: _muted } }, p.label.length > 5 ? p.label.substring(0, 4) + '..' : p.label)
-
-                      );
-
-                    })
-
-                  );
-
-                })(),
-
-
-
-                // ── Scatter Plot ──
-
-                chartType === 'scatter' && displayRows.length > 0 && (() => {
-
-                  var rangeY = maxVal - minVal || 1;
-
-                  var gap = displayRows.length > 1 ? (W - 2 * pad) / (displayRows.length - 1) : 0;
-
-                  var pts = displayRows.map(function (row, i) {
-
-                    var x = displayRows.length === 1 ? W / 2 : pad + i * gap;
-
-                    var y = (H - pad) - ((row.value - minVal) / rangeY) * (H - pad - 28);
-
-                    return { x: x, y: y, label: row.label, value: row.value };
-
-                  });
-
-                  // Trendline for scatter
-
-                  var trendEls = [];
-
-                  if (showTrendline && displayRows.length >= 2) {
-
-                    var tl = calcTrendline(displayRows);
-
-                    if (tl) {
-
-                      var tlY0 = (H - pad) - ((tl.intercept - minVal) / rangeY) * (H - pad - 28);
-
-                      var tlY1 = (H - pad) - (((tl.slope * (displayRows.length - 1) + tl.intercept) - minVal) / rangeY) * (H - pad - 28);
-
-                      trendEls.push(React.createElement("line", { key: 'tl', x1: pad, y1: tlY0, x2: pad + (displayRows.length - 1) * gap, y2: tlY1, stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '6 3', opacity: 0.7 }));
-
-                      trendEls.push(React.createElement("text", { key: 'tl-label', x: W - 12, y: tlY1 - 5, textAnchor: "end", style: { fontSize: '7px', fontWeight: 'bold', fill: '#ef4444' } }, 'y=' + tl.slope.toFixed(1) + 'x+' + tl.intercept.toFixed(1)));
-
-                      // R² value
-
-                      var ssRes = 0, ssTot = 0;
-
-                      displayRows.forEach(function (r, i) { var pred = tl.slope * i + tl.intercept; ssRes += Math.pow(r.value - pred, 2); ssTot += Math.pow(r.value - mean, 2); });
-
-                      var rSquared = ssTot > 0 ? (1 - ssRes / ssTot) : 0;
-
-                      trendEls.push(React.createElement("text", { key: 'r2', x: W - 12, y: tlY1 + 5, textAnchor: "end", style: { fontSize: '7px', fill: '#ef4444', opacity: 0.7 } }, 'R²=' + rSquared.toFixed(3)));
-
-                    }
-
-                  }
-
-                  return React.createElement("g", null,
-
-                    React.createElement("line", { x1: pad, y1: 25, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
-
-                    React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
-
-                    [0, 0.25, 0.5, 0.75, 1].map(function (frac, i) {
-
-                      var yVal = (minVal + rangeY * frac).toFixed(0);
-
-                      var yPos = (H - pad) - frac * (H - pad - 28);
-
-                      return React.createElement("g", { key: 'syl' + i },
-
-                        React.createElement("text", { x: pad - 5, y: yPos + 3, textAnchor: "end", style: { fontSize: '11px', fill: _muted } }, yVal),
-
-                        React.createElement("line", { x1: pad, y1: yPos, x2: W - 10, y2: yPos, stroke: _muted, strokeWidth: 0.2, strokeDasharray: "3 3" })
-
-                      );
-
-                    }),
-
-                    trendEls,
-
-                    pts.map(function (p, i) {
-
-                      return React.createElement("g", { key: 'sp' + i },
-
-                        React.createElement("circle", { cx: p.x, cy: p.y, r: 5, fill: COLORS[i % COLORS.length], stroke: _svgBg, strokeWidth: 2, opacity: 0.85 }),
-
-                        React.createElement("text", { x: p.x, y: p.y - 8, textAnchor: "middle", style: { fontSize: '8px', fontWeight: 'bold', fill: _text } }, p.value),
-
-                        React.createElement("text", { x: p.x, y: H - pad + 12, textAnchor: "middle", style: { fontSize: '7px', fill: _muted } }, p.label.length > 5 ? p.label.substring(0, 4) + '..' : p.label)
-
-                      );
-
-                    })
-
-                  );
-
-                })(),
-
-
-
-                // ── Histogram ──
-
-                chartType === 'histogram' && displayRows.length > 0 && (() => {
-
-                  // For histogram, bin the values
-
-                  var numBins = Math.min(8, Math.max(3, Math.ceil(Math.sqrt(values.length))));
-
-                  var range = maxVal - minVal || 1;
-
-                  var binW = range / numBins;
-
-                  var bins = [];
-
-                  for (var b = 0; b < numBins; b++) bins.push({ lo: minVal + b * binW, hi: minVal + (b + 1) * binW, count: 0 });
-
-                  values.forEach(function (v) {
-
-                    var bi = Math.min(numBins - 1, Math.floor((v - minVal) / binW));
-
-                    bins[bi].count++;
-
-                  });
-
-                  var maxCount = Math.max.apply(null, bins.map(function (b) { return b.count; }).concat([1]));
-
-                  var bw = (W - 2 * pad) / numBins - 2;
-
-                  return React.createElement("g", null,
-
-                    React.createElement("line", { x1: pad, y1: 25, x2: pad, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
-
-                    React.createElement("line", { x1: pad, y1: H - pad, x2: W - 10, y2: H - pad, stroke: _muted, strokeWidth: 0.5 }),
-
-                    bins.map(function (bin, i) {
-
-                      var bh = maxCount > 0 ? (bin.count / maxCount) * (H - pad - 28) : 0;
-
-                      var x = pad + i * ((W - 2 * pad) / numBins) + 1;
-
-                      var y = (H - pad) - bh;
-
-                      return React.createElement("g", { key: 'hb' + i },
-
-                        React.createElement("rect", { x: x, y: y, width: bw, height: bh, fill: COLORS[i % COLORS.length], opacity: 0.85, rx: 2 }),
-
-                        bin.count > 0 && React.createElement("text", { x: x + bw / 2, y: y - 3, textAnchor: "middle", style: { fontSize: '11px', fontWeight: 'bold', fill: _text } }, bin.count),
-
-                        React.createElement("text", { x: x + bw / 2, y: H - pad + 11, textAnchor: "middle", style: { fontSize: '7px', fill: _muted } }, bin.lo.toFixed(0) + '-' + bin.hi.toFixed(0))
-
-                      );
-
-                    })
-
-                  );
-
-                })()
-
-              )
-
-            ),
-
-
-
-            // ── Sort / Filter / Trendline Controls ──
-
-            React.createElement("div", { className: "flex gap-2 flex-wrap items-center", style: { marginBottom: 4 } },
-
-              // Sort controls
-
-              React.createElement("span", { className: "text-[11px] font-bold", style: { color: _muted } }, "SORT:"),
-
-              ['none', 'asc', 'desc'].map(function (s) {
-
-                var labels = { none: '— None', asc: '↑ Asc', desc: '↓ Desc' };
-
-                return React.createElement("button", { "aria-label": "Upd D S",
-
-                  key: s,
-
-                  onClick: function () { updDS('sortOrder', s); },
-
-                  className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all",
-
-                  style: { background: sortOrder === s ? _btnBg : _card, color: sortOrder === s ? '#fff' : _text, border: '1px solid ' + _border }
-
-                }, labels[s]);
-
-              }),
-
-              // Filter controls
-
-              React.createElement("span", { className: "text-[11px] font-bold ml-2", style: { color: _muted } }, "FILTER:"),
-
-              React.createElement("input", {
-
-                type: "number", placeholder: "Min", value: filterMin,
-
-                'aria-label': 'Filter minimum value',
-
-                onChange: function (e) { updDS('filterMin', e.target.value === '' ? '' : parseFloat(e.target.value)); },
-
-                className: "w-14 px-1.5 py-1 rounded-lg text-[11px] font-mono focus:ring-2 focus:ring-indigo-400",
-
-                style: { background: _card, border: '1px solid ' + _border, color: _text }
-
-              }),
-
-              React.createElement("span", { className: "text-[11px]", style: { color: _muted } }, "to"),
-
-              React.createElement("input", {
-
-                type: "number", placeholder: "Max", value: filterMax,
-
-                'aria-label': 'Filter maximum value',
-
-                onChange: function (e) { updDS('filterMax', e.target.value === '' ? '' : parseFloat(e.target.value)); },
-
-                className: "w-14 px-1.5 py-1 rounded-lg text-[11px] font-mono focus:ring-2 focus:ring-indigo-400",
-
-                style: { background: _card, border: '1px solid ' + _border, color: _text }
-
-              }),
-
-              (filterMin !== '' || filterMax !== '') && React.createElement("button", { "aria-label": "Clear",
-
-                onClick: function () { updDS('filterMin', ''); updDS('filterMax', ''); },
-
-                className: "px-2 py-1 rounded-lg text-[11px] font-bold",
-
-                style: { background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }
-
-              }, "✕ Clear"),
-
-              displayRows.length !== dataRows.length && React.createElement("span", { className: "text-[11px] font-bold", style: { color: _accent } }, '(' + displayRows.length + '/' + dataRows.length + ' shown)'),
-
-              // Trendline toggle (for line/scatter)
-
-              (chartType === 'line' || chartType === 'scatter') && React.createElement("button", { "aria-label": "Upd D S",
-
-                onClick: function () { updDS('showTrendline', !showTrendline); },
-
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-bold ml-auto transition-all",
-
-                style: { background: showTrendline ? '#ef4444' : _card, color: showTrendline ? '#fff' : _text, border: '1px solid ' + (showTrendline ? '#ef4444' : _border) }
-
-              }, showTrendline ? '📉 Trendline On' : '📉 Trendline')
-
-            ),
-
-
-
-            // ── Preset Datasets ──
-
-            React.createElement("div", { className: "flex gap-2 flex-wrap" },
-
-              React.createElement("span", { className: "text-[11px] font-bold self-center", style: { color: _muted } }, "PRESETS:"),
-
-              PRESETS.map(function (p, i) {
-
-                return React.createElement("button", { "aria-label": "Upd D S",
-
-                  key: i,
-
-                  onClick: function () { updDS('dataRows', p.data); updDS('chartTitle', p.title); if (typeof awardStemXP === 'function') awardStemXP('dataStudio', 3, 'Preset: ' + p.title); },
-
-                  className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all hover:scale-105",
-
-                  style: { background: _card, border: '1px solid ' + _border, color: _accent }
-
-                }, p.label);
-
-              })
-
-            ),
-
-
-
-            // ── CSV Import ──
-
-            React.createElement("div", { className: "flex gap-2" },
-
-              React.createElement("button", { "aria-label": "Import CSV Data",
-
-                onClick: function () {
-
-                  var el = document.createElement('input');
-
-                  el.type = 'file';
-
-                  el.accept = '.csv,.txt';
-
-                  el.onchange = function (e) {
-
-                    var file = e.target.files[0];
-
-                    if (file) {
-
-                      var reader = new FileReader();
-
-                      reader.onload = function (ev) { handleCSVImport(ev.target.result); };
-
-                      reader.readAsText(file);
-
-                    }
-
-                  };
-
-                  el.click();
-
-                },
-
-                className: "px-3 py-2 rounded-xl text-xs font-bold transition-all",
-
-                style: { background: _card, border: '1px solid ' + _border, color: _accent }
-
-              }, "📂 Import CSV"),
-
-              React.createElement("button", { "aria-label": "Export CSV",
-
-                onClick: function () {
-
-                  var csv = 'Label,Value\n' + dataRows.map(function (r) { return r.label + ',' + r.value; }).join('\n');
-
-                  var blob = new Blob([csv], { type: 'text/csv' });
-
-                  var url = URL.createObjectURL(blob);
-
-                  var a = document.createElement('a');
-
-                  a.href = url; a.download = (chartTitle || 'data') + '.csv';
-
-                  a.click(); URL.revokeObjectURL(url);
-
-                },
-
-                className: "px-3 py-2 rounded-xl text-xs font-bold transition-all",
-
-                style: { background: _card, border: '1px solid ' + _border, color: _accent }
-
-              }, "💾 Export CSV")
-
-            ),
-
-
-
-            // ── Data Editor ──
-
-            React.createElement("div", { className: "rounded-2xl p-3", style: { background: _card, border: '1px solid ' + _border } },
-
-              React.createElement("div", { className: "text-xs font-bold mb-2", style: { color: _accent } }, "📝 Data (" + dataRows.length + " items" + (displayRows.length !== dataRows.length ? ', ' + displayRows.length + ' shown' : '') + ")"),
-
-              // Add row
-
-              React.createElement("div", { className: "flex gap-2 mb-2" },
-
-                React.createElement("input", {
-
-                  type: "text", placeholder: "Label",
-
-                  'aria-label': 'Data point label',
-
-                  value: editRow.label,
-
-                  onChange: function (e) { updDS('editRow', { label: e.target.value, value: editRow.value }); },
-
-                  className: "flex-1 px-2 py-1.5 rounded-lg text-xs focus:ring-2 focus:ring-indigo-400",
-
-                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text }
-
-                }),
-
-                React.createElement("input", {
-
-                  type: "number", placeholder: "Value",
-
-                  'aria-label': 'Data point value',
-
-                  value: editRow.value,
-
-                  onChange: function (e) { updDS('editRow', { label: editRow.label, value: e.target.value }); },
-
-                  onKeyDown: function (e) {
-
-                    if (e.key === 'Enter' && editRow.label && editRow.value !== '') {
-
-                      updDS('dataRows', dataRows.concat([{ label: editRow.label, value: parseFloat(editRow.value) || 0 }]));
-
-                      updDS('editRow', { label: '', value: '' });
-
-                    }
-
-                  },
-
-                  className: "w-20 px-2 py-1.5 rounded-lg text-xs font-mono focus:ring-2 focus:ring-indigo-400",
-
-                  style: { background: _svgBg, border: '1px solid ' + _border, color: _text }
-
-                }),
-
-                React.createElement("button", { "aria-label": "+ Add",
-
-                  onClick: function () {
-
-                    if (editRow.label && editRow.value !== '') {
-
-                      updDS('dataRows', dataRows.concat([{ label: editRow.label, value: parseFloat(editRow.value) || 0 }]));
-
-                      updDS('editRow', { label: '', value: '' });
-
-                    }
-
-                  },
-
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold",
-
-                  style: { background: _btnBg, color: '#fff' }
-
-                }, "+ Add")
-
-              ),
-
-              // Data rows
-
-              React.createElement("div", { className: "max-h-28 overflow-y-auto space-y-1" },
-
-                dataRows.map(function (row, i) {
-
-                  return React.createElement("div", { key: i, className: "flex items-center gap-2 py-1 px-2 rounded-lg text-xs", style: { background: _svgBg } },
-
-                    React.createElement("div", { className: "w-3 h-3 rounded-full", style: { background: COLORS[i % COLORS.length] } }),
-
-                    React.createElement("span", { className: "flex-1 font-bold" }, row.label),
-
-                    React.createElement("span", { className: "font-mono", style: { color: _muted } }, row.value),
-
-                    React.createElement("button", { "aria-label": "Upd D S",
-
-                      onClick: function () { updDS('dataRows', dataRows.filter(function (_, j) { return j !== i; })); },
-
-                      className: "text-red-400 hover:text-red-600 font-bold text-xs"
-
-                    }, "✕")
-
-                  );
-
-                })
-
-              ),
-
-              // Clear
-
-              dataRows.length > 0 && React.createElement("button", { "aria-label": "Clear All",
-
-                onClick: function () { updDS('dataRows', []); },
-
-                className: "mt-2 px-3 py-1 rounded-lg text-[11px] font-bold",
-
-                style: { background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }
-
-              }, "🗑 Clear All")
-
-            ),
-
-
-
-            // ── Statistics Panel ──
-
-            showStats && dataRows.length > 0 && React.createElement("div", { className: "grid grid-cols-4 gap-2" },
-
-              [
-
-                { label: 'Sum', val: total.toFixed(1) },
-
-                { label: 'Mean', val: mean.toFixed(1) },
-
-                { label: 'Median', val: median.toFixed(1) },
-
-                { label: 'Std Dev', val: stdDev.toFixed(1) }
-
-              ].map(function (stat, i) {
-
-                return React.createElement("div", { key: i, className: "p-2 rounded-xl text-center", style: { background: _card, border: '1px solid ' + _border } },
-
-                  React.createElement("div", { className: "text-[11px] font-bold uppercase", style: { color: _muted } }, stat.label),
-
-                  React.createElement("div", { className: "text-sm font-bold font-mono", style: { color: _accent } }, stat.val)
-
-                );
-
-              })
-
-            )
-
-          );
-      })();
-    }
-  });
-
-  console.log('[StemLab] stem_tool_creative.js loaded \u2014 3 tools');
+  console.log('[StemLab] stem_tool_artstudio.js loaded \u2014 1 tool (artStudio)');
 })();

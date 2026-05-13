@@ -8,6 +8,12 @@
 var LanguageContext = window.AlloLanguageContext;
 var useState = React.useState; var useEffect = React.useEffect; var useRef = React.useRef;
 var useContext = React.useContext; var useMemo = React.useMemo; var useCallback = React.useCallback;
+
+// Defensive translation helper: AlloFlow's t() returns the literal key string
+// when no translation exists, so the pervasive `t(key) || fallback` pattern
+// can never reach its fallback (a literal key is truthy). safeT detects that
+// case and returns the human-readable fallback instead.
+const safeT = (t, key, fb) => { const r = t(key); return (r && r !== key) ? r : fb; };
 var _lazyIcon = function(name) { return function(props) { var I = window.AlloIcons && window.AlloIcons[name]; return I ? React.createElement(I, props) : null; }; };
 var ArrowLeft = _lazyIcon('ArrowLeft');
 var ArrowRight = _lazyIcon('ArrowRight');
@@ -191,11 +197,11 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
         <div className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200" style={{ backgroundColor: c.bg }}>
             <div className="p-4 flex justify-between items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
-                    <button onClick={onClose} aria-label={t('common.close') || 'Close'} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.strong }}>
+                    <button onClick={onClose} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.strong }}>
                         <ArrowLeft size={22} />
                     </button>
                     <div className="flex flex-col">
-                        <span className="font-bold text-base" style={{ color: c.strong }}>{t('immersive.focus_mode') || 'Focus Mode'}</span>
+                        <span className="font-bold text-base" style={{ color: c.strong }}>{safeT(t, 'immersive.focus_mode', 'Focus Mode')}</span>
                         <span className="text-xs" style={{ color: c.light }}>
                             {chunkIdx + 1} / {chunks.length} · {rsvp ? 'single-word RSVP' : `${chunkSize}-word chunks · bold-assist`}
                         </span>
@@ -209,12 +215,12 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
                     </label>
                     <label className="flex items-center gap-2">
                         <span style={{ color: c.light }}>SPEED</span>
-                        <input aria-label={t('common.speed') || 'Words per minute'} type="range" min="100" max="900" step="25" value={wpm} onChange={e => setWpm(parseInt(e.target.value))} className="w-28 accent-indigo-600" />
+                        <input aria-label={safeT(t, 'common.speed', 'Words per minute')} type="range" min="100" max="900" step="25" value={wpm} onChange={e => setWpm(parseInt(e.target.value))} className="w-28 accent-indigo-600" />
                         <span className="font-mono w-16 text-right">{wpm} wpm</span>
                     </label>
                     <label className="flex items-center gap-2">
                         <span style={{ color: c.light }}>THEME</span>
-                        <select aria-label="Theme" value={theme} onChange={e => setTheme(e.target.value)} className="text-xs rounded px-2 py-1 border" style={{ borderColor: c.light + '55', background: 'transparent', color: c.strong }}>
+                        <select aria-label="Theme" value={theme} onChange={e => setTheme(e.target.value)} className="text-xs rounded px-2 py-1 border" style={{ borderColor: c.light, background: c.bg, color: c.strong }}>
                             <option value="warm">☀ Warm</option>
                             <option value="dark">🌙 Dark</option>
                             <option value="sepia">📜 Sepia</option>
@@ -290,7 +296,7 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
     );
 });
 
-const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing , isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, onGeneratePOS, isGeneratingPOS, posReady, onGenerateSyllables, isGeneratingSyllables, syllablesReady, isFocusReaderActive, onToggleFocusReader }) => {
+const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing , isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, chunkReaderMood, setChunkReaderMood, onGeneratePOS, isGeneratingPOS, posReady, onGenerateSyllables, isGeneratingSyllables, syllablesReady, isFocusReaderActive, onToggleFocusReader }) => {
   // Back-compat: if the parent hasn't upgraded to the unified Focus Mode prop
   // yet, synthesize it from the two legacy props (Speed Read and Chunk Stream).
   const focusReaderActive = (typeof isFocusReaderActive === 'boolean')
@@ -393,66 +399,66 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               <ToggleButton
                 active={!!focusReaderActive}
                 onClick={toggleFocusReader}
-                title={t('immersive.focus_mode_title') || 'Focus Mode — single-word RSVP or multi-word chunks with bold-assist (drag the WORDS slider once open)'}
+                title={safeT(t, 'immersive.focus_mode_title', 'Focus Mode — single-word RSVP or multi-word chunks with bold-assist (drag the WORDS slider once open)')}
                 activeColor="bg-sky-500 text-white"
                 data-help-key="immersive_focus_mode"
               >
-                <Zap size={14} className="mr-1 inline"/> {t('immersive.focus_mode') || 'Focus Mode'}
+                <Zap size={14} className="mr-1 inline"/> {safeT(t, 'immersive.focus_mode', 'Focus Mode')}
               </ToggleButton>
             )}
             <ToggleButton
               active={isChunkReaderActive}
               onClick={onToggleChunkReader}
-              title={(t('immersive.chunk_read') || 'Chunk Read')}
+              title={safeT(t, 'immersive.chunk_read', 'Chunk Read')}
               activeColor="bg-emerald-700 text-white"
               data-help-key="immersive_chunk_reader"
             >
-              <List size={14} className="mr-1 inline"/> {(t('immersive.chunk_read') || 'Chunk Read')}
+              <List size={14} className="mr-1 inline"/> {safeT(t, 'immersive.chunk_read', 'Chunk Read')}
             </ToggleButton>
             {onToggleCrawlReader && (
               <ToggleButton
                 active={!!isCrawlReaderActive}
                 onClick={onToggleCrawlReader}
-                title={(t('immersive.cinematic_crawl') || 'Cinematic Crawl — receding-perspective scroll')}
+                title={safeT(t, 'immersive.cinematic_crawl', 'Cinematic Crawl — receding-perspective scroll')}
                 activeColor="bg-amber-500 text-slate-900"
                 data-help-key="immersive_perspective_crawl"
               >
-                <Zap size={14} className="mr-1 inline"/> {(t('immersive.cinematic_crawl') || 'Crawl')}
+                <Zap size={14} className="mr-1 inline"/> {safeT(t, 'immersive.cinematic_crawl', 'Crawl')}
               </ToggleButton>
             )}
             {onToggleKaraokeOverlay && (
               <ToggleButton
                 active={!!isKaraokeOverlayActive}
                 onClick={onToggleKaraokeOverlay}
-                title={(t('immersive.focus_reader_title') || 'Focus Reader — full-screen read-along with sentence-sweep visuals')}
+                title={safeT(t, 'immersive.focus_reader_title', 'Focus Reader — full-screen read-along with sentence-sweep visuals')}
                 activeColor="bg-fuchsia-600 text-white"
                 data-help-key="immersive_karaoke_overlay"
                 aria-pressed={!!isKaraokeOverlayActive}
               >
-                <Volume2 size={14} className="mr-1 inline"/> {(t('immersive.focus_reader') || 'Focus Reader')}
+                <Volume2 size={14} className="mr-1 inline"/> {safeT(t, 'immersive.focus_reader', 'Focus Reader')}
               </ToggleButton>
             )}
         </div>
         {setInteractionMode && (
           <>
           <div className="h-4 w-px bg-slate-300 shrink-0"></div>
-          <div className="flex items-center gap-1 shrink-0 bg-slate-100 rounded-full p-0.5" role="group" aria-label={t('immersive.tap_mode') || 'Tap action'}>
-            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider px-2">{t('immersive.tap_mode') || 'Tap'}</span>
+          <div className="flex items-center gap-1 shrink-0 bg-slate-100 rounded-full p-0.5" role="group" aria-label={safeT(t, 'immersive.tap_mode', 'Tap action')}>
+            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider px-2">{safeT(t, 'immersive.tap_mode', 'Tap')}</span>
             <button
               onClick={() => setInteractionMode('read')}
               aria-pressed={interactionMode !== 'define' && interactionMode !== 'phonics'}
-              title={t('immersive.tap_speak') || 'Tap a word to hear it'}
+              title={safeT(t, 'immersive.tap_speak', 'Tap a word to hear it')}
               className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-full transition-colors ${interactionMode !== 'define' && interactionMode !== 'phonics' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}
             >
-              <Volume2 size={12}/> {t('immersive.speak') || 'Speak'}
+              <Volume2 size={12}/> {safeT(t, 'immersive.speak', 'Speak')}
             </button>
             <button
               onClick={() => setInteractionMode('define')}
               aria-pressed={interactionMode === 'define'}
-              title={t('immersive.tap_define') || 'Tap a word to see its definition and picture'}
+              title={safeT(t, 'immersive.tap_define', 'Tap a word to see its definition and picture')}
               className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-full transition-colors ${interactionMode === 'define' ? 'bg-yellow-500 text-white shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}
             >
-              <BookOpen size={12}/> {t('immersive.define') || 'Define'}
+              <BookOpen size={12}/> {safeT(t, 'immersive.define', 'Define')}
             </button>
           </div>
           </>
@@ -461,11 +467,11 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
           <>
           <div className="h-4 w-px bg-slate-300 shrink-0"></div>
           <div className="flex items-center gap-2 shrink-0">
-            <button onClick={() => setChunkReaderIdx(Math.max(0, chunkReaderIdx - 1))} disabled={chunkReaderIdx <= 0} className="p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all" title={t('common.previous')}><ChevronLeft size={14}/></button>
+            <button onClick={() => setChunkReaderIdx(Math.max(0, chunkReaderIdx - 1))} disabled={chunkReaderIdx <= 0} className="p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all" title={safeT(t, 'common.previous', 'Previous') + ' (← / Home)'}><ChevronLeft size={14}/></button>
             <span className="text-xs font-bold text-slate-600 tabular-nums min-w-[3rem] text-center">{chunkReaderIdx + 1} / {totalSentences}</span>
-            <button onClick={() => setChunkReaderIdx(Math.min(totalSentences - 1, chunkReaderIdx + 1))} disabled={chunkReaderIdx >= totalSentences - 1} className="p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all" title={t('common.next')}><ChevronRight size={14}/></button>
+            <button onClick={() => setChunkReaderIdx(Math.min(totalSentences - 1, chunkReaderIdx + 1))} disabled={chunkReaderIdx >= totalSentences - 1} className="p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all" title={safeT(t, 'common.next', 'Next') + ' (→ / End)'}><ChevronRight size={14}/></button>
             <div className="h-4 w-px bg-slate-200"></div>
-            <button onClick={() => setChunkReaderAutoPlay(!chunkReaderAutoPlay)} className={`px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderAutoPlay ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`} title={chunkReaderAutoPlay ? t('common.pause') : (t('common.auto_play') || 'Auto')}>
+            <button onClick={() => setChunkReaderAutoPlay(!chunkReaderAutoPlay)} className={`px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderAutoPlay ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`} title={(chunkReaderAutoPlay ? safeT(t, 'common.pause', 'Pause') : safeT(t, 'common.auto_play', 'Auto')) + ' (Space) · Esc exits · Enter skips typewriter reveal'}>
               {chunkReaderAutoPlay ? <Pause size={12} className="inline"/> : <Play size={12} className="inline"/>}
             </button>
             <div className="flex items-center gap-1">
@@ -483,8 +489,29 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
                   className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderReadAlong ? 'bg-fuchsia-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                   data-help-key="immersive_chunk_read_along"
                 >
-                  <Volume2 size={12} className="inline"/> {(t('immersive.read_along') || 'Read Along')}
+                  <Volume2 size={12} className="inline"/> {safeT(t, 'immersive.read_along', 'Read Along')}
                 </button>
+              </>
+            )}
+            {setChunkReaderMood && (
+              <>
+                <div className="h-4 w-px bg-slate-200"></div>
+                <label className="flex items-center gap-1">
+                  <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{safeT(t, 'immersive.chunk_mood_label', 'Mood')}</span>
+                  <select
+                    aria-label={safeT(t, 'immersive.chunk_mood', 'Chunk Read animation mood')}
+                    value={chunkReaderMood || 'highlight'}
+                    onChange={e => setChunkReaderMood(e.target.value)}
+                    title="Animation mood for active chunk · Enter skips typewriter reveal"
+                    className="text-[11px] font-bold rounded-full px-2 py-1 border border-slate-300 bg-slate-100 text-slate-700 cursor-pointer hover:bg-slate-200"
+                    data-help-key="immersive_chunk_mood"
+                  >
+                    <option value="highlight">✨ Sweep</option>
+                    <option value="typewriter">⌨️ Typewriter</option>
+                    <option value="popin">🎈 Pop-In</option>
+                    <option value="pulse">💗 Pulse</option>
+                  </select>
+                </label>
               </>
             )}
           </div>
@@ -540,12 +567,12 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
             "inherit from the surrounding theme" so we don't force a font on
             readers who are happy with the default. */}
         <div className="flex items-center gap-2 shrink-0">
-            <span className="text-xs font-bold text-slate-600">{t('immersive.font') || 'Font'}</span>
+            <span className="text-xs font-bold text-slate-600">{safeT(t, 'immersive.font', 'Font')}</span>
             <select
-              aria-label={t('immersive.font_family') || 'Font family'}
+              aria-label={safeT(t, 'immersive.font_family', 'Font family')}
               value={settings.fontFamily || ''}
               onChange={(e) => setSettings(prev => ({ ...prev, fontFamily: e.target.value }))}
-              className="text-xs bg-slate-100 border border-slate-200 rounded-full px-2 py-1 cursor-pointer hover:bg-slate-200 transition-all font-medium text-slate-700"
+              className="text-xs bg-slate-100 border border-slate-400 rounded-full px-2 py-1 cursor-pointer hover:bg-slate-200 transition-all font-medium text-slate-700"
               data-help-key="immersive_font_family"
             >
                 <option value="">Default</option>
@@ -560,9 +587,9 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
         </div>
         <div className="h-4 w-px bg-slate-300 shrink-0"></div>
         <div className="flex items-center gap-2 shrink-0 relative">
-            <span className="text-xs font-bold text-slate-600">{t('immersive.colors') || 'Colors'}</span>
+            <span className="text-xs font-bold text-slate-600">{safeT(t, 'immersive.colors', 'Colors')}</span>
             <select
-              aria-label={t('immersive.color_preset') || 'Color preset'}
+              aria-label={safeT(t, 'immersive.color_preset', 'Color preset')}
               value=""
               onChange={(e) => {
                 const presets = {
@@ -578,9 +605,9 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
                   setSettings(prev => ({...prev, ...presets[e.target.value]}));
                 }
               }}
-              className="text-xs bg-slate-100 border border-slate-200 rounded-full px-2 py-1 cursor-pointer hover:bg-slate-200 transition-all font-medium text-slate-600"
+              className="text-xs bg-slate-100 border border-slate-400 rounded-full px-2 py-1 cursor-pointer hover:bg-slate-200 transition-all font-medium text-slate-600"
             >
-              <option value="" disabled>{t('immersive.presets') || 'Presets'}</option>
+              <option value="" disabled>{safeT(t, 'immersive.presets', 'Presets')}</option>
               <option value="warm">☀️ Warm</option>
               <option value="dark">🌙 Dark</option>
               <option value="high-contrast">◼️ High Contrast</option>
@@ -590,10 +617,10 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               <option value="rose">🌸 Rose</option>
             </select>
             <div className="flex items-center gap-1.5">
-              <label className="text-[11px] text-slate-600">{t('immersive.bg') || 'Bg'}</label>
-              <input type="color" value={settings.bgColor || '#fdfbf7'} onChange={(e) => setSettings(prev => ({...prev, bgColor: e.target.value}))} className="w-5 h-5 rounded-full border border-slate-200 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.bgColor}} aria-label={t('immersive.bg_color') || 'Background color'}/>
-              <label className="text-[11px] text-slate-600">{t('immersive.text') || 'Text'}</label>
-              <input type="color" value={settings.fontColor || '#1e293b'} onChange={(e) => setSettings(prev => ({...prev, fontColor: e.target.value}))} className="w-5 h-5 rounded-full border border-slate-200 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.fontColor}} aria-label={t('immersive.text_color') || 'Text color'}/>
+              <label className="text-[11px] text-slate-600">{safeT(t, 'immersive.bg', 'Bg')}</label>
+              <input type="color" value={settings.bgColor || '#fdfbf7'} onChange={(e) => setSettings(prev => ({...prev, bgColor: e.target.value}))} className="w-5 h-5 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.bgColor}} aria-label={safeT(t, 'immersive.bg_color', 'Background color')}/>
+              <label className="text-[11px] text-slate-600">{safeT(t, 'immersive.text', 'Text')}</label>
+              <input type="color" value={settings.fontColor || '#1e293b'} onChange={(e) => setSettings(prev => ({...prev, fontColor: e.target.value}))} className="w-5 h-5 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.fontColor}} aria-label={safeT(t, 'immersive.text_color', 'Text color')}/>
             </div>
         </div>
       </div>
@@ -620,12 +647,28 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
 // ============================================================================
 const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     const { t } = useContext(LanguageContext);
-    const [speedPxPerSec, setSpeedPxPerSec] = useState(50);
+    // Persist user's preferred speed / palette / ambient across sessions so each
+    // open doesn't reset to defaults. Direct localStorage with try/catch — same
+    // lightweight pattern used elsewhere (no safeGetItem dep needed).
+    const [speedPxPerSec, setSpeedPxPerSec] = useState(() => {
+        try { const v = parseInt(localStorage.getItem('allo_crawl_speed'), 10); return (v >= 10 && v <= 140) ? v : 70; } catch { return 70; }
+    });
+    useEffect(() => { try { localStorage.setItem('allo_crawl_speed', String(speedPxPerSec)); } catch {} }, [speedPxPerSec]);
     const [isPlaying, setIsPlaying] = useState(true);
     const [translateY, setTranslateY] = useState(0); // negative = scrolled up — used for render only
-    const [palette, setPalette] = useState('gold'); // 'gold' | 'teal' | 'paper'
+    const [palette, setPalette] = useState(() => {
+        try { const v = localStorage.getItem('allo_crawl_palette'); return ['gold', 'teal', 'paper'].includes(v) ? v : 'gold'; } catch { return 'gold'; }
+    }); // 'gold' | 'teal' | 'paper'
+    useEffect(() => { try { localStorage.setItem('allo_crawl_palette', palette); } catch {} }, [palette]);
     const [finished, setFinished] = useState(false);
-    const [ambientOn, setAmbientOn] = useState(true);
+    // Ambient pad defaults OFF — clicking "Cinematic Crawl" counts as a user
+    // gesture, so the AudioContext would otherwise start playing immediately and
+    // surprise users who didn't expect audio. Users who want it can press M or
+    // click ♪; their preference persists across sessions.
+    const [ambientOn, setAmbientOn] = useState(() => {
+        try { return localStorage.getItem('allo_crawl_ambient') === '1'; } catch { return false; }
+    });
+    useEffect(() => { try { localStorage.setItem('allo_crawl_ambient', ambientOn ? '1' : '0'); } catch {} }, [ambientOn]);
     const [progressPct, setProgressPct] = useState(0);
     const palettes = {
         gold: { bg: '#000000', text: '#fde047', accent: '#facc15' },
@@ -787,10 +830,10 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
         <div className="fixed inset-0 z-[300] flex flex-col" style={{ backgroundColor: p.bg, color: p.text }}>
             <div className="p-4 flex justify-between items-center gap-3 flex-wrap backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.55)' }}>
                 <div className="flex items-center gap-3">
-                    <button onClick={onClose} aria-label={t('common.close') || 'Close'} className="p-2 rounded-full" style={{ color: p.text }}>
+                    <button onClick={onClose} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full" style={{ color: p.text }}>
                         <ArrowLeft size={22} />
                     </button>
-                    <span className="font-bold text-base">{t('immersive.cinematic_crawl') || 'Cinematic Crawl'}</span>
+                    <span className="font-bold text-base">{safeT(t, 'immersive.cinematic_crawl', 'Cinematic Crawl')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-xs font-bold flex-wrap">
                     <label className="flex items-center gap-2">
@@ -800,7 +843,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                     </label>
                     <label className="flex items-center gap-2">
                         <span style={{ opacity: 0.7 }}>PALETTE</span>
-                        <select aria-label="Palette" value={palette} onChange={e => setPalette(e.target.value)} className="text-xs rounded px-2 py-1 bg-transparent border" style={{ borderColor: p.text + '55', color: p.text }}>
+                        <select aria-label="Palette" value={palette} onChange={e => setPalette(e.target.value)} className="text-xs rounded px-2 py-1 border" style={{ borderColor: p.text, background: p.bg, color: p.text }}>
                             <option value="gold">Golden</option>
                             <option value="teal">Aqua</option>
                             <option value="paper">Paper</option>
@@ -828,7 +871,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                 ref={viewportRef}
                 onClick={togglePlay}
                 className="flex-1 relative overflow-hidden cursor-pointer select-none"
-                style={{ perspective: '500px', perspectiveOrigin: '50% 100%' }}
+                style={{ perspective: '900px', perspectiveOrigin: '50% 100%' }}
                 role="button"
                 aria-label={isPlaying ? 'Pause crawl' : 'Play crawl'}
             >
@@ -856,10 +899,10 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                         padding: '0 10%',
                         fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
                         fontWeight: 700,
-                        fontSize: 'clamp(1.4rem, 2.6vw, 2.4rem)',
+                        fontSize: 'clamp(2rem, 3.6vw, 3.4rem)',
                         lineHeight: 1.5,
                         textAlign: 'justify',
-                        transform: `translateY(${translateY}px) rotateX(22deg)`,
+                        transform: `translateY(${translateY}px) rotateX(15deg)`,
                         transformOrigin: '50% 100%',
                         willChange: 'transform',
                         textShadow: '0 0 12px ' + p.accent + '44'
@@ -872,7 +915,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                 {/* Fade at top so text gracefully vanishes as it recedes */}
                 <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: '40%', background: `linear-gradient(to bottom, ${p.bg} 0%, ${p.bg}cc 40%, transparent 100%)` }} />
                 {/* Matching fade-in at bottom so paragraphs ease into view as they enter */}
-                <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: '18%', background: `linear-gradient(to top, ${p.bg} 0%, transparent 100%)` }} />
+                <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: '8%', background: `linear-gradient(to top, ${p.bg} 0%, transparent 100%)` }} />
                 {/* subtle vignette */}
                 <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 180px rgba(0,0,0,0.6)' }} />
                 {/* Outro card when the crawl completes */}
@@ -1187,11 +1230,11 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
         <div className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200" style={{ backgroundColor: c.bg, color: c.ink }}>
             <div className="p-4 flex justify-between items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => { hardStop(); onClose(); }} aria-label={t('common.close') || 'Close'} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.ink }}>
+                    <button onClick={() => { hardStop(); onClose(); }} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.ink }}>
                         <ArrowLeft size={22} />
                     </button>
                     <div className="flex flex-col">
-                        <span className="font-bold text-base">{t('immersive.focus_reader') || 'Focus Reader'}</span>
+                        <span className="font-bold text-base">{safeT(t, 'immersive.focus_reader', 'Focus Reader')}</span>
                         <span className="text-xs" style={{ color: c.dim }}>Sentence {sentenceIdx + 1} / {sentences.length} · read-along sweep</span>
                     </div>
                 </div>
@@ -1226,7 +1269,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
                     </div>
                     <label className="flex items-center gap-2">
                         <span style={{ color: c.dim }}>THEME</span>
-                        <select aria-label="Theme" value={theme} onChange={e => setTheme(e.target.value)} className="text-xs rounded px-2 py-1 border" style={{ borderColor: c.dim + '88', background: 'transparent', color: c.ink }}>
+                        <select aria-label="Theme" value={theme} onChange={e => setTheme(e.target.value)} className="text-xs rounded px-2 py-1 border" style={{ borderColor: c.ink, background: c.bg, color: c.ink }}>
                             <option value="warm">☀️ Warm</option>
                             <option value="dark">🌙 Dark</option>
                             <option value="sepia">📜 Sepia</option>

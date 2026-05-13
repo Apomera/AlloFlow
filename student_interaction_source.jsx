@@ -139,7 +139,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
                 </div>
             </div>
         </div>
-        <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 mb-6">
+        <div className="bg-slate-50 rounded-xl p-4 border border-slate-400 mb-6">
             <h4 className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-3 border-b border-slate-200 pb-2">{t('modals.work_summary')}</h4>
             <div className="grid grid-cols-2 gap-3 mb-3">
                 <div className="flex items-center gap-2 text-sm text-slate-700">
@@ -204,7 +204,7 @@ const DraftFeedbackInterface = React.memo(({
   const renderRubric = () => {
     if (!gradingDetails || !gradingDetails.breakdown) return null;
     return (
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+      <div className="bg-white rounded-xl border border-slate-400 shadow-sm overflow-hidden mb-6">
         <div className="bg-slate-50 p-4 border-b border-slate-200 flex justify-between items-center">
           <h3 className="font-bold text-slate-700">{t('mastery.feedback')} & {t('mastery.score')}</h3>
           <div className={`px-4 py-1 rounded-full text-sm font-black border ${status === 'mastery' ? 'bg-yellow-100 text-yellow-700 border-yellow-300' : 'bg-blue-100 text-blue-700 border-blue-200'}`}>
@@ -310,7 +310,7 @@ const DraftFeedbackInterface = React.memo(({
                 <label className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2">
                     <History size={14} /> {t('mastery.locked_draft', { count: draftCount })}
                 </label>
-                <div className="bg-slate-100 text-slate-600 p-6 rounded-xl border border-slate-200 h-96 overflow-y-auto font-serif relative whitespace-pre-wrap">
+                <div className="bg-slate-100 text-slate-600 p-6 rounded-xl border border-slate-400 h-96 overflow-y-auto font-serif relative whitespace-pre-wrap">
                     <div className="absolute top-4 right-4 text-slate-600">
                         <Lock size={20} />
                     </div>
@@ -371,7 +371,7 @@ const DraftFeedbackInterface = React.memo(({
             </div>
         </div>
         {gradingDetails?.feedback?.strength && (
-             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-left mb-8 max-w-3xl mx-auto">
+             <div className="bg-white p-6 rounded-2xl border border-slate-400 shadow-sm text-left mb-8 max-w-3xl mx-auto">
                  <h4 className="font-bold text-slate-700 flex items-center gap-2 mb-2">
                      <Star size={16} className="text-yellow-500 fill-current"/> {t('mastery.teacher_feedback')}
                  </h4>

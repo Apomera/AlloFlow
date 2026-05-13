@@ -33,6 +33,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-singing')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-singing';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ═══════════════════════════════════════════
   // Module-scoped audio processing functions
@@ -265,7 +287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var lineGap = opts.lineGap || 10;
     var isDark = opts.isDark;
 
-    c.strokeStyle = isDark ? '#64748b' : '#94a3b8';
+    c.strokeStyle = isDark ? '#94a3b8' : '#94a3b8';
     c.lineWidth = 1;
 
     // 5 staff lines
@@ -421,7 +443,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         c.moveTo(plotX, noteY);
         c.lineTo(W, noteY);
         c.stroke();
-        c.fillStyle = isDark ? '#94a3b8' : '#64748b';
+        c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
         c.fillText(noteInfo.str, labelW - 3, noteY + 3);
       } else if (isNatural) {
         c.strokeStyle = isDark ? '#1e293b' : '#e2e8f0';
@@ -435,7 +457,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
     // Draw pitch history line
     if (!history || history.length < 2) {
-      c.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       c.textAlign = 'center';
       c.font = '13px sans-serif';
       c.fillText('Start singing to see your pitch', W / 2, H / 2);
@@ -535,7 +557,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
     // Labels
     c.font = '8px sans-serif';
-    c.fillStyle = isDark ? '#64748b' : '#94a3b8';
+    c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
     c.textAlign = 'center';
     c.fillText('Flat', barX + 10, barY + barH + 12);
     c.fillText('Sharp', barX + barW - 10, barY + barH + 12);
@@ -576,7 +598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     c.fillRect(0, 0, W, H);
 
     if (!history || history.length < 10) {
-      c.fillStyle = isDark ? '#64748b' : '#94a3b8';
+      c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
       c.textAlign = 'center';
       c.font = '12px sans-serif';
       c.fillText('Sustain a note to see vibrato waveform', W / 2, H / 2);
@@ -598,7 +620,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var gridCents = [-40, -20, 0, 20, 40];
     c.font = '8px sans-serif';
     c.textAlign = 'right';
-    c.fillStyle = isDark ? '#64748b' : '#94a3b8';
+    c.fillStyle = isDark ? '#94a3b8' : '#94a3b8';
     for (var gi = 0; gi < gridCents.length; gi++) {
       var gy = centerY - gridCents[gi] * scaleY;
       c.beginPath();
@@ -692,7 +714,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       // Label on C notes
       if (n.note === 'C') {
         c.font = '7px sans-serif';
-        c.fillStyle = isDark ? '#1e293b' : '#64748b';
+        c.fillStyle = isDark ? '#1e293b' : '#94a3b8';
         c.textAlign = 'center';
         c.fillText(n.str, x + keyW / 2, keyH - 4);
       }
@@ -720,7 +742,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             ? (isDark ? '#15803d' : '#4ade80')
             : (isDark ? '#0f172a' : '#1e293b');
           c.fillRect(bx, 0, blackKeyW, blackKeyH);
-          c.strokeStyle = isDark ? '#334155' : '#64748b';
+          c.strokeStyle = isDark ? '#334155' : '#94a3b8';
           c.lineWidth = 0.5;
           c.strokeRect(bx, 0, blackKeyW, blackKeyH);
 
@@ -1264,7 +1286,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
       // Note name label below
       c.font = '9px sans-serif';
-      c.fillStyle = isDk ? '#64748b' : '#94a3b8';
+      c.fillStyle = isDk ? '#94a3b8' : '#94a3b8';
       c.textAlign = 'center';
       c.fillText(info.str, nx, staffBottom + lineGap * 3.5);
     }
@@ -2657,7 +2679,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
         var cardClass = isDark
           ? 'bg-slate-800 border border-slate-700 rounded-xl p-4'
-          : 'bg-white border border-slate-200 rounded-xl p-4 shadow-sm';
+          : 'bg-white border border-slate-400 rounded-xl p-4 shadow-sm';
         var headingClass = isDark ? 'text-white font-bold' : 'text-slate-900 font-bold';
         var subTextClass = isDark ? 'text-slate-200 text-xs' : 'text-slate-600 text-xs';
         var btnPrimary = 'px-4 py-2 rounded-lg font-bold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ' +
@@ -2705,7 +2727,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         function renderPitchDetective() {
           // Note display color
           var centsAbs = Math.abs(currentNote.cents || 0);
-          var noteColor = currentNote.midi <= 0 ? (isDark ? '#64748b' : '#94a3b8')
+          var noteColor = currentNote.midi <= 0 ? (isDark ? '#94a3b8' : '#94a3b8')
             : centsAbs <= 10 ? '#22c55e'
             : centsAbs <= 25 ? '#eab308'
             : '#ef4444';
@@ -2921,7 +2943,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 ),
                 h('button', {
                   className: btnSecondary,
-                  'aria-label': 'Cancel vocal range test',
+                  'aria-label': 'Cancel vocal range test (low range)',
                   onClick: function() { setRangeStep(0); }
                 }, 'Cancel')
               ),
@@ -2943,7 +2965,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 ),
                 h('button', {
                   className: btnSecondary,
-                  'aria-label': 'Cancel vocal range test',
+                  'aria-label': 'Cancel vocal range test (high range)',
                   onClick: function() { setRangeStep(0); }
                 }, 'Cancel')
               ),
@@ -3082,7 +3104,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
           var depth = vibratoResult.depth;
 
           // Quality assessment
-          var quality = { label: 'No Signal', color: '#64748b', desc: 'Start singing a sustained note.' };
+          var quality = { label: 'No Signal', color: '#94a3b8', desc: 'Start singing a sustained note.' };
           if (vibratoHistory.length >= 20 && currentNote.midi > 0) {
             if (depth < 10) {
               quality = { label: 'Straight Tone', color: '#6366f1', desc: 'Very little pitch variation. Good for choral blend!' };
@@ -4384,7 +4406,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   className: 'flex items-center gap-3 p-2 rounded-lg ' +
                     (q.done
                       ? (isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200')
-                      : (isDark ? 'bg-slate-800 border border-slate-700' : 'bg-slate-50 border border-slate-200')),
+                      : (isDark ? 'bg-slate-800 border border-slate-700' : 'bg-slate-50 border border-slate-400')),
                   role: 'listitem'
                 },
                   h('span', { className: 'text-lg' }, q.done ? '\u2705' : q.icon),
@@ -4468,6 +4490,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 }
               }, tab.icon + ' ' + tab.label);
             })),
+
+          // ── Topic-accent hero band (per tab) ──
+          (function() {
+            var TAB_META = {
+              pitch:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '🎯', title: 'Pitch Detective',           hint: 'Sing into the mic; the lab tracks frequency in real time. Trained singers hold pitch within ±5 cents (1/20th of a semitone) — that is what perfect-pitch matching looks like.' },
+              range:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎹', title: 'Vocal Range — your tessitura', hint: 'Most untrained voices span 1.5–2 octaves; trained classical singers reach 3+. Range expansion is mostly about REGISTER blending, not just stretching higher and lower.' },
+              vibrato:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🌊', title: 'Vibrato Lab',                hint: 'Healthy vibrato: 5–7 Hz oscillation, ~60–100 cents wide. Slower = wobble; faster = tremor. Vibrato is a function of relaxed breath support, not a separate technique.' },
+              intervals: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '🎵', title: 'Interval Singer — ear training', hint: 'Major 3rd vs minor 3rd is the single most-confused interval pair for beginners. Mnemonics: M3 = "Oh when the saints," m3 = "Greensleeves." Builds relative pitch.' },
+              warmups:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '❤️', title: 'Warm-ups',                  hint: 'Lip trills + sirens before any sustained singing. 5–10 minutes of low-intensity warm-up halves the risk of vocal-fold strain. Skipping warm-ups is the #1 cause of preventable vocal injury.' },
+              sightread: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '🎼', title: 'Sight reading',              hint: 'Solfège (do-re-mi) > letter names for sight-singing because the syllables encode interval relationships, not just pitch labels. Movable do beats fixed do for tonal music.' }
+            };
+            var meta = TAB_META[activeTab] || TAB_META.pitch;
+            return h('div', {
+              className: 'mt-2',
+              style: {
+                padding: '12px 14px',
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                border: '1px solid ' + meta.accent + '55',
+                borderLeft: '4px solid ' + meta.accent,
+                display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+              }
+            },
+              h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('p', { style: { margin: '3px 0 0', color: isDark ? '#cbd5e1' : '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              )
+            );
+          })(),
 
           // Quest summary
           renderQuestSummary(),

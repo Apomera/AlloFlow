@@ -452,7 +452,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                   onKeyDown: function(e) { if (e.key === 'Enter' && auditUrl.trim()) fetchAndAudit(auditUrl.trim()); },
                   placeholder: 'https://example.com',
                   'aria-label': 'Website URL to audit',
-                  className: 'flex-1 text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-300'
+                  className: 'flex-1 text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-teal-300'
                 }),
                 h('button', { 'aria-label': 'Try:',
                   onClick: function() { if (auditUrl.trim()) fetchAndAudit(auditUrl.trim()); },
@@ -482,7 +482,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 onChange: function(e) { upd('auditHtml', e.target.value); },
                 placeholder: '<html>\n  <head><title>My Page</title></head>\n  <body>\n    <h1>Hello World</h1>\n    <img src="photo.jpg">\n  </body>\n</html>',
                 'aria-label': 'HTML code to audit',
-                className: 'w-full text-xs p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-teal-300 font-mono resize-none h-32'
+                className: 'w-full text-xs p-3 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-teal-300 font-mono resize-none h-32'
               }),
               h('button', { 'aria-label': 'A11yauditor action',
                 onClick: function() { if (auditHtml.trim()) runAudit(auditHtml.trim(), 'html'); },
@@ -611,7 +611,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             ),
 
             // Score breakdown radar
-            auditResult.score_breakdown && h('div', { className: 'bg-white rounded-2xl border border-slate-200 p-4' },
+            auditResult.score_breakdown && h('div', { className: 'bg-white rounded-2xl border border-slate-400 p-4' },
               h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-widest mb-3' }, 'Score Breakdown'),
               h('div', { className: 'grid grid-cols-2 sm:grid-cols-5 gap-2' },
                 Object.entries(auditResult.score_breakdown).map(function(entry) {
@@ -641,7 +641,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             ),
 
             // Issues
-            auditResult.issues && auditResult.issues.length > 0 && h('div', { className: 'bg-white rounded-2xl border border-slate-200 p-4' },
+            auditResult.issues && auditResult.issues.length > 0 && h('div', { className: 'bg-white rounded-2xl border border-slate-400 p-4' },
               h('h4', { className: 'text-xs font-bold text-slate-600 uppercase tracking-widest mb-3' }, 'Issues Found (', auditResult.issues.length, ')'),
               h('div', { className: 'space-y-2' },
                 auditResult.issues.map(function(issue, i) {
@@ -825,10 +825,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             ),
             // Entity name
             h('label', { className: 'text-xs font-bold text-slate-600 block' }, 'Entity Name (school, city, agency)'),
-            h('input', { type: 'text', value: complaintEntity, onChange: function(e) { upd('complaintEntity', e.target.value); }, placeholder: 'e.g. Portland Public Schools, City of Austin', className: 'w-full text-sm p-2.5 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-red-300 mt-1', 'aria-label': 'Entity name' }),
+            h('input', { type: 'text', value: complaintEntity, onChange: function(e) { upd('complaintEntity', e.target.value); }, placeholder: 'e.g. Portland Public Schools, City of Austin', className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-red-300 mt-1', 'aria-label': 'Entity name' }),
             // Impact description
             h('label', { className: 'text-xs font-bold text-slate-600 block mt-2' }, 'Describe the impact (who is affected and how)'),
-            h('textarea', { value: complaintImpact, onChange: function(e) { upd('complaintImpact', e.target.value); }, placeholder: 'e.g. My child uses a screen reader and cannot navigate the enrollment forms...', className: 'w-full text-xs p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-red-300 resize-none h-20 mt-1', 'aria-label': 'Impact description' }),
+            h('textarea', { value: complaintImpact, onChange: function(e) { upd('complaintImpact', e.target.value); }, placeholder: 'e.g. My child uses a screen reader and cannot navigate the enrollment forms...', className: 'w-full text-xs p-3 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-red-300 resize-none h-20 mt-1', 'aria-label': 'Impact description' }),
             // Auto-populate from last audit
             auditResult && auditResult.issues && h('p', { className: 'text-[10px] text-teal-600 font-bold' }, '\u2705 ' + auditResult.issues.length + ' issues from your last audit will be included automatically'),
             // Generate button
@@ -860,7 +860,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             }, complaintLoading ? 'Generating...' : '\uD83D\uDCDD Generate Complaint Letter'),
             // Result
             complaintResult && h('div', { className: 'mt-3 space-y-2' },
-              h('div', { className: 'bg-slate-50 border border-slate-200 rounded-xl p-4 max-h-60 overflow-y-auto' },
+              h('div', { className: 'bg-slate-50 border border-slate-400 rounded-xl p-4 max-h-60 overflow-y-auto' },
                 h('pre', { className: 'text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed' }, complaintResult)
               ),
               h('div', { className: 'flex gap-2' },

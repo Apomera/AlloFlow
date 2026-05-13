@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_flightsim.js — SkySchool: Educational Flight Simulator
 // Teaches aerodynamics, flight mechanics, navigation, and geography
@@ -16,6 +26,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
 (function() {
   'use strict';
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-flightsim')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-flightsim';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ── WAYPOINTS: Real-world locations with educational facts ──
   var WAYPOINTS = [
@@ -141,6 +164,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     { id: 'mountain_flying', name: 'Mountain Flying', desc: 'Fly to Denver at 5,431 ft elevation. Learn how altitude affects aircraft performance.', goals: ['Climb above 8,000 ft', 'Experience reduced lift at altitude', 'Land at DEN'], lesson: 'lift' },
     { id: 'energy_management', name: 'Energy Management', desc: 'Trade speed for altitude and back. Demonstrate conservation of energy.', goals: ['Reach 5,000 ft', 'Reduce throttle to idle', 'Maintain speed by descending', 'Climb using excess speed'], lesson: 'weight' },
     { id: 'world_tour', name: 'Around the World', desc: 'Visit 5 airports across different continents. Learn geography as you fly!', goals: ['Visit any 5 different airports', 'Cross at least 2 oceans', 'Learn a fact at each stop'], lesson: 'navigation' },
+    { id: 'coastal_rescue', name: '🚁 Coastal Rescue', desc: 'A boater is in distress 5nm offshore from PWM. Fly the rescue helicopter to the location, hover stably below 100 ft AGL, lower the hoist for 5 seconds, then return to PWM and land.', goals: ['Reach the survivor coordinates', 'Hover stably for hoist (≤100 ft AGL, ≤10 kts)', 'Hold hoist 5 seconds', 'Return to PWM', 'Land safely'], lesson: 'lift', requiresAircraft: 'rescue_heli' },
+    { id: 'drone_survey', name: '🛸 Drone Aerial Survey', desc: 'Fly a Part 107 drone survey of Casco Bay. Stay below 400 ft AGL, within visual line of sight, capture 4 photo waypoints, and return to launch.', goals: ['Read FAA Part 107 briefing', 'Stay below 400 ft AGL', 'Capture 4 photo waypoints', 'Stay within 1 nm of launch', 'Return to launch + land'], lesson: 'navigation', requiresAircraft: 'drone' },
+    { id: 'drone_powerline', name: '🔌 Powerline Inspection', desc: 'Real Part 107 work: fly low and slow along a 6-segment powerline, photograph each defect site for the utility crew, and return to launch. Tighter tolerance — 30 ft, 60 ft AGL, 5 kts.', goals: ['Read FAA Part 107 briefing', 'Stay below 400 ft AGL', 'Inspect 6 defect sites at < 60 ft AGL', 'Stay within 30 ft of each pole', 'Return to launch + land'], lesson: 'navigation', requiresAircraft: 'drone' },
   ];
 
   // ── HYPERJET GEOGRAPHY SPRINT ROUTES ──
@@ -175,6 +201,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       wingArea: 1800, weight: 152000, maxThrust: 68000, cl0: 0.15, clPerAoa: 0.06, cd0: 0.009, cdK: 0.06,
       maxSpeed: 2200, ceiling: 85000, fuelBurn: 8000, range: 3200,
       lesson: 'The SR-71 flies so fast that its titanium skin heats to over 600°F from air friction. The fuel tanks are designed to leak on the ground — they only seal properly when the metal expands at operating temperature!' },
+    { id: 'rescue_heli', name: 'UH-60 Rescue Helicopter', icon: '🚁', desc: 'A search-and-rescue helicopter. Hovers in place, lifts straight up, no runway needed. Different physics from fixed-wing — collective controls vertical thrust, cyclic pitches the rotor disk for forward motion.', category: 'Rotor',
+      isHelicopter: true,
+      wingArea: 1, weight: 11000, maxThrust: 13000, cl0: 0, clPerAoa: 0, cd0: 0.15, cdK: 0,
+      maxSpeed: 174, ceiling: 10500, fuelBurn: 230, range: 320,
+      lesson: 'A helicopter rotor is a rotating wing. The rotor blades produce lift the same way a fixed wing does — but because the blades are always moving (even when the aircraft isn\'t), the helicopter can hover. Tilt the rotor disk forward and lift becomes thrust + lift; the helicopter accelerates while staying airborne. This is why rescue helicopters can pluck a person off a sinking boat.' },
+    { id: 'drone', name: 'DJI Mavic Drone', icon: '🛸', desc: 'A consumer quadcopter. Snappy, GPS-stabilized, capped at 400 ft AGL by FAA Part 107. Smaller than a helicopter — built for photography, mapping, and survey work.', category: 'Drone',
+      isDrone: true,
+      wingArea: 0.5, weight: 2 /* lbs */, maxThrust: 4 /* very high thrust-to-weight */, cl0: 0, clPerAoa: 0, cd0: 0.4, cdK: 0,
+      maxSpeed: 100, ceiling: 400 /* AGL clamp enforced in physics */, fuelBurn: 0, range: 4 /* nm visual line-of-sight */,
+      lesson: 'A quadcopter has 4 rotors that vary individual thrust to control roll, pitch, and yaw. GPS holds altitude when you release the throttle — release the stick and the drone hovers in place. Under FAA Part 107, you must keep visual line of sight, fly below 400 ft AGL, and stay clear of airports. These rules exist because drones share airspace with crewed aircraft, and a 2 lb drone hitting a windshield at 200 mph is a real safety issue.' },
   ];
 
   // ── ACHIEVEMENT SYSTEM ──
@@ -194,6 +230,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     { id: 'quiz_10', name: 'Quiz Whiz', icon: '🧠', desc: 'Answer 10 geography quiz questions correctly', check: function(s, extra) { return extra.quizScore >= 10; } },
     { id: 'sprint_perfect', name: 'Perfect Sprint', icon: '⭐', desc: 'Complete a HyperJet sprint with 100% score', check: function(s, extra) { return extra.perfectSprint; } },
     { id: 'cross_ocean', name: 'Ocean Crossing', icon: '🌊', desc: 'Fly over an ocean (detect water below for 50+ nm)', check: function(s, extra) { return extra.oceanCrossing; } },
+    { id: 'rescue_one', name: 'Coast Guard Pilot', icon: '🚁', desc: 'Complete one coastal rescue', check: function(s, extra) { return extra.rescuesCompleted >= 1; } },
   ];
 
   // ── CONTINENT/OCEAN LABELS (visible at high altitude) ──
@@ -258,12 +295,168 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       var throttle = Math.max(0, Math.min(1, controls.throttle));
       var pitch = controls.pitch; // degrees, positive = nose up
       var bank = controls.bank;   // degrees
+      var yawRate = controls.yawRate || 0; // deg/s, used by helicopter tail rotor
 
       var speed = state.speed;    // ft/s (TAS)
       var alt = state.altitude;   // ft MSL
       var vsi = state.vsi;        // ft/s vertical speed
       var heading = state.heading; // degrees
 
+      // ── HELICOPTER PHYSICS BRANCH ──
+      // Different regime from fixed-wing: lift comes from rotor thrust
+      // (independent of forward airspeed), forward motion comes from
+      // tilting the rotor disk, yaw comes from tail rotor (independent
+      // of bank). This is what allows hover.
+      if (this.IS_HELICOPTER) {
+        var collective = throttle;
+        // Rotor lift: vertical component is collective * MAX_THRUST * cos(pitch).
+        // Forward thrust: collective * MAX_THRUST * sin(pitch). Together, total
+        // rotor thrust magnitude = collective * MAX_THRUST.
+        var pitchRadH = pitch * Math.PI / 180;
+        var rotorThrust = this.MAX_THRUST * collective;
+        var verticalLift = rotorThrust * Math.cos(pitchRadH);
+        var forwardThrustH = rotorThrust * Math.sin(pitchRadH);
+        // Parasitic drag — uses cd0 against airspeed
+        var rho = this.airDensity(alt);
+        var dragH = 0.5 * rho * speed * speed * 35 * (this.CD0 || 0.15); // 35ft² flat-plate equivalent
+        // Forward acceleration
+        var accelH = (forwardThrustH - dragH) / (this.WEIGHT / this.G);
+        speed += accelH * dt;
+        speed = Math.max(0, speed);
+        // Cap at helicopter Vne (max forward speed in ft/s)
+        var maxFwdFtS = (this.MAX_SPEED_KTS || 174) * 1.6878;
+        if (speed > maxFwdFtS) speed = maxFwdFtS;
+        // Vertical accel — direct, no aoa coupling
+        var vertAccelH = (verticalLift - this.WEIGHT) / (this.WEIGHT / this.G);
+        vsi += vertAccelH * dt * 0.5;
+        vsi *= 0.96; // damping (helicopters are responsive but not bouncy)
+        alt += vsi * dt;
+        var fieldElevH = state.fieldElev || 0;
+        if (alt < fieldElevH) alt = fieldElevH;
+        // Ground contact
+        if (alt <= fieldElevH) {
+          alt = fieldElevH;
+          vsi = Math.max(0, vsi);
+          // Helicopters on the ground don't roll like a fixed-wing — kill speed faster
+          speed = Math.max(0, speed - 1.5 * this.G * dt);
+        }
+        // Yaw from tail rotor (independent of bank/airspeed)
+        heading += yawRate * dt;
+        // Bank also induces sideways drift but we keep it simple: bank affects
+        // visual roll but heading change is via yaw only. This is honest to how
+        // helicopters feel — bank in a hover translates sideways without turning.
+        heading = ((heading % 360) + 360) % 360;
+        // Position update — uses ground speed projected onto heading
+        var gsH = speed; // helicopter forward speed IS ground speed in this model
+        var nmPerSecH = gsH / 6076.12;
+        var latChangeH = nmPerSecH * Math.cos(heading * Math.PI / 180) / 60 * dt;
+        var lonChangeH = nmPerSecH * Math.sin(heading * Math.PI / 180) / (60 * Math.cos(state.lat * Math.PI / 180)) * dt;
+        // Sideways drift from bank (translates without turning)
+        var bankRadH = bank * Math.PI / 180;
+        var driftFtS = Math.sin(bankRadH) * collective * 30; // small lateral drift
+        var driftNmS = driftFtS / 6076.12;
+        var sideHeadingRad = (heading + 90) * Math.PI / 180;
+        latChangeH += driftNmS * Math.cos(sideHeadingRad) / 60 * dt;
+        lonChangeH += driftNmS * Math.sin(sideHeadingRad) / (60 * Math.cos(state.lat * Math.PI / 180)) * dt;
+        return {
+          speed: speed,
+          altitude: alt,
+          vsi: vsi,
+          heading: heading,
+          lat: state.lat + latChangeH,
+          lon: state.lon + lonChangeH,
+          aoa: 0,
+          stalling: false,
+          onGround: alt <= fieldElevH + 1,
+          fieldElev: fieldElevH,
+          forces: { lift: verticalLift, drag: dragH, thrust: rotorThrust, weight: this.WEIGHT }
+        };
+      }
+
+      // ── DRONE PHYSICS BRANCH ──
+      // Quadcopter: very light, very high thrust-to-weight, GPS-stabilized
+      // altitude hold (release throttle and altitude stays), capped at
+      // 400 ft AGL by FAA Part 107. Snappier response than the helicopter
+      // but follows the same general rotor-thrust model.
+      if (this.IS_DRONE) {
+        var dCollective = throttle;
+        var pitchRadD = pitch * Math.PI / 180;
+        var dThrust = this.MAX_THRUST * dCollective;
+        // Thrust-to-weight ratio is ~2:1 — drones are over-powered.
+        // We multiply by weight ratio so accelerations feel right at this scale.
+        var dForce = dThrust * this.WEIGHT;
+        var verticalLiftD = dForce * Math.cos(pitchRadD);
+        var forwardThrustD = dForce * Math.sin(pitchRadD);
+        // Drag — drones are draggy (small frontal area but bluff body)
+        var rhoD = this.airDensity(alt);
+        var dragD = 0.5 * rhoD * speed * speed * 0.4 * (this.CD0 || 0.4);
+        var accelD = (forwardThrustD - dragD) / (this.WEIGHT / this.G);
+        speed += accelD * dt;
+        speed = Math.max(0, speed);
+        var maxFwdFtSD = (this.MAX_SPEED_KTS || 100) * 1.6878;
+        if (speed > maxFwdFtSD) speed = maxFwdFtSD;
+        // Vertical accel — drones are very responsive; minimal damping
+        var vertAccelD = (verticalLiftD - this.WEIGHT) / (this.WEIGHT / this.G);
+        vsi += vertAccelD * dt * 0.7;
+        // GPS altitude hold — when collective is near 50% (the "hover"
+        // collective), VSI decays toward 0 quickly. Real drones use
+        // barometric + GPS feedback to actively hold altitude.
+        var hoverColl = 0.5;
+        if (Math.abs(dCollective - hoverColl) < 0.05) {
+          vsi *= 0.85; // strong damping at hover throttle
+        } else {
+          vsi *= 0.94;
+        }
+        alt += vsi * dt;
+        var fieldElevD = state.fieldElev || 0;
+        var aglD = alt - fieldElevD;
+        // FAA Part 107 hard ceiling at 400 ft AGL — hard clamp, drone
+        // refuses to climb past this. Triggers a flag for HUD red alert.
+        var hitCeiling = false;
+        if (this.AGL_CEILING && aglD > this.AGL_CEILING) {
+          alt = fieldElevD + this.AGL_CEILING;
+          if (vsi > 0) vsi = 0;
+          hitCeiling = true;
+        }
+        if (alt < fieldElevD) alt = fieldElevD;
+        if (alt <= fieldElevD) {
+          alt = fieldElevD;
+          vsi = Math.max(0, vsi);
+          // Drones land soft — minimal ground friction
+          speed = Math.max(0, speed - 0.5 * this.G * dt);
+        }
+        // Yaw from drone yaw stick (pedals on heli, sticks on drone)
+        heading += yawRate * dt;
+        heading = ((heading % 360) + 360) % 360;
+        // Position update
+        var gsD = speed;
+        var nmPerSecD = gsD / 6076.12;
+        var latChangeD = nmPerSecD * Math.cos(heading * Math.PI / 180) / 60 * dt;
+        var lonChangeD = nmPerSecD * Math.sin(heading * Math.PI / 180) / (60 * Math.cos(state.lat * Math.PI / 180)) * dt;
+        // Sideways drift from bank — quadcopters strafe with roll, no auto-turn
+        var bankRadD = bank * Math.PI / 180;
+        var driftFtSD = Math.sin(bankRadD) * dCollective * 50; // drones strafe fast
+        var driftNmSD = driftFtSD / 6076.12;
+        var sideHeadingRadD = (heading + 90) * Math.PI / 180;
+        latChangeD += driftNmSD * Math.cos(sideHeadingRadD) / 60 * dt;
+        lonChangeD += driftNmSD * Math.sin(sideHeadingRadD) / (60 * Math.cos(state.lat * Math.PI / 180)) * dt;
+        return {
+          speed: speed,
+          altitude: alt,
+          vsi: vsi,
+          heading: heading,
+          lat: state.lat + latChangeD,
+          lon: state.lon + lonChangeD,
+          aoa: 0,
+          stalling: false,
+          onGround: alt <= fieldElevD + 1,
+          fieldElev: fieldElevD,
+          hitCeiling: hitCeiling,
+          forces: { lift: verticalLiftD, drag: dragD, thrust: dThrust, weight: this.WEIGHT }
+        };
+      }
+
+      // ── FIXED-WING PHYSICS (unchanged below) ──
       // Forces
       var thrust = this.MAX_THRUST * throttle;
       var aoa = pitch - (vsi / Math.max(speed, 1)) * (180 / Math.PI) * 0.5;
@@ -297,11 +490,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       var fieldElev = state.fieldElev || 0;
       if (alt < fieldElev) alt = fieldElev;
 
-      // Ground contact (at field elevation, not sea level)
+      // Ground contact (at field elevation, not sea level).
+      // Rolling friction modeled as a constant decelerating force (the
+      // physically-correct model for tire contact), not as exponential
+      // speed decay. The previous `speed *= 0.995` per frame at 30fps
+      // imposed ~14% speed loss per second, which capped the plane's
+      // ground roll at ~20 kts equilibrium — well below the 55 kt Cessna
+      // rotation speed. Result: takeoff was literally impossible.
+      // Coefficient of rolling friction for paved runway ≈ 0.025; this
+      // gives ~0.8 ft/s² decel (~50 lbs resistance against 400 lbs thrust),
+      // which lets the plane accelerate normally toward Vr.
       if (alt <= fieldElev) {
         alt = fieldElev;
         vsi = Math.max(0, vsi);
-        speed *= 0.995; // ground friction
+        var rollingMu = 0.025;
+        speed = Math.max(0, speed - rollingMu * this.G * dt);
       }
 
       // Turn rate (bank angle → heading change).
@@ -442,9 +645,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       }, []);
 
       // ── Keyboard Controls ──
+      // Bug fix: arrow keys + WASD weren't preventDefault'd, so the
+      // page scrolled out from under the plane while the student
+      // tried to fly. Now any flight-control key swallows its default
+      // browser action; non-flight keys still fall through so the
+      // student can type elsewhere on the page.
       useEffect(function() {
         if (view !== 'flying') return;
-        var onKey = function(e) { keysRef.current[e.key.toLowerCase()] = e.type === 'keydown'; };
+        var FLIGHT_KEYS = { 'arrowup': 1, 'arrowdown': 1, 'arrowleft': 1, 'arrowright': 1, 'w': 1, 'a': 1, 's': 1, 'd': 1, ' ': 1, 'spacebar': 1, 'q': 1, 'e': 1, 'shift': 1 };
+        var onKey = function(e) {
+          var k = (e.key || '').toLowerCase();
+          if (FLIGHT_KEYS[k]) {
+            keysRef.current[k] = e.type === 'keydown';
+            if (e.type === 'keydown') e.preventDefault();
+          }
+        };
         window.addEventListener('keydown', onKey);
         window.addEventListener('keyup', onKey);
         return function() { window.removeEventListener('keydown', onKey); window.removeEventListener('keyup', onKey); };
@@ -834,6 +1049,1528 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         return terrainHash(lat * 2, lon * 2) > 0.45; // noise-based coastlines
       };
 
+      // ── Low-altitude scrolling detail layer ──
+      // Adds visible features (towns, scattered trees, roads, fields) that
+      // scroll past as the student flies. At very low altitude drawTerrain's
+      // depth-scaled sampling (alt/2000) collapses all 16 rows to nearly the
+      // same lat/lon so the ground reads as one uniform wash with no parallax
+      // — students "can't tell they're moving." This adds a deterministic
+      // grid of features keyed on lat/lon that visibly scroll relative to
+      // the player and fade out by ~6000 ft AGL (where the standard terrain
+      // sampling takes over and supplies the variation naturally).
+      var drawLowAltDetails = function(gfx, W, H, horizonY, state, time, dayNight2) {
+        var fieldElev = state.fieldElev || 0;
+        var aglAlt = Math.max(0, state.altitude - fieldElev);
+        if (aglAlt > 6000) return;
+        // Skip over open ocean — water already has waves/sunglint for cues
+        if (isWater(state.lat, state.lon)) return;
+        if (dayNight2 && dayNight2.isNight) return; // night handled by city lights elsewhere
+
+        var fade = Math.max(0, 1 - aglAlt / 6000); // 1 on ground, 0 at 6000 ft
+        var hdgRad = state.heading * Math.PI / 180;
+        var cosHdg = Math.cos(hdgRad);
+        var sinHdg = Math.sin(hdgRad);
+
+        // Project a lat/lon point to screen y (approximate perspective).
+        // Closer points (small forwardNm) are nearer the bottom of screen;
+        // farther points climb toward the horizon. Returns null if behind us.
+        function projectLatLon(lat, lon) {
+          // Forward distance in nautical miles along plane's heading
+          var dLat = lat - state.lat;
+          var dLon = (lon - state.lon) * Math.cos(state.lat * Math.PI / 180);
+          var nmFwd = (dLat * cosHdg + dLon * sinHdg) * 60;     // along-track nm
+          var nmSide = (dLat * (-sinHdg) + dLon * cosHdg) * 60; // cross-track nm
+          if (nmFwd < 0.05) return null;            // behind plane
+          if (nmFwd > 8) return null;               // beyond horizon for low-alt detail
+          // Perspective: log-ish forward → screen depth (0 at horizon, 1 at viewer)
+          var t = 1 - Math.min(1, Math.log(nmFwd + 1) / Math.log(9));
+          var y = horizonY + (H - horizonY) * (0.05 + 0.95 * (t * t));
+          // Horizontal: side offset shrinks with depth
+          var sideScale = 80 * (t * t * 0.6 + 0.4); // px per nm side at this depth
+          var x = W / 2 + nmSide * sideScale;
+          if (x < -50 || x > W + 50) return null;
+          return { x: x, y: y, t: t, nmFwd: nmFwd };
+        }
+
+        // ── Field patchwork: alternating warm/cool green tones across a
+        // 0.012° grid (~0.7 nm). Adds gentle agricultural texture to the
+        // otherwise-uniform terrain wash so rural land reads as patchwork
+        // farmland rather than blank green.
+        if (aglAlt < 4500) {
+          var FSTEP = 0.012;
+          var flatC = Math.round(state.lat / FSTEP) * FSTEP;
+          var flonC = Math.round(state.lon / FSTEP) * FSTEP;
+          for (var fi = -5; fi <= 5; fi++) {
+            for (var fj = -5; fj <= 5; fj++) {
+              var fLat = flatC + fi * FSTEP;
+              var fLon = flonC + fj * FSTEP;
+              var fSeed = terrainHash(fLat * 91, fLon * 53);
+              if (fSeed < 0.35) continue; // sparse — only some cells are visibly tinted
+              // Project the field's four corners to draw an actual quad
+              var pTL = projectLatLon(fLat, fLon);
+              var pTR = projectLatLon(fLat, fLon + FSTEP);
+              var pBL = projectLatLon(fLat + FSTEP, fLon);
+              var pBR = projectLatLon(fLat + FSTEP, fLon + FSTEP);
+              if (!pTL || !pTR || !pBL || !pBR) continue;
+              var fG = fSeed > 0.7 ? 'rgba(112,138,72,'  // ripe wheat / hay
+                     : fSeed > 0.55 ? 'rgba(70,108,50,'   // pasture
+                     : fSeed > 0.45 ? 'rgba(132,118,78,'  // tilled / fallow
+                                    : 'rgba(86,128,68,';  // grass
+              gfx.fillStyle = fG + (0.30 * fade * (0.5 + (pTL.t + pBL.t) * 0.25)) + ')';
+              gfx.beginPath();
+              gfx.moveTo(pTL.x, pTL.y);
+              gfx.lineTo(pTR.x, pTR.y);
+              gfx.lineTo(pBR.x, pBR.y);
+              gfx.lineTo(pBL.x, pBL.y);
+              gfx.closePath();
+              gfx.fill();
+              // Plowed-field row stripes — only on tilled cells, only at
+              // very low altitude where the texture would actually be
+              // visible. 4 parallel stripes traversing the cell, slight
+              // alpha so they read as soil furrows not painted lines.
+              if (fSeed > 0.45 && fSeed <= 0.55 && aglAlt < 2000 && pTL.t > 0.5) {
+                gfx.strokeStyle = 'rgba(95,82,55,' + (0.35 * fade * pTL.t) + ')';
+                gfx.lineWidth = 0.7;
+                for (var st = 1; st <= 4; st++) {
+                  var stT = st / 5;
+                  // Stripe runs from interpolated TL→BL to TR→BR
+                  var sx0 = pTL.x + (pBL.x - pTL.x) * stT;
+                  var sy0 = pTL.y + (pBL.y - pTL.y) * stT;
+                  var sx1 = pTR.x + (pBR.x - pTR.x) * stT;
+                  var sy1 = pTR.y + (pBR.y - pTR.y) * stT;
+                  gfx.beginPath();
+                  gfx.moveTo(sx0, sy0);
+                  gfx.lineTo(sx1, sy1);
+                  gfx.stroke();
+                }
+              }
+              // Animal herd in pasture cells (fSeed 0.55-0.7 → green pasture).
+              // Cluster of 5-9 small dark dots representing cattle or sheep
+              // grouped near the cell center. Seed-locked positions so the
+              // herd doesn't shimmer, but visible only at close range.
+              if (fSeed > 0.55 && fSeed <= 0.7 && aglAlt < 1800 && pTL.t > 0.55
+                  && terrainHash(fLat * 311, fLon * 211) > 0.7) {
+                var herdN = 5 + Math.floor(fSeed * 5);
+                var herdCx = (pTL.x + pTR.x + pBL.x + pBR.x) / 4;
+                var herdCy = (pTL.y + pTR.y + pBL.y + pBR.y) / 4;
+                var herdR = Math.abs(pTR.x - pTL.x) * 0.35;
+                // Color choice: dark brown (cattle) or off-white (sheep)
+                var isSheep = terrainHash(fLat * 17, fLon * 23) > 0.6;
+                gfx.fillStyle = isSheep
+                  ? 'rgba(225,220,210,' + (0.85 * fade) + ')'
+                  : 'rgba(70,52,42,' + (0.85 * fade) + ')';
+                for (var an = 0; an < herdN; an++) {
+                  var anAng = terrainHash(an, fSeed * 130) * Math.PI * 2;
+                  var anRad = terrainHash(an + 5, fSeed * 150) * herdR;
+                  var anX = herdCx + Math.cos(anAng) * anRad;
+                  var anY = herdCy + Math.sin(anAng) * anRad * 0.5;
+                  var anSize = Math.max(0.7, 1.1 * pTL.t);
+                  gfx.fillRect(anX - anSize / 2, anY - anSize / 2, anSize, anSize * 0.7);
+                }
+              }
+            }
+          }
+        }
+
+        // ── Lakes & ponds: small deterministic water bodies in the
+        // landscape, drawn before towns so towns can sit on lakeshores.
+        // Sparse — only ~10% of a coarser grid hosts a water body.
+        if (aglAlt < 5000) {
+          var LSTEP = 0.04;
+          var llatC = Math.round(state.lat / LSTEP) * LSTEP;
+          var llonC = Math.round(state.lon / LSTEP) * LSTEP;
+          for (var li = -2; li <= 2; li++) {
+            for (var lj = -2; lj <= 2; lj++) {
+              var lLat = llatC + li * LSTEP;
+              var lLon = llonC + lj * LSTEP;
+              var lSeed = terrainHash(lLat * 173, lLon * 89);
+              if (lSeed < 0.90) continue; // 10% of cells host a water body
+              var pl = projectLatLon(lLat, lLon);
+              if (!pl) continue;
+              var lakeRx = Math.max(8, 22 * pl.t * (0.6 + lSeed * 0.6));
+              var lakeRy = lakeRx * (0.4 + (lSeed * 7 % 1) * 0.4);
+              gfx.fillStyle = 'rgba(70,118,158,' + (0.55 * fade * (0.5 + pl.t * 0.5)) + ')';
+              gfx.beginPath();
+              gfx.ellipse(pl.x, pl.y, lakeRx, lakeRy, 0, 0, Math.PI * 2);
+              gfx.fill();
+              // Lighter rim — shore band
+              gfx.strokeStyle = 'rgba(180,210,220,' + (0.35 * fade) + ')';
+              gfx.lineWidth = 0.8;
+              gfx.beginPath();
+              gfx.ellipse(pl.x, pl.y, lakeRx, lakeRy, 0, 0, Math.PI * 2);
+              gfx.stroke();
+              // Sailboats on big lakes (close range only) — 2-3 small white
+              // triangles at deterministic positions inside the ellipse, each
+              // drifting slowly with time so the lake actually has motion.
+              if (lakeRx > 14 && pl.t > 0.45) {
+                var nSails = 2 + Math.floor(lSeed * 2);
+                for (var sb = 0; sb < nSails; sb++) {
+                  var sbAng = terrainHash(sb, lSeed * 60) * Math.PI * 2;
+                  var sbRad = (terrainHash(sb + 7, lSeed * 80) * 0.55 + 0.15) * lakeRx;
+                  // Slow drift — phase by sb so each boat moves independently
+                  var sbDrift = (time * 0.04 + sb * 0.7) * 0.3;
+                  var sbx = pl.x + Math.cos(sbAng + sbDrift) * sbRad;
+                  var sby = pl.y + Math.sin(sbAng + sbDrift) * sbRad * 0.5;
+                  var sailH = Math.max(1.4, 2.6 * pl.t);
+                  // Sail (white triangle)
+                  gfx.fillStyle = 'rgba(245,245,250,' + (0.85 * fade) + ')';
+                  gfx.beginPath();
+                  gfx.moveTo(sbx, sby - sailH);
+                  gfx.lineTo(sbx - sailH * 0.4, sby);
+                  gfx.lineTo(sbx + sailH * 0.4, sby);
+                  gfx.closePath();
+                  gfx.fill();
+                  // Hull
+                  gfx.fillStyle = 'rgba(60,55,55,' + (0.7 * fade) + ')';
+                  gfx.fillRect(sbx - sailH * 0.5, sby, sailH, 0.7);
+                }
+              }
+            }
+          }
+        }
+
+        // ── Towns: deterministic grid every ~0.025° lat/lon (~1.5 nm).
+        // Each cell either has a town or doesn't (seeded). Top-tier seed
+        // values produce small CITIES with a skyline silhouette behind
+        // the building dots — for high-population cells. Lower seeds give
+        // ordinary towns; lowest are skipped.
+        var STEP = 0.025;
+        var latC = Math.round(state.lat / STEP) * STEP;
+        var lonC = Math.round(state.lon / STEP) * STEP;
+        var townTint = 'rgba(120,110,100,';
+        var roofTint = 'rgba(160,90,70,';
+        for (var di = -3; di <= 3; di++) {
+          for (var dj = -3; dj <= 3; dj++) {
+            var cellLat = latC + di * STEP;
+            var cellLon = lonC + dj * STEP;
+            var seed = terrainHash(cellLat * 67, cellLon * 41);
+            // 22% of cells host a town
+            if (seed < 0.78) continue;
+            // Jitter the center within the cell so towns don't form a perfect grid
+            var jLat = (terrainHash(cellLat, cellLon * 7) - 0.5) * STEP * 0.6;
+            var jLon = (terrainHash(cellLat * 3, cellLon) - 0.5) * STEP * 0.6;
+            var p = projectLatLon(cellLat + jLat, cellLon + jLon);
+            if (!p) continue;
+            var isCity = seed > 0.94; // top 6% get a skyline
+            var nBldgs = Math.floor(6 + seed * 12) + (isCity ? 8 : 0);
+            var clusterR = Math.max(3, 9 * p.t * (0.8 + seed * 0.4)) * (isCity ? 1.6 : 1);
+
+            // City skyline: a row of taller silhouette rectangles BEHIND
+            // the building dots, varying heights, suggests downtown core.
+            if (isCity && p.t > 0.35) {
+              var skyN = 7 + Math.floor(seed * 6);
+              var skyW = clusterR * 1.8;
+              gfx.fillStyle = 'rgba(75,85,105,' + (0.55 * fade * (0.5 + p.t * 0.5)) + ')';
+              for (var sk = 0; sk < skyN; sk++) {
+                var skSeed = terrainHash(seed * 1000 + sk, cellLat * 17);
+                var skX = p.x - skyW / 2 + (sk / skyN) * skyW;
+                var skBldgW = (skyW / skyN) * 0.85;
+                var skBldgH = (4 + skSeed * 14) * p.t;
+                gfx.fillRect(skX, p.y - skBldgH, skBldgW, skBldgH);
+                // Window glints (only at close range)
+                if (p.t > 0.6 && skBldgH > 6) {
+                  gfx.fillStyle = 'rgba(255,230,140,' + (0.4 * fade) + ')';
+                  for (var wn = 0; wn < 3; wn++) {
+                    if (terrainHash(skSeed * 50 + wn, sk * 13) < 0.45) continue;
+                    gfx.fillRect(skX + skBldgW * 0.2 + wn * skBldgW * 0.25, p.y - skBldgH + 2 + wn * 3, 1, 1);
+                  }
+                  gfx.fillStyle = 'rgba(75,85,105,' + (0.55 * fade * (0.5 + p.t * 0.5)) + ')';
+                }
+              }
+            }
+
+            // Cluster of building dots
+            for (var bi = 0; bi < nBldgs; bi++) {
+              var bAng = terrainHash(seed * 100 + bi, cellLat) * Math.PI * 2;
+              var bRad = terrainHash(seed * 200 + bi, cellLon) * clusterR;
+              var bx = p.x + Math.cos(bAng) * bRad;
+              var by = p.y + Math.sin(bAng) * bRad * 0.5;
+              var bSize = Math.max(0.6, 1 + p.t * 1.6) * (isCity && bi < 4 ? 1.6 : 1);
+              gfx.fillStyle = (bi % 3 === 0 ? roofTint : townTint) + (0.5 * fade * (0.4 + p.t * 0.6)) + ')';
+              gfx.fillRect(bx - bSize / 2, by - bSize / 2, bSize, bSize);
+            }
+
+            // City stadium: large oval bowl at the edge of the city
+            // for the largest cells. Bright green field inside a darker
+            // oval ring (the bleachers). Distinctive and instantly
+            // readable as "stadium" from the air.
+            if (isCity && p.t > 0.5 && seed > 0.965) {
+              // Stadium offset from city center
+              var stAng = (terrainHash(seed * 800, cellLat * 23) - 0.5) * Math.PI;
+              var stRad = clusterR * 1.3;
+              var stx = p.x + Math.cos(stAng) * stRad;
+              var sty = p.y + Math.sin(stAng) * stRad * 0.5;
+              var stRx = Math.max(7, 14 * p.t);
+              var stRy = stRx * 0.65;
+              // Bleachers ring
+              gfx.fillStyle = 'rgba(70,75,85,' + (0.85 * fade) + ')';
+              gfx.beginPath();
+              gfx.ellipse(stx, sty, stRx, stRy, 0, 0, Math.PI * 2);
+              gfx.fill();
+              // Field — bright green
+              gfx.fillStyle = 'rgba(64,148,72,' + (0.95 * fade) + ')';
+              gfx.beginPath();
+              gfx.ellipse(stx, sty, stRx * 0.65, stRy * 0.55, 0, 0, Math.PI * 2);
+              gfx.fill();
+              // Center line (white) only at very close range
+              if (p.t > 0.7) {
+                gfx.strokeStyle = 'rgba(245,245,245,' + (0.85 * fade) + ')';
+                gfx.lineWidth = 0.7;
+                gfx.beginPath();
+                gfx.moveTo(stx, sty - stRy * 0.5);
+                gfx.lineTo(stx, sty + stRy * 0.5);
+                gfx.stroke();
+              }
+            }
+
+            // City smokestacks: 1-2 industrial stacks at the city's
+            // edge with a faint vertical steam plume. Only for cities
+            // (top 6% seed) and only when the city is close enough to
+            // visibly resolve them. Plume drifts with time for life.
+            if (isCity && p.t > 0.45) {
+              var nStacks = 1 + Math.floor(seed * 2);
+              for (var ss = 0; ss < nStacks; ss++) {
+                var ssAng = (terrainHash(seed * 700 + ss, cellLat * 19) - 0.5) * Math.PI;
+                var ssRad = clusterR * (0.7 + ss * 0.2);
+                var ssx = p.x + Math.cos(ssAng) * ssRad;
+                var ssy = p.y + Math.sin(ssAng) * ssRad * 0.5;
+                var stackH = Math.max(5, 12 * p.t);
+                var stackW = Math.max(0.8, 1.6 * p.t);
+                // Stack
+                gfx.fillStyle = 'rgba(60,55,50,' + (0.75 * fade) + ')';
+                gfx.fillRect(ssx - stackW / 2, ssy - stackH, stackW, stackH);
+                // Red band near top
+                gfx.fillStyle = 'rgba(140,60,55,' + (0.7 * fade) + ')';
+                gfx.fillRect(ssx - stackW / 2, ssy - stackH + 1, stackW, Math.max(0.5, stackH * 0.12));
+                // Steam plume — 4 puffs rising and drifting laterally
+                for (var sp2 = 0; sp2 < 4; sp2++) {
+                  var spAge = (time * 0.6 + sp2 * 0.6 + ss * 0.3) % 4;
+                  var spY = ssy - stackH - spAge * 6 * p.t;
+                  var spX = ssx + Math.sin(spAge * 1.2 + ss) * 4 * p.t + spAge * 1.5;
+                  var spRad = (1.4 + spAge * 1.2) * p.t;
+                  var spA = (0.55 - spAge * 0.13) * fade;
+                  if (spA <= 0) continue;
+                  gfx.fillStyle = 'rgba(220,225,230,' + spA + ')';
+                  gfx.beginPath();
+                  gfx.arc(spX, spY, spRad, 0, Math.PI * 2);
+                  gfx.fill();
+                }
+              }
+            }
+            // Label: cities get an all-caps name from farther; towns only when close
+            var labelDistance = isCity ? 2.5 : 1.5;
+            if (p.nmFwd < labelDistance && p.t > 0.4) {
+              gfx.fillStyle = 'rgba(220,220,230,' + (0.4 * fade) + ')';
+              gfx.font = (isCity ? 'bold 9px ' : '8px ') + 'system-ui';
+              gfx.textAlign = 'center';
+              var nameLen = 4 + Math.floor(seed * 4);
+              var townName = '';
+              for (var ni = 0; ni < nameLen; ni++) {
+                townName += String.fromCharCode(65 + Math.floor(terrainHash(seed * 50 + ni, cellLat * 3) * 26));
+              }
+              townName = isCity ? townName : (townName.charAt(0) + townName.slice(1).toLowerCase());
+              gfx.fillText(townName, p.x, p.y + clusterR + 8);
+            }
+          }
+        }
+
+        // ── Sparse trees scattered across the rural landscape. Cheap
+        // dot-cluster between towns, deterministic per-cell so they don't
+        // shimmer. Skip cells that already have a town (visual clutter).
+        if (aglAlt < 3500) {
+          var TREE_STEP = 0.008;
+          var tlatC = Math.round(state.lat / TREE_STEP) * TREE_STEP;
+          var tlonC = Math.round(state.lon / TREE_STEP) * TREE_STEP;
+          var treeColor = 'rgba(35,80,40,';
+          for (var ti = -6; ti <= 6; ti++) {
+            for (var tj = -6; tj <= 6; tj++) {
+              var tLat = tlatC + ti * TREE_STEP;
+              var tLon = tlonC + tj * TREE_STEP;
+              var tSeed = terrainHash(tLat * 211, tLon * 137);
+              if (tSeed < 0.55) continue;          // 45% of cells get a tree
+              var pt = projectLatLon(tLat, tLon);
+              if (!pt) continue;
+              var tSize = Math.max(0.8, 1.2 + pt.t * 1.8);
+              var tAlpha = 0.55 * fade * (0.3 + pt.t * 0.7);
+              gfx.fillStyle = treeColor + tAlpha + ')';
+              gfx.beginPath();
+              gfx.arc(pt.x, pt.y, tSize, 0, Math.PI * 2);
+              gfx.fill();
+            }
+          }
+        }
+
+        // ── A road or two: pseudo-random straight lines at deterministic
+        // bearings, visible only when low. Drawn as fading dashed strokes
+        // for visibility. Strong motion cue when moving. Each road also
+        // gets a couple of small moving "car" dots that scroll along it.
+        if (aglAlt < 2500) {
+          for (var ri = 0; ri < 2; ri++) {
+            var rSeed = terrainHash(Math.floor(state.lat * 8) + ri * 13, Math.floor(state.lon * 8) + ri * 7);
+            if (rSeed < 0.4) continue;
+            // Road runs at a random bearing; pick start/end nm offsets.
+            var rBearing = rSeed * Math.PI * 2;
+            var rLat0 = state.lat + Math.cos(rBearing) * 0.05;
+            var rLon0 = state.lon + Math.sin(rBearing) * 0.05;
+            var rLat1 = state.lat + Math.cos(rBearing) * 0.12;
+            var rLon1 = state.lon + Math.sin(rBearing) * 0.12;
+            var p0 = projectLatLon(rLat0, rLon0);
+            var p1 = projectLatLon(rLat1, rLon1);
+            if (!p0 || !p1) continue;
+            gfx.strokeStyle = 'rgba(80,75,70,' + (0.45 * fade) + ')';
+            gfx.lineWidth = Math.max(0.8, 2.2 * Math.max(p0.t, p1.t));
+            gfx.beginPath();
+            gfx.moveTo(p0.x, p0.y);
+            gfx.lineTo(p1.x, p1.y);
+            gfx.stroke();
+            // Cars: 2 dots traveling along the road in opposite directions.
+            // Phase derived from time so they actually move; modulo 1 wraps.
+            for (var ca = 0; ca < 2; ca++) {
+              var carPhase = ((time * (0.07 + ca * 0.04) + ri * 0.5 + ca * 0.5) % 1);
+              if (ca === 1) carPhase = 1 - carPhase; // opposite direction
+              var carX = p0.x + (p1.x - p0.x) * carPhase;
+              var carY = p0.y + (p1.y - p0.y) * carPhase;
+              var carT = p0.t + (p1.t - p0.t) * carPhase;
+              var carSize = Math.max(0.8, 1.4 * carT);
+              gfx.fillStyle = ca === 0
+                ? 'rgba(220,210,180,' + (0.7 * fade) + ')'   // headlights (lighter)
+                : 'rgba(180,40,40,' + (0.7 * fade) + ')';     // taillights (red)
+              gfx.fillRect(carX - carSize / 2, carY - carSize / 2, carSize, carSize);
+            }
+          }
+        }
+
+        // ── Highway / interstate: a wider, divided road with two lanes
+        // each direction. Per-region deterministic (40% chance), drawn as
+        // a thick gray strip with a yellow center divider, white lane
+        // dashes, and 4-6 cars in each direction. Major motion landmark.
+        if (aglAlt < 2500) {
+          var hwSeed = terrainHash(Math.floor(state.lat * 6) + 31, Math.floor(state.lon * 6) + 47);
+          if (hwSeed > 0.6) {
+            var hwBearing = (hwSeed + 0.15) * Math.PI * 2;
+            var hwLat0 = state.lat + Math.cos(hwBearing) * 0.04;
+            var hwLon0 = state.lon + Math.sin(hwBearing) * 0.04;
+            var hwLat1 = state.lat + Math.cos(hwBearing) * 0.16;
+            var hwLon1 = state.lon + Math.sin(hwBearing) * 0.16;
+            var phw0 = projectLatLon(hwLat0, hwLon0);
+            var phw1 = projectLatLon(hwLat1, hwLon1);
+            if (phw0 && phw1) {
+              // Compute perpendicular for lane offsets
+              var hwDx = phw1.x - phw0.x, hwDy = phw1.y - phw0.y;
+              var hwLen = Math.sqrt(hwDx * hwDx + hwDy * hwDy) || 1;
+              var hwNx = -hwDy / hwLen, hwNy = hwDx / hwLen;
+              var laneHalfW = Math.max(2, 4.5 * Math.max(phw0.t, phw1.t));
+              // Asphalt body (thick stroke offset between two parallel polylines)
+              gfx.strokeStyle = 'rgba(60,58,55,' + (0.85 * fade) + ')';
+              gfx.lineWidth = laneHalfW * 2.2;
+              gfx.lineCap = 'round';
+              gfx.beginPath();
+              gfx.moveTo(phw0.x, phw0.y);
+              gfx.lineTo(phw1.x, phw1.y);
+              gfx.stroke();
+              // Center yellow median
+              gfx.strokeStyle = 'rgba(225,180,40,' + (0.7 * fade) + ')';
+              gfx.lineWidth = Math.max(0.6, 1 * Math.max(phw0.t, phw1.t));
+              gfx.beginPath();
+              gfx.moveTo(phw0.x, phw0.y);
+              gfx.lineTo(phw1.x, phw1.y);
+              gfx.stroke();
+              // Dashed lane stripes — outer edges
+              gfx.strokeStyle = 'rgba(245,245,240,' + (0.55 * fade) + ')';
+              gfx.lineWidth = Math.max(0.3, 0.7 * Math.max(phw0.t, phw1.t));
+              gfx.setLineDash([5, 5]);
+              for (var le = -1; le <= 1; le += 2) {
+                gfx.beginPath();
+                gfx.moveTo(phw0.x + hwNx * laneHalfW * 0.5 * le, phw0.y + hwNy * laneHalfW * 0.5 * le);
+                gfx.lineTo(phw1.x + hwNx * laneHalfW * 0.5 * le, phw1.y + hwNy * laneHalfW * 0.5 * le);
+                gfx.stroke();
+              }
+              gfx.setLineDash([]);
+              // Cars: 6 per direction, slightly offset perpendicular for lanes
+              var carCount = 6;
+              for (var hca = 0; hca < carCount * 2; hca++) {
+                var dirIsRight = hca < carCount;
+                var phaseOff = (hca % carCount) / carCount;
+                var hcPhase = ((time * 0.10 + phaseOff + (dirIsRight ? 0 : 0.5)) % 1);
+                if (!dirIsRight) hcPhase = 1 - hcPhase;
+                var hcCenterX = phw0.x + hwDx * hcPhase;
+                var hcCenterY = phw0.y + hwDy * hcPhase;
+                // Lane offset
+                var laneOff = (dirIsRight ? -1 : 1) * laneHalfW * 0.4;
+                var hcx = hcCenterX + hwNx * laneOff;
+                var hcy = hcCenterY + hwNy * laneOff;
+                var hcT = phw0.t + (phw1.t - phw0.t) * hcPhase;
+                var hcSize = Math.max(0.9, 1.6 * hcT);
+                gfx.fillStyle = dirIsRight
+                  ? 'rgba(225,215,185,' + (0.75 * fade) + ')'
+                  : 'rgba(190,55,50,' + (0.75 * fade) + ')';
+                gfx.fillRect(hcx - hcSize / 2, hcy - hcSize / 2, hcSize, hcSize);
+              }
+            }
+          }
+        }
+
+        // ── Rivers: meandering blue lines threading through the landscape.
+        // Each ~6nm region either has a river or doesn't (seeded), with
+        // segments computed as a sine-modulated path along a fixed bearing.
+        // Visible up to ~4500 ft AGL — strong motion cue at cruise.
+        if (aglAlt < 4500) {
+          var rivSeed = terrainHash(Math.floor(state.lat * 5), Math.floor(state.lon * 5));
+          if (rivSeed > 0.55) {
+            // River bearing — perpendicular-ish to the slope of terrain
+            var rivBearing = rivSeed * Math.PI * 2;
+            var rivCosB = Math.cos(rivBearing);
+            var rivSinB = Math.sin(rivBearing);
+            // Build a 9-point polyline that meanders ±0.012° perpendicular
+            // to the bearing as it travels along it.
+            var rivPts = [];
+            for (var rp = 0; rp < 9; rp++) {
+              var rT = -0.04 + rp * 0.025; // -0.04 to 0.16 along bearing
+              var meander = Math.sin(rp * 0.9 + rivSeed * 10) * 0.015;
+              var rivLat = state.lat + rivCosB * rT + (-rivSinB) * meander;
+              var rivLon = state.lon + rivSinB * rT + rivCosB * meander;
+              var pp = projectLatLon(rivLat, rivLon);
+              if (pp) rivPts.push(pp);
+            }
+            if (rivPts.length >= 3) {
+              // Draw the river as a thick blue stroke
+              gfx.strokeStyle = 'rgba(80,128,168,' + (0.65 * fade) + ')';
+              gfx.lineWidth = Math.max(2, 4 * (rivPts[rivPts.length - 1].t || 0.5));
+              gfx.lineCap = 'round';
+              gfx.lineJoin = 'round';
+              gfx.beginPath();
+              gfx.moveTo(rivPts[0].x, rivPts[0].y);
+              for (var rpi = 1; rpi < rivPts.length; rpi++) {
+                gfx.lineTo(rivPts[rpi].x, rivPts[rpi].y);
+              }
+              gfx.stroke();
+              // Lighter highlight stroke for shimmer
+              gfx.strokeStyle = 'rgba(170,210,230,' + (0.35 * fade) + ')';
+              gfx.lineWidth = Math.max(0.6, 1.4 * (rivPts[rivPts.length - 1].t || 0.5));
+              gfx.beginPath();
+              gfx.moveTo(rivPts[0].x, rivPts[0].y);
+              for (var rpj = 1; rpj < rivPts.length; rpj++) {
+                gfx.lineTo(rivPts[rpj].x, rivPts[rpj].y);
+              }
+              gfx.stroke();
+            }
+          }
+        }
+
+        // ── Wind turbines: clusters of 3-5 white poles with rotating
+        // three-blade rotors. Maine-relevant — Aroostook, coastal ridges,
+        // Mars Hill etc. all have them. Deterministic per ~3nm cell, ~8%
+        // density. Blades spin in real time so the eye catches them.
+        if (aglAlt < 3500) {
+          var WSTEP = 0.05;
+          var wlatC = Math.round(state.lat / WSTEP) * WSTEP;
+          var wlonC = Math.round(state.lon / WSTEP) * WSTEP;
+          for (var wi = -2; wi <= 2; wi++) {
+            for (var wj = -2; wj <= 2; wj++) {
+              var wLat = wlatC + wi * WSTEP;
+              var wLon = wlonC + wj * WSTEP;
+              var wSeed = terrainHash(wLat * 197, wLon * 113);
+              if (wSeed < 0.92) continue; // ~8% of cells host a wind farm
+              var nTurbines = 3 + Math.floor(wSeed * 5); // 3-7 turbines
+              for (var tu = 0; tu < nTurbines; tu++) {
+                var tuLat = wLat + (terrainHash(wSeed * 100 + tu, 7) - 0.5) * WSTEP * 0.7;
+                var tuLon = wLon + (terrainHash(wSeed * 200 + tu, 11) - 0.5) * WSTEP * 0.7;
+                var tp = projectLatLon(tuLat, tuLon);
+                if (!tp) continue;
+                // Pole height scales with perspective
+                var poleH = Math.max(6, 18 * tp.t);
+                var poleW = Math.max(0.6, 1.2 * tp.t);
+                // White pole
+                gfx.fillStyle = 'rgba(230,230,235,' + (0.7 * fade * (0.4 + tp.t * 0.6)) + ')';
+                gfx.fillRect(tp.x - poleW / 2, tp.y - poleH, poleW, poleH);
+                // Rotor: 3 blades rotating with time, phase offset per turbine
+                var bladeR = poleH * 0.55;
+                var bladePhase = time * 0.6 + tu * 0.8 + wSeed * 5;
+                gfx.strokeStyle = 'rgba(230,230,235,' + (0.7 * fade * (0.4 + tp.t * 0.6)) + ')';
+                gfx.lineWidth = Math.max(0.5, 0.8 * tp.t);
+                for (var bl = 0; bl < 3; bl++) {
+                  var bAngle = bladePhase + bl * (Math.PI * 2 / 3);
+                  gfx.beginPath();
+                  gfx.moveTo(tp.x, tp.y - poleH);
+                  gfx.lineTo(tp.x + Math.cos(bAngle) * bladeR, tp.y - poleH + Math.sin(bAngle) * bladeR);
+                  gfx.stroke();
+                }
+                // Hub dot
+                gfx.fillStyle = 'rgba(180,180,185,' + (0.8 * fade) + ')';
+                gfx.beginPath();
+                gfx.arc(tp.x, tp.y - poleH, Math.max(0.5, 0.9 * tp.t), 0, Math.PI * 2);
+                gfx.fill();
+              }
+            }
+          }
+        }
+
+        // ── Forest blocks: dense canopy patches at deterministic positions.
+        // Different from the scattered single trees earlier — these are
+        // identifiable WOODED AREAS, drawn as a tight cluster of dots that
+        // reads as a forest stand against the field patchwork.
+        if (aglAlt < 3000) {
+          var FOREST_STEP = 0.022;
+          var folatC = Math.round(state.lat / FOREST_STEP) * FOREST_STEP;
+          var folonC = Math.round(state.lon / FOREST_STEP) * FOREST_STEP;
+          for (var foi = -3; foi <= 3; foi++) {
+            for (var foj = -3; foj <= 3; foj++) {
+              var foLat = folatC + foi * FOREST_STEP;
+              var foLon = folonC + foj * FOREST_STEP;
+              var foSeed = terrainHash(foLat * 79, foLon * 167);
+              if (foSeed < 0.78) continue; // ~22% of cells are forest blocks
+              var pf = projectLatLon(foLat, foLon);
+              if (!pf) continue;
+              // Forest base wash (darker green) — slightly larger ellipse
+              // behind the canopy dots so the patch reads even at distance.
+              var foRx = Math.max(8, 28 * pf.t * (0.7 + foSeed * 0.5));
+              var foRy = foRx * 0.55;
+              gfx.fillStyle = 'rgba(28,68,38,' + (0.45 * fade * (0.5 + pf.t * 0.5)) + ')';
+              gfx.beginPath();
+              gfx.ellipse(pf.x, pf.y, foRx, foRy, 0, 0, Math.PI * 2);
+              gfx.fill();
+              // Canopy dots — boreal/deciduous mix tones
+              var canopyN = Math.floor(18 + foSeed * 26);
+              for (var cd = 0; cd < canopyN; cd++) {
+                var cdAng = terrainHash(foSeed * 100 + cd, foLat * 5) * Math.PI * 2;
+                var cdRad = terrainHash(foSeed * 200 + cd, foLon * 5) * foRx * 0.85;
+                var cdx = pf.x + Math.cos(cdAng) * cdRad;
+                var cdy = pf.y + Math.sin(cdAng) * cdRad * 0.55;
+                var cdSize = Math.max(1, 1.6 + pf.t * 1.4);
+                var cdHue = terrainHash(cd, foSeed * 13);
+                gfx.fillStyle = cdHue > 0.6
+                  ? 'rgba(45,95,55,' + (0.7 * fade) + ')'  // brighter deciduous
+                  : 'rgba(25,72,40,' + (0.7 * fade) + ')';  // darker conifer
+                gfx.beginPath();
+                gfx.arc(cdx, cdy, cdSize, 0, Math.PI * 2);
+                gfx.fill();
+              }
+            }
+          }
+        }
+
+        // ── Cloud shadows: drifting dark blobs across the ground that
+        // suggest sun-blocking cumulus overhead. They drift slowly with
+        // time so the eye catches motion even when the plane is hovering.
+        // 6 deterministically-seeded shadows wrap across the ground area.
+        if (aglAlt < 5000) {
+          gfx.fillStyle = 'rgba(20,30,40,' + (0.18 * fade) + ')';
+          for (var sh = 0; sh < 6; sh++) {
+            // Position cycles through the visible ground band, slowly drifting
+            var shPhase = ((time * 0.05 + sh * 0.17) % 1);
+            var shScreenX = ((shPhase * (W + 200)) - 100);
+            var shScreenY = horizonY + (H - horizonY) * (0.25 + (sh % 3) * 0.22);
+            var shRx = 60 + (sh % 4) * 20;
+            var shRy = shRx * 0.35;
+            gfx.beginPath();
+            gfx.ellipse(shScreenX, shScreenY, shRx, shRy, 0, 0, Math.PI * 2);
+            gfx.fill();
+          }
+        }
+
+        // ── Lake & river surface sparkles: small bright dots overlaid on
+        // water bodies that twinkle with time, suggesting sun reflection
+        // off ripples. Re-uses the same lake grid as the lake renderer.
+        if (aglAlt < 4000 && dayNight2 && !dayNight2.isNight) {
+          var spStep = 0.04;
+          var splatC = Math.round(state.lat / spStep) * spStep;
+          var splonC = Math.round(state.lon / spStep) * spStep;
+          for (var spi = -2; spi <= 2; spi++) {
+            for (var spj = -2; spj <= 2; spj++) {
+              var spLat = splatC + spi * spStep;
+              var spLon = splonC + spj * spStep;
+              var spSeed = terrainHash(spLat * 173, spLon * 89);
+              if (spSeed < 0.90) continue; // matches lake density
+              var psp = projectLatLon(spLat, spLon);
+              if (!psp) continue;
+              // 4-6 sparkles per lake, twinkling with sin(time)
+              var spN = 4 + Math.floor(spSeed * 3);
+              for (var sp = 0; sp < spN; sp++) {
+                var spAng = terrainHash(sp, spSeed * 50) * Math.PI * 2;
+                var spRad = terrainHash(sp + 5, spSeed * 70) * 18 * psp.t;
+                var spx = psp.x + Math.cos(spAng) * spRad;
+                var spy = psp.y + Math.sin(spAng) * spRad * 0.4;
+                var twinkle = 0.3 + 0.7 * (Math.sin(time * 4 + sp * 1.7 + spSeed * 9) * 0.5 + 0.5);
+                gfx.fillStyle = 'rgba(255,250,210,' + (twinkle * 0.7 * fade * psp.t) + ')';
+                gfx.fillRect(spx, spy, 1.2, 0.8);
+              }
+            }
+          }
+        }
+
+        // ── Train tracks with a moving train ──
+        // Deterministic per ~3nm region. Drawn as TWO parallel rails
+        // very close together with periodic short tie-marks. A 3-car
+        // train slides along the track at a phase-driven position so
+        // it visibly moves. Strong landmark + motion cue.
+        if (aglAlt < 2500) {
+          var trSeed = terrainHash(Math.floor(state.lat * 6) + 23, Math.floor(state.lon * 6) + 41);
+          if (trSeed > 0.62) {
+            var trBearing = (trSeed + 0.6) * Math.PI * 2;
+            var trCos = Math.cos(trBearing);
+            var trSin = Math.sin(trBearing);
+            var trPts = [];
+            for (var trp = 0; trp < 9; trp++) {
+              var trT = -0.05 + trp * 0.022;
+              var ptr = projectLatLon(state.lat + trCos * trT, state.lon + trSin * trT);
+              if (ptr) trPts.push({ p: ptr, fwdT: trT });
+            }
+            if (trPts.length >= 3) {
+              // Compute a perpendicular-on-screen offset so the two rails
+              // don't visually merge into one line. Use the segment direction
+              // for each pair of adjacent points.
+              for (var trr = 0; trr < trPts.length - 1; trr++) {
+                var pa = trPts[trr].p, pb = trPts[trr + 1].p;
+                var dx = pb.x - pa.x, dy = pb.y - pa.y;
+                var len = Math.sqrt(dx * dx + dy * dy) || 1;
+                var nx = -dy / len, ny = dx / len; // perpendicular unit
+                var railHalfGap = Math.max(0.6, 1.3 * pa.t);
+                gfx.strokeStyle = 'rgba(45,40,35,' + (0.7 * fade) + ')';
+                gfx.lineWidth = Math.max(0.5, 0.9 * pa.t);
+                // Two rails
+                gfx.beginPath();
+                gfx.moveTo(pa.x + nx * railHalfGap, pa.y + ny * railHalfGap);
+                gfx.lineTo(pb.x + nx * railHalfGap, pb.y + ny * railHalfGap);
+                gfx.stroke();
+                gfx.beginPath();
+                gfx.moveTo(pa.x - nx * railHalfGap, pa.y - ny * railHalfGap);
+                gfx.lineTo(pb.x - nx * railHalfGap, pb.y - ny * railHalfGap);
+                gfx.stroke();
+                // Ties — short cross-strokes every quarter of segment
+                gfx.lineWidth = Math.max(0.4, 0.7 * pa.t);
+                for (var tt = 0; tt < 4; tt++) {
+                  var ttF = (tt + 0.5) / 4;
+                  var ttx = pa.x + dx * ttF, tty = pa.y + dy * ttF;
+                  gfx.beginPath();
+                  gfx.moveTo(ttx + nx * railHalfGap * 1.4, tty + ny * railHalfGap * 1.4);
+                  gfx.lineTo(ttx - nx * railHalfGap * 1.4, tty - ny * railHalfGap * 1.4);
+                  gfx.stroke();
+                }
+              }
+              // Train: phase along the track, drawn as 4 small connected boxes.
+              // Speed slow enough to feel realistic (a freight cycles ~3 min).
+              var trainPhase = ((time * 0.025 + trSeed * 1.7) % 1);
+              // Find the segment that contains trainPhase by walking trPts spacing
+              var totalSeg = trPts.length - 1;
+              var trainPos = trainPhase * totalSeg;
+              var trainSeg = Math.floor(trainPos);
+              var trainFrac = trainPos - trainSeg;
+              if (trainSeg < trPts.length - 1) {
+                var pa2 = trPts[trainSeg].p, pb2 = trPts[trainSeg + 1].p;
+                var dx2 = pb2.x - pa2.x, dy2 = pb2.y - pa2.y;
+                var len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2) || 1;
+                var trDirX = dx2 / len2, trDirY = dy2 / len2;
+                var trainCenterX = pa2.x + dx2 * trainFrac;
+                var trainCenterY = pa2.y + dy2 * trainFrac;
+                var carT = pa2.t + (pb2.t - pa2.t) * trainFrac;
+                var carLen = Math.max(4, 8 * carT);
+                var carW = Math.max(1.5, 2.4 * carT);
+                // 4 cars trailing behind the engine
+                for (var trc = 0; trc < 4; trc++) {
+                  var trcOff = -trc * (carLen + 1.2);
+                  var carCx = trainCenterX + trDirX * trcOff;
+                  var carCy = trainCenterY + trDirY * trcOff;
+                  // Locomotive (trc=0) is dark, cars are colored
+                  var carColor = trc === 0 ? '#1f2937' : (trc % 2 === 0 ? '#92400e' : '#374151');
+                  gfx.save();
+                  gfx.translate(carCx, carCy);
+                  gfx.rotate(Math.atan2(trDirY, trDirX));
+                  gfx.fillStyle = carColor;
+                  gfx.globalAlpha = 0.85 * fade;
+                  gfx.fillRect(-carLen / 2, -carW / 2, carLen, carW);
+                  gfx.restore();
+                }
+              }
+            }
+          }
+        }
+
+        // ── Bridges across rivers ──
+        // When a river-region cell ALSO has a road bearing close to
+        // perpendicular to the river bearing, draw a small horizontal
+        // bridge structure across the river midpoint. Very satisfying
+        // when the eye spots a road becoming a bridge.
+        if (aglAlt < 2500) {
+          var bgSeed = terrainHash(Math.floor(state.lat * 5), Math.floor(state.lon * 5));
+          if (bgSeed > 0.55) { // matches river-render threshold
+            // River midpoint (around the visible center of the river polyline)
+            var bgRivBearing = bgSeed * Math.PI * 2;
+            var bgMidLat = state.lat + Math.cos(bgRivBearing) * 0.06;
+            var bgMidLon = state.lon + Math.sin(bgRivBearing) * 0.06;
+            var pbg = projectLatLon(bgMidLat, bgMidLon);
+            if (pbg) {
+              // Bridge spans perpendicular to river bearing
+              var bgLen = Math.max(8, 22 * pbg.t);
+              var perpAng = bgRivBearing + Math.PI / 2;
+              var bgDx = Math.cos(perpAng) * bgLen / 2;
+              var bgDy = Math.sin(perpAng) * bgLen / 2 * 0.4; // foreshorten in y
+              // Bridge deck
+              gfx.strokeStyle = 'rgba(80,75,70,' + (0.8 * fade) + ')';
+              gfx.lineWidth = Math.max(2, 3.5 * pbg.t);
+              gfx.beginPath();
+              gfx.moveTo(pbg.x - bgDx, pbg.y - bgDy);
+              gfx.lineTo(pbg.x + bgDx, pbg.y + bgDy);
+              gfx.stroke();
+              // Suspension cables / arch — two thin diagonal lines
+              gfx.strokeStyle = 'rgba(140,135,130,' + (0.6 * fade) + ')';
+              gfx.lineWidth = Math.max(0.5, 0.7 * pbg.t);
+              gfx.beginPath();
+              gfx.moveTo(pbg.x - bgDx, pbg.y - bgDy);
+              gfx.quadraticCurveTo(pbg.x, pbg.y - 6 * pbg.t, pbg.x + bgDx, pbg.y + bgDy);
+              gfx.stroke();
+
+              // Dam upstream of the bridge — only when the river-region
+              // seed is in the top tier. A concrete wall perpendicular
+              // to the river bearing, with a small reservoir (lighter blue
+              // ellipse) immediately behind it. Hydroelectric infrastructure.
+              if (bgSeed > 0.85) {
+                var damLat = state.lat + Math.cos(bgRivBearing) * 0.10;
+                var damLon = state.lon + Math.sin(bgRivBearing) * 0.10;
+                var pdam = projectLatLon(damLat, damLon);
+                if (pdam) {
+                  var damLen = Math.max(10, 26 * pdam.t);
+                  var damDx = Math.cos(perpAng) * damLen / 2;
+                  var damDy = Math.sin(perpAng) * damLen / 2 * 0.4;
+                  // Reservoir behind dam (slightly upstream)
+                  var resLat = state.lat + Math.cos(bgRivBearing) * 0.115;
+                  var resLon = state.lon + Math.sin(bgRivBearing) * 0.115;
+                  var pres = projectLatLon(resLat, resLon);
+                  if (pres) {
+                    gfx.fillStyle = 'rgba(95,140,170,' + (0.7 * fade) + ')';
+                    gfx.beginPath();
+                    gfx.ellipse(pres.x, pres.y, damLen * 0.7, damLen * 0.32, perpAng, 0, Math.PI * 2);
+                    gfx.fill();
+                  }
+                  // Dam wall (concrete)
+                  gfx.strokeStyle = 'rgba(180,178,172,' + (0.9 * fade) + ')';
+                  gfx.lineWidth = Math.max(2.5, 4 * pdam.t);
+                  gfx.beginPath();
+                  gfx.moveTo(pdam.x - damDx, pdam.y - damDy);
+                  gfx.lineTo(pdam.x + damDx, pdam.y + damDy);
+                  gfx.stroke();
+                  // Spillway: a darker stripe in the middle
+                  gfx.strokeStyle = 'rgba(60,75,95,' + (0.8 * fade) + ')';
+                  gfx.lineWidth = Math.max(1, 1.6 * pdam.t);
+                  gfx.beginPath();
+                  gfx.moveTo(pdam.x - damDx * 0.15, pdam.y - damDy * 0.15);
+                  gfx.lineTo(pdam.x + damDx * 0.15, pdam.y + damDy * 0.15);
+                  gfx.stroke();
+                }
+              }
+            }
+          }
+        }
+
+        // ── Power transmission lines: long straight lines with periodic
+        // lattice towers, traveling at a deterministic bearing across the
+        // landscape. Visible to ~2500 ft AGL. Strong infrastructure cue
+        // and a clear motion reference along its length.
+        if (aglAlt < 2500) {
+          var plSeed = terrainHash(Math.floor(state.lat * 4) + 7, Math.floor(state.lon * 4) + 11);
+          if (plSeed > 0.5) {
+            var plBearing = (plSeed + 0.3) * Math.PI * 2;
+            var plPts = [];
+            // 6 segments along bearing, ~0.025° each step → 1.5nm spacing
+            for (var pp = 0; pp < 7; pp++) {
+              var pT = -0.05 + pp * 0.025;
+              var plLat = state.lat + Math.cos(plBearing) * pT;
+              var plLon = state.lon + Math.sin(plBearing) * pT;
+              var pp2 = projectLatLon(plLat, plLon);
+              if (pp2) plPts.push(pp2);
+            }
+            if (plPts.length >= 2) {
+              // Cable lines — thin and translucent so they don't dominate
+              gfx.strokeStyle = 'rgba(40,45,55,' + (0.45 * fade) + ')';
+              gfx.lineWidth = 0.5;
+              gfx.beginPath();
+              gfx.moveTo(plPts[0].x, plPts[0].y - 1);
+              for (var pli = 1; pli < plPts.length; pli++) gfx.lineTo(plPts[pli].x, plPts[pli].y - 1);
+              gfx.stroke();
+              gfx.beginPath();
+              gfx.moveTo(plPts[0].x, plPts[0].y + 1);
+              for (var plj = 1; plj < plPts.length; plj++) gfx.lineTo(plPts[plj].x, plPts[plj].y + 1);
+              gfx.stroke();
+              // Lattice towers at each pivot point
+              gfx.strokeStyle = 'rgba(50,55,65,' + (0.7 * fade) + ')';
+              gfx.lineWidth = Math.max(0.6, 1.2 * (plPts[0].t || 0.5));
+              for (var ptw = 0; ptw < plPts.length; ptw++) {
+                var towH = Math.max(4, 8 * plPts[ptw].t);
+                var towW = towH * 0.5;
+                // Tower silhouette: an X / lattice bracket
+                gfx.beginPath();
+                gfx.moveTo(plPts[ptw].x - towW / 2, plPts[ptw].y);
+                gfx.lineTo(plPts[ptw].x + towW / 2, plPts[ptw].y - towH);
+                gfx.moveTo(plPts[ptw].x + towW / 2, plPts[ptw].y);
+                gfx.lineTo(plPts[ptw].x - towW / 2, plPts[ptw].y - towH);
+                gfx.moveTo(plPts[ptw].x, plPts[ptw].y);
+                gfx.lineTo(plPts[ptw].x, plPts[ptw].y - towH);
+                gfx.stroke();
+              }
+            }
+          }
+        }
+
+        // ── Coastal harbors: when one of the cells in the lake grid is
+        // ALSO adjacent to ocean (terrainHash on water side > threshold),
+        // render a small dock + 4-6 boat dots arranged around it. Maine-
+        // specific feel — most flights from PWM hit the coast quickly.
+        if (aglAlt < 3000) {
+          var hbStep = 0.04;
+          var hblatC = Math.round(state.lat / hbStep) * hbStep;
+          var hblonC = Math.round(state.lon / hbStep) * hbStep;
+          for (var hbi = -2; hbi <= 2; hbi++) {
+            for (var hbj = -2; hbj <= 2; hbj++) {
+              var hbLat = hblatC + hbi * hbStep;
+              var hbLon = hblonC + hbj * hbStep;
+              // Adjacent ocean check: noisy isWater, NOT the regional guard,
+              // so it can fire over coastal areas where the cell is land but
+              // a neighbor is water.
+              var hbAdjW = terrainHash(hbLat * 2, (hbLon - 0.04) * 2) > 0.45
+                        || terrainHash(hbLat * 2, (hbLon + 0.04) * 2) > 0.45
+                        || terrainHash((hbLat - 0.04) * 2, hbLon * 2) > 0.45;
+              if (!hbAdjW) continue;
+              var hbSeed = terrainHash(hbLat * 251, hbLon * 191);
+              if (hbSeed < 0.85) continue; // 15% of qualifying cells host a harbor
+              var phb = projectLatLon(hbLat, hbLon);
+              if (!phb) continue;
+              // Dock structure — a thin gray bar
+              var dockW = Math.max(8, 18 * phb.t);
+              gfx.fillStyle = 'rgba(85,75,60,' + (0.7 * fade) + ')';
+              gfx.fillRect(phb.x - dockW / 2, phb.y - 1, dockW, 2);
+              // Boats — 4-6 small white triangles around the dock (sails)
+              var nBoats = 4 + Math.floor(hbSeed * 3);
+              for (var bo = 0; bo < nBoats; bo++) {
+                var boAng = terrainHash(bo, hbSeed * 80) * Math.PI * 2;
+                var boRad = (4 + terrainHash(bo + 7, hbSeed * 90) * dockW * 0.6) * phb.t;
+                var bx = phb.x + Math.cos(boAng) * boRad;
+                var by = phb.y + Math.sin(boAng) * boRad * 0.4;
+                var sailH = Math.max(1.5, 3 * phb.t);
+                gfx.fillStyle = 'rgba(245,245,245,' + (0.85 * fade) + ')';
+                gfx.beginPath();
+                gfx.moveTo(bx, by - sailH);
+                gfx.lineTo(bx - sailH * 0.4, by);
+                gfx.lineTo(bx + sailH * 0.4, by);
+                gfx.closePath();
+                gfx.fill();
+                // Hull
+                gfx.fillStyle = 'rgba(60,65,75,' + (0.7 * fade) + ')';
+                gfx.fillRect(bx - sailH * 0.5, by, sailH, 0.8);
+              }
+              // Lighthouse at the harbor: tall red-and-white striped tower
+              // with a rotating beam. Iconic Maine landmark — pairs perfectly
+              // with the harbor + sailboats and reads instantly.
+              if (phb.t > 0.5 && hbSeed > 0.92) {
+                var lhX = phb.x - dockW * 0.35;
+                var lhY = phb.y;
+                var lhH = Math.max(7, 16 * phb.t);
+                var lhW = Math.max(1.3, 2.4 * phb.t);
+                // Tower (alternating white and red bands)
+                var bandH = lhH / 4;
+                for (var lhb = 0; lhb < 4; lhb++) {
+                  gfx.fillStyle = (lhb % 2 === 0)
+                    ? 'rgba(245,245,240,' + (0.9 * fade) + ')'
+                    : 'rgba(190,55,50,' + (0.9 * fade) + ')';
+                  gfx.fillRect(lhX - lhW / 2, lhY - lhH + lhb * bandH, lhW, bandH);
+                }
+                // Lantern room (dark band at top)
+                gfx.fillStyle = 'rgba(40,45,55,' + (0.9 * fade) + ')';
+                gfx.fillRect(lhX - lhW * 0.7, lhY - lhH - 1.5, lhW * 1.4, 2);
+                // Rotating beam (cone of light)
+                var beamAng = time * 0.7 + hbSeed * 9;
+                var beamLen = lhH * 1.6;
+                gfx.fillStyle = 'rgba(255,250,200,' + (0.35 * fade) + ')';
+                gfx.beginPath();
+                gfx.moveTo(lhX, lhY - lhH);
+                gfx.lineTo(lhX + Math.cos(beamAng) * beamLen, lhY - lhH + Math.sin(beamAng) * beamLen * 0.4);
+                gfx.lineTo(lhX + Math.cos(beamAng + 0.32) * beamLen, lhY - lhH + Math.sin(beamAng + 0.32) * beamLen * 0.4);
+                gfx.closePath();
+                gfx.fill();
+                // Light bulb itself (bright dot)
+                gfx.fillStyle = 'rgba(255,250,180,' + (0.95 * fade) + ')';
+                gfx.beginPath();
+                gfx.arc(lhX, lhY - lhH, Math.max(0.5, 0.8 * phb.t), 0, Math.PI * 2);
+                gfx.fill();
+              }
+            }
+          }
+        }
+
+        // ── Greenhouses: long bright reflective rectangles in agricultural
+        // cells. Glass-roof commercial nurseries. Read instantly from the
+        // air as bright white-blue parallel strips. Sparse (~5%).
+        if (aglAlt < 2200) {
+          var ghStep = 0.045;
+          var ghlatC = Math.round(state.lat / ghStep) * ghStep;
+          var ghlonC = Math.round(state.lon / ghStep) * ghStep;
+          for (var ghi = -2; ghi <= 2; ghi++) {
+            for (var ghj = -2; ghj <= 2; ghj++) {
+              var ghLat = ghlatC + ghi * ghStep;
+              var ghLon = ghlonC + ghj * ghStep;
+              var ghhSeed = terrainHash(ghLat * 281, ghLon * 313);
+              if (ghhSeed < 0.95) continue; // 5% of cells
+              var pgh = projectLatLon(ghLat, ghLon);
+              if (!pgh) continue;
+              var ghW = Math.max(8, 18 * pgh.t);
+              var ghH = Math.max(2, 4 * pgh.t);
+              // 4 long parallel greenhouse roofs
+              for (var ghr = 0; ghr < 4; ghr++) {
+                var ghrY = pgh.y - ghH * 1.5 + ghr * (ghH * 0.95);
+                // Roof — bright pale aqua (sky-reflecting glass)
+                var ghAlpha = 0.85 - ghr * 0.05;
+                gfx.fillStyle = 'rgba(195,225,235,' + (ghAlpha * fade) + ')';
+                gfx.fillRect(pgh.x - ghW / 2, ghrY, ghW, ghH * 0.6);
+                // Sharp specular highlight strip on top edge
+                gfx.fillStyle = 'rgba(255,255,255,' + (0.5 * fade * pgh.t) + ')';
+                gfx.fillRect(pgh.x - ghW / 2, ghrY, ghW, Math.max(0.4, 0.6 * pgh.t));
+              }
+              // Frame outline — darker thin border
+              gfx.strokeStyle = 'rgba(85,95,100,' + (0.6 * fade) + ')';
+              gfx.lineWidth = 0.5;
+              gfx.strokeRect(pgh.x - ghW / 2 - 0.5, pgh.y - ghH * 1.5 - 0.5, ghW + 1, ghH * 4 * 0.95);
+            }
+          }
+        }
+
+        // ── Drive-in movie theaters: a single big white screen with a
+        // fan of parked car dots in front. Quirky, recognizable, very
+        // satisfying when one slides past. Very sparse (~1.5%).
+        if (aglAlt < 2000) {
+          var diStep = 0.08;
+          var dilatC = Math.round(state.lat / diStep) * diStep;
+          var dilonC = Math.round(state.lon / diStep) * diStep;
+          for (var dii = -1; dii <= 1; dii++) {
+            for (var dij = -1; dij <= 1; dij++) {
+              var diLat = dilatC + dii * diStep;
+              var diLon = dilonC + dij * diStep;
+              var diSeed = terrainHash(diLat * 467, diLon * 521);
+              if (diSeed < 0.985) continue;
+              var pdi = projectLatLon(diLat, diLon);
+              if (!pdi) continue;
+              var scrW = Math.max(8, 18 * pdi.t);
+              var scrH = scrW * 0.55;
+              // Screen — bright white face with a thin dark frame
+              gfx.fillStyle = 'rgba(50,52,60,' + (0.85 * fade) + ')';
+              gfx.fillRect(pdi.x - scrW / 2 - 0.6, pdi.y - scrH * 0.95, scrW + 1.2, scrH + 0.6);
+              gfx.fillStyle = 'rgba(245,240,225,' + (0.95 * fade) + ')';
+              gfx.fillRect(pdi.x - scrW / 2, pdi.y - scrH * 0.9, scrW, scrH);
+              // Movie frame: subtle warm glow rectangles inside the screen
+              // suggesting a film image
+              gfx.fillStyle = 'rgba(220,150,80,' + (0.4 * fade) + ')';
+              gfx.fillRect(pdi.x - scrW * 0.35, pdi.y - scrH * 0.7, scrW * 0.7, scrH * 0.5);
+              // Support legs
+              gfx.fillStyle = 'rgba(60,55,50,' + (0.85 * fade) + ')';
+              gfx.fillRect(pdi.x - scrW * 0.4, pdi.y, 0.8, scrH * 0.25);
+              gfx.fillRect(pdi.x + scrW * 0.4, pdi.y, 0.8, scrH * 0.25);
+              // Parking lot fan — 10-15 car dots in arc rows facing the screen
+              var lotRows = 4, lotCols = 8;
+              gfx.fillStyle = 'rgba(180,170,160,' + (0.7 * fade * pdi.t) + ')';
+              for (var lr = 0; lr < lotRows; lr++) {
+                var lotY = pdi.y + scrH * 0.5 + lr * scrH * 0.32;
+                var lotW = scrW * (1 + lr * 0.18);
+                for (var lc = 0; lc < lotCols; lc++) {
+                  var lotX = pdi.x - lotW / 2 + (lc + 0.5) * (lotW / lotCols);
+                  if (terrainHash(diSeed * 50 + lr * 10 + lc, diLat * 7) < 0.35) continue;
+                  gfx.fillRect(lotX - 0.6 * pdi.t, lotY - 0.4 * pdi.t, 1.4 * pdi.t, 0.9 * pdi.t);
+                }
+              }
+            }
+          }
+        }
+
+        // ── Wharves at the coast: long thin piers extending from harbors
+        // OUT into the water. Different from harbor docks (which sit at
+        // the dock). Visible to ~2500 ft AGL, paired with the existing
+        // harbor cells so they make geographic sense.
+        if (aglAlt < 2500) {
+          var whStep = 0.04;
+          var whlatC = Math.round(state.lat / whStep) * whStep;
+          var whlonC = Math.round(state.lon / whStep) * whStep;
+          for (var whi = -2; whi <= 2; whi++) {
+            for (var whj = -2; whj <= 2; whj++) {
+              var whLat = whlatC + whi * whStep;
+              var whLon = whlonC + whj * whStep;
+              // Same adjacency check used by harbor block — only render
+              // a wharf where ocean is a neighbor.
+              var whAdjW = terrainHash(whLat * 2, (whLon - 0.04) * 2) > 0.45
+                        || terrainHash(whLat * 2, (whLon + 0.04) * 2) > 0.45
+                        || terrainHash((whLat - 0.04) * 2, whLon * 2) > 0.45;
+              if (!whAdjW) continue;
+              var whSeed = terrainHash(whLat * 191, whLon * 257);
+              if (whSeed < 0.78) continue; // ~22% of qualifying cells host a wharf
+              var pwh = projectLatLon(whLat, whLon);
+              if (!pwh) continue;
+              // Wharf direction: random bearing, but biased toward water side
+              var whAng = whSeed * Math.PI * 2;
+              var whLen = Math.max(8, 22 * pwh.t);
+              var endX = pwh.x + Math.cos(whAng) * whLen;
+              var endY = pwh.y + Math.sin(whAng) * whLen * 0.5;
+              // Pier deck — thick gray stroke
+              gfx.strokeStyle = 'rgba(95,85,72,' + (0.85 * fade) + ')';
+              gfx.lineWidth = Math.max(1.4, 2.6 * pwh.t);
+              gfx.lineCap = 'round';
+              gfx.beginPath();
+              gfx.moveTo(pwh.x, pwh.y);
+              gfx.lineTo(endX, endY);
+              gfx.stroke();
+              // Pilings — small dots along the pier
+              gfx.fillStyle = 'rgba(50,42,35,' + (0.7 * fade) + ')';
+              for (var pl3 = 1; pl3 <= 4; pl3++) {
+                var plF = pl3 / 5;
+                var plX = pwh.x + (endX - pwh.x) * plF;
+                var plY = pwh.y + (endY - pwh.y) * plF;
+                gfx.fillRect(plX - 0.4, plY + 1.2, 0.8, 1.2);
+              }
+              // Boat at the pier end
+              gfx.fillStyle = 'rgba(50,55,65,' + (0.85 * fade) + ')';
+              gfx.fillRect(endX - 2 * pwh.t, endY, 4 * pwh.t, 1.4 * pwh.t);
+              gfx.fillStyle = 'rgba(245,245,250,' + (0.85 * fade) + ')';
+              gfx.fillRect(endX - 1 * pwh.t, endY - 1.2 * pwh.t, 2 * pwh.t, 1.2 * pwh.t);
+            }
+          }
+        }
+
+        // ── Quarries: terraced gray pits at deterministic rural cells.
+        // Sparse (~3% of cells on a coarser grid). Drawn as 4 concentric
+        // ellipses descending into the pit, each one smaller and darker
+        // than the last, with a small dirt road accessing the floor.
+        if (aglAlt < 2500) {
+          var qStep = 0.07;
+          var qlatC = Math.round(state.lat / qStep) * qStep;
+          var qlonC = Math.round(state.lon / qStep) * qStep;
+          for (var qi = -2; qi <= 2; qi++) {
+            for (var qj = -2; qj <= 2; qj++) {
+              var qLat = qlatC + qi * qStep;
+              var qLon = qlonC + qj * qStep;
+              var qSeed = terrainHash(qLat * 367, qLon * 419);
+              if (qSeed < 0.97) continue; // ~3% of cells
+              var pq = projectLatLon(qLat, qLon);
+              if (!pq) continue;
+              var pitR = Math.max(8, 18 * pq.t);
+              // 4 terraces: rim → floor, each darker and smaller
+              var terraceColors = [
+                'rgba(190,180,165,',  // rim — light dust
+                'rgba(155,145,130,',  // upper bench
+                'rgba(115,108,98,',   // mid bench
+                'rgba(78,72,65,'      // floor
+              ];
+              for (var tr = 0; tr < 4; tr++) {
+                var trR = pitR * (1 - tr * 0.18);
+                gfx.fillStyle = terraceColors[tr] + (0.85 * fade) + ')';
+                gfx.beginPath();
+                gfx.ellipse(pq.x, pq.y, trR, trR * 0.55, 0, 0, Math.PI * 2);
+                gfx.fill();
+              }
+              // Access road switchback — one curved line from rim to floor
+              gfx.strokeStyle = 'rgba(140,128,112,' + (0.7 * fade) + ')';
+              gfx.lineWidth = Math.max(0.5, 0.9 * pq.t);
+              gfx.beginPath();
+              gfx.moveTo(pq.x - pitR * 0.85, pq.y);
+              gfx.quadraticCurveTo(pq.x - pitR * 0.4, pq.y + pitR * 0.25, pq.x, pq.y);
+              gfx.stroke();
+            }
+          }
+        }
+
+        // ── Solar farms: deterministic blue rectangular grids in rural
+        // cells. Modern landmark — a real "wow" moment when one slides
+        // past the cockpit. Sparse: ~3% of a coarser grid.
+        if (aglAlt < 2500) {
+          var sfStep = 0.06;
+          var sflatC = Math.round(state.lat / sfStep) * sfStep;
+          var sflonC = Math.round(state.lon / sfStep) * sfStep;
+          for (var sfi = -2; sfi <= 2; sfi++) {
+            for (var sfj = -2; sfj <= 2; sfj++) {
+              var sfLat = sflatC + sfi * sfStep;
+              var sfLon = sflonC + sfj * sfStep;
+              var sfSeed = terrainHash(sfLat * 211, sfLon * 251);
+              if (sfSeed < 0.97) continue; // 3% of cells host a solar farm
+              var psf = projectLatLon(sfLat, sfLon);
+              if (!psf) continue;
+              var farmW = Math.max(10, 24 * psf.t);
+              var farmH = farmW * 0.55;
+              // Dark slate base
+              gfx.fillStyle = 'rgba(28,38,55,' + (0.7 * fade) + ')';
+              gfx.fillRect(psf.x - farmW / 2, psf.y - farmH / 2, farmW, farmH);
+              // Grid of panel rows — bluish glints
+              gfx.fillStyle = 'rgba(60,100,160,' + (0.65 * fade * psf.t) + ')';
+              var rows = 4, cols = 8;
+              var pW = farmW / cols * 0.85;
+              var pH = farmH / rows * 0.7;
+              for (var prr = 0; prr < rows; prr++) {
+                for (var pcc = 0; pcc < cols; pcc++) {
+                  var px = psf.x - farmW / 2 + (pcc + 0.5) * (farmW / cols);
+                  var py = psf.y - farmH / 2 + (prr + 0.5) * (farmH / rows);
+                  gfx.fillRect(px - pW / 2, py - pH / 2, pW, pH);
+                }
+              }
+              // Highlight — sun glint on one corner of the array
+              if (psf.t > 0.55) {
+                gfx.fillStyle = 'rgba(180,210,240,' + (0.5 * fade * psf.t) + ')';
+                gfx.fillRect(psf.x + farmW * 0.15, psf.y - farmH * 0.4, farmW * 0.15, farmH * 0.15);
+              }
+            }
+          }
+        }
+      };
+
+      // ── Other aircraft passing overhead ──
+      // Three deterministic "ghost" aircraft drift across the sky at
+      // different altitudes and headings. Each gets a tiny silhouette
+      // (cross or arrow shape depending on perspective). At higher
+      // altitudes they trail a contrail (white streak). Visible at all
+      // altitudes — strong "you're sharing airspace" cue.
+      var drawOtherAircraft = function(gfx, W, H, horizonY, state, time, dayNight2) {
+        if (dayNight2 && dayNight2.isNight) return; // navigation lights handled separately
+        for (var ac = 0; ac < 3; ac++) {
+          // Each aircraft cycles across the sky over ~120s with a different speed.
+          var period = 90 + ac * 35;
+          var phase = ((time / period) + ac * 0.37) % 1;
+          var ax = phase * (W + 200) - 100;
+          // Vertical band: mid-sky for first, lower for second, very high for third
+          var bandY = ac === 0 ? horizonY * 0.55
+                    : ac === 1 ? horizonY * 0.78
+                                : horizonY * 0.30;
+          var ay = bandY + Math.sin(time * 0.3 + ac) * 4; // gentle bobbing
+          // Bias the heading: alternating left-to-right and right-to-left so the
+          // sky has crossing traffic.
+          var goingRight = (ac % 2 === 0);
+          // Aircraft type: high-altitude jet (contrail), mid-altitude commercial,
+          // low Cessna-style (no contrail).
+          var isHigh = ac === 2;
+          var bodyAlpha = 0.55 + 0.35 * (1 - Math.abs(phase - 0.5) * 2); // brighter mid-pass
+          gfx.fillStyle = 'rgba(45,55,70,' + bodyAlpha + ')';
+          // Silhouette — a small horizontal capsule with a vertical tail tab
+          var bodyW = isHigh ? 8 : (ac === 0 ? 6 : 5);
+          var bodyH = 1.6;
+          gfx.fillRect(ax - bodyW / 2, ay - bodyH / 2, bodyW, bodyH);
+          // Wings — perpendicular line a touch wider than body
+          gfx.fillRect(ax - bodyW * 0.65, ay - 0.4, bodyW * 1.3, 0.8);
+          // Tail
+          gfx.fillRect(ax + (goingRight ? -bodyW / 2 - 1 : bodyW / 2), ay - 1.8, 1.2, 1.8);
+          // Contrail for high-altitude jet — a fading white streak BEHIND the plane
+          if (isHigh) {
+            // Trail extends opposite to direction of travel
+            var trailLen = 80;
+            var trailDir = goingRight ? -1 : 1;
+            var trailGrad = gfx.createLinearGradient(ax, ay, ax + trailDir * trailLen, ay);
+            trailGrad.addColorStop(0, 'rgba(255,255,255,0.55)');
+            trailGrad.addColorStop(1, 'rgba(255,255,255,0)');
+            gfx.fillStyle = trailGrad;
+            gfx.fillRect(Math.min(ax, ax + trailDir * trailLen), ay - 1.6, trailLen, 3.2);
+          }
+        }
+      };
+
+      // ── Hot air balloons drifting at low-mid altitude ──
+      // Two balloons cycle very slowly across the sky (~6-8 minute crossing).
+      // Each has a striped envelope (alternating colored bands) and a tiny
+      // basket below. Beautiful, distinctive, instantly readable as "real".
+      // Suppressed at night and at high altitude (balloons live <10k ft).
+      var drawHotAirBalloons = function(gfx, W, H, horizonY, state, time, dayNight2) {
+        if (dayNight2 && dayNight2.isNight) return;
+        if (state.altitude > 10000) return;
+        var palettes = [
+          ['#dc2626', '#fef3c7', '#dc2626', '#1e40af'],   // red/cream/red/blue
+          ['#f97316', '#16a34a', '#f97316', '#fbbf24'],   // orange/green/orange/yellow
+          ['#7c3aed', '#fef3c7', '#7c3aed', '#06b6d4']    // violet/cream/violet/cyan
+        ];
+        for (var ba = 0; ba < 2; ba++) {
+          var balPeriod = 380 + ba * 90;
+          var balPhase = ((time / balPeriod) + ba * 0.43) % 1;
+          var bx = balPhase * (W + 200) - 100;
+          var by = horizonY * (0.45 + ba * 0.18) + Math.sin(time * 0.15 + ba) * 6;
+          var palette = palettes[(ba + Math.floor(time / 600)) % palettes.length];
+          var envR = ba === 0 ? 14 : 11; // envelope radius
+          var bskW = envR * 0.45;
+          var bskH = envR * 0.35;
+          // Envelope — 4 vertical bands of color stacked into the round shape
+          gfx.save();
+          gfx.translate(bx, by);
+          for (var bd = 0; bd < 4; bd++) {
+            gfx.fillStyle = palette[bd];
+            gfx.beginPath();
+            // Each band is a quarter of the circle horizontally
+            var bdAng0 = -Math.PI / 2 + bd * (Math.PI / 4) - Math.PI / 4;
+            var bdAng1 = -Math.PI / 2 + (bd + 1) * (Math.PI / 4) - Math.PI / 4;
+            gfx.moveTo(0, envR * 0.55);
+            gfx.arc(0, 0, envR, bdAng0, bdAng1, false);
+            gfx.closePath();
+            gfx.fill();
+          }
+          // Outline for definition
+          gfx.strokeStyle = 'rgba(20,25,35,0.55)';
+          gfx.lineWidth = 0.6;
+          gfx.beginPath();
+          gfx.arc(0, 0, envR, -Math.PI, 0, false);
+          gfx.lineTo(0, envR * 0.6);
+          gfx.closePath();
+          gfx.stroke();
+          // Suspension lines
+          gfx.beginPath();
+          gfx.moveTo(-envR * 0.65, envR * 0.5); gfx.lineTo(-bskW * 0.6, envR + 4);
+          gfx.moveTo( envR * 0.65, envR * 0.5); gfx.lineTo( bskW * 0.6, envR + 4);
+          gfx.moveTo(0, envR);                  gfx.lineTo(0, envR + 4);
+          gfx.stroke();
+          // Basket
+          gfx.fillStyle = '#92400e';
+          gfx.fillRect(-bskW / 2, envR + 4, bskW, bskH);
+          // Wicker grain — a couple of horizontal slats
+          gfx.strokeStyle = 'rgba(60,30,10,0.5)'; gfx.lineWidth = 0.4;
+          gfx.beginPath();
+          gfx.moveTo(-bskW / 2, envR + 4 + bskH * 0.5); gfx.lineTo(bskW / 2, envR + 4 + bskH * 0.5);
+          gfx.stroke();
+          gfx.restore();
+        }
+      };
+
+      // ── Crepuscular sun rays through clouds ("god rays") ──
+      // Soft fan-shaped light beams emanating from the sun's screen position
+      // when the player is below the cloud layer (alt < 12k ft) and during
+      // golden hour or midday with sky brightness. Beautiful sunlight cue.
+      var drawCrepuscularRays = function(gfx, W, H, horizonY, state, time, dayNight2) {
+        if (!dayNight2 || dayNight2.isNight) return;
+        if (state.altitude > 12000) return;
+        // Approximate sun position: morning west, evening east, midday top.
+        // Clamp result to within visible canvas.
+        var solarHour = dayNight2.solarHour != null ? dayNight2.solarHour : 12;
+        var sunT = Math.max(0, Math.min(1, (solarHour - 6) / 12));
+        var sunX = W * (0.12 + sunT * 0.76);
+        var sunY = Math.max(20, horizonY * (0.15 + Math.abs(sunT - 0.5) * 0.6));
+        // Fade rays out at noon (when sun is high overhead, less of an effect)
+        // and at extreme dawn/dusk (when sky already dramatic).
+        var rayStrength = 0.28 * (1 - Math.abs(sunT - 0.5) * 1.6);
+        if (rayStrength <= 0.04) return;
+        gfx.save();
+        gfx.globalCompositeOperation = 'lighter';
+        gfx.fillStyle = 'rgba(255,240,200,' + rayStrength.toFixed(3) + ')';
+        // 5 fan rays radiating from sun position
+        for (var rr = 0; rr < 5; rr++) {
+          var rrAng = (rr - 2) * 0.10 + Math.sin(time * 0.05 + rr) * 0.02;
+          var rrLen = H * 1.1;
+          // Triangle from sun to two points on the lower edge
+          gfx.beginPath();
+          gfx.moveTo(sunX, sunY);
+          gfx.lineTo(sunX + Math.sin(rrAng - 0.04) * rrLen, sunY + Math.cos(rrAng - 0.04) * rrLen);
+          gfx.lineTo(sunX + Math.sin(rrAng + 0.04) * rrLen, sunY + Math.cos(rrAng + 0.04) * rrLen);
+          gfx.closePath();
+          gfx.fill();
+        }
+        gfx.restore();
+      };
+
+      // ── Migrating goose V-formations at low altitude ──
+      // A single 7-bird V drifts slowly across the sky over ~3 minutes.
+      // Each bird is two short angled strokes (a tiny check-mark shape)
+      // that flap with a sin(time) rhythm. Distinct from the existing
+      // bird-flock rendering at higher altitudes — these are noticeably
+      // organized in a V pattern, very Maine-fall.
+      var drawGooseFormation = function(gfx, W, H, horizonY, state, time, dayNight2) {
+        if (dayNight2 && dayNight2.isNight) return;
+        if (state.altitude > 6000) return; // geese fly low
+        var period = 180;
+        // Hash on slowly-rotating seed so the V appears in different
+        // sessions at different paths
+        var slot = Math.floor(time / period);
+        var slotHash = ((slot * 9301 + 49297) % 233280) / 233280;
+        if (slotHash < 0.55) return; // some periods have no flock
+        var goingRight = slotHash > 0.78;
+        var phase = ((time % period) / period);
+        var leadX = goingRight
+          ? phase * (W + 200) - 100
+          : (1 - phase) * (W + 200) - 100;
+        // Vertical band: lower half of sky (geese low)
+        var bandHash = ((slot * 7 + 11) % 23) / 23;
+        var leadY = horizonY * 0.40 + bandHash * horizonY * 0.30;
+        // 7 birds in a V — leader at apex, 3 trailing on each wing
+        var sep = 9; // px between birds along the wings
+        var birdColor = 'rgba(45,38,32,0.85)';
+        gfx.strokeStyle = birdColor;
+        gfx.lineWidth = 0.9;
+        for (var bi = 0; bi < 7; bi++) {
+          // Bird offset relative to leader
+          var arm = bi === 0 ? 0 : (bi - 1) % 2 === 0 ? -1 : 1; // alternating sides
+          var rank = bi === 0 ? 0 : Math.ceil(bi / 2);          // 1,1,2,2,3,3
+          var bdx = (goingRight ? -1 : 1) * rank * sep;
+          var bdy = rank * sep * 0.55;
+          var bx = leadX + bdx + arm * rank * sep * 0.5;
+          var by = leadY + bdy;
+          // Wing flap: angle between body and wings opens/closes
+          var flap = 0.55 + 0.35 * Math.sin(time * 6 + bi * 0.4);
+          var wingLen = 2.6;
+          // Two strokes forming a "wide checkmark" or "wing pair"
+          gfx.beginPath();
+          gfx.moveTo(bx - wingLen, by + wingLen * (1 - flap));
+          gfx.lineTo(bx, by);
+          gfx.lineTo(bx + wingLen, by + wingLen * (1 - flap));
+          gfx.stroke();
+        }
+      };
+
+      // ── Helicopter with rotor blur ──
+      // Single helicopter cycles slowly across the lower sky on a long
+      // ~4-minute path. Rotor disk drawn as a thin horizontal blur ellipse
+      // that gets a counter-rotating tail rotor for added authenticity.
+      // Visible below 8000 ft AGL — helicopters fly in this band.
+      var drawHelicopter = function(gfx, W, H, horizonY, state, time, dayNight2) {
+        if (dayNight2 && dayNight2.isNight) return;
+        if (state.altitude > 8000) return;
+        // Slot-based: not every period has a helicopter visible
+        var slot = Math.floor(time / 240);
+        var slotHash = ((slot * 17389 + 23) % 233280) / 233280;
+        if (slotHash < 0.40) return;
+        var goingRight = slotHash > 0.7;
+        var phase = ((time % 240) / 240);
+        var hx = goingRight ? phase * (W + 200) - 100 : (1 - phase) * (W + 200) - 100;
+        var hy = horizonY * (0.55 + (slot % 7) * 0.04) + Math.sin(time * 0.4) * 3;
+        // Body color — alternate between civil orange/white and military olive
+        var bodyColor = (slot % 2 === 0) ? '#1e3a5f' : '#3a4a3a';
+        var rotorAlpha = 0.35;
+        // Main fuselage — short rounded body
+        gfx.fillStyle = bodyColor;
+        gfx.beginPath();
+        gfx.ellipse(hx, hy, 5, 1.8, 0, 0, Math.PI * 2);
+        gfx.fill();
+        // Tail boom — a thin rectangle to one side
+        var boomDir = goingRight ? -1 : 1;
+        gfx.fillRect(hx + boomDir * 4, hy - 0.3, 7 * boomDir, 0.7);
+        // Tail rotor — small vertical disk at tail end
+        var tailX = hx + boomDir * 11;
+        var tailRotorPhase = Math.sin(time * 18);
+        gfx.fillStyle = 'rgba(45,55,70,' + (0.5 + tailRotorPhase * 0.2) + ')';
+        gfx.beginPath();
+        gfx.ellipse(tailX, hy, 0.6, 1.6, 0, 0, Math.PI * 2);
+        gfx.fill();
+        // Skids — small horizontal landing gear lines below body
+        gfx.strokeStyle = bodyColor;
+        gfx.lineWidth = 0.6;
+        gfx.beginPath();
+        gfx.moveTo(hx - 4, hy + 2.2); gfx.lineTo(hx + 4, hy + 2.2);
+        gfx.stroke();
+        // Main rotor disk (top) — wide horizontal blur ellipse with subtle
+        // motion lines. Uses lower alpha to read as a spinning disk.
+        gfx.fillStyle = 'rgba(45,55,70,' + rotorAlpha + ')';
+        gfx.beginPath();
+        gfx.ellipse(hx, hy - 2.5, 9, 0.9, 0, 0, Math.PI * 2);
+        gfx.fill();
+        // Faint blade hint — two crossing lines spinning
+        var bladeAng = time * 8;
+        gfx.strokeStyle = 'rgba(45,55,70,0.3)';
+        gfx.lineWidth = 0.5;
+        gfx.beginPath();
+        gfx.moveTo(hx + Math.cos(bladeAng) * 9, hy - 2.5 + Math.sin(bladeAng) * 0.6);
+        gfx.lineTo(hx - Math.cos(bladeAng) * 9, hy - 2.5 - Math.sin(bladeAng) * 0.6);
+        gfx.stroke();
+      };
+
+      // ── Distant thunderstorm cells on the horizon ──
+      // 1-2 deterministic cumulonimbus towers with anvil tops and a
+      // semi-transparent rain shaft beneath. Drift slowly across the
+      // horizon over ~5 minutes. Adds weather drama at distance even
+      // when the active weather setting is "clear" — pilots don't fly
+      // into storm cells, they navigate AROUND them, and seeing one
+      // 20nm away is part of real flying.
+      var drawDistantStorms = function(gfx, W, H, horizonY, state, time, dayNight2) {
+        if (dayNight2 && dayNight2.isNight) return; // night = blackness, no value
+        if (state.altitude > 25000) return;          // above storm tops
+        // Number of cells visible depends on a slow rotating seed so the
+        // sky composition changes through the flight.
+        var stormSeed = Math.floor(state.lat * 3 + state.lon * 5 + time / 240);
+        var seedHash = (stormSeed * 9301 + 49297) % 233280 / 233280;
+        if (seedHash < 0.45) return; // ~55% of moments have NO storm visible
+        for (var sc = 0; sc < 2; sc++) {
+          // Each cell drifts slowly across horizon
+          var period = 320 + sc * 90;
+          var phase = ((time / period) + sc * 0.61 + seedHash) % 1;
+          var sx = phase * (W + 200) - 100;
+          var sy = horizonY + (sc === 0 ? -8 : -14); // slight stack
+          // Skip second cell some sessions for variety
+          if (sc === 1 && seedHash < 0.7) continue;
+          // Tower body: vertical column of overlapping ellipses
+          var towerH = 80 + sc * 16;
+          var towerW = 36 + sc * 8;
+          var bodyA = 0.55;
+          for (var lay = 0; lay < 5; lay++) {
+            var layT = lay / 4;
+            var layY = sy - towerH * layT;
+            var layW = towerW * (0.6 + layT * 0.5);
+            var layH = 14 + layT * 6;
+            // Deeper gray near base, lighter near anvil
+            var gray = Math.round(110 + layT * 80);
+            gfx.fillStyle = 'rgba(' + gray + ',' + gray + ',' + (gray + 6) + ',' + (bodyA - layT * 0.1) + ')';
+            gfx.beginPath();
+            gfx.ellipse(sx, layY, layW, layH, 0, 0, Math.PI * 2);
+            gfx.fill();
+          }
+          // Anvil top: wide flat ellipse spreading outward
+          gfx.fillStyle = 'rgba(220,220,225,0.55)';
+          gfx.beginPath();
+          gfx.ellipse(sx, sy - towerH, towerW * 1.6, 9, 0, 0, Math.PI * 2);
+          gfx.fill();
+          gfx.fillStyle = 'rgba(200,205,215,0.45)';
+          gfx.beginPath();
+          gfx.ellipse(sx + 6, sy - towerH + 3, towerW * 1.3, 7, 0, 0, Math.PI * 2);
+          gfx.fill();
+          // Rain shaft: vertical streaks beneath the cell, fading toward
+          // ground. Composite-multiply darkens the terrain it falls on.
+          gfx.save();
+          gfx.globalAlpha = 0.35;
+          gfx.strokeStyle = 'rgba(80,90,110,1)';
+          gfx.lineWidth = 0.6;
+          var shaftN = 16;
+          for (var rs = 0; rs < shaftN; rs++) {
+            var shaftX = sx - towerW * 0.6 + (rs / (shaftN - 1)) * towerW * 1.2;
+            var shaftY0 = sy + 4;
+            var shaftY1 = sy + 24 + (rs % 4) * 2;
+            // Diagonal streaks (windblown rain)
+            gfx.beginPath();
+            gfx.moveTo(shaftX, shaftY0);
+            gfx.lineTo(shaftX - 4, shaftY1);
+            gfx.stroke();
+          }
+          gfx.restore();
+          // Lightning flicker: very rare, deterministic per second
+          var flickSeed = Math.floor(time * 3 + sc * 7);
+          var flickHash = ((flickSeed * 9301 + 49297) % 233280) / 233280;
+          if (flickHash > 0.97) {
+            // Bright flash inside the tower
+            gfx.fillStyle = 'rgba(255,255,230,0.6)';
+            gfx.beginPath();
+            gfx.ellipse(sx, sy - towerH * 0.4, towerW * 0.6, 12, 0, 0, Math.PI * 2);
+            gfx.fill();
+            // Sharp white bolt
+            gfx.strokeStyle = 'rgba(255,255,255,0.9)';
+            gfx.lineWidth = 1.2;
+            gfx.beginPath();
+            gfx.moveTo(sx, sy - towerH * 0.7);
+            gfx.lineTo(sx - 3, sy - towerH * 0.4);
+            gfx.lineTo(sx + 2, sy - towerH * 0.2);
+            gfx.lineTo(sx - 4, sy);
+            gfx.stroke();
+          }
+          // Rainbow arc: rare gem when the sun and rain are on opposite
+          // sides of the cell. Only the first storm cell (sc=0) generates
+          // one, and only when seedHash is in a sweet range. Drawn as
+          // 5 concentric ROYGBIV arcs.
+          if (sc === 0 && seedHash > 0.82) {
+            var rbCx = sx - 60;
+            var rbCy = sy + 32;
+            var rbR = 70;
+            var rbColors = ['#dc2626', '#f97316', '#facc15', '#65a30d', '#0ea5e9', '#7c3aed'];
+            gfx.save();
+            gfx.lineCap = 'round';
+            for (var rbi = 0; rbi < rbColors.length; rbi++) {
+              gfx.strokeStyle = rbColors[rbi];
+              gfx.globalAlpha = 0.32;
+              gfx.lineWidth = 2.2;
+              gfx.beginPath();
+              gfx.arc(rbCx, rbCy, rbR + rbi * 2.5, Math.PI * 1.05, Math.PI * 1.95);
+              gfx.stroke();
+            }
+            gfx.restore();
+          }
+        }
+      };
+
       // ── Draw terrain perspective ──
       var drawTerrain = function(gfx, W, H, horizonY, state, time, dayNight2) {
         var rows = 16;
@@ -933,20 +2670,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   var shX = ((terrainHash(shipSeed + sh, 9) * W) + time * (2 + sh) * 3) % W;
                   var shY = y + Math.sin(time * 1.5 + sh) * 0.5;
                   var shSize = Math.max(1.5, 3 + depth * 4);
+                  // The first ship occasionally upgrades to a CARGO SHIP
+                  // with a row of stacked containers — instantly readable
+                  // as a freighter rather than a small fishing boat.
+                  var isCargo = sh === 0 && terrainHash(shipSeed, 19) > 0.55 && shSize > 2.8;
+                  if (isCargo) shSize *= 1.6;
                   // Hull
-                  gfx.fillStyle = sh % 2 === 0 ? 'rgba(40,40,55,0.8)' : 'rgba(180,40,40,0.75)';
+                  gfx.fillStyle = sh % 2 === 0 ? 'rgba(40,40,55,0.85)' : 'rgba(180,40,40,0.8)';
                   gfx.fillRect(shX - shSize, shY, shSize * 2, shSize * 0.4);
-                  // Superstructure
-                  gfx.fillStyle = 'rgba(240,240,240,0.7)';
-                  gfx.fillRect(shX - shSize * 0.3, shY - shSize * 0.35, shSize * 0.6, shSize * 0.4);
+                  if (isCargo) {
+                    // Container stack — alternating colored boxes
+                    var contColors = ['#dc2626', '#f59e0b', '#0284c7', '#16a34a', '#a855f7'];
+                    var contRowN = 8;
+                    var contW = shSize * 1.7 / contRowN;
+                    var contH = shSize * 0.22;
+                    for (var cn = 0; cn < contRowN; cn++) {
+                      var cnSeed = (shipSeed + cn * 7 + sh * 3) >>> 0;
+                      gfx.fillStyle = contColors[cnSeed % contColors.length];
+                      gfx.globalAlpha = 0.85;
+                      gfx.fillRect(shX - shSize * 0.85 + cn * contW, shY - contH, contW * 0.92, contH);
+                    }
+                    gfx.globalAlpha = 1;
+                    // Bridge tower at stern (rear)
+                    gfx.fillStyle = 'rgba(245,245,245,0.85)';
+                    gfx.fillRect(shX + shSize * 0.6, shY - shSize * 0.55, shSize * 0.3, shSize * 0.55);
+                    // Smokestack with thin vertical stripe
+                    gfx.fillStyle = 'rgba(60,55,55,0.85)';
+                    gfx.fillRect(shX + shSize * 0.78, shY - shSize * 0.85, shSize * 0.12, shSize * 0.3);
+                  } else {
+                    // Smaller boat — superstructure cabin
+                    gfx.fillStyle = 'rgba(240,240,240,0.7)';
+                    gfx.fillRect(shX - shSize * 0.3, shY - shSize * 0.35, shSize * 0.6, shSize * 0.4);
+                  }
                   // Wake (V-shape trail)
-                  gfx.strokeStyle = 'rgba(255,255,255,' + (0.25 + depth * 0.25) + ')';
-                  gfx.lineWidth = 0.8;
+                  gfx.strokeStyle = 'rgba(255,255,255,' + (0.3 + depth * 0.3) + ')';
+                  gfx.lineWidth = isCargo ? 1.2 : 0.8;
                   gfx.beginPath();
                   gfx.moveTo(shX - shSize * 1.2, shY + shSize * 0.5);
-                  gfx.lineTo(shX - shSize * 4, shY + shSize * 1.2);
+                  gfx.lineTo(shX - shSize * 4.5, shY + shSize * 1.4);
                   gfx.moveTo(shX - shSize * 1.2, shY + shSize * 0.5);
-                  gfx.lineTo(shX - shSize * 4, shY - shSize * 0.3);
+                  gfx.lineTo(shX - shSize * 4.5, shY - shSize * 0.4);
                   gfx.stroke();
                 }
               }
@@ -2235,7 +3998,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           if (line) gfx.fillText(line, cardX + 12, lineY);
 
           if (p.pop) {
-            gfx.fillStyle = '#64748b'; gfx.font = '9px system-ui'; gfx.textAlign = 'right';
+            gfx.fillStyle = '#94a3b8'; gfx.font = '9px system-ui'; gfx.textAlign = 'right';
             gfx.fillText('Pop: ' + p.pop, cardX + cardW - 12, cardY + 18);
           }
 
@@ -3757,10 +5520,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         });
 
         if (quiz.showResult) {
-          gfx.fillStyle = '#64748b'; gfx.font = '10px system-ui'; gfx.textAlign = 'center';
+          gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('Press Q for next question, ESC to close quiz', cardX + cardW / 2, cardY + cardH - 8);
         } else {
-          gfx.fillStyle = '#64748b'; gfx.font = '10px system-ui'; gfx.textAlign = 'center';
+          gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('Press 1, 2, 3, or 4 to answer', cardX + cardW / 2, cardY + cardH - 8);
         }
         gfx.restore(); // Restore from fade-in globalAlpha
@@ -4322,7 +6085,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var twX = termX + termW * 0.35;
           var twW = termW * 0.18;
           var twShaftH = 28;
-          gfx.fillStyle = '#64748b';
+          gfx.fillStyle = '#94a3b8';
           gfx.fillRect(twX, termY - twShaftH, twW, twShaftH);
           // Glass cab (wider than shaft)
           gfx.fillStyle = '#1e293b';
@@ -4354,7 +6117,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             var hH = (H - horizonY) * (0.14 - hi * 0.015);
             var hX = hangBaseX + hi * (hW + 6);
             // Metal siding
-            gfx.fillStyle = hi === 0 ? '#6b7280' : (hi === 1 ? '#7b8390' : '#8a95a3');
+            gfx.fillStyle = hi === 0 ? '#94a3b8' : (hi === 1 ? '#7b8390' : '#8a95a3');
             gfx.fillRect(hX, hangY, hW, hH);
             // Arched roof (half-ellipse)
             gfx.fillStyle = hi === 0 ? '#4b5563' : (hi === 1 ? '#5b6776' : '#6a7888');
@@ -4747,12 +6510,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       };
 
       // ── Landing Score System ──
-      var landingRef = useRef({ wasAirborne: false, lastVSI: 0, scored: false });
+      // wasAirborne: only flips true once the plane has cleared 50 ft AGL
+      //   (MSL > 20 was buggy — at PWM with field elev 76 ft, that condition
+      //   was true even while parked, so a single bounce off the runway
+      //   would arm the landing scorer).
+      // lastVSI: now updated WHILE airborne (the previous gate `!wasAirborne`
+      //   was inverted, so lastVSI froze at "parked on runway" = ~0, making
+      //   every touchdown register as 0 fpm = spurious Butter Landing).
+      // peakAGL: tracks the highest AGL reached this flight so a real,
+      //   intentional landing has to come from at least 100 ft AGL —
+      //   prevents micro-bounces during takeoff roll from triggering a
+      //   "landing" event.
+      var landingRef = useRef({ wasAirborne: false, lastVSI: 0, scored: false, peakAGL: 0 });
       var drawLandingScore = function(gfx, W, H, state, time) {
         var ls = landingRef.current;
-        if (!state.onGround && state.altitude > 20) { ls.wasAirborne = true; ls.scored = false; }
-        if (!ls.wasAirborne) { ls.lastVSI = state.vsi * 60; return; }
-        if (state.onGround && ls.wasAirborne && !ls.scored) {
+        var fieldElev = state.fieldElev || 0;
+        var aglAlt = state.altitude - fieldElev;
+
+        // Arm the landing scorer once we're genuinely airborne (>50 ft AGL).
+        if (!state.onGround && aglAlt > 50) {
+          ls.wasAirborne = true;
+          ls.scored = false;
+          if (aglAlt > ls.peakAGL) ls.peakAGL = aglAlt;
+        }
+
+        // Track live VSI while airborne so touchdown captures actual descent rate.
+        if (!state.onGround) {
+          ls.lastVSI = state.vsi * 60;
+        }
+
+        // Nothing to score until armed.
+        if (!ls.wasAirborne) return;
+
+        // Score on touchdown — but only if the flight reached at least
+        // 100 ft AGL (rules out runway bounces on takeoff roll).
+        if (state.onGround && !ls.scored && ls.peakAGL >= 100) {
           var fpm = Math.abs(ls.lastVSI);
           ls.touchdownFPM = fpm;
           ls.touchdownSpeed = state.speed * 0.5924838;
@@ -4785,8 +6577,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }
           } catch(e) {}
           skyAnnounce('Landing: ' + ls.grade + '. ' + Math.round(fpm) + ' feet per minute. ' + Math.round(ls.touchdownSpeed) + ' knots.');
+          // Reset peakAGL so the next flight cycle (taxi → takeoff → land)
+          // gates on 100 ft AGL again rather than carrying the old high.
+          ls.peakAGL = 0;
         }
-        if (!ls.wasAirborne) ls.lastVSI = state.vsi * 60;
 
         // ── Touchdown dust / tire smoke puff ──
         // For 1.5 s after wheels meet ground, render two expanding tan smoke
@@ -4842,7 +6636,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fillText(ls.grade, cardX + cardW / 2, cardY + 28);
           gfx.fillStyle = '#94a3b8'; gfx.font = '12px system-ui';
           gfx.fillText(Math.round(ls.touchdownFPM) + ' fpm  |  ' + Math.round(ls.touchdownSpeed) + ' kts', cardX + cardW / 2, cardY + 48);
-          gfx.fillStyle = '#64748b'; gfx.font = '10px system-ui';
+          gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui';
           var tip = ls.touchdownFPM < 200 ? 'Perfect touchdown!' : ls.touchdownFPM < 400 ? 'Try descending more gently — aim for under 200 fpm.' : 'Reduce your descent rate before touchdown. Flare (pitch up gently) just before the runway.';
           gfx.fillText(tip, cardX + cardW / 2, cardY + 66);
           gfx.globalAlpha = 1;
@@ -4941,6 +6735,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         Physics.CL_PER_AOA = currentAC.clPerAoa;
         Physics.CD0 = currentAC.cd0;
         Physics.CD_INDUCED_K = currentAC.cdK;
+        Physics.IS_HELICOPTER = !!currentAC.isHelicopter;
+        Physics.IS_DRONE = !!currentAC.isDrone;
+        Physics.MAX_SPEED_KTS = currentAC.maxSpeed;
+        Physics.AGL_CEILING = currentAC.isDrone ? 400 : null;
       }, [selectedAircraft]);
 
       // ── Achievement Tracker ──
@@ -4956,7 +6754,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           airports: (d.visitedAirports || []).length,
           quizScore: geoQuizRef.current.score,
           perfectSprint: sprintRef.current.phase === 'result' && sprintRef.current.score === sprintRef.current.places?.length && sprintRef.current.score > 0,
-          oceanCrossing: oceanNmRef.current > 50
+          oceanCrossing: oceanNmRef.current > 50,
+          rescuesCompleted: d.rescuesCompleted || 0
         };
         // Track ocean crossing
         if (isWater(state.lat, state.lon)) { oceanNmRef.current += 0.05; } else { oceanNmRef.current = 0; }
@@ -4990,6 +6789,326 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         gfx.fillStyle = '#fff'; gfx.font = 'bold 13px system-ui';
         gfx.fillText(pop.ach.icon + ' ' + pop.ach.name, cardX + 10, cardY + 37);
         gfx.globalAlpha = 1;
+      };
+
+      // ── Coastal Rescue overlay ──
+      // Draws the distress beacon banner, bearing/distance to survivor,
+      // hover-stability progress bar during hoist, and a flashing red
+      // distress marker on the canvas at the survivor's projected position.
+      var drawRescueOverlay = function(gfx, W, H, horizonY, state, time) {
+        var rescue = d.rescue;
+        if (!rescue || !rescue.active) return;
+        var rDist = haversineNm(state.lat, state.lon, rescue.survivorLat, rescue.survivorLon);
+        var rBrg = bearing(state.lat, state.lon, rescue.survivorLat, rescue.survivorLon);
+        var rRelBrg = ((rBrg - state.heading + 540) % 360) - 180;
+        var rAgl = state.altitude - (state.fieldElev || 0);
+        var rKts = state.speed * 0.5924838;
+
+        // Top-left distress beacon banner
+        var bannerY = 40;
+        gfx.fillStyle = 'rgba(180,30,30,0.85)';
+        gfx.fillRect(8, bannerY, 230, 22);
+        gfx.fillStyle = '#fff';
+        gfx.font = 'bold 10px system-ui';
+        gfx.textAlign = 'left';
+        var beaconLabel = rescue.recovered
+          ? '✅ SURVIVOR ABOARD — RTB PWM'
+          : '🆘 DISTRESS BEACON · ' + rDist.toFixed(1) + ' nm @ ' + Math.round(((rBrg + 360) % 360)) + '°';
+        gfx.fillText(beaconLabel, 14, bannerY + 14);
+
+        // Mission status callout under the beacon banner — close-range info
+        if (rDist < 1.5 && !rescue.recovered) {
+          gfx.fillStyle = 'rgba(15,23,42,0.85)';
+          gfx.fillRect(8, bannerY + 26, 230, 36);
+          gfx.fillStyle = '#fbbf24';
+          gfx.font = 'bold 10px system-ui';
+          gfx.fillText('CLOSE — SLOW + DESCEND TO HOVER', 14, bannerY + 38);
+          gfx.fillStyle = '#cbd5e1';
+          gfx.font = '10px monospace';
+          gfx.fillText('AGL ' + Math.round(rAgl) + ' ft  ·  GS ' + Math.round(rKts) + ' kts', 14, bannerY + 52);
+          gfx.fillText('Δ ' + (rDist * 6076).toFixed(0) + ' ft  ·  TGT < 100 ft AGL, < 10 kts', 14, bannerY + 64);
+        }
+
+        // Hoist progress bar — only visible while actively hoisting
+        var hoistT = rescue.hoistTime || 0;
+        if (hoistT > 0.02 && !rescue.recovered) {
+          var hbW = 240, hbH = 14;
+          var hbX = (W - hbW) / 2, hbY = H * 0.32;
+          gfx.fillStyle = 'rgba(15,23,42,0.92)';
+          gfx.fillRect(hbX - 6, hbY - 18, hbW + 12, hbH + 32);
+          gfx.fillStyle = '#fbbf24';
+          gfx.font = 'bold 11px system-ui';
+          gfx.textAlign = 'center';
+          gfx.fillText('HOLD POSITION — HOIST IN PROGRESS', W / 2, hbY - 4);
+          // Bar background
+          gfx.fillStyle = 'rgba(60,65,75,0.9)';
+          gfx.fillRect(hbX, hbY, hbW, hbH);
+          // Bar fill
+          var pct = Math.min(1, hoistT / 5);
+          gfx.fillStyle = '#22c55e';
+          gfx.fillRect(hbX, hbY, hbW * pct, hbH);
+          // Time label
+          gfx.fillStyle = '#fff';
+          gfx.font = 'bold 9px monospace';
+          gfx.fillText(hoistT.toFixed(1) + ' / 5.0 s', W / 2, hbY + hbH + 12);
+        }
+
+        // Flashing distress marker on canvas — projected to screen position
+        // when the survivor is roughly in front of the plane.
+        if (Math.abs(rRelBrg) < 60 && !rescue.recovered && rDist < 8) {
+          // Project distance/bearing to screen coords
+          var relRad = rRelBrg * Math.PI / 180;
+          var t = Math.max(0.1, 1 - Math.min(1, Math.log(rDist + 1) / Math.log(9)));
+          var bx = W / 2 + Math.sin(relRad) * 80 * (t * t * 0.6 + 0.4) * Math.max(rDist, 0.05) * 60;
+          // Actually clamp bx to reasonable horizontal screen range using direct relBrg fraction
+          bx = W / 2 + (rRelBrg / 60) * (W * 0.45);
+          var by = horizonY + (H - horizonY) * (0.05 + 0.85 * (t * t));
+          var pulse = 0.5 + 0.5 * Math.sin(time * 6);
+          gfx.fillStyle = 'rgba(220,40,40,' + pulse + ')';
+          gfx.beginPath();
+          gfx.arc(bx, by, 5 + pulse * 3, 0, Math.PI * 2);
+          gfx.fill();
+          // Outer ring
+          gfx.strokeStyle = 'rgba(255,180,180,' + (pulse * 0.8) + ')';
+          gfx.lineWidth = 1.4;
+          gfx.beginPath();
+          gfx.arc(bx, by, 12 + pulse * 4, 0, Math.PI * 2);
+          gfx.stroke();
+          // Beacon label
+          gfx.fillStyle = 'rgba(255,255,255,0.85)';
+          gfx.font = 'bold 10px system-ui';
+          gfx.textAlign = 'center';
+          gfx.fillText('SURVIVOR', bx, by - 18);
+        }
+
+        // Completion celebration card — full-screen success
+        if (rescue.completed && rescue.completedAt && (time - rescue.completedAt) < 8) {
+          var cAge = time - rescue.completedAt;
+          var cAlpha = Math.min(1, cAge < 0.5 ? cAge * 2 : (cAge > 6 ? (8 - cAge) / 2 : 1));
+          var ccW = 360, ccH = 110;
+          var ccX = (W - ccW) / 2, ccY = H * 0.25;
+          gfx.fillStyle = 'rgba(22,40,28,' + (0.92 * cAlpha) + ')';
+          gfx.fillRect(ccX, ccY, ccW, ccH);
+          gfx.strokeStyle = 'rgba(34,197,94,' + cAlpha + ')';
+          gfx.lineWidth = 2;
+          gfx.strokeRect(ccX, ccY, ccW, ccH);
+          gfx.fillStyle = 'rgba(34,197,94,' + cAlpha + ')';
+          gfx.font = 'bold 16px system-ui';
+          gfx.textAlign = 'center';
+          gfx.fillText('✅ RESCUE COMPLETE', W / 2, ccY + 30);
+          gfx.fillStyle = 'rgba(255,255,255,' + cAlpha + ')';
+          gfx.font = 'bold 12px system-ui';
+          gfx.fillText('Survivor delivered to PWM', W / 2, ccY + 54);
+          gfx.fillStyle = 'rgba(203,213,225,' + cAlpha + ')';
+          gfx.font = '11px system-ui';
+          gfx.fillText('Total mission time: ' + (rescue.totalSec || 0) + ' seconds', W / 2, ccY + 74);
+          gfx.fillStyle = 'rgba(251,191,36,' + cAlpha + ')';
+          gfx.font = 'italic 10px system-ui';
+          gfx.fillText('+ Coast Guard Pilot achievement', W / 2, ccY + 94);
+        }
+      };
+
+      // ── Drone Aerial Survey / Powerline Inspection overlay ──
+      // Renders battery + GPS + AGL HUD strip, waypoint markers projected
+      // onto the canvas, the active capture progress ring, and a brief camera-flash
+      // when a target is captured. Only active when d.survey.active.
+      var drawSurveyOverlay = function(gfx, W, H, horizonY, state, time) {
+        var survey = d.survey;
+        if (!survey || !survey.active) return;
+        var photos = survey.photos || [];
+        var aglS = state.altitude - (state.fieldElev || 0);
+        var ktsS = state.speed * 0.5924838;
+        var launchDist = haversineNm(state.lat, state.lon, survey.launchLat, survey.launchLon);
+        var sMode = survey.mode || 'aerial';
+        var sTotal = photos.length;
+        var sLabel = sMode === 'powerline' ? '🔌 INSPECTIONS' : '📸 PHOTOS';
+        var sHudTitle = sMode === 'powerline' ? '🔌 LINE INSPECTOR' : '🛸 DRONE TELEMETRY';
+        var sCapRadiusFt = sMode === 'powerline' ? 30 : 50;
+        var sCapCeil = sMode === 'powerline' ? 60 : 100;
+        var sCapKts = sMode === 'powerline' ? 5 : 8;
+        var sCapHold = sMode === 'powerline' ? 1.5 : 2.0;
+        var sActiveColor = sMode === 'powerline' ? '#fb923c' : '#22d3ee';
+        var sActiveColorRgb = sMode === 'powerline' ? '251,146,60' : '34,211,238';
+
+        // Top-right drone HUD strip
+        var hudW = 220, hudH = 76;
+        var hudX = W - hudW - 10, hudY = 40;
+        gfx.fillStyle = 'rgba(8,47,73,0.88)';
+        gfx.fillRect(hudX, hudY, hudW, hudH);
+        gfx.strokeStyle = 'rgba(' + sActiveColorRgb + ',0.6)';
+        gfx.lineWidth = 1;
+        gfx.strokeRect(hudX, hudY, hudW, hudH);
+
+        // Header
+        gfx.fillStyle = sActiveColor;
+        gfx.font = 'bold 10px system-ui';
+        gfx.textAlign = 'left';
+        gfx.fillText(sHudTitle, hudX + 8, hudY + 13);
+
+        // Battery bar
+        var bat = survey.battery != null ? survey.battery : 100;
+        var batW = 140, batH = 8;
+        gfx.fillStyle = 'rgba(0,0,0,0.4)';
+        gfx.fillRect(hudX + 8, hudY + 20, batW, batH);
+        var batColor = bat > 30 ? '#22c55e' : (bat > 15 ? '#fbbf24' : '#ef4444');
+        gfx.fillStyle = batColor;
+        gfx.fillRect(hudX + 8, hudY + 20, batW * (bat / 100), batH);
+        gfx.fillStyle = '#fff';
+        gfx.font = 'bold 9px monospace';
+        gfx.textAlign = 'right';
+        gfx.fillText('🔋 ' + Math.round(bat) + '%', hudX + hudW - 8, hudY + 28);
+
+        // AGL — flash red near 400 ft ceiling
+        var aglColor = aglS > 380 ? '#ef4444' : (aglS > 350 ? '#fbbf24' : '#cbd5e1');
+        var aglFlash = (aglS > 380 && Math.sin(time * 8) > 0) ? '⚠ ' : '';
+        gfx.fillStyle = aglColor;
+        gfx.font = 'bold 10px monospace';
+        gfx.textAlign = 'left';
+        gfx.fillText(aglFlash + 'AGL ' + Math.round(aglS) + ' ft / 400 max', hudX + 8, hudY + 44);
+
+        // VLOS distance
+        var vlosColor = launchDist > 1.0 ? '#ef4444' : (launchDist > 0.8 ? '#fbbf24' : '#cbd5e1');
+        gfx.fillStyle = vlosColor;
+        gfx.fillText('VLOS ' + launchDist.toFixed(2) + ' nm / 1.00 max', hudX + 8, hudY + 56);
+
+        // Capture / inspection count + AGL-ceiling reminder for current mode
+        gfx.fillStyle = sActiveColor;
+        gfx.font = 'bold 10px system-ui';
+        gfx.fillText(sLabel + ': ' + (survey.capturedCount || 0) + ' / ' + sTotal, hudX + 8, hudY + 70);
+        gfx.fillStyle = '#64748b';
+        gfx.font = '8px system-ui';
+        gfx.textAlign = 'right';
+        gfx.fillText('hold ' + sCapHold.toFixed(1) + 's < ' + sCapCeil + 'ft AGL < ' + sCapKts + 'kts', hudX + hudW - 8, hudY + 70);
+
+        // ── Search-pattern polyline ──
+        // Connect uncaptured waypoints with a faint cyan line so students see
+        // the box / lawnmower pattern. Real drone surveys ALWAYS fly a planned
+        // pattern — random sweeps miss coverage and waste battery.
+        var screenPts = [];
+        for (var spi = 0; spi < photos.length; spi++) {
+          var sp = photos[spi];
+          var spBrg = bearing(state.lat, state.lon, sp.lat, sp.lon);
+          var spRel = ((spBrg - state.heading + 540) % 360) - 180;
+          var spDistNm = haversineNm(state.lat, state.lon, sp.lat, sp.lon);
+          if (Math.abs(spRel) < 80 && spDistNm < 6) {
+            var spX = W / 2 + (spRel / 60) * (W * 0.45);
+            var tN = Math.max(0.05, 1 - Math.min(1, Math.log(spDistNm * 60 + 1) / Math.log(120)));
+            var spY = horizonY + (H - horizonY) * (0.05 + 0.85 * (tN * tN));
+            screenPts.push({ x: spX, y: spY, captured: sp.captured });
+          } else {
+            screenPts.push(null); // off-screen
+          }
+        }
+        // Draw polyline connecting uncaptured waypoints in order (forms the search pattern)
+        gfx.strokeStyle = 'rgba(' + sActiveColorRgb + ',0.4)';
+        gfx.lineWidth = 1.5;
+        gfx.setLineDash([6, 4]);
+        gfx.beginPath();
+        var lineStarted = false;
+        for (var li = 0; li < screenPts.length; li++) {
+          var pt = screenPts[li];
+          if (!pt) { lineStarted = false; continue; }
+          if (!lineStarted) {
+            gfx.moveTo(pt.x, pt.y);
+            lineStarted = true;
+          } else {
+            gfx.lineTo(pt.x, pt.y);
+          }
+        }
+        gfx.stroke();
+        gfx.setLineDash([]);
+
+        // Project photo waypoints onto canvas (front of camera)
+        for (var pi = 0; pi < photos.length; pi++) {
+          var p = photos[pi];
+          if (p.captured) continue;
+          var pBrg = bearing(state.lat, state.lon, p.lat, p.lon);
+          var pRel = ((pBrg - state.heading + 540) % 360) - 180;
+          var pDistNm = haversineNm(state.lat, state.lon, p.lat, p.lon);
+          if (Math.abs(pRel) < 70 && pDistNm < 4) {
+            var pBx = W / 2 + (pRel / 60) * (W * 0.45);
+            var tNorm = Math.max(0.05, 1 - Math.min(1, Math.log(pDistNm * 60 + 1) / Math.log(120)));
+            var pBy = horizonY + (H - horizonY) * (0.05 + 0.85 * (tNorm * tNorm));
+            // Pulse marker
+            var pulseS = 0.5 + 0.5 * Math.sin(time * 4 + pi);
+            gfx.strokeStyle = 'rgba(' + sActiveColorRgb + ',' + (0.6 + pulseS * 0.4) + ')';
+            gfx.lineWidth = 2;
+            gfx.beginPath();
+            gfx.arc(pBx, pBy, 14 + pulseS * 6, 0, Math.PI * 2);
+            gfx.stroke();
+            // Inner dot
+            gfx.fillStyle = 'rgba(' + sActiveColorRgb + ',0.85)';
+            gfx.beginPath();
+            gfx.arc(pBx, pBy, 4, 0, Math.PI * 2);
+            gfx.fill();
+            // Label
+            gfx.fillStyle = 'rgba(255,255,255,0.9)';
+            gfx.font = 'bold 9px system-ui';
+            gfx.textAlign = 'center';
+            gfx.fillText(p.name, pBx, pBy - 22);
+            gfx.fillText((pDistNm * 6076).toFixed(0) + ' ft', pBx, pBy + 28);
+          }
+        }
+
+        // Capture-in-progress ring (center of canvas)
+        var capP = survey.captureProgress || 0;
+        if (capP > 0.05 && (survey.capturedCount || 0) < sTotal) {
+          var crX = W / 2, crY = H * 0.4;
+          gfx.strokeStyle = 'rgba(15,23,42,0.85)';
+          gfx.lineWidth = 8;
+          gfx.beginPath(); gfx.arc(crX, crY, 26, 0, Math.PI * 2); gfx.stroke();
+          gfx.strokeStyle = sActiveColor;
+          gfx.lineWidth = 4;
+          gfx.beginPath();
+          gfx.arc(crX, crY, 26, -Math.PI / 2, -Math.PI / 2 + (capP / sCapHold) * Math.PI * 2);
+          gfx.stroke();
+          gfx.fillStyle = '#fff';
+          gfx.font = 'bold 11px system-ui';
+          gfx.textAlign = 'center';
+          gfx.fillText((sMode === 'powerline' ? '🔌 INSPECTING' : '📸 CAPTURING'), crX, crY - 38);
+          gfx.font = 'bold 10px monospace';
+          gfx.fillText(capP.toFixed(1) + ' / ' + sCapHold.toFixed(1) + ' s', crX, crY + 46);
+        }
+
+        // Camera flash effect (300ms after each photo)
+        if (survey.flashAt && (time - survey.flashAt) < 0.3) {
+          var fAlpha = 1 - (time - survey.flashAt) / 0.3;
+          gfx.fillStyle = 'rgba(255,255,255,' + (fAlpha * 0.6) + ')';
+          gfx.fillRect(0, 0, W, H);
+        }
+
+        // Completion celebration (similar to rescue)
+        if (survey.completed && survey.completedAt && (time - survey.completedAt) < 8) {
+          var sAge = time - survey.completedAt;
+          var sAlpha = Math.min(1, sAge < 0.5 ? sAge * 2 : (sAge > 6 ? (8 - sAge) / 2 : 1));
+          var scW = 380, scH = 110;
+          var scX = (W - scW) / 2, scY = H * 0.25;
+          gfx.fillStyle = 'rgba(8,47,73,' + (0.92 * sAlpha) + ')';
+          gfx.fillRect(scX, scY, scW, scH);
+          gfx.strokeStyle = 'rgba(' + sActiveColorRgb + ',' + sAlpha + ')';
+          gfx.lineWidth = 2;
+          gfx.strokeRect(scX, scY, scW, scH);
+          gfx.fillStyle = 'rgba(' + sActiveColorRgb + ',' + sAlpha + ')';
+          gfx.font = 'bold 16px system-ui';
+          gfx.textAlign = 'center';
+          var doneTitle = sMode === 'powerline' ? '✅ INSPECTION COMPLETE' : '✅ SURVEY COMPLETE';
+          var doneSub = sMode === 'powerline'
+            ? 'All ' + sTotal + ' poles documented · drone returned'
+            : 'All ' + sTotal + ' photos captured · drone returned';
+          var donePart107 = sMode === 'powerline'
+            ? 'Part 107 Powerline Inspection complete'
+            : 'Part 107 Aerial Survey complete';
+          gfx.fillText(doneTitle, W / 2, scY + 30);
+          gfx.fillStyle = 'rgba(255,255,255,' + sAlpha + ')';
+          gfx.font = 'bold 12px system-ui';
+          gfx.fillText(doneSub, W / 2, scY + 54);
+          gfx.fillStyle = 'rgba(125,211,252,' + sAlpha + ')';
+          gfx.font = '11px system-ui';
+          gfx.fillText('Battery remaining: ' + Math.round(survey.battery || 0) + '%', W / 2, scY + 74);
+          gfx.fillStyle = 'rgba(251,191,36,' + sAlpha + ')';
+          gfx.font = 'italic 10px system-ui';
+          gfx.fillText(donePart107, W / 2, scY + 94);
+        }
       };
 
       // ── World Labels (continents/oceans at high altitude) ──
@@ -5264,7 +7383,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }
           });
 
-          gfx.fillStyle = '#64748b'; gfx.font = '12px system-ui'; gfx.textAlign = 'center';
+          gfx.fillStyle = '#94a3b8'; gfx.font = '12px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('Press ESC to return to menu', cx, H - 20);
         }
       };
@@ -5617,7 +7736,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.fillStyle = '#94a3b8'; gfx.font = '14px system-ui';
             gfx.fillText('Press Space to resume | I for status | ESC to exit', W / 2, H * 0.5);
             var ktsP = Math.round(flightRef.current.speed * 0.5924838);
-            gfx.fillStyle = '#64748b'; gfx.font = '12px system-ui';
+            gfx.fillStyle = '#94a3b8'; gfx.font = '12px system-ui';
             gfx.fillText('ALT: ' + Math.round(flightRef.current.altitude).toLocaleString() + ' ft  |  SPD: ' + ktsP + ' kts  |  HDG: ' + Math.round(flightRef.current.heading) + '°', W / 2, H * 0.58);
             animRef.current = requestAnimationFrame(loop);
             return;
@@ -5625,12 +7744,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           // Process keyboard input
           var ctrl = controlsRef.current;
-          if (keys['w'] || keys['arrowup']) ctrl.pitch = Math.min(15, ctrl.pitch + 0.5);
-          else if (keys['s'] || keys['arrowdown']) ctrl.pitch = Math.max(-15, ctrl.pitch - 0.5);
-          else ctrl.pitch *= 0.92;
-          if (keys['a'] || keys['arrowleft']) ctrl.bank = Math.max(-45, ctrl.bank - 1);
-          else if (keys['d'] || keys['arrowright']) ctrl.bank = Math.min(45, ctrl.bank + 1);
-          else ctrl.bank *= 0.95;
+          // Helicopter mode: cyclic pitch range narrower (rotor disk only
+          // tilts ±20° in real life), bank doesn't auto-center as fast
+          // (sideways drift continues until commanded back), AND Q/E pedals
+          // map to yawRate for tail rotor.
+          // Drone mode: similar but snappier — instant response, faster
+          // yaw rate, GPS auto-centering.
+          var heliMode = !!(currentAC && currentAC.isHelicopter);
+          var droneMode = !!(currentAC && currentAC.isDrone);
+          if (droneMode) {
+            // Drone: snappy responses, returns to neutral fast (GPS stabilized)
+            if (keys['w'] || keys['arrowup']) ctrl.pitch = Math.min(25, ctrl.pitch + 1.0);
+            else if (keys['s'] || keys['arrowdown']) ctrl.pitch = Math.max(-25, ctrl.pitch - 1.0);
+            else ctrl.pitch *= 0.78; // GPS stabilization auto-levels
+            if (keys['a'] || keys['arrowleft']) ctrl.bank = Math.max(-25, ctrl.bank - 1.2);
+            else if (keys['d'] || keys['arrowright']) ctrl.bank = Math.min(25, ctrl.bank + 1.2);
+            else ctrl.bank *= 0.78;
+            // Yaw stick — faster than helicopter
+            if (keys['q']) ctrl.yawRate = Math.max(-45, (ctrl.yawRate || 0) - 2.5);
+            else if (keys['e']) ctrl.yawRate = Math.min(45, (ctrl.yawRate || 0) + 2.5);
+            else ctrl.yawRate = (ctrl.yawRate || 0) * 0.7;
+          } else if (heliMode) {
+            // Cyclic pitch (W/S): ±20° rotor disk tilt, snappier response
+            if (keys['w'] || keys['arrowup']) ctrl.pitch = Math.min(20, ctrl.pitch + 0.7);
+            else if (keys['s'] || keys['arrowdown']) ctrl.pitch = Math.max(-20, ctrl.pitch - 0.7);
+            else ctrl.pitch *= 0.88; // returns to neutral when released (rotor recenters)
+            // Cyclic roll (A/D): sideways disk tilt for translation
+            if (keys['a'] || keys['arrowleft']) ctrl.bank = Math.max(-30, ctrl.bank - 0.8);
+            else if (keys['d'] || keys['arrowright']) ctrl.bank = Math.min(30, ctrl.bank + 0.8);
+            else ctrl.bank *= 0.90;
+            // Tail rotor pedals (Q/E): yaw rate in deg/s. Continuous hold.
+            if (keys['q']) ctrl.yawRate = Math.max(-25, (ctrl.yawRate || 0) - 1.5);
+            else if (keys['e']) ctrl.yawRate = Math.min(25, (ctrl.yawRate || 0) + 1.5);
+            else ctrl.yawRate = (ctrl.yawRate || 0) * 0.85;
+          } else {
+            if (keys['w'] || keys['arrowup']) ctrl.pitch = Math.min(15, ctrl.pitch + 0.5);
+            else if (keys['s'] || keys['arrowdown']) ctrl.pitch = Math.max(-15, ctrl.pitch - 0.5);
+            else ctrl.pitch *= 0.92;
+            if (keys['a'] || keys['arrowleft']) ctrl.bank = Math.max(-45, ctrl.bank - 1);
+            else if (keys['d'] || keys['arrowright']) ctrl.bank = Math.min(45, ctrl.bank + 1);
+            else ctrl.bank *= 0.95;
+            ctrl.yawRate = 0;
+          }
           // Engine-start cough: first time throttle leaves zero on the ground,
           // record the moment so the render block can draw a puff of exhaust
           // smoke and the HUD can print "IGNITION" briefly. Reset once we're
@@ -5714,6 +7869,127 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var state = Physics.step(flightRef.current, dt, ctrl);
           flightRef.current = state;
 
+          // ── Coastal rescue mission tick ──
+          // Tracks hover-stability over the survivor and recovery progress.
+          // State persists in d.rescue so it survives mode switches (but
+          // resets on a fresh mission start).
+          var rescue = d.rescue;
+          if (rescue && rescue.active && !rescue.completed) {
+            // Lazy-init startedAt the first tick after mission begins
+            if (!rescue.startedAt) {
+              upd('rescue', Object.assign({}, rescue, { startedAt: timeRef.current }));
+              rescue = d.rescue || rescue;
+            }
+            var rDist = haversineNm(state.lat, state.lon, rescue.survivorLat, rescue.survivorLon);
+            var rAgl = state.altitude - (state.fieldElev || 0);
+            var rKts = state.speed * 0.5924838;
+            var hoverable = rDist < 0.05 && rAgl < 100 && rAgl > 5
+                         && rKts < 10 && Math.abs(state.vsi * 60) < 200;
+            if (!rescue.recovered) {
+              var hoist = rescue.hoistTime || 0;
+              hoist = hoverable ? Math.min(5.5, hoist + dt) : Math.max(0, hoist - dt * 1.5);
+              if (hoist >= 5 && !rescue.recovered) {
+                upd('rescue', Object.assign({}, rescue, { hoistTime: 5, recovered: true, recoveredAt: timeRef.current }));
+                if (typeof addToast === 'function') addToast('🚁 Survivor recovered! Return to PWM and land.', 'success');
+                if (typeof skyAnnounce === 'function') skyAnnounce('Survivor recovered. Return to base and land.');
+              } else if (hoist !== rescue.hoistTime) {
+                // Update without spamming — only meaningful change
+                if (Math.abs(hoist - rescue.hoistTime) > 0.05) {
+                  upd('rescue', Object.assign({}, rescue, { hoistTime: hoist }));
+                }
+              }
+            } else if (rescue.recovered && state.onGround) {
+              // Find PWM for return-distance check
+              var pwm = WAYPOINTS.filter(function(a) { return a.id === 'kpwm'; })[0];
+              var returnDist = pwm ? haversineNm(state.lat, state.lon, pwm.lat, pwm.lon) : 99;
+              if (returnDist < 0.5) {
+                var elapsedSec = Math.floor(timeRef.current - (rescue.startedAt || 0));
+                upd('rescue', Object.assign({}, rescue, { completed: true, completedAt: timeRef.current, totalSec: elapsedSec }));
+                upd('rescuesCompleted', (d.rescuesCompleted || 0) + 1);
+                if (typeof addToast === 'function') addToast('✅ RESCUE COMPLETE — ' + elapsedSec + 's', 'success');
+                if (typeof skyAnnounce === 'function') skyAnnounce('Rescue complete. Total time ' + elapsedSec + ' seconds.');
+              }
+            }
+          }
+
+          // ── Drone Aerial Survey / Powerline Inspection mission tick ──
+          // Tracks waypoint capture. Tolerances depend on mission mode:
+          //   aerial:    < 50 ft horiz, < 100 ft AGL, < 8 kts, 2.0 s hold
+          //   powerline: < 30 ft horiz, <  60 ft AGL, < 5 kts, 1.5 s hold
+          // Battery decays slowly while in flight.
+          var survey = d.survey;
+          if (survey && survey.active && !survey.completed) {
+            var anyChange = false;
+            var photos = survey.photos || [];
+            var capProgress = survey.captureProgress || 0;
+            var aglS = state.altitude - (state.fieldElev || 0);
+            var ktsS = state.speed * 0.5924838;
+            var sMode = survey.mode || 'aerial';
+            var capRadiusFt = sMode === 'powerline' ? 30 : 50;
+            var capCeilingAgl = sMode === 'powerline' ? 60 : 100;
+            var capMaxKts = sMode === 'powerline' ? 5 : 8;
+            var capHoldSec = sMode === 'powerline' ? 1.5 : 2.0;
+            var totalTargets = photos.length;
+            var captureEmoji = sMode === 'powerline' ? '🔌' : '📸';
+            var actionWord = sMode === 'powerline' ? 'inspected' : 'captured';
+            // Find nearest uncaptured photo waypoint
+            var nearestPi = -1; var nearestDistFt = 9e9;
+            for (var pi = 0; pi < photos.length; pi++) {
+              if (photos[pi].captured) continue;
+              var pdNm = haversineNm(state.lat, state.lon, photos[pi].lat, photos[pi].lon);
+              var pdFt = pdNm * 6076;
+              if (pdFt < nearestDistFt) { nearestDistFt = pdFt; nearestPi = pi; }
+            }
+            var capturable = nearestPi >= 0 && nearestDistFt < capRadiusFt && aglS < capCeilingAgl && aglS > 5 && ktsS < capMaxKts;
+            if (capturable) {
+              capProgress += dt;
+              if (capProgress >= capHoldSec) {
+                photos[nearestPi].captured = true;
+                capProgress = 0;
+                survey.capturedCount = (survey.capturedCount || 0) + 1;
+                survey.flashAt = timeRef.current; // for camera-flash overlay
+                anyChange = true;
+                if (typeof addToast === 'function') addToast(captureEmoji + ' ' + photos[nearestPi].name + ' ' + actionWord + '! ' + survey.capturedCount + '/' + totalTargets, 'success');
+                if (typeof skyAnnounce === 'function') skyAnnounce(actionWord.charAt(0).toUpperCase() + actionWord.slice(1) + '. ' + survey.capturedCount + ' of ' + totalTargets + '.');
+              }
+            } else {
+              capProgress = Math.max(0, capProgress - dt * 1.5);
+            }
+            // Battery decay — full motors burn ~10%/min; idle ~3%/min
+            var batDrain = (0.05 + 0.12 * Math.abs(ctrl.throttle || 0)) * dt;
+            var newBat = Math.max(0, (survey.battery != null ? survey.battery : 100) - batDrain);
+            // Range warning — beyond 1 nm of launch breaks visual line-of-sight
+            var launchDist = haversineNm(state.lat, state.lon, survey.launchLat, survey.launchLon);
+            if (launchDist > 1.0 && !survey.vlosWarned) {
+              survey.vlosWarned = true;
+              anyChange = true;
+              if (typeof addToast === 'function') addToast('⚠️ Beyond 1 nm — visual line of sight lost!', 'warning');
+            } else if (launchDist <= 1.0 && survey.vlosWarned) {
+              survey.vlosWarned = false; anyChange = true;
+            }
+            // Mission complete: all targets captured AND landed back near launch
+            if (survey.capturedCount >= totalTargets && state.onGround && launchDist < 0.2) {
+              survey.completed = true;
+              survey.completedAt = timeRef.current;
+              upd('surveysCompleted', (d.surveysCompleted || 0) + 1);
+              var doneLabel = sMode === 'powerline'
+                ? '✅ INSPECTION COMPLETE — all ' + totalTargets + ' poles documented'
+                : '✅ SURVEY COMPLETE — all ' + totalTargets + ' photos captured';
+              var doneAnnounce = sMode === 'powerline'
+                ? 'Powerline inspection complete. Drone landed.'
+                : 'Survey complete. All photos captured. Drone landed.';
+              if (typeof addToast === 'function') addToast(doneLabel, 'success');
+              if (typeof skyAnnounce === 'function') skyAnnounce(doneAnnounce);
+              anyChange = true;
+            }
+            // Persist update — only if meaningful change to avoid render thrash
+            if (anyChange || Math.abs(capProgress - (survey.captureProgress || 0)) > 0.05 || Math.abs(newBat - (survey.battery || 100)) > 0.5) {
+              upd('survey', Object.assign({}, survey, {
+                photos: photos, captureProgress: capProgress, battery: newBat
+              }));
+            }
+          }
+
           // Auto-dismiss the takeoff tutorial once the player is solidly airborne
           // (>200 ft above the field). Persists in d so it doesn't reappear next drive.
           if (!state.onGround && (state.altitude - (state.fieldElev || 0)) > 200 && !d.takeoffTutorialDismissed) {
@@ -5785,6 +8061,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           // Procedural terrain (replaces flat gradient)
           drawTerrain(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+
+          // Low-altitude detail layer: scrolling towns, trees, and roads so
+          // the student sees motion and "ground features" rather than a
+          // featureless wash. Fades out by 6000 ft AGL.
+          drawLowAltDetails(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+
+          // Other aircraft passing — a few ghost planes drift across the
+          // sky at different altitudes and bearings. Strong "shared airspace"
+          // cue, visible at any altitude.
+          drawOtherAircraft(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+
+          // Hot air balloons drifting at low-mid altitude.
+          drawHotAirBalloons(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+
+          // Crepuscular sun rays through cloud gaps when sun is mid-sky.
+          drawCrepuscularRays(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+
+          // Distant thunderstorm cells with anvil + rain shafts.
+          drawDistantStorms(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+
+          // Migrating goose V-formation drifting low across the sky.
+          drawGooseFormation(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+
+          // Helicopter cycling across lower sky with rotor blur.
+          drawHelicopter(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
           // Distant hills poking above the horizon — a deterministic silhouette
           // seeded by lat/lon so each airport gets a consistent skyline instead
@@ -5897,7 +8198,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             var tintStr = dayNight.isNight ? '220,225,240' : '255,255,255';
             [
               { yOff: -60, size: 1.0, speed: 0.012, count: 6 },   // high cirrus
-              { yOff: -20, size: 1.25, speed: 0.020, count: 5 }   // low cumulus
+              { yOff: -45, size: 1.25, speed: 0.020, count: 5 }   // low cumulus (was -20 → bled below horizon, washed ground white)
             ].forEach(function(band, bi) {
               var cloudAlpha = baseAlpha + Math.sin(timeRef.current * 0.1 + bi) * 0.05;
               var cloudY = horizonY + band.yOff - state.altitude * 0.003;
@@ -5906,9 +8207,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 var cSize = (40 + ci * 18 + Math.sin(ci * 2.1 + bi) * 20) * band.size;
                 var alphaHere = cloudAlpha * (1 - ci * 0.07);
                 gfx.fillStyle = 'rgba(' + tintStr + ',' + alphaHere + ')';
-                gfx.beginPath(); gfx.ellipse(cx2, cloudY + ci * 6, cSize, 12 + ci * 2, 0, 0, Math.PI * 2); gfx.fill();
-                gfx.beginPath(); gfx.ellipse(cx2 + cSize * 0.4, cloudY + ci * 6 - 4, cSize * 0.6, 10, 0, 0, Math.PI * 2); gfx.fill();
-                gfx.beginPath(); gfx.ellipse(cx2 - cSize * 0.35, cloudY + ci * 6 + 2, cSize * 0.55, 9, 0, 0, Math.PI * 2); gfx.fill();
+                // Reduced ci offset (was *6 → spread clouds 0..24px down,
+                // pushing low-band clouds across the horizon onto the ground
+                // and creating a cumulative white wash). Now *3 keeps the
+                // cumulus tightly stacked and a Math.min cap pins the
+                // bottom of the largest ellipse to ≥4px above horizon so
+                // the ground never gets cloud overspray.
+                var rowYBase = cloudY + ci * 3;
+                var capY = horizonY - (12 + ci * 2) - 4; // never paint below this
+                var rowY = Math.min(rowYBase, capY);
+                gfx.beginPath(); gfx.ellipse(cx2, rowY, cSize, 12 + ci * 2, 0, 0, Math.PI * 2); gfx.fill();
+                gfx.beginPath(); gfx.ellipse(cx2 + cSize * 0.4, rowY - 4, cSize * 0.6, 10, 0, 0, Math.PI * 2); gfx.fill();
+                gfx.beginPath(); gfx.ellipse(cx2 - cSize * 0.35, rowY + 2, cSize * 0.55, 9, 0, 0, Math.PI * 2); gfx.fill();
               }
             });
           }
@@ -6090,6 +8400,195 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             var acX = W / 2, acY = H * 0.6;
             gfx.translate(acX, acY);
             gfx.rotate(ctrl.bank * Math.PI / 180 * 0.02); // Subtle bank
+
+            // ── Helicopter sprite (chase cam) ──
+            // Different silhouette than fixed-wing: short fuselage + tail
+            // boom + main rotor disk above + tail rotor + skids. Rotor
+            // disk drawn as wide blur ellipse with two crossing blade
+            // hints rotating at high frequency.
+            if (currentAC && currentAC.isHelicopter) {
+              // Shadow
+              gfx.fillStyle = 'rgba(0,0,0,0.18)';
+              gfx.beginPath(); gfx.ellipse(2, 14, 28, 5, 0, 0, Math.PI * 2); gfx.fill();
+              // Fuselage — rounded box with a window slit at front
+              gfx.fillStyle = '#1e3a5f';
+              gfx.beginPath(); gfx.ellipse(-2, 0, 16, 7, 0, 0, Math.PI * 2); gfx.fill();
+              // Cockpit windscreen — blue-tinted window at the front
+              gfx.fillStyle = 'rgba(135,180,220,0.85)';
+              gfx.beginPath(); gfx.ellipse(8, -1, 6, 4.5, 0, 0, Math.PI * 2); gfx.fill();
+              gfx.strokeStyle = 'rgba(20,30,45,0.7)';
+              gfx.lineWidth = 0.6;
+              gfx.beginPath(); gfx.ellipse(8, -1, 6, 4.5, 0, 0, Math.PI * 2); gfx.stroke();
+              // Tail boom — long rectangle extending back (left side from chase cam)
+              gfx.fillStyle = '#1e3a5f';
+              gfx.fillRect(-32, -2, 18, 3.5);
+              // Vertical fin at tail tip
+              gfx.fillStyle = '#64748b';
+              gfx.beginPath();
+              gfx.moveTo(-32, -2); gfx.lineTo(-36, -8); gfx.lineTo(-32, -1); gfx.closePath();
+              gfx.fill();
+              // Tail rotor — small vertical blur disk at the tail end
+              var trBlurAlpha = 0.35 + ctrl.throttle * 0.25;
+              gfx.fillStyle = 'rgba(45,55,70,' + trBlurAlpha + ')';
+              gfx.beginPath(); gfx.ellipse(-37, -1, 1.2, 4.5, 0, 0, Math.PI * 2); gfx.fill();
+              // Skids — twin horizontal lines beneath the fuselage
+              gfx.strokeStyle = '#475569';
+              gfx.lineWidth = 1.5;
+              gfx.beginPath();
+              gfx.moveTo(-12, 9); gfx.lineTo(8, 9);
+              gfx.moveTo(-10, 11); gfx.lineTo(6, 11);
+              gfx.stroke();
+              // Skid struts (vertical connectors)
+              gfx.lineWidth = 0.8;
+              [-8, 0, 4].forEach(function(sx) {
+                gfx.beginPath();
+                gfx.moveTo(sx, 5); gfx.lineTo(sx, 9);
+                gfx.stroke();
+              });
+              // Main rotor disk — wide horizontal blur ellipse above body
+              var rotorAlpha = 0.32 + ctrl.throttle * 0.15;
+              gfx.fillStyle = 'rgba(45,55,70,' + rotorAlpha + ')';
+              gfx.beginPath(); gfx.ellipse(-2, -10, 38, 1.8, 0, 0, Math.PI * 2); gfx.fill();
+              // Two crossing blade hints, rotating fast
+              var bladeAng = timeRef.current * 14;
+              gfx.strokeStyle = 'rgba(45,55,70,0.45)';
+              gfx.lineWidth = 0.8;
+              gfx.beginPath();
+              gfx.moveTo(-2 + Math.cos(bladeAng) * 38, -10 + Math.sin(bladeAng) * 1.4);
+              gfx.lineTo(-2 - Math.cos(bladeAng) * 38, -10 - Math.sin(bladeAng) * 1.4);
+              gfx.moveTo(-2 + Math.cos(bladeAng + Math.PI / 2) * 38, -10 + Math.sin(bladeAng + Math.PI / 2) * 1.4);
+              gfx.lineTo(-2 - Math.cos(bladeAng + Math.PI / 2) * 38, -10 - Math.sin(bladeAng + Math.PI / 2) * 1.4);
+              gfx.stroke();
+              // Rotor mast (small vertical pillar from body to rotor)
+              gfx.fillStyle = '#334155';
+              gfx.fillRect(-3, -10, 2, 7);
+              // Nav lights blinking (red/green on each side)
+              if (Math.sin(timeRef.current * 3) > 0) {
+                gfx.fillStyle = '#ef4444'; gfx.beginPath(); gfx.arc(-2, -7, 1.4, 0, Math.PI * 2); gfx.fill(); // Top red beacon
+              }
+              if (timeRef.current % 1 > 0.92) {
+                gfx.fillStyle = 'rgba(255,255,255,0.9)';
+                gfx.beginPath(); gfx.arc(0, 6, 2, 0, Math.PI * 2); gfx.fill();
+              }
+
+              // ── Hoist cable (only during hoist phase of rescue) ──
+              // Renders a thin cable lowering from the helicopter belly
+              // toward the ground when the rescue is in progress and
+              // hovering. Recovery animation: pulled up after success.
+              var rescueR = d.rescue;
+              if (rescueR && rescueR.active && !rescueR.completed) {
+                var hoistT = rescueR.hoistTime || 0;
+                if (hoistT > 0.05 || rescueR.recovered) {
+                  // Cable length: extends down 0..40px during hoist, retracts after recovery
+                  var cableLen;
+                  if (rescueR.recovered) {
+                    var ageR = (timeRef.current - (rescueR.recoveredAt || timeRef.current));
+                    cableLen = Math.max(0, 40 - ageR * 30); // retract over ~1.3s
+                  } else {
+                    cableLen = (hoistT / 5) * 40;
+                  }
+                  if (cableLen > 0) {
+                    gfx.strokeStyle = 'rgba(40,40,40,0.85)';
+                    gfx.lineWidth = 0.8;
+                    gfx.beginPath();
+                    gfx.moveTo(0, 6);
+                    gfx.lineTo(0, 6 + cableLen);
+                    gfx.stroke();
+                    // Hook / basket at end
+                    gfx.fillStyle = '#fbbf24';
+                    gfx.fillRect(-2, 6 + cableLen, 4, 2.5);
+                    // Survivor figure once recovered (ascending with cable)
+                    if (rescueR.recovered && cableLen > 5) {
+                      gfx.fillStyle = '#fef3c7';
+                      gfx.beginPath();
+                      gfx.arc(0, 6 + cableLen + 4, 1.5, 0, Math.PI * 2); // head
+                      gfx.fill();
+                      gfx.fillStyle = '#dc2626';
+                      gfx.fillRect(-1.5, 6 + cableLen + 5, 3, 3); // life vest
+                    }
+                  }
+                }
+              }
+
+              gfx.restore();
+            } else if (currentAC && currentAC.isDrone) {
+              // ── Quadcopter drone sprite (chase cam) ──
+              // Compact X-frame with 4 motor pods, 4 spinning rotor disks,
+              // a central body with camera gimbal, blinking nav lights.
+              var droneScale = 0.85;
+              gfx.scale(droneScale, droneScale);
+              // Shadow (drawn before tilt so it stays grounded under the drone)
+              gfx.fillStyle = 'rgba(0,0,0,0.18)';
+              gfx.beginPath(); gfx.ellipse(0, 12, 22, 4, 0, 0, Math.PI * 2); gfx.fill();
+              // Wind-drift compensation: real drones tilt INTO the wind to hold
+              // position. Sample wind vs heading; tilt scales with hover-ness
+              // (zero airspeed = full tilt; >5 kts = no tilt because the drone
+              // is moving and doesn't need to fight wind to hold a spot).
+              var dWeather = weatherRef.current || { wind: 0, windDir: 270 };
+              var dWspd = dWeather.wind || 0;
+              var dRelWind = ((dWeather.windDir - state.heading + 540) % 360) - 180;
+              var dHoverFactor = Math.max(0, 1 - (state.speed * 0.5924838) / 5);
+              var dTiltDeg = Math.sin(dRelWind * Math.PI / 180) * Math.min(dWspd, 25) / 25 * 8 * dHoverFactor;
+              gfx.rotate(dTiltDeg * Math.PI / 180);
+              // X-frame arms (4 diagonals from center)
+              gfx.strokeStyle = '#1f2937';
+              gfx.lineWidth = 2.4;
+              gfx.beginPath();
+              gfx.moveTo(-16, -10); gfx.lineTo(16, 10);
+              gfx.moveTo(-16, 10); gfx.lineTo(16, -10);
+              gfx.stroke();
+              // 4 motor pods at arm tips
+              var motorPositions = [[-16, -10], [16, -10], [-16, 10], [16, 10]];
+              for (var mi = 0; mi < motorPositions.length; mi++) {
+                var mx = motorPositions[mi][0], my = motorPositions[mi][1];
+                // Motor housing
+                gfx.fillStyle = '#0f172a';
+                gfx.beginPath(); gfx.arc(mx, my, 3, 0, Math.PI * 2); gfx.fill();
+                // Spinning rotor disk (translucent blur)
+                var dRotorAlpha = 0.25 + Math.abs(ctrl.throttle || 0) * 0.3;
+                gfx.fillStyle = 'rgba(60,70,85,' + dRotorAlpha + ')';
+                gfx.beginPath(); gfx.arc(mx, my, 8.5, 0, Math.PI * 2); gfx.fill();
+                // 2 blade hints rotating fast (alternating directions per motor)
+                var dirSign = (mi === 0 || mi === 3) ? 1 : -1;
+                var bAng = timeRef.current * 22 * dirSign + mi;
+                gfx.strokeStyle = 'rgba(60,70,85,0.4)';
+                gfx.lineWidth = 0.6;
+                gfx.beginPath();
+                gfx.moveTo(mx + Math.cos(bAng) * 8.5, my + Math.sin(bAng) * 8.5);
+                gfx.lineTo(mx - Math.cos(bAng) * 8.5, my - Math.sin(bAng) * 8.5);
+                gfx.moveTo(mx + Math.cos(bAng + Math.PI / 2) * 8.5, my + Math.sin(bAng + Math.PI / 2) * 8.5);
+                gfx.lineTo(mx - Math.cos(bAng + Math.PI / 2) * 8.5, my - Math.sin(bAng + Math.PI / 2) * 8.5);
+                gfx.stroke();
+              }
+              // Central body
+              gfx.fillStyle = '#0f172a';
+              gfx.beginPath(); gfx.ellipse(0, 0, 9, 5.5, 0, 0, Math.PI * 2); gfx.fill();
+              // Camera gimbal (small dome under body, front)
+              gfx.fillStyle = '#475569';
+              gfx.beginPath(); gfx.arc(4, 4, 2.5, 0, Math.PI * 2); gfx.fill();
+              gfx.fillStyle = '#22d3ee';
+              gfx.beginPath(); gfx.arc(5, 4, 1, 0, Math.PI * 2); gfx.fill();
+              // Nav lights — green right, red left (front motor pods)
+              if (Math.sin(timeRef.current * 4) > -0.3) {
+                gfx.fillStyle = '#22c55e';
+                gfx.beginPath(); gfx.arc(16, -10, 1.4, 0, Math.PI * 2); gfx.fill();
+                gfx.fillStyle = '#ef4444';
+                gfx.beginPath(); gfx.arc(-16, -10, 1.4, 0, Math.PI * 2); gfx.fill();
+              }
+              // White strobe on rear (random blink)
+              if (timeRef.current % 1.5 > 1.4) {
+                gfx.fillStyle = 'rgba(255,255,255,0.95)';
+                gfx.beginPath(); gfx.arc(0, 8, 1.6, 0, Math.PI * 2); gfx.fill();
+              }
+              // Camera-flash visual pulse on the gimbal during photo capture
+              var droneSurv = d.survey;
+              if (droneSurv && droneSurv.flashAt && (timeRef.current - droneSurv.flashAt) < 0.3) {
+                var fAlpha2 = 1 - (timeRef.current - droneSurv.flashAt) / 0.3;
+                gfx.fillStyle = 'rgba(255,255,255,' + (fAlpha2 * 0.9) + ')';
+                gfx.beginPath(); gfx.arc(5, 4, 4, 0, Math.PI * 2); gfx.fill();
+              }
+              gfx.restore();
+            } else {
             // Shadow on ground
             gfx.fillStyle = 'rgba(0,0,0,0.15)';
             gfx.beginPath(); gfx.ellipse(2, 12, 30, 5, 0, 0, Math.PI * 2); gfx.fill();
@@ -6162,6 +8661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.beginPath(); gfx.arc(0, 4, 2.5, 0, Math.PI * 2); gfx.fill();
             }
             gfx.restore();
+            } // end fixed-wing else
           }
 
           // (dayNight was computed at the top of the render block so drawTerrain
@@ -7046,6 +9546,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           checkAchievements(state, timeRef.current);
           drawAchievementPopup(gfx, W, H, timeRef.current);
 
+          // Coastal rescue overlay (distress beacon, hover bar, success card)
+          drawRescueOverlay(gfx, W, H, horizonY, state, timeRef.current);
+
+          // Drone aerial survey overlay (battery, photo waypoints, capture ring)
+          drawSurveyOverlay(gfx, W, H, horizonY, state, timeRef.current);
+
           // HyperJet Sprint HUD (drawn over everything)
           drawSprintHUD(gfx, W, H, state, timeRef.current);
 
@@ -7289,7 +9795,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 gfx.fillText(item[1], 170, shY);
               });
             });
-            gfx.fillStyle = '#64748b'; gfx.font = '11px system-ui'; gfx.textAlign = 'center';
+            gfx.fillStyle = '#94a3b8'; gfx.font = '11px system-ui'; gfx.textAlign = 'center';
             gfx.fillText('Press ? or ESC to close', W / 2, H - 8);
             animRef.current = requestAnimationFrame(loop); return;
           }
@@ -7735,7 +10241,108 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
       // ── MENU VIEW ──
       if (view === 'menu') {
-        return h('div', { style: { minHeight: '500px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'linear-gradient(135deg, #0c1222 0%, #1e3a5f 50%, #0c4a6e 100%)', borderRadius: '16px', overflow: 'auto' } },
+        return h('div', { style: { minHeight: '500px', height: '100%', maxHeight: 'calc(100vh - 80px)', background: 'linear-gradient(135deg, #0c1222 0%, #1e3a5f 50%, #0c4a6e 100%)', borderRadius: '16px', overflow: 'auto', position: 'relative' } },
+          // FAA Part 107 Drone Briefing Modal (gates drone_survey mission)
+          d.droneBriefing && h('div', {
+            role: 'dialog',
+            'aria-modal': 'true',
+            'aria-labelledby': 'drone-briefing-title',
+            style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', overflow: 'auto' }
+          },
+            h('div', { style: { maxWidth: '560px', width: '100%', background: 'linear-gradient(135deg, #082f49, #0c4a6e)', border: '2px solid #0891b2', borderRadius: '16px', padding: '24px', color: '#fff', boxShadow: '0 20px 60px rgba(0,0,0,0.6)', maxHeight: '90vh', overflowY: 'auto' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' } },
+                h('div', { style: { fontSize: '32px' } }, '🛸'),
+                h('div', null,
+                  h('div', { id: 'drone-briefing-title', style: { fontSize: '18px', fontWeight: 900, letterSpacing: '0.5px' } }, 'Pre-Flight Safety Briefing'),
+                  h('div', { style: { fontSize: '11px', color: '#7dd3fc', fontWeight: 700, marginTop: '2px' } }, 'FAA Part 107 — Small UAS Operations')
+                )
+              ),
+              h('p', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6, marginBottom: '14px' } },
+                'Before you fly, real Part 107 remote pilots in the U.S. must comply with these rules. This sim treats them as flight constraints.'
+              ),
+              h('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' } },
+                [
+                  ['📏', 'Max altitude 400 ft AGL', 'Above ground level (not sea level). The sim hard-caps you at 400 ft.'],
+                  ['👁️', 'Visual line-of-sight required', 'You must be able to see the drone unaided. The sim flags ranges over 1 nm.'],
+                  ['🛬', 'No flying near airports without LAANC', 'Within 5 mi of controlled airspace, you need LAANC authorization.'],
+                  ['☀️', 'Daylight or civil twilight only', 'Operations after dark require anti-collision lighting and a waiver.'],
+                  ['👥', 'No flying over people unless authorized', 'Operations over uninvolved people require Category 1–4 compliance.'],
+                  ['⚖️', 'Register if ≥ 0.55 lb', 'Drones from 0.55 lb to 55 lb must be registered with the FAA.'],
+                  ['🚫', 'Don’t fly under the influence', 'Same standard as flying any aircraft. 8 hours bottle-to-throttle.'],
+                  ['✈️', 'Yield right of way to manned aircraft', 'You give way to airplanes, helicopters, gliders, and balloons. Always.']
+                ].map(function(item, i) {
+                  return h('li', { key: i, style: { display: 'flex', gap: '10px', padding: '10px 12px', background: 'rgba(15,23,42,0.5)', borderRadius: '10px', border: '1px solid rgba(8,145,178,0.25)' } },
+                    h('div', { style: { fontSize: '18px', flexShrink: 0, lineHeight: 1.2 } }, item[0]),
+                    h('div', null,
+                      h('div', { style: { fontSize: '12px', fontWeight: 700, color: '#e0f2fe', marginBottom: '2px' } }, item[1]),
+                      h('div', { style: { fontSize: '10px', color: '#94a3b8', lineHeight: 1.5 } }, item[2])
+                    )
+                  );
+                })
+              ),
+              h('div', { style: { fontSize: '10px', color: '#cbd5e1', marginTop: '14px', lineHeight: 1.5 } },
+                'Source: 14 CFR § 107 (Small Unmanned Aircraft Systems). For real flights, study the official FAA Part 107 study guide and pass the Remote Pilot Knowledge Test.'
+              ),
+              h('div', { style: { display: 'flex', gap: '8px', marginTop: '16px' } },
+                h('button', {
+                  onClick: function() { updMulti({ droneBriefing: false, selectedChallenge: null }); },
+                  style: { flex: 1, padding: '12px', borderRadius: '10px', border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+                }, 'Cancel'),
+                h('button', {
+                  onClick: function() {
+                    var pwm = WAYPOINTS.filter(function(a) { return a.id === 'kpwm'; })[0];
+                    var lat0 = pwm ? pwm.lat : 43.646;
+                    var lon0 = pwm ? pwm.lon : -70.309;
+                    var mode = d.selectedChallenge === 'drone_powerline' ? 'powerline' : 'aerial';
+                    var photoPts;
+                    var armToast;
+                    if (mode === 'powerline') {
+                      // 6 defect sites strung along a ~0.6 nm east-west powerline
+                      // running just NW of PWM (rural Maine countryside).
+                      // Spacing ~0.002° lon ≈ 540 ft per pole — realistic transmission spacing.
+                      var poleLat = lat0 + 0.012;
+                      photoPts = [
+                        { lat: poleLat, lon: lon0 - 0.006, captured: false, name: 'Pole 1 — Cracked insulator' },
+                        { lat: poleLat, lon: lon0 - 0.004, captured: false, name: 'Pole 2 — Vegetation contact' },
+                        { lat: poleLat, lon: lon0 - 0.002, captured: false, name: 'Pole 3 — Loose hardware' },
+                        { lat: poleLat, lon: lon0 + 0.000, captured: false, name: 'Pole 4 — Corrosion' },
+                        { lat: poleLat, lon: lon0 + 0.002, captured: false, name: 'Pole 5 — Splice integrity' },
+                        { lat: poleLat, lon: lon0 + 0.004, captured: false, name: 'Pole 6 — Bird strike risk' }
+                      ];
+                      armToast = '🔌 Powerline inspection armed. Fly low (< 60 ft AGL) and slow (< 5 kts) along each pole.';
+                    } else {
+                      // 4 photo waypoints in a small box pattern within ~1 nm of launch
+                      photoPts = [
+                        { lat: lat0 + 0.008, lon: lon0 + 0.008, captured: false, name: 'Photo 1 — NE' },
+                        { lat: lat0 + 0.008, lon: lon0 - 0.008, captured: false, name: 'Photo 2 — NW' },
+                        { lat: lat0 - 0.008, lon: lon0 - 0.008, captured: false, name: 'Photo 3 — SW' },
+                        { lat: lat0 - 0.008, lon: lon0 + 0.008, captured: false, name: 'Photo 4 — SE' }
+                      ];
+                      armToast = '🛸 Drone armed. Lift off and fly to each photo waypoint. Stay below 400 ft.';
+                    }
+                    updMulti({
+                      droneBriefing: false,
+                      aircraft: 'drone',
+                      survey: {
+                        active: true,
+                        mode: mode,
+                        launchLat: lat0,
+                        launchLon: lon0,
+                        photos: photoPts,
+                        capturedCount: 0,
+                        completed: false,
+                        battery: 100,
+                        captureProgress: 0
+                      }
+                    });
+                    startFlying('kpwm');
+                    if (typeof addToast === 'function') addToast(armToast, 'info');
+                  },
+                  style: { flex: 2, padding: '12px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #0891b2, #06b6d4)', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(8,145,178,0.4)' }
+                }, '✓ I Understand — Begin Flight')
+              )
+            )
+          ),
           // Back button
           h('div', { style: { padding: '12px 16px 0', display: 'flex', alignItems: 'center', gap: '8px' } },
             h('button', {
@@ -7750,7 +10357,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('div', { style: { fontSize: '28px', fontWeight: 900, color: '#fff', letterSpacing: '2px' } }, 'SKYSCHOOL'),
             h('div', { style: { fontSize: '13px', color: '#94a3b8', marginTop: '4px' } }, 'Learn to fly. Learn the world.'),
             // Stats bar
-            (d.totalFlightTime || 0) > 0 && h('div', { style: { display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '8px', fontSize: '10px', color: '#64748b' } },
+            (d.totalFlightTime || 0) > 0 && h('div', { style: { display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '8px', fontSize: '10px', color: '#94a3b8' } },
               h('span', null, '\u23F1 ' + Math.floor((d.totalFlightTime || 0) / 60) + ' min flight time'),
               h('span', null, '\uD83C\uDF0D ' + (d.visitedAirports || []).length + ' airports'),
               h('span', null, '\uD83D\uDCCD ' + Object.keys(d.geoDiscovered || {}).length + ' places discovered')
@@ -7772,23 +10379,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('button', { onClick: function() { flightPlanRef.current = { departure: null, destination: null, route: [], distNm: 0, estTime: 0, initialHdg: 0 }; startFlying('kpwm'); },
               style: { width: '100%', padding: '16px', borderRadius: '14px', border: '2px solid #3b82f6', background: 'linear-gradient(135deg, #1e40af, #3b82f6)', color: '#fff', fontSize: '16px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 20px rgba(59,130,246,0.3)' }
             }, '\uD83D\uDEEB Free Flight from Portland, ME'),
-            h('div', { style: { textAlign: 'center', fontSize: '10px', color: '#475569', marginTop: '4px' } }, 'Takeoff from Portland International Jetport \u2022 Fly anywhere in the world')
+            h('div', { style: { textAlign: 'center', fontSize: '11px', color: '#cbd5e1', marginTop: '6px' } }, 'Takeoff from Portland International Jetport \u2022 Fly anywhere in the world')
           ),
           // Flight Planner
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🗺️ Flight Planner'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🗺️ Flight Planner'),
             h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '12px', border: '1px solid #1e3a5f' } },
               h('div', { style: { display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' } },
                 h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontSize: '8px', color: '#64748b', textTransform: 'uppercase', marginBottom: '2px' } }, 'From'),
+                  h('div', { style: { fontSize: '8px', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '2px' } }, 'From'),
                   h('select', { value: d.planDep || 'kpwm', onChange: function(e) { upd('planDep', e.target.value); },
                     style: { width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #334155', background: '#1e293b', color: '#fff', fontSize: '11px', fontWeight: 700 },
                     'aria-label': 'Departure airport'
                   }, WAYPOINTS.map(function(wp) { return h('option', { key: wp.id, value: wp.id }, wp.code + ' — ' + wp.name); }))
                 ),
-                h('div', { style: { color: '#64748b', fontSize: '16px', marginTop: '10px' } }, '→'),
+                h('div', { style: { color: '#94a3b8', fontSize: '16px', marginTop: '10px' } }, '→'),
                 h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontSize: '8px', color: '#64748b', textTransform: 'uppercase', marginBottom: '2px' } }, 'To'),
+                  h('div', { style: { fontSize: '8px', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '2px' } }, 'To'),
                   h('select', { value: d.planDest || 'kjfk', onChange: function(e) { upd('planDest', e.target.value); },
                     style: { width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #334155', background: '#1e293b', color: '#fff', fontSize: '11px', fontWeight: 700 },
                     'aria-label': 'Destination airport'
@@ -7810,7 +10417,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                     [['📏 ' + dist + ' nm', 'Distance'], ['🧭 ' + String(hdg).padStart(3, '0') + '°', 'Heading'], ['⏱️ ~' + estMin + ' min', 'Est. Time'], ['🔝 FL' + (cruiseAlt / 100), 'Cruise Alt']].map(function(s) {
                       return h('div', { key: s[1], style: { background: '#1e293b', borderRadius: '4px', padding: '4px', textAlign: 'center' } },
                         h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#60a5fa' } }, s[0]),
-                        h('div', { style: { fontSize: '7px', color: '#64748b' } }, s[1])
+                        h('div', { style: { fontSize: '7px', color: '#94a3b8' } }, s[1])
                       );
                     })
                   ),
@@ -7832,16 +10439,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ),
           // Aircraft Selection
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🛩️ Select Aircraft'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🛩️ Select Aircraft'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px' } },
               AIRCRAFT.map(function(ac) {
                 var isSelected = selectedAircraft === ac.id;
                 return h('button', { key: ac.id, onClick: function() { upd('aircraft', ac.id); },
+                  'aria-pressed': isSelected,
+                  'aria-label': ac.name + ' (' + ac.category + ')' + (isSelected ? ', selected' : ''),
                   style: { padding: '8px 4px', borderRadius: '8px', border: '2px solid ' + (isSelected ? '#3b82f6' : '#1e293b'), background: isSelected ? '#1e3a5f' : '#0f172a', color: '#fff', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s' }
                 },
                   h('div', { style: { fontSize: '20px' } }, ac.icon),
                   h('div', { style: { fontSize: '9px', fontWeight: 700, marginTop: '2px', lineHeight: '1.2' } }, ac.name.split(' ')[0]),
-                  h('div', { style: { fontSize: '8px', color: '#64748b', marginTop: '1px' } }, ac.category)
+                  h('div', { style: { fontSize: '8px', color: '#94a3b8', marginTop: '1px' } }, ac.category)
                 );
               })
             ),
@@ -7849,7 +10458,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('div', { style: { marginTop: '8px', padding: '10px', background: '#0f172a', borderRadius: '8px', border: '1px solid #1e3a5f' } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
                 h('span', { style: { fontSize: '13px', fontWeight: 800, color: '#fff' } }, currentAC.icon + ' ' + currentAC.name),
-                h('span', { style: { fontSize: '9px', color: '#64748b', background: '#1e293b', padding: '2px 6px', borderRadius: '4px' } }, currentAC.category)
+                h('span', { style: { fontSize: '9px', color: '#94a3b8', background: '#1e293b', padding: '2px 6px', borderRadius: '4px' } }, currentAC.category)
               ),
               h('p', { style: { fontSize: '10px', color: '#94a3b8', margin: '0 0 6px', lineHeight: '1.4' } }, currentAC.desc),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', marginBottom: '6px' } },
@@ -7863,7 +10472,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                     h('div', { style: { width: '100%', height: '3px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', marginTop: '3px', overflow: 'hidden' } },
                       h('div', { style: { width: stat[2] + '%', height: '100%', background: stat[3], borderRadius: '2px', transition: 'width 0.5s ease' } })
                     ),
-                    h('div', { style: { fontSize: '8px', color: '#64748b', marginTop: '2px' } }, stat[0])
+                    h('div', { style: { fontSize: '8px', color: '#94a3b8', marginTop: '2px' } }, stat[0])
                   );
                 })
               ),
@@ -7874,7 +10483,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ),
           // Departure selector
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, 'Or choose a departure airport'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, 'Or choose a departure airport'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' } },
               WAYPOINTS.map(function(wp) {
                 var visited = visitedAirports.indexOf(wp.id) >= 0;
@@ -7896,14 +10505,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   // Name
                   h('div', { style: { fontSize: '10px', color: '#e2e8f0', fontWeight: 600 } }, wp.name),
                   // Region + altitude
-                  h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '1px' } }, wp.region + ' \u2022 ' + wp.alt.toLocaleString() + ' ft elevation')
+                  h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '1px' } }, wp.region + ' \u2022 ' + wp.alt.toLocaleString() + ' ft elevation')
                 );
               })
             )
           ),
           // Lessons
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '📚 Aerodynamics Lessons'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '📚 Aerodynamics Lessons'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' } },
               Object.keys(LESSONS).map(function(key) {
                 var les = LESSONS[key];
@@ -7917,13 +10526,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ),
           // Challenges
           h('div', { style: { padding: '0 24px 24px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏆 Flight Challenges'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏆 Flight Challenges'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               CHALLENGES.map(function(ch) {
-                return h('button', { key: ch.id, onClick: function() { startFlying('kpwm'); updMulti({ selectedChallenge: ch.id }); },
-                  style: { padding: '10px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#0f172a', color: '#fff', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px' }
+                var isRescue = ch.id === 'coastal_rescue';
+                var isDroneMission = ch.id === 'drone_survey' || ch.id === 'drone_powerline';
+                var isPowerline = ch.id === 'drone_powerline';
+                return h('button', { key: ch.id, onClick: function() {
+                  if (isRescue) {
+                    // Rescue mission: force aircraft selection to helicopter,
+                    // place survivor 5nm SE of PWM in Casco Bay, and arm
+                    // state.rescue. Then start the flight at PWM.
+                    var pwm = WAYPOINTS.filter(function(a) { return a.id === 'kpwm'; })[0];
+                    var survivorLat = (pwm ? pwm.lat : 43.646) - 0.04;
+                    var survivorLon = (pwm ? pwm.lon : -70.309) + 0.07;
+                    updMulti({
+                      aircraft: 'rescue_heli',
+                      selectedChallenge: ch.id,
+                      rescue: {
+                        active: true,
+                        survivorLat: survivorLat,
+                        survivorLon: survivorLon,
+                        hoistTime: 0,
+                        recovered: false,
+                        completed: false,
+                        startedAt: 0
+                      }
+                    });
+                    startFlying('kpwm');
+                    if (typeof addToast === 'function') addToast('🚁 Distress beacon. Boater in Casco Bay. Lift off, fly heading 095°, recover the survivor.', 'info');
+                  } else if (isDroneMission) {
+                    // Drone survey: gate behind FAA Part 107 briefing modal.
+                    // Briefing dismisses → aircraft = drone, survey state armed, flight starts.
+                    updMulti({ droneBriefing: true, selectedChallenge: ch.id });
+                  } else {
+                    startFlying('kpwm'); updMulti({ selectedChallenge: ch.id });
+                  }
                 },
-                  h('div', { style: { fontSize: '24px', shrink: 0 } }, '🎯'),
+                  style: { padding: '10px 12px', borderRadius: '8px', border: '1px solid ' + (isRescue ? '#dc2626' : (isDroneMission ? '#0891b2' : '#334155')), background: isRescue ? 'linear-gradient(135deg, #1f0a0a, #2d0f0f)' : (isDroneMission ? 'linear-gradient(135deg, #082f49, #0c4a6e)' : '#0f172a'), color: '#fff', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px' }
+                },
+                  h('div', { style: { fontSize: '24px', shrink: 0 } }, isRescue ? '🚁' : (isPowerline ? '🔌' : (isDroneMission ? '🛸' : '🎯'))),
                   h('div', null,
                     h('div', { style: { fontSize: '12px', fontWeight: 700 } }, ch.name),
                     h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '2px' } }, ch.desc)
@@ -7934,7 +10576,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           ),
           // HyperJet Geography Sprint
           h('div', { style: { padding: '0 24px 24px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🚀 HyperJet Geography Sprint'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🚀 HyperJet Geography Sprint'),
             h('p', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '8px' } }, 'Fly at Mach 3 on autopilot — name countries, capitals, and cities as you zoom past! Press 1-4 to answer before you fly by.'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' } },
               SPRINT_ROUTES.map(function(route) {
@@ -7943,14 +10585,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 },
                   h('div', { style: { fontSize: '12px', fontWeight: 800, marginBottom: '2px' } }, route.name),
                   h('div', { style: { fontSize: '10px', color: '#a78bfa' } }, route.desc),
-                  h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '4px' } }, route.places.length + ' stops · ' + Math.round(route.speed * 0.59) + ' kts')
+                  h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '4px' } }, route.places.length + ' stops · ' + Math.round(route.speed * 0.59) + ' kts')
                 );
               })
             )
           ),
           // Achievements
           h('div', { style: { padding: '0 24px 16px' } },
-            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏆 Achievements (' + Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length + ')'),
+            h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏆 Achievements (' + Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length + ')'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
               ACHIEVEMENTS.map(function(ach) {
                 var earned = !!earnedBadges[ach.id];
@@ -7965,7 +10607,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             [['W/S or ↑/↓', 'Pitch'], ['A/D or ←/→', 'Bank'], ['Shift/Ctrl', 'Throttle'], ['B', 'Autopilot'], ['F', 'Forces'], ['Q', 'Quiz'], ['Space', 'Pause'], ['?', 'Help'], ['ESC', 'Exit']].map(function(item) {
               return h('div', { key: item[0], style: { textAlign: 'center' } },
                 h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#60a5fa', background: '#1e3a5f', padding: '2px 8px', borderRadius: '4px', fontFamily: 'monospace' } }, item[0]),
-                h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '2px' } }, item[1])
+                h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '2px' } }, item[1])
               );
             })
           )
@@ -7982,7 +10624,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('h2', { style: { fontSize: '20px', fontWeight: 900, textAlign: 'center', marginBottom: '16px' } }, les.title),
             h('p', { style: { fontSize: '14px', lineHeight: '1.7', color: '#cbd5e1', marginBottom: '16px' } }, les.content),
             h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '16px', border: '1px solid #334155' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' } }, 'Formula'),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: '6px' } }, 'Formula'),
               h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#22d3ee', fontFamily: 'monospace', marginBottom: '8px' } }, les.formula),
               h('div', { style: { fontSize: '11px', color: '#94a3b8', lineHeight: '1.5' } }, les.variables)
             ),
@@ -8202,7 +10844,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('div', { style: { fontSize: '48px', marginBottom: '4px' } }, gradeIcon),
             h('div', { style: { fontSize: '22px', fontWeight: 900, letterSpacing: '1px' } }, 'FLIGHT DEBRIEF'),
             h('div', { style: { fontSize: '15px', color: gradeColor, fontWeight: 800, marginTop: '6px' } }, gradeText),
-            h('div', { style: { fontSize: '11px', color: '#64748b', marginTop: '4px' } }, 'Aircraft: ' + db.aircraft + ' \u2022 +' + gradeXP + ' XP')
+            h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '4px' } }, 'Aircraft: ' + db.aircraft + ' \u2022 +' + gradeXP + ' XP')
           ),
           // Educational tip
           tip && h('div', { style: { padding: '10px 14px', borderRadius: '10px', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', marginBottom: '16px', fontSize: '12px', color: '#a5b4fc', lineHeight: 1.5 } }, tip),
@@ -8220,7 +10862,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               return h('div', { key: stat[2], style: { background: '#0f172a', borderRadius: '8px', padding: '10px', textAlign: 'center', border: '1px solid #1e293b' } },
                 h('div', { style: { fontSize: '16px' } }, stat[0]),
                 h('div', { style: { fontSize: '16px', fontWeight: 800, color: '#60a5fa', marginTop: '2px' } }, stat[1]),
-                h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '2px' } }, stat[2])
+                h('div', { style: { fontSize: '9px', color: '#94a3b8', marginTop: '2px' } }, stat[2])
               );
             })
           ),
@@ -8373,7 +11015,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       }
 
       // Fallback
-      return h('div', { style: { padding: '24px', textAlign: 'center', color: '#64748b' } }, 'Loading SkySchool...');
+      return h('div', { style: { padding: '24px', textAlign: 'center', color: '#94a3b8' } }, 'Loading SkySchool...');
     }
   });
 

@@ -17,6 +17,25 @@ window.SelHub = window.SelHub || {
 (function() {
   'use strict';
 
+  // ── Live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-teamwork')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-teamwork'; lr.setAttribute('aria-live', 'polite'); lr.setAttribute('aria-atomic', 'true'); lr.setAttribute('role', 'status'); lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
+  // ── Accessibility scaffolding (WCAG 2.3.3 Animation from Interactions) ──
+  // Reduced-motion CSS guards animated counters, progress indicators, and transitions.
+  (function() {
+    if (document.getElementById('allo-teamwork-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-teamwork-a11y-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { .selh-teamwork *, .selh-teamwork *::before, .selh-teamwork *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   // ══════════════════════════════════════════════════════════════
   // ── Sound Effects Engine (Web Audio API) ──
   // ══════════════════════════════════════════════════════════════
@@ -636,8 +655,7 @@ window.SelHub = window.SelHub || {
           { id: 'progress',    label: '\uD83D\uDCC8 Progress' }
         ];
 
-        var tabBar = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-          role: 'tablist', 'aria-label': 'Teamwork & Collaboration tabs',
+        var tabBar = h('div', {           role: 'tablist', 'aria-label': 'Teamwork & Collaboration tabs',
           style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
         },
           tabs.map(function(t) {
@@ -657,13 +675,13 @@ window.SelHub = window.SelHub || {
           // Sound toggle
           h('button', { 'aria-label': 'Toggle panel',
             onClick: function() { upd('soundEnabled', !soundEnabled); },
-            style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#64748b' },
+            style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#94a3b8' },
             title: soundEnabled ? 'Mute sounds' : 'Enable sounds'
           }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
           // Badge counter
           h('button', { 'aria-label': 'Toggle panel',
             onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
-            style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#64748b', position: 'relative' }
+            style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: '#94a3b8', position: 'relative' }
           },
             '\uD83C\uDFC5',
             Object.keys(earnedBadges).length > 0 && h('span', {
@@ -671,6 +689,40 @@ window.SelHub = window.SelHub || {
             }, Object.keys(earnedBadges).length)
           )
         );
+
+        // ── Topic-accent hero band per tab ──
+        var heroBand = (function() {
+          var TAB_META = {
+            roles:        { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)', icon: '\uD83D\uDC51', title: 'Roles \u2014 Belbin\u2019s 9 team archetypes',                  hint: 'Belbin 1981: Plant, Resource Investigator, Coordinator, Shaper, Monitor Evaluator, Teamworker, Implementer, Completer Finisher, Specialist. Balanced teams beat all-stars; complementary roles outperform homogeneous talent.' },
+            challenges:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDFD7', title: 'Challenges \u2014 the 5 dysfunctions',                       hint: 'Lencioni 2002: absence of trust \u2192 fear of conflict \u2192 lack of commitment \u2192 avoidance of accountability \u2192 inattention to results. Each layer rests on the one below; teams fail bottom-up.' },
+            scenarios:    { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios \u2014 practice on others first',                hint: 'Behavioral rehearsal (Bandura) lowers in-the-moment freezing. Free-rider, dominator, missed deadline, idea-stealer \u2014 the patterns repeat. Walking through them off-stage builds the script for on-stage moments.' },
+            commstyle:    { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDDE3', title: 'Comm Style \u2014 know your default',                       hint: 'DiSC, MBTI-style preferences. Each style has gifts + traps. Driver gets things done but bulldozes; analytical thinks deeply but slows. Pair complementary styles + name them \u2014 the friction disappears.' },
+            virtualteam:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83D\uDCBB', title: 'Virtual Team \u2014 distance changes the rules',           hint: 'Async-first beats sync-first; written norms matter more without hallway clarification. Mark-of-attention (camera on / quick reply) IS the trust signal. Watson 2018: virtual teams underperform on creativity, beat in-person on focused output.' },
+            conflicttool: { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '\u267B',         title: 'Conflict \u2192 Collab \u2014 turn friction into output',  hint: 'Task conflict (about ideas) helps; relationship conflict (about people) hurts. Jehn 1995: high-performing teams have MORE task conflict than average ones. Reframe \u201Cwe disagree\u201D from threat to data.' },
+            retro:        { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83D\uDD04', title: 'Retro \u2014 keep / start / stop / drop',                  hint: 'Agile retrospective format. Without retros, teams repeat their failure modes; with retros, they upgrade them. Schedule before you need one \u2014 cadence beats crisis. Keep it short, action-oriented, blame-free.' },
+            quiz:         { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '\uD83D\uDCCA', title: 'Quiz \u2014 self-knowledge check',                          hint: 'When are you the team accelerator? When are you the bottleneck? Both are normal. Pattern recognition turns reactive collaboration into deliberate. The quiz is a mirror, not a verdict.' },
+            contract:     { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83D\uDCDC', title: 'Contract \u2014 the team agreement',                       hint: 'Working agreements set norms BEFORE the friction (response times, decision rules, conflict handling). Edmondson 2018 psychological safety research: explicit norms predict speak-up rates more than personality.' },
+            progress:     { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)',  icon: '\uD83D\uDCC8', title: 'Progress \u2014 team-skill growth over time',              hint: 'Track which collaboration skills you\u2019ve flexed. Progress is invisible without measurement. Show the chart to your team \u2014 vulnerability about growth predicts trust (Brown 2018).' }
+          };
+          var meta = TAB_META[activeTab] || TAB_META.roles;
+          return h('div', {
+            style: {
+              margin: '8px 12px 12px',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })();
 
         // ── Badge Popup ──
         var badgePopup = null;
@@ -693,16 +745,15 @@ window.SelHub = window.SelHub || {
         if (showBadgesPanel) {
           var panelContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, '\uD83C\uDFC5 Badges'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
               BADGES.map(function(b) {
                 var earned = !!earnedBadges[b.id];
-                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-                  key: b.id,
+                return h('div', {                   key: b.id,
                   style: { padding: 14, borderRadius: 12, background: earned ? '#1e293b' : '#0f172a', border: '1px solid ' + (earned ? ACCENT + '66' : '#334155'), textAlign: 'center', opacity: earned ? 1 : 0.5 }
                 },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 28 } }, earned ? b.icon : '\uD83D\uDD12'),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, fontWeight: 600, color: earned ? '#f1f5f9' : '#64748b', marginTop: 4 } }, b.name),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#64748b', marginTop: 2 } }, b.desc)
+                  h('div', { style: { fontSize: 28 } }, earned ? b.icon : '\uD83D\uDD12'),
+                  h('div', { style: { fontSize: 12, fontWeight: 600, color: earned ? '#f1f5f9' : '#94a3b8', marginTop: 4 } }, b.name),
+                  h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2 } }, b.desc)
                 );
               })
             ),
@@ -733,14 +784,16 @@ window.SelHub = window.SelHub || {
             ),
 
             // Role cards
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 } },
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 } },
               roles.map(function(role) {
                 var isExpanded = expandedRole === role.id;
                 var isSelected = selectedRoles.indexOf(role.id) !== -1;
-                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                return h('div', Object.assign({
                   key: role.id,
-                  style: { padding: 14, borderRadius: 12, background: isSelected ? '#1e293b' : '#0f172a', border: '1px solid ' + (isSelected ? ACCENT + '88' : '#334155'), cursor: 'pointer', transition: 'all 0.2s' },
-                  onClick: function() {
+                  'aria-label': role.name + (isExpanded ? ' (collapse)' : ' (expand)'),
+                  'aria-expanded': isExpanded ? 'true' : 'false',
+                  style: { padding: 14, borderRadius: 12, background: isSelected ? '#1e293b' : '#0f172a', border: '1px solid ' + (isSelected ? ACCENT + '88' : '#334155'), cursor: 'pointer', transition: 'all 0.2s' }
+                }, a11yClick(function() {
                     upd('expandedRole', isExpanded ? null : role.id);
                     if (soundEnabled) sfxClick();
                     logPractice('role_explore', role.id);
@@ -754,15 +807,14 @@ window.SelHub = window.SelHub || {
                       if (!found) allExplored = false;
                     });
                     if (allExplored) tryAwardBadge('all_roles');
-                  }
-                },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 10 } },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 24 } }, role.emoji),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1 } },
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 14, fontWeight: 600, color: '#f1f5f9' } }, role.name),
-                      isExpanded && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 8 } },
+                })),
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
+                    h('span', { style: { fontSize: 24 } }, role.emoji),
+                    h('div', { style: { flex: 1 } },
+                      h('div', { style: { fontSize: 14, fontWeight: 600, color: '#f1f5f9' } }, role.name),
+                      isExpanded && h('div', { style: { marginTop: 8 } },
                         h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 8 } }, role.desc),
-                        h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: ACCENT, fontStyle: 'italic', padding: '8px 12px', background: ACCENT_DIM, borderRadius: 8 } },
+                        h('div', { style: { fontSize: 12, color: ACCENT, fontStyle: 'italic', padding: '8px 12px', background: ACCENT_DIM, borderRadius: 8 } },
                           '\uD83D\uDCAC Sounds like: ' + role.soundsLike
                         )
                       )
@@ -794,7 +846,7 @@ window.SelHub = window.SelHub || {
                 })
               ),
               // Reflection
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#94a3b8', marginBottom: 8 } }, '\uD83D\uDCDD My Best Team Role \u2014 Reflection:'),
+              h('div', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 8 } }, '\uD83D\uDCDD My Best Team Role \u2014 Reflection:'),
               h('textarea', {
                 value: roleReflection,
                 'aria-label': 'Role reflection',
@@ -803,7 +855,7 @@ window.SelHub = window.SelHub || {
                 rows: 3,
                 style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#0f172a', color: '#e2e8f0', fontSize: 13, resize: 'vertical', boxSizing: 'border-box' }
               }),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 8, marginTop: 8 } },
+              h('div', { style: { display: 'flex', gap: 8, marginTop: 8 } },
                 h('button', { 'aria-label': 'Toggle sound',
                   onClick: function() {
                     if (!roleReflection.trim()) { addToast('Write a reflection first!', 'info'); return; }
@@ -829,6 +881,16 @@ window.SelHub = window.SelHub || {
                       var r = roles.find(function(x) { return x.id === rid; });
                       return r ? r.name : rid;
                     }).join(', ');
+                    // Safety pre-check on role-reflection free-text.
+                    var rrSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                      ? window.SelHub.safeRehearseCheck(roleReflection, { toolId: 'teamwork_role', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+                      : { action: 'continue' };
+                    if (rrSafety.action === 'block') {
+                      upd('coachResponse', window.SelHub.rehearseBreakCharacterText(rrSafety.severity));
+                      upd('coachLoading', false);
+                      upd('_lastTier', 3);
+                      return;
+                    }
                     var prompt = 'You are a supportive teamwork coach for ' + band + ' school students.\n\n' +
                       'The student identified their team roles as: ' + selNames + '\n' +
                       'Their reflection: "' + roleReflection + '"\n\n' +
@@ -849,10 +911,12 @@ window.SelHub = window.SelHub || {
                   style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: coachLoading ? '#334155' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 12, cursor: coachLoading ? 'default' : 'pointer' }
                 }, coachLoading ? 'Thinking...' : '\u2728 AI Coach')
               ),
-              // AI response
-              coachResponse && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #6366f144' } },
-                h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Team Coach'),
-                h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, coachResponse)
+              // AI response \u2014 always-rendered live region so SR users get notified
+              h('div', { role: 'region', 'aria-label': 'Team coach response', 'aria-live': 'polite', 'aria-busy': coachLoading ? 'true' : 'false' },
+                coachResponse && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #6366f144' } },
+                  h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Team Coach'),
+                  h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, coachResponse)
+                )
               )
             ),
 
@@ -902,12 +966,12 @@ window.SelHub = window.SelHub || {
               ),
 
               // Skill self-rating
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, fontWeight: 600, color: '#f1f5f9', marginBottom: 8 } }, '\uD83C\uDFAF Rate Your Team Skills:'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 } },
+              h('div', { style: { fontSize: 12, fontWeight: 600, color: '#f1f5f9', marginBottom: 8 } }, '\uD83C\uDFAF Rate Your Team Skills:'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 } },
                 curCh.skills.map(function(s) {
                   var r = chRatings[s] || 0;
-                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: s, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 8, background: '#0f172a' } },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#cbd5e1', flex: 1, textTransform: 'capitalize' } }, s.replace(/-/g, ' ')),
+                  return h('div', { key: s, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 8, background: '#0f172a' } },
+                    h('span', { style: { fontSize: 12, color: '#cbd5e1', flex: 1, textTransform: 'capitalize' } }, s.replace(/-/g, ' ')),
                     [1, 2, 3, 4, 5].map(function(star) {
                       return h('button', { 'aria-label': 'Toggle sound',
                         key: star,
@@ -937,7 +1001,7 @@ window.SelHub = window.SelHub || {
               }),
 
               // Navigation
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 10, justifyContent: 'center' } },
+              h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
                 challengeIdx > 0 && h('button', { 'aria-label': 'Previous',
                   onClick: function() { upd({ challengeIdx: challengeIdx - 1, challengeDiscussion: '' }); if (soundEnabled) sfxClick(); },
                   style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
@@ -984,19 +1048,19 @@ window.SelHub = window.SelHub || {
             ),
 
             // Scenario card
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, borderRadius: 14, background: '#1e293b', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 28 } }, curSc.icon),
+            h('div', { style: { padding: 20, borderRadius: 14, background: '#1e293b', border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
+                h('span', { style: { fontSize: 28 } }, curSc.icon),
                 h('h4', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9', margin: 0 } }, curSc.title)
               ),
               h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.7, marginBottom: 16 } }, curSc.setup),
 
               // Choices
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 curSc.choices.map(function(ch, ci) {
                   var isChosen = scenarioAnswers[curSc.id] === ci;
                   var showFeedback = revealed && isChosen;
-                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: ci },
+                  return h('div', { key: ci },
                     h('button', { 'aria-label': 'Toggle sound',
                       onClick: function() {
                         if (answered) return;
@@ -1050,19 +1114,19 @@ window.SelHub = window.SelHub || {
 
               // Show all feedback after answering
               revealed && h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, fontWeight: 600, color: '#94a3b8', marginBottom: 6 } }, 'All response ratings:'),
+                h('div', { style: { fontSize: 11, fontWeight: 600, color: '#94a3b8', marginBottom: 6 } }, 'All response ratings:'),
                 curSc.choices.map(function(ch, ci) {
                   var isChosen = scenarioAnswers[curSc.id] === ci;
-                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: ci, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', fontSize: 11, color: isChosen ? '#f1f5f9' : '#64748b' } },
+                  return h('div', { key: ci, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', fontSize: 11, color: isChosen ? '#f1f5f9' : '#94a3b8' } },
                     renderStars(ch.rating),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginLeft: 4 } }, ch.label.substring(0, 50) + (ch.label.length > 50 ? '...' : '')),
-                    isChosen && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { color: ACCENT, marginLeft: 4, fontWeight: 700 } }, '\u2190 your pick')
+                    h('span', { style: { marginLeft: 4 } }, ch.label.substring(0, 50) + (ch.label.length > 50 ? '...' : '')),
+                    isChosen && h('span', { style: { color: ACCENT, marginLeft: 4, fontWeight: 700 } }, '\u2190 your pick')
                   );
                 })
               ),
 
               // Navigation
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 16 } },
+              h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 16 } },
                 scenarioIdx > 0 && h('button', { 'aria-label': 'Previous',
                   onClick: function() { upd('scenarioIdx', scenarioIdx - 1); if (soundEnabled) sfxClick(); },
                   style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
@@ -1075,8 +1139,8 @@ window.SelHub = window.SelHub || {
             ),
 
             // AI Team Coach section
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #6366f133' } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 8 } }, '\u2728 AI Team Coach'),
+            h('div', { style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid #6366f133' } },
+              h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 8 } }, '\u2728 AI Team Coach'),
               h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 10 } }, 'Ask the AI coach about any teamwork challenge you\'re facing.'),
               h('textarea', {
                 value: coachPrompt,
@@ -1090,6 +1154,16 @@ window.SelHub = window.SelHub || {
                 onClick: function() {
                   if (!coachPrompt.trim()) { addToast('Describe your teamwork challenge first!', 'info'); return; }
                   if (!callGemini) { addToast('AI not available.', 'error'); return; }
+                  // Safety pre-check on the teamwork-challenge free-text.
+                  var cpSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                    ? window.SelHub.safeRehearseCheck(coachPrompt, { toolId: 'teamwork_coach', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+                    : { action: 'continue' };
+                  if (cpSafety.action === 'block') {
+                    upd('coachResponse', window.SelHub.rehearseBreakCharacterText(cpSafety.severity));
+                    upd('coachLoading', false);
+                    upd('_lastTier', 3);
+                    return;
+                  }
                   upd('coachLoading', true);
                   upd('coachResponse', null);
                   var prompt = 'You are a warm, knowledgeable teamwork coach for ' + band + ' school students.\n\n' +
@@ -1111,9 +1185,11 @@ window.SelHub = window.SelHub || {
                 disabled: coachLoading,
                 style: { padding: '8px 18px', borderRadius: 8, border: 'none', background: coachLoading ? '#334155' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 12, cursor: coachLoading ? 'default' : 'pointer' }
               }, coachLoading ? 'Thinking...' : '\u2728 Ask Coach'),
-              coachResponse && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #6366f144' } },
-                h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Coach Says'),
-                h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, coachResponse)
+              h('div', { role: 'region', 'aria-label': 'Coach response', 'aria-live': 'polite', 'aria-busy': coachLoading ? 'true' : 'false' },
+                coachResponse && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #6366f144' } },
+                  h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Coach Says'),
+                  h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, coachResponse)
+                )
               )
             ),
 
@@ -1145,15 +1221,15 @@ window.SelHub = window.SelHub || {
                   key: skill.id,
                   style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid ' + (rating > 0 ? ACCENT + '44' : '#334155') }
                 },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 20 } }, skill.icon),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { flex: 1 } },
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9' } }, skill.name),
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, skill.desc)
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                    h('span', { style: { fontSize: 20 } }, skill.icon),
+                    h('div', { style: { flex: 1 } },
+                      h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9' } }, skill.name),
+                      h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, skill.desc)
                     )
                   ),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 6, alignItems: 'center' } },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#64748b', marginRight: 4 } }, 'Low'),
+                  h('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
+                    h('span', { style: { fontSize: 10, color: '#94a3b8', marginRight: 4 } }, 'Low'),
                     [1, 2, 3, 4, 5].map(function(val) {
                       var isSelected = rating === val;
                       return h('button', { 'aria-label': 'Toggle sound',
@@ -1172,7 +1248,7 @@ window.SelHub = window.SelHub || {
                         }
                       }, String(val));
                     }),
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 10, color: '#64748b', marginLeft: 4 } }, 'High')
+                    h('span', { style: { fontSize: 10, color: '#94a3b8', marginLeft: 4 } }, 'High')
                   )
                 );
               })
@@ -1190,7 +1266,7 @@ window.SelHub = window.SelHub || {
                 addToast('Skills assessment complete! +20 XP', 'success');
                 celebrate && celebrate();
               },
-              style: { display: 'block', width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', background: quizDone ? ACCENT : '#334155', color: quizDone ? '#0f172a' : '#64748b', fontWeight: 700, fontSize: 14, cursor: quizDone ? 'pointer' : 'default', marginBottom: 20 }
+              style: { display: 'block', width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', background: quizDone ? ACCENT : '#334155', color: quizDone ? '#0f172a' : '#94a3b8', fontWeight: 700, fontSize: 14, cursor: quizDone ? 'pointer' : 'default', marginBottom: 20 }
             }, quizDone ? '\u2705 Submit My Assessment' : 'Rate all 8 skills to continue'),
 
             // Results visualization (bar chart)
@@ -1219,7 +1295,7 @@ window.SelHub = window.SelHub || {
                   );
                 })
               ),
-              h('div', { style: { display: 'flex', gap: 16, justifyContent: 'center', marginTop: 12, fontSize: 10, color: '#64748b' } },
+              h('div', { style: { display: 'flex', gap: 16, justifyContent: 'center', marginTop: 12, fontSize: 10, color: '#94a3b8' } },
                 h('span', null, h('span', { style: { display: 'inline-block', width: 10, height: 10, borderRadius: 2, background: ACCENT, marginRight: 4, verticalAlign: 'middle' } }), 'Your Rating'),
                 h('span', null, h('span', { style: { display: 'inline-block', width: 10, height: 4, borderRadius: 2, background: '#6366f144', marginRight: 4, verticalAlign: 'middle' } }), 'Ideal Team Player')
               ),
@@ -1236,7 +1312,7 @@ window.SelHub = window.SelHub || {
                 var avg = count > 0 ? (total / count).toFixed(1) : '0';
                 return h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
                   h('div', { style: { fontSize: 12, fontWeight: 600, color: '#f1f5f9', marginBottom: 6 } }, '\uD83D\uDCCB Summary'),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.8 } },
+                  h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.8 } },
                     '\u2022 Average score: ' + avg + '/5',
                     h('br'),
                     '\u2022 Strongest skill: ' + strongest + ' (' + sMax + '/5)',
@@ -1251,7 +1327,7 @@ window.SelHub = window.SelHub || {
               // Reset quiz
               h('button', { 'aria-label': 'Retake Quiz',
                 onClick: function() { upd({ quizRatings: {}, quizSubmitted: false }); if (soundEnabled) sfxClick(); },
-                style: { display: 'block', margin: '12px auto 0', padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#64748b', fontSize: 11, cursor: 'pointer' }
+                style: { display: 'block', margin: '12px auto 0', padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontSize: 11, cursor: 'pointer' }
               }, 'Retake Quiz')
             ),
 
@@ -1369,7 +1445,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Save / Preview
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 16 } },
+            h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 16 } },
               h('button', { 'aria-label': 'Start New Contract',
                 onClick: function() {
                   var filledAgreements = contractAgreements.filter(function(a) { return a.trim(); });
@@ -1386,7 +1462,7 @@ window.SelHub = window.SelHub || {
               }, contractSaved ? '\u2713 Contract Saved' : '\uD83D\uDCBE Save Contract'),
               contractSaved && h('button', { 'aria-label': 'Start New Contract',
                 onClick: function() { upd({ contractAgreements: ['', '', '', '', ''], contractRoles: ['', '', '', ''], contractComms: '', contractConsequence: '', contractSaved: false }); if (soundEnabled) sfxClick(); },
-                style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: '#64748b', fontSize: 12, cursor: 'pointer' }
+                style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
               }, 'Start New Contract')
             ),
 
@@ -1394,7 +1470,7 @@ window.SelHub = window.SelHub || {
             contractSaved && h('div', { style: { padding: 20, borderRadius: 14, background: '#0f172a', border: '2px solid ' + ACCENT + '44', marginBottom: 16 } },
               h('div', { style: { textAlign: 'center', marginBottom: 14 } },
                 h('div', { style: { fontSize: 20, fontWeight: 700, color: '#f1f5f9' } }, '\uD83D\uDCDC Team Contract'),
-                h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 4 } }, 'Created ' + new Date().toLocaleDateString())
+                h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4 } }, 'Created ' + new Date().toLocaleDateString())
               ),
               h('div', { style: { marginBottom: 14 } },
                 h('div', { style: { fontSize: 12, fontWeight: 700, color: ACCENT, marginBottom: 6 } }, 'AGREEMENTS:'),
@@ -1417,7 +1493,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, paddingLeft: 12, borderLeft: '2px solid #ef444444' } }, contractConsequence)
               ),
               h('div', { style: { marginTop: 16, paddingTop: 12, borderTop: '1px dashed #334155', textAlign: 'center' } },
-                h('div', { style: { fontSize: 11, color: '#64748b', fontStyle: 'italic' } }, 'Signatures: _______________  _______________  _______________  _______________')
+                h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, 'Signatures: _______________  _______________  _______________  _______________')
               )
             )
           );
@@ -1451,15 +1527,15 @@ window.SelHub = window.SelHub || {
               band === 'middle' ? 'Discover your natural communication style. There are no wrong answers \u2014 every style has strengths!' :
               'Identify your dominant communication tendencies to leverage strengths and address blind spots in team settings.'
             ),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#64748b', textAlign: 'center', marginBottom: 16 } }, answeredQuestions + ' / ' + totalQuestions + ' questions answered'),
+            h('div', { style: { fontSize: 11, color: '#94a3b8', textAlign: 'center', marginBottom: 16 } }, answeredQuestions + ' / ' + totalQuestions + ' questions answered'),
 
             // Questions (not yet submitted)
-            !commStyleDone && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 } },
+            !commStyleDone && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 } },
               COMM_STYLE_QUESTIONS.map(function(q, qi) {
                 var answered = commStyleAnswers[qi] != null;
-                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: qi, style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid ' + (answered ? ACCENT + '44' : '#334155') } },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 10 } }, (qi + 1) + '. ' + q.q),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+                return h('div', { key: qi, style: { padding: 14, borderRadius: 12, background: '#1e293b', border: '1px solid ' + (answered ? ACCENT + '44' : '#334155') } },
+                  h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 10 } }, (qi + 1) + '. ' + q.q),
+                  h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                     q.options.map(function(opt, oi) {
                       var isSelected = commStyleAnswers[qi] === opt.style;
                       return h('button', { 'aria-label': 'Toggle sound',
@@ -1496,7 +1572,7 @@ window.SelHub = window.SelHub || {
                 addToast('Communication style discovered! +25 XP', 'success');
                 celebrate && celebrate();
               },
-              style: { display: 'block', width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', background: answeredQuestions === totalQuestions ? ACCENT : '#334155', color: answeredQuestions === totalQuestions ? '#0f172a' : '#64748b', fontWeight: 700, fontSize: 14, cursor: answeredQuestions === totalQuestions ? 'pointer' : 'default', marginBottom: 20 }
+              style: { display: 'block', width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', background: answeredQuestions === totalQuestions ? ACCENT : '#334155', color: answeredQuestions === totalQuestions ? '#0f172a' : '#94a3b8', fontWeight: 700, fontSize: 14, cursor: answeredQuestions === totalQuestions ? 'pointer' : 'default', marginBottom: 20 }
             }, answeredQuestions === totalQuestions ? '\u2705 Discover My Style' : 'Answer all ' + totalQuestions + ' questions'),
 
             // Results
@@ -1566,16 +1642,16 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 10 } }, '\uD83E\uDD1D How to Work With Each Style'),
                   styleKeys.map(function(sk) {
                     var s = COMM_STYLES[sk];
-                    return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: sk, style: { padding: 10, borderRadius: 8, background: '#0f172a', marginBottom: 6, borderLeft: '3px solid ' + s.color } },
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, fontWeight: 600, color: s.color, marginBottom: 4 } }, s.icon + ' ' + s.name),
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.6 } }, s.workWith)
+                    return h('div', { key: sk, style: { padding: 10, borderRadius: 8, background: '#0f172a', marginBottom: 6, borderLeft: '3px solid ' + s.color } },
+                      h('div', { style: { fontSize: 12, fontWeight: 600, color: s.color, marginBottom: 4 } }, s.icon + ' ' + s.name),
+                      h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.6 } }, s.workWith)
                     );
                   })
                 ),
 
                 // AI team composition advice
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid #6366f133', marginBottom: 16 } },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 8 } }, '\u2728 AI Team Composition Advice'),
+                h('div', { style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid #6366f133', marginBottom: 16 } },
+                  h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 8 } }, '\u2728 AI Team Composition Advice'),
                   h('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 10 } }, 'Get personalized advice on how your style fits into different team compositions.'),
                   h('button', { 'aria-label': commStyleCoachLoad ? 'Thinking...' : '\u2728 Get Team Advice',
                     onClick: function() {
@@ -1602,16 +1678,16 @@ window.SelHub = window.SelHub || {
                     disabled: commStyleCoachLoad,
                     style: { padding: '8px 18px', borderRadius: 8, border: 'none', background: commStyleCoachLoad ? '#334155' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 12, cursor: commStyleCoachLoad ? 'default' : 'pointer' }
                   }, commStyleCoachLoad ? 'Thinking...' : '\u2728 Get Team Advice'),
-                  commStyleCoachResp && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 12, padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #6366f144' } },
+                  commStyleCoachResp && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #6366f144' } },
                     h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Team Coach'),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, commStyleCoachResp)
+                    h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, commStyleCoachResp)
                   )
                 ),
 
                 // Retake
                 h('button', { 'aria-label': 'Retake Quiz',
                   onClick: function() { upd({ commStyleAnswers: {}, commStyleDone: false, commStyleResult: null, commStyleCoachResp: null }); if (soundEnabled) sfxClick(); },
-                  style: { display: 'block', margin: '0 auto', padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#64748b', fontSize: 11, cursor: 'pointer' }
+                  style: { display: 'block', margin: '0 auto', padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontSize: 11, cursor: 'pointer' }
                 }, 'Retake Quiz')
               );
             })(),
@@ -1638,24 +1714,24 @@ window.SelHub = window.SelHub || {
               band === 'middle' ? 'Master the challenges of remote collaboration. 5 realistic scenarios.' :
               'Navigate the complexities of virtual teamwork. Practice async communication, trust-building, and remote conflict resolution.'
             ),
-            h('div', { style: { fontSize: 11, color: '#64748b', textAlign: 'center', marginBottom: 16 } },
+            h('div', { style: { fontSize: 11, color: '#94a3b8', textAlign: 'center', marginBottom: 16 } },
               'Scenario ' + ((vtScenarioIdx % VIRTUAL_TEAM_SCENARIOS.length) + 1) + ' of ' + VIRTUAL_TEAM_SCENARIOS.length + ' \u00B7 ' + vtAnsweredCount + ' completed'
             ),
 
             // Scenario card
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 20, borderRadius: 14, background: '#1e293b', border: '1px solid #3b82f644', marginBottom: 16 } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 28 } }, curVt.icon),
+            h('div', { style: { padding: 20, borderRadius: 14, background: '#1e293b', border: '1px solid #3b82f644', marginBottom: 16 } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
+                h('span', { style: { fontSize: 28 } }, curVt.icon),
                 h('h4', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9', margin: 0 } }, curVt.title)
               ),
               h('p', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.7, marginBottom: 16 } }, curVt.setup),
 
               // Choices
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 curVt.choices.map(function(ch, ci) {
                   var isChosen = vtAnswers[curVt.id] === ci;
                   var showFeedback = vtReveal && isChosen;
-                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: ci },
+                  return h('div', { key: ci },
                     h('button', { 'aria-label': 'Toggle sound',
                       onClick: function() {
                         if (vtAnswered) return;
@@ -1703,22 +1779,22 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: 11, fontWeight: 600, color: '#94a3b8', marginBottom: 6 } }, 'All response ratings:'),
                 curVt.choices.map(function(ch, ci) {
                   var isChosen = vtAnswers[curVt.id] === ci;
-                  return h('div', { key: ci, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', fontSize: 11, color: isChosen ? '#f1f5f9' : '#64748b' } },
+                  return h('div', { key: ci, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', fontSize: 11, color: isChosen ? '#f1f5f9' : '#94a3b8' } },
                     renderStars(ch.rating),
                     h('span', { style: { marginLeft: 4 } }, ch.text.substring(0, 50) + (ch.text.length > 50 ? '...' : '')),
-                    isChosen && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { color: ACCENT, marginLeft: 4, fontWeight: 700 } }, '\u2190 your pick')
+                    isChosen && h('span', { style: { color: ACCENT, marginLeft: 4, fontWeight: 700 } }, '\u2190 your pick')
                   );
                 })
               ),
 
               // Remote work tip
-              vtReveal && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginTop: 12, padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #3b82f633' } },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 11, fontWeight: 700, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, '\uD83D\uDCA1 Remote Work Tip'),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } }, curVt.tip)
+              vtReveal && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #3b82f633' } },
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, '\uD83D\uDCA1 Remote Work Tip'),
+                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } }, curVt.tip)
               ),
 
               // Navigation
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 16 } },
+              h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 16 } },
                 vtScenarioIdx > 0 && h('button', { 'aria-label': 'Previous',
                   onClick: function() { upd('vtScenarioIdx', vtScenarioIdx - 1); if (soundEnabled) sfxClick(); },
                   style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
@@ -1749,8 +1825,8 @@ window.SelHub = window.SelHub || {
             ),
 
             // Input section
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 18, borderRadius: 14, background: '#1e293b', border: '1px solid #f59e0b44', marginBottom: 16 } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 10 } }, '\uD83D\uDD25 Describe the Team Conflict'),
+            h('div', { style: { padding: 18, borderRadius: 14, background: '#1e293b', border: '1px solid #f59e0b44', marginBottom: 16 } },
+              h('div', { style: { fontSize: 13, fontWeight: 600, color: '#f1f5f9', marginBottom: 10 } }, '\uD83D\uDD25 Describe the Team Conflict'),
               h('textarea', {
                 value: conflictInput,
                 'aria-label': 'Describe your team conflict',
@@ -1766,6 +1842,16 @@ window.SelHub = window.SelHub || {
                   if (!conflictInput.trim()) { addToast('Describe the conflict first!', 'info'); return; }
                   if (conflictInput.trim().length < 15) { addToast('Please describe the conflict in more detail.', 'info'); return; }
                   if (!callGemini) { addToast('AI not available.', 'error'); return; }
+                  // Safety pre-check on conflict-description free-text.
+                  var cnSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                    ? window.SelHub.safeRehearseCheck(conflictInput, { toolId: 'teamwork_conflict', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+                    : { action: 'continue' };
+                  if (cnSafety.action === 'block') {
+                    upd('conflictResult', window.SelHub.rehearseBreakCharacterText(cnSafety.severity));
+                    upd('conflictLoading', false);
+                    upd('_lastTier', 3);
+                    return;
+                  }
                   upd('conflictLoading', true);
                   upd('conflictResult', null);
                   var prompt = 'You are a teamwork mediator and collaboration coach for ' + band + ' school students.\n\n' +
@@ -1802,9 +1888,9 @@ window.SelHub = window.SelHub || {
             ),
 
             // Result
-            conflictResult && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 18, borderRadius: 14, background: '#1e293b', border: '2px solid #22c55e44', marginBottom: 16 } },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 14, fontWeight: 700, color: '#22c55e', marginBottom: 12, textAlign: 'center' } }, '\u2705 Collaboration Opportunity'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, conflictResult),
+            conflictResult && h('div', { style: { padding: 18, borderRadius: 14, background: '#1e293b', border: '2px solid #22c55e44', marginBottom: 16 } },
+              h('div', { style: { fontSize: 14, fontWeight: 700, color: '#22c55e', marginBottom: 12, textAlign: 'center' } }, '\u2705 Collaboration Opportunity'),
+              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, conflictResult),
               h('button', { 'aria-label': 'Convert Another Conflict',
                 onClick: function() { upd({ conflictInput: '', conflictResult: null }); if (soundEnabled) sfxClick(); },
                 style: { display: 'block', margin: '14px auto 0', padding: '8px 18px', borderRadius: 8, border: 'none', background: '#f59e0b', color: '#0f172a', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
@@ -1815,7 +1901,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { padding: 14, borderRadius: 12, background: '#0f172a', border: '1px solid #334155', marginBottom: 16, textAlign: 'center' } },
               h('div', { style: { fontSize: 24, fontWeight: 700, color: '#f59e0b' } }, String(conflictCount)),
               h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, 'Conflicts Converted to Collaborations'),
-              conflictCount < 3 && h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4 } }, 'Convert ' + (3 - conflictCount) + ' more to earn the Conflict Converter badge!')
+              conflictCount < 3 && h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4 } }, 'Convert ' + (3 - conflictCount) + ' more to earn the Conflict Converter badge!')
             ),
 
             // History
@@ -1824,7 +1910,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 conflictHistory.slice(-5).reverse().map(function(entry, i) {
                   return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: '#1e293b', border: '1px solid #334155' } },
-                    h('div', { style: { fontSize: 10, color: '#64748b', marginBottom: 4 } }, new Date(entry.timestamp).toLocaleString()),
+                    h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 4 } }, new Date(entry.timestamp).toLocaleString()),
                     h('div', { style: { fontSize: 11, color: '#ef4444', marginBottom: 4, fontStyle: 'italic' } }, '\uD83D\uDD25 "' + (entry.input.length > 80 ? entry.input.substring(0, 80) + '...' : entry.input) + '"'),
                     h('div', { style: { fontSize: 11, color: '#22c55e' } }, '\u2705 Converted successfully')
                   );
@@ -1857,19 +1943,19 @@ window.SelHub = window.SelHub || {
 
             // Three category sections
             retroCategories.map(function(cat) {
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: cat.key, style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid ' + cat.color + '44', marginBottom: 14 } },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 18 } }, cat.icon),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 14, fontWeight: 700, color: cat.color } }, cat.label),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { marginLeft: 'auto', fontSize: 11, color: '#64748b', padding: '2px 8px', borderRadius: 12, background: '#0f172a' } }, cat.items.length + ' cards')
+              return h('div', { key: cat.key, style: { padding: 16, borderRadius: 14, background: '#1e293b', border: '1px solid ' + cat.color + '44', marginBottom: 14 } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
+                  h('span', { style: { fontSize: 18 } }, cat.icon),
+                  h('span', { style: { fontSize: 14, fontWeight: 700, color: cat.color } }, cat.label),
+                  h('span', { style: { marginLeft: 'auto', fontSize: 11, color: '#94a3b8', padding: '2px 8px', borderRadius: 12, background: '#0f172a' } }, cat.items.length + ' cards')
                 ),
 
                 // Existing cards
-                cat.items.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 } },
+                cat.items.length > 0 && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 } },
                   cat.items.map(function(item, idx) {
-                    return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: idx, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: '#0f172a', border: '1px solid ' + cat.color + '22' } },
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { width: 4, height: 20, borderRadius: 2, background: cat.color, flexShrink: 0 } }),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { fontSize: 12, color: '#e2e8f0', flex: 1, lineHeight: 1.5 } }, item),
+                    return h('div', { key: idx, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: '#0f172a', border: '1px solid ' + cat.color + '22' } },
+                      h('div', { style: { width: 4, height: 20, borderRadius: 2, background: cat.color, flexShrink: 0 } }),
+                      h('span', { style: { fontSize: 12, color: '#e2e8f0', flex: 1, lineHeight: 1.5 } }, item),
                       h('button', { 'aria-label': 'Remove',
                         onClick: function() {
                           var newItems = cat.items.slice();
@@ -1878,7 +1964,7 @@ window.SelHub = window.SelHub || {
                           upd('retroSaved', false);
                           if (soundEnabled) sfxClick();
                         },
-                        style: { background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 14, padding: '0 4px' },
+                        style: { background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 14, padding: '0 4px' },
                         title: 'Remove'
                       }, '\u00D7')
                     );
@@ -1920,7 +2006,7 @@ window.SelHub = window.SelHub || {
             }),
 
             // Save / Export buttons
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 16 } },
+            h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 16 } },
               h('button', { 'aria-label': 'Toggle sound',
                 onClick: function() {
                   var totalCards = retroGreen.length + retroYellow.length + retroBlue.length;
@@ -1978,7 +2064,7 @@ window.SelHub = window.SelHub || {
                   upd({ retroGreen: [], retroYellow: [], retroBlue: [], retroGreenInput: '', retroYellowInput: '', retroBlueInput: '', retroSaved: false });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '10px 14px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: '#64748b', fontSize: 12, cursor: 'pointer' }
+                style: { padding: '10px 14px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontSize: 12, cursor: 'pointer' }
               }, 'Clear All')
             ),
 
@@ -1986,7 +2072,7 @@ window.SelHub = window.SelHub || {
             retroSaved && h('div', { style: { padding: 18, borderRadius: 14, background: '#0f172a', border: '2px solid ' + ACCENT + '44', marginBottom: 16 } },
               h('div', { style: { textAlign: 'center', marginBottom: 14 } },
                 h('div', { style: { fontSize: 18, fontWeight: 700, color: '#f1f5f9' } }, '\uD83D\uDD04 Retrospective Summary'),
-                h('div', { style: { fontSize: 11, color: '#64748b', marginTop: 4 } }, new Date().toLocaleDateString())
+                h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4 } }, new Date().toLocaleDateString())
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 } },
                 [
@@ -2104,7 +2190,7 @@ window.SelHub = window.SelHub || {
                   },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
                       h('span', { style: { padding: '2px 8px', borderRadius: 12, background: ACCENT_DIM, color: ACCENT, fontSize: 10, fontWeight: 600 } }, entry.skill),
-                      h('span', { style: { fontSize: 10, color: '#64748b', marginLeft: 'auto' } }, entry.activity + ' \u00B7 ' + new Date(entry.timestamp).toLocaleDateString())
+                      h('span', { style: { fontSize: 10, color: '#94a3b8', marginLeft: 'auto' } }, entry.activity + ' \u00B7 ' + new Date(entry.timestamp).toLocaleDateString())
                     ),
                     entry.note && h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, '"' + entry.note + '"')
                   );
@@ -2125,7 +2211,7 @@ window.SelHub = window.SelHub || {
                   },
                     h('span', null, icons[entry.type] || '\uD83D\uDCDD'),
                     h('span', { style: { color: '#e2e8f0', fontWeight: 500 } }, labels[entry.type] || entry.type),
-                    h('span', { style: { marginLeft: 'auto', color: '#64748b', fontSize: 11 } }, new Date(entry.timestamp).toLocaleString())
+                    h('span', { style: { marginLeft: 'auto', color: '#94a3b8', fontSize: 11 } }, new Date(entry.timestamp).toLocaleString())
                   );
                 })
               )
@@ -2138,8 +2224,10 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════════
         var content = rolesContent || challengesContent || scenariosContent || commStyleContent || virtualTeamContent || conflictToolContent || retroContent || quizContent || contractContent || progressContent;
 
-        return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+        return h('div', { className: 'selh-teamwork', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('teamwork', h, ctx) : null),
           tabBar,
+          heroBand,
           badgePopup,
           h('div', { style: { flex: 1, overflow: 'auto' } }, content)
         );

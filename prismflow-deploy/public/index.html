@@ -60,6 +60,10 @@
   </script>
   <!-- AI Backend: Firebase Shim + WebSearchProvider + AIProvider (must load before React bundle) -->
   <script src="/ai_backend_module.js"></script>
+  <!-- DragDropTouch polyfill: makes HTML5 native drag-and-drop work on touch devices (iPad / Android tablet).
+       Without this, all sort games' draggable items silently fail on touch.
+       Attaches to all `draggable` elements on load; no code changes needed elsewhere. -->
+  <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/dist/drag-drop-touch.js" defer></script>
 </head>
 
 <body>

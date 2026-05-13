@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AlloFlow Catalog: Submission Review</title>
+<meta name="robots" content="noindex" />
+<style>
+  :root {
+    --navy: #1e3a5f; --slate: #475569; --soft: #f1f5f9; --rule: #cbd5e1;
+    --accent: #0c7a8a; --error: #b91c1c; --warn: #b45309; --ok: #047857;
+  }
+  * { box-sizing: border-box; }
+  body { font: 15px/1.5 system-ui, -apple-system, sans-serif; color: #0f172a; margin: 0; }
+  header { background: var(--navy); color: #fff; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; }
+  header h1 { font-size: 18px; margin: 0; font-weight: 600; }
+  header .who { font-size: 13px; opacity: 0.9; }
+  main { display: grid; grid-template-columns: 320px 1fr; gap: 0; min-height: calc(100vh - 50px); }
+  aside { border-right: 1px solid var(--rule); background: var(--soft); overflow-y: auto; max-height: calc(100vh - 50px); }
+  aside .filter { padding: 10px 14px; border-bottom: 1px solid var(--rule); }
+  aside select { width: 100%; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 4px; font: inherit; background: #fff; }
+  .sub-item { padding: 10px 14px; border-bottom: 1px solid var(--rule); cursor: pointer; }
+  .sub-item:hover { background: #fff; }
+  .sub-item.active { background: #fff; border-left: 3px solid var(--accent); padding-left: 11px; }
+  .sub-item .title { font-weight: 600; font-size: 14px; color: var(--navy); margin-bottom: 2px; }
+  .sub-item .meta { font-size: 12px; color: var(--slate); }
+  .sub-item .pii-count { color: var(--warn); font-weight: 600; }
+  .sub-item .status-badge { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 10px; font-weight: 600; }
+  .status-pending { background: #fef3c7; color: #b45309; }
+  .status-approved { background: #d1fae5; color: var(--ok); }
+  .status-rejected { background: #fee2e2; color: var(--error); }
+  section { padding: 20px 28px; overflow-y: auto; max-height: calc(100vh - 50px); }
+  h2 { font-size: 18px; color: var(--navy); margin: 0 0 8px; }
+  h3 { font-size: 14px; color: var(--navy); margin: 18px 0 6px; }
+  .meta-grid { display: grid; grid-template-columns: 130px 1fr; gap: 6px 14px; font-size: 14px; padding: 10px 0; }
+  .meta-grid dt { color: var(--slate); }
+  .pii-flag { color: var(--warn); font-weight: 600; }
+  .pii-clean { color: var(--ok); font-weight: 600; }
+  pre { background: var(--soft); border: 1px solid var(--rule); border-radius: 4px; padding: 10px; font: 12px/1.4 ui-monospace, monospace; max-height: 400px; overflow: auto; white-space: pre-wrap; word-break: break-word; }
+  button { font: inherit; padding: 8px 14px; border-radius: 6px; border: 1px solid var(--rule); background: #fff; cursor: pointer; }
+  button.primary { background: var(--ok); color: #fff; border-color: var(--ok); font-weight: 600; }
+  button.danger { background: var(--error); color: #fff; border-color: var(--error); font-weight: 600; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .actions { display: flex; gap: 10px; margin: 16px 0; padding: 14px; background: var(--soft); border-radius: 6px; }
+  textarea.notes { width: 100%; padding: 8px; border: 1px solid var(--rule); border-radius: 4px; font: inherit; min-height: 60px; }
+  .signin { padding: 80px 40px; text-align: center; }
+  .signin h2 { margin-bottom: 16px; }
+  .signin button { background: var(--accent); color: #fff; border-color: var(--accent); padding: 12px 24px; font-weight: 600; }
+  .empty { padding: 40px 24px; color: var(--slate); text-align: center; }
+  .checkbox-row { display: flex; align-items: flex-start; gap: 6px; margin: 4px 0; font-size: 13px; }
+  details { margin: 8px 0; }
+  summary { cursor: pointer; font-weight: 600; color: var(--navy); padding: 4px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>AlloFlow Catalog Review</h1>
+  <div class="who" id="whoami">Not signed in</div>
+</header>
+
+<div id="signinView" class="signin" hidden>
+  <h2>Admin sign-in required</h2>
+  <p>This page is only available to AlloFlow maintainers. Sign in with the Google account that owns the AlloFlow Firebase project.</p>
+  <button id="signInBtn">Sign in with Google</button>
+  <p id="signinError" style="color: var(--error); margin-top: 12px;"></p>
+</div>
+
+<main id="mainView" hidden>
+  <aside>
+    <div class="filter">
+      <label for="filterStatus" style="font-size: 12px; color: var(--slate);">Filter</label>
+      <select id="filterStatus">
+        <option value="pending">Pending review</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+        <option value="all">All</option>
+      </select>
+    </div>
+    <div id="submissionList"><div class="empty">Loading...</div></div>
+  </aside>
+
+  <section id="detailPane">
+    <div class="empty">Select a submission to review.</div>
+  </section>
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+  import { getFirestore, collection, query, where, orderBy, onSnapshot, doc, updateDoc, addDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+
+  // Admin authorization is enforced server-side by firestore.rules.
+  // After signing in, this page tries to subscribe to catalog_submissions; if
+  // the read fails with permission-denied, the user is shown an authorization
+  // error and asked to add their UID (logged below) to the admins/{uid} doc
+  // in Firestore. No code changes or redeploy required to add an admin.
+
+  let db = null;
+  let auth = null;
+  let currentUser = null;
+  let currentSubId = null;
+  let unsubList = null;
+
+  async function init() {
+    try {
+      const cfg = await (await fetch("/__/firebase/init.json")).json();
+      const app = initializeApp(cfg);
+      db = getFirestore(app);
+      auth = getAuth(app);
+      onAuthStateChanged(auth, handleAuth);
+    } catch (e) {
+      document.body.innerHTML = '<p style="padding:40px;color:#b91c1c">Firebase init failed: ' + escapeHtml(e.message) + '. This page must be served from Firebase Hosting.</p>';
+    }
+  }
+
+  function handleAuth(user) {
+    currentUser = user;
+    if (!user) {
+      document.getElementById("signinView").hidden = false;
+      document.getElementById("mainView").hidden = true;
+      document.getElementById("whoami").textContent = "Not signed in";
+      return;
+    }
+    console.log("[admin] signed in as " + user.uid + " (" + (user.email || "no email") + ")");
+    document.getElementById("signinView").hidden = true;
+    document.getElementById("mainView").hidden = false;
+    document.getElementById("whoami").textContent = user.email;
+    subscribeToList();
+  }
+
+  document.getElementById("signInBtn").addEventListener("click", async () => {
+    const provider = new GoogleAuthProvider();
+    try { await signInWithPopup(auth, provider); }
+    catch (e) { document.getElementById("signinError").textContent = e.message; }
+  });
+
+  document.getElementById("filterStatus").addEventListener("change", subscribeToList);
+
+  function subscribeToList() {
+    if (unsubList) { unsubList(); }
+    const filter = document.getElementById("filterStatus").value;
+    let q;
+    const col = collection(db, "catalog_submissions");
+    if (filter === "all") {
+      q = query(col, orderBy("submitted_at", "desc"));
+    } else {
+      q = query(col, where("status", "==", filter), orderBy("submitted_at", "desc"));
+    }
+    unsubList = onSnapshot(q, snap => {
+      const items = [];
+      snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+      renderList(items);
+    }, err => {
+      if (err.code === "permission-denied") {
+        document.getElementById("mainView").hidden = true;
+        document.getElementById("signinView").hidden = false;
+        document.getElementById("signinError").innerHTML =
+          'Signed in as <strong>' + escapeHtml(currentUser?.email || "(no email)") + '</strong> but this UID is not on the admin allowlist.<br><br>' +
+          'Your UID: <code>' + escapeHtml(currentUser?.uid || "(unknown)") + '</code><br><br>' +
+          'To grant access: open the Firebase Console &rarr; Firestore &rarr; create a collection named <code>admins</code> &rarr; add a document with ID set to the UID above, with any field (e.g., <code>role: "admin"</code>). Then refresh this page. No redeploy required.';
+      } else {
+        document.getElementById("submissionList").innerHTML = '<div class="empty" style="color:#b91c1c">Error: ' + escapeHtml(err.message) + '</div>';
+      }
+    });
+  }
+
+  function renderList(items) {
+    const list = document.getElementById("submissionList");
+    if (items.length === 0) {
+      list.innerHTML = '<div class="empty">No submissions in this filter.</div>';
+      return;
+    }
+    list.innerHTML = items.map(item => {
+      const piiCount = (item.pii_scan?.findings || []).reduce((sum, f) => sum + (f.count || 0), 0);
+      const ts = item.submitted_at?.toDate?.()?.toLocaleString?.() || "—";
+      return `
+        <div class="sub-item ${item.id === currentSubId ? "active" : ""}" data-id="${item.id}">
+          <div class="title">${escapeHtml(item.metadata?.title || "(no title)")}</div>
+          <div class="meta">
+            <span class="status-badge status-${item.status}">${item.status}</span>
+            ${escapeHtml(item.metadata?.subject || "—")} · ${escapeHtml(item.metadata?.grade_level || "—")}
+            ${piiCount > 0 ? '· <span class="pii-count">' + piiCount + ' PII flag' + (piiCount !== 1 ? "s" : "") + '</span>' : ""}
+          </div>
+          <div class="meta" style="margin-top:2px">${escapeHtml(ts)}</div>
+        </div>
+      `;
+    }).join("");
+    list.querySelectorAll(".sub-item").forEach(el => {
+      el.addEventListener("click", () => loadDetail(el.dataset.id));
+    });
+  }
+
+  async function loadDetail(id) {
+    currentSubId = id;
+    document.querySelectorAll(".sub-item").forEach(el => el.classList.toggle("active", el.dataset.id === id));
+    const ref = doc(db, "catalog_submissions", id);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      document.getElementById("detailPane").innerHTML = '<div class="empty">Submission not found.</div>';
+      return;
+    }
+    const data = snap.data();
+    renderDetail(id, data);
+  }
+
+  function renderDetail(id, data) {
+    const ts = data.submitted_at?.toDate?.()?.toLocaleString?.() || "—";
+    const piiList = (data.pii_scan?.findings || []).map(f =>
+      `<li><span class="pii-flag">${escapeHtml(f.type)}</span>: ${f.count} match${f.count !== 1 ? "es" : ""} (e.g., ${(f.samples || []).map(s => "<code>" + escapeHtml(s) + "</code>").join(", ")})</li>`
+    ).join("");
+    const affs = data.affirmations || {};
+    const meta = data.metadata || {};
+    const tags = (meta.tags || []).join(", ") || "—";
+    const isPending = data.status === "pending";
+
+    document.getElementById("detailPane").innerHTML = `
+      <h2>${escapeHtml(meta.title || "(no title)")}</h2>
+      <p style="color:var(--slate);font-size:13px;margin:0;">Submitted ${escapeHtml(ts)} · status <strong>${escapeHtml(data.status)}</strong> · ref <code>${escapeHtml(id)}</code></p>
+
+      <h3>Metadata</h3>
+      <dl class="meta-grid">
+        <dt>Subject</dt><dd>${escapeHtml(meta.subject || "—")}</dd>
+        <dt>Grade level</dt><dd>${escapeHtml(meta.grade_level || "—")}</dd>
+        <dt>Tags</dt><dd>${escapeHtml(tags)}</dd>
+        <dt>Credit</dt><dd>${escapeHtml(meta.credit || "(anonymous)")}</dd>
+        <dt>License</dt><dd>${escapeHtml(meta.license || "—")}</dd>
+        <dt>Schema</dt><dd>${escapeHtml(data.schema_version || "—")}</dd>
+        <dt>Submitter UID</dt><dd>${escapeHtml(data.submitted_by_uid || "(anonymous)")}</dd>
+      </dl>
+
+      <h3>Privacy scan</h3>
+      ${piiList ? '<ul>' + piiList + '</ul>' : '<p class="pii-clean">No PII flags from automated scan.</p>'}
+
+      <h3>Affirmations</h3>
+      <div class="checkbox-row"><input type="checkbox" disabled ${affs.author_or_authorized ? "checked" : ""}> Author or authorized submitter</div>
+      <div class="checkbox-row"><input type="checkbox" disabled ${affs.no_pii ? "checked" : ""}> Confirmed no PII</div>
+      <div class="checkbox-row"><input type="checkbox" disabled ${affs.license_agreed ? "checked" : ""}> License agreed</div>
+      <div class="checkbox-row"><input type="checkbox" disabled ${affs.age_eligible ? "checked" : ""}> Age eligible (or adult-on-behalf)</div>
+
+      <details>
+        <summary>JSON payload</summary>
+        <pre>${escapeHtml(JSON.stringify(data.json_payload || {}, null, 2))}</pre>
+      </details>
+
+      ${isPending ? `
+        <div class="actions">
+          <button id="approveBtn" class="primary">Approve and publish</button>
+          <button id="rejectBtn" class="danger">Reject</button>
+        </div>
+        <h3>Reviewer notes (optional)</h3>
+        <textarea id="reviewerNotes" class="notes" placeholder="Visible to reviewers; not shown publicly. E.g., why approved, why rejected, suggestions for resubmission."></textarea>
+      ` : `
+        <p style="color:var(--slate);font-style:italic;">This submission has already been ${escapeHtml(data.status)}.</p>
+        ${data.reviewer_notes ? `<h3>Reviewer notes</h3><pre>${escapeHtml(data.reviewer_notes)}</pre>` : ""}
+      `}
+    `;
+
+    if (isPending) {
+      document.getElementById("approveBtn").addEventListener("click", () => act("approved", data));
+      document.getElementById("rejectBtn").addEventListener("click", () => act("rejected", data));
+    }
+  }
+
+  async function act(newStatus, data) {
+    if (!confirm(`Confirm: ${newStatus.toUpperCase()} this submission?`)) return;
+    const notes = document.getElementById("reviewerNotes")?.value?.trim() || "";
+    try {
+      await updateDoc(doc(db, "catalog_submissions", currentSubId), {
+        status: newStatus,
+        reviewer_notes: notes,
+        reviewed_at: serverTimestamp(),
+        reviewed_by_uid: currentUser.uid,
+      });
+      if (newStatus === "approved") {
+        // Mirror to the public catalog collection.
+        await addDoc(collection(db, "catalog_published"), {
+          source_id: currentSubId,
+          published_at: serverTimestamp(),
+          metadata: data.metadata,
+          json_payload: data.json_payload,
+          schema_version: data.schema_version,
+        });
+      }
+      loadDetail(currentSubId);
+    } catch (e) {
+      alert("Action failed: " + e.message);
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  init();
+</script>
+</body>
+</html>

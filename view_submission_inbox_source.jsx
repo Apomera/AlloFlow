@@ -1,0 +1,1478 @@
+// view_submission_inbox_source.jsx — teacher batch upload + decrypt for offline HTML submissions.
+// Phase 2 of the offline-HTML worksheet submission system (May 11 2026).
+//
+// Workflow:
+//   1. Teacher opens this modal from the Roster panel.
+//   2. Loads class-key.alloflow (the file downloaded at class setup).
+//   3. Selects one or more <nickname>-<doc>-<date>.alloflow.html files
+//      students submitted (typically pulled from their class Drive folder).
+//   4. Clicks "Decrypt all" — each row's encrypted blob is unwrapped with
+//      the loaded private key and the payload appears in the queue.
+//   5. Roster cross-check badges known nicknames green, unknown yellow.
+//   6. "Send to gradebook" is a placeholder — Phase 3 will wire it to AI
+//      rubric grading + studentResponses IndexedDB writes.
+//
+// Dependencies: window.AlloModules.SubmissionCrypto.decryptSubmission
+// (registered by submission_crypto_module.js).
+
+function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
+  if (!isOpen) return null;
+
+  const [privateJwk, setPrivateJwk] = useState(null);
+  const [classKeyMeta, setClassKeyMeta] = useState(null);
+  const [queue, setQueue] = useState([]);
+  const [decryptingAll, setDecryptingAll] = useState(false);
+  const [expandedRow, setExpandedRow] = useState(null);
+  // Phase 3 (May 11 2026): per-row rubric state + AI grading results.
+  // rubrics[idx] = { rubric: string, context: string, exemplar: string }
+  // grades[idx]  = { [responseKey]: { score, status, feedback } }
+  const [rubrics, setRubrics] = useState({});
+  const [grades, setGrades] = useState({});
+  const [gradingRow, setGradingRow] = useState(null);
+  // Multi-anchor few-shot calibration (May 11 2026, Phase 3 v2):
+  // Each anchor is a teacher-scored exemplar of a student response that
+  // the AI uses as a calibration sample when grading every other response.
+  // Anchors are global across the inbox session (not per-row) so
+  // teachers can build up a calibration set by anchoring real student
+  // responses they've graded, then have the AI extend the scoring to
+  // everything else.
+  // shape: [{ studentResponse, teacherScore (0-100), teacherFeedback?, fromSubmissionIdx?, fromResponseKey? }]
+  const [anchors, setAnchors] = useState([]);
+  const [anchorsPanelOpen, setAnchorsPanelOpen] = useState(false);
+  const [pendingAnchor, setPendingAnchor] = useState(null);  // {submissionIdx, responseKey, responseText}
+  // Phase 3 v2.1 (May 12 2026): one global rubric the teacher sets at the
+  // top of the inbox, used by both the per-row Grade button (as default)
+  // and the new "Grade entire queue" bulk action.
+  const [globalRubric, setGlobalRubric] = useState({ rubric: '', context: '' });
+  const [globalRubricOpen, setGlobalRubricOpen] = useState(false);
+  const [bulkGrading, setBulkGrading] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 });
+  // Gradebook viewer (Phase 3 v2.2, May 12 2026)
+  // Reads from localStorage 'alloflow_offline_grades' written by
+  // saveRowToGradebook. Refresh tick bumps when we save so the panel
+  // re-reads without needing a full remount.
+  const [gradebookOpen, setGradebookOpen] = useState(false);
+  const [gradebookRefresh, setGradebookRefresh] = useState(0);
+  // Phase 3 v2.3 (May 12 2026): group-by pivot for the gradebook table.
+  const [gradebookGroupBy, setGradebookGroupBy] = useState('submission');  // 'submission' | 'student'
+  const [expandedStudent, setExpandedStudent] = useState(null);
+  // Session persistence: auto-save globalRubric + anchors to localStorage
+  // so the teacher doesn't lose their setup across browser refreshes / tabs.
+  // sessionLoadedRef prevents the first auto-save from overwriting state
+  // before the restore effect has run.
+  const sessionLoadedRef = useRef(false);
+  const [savedSessionMeta, setSavedSessionMeta] = useState(null);  // { savedAt } if restored from localStorage
+  // Phase 3 v2.4 (May 12 2026): named rubric presets ("Reading Response",
+  // "Math Word Problem", etc.). Stored in localStorage under
+  // 'alloflow_rubric_presets'. Each preset captures rubric + context +
+  // anchors so the teacher can re-apply a full calibration in one click.
+  const [rubricPresets, setRubricPresets] = useState({});
+  const [presetsMenuOpen, setPresetsMenuOpen] = useState(false);
+  const [presetNameInput, setPresetNameInput] = useState('');
+  const presetsLoadedRef = useRef(false);
+  const gradebookEntries = React.useMemo(() => {
+    try {
+      const raw = JSON.parse(localStorage.getItem('alloflow_offline_grades') || '{}');
+      return Object.entries(raw).map(([key, entry]) => ({ key: key, ...entry }));
+    } catch (e) { return []; }
+  }, [gradebookRefresh, isOpen]);
+  const keyInputRef = useRef(null);
+  const subInputRef = useRef(null);
+  const presetImportRef = useRef(null);
+
+  const tx = t || ((k, fallback) => fallback || k);
+
+  // Restore last saved session on first open (Phase 3 v2.3, May 12 2026).
+  // Pulls globalRubric + anchors back from localStorage. Class key + queue
+  // are intentionally NOT persisted — those are per-batch and shouldn't
+  // surprise the teacher by sticking around.
+  React.useEffect(() => {
+    if (!isOpen || sessionLoadedRef.current) return;
+    sessionLoadedRef.current = true;
+    try {
+      const raw = localStorage.getItem('alloflow_inbox_session');
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (saved && typeof saved === 'object') {
+        if (saved.globalRubric && (saved.globalRubric.rubric || saved.globalRubric.context)) {
+          setGlobalRubric({
+            rubric: saved.globalRubric.rubric || '',
+            context: saved.globalRubric.context || '',
+          });
+          setGlobalRubricOpen(true);
+        }
+        if (Array.isArray(saved.anchors) && saved.anchors.length > 0) {
+          setAnchors(saved.anchors);
+        }
+        if (saved.savedAt) setSavedSessionMeta({ savedAt: saved.savedAt });
+      }
+    } catch (e) { /* ignore corrupt storage */ }
+  }, [isOpen]);
+
+  // Auto-save on changes to globalRubric or anchors (only after first restore
+  // has run, so we don't clobber stored state on mount).
+  React.useEffect(() => {
+    if (!sessionLoadedRef.current) return;
+    try {
+      const payload = {
+        globalRubric: globalRubric,
+        anchors: anchors,
+        savedAt: new Date().toISOString(),
+      };
+      // Only write if there's actually something worth saving.
+      if ((globalRubric.rubric || '').trim() || (globalRubric.context || '').trim() || anchors.length > 0) {
+        localStorage.setItem('alloflow_inbox_session', JSON.stringify(payload));
+      } else {
+        localStorage.removeItem('alloflow_inbox_session');
+      }
+    } catch (e) { /* private mode / quota */ }
+  }, [globalRubric, anchors]);
+
+  // Load saved presets once when the modal first opens.
+  React.useEffect(() => {
+    if (!isOpen || presetsLoadedRef.current) return;
+    presetsLoadedRef.current = true;
+    try {
+      const raw = localStorage.getItem('alloflow_rubric_presets');
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') setRubricPresets(parsed);
+    } catch (e) { /* ignore corrupt storage */ }
+  }, [isOpen]);
+
+  const writePresets = (next) => {
+    try {
+      localStorage.setItem('alloflow_rubric_presets', JSON.stringify(next));
+    } catch (e) { /* private mode / quota */ }
+    setRubricPresets(next);
+  };
+  const savePreset = () => {
+    const name = (presetNameInput || '').trim();
+    if (!name) {
+      addToast && addToast('Give the preset a short name (e.g. "Reading response Ch.3").', 'warn');
+      return;
+    }
+    if (!(globalRubric.rubric || '').trim() && anchors.length === 0) {
+      addToast && addToast('Nothing to save yet — add a rubric or anchors first.', 'warn');
+      return;
+    }
+    const key = name.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+    const now = new Date().toISOString();
+    const existing = rubricPresets[key];
+    const preset = {
+      name: name,
+      rubric: globalRubric.rubric || '',
+      context: globalRubric.context || '',
+      anchors: anchors.slice(),
+      createdAt: existing ? existing.createdAt : now,
+      lastUsed: now,
+    };
+    const next = { ...rubricPresets, [key]: preset };
+    writePresets(next);
+    setPresetNameInput('');
+    addToast && addToast(existing ? 'Updated preset "' + name + '".' : 'Saved preset "' + name + '".', 'success');
+  };
+  const loadPreset = (key) => {
+    const p = rubricPresets[key];
+    if (!p) return;
+    setGlobalRubric({ rubric: p.rubric || '', context: p.context || '' });
+    setAnchors(Array.isArray(p.anchors) ? p.anchors.slice() : []);
+    const next = { ...rubricPresets, [key]: { ...p, lastUsed: new Date().toISOString() } };
+    writePresets(next);
+    setPresetsMenuOpen(false);
+    addToast && addToast('Loaded preset "' + p.name + '" (' + (p.anchors ? p.anchors.length : 0) + ' anchor' + ((p.anchors && p.anchors.length === 1) ? '' : 's') + ').', 'success');
+  };
+  const deletePreset = (key) => {
+    if (!rubricPresets[key]) return;
+    const name = rubricPresets[key].name;
+    const next = { ...rubricPresets };
+    delete next[key];
+    writePresets(next);
+    addToast && addToast('Deleted preset "' + name + '".', 'info');
+  };
+  // Export ALL presets as a JSON file teachers can share or back up.
+  const exportPresets = () => {
+    const presetCount = Object.keys(rubricPresets).length;
+    if (presetCount === 0) {
+      addToast && addToast('No presets to export yet.', 'warn');
+      return;
+    }
+    const payload = {
+      kind: 'alloflow-rubric-presets',
+      schemaVersion: 1,
+      exportedAt: new Date().toISOString(),
+      presets: rubricPresets,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const dateStr = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = 'alloflow_rubric_presets_' + dateStr + '.json';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); if (a.parentNode) a.parentNode.removeChild(a); }, 200);
+    addToast && addToast('Exported ' + presetCount + ' preset' + (presetCount === 1 ? '' : 's') + '.', 'success');
+  };
+  // Import presets from a JSON file. Merges into the existing library;
+  // duplicates (same slug key) prompt the teacher to confirm overwrite.
+  const importPresets = async (e) => {
+    const file = e.target?.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      if (!parsed || parsed.kind !== 'alloflow-rubric-presets' || !parsed.presets) {
+        addToast && addToast('Not a valid AlloFlow presets file.', 'error');
+        return;
+      }
+      const incoming = parsed.presets;
+      const conflicts = Object.keys(incoming).filter(k => rubricPresets[k]);
+      let overwriteAll = false;
+      if (conflicts.length > 0) {
+        overwriteAll = confirm(
+          conflicts.length + ' preset' + (conflicts.length === 1 ? '' : 's') + ' already exist with the same name: ' +
+          conflicts.slice(0, 5).map(k => '"' + incoming[k].name + '"').join(', ') +
+          (conflicts.length > 5 ? ', …' : '') +
+          '.\n\nClick OK to overwrite, Cancel to skip existing presets.'
+        );
+      }
+      const next = { ...rubricPresets };
+      let added = 0, skipped = 0, overwritten = 0;
+      Object.entries(incoming).forEach(([k, p]) => {
+        if (next[k]) {
+          if (overwriteAll) {
+            next[k] = { ...p, lastUsed: new Date().toISOString() };
+            overwritten++;
+          } else {
+            skipped++;
+          }
+        } else {
+          next[k] = { ...p, lastUsed: p.lastUsed || new Date().toISOString() };
+          added++;
+        }
+      });
+      writePresets(next);
+      addToast && addToast(
+        added + ' added' +
+        (overwritten > 0 ? ', ' + overwritten + ' overwritten' : '') +
+        (skipped > 0 ? ', ' + skipped + ' skipped' : ''),
+        'success'
+      );
+    } catch (err) {
+      addToast && addToast('Could not import: ' + err.message, 'error');
+    }
+    if (e.target) e.target.value = '';
+  };
+
+  const clearSavedSession = () => {
+    try { localStorage.removeItem('alloflow_inbox_session'); } catch (e) {}
+    setGlobalRubric({ rubric: '', context: '' });
+    setAnchors([]);
+    setSavedSessionMeta(null);
+    addToast && addToast('Cleared saved class rubric and anchors.', 'info');
+  };
+
+  const handleKeyFile = async (e) => {
+    const file = e.target?.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if (data.kind !== 'alloflow-class-key' || !data.privateJwk) {
+        addToast && addToast('Not a valid AlloFlow class key file.', 'error');
+        return;
+      }
+      setPrivateJwk(data.privateJwk);
+      setClassKeyMeta({
+        className: data.className || '',
+        classId: data.classId,
+        createdAt: data.createdAt
+      });
+      addToast && addToast('Class key loaded.', 'success');
+    } catch (err) {
+      addToast && addToast('Could not read key file: ' + err.message, 'error');
+    }
+    if (e.target) e.target.value = '';
+  };
+
+  const handleSubmissionFiles = async (e) => {
+    const files = Array.prototype.slice.call(e.target?.files || []);
+    if (files.length === 0) return;
+    const newRows = [];
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      try {
+        const text = await f.text();
+        const match = text.match(/<script type="application\/json" id="alloflow-submission">([\s\S]*?)<\/script>/);
+        if (!match) {
+          newRows.push({
+            fileName: f.name, nickname: '?', status: 'error',
+            error: 'Not an AlloFlow submission file (no embedded blob).'
+          });
+          continue;
+        }
+        const json = match[1].replace(/\\u003c/g, '<');
+        const blob = JSON.parse(json);
+        newRows.push({
+          fileName: f.name,
+          nickname: blob.nickname || '?',
+          docTitle: blob.docTitle || '',
+          timestamp: blob.timestamp || null,
+          encryptedBlob: blob,
+          payload: null,
+          status: 'pending',
+          error: null
+        });
+      } catch (err) {
+        newRows.push({ fileName: f.name, nickname: '?', status: 'error', error: err.message });
+      }
+    }
+    setQueue(prev => [...prev, ...newRows]);
+    if (e.target) e.target.value = '';
+  };
+
+  const handleDecryptAll = async () => {
+    if (!privateJwk) {
+      addToast && addToast('Load the class key file first.', 'warn');
+      return;
+    }
+    const SC = window.AlloModules && window.AlloModules.SubmissionCrypto;
+    if (!SC || typeof SC.decryptSubmission !== 'function') {
+      addToast && addToast('SubmissionCrypto module not loaded yet. Try again in a moment.', 'error');
+      return;
+    }
+    setDecryptingAll(true);
+    let ok = 0, fail = 0;
+    // Iterate by index so each row gets its own state update
+    for (let i = 0; i < queue.length; i++) {
+      const row = queue[i];
+      if (row.status !== 'pending') continue;
+      try {
+        const payload = await SC.decryptSubmission(row.encryptedBlob, privateJwk);
+        setQueue(prev => prev.map((r, idx) => idx === i ? { ...r, payload, status: 'decrypted' } : r));
+        ok++;
+      } catch (err) {
+        setQueue(prev => prev.map((r, idx) => idx === i ? { ...r, status: 'error', error: err.message } : r));
+        fail++;
+      }
+    }
+    setDecryptingAll(false);
+    addToast && addToast(
+      ok + ' decrypted' + (fail > 0 ? ', ' + fail + ' failed (wrong key?)' : ''),
+      fail > 0 ? 'warn' : 'success'
+    );
+  };
+
+  const removeRow = (idx) => setQueue(prev => prev.filter((_, i) => i !== idx));
+  const clearQueue = () => { setQueue([]); setExpandedRow(null); };
+
+  const rosterStudents = (rosterKey && rosterKey.students) || {};
+  const rosterStudentNames = Object.keys(rosterStudents);
+  // Normalize a name for fuzzy comparison: lowercase, strip punctuation
+  // + collapse internal whitespace. Handles capitalization, "Test Kid"
+  // vs "TestKid", "test-kid", trailing whitespace, etc.
+  const _normalizeNickname = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  // Returns one of:
+  //   { kind: 'exact', name }       — exact match in roster
+  //   { kind: 'fuzzy', name }       — normalized match (e.g. "TestKid" ↔ "Test Kid")
+  //   { kind: 'unknown' }           — no match found
+  // Roster matching is intentionally narrow — fuzzy only matches when the
+  // normalized forms are identical. Levenshtein/typo tolerance is out of
+  // scope for v1 (too easy to silently mis-attribute).
+  const rosterMatch = React.useMemo(() => {
+    const normalizedRoster = {};
+    rosterStudentNames.forEach(n => { normalizedRoster[_normalizeNickname(n)] = n; });
+    return (nickname) => {
+      if (!nickname || nickname === '?') return { kind: 'unknown' };
+      const raw = String(nickname);
+      if (rosterStudents[raw]) return { kind: 'exact', name: raw };
+      const exactCi = rosterStudentNames.find(n => n.toLowerCase() === raw.toLowerCase());
+      if (exactCi) return { kind: 'exact', name: exactCi };
+      const norm = _normalizeNickname(raw);
+      if (norm && normalizedRoster[norm]) return { kind: 'fuzzy', name: normalizedRoster[norm] };
+      return { kind: 'unknown' };
+    };
+  }, [rosterKey]);
+  // Back-compat shim so existing callers still get 'known' | 'unknown'.
+  const rosterStatus = (nickname) => {
+    const m = rosterMatch(nickname);
+    return (m.kind === 'exact' || m.kind === 'fuzzy') ? 'known' : 'unknown';
+  };
+  // Re-grade detection (Phase 3 v2.5, May 12 2026): when a decrypted row's
+  // nickname+docTitle already has an entry in the gradebook, surface a
+  // badge so the teacher knows this submission was already graded
+  // (typically a student resubmitting). The gradebook key encodes
+  // timestamp, so distinct submissions stay separate — this just informs
+  // the teacher.
+  const previousGradesFor = React.useMemo(() => {
+    const byKey = {};
+    gradebookEntries.forEach(e => {
+      const k = (e.nickname || '').toLowerCase() + '|' + (e.docTitle || '').toLowerCase();
+      if (!byKey[k]) byKey[k] = [];
+      byKey[k].push(e);
+    });
+    return (nickname, docTitle) => {
+      if (!nickname || !docTitle) return [];
+      return byKey[(nickname || '').toLowerCase() + '|' + (docTitle || '').toLowerCase()] || [];
+    };
+  }, [gradebookEntries]);
+
+  const counts = queue.reduce((acc, r) => {
+    acc[r.status] = (acc[r.status] || 0) + 1;
+    return acc;
+  }, {});
+
+  const statusBadge = (status) => {
+    const styles = {
+      pending: { bg: '#f1f5f9', color: '#475569', label: 'Pending' },
+      decrypted: { bg: '#dcfce7', color: '#166534', label: '✓ Decrypted' },
+      error: { bg: '#fee2e2', color: '#991b1b', label: '✗ Error' }
+    };
+    const s = styles[status] || styles.pending;
+    return /*#__PURE__*/React.createElement('span', {
+      style: {
+        display: 'inline-block', padding: '2px 8px', borderRadius: 999,
+        background: s.bg, color: s.color, fontSize: '0.72rem', fontWeight: 700
+      }
+    }, s.label);
+  };
+
+  // ── Phase 3: AI grading helpers ───────────────────────────
+  const updateRubric = (idx, patch) => {
+    setRubrics(prev => ({ ...prev, [idx]: { ...(prev[idx] || { rubric: '', context: '', exemplar: '' }), ...patch } }));
+  };
+  const gradeRow = async (idx, opts) => {
+    opts = opts || {};
+    const row = queue[idx];
+    if (!row || row.status !== 'decrypted' || !row.payload) return;
+    const r = rubrics[idx] || {};
+    // Per-row rubric wins; fall back to the global rubric so a bulk run
+    // or a row that hasn't been customized still has something to grade by.
+    const rubricText = ((r.rubric || '').trim() || (globalRubric.rubric || '').trim());
+    const contextText = ((r.context || '').trim() || (globalRubric.context || '').trim());
+    if (!rubricText) {
+      if (!opts.silent) addToast && addToast('Add a class rubric at the top, or a per-submission rubric, before grading.', 'warn');
+      return { ok: 0, fail: 0, skipped: true };
+    }
+    const QH = window.AlloModules && window.AlloModules.QuizAIHelpers;
+    if (!QH || typeof QH.gradeFreeformAnswerWithCalibration !== 'function') {
+      addToast && addToast('Grader module not loaded yet. Try again in a moment.', 'error');
+      return;
+    }
+    const callGemini = window.callGemini;
+    if (typeof callGemini !== 'function') {
+      addToast && addToast('Gemini API not ready. Open a regular AlloFlow window first so the API key loads.', 'error');
+      return;
+    }
+    // Build calibration set: combine global anchors (multi-anchor few-shot)
+    // with the per-row exemplar if one was provided. Cap at 5 to keep the
+    // prompt under control.
+    const calibrationSamples = [];
+    if (Array.isArray(anchors) && anchors.length > 0) {
+      anchors.forEach(a => {
+        calibrationSamples.push({
+          studentResponse: a.studentResponse,
+          teacherScore: a.teacherScore,
+          teacherFeedback: a.teacherFeedback || ''
+        });
+      });
+    }
+    if (r.exemplar && r.exemplar.trim() && calibrationSamples.length < 5) {
+      calibrationSamples.push({
+        studentResponse: r.exemplar.trim(),
+        teacherScore: 95,
+        teacherFeedback: 'Teacher-provided exemplar — full credit anchor.'
+      });
+    }
+    const cappedSamples = calibrationSamples.slice(0, 5);
+
+    // Skip responses that are already anchored — they have teacher scores
+    // already, no need to ask AI.
+    const anchoredKeys = new Set();
+    anchors.forEach(a => {
+      if (a.fromSubmissionIdx === idx && a.fromResponseKey) anchoredKeys.add(a.fromResponseKey);
+    });
+    const responseEntries = Object.entries(row.payload.responses || {})
+      .filter(([k, v]) => v && String(v).trim() && !anchoredKeys.has(k));
+    if (responseEntries.length === 0) {
+      if (!opts.silent) addToast && addToast(
+        anchoredKeys.size > 0
+          ? 'All responses on this submission are already anchored.'
+          : 'No responses to grade in this submission.',
+        'warn'
+      );
+      return { ok: 0, fail: 0, skipped: true };
+    }
+    setGradingRow(idx);
+    // Pre-populate anchored responses' grades so they show in the row
+    setGrades(prev => {
+      const rowGrades = { ...(prev[idx] || {}) };
+      anchors.forEach(a => {
+        if (a.fromSubmissionIdx === idx && a.fromResponseKey) {
+          rowGrades[a.fromResponseKey] = {
+            score: a.teacherScore,
+            status: 'correct',
+            feedback: '📌 Teacher-anchored: ' + (a.teacherFeedback || '(no note)')
+          };
+        }
+      });
+      return { ...prev, [idx]: rowGrades };
+    });
+    let ok = 0, fail = 0;
+    for (let i = 0; i < responseEntries.length; i++) {
+      const [key, value] = responseEntries[i];
+      try {
+        const result = await QH.gradeFreeformAnswerWithCalibration({
+          rubric: rubricText,
+          context: contextText || row.payload.docTitle || '',
+          studentResponse: String(value),
+          calibrationSamples: cappedSamples,
+          callGemini: callGemini,
+        });
+        setGrades(prev => ({
+          ...prev,
+          [idx]: { ...(prev[idx] || {}), [key]: result }
+        }));
+        if (result.status !== 'error') ok++; else fail++;
+      } catch (err) {
+        setGrades(prev => ({
+          ...prev,
+          [idx]: { ...(prev[idx] || {}), [key]: { status: 'error', feedback: err.message || 'Grader failed', score: 0 } }
+        }));
+        fail++;
+      }
+    }
+    setGradingRow(null);
+    if (!opts.silent) addToast && addToast(
+      'Graded ' + ok + ' response' + (ok === 1 ? '' : 's') + (fail > 0 ? ', ' + fail + ' failed' : ''),
+      fail > 0 ? 'warn' : 'success'
+    );
+    return { ok, fail };
+  };
+  // Phase 3 v2.1: bulk-grade every decrypted submission using the global
+  // rubric (and per-row override if one exists). Runs sequentially so the
+  // Gemini API isn't hammered + so the teacher can see progress.
+  const gradeAllDecrypted = async () => {
+    if (!(globalRubric.rubric || '').trim()) {
+      addToast && addToast('Add a class rubric at the top before bulk grading.', 'warn');
+      setGlobalRubricOpen(true);
+      return;
+    }
+    const decryptedIdxs = queue
+      .map((r, i) => ({ r, i }))
+      .filter(x => x.r.status === 'decrypted')
+      .map(x => x.i);
+    if (decryptedIdxs.length === 0) {
+      addToast && addToast('No decrypted submissions to grade.', 'warn');
+      return;
+    }
+    setBulkGrading(true);
+    setBulkProgress({ current: 0, total: decryptedIdxs.length });
+    let totalOk = 0, totalFail = 0, totalSkipped = 0;
+    for (let i = 0; i < decryptedIdxs.length; i++) {
+      const idx = decryptedIdxs[i];
+      setBulkProgress({ current: i + 1, total: decryptedIdxs.length });
+      const result = await gradeRow(idx, { silent: true });
+      if (result) {
+        totalOk += result.ok || 0;
+        totalFail += result.fail || 0;
+        if (result.skipped) totalSkipped += 1;
+      }
+    }
+    setBulkGrading(false);
+    setBulkProgress({ current: 0, total: 0 });
+    addToast && addToast(
+      'Bulk grade done: ' + totalOk + ' response' + (totalOk === 1 ? '' : 's') + ' graded across ' +
+        (decryptedIdxs.length - totalSkipped) + ' submission' + (decryptedIdxs.length - totalSkipped === 1 ? '' : 's') +
+        (totalFail > 0 ? ', ' + totalFail + ' failed' : '') +
+        (totalSkipped > 0 ? ', ' + totalSkipped + ' skipped (already fully anchored or no responses)' : ''),
+      totalFail > 0 ? 'warn' : 'success'
+    );
+  };
+  // ── Anchor management (Phase 3 v2: multi-anchor few-shot) ──────
+  const openAnchorForm = (submissionIdx, responseKey, responseText) => {
+    setPendingAnchor({ submissionIdx, responseKey, responseText, score: 95, feedback: '' });
+  };
+  const cancelPendingAnchor = () => setPendingAnchor(null);
+  const confirmPendingAnchor = () => {
+    if (!pendingAnchor) return;
+    const score = Math.max(0, Math.min(100, parseInt(pendingAnchor.score, 10) || 0));
+    setAnchors(prev => [...prev, {
+      studentResponse: pendingAnchor.responseText,
+      teacherScore: score,
+      teacherFeedback: pendingAnchor.feedback || '',
+      fromSubmissionIdx: pendingAnchor.submissionIdx,
+      fromResponseKey: pendingAnchor.responseKey,
+    }]);
+    setPendingAnchor(null);
+    addToast && addToast('Anchor added (' + score + '/100). It will calibrate every future grading run.', 'success');
+  };
+  const removeAnchor = (i) => {
+    setAnchors(prev => prev.filter((_, idx) => idx !== i));
+  };
+  const clearAnchors = () => {
+    if (anchors.length === 0) return;
+    setAnchors([]);
+    addToast && addToast('Cleared ' + anchors.length + ' calibration anchor' + (anchors.length === 1 ? '' : 's') + '.', 'info');
+  };
+  const isResponseAnchored = (submissionIdx, responseKey) => {
+    return anchors.some(a => a.fromSubmissionIdx === submissionIdx && a.fromResponseKey === responseKey);
+  };
+  const getAnchorScore = (submissionIdx, responseKey) => {
+    const a = anchors.find(a2 => a2.fromSubmissionIdx === submissionIdx && a2.fromResponseKey === responseKey);
+    return a ? a.teacherScore : null;
+  };
+
+  const _writeRowToGradebook = (idx) => {
+    const row = queue[idx];
+    if (!row || row.status !== 'decrypted' || !row.payload) return { ok: false, reason: 'not decrypted' };
+    const rowGrades = grades[idx] || {};
+    if (Object.keys(rowGrades).length === 0) return { ok: false, reason: 'no grades' };
+    const existing = JSON.parse(localStorage.getItem('alloflow_offline_grades') || '{}');
+    const nickname = row.payload.nickname || 'unknown';
+    const docTitle = row.payload.docTitle || 'untitled';
+    const className = (classKeyMeta && classKeyMeta.className) || '';
+    const submissionKey = nickname + '|' + docTitle + '|' + (row.payload.timestamp || '');
+    existing[submissionKey] = {
+      nickname: nickname,
+      docTitle: docTitle,
+      className: className,
+      submittedAt: row.payload.timestamp,
+      gradedAt: new Date().toISOString(),
+      source: 'offline-html',
+      responses: row.payload.responses,
+      grades: rowGrades,
+      rubric: ((rubrics[idx] && rubrics[idx].rubric) || globalRubric.rubric || '').trim(),
+    };
+    localStorage.setItem('alloflow_offline_grades', JSON.stringify(existing));
+    return { ok: true, key: submissionKey, nickname };
+  };
+  const saveRowToGradebook = (idx) => {
+    const rowGrades = grades[idx] || {};
+    if (Object.keys(rowGrades).length === 0) {
+      addToast && addToast('Grade the responses first.', 'warn');
+      return;
+    }
+    try {
+      const result = _writeRowToGradebook(idx);
+      if (result.ok) {
+        addToast && addToast('Saved ' + result.nickname + '\'s submission to local gradebook.', 'success');
+        setGradebookRefresh(t => t + 1);
+      }
+    } catch (err) {
+      addToast && addToast('Could not save: ' + err.message, 'error');
+    }
+  };
+  // Bulk save every row that has grades to the local gradebook.
+  const saveAllGradedToGradebook = () => {
+    const candidates = queue.map((r, i) => i).filter(i => Object.keys(grades[i] || {}).length > 0);
+    if (candidates.length === 0) {
+      addToast && addToast('No graded submissions to save yet.', 'warn');
+      return;
+    }
+    let saved = 0, fail = 0;
+    for (const idx of candidates) {
+      try {
+        const result = _writeRowToGradebook(idx);
+        if (result.ok) saved++;
+        else fail++;
+      } catch (e) { fail++; }
+    }
+    setGradebookRefresh(t => t + 1);
+    addToast && addToast(
+      'Saved ' + saved + ' submission' + (saved === 1 ? '' : 's') + ' to local gradebook' + (fail > 0 ? ' (' + fail + ' failed)' : ''),
+      fail > 0 ? 'warn' : 'success'
+    );
+  };
+  // Delete a gradebook entry by storage key.
+  const deleteGradebookEntry = (storageKey) => {
+    try {
+      const existing = JSON.parse(localStorage.getItem('alloflow_offline_grades') || '{}');
+      delete existing[storageKey];
+      localStorage.setItem('alloflow_offline_grades', JSON.stringify(existing));
+      setGradebookRefresh(t => t + 1);
+      addToast && addToast('Removed from gradebook.', 'info');
+    } catch (e) {
+      addToast && addToast('Could not delete: ' + e.message, 'error');
+    }
+  };
+  // CSV export: one row per (submission × response) for spreadsheet pivots.
+  const exportGradebookCsv = () => {
+    if (gradebookEntries.length === 0) {
+      addToast && addToast('Gradebook is empty.', 'warn');
+      return;
+    }
+    const esc = (s) => {
+      const v = (s == null ? '' : String(s)).replace(/\r?\n/g, ' ').trim();
+      return /[",]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+    };
+    const headers = ['Nickname', 'Class', 'Document', 'SubmittedAt', 'GradedAt', 'Source', 'ResponseKey', 'StudentResponse', 'Score', 'Status', 'AIFeedback', 'Rubric'];
+    const rows = [headers.join(',')];
+    for (const entry of gradebookEntries) {
+      const respKeys = Object.keys(entry.grades || {});
+      if (respKeys.length === 0) {
+        rows.push([entry.nickname, entry.className, entry.docTitle, entry.submittedAt, entry.gradedAt, entry.source, '', '', '', '', '', entry.rubric].map(esc).join(','));
+        continue;
+      }
+      for (const k of respKeys) {
+        const g = entry.grades[k] || {};
+        const respText = (entry.responses && entry.responses[k]) || '';
+        rows.push([entry.nickname, entry.className, entry.docTitle, entry.submittedAt, entry.gradedAt, entry.source, k, respText, g.score, g.status, g.feedback, entry.rubric].map(esc).join(','));
+      }
+    }
+    const csv = rows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const dateStr = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = 'alloflow_gradebook_' + dateStr + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); if (a.parentNode) a.parentNode.removeChild(a); }, 200);
+    addToast && addToast('Downloaded gradebook CSV (' + (rows.length - 1) + ' row' + (rows.length - 1 === 1 ? '' : 's') + ').', 'success');
+  };
+  const gradebookAvg = (entry) => {
+    const scores = Object.values(entry.grades || {}).map(g => g.score).filter(s => typeof s === 'number');
+    if (scores.length === 0) return null;
+    return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+  };
+  const scoreColor = (score) => {
+    if (typeof score !== 'number') return { bg: '#f1f5f9', color: '#475569' };
+    if (score >= 85) return { bg: '#dcfce7', color: '#166534' };
+    if (score >= 65) return { bg: '#fef3c7', color: '#92400e' };
+    if (score >= 40) return { bg: '#fed7aa', color: '#9a3412' };
+    return { bg: '#fee2e2', color: '#991b1b' };
+  };
+
+  // rosterBadge accepts either a legacy 'known'|'unknown' string OR the
+  // {kind, name} object returned by rosterMatch — fuzzy matches surface
+  // the real roster name so a "TestKid" submission shows "✓ Test Kid".
+  const rosterBadge = (input) => {
+    let kind, name;
+    if (typeof input === 'string') {
+      kind = input;
+      name = null;
+    } else if (input && typeof input === 'object') {
+      kind = input.kind === 'exact' || input.kind === 'fuzzy' ? input.kind : 'unknown';
+      name = input.name;
+    } else {
+      kind = 'unknown';
+    }
+    let bg, color, label, title;
+    if (kind === 'exact') {
+      bg = '#dcfce7'; color = '#166534'; label = '✓ Roster match'; title = 'Exact roster match';
+    } else if (kind === 'fuzzy') {
+      bg = '#dcfce7'; color = '#166534'; label = '✓ ' + name; title = 'Matched roster student "' + name + '" by normalized name (capitalization/punctuation ignored)';
+    } else {
+      bg = '#fef3c7'; color = '#92400e'; label = '⚠ Unknown name'; title = 'No roster student matched this nickname';
+    }
+    return /*#__PURE__*/React.createElement('span', {
+      title: title,
+      style: {
+        display: 'inline-block', padding: '2px 8px', borderRadius: 999,
+        background: bg, color: color, fontSize: '0.7rem', fontWeight: 600
+      }
+    }, label);
+  };
+
+  // ── Render ──────────────────────────────────────────────────
+  return /*#__PURE__*/React.createElement('div', {
+    role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Submission inbox',
+    style: {
+      position: 'fixed', inset: 0, zIndex: 270,
+      background: 'rgba(15,23,42,0.8)', backdropFilter: 'blur(4px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16
+    }
+  },
+    /*#__PURE__*/React.createElement('div', {
+      style: {
+        background: 'white', borderRadius: 16, boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+        width: '100%', maxWidth: 980, maxHeight: '90vh', display: 'flex', flexDirection: 'column',
+        border: '2px solid #c7d2fe', overflow: 'hidden', position: 'relative'
+      }
+    },
+      // Header
+      /*#__PURE__*/React.createElement('div', { style: { padding: '18px 22px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
+        /*#__PURE__*/React.createElement('div', null,
+          /*#__PURE__*/React.createElement('h2', { style: { margin: 0, fontSize: '1.2rem', fontWeight: 900, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 } },
+            '📥 Import student submissions'
+          ),
+          /*#__PURE__*/React.createElement('p', { style: { margin: '4px 0 0 0', fontSize: '0.85rem', color: '#64748b' } },
+            'Load your class key, then drop in the encrypted .alloflow.html files students sent you.'
+          )
+        ),
+        /*#__PURE__*/React.createElement('button', {
+          type: 'button', onClick: onClose,
+          style: { padding: '6px 10px', border: 'none', background: 'transparent', color: '#475569', cursor: 'pointer', fontSize: '1.4rem', lineHeight: 1, borderRadius: 6 },
+          'aria-label': 'Close'
+        }, '×')
+      ),
+
+      // Body
+      /*#__PURE__*/React.createElement('div', { style: { flex: 1, overflowY: 'auto', padding: '18px 22px' } },
+        // Step 1: class key
+        /*#__PURE__*/React.createElement('div', { style: { background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '14px 16px', marginBottom: 14 } },
+          /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
+            /*#__PURE__*/React.createElement('div', null,
+              /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#1e3a8a', marginBottom: 2 } }, '1. Class key file'),
+              privateJwk
+                ? /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', color: '#1e40af' } },
+                    '✓ Loaded',
+                    classKeyMeta?.className ? ' for "' + classKeyMeta.className + '"' : '',
+                    classKeyMeta?.createdAt ? ' (created ' + classKeyMeta.createdAt.slice(0, 10) + ')' : ''
+                  )
+                : /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', color: '#64748b' } },
+                    'Pick the class-key_*.alloflow file you saved when setting up offline submissions.'
+                  )
+            ),
+            /*#__PURE__*/React.createElement('button', {
+              type: 'button', onClick: () => keyInputRef.current?.click(),
+              style: { padding: '8px 16px', background: privateJwk ? '#f1f5f9' : '#2563eb', color: privateJwk ? '#475569' : 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: '0.88rem' }
+            }, privateJwk ? '🔁 Load different key' : '🔑 Load class key')
+          ),
+          /*#__PURE__*/React.createElement('input', {
+            ref: keyInputRef, type: 'file', accept: '.alloflow,application/json',
+            onChange: handleKeyFile, style: { display: 'none' }, 'aria-label': 'Class key file'
+          })
+        ),
+
+        // Step 2: submission files
+        /*#__PURE__*/React.createElement('div', { style: { background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '14px 16px', marginBottom: 14, opacity: privateJwk ? 1 : 0.55 } },
+          /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
+            /*#__PURE__*/React.createElement('div', null,
+              /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#166534', marginBottom: 2 } }, '2. Student submission files'),
+              /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', color: '#475569' } },
+                queue.length === 0
+                  ? 'Select one or more .alloflow.html files (the encrypted submissions students saved).'
+                  : (queue.length + ' file' + (queue.length === 1 ? '' : 's') + ' loaded · ' +
+                     (counts.decrypted || 0) + ' decrypted · ' +
+                     (counts.pending || 0) + ' pending · ' +
+                     (counts.error || 0) + ' error')
+              )
+            ),
+            /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 8 } },
+              /*#__PURE__*/React.createElement('button', {
+                type: 'button', onClick: () => subInputRef.current?.click(), disabled: !privateJwk,
+                style: { padding: '8px 16px', background: '#16a34a', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: privateJwk ? 'pointer' : 'not-allowed', fontSize: '0.88rem', opacity: privateJwk ? 1 : 0.5 }
+              }, '＋ Add submissions'),
+              queue.length > 0 && /*#__PURE__*/React.createElement('button', {
+                type: 'button', onClick: clearQueue,
+                style: { padding: '8px 12px', background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }
+              }, 'Clear')
+            )
+          ),
+          /*#__PURE__*/React.createElement('input', {
+            ref: subInputRef, type: 'file', accept: '.html,.alloflow.html,text/html', multiple: true,
+            onChange: handleSubmissionFiles, style: { display: 'none' }, 'aria-label': 'Submission files'
+          })
+        ),
+
+        // Class rubric panel — shown whenever ≥1 row is decrypted. Optional
+        // global rubric that fills in the per-row rubric when grading.
+        (counts.decrypted || 0) > 0 && /*#__PURE__*/React.createElement('div', { style: { background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 10, padding: globalRubricOpen ? '14px 16px' : '8px 14px', marginBottom: 14 } },
+          /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
+            /*#__PURE__*/React.createElement('button', {
+              type: 'button',
+              onClick: () => setGlobalRubricOpen(!globalRubricOpen),
+              style: { display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 700, color: '#3730a3', fontSize: '0.9rem' }
+            },
+              '🎯 Class rubric',
+              (globalRubric.rubric || '').trim() && /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', padding: '1px 8px', borderRadius: 999, background: '#c7d2fe', color: '#3730a3', fontSize: '0.7rem', fontWeight: 700 } }, '✓ set'),
+              /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.75rem', fontWeight: 600, color: '#6366f1' } }, globalRubricOpen ? '▾' : '▸')
+            ),
+            /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+              !bulkGrading && /*#__PURE__*/React.createElement('button', {
+                type: 'button',
+                onClick: gradeAllDecrypted,
+                disabled: (counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim(),
+                title: (globalRubric.rubric || '').trim()
+                  ? 'Grade every decrypted submission in the queue with this rubric'
+                  : 'Set a class rubric first',
+                style: {
+                  padding: '8px 16px',
+                  background: ((counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim()) ? '#cbd5e1' : '#4f46e5',
+                  color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem',
+                  cursor: ((counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim()) ? 'not-allowed' : 'pointer'
+                }
+              }, '🎯 Grade entire queue (' + (counts.decrypted || 0) + ')'),
+              !bulkGrading && (() => {
+                const gradedCount = queue.filter((_, i) => Object.keys(grades[i] || {}).length > 0).length;
+                return gradedCount > 0 && /*#__PURE__*/React.createElement('button', {
+                  type: 'button',
+                  onClick: saveAllGradedToGradebook,
+                  title: 'Write every graded submission to the local gradebook',
+                  style: { padding: '8px 16px', background: '#16a34a', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }
+                }, '💾 Save all graded (' + gradedCount + ')');
+              })(),
+              bulkGrading && /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem', color: '#3730a3', fontWeight: 700 } },
+                /*#__PURE__*/React.createElement('span', null, 'Grading ' + bulkProgress.current + ' / ' + bulkProgress.total + '…'),
+                /*#__PURE__*/React.createElement('div', { style: { width: 120, height: 8, background: '#c7d2fe', borderRadius: 999, overflow: 'hidden' } },
+                  /*#__PURE__*/React.createElement('div', { style: { width: (bulkProgress.total ? (bulkProgress.current / bulkProgress.total * 100) : 0) + '%', height: '100%', background: '#4f46e5', transition: 'width 0.3s' } })
+                )
+              )
+            )
+          ),
+          globalRubricOpen && /*#__PURE__*/React.createElement('div', { style: { marginTop: 12, paddingTop: 12, borderTop: '1px solid #c7d2fe' } },
+            /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.78rem', color: '#3730a3', fontWeight: 600, marginBottom: 4 } }, 'Rubric for this batch — what does full credit look like?'),
+            /*#__PURE__*/React.createElement('textarea', {
+              value: globalRubric.rubric,
+              onChange: e => setGlobalRubric(prev => ({ ...prev, rubric: e.target.value })),
+              placeholder: 'e.g., "Each response should name the main idea, cite at least one specific detail from the text, and explain reasoning in 2-3 complete sentences."',
+              rows: 3,
+              style: { width: '100%', padding: 8, border: '1px solid #c7d2fe', borderRadius: 6, fontSize: '0.88rem', fontFamily: 'inherit', resize: 'vertical', marginBottom: 10 }
+            }),
+            /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.78rem', color: '#3730a3', fontWeight: 600, marginBottom: 4 } }, 'Assignment context (optional)'),
+            /*#__PURE__*/React.createElement('input', {
+              type: 'text',
+              value: globalRubric.context,
+              onChange: e => setGlobalRubric(prev => ({ ...prev, context: e.target.value })),
+              placeholder: 'e.g., "Reading response to chapter 3"',
+              style: { width: '100%', padding: '6px 8px', border: '1px solid #c7d2fe', borderRadius: 6, fontSize: '0.85rem', marginBottom: 8 }
+            }),
+            /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.78rem', color: '#475569' } },
+              'This rubric is used by "Grade entire queue" and as the default for each per-submission Grade button. Per-submission rubrics still override the global one when set.'
+            ),
+            // Named preset library — save/load named rubric+anchor sets across sessions
+            /*#__PURE__*/React.createElement('div', { style: { marginTop: 12, paddingTop: 10, borderTop: '1px dashed #c7d2fe' } },
+              /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+                /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.78rem', fontWeight: 700, color: '#3730a3', marginRight: 4 } }, '📋 Presets:'),
+                /*#__PURE__*/React.createElement('input', {
+                  type: 'text',
+                  value: presetNameInput,
+                  onChange: e => setPresetNameInput(e.target.value),
+                  onKeyDown: e => { if (e.key === 'Enter') { e.preventDefault(); savePreset(); } },
+                  placeholder: 'Name this preset (e.g. "Reading response Ch.3")',
+                  style: { flex: 1, minWidth: 180, padding: '5px 10px', border: '1px solid #c7d2fe', borderRadius: 6, fontSize: '0.8rem' }
+                }),
+                /*#__PURE__*/React.createElement('button', {
+                  type: 'button', onClick: savePreset,
+                  disabled: !presetNameInput.trim() || (!globalRubric.rubric.trim() && anchors.length === 0),
+                  title: 'Save the current rubric + context + anchors as a named preset.',
+                  style: {
+                    padding: '5px 12px',
+                    background: (!presetNameInput.trim() || (!globalRubric.rubric.trim() && anchors.length === 0)) ? '#cbd5e1' : '#4f46e5',
+                    color: 'white', border: 'none', borderRadius: 6, fontWeight: 700, fontSize: '0.78rem',
+                    cursor: (!presetNameInput.trim() || (!globalRubric.rubric.trim() && anchors.length === 0)) ? 'not-allowed' : 'pointer'
+                  }
+                }, '💾 Save'),
+                /*#__PURE__*/React.createElement('button', {
+                  type: 'button', onClick: () => presetImportRef.current?.click(),
+                  title: 'Import presets from a JSON file (e.g. shared by another teacher).',
+                  style: { padding: '5px 10px', background: 'white', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontWeight: 600, fontSize: '0.74rem', cursor: 'pointer' }
+                }, '⬆ Import'),
+                /*#__PURE__*/React.createElement('input', {
+                  ref: presetImportRef, type: 'file', accept: '.json,application/json',
+                  onChange: importPresets, style: { display: 'none' }, 'aria-label': 'Import presets JSON'
+                }),
+                Object.keys(rubricPresets).length > 0 && /*#__PURE__*/React.createElement('button', {
+                  type: 'button', onClick: exportPresets,
+                  title: 'Export all your presets as a JSON file you can share or back up.',
+                  style: { padding: '5px 10px', background: 'white', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontWeight: 600, fontSize: '0.74rem', cursor: 'pointer' }
+                }, '⬇ Export'),
+                Object.keys(rubricPresets).length > 0 && /*#__PURE__*/React.createElement('div', { style: { position: 'relative' } },
+                  /*#__PURE__*/React.createElement('button', {
+                    type: 'button', onClick: () => setPresetsMenuOpen(!presetsMenuOpen),
+                    title: 'Load a saved preset',
+                    style: { padding: '5px 12px', background: 'white', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer' }
+                  }, '📂 Load (' + Object.keys(rubricPresets).length + ') ' + (presetsMenuOpen ? '▴' : '▾')),
+                  presetsMenuOpen && /*#__PURE__*/React.createElement('div', { style: { position: 'absolute', top: 'calc(100% + 4px)', right: 0, background: 'white', border: '1px solid #c7d2fe', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', minWidth: 280, maxHeight: 320, overflowY: 'auto', zIndex: 5 } },
+                    Object.entries(rubricPresets)
+                      .sort(([, a], [, b]) => (b.lastUsed || '').localeCompare(a.lastUsed || ''))
+                      .map(([key, p]) => /*#__PURE__*/React.createElement('div', {
+                        key: key,
+                        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderBottom: '1px solid #f1f5f9', gap: 6 }
+                      },
+                        /*#__PURE__*/React.createElement('button', {
+                          type: 'button', onClick: () => loadPreset(key),
+                          style: { flex: 1, textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }
+                        },
+                          /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' } }, p.name),
+                          /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.72rem', color: '#94a3b8' } },
+                            (p.anchors ? p.anchors.length : 0) + ' anchor' + (p.anchors && p.anchors.length === 1 ? '' : 's'),
+                            ' · last used ',
+                            p.lastUsed ? new Date(p.lastUsed).toLocaleDateString() : '—'
+                          )
+                        ),
+                        /*#__PURE__*/React.createElement('button', {
+                          type: 'button', onClick: (e) => { e.stopPropagation(); if (confirm('Delete preset "' + p.name + '"?')) deletePreset(key); },
+                          title: 'Delete this preset',
+                          style: { padding: '2px 8px', background: 'transparent', color: '#94a3b8', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: '0.7rem', cursor: 'pointer' }
+                        }, '✗')
+                      ))
+                  )
+                )
+              ),
+              /*#__PURE__*/React.createElement('div', { style: { marginTop: 6, fontSize: '0.72rem', color: '#64748b' } },
+                'Presets save the rubric + context + every calibration anchor as a named set. Pick a name like "Reading response", "Math word problem", "Lab report" so you can load the right calibration when the same assignment comes back.'
+              )
+            ),
+            (savedSessionMeta || (globalRubric.rubric || '').trim() || anchors.length > 0) && /*#__PURE__*/React.createElement('div', { style: { marginTop: 10, paddingTop: 10, borderTop: '1px dashed #c7d2fe', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, fontSize: '0.78rem', color: '#3730a3' } },
+              /*#__PURE__*/React.createElement('span', null,
+                savedSessionMeta
+                  ? '💾 Restored from saved session (' + new Date(savedSessionMeta.savedAt).toLocaleString() + '). Auto-saves on every change.'
+                  : '💾 Auto-saves your rubric + anchors so they persist across browser refreshes.'
+              ),
+              /*#__PURE__*/React.createElement('button', {
+                type: 'button', onClick: clearSavedSession,
+                title: 'Clear the auto-saved rubric and anchors',
+                style: { padding: '4px 10px', background: 'transparent', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer' }
+              }, 'Clear saved session')
+            )
+          )
+        ),
+
+        // Gradebook viewer panel — always visible, shows accumulated saved grades
+        // across all inbox sessions. Reads from localStorage 'alloflow_offline_grades'.
+        /*#__PURE__*/React.createElement('div', { style: { background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: gradebookOpen ? '14px 16px' : '8px 14px', marginBottom: 14 } },
+          /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
+            /*#__PURE__*/React.createElement('button', {
+              type: 'button',
+              onClick: () => setGradebookOpen(!gradebookOpen),
+              style: { display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 700, color: '#166534', fontSize: '0.9rem' }
+            },
+              '📊 Gradebook',
+              /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', padding: '1px 8px', borderRadius: 999, background: '#bbf7d0', color: '#166534', fontSize: '0.7rem', fontWeight: 700 } }, gradebookEntries.length + ' saved'),
+              /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.75rem', fontWeight: 600, color: '#16a34a' } }, gradebookOpen ? '▾' : '▸')
+            ),
+            gradebookEntries.length > 0 && /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
+              /*#__PURE__*/React.createElement('div', { style: { display: 'inline-flex', background: 'white', border: '1px solid #86efac', borderRadius: 6, padding: 2, fontSize: '0.74rem', fontWeight: 600 } },
+                /*#__PURE__*/React.createElement('button', {
+                  type: 'button', onClick: () => setGradebookGroupBy('submission'),
+                  style: { padding: '4px 10px', background: gradebookGroupBy === 'submission' ? '#16a34a' : 'transparent', color: gradebookGroupBy === 'submission' ? 'white' : '#166534', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 700 }
+                }, 'Submissions'),
+                /*#__PURE__*/React.createElement('button', {
+                  type: 'button', onClick: () => setGradebookGroupBy('student'),
+                  style: { padding: '4px 10px', background: gradebookGroupBy === 'student' ? '#16a34a' : 'transparent', color: gradebookGroupBy === 'student' ? 'white' : '#166534', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 700 }
+                }, 'By student')
+              ),
+              /*#__PURE__*/React.createElement('button', {
+                type: 'button', onClick: exportGradebookCsv,
+                title: 'Download all saved grades as a CSV spreadsheet',
+                style: { padding: '6px 12px', background: 'white', color: '#166534', border: '1px solid #86efac', borderRadius: 6, fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }
+              }, '⬇ Export CSV')
+            )
+          ),
+          gradebookOpen && /*#__PURE__*/React.createElement('div', { style: { marginTop: 12, paddingTop: 12, borderTop: '1px solid #bbf7d0' } },
+            gradebookEntries.length === 0
+              ? /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', color: '#166534', fontStyle: 'italic' } },
+                  'No saved grades yet. Grade some submissions and click "💾 Save all graded" or the per-row "Save to gradebook" button to populate this list.'
+                )
+              : /*#__PURE__*/React.createElement('div', null,
+                  /*#__PURE__*/React.createElement('div', { style: { border: '1px solid #bbf7d0', borderRadius: 8, overflow: 'hidden', background: 'white' } },
+                    /*#__PURE__*/React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' } },
+                      /*#__PURE__*/React.createElement('thead', null,
+                        /*#__PURE__*/React.createElement('tr', { style: { background: '#f0fdf4', borderBottom: '1px solid #bbf7d0' } },
+                          /*#__PURE__*/React.createElement('th', { style: { textAlign: 'left', padding: '8px 12px', fontWeight: 700, color: '#166534', fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, gradebookGroupBy === 'student' ? 'Student' : 'Nickname'),
+                          /*#__PURE__*/React.createElement('th', { style: { textAlign: 'left', padding: '8px 12px', fontWeight: 700, color: '#166534', fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, gradebookGroupBy === 'student' ? 'Submissions' : 'Document'),
+                          /*#__PURE__*/React.createElement('th', { style: { textAlign: 'left', padding: '8px 12px', fontWeight: 700, color: '#166534', fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, gradebookGroupBy === 'student' ? 'Avg of avgs' : 'Avg'),
+                          /*#__PURE__*/React.createElement('th', { style: { textAlign: 'left', padding: '8px 12px', fontWeight: 700, color: '#166534', fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, gradebookGroupBy === 'student' ? 'Last graded' : 'Graded'),
+                          /*#__PURE__*/React.createElement('th', { style: { textAlign: 'right', padding: '8px 12px' } }, '')
+                        )
+                      ),
+                      /*#__PURE__*/React.createElement('tbody', null,
+                        gradebookGroupBy === 'student'
+                          ? (() => {
+                              // Group entries by nickname
+                              const byStudent = {};
+                              gradebookEntries.forEach(e => {
+                                const key = (e.nickname || 'unknown').toLowerCase();
+                                if (!byStudent[key]) byStudent[key] = { nickname: e.nickname, className: e.className, entries: [] };
+                                byStudent[key].entries.push(e);
+                              });
+                              const students = Object.values(byStudent).sort((a, b) => (a.nickname || '').localeCompare(b.nickname || ''));
+                              return students.map((s, i) => {
+                                const avgs = s.entries.map(e => gradebookAvg(e)).filter(a => typeof a === 'number');
+                                const avgOfAvgs = avgs.length > 0 ? Math.round(avgs.reduce((a, b) => a + b, 0) / avgs.length) : null;
+                                const sc = typeof avgOfAvgs === 'number' ? scoreColor(avgOfAvgs) : { bg: '#f1f5f9', color: '#475569' };
+                                const lastGraded = s.entries
+                                  .map(e => e.gradedAt)
+                                  .filter(Boolean)
+                                  .sort()
+                                  .pop();
+                                const studentKey = s.nickname + '|' + (s.className || '');
+                                const isExpanded = expandedStudent === studentKey;
+                                return /*#__PURE__*/React.createElement(React.Fragment, { key: i },
+                                  /*#__PURE__*/React.createElement('tr', { style: { borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }, onClick: () => setExpandedStudent(isExpanded ? null : studentKey) },
+                                    /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', fontWeight: 700, color: '#1e293b' } },
+                                      /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', marginRight: 6, fontSize: '0.7rem', color: '#94a3b8' } }, isExpanded ? '▾' : '▸'),
+                                      s.nickname,
+                                      s.className && /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.72rem', color: '#94a3b8', fontWeight: 400, marginLeft: 14 } }, s.className)
+                                    ),
+                                    /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', color: '#475569' } },
+                                      s.entries.length + ' submission' + (s.entries.length === 1 ? '' : 's')
+                                    ),
+                                    /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px' } },
+                                      avgOfAvgs !== null
+                                        ? /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700, fontSize: '0.78rem' } }, avgOfAvgs + '/100')
+                                        : /*#__PURE__*/React.createElement('span', { style: { color: '#94a3b8', fontSize: '0.8rem' } }, '—')
+                                    ),
+                                    /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', fontSize: '0.78rem', color: '#64748b' } },
+                                      lastGraded ? new Date(lastGraded).toLocaleDateString() : '—'
+                                    ),
+                                    /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', textAlign: 'right', fontSize: '0.72rem', color: '#94a3b8' } },
+                                      isExpanded ? 'click to collapse' : 'click for detail'
+                                    )
+                                  ),
+                                  isExpanded && s.entries.map((entry, j) => {
+                                    const eAvg = gradebookAvg(entry);
+                                    const eSc = typeof eAvg === 'number' ? scoreColor(eAvg) : { bg: '#f1f5f9', color: '#475569' };
+                                    const respCount = Object.keys(entry.grades || {}).length;
+                                    return /*#__PURE__*/React.createElement('tr', { key: 'e' + j, style: { borderBottom: '1px solid #f1f5f9', background: '#fafaf9' } },
+                                      /*#__PURE__*/React.createElement('td', { style: { padding: '6px 12px 6px 36px', fontSize: '0.78rem', color: '#94a3b8', fontWeight: 400 } }, '↳ entry ' + (j + 1)),
+                                      /*#__PURE__*/React.createElement('td', { style: { padding: '6px 12px', color: '#475569', fontSize: '0.82rem' } },
+                                        entry.docTitle,
+                                        /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.7rem', color: '#94a3b8' } }, respCount + ' response' + (respCount === 1 ? '' : 's'))
+                                      ),
+                                      /*#__PURE__*/React.createElement('td', { style: { padding: '6px 12px' } },
+                                        eAvg !== null
+                                          ? /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', padding: '1px 7px', borderRadius: 999, background: eSc.bg, color: eSc.color, fontWeight: 700, fontSize: '0.72rem' } }, eAvg + '/100')
+                                          : /*#__PURE__*/React.createElement('span', { style: { color: '#94a3b8', fontSize: '0.8rem' } }, '—')
+                                      ),
+                                      /*#__PURE__*/React.createElement('td', { style: { padding: '6px 12px', fontSize: '0.72rem', color: '#64748b' } },
+                                        entry.gradedAt ? new Date(entry.gradedAt).toLocaleDateString() : '—'
+                                      ),
+                                      /*#__PURE__*/React.createElement('td', { style: { padding: '6px 12px', textAlign: 'right' } },
+                                        /*#__PURE__*/React.createElement('button', {
+                                          type: 'button', onClick: (e) => { e.stopPropagation(); deleteGradebookEntry(entry.key); },
+                                          title: 'Remove from local gradebook',
+                                          style: { padding: '2px 8px', background: 'transparent', color: '#94a3b8', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: '0.7rem', cursor: 'pointer' }
+                                        }, '✗')
+                                      )
+                                    );
+                                  })
+                                );
+                              });
+                            })()
+                          : gradebookEntries.map((entry, i) => {
+                              const avg = gradebookAvg(entry);
+                              const sc = typeof avg === 'number' ? scoreColor(avg) : { bg: '#f1f5f9', color: '#475569' };
+                              const respCount = Object.keys(entry.grades || {}).length;
+                              return /*#__PURE__*/React.createElement('tr', { key: i, style: { borderBottom: '1px solid #f1f5f9' } },
+                                /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', fontWeight: 700, color: '#1e293b' } },
+                                  entry.nickname,
+                                  entry.className && /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.72rem', color: '#94a3b8', fontWeight: 400 } }, entry.className)
+                                ),
+                                /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', color: '#475569' } },
+                                  entry.docTitle,
+                                  /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.72rem', color: '#94a3b8' } }, respCount + ' response' + (respCount === 1 ? '' : 's'))
+                                ),
+                                /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px' } },
+                                  avg !== null
+                                    ? /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700, fontSize: '0.78rem' } }, avg + '/100')
+                                    : /*#__PURE__*/React.createElement('span', { style: { color: '#94a3b8', fontSize: '0.8rem' } }, '—')
+                                ),
+                                /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', fontSize: '0.78rem', color: '#64748b' } },
+                                  entry.gradedAt ? new Date(entry.gradedAt).toLocaleDateString() : '—'
+                                ),
+                                /*#__PURE__*/React.createElement('td', { style: { padding: '8px 12px', textAlign: 'right' } },
+                                  /*#__PURE__*/React.createElement('button', {
+                                    type: 'button', onClick: () => deleteGradebookEntry(entry.key),
+                                    title: 'Remove from local gradebook',
+                                    style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: '0.74rem', cursor: 'pointer' }
+                                  }, '✗')
+                                )
+                              );
+                            })
+                      )
+                    )
+                  ),
+                  /*#__PURE__*/React.createElement('div', { style: { marginTop: 8, fontSize: '0.78rem', color: '#166534' } },
+                    'Saved locally in your browser. Export CSV to push to Sheets / your grade system. AlloFlow does not upload these grades anywhere.'
+                  )
+                )
+          )
+        ),
+
+        // Calibration anchors panel — visible whenever the queue has decrypted rows
+        (counts.decrypted || 0) > 0 && /*#__PURE__*/React.createElement('div', { style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: anchorsPanelOpen ? '12px 16px' : '8px 14px', marginBottom: 14 } },
+          /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
+            /*#__PURE__*/React.createElement('button', {
+              type: 'button',
+              onClick: () => setAnchorsPanelOpen(!anchorsPanelOpen),
+              style: { display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 700, color: '#92400e', fontSize: '0.9rem' }
+            },
+              '📌 Calibration anchors (' + anchors.length + ')',
+              /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.75rem', fontWeight: 600, color: '#b45309' } }, anchorsPanelOpen ? '▾' : '▸')
+            ),
+            /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.78rem', color: '#92400e' } },
+              anchors.length === 0
+                ? 'Tap 📌 on any decrypted response to teach the AI your scoring direction.'
+                : 'Each AI grading run will use these ' + anchors.length + ' anchor' + (anchors.length === 1 ? '' : 's') + ' as few-shot examples.'
+            )
+          ),
+          anchorsPanelOpen && /*#__PURE__*/React.createElement('div', { style: { marginTop: 10, paddingTop: 10, borderTop: '1px solid #fde68a' } },
+            anchors.length === 0
+              ? /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', color: '#92400e', fontStyle: 'italic' } },
+                  'No anchors yet. Anchors are individual student responses you score by hand; the AI uses them as calibration examples when grading every other response. 3-5 anchors that span the score range usually gives the best results.'
+                )
+              : /*#__PURE__*/React.createElement('div', null,
+                  anchors.map((a, i) => /*#__PURE__*/React.createElement('div', { key: i, style: { display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 10px', background: 'white', borderRadius: 6, marginBottom: 6, border: '1px solid #fde68a' } },
+                    /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', minWidth: 48, padding: '2px 8px', borderRadius: 999, background: scoreColor(a.teacherScore).bg, color: scoreColor(a.teacherScore).color, fontWeight: 700, fontSize: '0.8rem', textAlign: 'center', flexShrink: 0 } }, a.teacherScore + '/100'),
+                    /*#__PURE__*/React.createElement('div', { style: { flex: 1, minWidth: 0 } },
+                      /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.85rem', color: '#1e293b' } }, String(a.studentResponse).slice(0, 180) + (a.studentResponse.length > 180 ? '…' : '')),
+                      a.teacherFeedback && /*#__PURE__*/React.createElement('div', { style: { marginTop: 4, fontSize: '0.75rem', color: '#64748b', fontStyle: 'italic' } }, '"' + a.teacherFeedback + '"')
+                    ),
+                    /*#__PURE__*/React.createElement('button', {
+                      type: 'button',
+                      onClick: () => removeAnchor(i),
+                      title: 'Remove this anchor',
+                      style: { padding: '2px 8px', background: 'transparent', color: '#94a3b8', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: '0.75rem', cursor: 'pointer', flexShrink: 0 }
+                    }, '✗')
+                  )),
+                  /*#__PURE__*/React.createElement('div', { style: { marginTop: 8, fontSize: '0.78rem', color: '#92400e' } },
+                    /*#__PURE__*/React.createElement('button', {
+                      type: 'button',
+                      onClick: clearAnchors,
+                      style: { padding: '4px 10px', background: 'transparent', color: '#92400e', border: '1px solid #fde68a', borderRadius: 6, fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', marginRight: 8 }
+                    }, 'Clear all'),
+                    /*#__PURE__*/React.createElement('span', { style: { color: '#b45309' } },
+                      'Tip: anchor responses spanning the full score range (e.g. one 95, one 70, one 40) for the most accurate AI calibration.'
+                    )
+                  )
+                )
+          )
+        ),
+
+        // Step 3: decrypt action
+        privateJwk && queue.length > 0 && /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 10, alignItems: 'center', marginBottom: 14 } },
+          /*#__PURE__*/React.createElement('button', {
+            type: 'button', onClick: handleDecryptAll, disabled: decryptingAll || (counts.pending || 0) === 0,
+            style: {
+              padding: '10px 20px', background: '#4f46e5', color: 'white', border: 'none', borderRadius: 10,
+              fontWeight: 700, fontSize: '0.95rem',
+              cursor: (decryptingAll || (counts.pending || 0) === 0) ? 'not-allowed' : 'pointer',
+              opacity: (decryptingAll || (counts.pending || 0) === 0) ? 0.6 : 1
+            }
+          }, decryptingAll ? 'Decrypting…' : '🔓 Decrypt all ' + (counts.pending ? '(' + counts.pending + ')' : '')),
+          /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.85rem', color: '#64748b' } },
+            'Each submission is decrypted in your browser. Nothing leaves this device.'
+          )
+        ),
+
+        // Queue table
+        queue.length === 0
+          ? /*#__PURE__*/React.createElement('div', { style: { padding: '40px 20px', textAlign: 'center', color: '#94a3b8', fontSize: '0.95rem', border: '2px dashed #e2e8f0', borderRadius: 12 } },
+              'No submissions loaded yet. Load your class key, then add files.'
+            )
+          : /*#__PURE__*/React.createElement('div', { style: { border: '1px solid #e2e8f0', borderRadius: 10, overflow: 'hidden' } },
+              /*#__PURE__*/React.createElement('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' } },
+                /*#__PURE__*/React.createElement('thead', null,
+                  /*#__PURE__*/React.createElement('tr', { style: { background: '#f8fafc', borderBottom: '1px solid #e2e8f0' } },
+                    /*#__PURE__*/React.createElement('th', { style: { textAlign: 'left', padding: '10px 12px', fontWeight: 700, color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Nickname'),
+                    /*#__PURE__*/React.createElement('th', { style: { textAlign: 'left', padding: '10px 12px', fontWeight: 700, color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Document'),
+                    /*#__PURE__*/React.createElement('th', { style: { textAlign: 'left', padding: '10px 12px', fontWeight: 700, color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Status'),
+                    /*#__PURE__*/React.createElement('th', { style: { textAlign: 'right', padding: '10px 12px', fontWeight: 700, color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, '')
+                  )
+                ),
+                /*#__PURE__*/React.createElement('tbody', null,
+                  queue.map((row, idx) => /*#__PURE__*/React.createElement(React.Fragment, { key: idx },
+                    /*#__PURE__*/React.createElement('tr', { style: { borderBottom: '1px solid #f1f5f9' } },
+                      /*#__PURE__*/React.createElement('td', { style: { padding: '10px 12px' } },
+                        /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#1e293b' } }, row.nickname),
+                        row.nickname !== '?' && rosterBadge(rosterMatch(row.nickname))
+                      ),
+                      /*#__PURE__*/React.createElement('td', { style: { padding: '10px 12px', color: '#475569' } },
+                        /*#__PURE__*/React.createElement('div', null, row.docTitle || row.fileName),
+                        row.timestamp && /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.75rem', color: '#94a3b8' } }, new Date(row.timestamp).toLocaleString())
+                      ),
+                      /*#__PURE__*/React.createElement('td', { style: { padding: '10px 12px' } },
+                        statusBadge(row.status),
+                        row.status === 'error' && /*#__PURE__*/React.createElement('div', { style: { marginTop: 4, fontSize: '0.75rem', color: '#991b1b' } }, row.error),
+                        row.status === 'decrypted' && row.payload && (() => {
+                          const prior = previousGradesFor(row.payload.nickname, row.payload.docTitle);
+                          // Filter out matches whose timestamp is the same as this submission
+                          // (that's just our own save, not a re-submit).
+                          const others = prior.filter(p => p.submittedAt !== row.payload.timestamp);
+                          if (others.length === 0) return null;
+                          const lastDate = others.map(p => p.gradedAt).filter(Boolean).sort().pop();
+                          return /*#__PURE__*/React.createElement('div', {
+                            style: { marginTop: 4, display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: '#fef3c7', color: '#92400e', fontSize: '0.7rem', fontWeight: 600 },
+                            title: 'This student already has ' + others.length + ' graded submission' + (others.length === 1 ? '' : 's') + ' for this document in the gradebook. Most recent: ' + (lastDate ? new Date(lastDate).toLocaleString() : 'unknown')
+                          }, '🔁 Previously graded' + (others.length > 1 ? ' (' + others.length + 'x)' : '') + (lastDate ? ' ' + new Date(lastDate).toLocaleDateString() : ''));
+                        })()
+                      ),
+                      /*#__PURE__*/React.createElement('td', { style: { padding: '10px 12px', textAlign: 'right' } },
+                        row.status === 'decrypted' && /*#__PURE__*/React.createElement('button', {
+                          type: 'button', onClick: () => setExpandedRow(expandedRow === idx ? null : idx),
+                          style: { marginRight: 6, padding: '4px 10px', background: '#eef2ff', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }
+                        }, expandedRow === idx ? 'Hide' : 'View'),
+                        /*#__PURE__*/React.createElement('button', {
+                          type: 'button', onClick: () => removeRow(idx),
+                          style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: '0.78rem', cursor: 'pointer' }
+                        }, 'Remove')
+                      )
+                    ),
+                    expandedRow === idx && row.payload && /*#__PURE__*/React.createElement('tr', null,
+                      /*#__PURE__*/React.createElement('td', { colSpan: 4, style: { padding: 0 } },
+                        /*#__PURE__*/React.createElement('div', { style: { background: '#fafafa', padding: '12px 16px', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' } },
+                          /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#475569', fontSize: '0.8rem', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } },
+                            'Decrypted responses (' + Object.keys(row.payload.responses || {}).length + ')'
+                          ),
+                          Object.keys(row.payload.responses || {}).length === 0
+                            ? /*#__PURE__*/React.createElement('div', { style: { fontStyle: 'italic', color: '#94a3b8', fontSize: '0.85rem' } }, 'No responses captured.')
+                            : Object.entries(row.payload.responses).map(([k, v], i) => {
+                                const g = (grades[idx] || {})[k];
+                                const sc = g ? scoreColor(g.score) : null;
+                                const isAnchored = isResponseAnchored(idx, k);
+                                const anchorScore = getAnchorScore(idx, k);
+                                return /*#__PURE__*/React.createElement('div', { key: i, style: { marginBottom: 8, padding: '6px 8px', borderRadius: 6, background: isAnchored ? '#fef3c7' : (g ? 'white' : 'transparent'), border: isAnchored ? '1.5px solid #f59e0b' : (g ? '1px solid #e2e8f0' : 'none') } },
+                                  /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: '0.85rem', marginBottom: g || isAnchored ? 4 : 0 } },
+                                    /*#__PURE__*/React.createElement('div', { style: { flex: 1, minWidth: 0 } },
+                                      /*#__PURE__*/React.createElement('code', { style: { fontSize: '0.72rem', color: '#94a3b8', marginRight: 6 } }, k.length > 40 ? k.slice(0, 40) + '…' : k),
+                                      /*#__PURE__*/React.createElement('span', { style: { color: '#1e293b' } }, String(v).slice(0, 300))
+                                    ),
+                                    String(v).trim() && (
+                                      isAnchored
+                                        ? /*#__PURE__*/React.createElement('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 999, background: '#fde68a', color: '#92400e', fontWeight: 700, fontSize: '0.72rem', flexShrink: 0 } },
+                                            '📌 Anchor ' + anchorScore + '/100'
+                                          )
+                                        : /*#__PURE__*/React.createElement('button', {
+                                            type: 'button',
+                                            onClick: () => openAnchorForm(idx, k, String(v)),
+                                            title: 'Mark this response as a calibration anchor. The AI will use it as an example to match your scoring.',
+                                            style: { padding: '2px 8px', background: '#fffbeb', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 999, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }
+                                          }, '📌 Anchor')
+                                    )
+                                  ),
+                                  g && /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, fontSize: '0.78rem' } },
+                                    /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700 } }, (typeof g.score === 'number' ? g.score : '–') + '/100'),
+                                    /*#__PURE__*/React.createElement('span', { style: { color: '#475569', fontStyle: 'italic' } }, g.feedback || '')
+                                  )
+                                );
+                              }),
+                          // Rubric / Grade-with-AI section
+                          Object.keys(row.payload.responses || {}).length > 0 && /*#__PURE__*/React.createElement('div', { style: { marginTop: 14, paddingTop: 12, borderTop: '1px dashed #cbd5e1' } },
+                            /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#475569', fontSize: '0.8rem', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } },
+                              '🎯 AI Grade with rubric'
+                            ),
+                            /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.78rem', color: '#475569', fontWeight: 600, marginBottom: 4 } },
+                              'Rubric (what full credit looks like)',
+                              (globalRubric.rubric || '').trim() && !((rubrics[idx] && rubrics[idx].rubric) || '').trim()
+                                ? /*#__PURE__*/React.createElement('span', { style: { fontWeight: 400, color: '#94a3b8', marginLeft: 6, fontSize: '0.72rem' } }, '— using class rubric above (override here for this submission only)')
+                                : null
+                            ),
+                            /*#__PURE__*/React.createElement('textarea', {
+                              value: (rubrics[idx] && rubrics[idx].rubric) || '',
+                              onChange: e => updateRubric(idx, { rubric: e.target.value }),
+                              placeholder: (globalRubric.rubric || '').trim() ? globalRubric.rubric : 'e.g., "Explains the main idea in their own words, cites at least one detail from the text, uses complete sentences."',
+                              rows: 3,
+                              style: { width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: '0.85rem', fontFamily: 'inherit', resize: 'vertical', marginBottom: 8 }
+                            }),
+                            /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.78rem', color: '#475569', fontWeight: 600, marginBottom: 4 } }, 'Assignment context (optional)'),
+                            /*#__PURE__*/React.createElement('input', {
+                              type: 'text',
+                              value: (rubrics[idx] && rubrics[idx].context) || '',
+                              onChange: e => updateRubric(idx, { context: e.target.value }),
+                              placeholder: 'e.g., "Reading response to chapter 3"',
+                              style: { width: '100%', padding: '6px 8px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: '0.85rem', marginBottom: 8 }
+                            }),
+                            /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.78rem', color: '#475569', fontWeight: 600, marginBottom: 4 } },
+                              'Quick exemplar (optional) ',
+                              /*#__PURE__*/React.createElement('span', { style: { fontWeight: 400, color: '#94a3b8', fontSize: '0.75rem' } },
+                                anchors.length > 0
+                                  ? '— ' + anchors.length + ' calibration anchor' + (anchors.length === 1 ? '' : 's') + ' active (📌 panel above). Anchors apply across all submissions; this exemplar adds one more locally.'
+                                  : '— or tap 📌 on a real student response above to anchor it (multi-anchor calibration).'
+                              )
+                            ),
+                            /*#__PURE__*/React.createElement('textarea', {
+                              value: (rubrics[idx] && rubrics[idx].exemplar) || '',
+                              onChange: e => updateRubric(idx, { exemplar: e.target.value }),
+                              placeholder: 'Paste an example of a 95/100 response so the AI matches your scoring.',
+                              rows: 2,
+                              style: { width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: '0.85rem', fontFamily: 'inherit', resize: 'vertical', marginBottom: 8 }
+                            }),
+                            /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
+                              /*#__PURE__*/React.createElement('button', {
+                                type: 'button',
+                                onClick: () => gradeRow(idx),
+                                disabled: gradingRow === idx,
+                                style: { padding: '8px 16px', background: '#7c3aed', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: gradingRow === idx ? 'wait' : 'pointer', opacity: gradingRow === idx ? 0.6 : 1 }
+                              }, gradingRow === idx ? 'Grading…' : '🎯 Grade responses'),
+                              Object.keys(grades[idx] || {}).length > 0 && /*#__PURE__*/React.createElement('button', {
+                                type: 'button',
+                                onClick: () => saveRowToGradebook(idx),
+                                style: { padding: '8px 16px', background: '#16a34a', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }
+                              }, '💾 Save to gradebook'),
+                              Object.keys(grades[idx] || {}).length > 0 && /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.78rem', color: '#64748b' } },
+                                'Avg: ' + Math.round(Object.values(grades[idx]).reduce((s, g) => s + (g.score || 0), 0) / Object.values(grades[idx]).length) + '/100'
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  ))
+                )
+              )
+            )
+      ),
+
+      // Footer
+      /*#__PURE__*/React.createElement('div', { style: { padding: '14px 22px', borderTop: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 } },
+        /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.8rem', color: '#64748b' } },
+          (counts.decrypted || 0) > 0
+            ? 'Click "View" on a row to grade it with an AI rubric and save the result to your local gradebook.'
+            : 'Decrypt the queue to see student responses.'
+        ),
+        /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 8 } },
+          /*#__PURE__*/React.createElement('button', {
+            type: 'button', onClick: onClose,
+            style: { padding: '8px 18px', background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }
+          }, 'Close')
+        )
+      ),
+
+      // Pending anchor inline form (nested overlay)
+      pendingAnchor && /*#__PURE__*/React.createElement('div', {
+        role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Score this response as a calibration anchor',
+        style: { position: 'absolute', inset: 0, background: 'rgba(15,23,42,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, zIndex: 10 }
+      },
+        /*#__PURE__*/React.createElement('div', { style: { background: 'white', borderRadius: 14, boxShadow: '0 12px 40px rgba(0,0,0,0.25)', maxWidth: 540, width: '100%', padding: '20px 24px', border: '2px solid #fde68a' } },
+          /*#__PURE__*/React.createElement('h3', { style: { margin: '0 0 8px 0', fontSize: '1.05rem', fontWeight: 800, color: '#92400e' } }, '📌 Anchor this response'),
+          /*#__PURE__*/React.createElement('p', { style: { margin: '0 0 12px 0', fontSize: '0.85rem', color: '#64748b' } },
+            'Give this response a score. The AI will use it as a calibration example when grading every other response.'
+          ),
+          /*#__PURE__*/React.createElement('div', { style: { background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '10px 12px', marginBottom: 14, fontSize: '0.85rem', color: '#1e293b', maxHeight: 120, overflowY: 'auto' } },
+            /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', fontWeight: 700, marginBottom: 4 } }, 'Student response'),
+            pendingAnchor.responseText
+          ),
+          /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: 4 } }, 'Score (0-100)'),
+          /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 } },
+            /*#__PURE__*/React.createElement('input', {
+              type: 'range', min: 0, max: 100, step: 5,
+              value: pendingAnchor.score,
+              onChange: e => setPendingAnchor({ ...pendingAnchor, score: e.target.value }),
+              style: { flex: 1 }
+            }),
+            /*#__PURE__*/React.createElement('input', {
+              type: 'number', min: 0, max: 100,
+              value: pendingAnchor.score,
+              onChange: e => setPendingAnchor({ ...pendingAnchor, score: e.target.value }),
+              style: { width: 70, padding: '4px 8px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: '0.9rem', textAlign: 'center' }
+            })
+          ),
+          /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: 4 } }, 'Note (optional — tells the AI why this got that score)'),
+          /*#__PURE__*/React.createElement('textarea', {
+            value: pendingAnchor.feedback,
+            onChange: e => setPendingAnchor({ ...pendingAnchor, feedback: e.target.value }),
+            placeholder: 'e.g., "Clear evidence + reasoning, but missed the counter-argument."',
+            rows: 2,
+            style: { width: '100%', padding: 8, border: '1px solid #cbd5e1', borderRadius: 6, fontSize: '0.85rem', fontFamily: 'inherit', resize: 'vertical', marginBottom: 16 }
+          }),
+          /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 8, justifyContent: 'flex-end' } },
+            /*#__PURE__*/React.createElement('button', {
+              type: 'button', onClick: cancelPendingAnchor,
+              style: { padding: '8px 16px', background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.88rem' }
+            }, 'Cancel'),
+            /*#__PURE__*/React.createElement('button', {
+              type: 'button', onClick: confirmPendingAnchor,
+              style: { padding: '8px 16px', background: '#f59e0b', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: '0.88rem' }
+            }, '📌 Add anchor')
+          )
+        )
+      )
+    )
+  );
+}

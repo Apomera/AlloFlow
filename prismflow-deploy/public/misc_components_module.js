@@ -9,6 +9,8 @@ var useState = React.useState;
 var useEffect = React.useEffect;
 var useRef = React.useRef;
 var useContext = React.useContext;
+var debugLog = (typeof window !== 'undefined' && (window.__alloDebugLog || window.debugLog)) || function(){};
+var warnLog = (typeof window !== 'undefined' && window.warnLog) || console.warn.bind(console);
 var _lazyIcon = function (name) {
   return function (props) {
     var I = window.AlloIcons && window.AlloIcons[name];
@@ -122,7 +124,7 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved }) => {
         readOnly: status === "success",
         className: `
                   text-center border-b-2 px-1 py-0.5 text-sm font-bold transition-all outline-none focus:ring-2 focus:ring-indigo-400 rounded-t
-                  ${status === "success" ? "border-green-500 bg-green-50 text-green-800" : status === "error" ? "border-red-500 bg-red-50 animate-pulse" : status === "active" ? "border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200" : "border-indigo-300 bg-white focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200"}
+                  ${status === "success" ? "border-green-500 bg-green-50 text-green-800" : status === "error" ? "border-red-500 bg-red-50 animate-pulse" : status === "active" ? "border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200" : "border-indigo-600 bg-white focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200"}
               `,
         style: { width },
         placeholder: "?",
@@ -636,7 +638,7 @@ const WordSoundsReviewPanel = ({
         const a = Array.isArray(p) ? p : p?.phonemes && Array.isArray(p.phonemes) ? p.phonemes : [];
         return a.length === 0;
       })() && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-sm italic" }, 'No phonemes - click "Add Sound" to build')
-    ), showPhonemeBank === idx && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-2 border-slate-200 rounded-xl p-3 mt-2 animate-in slide-in-from-top-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, "\u{1F4A1} Hover any sound for teaching tips")), Object.entries(PHONEME_BANK).map(([category, phonemes]) => /* @__PURE__ */ React.createElement("div", { key: category, className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase mb-1", title: category === "Consonants" ? "Single consonant sounds \u2014 pair voiced (b,d,g) with unvoiced (p,t,k)" : category === "Vowels (Short)" ? "Quick vowel sounds \u2014 cat, pet, sit, hot, cup, book" : category === "Vowels (Long)" ? "Longer vowel sounds \u2014 see, moon, cue, saw + vowel teams ai, ea, oa" : category === "Digraphs" ? "Two letters that make ONE sound \u2014 sh, ch, th, wh, ng" : category === "R-Controlled" ? "Bossy R changes the vowel sound \u2014 ar, er, ir, or, ur, air, ear" : category === "Diphthongs" ? "Vowel sounds that glide \u2014 ay (day), ie (tie), ow (cow), oy (boy)" : category }, category), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, (Array.isArray(phonemes) ? phonemes : []).map((p) => /* @__PURE__ */ React.createElement("div", { key: p, className: "inline-flex rounded overflow-hidden border border-slate-300 hover:border-pink-400 transition-colors" }, /* @__PURE__ */ React.createElement(
+    ), showPhonemeBank === idx && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-2 border-slate-200 rounded-xl p-3 mt-2 animate-in slide-in-from-top-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, "\u{1F4A1} Hover any sound for teaching tips")), Object.entries(PHONEME_BANK).map(([category, phonemes]) => /* @__PURE__ */ React.createElement("div", { key: category, className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase mb-1", title: category === "Consonants" ? "Single consonant sounds \u2014 pair voiced (b,d,g) with unvoiced (p,t,k)" : category === "Vowels (Short)" ? "Quick vowel sounds \u2014 cat, pet, sit, hot, cup, book" : category === "Vowels (Long)" ? "Longer vowel sounds \u2014 see, moon, cue, saw + vowel teams ai, ea, oa" : category === "Digraphs" ? "Two letters that make ONE sound \u2014 sh, ch, th, wh, ng" : category === "R-Controlled" ? "Bossy R changes the vowel sound \u2014 ar, er, ir, or, ur, air, ear" : category === "Diphthongs" ? "Vowel sounds that glide \u2014 ay (day), ie (tie), ow (cow), oy (boy)" : category }, category), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, (Array.isArray(phonemes) ? phonemes : []).map((p) => /* @__PURE__ */ React.createElement("div", { key: p, className: "inline-flex rounded overflow-hidden border border-slate-400 hover:border-pink-400 transition-colors" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => onPlayAudio && onPlayAudio(p),

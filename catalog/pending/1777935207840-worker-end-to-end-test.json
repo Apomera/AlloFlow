@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "submitted_at": "2026-05-04T22:53:27.840Z",
+  "metadata": {
+    "title": "Worker End-to-End Test",
+    "subject": "Other",
+    "grade_level": "K-12",
+    "tags": [
+      "test",
+      "internal"
+    ],
+    "credit": "AlloFlow Internal Test",
+    "license": "CC0"
+  },
+  "affirmations": {
+    "author_or_authorized": true,
+    "no_pii": true,
+    "license_agreed": true,
+    "age_eligible": true
+  },
+  "pii_scan": {
+    "ran_server_side": true,
+    "findings": []
+  },
+  "submitter": {
+    "ip_country": "US",
+    "user_agent": "curl/8.18.0"
+  },
+  "lesson_payload": {
+    "mode": "teacher",
+    "history": [
+      {
+        "id": "test-1",
+        "type": "glossary",
+        "title": "Worker End-to-End Test",
+        "data": [
+          {
+            "term": "verification",
+            "definition": "Confirms a system works as intended"
+          }
+        ]
+      }
+    ]
+  }
+}

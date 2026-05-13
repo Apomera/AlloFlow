@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // stem_lab_module.js — v2.3.0 (a11y enhancements)
 (function () {
   if (window.AlloModules && window.AlloModules.StemLab) { console.log('[CDN] StemLab already loaded, skipping duplicate'); } else {
@@ -17,13 +27,21 @@
         registerTool: function(id, config) {
           config.id = id;
           config.ready = config.ready !== false;
+          // Normalize legacy field-name aliases so downstream `tool.label`/`tool.desc` reads
+          // always resolve. Some plugins use `title`/`name` (legacy) or `description` (legacy)
+          // instead of canonical `label`/`desc`. Defaults applied for fields whose absence
+          // would cause visible degradation (slate tile, ungrouped category).
+          if (!config.label) config.label = config.title || config.name || id;
+          if (!config.desc) config.desc = config.description || '';
+          if (!config.color) config.color = 'slate';
+          if (!config.category) config.category = 'general';
           this._registry[id] = config;
           if (this._order.indexOf(id) === -1) this._order.push(id);
           console.log('[StemLab] Registered tool: ' + id);
           // Populate STEM_TOOL_REGISTRY for lesson plan integration
           if (!window.STEM_TOOL_REGISTRY) window.STEM_TOOL_REGISTRY = [];
           var catMap = { science: ['Science'], math: ['Math'], engineering: ['Engineering'], art: ['Art'], coding: ['CS'] };
-          var entry = { id: id, name: config.label || id, subjects: catMap[config.category] || ['STEM'], tags: [config.category || 'stem', id] };
+          var entry = { id: id, name: config.label, subjects: catMap[config.category] || ['STEM'], tags: [config.category || 'stem', id] };
           var exists = false;
           for (var ri = 0; ri < window.STEM_TOOL_REGISTRY.length; ri++) {
             if (window.STEM_TOOL_REGISTRY[ri].id === id) { exists = true; break; }
@@ -39,6 +57,38 @@
           var tool = this._registry[id];
           if (!tool || !tool.render) return null;
           try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
+        },
+        // Shared HiDPI canvas setup. Resizes the internal pixel buffer
+        // to match the device pixel ratio while keeping CSS dims at the
+        // logical size, so retina/HiDPI displays render canvas content
+        // crisply instead of CSS-scaling a 1x bitmap. Idempotent: only
+        // re-allocates when dpr or logical dims change.
+        //
+        // Usage in a tool's render useEffect:
+        //   var canvas = canvasRef.current; if (!canvas) return;
+        //   window.StemLab.setupHiDPI(canvas, 720, 360);
+        //   var gfx = canvas.getContext('2d');
+        //   gfx.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
+        //   var W = canvas._logicalW || canvas.width;
+        //   var H = canvas._logicalH || canvas.height;
+        //   // ... rest of draw code, all in CSS px ...
+        //
+        // Mouse coord math should use canvas._logicalW / canvas._logicalH
+        // (NOT canvas.width/height which after setup return the dpr-scaled
+        // buffer size, off by a factor of dpr).
+        //
+        // dpr is clamped to [1, 2] to avoid runaway memory on 3x phones.
+        setupHiDPI: function(canvas, logicalW, logicalH) {
+          if (!canvas) return;
+          var dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+          if (canvas._dpr === dpr && canvas._logicalW === logicalW && canvas._logicalH === logicalH) return;
+          canvas.width = Math.round(logicalW * dpr);
+          canvas.height = Math.round(logicalH * dpr);
+          canvas.style.width = logicalW + 'px';
+          canvas.style.height = logicalH + 'px';
+          canvas._dpr = dpr;
+          canvas._logicalW = logicalW;
+          canvas._logicalH = logicalH;
         }
       };
     }
@@ -174,6 +224,7 @@
         labToolData,
         setLabToolData,
         gradeLevel,
+        sourceTopic,
         callGemini,
         callTTS,
         callImagen,
@@ -215,6 +266,18 @@
       var [_xpPopupTick, _setXpPopupTick] = React.useState(0);
       // XP badge pulse state
       var [_xpBadgePulse, _setXpBadgePulse] = React.useState(false);
+      // Plugin-load progress tick — bumped by the allo-plugins-changed event the
+      // lazy-loader fires after each stem_tool_*.js script finishes registering.
+      // Forces the tile grid to re-render as plugins stream in on first hub-open.
+      var [_pluginProgressTick, _setPluginProgressTick] = React.useState(0);
+      React.useEffect(function() {
+        var handler = function(e) {
+          if (e && e.detail && e.detail.label !== 'Stem') return;
+          _setPluginProgressTick(function(t) { return t + 1; });
+        };
+        window.addEventListener('allo-plugins-changed', handler);
+        return function() { window.removeEventListener('allo-plugins-changed', handler); };
+      }, []);
 
       // Life Skills Lab Global State
       var [stemState, setStemState] = React.useState({});
@@ -2136,7 +2199,7 @@
           id: 'explore',
           label: '\uD83D\uDD27 Explore',
           desc: t('stem.solver.manipulatives')
-        }].map(tab => /*#__PURE__*/React.createElement("button", { "aria-label": "STEM Lab tab",
+        }].map(tab => /*#__PURE__*/React.createElement("button", { "aria-label": tab.desc ? (tab.label + " tab: " + tab.desc) : (tab.label + " tab"),
           key: tab.id, role: "tab", "aria-selected": stemLabTab === tab.id,
           onClick: () => {
             setStemLabTab(tab.id);
@@ -2353,7 +2416,7 @@
         }].map(m => /*#__PURE__*/React.createElement("button", { "aria-label": m.label.replace(/[^\w\s]/g, '').trim() + ' mode',
           key: m.id,
           onClick: () => setStemLabCreateMode(m.id),
-          className: `px-4 py-2 rounded-xl text-sm font-bold transition-all ${stemLabCreateMode === m.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600'}`
+          className: `px-4 py-2 rounded-xl text-sm font-bold transition-all ${stemLabCreateMode === m.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border border-slate-400 text-slate-600 hover:border-indigo-600 hover:text-indigo-600'}`
         }, m.label)), /*#__PURE__*/React.createElement("div", {
           className: "flex-1"
         }), /*#__PURE__*/React.createElement("button", { "aria-label": "Open assessment builder",
@@ -2375,14 +2438,14 @@
         }].map(s => /*#__PURE__*/React.createElement("button", { "aria-label": s.label + ' style',
           key: s.val,
           onClick: () => setMathMode(s.val),
-          className: `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${mathMode === s.val ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-white border border-slate-200 text-slate-500 hover:border-blue-200'}`
+          className: `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${mathMode === s.val ? 'bg-blue-100 text-blue-700 border border-blue-600' : 'bg-white border border-slate-400 text-slate-500 hover:border-blue-200'}`
         }, s.label))), /*#__PURE__*/React.createElement("div", {
-          className: "bg-slate-50 rounded-xl p-4 border border-slate-200"
+          className: "bg-slate-50 rounded-xl p-4 border border-slate-400"
         }, /*#__PURE__*/React.createElement("textarea", {
           value: mathInput,
           onChange: e => setMathInput(e.target.value),
           placeholder: stemLabCreateMode === 'solve' ? 'Enter a math problem to solve step-by-step...' : stemLabCreateMode === 'content' ? 'Paste or describe content to generate math problems from...' : 'Enter topic, standard, or description (e.g. "3rd grade multiplication word problems")...',
-          className: "w-full h-28 px-4 py-3 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none resize-none bg-white",
+          className: "w-full h-28 px-4 py-3 text-sm border border-slate-400 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none resize-none bg-white",
           "aria-label": "Math problem input"
         }), stemLabCreateMode !== 'solve' && /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-4 mt-3"
@@ -2435,13 +2498,13 @@
           id: 'fractionViz',
           icon: '🍕',
           label: t('stem.assessment.fraction_lab')
-        }].map(tool => /*#__PURE__*/React.createElement("button", { "aria-label": "STEM Lab tab",
+        }].map(tool => /*#__PURE__*/React.createElement("button", { "aria-label": "Open " + tool.label,
           key: tool.id,
           onClick: () => {
             setStemLabTab('explore');
             setStemLabTool(tool.id);
           },
-          className: "px-2 py-1 text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all flex items-center gap-1"
+          className: "px-2 py-1 text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all flex items-center gap-1"
         }, tool.icon, " ", tool.label)))), stemLabTab === 'create' && showAssessmentBuilder && /*#__PURE__*/React.createElement("div", {
           className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200"
         }, /*#__PURE__*/React.createElement("div", {
@@ -2490,7 +2553,7 @@
             nb[idx].type = e.target.value;
             setAssessmentBlocks(nb);
           },
-          className: "px-3 py-1.5 text-sm font-bold border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none",
+          className: "px-3 py-1.5 text-sm font-bold border border-slate-400 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none",
           "aria-label": "Block type"
         }, /*#__PURE__*/React.createElement("option", {
           value: "computation"
@@ -2522,7 +2585,7 @@
             nb[idx].quantity = Math.max(1, parseInt(e.target.value) || 1);
             setAssessmentBlocks(nb);
           },
-          className: "w-14 px-2 py-1.5 text-sm font-mono border border-slate-200 rounded-lg text-center",
+          className: "w-14 px-2 py-1.5 text-sm font-mono border border-slate-400 rounded-lg text-center",
           "aria-label": "Quantity"
         }), block.type === 'fluency' && /*#__PURE__*/React.createElement("span", {
           className: "px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-700 rounded-full"
@@ -2681,7 +2744,7 @@
             className: "grid grid-cols-2 gap-2"
           }, toolSnapshots.map((snap, si) => /*#__PURE__*/React.createElement("div", {
             key: snap.id,
-            className: "bg-white rounded-lg p-2.5 border border-slate-200 hover:border-indigo-300 transition-all group"
+            className: "bg-white rounded-lg p-2.5 border border-slate-400 hover:border-indigo-300 transition-all group"
           }, /*#__PURE__*/React.createElement("div", {
             className: "flex items-center gap-2"
           }, /*#__PURE__*/React.createElement("span", {
@@ -2743,6 +2806,7 @@
               },
               {
                 id: 'fractionViz',
+                aliases: ['fractions'],
                 icon: '🍕',
                 label: t('stem.assessment.fraction_lab'),
                 desc: 'Compare fractions side-by-side (Compare tab) or practice with interactive challenges (Challenge tab).',
@@ -2898,6 +2962,16 @@
                 color: 'emerald', ready: true
               },
               {
+                id: 'stewardshipHub', icon: '\uD83C\uDF0D', label: 'Maine Stewardship Campaigns',
+                desc: 'Cross-campaign launcher: pick from five environmental stewardship sims (Cultural Mosaic, Conservation Manager, Outbreak Response, Watershed Steward, Climate Policy Pathways) and track mastery across all five.',
+                color: 'emerald', ready: true
+              },
+              {
+                id: 'renewablesLab', icon: '\u26A1', label: 'Renewables Lab',
+                desc: 'How each renewable source actually generates electricity. Live sliders for solar PV, wind (Betz limit + cube of wind speed), hydro (head x flow), geothermal (depth x gradient), CSP, wave/tidal, biomass, and storage. Cited to NREL, IEA, IRENA.',
+                color: 'green', ready: true
+              },
+              {
                 id: 'fireEcology', icon: '\uD83D\uDD25', label: 'Fire Ecology & Indigenous Stewardship',
                 desc: 'Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, prescribed burn planning, and forest management science. Centers Aboriginal Australian, Karuk, Martu, Plains Nations, and more.',
                 color: 'orange', ready: true
@@ -2906,6 +2980,11 @@
                 id: 'aquarium', icon: '🐠', label: 'Aquaculture & Ocean Lab',
                 desc: 'Manage aquarium tanks, simulate sustainable fishing, and explore marine ecosystems. Water chemistry, population dynamics and species studies.',
                 color: 'cyan', ready: true
+              },
+              {
+                id: 'petsLab', icon: '🐾', label: 'Science of Pets Lab',
+                desc: 'Companion-animal SCIENCE: physiology, ethology, nutrition, genetics, domestication, zoonoses. Service & support animals. Cross-species training that assumes BehaviorLab\'s operant theory.',
+                color: 'amber', ready: true
               },
               {
                 id: 'decomposer', icon: '🧫', label: t('stem.tools_menu.decomposer'), desc: t('stem.tools_menu.break_materials_into_elements'),
@@ -2987,6 +3066,11 @@
                 id: 'dataStudio', icon: '📉', label: 'Data Studio',
                 desc: 'Bar charts, pie charts, line graphs & histograms. Import CSV data or enter your own. Statistical analysis included.',
                 color: 'cyan', ready: true
+              },
+              {
+                id: 'opticsLab', icon: '🔆', label: 'OpticsLab AP',
+                desc: 'AP Physics 2 geometric + wave optics: ray diagrams, Snell\'s law, mirrors, lenses, double-slit interference, single-slit diffraction, polarization. Side-by-side draggable sims + calculators with show-the-math, sample problems, glossary, misconceptions, AP exam quiz, and AI-graded explanations.',
+                color: 'sky', ready: true
               },
 
               { id: '_cat_ComputerScience', icon: '', label: 'Computer Science', desc: '', color: 'slate', category: true },
@@ -3084,6 +3168,71 @@
                 desc: 'Air Traffic Control simulator — manage approaching aircraft, solve rate problems, and learn the math behind aviation safety.',
                 color: 'emerald', ready: true
               },
+              {
+                id: 'throwlab', icon: '⚾', label: 'ThrowLab: Sports Physics',
+                desc: 'Pitcher\'s Mound: dial spin, speed, and release point and watch the Magnus + drag integrator shape the ball\'s path. 6 pitch types. Hot-Hand streaks + Rookie/Pro tiers.',
+                color: 'amber', ready: true
+              },
+              {
+                id: 'playlab', icon: '🏈', label: 'PlayLab: Strategy on the Field',
+                desc: 'Football + soccer play design: drag-to-place routes, animated simulation, Coach Mode coverage analysis, drills + saved plays. Built for athletic kids.',
+                color: 'lime', ready: true
+              },
+              {
+                id: 'skatelab', icon: '🛹', label: 'SkateLab: Skate + BMX Physics',
+                desc: 'The physics that lands a 720: kickflips, halfpipe pumps, gap jumps. Energy conservation + angular momentum, made for kids who learn through tricks.',
+                color: 'amber', ready: true
+              },
+              {
+                id: 'firstResponse', icon: '🚑', label: 'First Response Lab',
+                desc: 'Recognize + respond to medical emergencies. Hands-only CPR rhythm trainer, AED walkthrough, Stop the Bleed, choking, seizure, stroke, anaphylaxis. Disability-affirming peer response. Maine 911 + text-to-911. Educational only.',
+                color: 'rose', ready: true
+              },
+              {
+                id: 'swimLab', icon: '🏊', label: 'SwimLab',
+                desc: 'How swimming works (stroke physics + survival skills) plus what every swimmer should know about cold water, rip currents, ice, life jackets, and rescue. Visual stroke breakdowns, the science of buoyancy and propulsion, and the survival skills (back float, eggbeater, HELP, huddle) that actually save lives. Sources: CDC, USCG, AAP, NAA, NOAA, USA Swimming. Educational only — find a Water Safety Instructor for actual swim training.',
+                color: 'cyan', ready: true
+              },
+              {
+                id: 'autoRepair', icon: '🔧', label: 'Auto Repair Shop',
+                desc: 'Diagnose + fix a vehicle: OBD-II codes, fluid / sound / visual diagnosis, 7 step-by-step repairs (oil, brakes, alternator, tires, A/C, timing belt). Maine vocational pathways + ASE certification info. Pairs with RoadReady.',
+                color: 'slate', ready: true
+              },
+              {
+                id: 'weldLab', icon: '🔥', label: 'WeldLab: Welding & Metal Joining',
+                desc: 'MIG / TIG / Stick / Oxy-Fuel processes, heat-input physics, weld-bead geometry, defect ID, AWS welding symbols, OSHA-aligned PPE. Maine career pathways (Bath Iron Works, EMCC, AWS cert ladder).',
+                color: 'orange', ready: true
+              },
+              {
+                id: 'nutritionLab', icon: '🥗', label: 'NutritionLab: Nutrition Science',
+                desc: 'Adolescent-safe nutrition science: macros, micros, food labels, metabolism, digestion, food + mental health, eating-disorder awareness. Physiology-first framing — NOT weight-loss. Sources: USDA / NIH / Harvard / AAP / NEDA.',
+                color: 'green', ready: true
+              },
+              {
+                id: 'evoLab', icon: '🧬', label: 'EvoLab: Evolution',
+                desc: 'Evolution + natural selection: Selection Sandbox, Galápagos Beak Lab, Phylogenetic Tree Builder, plus quick labs on Hardy-Weinberg, genetic drift, common ancestry, evolution misconceptions. Maine wildlife examples.',
+                color: 'emerald', ready: true
+              },
+              {
+                id: 'statsLab', icon: '📊', label: 'Statistics Lab',
+                desc: 'Inferential statistics: t-tests, ANOVA, correlation, regression, chi-square, non-parametric, power analysis. AP Psych / AP Bio focus. Transparent computation, plain-English results, APA write-ups, AI interpretation grader.',
+                color: 'sky', ready: true
+              },
+              {
+                id: 'learningLab', icon: '🧠', label: 'Learning Lab: How Learning Works',
+                desc: 'Bloom\'s Taxonomy, UDL framework, metacognition, cognitive load, spaced repetition + retrieval practice, study strategies that actually work, neuromyth debunking. Cited primary sources (Dunlosky 2013, Pashler 2008, Sweller 1988, CAST UDL 3.0).',
+                color: 'indigo', ready: true
+              },
+              {
+                id: 'llmLiteracy', icon: '🧠', label: 'AI Literacy Lab',
+                desc: 'How LLMs actually work, when they fail, how to prompt well, and when to use AI as a scaffold vs. let it substitute for your thinking.',
+                color: 'violet', ready: true
+              },
+              {
+                id: 'assessmentLiteracy', icon: '📊', label: 'Assessment Literacy Lab',
+                desc: 'How cognitive, personality, career, and employer tests actually work. Build mock batteries, critique pseudoscience, coach yourself ethically for hiring tests.',
+                color: 'fuchsia', ready: true
+              },
 
               { id: '_cat_Strategy', icon: '', label: '⚔️ Strategy Games', desc: '', color: 'slate', category: true },
               { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true },
@@ -3109,7 +3258,11 @@
               { id: 'oratory', icon: '\uD83D\uDDE3\uFE0F', label: 'Oratory & Speech Lab', desc: 'Practice public speaking with real-time pacing analysis, vocal warm-ups, and speech delivery coaching.', color: 'rose', ready: true },
               { id: 'singing', icon: '\uD83C\uDFB5', label: 'Voice & Singing Lab', desc: 'Vocal range exploration, pitch matching, breathing exercises, and the science of the singing voice.', color: 'violet', ready: true },
 
+              { id: '_cat_HistoryEng', icon: '', label: '\uD83D\uDCDC History & Engineering', desc: '', color: 'slate', category: true },
+              { id: 'printingPress', icon: '\uD83D\uDCDC', label: 'PrintingPress', desc: 'The Gutenberg-style screw press as a working simulation. Pull the bar, set your own type, see the impression. Plus the materials science (lead-tin-antimony alloy), economics (cost-per-book collapse), history (Reformation, scientific revolution), typography, and the people behind the press (including women printers history forgot). Built for interdisciplinary middle-school work.', color: 'amber', ready: true },
+
               { id: '_cat_Ecology', icon: '', label: '\uD83C\uDF0D Ecology & Migration', desc: '', color: 'slate', category: true },
+              { id: 'birdLab', icon: '\uD83D\uDC26', label: 'BirdLab: I-Spy Ornithology', desc: 'Layered habitat I-Spy with animated birds whose movement signatures double as field marks. Field Marks Trainer, Beak & Feet Lab, Bird Calls, Maine Birds Spotlight, Migration, Citizen Science, Photo ID, and a Life List that persists across habitats. Pairs with Cornell Lab\u2019s Merlin Bird ID.', color: 'emerald', ready: true },
               { id: 'migration', icon: '\uD83E\uDD85', label: 'Animal Migration Lab', desc: 'Track real animal migration routes across continents. Explore navigation, climate triggers, and conservation challenges facing migratory species.', color: 'teal', ready: true },
 
               { id: '_cat_Technology', icon: '', label: '\uD83D\uDCF1 Technology & AI', desc: '', color: 'slate', category: true },
@@ -3188,9 +3341,132 @@
             var _cardIndex = 0;
             // Tool count summary
             var _toolCount = _filteredTools.filter(function(t2) { return !t2.category; }).length;
+            // ── Mastery Atlas: cross-tool engagement dashboard ──
+            // Reads each tool's persistent window slot (with localStorage
+            // fallback) and renders a single dashboard tile per tool that
+            // has the mastery primitive wired in. Surfaces 10 simultaneous
+            // engagement counts so kids see their full STEM Lab progress at
+            // a glance and can jump straight into the tool with one click.
+            // Only shows tools where the user has mastered ≥1 item, so the
+            // atlas stays out of the way for first-time visitors.
+            var _readSlot = function (slotName, lsKey) {
+              var win = null, ls = null;
+              try { win = (typeof window !== 'undefined' && window[slotName]) || null; } catch (e) {}
+              try { ls = JSON.parse(localStorage.getItem(lsKey) || 'null'); } catch (e) {}
+              return win || ls || null;
+            };
+            var _atlasCardCount = function (state, getCount) {
+              if (!state) return 0;
+              try { return getCount(state) || 0; } catch (e) { return 0; }
+            };
+            var _atlasEntries = [
+              { id: 'birdLab', icon: '🪶', label: 'BirdLab Life List',
+                color: '#10b981', accent: 'rgba(16,185,129,0.15)',
+                slot: '__alloflowBirdLab', lsKey: 'birdLab.lifeList.v1', total: 15,
+                count: function () { var s = _readSlot('__alloflowBirdLab', 'birdLab.lifeList.v1'); if (!s) return 0; var ll = (s.lifeList || s); return Object.keys(ll || {}).length; } },
+              { id: 'petsLab', icon: '🐾', label: 'PetsLab Decoder',
+                color: '#f59e0b', accent: 'rgba(245,158,11,0.15)',
+                slot: '__alloflowPetsLab', lsKey: 'petsLab.state.v1', total: 27,
+                count: function () { var s = _readSlot('__alloflowPetsLab', 'petsLab.state.v1'); return s && s.decoderMastery ? Object.keys(s.decoderMastery).length : 0; } },
+              { id: 'opticsLab', icon: '🔆', label: 'OpticsLab AP',
+                color: '#0ea5e9', accent: 'rgba(14,165,233,0.15)',
+                slot: '__alloflowOpticsLab', lsKey: 'opticsLab.state.v1', total: 30,
+                count: function () { var s = _readSlot('__alloflowOpticsLab', 'opticsLab.state.v1'); return s && s.quizMastery ? Object.keys(s.quizMastery).length : 0; } },
+              { id: 'statsLab', icon: '📊', label: 'StatsLab AP',
+                color: '#a855f7', accent: 'rgba(168,85,247,0.15)',
+                slot: '__alloflowStatsLab', lsKey: 'statsLab.state.v1', total: 25,
+                count: function () { var s = _readSlot('__alloflowStatsLab', 'statsLab.state.v1'); return s && s.quizMastery ? Object.keys(s.quizMastery).length : 0; } },
+              { id: 'weldLab', icon: '🔥', label: "Welder's Catalog",
+                color: '#dc2626', accent: 'rgba(220,38,38,0.15)',
+                slot: '__alloflowWeldLab', lsKey: 'weldLab.defectCatalog.v1', total: 6,
+                count: function () { var s = _readSlot('__alloflowWeldLab', 'weldLab.defectCatalog.v1'); if (!s) return 0; var cat = (s.defectCatalog || s); return Object.keys(cat || {}).length; } },
+              { id: 'renewablesLab', icon: '☀️', label: 'Energy Mastery',
+                color: '#22c55e', accent: 'rgba(34,197,94,0.15)',
+                slot: '__alloflowRenewablesLab', lsKey: 'renewablesLab.state.v1', total: 18,
+                count: function () { var s = _readSlot('__alloflowRenewablesLab', 'renewablesLab.state.v1'); return s && s.quizMastery ? Object.keys(s.quizMastery).length : 0; } },
+              { id: 'firstResponse', icon: '🚑', label: 'Responder Mastery',
+                color: '#ef4444', accent: 'rgba(239,68,68,0.15)',
+                slot: '__alloflowFirstResponse', lsKey: 'firstResponse.state.v1', total: 10,
+                count: function () { var s = _readSlot('__alloflowFirstResponse', 'firstResponse.state.v1'); return s && s.faMastery ? Object.keys(s.faMastery).length : 0; } },
+              { id: 'throwlab', icon: '⚾', label: 'Pitch Locker',
+                color: '#7c3aed', accent: 'rgba(124,58,237,0.15)',
+                slot: '__alloflowThrowLab', lsKey: 'throwlab.state.v1', total: 6,
+                count: function () { var s = _readSlot('__alloflowThrowLab', 'throwlab.state.v1'); return s && s.pitchLocker ? Object.keys(s.pitchLocker).length : 0; } },
+              { id: 'playlab', icon: '🏈', label: 'Play Catalog',
+                color: '#fb923c', accent: 'rgba(251,146,60,0.15)',
+                slot: '__alloflowPlayLab', lsKey: 'playlab.state.v1', total: 13,
+                count: function () { var s = _readSlot('__alloflowPlayLab', 'playlab.state.v1'); return s && s.playCatalog ? Object.keys(s.playCatalog).length : 0; } },
+              { id: 'roadReady', icon: '🚗', label: 'Permit Mastery',
+                color: '#fbbf24', accent: 'rgba(251,191,36,0.15)',
+                slot: '__alloflowRoadReady', lsKey: 'roadReady.permitMastery.v1', total: 185,
+                count: function () { var s = _readSlot('__alloflowRoadReady', 'roadReady.permitMastery.v1'); if (!s) return 0; var pm = (s.permitMastery || s); return Object.keys(pm || {}).length; } },
+              { id: 'assessmentLiteracy', icon: '🔍', label: 'Junk-Science',
+                color: '#c026d3', accent: 'rgba(192,38,211,0.15)',
+                slot: '__alloflowAssessmentLiteracy', lsKey: 'assessmentLiteracy.state.v1', total: 15,
+                count: function () { var s = _readSlot('__alloflowAssessmentLiteracy', 'assessmentLiteracy.state.v1'); return s && s.junkMastery ? Object.keys(s.junkMastery).length : 0; } }
+            ];
+            var _atlasActive = _atlasEntries.map(function (e) { return Object.assign({}, e, { current: e.count() }); }).filter(function (e) { return e.current > 0; });
+            var _atlasTotal = _atlasActive.reduce(function (s, e) { return s + e.current; }, 0);
             return /*#__PURE__*/React.createElement("div", {
               className: "max-w-3xl mx-auto animate-in fade-in duration-200"
             },
+          // ── Mastery Atlas (only shows when at least one tool has progress) ──
+          _atlasActive.length > 0 && /*#__PURE__*/React.createElement("div", {
+            role: 'region',
+            'aria-label': 'STEM Lab Mastery Atlas — ' + _atlasTotal + ' total items mastered across ' + _atlasActive.length + ' tools',
+            className: "mb-4 rounded-2xl p-4 border-2",
+            style: { background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #312e81 100%)', borderColor: 'rgba(99,102,241,0.50)' }
+          },
+            /*#__PURE__*/React.createElement("div", { className: "flex items-center justify-between gap-2 mb-3 flex-wrap" },
+              /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2" },
+                /*#__PURE__*/React.createElement("span", { 'aria-hidden': 'true', style: { fontSize: 22 } }, '🏅'),
+                /*#__PURE__*/React.createElement("h3", { className: "text-base font-black text-amber-300 m-0" }, "Your Mastery Atlas"),
+                /*#__PURE__*/React.createElement("span", { className: "text-[11px] text-slate-300 font-mono ml-1" }, _atlasTotal + ' items locked in')
+              ),
+              /*#__PURE__*/React.createElement("span", { className: "text-[11px] text-slate-400 italic" }, "Click any tool to jump back in")
+            ),
+            /*#__PURE__*/React.createElement("div", {
+              className: "grid gap-2",
+              style: { gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }
+            },
+              _atlasActive.map(function (entry) {
+                var pct = entry.total > 0 ? Math.round((entry.current / entry.total) * 100) : 0;
+                var isFull = entry.current >= entry.total;
+                return /*#__PURE__*/React.createElement("button", {
+                  key: entry.id,
+                  onClick: function () { setStemLabTool(entry.id); announceToSR && announceToSR('Opening ' + entry.label); },
+                  'aria-label': entry.label + ': ' + entry.current + ' of ' + entry.total + ' mastered. Click to open.',
+                  className: "text-left p-3 rounded-xl border transition hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-amber-400",
+                  style: {
+                    background: entry.accent,
+                    borderColor: entry.color + '88',
+                    color: '#f1f5f9',
+                    cursor: 'pointer'
+                  }
+                },
+                  /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    /*#__PURE__*/React.createElement("span", { 'aria-hidden': 'true', style: { fontSize: 20 } }, entry.icon),
+                    /*#__PURE__*/React.createElement("div", { className: "flex-1 min-w-0" },
+                      /*#__PURE__*/React.createElement("div", { className: "text-[12px] font-black truncate", style: { color: '#f1f5f9' } }, entry.label),
+                      /*#__PURE__*/React.createElement("div", { className: "text-[10px] font-mono", style: { color: entry.color } },
+                        entry.current + ' / ' + entry.total + (isFull ? ' 🏆' : '')
+                      )
+                    )
+                  ),
+                  /*#__PURE__*/React.createElement("div", {
+                    className: "h-1.5 rounded-full overflow-hidden",
+                    style: { background: 'rgba(15,23,42,0.6)' },
+                    'aria-hidden': 'true'
+                  },
+                    /*#__PURE__*/React.createElement("div", {
+                      className: "h-full transition-all",
+                      style: { width: pct + '%', background: entry.color }
+                    })
+                  )
+                );
+              })
+            )
+          ),
           // Search input
           /*#__PURE__*/React.createElement("div", { className: "mb-4 relative" },
             /*#__PURE__*/React.createElement("input", {
@@ -3198,7 +3474,7 @@
               value: _stemToolSearch,
               onChange: function (e) { _setStemToolSearch(e.target.value); },
               placeholder: "\uD83D\uDD0D Search tools...",
-              className: "w-full px-4 py-2.5 pl-10 text-sm border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all",
+              className: "w-full px-4 py-2.5 pl-10 text-sm border border-slate-400 rounded-xl bg-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all",
               'aria-label': 'Search STEM Lab tools'
             }),
             /*#__PURE__*/React.createElement("span", { className: "absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" }, "\uD83D\uDD0D"),
@@ -3232,7 +3508,7 @@
                   if (typeof announceToSR === 'function') announceToSR(newFilter ? 'Showing ' + cat.label + ' tools' : 'Showing all tools');
                 },
                 className: "px-2.5 py-1 rounded-full text-[10px] font-bold transition-all border " +
-                  (isActive ? 'bg-indigo-600 text-white border-indigo-500 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-300 hover:text-indigo-600')
+                  (isActive ? 'bg-indigo-600 text-white border-indigo-500 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-600 hover:text-indigo-600')
               }, cat.icon + ' ' + cat.label);
             })
           ),
@@ -3272,7 +3548,7 @@
                   if (addToast) addToast('\uD83C\uDFAF Station loaded: ' + (st ? st.name : ''), 'success');
                 }
               },
-              className: "px-2 py-1.5 text-xs border border-slate-200 rounded-lg bg-white text-slate-700 font-bold"
+              className: "px-2 py-1.5 text-xs border border-slate-400 rounded-lg bg-white text-slate-700 font-bold"
             },
               React.createElement("option", { value: "" }, "\uD83D\uDCCB Load Station..."),
               _savedStations.map(function(st) {
@@ -3757,7 +4033,7 @@
                       _setStationTools(next);
                     },
                     className: "p-2 rounded-lg text-left text-[10px] font-bold transition-all border " +
-                      (isSelected ? "bg-indigo-100 border-indigo-400 text-indigo-800" : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300")
+                      (isSelected ? "bg-indigo-100 border-indigo-400 text-indigo-800" : "bg-white border-slate-200 text-slate-600 hover:border-indigo-600")
                   },
                     React.createElement("span", { className: "text-lg block" }, tool.icon),
                     React.createElement("span", { className: "block truncate" }, tool.label)
@@ -3803,7 +4079,7 @@
               }, "\uD83D\uDCCC Save Station"),
               React.createElement("button", { "aria-label": "Cancel",
                 onClick: function() { _setShowStationBuilder(false); },
-                className: "px-4 py-2 rounded-lg text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50"
+                className: "px-4 py-2 rounded-lg text-sm font-bold text-slate-600 bg-white border border-slate-400 hover:bg-slate-50"
               }, "Cancel")
             ),
 
@@ -4109,7 +4385,11 @@
         // have inline render code above. Bridges hub-scope variables into
         // the plugin's ctx object format.
         // ════════════════════════════════════════════════════════════════════
-        stemLabTab === 'explore' && stemLabTool && window.StemLab && window.StemLab.isRegistered(stemLabTool) && (function _pluginFallback() {
+        // Outer guard previously required isRegistered(stemLabTool), which made
+        // the inner "plugin not yet loaded" skeleton (below) dead code. With
+        // lazy-loaded plugin scripts (May 11 2026), a user can click a tile
+        // before its plugin has registered; the skeleton handles that window.
+        stemLabTab === 'explore' && stemLabTool && window.StemLab && (function _pluginFallback() {
           // Only render if no inline IIFE already handled this tool.
           // We detect this by checking a known marker: inline tools set state
           // immediately via their IIFE returns. If the tool is in the registry
@@ -4125,9 +4405,9 @@
             probability: true, protractor: true, volume: true,
             // Science
             anatomy: true, aquarium: true, brainAtlas: true, cell: true,
-            chemBalance: true, climateExplorer: true, companionPlanting: true,
+            chemBalance: true, climateExplorer: true, companionPlanting: true, renewablesLab: true, petsLab: true,
             dataPlot: true, dissection: true, dnaLab: true, ecosystem: true,
-            epidemicSim: true, fireEcology: true, molecule: true, punnett: true,
+            epidemicSim: true, fireEcology: true, molecule: true, opticsLab: true, punnett: true,
             rocks: true, rockCycle: true, science: true, solarSystem: true,
             titrationLab: true, universe: true, unitConvert: true, waterCycle: true,
             // Engineering & CS
@@ -4148,7 +4428,25 @@
             flightSim: true,
             roadReady: true,
             bikeLab: true,
+            birdLab: true,
+            printingPress: true,
             atcTower: true,
+            throwlab: true,
+            playlab: true,
+            // Apr 30 catch-up: 10 production-ready tools that had built JS files
+            // and were loading via toolModules but were NEVER given menu tiles or
+            // plugin-only flags — so they were completely invisible. Adding both.
+            skatelab: true,
+            firstResponse: true,
+            swimLab: true,
+            autoRepair: true,
+            weldLab: true,
+            nutritionLab: true,
+            evoLab: true,
+            statsLab: true,
+            learningLab: true,
+            llmLiteracy: true,
+            assessmentLiteracy: true,
             musicSynth: true,
             beehive: true,
             echolocation: true,
@@ -4205,6 +4503,15 @@
             };
           }
           var _safeSetLabToolData = _deferSafe(setLabToolData);
+          // Wrap every parent-state setter exposed to plugins so any
+          // during-render call gets deferred. Previously only setLabToolData
+          // had this protection; plugins that called setStemLabTool /
+          // setStemLabTab / setToolSnapshots / shared explore setters during
+          // render could trigger "Cannot update a component while rendering
+          // a different component" because those setters were raw.
+          var _safeSetStemLabTool = typeof setStemLabTool === 'function' ? _deferSafe(setStemLabTool) : function() {};
+          var _safeSetStemLabTab = typeof setStemLabTab === 'function' ? _deferSafe(setStemLabTab) : function() {};
+          var _safeSetToolSnapshots = typeof setToolSnapshots === 'function' ? _deferSafe(setToolSnapshots) : function() {};
           var _ctx = {
             React: React,
             toolData: labToolData,
@@ -4224,38 +4531,71 @@
                 return Object.assign({}, prev, patch);
               });
             },
-            setStemLabTool: setStemLabTool,
-            setStemLabTab: setStemLabTab,
+            setStemLabTool: _safeSetStemLabTool,
+            setStemLabTab: _safeSetStemLabTab,
             stemLabTab: stemLabTab,
             stemLabTool: stemLabTool,
             toolSnapshots: toolSnapshots,
-            setToolSnapshots: setToolSnapshots,
+            setToolSnapshots: _safeSetToolSnapshots,
             // Wrap addToast so every plugin toast also announces to screen readers.
             // This gives all 57 STEM tools SR announcements without modifying each plugin.
-            addToast: function(msg, type) {
+            // _deferSafe wrap: addToast + the inner announceToSR both touch parent
+            // React state (toast list + a11y live-region useState). Plugins that
+            // toast during their initial render (e.g. funcgrapher canvasNarrate
+            // chain) trigger "Cannot update component while rendering" without it.
+            addToast: _deferSafe(function(msg, type) {
               if (addToast) addToast(msg, type);
               // Strip emoji from message for cleaner SR output
               if (typeof announceToSR === 'function' && msg) {
                 var srMsg = msg.replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27BF]|[\uFE00-\uFE0F]|[\u200D]/gu, '').trim();
                 if (srMsg) announceToSR(srMsg);
               }
-            },
-            awardXP: typeof awardStemXP === 'function' ? awardStemXP : function() {},
+            }),
+            // _deferSafe wrap: awardStemXP calls setStemXP (parent useState).
+            awardXP: typeof awardStemXP === 'function' ? _deferSafe(awardStemXP) : function() {},
             getXP: typeof getStemXP === 'function' ? getStemXP : function() { return 0; },
-            announceToSR: typeof announceToSR === 'function' ? announceToSR : function() {},
-            canvasNarrate: typeof canvasNarrate === 'function' ? canvasNarrate : function() {},
+            // _deferSafe wrap: announceToSR calls setA11yAnnouncement (parent useState)
+            // and canvasNarrate calls announceToSR. Without these wraps, plugins
+            // that call canvasNarrate('init', ...) during their first render \u2014 like
+            // funcgrapher at stem_tool_funcgrapher.js:123 \u2014 produce the React
+            // "Cannot update component while rendering" warning every modal open.
+            announceToSR: typeof announceToSR === 'function' ? _deferSafe(announceToSR) : function() {},
+            canvasNarrate: typeof canvasNarrate === 'function' ? _deferSafe(canvasNarrate) : function() {},
             setCanvasNarrateEnabled: typeof setCanvasNarrateEnabled === 'function' ? setCanvasNarrateEnabled : function() {},
-            celebrate: typeof stemCelebrate === 'function' ? stemCelebrate : function() {},
+            // _deferSafe wrap: stemCelebrate sets parent confetti/celebration state.
+            celebrate: typeof stemCelebrate === 'function' ? _deferSafe(stemCelebrate) : function() {},
             callGemini: typeof callGemini === 'function' ? callGemini : null,
+            // Callback-style AI helper. cyberdefense's AI coach was written to a
+            // callback API before the host standardized on promise-based callGemini.
+            // Adapter keeps both surfaces working.
+            aiChat: typeof callGemini === 'function' ? function(prompt, cb) {
+              try {
+                callGemini(prompt).then(function(resp) { try { cb && cb(resp); } catch(_) {} })
+                  .catch(function() { try { cb && cb(null); } catch(_) {} });
+              } catch (_) { try { cb && cb(null); } catch(_) {} }
+            } : null,
             sourceText: typeof inputText === 'string' ? inputText : (typeof sourceText === 'string' ? sourceText : ''),
             inputText: typeof inputText === 'string' ? inputText : '',
+            sourceTopic: typeof sourceTopic === 'string' ? sourceTopic : '',
             gradeLevel: typeof gradeLevel === 'string' ? gradeLevel : '',
+            // Coarse-grained grade banding for tools that target tiers rather than
+            // single grades (firstresponse, swimlab, etc. expect 'k2'|'g35'|'g68'|'g912').
+            gradeBand: (function() {
+              var g = (typeof gradeLevel === 'string' ? gradeLevel : '').toLowerCase();
+              if (g.indexOf('kindergarten') === 0 || /\b(1st|2nd)\b/.test(g)) return 'k2';
+              if (/\b(3rd|4th|5th)\b/.test(g)) return 'g35';
+              if (/\b(6th|7th|8th)\b/.test(g)) return 'g68';
+              if (/\b(9th|10th|11th|12th)\b/.test(g) || g.indexOf('college') !== -1 || g.indexOf('graduate') !== -1) return 'g912';
+              return 'g68';
+            })(),
+            // Coordinate grid range (passed from host useState — defaults to ±10).
+            gridRange: typeof gridRange !== 'undefined' && gridRange ? gridRange : { min: -10, max: 10 },
             t: typeof t === 'function' ? t : function(k) { return k; },
             icons: { ArrowLeft: ArrowLeft, Calculator: Calculator, Sparkles: Sparkles, X: X, GripVertical: GripVertical },
             _codingCanvasRef: typeof _codingCanvasRef !== 'undefined' ? _codingCanvasRef : null,
             saveSnapshot: function(toolId, label, data) {
               if (typeof setToolSnapshots === 'function') {
-                setToolSnapshots(function(prev) {
+                _safeSetToolSnapshots(function(prev) {
                   return (prev || []).concat([{ id: toolId + '-' + Date.now(), tool: toolId, label: label, data: data, ts: Date.now() }]);
                 });
               }
@@ -4291,30 +4631,32 @@
             theme: _stemTheme,
             pal: _pal,
             // ── Shared explore state ──
+            // Setters wrapped via _deferSafe so plugins calling them during
+            // render don't trip "Cannot update component while rendering" warnings.
             exploreScore: exploreScore || { correct: 0, total: 0 },
-            setExploreScore: typeof setExploreScore === 'function' ? setExploreScore : function() {},
+            setExploreScore: typeof setExploreScore === 'function' ? _deferSafe(setExploreScore) : function() {},
             exploreDifficulty: exploreDifficulty,
-            setExploreDifficulty: typeof setExploreDifficulty === 'function' ? setExploreDifficulty : function() {},
+            setExploreDifficulty: typeof setExploreDifficulty === 'function' ? _deferSafe(setExploreDifficulty) : function() {},
             // ── Angle Explorer state ──
             angleValue: typeof angleValue !== 'undefined' ? angleValue : 45,
-            setAngleValue: typeof setAngleValue === 'function' ? setAngleValue : function() {},
+            setAngleValue: typeof setAngleValue === 'function' ? _deferSafe(setAngleValue) : function() {},
             angleChallenge: typeof angleChallenge !== 'undefined' ? angleChallenge : null,
-            setAngleChallenge: typeof setAngleChallenge === 'function' ? setAngleChallenge : function() {},
+            setAngleChallenge: typeof setAngleChallenge === 'function' ? _deferSafe(setAngleChallenge) : function() {},
             angleFeedback: typeof angleFeedback !== 'undefined' ? angleFeedback : null,
-            setAngleFeedback: typeof setAngleFeedback === 'function' ? setAngleFeedback : function() {},
+            setAngleFeedback: typeof setAngleFeedback === 'function' ? _deferSafe(setAngleFeedback) : function() {},
             // ── Multiplication Table state ──
             multTableAnswer: typeof multTableAnswer !== 'undefined' ? multTableAnswer : '',
-            setMultTableAnswer: typeof setMultTableAnswer === 'function' ? setMultTableAnswer : function() {},
+            setMultTableAnswer: typeof setMultTableAnswer === 'function' ? _deferSafe(setMultTableAnswer) : function() {},
             multTableChallenge: typeof multTableChallenge !== 'undefined' ? multTableChallenge : null,
-            setMultTableChallenge: typeof setMultTableChallenge === 'function' ? setMultTableChallenge : function() {},
+            setMultTableChallenge: typeof setMultTableChallenge === 'function' ? _deferSafe(setMultTableChallenge) : function() {},
             multTableFeedback: typeof multTableFeedback !== 'undefined' ? multTableFeedback : null,
-            setMultTableFeedback: typeof setMultTableFeedback === 'function' ? setMultTableFeedback : function() {},
+            setMultTableFeedback: typeof setMultTableFeedback === 'function' ? _deferSafe(setMultTableFeedback) : function() {},
             multTableHidden: typeof multTableHidden !== 'undefined' ? multTableHidden : false,
-            setMultTableHidden: typeof setMultTableHidden === 'function' ? setMultTableHidden : function() {},
+            setMultTableHidden: typeof setMultTableHidden === 'function' ? _deferSafe(setMultTableHidden) : function() {},
             multTableHover: typeof multTableHover !== 'undefined' ? multTableHover : null,
-            setMultTableHover: typeof setMultTableHover === 'function' ? setMultTableHover : function() {},
+            setMultTableHover: typeof setMultTableHover === 'function' ? _deferSafe(setMultTableHover) : function() {},
             multTableRevealed: typeof multTableRevealed !== 'undefined' ? multTableRevealed : new Set(),
-            setMultTableRevealed: typeof setMultTableRevealed === 'function' ? setMultTableRevealed : function() {},
+            setMultTableRevealed: typeof setMultTableRevealed === 'function' ? _deferSafe(setMultTableRevealed) : function() {},
             // ── Shared labToolData ──
             labToolData: labToolData || {},
             setLabToolData: _safeSetLabToolData,

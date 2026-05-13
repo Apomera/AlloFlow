@@ -312,21 +312,48 @@ if (!window._alloGamepadGlobal) {
         if (micBtn) {
           micBtn.click();
         } else {
-          // Fallback: start browser speech recognition directly
+          // Phase 3v.M — gamepad fallback dictation now routes through
+          // window.AlloFlowVoice.initWebSpeechCapture when available.
+          // The cached global controller (window._gpadSpeechRecog) +
+          // toggle flag (window._gpadSpeechRecogActive) pattern is
+          // preserved so other gamepad event handlers can still inspect
+          // state. The controller's .start()/.stop() methods are
+          // SpeechRecognition-shape compatible for that purpose.
+          //
+          // The transcript is appended to the currently-focused INPUT or
+          // TEXTAREA via the React-friendly value-setter trick so React
+          // controlled inputs receive proper change events.
+          const handleTranscript = (text) => {
+            const target = document.activeElement;
+            if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+              const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set
+                || Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set;
+              if (setter) {
+                setter.call(target, target.value + text);
+                target.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+            }
+          };
           if (!window._gpadSpeechRecog) {
-            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (SR) {
-              window._gpadSpeechRecog = new SR();
-              window._gpadSpeechRecog.continuous = false;
-              window._gpadSpeechRecog.interimResults = false;
-              window._gpadSpeechRecog.onresult = (e) => {
-                const text = e.results[0][0].transcript;
-                const target = document.activeElement;
-                if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
-                  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set || Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set;
-                  if (setter) { setter.call(target, target.value + text); target.dispatchEvent(new Event('input', { bubbles: true })); }
-                }
-              };
+            if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === 'function') {
+              const ctrl = window.AlloFlowVoice.initWebSpeechCapture({
+                lang: 'en-US',
+                continuous: false,
+                interimResults: false,
+                onTranscript: (text) => handleTranscript(text),
+                onEnd: () => { window._gpadSpeechRecogActive = false; }
+              });
+              if (ctrl.supported) {
+                window._gpadSpeechRecog = ctrl;
+              }
+            } else {
+              const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+              if (SR) {
+                window._gpadSpeechRecog = new SR();
+                window._gpadSpeechRecog.continuous = false;
+                window._gpadSpeechRecog.interimResults = false;
+                window._gpadSpeechRecog.onresult = (e) => handleTranscript(e.results[0][0].transcript);
+              }
             }
           }
           if (window._gpadSpeechRecog) {

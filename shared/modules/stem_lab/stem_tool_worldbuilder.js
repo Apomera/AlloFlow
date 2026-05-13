@@ -16,6 +16,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio System (auto-injected) ──
   var _wbAC = null;
@@ -1015,13 +1024,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           ),
 
           // Character creation
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-2xl border-2 border-violet-200 p-5 space-y-3' },
+          h('div', { className: 'bg-white rounded-2xl border-2 border-violet-200 p-5 space-y-3' },
             h('h4', { className: 'text-sm font-bold text-violet-700' }, '✨ Create Your Character'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-4' },
+            h('div', { className: 'flex gap-4' },
               // Portrait area
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'shrink-0 text-center' },
+              h('div', { className: 'shrink-0 text-center' },
                 characterPortrait
-                  ? h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'relative' },
+                  ? h('div', { className: 'relative' },
                       h('img', { src: characterPortrait, alt: (characterName || 'Character') + ' portrait', className: 'w-24 h-24 rounded-xl object-cover border-2 border-violet-300 shadow-lg' }),
                       callGeminiImageEdit && h('button', {
                         onClick: function() {
@@ -1043,11 +1052,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 h('div', { className: 'grid grid-cols-3 gap-2' },
                   h('div', null,
                     h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, 'Character Name'),
-                    h('input', { type: 'text', value: characterName, onChange: function(e) { upd('characterName', e.target.value); }, placeholder: 'Your character\'s name...', 'aria-label': 'Character name', className: 'w-full text-sm p-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-violet-300' })
+                    h('input', { type: 'text', value: characterName, onChange: function(e) { upd('characterName', e.target.value); }, placeholder: 'Your character\'s name...', 'aria-label': 'Character name', className: 'w-full text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-violet-300' })
                   ),
                   h('div', null,
                     h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, 'Class / Role'),
-                    h('input', { type: 'text', value: characterClass, onChange: function(e) { upd('characterClass', e.target.value); }, placeholder: 'e.g., Scholar, Explorer...', 'aria-label': 'Character class or role', className: 'w-full text-sm p-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-violet-300' })
+                    h('input', { type: 'text', value: characterClass, onChange: function(e) { upd('characterClass', e.target.value); }, placeholder: 'e.g., Scholar, Explorer...', 'aria-label': 'Character class or role', className: 'w-full text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-violet-300' })
                   ),
                   h('div', null,
                     h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '📚 Grade Level'),
@@ -1055,13 +1064,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                       value: gradeLevel,
                       onChange: function(e) { upd('playerGradeLevel', e.target.value); },
                       'aria-label': 'Your grade level',
-                      className: 'w-full text-sm p-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-violet-300 bg-white'
+                      className: 'w-full text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-violet-300 bg-white'
                     },
                       GRADE_OPTIONS.map(function(g) {
                         return h('option', { key: g, value: g }, g);
                       })
                     ),
-                    ctxGradeLevel && !playerGradeLevel && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] text-violet-500 mt-0.5' }, '📋 Set by teacher: ' + ctxGradeLevel)
+                    ctxGradeLevel && !playerGradeLevel && h('div', { className: 'text-[11px] text-violet-500 mt-0.5' }, '📋 Set by teacher: ' + ctxGradeLevel)
                   )
                 ),
                 h('div', null,
@@ -1071,20 +1080,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                     onChange: function(e) { upd('characterAppearance', e.target.value); },
                     placeholder: 'Describe what your character looks like with vivid detail — hair, eyes, clothing, accessories, distinguishing features...',
                     'aria-label': 'Character appearance description',
-                    className: 'w-full text-sm p-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-violet-300 resize-none h-16'
+                    className: 'w-full text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-violet-300 resize-none h-16'
                   })
                 ),
                 callImagen && characterAppearance.trim().length > 10 && h('button', { 'aria-label': 'Generate Character Portrait',
                   onClick: function() { generateCharacterPortrait(characterAppearance); },
                   disabled: characterPortraitLoading,
                   className: 'px-3 py-1.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-lg text-xs font-bold hover:from-violet-700 hover:to-purple-700 disabled:opacity-40 transition-all flex items-center gap-1.5'
-                }, characterPortraitLoading ? h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'animate-spin' }, '⏳') : h(Sparkles, { size: 14 }), characterPortraitLoading ? ' Generating...' : ' Generate Portrait')
+                }, characterPortraitLoading ? h('span', { className: 'animate-spin' }, '⏳') : h(Sparkles, { size: 14 }), characterPortraitLoading ? ' Generating...' : ' Generate Portrait')
               )
             )
           ),
 
           // World cards
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+          h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             WORLDS.map(function(w) {
               return h('button', { 'aria-label': 'Select world to explore', key: w.id, onClick: function() { updMulti({ selectedWorld: w.id, currentRoom: w.rooms[0].id, writingPower: 10, roomsVisited: [w.rooms[0].id] }); if (awardStemXP) awardStemXP(5); moveToRoom(w.rooms[0].id); },
                 className: 'p-5 rounded-2xl border-2 border-slate-200 bg-white text-left hover:border-violet-400 hover:shadow-lg transition-all hover:scale-[1.02]'
@@ -1131,25 +1140,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           ),
 
           // World map (connected rooms)
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-xl border border-slate-200 p-3' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2' }, '🗺️ Connected Locations'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-2' },
+          h('div', { className: 'bg-white rounded-xl border border-slate-400 p-3' },
+            h('div', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2' }, '🗺️ Connected Locations'),
+            h('div', { className: 'flex flex-wrap gap-2' },
               room.connections.map(function(connId) {
                 var connRoom = world.rooms.find(function(r) { return r.id === connId; });
                 if (!connRoom) return null;
                 var visited = roomsVisited.indexOf(connId) >= 0;
                 return h('button', { 'aria-label': 'Move To Room', key: connId, onClick: function() { moveToRoom(connId); },
                   className: 'px-3 py-2 rounded-xl border-2 text-xs font-bold transition-all hover:scale-105 ' +
-                    (visited ? 'border-green-300 bg-green-50 text-green-700' : 'border-slate-200 bg-white text-slate-600 hover:border-violet-300')
+                    (visited ? 'border-green-600 bg-green-50 text-green-700' : 'border-slate-200 bg-white text-slate-600 hover:border-violet-600')
                 }, connRoom.emoji + ' ' + connRoom.name + (visited ? ' ✓' : ''));
               })
             )
           ),
 
           // NPCs in this room
-          gmCharacters.filter(function(npc) { return !npc.roomId || npc.roomId === currentRoom; }).length > 0 && !activeNPC && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-cyan-50 to-teal-50 border border-cyan-200 rounded-xl p-3' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-cyan-600 uppercase tracking-widest mb-2' }, '👥 People Here'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-2' },
+          gmCharacters.filter(function(npc) { return !npc.roomId || npc.roomId === currentRoom; }).length > 0 && !activeNPC && h('div', { className: 'bg-gradient-to-r from-cyan-50 to-teal-50 border border-cyan-200 rounded-xl p-3' },
+            h('div', { className: 'text-[11px] font-bold text-cyan-600 uppercase tracking-widest mb-2' }, '👥 People Here'),
+            h('div', { className: 'flex flex-wrap gap-2' },
               gmCharacters.filter(function(npc) { return !npc.roomId || npc.roomId === currentRoom; }).map(function(npc, i) {
                 return h('button', { 'aria-label': 'Interact With N P C', key: i, onClick: function() { interactWithNPC(npc); },
                   className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-xl border border-cyan-200 text-xs hover:border-cyan-400 hover:shadow-md transition-all'
@@ -1193,7 +1202,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                   h('span', { className: 'text-cyan-600 tracking-widest' }, '💛 Rapport'),
                   h('span', { className: rapport >= 70 ? 'text-green-600' : 'text-slate-600' }, rapport + '%')
                 ),
-                h('div', { className: 'w-full h-2.5 bg-slate-200 rounded-full overflow-hidden border border-slate-300' },
+                h('div', { className: 'w-full h-2.5 bg-slate-200 rounded-full overflow-hidden border border-slate-400' },
                   h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full transition-all duration-500 rounded-full ' +
                     (rapport >= 70 ? 'bg-gradient-to-r from-green-400 to-emerald-500' :
                      rapport >= 40 ? 'bg-gradient-to-r from-amber-400 to-yellow-500' :
@@ -1247,10 +1256,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           ),
 
           // GM Message (teacher broadcast)
-          gmMessage && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-2xl p-4 animate-in slide-in-from-top duration-300' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-1' },
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, '🎭'),
-              h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs font-bold text-amber-700 uppercase tracking-widest' }, 'Game Master')
+          gmMessage && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-2xl p-4 animate-in slide-in-from-top duration-300' },
+            h('div', { className: 'flex items-center gap-2 mb-1' },
+              h('span', { className: 'text-lg' }, '🎭'),
+              h('span', { className: 'text-xs font-bold text-amber-700 uppercase tracking-widest' }, 'Game Master')
             ),
             h('p', { className: 'text-sm text-amber-900 font-medium leading-relaxed' }, gmMessage),
             gmSceneImage && h('img', { src: gmSceneImage, alt: 'Scene from the Game Master', className: 'w-full rounded-xl mt-2 border border-amber-200' }),
@@ -1269,16 +1278,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           ),
 
           // ── Inventory ──
-          inventory.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-3' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-amber-600 uppercase tracking-widest' }, '🎒 Inventory (' + inventory.length + ')'),
-              activeItem && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full' }, '⚔️ Equipped: ' + activeItem.emoji + ' ' + activeItem.name)
+          inventory.length > 0 && h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-3' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
+              h('div', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-widest' }, '🎒 Inventory (' + inventory.length + ')'),
+              activeItem && h('span', { className: 'text-[11px] font-bold bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full' }, '⚔️ Equipped: ' + activeItem.emoji + ' ' + activeItem.name)
             ),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
+            h('div', { className: 'flex flex-wrap gap-1.5' },
               inventory.map(function(item, i) {
                 var tier = getQualityTier(item.quality);
                 var isEquipped = activeItem && activeItem.name === item.name;
-                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'group relative' },
+                return h('div', { key: i, className: 'group relative' },
                   h('button', {
                     onClick: function() {
                       if (activeBattle) { useItemInBattle(item); }
@@ -1350,32 +1359,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           })(),
 
           // Writing action area
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-violet-50 to-indigo-50 rounded-2xl border-2 border-violet-200 p-5' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between mb-2' },
+          h('div', { className: 'bg-gradient-to-r from-violet-50 to-indigo-50 rounded-2xl border-2 border-violet-200 p-5' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
               h('h4', { className: 'text-sm font-bold text-violet-700' }, '✍️ What do you do?'),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold px-2 py-1 rounded-full', style: { background: getQualityTier(writingPower).color + '22', color: getQualityTier(writingPower).color } },
+              h('div', { className: 'flex items-center gap-2' },
+                h('span', { className: 'text-[11px] font-bold px-2 py-1 rounded-full', style: { background: getQualityTier(writingPower).color + '22', color: getQualityTier(writingPower).color } },
                   getQualityTier(writingPower).emoji + ' Power: ' + writingPower
                 )
               )
             ),
             h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Describe your action with vivid detail. The better you write, the more powerful the outcome. Use sensory language, precise vocabulary, and creativity!'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-2 mb-2' },
-              h('button', { 'aria-label': 'Act', onClick: function() { upd('actionMode', 'action'); }, className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' + ((d.actionMode || 'action') === 'action' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, '⚔️ Act'),
-              h('button', { 'aria-label': 'Explore', onClick: function() { upd('actionMode', 'explore'); }, className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' + (d.actionMode === 'explore' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, '🔍 Explore'),
-              h('button', { 'aria-label': 'Battle', onClick: function() { upd('actionMode', 'craft'); }, className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' + (d.actionMode === 'craft' ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') + (craftedThisTurn && structureCooldown > 0 ? ' opacity-40' : '') }, '🔨 Craft' + (structureCooldown > 0 ? ' (' + structureCooldown + ' turns)' : craftedThisTurn ? ' (done)' : '')),
+            h('div', { className: 'flex flex-wrap gap-2 mb-2' },
+              h('button', { onClick: function() { upd('actionMode', 'action'); }, 'aria-pressed': (d.actionMode || 'action') === 'action', className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' + ((d.actionMode || 'action') === 'action' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, '⚔️ Act'),
+              h('button', { onClick: function() { upd('actionMode', 'explore'); }, 'aria-pressed': d.actionMode === 'explore', className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' + (d.actionMode === 'explore' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, '🔍 Explore'),
+              h('button', { onClick: function() { upd('actionMode', 'craft'); }, 'aria-pressed': d.actionMode === 'craft', className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' + (d.actionMode === 'craft' ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') + (craftedThisTurn && structureCooldown > 0 ? ' opacity-40' : '') }, '🔨 Craft' + (structureCooldown > 0 ? ' (' + structureCooldown + ' turns)' : craftedThisTurn ? ' (done)' : '')),
               !activeBattle && !activeNPC && h('button', { 'aria-label': 'Battle', onClick: startBattle, className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all bg-red-100 text-red-700 hover:bg-red-200' }, '⚔️ Battle'),
               activeNPC && h('button', { 'aria-label': 'Leave', onClick: function() { updMulti({ activeNPC: null, actionMode: 'action' }); }, className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all bg-slate-100 text-slate-600 hover:bg-slate-200' }, '👋 Leave')
             ),
             // Craft sub-mode selector (Item vs Structure)
-            d.actionMode === 'craft' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mb-2 ml-1' },
+            d.actionMode === 'craft' && h('div', { className: 'flex gap-2 mb-2 ml-1' },
               h('button', { 'aria-label': 'Craft Item', onClick: function() { upd('craftSubMode', 'item'); },
                 className: 'px-3 py-1 rounded-lg text-[11px] font-bold border transition-all ' +
-                  (craftSubMode === 'item' ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-white border-slate-200 text-slate-600 hover:border-amber-300')
+                  (craftSubMode === 'item' ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-white border-slate-200 text-slate-600 hover:border-amber-600')
               }, '🔨 Craft Item' + (craftedThisTurn ? ' ✓' : '')),
               h('button', { 'aria-label': 'Build Structure', onClick: function() { upd('craftSubMode', 'structure'); },
                 className: 'px-3 py-1 rounded-lg text-[11px] font-bold border transition-all ' +
-                  (craftSubMode === 'structure' ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-300') +
+                  (craftSubMode === 'structure' ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-600') +
                   (structureCooldown > 0 ? ' opacity-40' : '')
               }, '🏗️ Build Structure' + (structureCooldown > 0 ? ' (' + structureCooldown + ' turns)' : '')),
               structureCooldown > 0 && h('span', { className: 'text-[11px] text-slate-200 self-center' }, '⏳ Structure cooldown: ' + structureCooldown + ' turn' + (structureCooldown > 1 ? 's' : '') + ' left')
@@ -1483,8 +1492,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             pasteDetected && h('div', { className: 'text-[11px] text-red-600 font-bold mt-1' }, '⚠ Pasting detected — please write your own words! Your writing power depends on YOUR creativity.'),
             h('div', { className: 'flex items-center justify-between mt-2' },
               h('span', { className: 'text-[11px] text-slate-600' }, actionText.split(/\s+/).filter(Boolean).length + ' words'),
-              h('button', { 'aria-label': 'Worldbuilder action',
-                onClick: function() { activeNPC ? respondToNPC() : activeBattle ? performBattleAction() : d.actionMode === 'craft' ? (craftSubMode === 'structure' ? buildStructure(actionText) : craftItem(actionText)) : performAction(); },
+              h('button', { onClick: function() { activeNPC ? respondToNPC() : activeBattle ? performBattleAction() : d.actionMode === 'craft' ? (craftSubMode === 'structure' ? buildStructure(actionText) : craftItem(actionText)) : performAction(); },
+                'aria-busy': !!actionLoading,
                 disabled: actionText.trim().length < 5 || actionLoading,
                 className: 'px-5 py-2.5 bg-gradient-to-r ' + (d.actionMode === 'craft' && craftSubMode === 'structure' ? 'from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700' : d.actionMode === 'craft' ? 'from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700' : 'from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700') + ' text-white rounded-xl font-bold text-sm disabled:opacity-40 transition-all shadow-lg flex items-center gap-2'
               }, actionLoading ? h('span', { className: 'animate-spin' }, '⏳') : h(Sparkles, { size: 16 }), actionLoading ? ' The world responds...' : activeNPC ? ' Respond' : activeBattle ? ' Attack!' : d.actionMode === 'craft' && craftSubMode === 'structure' ? ' Build!' : d.actionMode === 'craft' ? ' Craft!' : d.actionMode === 'explore' ? ' Explore!' : ' Act!')
@@ -1545,26 +1554,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               ),
 
               // Extras
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-4 pb-3 flex flex-wrap gap-2' },
-                actionResult.xpEarned && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded-full' }, '+' + actionResult.xpEarned + ' XP'),
-                actionResult.damageDealt && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold bg-red-100 text-red-700 px-2 py-1 rounded-full' }, '💥 ' + actionResult.damageDealt + ' damage'),
-                actionResult.powerChange > 0 && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold bg-violet-100 text-violet-700 px-2 py-1 rounded-full' }, '+' + actionResult.powerChange + ' Power'),
-                actionResult.discoveredItem && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full' }, '🎁 Found: ' + actionResult.discoveredItem),
+              h('div', { className: 'px-4 pb-3 flex flex-wrap gap-2' },
+                actionResult.xpEarned && h('span', { className: 'text-[11px] font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded-full' }, '+' + actionResult.xpEarned + ' XP'),
+                actionResult.damageDealt && h('span', { className: 'text-[11px] font-bold bg-red-100 text-red-700 px-2 py-1 rounded-full' }, '💥 ' + actionResult.damageDealt + ' damage'),
+                actionResult.powerChange > 0 && h('span', { className: 'text-[11px] font-bold bg-violet-100 text-violet-700 px-2 py-1 rounded-full' }, '+' + actionResult.powerChange + ' Power'),
+                actionResult.discoveredItem && h('span', { className: 'text-[11px] font-bold bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full' }, '🎁 Found: ' + actionResult.discoveredItem),
                 (actionResult.vocabHighlights || []).map(function(v, vi) {
-                  return h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: vi, className: 'text-[11px] font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded-full' }, '📖 ' + v);
+                  return h('span', { key: vi, className: 'text-[11px] font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded-full' }, '📖 ' + v);
                 })
               )
             ),
 
             // TTS narrate both player and enemy
-            callTTS && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
-              h('button', { 'aria-label': 'Hear your action', onClick: function() { callTTS(actionResult.narrative || ''); }, className: 'text-[11px] text-violet-500 hover:text-violet-700 font-bold' }, '🔊 Hear your action'),
+            callTTS && h('div', { className: 'flex gap-2' },
+              h('button', { onClick: function() { callTTS(actionResult.narrative || ''); }, className: 'text-[11px] text-violet-500 hover:text-violet-700 font-bold' }, '🔊 Hear your action'),
               actionResult.enemyWriting && h('button', { 'aria-label': 'Refresh', onClick: function() { callTTS(actionResult.enemyWriting); }, className: 'text-[11px] text-red-500 hover:text-red-700 font-bold' }, '🔊 Hear enemy\'s response')
             )
           ),
 
           // Action log
-          actionLog.length > 0 && h('details', { className: 'bg-white rounded-xl border border-slate-200' },
+          actionLog.length > 0 && h('details', { className: 'bg-white rounded-xl border border-slate-400' },
             h('summary', { className: 'px-4 py-2 text-xs font-bold text-slate-600 cursor-pointer hover:bg-slate-50' }, '📜 Adventure Log (' + actionLog.length + ' actions)'),
             h('div', { className: 'px-4 pb-3 space-y-1.5 max-h-48 overflow-y-auto' },
               actionLog.slice().reverse().map(function(entry, i) {
@@ -1618,7 +1627,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           // ── Game Master Panel (teacher creates characters) ──
           h('details', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-200' },
             h('summary', { className: 'px-4 py-3 text-sm font-bold text-amber-700 cursor-pointer hover:bg-amber-100 rounded-2xl transition-colors' }, '🎭 Game Master — Create Characters & Quests'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-4 pb-4 space-y-3' },
+            h('div', { className: 'px-4 pb-4 space-y-3' },
               h('p', { className: 'text-xs text-amber-600' }, 'Create individual characters or launch full scenarios with multiple NPCs interacting.'),
 
               // Teacher penmanship toggle
@@ -1636,11 +1645,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               ),
 
               // Scenario templates
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mb-3' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-amber-600 uppercase tracking-widest mb-1.5' }, '📋 Quick Scenarios (creates multiple characters)'),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-1.5' },
+              h('div', { className: 'mb-3' },
+                h('div', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-widest mb-1.5' }, '📋 Quick Scenarios (creates multiple characters)'),
+                h('div', { className: 'flex flex-wrap gap-1.5' },
                   SCENARIO_TEMPLATES.map(function(tmpl) {
-                    return h('button', { 'aria-label': 'Action', key: tmpl.type,
+                    return h('button', { key: tmpl.type,
                       onClick: function() {
                         upd('actionLoading', true);
                         var prompt = 'Create a multi-character scene for a ' + gradeLevel + ' literary RPG in the world "' + (world ? world.name : 'Fantasy') + '".\n\n' +
@@ -1672,7 +1681,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 )
               ),
 
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-amber-500 uppercase tracking-widest mb-1' }, 'Or create a custom character:'),
+              h('div', { className: 'text-[11px] font-bold text-amber-500 uppercase tracking-widest mb-1' }, 'Or create a custom character:'),
               h('textarea', {
                 value: d.gmCharacterPrompt || '',
                 onChange: function(e) { upd('gmCharacterPrompt', e.target.value); },
@@ -1680,20 +1689,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 'aria-label': 'Describe a character for the world',
                 className: 'w-full text-sm p-3 border border-amber-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-400 resize-none h-20'
               }),
-              h('button', { 'aria-label': 'Change gm character prompt',
-                onClick: function() { if ((d.gmCharacterPrompt || '').trim()) { createGMCharacter(d.gmCharacterPrompt); upd('gmCharacterPrompt', ''); } },
+              h('button', { onClick: function() { if ((d.gmCharacterPrompt || '').trim()) { createGMCharacter(d.gmCharacterPrompt); upd('gmCharacterPrompt', ''); } },
                 disabled: !(d.gmCharacterPrompt || '').trim() || actionLoading,
                 className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700 disabled:opacity-40 transition-colors'
               }, actionLoading ? 'Creating...' : '✨ Create Character'),
-              gmCharacters.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2 mt-2' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[11px] font-bold text-amber-600 uppercase tracking-widest' }, 'Characters in World (' + gmCharacters.length + ')'),
+              gmCharacters.length > 0 && h('div', { className: 'space-y-2 mt-2' },
+                h('div', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-widest' }, 'Characters in World (' + gmCharacters.length + ')'),
                 gmCharacters.map(function(npc, i) {
-                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'flex items-center gap-2 p-2 bg-white rounded-lg border border-amber-200 text-xs' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-lg' }, npc.emoji),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex-1 min-w-0' },
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-slate-800' }, npc.name),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-slate-600 ml-1' }, '(' + npc.role + ')'),
-                      npc.selTheme && h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'ml-1 text-[11px] bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded-full font-bold' }, npc.selTheme)
+                  return h('div', { key: i, className: 'flex items-center gap-2 p-2 bg-white rounded-lg border border-amber-200 text-xs' },
+                    h('span', { className: 'text-lg' }, npc.emoji),
+                    h('div', { className: 'flex-1 min-w-0' },
+                      h('span', { className: 'font-bold text-slate-800' }, npc.name),
+                      h('span', { className: 'text-slate-600 ml-1' }, '(' + npc.role + ')'),
+                      npc.selTheme && h('span', { className: 'ml-1 text-[11px] bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded-full font-bold' }, npc.selTheme)
                     ),
                     h('button', { onClick: function() { updMulti({ gmCharacters: gmCharacters.filter(function(_, j) { return j !== i; }) }); }, className: 'text-slate-600 hover:text-red-500 text-[11px]', 'aria-label': 'Remove ' + npc.name }, '✕')
                   );

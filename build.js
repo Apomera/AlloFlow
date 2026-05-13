@@ -45,12 +45,47 @@ const SOURCE = path.join(ROOT, 'AlloFlowANTI.txt');
 const OUTPUT = path.join(ROOT, 'prismflow-deploy', 'src', 'App.jsx');
 const BACKUP = path.join(ROOT, 'prismflow-deploy', 'src', 'AlloFlowANTI.txt');
 
+// ── CDN base (May 12 2026) ──────────────────────────────────────
+// Switched from jsdelivr (cdn.jsdelivr.net/gh/Apomera/AlloFlow@<hash>/<file>)
+// to Cloudflare Pages because jsdelivr started returning GitHub's "429:
+// Too Many Requests" plaintext as response bodies, causing ~30-40 of 127
+// modules to [CDN-FAIL] every cold load. Cloudflare Pages serves the files
+// directly from its edge network — no GitHub API in the request path, no
+// rate-limit cascade. URLs no longer need a @hash because Cloudflare
+// invalidates by content automatically when a new commit pushes to main.
+const CLOUDFLARE_CDN_BASE = 'https://alloflow-cdn.pages.dev';
+
 // ── Module definitions ──────────────────────────────────────────
 // Each module: { name, filename, cdnTemplate }
 const MODULES = [
     {
         name: 'AlloData',
         filename: 'allo_data_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'SubmissionCrypto',
+        filename: 'submission_crypto_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'SubmissionInbox',
+        filename: 'view_submission_inbox_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'FirestoreSync',
+        filename: 'firestore_sync_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'SafetyChecker',
+        filename: 'safety_checker_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'Fluency',
+        filename: 'fluency_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -89,6 +124,181 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'AudioHelpersModule',
+        filename: 'audio_helpers_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'GenerationHelpersModule',
+        filename: 'generation_helpers_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'MiscHandlersModule',
+        filename: 'misc_handlers_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'PureHelpersModule',
+        filename: 'pure_helpers_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'MathHelpersModule',
+        filename: 'math_helpers_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'CmapHandlersModule',
+        filename: 'concept_map_handlers_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'GenDispatcherModule',
+        filename: 'generate_dispatcher_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'PhaseKHelpersModule',
+        filename: 'phase_k_helpers_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'PhaseNHelpersModule',
+        filename: 'phase_n_misc_helpers_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'PhaseOHandlersModule',
+        filename: 'phase_o_misc_handlers_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AdventureSessionHandlersModule',
+        filename: 'adventure_session_handlers_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'TextUtilityHelpersModule',
+        filename: 'text_utility_helpers_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewDbqModule',
+        filename: 'view_dbq_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewTimelineModule',
+        filename: 'view_timeline_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewGlossaryModule',
+        filename: 'view_glossary_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewOutlineModule',
+        filename: 'view_outline_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewFaqModule',
+        filename: 'view_faq_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewSentenceFramesModule',
+        filename: 'view_sentence_frames_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewBrainstormModule',
+        filename: 'view_brainstorm_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewImageModule',
+        filename: 'view_image_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewAnalysisModule',
+        filename: 'view_analysis_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewQuizModule',
+        filename: 'view_quiz_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewSimplifiedModule',
+        filename: 'view_simplified_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewMathModule',
+        filename: 'view_math_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewLessonPlanModule',
+        filename: 'view_lesson_plan_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewAlignmentReportModule',
+        filename: 'view_alignment_report_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewWordSoundsPreviewModule',
+        filename: 'view_word_sounds_preview_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewGeminiBridgeModule',
+        filename: 'view_gemini_bridge_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewConceptSortModule',
+        filename: 'view_concept_sort_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewPersonaChatModule',
+        filename: 'view_persona_chat_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewSpotlightTourModule',
+        filename: 'view_spotlight_tour_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewProjectSettingsModule',
+        filename: 'view_project_settings_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewLaunchPadModule',
+        filename: 'view_launch_pad_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewAdventureModule',
+        filename: 'view_adventure_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ExportHandlersModule',
+        filename: 'export_handlers_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'LargeFileModule',
         filename: 'large_file_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -115,62 +325,102 @@ const MODULES = [
     },
     {
         name: 'StemLab',
-        filename: 'shared/modules/stem_lab/stem_lab_module.js',
+        filename: 'stem_lab/stem_lab_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'WordSoundsModal',
-        filename: 'shared/modules/word_sounds_module.js',
+        filename: 'word_sounds_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'BehaviorLens',
-        filename: 'shared/modules/behavior_lens_module.js',
+        filename: 'behavior_lens_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'ReportWriter',
-        filename: 'shared/modules/report_writer_module.js',
+        filename: 'report_writer_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'StudentAnalytics',
-        filename: 'shared/modules/student_analytics_module.js',
+        filename: 'student_analytics_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'SymbolStudio',
-        filename: 'shared/modules/symbol_studio_module.js',
+        filename: 'symbol_studio_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AlloHaven',
+        filename: 'allohaven_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'Voice',
+        filename: 'voice_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'GamesBundle',
-        filename: 'shared/modules/games_module.js',
+        filename: 'games_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'SelHub',
-        filename: 'shared/modules/sel_hub/sel_hub_module.js',
+        filename: 'sel_hub/sel_hub_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'CommunityCatalog',
+        filename: 'catalog_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AccessibilityLab',
+        filename: 'accessibility_lab_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AuditRemediator',
+        filename: 'audit_remediator_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'QuizModeStrategies',
+        filename: 'quiz_mode_strategies.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'QuizAIHelpers',
+        filename: 'quiz_ai_helpers.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'QuizLiveAggregators',
+        filename: 'quiz_live_aggregators.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'QuickStartWizard',
-        filename: 'shared/modules/quickstart_module.js',
+        filename: 'quickstart_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'AlloBot',
-        filename: 'shared/modules/allobot_module.js',
+        filename: 'allobot_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'TeacherModule',
-        filename: 'shared/modules/teacher_module.js',
+        filename: 'teacher_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
         name: 'StoryForge',
-        filename: 'shared/modules/story_forge_module.js',
+        filename: 'story_forge_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -211,6 +461,186 @@ const MODULES = [
     {
         name: 'UIModalsModule',
         filename: 'ui_modals_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'UIFontLibrary',
+        filename: 'ui_font_library_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'VoiceConfig',
+        filename: 'voice_config_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'CanvasTips',
+        filename: 'canvas_tips_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'KokoroOfferModal',
+        filename: 'view_kokoro_offer_modal_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ConfirmDialog',
+        filename: 'view_confirm_dialog_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'HintsModal',
+        filename: 'view_hints_modal_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'XPModal',
+        filename: 'view_xp_modal_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'StorybookExportModal',
+        filename: 'view_storybook_export_modal_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'InfoModal',
+        filename: 'view_info_modal_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'SessionModal',
+        filename: 'view_session_modal_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'SocraticChat',
+        filename: 'view_socratic_chat_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'GlobalLevelUpModal',
+        filename: 'view_global_level_up_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'HeaderBar',
+        filename: 'view_header_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'GuidedModeBanner',
+        filename: 'view_guided_mode_banner_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'StudentJoinPanel',
+        filename: 'view_student_join_panel_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'StudentSaveAdventurePanel',
+        filename: 'view_student_save_adventure_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'SidebarTabsNav',
+        filename: 'view_sidebar_tabs_nav_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'UDLGuideButton',
+        filename: 'view_udl_guide_button_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'TeacherHistoryTab',
+        filename: 'view_teacher_history_tab_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'HistoryPanel',
+        filename: 'view_history_panel_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'FabStack',
+        filename: 'view_fab_stack_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'StudyTimerModal',
+        filename: 'view_study_timer_modal_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'EducatorHubModal',
+        filename: 'view_educator_hub_modal_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'VisualSupportsModal',
+        filename: 'view_visual_supports_modal_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'LearningHubModal',
+        filename: 'view_learning_hub_modal_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ClozeInteractionPanel',
+        filename: 'view_cloze_interaction_panel_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'LabelPositions',
+        filename: 'label_positions_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'UILanguageSelector',
+        filename: 'ui_language_selector_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AudioBanks',
+        filename: 'audio_banks_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'PdfAuditView',
+        filename: 'view_pdf_audit_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ModuleScopeExtras',
+        filename: 'module_scope_extras_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ExportPreviewView',
+        filename: 'view_export_preview_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'MiscModals',
+        filename: 'view_misc_modals_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'GeminiBridge',
+        filename: 'view_gemini_bridge_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'MiscPanels',
+        filename: 'view_misc_panels_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'SidebarPanels',
+        filename: 'view_sidebar_panels_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
@@ -295,10 +725,14 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_a11yauditor.js',
     'stem_lab/stem_tool_worldbuilder.js',
     'stem_lab/stem_tool_flightsim.js',
-    'stem_lab/stem_tool_atctower.js',
+    // atcTower entry moved to the catch-up batch below with the correct camelCase
+    // filename (matches the actual stem_tool_atcTower.js on disk + GitHub).
     'stem_lab/stem_tool_music.js',
     'stem_lab/stem_tool_climateExplorer.js',
+    'stem_lab/stem_tool_renewables.js',
+    'stem_lab/stem_tool_pets.js',
     'stem_lab/stem_tool_fireecology.js',
+    'stem_lab/stem_tool_stewardship.js',
     'stem_lab/stem_tool_moonmission.js',
     'stem_lab/stem_tool_beehive.js',
     'stem_lab/stem_tool_spacecolony.js',
@@ -331,7 +765,31 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_echotrainer.js',
     'stem_lab/stem_tool_bakingscience.js',
     'stem_lab/stem_tool_allobotsage.js',
+    'stem_lab/stem_tool_skatelab.js',
+    'stem_lab/stem_tool_statslab.js',
+    'stem_lab/stem_tool_optics.js',
+    // Catch-up batch (Apr 30 2026): tools that were live in AlloFlowANTI/App.jsx
+    // toolModules array but missing here, so build.js couldn't bump their CDN
+    // hash. Fixed alongside the atcTower casing + playlab/throwlab full wiring.
+    'stem_lab/stem_tool_atcTower.js',
+    'stem_lab/stem_tool_throwlab.js',
+    'stem_lab/stem_tool_playlab.js',
+    'stem_lab/stem_tool_assessmentliteracy.js',
+    'stem_lab/stem_tool_autorepair.js',
+    'stem_lab/stem_tool_bikelab.js',
+    'stem_lab/stem_tool_evolab.js',
+    'stem_lab/stem_tool_firstresponse.js',
+    'stem_lab/stem_tool_learning_lab.js',
+    'stem_lab/stem_tool_llm_literacy.js',
+    'stem_lab/stem_tool_nutritionlab.js',
+    'stem_lab/stem_tool_roadready.js',
+    'stem_lab/stem_tool_typingpractice.js',
+    'stem_lab/stem_tool_weldlab.js',
+    'stem_lab/stem_tool_birdlab.js',
+    'stem_lab/stem_tool_swimlab.js',
+    'stem_lab/stem_tool_printingpress.js',
     'sel_hub/sel_safety_layer.js',  // MUST load before any sel_tool_*.js
+    'sel_hub/sel_standards_alignment.js',  // standards alignment data + helper used by sel_tool_*.js About views
     'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
     'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_mindfulness.js',
     'sel_hub/sel_tool_social.js',
@@ -339,6 +797,43 @@ const PLUGIN_FILES = [
     'sel_hub/sel_tool_decisions.js',
     'sel_hub/sel_tool_conflict.js',
     'sel_hub/sel_tool_advocacy.js',
+    'sel_hub/sel_tool_howl.js',
+    'sel_hub/sel_tool_landplace.js',
+    'sel_hub/sel_tool_quietquestions.js',
+    'sel_hub/sel_tool_careconstellations.js',
+    'sel_hub/sel_tool_orientations.js',
+    'sel_hub/sel_tool_onepageprofile.js',
+    'sel_hub/sel_tool_maps.js',
+    'sel_hub/sel_tool_path.js',
+    'sel_hub/sel_tool_ecomap.js',
+    'sel_hub/sel_tool_circlesofsupport.js',
+    'sel_hub/sel_tool_genogram.js',
+    'sel_hub/sel_tool_windowoftolerance.js',
+    'sel_hub/sel_tool_stressbucket.js',
+    'sel_hub/sel_tool_viastrengths.js',
+    'sel_hub/sel_tool_wheeloflife.js',
+    'sel_hub/sel_tool_thoughtrecord.js',
+    'sel_hub/sel_tool_costbenefit.js',
+    'sel_hub/sel_tool_tipp.js',
+    'sel_hub/sel_tool_dearman.js',
+    'sel_hub/sel_tool_valuescommittedaction.js',
+    'sel_hub/sel_tool_sfbt.js',
+    'sel_hub/sel_tool_behavioralactivation.js',
+    'sel_hub/sel_tool_careercompass.js',
+    'sel_hub/sel_tool_perma.js',
+    'sel_hub/sel_tool_motivationalinterviewing.js',
+    'sel_hub/sel_tool_crewprotocols.js',
+    'sel_hub/sel_tool_griefloss.js',
+    'sel_hub/sel_tool_anxietytoolkit.js',
+    'sel_hub/sel_tool_sleep.js',
+    'sel_hub/sel_tool_sensoryregulation.js',
+    'sel_hub/sel_tool_traumapsychoed.js',
+    'sel_hub/sel_tool_bodystory.js',
+    'sel_hub/sel_tool_sourcesofstrength.js',
+    'sel_hub/sel_tool_bigfeelings.js',
+    'sel_hub/sel_tool_healthyrelationships.js',
+    'sel_hub/sel_tool_substancepsychoed.js',
+    'sel_hub/sel_tool_identitysupport.js',
     'sel_hub/sel_tool_strengths.js',
     'sel_hub/sel_tool_goals.js',
     'sel_hub/sel_tool_community.js',
@@ -353,7 +848,8 @@ const PLUGIN_FILES = [
     'sel_hub/sel_tool_transitions.js',
     'sel_hub/sel_tool_friendship.js',
     'sel_hub/sel_tool_compassion.js',
-    'sel_hub/sel_tool_upstander.js'
+    'sel_hub/sel_tool_upstander.js',
+    'sel_hub/sel_tool_conflicttheater.js'
 ];
 
 // ── Source → Module compilation ─────────────────────────────────
@@ -418,7 +914,7 @@ const COMPILE_PAIRS = [
     {
         // ── persona_ui ── JSX-bearing module, verified zero-diff vs deployed module.js after
         // the April 2026 WCAG back-port (slate-500→600 + text-[10px]→[11px]). First JSX module
-        // onboarded to Phase 2 auto-compile. To add more modules, verify `_phase2_diff_audit.js`
+        // onboarded to Phase 2 auto-compile. To add more modules, verify `dev-tools/phase2_diff_audit.js`
         // reports PERFECT for that module after any needed source back-ports, then add an
         // entry here with the module's specific wrapper.
         name: 'PersonaUI',
@@ -610,6 +1106,21 @@ if (mode === 'prod') {
         process.exit(1);
     }
     console.log('');
+
+    // ── Module registry contract check ────────────────────────────────
+    // Verifies every `window.AlloModules.X` consumer in AlloFlowANTI.txt
+    // has at least one CDN module that registers X. Catches the bug class
+    // surfaced 2026-05-10 (Teacher Dashboard 10 components silently
+    // unregistered, GeminiBridgeView deleted-but-consumed, etc.).
+    console.log('── Verifying window.AlloModules.X consumer/producer contract ──');
+    try {
+        execSync('node dev-tools/verify_module_registry.cjs --quiet', { cwd: ROOT, stdio: 'inherit' });
+        console.log('  ✓ All consumers resolved.\n');
+    } catch (e) {
+        console.error('❌ Module registry verification failed. Aborting build.');
+        console.error('   Run `npm run verify:registry` for the full report.');
+        process.exit(1);
+    }
 }
 
 let content = fs.readFileSync(SOURCE, 'utf-8');
@@ -758,8 +1269,11 @@ content = content.replace(LOAD_MODULE_RE, (match, moduleName, currentUrl) => {
         // Point to local file for hot-reloading during development
         newUrl = `./${moduleDef.filename}`;
     } else {
-        // Production: CDN URL with git hash
-        newUrl = `${moduleDef.cdnBase}@${gitHash}/${moduleDef.filename}`;
+        // Production: Cloudflare Pages serves the file from its edge network.
+        // No @hash needed — Cloudflare auto-invalidates by content on each push.
+        // moduleDef.cdnBase (legacy jsdelivr URL) is left in the MODULES table
+        // but unused; kept for diff readability if we ever need to switch back.
+        newUrl = `${CLOUDFLARE_CDN_BASE}/${moduleDef.filename}`;
     }
 
     replacementCount++;
@@ -772,23 +1286,27 @@ content = content.replace(LOAD_MODULE_RE, (match, moduleName, currentUrl) => {
 });
 
 // ── Transform plugin loader CDN base ────────────────────────────
-// Matches: var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@HASH/';
-const PLUGIN_CDN_RE = /var\s+pluginCdnBase\s*=\s*'https:\/\/cdn\.jsdelivr\.net\/gh\/Apomera\/AlloFlow@[^/]+\//;
+// Matches either the legacy jsdelivr URL OR the new Cloudflare Pages URL,
+// so re-running build.js after the May 12 2026 CDN switch still works.
+//   var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@HASH/'
+//   var pluginCdnBase = 'https://alloflow-cdn.pages.dev/'
+//   var pluginCdnBase = './'   (dev mode)
+const PLUGIN_CDN_RE = /var\s+pluginCdnBase\s*=\s*'[^']*'/;
 let pluginReplaced = false;
 
 if (mode === 'dev') {
     // In dev mode, plugins load from local paths
     content = content.replace(PLUGIN_CDN_RE, () => {
         pluginReplaced = true;
-        console.log('  ✏️  pluginCdnBase: → local (./shared/modules/)'); 
-        return "var pluginCdnBase = './shared/modules/";
+        console.log('  ✏️  pluginCdnBase: → local (./)');
+        return "var pluginCdnBase = './'";
     });
 } else {
     content = content.replace(PLUGIN_CDN_RE, () => {
         pluginReplaced = true;
-        const newBase = `https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@${gitHash}/`;
-        console.log(`  ✏️  pluginCdnBase: → @${gitHash}`);
-        return `var pluginCdnBase = '${newBase}`;
+        const newBase = `${CLOUDFLARE_CDN_BASE}/`;
+        console.log(`  ✏️  pluginCdnBase: → Cloudflare Pages (${CLOUDFLARE_CDN_BASE})`);
+        return `var pluginCdnBase = '${newBase}'`;
     });
 }
 

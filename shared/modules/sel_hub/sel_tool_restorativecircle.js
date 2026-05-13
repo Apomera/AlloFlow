@@ -15,6 +15,15 @@ window.SelHub = window.SelHub || {
 (function() {
   'use strict';
 
+  // ── Live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-restorativecircle')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-restorativecircle'; lr.setAttribute('aria-live', 'polite'); lr.setAttribute('aria-atomic', 'true'); lr.setAttribute('role', 'status'); lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
   // ── Audio + WCAG (auto-injected) ──
   var _restorAC = null;
   function getRestorAC() { if (!_restorAC) { try { _restorAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_restorAC && _restorAC.state==="suspended") { try { _restorAC.resume(); } catch(e) {} } return _restorAC; }
@@ -935,6 +944,20 @@ window.SelHub = window.SelHub || {
       var aiResponse = d.aiResponse || null;
       var aiLoading = d.aiLoading || false;
 
+      // ── Rehearsal Role-Play state ──
+      // AI plays one of three restorative-conference participants while the
+      // student practices what they would actually say. Mirrors the pattern
+      // proven in Upstander but with restorative-specific characters and
+      // facilitator-friendly coach prompts.
+      var rcRpRole         = d.rcRpRole || '';        // '' | 'facilitator' | 'accountability' | 'listening'
+      var rcRpScene        = d.rcRpScene || '';       // AI-generated scene description
+      var rcRpHistory      = d.rcRpHistory || [];     // [{ speaker, text }]
+      var rcRpInput        = d.rcRpInput || '';
+      var rcRpLoading      = !!d.rcRpLoading;
+      var rcRpStarting     = !!d.rcRpStarting;
+      var rcRpEnded        = !!d.rcRpEnded;
+      var rcRpReflection   = d.rcRpReflection || '';
+
       // ── Badge progress tracking ──
       var badgeProgress = d.badgeProgress || {};
       var earnedBadges = d.earnedBadges || {};
@@ -982,7 +1005,21 @@ window.SelHub = window.SelHub || {
 
       // ── AI circle facilitator ──
       var askCircleFacilitator = function(question) {
-        if (!callGemini) return;
+        if (!callGemini || !question) return;
+        // Safety pre-check on the student's free-text question. Block on
+        // critical content (self-harm, harm-to-others); show coach message
+        // + crisis resources instead of an in-character facilitator reply.
+        var safety = (window.SelHub && window.SelHub.safeRehearseCheck)
+          ? window.SelHub.safeRehearseCheck(question, { toolId: 'restorativecircle', onSafetyFlag: ctx.onSafetyFlag })
+          : { action: 'continue' };
+        if (safety.action === 'block') {
+          updMulti({
+            aiResponse: window.SelHub.rehearseBreakCharacterText(safety.severity),
+            aiLoading: false,
+            _lastTier: 3
+          });
+          return;
+        }
         upd('aiLoading', true);
         var prompt = 'You are a warm, experienced circle facilitator helping a ' + (gradeLevel || '5th grade') + ' group. ' +
           'The circle type is: ' + (selectedCircleType || 'community building') + '. ' +
@@ -990,7 +1027,7 @@ window.SelHub = window.SelHub || {
           'Respond with empathy and practical guidance. Keep it brief (2-3 sentences). ' +
           'If the question is about a conflict, center healing and accountability over punishment.';
         callGemini(prompt).then(function(resp) {
-          updMulti({ aiResponse: resp, aiLoading: false });
+          updMulti({ aiResponse: resp, aiLoading: false, _lastTier: safety.action === 'nudge' ? 2 : 0 });
         }).catch(function() {
           updMulti({ aiResponse: 'I\'m here to help. Let\'s take a breath and try again.', aiLoading: false });
         });
@@ -1065,15 +1102,17 @@ window.SelHub = window.SelHub || {
           )
         ),
 
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('restorativeCircle', h, ctx) : null),
         // ── Tab Navigation ──
         h('div', { role: 'tablist', 'aria-label': 'Restorative Circle tabs', className: 'flex flex-wrap gap-1 bg-amber-50 rounded-xl p-1 border border-amber-200' },
-          ['home', 'circle', 'scripts', 'harm-repair', 'scenarios', 'agreements', 'talking-piece', 'roots', 'questions', 'roles', 'empathy-map', 'compare', 'badges'].map(function(t) {
+          ['home', 'circle', 'scripts', 'harm-repair', 'scenarios', 'rehearse', 'agreements', 'talking-piece', 'roots', 'questions', 'roles', 'empathy-map', 'compare', 'badges', 'print'].map(function(t) {
             var labels = {
               'home': '\uD83C\uDFE0 Types',
               'circle': '\u2B55 Circle',
               'scripts': '\uD83D\uDCDC Scripts',
               'harm-repair': '\uD83E\uDE79 Repair',
               'scenarios': '\uD83C\uDFAD Scenarios',
+              'rehearse': '\uD83C\uDFAD Rehearse',
               'agreements': '\uD83E\uDD1D Agreements',
               'talking-piece': '\uD83E\uDEB6 Piece',
               'roots': '\uD83C\uDF0D Roots',
@@ -1082,6 +1121,7 @@ window.SelHub = window.SelHub || {
               'empathy-map': '\uD83E\uDDE0 Empathy',
               'compare': '\u2696\uFE0F Compare',
               'badges': '\uD83C\uDFC5 Badges',
+              'print': '\uD83D\uDDA8 Print',
             };
             return h('button', { 'aria-label': 'Choose the type of circle you want to facilitate today.',
               key: t,
@@ -1094,17 +1134,17 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ HOME — Circle Types ═══
-        tab === 'home' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
+        tab === 'home' && h('div', { className: 'space-y-3' },
           h('p', { className: 'text-sm text-slate-600 text-center' }, 'Choose the type of circle you want to facilitate today.'),
 
           // Circle type cards
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+          h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             CIRCLE_TYPES.map(function(ct) {
               return h('button', { 'aria-label': ct.emoji,
                 key: ct.id,
                 onClick: function() { updMulti({ circleType: ct.id, tab: 'circle', promptIdx: 0, circleActive: true, customPrompts: null }); ctx.awardXP(5); },
                 className: 'p-4 rounded-2xl border-2 text-left transition-all hover:scale-[1.02] hover:shadow-md ' +
-                  (selectedCircleType === ct.id ? 'border-amber-400 bg-amber-50 shadow-md' : 'border-slate-200 bg-white hover:border-amber-300')
+                  (selectedCircleType === ct.id ? 'border-amber-400 bg-amber-50 shadow-md' : 'border-slate-200 bg-white hover:border-amber-600')
               },
                 h('div', { className: 'text-2xl mb-2' }, ct.emoji),
                 h('div', { className: 'font-bold text-sm text-slate-800' }, ct.label),
@@ -1160,12 +1200,12 @@ window.SelHub = window.SelHub || {
           })(),
 
           // Current prompt
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-white rounded-2xl border-2 border-amber-200 p-6 text-center shadow-lg' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2' }, 'Round ' + (currentPromptIdx + 1) + ' of ' + prompts.length),
+          h('div', { className: 'bg-white rounded-2xl border-2 border-amber-200 p-6 text-center shadow-lg' },
+            h('div', { className: 'text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2' }, 'Round ' + (currentPromptIdx + 1) + ' of ' + prompts.length),
             h('p', { className: 'text-lg font-bold text-slate-800 leading-relaxed' }, prompts[currentPromptIdx] || 'Circle complete \u2014 thank you for sharing.'),
 
             // Navigation
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 justify-center mt-4' },
+            h('div', { className: 'flex gap-2 justify-center mt-4' },
               h('button', { 'aria-label': 'Previous',
                 onClick: function() { upd('promptIdx', Math.max(0, currentPromptIdx - 1)); },
                 disabled: currentPromptIdx === 0,
@@ -1195,13 +1235,13 @@ window.SelHub = window.SelHub || {
           ),
 
           // Reflection journal
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-slate-50 rounded-xl border border-slate-200 p-4' },
+          h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-4' },
             h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '\uD83D\uDCDD Your Reflection (private)'),
             h('textarea', {
               value: d.currentReflection || '',
               onChange: function(e) { upd('currentReflection', e.target.value); },
               placeholder: 'What came up for you during this round? What did you notice?',
-              className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
+              className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
               'aria-label': 'Circle reflection'
             }),
             d.currentReflection && h('button', { 'aria-label': 'Save Reflection',
@@ -1219,13 +1259,13 @@ window.SelHub = window.SelHub || {
           h('button', { 'aria-label': 'Circle Scripts',
             onClick: generateCustomPrompts,
             disabled: aiLoading,
-            className: 'w-full px-4 py-2 bg-indigo-50 border border-indigo-200 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-100 transition-colors disabled:opacity-40 flex items-center justify-center gap-2'
+            className: 'w-full px-4 py-2 bg-indigo-50 border border-indigo-600 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-100 transition-colors disabled:opacity-40 flex items-center justify-center gap-2'
           }, h(Sparkles, { size: 14 }), aiLoading ? 'Generating...' : '\u2728 Generate Custom Prompts with AI')
         ),
 
         // ═══ CIRCLE SCRIPTS ═══
-        tab === 'scripts' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
+        tab === 'scripts' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCDC Circle Scripts'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'Pre-written scripts to guide each phase of your circle. Select a section below, then choose a script to follow.'
@@ -1233,7 +1273,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Script section selector
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 bg-slate-100 rounded-xl p-1' },
+          h('div', { className: 'flex gap-1 bg-slate-100 rounded-xl p-1' },
             ['opening', 'checkIn', 'discussion', 'closing'].map(function(sec) {
               var secLabels = { opening: '\uD83C\uDF1F Opening', checkIn: '\u2600\uFE0F Check-In', discussion: '\uD83D\uDCAC Discussion', closing: '\uD83C\uDF19 Closing' };
               return h('button', { 'aria-label': 'Grade band: discussion prompts available',
@@ -1254,11 +1294,11 @@ window.SelHub = window.SelHub || {
 
             // Discussion section is an array of strings
             if (scriptSection === 'discussion') {
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
+              return h('div', { className: 'space-y-2' },
                 h('p', { className: 'text-xs text-slate-600 italic' }, 'Grade band: ' + gradeBand + ' \u2014 ' + bandData.length + ' discussion prompts available'),
                 bandData.map(function(prompt, i) {
-                  return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'bg-white rounded-xl border border-amber-200 p-3 flex items-start gap-3' },
-                    h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-amber-500 font-bold text-sm mt-0.5 shrink-0' }, (i + 1) + '.'),
+                  return h('div', { key: i, className: 'bg-white rounded-xl border border-amber-200 p-3 flex items-start gap-3' },
+                    h('span', { className: 'text-amber-500 font-bold text-sm mt-0.5 shrink-0' }, (i + 1) + '.'),
                     h('p', { className: 'text-sm text-slate-700 leading-relaxed flex-1' }, prompt),
                     callTTS && h('button', { 'aria-label': 'Mark Discussion Prompts as Used',
                       onClick: function() { callTTS(prompt); },
@@ -1274,25 +1314,25 @@ window.SelHub = window.SelHub || {
             }
 
             // Opening, CheckIn, Closing sections are arrays of { title, desc }
-            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
+            return h('div', { className: 'space-y-3' },
               h('p', { className: 'text-xs text-slate-600 italic' }, 'Grade band: ' + gradeBand + ' \u2014 ' + bandData.length + ' scripts available'),
               bandData.map(function(script, i) {
                 var isActive = activeScriptIdx === i;
-                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'bg-white rounded-xl border-2 transition-all ' + (isActive ? 'border-amber-400 shadow-md' : 'border-slate-200 hover:border-amber-300') },
+                return h('div', { key: i, className: 'bg-white rounded-xl border-2 transition-all ' + (isActive ? 'border-amber-400 shadow-md' : 'border-slate-200 hover:border-amber-300') },
                   h('button', { 'aria-label': script.title,
                     onClick: function() { upd('activeScriptIdx', isActive ? undefined : i); },
                     className: 'w-full text-left p-4'
                   },
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center justify-between' },
-                      h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-sm text-slate-800' }, script.title),
-                      h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xs text-amber-500' }, isActive ? '\u25B2 Collapse' : '\u25BC Expand')
+                    h('div', { className: 'flex items-center justify-between' },
+                      h('div', { className: 'font-bold text-sm text-slate-800' }, script.title),
+                      h('span', { className: 'text-xs text-amber-500' }, isActive ? '\u25B2 Collapse' : '\u25BC Expand')
                     )
                   ),
-                  isActive && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'px-4 pb-4 space-y-3' },
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 rounded-lg p-4 border border-amber-100' },
+                  isActive && h('div', { className: 'px-4 pb-4 space-y-3' },
+                    h('div', { className: 'bg-amber-50 rounded-lg p-4 border border-amber-100' },
                       h('p', { className: 'text-sm text-slate-700 leading-relaxed italic' }, '"' + script.desc + '"')
                     ),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
+                    h('div', { className: 'flex gap-2' },
                       callTTS && h('button', { 'aria-label': 'Read Aloud',
                         onClick: function() { callTTS(script.desc); },
                         className: 'px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors'
@@ -1330,7 +1370,7 @@ window.SelHub = window.SelHub || {
               return h('div', { key: i, className: 'flex items-center' },
                 h('div', {
                   className: 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ' +
-                    (isComplete ? 'bg-emerald-700 text-white' : isCurrent ? 'bg-amber-700 text-white ring-2 ring-amber-300' : 'bg-slate-200 text-slate-500')
+                    (isComplete ? 'bg-emerald-700 text-white' : isCurrent ? 'bg-amber-700 text-white ring-2 ring-amber-300' : 'bg-slate-200 text-slate-300')
                 }, isComplete ? '\u2713' : (i + 1)),
                 i < HARM_REPAIR_STEPS.length - 1 && h('div', { className: 'w-4 h-0.5 ' + (isComplete ? 'bg-emerald-400' : 'bg-slate-200') })
               );
@@ -1361,7 +1401,7 @@ window.SelHub = window.SelHub || {
                   upd('harmResponses', newResponses);
                 },
                 placeholder: placeholder,
-                className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-amber-300',
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-28 outline-none focus:ring-2 focus:ring-amber-300',
                 'aria-label': step.title + ' response'
               }),
               callTTS && h('button', { 'aria-label': 'Read Guidance Aloud',
@@ -1370,7 +1410,7 @@ window.SelHub = window.SelHub || {
               }, '\uD83D\uDD0A Read Guidance Aloud'),
 
               // Navigation
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 justify-center mt-4' },
+              h('div', { className: 'flex gap-2 justify-center mt-4' },
                 h('button', { 'aria-label': 'Previous Step',
                   onClick: function() { upd('harmStep', Math.max(0, harmStep - 1)); },
                   disabled: harmStep === 0,
@@ -1395,7 +1435,7 @@ window.SelHub = window.SelHub || {
           })(),
 
           // Summary of responses so far
-          harmStep > 0 && h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-4' },
+          harmStep > 0 && h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-4' },
             h('h4', { className: 'text-xs font-bold text-slate-600 mb-2 uppercase tracking-widest' }, 'Previous Steps'),
             h('div', { className: 'space-y-2' },
               HARM_REPAIR_STEPS.slice(0, harmStep).map(function(step, i) {
@@ -1423,9 +1463,9 @@ window.SelHub = window.SelHub || {
             var scenario = scenarios[scenarioIdx];
             if (!scenario) return null;
 
-            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
+            return h('div', { className: 'space-y-4' },
               // Scenario selector
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 overflow-x-auto pb-1' },
+              h('div', { className: 'flex gap-1 overflow-x-auto pb-1' },
                 scenarios.map(function(sc, i) {
                   return h('button', { 'aria-label': sc.emoji + ' ' + sc.title,
                     key: i,
@@ -1438,16 +1478,16 @@ window.SelHub = window.SelHub || {
 
               // Scenario card
               h('div', { className: 'bg-white rounded-2xl border-2 border-amber-200 p-6 shadow-lg' },
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-4' },
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-3xl' }, scenario.emoji),
+                h('div', { className: 'text-center mb-4' },
+                  h('span', { className: 'text-3xl' }, scenario.emoji),
                   h('h4', { className: 'text-lg font-bold text-slate-800 mt-2' }, scenario.title)
                 ),
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 rounded-lg p-4 mb-4 border border-amber-100' },
+                h('div', { className: 'bg-amber-50 rounded-lg p-4 mb-4 border border-amber-100' },
                   h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, scenario.setup)
                 ),
 
                 // Choices
-                !scenarioOutcome && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
+                !scenarioOutcome && h('div', { className: 'space-y-2' },
                   h('p', { className: 'text-xs font-bold text-slate-600 mb-1' }, 'What would you do?'),
                   scenario.choices.map(function(choice, i) {
                     return h('button', { 'aria-label': choice.text,
@@ -1466,12 +1506,12 @@ window.SelHub = window.SelHub || {
                 ),
 
                 // Outcome
-                scenarioOutcome && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-emerald-50 rounded-lg p-4 border border-emerald-200' },
+                scenarioOutcome && h('div', { className: 'space-y-3' },
+                  h('div', { className: 'bg-emerald-50 rounded-lg p-4 border border-emerald-200' },
                     h('h5', { className: 'text-xs font-bold text-emerald-700 uppercase tracking-widest mb-2' }, '\u2728 What Happens Next'),
                     h('p', { className: 'text-sm text-emerald-800 leading-relaxed' }, scenarioOutcome)
                   ),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 justify-center' },
+                  h('div', { className: 'flex gap-2 justify-center' },
                     scenarioIdx < scenarios.length - 1 && h('button', { 'aria-label': 'Next Scenario',
                       onClick: function() { updMulti({ scenarioIdx: scenarioIdx + 1, scenarioChoice: undefined, scenarioOutcome: null }); },
                       className: 'px-4 py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-700 transition-colors'
@@ -1485,19 +1525,335 @@ window.SelHub = window.SelHub || {
               ),
 
               // Reflection
-              h('div', { className: 'bg-slate-50 rounded-xl border border-slate-200 p-4' },
+              h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-4' },
                 h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, '\uD83D\uDCAC What restorative approach would you use in real life?'),
                 h('textarea', {
                   value: d.scenarioReflection || '',
                   onChange: function(e) { upd('scenarioReflection', e.target.value); },
                   placeholder: 'Think about a real situation where a restorative approach could help...',
-                  className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
+                  className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
                   'aria-label': 'Scenario reflection'
                 })
               )
             );
           })()
         ),
+
+        // ═══ REHEARSE — Generative multi-turn role-play for restorative conversations ═══
+        // AI plays one restorative-conference role; student practices what they would say.
+        // Mirrors the Upstander role-play pattern but with restorative-specific characters,
+        // fresh scenes each playthrough, break-character coach, and end-reflection.
+        tab === 'rehearse' && (function renderRehearse() {
+          var rolesCfg = {
+            facilitator: {
+              label: 'Practice being the facilitator',
+              icon: '🪶',
+              desc: 'AI plays a participant in a circle who is being defensive or avoidant. You practice facilitating with curiosity, not judgment.',
+              charDesc: 'a middle/high school student attending a restorative circle. You are guarded, slightly defensive, and want to minimize what happened ("it was just a joke," "they overreacted," "I don\'t see why we have to talk about this"). You are NOT openly hostile, just resistant. Soften gradually IF the facilitator asks open, curious, non-blaming questions. Stay defensive if they accuse, lecture, or rush you.',
+              fallbackScene: 'You are facilitating a small repair circle. A student named Jamie is here because of a conflict at lunch yesterday. They sit with arms crossed.',
+              fallbackOpener: 'Look, can we just get this over with? I already apologized. I don\'t know why we have to make this such a big deal.'
+            },
+            accountability: {
+              label: 'Practice taking accountability',
+              icon: '🩹',
+              desc: 'AI plays the person you hurt. You practice acknowledging what you did without making excuses or over-apologizing.',
+              charDesc: 'a middle/high school student who was recently hurt by the student\'s actions. You are NOT in crisis. You are quiet, a little hurt, a little distrustful — you want a real acknowledgment, not a fast apology that erases what happened. You may ask follow-up questions ("did you actually know it would hurt me?" "are you only saying this because you got in trouble?"). Soften when you sense the student is being honest, not performing.',
+              fallbackScene: 'A facilitator just left the two of you alone for five minutes. You hurt this peer a few days ago — spread something private about them. They\'re sitting across from you, waiting.',
+              fallbackOpener: 'Okay. So. You wanted to say something to me.'
+            },
+            listening: {
+              label: 'Practice listening when someone shares their hurt',
+              icon: '👂',
+              desc: 'AI plays a peer telling you why something you did hurt them. You practice receiving without defending, explaining, or fixing.',
+              charDesc: 'a middle/high school peer who is trying to tell the student why something they did hurt. You speak in 1st person from the hurt — "when you said that, I felt ___, and I started ___." You are vulnerable, NOT angry. You will NOT pre-forgive. If the student gets defensive or starts explaining themselves, you will get quieter and start to shut down. If they just listen and reflect back what they hear, you will keep going and open up more.',
+              fallbackScene: 'A classmate texted you "hey can we talk?" Now you\'re sitting together at a quiet table after school. They look like they\'ve been thinking about how to say something for a while.',
+              fallbackOpener: 'I\'ve been trying to figure out how to tell you this. When you laughed along last week — I know it seems small to you. It really wasn\'t small to me.'
+            }
+          };
+          var charCfg = rcRpRole && rolesCfg[rcRpRole];
+          var bandLabel = gradeBand === 'elementary' ? 'elementary (3-5)' : gradeBand === 'middle' ? 'middle (6-8)' : gradeBand === 'high' ? 'high (9-12)' : 'middle school';
+
+          function rcStartRolePlay(roleKey) {
+            var cfg = rolesCfg[roleKey];
+            if (!cfg) return;
+            if (!callGemini) {
+              updMulti({ rcRpRole: roleKey, rcRpScene: cfg.fallbackScene, rcRpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener }], rcRpInput: '', rcRpEnded: false, rcRpReflection: '', rcRpStarting: false });
+              return;
+            }
+            updMulti({ rcRpRole: roleKey, rcRpScene: '', rcRpHistory: [], rcRpInput: '', rcRpEnded: false, rcRpReflection: '', rcRpStarting: true });
+            if (announceToSR) announceToSR('Generating restorative-practice scene');
+            var prompt =
+              'You are setting up a brief role-play for an SEL restorative-practice rehearsal tool. Build a fresh, realistic mini-scene for the student. ' +
+              'Return STRICT JSON only (no markdown, no fences, no preamble):\n' +
+              '{"scene":"1-2 sentence scene-setter naming WHO the other person is (use a first name and one detail), WHERE this is happening, and WHAT happened earlier — present tense, neutral observer voice","opener":"the FIRST in-character line the other person says, 1-2 sentences, in their voice, no narration, no quotation marks"}\n\n' +
+              'YOUR CHARACTER: ' + cfg.charDesc + '\n' +
+              'AUDIENCE: ' + bandLabel + ' grade band. Use age-appropriate vocabulary and social dynamics.\n\n' +
+              'RULES:\n' +
+              '- Vary the setting and details each time — avoid defaulting to "the cafeteria yesterday".\n' +
+              '- The "scene" field is neutral narration, not in character.\n' +
+              '- The "opener" field is the character SPEAKING in 1st person, sounds like a real student.\n' +
+              '- NO slurs, NO physical violence, NO sexual content. Keep harm at the relational/verbal level.\n' +
+              '- Avoid identity-based harm (race/gender/disability) — keep the harm general so any student can rehearse.\n\n' +
+              'Return ONLY the JSON object.';
+            callGemini(prompt, true).then(function(r) {
+              try {
+                var clean = (r || '').replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim().replace(/^[^{]*/, '').replace(/[^}]*$/, '');
+                var parsed = JSON.parse(clean);
+                if (!parsed || !parsed.scene || !parsed.opener) throw new Error('shape');
+                updMulti({
+                  rcRpScene: String(parsed.scene).trim(),
+                  rcRpHistory: [{ speaker: 'ai', text: String(parsed.opener).trim().replace(/^"|"$/g, '') }],
+                  rcRpStarting: false
+                });
+                if (announceToSR) announceToSR('Scene ready. ' + cfg.label);
+              } catch (e) {
+                updMulti({ rcRpScene: cfg.fallbackScene, rcRpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener }], rcRpStarting: false });
+              }
+            }).catch(function() {
+              updMulti({ rcRpScene: cfg.fallbackScene, rcRpHistory: [{ speaker: 'ai', text: cfg.fallbackOpener }], rcRpStarting: false });
+            });
+          }
+
+          return h('div', { className: 'space-y-4' },
+            h('div', { className: 'text-center mb-2' },
+              h('h3', { className: 'text-lg font-black text-slate-800' }, '🎭 Rehearse the conversation'),
+              h('p', { className: 'text-xs text-slate-600' }, 'Restorative work is dialogue. Practice what you would actually say before you have to say it for real.')
+            ),
+            // STEP 1: pick a role to rehearse
+            !rcRpRole && h('div', { className: 'space-y-3' },
+              h('p', { className: 'text-sm text-slate-600' },
+                h('strong', { className: 'text-amber-700' }, 'Pick what you want to practice. '),
+                'The AI plays the OTHER person. You play yourself. Keep responses short and real — the way you would actually talk.'),
+              h('div', { className: 'grid gap-2' },
+                ['facilitator', 'accountability', 'listening'].map(function(roleKey) {
+                  var cfg = rolesCfg[roleKey];
+                  return h('button', {
+                    key: roleKey,
+                    onClick: function() { rcStartRolePlay(roleKey); },
+                    disabled: !callGemini || rcRpStarting,
+                    style: {
+                      padding: '12px 14px', textAlign: 'left',
+                      background: '#fff', border: '2px solid #fde68a', borderRadius: 10,
+                      fontSize: 14, color: '#0f172a', cursor: (callGemini && !rcRpStarting) ? 'pointer' : 'not-allowed',
+                      display: 'flex', alignItems: 'flex-start', gap: 10,
+                      opacity: rcRpStarting ? 0.6 : 1
+                    }
+                  },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 22, marginTop: 2 } }, cfg.icon),
+                    h('div', { style: { flex: 1 } },
+                      h('div', { style: { fontWeight: 700, marginBottom: 4 } }, cfg.label),
+                      h('div', { style: { fontSize: 12, color: '#64748b', lineHeight: 1.45 } }, cfg.desc)
+                    )
+                  );
+                })
+              ),
+              rcRpStarting && h('p', { 'aria-live': 'polite', className: 'text-xs italic text-amber-700' }, 'Generating a fresh scene…'),
+              !callGemini && h('p', { className: 'text-xs text-amber-700 italic' }, 'AI features need a connection. Try the Scenarios tab while offline.')
+            ),
+            // STEP 2: conversation in progress
+            rcRpRole && charCfg && h('div', { className: 'space-y-3' },
+              h('div', { style: { padding: '8px 12px', background: '#fef3c7', borderRadius: 8, fontSize: 12, color: '#92400e', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
+                h('span', { style: { fontWeight: 700 } }, charCfg.icon + ' ' + charCfg.label),
+                h('button', {
+                  onClick: function() { updMulti({ rcRpRole: '', rcRpScene: '', rcRpHistory: [], rcRpInput: '', rcRpEnded: false, rcRpReflection: '', rcRpStarting: false }); },
+                  style: { padding: '4px 10px', background: '#fff', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+                }, '← Different role')
+              ),
+              // Scene
+              rcRpScene && h('div', { style: { padding: '10px 12px', background: '#fafafa', border: '1px solid #e5e7eb', borderLeft: '3px solid #f59e0b', borderRadius: 8, fontSize: 13, lineHeight: 1.5, color: '#475569', fontStyle: 'italic' } },
+                h('span', { style: { fontStyle: 'normal', fontWeight: 700, color: '#92400e', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 6 } }, 'Scene:'),
+                rcRpScene
+              ),
+              // Conversation log
+              h('div', { 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '40vh', overflowY: 'auto', padding: 4 } },
+                rcRpHistory.map(function(turn, ti) {
+                  if (turn.speaker === '_crisis') {
+                    return h('div', { key: 'rc-rp-' + ti, style: { alignSelf: 'stretch' } },
+                      window.SelHub && window.SelHub.renderCrisisResources && window.SelHub.renderCrisisResources(h, gradeBand)
+                    );
+                  }
+                  var isStudent = turn.speaker === 'student';
+                  var isCoach = turn.speaker === 'coach';
+                  return h('div', {
+                    key: 'rc-rp-' + ti,
+                    style: {
+                      alignSelf: isStudent ? 'flex-end' : 'flex-start',
+                      maxWidth: '85%',
+                      padding: '10px 13px',
+                      borderRadius: 12,
+                      fontSize: 14, lineHeight: 1.5, whiteSpace: 'pre-wrap',
+                      background: isStudent ? '#dbeafe' : (isCoach ? '#fef3c7' : '#f1f5f9'),
+                      border: '1px solid ' + (isStudent ? '#93c5fd' : (isCoach ? '#fcd34d' : '#cbd5e1')),
+                      color: '#0f172a'
+                    }
+                  },
+                    h('div', { style: { fontSize: 10, fontWeight: 700, color: isStudent ? '#1d4ed8' : (isCoach ? '#92400e' : '#475569'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } },
+                      isStudent ? 'You' : (isCoach ? '🪶 Coach (out of character)' : '🎭 ' + (rcRpRole === 'facilitator' ? 'Defensive participant' : rcRpRole === 'accountability' ? 'Person you hurt' : 'Peer sharing their hurt'))),
+                    h('div', null, turn.text)
+                  );
+                })
+              ),
+              // Input + actions
+              !rcRpEnded && h('div', null,
+                h('textarea', { id: 'rc-rp-input', value: rcRpInput,
+                  onChange: function(e) { upd('rcRpInput', e.target.value); },
+                  placeholder: 'What would you actually say next? Keep it short — restorative work is more about listening than fixing.',
+                  rows: 2,
+                  disabled: rcRpLoading,
+                  className: 'w-full p-2 text-sm border border-slate-300 rounded-lg font-inherit resize-y',
+                  style: { boxSizing: 'border-box', marginBottom: 8 }
+                }),
+                h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                  // Send
+                  h('button', {
+                    disabled: rcRpLoading || !rcRpInput.trim() || !callGemini,
+                    'aria-busy': rcRpLoading ? 'true' : 'false',
+                    onClick: function() {
+                      if (!callGemini || !rcRpInput.trim()) return;
+                      var studentTurn = rcRpInput.trim();
+                      // Safety pre-check (see sel_safety_layer.js:safeRehearseCheck).
+                      var safety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                        ? window.SelHub.safeRehearseCheck(studentTurn, { toolId: 'restorativecircle', onSafetyFlag: ctx.onSafetyFlag })
+                        : { action: 'continue' };
+                      if (safety.action === 'block') {
+                        updMulti({
+                          rcRpHistory: rcRpHistory.concat([
+                            { speaker: 'student', text: studentTurn },
+                            { speaker: 'coach', text: window.SelHub.rehearseBreakCharacterText(safety.severity) },
+                            { speaker: '_crisis', text: '' }
+                          ]),
+                          rcRpInput: '', rcRpLoading: false
+                        });
+                        return;
+                      }
+                      var newHist = rcRpHistory.concat([{ speaker: 'student', text: studentTurn }]);
+                      updMulti({ rcRpHistory: newHist, rcRpInput: '', rcRpLoading: true });
+                      var historyText = newHist.map(function(t) {
+                        if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
+                        if (t.speaker === 'coach') return 'COACH (out of character): ' + t.text;
+                        return 'OTHER (' + rcRpRole + '): "' + t.text.replace(/"/g, '\\"') + '"';
+                      }).join('\n');
+                      var turnN = newHist.filter(function(t) { return t.speaker === 'student'; }).length;
+                      var prompt =
+                        'You are role-playing for an SEL restorative-practice rehearsal tool. The student practices what to say in real life.\n\n' +
+                        'YOUR CHARACTER: ' + charCfg.charDesc + '\n' +
+                        'AUDIENCE: ' + bandLabel + ' grade band. Use age-appropriate vocabulary.\n\n' +
+                        (rcRpScene ? 'SCENE (stay consistent with this throughout): ' + rcRpScene + '\n\n' : '') +
+                        'STRICT RULES:\n' +
+                        '- Stay in character. Reply with 1-3 sentences max, like a real student would talk.\n' +
+                        '- NO slurs. NO physical threats or violence. Stay at the relational/verbal level.\n' +
+                        '- Do NOT narrate, moralize, or break character. Just speak as the character.\n' +
+                        '- Do not include quotation marks around your reply — just the words.\n' +
+                        '- This is turn ' + turnN + ' of the conversation. By turn 4-5, if the student is responding well (curious not accusing, listening not fixing, acknowledging not excusing), your character can soften, open up, or take a small step. If they are NOT responding well, stay consistent — do not fold.\n\n' +
+                        'CONVERSATION SO FAR:\n' + historyText + '\n\n' +
+                        'Respond as the character in 1-3 sentences. Just the line.';
+                      callGemini(prompt, false).then(function(r) {
+                        var reply = (r || '').trim().replace(/^"|"$/g, '');
+                        var afterTurn = newHist.concat([{ speaker: 'ai', text: reply || '...' }]);
+                        if (safety.action === 'nudge') {
+                          afterTurn = afterTurn.concat([{ speaker: 'coach', text: 'Quick check-in: if any of what you just typed is close to real life, talking to a trusted adult is always an option.' }]);
+                        }
+                        updMulti({ rcRpHistory: afterTurn, rcRpLoading: false });
+                        if (announceToSR) announceToSR('Response received');
+                      }).catch(function() {
+                        updMulti({ rcRpHistory: newHist.concat([{ speaker: 'ai', text: '(AI not reachable — try again in a moment)' }]), rcRpLoading: false });
+                      });
+                    },
+                    className: 'px-4 py-2 rounded-lg text-sm font-bold text-white',
+                    style: { background: (rcRpLoading || !rcRpInput.trim() || !callGemini) ? '#cbd5e1' : '#d97706', cursor: (rcRpLoading || !rcRpInput.trim() || !callGemini) ? 'not-allowed' : 'pointer' }
+                  }, rcRpLoading ? 'Thinking…' : 'Send →'),
+                  // Break character → coach
+                  h('button', {
+                    disabled: rcRpLoading || !callGemini || rcRpHistory.length === 0,
+                    onClick: function() {
+                      if (!callGemini) return;
+                      upd('rcRpLoading', true);
+                      var historyText = rcRpHistory.map(function(t) {
+                        if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
+                        if (t.speaker === 'coach') return 'COACH: ' + t.text;
+                        return 'OTHER: "' + t.text.replace(/"/g, '\\"') + '"';
+                      }).join('\n');
+                      var roleHint =
+                        rcRpRole === 'facilitator' ? 'Restorative facilitation centers curiosity over judgment, asks open questions, names what is happening without taking sides.' :
+                        rcRpRole === 'accountability' ? 'Real accountability is naming what you did, naming the impact (not the intent), and asking what would help repair — without rushing forgiveness.' :
+                        'Restorative listening is reflecting back what you heard before you respond, naming the feeling not the fact, resisting the urge to defend or explain.';
+                      var prompt =
+                        'You are a kind, grounded restorative-practice coach watching a role-play between a student and an AI peer. ' +
+                        'OUT OF CHARACTER NOW. Briefly tell the student two things, under 80 words total:\n' +
+                        '1) What is going on in this moment — what the other person is doing and what they probably need from the student.\n' +
+                        '2) One concrete thing the student could try saying next. Give an example phrasing.\n\n' +
+                        'No moralizing. No "good job" filler. Warm, peer-mentor tone. Plain English.\n' +
+                        'CONTEXT: ' + roleHint + '\n\n' +
+                        'CHARACTER played by AI: ' + charCfg.charDesc + '\n' +
+                        (rcRpScene ? 'SCENE: ' + rcRpScene + '\n' : '') +
+                        'CONVERSATION:\n' + historyText;
+                      callGemini(prompt, false).then(function(r) {
+                        var coachText = (r || 'Take a breath and notice what just happened. What would you say if you were not trying to fix it?').trim();
+                        updMulti({ rcRpHistory: rcRpHistory.concat([{ speaker: 'coach', text: coachText }]), rcRpLoading: false });
+                      }).catch(function() {
+                        upd('rcRpLoading', false);
+                      });
+                    },
+                    className: 'px-3 py-2 rounded-lg text-sm font-semibold',
+                    style: { background: '#fff', color: '#92400e', border: '1px solid #fcd34d', cursor: (rcRpLoading || !callGemini || rcRpHistory.length === 0) ? 'not-allowed' : 'pointer' }
+                  }, '🪶 Break character — coach me'),
+                  // End & reflect
+                  rcRpHistory.filter(function(t) { return t.speaker === 'student'; }).length >= 2 && h('button', {
+                    disabled: rcRpLoading || !callGemini,
+                    onClick: function() {
+                      if (!callGemini) return;
+                      upd('rcRpLoading', true);
+                      var historyText = rcRpHistory.map(function(t) {
+                        if (t.speaker === 'student') return 'STUDENT: "' + t.text.replace(/"/g, '\\"') + '"';
+                        if (t.speaker === 'coach') return 'COACH: ' + t.text;
+                        return 'OTHER: "' + t.text.replace(/"/g, '\\"') + '"';
+                      }).join('\n');
+                      var prompt =
+                        'You are a kind restorative-practice coach reflecting back on a brief role-play. ' +
+                        'In 2-3 sentences (under 70 words), name:\n' +
+                        '1) One specific thing the student did well in their responses (refer to their actual words when you can).\n' +
+                        '2) One thing they could try differently next time.\n\n' +
+                        'Be real and specific. No empty praise. Restorative tone: curious, not corrective.\n\n' +
+                        'CHARACTER played by AI: ' + charCfg.charDesc + '\n' +
+                        (rcRpScene ? 'SCENE: ' + rcRpScene + '\n' : '') +
+                        'CONVERSATION:\n' + historyText;
+                      callGemini(prompt, false).then(function(r) {
+                        var reflectText = (r || 'You showed up to the practice. That matters. Next time, try one sentence shorter — restorative work is often more about the silence between sentences than the sentences themselves.').trim();
+                        updMulti({ rcRpEnded: true, rcRpReflection: reflectText, rcRpLoading: false });
+                        incrementBadgeStat('roleplayed', 1);
+                      }).catch(function() {
+                        updMulti({ rcRpEnded: true, rcRpReflection: 'Practice complete. Next time, try one sentence shorter — restorative work lives in the silence between sentences.', rcRpLoading: false });
+                      });
+                    },
+                    className: 'px-3 py-2 rounded-lg text-sm font-semibold',
+                    style: { background: '#fff', color: '#475569', border: '1px solid #cbd5e1', cursor: (rcRpLoading || !callGemini) ? 'not-allowed' : 'pointer' }
+                  }, 'End & reflect')
+                )
+              ),
+              // STEP 3: reflection
+              rcRpEnded && rcRpReflection && h('div', { style: { padding: 14, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#166534', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'How that went'),
+                h('p', { style: { margin: '0 0 12px', fontSize: 14, lineHeight: 1.55, color: '#0f172a', whiteSpace: 'pre-wrap' } }, rcRpReflection),
+                h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                  h('button', {
+                    onClick: function() { updMulti({ rcRpRole: '', rcRpScene: '', rcRpHistory: [], rcRpInput: '', rcRpEnded: false, rcRpReflection: '', rcRpStarting: false }); },
+                    className: 'px-3 py-2 rounded-lg text-sm font-bold text-white',
+                    style: { background: '#d97706', cursor: 'pointer' }
+                  }, 'Practice again'),
+                  h('button', {
+                    onClick: function() { upd('tab', 'home'); updMulti({ rcRpRole: '', rcRpScene: '', rcRpHistory: [], rcRpInput: '', rcRpEnded: false, rcRpReflection: '' }); },
+                    className: 'px-3 py-2 rounded-lg text-sm font-semibold',
+                    style: { background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', cursor: 'pointer' }
+                  }, 'Done')
+                )
+              ),
+              rcRpRole && h('p', { style: { margin: '8px 0 0', fontSize: 11, color: '#92400e', fontStyle: 'italic' } },
+                'AI-generated responses. No real student is depicted. Treat coach feedback as one perspective.'),
+              // Always-on help strip — the real safety net is a trusted adult.
+              rcRpRole && window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, gradeBand)
+            )
+          );
+        })(),
 
         // ═══ COMMUNITY AGREEMENTS BUILDER ═══
         tab === 'agreements' && h('div', { className: 'space-y-4' },
@@ -1509,9 +1865,9 @@ window.SelHub = window.SelHub || {
           ),
 
           // Suggestions to select
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-amber-50 rounded-xl border border-amber-200 p-4' },
+          h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-4' },
             h('h4', { className: 'text-xs font-bold text-amber-700 mb-3 uppercase tracking-widest' }, '\uD83D\uDCA1 Suggested Agreements (tap to add)'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-wrap gap-2' },
+            h('div', { className: 'flex flex-wrap gap-2' },
               (AGREEMENT_SUGGESTIONS[gradeBand] || AGREEMENT_SUGGESTIONS.elementary).map(function(sug, i) {
                 var isAdded = agreements.indexOf(sug) !== -1;
                 return h('button', { 'aria-label': 'Next',
@@ -1525,14 +1881,14 @@ window.SelHub = window.SelHub || {
                   },
                   disabled: isAdded,
                   className: 'px-3 py-1.5 rounded-full text-[10px] font-bold transition-all ' +
-                    (isAdded ? 'bg-emerald-100 text-emerald-600 cursor-default' : 'bg-white text-slate-600 border border-slate-200 hover:border-amber-400 hover:bg-amber-50')
+                    (isAdded ? 'bg-emerald-100 text-emerald-600 cursor-default' : 'bg-white text-slate-600 border border-slate-400 hover:border-amber-400 hover:bg-amber-50')
                 }, (isAdded ? '\u2713 ' : '+ ') + sug);
               })
             )
           ),
 
           // Custom agreement input
-          h('div', { className: 'bg-white rounded-xl border border-slate-200 p-4' },
+          h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4' },
             h('h4', { className: 'text-xs font-bold text-slate-600 mb-2' }, '\u270D\uFE0F Write Your Own Agreement'),
             h('div', { className: 'flex gap-2' },
               h('input', {
@@ -1540,7 +1896,7 @@ window.SelHub = window.SelHub || {
                 value: customAgreement,
                 onChange: function(e) { upd('customAgreement', e.target.value); },
                 placeholder: 'Type a custom agreement...',
-                className: 'flex-1 text-sm p-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
+                className: 'flex-1 text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
                 'aria-label': 'Custom agreement input',
                 onKeyDown: function(e) {
                   if (e.key === 'Enter' && customAgreement.trim()) {
@@ -1565,13 +1921,13 @@ window.SelHub = window.SelHub || {
           ),
 
           // Current agreements list
-          agreements.length > 0 && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl border-2 border-amber-200 p-5' },
+          agreements.length > 0 && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl border-2 border-amber-200 p-5' },
             h('h4', { className: 'text-sm font-bold text-amber-700 mb-3 flex items-center gap-2' }, '\uD83D\uDCDC Our Community Agreements (' + agreements.length + ')'),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
+            h('div', { className: 'space-y-2' },
               agreements.map(function(ag, i) {
-                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'flex items-center gap-2 bg-white rounded-lg p-2 border border-amber-100' },
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-amber-500 font-bold text-sm shrink-0' }, (i + 1) + '.'),
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-sm text-slate-700 flex-1' }, ag),
+                return h('div', { key: i, className: 'flex items-center gap-2 bg-white rounded-lg p-2 border border-amber-100' },
+                  h('span', { className: 'text-amber-500 font-bold text-sm shrink-0' }, (i + 1) + '.'),
+                  h('span', { className: 'text-sm text-slate-700 flex-1' }, ag),
                   h('button', {
                     onClick: function() {
                       var newAg = agreements.filter(function(_, idx) { return idx !== i; });
@@ -1585,7 +1941,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Export / complete
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mt-4' },
+            h('div', { className: 'flex gap-2 mt-4' },
               h('button', { 'aria-label': 'Copy to Clipboard',
                 onClick: function() {
                   var text = 'Our Community Agreements\n' + '='.repeat(30) + '\n\n';
@@ -1627,11 +1983,10 @@ window.SelHub = window.SelHub || {
           ),
 
           // Talking piece cards
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+          h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             TALKING_PIECES.map(function(piece) {
               var isSelected = selectedPiece === piece.id;
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-                key: piece.id,
+              return h('div', {                 key: piece.id,
                 className: 'rounded-2xl border-2 p-4 transition-all cursor-pointer hover:shadow-md ' +
                   (isSelected ? 'border-amber-400 bg-amber-50 shadow-md ring-2 ring-amber-200' : 'border-slate-200 bg-white hover:border-amber-300'),
                 onClick: function() { upd('talkingPiece', piece.id); ctx.awardXP(3); }
@@ -1675,7 +2030,7 @@ window.SelHub = window.SelHub || {
                 value: d.rootsReflection || '',
                 onChange: function(e) { upd('rootsReflection', e.target.value); },
                 placeholder: 'Write your reflection here...',
-                className: 'w-full text-sm p-3 border border-slate-200 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300',
+                className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300',
                 'aria-label': 'Indigenous roots reflection'
               })
             ),
@@ -1697,7 +2052,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Land acknowledgment prompt
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center' },
+          h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center' },
             h('p', { className: 'text-xs text-emerald-700 leading-relaxed' },
               '\uD83C\uDF31 Consider beginning your circle with a land acknowledgment \u2014 recognizing the Indigenous peoples whose traditional territory you are on. ',
               h('a', { href: 'https://native-land.ca/', target: '_blank', rel: 'noopener noreferrer', className: 'underline font-bold hover:text-emerald-900' }, 'native-land.ca'),
@@ -1716,8 +2071,8 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ RESTORATIVE QUESTIONS BANK ═══
-        tab === 'questions' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
+        tab === 'questions' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\u2753 Restorative Questions Bank'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'Deep conversation starters organized by purpose. Use these in your circles or anytime you need a thoughtful question to open dialogue.'
@@ -1725,7 +2080,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Category selector
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 bg-slate-100 rounded-xl p-1' },
+          h('div', { className: 'flex gap-1 bg-slate-100 rounded-xl p-1' },
             ['opening', 'community', 'harm', 'closing'].map(function(cat) {
               var catData = RESTORATIVE_QUESTIONS[cat];
               return h('button', { 'aria-label': catData.emoji + ' ' + catData.label,
@@ -1743,17 +2098,17 @@ window.SelHub = window.SelHub || {
             var catData = RESTORATIVE_QUESTIONS[activeCat];
             if (!catData) return null;
 
-            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-center gap-2 mb-1' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-xl' }, catData.emoji),
+            return h('div', { className: 'space-y-2' },
+              h('div', { className: 'flex items-center gap-2 mb-1' },
+                h('span', { className: 'text-xl' }, catData.emoji),
                 h('h4', { className: 'text-sm font-bold', style: { color: catData.color } }, catData.label),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-slate-600 ml-auto' }, catData.questions.length + ' questions')
+                h('span', { className: 'text-[10px] text-slate-600 ml-auto' }, catData.questions.length + ' questions')
               ),
               catData.questions.map(function(q, i) {
-                return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'bg-white rounded-xl border border-amber-200 p-3 flex items-start gap-3 hover:border-amber-400 transition-all' },
-                  h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'font-bold text-sm mt-0.5 shrink-0', style: { color: catData.color } }, (i + 1) + '.'),
+                return h('div', { key: i, className: 'bg-white rounded-xl border border-amber-200 p-3 flex items-start gap-3 hover:border-amber-400 transition-all' },
+                  h('span', { className: 'font-bold text-sm mt-0.5 shrink-0', style: { color: catData.color } }, (i + 1) + '.'),
                   h('p', { className: 'text-sm text-slate-700 leading-relaxed flex-1' }, q),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex flex-col gap-1 shrink-0' },
+                  h('div', { className: 'flex flex-col gap-1 shrink-0' },
                     callTTS && h('button', {
                       onClick: function() { callTTS(q); incrementBadgeStat('questionsUsed', 1); },
                       className: 'text-[10px] text-amber-400 hover:text-amber-600',
@@ -1791,10 +2146,10 @@ window.SelHub = window.SelHub || {
           }, '\uD83C\uDFB2 Random Question'),
 
           // Display random question
-          d.randomQuestion && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-300 p-5 text-center' },
+          d.randomQuestion && h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-300 p-5 text-center' },
             h('p', { className: 'text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2' }, d.randomQuestionCat || 'Question'),
             h('p', { className: 'text-lg font-bold text-slate-800 leading-relaxed' }, d.randomQuestion),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 justify-center mt-3' },
+            h('div', { className: 'flex gap-2 justify-center mt-3' },
               callTTS && h('button', { 'aria-label': 'Read Aloud',
                 onClick: function() { callTTS(d.randomQuestion); },
                 className: 'px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors'
@@ -1824,8 +2179,7 @@ window.SelHub = window.SelHub || {
           // Role cards
           CIRCLE_ROLES.map(function(role, ri) {
             var isExpanded = d.expandedRole === role.id;
-            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
-              key: role.id,
+            return h('div', {               key: role.id,
               className: 'bg-white rounded-2xl border-2 transition-all ' +
                 (isExpanded ? 'border-amber-400 shadow-lg' : 'border-slate-200 hover:border-amber-300')
             },
@@ -1884,18 +2238,17 @@ window.SelHub = window.SelHub || {
                 ),
 
                 // Sample phrases
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-indigo-50 rounded-xl border border-indigo-200 p-3' },
+                h('div', { className: 'bg-indigo-50 rounded-xl border border-indigo-200 p-3' },
                   h('h5', { className: 'text-xs font-bold text-indigo-600 uppercase tracking-widest mb-2' }, '\uD83D\uDCAC Sample Phrases'),
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-1.5' },
+                  h('div', { className: 'space-y-1.5' },
                     role.phrases.map(function(phrase, i) {
-                      return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, key: i, className: 'flex items-center gap-2' },
+                      return h('div', { key: i, className: 'flex items-center gap-2' },
                         h('p', { className: 'text-xs text-indigo-800 italic leading-relaxed flex-1' }, '"' + phrase + '"'),
                         callTTS && h('button', { 'aria-label': 'Read aloud',
                           onClick: function() { callTTS(phrase); },
                           className: 'text-[10px] text-indigo-400 hover:text-indigo-600 shrink-0'
                         }, '\uD83D\uDD0A'),
-                        h('button', { 'aria-label': 'div',
-                          onClick: function() {
+                        h('button', { onClick: function() {
                             if (navigator.clipboard && navigator.clipboard.writeText) {
                               navigator.clipboard.writeText(phrase);
                               addToast('Phrase copied!', 'success');
@@ -1920,8 +2273,8 @@ window.SelHub = window.SelHub || {
         ),
 
         // ═══ EMPATHY MAPPING EXERCISE ═══
-        tab === 'empathy-map' && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-4' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-center mb-2' },
+        tab === 'empathy-map' && h('div', { className: 'space-y-4' },
+          h('div', { className: 'text-center mb-2' },
             h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83E\uDDE0 Empathy Mapping Exercise'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'Understand different perspectives in a conflict by mapping what each person said, did, thought, and felt. Then find areas of overlap and build bridges.'
@@ -1929,7 +2282,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Person selector
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 bg-slate-100 rounded-xl p-1' },
+          h('div', { className: 'flex gap-2 bg-slate-100 rounded-xl p-1' },
             ['personA', 'personB'].map(function(person) {
               var personLabel = person === 'personA' ? '\uD83D\uDC64 Person A' : '\uD83D\uDC65 Person B';
               return h('button', { 'aria-label': 'text-slate-600 hover:text-amber-600',
@@ -1945,14 +2298,14 @@ window.SelHub = window.SelHub || {
           (function() {
             var activePerson = d.empathyPerson || 'personA';
             var nameKey = activePerson + 'Name';
-            return h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3' },
+            return h('div', { className: 'bg-white rounded-xl border border-slate-400 p-3' },
               h('label', { className: 'text-xs font-bold text-slate-600 block mb-1' }, (activePerson === 'personA' ? 'Person A' : 'Person B') + '\'s Name (optional)'),
               h('input', {
                 type: 'text',
                 value: d[nameKey] || '',
                 onChange: function(e) { upd(nameKey, e.target.value); },
                 placeholder: 'Enter a name or label...',
-                className: 'w-full text-sm p-2 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
+                className: 'w-full text-sm p-2 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-amber-300',
                 'aria-label': 'Person name'
               })
             );
@@ -1979,7 +2332,7 @@ window.SelHub = window.SelHub || {
                       upd('empathyData', newData);
                     },
                     placeholder: quad.placeholder,
-                    className: 'w-full text-xs p-2 border border-slate-200 rounded-lg resize-none h-24 outline-none focus:ring-2',
+                    className: 'w-full text-xs p-2 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2',
                     style: { '--tw-ring-color': quad.color + '60' },
                     'aria-label': quad.label + ' for ' + activePerson
                   })
@@ -2025,13 +2378,13 @@ window.SelHub = window.SelHub || {
           }, h(Sparkles, { size: 14 }), aiLoading ? 'Analyzing perspectives...' : '\u2728 Analyze Perspectives with AI'),
 
           // Display AI analysis
-          d.empathyAnalysis && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border-2 border-indigo-200 p-5' },
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-start gap-2 mb-3' },
+          d.empathyAnalysis && h('div', { className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border-2 border-indigo-200 p-5' },
+            h('div', { className: 'flex items-start gap-2 mb-3' },
               h(Sparkles, { size: 14, className: 'text-indigo-500 mt-0.5 shrink-0' }),
               h('h5', { className: 'text-xs font-bold text-indigo-600 uppercase tracking-widest' }, 'Empathy Analysis')
             ),
             h('p', { className: 'text-sm text-indigo-800 leading-relaxed' }, d.empathyAnalysis),
-            h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 mt-3' },
+            h('div', { className: 'flex gap-2 mt-3' },
               callTTS && h('button', { 'aria-label': 'Read Aloud',
                 onClick: function() { callTTS(d.empathyAnalysis); },
                 className: 'px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200 transition-colors'
@@ -2051,7 +2404,7 @@ window.SelHub = window.SelHub || {
           // Reset button
           h('button', { 'aria-label': 'Start New Empathy Map',
             onClick: function() { updMulti({ empathyData: {}, empathyAnalysis: null, personAName: '', personBName: '', empathyPerson: 'personA' }); addToast('Empathy map cleared', 'info'); },
-            className: 'w-full px-4 py-2 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors'
+            className: 'w-full px-4 py-2 bg-slate-100 text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors'
           }, '\uD83D\uDD04 Start New Empathy Map')
         ),
 
@@ -2106,9 +2459,9 @@ window.SelHub = window.SelHub || {
               var ratings = d.compareRatings || {};
               var ratingKey = 'scenario_' + compareScenarioIdx;
 
-              return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-3' },
+              return h('div', { className: 'space-y-3' },
                 // Scenario selector
-                h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-1 overflow-x-auto pb-1' },
+                h('div', { className: 'flex gap-1 overflow-x-auto pb-1' },
                   scenarios.map(function(sc, i) {
                     var hasRating = ratings['scenario_' + i] !== undefined;
                     return h('button', { 'aria-label': sc.emoji + ' ' + (i + 1),
@@ -2144,18 +2497,18 @@ window.SelHub = window.SelHub || {
                   ),
 
                   // Discussion question
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-indigo-50 rounded-lg p-3 border border-indigo-200 mb-4' },
+                  h('div', { className: 'bg-indigo-50 rounded-lg p-3 border border-indigo-200 mb-4' },
                     h('p', { className: 'text-xs text-indigo-700 italic leading-relaxed' }, '\uD83D\uDCAD ' + scenario.discussion)
                   ),
 
                   // Rating
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'space-y-2' },
+                  h('div', { className: 'space-y-2' },
                     h('p', { className: 'text-xs font-bold text-slate-600' },
                       gradeBand === 'elementary'
                         ? 'Which way do you think works better?'
                         : 'Which approach do you think would be more effective and why?'
                     ),
-                    h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2' },
+                    h('div', { className: 'flex gap-2' },
                       h('button', { 'aria-label': 'comparisonScenariosRated',
                         onClick: function() {
                           var newRatings = Object.assign({}, ratings);
@@ -2165,7 +2518,7 @@ window.SelHub = window.SelHub || {
                           ctx.awardXP(5);
                         },
                         className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ' +
-                          (ratings[ratingKey] === 'punitive' ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-600 hover:border-red-300')
+                          (ratings[ratingKey] === 'punitive' ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-600 hover:border-red-600')
                       }, gradeBand === 'elementary' ? '\uD83D\uDEAB Punishment' : '\uD83D\uDEAB Punitive'),
                       h('button', { 'aria-label': 'compareReflections',
                         onClick: function() {
@@ -2176,7 +2529,7 @@ window.SelHub = window.SelHub || {
                           ctx.awardXP(5);
                         },
                         className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ' +
-                          (ratings[ratingKey] === 'restorative' ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-slate-200 text-slate-600 hover:border-emerald-300')
+                          (ratings[ratingKey] === 'restorative' ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-slate-200 text-slate-600 hover:border-emerald-600')
                       }, gradeBand === 'elementary' ? '\uD83D\uDC9A Making It Right' : '\uD83D\uDC9A Restorative')
                     ),
 
@@ -2192,14 +2545,14 @@ window.SelHub = window.SelHub || {
                         placeholder: gradeBand === 'elementary'
                           ? 'Tell us why you picked this one...'
                           : 'Explain your reasoning. What makes this approach more effective?',
-                        className: 'w-full text-xs p-2 border border-slate-200 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-amber-300',
+                        className: 'w-full text-xs p-2 border border-slate-400 rounded-lg resize-none h-16 outline-none focus:ring-2 focus:ring-amber-300',
                         'aria-label': 'Comparison reflection'
                       })
                     )
                   ),
 
                   // Navigation
-                  h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-2 justify-center mt-4' },
+                  h('div', { className: 'flex gap-2 justify-center mt-4' },
                     compareScenarioIdx > 0 && h('button', { 'aria-label': 'Previous',
                       onClick: function() { upd('compareScenarioIdx', compareScenarioIdx - 1); },
                       className: 'px-4 py-2 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors'
@@ -2226,15 +2579,15 @@ window.SelHub = window.SelHub || {
               if (ratings[k] === 'restorative') restorativeCount++;
               if (ratings[k] === 'punitive') punitiveCount++;
             });
-            return h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4' },
+            return h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-4' },
               h('p', { className: 'text-xs font-bold text-amber-700 text-center' },
                 'You have rated ' + totalRated + ' of ' + totalScenarios + ' scenarios'
               ),
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex gap-4 justify-center mt-2' },
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-red-600 font-bold' }, '\uD83D\uDEAB Punitive: ' + punitiveCount),
-                h('span', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] text-emerald-600 font-bold' }, '\uD83D\uDC9A Restorative: ' + restorativeCount)
+              h('div', { className: 'flex gap-4 justify-center mt-2' },
+                h('span', { className: 'text-[10px] text-red-600 font-bold' }, '\uD83D\uDEAB Punitive: ' + punitiveCount),
+                h('span', { className: 'text-[10px] text-emerald-600 font-bold' }, '\uD83D\uDC9A Restorative: ' + restorativeCount)
               ),
-              totalRated >= totalScenarios && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'mt-2 text-center' },
+              totalRated >= totalScenarios && h('div', { className: 'mt-2 text-center' },
                 h('button', { 'aria-label': 'Complete Comparison Study',
                   onClick: function() {
                     addToast('Comparison complete! You are a Restorative Scholar! \uD83D\uDCDA', 'success');
@@ -2297,15 +2650,122 @@ window.SelHub = window.SelHub || {
         ),
 
         // ── AI Response ──
-        aiResponse && h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'bg-indigo-50 border border-indigo-200 rounded-xl p-4' },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'flex items-start gap-2' },
+        h('div', { role: 'region', 'aria-label': 'Circle facilitator response', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false' },
+        // Surface 988 / Crisis Text Line block when last facilitator question
+        // was flagged tier-3 (self-harm or harm-to-others keywords).
+        (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, gradeBand),
+        aiResponse && h('div', { className: 'bg-indigo-50 border border-indigo-200 rounded-xl p-4' },
+          h('div', { className: 'flex items-start gap-2' },
             h(Sparkles, { size: 14, className: 'text-indigo-500 mt-0.5 shrink-0' }),
             h('div', null,
-              h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, className: 'text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-1' }, 'Circle Facilitator'),
+              h('div', { className: 'text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-1' }, 'Circle Facilitator'),
               h('p', { className: 'text-sm text-indigo-800 leading-relaxed' }, aiResponse)
             )
           ),
           h('button', { 'aria-label': 'Dismiss', onClick: function() { upd('aiResponse', null); }, className: 'mt-2 text-[10px] text-indigo-400 hover:text-indigo-600 font-bold' }, 'Dismiss')
+        ),
+
+        // ═══ PRINT ═══
+        tab === 'print' && h('div', { className: 'space-y-3' },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 8, fontSize: 12.5, color: '#78350f', lineHeight: 1.65 } },
+            h('strong', null, '\uD83D\uDDA8 Facilitator pocket reference. '),
+            'A one-page circle protocol: structure of the 4 movements, talking-piece norms, opening + closing scripts, role cards, and the questions bank for the three most common circle types. Designed for teachers and Crew leaders to carry.'
+          ),
+          h('div', { className: 'no-print', style: { textAlign: 'center', marginBottom: 14 } },
+            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, 'aria-label': 'Print or save as PDF',
+              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
+          ),
+          h('style', null,
+            '@media print { body * { visibility: hidden !important; } ' +
+            '#rc-print-region, #rc-print-region * { visibility: visible !important; } ' +
+            '#rc-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #0f172a !important; } ' +
+            '#rc-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
+            '.no-print { display: none !important; } }'
+          ),
+          h('div', { id: 'rc-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
+              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'Restorative Circle \u00b7 Facilitator Reference'),
+              h('div', { style: { fontSize: 11, color: '#475569' } }, 'IIRP \u00b7 Indigenous lineage \u00b7 EL Education Crew')
+            ),
+
+            h('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.6, color: '#78350f' } },
+              h('strong', null, 'Use this before, not during, the circle. '),
+              'In circle, eyes are on the talking piece, not paper. The reference is for prep. Once you have run a few circles, the structure becomes second nature.'
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'The four movements of a circle'),
+              h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: '#0f172a', lineHeight: 1.7 } },
+                h('li', { style: { marginBottom: 4 } }, h('strong', null, 'Welcome and centering. '), 'Greet the group. A short centering moment (breath, mindful minute, naming what you carry into the space). State the purpose of the circle in one sentence.'),
+                h('li', { style: { marginBottom: 4 } }, h('strong', null, 'Agreements. '), 'Name the talking-piece norm: when you hold it, you speak; when you do not, you listen. "Pass" is always an option. What is said in circle stays in circle.'),
+                h('li', { style: { marginBottom: 4 } }, h('strong', null, 'Rounds. '), 'Open the question. Pass the piece. Listen. Keep going until everyone has had a chance with the piece (more than once for deeper circles).'),
+                h('li', null, h('strong', null, 'Closing. '), 'Mark the end clearly. A second short centering. Thank the group. Offer a moment for one-word reflections or a closing read.')
+              )
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Talking-piece norms'),
+              h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: '#0f172a', lineHeight: 1.65 } },
+                h('li', null, 'The person holding the piece is the only person speaking. Everyone else listens, fully, without prepping a response.'),
+                h('li', null, 'Pass is always honored. Silence is part of the circle.'),
+                h('li', null, 'No cross-talk, no rebuttal, no interruption \u2014 even by the facilitator.'),
+                h('li', null, 'The piece moves in one direction around the circle.'),
+                h('li', null, 'A piece that carries meaning for the group (an object from the school, a stone from the land, an item a student brings) deepens the work. A pen will do in a pinch.')
+              )
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Opening + closing scripts'),
+              h('div', { style: { padding: 8, background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 6, marginBottom: 8 } },
+                h('div', { style: { fontSize: 11.5, color: '#78350f', fontWeight: 700, marginBottom: 4 } }, 'Opening'),
+                h('div', { style: { fontSize: 12, color: '#0f172a', lineHeight: 1.6, fontStyle: 'italic' } }, '"Welcome. We are gathering in circle today to ____. Before we begin, let\'s take a breath together. \u00b7 [breath] \u00b7 The talking piece is ____. When you hold it, you speak. When you do not, you listen. Pass is always okay. What we share in this circle stays in this circle. The first round will be on ____."')
+              ),
+              h('div', { style: { padding: 8, background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: 6 } },
+                h('div', { style: { fontSize: 11.5, color: '#78350f', fontWeight: 700, marginBottom: 4 } }, 'Closing'),
+                h('div', { style: { fontSize: 12, color: '#0f172a', lineHeight: 1.6, fontStyle: 'italic' } }, '"As we close, I am going to invite one final round. One word, one breath, one feeling \u2014 something to carry out of this circle with you. \u00b7 [round] \u00b7 Thank you for your honesty, your listening, and your care for each other today. The circle is closed."')
+              )
+            ),
+
+            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'Question bank: the three most common circle types'),
+              h('div', { style: { marginBottom: 8 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#78350f', marginBottom: 3 } }, 'Community-building circle'),
+                h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 11.5, color: '#0f172a', lineHeight: 1.55 } },
+                  h('li', null, 'One word for how you arrived today.'),
+                  h('li', null, 'A small thing you are grateful for this week.'),
+                  h('li', null, 'Something you wish more people in this circle knew about you.')
+                )
+              ),
+              h('div', { style: { marginBottom: 8 } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#78350f', marginBottom: 3 } }, 'Check-in / Crew circle'),
+                h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 11.5, color: '#0f172a', lineHeight: 1.55 } },
+                  h('li', null, 'How is your heart today? One word.'),
+                  h('li', null, 'A moment from this week when you were proud of who you were being.'),
+                  h('li', null, 'Something you are carrying that you want this Crew to know about, even briefly.')
+                )
+              ),
+              h('div', null,
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#78350f', marginBottom: 3 } }, 'Harm-repair circle'),
+                h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 11.5, color: '#0f172a', lineHeight: 1.55 } },
+                  h('li', null, 'For the person harmed: what happened, from your perspective?'),
+                  h('li', null, 'For the person who caused harm: what happened, from your perspective?'),
+                  h('li', null, 'For everyone: what was the impact on you, on the people you love, on this community?'),
+                  h('li', null, 'What would help make things as right as possible?'),
+                  h('li', null, 'What agreements do we leave this circle with?')
+                )
+              )
+            ),
+
+            h('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 10, fontSize: 11.5, color: '#78350f', lineHeight: 1.6 } },
+              h('strong', null, 'Roles: '),
+              'Keeper (holds the structure, opens and closes), Timekeeper (gentle, optional, especially for shorter circles), Talking-piece holder (one person who passes the piece in), Witness or Co-keeper (especially in harm-repair circles, to share the emotional load).'
+            ),
+
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
+              'Circle practice has deep Indigenous roots and was carried into Western restorative justice through Howard Zehr, Kay Pranis, and many First Nations elders. Sources: International Institute for Restorative Practices (iirp.edu), Kay Pranis (The Little Book of Circle Processes), Howard Zehr (The Little Book of Restorative Justice). Printed from AlloFlow SEL Hub.'
+            )
+          )
+        )
         )
       );
     }

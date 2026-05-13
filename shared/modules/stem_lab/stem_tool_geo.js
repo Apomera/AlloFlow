@@ -32,6 +32,15 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _geoAC = null;
@@ -1492,6 +1501,38 @@ var d = labToolData || {};
 
             ),
 
+            // ── Topic-accent hero band per tab ──
+            (function() {
+              var TAB_META = {
+                findCountry:  { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83D\uDDFA', title: 'Find Country \u2014 the visual atlas',                hint: '195 sovereign nations recognized by the UN. Mercator projection distorts size near the poles \u2014 Greenland looks the size of Africa but is 14\u00d7 smaller. Equal-area projections (Goode, Robinson) trade angle accuracy for honest area.' },
+                capitals:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83C\uDFDB', title: 'Capitals \u2014 govt seats + cultural anchors',         hint: 'Most capitals also house head-of-state, supreme court, parliament. South Africa has 3 (Pretoria executive, Cape Town legislative, Bloemfontein judicial). Bolivia, Tanzania, Switzerland, Honduras, Eswatini also split.' },
+                continents:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83C\uDF0D', title: 'Continents \u2014 7 (or 5, depending who you ask)',     hint: '7-continent model (US/UK): Africa, Antarctica, Asia, Australia, Europe, N. America, S. America. Many countries teach 6 (combining N+S America) or 5 (combining Europe+Asia into Eurasia). Russia + Turkey straddle two.' },
+                landmarks:    { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFD4', title: 'Landmarks \u2014 the visual mnemonics',                hint: 'Eiffel (Paris), Christ the Redeemer (Rio), Sydney Opera House, Petra (Jordan), Burj Khalifa (Dubai). Cultural anchoring: when students learn the building, the country sticks 10\u00d7 better.' },
+                sizeCompare:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDCCF', title: 'Size Compare \u2014 fight Mercator distortion',          hint: 'Russia is 17M km\u00b2 (largest). USA + China + India fit inside Russia with room to spare. Africa is 30M km\u00b2 \u2014 fits USA + China + India + Mexico + Western Europe combined. Maps lie about scale.' },
+                globeView:    { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83C\uDF10', title: 'Globe View \u2014 honest spherical geometry',           hint: 'Earth is an oblate spheroid \u2014 21 km wider at the equator than pole-to-pole. The shortest path between two cities is a great-circle arc, not a straight line on a flat map. Why flights bend over the Arctic.' },
+                quizBuilder:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFC6', title: 'Quiz Builder \u2014 graded geography practice',         hint: 'Mix country / capital / continent / landmark items at chosen difficulty. Spaced retrieval beats cramming for long-term recall (Karpicke 2008). NCSS curriculum standards aligned through grade 8.' },
+                distance:     { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '\uD83D\uDCCD', title: 'Distance \u2014 great-circle math',                    hint: 'Haversine formula gives the great-circle distance between two lat/lng pairs. NYC to Tokyo \u2248 10,840 km going north over the pole \u2014 shorter than the flat-map straight line. Pilot routes prove it daily.' }
+              };
+              var meta = TAB_META[geoTab] || TAB_META.findCountry;
+              return React.createElement('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
 
 
             // ── Feedback bar ──
@@ -1622,7 +1663,7 @@ var d = labToolData || {};
 
                     onKeyDown: function(e) { if (e.key === 'Enter' && !geoFeedback) { checkCapitalAnswer(d.geoCapitalInput || ''); upd('geoCapitalInput', ''); } },
 
-                    className: 'flex-1 px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:bg-slate-50 disabled:text-slate-500'
+                    className: 'flex-1 px-3 py-2 rounded-lg border border-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:bg-slate-50 disabled:text-slate-300'
 
                   }),
 
@@ -1672,7 +1713,7 @@ var d = labToolData || {};
                                    (isCorrect ? 'bg-green-100 border-green-400 text-green-800' :
                                     isWrongClicked ? 'bg-red-100 border-red-400 text-red-800' :
                                     answered ? 'bg-slate-50 border-slate-200 text-slate-400' :
-                                    'bg-slate-100 hover:bg-teal-100 text-slate-700 border-slate-200 hover:border-teal-300')
+                                    'bg-slate-100 hover:bg-teal-100 text-slate-700 border-slate-200 hover:border-teal-600')
                       }, cap);
                     })
                   );
@@ -1694,7 +1735,7 @@ var d = labToolData || {};
               geoTarget && React.createElement('div', { className: 'max-w-lg mx-auto' },
 
                 React.createElement('div', { className: 'text-center mb-3' },
-                  React.createElement('p', { className: 'text-xs text-slate-500 uppercase tracking-wide' }, 'Which continent is'),
+                  React.createElement('p', { className: 'text-xs text-slate-300 uppercase tracking-wide' }, 'Which continent is'),
                   React.createElement('p', { className: 'text-2xl font-bold text-slate-800' }, geoTarget.name + '?')
                 ),
 
@@ -1925,7 +1966,7 @@ var d = labToolData || {};
                     // Country label: always visible in browse; hidden in quiz until answered
                     (!isQuiz || revealed) && React.createElement('p', { className: 'text-xs text-amber-600 mt-2 font-bold' }, '\uD83D\uDCCD ' + lm.country + ' \u2014 ' + lm.lat.toFixed(1) + '\u00b0, ' + lm.lng.toFixed(1) + '\u00b0'),
 
-                    isQuiz && !revealed && React.createElement('p', { className: 'text-xs text-slate-500 italic mt-2' }, 'Which country is this in?')
+                    isQuiz && !revealed && React.createElement('p', { className: 'text-xs text-slate-300 italic mt-2' }, 'Which country is this in?')
 
                   ),
 
@@ -1994,7 +2035,7 @@ var d = labToolData || {};
                         : isPicked
                           ? 'bg-red-100 border-red-500 text-red-800'
                           : revealed
-                            ? 'bg-slate-50 border-slate-200 text-slate-500'
+                            ? 'bg-slate-50 border-slate-200 text-slate-300'
                             : 'bg-white border-slate-300 text-slate-700 hover:bg-teal-50 hover:border-teal-400';
                       return React.createElement('button', {
                         key: name,
@@ -2074,7 +2115,7 @@ var d = labToolData || {};
                         answered && React.createElement('div', {
                           style: {
                             position: 'absolute', left: 0, bottom: 0, height: '6px', width: fillPct + '%',
-                            background: isBigger ? '#22c55e' : '#64748b',
+                            background: isBigger ? '#22c55e' : '#94a3b8',
                             transition: 'width 0.8s ease-out'
                           },
                           'aria-hidden': 'true'
@@ -2088,7 +2129,7 @@ var d = labToolData || {};
 
                         // Area reveal — only after answering, color-coded
                         answered
-                          ? React.createElement('p', { className: 'text-sm font-bold mt-2 ' + (isBigger ? 'text-green-700' : 'text-slate-500') },
+                          ? React.createElement('p', { className: 'text-sm font-bold mt-2 ' + (isBigger ? 'text-green-700' : 'text-slate-300') },
                               c.area.toLocaleString() + ' km\u00b2')
                           : React.createElement('p', { className: 'text-[11px] text-slate-600 mt-1' }, 'Click if bigger')
 
@@ -2164,7 +2205,7 @@ var d = labToolData || {};
                     'aria-label': 'Close country info',
                     className: 'text-slate-400 hover:text-white text-sm leading-none'
                   }, '\u2715')
-                ) : React.createElement('p', { className: 'text-xs text-slate-500 text-center italic' }, 'Click any country on the globe to see its info here.')
+                ) : React.createElement('p', { className: 'text-xs text-slate-300 text-center italic' }, 'Click any country on the globe to see its info here.')
               )
 
             ),
@@ -2197,7 +2238,7 @@ var d = labToolData || {};
 
                   onKeyDown: function(e) { if (e.key === 'Enter' && d.geoQuizInput && !d.geoQuizLoading) { document.activeElement && document.activeElement.blur(); setTimeout(function() { var btn = document.querySelector('[data-geo-quiz-generate]'); if (btn) btn.click(); }, 0); } },
 
-                  className: 'flex-1 px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:bg-slate-50'
+                  className: 'flex-1 px-3 py-2 rounded-lg border border-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:bg-slate-50'
 
                 }),
 
@@ -2394,7 +2435,7 @@ var d = labToolData || {};
                       disabled: answered,
                       onChange: function(e) { upd('geoQuizAnswer', e.target.value); },
                       onKeyDown: function(e) { if (e.key === 'Enter') submitAnswer(d.geoQuizAnswer || ''); },
-                      className: 'flex-1 px-3 py-2 rounded-lg border border-teal-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:bg-slate-50 disabled:text-slate-500'
+                      className: 'flex-1 px-3 py-2 rounded-lg border border-teal-600 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:bg-slate-50 disabled:text-slate-300'
                     }),
 
                     React.createElement('button', {
@@ -2504,7 +2545,7 @@ var d = labToolData || {};
                     onKeyDown: function(e) { if (e.key === 'Enter') checkDistanceAnswer(); },
                     placeholder: 'Distance in km...',
                     'aria-label': 'Distance guess in kilometers',
-                    className: 'w-48 px-3 py-2 rounded-lg border border-teal-200 text-sm text-center focus:outline-none focus:ring-2 focus:ring-teal-400'
+                    className: 'w-48 px-3 py-2 rounded-lg border border-teal-600 text-sm text-center focus:outline-none focus:ring-2 focus:ring-teal-400'
                   }),
                   React.createElement('span', { className: 'text-xs text-slate-600 font-bold' }, 'km'),
                   React.createElement('button', {
@@ -2564,7 +2605,7 @@ var d = labToolData || {};
                 ),
 
                 geoStatsOpen && React.createElement('div', { className: 'mt-2 space-y-1.5' },
-                  !hasStats && React.createElement('p', { className: 'text-[11px] text-slate-500 italic text-center py-2' }, 'Answer some questions to see your progress per continent.'),
+                  !hasStats && React.createElement('p', { className: 'text-[11px] text-slate-300 italic text-center py-2' }, 'Answer some questions to see your progress per continent.'),
                   hasStats && ['Africa', 'Asia', 'Europe', 'North America', 'South America', 'Oceania'].map(function(cont) {
                     var s = geoSessionStats[cont];
                     var hasData = !!s;
@@ -2919,7 +2960,7 @@ var d = labToolData || {};
             React.createElement('p',{className:'text-sm font-bold text-violet-800 mb-1'},'🧩 Drag each theorem to its description:'),
             // Theorem chips (left)
             React.createElement('div',{className:'flex flex-wrap gap-2 mb-3'},
-              MATCH_PAIRS.filter(p=>!matchedIds.has(p.id)).map(p=>React.createElement('div',{ role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+              MATCH_PAIRS.filter(p=>!matchedIds.has(p.id)).map(p=>React.createElement('div',{ 
                 key:p.id, draggable:true,
                 onDragStart:e=>{ _gpDrag.matchId=p.id; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',p.theorem);}catch(ex){} },
                 onDragEnd:()=>{ _gpDrag.matchId=null; },
@@ -3103,6 +3144,68 @@ var d = labToolData || {};
         };
         const handleCanvasMouseUp = () => { if (gpDragging!=null) gpUpd('dragging',null); };
 
+        // Keyboard accessibility (WCAG 2.1.1): focus the SVG and use Enter to place,
+        // arrow keys to nudge the most recent point, Delete to remove it, N to cycle selection.
+        const gpSelected = (typeof gpHoverIdx === 'number' && gpHoverIdx >= 0 && gpHoverIdx < gpPoints.length) ? gpHoverIdx : (gpPoints.length - 1);
+        const handleCanvasKeyDown = e => {
+          const k = e.key;
+          // Enter or Space: add a point at canvas center (or next to selected, with offset)
+          if (k === 'Enter' || k === ' ') {
+            let nx, ny;
+            if (gpSelected >= 0 && gpPoints[gpSelected]) {
+              nx = Math.min(W - 10, gpPoints[gpSelected].x + gridStep);
+              ny = gpPoints[gpSelected].y;
+            } else {
+              nx = Math.round((W / 2) / gridStep) * gridStep;
+              ny = Math.round((H / 2) / gridStep) * gridStep;
+            }
+            const newPts = [...gpPoints, { x: nx, y: ny }];
+            gpUpd('points', newPts);
+            gpUpd('hoverIdx', newPts.length - 1);
+            if (gpConnecting != null) { gpUpd('segments', [...gpSegments, { from: gpConnecting, to: newPts.length - 1 }]); gpUpd('connecting', null); }
+            e.preventDefault();
+            return;
+          }
+          // Arrow keys: nudge selected point
+          const step = e.shiftKey ? gridStep * 2 : gridStep;
+          if (gpSelected >= 0 && gpPoints[gpSelected]) {
+            let dx = 0, dy = 0;
+            if (k === 'ArrowLeft') dx = -step;
+            else if (k === 'ArrowRight') dx = step;
+            else if (k === 'ArrowUp') dy = -step;
+            else if (k === 'ArrowDown') dy = step;
+            if (dx !== 0 || dy !== 0) {
+              gpUpd('points', gpPoints.map((p, i) => i === gpSelected ? { x: Math.max(10, Math.min(W - 10, p.x + dx)), y: Math.max(10, Math.min(H - 10, p.y + dy)) } : p));
+              e.preventDefault();
+              return;
+            }
+          }
+          // N or Tab-equivalent (we don't hijack Tab): cycle selection forward
+          if (k === 'n' || k === 'N') {
+            if (gpPoints.length > 0) gpUpd('hoverIdx', (gpSelected + 1) % gpPoints.length);
+            e.preventDefault();
+            return;
+          }
+          if (k === 'p' || k === 'P') {
+            if (gpPoints.length > 0) gpUpd('hoverIdx', (gpSelected - 1 + gpPoints.length) % gpPoints.length);
+            e.preventDefault();
+            return;
+          }
+          // Delete or Backspace: remove selected point (and any segments connected to it)
+          if (k === 'Delete' || k === 'Backspace') {
+            if (gpSelected >= 0 && gpPoints[gpSelected]) {
+              const newPts = gpPoints.filter((_, i) => i !== gpSelected);
+              const newSegs = gpSegments
+                .filter(s => s.from !== gpSelected && s.to !== gpSelected)
+                .map(s => ({ from: s.from > gpSelected ? s.from - 1 : s.from, to: s.to > gpSelected ? s.to - 1 : s.to }));
+              gpUpd('points', newPts);
+              gpUpd('segments', newSegs);
+              gpUpd('hoverIdx', Math.min(gpSelected, newPts.length - 1));
+              e.preventDefault();
+            }
+          }
+        };
+
         const helperText = gpPoints.length===0 ? '👆 Click canvas to place your first point'
           : gpConnecting!=null ? `↗️ Click a point or canvas to draw segment from ${labelFor(gpConnecting)}`
           : gpDragging!=null ? `✋ Dragging ${labelFor(gpDragging)} — release to drop`
@@ -3112,7 +3215,7 @@ var d = labToolData || {};
           : 'Drag points • Add segments to discover theorems';
 
         // SVG Canvas
-        const renderCanvas = () => React.createElement('svg', { width:W, height:H, viewBox:`0 0 ${W} ${H}`, className:'cursor-crosshair select-none', style:{background:'#faf5ff'}, role:'img', 'aria-label':'Geometry canvas', onMouseDown:handleCanvasMouseDown, onMouseMove:handleCanvasMouseMove, onMouseUp:handleCanvasMouseUp, onMouseLeave:()=>{ handleCanvasMouseUp(); gpUpd('hoverIdx',-1); } },
+        const renderCanvas = () => React.createElement('svg', { width:W, height:H, viewBox:`0 0 ${W} ${H}`, className:'cursor-crosshair select-none', style:{background:'#faf5ff', outline:'none'}, role:'application', tabIndex:0, 'aria-label': `Geometry prover canvas. ${gpPoints.length} point${gpPoints.length===1?'':'s'} placed${gpSelected>=0?', point '+(gpSelected+1)+' selected':''}. Keyboard: Enter or Space to place a point near the selection, arrow keys to nudge the selected point, N or P to cycle selection, Delete to remove selected point.`, onKeyDown:handleCanvasKeyDown, onMouseDown:handleCanvasMouseDown, onMouseMove:handleCanvasMouseMove, onMouseUp:handleCanvasMouseUp, onMouseLeave:()=>{ handleCanvasMouseUp(); gpUpd('hoverIdx',-1); } },
           React.createElement('title',null,'Geometry Prover Canvas'),
           Array.from({length:Math.floor(W/gridStep)+1}).map((_,i)=>React.createElement('line',{key:'gv'+i,x1:i*gridStep,y1:0,x2:i*gridStep,y2:H,stroke:'#ede9fe',strokeWidth:0.5})),
           Array.from({length:Math.floor(H/gridStep)+1}).map((_,i)=>React.createElement('line',{key:'gh'+i,x1:0,y1:i*gridStep,x2:W,y2:i*gridStep,stroke:'#ede9fe',strokeWidth:0.5})),
@@ -3140,7 +3243,7 @@ var d = labToolData || {};
           if (gpInvestigate&&!gpRevealed) return React.createElement('div',{className:'bg-amber-50 rounded-xl p-3 border-2 border-amber-200 border-dashed'},
             React.createElement('div',{className:'flex items-center gap-2 mb-2'}, React.createElement('span',{className:'text-base'},'🔍'), React.createElement('p',{className:'text-sm font-bold text-amber-700 flex-1'},`${theorems.length} relationship${theorems.length>1?'s':''} detected!`)),
             React.createElement('p',{className:'text-xs text-amber-600 mb-2'},'Investigate Mode ON — write your prediction before revealing!'),
-            React.createElement('textarea',{rows:2,placeholder:'What theorems or rules do you think apply here?','aria-label':'Theorem prediction',value:gp.prediction||'',onChange:e=>gpUpd('prediction',e.target.value),className:'w-full px-3 py-2 border-2 border-amber-300 rounded-lg text-sm mb-2 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-300 resize-none'}),
+            React.createElement('textarea',{rows:2,placeholder:'What theorems or rules do you think apply here?','aria-label':'Theorem prediction',value:gp.prediction||'',onChange:e=>gpUpd('prediction',e.target.value),className:'w-full px-3 py-2 border-2 border-amber-600 rounded-lg text-sm mb-2 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-300 resize-none'}),
             React.createElement('button',{onClick:()=>gpUpd('revealed',true),disabled:!(gp.prediction||'').trim(),className:'w-full py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all disabled:opacity-40'},'👁 Reveal Theorems')
           );
           return React.createElement('div',{className:'bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-3 border border-violet-200'},
@@ -3177,12 +3280,12 @@ var d = labToolData || {};
             React.createElement('div',{className:'flex items-center gap-2 mb-3'}, React.createElement('div',{className:'w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-base'},'📝'), React.createElement('div',{className:'flex-1'}, React.createElement('h4',{className:'text-sm font-bold text-emerald-800'},proof.title), React.createElement('p',{className:'text-[11px] text-emerald-600 italic'},proof.theorem)), React.createElement('div',{className:`text-xs font-bold px-2 py-1 rounded-full ${pct===100?'bg-emerald-700 text-white':'bg-emerald-100 text-emerald-700'}`},pct+'%')),
             React.createElement('div',{className:'w-full h-1.5 bg-emerald-200 rounded-full mb-3 overflow-hidden'}, React.createElement('div',{className:'h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full transition-all duration-500',style:{width:pct+'%'}})),
             // Proof selector
-            React.createElement('div',{className:'flex gap-1.5 mb-3 flex-wrap'}, GUIDED_PROOFS.map(p=>React.createElement('button',{key:p.id,onClick:()=>loadGuidedProof(p.id),className:`px-2 py-1 text-[11px] font-bold rounded-lg transition-all ${gpGuided.proofId===p.id?'bg-emerald-700 text-white':'bg-white text-emerald-700 hover:bg-emerald-100 border border-emerald-200'}`},p.title.split(' ').slice(0,3).join(' ')))),
+            React.createElement('div',{className:'flex gap-1.5 mb-3 flex-wrap'}, GUIDED_PROOFS.map(p=>React.createElement('button',{key:p.id,onClick:()=>loadGuidedProof(p.id),className:`px-2 py-1 text-[11px] font-bold rounded-lg transition-all ${gpGuided.proofId===p.id?'bg-emerald-700 text-white':'bg-white text-emerald-700 hover:bg-emerald-100 border border-emerald-600'}`},p.title.split(' ').slice(0,3).join(' ')))),
             // ── Reason Chip Bank (draggable) ──
             React.createElement('div',{className:'mb-3'},
               React.createElement('p',{className:'text-[11px] font-bold text-emerald-700 uppercase mb-1.5'},'🧩 Drag a reason to the correct row (or click to select, then click the row):'),
               React.createElement('div',{className:'flex flex-wrap gap-1.5'},
-                availableReasons.map(reason => React.createElement('div',{ role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                availableReasons.map(reason => React.createElement('div',{ 
                   key:reason,
                   draggable:true,
                   onDragStart:e=>{ _gpDrag.reason=reason; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',reason);}catch(ex){} },
@@ -3286,7 +3389,7 @@ var d = labToolData || {};
             React.createElement('h3',{className:'text-lg font-bold text-violet-800'},'📐 Geometry Prover'),
             React.createElement('div',{className:'flex items-center gap-2 ml-auto'},
               React.createElement('div',{className:'text-xs font-bold text-emerald-600'},exploreScore.correct+'/'+exploreScore.total),
-              React.createElement('button',{onClick:()=>{ const snap={id:'snap-'+Date.now(),tool:'geometryProver',label:`Proof: ${gpPoints.length} pts`,data:{points:[...gpPoints],segments:[...gpSegments],theorems:theorems.map(t=>t.label)},timestamp:Date.now()}; setToolSnapshots(prev=>[...prev,snap]); addToast('📸 Snapshot saved!','success'); },className:'text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full px-2 py-0.5'},'📸 Snapshot')
+              React.createElement('button',{onClick:()=>{ const snap={id:'snap-'+Date.now(),tool:'geometryProver',label:`Proof: ${gpPoints.length} pts`,data:{points:[...gpPoints],segments:[...gpSegments],theorems:theorems.map(t=>t.label)},timestamp:Date.now()}; setToolSnapshots(prev=>[...prev,snap]); addToast('📸 Snapshot saved!','success'); },className:'text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5'},'📸 Snapshot')
             )
           ),
           // Tab bar
@@ -3306,7 +3409,7 @@ var d = labToolData || {};
           // BUILD TAB
           gpTab==='build'&&React.createElement('div',{className:'space-y-3'},
             React.createElement('div',{className:'flex items-center gap-2'},
-              React.createElement('button',{onClick:()=>{gpUpd('investigate',!gpInvestigate);gpUpd('revealed',false);gpUpd('prediction','');},className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpInvestigate?'bg-amber-700 text-white shadow':'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100'}`},gpInvestigate?'🔮 Investigate ON':'🔮 Investigate Mode'),
+              React.createElement('button',{onClick:()=>{gpUpd('investigate',!gpInvestigate);gpUpd('revealed',false);gpUpd('prediction','');},className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpInvestigate?'bg-amber-700 text-white shadow':'bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100'}`},gpInvestigate?'🔮 Investigate ON':'🔮 Investigate Mode'),
               React.createElement('span',{className:'text-[11px] text-slate-600 italic'},gpInvestigate?'Theorems hidden — predict first!':'Auto-show theorems')
             ),
             React.createElement('div',{className:'flex gap-1.5 flex-wrap'},
@@ -3316,13 +3419,13 @@ var d = labToolData || {};
                {id:'parallel',label:'∥ Parallel',color:'teal',action:loadParallel},
                {id:'bisector',label:'∠ Bisector',color:'amber',action:loadBisector},
                {id:'guided',label:'📝 Guided Proof',color:'emerald',action:()=>loadGuidedProof('tri_angle_sum')}
-              ].map(m=>React.createElement('button',{key:m.id,onClick:m.action,className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpMode===m.id?'bg-'+m.color+'-600 text-white shadow-md':'bg-'+m.color+'-50 text-'+m.color+'-700 hover:bg-'+m.color+'-100 border border-'+m.color+'-200'}`},m.label))
+              ].map(m=>React.createElement('button',{key:m.id,onClick:m.action,className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpMode===m.id?'bg-'+m.color+'-600 text-white shadow-md':'bg-'+m.color+'-50 text-'+m.color+'-700 hover:bg-'+m.color+'-100 border border-'+m.color+'-600'}`},m.label))
             ),
             React.createElement('div',{className:'flex gap-2 flex-wrap'},
-              React.createElement('button',{onClick:()=>{if(gpPoints.length>=2){const last=gpPoints.length-1;if(!gpSegments.some(s=>(s.from===last-1&&s.to===last)||(s.from===last&&s.to===last-1)))gpUpd('segments',[...gpSegments,{from:last-1,to:last}]);}},disabled:gpPoints.length<2,className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-violet-100 text-violet-700 hover:bg-violet-200 border border-violet-200 transition-all disabled:opacity-40'},'🔗 Connect Last Two'),
-              React.createElement('button',{onClick:()=>{if(gpConnecting!=null)gpUpd('connecting',null);else if(gpPoints.length>0)gpUpd('connecting',gpPoints.length-1);},disabled:gpPoints.length<1,className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpConnecting!=null?'bg-indigo-600 text-white':'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200'} disabled:opacity-40`},gpConnecting!=null?'✔ Connecting from '+labelFor(gpConnecting):'↗️ Draw Segment'),
-              React.createElement('button',{onClick:()=>gpUpd('showLabels',!gpShowLabels),className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpShowLabels?'bg-emerald-700 text-white':'bg-slate-100 text-slate-600 border border-slate-200'}`},gpShowLabels?'📏 Labels ON':'📏 Labels'),
-              React.createElement('button',{onClick:()=>{if(gpPoints.length>0){const rm=gpPoints.length-1;gpUpd('points',gpPoints.slice(0,-1));gpUpd('segments',gpSegments.filter(s=>s.from!==rm&&s.to!==rm));gpUpd('connecting',null);}},disabled:gpPoints.length<1,className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-all disabled:opacity-40'},'⌫ Undo'),
+              React.createElement('button',{onClick:()=>{if(gpPoints.length>=2){const last=gpPoints.length-1;if(!gpSegments.some(s=>(s.from===last-1&&s.to===last)||(s.from===last&&s.to===last-1)))gpUpd('segments',[...gpSegments,{from:last-1,to:last}]);}},disabled:gpPoints.length<2,className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-violet-100 text-violet-700 hover:bg-violet-200 border border-violet-600 transition-all disabled:opacity-40'},'🔗 Connect Last Two'),
+              React.createElement('button',{onClick:()=>{if(gpConnecting!=null)gpUpd('connecting',null);else if(gpPoints.length>0)gpUpd('connecting',gpPoints.length-1);},disabled:gpPoints.length<1,className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpConnecting!=null?'bg-indigo-600 text-white':'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-600'} disabled:opacity-40`},gpConnecting!=null?'✔ Connecting from '+labelFor(gpConnecting):'↗️ Draw Segment'),
+              React.createElement('button',{onClick:()=>gpUpd('showLabels',!gpShowLabels),className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpShowLabels?'bg-emerald-700 text-white':'bg-slate-100 text-slate-600 border border-slate-400'}`},gpShowLabels?'📏 Labels ON':'📏 Labels'),
+              React.createElement('button',{onClick:()=>{if(gpPoints.length>0){const rm=gpPoints.length-1;gpUpd('points',gpPoints.slice(0,-1));gpUpd('segments',gpSegments.filter(s=>s.from!==rm&&s.to!==rm));gpUpd('connecting',null);}},disabled:gpPoints.length<1,className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-600 transition-all disabled:opacity-40'},'⌫ Undo'),
               React.createElement('button',{onClick:()=>{gpUpd('points',[]);gpUpd('segments',[]);gpUpd('connecting',null);gpUpd('feedback',null);gpUpd('challenge',null);gpUpd('challengeAnswer','');},className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 transition-all'},'↺ Clear')
             ),
             renderTheoremPanel(),
@@ -3348,7 +3451,7 @@ var d = labToolData || {};
               React.createElement('p',{className:'text-sm font-bold text-violet-800 mb-3'},'🎯 '+gpChallenge.question),
               gpChallenge.type==='polygon_sum'&&React.createElement('p',{className:'text-[11px] text-violet-600 italic mb-2'},'💡 How many triangles fit inside the polygon?'),
               React.createElement('div',{className:'flex gap-2'},
-                React.createElement('input',{type:'text','aria-label':'Challenge answer in degrees',value:gp.challengeAnswer||'',onChange:e=>gpUpd('challengeAnswer',e.target.value),onKeyDown:e=>{if(e.key==='Enter')checkChallenge();},placeholder:'Your answer (°)',className:'flex-1 px-3 py-2 border-2 border-violet-300 rounded-lg text-sm font-bold text-center focus:border-violet-500 focus:ring-2 focus:ring-violet-300 outline-none'}),
+                React.createElement('input',{type:'text','aria-label':'Challenge answer in degrees',value:gp.challengeAnswer||'',onChange:e=>gpUpd('challengeAnswer',e.target.value),onKeyDown:e=>{if(e.key==='Enter')checkChallenge();},placeholder:'Your answer (°)',className:'flex-1 px-3 py-2 border-2 border-violet-600 rounded-lg text-sm font-bold text-center focus:border-violet-500 focus:ring-2 focus:ring-violet-300 outline-none'}),
                 React.createElement('button',{onClick:checkChallenge,className:'px-4 py-2 bg-violet-700 text-white font-bold rounded-lg text-sm hover:bg-violet-600 transition-all'},'✔ Check')
               ),
               gpFeedback&&React.createElement('div',{className:`mt-3 p-3 rounded-xl border ${gpFeedback.correct?'bg-emerald-50 border-emerald-200':'bg-red-50 border-red-200'}`}, React.createElement('p',{className:`text-sm font-bold ${gpFeedback.correct?'text-emerald-700':'text-red-600'}`},gpFeedback.msg))

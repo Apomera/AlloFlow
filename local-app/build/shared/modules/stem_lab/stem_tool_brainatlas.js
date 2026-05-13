@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // stem_tool_brainatlas.js - Brain Atlas Explorer plugin
 // Extracted from stem_tool_science.js
 (function() {
@@ -432,9 +442,14 @@ var d = labToolData.brainAtlas || {};
 
             canvas._brainViewKey = _cacheKey;
 
+            // PL7 HiDPI: crisp rendering on retina displays.
+            if (window.StemLab && window.StemLab.setupHiDPI) {
+              window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+            }
             var ctx = canvas.getContext('2d');
+            if (canvas._dpr) ctx.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
 
-            var W = canvas.width, H = canvas.height;
+            var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
 
             var fontScale = W / 600; // Scale text proportionally
 
@@ -2582,7 +2597,7 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.beginPath(); ctx.moveTo(px2,py2); ctx.lineTo(px2,py2+ph2); ctx.lineTo(px2+pw2,py2+ph2); ctx.stroke();
 
-                ctx.font='bold '+(7*fontScale)+'px Inter,system-ui,sans-serif'; ctx.fillStyle='#64748b'; ctx.textAlign='right';
+                ctx.font='bold '+(7*fontScale)+'px Inter,system-ui,sans-serif'; ctx.fillStyle='#94a3b8'; ctx.textAlign='right';
 
                 ctx.fillText('+30 mV',px2-3,py2+ph2*0.15); ctx.fillText('0 mV',px2-3,py2+ph2*0.38);
 
@@ -2670,7 +2685,7 @@ var d = labToolData.brainAtlas || {};
 
                 ctx.beginPath(); ctx.roundRect(W-pnW2-10,6,pnW2,24,8);
 
-                var pc=phase<1?'#64748b':phase<2?'#eab308':phase<4?'#f97316':phase<5?'#22c55e':'#3b82f6';
+                var pc=phase<1?'#94a3b8':phase<2?'#eab308':phase<4?'#f97316':phase<5?'#22c55e':'#3b82f6';
 
                 ctx.fillStyle=pc+'20'; ctx.fill(); ctx.strokeStyle=pc+'60'; ctx.lineWidth=1; ctx.stroke();
 
@@ -2689,7 +2704,7 @@ var d = labToolData.brainAtlas || {};
                 var sleepCycles = [
                   // ~90 min cycles, 4-5 per night. REM lengthens, SWS shortens across night
                   // Cycle 1 (0-0.19)
-                  {s:'Awake',y:0.05,c:'#64748b',t0:0,t1:0.01},
+                  {s:'Awake',y:0.05,c:'#94a3b8',t0:0,t1:0.01},
                   {s:'N1',y:0.25,c:'#38bdf8',t0:0.01,t1:0.03},
                   {s:'N2',y:0.50,c:'#3b82f6',t0:0.03,t1:0.08},
                   {s:'N3',y:0.80,c:'#4338ca',t0:0.08,t1:0.14},
@@ -2715,7 +2730,7 @@ var d = labToolData.brainAtlas || {};
                   {s:'N1',y:0.25,c:'#38bdf8',t0:0.82,t1:0.84},
                   {s:'N2',y:0.50,c:'#3b82f6',t0:0.84,t1:0.90},
                   {s:'REM',y:0.15,c:'#a855f7',t0:0.90,t1:0.98},
-                  {s:'Awake',y:0.05,c:'#64748b',t0:0.98,t1:1.0}
+                  {s:'Awake',y:0.05,c:'#94a3b8',t0:0.98,t1:1.0}
                 ];
 
                 // Graph area
@@ -2737,7 +2752,7 @@ var d = labToolData.brainAtlas || {};
                 ctx.font = Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
                 ctx.textAlign = 'right';
                 var stageLabels = [
-                  {name:'Awake',y:0.05,color:'#64748b'},
+                  {name:'Awake',y:0.05,color:'#94a3b8'},
                   {name:'REM',y:0.15,color:'#a855f7'},
                   {name:'N1',y:0.25,color:'#38bdf8'},
                   {name:'N2',y:0.50,color:'#3b82f6'},
@@ -2836,7 +2851,7 @@ var d = labToolData.brainAtlas || {};
                 ctx.font = 'bold ' + Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
                 var legendY = H * 0.92;
                 var legendItems = [
-                  {name:'Awake',c:'#64748b'},{name:'REM',c:'#a855f7'},{name:'N1',c:'#38bdf8'},{name:'N2',c:'#3b82f6'},{name:'N3/SWS',c:'#4338ca'}
+                  {name:'Awake',c:'#94a3b8'},{name:'REM',c:'#a855f7'},{name:'N1',c:'#38bdf8'},{name:'N2',c:'#3b82f6'},{name:'N3/SWS',c:'#4338ca'}
                 ];
                 var lx = W * 0.10;
                 legendItems.forEach(function(li) {
@@ -2896,7 +2911,7 @@ var d = labToolData.brainAtlas || {};
                   ctx.fillStyle = isAct ? '#7c3aed' : '#f1f5f9';
                   ctx.fill();
                   ctx.strokeStyle = isAct ? '#6d28d9' : '#cbd5e1'; ctx.lineWidth = 1; ctx.stroke();
-                  ctx.fillStyle = isAct ? '#fff' : '#64748b'; ctx.textAlign = 'center';
+                  ctx.fillStyle = isAct ? '#fff' : '#94a3b8'; ctx.textAlign = 'center';
                   ctx.fillText(EEG_ACTIVITIES[ak].label, bx + actBtnW / 2, actBtnY + 11);
                   canvas._eegBtnRects.push({ key: ak, x: bx / W, y: actBtnY / H, w: actBtnW / W, h: actBtnH / H });
                 });
@@ -3208,7 +3223,7 @@ var d = labToolData.brainAtlas || {};
                 legRow1.forEach(function(li) {
                   ctx.beginPath(); ctx.arc(legX1 + 5, legY1, 4, 0, Math.PI * 2);
                   ctx.fillStyle = li.color; ctx.fill();
-                  ctx.fillStyle = '#64748b'; ctx.textAlign = 'left';
+                  ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'left';
                   ctx.fillText(li.label, legX1 + 13, legY1 + 4);
                   legX1 += ctx.measureText(li.label).width + 30;
                 });
@@ -3221,7 +3236,7 @@ var d = labToolData.brainAtlas || {};
                 legRow2.forEach(function(li) {
                   ctx.beginPath(); ctx.arc(legX2 + 5, legY2, 4, 0, Math.PI * 2);
                   ctx.fillStyle = li.color; ctx.fill();
-                  ctx.fillStyle = '#64748b'; ctx.textAlign = 'left';
+                  ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'left';
                   ctx.fillText(li.label, legX2 + 13, legY2 + 4);
                   legX2 += ctx.measureText(li.label).width + 30;
                 });
@@ -3452,7 +3467,7 @@ var d = labToolData.brainAtlas || {};
           }
 
           return React.createElement("div", {
-              className: "max-w-4xl mx-auto animate-in fade-in duration-200 outline-none",
+              className: "max-w-4xl mx-auto animate-in fade-in duration-200",
               role: "region",
               "aria-label": "Brain Atlas. Keyboard shortcuts: 1 through " + VIEW_KEYS.length + " switch views, Q toggles quiz, / focuses search, Escape closes region detail.",
               tabIndex: 0,
@@ -3483,19 +3498,50 @@ var d = labToolData.brainAtlas || {};
 
                 var v = VIEWS[key];
 
-                return React.createElement("button", { "aria-label": "Change view",
-
-                  key: key,
+                return React.createElement("button", { key: key,
 
                   onClick: function () { upd('view', key); upd('selectedRegion', null); upd('quizMode', false); upd('search', ''); },
 
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (viewKey === key ? 'bg-purple-600 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-purple-50 border border-slate-200')
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (viewKey === key ? 'bg-purple-600 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-purple-50 border border-slate-400')
 
                 }, v.name);
 
               })
 
             ),
+
+            // ── Topic-accent hero band (per anatomical view) ──
+            (function() {
+              var VIEW_META = {
+                lateral:           { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '🧠', title: 'Lateral view — the 4 lobes, cerebellum, brainstem',  hint: 'The classic side view. Frontal (planning + Broca), parietal (sensation + space), temporal (language + memory), occipital (vision). Each lobe maps to specific clinical syndromes.' },
+                medial:            { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🪞', title: 'Medial sagittal — midline structures',          hint: 'Cut the brain in half: corpus callosum, thalamus, hypothalamus, cingulate, hippocampus. The deep structures the lateral view hides — most of the limbic system lives here.' },
+                superior:          { accent: '#3b82f6', soft: 'rgba(59,130,246,0.10)', icon: '⬆️', title: 'Superior view — top-down',                       hint: 'Look down at the brain. The longitudinal fissure splits L and R hemispheres; the central sulcus separates motor (front) from somatosensory (back). Asymmetry reveals.' },
+                inferior:          { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '⬇️', title: 'Inferior view — bottom-up',                      hint: 'Look up from underneath. Cranial nerves I–XII exit here. The Circle of Willis (basilar + vertebral + ICA) supplies the brain — strokes happen at these branch points.' },
+                neurotransmitters: { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '🧪', title: 'Neurotransmitters — chemistry of mind',          hint: 'Glutamate (excite), GABA (inhibit), dopamine (reward + motor), serotonin (mood + GI), norepinephrine (alertness), acetylcholine (memory + autonomic). Drug targets all live here.' },
+                neuron:            { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '🪡', title: 'Neuron anatomy — single cell',                  hint: 'Dendrites (input) → soma → axon (output) → terminal. Action potential travels at 10–120 m/s; myelin makes it faster. Synapses can be excitatory or inhibitory.' },
+                sleepStages:       { accent: '#6366f1', soft: 'rgba(99,102,241,0.10)', icon: '😴', title: 'Sleep stages — N1, N2, N3, REM',               hint: 'Cycles every ~90 min. N3 (deep) for memory consolidation; REM for emotional processing + procedural memory. Adolescents need 8–10 hrs; chronic deprivation impairs everything cognitive.' },
+                eegWaves:          { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '📈', title: 'EEG waves — brain rhythms',                    hint: 'Delta (deep sleep) → Theta (drowsy + memory) → Alpha (relaxed wakefulness) → Beta (active thinking) → Gamma (focused attention). Frequency rises with arousal level.' },
+                crossLateral:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '⚡', title: 'Cross-lateral wiring — left vs right',          hint: 'Each hemisphere controls the OPPOSITE side of the body. Left = language + sequential reasoning (most people); right = spatial + emotional processing. Stroke maps directly here.' }
+              };
+              var meta = VIEW_META[viewKey] || VIEW_META.lateral;
+              return React.createElement('div', {
+                style: {
+                  marginBottom: '12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
 
             // Controls
 
@@ -3505,17 +3551,17 @@ var d = labToolData.brainAtlas || {};
 
                 type: "text", placeholder: "\uD83D\uDD0D Search regions, functions, conditions...",
 
+                'aria-label': 'Search brain regions, functions, and conditions',
+
                 value: d.search || '',
 
                 onChange: function (e) { upd('search', e.target.value); },
 
-                className: "flex-1 min-w-[160px] px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none"
+                className: "flex-1 min-w-[160px] px-3 py-1.5 text-xs border border-slate-400 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none"
 
               }),
 
-              React.createElement("button", { "aria-label": "Change quiz mode",
-
-                onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
+              React.createElement("button", { onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
 
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-700 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
 
@@ -3524,6 +3570,193 @@ var d = labToolData.brainAtlas || {};
               React.createElement("span", { className: "text-[11px] text-slate-600 font-bold" }, filtered.length + ' regions')
 
             ),
+
+            // ─── FUNCTION MATCH (net-new mini-game) ───
+            // 12 function/clinical-syndrome vignettes; player picks the brain
+            // region from 8 common areas. Distinct from the existing Quiz mode
+            // (which tests region-name → click location): Function Match tests
+            // function/syndrome → region. The school-psych canonical reflex.
+            (function() {
+              var FM_REGIONS = [
+                { id: 'frontal',     label: 'Frontal lobe',    color: '#7c3aed', icon: '🧠', def: 'Executive function, planning, motor cortex, Broca\'s area (speech production), personality, impulse control. Damage = Phineas Gage / motor aphasia / hemiparesis.' },
+                { id: 'parietal',    label: 'Parietal lobe',   color: '#0ea5e9', icon: '🗺️', def: 'Somatosensory cortex, spatial awareness, visuomotor integration. Right-hemisphere damage = hemispatial neglect; left = Gerstmann syndrome.' },
+                { id: 'temporal',    label: 'Temporal lobe',   color: '#16a34a', icon: '👂', def: 'Auditory cortex, Wernicke\'s area (language comprehension), face recognition (fusiform), encloses the hippocampus + amygdala.' },
+                { id: 'occipital',   label: 'Occipital lobe',  color: '#f59e0b', icon: '👁️', def: 'Primary visual cortex (V1) + association areas (V2-V5). Color, motion, depth, object recognition. Damage = cortical blindness, hemianopia, visual agnosia.' },
+                { id: 'hippocampus', label: 'Hippocampus',     color: '#ec4899', icon: '📚', def: 'Memory formation + consolidation; spatial memory (London-taxi-driver studies). Bilateral damage = anterograde amnesia (HM / Henry Molaison case).' },
+                { id: 'amygdala',    label: 'Amygdala',        color: '#dc2626', icon: '⚡', def: 'Emotion processing, fear recognition + conditioning, threat detection. Damage = Klüver-Bucy / fear-blindness; hyperactivity = PTSD, anxiety disorders.' },
+                { id: 'cerebellum',  label: 'Cerebellum',      color: '#0891b2', icon: '🦴', def: 'Motor coordination, balance, motor learning, timing. Damage = ipsilateral ataxia, dysmetria, intention tremor, scanning speech (NOT contralateral like cerebrum).' },
+                { id: 'brainstem',   label: 'Brainstem',       color: '#64748b', icon: '🌳', def: 'Cranial nerve nuclei (III-XII), reticular activating system (consciousness), vital centers (cardiac, respiratory). Damage = coma, cranial palsies, vital instability.' }
+              ];
+              var FM_V = [
+                { id: 1, scenario: 'Patient produces telegraphic, non-fluent speech ("water... want...") with intact comprehension. Aware of the deficit and frustrated by it. Right hemiparesis on exam.', correct: 'frontal',
+                  why: "Broca's aphasia (left frontal lobe, BA 44/45). Non-fluent + intact comprehension + frustrated awareness is the canonical triad. Adjacent motor cortex damage explains the right hemiparesis (corticospinal tract crosses)." },
+                { id: 2, scenario: 'Patient produces fluent, well-articulated but nonsensical "word salad" with poor comprehension of others. Unaware of the deficit. No motor weakness.', correct: 'temporal',
+                  why: "Wernicke's aphasia (left posterior superior temporal gyrus, BA 22). Fluent + nonsensical + comprehension-impaired + unaware is the canonical contrast to Broca's. No hemiparesis because motor cortex is far away." },
+                { id: 3, scenario: 'After surgical removal of bilateral medial temporal lobes for intractable epilepsy, patient cannot form ANY new long-term memories, though working memory + procedural learning are preserved. Pre-surgery memories intact.', correct: 'hippocampus',
+                  why: "Henry Molaison (HM) case — the most-cited case in cognitive neuroscience. Bilateral hippocampal removal = profound anterograde amnesia. Distinguishes declarative (lost) from procedural (preserved) memory systems. Implicit memory works through different circuits." },
+                { id: 4, scenario: 'Patient has flattened emotional response. Cannot recognize fear in others\' faces. Approaches strangers without normal caution. No motor or sensory deficits.', correct: 'amygdala',
+                  why: "Bilateral amygdala damage (Klüver-Bucy syndrome features). Fear-recognition + appropriate-caution-around-strangers depend on amygdala fast-track threat processing. Patient SR (Bechara et al.) is the canonical case." },
+                { id: 5, scenario: 'After damage from a railroad accident, patient becomes impulsive, socially inappropriate, abandons long-term plans. Personality changed. Memory + speech + motor function intact.', correct: 'frontal',
+                  why: "Phineas Gage (1848) — the founding case of frontal-lobe / executive-function neuroscience. Prefrontal damage with intact cognition + memory shows that personality + planning + impulse control live in the frontal lobe specifically." },
+                { id: 6, scenario: 'Patient develops cortical blindness after a stroke but their pupillary light reflex is intact. They sometimes deny being blind (Anton syndrome). Eyes are anatomically normal.', correct: 'occipital',
+                  why: "Bilateral occipital lobe damage (V1) = cortical blindness. Pupillary reflex is intact because it bypasses cortex (subcortical pathway via pretectum). Anton syndrome (denial of blindness) suggests damage extends to association areas that would normally signal the deficit." },
+                { id: 7, scenario: 'Patient has wide-based gait, intention tremor (worsens as the hand approaches a target), dysmetria (overshoot/undershoot on finger-to-nose test), and scanning speech. Strength normal. Damage from PICA stroke.', correct: 'cerebellum',
+                  why: "Classic cerebellar syndrome. Coordination + timing + motor learning deficits without weakness. PICA (posterior inferior cerebellar artery) supplies the cerebellum. Note: cerebellar damage causes IPSILATERAL signs (same side), unlike cerebral cortex damage." },
+                { id: 8, scenario: 'Patient ignores the entire left side of space. Eats food only off the right half of their plate, dresses only the right side, draws clocks with all numbers crammed on the right. No visual-field cut.', correct: 'parietal',
+                  why: "Right-parietal damage = hemispatial neglect. Spatial-attention systems are right-lateralized, so right damage produces left neglect (much more common than the reverse). Distinguishes from hemianopia (visual-field cut) — neglect is attentional, not visual." },
+                { id: 9, scenario: 'Patient cannot recognize familiar faces (including own family) but can recognize them by voice or context. Other visual recognition intact. Lesion in fusiform gyrus.', correct: 'temporal',
+                  why: "Prosopagnosia (face blindness). The fusiform face area (FFA) in the right ventral temporal cortex is specialized for face recognition. Voice + context recognition are unaffected because they use different cortical pathways. Distinguishes face-specific from general visual agnosia." },
+                { id: 10, scenario: 'Patient becomes comatose after a midbrain lesion. Pupils unresponsive. Spontaneous breathing intact but irregular. Patient does not arouse to noxious stimuli.', correct: 'brainstem',
+                  why: "Midbrain damage affecting the reticular activating system (RAS) = coma. Pupils are unresponsive because cranial nerves III + sympathetic innervation pass through midbrain. Vital centers (medulla) determine whether spontaneous breathing continues. Brainstem death = legal death criterion." },
+                { id: 11, scenario: 'Combat veteran shows hyper-vigilance, exaggerated startle response, and intense fear responses to neutral cues that resemble combat (a car backfire, bright flashes). Imaging shows hyperactivity here.', correct: 'amygdala',
+                  why: "PTSD = amygdala hyperactivity + reduced prefrontal regulation. Trauma-conditioned cues activate the amygdala\'s fear circuit, bypassing slower cortical evaluation. Treatment (exposure therapy, EMDR, propranolol) targets re-consolidation of the fear-conditioned trace." },
+                { id: 12, scenario: 'Patient with mild cognitive impairment cannot remember a 4-item shopping list 5 minutes later, gets lost in their own neighborhood, and has trouble learning new routes. Pre-clinical Alzheimer\'s suspected.', correct: 'hippocampus',
+                  why: "Earliest Alzheimer\'s pathology starts in the entorhinal cortex + hippocampus (medial temporal lobe). Spatial memory + new-route learning depend on hippocampal place cells (Nobel Prize 2014: O\'Keefe + Mosers). Anterograde memory deficit before other cognitive symptoms is the typical AD progression." }
+              ];
+              var fmIdx = d.fmIdx == null ? -1 : d.fmIdx;
+              var fmSeed = d.fmSeed || 1;
+              var fmAns = !!d.fmAns;
+              var fmPick = d.fmPick;
+              var fmScore = d.fmScore || 0;
+              var fmRounds = d.fmRounds || 0;
+              var fmStreak = d.fmStreak || 0;
+              var fmBest = d.fmBest || 0;
+              var fmShown = d.fmShown || [];
+              var fmOpen = !!d.fmOpen;
+              function startFm() {
+                var pool = [];
+                for (var i = 0; i < FM_V.length; i++) if (fmShown.indexOf(i) < 0) pool.push(i);
+                if (pool.length === 0) { pool = []; for (var j = 0; j < FM_V.length; j++) pool.push(j); fmShown = []; }
+                var seedNext = ((fmSeed * 16807 + 11) % 2147483647) || 7;
+                var pick = pool[seedNext % pool.length];
+                upd('fmSeed', seedNext);
+                upd('fmIdx', pick);
+                upd('fmAns', false);
+                upd('fmPick', null);
+                upd('fmShown', fmShown.concat([pick]));
+              }
+              function pickFm(rId) {
+                if (fmAns) return;
+                var v = FM_V[fmIdx];
+                var correct = rId === v.correct;
+                var newScore = fmScore + (correct ? 1 : 0);
+                var newStreak = correct ? (fmStreak + 1) : 0;
+                var newBest = Math.max(fmBest, newStreak);
+                upd('fmAns', true);
+                upd('fmPick', rId);
+                upd('fmScore', newScore);
+                upd('fmRounds', fmRounds + 1);
+                upd('fmStreak', newStreak);
+                upd('fmBest', newBest);
+              }
+              return React.createElement("div", { style: { padding: 14, marginBottom: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(124,58,237,0.06), rgba(255,255,255,0))', border: '2px solid rgba(124,58,237,0.30)' } },
+                React.createElement("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 } },
+                  React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                    React.createElement("span", { style: { fontSize: 22 }, 'aria-hidden': 'true' }, '🕵️'),
+                    React.createElement("div", null,
+                      React.createElement("div", { style: { color: '#6d28d9', fontSize: 14, fontWeight: 900 } }, 'Function Match'),
+                      React.createElement("div", { style: { color: '#64748b', fontSize: 11, fontStyle: 'italic' } }, '12 function / clinical-syndrome vignettes — pick the brain region.')
+                    )
+                  ),
+                  React.createElement("button", {
+                    onClick: function() { upd('fmOpen', !fmOpen); },
+                    style: { padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(124,58,237,0.40)', background: 'rgba(124,58,237,0.10)', color: '#6d28d9', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                  }, fmOpen ? 'Hide ▴' : 'Play →')
+                ),
+                fmOpen && (fmIdx < 0
+                  ? React.createElement("div", { style: { textAlign: 'center', padding: '12px 0' } },
+                      React.createElement("p", { style: { color: '#475569', fontSize: 12, lineHeight: 1.55, marginBottom: 12 } },
+                        'For each clinical vignette, pick the brain region most likely involved. Coaching cites the canonical case (HM, Phineas Gage, etc.) and what distinguishes the correct region from look-alikes.'),
+                      React.createElement("button", {
+                        onClick: startFm,
+                        style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: '#7c3aed', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
+                      }, '🕵️ Start — vignette 1 of 12')
+                    )
+                  : (function() {
+                      var v = FM_V[fmIdx];
+                      var pickedCorrect = fmAns && fmPick === v.correct;
+                      var pct = fmRounds > 0 ? Math.round((fmScore / fmRounds) * 100) : 0;
+                      var allDone = fmShown.length >= FM_V.length && fmAns;
+                      var correctReg = FM_REGIONS.filter(function(r) { return r.id === v.correct; })[0];
+                      var pickedReg = fmPick ? FM_REGIONS.filter(function(r) { return r.id === fmPick; })[0] : null;
+                      return React.createElement("div", { style: { marginTop: 10 } },
+                        React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 11, color: '#475569', marginBottom: 8 } },
+                          React.createElement("span", null, 'Vignette ', React.createElement("strong", { style: { color: '#1e293b' } }, fmShown.length)),
+                          React.createElement("span", null, 'Score ', React.createElement("strong", { style: { color: '#16a34a' } }, fmScore + ' / ' + fmRounds)),
+                          fmRounds > 0 && React.createElement("span", null, 'Accuracy ', React.createElement("strong", { style: { color: '#0ea5e9' } }, pct + '%')),
+                          React.createElement("span", null, 'Streak ', React.createElement("strong", { style: { color: '#f59e0b' } }, fmStreak)),
+                          React.createElement("span", null, 'Best ', React.createElement("strong", { style: { color: '#7c3aed' } }, fmBest))
+                        ),
+                        React.createElement("div", { style: { padding: '12px 14px', borderRadius: 10, background: '#faf5ff', border: '2px solid rgba(124,58,237,0.40)', marginBottom: 10 } },
+                          React.createElement("div", { style: { fontSize: 11, color: '#6d28d9', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, 'Vignette ' + fmShown.length + ' of ' + FM_V.length),
+                          React.createElement("p", { style: { margin: 0, color: '#1e293b', fontSize: 13, lineHeight: 1.55 } }, v.scenario)
+                        ),
+                        React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': 'Pick the brain region' },
+                          FM_REGIONS.map(function(r) {
+                            var picked = fmAns && fmPick === r.id;
+                            var isRight = fmAns && r.id === v.correct;
+                            var bg, border, color;
+                            if (fmAns) {
+                              if (isRight) { bg = '#ecfdf5'; border = '#22c55e'; color = '#166534'; }
+                              else if (picked) { bg = '#fef2f2'; border = '#ef4444'; color = '#991b1b'; }
+                              else { bg = '#f8fafc'; border = '#cbd5e1'; color = '#64748b'; }
+                            } else {
+                              bg = r.color + '12'; border = r.color + '60'; color = '#1e293b';
+                            }
+                            return React.createElement('button', {
+                              key: r.id, role: 'radio',
+                              'aria-checked': picked ? 'true' : 'false',
+                              'aria-label': r.label,
+                              disabled: fmAns,
+                              onClick: function() { pickFm(r.id); },
+                              style: { padding: '10px 12px', borderRadius: 8, background: bg, color: color, border: '2px solid ' + border, cursor: fmAns ? 'default' : 'pointer', textAlign: 'left', fontWeight: 700, fontSize: 11, minHeight: 70, transition: 'all 0.15s' }
+                            },
+                              React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 } },
+                                React.createElement('span', { style: { fontSize: 14 }, 'aria-hidden': 'true' }, r.icon),
+                                React.createElement('span', { style: { color: fmAns ? color : r.color, fontSize: 12, fontWeight: 800 } }, r.label)
+                              ),
+                              React.createElement('div', { style: { fontSize: 10, fontWeight: 500, lineHeight: 1.4, color: fmAns ? color : '#475569' } }, r.def)
+                            );
+                          })
+                        ),
+                        fmAns && React.createElement("div", {
+                          style: {
+                            marginTop: 10, padding: '12px 14px', borderRadius: 10,
+                            background: pickedCorrect ? '#ecfdf5' : '#fef2f2',
+                            border: '1px solid ' + (pickedCorrect ? '#22c55e88' : '#ef444488')
+                          }
+                        },
+                          React.createElement("div", { style: { fontSize: 13, fontWeight: 800, marginBottom: 6, color: pickedCorrect ? '#166534' : '#991b1b' } },
+                            pickedCorrect
+                              ? '✅ Correct — ' + correctReg.label
+                              : '❌ The region is ' + correctReg.label + (pickedReg ? ' (you picked ' + pickedReg.label + ')' : '')
+                          ),
+                          React.createElement("p", { style: { color: '#1e293b', fontSize: 12, lineHeight: 1.55, margin: '0 0 10px' } }, v.why),
+                          allDone
+                            ? React.createElement("div", { style: { padding: 10, borderRadius: 8, background: '#faf5ff', border: '1px solid rgba(124,58,237,0.45)' } },
+                                React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: '#6d28d9', marginBottom: 4 } }, '🏆 All 12 vignettes complete'),
+                                React.createElement("div", { style: { color: '#1e293b', fontSize: 12, lineHeight: 1.5 } },
+                                  'Final: ', React.createElement('strong', null, fmScore + ' / ' + FM_V.length + ' (' + Math.round((fmScore / FM_V.length) * 100) + '%)'),
+                                  fmScore === FM_V.length ? ' — every region correctly identified. Ready for clinical neuro work.' :
+                                  fmScore >= 10 ? ' — strong clinical-syndrome reasoning. The most-confused pair is usually frontal vs temporal for language deficits (Broca\'s frontal vs Wernicke\'s temporal — fluency is the discriminator).' :
+                                  fmScore >= 7 ? ' — solid baseline. Reflexes worth building: telegraphic = Broca\'s (frontal), fluent nonsense = Wernicke\'s (temporal), no new memories = hippocampus, fearless = amygdala, ataxia = cerebellum.' :
+                                  ' — these distinctions are what neurology + neuropsych assessments are built on. Re-read the rationales on misses, then retake.'
+                                ),
+                                React.createElement("button", {
+                                  onClick: function() { upd('fmIdx', -1); upd('fmShown', []); upd('fmScore', 0); upd('fmRounds', 0); upd('fmStreak', 0); },
+                                  style: { marginTop: 8, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                                }, '🔄 Restart')
+                              )
+                            : React.createElement("button", {
+                                onClick: startFm,
+                                style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                              }, '➡️ Next vignette')
+                        )
+                      );
+                    })()
+                )
+              );
+            })(),
 
             // Main: canvas (full width) + detail below
 
@@ -3537,9 +3770,7 @@ var d = labToolData.brainAtlas || {};
 
                   var isActive = simScenario === s.id;
 
-                  return React.createElement("button", { "aria-label": "Change sim scenario",
-
-                    key: s.id,
+                  return React.createElement("button", { key: s.id,
 
                     onClick: function () { upd('simScenario', s.id); },
 
@@ -3680,9 +3911,7 @@ var d = labToolData.brainAtlas || {};
 
                       var showResult = fb !== null && fb !== undefined;
 
-                      return React.createElement("button", { "aria-label": "Brainatlas action",
-
-                        key: opt.id, disabled: showResult,
+                      return React.createElement("button", { key: opt.id, disabled: showResult,
 
                         onClick: function () {
 
@@ -3770,9 +3999,7 @@ var d = labToolData.brainAtlas || {};
 
                         var isActive = (d.brainwaveType || 'alpha') === waveType;
 
-                        return React.createElement("button", { "aria-label": "Change brainwave type",
-
-                          key: waveType,
+                        return React.createElement("button", { key: waveType,
 
                           onClick: function () { upd('brainwaveType', waveType); },
 
@@ -3894,9 +4121,14 @@ var d = labToolData.brainAtlas || {};
 
                   if (!canvas || canvas._bwAnimFrame) return;
 
+                  // PL7 HiDPI: crisp rendering on retina displays.
+                  if (window.StemLab && window.StemLab.setupHiDPI) {
+                    window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+                  }
                   var ctx = canvas.getContext('2d');
+                  if (canvas._dpr) ctx.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
 
-                  var W = canvas.width, H = canvas.height;
+                  var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
 
                   var tick = 0;
 
@@ -4284,15 +4516,13 @@ var d = labToolData.brainAtlas || {};
 
                     filtered.map(function (r) {
 
-                      return React.createElement("button", { "aria-label": "Change selected region",
-
-                        key: r.id,
+                      return React.createElement("button", { key: r.id,
 
                         onClick: function () { upd('selectedRegion', r.id); },
 
                         className: "w-full text-left px-3 py-2 rounded-lg text-xs transition-all hover:shadow-sm " +
 
-                          (d.selectedRegion === r.id ? 'font-bold border-2 border-purple-400 bg-purple-50' : 'bg-slate-50 hover:bg-white border border-slate-200')
+                          (d.selectedRegion === r.id ? 'font-bold border-2 border-purple-400 bg-purple-50' : 'bg-slate-50 hover:bg-white border border-slate-400')
 
                       },
 

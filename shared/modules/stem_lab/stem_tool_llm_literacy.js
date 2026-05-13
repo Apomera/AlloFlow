@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════════════════════════
 // stem_tool_llm_literacy.js — AI Literacy Lab (v1.0)
 // Teaches LLM mechanics (tokenization, next-token prediction,
@@ -19,6 +29,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
 
 (function() {
   'use strict';
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-llm_literacy')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-llm_literacy';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ── Inject CSS keyframes once (idempotent) ──
   // Used for gentle reveals and the thermometer needle — inline React styles
@@ -38,7 +61,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       '.llm-lit-span-pick { transition: background-color .15s ease, border-color .15s ease; }',
       '.llm-lit-span-pick:not([aria-disabled=true]):hover { background-color: #f1f5f9; }',
       '.llm-lit-term { border-bottom: 1px dotted currentColor; cursor: help; }',
-      '.llm-lit-term:hover, .llm-lit-term:focus { background-color: rgba(124, 58, 237, .08); outline: none; }',
+      '.llm-lit-term:hover { background-color: rgba(124, 58, 237, .08); }',
+      '.llm-lit-term:focus { background-color: rgba(124, 58, 237, .12); outline: 2px solid #7c3aed; outline-offset: 2px; }',
       // Skip-link: visually hidden until focused, then jumps to main content.
       '.llm-lit-skip { position: absolute; top: -40px; left: 8px; background: #7c3aed; color: #fff; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 13px; z-index: 10000; transition: top .2s ease; }',
       '.llm-lit-skip:focus { top: 8px; outline: 2px solid #fff; outline-offset: 2px; }',
@@ -278,13 +302,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
 
   // Create a recognizer bound to callbacks. Returns the recognizer instance
   // or null if unsupported. Caller is responsible for start()/stop().
+  // Phase 3v.M — when window.AlloFlowVoice is available, returns a
+  // controller that mirrors the SpeechRecognition surface callers expect
+  // (start/stop methods on the returned object). Falls back to the inline
+  // construction otherwise so this tool keeps working pre-3v.M and on
+  // first paint while voice_module is still loading.
   function createSpeechRecognizer(onResult, onEnd, onError) {
     if (!SpeechRecognitionCtor) return null;
+    var lang = (navigator.language || 'en-US');
+    if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === 'function') {
+      var ctrl = window.AlloFlowVoice.initWebSpeechCapture({
+        lang: lang,
+        continuous: false,
+        interimResults: true,
+        onRichResult: function(payload) {
+          if (onResult) onResult({ final: payload.final, interim: payload.interim });
+        },
+        onError: function(ev) { if (onError) onError(ev); },
+        onEnd: function() { if (onEnd) onEnd(); }
+      });
+      if (!ctrl.supported) return null;
+      // Return a thin SpeechRecognition-shaped facade so existing callers
+      // that invoke .start() / .stop() on the returned instance keep working.
+      return {
+        start: ctrl.start,
+        stop: ctrl.stop,
+        // Read-only echo of the rec settings; some callers may inspect these.
+        continuous: false,
+        interimResults: true,
+        lang: lang
+      };
+    }
     var rec;
     try { rec = new SpeechRecognitionCtor(); } catch (e) { return null; }
     rec.continuous = false;   // one utterance per start
     rec.interimResults = true;
-    rec.lang = (navigator.language || 'en-US');
+    rec.lang = lang;
     rec.onresult = function(ev) {
       var finalText = '';
       var interim = '';
@@ -1210,7 +1263,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         good:     '#059669',
         bad:      '#dc2626',
         warn:     '#d97706',
-        muted:    '#64748b',
+        muted:    '#94a3b8',
         text:     '#0f172a',
         subtext:  '#475569'
       };
@@ -1218,7 +1271,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         word:    { bg: '#dbeafe', fg: '#1e40af' },
         subword: { bg: '#fce7f3', fg: '#9d174d' },
         punct:   { bg: '#fef3c7', fg: '#92400e' },
-        space:   { bg: '#f1f5f9', fg: '#64748b' }
+        space:   { bg: '#f1f5f9', fg: '#94a3b8' }
       };
       function btn(bg, fg, disabled) {
         return {
@@ -2147,9 +2200,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           { id: 'tokens',    icon: '\uD83D\uDD24', title: '1. How LLMs Work',         desc: 'See tokens, next-token prediction, and temperature in action.', color: '#2563eb' },
           { id: 'fails',     icon: '\u26A0\uFE0F', title: '2. Why LLMs Get Things Wrong', desc: 'A gallery of real-feeling AI mistakes, with why each one fools people.', color: '#d97706' },
           { id: 'prompt',    icon: '\u270F\uFE0F', title: '3. Prompt Craft',          desc: 'Weak vs. strong prompts, five patterns, and live iteration.', color: '#7c3aed' },
-          { id: 'spotter',   icon: '\uD83D\uDD0D', title: '4. Hallucination Spotter', desc: 'Click the wrong parts of an AI-generated passage.', color: '#059669' },
-          { id: 'udl',       icon: '\uD83E\uDDED', title: '5. When to Use AI',        desc: 'Scaffold vs. substitute \u2014 a UDL-framed decision tool. Bring your own situation.', color: '#db2777' },
-          { id: 'ref',       icon: '\uD83D\uDCC4', title: '6. Quick Reference',       desc: 'One-page printable summary of the whole lab.', color: '#0f766e' }
+          { id: 'anatomy',   icon: '\uD83E\uDDE9', title: '4. Prompt Anatomy',        desc: '12 phrases. Identify the role of each (persona / task / context / format / example / constraint).', color: '#9333ea' },
+          { id: 'spotter',   icon: '\uD83D\uDD0D', title: '5. Hallucination Spotter', desc: 'Click the wrong parts of an AI-generated passage.', color: '#059669' },
+          { id: 'udl',       icon: '\uD83E\uDDED', title: '6. When to Use AI',        desc: 'Scaffold vs. substitute \u2014 a UDL-framed decision tool. Bring your own situation.', color: '#db2777' },
+          { id: 'ref',       icon: '\uD83D\uDCC4', title: '7. Quick Reference',       desc: 'One-page printable summary of the whole lab.', color: '#0f766e' }
         ];
         var visitedCount = tiles.reduce(function(n, t) { return n + (d.visited && d.visited[t.id] ? 1 : 0); }, 0);
         var pct = Math.round((visitedCount / tiles.length) * 100);
@@ -2751,6 +2805,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             { id: 'llm-lit-s1-playground',  icon: '\uD83C\uDF9B\uFE0F', label: 'Playground' }
           ]),
           renderGenerationLoop(),
+
+          // ── Pipeline overview: where each Section 1 sub-card fits in the LLM flow ──
+          // Lifts the BirdLab career-pathway step-flow pattern.
+          (function() {
+            var STAGES = [
+              { id: 'tokens',  glyph: '🔤', title: 'Tokens',          subtitle: 'Text → sub-word IDs',     color: '#2563eb', anchor: '#llm-lit-s1-tokens' },
+              { id: 'embed',   glyph: '🧮', title: 'Embeddings',      subtitle: 'IDs → high-D vectors',    color: '#7c3aed', anchor: '#llm-lit-s1-tokens' },
+              { id: 'context', glyph: '🪟', title: 'Context window',  subtitle: 'N tokens visible at once', color: '#0891b2', anchor: '#llm-lit-s1-loop' },
+              { id: 'predict', glyph: '🎲', title: 'Next-token',      subtitle: 'Probabilities over vocab',  color: '#0d9488', anchor: '#llm-lit-s1-nexttok' },
+              { id: 'temp',    glyph: '🌡️', title: 'Temperature',    subtitle: 'How far from the top pick',  color: '#d97706', anchor: '#llm-lit-s1-tempcompare' },
+              { id: 'output',  glyph: '🔁', title: 'Sample + repeat', subtitle: 'Append → loop until stop',   color: '#be123c', anchor: '#llm-lit-s1-loop' }
+            ];
+            return h('div', { style: Object.assign({}, cardStyle, { borderLeft: '4px solid #6366f1', background: 'linear-gradient(135deg, #eef2ff 0%, #f0f9ff 60%, #ecfeff 100%)' }) },
+              h('div', { style: { fontSize: '11px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#4338ca', marginBottom: '10px' } }, '🛤 The full pipeline at a glance'),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', gap: '6px' } },
+                STAGES.map(function(s, i) {
+                  var isLast = i === STAGES.length - 1;
+                  return h('div', { key: s.id, style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+                    h('a', {
+                      href: s.anchor,
+                      onClick: function(e) {
+                        e.preventDefault();
+                        var el = document.querySelector(s.anchor);
+                        if (el && el.scrollIntoView) {
+                          var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                          el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+                        }
+                      },
+                      'aria-label': 'Step ' + (i + 1) + ': ' + s.title + ' — ' + s.subtitle + '. Jump to section.',
+                      style: {
+                        position: 'relative',
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                        background: '#ffffff',
+                        border: '2px solid ' + s.color,
+                        borderRadius: '10px',
+                        padding: '8px 12px 8px 16px',
+                        textDecoration: 'none',
+                        boxShadow: '0 1px 3px rgba(15,23,42,0.08)',
+                        color: COLORS.text
+                      }
+                    },
+                      h('span', {
+                        'aria-hidden': 'true',
+                        style: {
+                          position: 'absolute', top: -8, left: -8,
+                          width: 22, height: 22, borderRadius: '50%',
+                          background: s.color, color: '#ffffff',
+                          fontSize: 11, fontWeight: 900,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.25)'
+                        }
+                      }, String(i + 1)),
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: '18px' } }, s.glyph),
+                      h('div', { style: { display: 'flex', flexDirection: 'column', lineHeight: 1.15 } },
+                        h('span', { style: { fontWeight: 800, fontSize: '13px', color: s.color } }, s.title),
+                        h('span', { style: { fontSize: '10px', color: COLORS.muted } }, s.subtitle)
+                      )
+                    ),
+                    !isLast && h('span', {
+                      'aria-hidden': 'true',
+                      style: { color: '#6366f1', fontSize: '18px', fontWeight: 'bold' }
+                    }, '→')
+                  );
+                })
+              ),
+              h('p', { style: { fontSize: '11px', color: COLORS.muted, margin: '10px 0 0', lineHeight: 1.4, fontStyle: 'italic' } },
+                'Each block below explores one of these stages. Click any chip to jump straight to it.')
+            );
+          })(),
 
           // ── Part A: Tokenization ──
           h('div', { id: 'llm-lit-s1-tokens', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.accent2 }) },
@@ -4520,7 +4643,201 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       }
 
       // ═══════════════════════════════════════════════════════
-      // SECTION 4: Hallucination Spotter
+      // SECTION 4: Prompt Anatomy (net-new mini-game)
+      // 12 phrases pulled from realistic prompts. Player picks which of 6
+      // anatomical roles each phrase plays. Tests whether students can
+      // *parse* a prompt as an artifact, not just write or read one.
+      // ═══════════════════════════════════════════════════════
+      function PromptAnatomy() {
+        var ROLES = [
+          { id: 'role',       label: 'Role / Persona',     color: '#9333ea', icon: '🎭', def: 'Tells the model what perspective, voice, or identity to take.' },
+          { id: 'task',       label: 'Task',               color: '#0ea5e9', icon: '🎯', def: 'The action the model should perform on the inputs.' },
+          { id: 'context',    label: 'Context',            color: '#22c55e', icon: '🌍', def: 'Background, audience, or situation that shapes the response.' },
+          { id: 'format',     label: 'Output format',      color: '#f59e0b', icon: '📐', def: 'How the result should be structured (bullets, JSON, table, length).' },
+          { id: 'example',    label: 'Example / few-shot', color: '#ef4444', icon: '🧪', def: 'A worked example included to anchor the pattern the model should follow.' },
+          { id: 'constraint', label: 'Constraint',         color: '#6366f1', icon: '🚧', def: 'A rule, do-not, length cap, or tone requirement that bounds the answer.' }
+        ];
+        var PHRASES = [
+          { id: 1,  text: 'You are a 7th-grade life science teacher reviewing student work.', correct: 'role',
+            why: 'Persona-setting language. Always look for "you are…" or "act as a…" — that\'s telling the model what voice to take.' },
+          { id: 2,  text: 'Summarize the following article.', correct: 'task',
+            why: 'A direct verb (summarize / explain / generate / classify / rewrite) is almost always the task. Without one, the model has to guess what you want.' },
+          { id: 3,  text: 'The audience is parents who don\'t have a science background.', correct: 'context',
+            why: 'Context tells the model who will read the output. Same task + different audience = very different language. This is one of the highest-leverage prompt parts.' },
+          { id: 4,  text: 'Output as 3 bullet points, max 20 words each.', correct: 'format',
+            why: 'Format dictates the structure of the response. Specifying it explicitly is the difference between a 600-word essay and a usable summary.' },
+          { id: 5,  text: 'For instance: "Photosynthesis is how plants eat sunlight."', correct: 'example',
+            why: 'Few-shot examples show the model the *pattern* you want, not just the description. One worked example often beats three sentences of instructions.' },
+          { id: 6,  text: 'Do not use the words "simply" or "just."', correct: 'constraint',
+            why: 'Negative constraints (do not, avoid, never) bound the output. They\'re explicit about what would feel wrong even if technically correct.' },
+          { id: 7,  text: 'Pretend you are an admissions officer at a small liberal-arts college.', correct: 'role',
+            why: 'Same shape as #1 — persona-setting. The "pretend you are" phrasing is just a different lead-in for the same anatomical part.' },
+          { id: 8,  text: 'Use a warm but professional tone.', correct: 'constraint',
+            why: 'Tone constraints bound the output stylistically. Together with format and length, tone is one of the most-skipped prompt parts in casual usage.' },
+          { id: 9,  text: 'The parent emailed yesterday asking why their child is on a behavior watchlist.', correct: 'context',
+            why: 'Background information about the situation. The model uses this to calibrate sensitivity, terminology, and what to acknowledge first.' },
+          { id: 10, text: 'Format: subject line, 2-paragraph body, sign-off.', correct: 'format',
+            why: 'Structural format spec. Even if you specify tone elsewhere, format determines whether the model produces an email vs a memo vs a transcript.' },
+          { id: 11, text: 'Example output: "Your essay shows strong voice but lacks structure. Try…"', correct: 'example',
+            why: 'A canonical few-shot example. Notice the pattern includes BOTH a positive observation AND an actionable suggestion — the model will usually mirror that structure.' },
+          { id: 12, text: 'Write a follow-up email to the parent.', correct: 'task',
+            why: 'Direct task verb. Writing tasks are some of the most common — but pairing them with role + context + format + tone is what turns a generic email into a usable one.' }
+        ];
+
+        // State (uses the section\'s own d.* keys to avoid colliding with PromptCraft).
+        var paIdx = d.paIdx == null ? -1 : d.paIdx;
+        var paSeed = d.paSeed || 1;
+        var paAnswered = !!d.paAnswered;
+        var paPick = d.paPick;
+        var paScore = d.paScore || 0;
+        var paRounds = d.paRounds || 0;
+        var paStreak = d.paStreak || 0;
+        var paBest = d.paBest || 0;
+        var paShown = d.paShown || [];
+
+        function paUpd(patch) {
+          if (!ctx.setToolData) return;
+          ctx.setToolData(function(prev) {
+            var existing = (prev && prev.llmLiteracy) || {};
+            return Object.assign({}, prev, { llmLiteracy: Object.assign({}, existing, patch) });
+          });
+        }
+        function startRound() {
+          var pool = [];
+          for (var i = 0; i < PHRASES.length; i++) if (paShown.indexOf(i) < 0) pool.push(i);
+          if (pool.length === 0) { pool = []; for (var j = 0; j < PHRASES.length; j++) pool.push(j); paShown = []; }
+          var seedNext = ((paSeed * 16807 + 11) % 2147483647) || 7;
+          var pick = pool[seedNext % pool.length];
+          paUpd({ paSeed: seedNext, paIdx: pick, paAnswered: false, paPick: null, paShown: paShown.concat([pick]) });
+        }
+        function answer(roleId) {
+          if (paAnswered) return;
+          var ph = PHRASES[paIdx];
+          var correct = roleId === ph.correct;
+          var newScore = paScore + (correct ? 1 : 0);
+          var newStreak = correct ? (paStreak + 1) : 0;
+          var newBest = Math.max(paBest, newStreak);
+          paUpd({ paAnswered: true, paPick: roleId, paScore: newScore, paRounds: paRounds + 1, paStreak: newStreak, paBest: newBest });
+          if (announceToSR) announceToSR(correct ? 'Correct: ' + ROLES.filter(function(x) { return x.id === ph.correct; })[0].label : 'Not quite');
+        }
+
+        var ph = paIdx >= 0 ? PHRASES[paIdx] : null;
+        var pickedCorrect = paAnswered && paPick === (ph && ph.correct);
+        var pct = paRounds > 0 ? Math.round((paScore / paRounds) * 100) : 0;
+        var allDone = paShown.length >= PHRASES.length && paAnswered;
+
+        // Intro
+        if (paIdx < 0) {
+          return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto' } },
+            h('h2', { style: { color: COLORS.text, fontSize: '22px', fontWeight: 800, margin: '0 0 6px' } }, '🧩 Prompt Anatomy'),
+            h('p', { style: { color: COLORS.subtext, fontSize: '13px', lineHeight: 1.55, margin: '0 0 16px' } },
+              'You will see 12 phrases pulled from realistic prompts. For each, pick which of six anatomical roles the phrase plays — persona, task, context, format, example, or constraint. Tests whether you can *parse* a prompt as an artifact, not just write or read one.'
+            ),
+            h('div', { style: { padding: '14px 16px', borderRadius: '12px', background: '#faf5ff', border: '1px solid #c084fc55', marginBottom: '16px' } },
+              h('div', { style: { color: '#9333ea', fontSize: '12px', fontWeight: 800, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'The six anatomical roles'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px' } },
+                ROLES.map(function(r) {
+                  return h('div', { key: r.id, style: { padding: '8px 10px', borderRadius: '8px', background: r.color + '12', border: '1px solid ' + r.color + '55' } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' } },
+                      h('span', { style: { fontSize: '16px' } }, r.icon),
+                      h('span', { style: { color: r.color, fontWeight: 800, fontSize: '12px' } }, r.label)
+                    ),
+                    h('div', { style: { color: COLORS.text, fontSize: '11px', lineHeight: 1.45 } }, r.def)
+                  );
+                })
+              )
+            ),
+            h('button', {
+              onClick: startRound,
+              style: { padding: '12px 18px', background: '#9333ea', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '13px', cursor: 'pointer', width: '100%' }
+            }, '🧩 Start — phrase 1 of 12'),
+            sectionFooter('anatomy')
+          );
+        }
+
+        return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto' } },
+          h('h2', { style: { color: COLORS.text, fontSize: '22px', fontWeight: 800, margin: '0 0 6px' } }, '🧩 Prompt Anatomy'),
+          // Score header
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', fontSize: '12px', color: COLORS.subtext, marginBottom: '12px' } },
+            h('span', null, 'Phrase ', h('strong', { style: { color: COLORS.text } }, paShown.length)),
+            h('span', null, 'Score ', h('strong', { style: { color: '#22c55e' } }, paScore + ' / ' + paRounds)),
+            paRounds > 0 && h('span', null, 'Accuracy ', h('strong', { style: { color: '#0ea5e9' } }, pct + '%')),
+            h('span', null, 'Streak ', h('strong', { style: { color: '#f59e0b' } }, paStreak)),
+            h('span', null, 'Best ', h('strong', { style: { color: '#fbbf24' } }, paBest))
+          ),
+          // The phrase
+          h('section', { style: { padding: '18px 20px', borderRadius: '14px', background: '#faf5ff', border: '2px solid #c084fc55', marginBottom: '14px' } },
+            h('div', { style: { color: '#9333ea', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '6px' } }, 'Phrase ' + paShown.length + ' of ' + PHRASES.length),
+            h('p', { style: { color: COLORS.text, fontSize: '15px', lineHeight: 1.5, fontFamily: 'system-ui', margin: 0, fontStyle: 'italic' } }, '"' + ph.text + '"')
+          ),
+          // 6 role picker buttons
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px' }, role: 'radiogroup', 'aria-label': 'Pick the anatomical role' },
+            ROLES.map(function(r) {
+              var picked = paAnswered && paPick === r.id;
+              var isRight = paAnswered && r.id === ph.correct;
+              var bg, border, color;
+              if (paAnswered) {
+                if (isRight) { bg = '#ecfdf5'; border = '#22c55e'; color = '#15803d'; }
+                else if (picked) { bg = '#fef2f2'; border = '#ef4444'; color = '#991b1b'; }
+                else { bg = '#f8fafc'; border = '#cbd5e1'; color = COLORS.subtext; }
+              } else {
+                bg = r.color + '10'; border = r.color + '60'; color = COLORS.text;
+              }
+              return h('button', {
+                key: r.id, role: 'radio',
+                'aria-checked': picked ? 'true' : 'false',
+                disabled: paAnswered,
+                onClick: function() { answer(r.id); },
+                style: { padding: '10px 12px', borderRadius: '10px', background: bg, color: color, border: '2px solid ' + border, cursor: paAnswered ? 'default' : 'pointer', textAlign: 'left', fontWeight: 700, fontSize: '12px', transition: 'all 0.15s', minHeight: '52px' }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' } },
+                  h('span', { style: { fontSize: '15px' } }, r.icon),
+                  h('span', { style: { color: paAnswered ? color : r.color, fontSize: '13px', fontWeight: 800 } }, r.label)
+                ),
+                h('div', { style: { fontSize: '10px', fontWeight: 500, lineHeight: 1.4, color: paAnswered ? color : COLORS.subtext } }, r.def)
+              );
+            })
+          ),
+          // Feedback
+          paAnswered && h('section', {
+            style: {
+              marginTop: '14px', padding: '14px 16px', borderRadius: '12px',
+              background: pickedCorrect ? '#ecfdf5' : '#fef2f2',
+              border: '1px solid ' + (pickedCorrect ? '#22c55e88' : '#ef444488')
+            }
+          },
+            h('div', { style: { fontSize: '13px', fontWeight: 800, marginBottom: '6px', color: pickedCorrect ? '#15803d' : '#991b1b' } },
+              pickedCorrect
+                ? '✅ Correct — ' + (ROLES.filter(function(x) { return x.id === ph.correct; })[0]).label
+                : '❌ The right role is ' + (ROLES.filter(function(x) { return x.id === ph.correct; })[0]).label + (paPick ? ' (you picked ' + (ROLES.filter(function(x) { return x.id === paPick; })[0]).label + ')' : '')
+            ),
+            h('p', { style: { color: COLORS.text, fontSize: '12px', lineHeight: 1.5, margin: '0 0 10px' } }, ph.why),
+            allDone
+              ? h('div', { style: { padding: '10px 12px', borderRadius: '10px', background: '#faf5ff', border: '1px solid #c084fc88' } },
+                  h('div', { style: { fontSize: '13px', fontWeight: 800, color: '#9333ea', marginBottom: '4px' } }, '🏆 All 12 phrases complete!'),
+                  h('div', { style: { fontSize: '12px', color: COLORS.text, lineHeight: 1.5 } },
+                    'Final: ', h('strong', null, paScore + ' / ' + PHRASES.length + ' (' + Math.round((paScore / PHRASES.length) * 100) + '%)'),
+                    paScore === PHRASES.length ? ' — you can dissect any prompt now. The next time you write one, label each part as you go.' :
+                    paScore >= 10 ? ' — strong parsing skill. The most-confused pair is usually task vs format — some phrases (like "summarize in 3 bullets") fold both into one sentence.' :
+                    paScore >= 7 ? ' — solid baseline. The misses are typically constraint vs format vs context, which can blur in real prompts. Re-read the rationales on misses.' :
+                    ' — these distinctions take practice. Re-read the six role definitions, then retake. Once you can parse other people\'s prompts, you can write better ones yourself.'
+                  ),
+                  h('button', {
+                    onClick: function() { paUpd({ paIdx: -1, paShown: [], paScore: 0, paRounds: 0, paStreak: 0 }); },
+                    style: { marginTop: '10px', padding: '8px 14px', background: '#9333ea', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+                  }, '🔄 Restart')
+                )
+              : h('button', {
+                  onClick: startRound,
+                  style: { padding: '10px 16px', background: '#9333ea', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
+                }, '➡️ Next phrase')
+          ),
+          sectionFooter('anatomy')
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════
+      // SECTION 5: Hallucination Spotter
       // ═══════════════════════════════════════════════════════
       function HallucinationSpotter() {
         var passageIdxTuple = useState(0);
@@ -4678,13 +4995,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             checked && h('button', { onClick: reset, style: btn('#e2e8f0', COLORS.text, false) }, 'Try again'),
             !checked && hintsUsed > 0 && h('span', { style: { fontSize: '11px', color: COLORS.muted, fontStyle: 'italic' } }, 'Hints used \u2014 perfect bonus forfeited on this attempt. Reset and retry without hints to earn it.')
           ),
-          checked && score && h('div', { style: { background: score.perfect ? '#f0fdf4' : '#fff7ed', border: '2px solid ' + (score.perfect ? '#bbf7d0' : '#fed7aa'), borderRadius: '10px', padding: '12px', marginBottom: '10px', textAlign: 'center' } },
-            h('div', { style: { fontSize: '22px', fontWeight: 800, color: score.perfect ? COLORS.good : COLORS.warn, marginBottom: '4px' } },
-              score.perfect ? '\uD83C\uDFAF Perfect' : (score.hits + ' of ' + score.errors + ' caught')),
-            h('div', { style: { fontSize: '12px', color: COLORS.subtext } },
-              score.falsePos > 0 ? (score.falsePos + ' false alarm' + (score.falsePos === 1 ? '' : 's') + '. False alarms matter — over-flagging real information is its own failure mode.')
-                                  : (score.perfect ? 'You caught every seeded error with no false alarms. Keep this calibration — skepticism AND accuracy.' : 'You missed ' + score.misses + '. Scroll down for why each one sounded plausible.'))
-          ),
+          checked && score && (function() {
+            // Tier logic: perfect (no misses, no false-alarms) > strong (caught all but had FPs) >
+            // learning (some misses, some catches) > review (low recall).
+            var hits = score.hits || 0, errs = score.errors || 1, fp = score.falsePos || 0;
+            var recall = errs > 0 ? hits / errs : 0;
+            var pct = Math.round(recall * 100);
+            var tier = score.perfect ? 'perfect'
+                       : recall >= 1 ? 'strong'
+                       : recall >= 0.5 ? 'learning'
+                       : 'review';
+            var tierColor = tier === 'perfect' ? COLORS.good
+                            : tier === 'strong' ? '#16a34a'
+                            : tier === 'learning' ? COLORS.warn
+                            : COLORS.bad;
+            var tierIcon = tier === 'perfect' ? '🏆' : tier === 'strong' ? '🎯' : tier === 'learning' ? '🪶' : '📚';
+            var tierTitle = tier === 'perfect' ? 'Perfect — no misses, no false alarms'
+                            : tier === 'strong' ? 'Caught everything — but watch the false alarms'
+                            : tier === 'learning' ? 'Building hallucination radar'
+                            : 'Review the seeded errors';
+            var tierMsg = tier === 'perfect'
+                          ? 'You caught every seeded error with no false alarms. Keep this calibration — skepticism AND accuracy.'
+                          : tier === 'strong'
+                            ? 'You caught all ' + errs + ' seeded errors but flagged ' + fp + ' real fact' + (fp === 1 ? '' : 's') + ' as wrong. False alarms matter — over-flagging real info is its own failure mode.'
+                            : tier === 'learning'
+                              ? 'Mixed result — caught ' + hits + ' of ' + errs + ' errors. Read the explanations below for the misses; the patterns repeat.'
+                              : 'You missed ' + score.misses + ' of ' + errs + '. Recognition is the gate. Read the explanations, then try the next passage.';
+            var rad = 32, circ = 2 * Math.PI * rad;
+            var dashOff = circ - (recall) * circ;
+            return h('div', { style: { background: '#ffffff', border: '2px solid ' + tierColor, borderRadius: '12px', overflow: 'hidden', marginBottom: '10px' } },
+              h('div', { style: { padding: '14px', display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', background: 'linear-gradient(135deg, ' + tierColor + '22, transparent)' } },
+                h('div', { style: { position: 'relative', width: 88, height: 88, flexShrink: 0 } },
+                  h('svg', { viewBox: '0 0 100 100', width: 88, height: 88,
+                    'aria-label': 'Caught ' + hits + ' of ' + errs + ' seeded errors'
+                  },
+                    h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
+                    h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round',
+                      strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
+                  ),
+                  h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+                    h('div', { style: { fontSize: 20, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),
+                    h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: COLORS.muted } }, 'recall')
+                  )
+                ),
+                h('div', { style: { flex: 1, minWidth: 200 } },
+                  h('div', { style: { fontSize: 26, marginBottom: 2 }, 'aria-hidden': 'true' }, tierIcon),
+                  h('div', { style: { fontSize: 16, fontWeight: 900, color: tierColor, lineHeight: 1.15 } }, tierTitle),
+                  h('div', { style: { fontSize: 12, color: COLORS.subtext, lineHeight: 1.5, marginTop: 4 } }, tierMsg)
+                )
+              ),
+              // Hits / misses / false alarms tally chips
+              h('div', { style: { padding: '8px 14px 12px', display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                h('span', { style: { fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: '#d1fae5', color: '#065f46', border: '1px solid ' + COLORS.good } }, '✓ ' + hits + ' caught'),
+                score.misses > 0 && h('span', { style: { fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: '#fee2e2', color: '#991b1b', border: '1px solid ' + COLORS.bad } }, '⊘ ' + score.misses + ' missed'),
+                fp > 0 && h('span', { style: { fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: '#fef3c7', color: '#854d0e', border: '1px solid ' + COLORS.warn } }, '⚠ ' + fp + ' false alarm' + (fp === 1 ? '' : 's')),
+                score.hintsUsed > 0 && h('span', { style: { fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: '#ede9fe', color: '#5b21b6', border: '1px solid #a78bfa' } }, '💡 ' + score.hintsUsed + ' hint' + (score.hintsUsed === 1 ? '' : 's'))
+              )
+            );
+          })(),
           checked && h('div', { style: { background: '#f8fafc', border: '1px solid ' + COLORS.border, borderRadius: '8px', padding: '12px' } },
             h('div', { style: { fontSize: '12px', fontWeight: 700, color: COLORS.subtext, marginBottom: '6px' } }, 'LEGEND'),
             h('div', { style: { display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '12px', marginBottom: '10px' } },
@@ -5452,9 +5820,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         { id: 'tokens',  title: '1. How LLMs Work',         color: '#2563eb' },
         { id: 'fails',   title: '2. Why LLMs Get Things Wrong', color: '#d97706' },
         { id: 'prompt',  title: '3. Prompt Craft',          color: '#7c3aed' },
-        { id: 'spotter', title: '4. Hallucination Spotter', color: '#059669' },
-        { id: 'udl',     title: '5. When to Use AI',        color: '#db2777' },
-        { id: 'ref',     title: '6. Quick Reference',       color: '#0f766e' }
+        { id: 'anatomy', title: '4. Prompt Anatomy',        color: '#9333ea' },
+        { id: 'spotter', title: '5. Hallucination Spotter', color: '#059669' },
+        { id: 'udl',     title: '6. When to Use AI',        color: '#db2777' },
+        { id: 'ref',     title: '7. Quick Reference',       color: '#0f766e' }
       ];
       // Per-section check-for-understanding. State is kept in toolData so
       // completions persist and correct answers aren't re-awarded. We key the
@@ -5642,13 +6011,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       // ═══════════════════════════════════════════════════════
       // Main render
       // ═══════════════════════════════════════════════════════
+      // Sections must render via h(Component), NOT as plain function calls.
+      // Each sub-section uses React hooks (useState, useMemo, etc.) — calling
+      // them directly would attach all of them to StemPluginBridge, and switching
+      // sections would change hook count mid-render → "Rendered more hooks than
+      // during the previous render" violation. h(Component) gives each section
+      // its own component scope and isolated hook list.
       function renderSection() {
-        if (section === 'tokens')  return HowLLMsWork();
-        if (section === 'fails')   return WhyLLMsFail();
-        if (section === 'prompt')  return PromptCraft();
-        if (section === 'spotter') return HallucinationSpotter();
-        if (section === 'udl')     return UDLRubric();
-        if (section === 'ref')     return QuickReference();
+        if (section === 'tokens')  return h(HowLLMsWork);
+        if (section === 'fails')   return h(WhyLLMsFail);
+        if (section === 'prompt')  return h(PromptCraft);
+        if (section === 'anatomy') return h(PromptAnatomy);
+        if (section === 'spotter') return h(HallucinationSpotter);
+        if (section === 'udl')     return h(UDLRubric);
+        if (section === 'ref')     return h(QuickReference);
         return renderHome();
       }
       try {

@@ -31,6 +31,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-spacecolony')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-spacecolony';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ── Audio System (auto-injected) ──
   var _colAC = null;
@@ -564,9 +586,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           setTimeout(function () {
             if (!canvasRef.current || !mapData) return;
             var canvas = canvasRef.current;
+            // PL7 batch 3: HiDPI — multiply the dynamic offsetWidth by dpr
+            // for the internal pixel buffer; keep CSS dims at logical so
+            // layout doesn't shift. Then setTransform so existing draw
+            // code operates in CSS px without math changes.
+            var _scDpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+            var w = canvas.offsetWidth || 600;
+            var h = Math.min(560, w * 0.85);
+            canvas.width = Math.round(w * _scDpr);
+            canvas.height = Math.round(h * _scDpr);
+            canvas.style.width = w + 'px';
+            canvas.style.height = h + 'px';
             var ctx = canvas.getContext('2d');
-            var w = canvas.width = canvas.offsetWidth;
-            var h = canvas.height = Math.min(560, canvas.offsetWidth * 0.85);
+            ctx.setTransform(_scDpr, 0, 0, _scDpr, 0, 0);
             var animPhase = (Date.now() / 1000) % (Math.PI * 2);
 
             // Season-tinted background
@@ -632,7 +664,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
             ctx.fillText('\uD83D\uDE80 ' + colonyName.toUpperCase(), offsetX, 20);
             ctx.font = '10px Inter, system-ui'; ctx.fillStyle = '#94a3b8';
             ctx.fillText((seasonIcons[(seasonCycle || {}).id] || '\u2728') + ' ' + ((seasonDefs[(seasonCycle || {}).index] || {}).name || 'Calm'), w / 2 - 30, 20);
-            ctx.fillStyle = '#64748b';
+            ctx.fillStyle = '#94a3b8';
             ctx.fillText('T' + turn + ' | \uD83D\uDC65' + settlers.length + ' | \uD83C\uDFD7\uFE0F' + buildings.length, w - 135, 20);
 
             // Tiles (only render visible ones for performance)
@@ -923,7 +955,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
             // Terraform + Equity mini bar
             ctx.fillStyle = '#166534'; ctx.fillRect(4, rbY + 18, Math.floor((w - 8) * terraform / 100), 3);
             ctx.strokeStyle = '#14532d'; ctx.lineWidth = 0.5; ctx.strokeRect(4, rbY + 18, w - 8, 3);
-            ctx.fillStyle = '#64748b'; ctx.font = '7px Inter, system-ui';
+            ctx.fillStyle = '#94a3b8'; ctx.font = '7px Inter, system-ui';
             ctx.fillText('\uD83C\uDF0D ' + terraform + '%', 4, rbY + 28);
             ctx.fillText('\u2696\uFE0F ' + equity + '%', 54, rbY + 28);
             ctx.fillText('\uD83D\uDE42 ' + colonyHappiness + '%', 104, rbY + 28);
@@ -1215,18 +1247,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 ),
                 React.createElement('span', { className: 'text-[11px] text-slate-600' }, mapSize + '\u00D7' + mapSize + ' (' + camX + ',' + camY + ')')
               ),
-              React.createElement('canvas', {
-                ref: canvasRef,
-                onClick: handleMapClick,
-                onMouseDown: handleMapMouseDown,
-                onMouseMove: handleMapMouseMove,
-                onMouseUp: handleMapMouseUp,
-                onMouseLeave: handleMapMouseLeave,
-                onMouseEnter: handleMapMouseEnter,
-                onWheel: handleMapWheel,
-                className: 'w-full rounded-xl border border-slate-700 mb-3',
-                style: { maxHeight: '520px', cursor: dragState.dragging ? 'grabbing' : 'grab' }
-              }),
+              // Canvas wrapped in a relative div so the ⛶ button can sit
+              // absolutely-positioned over the top-right corner without
+              // interfering with the existing minimap positioned relative
+              // to the OUTER parent.
+              React.createElement('div', { id: 'spacecolony-fs-wrap', style: { position: 'relative' } },
+                React.createElement('canvas', {
+                  ref: canvasRef,
+                  tabIndex: 0,
+                  role: 'application',
+                  'aria-label': 'Colony map. Keyboard: W A S D or arrow keys to pan, plus and minus to zoom, H to home (return to colony), Escape to clear selection. Mouse: click to select tile, drag to pan, scroll to zoom.',
+                  onClick: handleMapClick,
+                  onMouseDown: handleMapMouseDown,
+                  onMouseMove: handleMapMouseMove,
+                  onMouseUp: handleMapMouseUp,
+                  onMouseLeave: handleMapMouseLeave,
+                  onMouseEnter: handleMapMouseEnter,
+                  onWheel: handleMapWheel,
+                  className: 'w-full rounded-xl border border-slate-700 mb-3',
+                  style: { maxHeight: '520px', cursor: dragState.dragging ? 'grabbing' : 'grab' }
+                }),
+                React.createElement('button', {
+                  'aria-label': 'Toggle fullscreen for the colony map',
+                  title: 'Fullscreen',
+                  onClick: function() {
+                    var el = document.getElementById('spacecolony-fs-wrap');
+                    if (!el) return;
+                    var inFull = document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el;
+                    if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) ex.call(document); }
+                    else { var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen; if (rq) rq.call(el); }
+                  },
+                  style: {
+                    position: 'absolute', top: 8, right: 8, zIndex: 11,
+                    width: 32, height: 32, borderRadius: 8,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+                    border: '1px solid rgba(99,102,241,0.45)', color: '#c7d2fe',
+                    fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
+                  }
+                }, '⛶')
+              ),
               // ── Minimap ──
               React.createElement('div', { className: 'relative', style: { width: '120px', height: '120px', position: 'absolute', right: '16px', top: '80px', zIndex: 10 } },
                 React.createElement('canvas', {
@@ -1260,13 +1320,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                           var pItem = mapPickups[pk]; var psx = ppx * cs + cs/2; var psy = ppy * cs + cs/2;
                           var pColor = pItem.rarity === 'epic' ? '#f59e0b' : pItem.rarity === 'rare' ? '#8b5cf6' : '#22c55e';
                           var pSize = pItem.rarity === 'epic' ? cs*0.4 : pItem.rarity === 'rare' ? cs*0.35 : cs*0.25;
-                          ctx.save(); ctx.globalAlpha = 0.7 + 0.3 * Math.sin(Date.now()/500 + parseInt(pxy[0]));
-                          ctx.fillStyle = pColor; ctx.shadowColor = pColor; ctx.shadowBlur = pItem.rarity === 'epic' ? 12 : 6;
-                          ctx.beginPath();
-                          if (pItem.rarity === 'epic') { for (var si=0;si<5;si++){var a=si*Math.PI*2/5-Math.PI/2;ctx.lineTo(psx+Math.cos(a)*pSize,psy+Math.sin(a)*pSize);a+=Math.PI/5;ctx.lineTo(psx+Math.cos(a)*pSize*0.4,psy+Math.sin(a)*pSize*0.4);} }
-                          else if (pItem.rarity === 'rare') { for (var si2=0;si2<4;si2++){var a2=si2*Math.PI/2+Math.PI/4;ctx.lineTo(psx+Math.cos(a2)*pSize,psy+Math.sin(a2)*pSize);a2+=Math.PI/4;ctx.lineTo(psx+Math.cos(a2)*pSize*0.5,psy+Math.sin(a2)*pSize*0.5);} }
-                          else { ctx.arc(psx, psy, pSize, 0, Math.PI * 2); }
-                          ctx.closePath(); ctx.fill(); ctx.restore();
+                          mCtx.save(); mCtx.globalAlpha = 0.7 + 0.3 * Math.sin(Date.now()/500 + parseInt(pxy[0]));
+                          mCtx.fillStyle = pColor; mCtx.shadowColor = pColor; mCtx.shadowBlur = pItem.rarity === 'epic' ? 12 : 6;
+                          mCtx.beginPath();
+                          if (pItem.rarity === 'epic') { for (var si=0;si<5;si++){var a=si*Math.PI*2/5-Math.PI/2;mCtx.lineTo(psx+Math.cos(a)*pSize,psy+Math.sin(a)*pSize);a+=Math.PI/5;mCtx.lineTo(psx+Math.cos(a)*pSize*0.4,psy+Math.sin(a)*pSize*0.4);} }
+                          else if (pItem.rarity === 'rare') { for (var si2=0;si2<4;si2++){var a2=si2*Math.PI/2+Math.PI/4;mCtx.lineTo(psx+Math.cos(a2)*pSize,psy+Math.sin(a2)*pSize);a2+=Math.PI/4;mCtx.lineTo(psx+Math.cos(a2)*pSize*0.5,psy+Math.sin(a2)*pSize*0.5);} }
+                          else { mCtx.arc(psx, psy, pSize, 0, Math.PI * 2); }
+                          mCtx.closePath(); mCtx.fill(); mCtx.restore();
                         }
                       });
                     // Colony marker
@@ -1944,7 +2004,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       var nl12 = gameLog.slice(); nl12.push('\uD83D\uDEA8 EMERGENCY: Water reserves depleted!'); upd('colonyLog', nl12);
                     }
                   },
-                  disabled: d.colonyEventLoading, className: 'w-full py-3 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]', style: { background: d.colonyEventLoading ? '#334155' : 'linear-gradient(135deg, #4f46e5, #7c3aed)', color: d.colonyEventLoading ? '#64748b' : '#e0e7ff', boxShadow: d.colonyEventLoading ? 'none' : '0 4px 15px rgba(99,102,241,0.3)' }
+                  disabled: d.colonyEventLoading, className: 'w-full py-3 rounded-xl text-sm font-bold transition-all hover:scale-[1.02]', style: { background: d.colonyEventLoading ? '#334155' : 'linear-gradient(135deg, #4f46e5, #7c3aed)', color: d.colonyEventLoading ? '#94a3b8' : '#e0e7ff', boxShadow: d.colonyEventLoading ? 'none' : '0 4px 15px rgba(99,102,241,0.3)' }
                   }, d.colonyEventLoading ? '\u23F3 Processing...' : '\u2728 Continue to Dawn'),
                   (function() { return null; })()
                 )
@@ -1967,7 +2027,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     ['\uD83E\uDEA8', 'Mat.', d.turnSummary.deltas.materials, '#94a3b8'],
                     ['\uD83D\uDD2C', 'Sci.', d.turnSummary.deltas.science, '#a78bfa']
                   ].map(function (rd) {
-                    var val = rd[2]; var col = val > 0 ? '#4ade80' : val < 0 ? '#f87171' : '#64748b';
+                    var val = rd[2]; var col = val > 0 ? '#4ade80' : val < 0 ? '#f87171' : '#94a3b8';
                     return React.createElement('div', { key: rd[1], className: 'text-center rounded-lg py-1', style: { backgroundColor: col + '15', border: '1px solid ' + col + '30' } },
                       React.createElement('div', { className: 'text-[11px]', style: { color: col } }, rd[0] + ' ' + (val > 0 ? '+' : '') + val),
                       React.createElement('div', { className: 'text-[11px] text-slate-600' }, rd[1])
@@ -2262,10 +2322,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 !maintChallenge.options && React.createElement('div', { className: 'flex gap-2' },
                   React.createElement('input', {
                     type: 'text', value: d.maintInput || '',
+                    'aria-label': 'Your answer to the maintenance challenge',
                     onChange: function (e) { upd('maintInput', e.target.value); },
                     onKeyDown: function (e) { if (e.key === 'Enter') document.getElementById('kepler-maint-btn').click(); },
                     placeholder: 'Type your answer...',
-                    className: 'flex-1 px-3 py-2 bg-amber-950 border-2 border-amber-600 rounded-xl text-xs text-white outline-none focus:border-amber-400'
+                    className: 'flex-1 px-3 py-2 bg-amber-950 border-2 border-amber-600 rounded-xl text-xs text-white focus:border-amber-400'
                   }),
                   React.createElement('button', {
                     id: 'kepler-maint-btn',
@@ -2454,9 +2515,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 // Free Response Mode
                 !scienceGate.options && React.createElement('div', { className: 'flex gap-2' },
                   React.createElement('input', {
-                    type: 'text', value: d.scienceGateInput || '', onChange: function (e) { upd('scienceGateInput', e.target.value); },
+                    type: 'text', value: d.scienceGateInput || '',
+                    'aria-label': 'Your answer to the science gate challenge',
+                    onChange: function (e) { upd('scienceGateInput', e.target.value); },
                     onKeyDown: function (e) { if (e.key === 'Enter') document.getElementById('kepler-gate-btn').click(); },
-                    placeholder: 'Type your answer...', className: 'flex-1 px-3 py-2 bg-purple-950 border-2 border-purple-600 rounded-xl text-xs text-white outline-none focus:border-purple-400'
+                    placeholder: 'Type your answer...', className: 'flex-1 px-3 py-2 bg-purple-950 border-2 border-purple-600 rounded-xl text-xs text-white focus:border-purple-400'
                   }),
                   React.createElement('button', {
                     id: 'kepler-gate-btn', onClick: function () {
@@ -2514,7 +2577,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 React.createElement('h4', { className: 'text-sm font-bold mb-2', style: { color: '#2dd4bf', textShadow: '0 0 10px rgba(45,212,191,0.3)' } }, '\uD83D\uDC65 Colony Crew \u2014 ' + settlers.length + ' Settlers'),
                 React.createElement('div', { className: 'grid grid-cols-3 gap-2' }, settlers.map(function (st, si2) {
                   var roleColors = { Botanist: '#22c55e', Engineer: '#f59e0b', Geologist: '#a78bfa', Medic: '#ef4444', Chemist: '#06b6d4', Physicist: '#818cf8', Xenobiologist: '#10b981', Roboticist: '#f97316', Surgeon: '#f43f5e', Pilot: '#38bdf8', Astrophysicist: '#c084fc', Tactician: '#fbbf24' };
-                  var rc = roleColors[st.role] || '#64748b';
+                  var rc = roleColors[st.role] || '#94a3b8';
                   return React.createElement('div', { key: si2, className: 'rounded-xl p-2 text-center transition-all hover:scale-[1.03]', style: { background: 'linear-gradient(135deg, #0f172a, #1e293b)', border: '1px solid ' + rc + '30', boxShadow: '0 0 8px ' + rc + '15' } },
                     React.createElement('div', { className: 'text-2xl', style: { filter: st.health < 30 ? 'grayscale(0.5)' : 'none', animation: st.morale > 80 ? 'kp-float 4s infinite' : 'none' } }, st.icon),
                     React.createElement('div', { className: 'text-[11px] font-bold text-white mt-1' }, st.name),
@@ -2762,7 +2825,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 scienceJournal.length === 0 && React.createElement('div', { className: 'text-center text-slate-600 text-[11px] py-4' }, 'No entries yet. Answer science gates and explore anomalies!'),
                 scienceJournal.slice().reverse().map(function (jEntry, ji) {
                   var domainColors = { biology: '#22c55e', physics: '#6366f1', chemistry: '#f59e0b', math: '#ef4444', geology: '#a78bfa', ecology: '#14b8a6' };
-                  var dc = domainColors[(jEntry.source || '').split(':')[0].toLowerCase().trim()] || '#64748b';
+                  var dc = domainColors[(jEntry.source || '').split(':')[0].toLowerCase().trim()] || '#94a3b8';
                   return React.createElement('div', { key: ji, className: 'mb-2 rounded-lg p-2 border', style: { background: 'linear-gradient(135deg, #0f172a, #1e293b)', borderColor: dc + '30', animation: ji === 0 ? 'kp-fadeIn 0.5s ease-out' : 'none' } },
                     React.createElement('div', { className: 'flex items-center justify-between mb-1' },
                       React.createElement('span', { className: 'text-[11px] font-bold', style: { color: dc } }, '\uD83D\uDD2C ' + jEntry.source),
@@ -2963,12 +3026,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               // Log
               React.createElement('div', { className: 'rounded-xl p-2 border max-h-28 overflow-y-auto', style: { background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', borderColor: '#334155' } },
                 React.createElement('h4', { className: 'text-[11px] font-bold text-indigo-400 uppercase mb-1 flex items-center gap-1' }, '\uD83D\uDCDC Mission Log'),
-                gameLog.slice(-8).reverse().map(function (log, li) { return React.createElement('div', { key: li, className: 'text-[11px] py-0.5 border-b border-slate-800/50', style: { color: li === 0 ? '#c4b5fd' : '#64748b', animation: li === 0 ? 'kp-fadeIn 0.5s ease-out' : 'none' } }, log); })
+                gameLog.slice(-8).reverse().map(function (log, li) { return React.createElement('div', { key: li, className: 'text-[11px] py-0.5 border-b border-slate-800/50', style: { color: li === 0 ? '#c4b5fd' : '#94a3b8', animation: li === 0 ? 'kp-fadeIn 0.5s ease-out' : 'none' } }, log); })
               ),
               React.createElement('button', {
                 onClick: function () { upd('colonyPhase', 'setup'); upd('colony', null); upd('colonyMap', null); upd('colonyTurn', 0); upd('colonyEvent', null); upd('scienceGate', null); upd('colonyLog', []); if (addToast) addToast('Colony reset', 'info'); },
                 className: 'mt-2 w-full py-2 rounded-xl text-[11px] font-bold transition-all hover:scale-[1.01]',
-                style: { background: 'linear-gradient(135deg, #1e293b, #0f172a)', color: '#64748b', border: '1px solid #334155', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }
+                style: { background: 'linear-gradient(135deg, #1e293b, #0f172a)', color: '#94a3b8', border: '1px solid #334155', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }
               }, '\u267B Abandon & Start New')
             )
           );

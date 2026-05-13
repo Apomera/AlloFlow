@@ -33,6 +33,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-beehive')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-beehive';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ── Audio System (auto-injected) ──
   var _beeAC = null;
@@ -1030,7 +1052,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', null,
                   h('div', { className: 'font-bold text-sm' }, 'Hive Inspector'),
                   h('div', { className: 'text-[11px] text-amber-300' }, 'Inside the superorganism'))),
-              h('button', { onClick: function() { upd('showInspect', false); }, 'aria-label': 'Return to colony view', className: 'px-3 py-1.5 bg-amber-800 hover:bg-amber-700 rounded-lg text-xs font-bold' }, '← Colony View')),
+              h('button', { onClick: function() { upd('showInspect', false); }, className: 'px-3 py-1.5 bg-amber-800 hover:bg-amber-700 rounded-lg text-xs font-bold' }, '← Colony View')),
             // Layer tabs — proper ARIA tablist with keyboard navigation
             h('div', { className: 'flex gap-1 flex-wrap', role: 'tablist', 'aria-label': 'Hive inspection layers' },
               (function() {
@@ -1076,7 +1098,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('span', { className: 'text-xs font-bold text-amber-200' }, r.role),
                         h('span', { className: 'text-[11px] text-amber-400' }, r.age),
                         h('span', { className: 'text-[11px] text-amber-500 ml-auto' }, fmtPop(r.count) + ' (' + r.pct + '%)')))),
-                  h('div', { className: 'h-1.5 bg-amber-900 rounded-full overflow-hidden mb-1' },
+                  h('div', { className: 'h-1.5 bg-amber-900 rounded-full overflow-hidden mb-1', 'aria-hidden': 'true' },
                     h('div', { style: { width: r.pct + '%' }, className: 'h-full ' + r.color + ' rounded-full' })),
                   h('p', { className: 'text-[11px] text-amber-100/70 leading-relaxed' }, r.desc));
               })),
@@ -2201,7 +2223,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }},
               { name: 'Hive Scale', desc: 'Digital scale under the hive — tracks daily weight = nectar flow', draw: function(x, y) {
                 // Scale body
-                c.fillStyle = '#6b7280'; c.fillRect(x - 9, y + 14, 18, 9);
+                c.fillStyle = '#94a3b8'; c.fillRect(x - 9, y + 14, 18, 9);
                 c.strokeStyle = '#1f2937'; c.lineWidth = 0.6; c.strokeRect(x - 9, y + 14, 18, 9);
                 // Digital display
                 c.fillStyle = '#064e3b';
@@ -4597,7 +4619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var zeroY = gY + gH * 0.7;
             c.beginPath(); c.moveTo(gX, zeroY); c.lineTo(gX + gW, zeroY); c.stroke();
             c.setLineDash([]);
-            c.font = '7px system-ui'; c.fillStyle = '#64748b'; c.textAlign = 'right';
+            c.font = '7px system-ui'; c.fillStyle = '#94a3b8'; c.textAlign = 'right';
             c.fillText('0°C', gX - 2, zeroY + 2);
             // Outside temp curve (sinusoidal year)
             c.strokeStyle = '#3b82f6'; c.lineWidth = 1.5;
@@ -4621,7 +4643,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillStyle = '#3b82f6';
             c.fillText('━ outside (−10 to 32°C)', gX + gW + 8, gY + 24);
             // Month labels
-            c.font = '8px system-ui'; c.textAlign = 'center'; c.fillStyle = '#64748b';
+            c.font = '8px system-ui'; c.textAlign = 'center'; c.fillStyle = '#94a3b8';
             ['J', 'M', 'M', 'J', 'S', 'N'].forEach(function(m, mi) {
               c.fillText(m, gX + (mi / 5) * gW, gY + gH + 10);
             });
@@ -5322,7 +5344,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // Direction arrows on path
             c.fillStyle = '#1e40af'; c.font = '10px system-ui';
             c.fillText('→ Thrust', 0, 60);
-            c.fillStyle = '#64748b'; c.font = '9px system-ui';
+            c.fillStyle = '#94a3b8'; c.font = '9px system-ui';
             c.fillText('230 Hz · ~130° arc · near-horizontal plane', 0, 85);
             c.restore();
 
@@ -5581,17 +5603,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // canvas was oversized (hiveW 30% / hiveH 56%). Scaled to realistic diorama proportions.
               var hiveW = W * 0.12, hiveH = H * 0.30;
               var hiveX = W * 0.11, hiveY = H * 0.48; // sit hive lower so ground line is consistent
-              var bkScale = Math.max(2.2, H / 220); // beekeeper size multiplier (was implicit 1.0)
+              var bkScale = Math.max(5.5, H / 90); // beekeeper size multiplier — bumped so beekeeper reads as ~1.3× hive height per real-world proportions noted above
               c.clearRect(0, 0, W, H);
 
               // ── Sky (seasonal gradient + atmosphere) ──
+              // Each season has a 3-stop vertical gradient (zenith / horizon
+              // / ground tint). We smoothly LERP between the current season
+              // and the next during the final 5 days of each 30-day season,
+              // so the sky shifts gradually instead of jumping color at the
+              // first frame of the new season.
               var skys = [
                 ['#7ec8e3','#b8e2f2','#90d88c'], ['#4a9fd6','#7ec8e3','#4ade80'],
                 ['#c4856b','#e8c496','#a87732'], ['#8aa4be','#b0c4de','#dfe6ed']
               ];
               var sk = skys[season] || skys[0];
+              var skNext = skys[(season + 1) % 4];
+              var _daysInSeason = day % 30;
+              var transT = _daysInSeason >= 25 ? (_daysInSeason - 25) / 5 : 0;
+              function _lerpHex(a, b, t) {
+                if (t <= 0) return a;
+                if (t >= 1) return b;
+                var ai = parseInt(a.slice(1), 16);
+                var bi = parseInt(b.slice(1), 16);
+                var ar = (ai >> 16) & 0xff, ag = (ai >> 8) & 0xff, ab = ai & 0xff;
+                var br = (bi >> 16) & 0xff, bg = (bi >> 8) & 0xff, bb = bi & 0xff;
+                var r = Math.round(ar + (br - ar) * t);
+                var g = Math.round(ag + (bg - ag) * t);
+                var bl = Math.round(ab + (bb - ab) * t);
+                var hex = ((r << 16) | (g << 8) | bl).toString(16);
+                while (hex.length < 6) hex = '0' + hex;
+                return '#' + hex;
+              }
+              var sk0 = _lerpHex(sk[0], skNext[0], transT);
+              var sk1 = _lerpHex(sk[1], skNext[1], transT);
+              var sk2 = _lerpHex(sk[2], skNext[2], transT);
               var sg = c.createLinearGradient(0, 0, 0, H);
-              sg.addColorStop(0, sk[0]); sg.addColorStop(0.55, sk[1]); sg.addColorStop(1, sk[2]);
+              sg.addColorStop(0, sk0); sg.addColorStop(0.55, sk1); sg.addColorStop(1, sk2);
               c.fillStyle = sg; c.fillRect(0, 0, W, H);
 
               // Sun / Moon — moves in an arc across the sky following the _tod cycle
@@ -5684,6 +5731,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
               c.globalAlpha = 1;
 
+              // ── Distant birds (seasonal: hawk in spring/summer, V-formation in fall) ──
+              // Tiny silhouettes in the upper sky add scale and the felt sense
+              // of a real ecosystem above the apiary. Fully suppressed in winter.
+              if (season === 0 || season === 1) {
+                // Lazy circling hawk: parametric circle in sky, with wing flap
+                var _hkT = t2 * 0.003;
+                var _hkCx = W * 0.55 + Math.sin(t2 * 0.0008) * 30;
+                var _hkCy = H * 0.16 + Math.cos(t2 * 0.0008) * 8;
+                var _hkX = _hkCx + Math.cos(_hkT) * 36;
+                var _hkY = _hkCy + Math.sin(_hkT) * 12;
+                var _hkFlap = Math.sin(t2 * 0.04) * 0.35;
+                c.save();
+                c.translate(_hkX, _hkY);
+                c.rotate(_hkT + Math.PI / 2);
+                c.strokeStyle = 'rgba(60,50,40,0.55)';
+                c.lineWidth = 1.1;
+                c.beginPath();
+                c.moveTo(-9, 0);
+                c.quadraticCurveTo(-4, -2 + _hkFlap, 0, 0);
+                c.quadraticCurveTo(4, -2 + _hkFlap, 9, 0);
+                c.stroke();
+                // Tail dot
+                c.fillStyle = 'rgba(60,50,40,0.6)';
+                c.beginPath(); c.arc(0, 1.5, 0.9, 0, 6.28); c.fill();
+                c.restore();
+              } else if (season === 2) {
+                // Fall: V-formation of 5 migrating geese sweeping right→left across sky
+                var _vfPhase = ((t2 * 0.18) % (W + 240)) - 60;
+                var _vfBaseX = W - _vfPhase;
+                var _vfBaseY = H * 0.13 + Math.sin(t2 * 0.002) * 4;
+                c.save();
+                c.strokeStyle = 'rgba(50,45,55,0.55)';
+                c.lineWidth = 1;
+                for (var vfi = 0; vfi < 5; vfi++) {
+                  var _vfRow = Math.floor(vfi / 2);
+                  var _vfSide = (vfi % 2 === 0) ? -1 : 1;
+                  var _vfX = _vfBaseX + _vfRow * 7 * _vfSide + (vfi === 0 ? 0 : 0);
+                  var _vfY = _vfBaseY + _vfRow * 4;
+                  if (vfi === 0) { _vfX = _vfBaseX; _vfY = _vfBaseY; }
+                  // Per-bird wing flap, slight phase offset
+                  var _vfFlap = Math.sin(t2 * 0.07 + vfi * 0.6) * 0.5;
+                  c.beginPath();
+                  c.moveTo(_vfX - 4, _vfY);
+                  c.quadraticCurveTo(_vfX - 1.5, _vfY - 1.5 + _vfFlap, _vfX, _vfY);
+                  c.quadraticCurveTo(_vfX + 1.5, _vfY - 1.5 + _vfFlap, _vfX + 4, _vfY);
+                  c.stroke();
+                }
+                c.restore();
+              }
+
               // ── Red barn next to the farmhouse (classic rural pairing) ──
               if (season !== 3) {
                 var bnX = W * 0.80, bnY = H * 0.70;
@@ -5760,6 +5857,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillRect(fhX - 4, fhY - 14, 8, 1);
               }
 
+              // ── Atmospheric haze band on the horizon (air-perspective depth) ──
+              // A soft horizontal band of color between sky and mountains
+              // softens the far edge of the world and gives the scene real
+              // distance-feel. Winter is pale-gray, fall is warm beige, summer
+              // is heavy heat-haze, spring is dewy blue. Drifts very slowly.
+              (function() {
+                var hzCol = season === 3 ? 'rgba(220,228,235,0.55)' :
+                             season === 2 ? 'rgba(230,200,160,0.40)' :
+                             season === 1 ? 'rgba(240,225,180,0.50)' :
+                                            'rgba(210,225,235,0.40)';
+                var hzY = H * 0.56;
+                var hzH = 22;
+                var hzG = c.createLinearGradient(0, hzY, 0, hzY + hzH);
+                hzG.addColorStop(0, 'rgba(255,255,255,0)');
+                hzG.addColorStop(0.5, hzCol);
+                hzG.addColorStop(1, 'rgba(255,255,255,0)');
+                c.fillStyle = hzG;
+                c.fillRect(0, hzY, W, hzH);
+                // Drifting mist tufts riding the haze band
+                c.fillStyle = season === 3 ? 'rgba(245,250,255,0.35)' : 'rgba(255,250,235,0.28)';
+                for (var hzi = 0; hzi < 5; hzi++) {
+                  var hzx = ((hzi * W * 0.24 + t2 * (0.05 + hzi * 0.02) + hzi * 33) % (W + 120)) - 60;
+                  var hzy = hzY + 6 + (hzi % 3) * 3 + Math.sin(t2 * 0.003 + hzi) * 1.5;
+                  c.beginPath();
+                  c.ellipse(hzx, hzy, 32 + hzi * 6, 4 + (hzi % 2), 0, 0, 6.28);
+                  c.fill();
+                }
+              })();
+
               // ── Distant mountain silhouettes (depth layer, non-winter uses blue-gray) ──
               var mtnColor = season === 3 ? 'rgba(140,160,180,0.55)' : season === 2 ? 'rgba(120,95,70,0.5)' : 'rgba(100,130,160,0.45)';
               c.fillStyle = mtnColor;
@@ -5806,6 +5932,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   var wlPhase = ((t2 * 1.2 + wl * 80) % (W + 160)) - 80;
                   c.beginPath(); c.moveTo(wlPhase, wlY); c.lineTo(wlPhase + 40, wlY); c.stroke();
                 }
+                // Dewdrops on grass tips (dawn only) — tiny silver beads with a
+                // sharp highlight. _sunCycle wraps at 2.0/0.0 = sunrise, so the
+                // dawn factor peaks near the wrap and fades within ±0.2 units.
+                var _dewDawn = Math.max(0, 1 - Math.min(_sunCycle, 2 - _sunCycle) / 0.2);
+                if (_dewDawn > 0.02) {
+                  for (var dw = 0; dw < 28; dw++) {
+                    var _dwX = ((dw * 23 + 11) % W) + Math.sin(dw * 1.7) * 4;
+                    var _dwY = H * 0.76 - 5 - (dw % 3) * 1.2;
+                    var _dwR = 0.75 + (dw % 4) * 0.15;
+                    // Bead body
+                    c.fillStyle = 'rgba(220,240,255,' + (0.55 * _dewDawn).toFixed(3) + ')';
+                    c.beginPath(); c.arc(_dwX, _dwY, _dwR, 0, 6.28); c.fill();
+                    // Sharp highlight on upper-left
+                    c.fillStyle = 'rgba(255,255,255,' + (0.85 * _dewDawn).toFixed(3) + ')';
+                    c.beginPath(); c.arc(_dwX - _dwR * 0.35, _dwY - _dwR * 0.4, _dwR * 0.35, 0, 6.28); c.fill();
+                  }
+                }
+              }
+              // ── Cloud shadows drifting across the meadow ──
+              // Soft dark patches on the ground that drift in sync with the
+              // overhead clouds. Fades out at dawn/dusk (low sun = no shadow)
+              // and is suppressed in winter. Gives kids a visceral, no-words
+              // cue of cloud motion they can track on the ground.
+              if (season !== 3) {
+                var _csDay = Math.max(0, Math.sin(_sunT_arc * Math.PI));
+                c.save();
+                c.fillStyle = '#1f2937';
+                for (var csi = 0; csi < 4; csi++) {
+                  var _csX = ((csi * W * 0.32 + t2 * (0.08 + csi * 0.04) + csi * 70) % (W + 160)) - 80;
+                  var _csY = H * 0.79 + csi * 4 + Math.sin(t2 * 0.004 + csi) * 1.2;
+                  c.globalAlpha = (0.09 + csi * 0.01) * _csDay;
+                  c.beginPath();
+                  c.ellipse(_csX, _csY, 48 + csi * 8, 9 + csi * 1.5, 0, 0, 6.28);
+                  c.fill();
+                  c.beginPath();
+                  c.ellipse(_csX + 26, _csY + 2, 30, 7, 0, 0, 6.28);
+                  c.fill();
+                }
+                c.restore();
+                // Hawk shadow on the ground — tracks the same parametric circle
+                // as the hawk silhouette overhead (spring/summer only). Offset
+                // slightly down-right because sun is mostly overhead, not at
+                // the horizon. Tiny — reinforces scale (real hawk shadow is
+                // small relative to a meadow this size).
+                if (season === 0 || season === 1) {
+                  var _hsT = t2 * 0.003;
+                  var _hsCx = W * 0.55 + Math.sin(t2 * 0.0008) * 30;
+                  var _hsX_g = _hsCx + Math.cos(_hsT) * 36 + 8;
+                  var _hsY_g = H * 0.83;
+                  c.save();
+                  c.globalAlpha = 0.18 * _csDay;
+                  c.fillStyle = '#0f172a';
+                  c.translate(_hsX_g, _hsY_g);
+                  c.rotate(_hsT + Math.PI / 2);
+                  c.beginPath();
+                  c.ellipse(0, 0, 6, 1.8, 0, 0, 6.28);
+                  c.fill();
+                  c.restore();
+                }
               }
               // Snow
               if (season === 3) {
@@ -5815,32 +6000,217 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
-              // ── Distant birds (seasonal: V-formation migrating in autumn, scattered swooping in spring/summer) ──
-              if (season !== 3) {
-                c.strokeStyle = season === 2 ? 'rgba(40,30,20,0.55)' : 'rgba(40,40,60,0.4)'; c.lineWidth = 1.2;
-                var birdFlyX = (t2 * 0.6) % (W + 120) - 60;
-                if (season === 2) {
-                  // V-formation of migrating geese
-                  for (var bd = 0; bd < 7; bd++) {
-                    var bdOffX = -bd * 14;
-                    var bdOffY = Math.abs(bd - 3) * 6;
-                    var bdx = birdFlyX + bdOffX;
-                    var bdy = H * 0.16 + bdOffY + Math.sin(t2 * 0.01 + bd) * 1;
-                    c.beginPath();
-                    c.moveTo(bdx - 4, bdy + 1); c.quadraticCurveTo(bdx - 2, bdy - 2, bdx, bdy);
-                    c.quadraticCurveTo(bdx + 2, bdy - 2, bdx + 4, bdy + 1);
-                    c.stroke();
+              // ── Cherry-blossom petals drifting (spring) ──
+              // Soft pink ovals tumbling down with horizontal sway — reads
+              // immediately as "spring" without needing a label. Each petal
+              // gets its own rotation + sway frequency so the whole field
+              // never settles into a grid.
+              if (season === 0) {
+                for (var cb = 0; cb < 22; cb++) {
+                  var _cbY = ((cb * 23 + t2 * 0.32) % (H + 30)) - 15;
+                  var _cbBaseX = (cb * 37 + 13) % W;
+                  var _cbX = _cbBaseX + Math.sin(t2 * 0.015 + cb * 0.6) * 18;
+                  var _cbRot = t2 * 0.012 + cb * 1.3;
+                  var _cbCol = cb % 3 === 0 ? 'rgba(252,231,243,0.85)' :
+                                cb % 3 === 1 ? 'rgba(251,207,232,0.85)' :
+                                               'rgba(244,114,182,0.65)';
+                  c.save();
+                  c.translate(_cbX, _cbY);
+                  c.rotate(_cbRot);
+                  c.fillStyle = _cbCol;
+                  c.beginPath();
+                  c.ellipse(0, 0, 2.6, 1.3, 0, 0, 6.28);
+                  c.fill();
+                  c.restore();
+                }
+              }
+
+              // ── Falling maple leaves (fall) ──
+              // Larger than petals, with a stem and an irregular notched
+              // outline; they tumble with both translation drift and a slow
+              // rotation. Three autumn colors mix across the population.
+              if (season === 2) {
+                for (var lf = 0; lf < 14; lf++) {
+                  var _lfY = ((lf * 41 + t2 * 0.45) % (H + 40)) - 20;
+                  var _lfBaseX = (lf * 53 + 29) % W;
+                  var _lfX = _lfBaseX + Math.sin(t2 * 0.018 + lf * 0.7) * 22 + Math.cos(t2 * 0.011 + lf) * 6;
+                  var _lfRot = Math.sin(t2 * 0.025 + lf) * 1.2 + lf * 0.5;
+                  var _lfCol = lf % 3 === 0 ? 'rgba(220,90,30,0.85)' :
+                                lf % 3 === 1 ? 'rgba(200,140,40,0.85)' :
+                                               'rgba(180,50,30,0.85)';
+                  var _lfStem = lf % 3 === 0 ? 'rgba(110,60,20,0.85)' :
+                                 lf % 3 === 1 ? 'rgba(120,80,30,0.85)' :
+                                                'rgba(90,40,20,0.85)';
+                  c.save();
+                  c.translate(_lfX, _lfY);
+                  c.rotate(_lfRot);
+                  c.fillStyle = _lfCol;
+                  // 5-pointed maple shape via star polygon
+                  c.beginPath();
+                  for (var lk = 0; lk < 10; lk++) {
+                    var _lfA = (lk / 10) * 6.28 - 1.57;
+                    var _lfR = lk % 2 === 0 ? 3.4 : 1.4;
+                    var _lpx = Math.cos(_lfA) * _lfR;
+                    var _lpy = Math.sin(_lfA) * _lfR;
+                    lk === 0 ? c.moveTo(_lpx, _lpy) : c.lineTo(_lpx, _lpy);
                   }
-                } else {
-                  // Single swallow or scattered swooping birds
-                  for (var bd2 = 0; bd2 < 2; bd2++) {
-                    var bdx2 = (birdFlyX + bd2 * 300) % (W + 80) - 40;
-                    var bdy2 = H * 0.22 + Math.sin(t2 * 0.008 + bd2 * 2) * 12;
-                    c.beginPath();
-                    c.moveTo(bdx2 - 5, bdy2 + 1); c.quadraticCurveTo(bdx2 - 2, bdy2 - 3, bdx2, bdy2);
-                    c.quadraticCurveTo(bdx2 + 2, bdy2 - 3, bdx2 + 5, bdy2 + 1);
-                    c.stroke();
+                  c.closePath();
+                  c.fill();
+                  // Stem
+                  c.strokeStyle = _lfStem; c.lineWidth = 0.6;
+                  c.beginPath(); c.moveTo(0, 2.8); c.lineTo(0, 5); c.stroke();
+                  // Faint center vein highlight
+                  c.strokeStyle = 'rgba(255,255,255,0.25)'; c.lineWidth = 0.4;
+                  c.beginPath(); c.moveTo(0, -3); c.lineTo(0, 3); c.stroke();
+                  c.restore();
+                }
+              }
+
+              // ── Summer pollen drift (golden particles riding the wind) ──
+              // A wave of pollen carried on the L→R wind that already moves the
+              // grass and flowers. Different from the existing pollination-feed
+              // particle stream (which streams meadow→hive); this is ambient
+              // atmosphere — pollen counts peak in summer, and the meadow air
+              // is literally yellow at midday. Suppressed at dusk/dawn (the
+              // wind dies and the bees stop kicking pollen into the air).
+              if (season === 1) {
+                var _pdDay = Math.max(0, Math.sin(_sunT_arc * Math.PI));
+                if (_pdDay > 0.1) {
+                  c.save();
+                  for (var pd = 0; pd < 26; pd++) {
+                    var _pdBaseX = (pd * 47 + 11) % W;
+                    var _pdDrift = (t2 * 0.18) % (W + 60);
+                    var _pdX = (_pdBaseX + _pdDrift) % (W + 60) - 30;
+                    var _pdY = H * 0.45 + ((pd * 13) % Math.floor(H * 0.30)) + Math.sin(t2 * 0.025 + pd * 0.9) * 5;
+                    var _pdSz = 0.55 + (pd % 4) * 0.18;
+                    var _pdA = (0.35 + (pd % 3) * 0.15) * _pdDay;
+                    c.fillStyle = 'rgba(250,204,21,' + _pdA.toFixed(3) + ')';
+                    c.beginPath(); c.arc(_pdX, _pdY, _pdSz, 0, 6.28); c.fill();
                   }
+                  c.restore();
+                }
+              }
+
+              // ── Summer heat shimmer over the ground (subtle band that wavers) ──
+              // Just above the meadow line in peak summer, the air ripples.
+              // Pure visual — no text, no measurement — but kids notice it.
+              if (season === 1) {
+                c.save();
+                c.globalAlpha = 0.10;
+                c.fillStyle = '#fef3c7';
+                for (var hs = 0; hs < 8; hs++) {
+                  var _hsy = H * 0.76 - 8 + hs * 1.2;
+                  var _hsoff = Math.sin(t2 * 0.04 + hs * 0.8) * 1.5;
+                  c.beginPath();
+                  c.moveTo(0, _hsy);
+                  for (var _hsx = 0; _hsx <= W; _hsx += 14) {
+                    var _hsdy = _hsy + Math.sin(t2 * 0.03 + _hsx * 0.04 + hs * 0.5) * 1.2 + _hsoff;
+                    c.lineTo(_hsx, _hsdy);
+                  }
+                  c.lineTo(W, _hsy + 1); c.lineTo(0, _hsy + 1); c.closePath();
+                  c.fill();
+                }
+                c.restore();
+              }
+
+              // (Distant birds handled earlier — hawk circling in spring/summer, V-formation in fall)
+
+              // ── Spider web in the upper-left corner (year-round naturalist detail) ──
+              // Anchored to the top + left edges of the canvas frame as if spun
+              // overnight between the apiary's posts. 8 radial spokes from a
+              // hub at (~6%W, ~4%H), 4 concentric polygon rings. A faint dew
+              // glint slides along one spoke during dawn. The hub gets a tiny
+              // resident spider silhouette.
+              (function() {
+                var _wbCx = W * 0.06, _wbCy = H * 0.04;
+                var _wbRMax = 38;
+                var _wbAlpha = season === 3 ? 0.32 : 0.22;
+                c.save();
+                c.strokeStyle = 'rgba(220,225,235,' + _wbAlpha.toFixed(3) + ')';
+                c.lineWidth = 0.35;
+                // Spokes — only the 4 reaching down-right are drawn (the others
+                // would extend off-canvas top/left). Quadrant angles ≈ 0..π/2.
+                var _wbAngles = [0.05, 0.32, 0.65, 0.95, 1.25, 1.50];
+                var _wbEnds = [];
+                for (var sp = 0; sp < _wbAngles.length; sp++) {
+                  var _wbEx = _wbCx + Math.cos(_wbAngles[sp]) * _wbRMax;
+                  var _wbEy = _wbCy + Math.sin(_wbAngles[sp]) * _wbRMax;
+                  _wbEnds.push({ x: _wbEx, y: _wbEy, a: _wbAngles[sp] });
+                  c.beginPath();
+                  c.moveTo(_wbCx, _wbCy);
+                  c.lineTo(_wbEx, _wbEy);
+                  c.stroke();
+                }
+                // Concentric rings — polyline along the spokes at 4 radii
+                var _wbRings = [10, 18, 26, 34];
+                for (var rg = 0; rg < _wbRings.length; rg++) {
+                  c.beginPath();
+                  for (var sp2 = 0; sp2 < _wbEnds.length; sp2++) {
+                    var _wbA2 = _wbEnds[sp2].a;
+                    var _wbPx = _wbCx + Math.cos(_wbA2) * _wbRings[rg];
+                    var _wbPy = _wbCy + Math.sin(_wbA2) * _wbRings[rg];
+                    sp2 === 0 ? c.moveTo(_wbPx, _wbPy) : c.lineTo(_wbPx, _wbPy);
+                  }
+                  c.stroke();
+                }
+                // Dawn dew glint — slides outward along one spoke
+                var _wbDewDawn = Math.max(0, 1 - Math.min(_sunCycle, 2 - _sunCycle) / 0.2);
+                if (_wbDewDawn > 0.05) {
+                  var _wbGlT = ((t2 * 0.4) % 100) / 100; // 0..1 sweep
+                  var _wbGlA = _wbEnds[3].a; // mid spoke
+                  var _wbGx = _wbCx + Math.cos(_wbGlA) * _wbRMax * _wbGlT;
+                  var _wbGy = _wbCy + Math.sin(_wbGlA) * _wbRMax * _wbGlT;
+                  c.fillStyle = 'rgba(255,255,255,' + (0.85 * _wbDewDawn).toFixed(3) + ')';
+                  c.beginPath(); c.arc(_wbGx, _wbGy, 1, 0, 6.28); c.fill();
+                }
+                // Tiny resident spider at the hub
+                c.fillStyle = 'rgba(30,25,20,0.78)';
+                c.beginPath(); c.ellipse(_wbCx, _wbCy, 1.4, 1, 0, 0, 6.28); c.fill();
+                c.strokeStyle = 'rgba(30,25,20,0.55)'; c.lineWidth = 0.3;
+                for (var lg = 0; lg < 4; lg++) {
+                  var _lgA = lg * 0.35 + 0.25;
+                  c.beginPath();
+                  c.moveTo(_wbCx, _wbCy);
+                  c.lineTo(_wbCx + Math.cos(_lgA) * 2.5, _wbCy + Math.sin(_lgA) * 2.5);
+                  c.stroke();
+                }
+                c.restore();
+              })();
+
+              // ── Mushroom cluster in autumn shade (decomposer story) ──
+              // Three small mushrooms tucked at the base of the apple-tree
+              // shadow in fall only — completes the seasonal-decomposer arc
+              // (leaves fall, mushrooms surface to break them down).
+              if (season === 2) {
+                var _msX0 = W * 0.42, _msY0 = H * 0.84;
+                var _msShapes = [
+                  { dx:  0, dy:  0, capR: 4.5, stem: 3.5, cap: '#a16207', cream: '#fde68a' },
+                  { dx:  6, dy:  2, capR: 3.2, stem: 2.6, cap: '#92400e', cream: '#fef3c7' },
+                  { dx: -5, dy:  3, capR: 2.6, stem: 2.0, cap: '#b45309', cream: '#fef3c7' }
+                ];
+                for (var ms = 0; ms < _msShapes.length; ms++) {
+                  var msh = _msShapes[ms];
+                  var _msX = _msX0 + msh.dx, _msY = _msY0 + msh.dy;
+                  // Shadow under cap
+                  c.fillStyle = 'rgba(40,25,10,0.30)';
+                  c.beginPath(); c.ellipse(_msX, _msY + 2, msh.capR * 0.9, 1.2, 0, 0, 6.28); c.fill();
+                  // Stem (cream)
+                  c.fillStyle = msh.cream;
+                  c.fillRect(_msX - msh.stem * 0.25, _msY - msh.stem, msh.stem * 0.5, msh.stem);
+                  // Cap — half ellipse for the dome
+                  c.fillStyle = msh.cap;
+                  c.beginPath();
+                  c.ellipse(_msX, _msY - msh.stem + 0.5, msh.capR, msh.capR * 0.65, 0, Math.PI, 2 * Math.PI);
+                  c.fill();
+                  // Cap highlight (upper-left arc)
+                  c.fillStyle = 'rgba(255,235,180,0.35)';
+                  c.beginPath();
+                  c.ellipse(_msX - msh.capR * 0.3, _msY - msh.stem - 0.2, msh.capR * 0.55, msh.capR * 0.25, -0.2, Math.PI, 2 * Math.PI);
+                  c.fill();
+                  // Two tiny white dots on the cap (Amanita-style flecks)
+                  c.fillStyle = 'rgba(255,250,235,0.85)';
+                  c.beginPath(); c.arc(_msX + msh.capR * 0.2, _msY - msh.stem - 0.1, 0.55, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_msX - msh.capR * 0.4, _msY - msh.stem + 0.3, 0.4, 0, 6.28); c.fill();
                 }
               }
 
@@ -6010,20 +6380,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var waterAlpha = 0.65 + Math.sin(t2 * 0.04) * 0.08;
                 c.fillStyle = 'rgba(125,175,220,' + waterAlpha + ')';
                 c.beginPath(); c.ellipse(bbX, bbY - 7, 13, 3.5, 0, 0, 6.28); c.fill();
-                // Ripple rings
-                var rippleR = (t2 * 0.3) % 10;
-                c.strokeStyle = 'rgba(255,255,255,' + (0.4 - rippleR * 0.04) + ')'; c.lineWidth = 0.5;
-                c.beginPath(); c.ellipse(bbX + Math.sin(t2 * 0.01) * 3, bbY - 7, rippleR, rippleR * 0.28, 0, 0, 6.28); c.stroke();
-                // Tiny bees drinking at the rim (2 static)
+                // Subtle highlight crescent (water surface reflectance from sun)
+                c.fillStyle = 'rgba(255,255,255,0.18)';
+                c.beginPath(); c.ellipse(bbX - 4, bbY - 7.6, 6, 1, 0, 0, 6.28); c.fill();
+                // Tiny submerged pebble (so a bee has a perch to drink from without drowning —
+                // real-world recommendation: keep pebbles in your bee water source)
+                c.fillStyle = 'rgba(120,113,108,0.55)';
+                c.beginPath(); c.arc(bbX + 2, bbY - 6.5, 1.2, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(bbX - 5, bbY - 6.8, 0.9, 0, 6.28); c.fill();
+                // ── Ripple rings — 3 staggered, each cycling 0→14 radius ──
+                // Centers jitter slightly so the rings look like real water
+                // ripples (raindrops, bee landings) instead of perfect concentric circles.
+                for (var rr = 0; rr < 3; rr++) {
+                  var rrT = ((t2 * 0.03 + rr * 0.33) % 1); // 0..1
+                  var rrR = rrT * 11;
+                  var rrA = (1 - rrT) * 0.42;
+                  if (rrA < 0.02) continue;
+                  var rrCx = bbX + Math.sin(t2 * 0.012 + rr * 1.7) * 3;
+                  var rrCy = bbY - 7 + Math.cos(t2 * 0.009 + rr) * 0.4;
+                  c.strokeStyle = 'rgba(255,255,255,' + rrA.toFixed(3) + ')';
+                  c.lineWidth = 0.6;
+                  c.beginPath(); c.ellipse(rrCx, rrCy, rrR, rrR * 0.28, 0, 0, 6.28); c.stroke();
+                }
+                // Tiny bees drinking at the rim (2 static, with a slow head-bob via sin)
                 c.fillStyle = '#fbbf24';
-                c.beginPath(); c.arc(bbX - 10, bbY - 6, 1.4, 0, 6.28); c.fill();
-                c.beginPath(); c.arc(bbX + 9, bbY - 5.5, 1.4, 0, 6.28); c.fill();
+                var drinkBob = Math.sin(t2 * 0.08) * 0.3;
+                c.beginPath(); c.arc(bbX - 10, bbY - 6 + drinkBob, 1.4, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(bbX + 9, bbY - 5.5 - drinkBob, 1.4, 0, 6.28); c.fill();
                 c.fillStyle = '#292524';
                 c.fillRect(bbX - 10.3, bbY - 6.3, 0.6, 0.6);
                 c.fillRect(bbX + 8.7, bbY - 5.8, 0.6, 0.6);
               }
 
               // ── Sunflowers (3 tall dramatic ones, major bee forage in summer/autumn) ──
+              // ⤴ Real sunflowers exhibit HELIOTROPISM — the young flower
+              // head physically tracks the sun across the sky (solar tracking
+              // via differential growth in the stem). We tilt each head a few
+              // pixels toward the current sun position to make this visible.
+              // At night, the heads face east (circadian "memory" of dawn) —
+              // a real phenomenon Helianthus annuus exhibits.
               if (season !== 3) {
                 var sunflowerSpots = [W * 0.50, W * 0.73, W * 0.95];
                 sunflowerSpots.forEach(function(sfx, sfi) {
@@ -6032,10 +6427,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   var sfH = 48 + sfi * 6;
                   var sfSw = Math.sin(t2 * 0.01 + sfi * 2) * 3;
                   var sfTopY = sfy - sfH;
-                  // Thick green stem
+                  // Heliotropism — head leans toward the sun by up to ~5px
+                  // (or east at night when sun is below horizon).
+                  var _helX = sunX - sfx;
+                  var _helY = sunY - sfTopY;
+                  var _helD = Math.hypot(_helX, _helY);
+                  var _isNight = _tdT >= 1.05 && _tdT <= 1.95;
+                  var helioX, helioY;
+                  if (_isNight) {
+                    // East-facing memory (slight leftward lean, slight upward)
+                    helioX = -4; helioY = -1;
+                  } else {
+                    helioX = _helD > 1 ? (_helX / _helD) * 4.5 : 0;
+                    helioY = _helD > 1 ? (_helY / _helD) * 3 : 0;
+                  }
+                  // Thick green stem — control point + endpoint shift with helio for a bent-toward-sun curve
                   c.strokeStyle = '#166534'; c.lineWidth = 2.5;
                   c.beginPath(); c.moveTo(sfx, sfy);
-                  c.quadraticCurveTo(sfx + sfSw * 0.6, sfy - sfH * 0.5, sfx + sfSw, sfTopY);
+                  c.quadraticCurveTo(sfx + sfSw * 0.6 + helioX * 0.4, sfy - sfH * 0.5 + helioY * 0.4, sfx + sfSw + helioX, sfTopY + helioY);
                   c.stroke();
                   // Leaves (2 per stem)
                   c.fillStyle = '#22c55e';
@@ -6043,8 +6452,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.beginPath(); c.ellipse(-5, 0, 6, 2.5, -0.4, 0, 6.28); c.fill();
                   c.beginPath(); c.ellipse(5, -6, 5, 2, 0.4, 0, 6.28); c.fill();
                   c.restore();
-                  // Petals (big yellow rays)
-                  var sfcX = sfx + sfSw, sfcY = sfTopY;
+                  // Petals (big yellow rays) — head leans toward the sun
+                  var sfcX = sfx + sfSw + helioX, sfcY = sfTopY + helioY;
                   c.save(); c.shadowColor = '#fbbf24'; c.shadowBlur = 4;
                   for (var sfp = 0; sfp < 14; sfp++) {
                     var sfpA = sfp * 0.449 + t2 * 0.001;
@@ -6254,137 +6663,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
-              // ── Beekeeper sprite ──
-              // Action-mode overrides the cameo cycle when d.bkAnim is set:
-              //   walk-in (0-25%) → perform at hive entrance (25-75%) → walk-back (75-100%)
-              // Action overlay (emoji above hands) + speech bubble (caption) render during "perform" phase.
-              (function () {
-                var bkAnim = ls.bkAnim;
-                var now = Date.now();
-                var inAction = bkAnim && bkAnim.startedAt && (now - bkAnim.startedAt) < (bkAnim.duration || 5000);
-
-                var bkCycle = (t2 % 1800) / 1800; // cameo cycle
-                var inCameo = !inAction && season !== 3 && bkCycle > 0.2 && bkCycle < 0.7;
-                if (!inAction && !inCameo) return;
-
-                // Compute position + phase
-                var homeX = W * 0.95;
-                var hiveEntranceX = hiveX + hiveW + 40 * bkScale;
-                var bkX, phase, perfT;
-                if (inAction) {
-                  var t = (now - bkAnim.startedAt) / (bkAnim.duration || 5000);
-                  if (t < 0.25) { // walk-in
-                    var p = t / 0.25;
-                    bkX = homeX - p * (homeX - hiveEntranceX);
-                    phase = 'walk';
-                  } else if (t < 0.75) { // perform
-                    bkX = hiveEntranceX;
-                    phase = 'perform';
-                    perfT = (t - 0.25) / 0.5; // 0..1 during perform
-                  } else { // walk-back
-                    var p2 = (t - 0.75) / 0.25;
-                    bkX = hiveEntranceX + p2 * (homeX - hiveEntranceX);
-                    phase = 'walk';
-                  }
-                } else {
-                  var bkProgress = (bkCycle - 0.2) / 0.5;
-                  bkX = homeX - bkProgress * (homeX - hiveEntranceX);
-                  phase = 'walk';
-                }
-
-                var bkGround = hiveY + hiveH + 4;
-                var bkBodyH = 14 * bkScale;
-                var bkBodyW = 8 * bkScale;
-                var bkY = bkGround - bkBodyH - (8 * bkScale);
-                var bkStep = phase === 'walk' ? Math.sin(t2 * 0.15) * 1.2 * bkScale : 0;
-
-                c.save();
-                // Shadow
-                c.fillStyle = 'rgba(0,0,0,0.25)';
-                c.beginPath(); c.ellipse(bkX, bkGround, 7 * bkScale, 1.6 * bkScale, 0, 0, 6.28); c.fill();
-                // Body
-                c.fillStyle = '#f1f5f9';
-                c.fillRect(bkX - bkBodyW / 2, bkY, bkBodyW, bkBodyH);
-                // Legs
-                c.fillStyle = '#1e293b';
-                c.fillRect(bkX - 3 * bkScale, bkY + bkBodyH, 2.5 * bkScale, 8 * bkScale + bkStep);
-                c.fillRect(bkX + 0.5 * bkScale, bkY + bkBodyH, 2.5 * bkScale, 8 * bkScale - bkStep);
-                // Arms — raised slightly during perform phase
-                c.fillStyle = '#f1f5f9';
-                var armLift = phase === 'perform' ? -2 * bkScale * Math.abs(Math.sin(t2 * 0.18)) : 0;
-                c.fillRect(bkX - 6 * bkScale, bkY + 2 * bkScale + armLift, 2 * bkScale, 9 * bkScale);
-                c.fillRect(bkX + 4 * bkScale, bkY + 2 * bkScale + armLift, 2 * bkScale, 9 * bkScale);
-                // Veil hood
-                c.fillStyle = '#f8fafc';
-                c.beginPath(); c.arc(bkX, bkY - 3 * bkScale, 5 * bkScale, 0, 6.28); c.fill();
-                c.fillStyle = 'rgba(30,41,59,0.4)';
-                c.beginPath(); c.arc(bkX, bkY - 2 * bkScale, 4 * bkScale, 0, 6.28); c.fill();
-                // Smoker in hand
-                c.fillStyle = '#44403c';
-                c.fillRect(bkX - 8 * bkScale, bkY + 8 * bkScale, 3 * bkScale, 6 * bkScale);
-                // Smoker puff — bigger during "smoke" action
-                var puffAlpha = (bkAnim && bkAnim.type === 'smoke' && phase === 'perform') ? 0.85 : 0.5;
-                var puffSize = (bkAnim && bkAnim.type === 'smoke' && phase === 'perform') ? 3.5 : 1.5;
-                c.fillStyle = 'rgba(220,220,220,' + puffAlpha + ')';
-                c.beginPath(); c.arc(bkX - 7 * bkScale, bkY + 5 * bkScale + Math.sin(t2 * 0.1) * 0.5 * bkScale, puffSize * bkScale, 0, 6.28); c.fill();
-                c.restore();
-
-                // ── Action overlay + speech bubble (perform phase only) ──
-                if (inAction && phase === 'perform' && bkAnim) {
-                  // Action emoji near hands (slight bounce)
-                  var itemY = bkY + 4 * bkScale + Math.sin(t2 * 0.2) * 1.5;
-                  var itemX = bkX + 7 * bkScale;
-                  c.save();
-                  c.font = 'bold ' + Math.round(14 * bkScale) + 'px system-ui, sans-serif';
-                  c.textAlign = 'center';
-                  c.textBaseline = 'middle';
-                  c.fillText(bkAnim.emoji || '🔍', itemX, itemY);
-                  c.restore();
-
-                  // Speech bubble above the beekeeper's head
-                  var caption = String(bkAnim.caption || '');
-                  if (caption) {
-                    c.save();
-                    c.font = 'bold 12px system-ui, sans-serif';
-                    c.textAlign = 'center';
-                    c.textBaseline = 'middle';
-                    var textW = c.measureText(caption).width;
-                    var bubW = Math.min(W * 0.45, textW + 20);
-                    var bubH = 28;
-                    var bubX = Math.max(8, Math.min(W - bubW - 8, bkX - bubW / 2));
-                    var bubY = bkY - 10 * bkScale - bubH - 6;
-                    // Bubble background
-                    c.fillStyle = 'rgba(255,255,255,0.96)';
-                    c.strokeStyle = 'rgba(30,41,59,0.5)';
-                    c.lineWidth = 1.2;
-                    c.beginPath();
-                    if (c.roundRect) c.roundRect(bubX, bubY, bubW, bubH, 8);
-                    else c.rect(bubX, bubY, bubW, bubH);
-                    c.fill(); c.stroke();
-                    // Tail
-                    c.beginPath();
-                    c.moveTo(bkX - 4, bubY + bubH);
-                    c.lineTo(bkX, bubY + bubH + 6);
-                    c.lineTo(bkX + 4, bubY + bubH);
-                    c.closePath();
-                    c.fillStyle = 'rgba(255,255,255,0.96)';
-                    c.fill();
-                    c.stroke();
-                    // Caption text
-                    c.fillStyle = '#1e293b';
-                    // Truncate if needed to fit bubble
-                    var drawnCaption = caption;
-                    if (textW > bubW - 16) {
-                      while (drawnCaption.length > 3 && c.measureText(drawnCaption + '…').width > bubW - 16) {
-                        drawnCaption = drawnCaption.slice(0, -1);
-                      }
-                      drawnCaption += '…';
-                    }
-                    c.fillText(drawnCaption, bubX + bubW / 2, bubY + bubH / 2);
-                    c.restore();
-                  }
-                }
-              })();
+              // ── Beekeeper sprite (moved further down the render order) ──
+              // Was previously drawn here, but meadow flowers / apple tree / tree
+              // line / hummingbird all paint AFTER this point and were partially
+              // hiding the beekeeper. Moved to just before the hive (after
+              // ladybugs) so the keeper layers above foliage and reads cleanly.
 
               // ── Hornet predator (rare — flies fast across scene every ~45s, adds drama) ──
               var hnCycle = (t2 % 2700) / 2700;
@@ -6754,9 +7037,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
 
               // ── Flowers (enhanced with depth) ──
+              // Sway = coherent wind wave (same speed/direction as the grass
+              // blades, sweeps L→R across the meadow) + a smaller per-flower
+              // jitter so the field looks alive, not robotic. The shared wave
+              // makes the whole meadow feel like ONE moving system instead of
+              // a grid of independent oscillators.
               flowers.forEach(function(fl) {
                 if (season === 3) return;
-                var sw = Math.sin(t2 * 0.012 + fl.sp) * 2.5;
+                var _flWind   = Math.sin(t2 * 0.025 - fl.x * 0.015) * 2.0;
+                var _flJitter = Math.sin(t2 * 0.012 + fl.sp) * 1.0;
+                var sw = _flWind + _flJitter;
                 var bsz = fl.sz * (season === 1 ? 1.3 : season === 2 ? 0.7 : 1.0);
                 // Stem with leaf
                 c.strokeStyle = '#16a34a'; c.lineWidth = 1.8;
@@ -6777,6 +7067,140 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 // Center
                 c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(fl.x + sw, fl.y, bsz * 0.22, 0, 6.28); c.fill();
               });
+
+              // ── Frozen birdbath in winter (ice + frost rim) ──
+              // Closes the seasonal arc for the water station: the bath doesn't
+              // disappear when winter hits, it freezes. Hexagonal frost cracks
+              // hint at the ice; the rim wears a thin layer of snow. No bees —
+              // they're inside, clustering on the brood.
+              if (season === 3) {
+                var _fbCx = W * 0.62, _fbCy = H * 0.88;
+                var _fbW = 16, _fbH = 5;
+                c.fillStyle = 'rgba(0,0,0,0.18)';
+                c.beginPath(); c.ellipse(_fbCx + 1, _fbCy + 2.5, _fbW + 1.5, _fbH * 0.6, 0, 0, 6.28); c.fill();
+                c.fillStyle = '#a8a29e';
+                c.fillRect(_fbCx - 4, _fbCy - 1, 8, 5);
+                c.fillStyle = '#78716c';
+                c.fillRect(_fbCx - 4, _fbCy + 3, 8, 1.5);
+                // Ceramic rim w/ snow on top
+                c.fillStyle = '#e7e5e4';
+                c.beginPath(); c.ellipse(_fbCx, _fbCy - 1, _fbW, _fbH, 0, 0, 6.28); c.fill();
+                c.fillStyle = '#ffffff';
+                c.beginPath(); c.ellipse(_fbCx, _fbCy - 2.4, _fbW, _fbH * 0.55, 0, Math.PI, 2 * Math.PI); c.fill();
+                // Inner shadow ring
+                c.fillStyle = '#a8a29e';
+                c.beginPath(); c.ellipse(_fbCx, _fbCy - 0.6, _fbW - 2.5, _fbH - 1.2, 0, 0, 6.28); c.fill();
+                // Ice surface — pale blue-white gradient
+                var _fbIg = c.createRadialGradient(_fbCx - 2, _fbCy - 1.5, 0.5, _fbCx, _fbCy - 1, _fbW - 3);
+                _fbIg.addColorStop(0, 'rgba(241,250,255,0.95)');
+                _fbIg.addColorStop(1, 'rgba(186,230,253,0.85)');
+                c.fillStyle = _fbIg;
+                c.beginPath(); c.ellipse(_fbCx, _fbCy - 1, _fbW - 3.5, _fbH - 1.8, 0, 0, 6.28); c.fill();
+                // Frost crack lines — radial fractures from one off-center point
+                c.strokeStyle = 'rgba(125,170,210,0.55)';
+                c.lineWidth = 0.4;
+                var _fbCrX = _fbCx - 2, _fbCrY = _fbCy - 1.4;
+                for (var fc = 0; fc < 6; fc++) {
+                  var _fcA = fc * 1.04 + 0.3;
+                  var _fcLen = 4 + (fc % 3);
+                  c.beginPath();
+                  c.moveTo(_fbCrX, _fbCrY);
+                  c.lineTo(_fbCrX + Math.cos(_fcA) * _fcLen, _fbCrY + Math.sin(_fcA) * _fcLen * 0.45);
+                  c.stroke();
+                }
+                // Tiny ice-shine glint (slowly travels)
+                var _fbShT = ((t2 * 0.04) % 100) / 100;
+                if (_fbShT < 0.4) {
+                  c.fillStyle = 'rgba(255,255,255,' + (0.7 * (1 - _fbShT / 0.4)).toFixed(3) + ')';
+                  c.beginPath();
+                  c.ellipse(_fbCx - 5 + _fbShT * 10, _fbCy - 1.8, 1.6, 0.4, 0, 0, 6.28);
+                  c.fill();
+                }
+              }
+
+              // ── Water station: ceramic birdbath with water-forager bees ──
+              // Real bee biology: in warm months, a colony dedicates ~6-12 workers
+              // to water foraging. They collect droplets and bring them home to
+              // spread on comb — fanner bees evaporate the water to cool brood
+              // (target 95°F). Beekeepers put out shallow water stations with
+              // landing stones so bees don't drown. Drawn before stepping stones
+              // so the foreground depth-sort puts stones in front when overlap.
+              if (season === 0 || season === 1 || season === 2) {
+                var _bbCx = W * 0.62, _bbCy = H * 0.88;
+                var _bbW = 16, _bbH = 5;
+                // Outer pedestal shadow
+                c.fillStyle = 'rgba(0,0,0,0.18)';
+                c.beginPath(); c.ellipse(_bbCx + 1, _bbCy + 2.5, _bbW + 1.5, _bbH * 0.6, 0, 0, 6.28); c.fill();
+                // Stone pedestal (chunky base)
+                c.fillStyle = '#a8a29e';
+                c.fillRect(_bbCx - 4, _bbCy - 1, 8, 5);
+                c.fillStyle = '#78716c';
+                c.fillRect(_bbCx - 4, _bbCy + 3, 8, 1.5);
+                // Outer rim (ceramic)
+                c.fillStyle = '#e7e5e4';
+                c.beginPath(); c.ellipse(_bbCx, _bbCy - 1, _bbW, _bbH, 0, 0, 6.28); c.fill();
+                // Inner shadow ring (lip)
+                c.fillStyle = '#a8a29e';
+                c.beginPath(); c.ellipse(_bbCx, _bbCy - 0.6, _bbW - 2.5, _bbH - 1.2, 0, 0, 6.28); c.fill();
+                // Water surface — pale blue with subtle gradient
+                var _bbWg = c.createRadialGradient(_bbCx - 2, _bbCy - 1.5, 0.5, _bbCx, _bbCy - 1, _bbW - 3);
+                _bbWg.addColorStop(0, 'rgba(186,230,253,0.95)');
+                _bbWg.addColorStop(1, 'rgba(56,189,248,0.85)');
+                c.fillStyle = _bbWg;
+                c.beginPath(); c.ellipse(_bbCx, _bbCy - 1, _bbW - 3.5, _bbH - 1.8, 0, 0, 6.28); c.fill();
+                // Surface highlight (curved bright crescent on upper-left of water)
+                c.fillStyle = 'rgba(255,255,255,0.55)';
+                c.beginPath(); c.ellipse(_bbCx - 3, _bbCy - 1.8, 4, 0.6, -0.2, 0, 6.28); c.fill();
+                // Ripple rings — 2 expanding rings at a slow cadence (a bee just landed)
+                var _bbRipT = ((t2 * 0.06) % 60) / 60; // 0..1
+                if (_bbRipT < 0.65) {
+                  var _bbRr = _bbRipT * (_bbW - 4);
+                  c.strokeStyle = 'rgba(255,255,255,' + (0.55 * (1 - _bbRipT / 0.65)).toFixed(3) + ')';
+                  c.lineWidth = 0.45;
+                  c.beginPath(); c.ellipse(_bbCx - 2, _bbCy - 1.4, _bbRr, _bbRr * 0.45, 0, 0, 6.28); c.stroke();
+                }
+                var _bbRipT2 = ((t2 * 0.06 + 30) % 60) / 60;
+                if (_bbRipT2 < 0.65) {
+                  var _bbRr2 = _bbRipT2 * (_bbW - 5);
+                  c.strokeStyle = 'rgba(255,255,255,' + (0.45 * (1 - _bbRipT2 / 0.65)).toFixed(3) + ')';
+                  c.lineWidth = 0.4;
+                  c.beginPath(); c.ellipse(_bbCx + 3, _bbCy - 0.8, _bbRr2, _bbRr2 * 0.45, 0, 0, 6.28); c.stroke();
+                }
+                // Landing stones — 2 small pebbles peeking above the water (so bees don't drown)
+                c.fillStyle = '#9ca3af';
+                c.beginPath(); c.ellipse(_bbCx - 5, _bbCy - 1.5, 1.6, 0.8, 0, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(_bbCx + 4, _bbCy - 0.7, 1.3, 0.7, 0, 0, 6.28); c.fill();
+                c.fillStyle = 'rgba(255,255,255,0.3)';
+                c.beginPath(); c.arc(_bbCx - 5.2, _bbCy - 1.8, 0.4, 0, 6.28); c.fill();
+                // Water-forager bees on the rim — 2 bees crouched drinking, head tipped to water
+                var _bbBeeCount = season === 1 ? 3 : 2; // more in peak summer (cooling demand)
+                for (var wfb = 0; wfb < _bbBeeCount; wfb++) {
+                  var _wfbAng = (wfb / _bbBeeCount) * 2.2 - 1.0; // span ~front arc
+                  var _wfbX = _bbCx + Math.cos(_wfbAng) * (_bbW - 2.5);
+                  var _wfbY = _bbCy - 1 + Math.sin(_wfbAng) * (_bbH - 1.5) * 0.7;
+                  // Tiny bee body (top-down view since they're crouched on the rim)
+                  var _wfbBob = Math.sin(t2 * 0.05 + wfb * 1.7) * 0.2; // gentle bob while drinking
+                  c.save();
+                  c.translate(_wfbX, _wfbY + _wfbBob);
+                  c.rotate(_wfbAng + Math.PI); // head pointing in toward water
+                  // Body
+                  c.fillStyle = '#fbbf24';
+                  c.beginPath(); c.ellipse(0, 0, 2, 1.1, 0, 0, 6.28); c.fill();
+                  // Stripes
+                  c.fillStyle = '#1c1917';
+                  c.fillRect(-0.3, -1, 0.5, 2);
+                  c.fillRect(0.5, -0.8, 0.4, 1.6);
+                  // Head (smaller dark circle at the leading end)
+                  c.fillStyle = '#1c1917';
+                  c.beginPath(); c.arc(-1.6, 0, 0.7, 0, 6.28); c.fill();
+                  // Wings (semi-transparent, slow flutter)
+                  c.globalAlpha = 0.45 + Math.abs(Math.sin(t2 * 0.18 + wfb)) * 0.25;
+                  c.fillStyle = '#e0f2fe';
+                  c.beginPath(); c.ellipse(0.6, -0.6, 1.3, 0.5, -0.2, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(0.6,  0.6, 1.3, 0.5,  0.2, 0, 6.28); c.fill();
+                  c.restore();
+                }
+              }
 
               // ── Stepping stones path leading from meadow to the hive ──
               var stepCount = 7;
@@ -6816,6 +7240,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillStyle = 'rgba(255,255,255,0.15)';
               c.fillRect(standX + 2, standY + 2, standW - 4, 1);
 
+              // ── Butterflies fluttering over the meadow (spring/summer) ──
+              // Slow erratic wandering, distinctly different motion from bees so
+              // it reads as a separate species. Wings beat slowly (vs. bee blur).
+              // Reinforces the pollinator-ecosystem story without numeric chrome.
+              if ((season === 0 || season === 1) && flowers.length > 4) {
+                var _bfCount = season === 1 ? 3 : 2;
+                for (var bfi = 0; bfi < _bfCount; bfi++) {
+                  // Each butterfly orbits a slowly drifting center point near the flower band
+                  var _bfPhase = t2 * 0.011 + bfi * 2.1;
+                  var _bfHome = flowers[(bfi * 3 + 2) % flowers.length];
+                  var _bfx = _bfHome.x + Math.cos(_bfPhase) * 28 + Math.sin(_bfPhase * 2.3) * 9;
+                  var _bfy = _bfHome.y - 6 + Math.sin(_bfPhase * 0.9) * 9 + Math.cos(_bfPhase * 1.7) * 4;
+                  // Wing-flap (slow, 4-5 Hz)
+                  var _bfFlap = Math.abs(Math.sin(t2 * 0.18 + bfi));
+                  var _bfWingW = 2.2 + _bfFlap * 2.4;
+                  var _bfWingH = 3.3 - _bfFlap * 1.6;
+                  // Heading (face direction of motion for slight rotation)
+                  var _bfHeading = Math.atan2(Math.cos(_bfPhase * 0.9) * 9, -Math.sin(_bfPhase) * 28);
+                  var _bfCol = bfi === 0 ? '#f97316' : bfi === 1 ? '#a78bfa' : '#fde047';
+                  var _bfEdge = bfi === 0 ? '#7c2d12' : bfi === 1 ? '#4c1d95' : '#a16207';
+                  c.save();
+                  c.translate(_bfx, _bfy);
+                  c.rotate(_bfHeading * 0.3);
+                  // Body
+                  c.fillStyle = '#1f2937';
+                  c.beginPath(); c.ellipse(0, 0, 0.7, 2.2, 0, 0, 6.28); c.fill();
+                  // Antennae
+                  c.strokeStyle = '#1f2937'; c.lineWidth = 0.35;
+                  c.beginPath(); c.moveTo(-0.4, -2); c.lineTo(-1.2, -3.5); c.stroke();
+                  c.beginPath(); c.moveTo(0.4, -2); c.lineTo(1.2, -3.5); c.stroke();
+                  // Left wing pair
+                  c.fillStyle = _bfCol;
+                  c.beginPath(); c.ellipse(-_bfWingW * 0.55, -0.4, _bfWingW, _bfWingH, -0.3, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(-_bfWingW * 0.5, 1.2, _bfWingW * 0.7, _bfWingH * 0.7, -0.2, 0, 6.28); c.fill();
+                  // Right wing pair
+                  c.beginPath(); c.ellipse(_bfWingW * 0.55, -0.4, _bfWingW, _bfWingH, 0.3, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_bfWingW * 0.5, 1.2, _bfWingW * 0.7, _bfWingH * 0.7, 0.2, 0, 6.28); c.fill();
+                  // Wing veins / edge accents
+                  c.strokeStyle = _bfEdge; c.lineWidth = 0.4;
+                  c.beginPath(); c.ellipse(-_bfWingW * 0.55, -0.4, _bfWingW, _bfWingH, -0.3, 0, 6.28); c.stroke();
+                  c.beginPath(); c.ellipse(_bfWingW * 0.55, -0.4, _bfWingW, _bfWingH, 0.3, 0, 6.28); c.stroke();
+                  // Wing dots (monarch-style)
+                  c.fillStyle = 'rgba(255,255,255,0.7)';
+                  c.beginPath(); c.arc(-_bfWingW * 0.55, -1, 0.35, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_bfWingW * 0.55, -1, 0.35, 0, 6.28); c.fill();
+                  c.restore();
+                }
+              }
+
               // ── Ladybugs on flowers (spring/summer, static on 2 flowers) ──
               if ((season === 0 || season === 1) && flowers.length > 3) {
                 [0, 5].forEach(function(flIdx) {
@@ -6839,7 +7312,376 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 });
               }
 
+              // ── Beekeeper sprite (depth-sorted in front of meadow foliage) ──
+              // Always visible outside winter — previously a 50% cameo window
+              // made the keeper appear/disappear unpredictably and felt buggy.
+              // Three phases now:
+              //   • action  → walk-in → perform at hive → walk-back (5s default)
+              //   • cameo   → slow walk from home toward hive once per ~30s
+              //   • idle    → stand at home (right side of scene) the rest of
+              //                 the time, so the keeper is always present.
+              // Action-mode overlay (emoji over hands) + speech bubble render
+              // during the "perform" phase.
+              (function () {
+                var bkAnim = ls.bkAnim;
+                var now = Date.now();
+                var inAction = bkAnim && bkAnim.startedAt && (now - bkAnim.startedAt) < (bkAnim.duration || 5000);
+                // Hide in winter unless actively doing something — visually consistent
+                // with the existing "no cameo in winter" rule.
+                if (!inAction && season === 3) return;
+
+                var bkCycle = (t2 % 1800) / 1800;
+                var inCameo = !inAction && season !== 3 && bkCycle > 0.2 && bkCycle < 0.7;
+
+                // Compute position + phase
+                var homeX = W * 0.95;
+                var hiveEntranceX = hiveX + hiveW + 40 * bkScale;
+                var bkX, phase, perfT;
+                if (inAction) {
+                  var t = (now - bkAnim.startedAt) / (bkAnim.duration || 5000);
+                  if (t < 0.25) { // walk-in
+                    var p = t / 0.25;
+                    bkX = homeX - p * (homeX - hiveEntranceX);
+                    phase = 'walk';
+                  } else if (t < 0.75) { // perform
+                    bkX = hiveEntranceX;
+                    phase = 'perform';
+                    perfT = (t - 0.25) / 0.5; // 0..1 during perform
+                  } else { // walk-back
+                    var p2 = (t - 0.75) / 0.25;
+                    bkX = hiveEntranceX + p2 * (homeX - hiveEntranceX);
+                    phase = 'walk';
+                  }
+                } else if (inCameo) {
+                  var bkProgress = (bkCycle - 0.2) / 0.5;
+                  bkX = homeX - bkProgress * (homeX - hiveEntranceX);
+                  phase = 'walk';
+                } else {
+                  // Idle: stand at home with a subtle breathing bob so the
+                  // keeper still feels alive even when nothing's scheduled.
+                  bkX = homeX;
+                  phase = 'idle';
+                }
+
+                // Anchor feet to the visible grass plane (ground line drawn at H * 0.76, fence at H * 0.775).
+                var bkGround = H * 0.82;
+                var bkBodyH = 14 * bkScale;
+                var bkBodyW = 8 * bkScale;
+                var idleBob = phase === 'idle' ? Math.sin(t2 * 0.04) * 0.8 : 0;
+                // Walk bounce — subtle vertical lift in sync with the leg step
+                var walkBounce = phase === 'walk' ? -Math.abs(Math.sin(t2 * 0.15)) * 0.7 * bkScale : 0;
+                var bkY = bkGround - bkBodyH - (8 * bkScale) + idleBob + walkBounce;
+                var bkStep = phase === 'walk' ? Math.sin(t2 * 0.15) * 1.2 * bkScale : 0;
+
+                c.save();
+                // ── Shadow (soft, faintly stretched during walk for motion read) ──
+                c.fillStyle = 'rgba(0,0,0,0.28)';
+                var shStretch = phase === 'walk' ? 1.1 : 1.0;
+                c.beginPath(); c.ellipse(bkX, bkGround, 7 * bkScale * shStretch, 1.6 * bkScale, 0, 0, 6.28); c.fill();
+                // ── Walk dust — 2 small puffs behind the heel when walking ──
+                // Telegraphs forward motion without needing a sprite flip.
+                // Travel direction is from homeX (right) toward hiveEntranceX
+                // (left) during action walk-in, reverse during walk-back. The
+                // dust always trails behind, so we'll just emit on both sides
+                // and let the alpha mask handle it visually.
+                if (phase === 'walk') {
+                  for (var wd = 0; wd < 2; wd++) {
+                    var wdT = ((t2 * 0.4 + wd * 25) % 50) / 50; // 0..1 fade
+                    var wdAlpha = (1 - wdT) * 0.35;
+                    var wdR = (1 + wdT * 2.5) * bkScale * 0.4;
+                    var wdOff = (3.5 + wdT * 4) * bkScale; // drift outward
+                    var wdY = bkGround - wdT * 0.5 * bkScale; // small float
+                    c.fillStyle = 'rgba(180,160,130,' + wdAlpha.toFixed(3) + ')';
+                    c.beginPath(); c.arc(bkX + wdOff, wdY, wdR, 0, 6.28); c.fill();
+                  }
+                }
+                // ── Body (white suit) — slight taper from shoulder to waist via two trapezoidal rects ──
+                c.fillStyle = '#f1f5f9';
+                // Main chest panel
+                c.fillRect(bkX - bkBodyW / 2, bkY, bkBodyW, bkBodyH);
+                // Subtle inner shading on the right side for dimensional read
+                c.fillStyle = 'rgba(15,23,42,0.06)';
+                c.fillRect(bkX + bkBodyW * 0.25, bkY, bkBodyW * 0.25, bkBodyH);
+                // Belt (suit cinch — dark band at waist)
+                c.fillStyle = '#475569';
+                c.fillRect(bkX - bkBodyW / 2, bkY + bkBodyH - 2 * bkScale, bkBodyW, 1.2 * bkScale);
+                // Zipper (subtle vertical center line)
+                c.fillStyle = 'rgba(100,116,139,0.45)';
+                c.fillRect(bkX - 0.25 * bkScale, bkY + 2 * bkScale, 0.5 * bkScale, bkBodyH - 4 * bkScale);
+                // Tool-belt clip
+                c.fillStyle = '#1e293b';
+                c.fillRect(bkX + bkBodyW * 0.2, bkY + bkBodyH - 2.4 * bkScale, 1.4 * bkScale, 0.6 * bkScale);
+                // ── Legs (pants — slightly darker than body, with cuff highlight) ──
+                c.fillStyle = '#1e293b';
+                c.fillRect(bkX - 3 * bkScale, bkY + bkBodyH, 2.5 * bkScale, 8 * bkScale + bkStep);
+                c.fillRect(bkX + 0.5 * bkScale, bkY + bkBodyH, 2.5 * bkScale, 8 * bkScale - bkStep);
+                // Boot caps
+                c.fillStyle = '#0f172a';
+                c.fillRect(bkX - 3 * bkScale, bkY + bkBodyH + 8 * bkScale + bkStep - 1.5 * bkScale, 2.5 * bkScale, 1.5 * bkScale);
+                c.fillRect(bkX + 0.5 * bkScale, bkY + bkBodyH + 8 * bkScale - bkStep - 1.5 * bkScale, 2.5 * bkScale, 1.5 * bkScale);
+                // ── Arms (suit fabric — raised slightly during perform) ──
+                c.fillStyle = '#f1f5f9';
+                var armLift = phase === 'perform' ? -2 * bkScale * Math.abs(Math.sin(t2 * 0.18)) : 0;
+                // Left arm (holding smoker)
+                c.fillRect(bkX - 6 * bkScale, bkY + 2 * bkScale + armLift, 2 * bkScale, 9 * bkScale);
+                // Right arm
+                c.fillRect(bkX + 4 * bkScale, bkY + 2 * bkScale + armLift, 2 * bkScale, 9 * bkScale);
+                // Arm shading (right side darker for depth)
+                c.fillStyle = 'rgba(15,23,42,0.08)';
+                c.fillRect(bkX + 5 * bkScale, bkY + 2 * bkScale + armLift, 1 * bkScale, 9 * bkScale);
+                // ── Gloves (tan/cream) at the end of each arm ──
+                c.fillStyle = '#e8d9b8';
+                c.beginPath(); c.arc(bkX - 5 * bkScale, bkY + 11.5 * bkScale + armLift, 1.6 * bkScale, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(bkX + 5 * bkScale, bkY + 11.5 * bkScale + armLift, 1.6 * bkScale, 0, 6.28); c.fill();
+                // Glove cuff stripe (tan-dark accent)
+                c.fillStyle = 'rgba(140,110,70,0.35)';
+                c.fillRect(bkX - 6.2 * bkScale, bkY + 10 * bkScale + armLift, 2.4 * bkScale, 0.5 * bkScale);
+                c.fillRect(bkX + 3.8 * bkScale, bkY + 10 * bkScale + armLift, 2.4 * bkScale, 0.5 * bkScale);
+                // ── Veil hood (white outer dome + mesh pattern + face shadow) ──
+                c.fillStyle = '#f8fafc';
+                c.beginPath(); c.arc(bkX, bkY - 3 * bkScale, 5 * bkScale, 0, 6.28); c.fill();
+                // Hood crown rim (slight band where helmet meets veil)
+                c.fillStyle = '#cbd5e1';
+                c.beginPath(); c.ellipse(bkX, bkY - 6 * bkScale, 5 * bkScale, 1 * bkScale, 0, 0, 6.28); c.fill();
+                // Veil mesh face area (dark tinted oval)
+                c.fillStyle = 'rgba(30,41,59,0.55)';
+                c.beginPath(); c.ellipse(bkX, bkY - 2 * bkScale, 3.8 * bkScale, 4 * bkScale, 0, 0, 6.28); c.fill();
+                // Mesh weave dots (tiny grid hints — the bee netting)
+                c.fillStyle = 'rgba(0,0,0,0.35)';
+                for (var mr = -2; mr <= 2; mr++) {
+                  for (var mc = -2; mc <= 2; mc++) {
+                    var mx = bkX + mc * 0.9 * bkScale;
+                    var my = bkY - 2 * bkScale + mr * 0.9 * bkScale;
+                    // Mask to the face oval
+                    var dx = (mx - bkX) / (3.8 * bkScale);
+                    var dy = (my - (bkY - 2 * bkScale)) / (4 * bkScale);
+                    if (dx * dx + dy * dy > 0.85) continue;
+                    c.fillRect(mx, my, 0.35 * bkScale, 0.35 * bkScale);
+                  }
+                }
+                // Subtle suggestion of a face — two tiny lighter spots where eyes would be
+                c.fillStyle = 'rgba(248,250,252,0.45)';
+                c.beginPath(); c.arc(bkX - 1.2 * bkScale, bkY - 2 * bkScale, 0.5 * bkScale, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(bkX + 1.2 * bkScale, bkY - 2 * bkScale, 0.5 * bkScale, 0, 6.28); c.fill();
+                // Veil cord (string under chin securing the hood)
+                c.strokeStyle = 'rgba(100,116,139,0.5)'; c.lineWidth = 0.5;
+                c.beginPath();
+                c.moveTo(bkX - 4 * bkScale, bkY + 0.5 * bkScale);
+                c.quadraticCurveTo(bkX, bkY + 2 * bkScale, bkX + 4 * bkScale, bkY + 0.5 * bkScale);
+                c.stroke();
+                // ── Smoker (canister + bellows + spout) in left hand ──
+                var smX = bkX - 7.2 * bkScale;
+                var smY = bkY + 9 * bkScale + armLift;
+                // Bellows (squarish brown leather bag)
+                c.fillStyle = '#5b4632';
+                c.fillRect(smX - 1.4 * bkScale, smY + 1 * bkScale, 2.4 * bkScale, 3 * bkScale);
+                // Bellows wrinkles (3 thin lines)
+                c.fillStyle = 'rgba(0,0,0,0.30)';
+                c.fillRect(smX - 1.4 * bkScale, smY + 1.7 * bkScale, 2.4 * bkScale, 0.25 * bkScale);
+                c.fillRect(smX - 1.4 * bkScale, smY + 2.4 * bkScale, 2.4 * bkScale, 0.25 * bkScale);
+                c.fillRect(smX - 1.4 * bkScale, smY + 3.1 * bkScale, 2.4 * bkScale, 0.25 * bkScale);
+                // Canister (cylinder, metal gray) — leans slightly right
+                c.fillStyle = '#78716c';
+                c.fillRect(smX + 0.6 * bkScale, smY - 4 * bkScale, 2.4 * bkScale, 5.8 * bkScale);
+                // Canister rim band
+                c.fillStyle = '#44403c';
+                c.fillRect(smX + 0.6 * bkScale, smY - 1.6 * bkScale, 2.4 * bkScale, 0.5 * bkScale);
+                // Highlight on canister (left edge)
+                c.fillStyle = 'rgba(255,255,255,0.20)';
+                c.fillRect(smX + 0.7 * bkScale, smY - 4 * bkScale, 0.5 * bkScale, 5.6 * bkScale);
+                // Spout (small angled rectangle at the top)
+                c.fillStyle = '#44403c';
+                c.save(); c.translate(smX + 1.8 * bkScale, smY - 4 * bkScale); c.rotate(-0.3);
+                c.fillRect(-0.5 * bkScale, -1.4 * bkScale, 1 * bkScale, 1.6 * bkScale);
+                c.restore();
+                // ── Smoker puff(s) rising from spout ──
+                var puffActive = (bkAnim && bkAnim.type === 'smoke' && phase === 'perform');
+                var puffCount = puffActive ? 4 : 2;
+                var puffBaseAlpha = puffActive ? 0.85 : 0.45;
+                var puffBaseSize = puffActive ? 3.0 : 1.4;
+                for (var pf = 0; pf < puffCount; pf++) {
+                  var pfT = ((t2 * (puffActive ? 0.45 : 0.20) + pf * 12) % 30) / 30; // 0..1 rise
+                  var pfX = smX + 1.8 * bkScale + Math.sin(t2 * 0.04 + pf) * 1.5 - pfT * 1.5;
+                  var pfY = smY - 5 * bkScale - pfT * 9 * bkScale;
+                  var pfR = (puffBaseSize + pfT * 1.8) * bkScale;
+                  var pfA = (1 - pfT) * puffBaseAlpha;
+                  c.fillStyle = 'rgba(220,220,220,' + pfA.toFixed(3) + ')';
+                  c.beginPath(); c.arc(pfX, pfY, pfR, 0, 6.28); c.fill();
+                }
+                c.restore();
+
+                // ── Action overlay + speech bubble (perform phase only) ──
+                if (inAction && phase === 'perform' && bkAnim) {
+                  // Action emoji near hands (slight bounce)
+                  var itemY = bkY + 4 * bkScale + Math.sin(t2 * 0.2) * 1.5;
+                  var itemX = bkX + 7 * bkScale;
+                  c.save();
+                  c.font = 'bold ' + Math.round(14 * bkScale) + 'px system-ui, sans-serif';
+                  c.textAlign = 'center';
+                  c.textBaseline = 'middle';
+                  c.fillText(bkAnim.emoji || '🔍', itemX, itemY);
+                  c.restore();
+
+                  // Speech bubble above the beekeeper's head
+                  var caption = String(bkAnim.caption || '');
+                  if (caption) {
+                    c.save();
+                    c.font = 'bold 12px system-ui, sans-serif';
+                    c.textAlign = 'center';
+                    c.textBaseline = 'middle';
+                    var textW = c.measureText(caption).width;
+                    var bubW = Math.min(W * 0.45, textW + 20);
+                    var bubH = 28;
+                    var bubX = Math.max(8, Math.min(W - bubW - 8, bkX - bubW / 2));
+                    var bubY = bkY - 10 * bkScale - bubH - 6;
+                    // Bubble background
+                    c.fillStyle = 'rgba(255,255,255,0.96)';
+                    c.strokeStyle = 'rgba(30,41,59,0.5)';
+                    c.lineWidth = 1.2;
+                    c.beginPath();
+                    if (c.roundRect) c.roundRect(bubX, bubY, bubW, bubH, 8);
+                    else c.rect(bubX, bubY, bubW, bubH);
+                    c.fill(); c.stroke();
+                    // Tail
+                    c.beginPath();
+                    c.moveTo(bkX - 4, bubY + bubH);
+                    c.lineTo(bkX, bubY + bubH + 6);
+                    c.lineTo(bkX + 4, bubY + bubH);
+                    c.closePath();
+                    c.fillStyle = 'rgba(255,255,255,0.96)';
+                    c.fill();
+                    c.stroke();
+                    // Caption text
+                    c.fillStyle = '#1e293b';
+                    // Truncate if needed to fit bubble
+                    var drawnCaption = caption;
+                    if (textW > bubW - 16) {
+                      while (drawnCaption.length > 3 && c.measureText(drawnCaption + '…').width > bubW - 16) {
+                        drawnCaption = drawnCaption.slice(0, -1);
+                      }
+                      drawnCaption += '…';
+                    }
+                    c.fillText(drawnCaption, bubX + bubW / 2, bubY + bubH / 2);
+                    c.restore();
+                  }
+                }
+              })();
+
               // ── Hive (detailed cross-section with 3D-ish look) ──
+              // ── Health-responsive aura ──
+              // Drawn FIRST so the shadow + hive paint on top. The aura color
+              // and intensity reflect colonyHealth so students get a constant
+              // ambient signal of how the colony is doing without reading any
+              // numbers. Gently pulses via sine(t2) to feel alive — disabled
+              // visually flat under prefers-reduced-motion via the 0.85-1.0
+              // amplitude floor (no full strobe even on max).
+              var auraCx = hiveX + hiveW / 2;
+              var auraCy = hiveY + hiveH * 0.45;
+              var auraR = hiveW * 1.7;
+              var auraColor, auraAlpha;
+              if (colonyHealth >= 80)      { auraColor = '254,224,138';  auraAlpha = 0.28; } // amber-200, vibrant
+              else if (colonyHealth >= 55) { auraColor = '252,211,77';   auraAlpha = 0.22; } // amber-300
+              else if (colonyHealth >= 35) { auraColor = '217,119,6';    auraAlpha = 0.18; } // amber-600, dim warm
+              else                         { auraColor = '220,38,38';    auraAlpha = 0.20; } // red-600, distinctly distressed
+              var auraPulse = 0.92 + Math.sin(t2 * 0.018) * 0.08; // 0.84..1.00 — soft breathing
+              auraAlpha *= auraPulse;
+              var auraGrad = c.createRadialGradient(auraCx, auraCy, hiveW * 0.2, auraCx, auraCy, auraR);
+              auraGrad.addColorStop(0, 'rgba(' + auraColor + ',' + auraAlpha.toFixed(3) + ')');
+              auraGrad.addColorStop(0.55, 'rgba(' + auraColor + ',' + (auraAlpha * 0.4).toFixed(3) + ')');
+              auraGrad.addColorStop(1, 'rgba(' + auraColor + ',0)');
+              c.fillStyle = auraGrad;
+              c.beginPath(); c.ellipse(auraCx, auraCy, auraR, auraR * 0.8, 0, 0, 6.28); c.fill();
+              // ── Stress haze drifting from entrance when morale low or varroa high ──
+              // A subtle wisp of "alarm pheromone" pink-red leaving the
+              // entrance — invisible biology made just barely visible.
+              if (morale < 40 || varroaLevel >= 25) {
+                var hazeStrength = Math.max(0, Math.min(1, ((40 - morale) / 40) + ((varroaLevel - 15) / 50)));
+                if (hazeStrength > 0.05) {
+                  c.save();
+                  c.globalAlpha = 0.18 * hazeStrength;
+                  for (var hz = 0; hz < 5; hz++) {
+                    var hzT = ((t2 * 0.4 + hz * 22) % 60) / 60; // 0..1 rise
+                    var hzX = hiveX + hiveW / 2 + Math.sin(t2 * 0.03 + hz) * 6 + (hz - 2) * 3;
+                    var hzY = hiveY + hiveH - hzT * 60;
+                    var hzR = 4 + hzT * 10;
+                    var hzAlpha = (1 - hzT) * 0.6;
+                    c.fillStyle = 'rgba(248,113,113,' + hzAlpha.toFixed(3) + ')';
+                    c.beginPath(); c.arc(hzX, hzY, hzR, 0, 6.28); c.fill();
+                  }
+                  c.restore();
+                }
+              }
+              // ── Queen Mandibular Pheromone (QMP) — golden ribbon above the hive ──
+              // Real bees can sense QMP through their antennae from inches
+              // away; it's the colony's most important social signal. We
+              // visualize it as a soft golden glow ringing the top of the
+              // hive whose intensity tracks queenHealth. Healthy queen =
+              // strong constant signal. Failing queen = thin, sputtering
+              // signal. Below 30% the signal collapses and stress shows up
+              // in the alarm pheromone wisp above.
+              if (queenHealth >= 35) {
+                var qmpStrength = Math.max(0, Math.min(1, (queenHealth - 30) / 70));
+                var qmpCx = hiveX + hiveW / 2;
+                var qmpCy = hiveY - 4;
+                c.save();
+                // Soft glow halo
+                var qmpGlow = c.createRadialGradient(qmpCx, qmpCy, 2, qmpCx, qmpCy, hiveW * 0.8);
+                qmpGlow.addColorStop(0, 'rgba(253,224,71,' + (0.22 * qmpStrength).toFixed(3) + ')');
+                qmpGlow.addColorStop(0.5, 'rgba(251,191,36,' + (0.10 * qmpStrength).toFixed(3) + ')');
+                qmpGlow.addColorStop(1, 'rgba(251,191,36,0)');
+                c.fillStyle = qmpGlow;
+                c.beginPath(); c.ellipse(qmpCx, qmpCy, hiveW * 0.8, hiveW * 0.35, 0, 0, 6.28); c.fill();
+                // Rising golden mote particles — count + speed scale with strength
+                var qmpCount = Math.round(2 + qmpStrength * 5);
+                c.globalAlpha = 0.7 * qmpStrength;
+                for (var qm = 0; qm < qmpCount; qm++) {
+                  var qmT = ((t2 * 0.22 + qm * 31) % 80) / 80; // 0..1 rise from hive top up
+                  var qmJitter = Math.sin(t2 * 0.04 + qm * 1.7) * 2;
+                  var qmX = qmpCx + (qm - qmpCount / 2) * 4 + qmJitter;
+                  var qmY = qmpCy - qmT * 28;
+                  var qmR = 0.9 + (1 - qmT) * 1.4;
+                  var qmAlpha = (1 - qmT) * 0.85;
+                  c.fillStyle = 'rgba(253,224,71,' + qmAlpha.toFixed(3) + ')';
+                  c.beginPath(); c.arc(qmX, qmY, qmR, 0, 6.28); c.fill();
+                }
+                c.restore();
+              } else if (queenHealth < 30 && queenHealth > 0) {
+                // Failing queen — golden motes falling (signal collapsing).
+                c.save();
+                c.globalAlpha = 0.35;
+                for (var qf = 0; qf < 3; qf++) {
+                  var qfT = ((t2 * 0.25 + qf * 27) % 60) / 60;
+                  var qfX = hiveX + hiveW / 2 + Math.sin(t2 * 0.05 + qf * 2) * 4;
+                  var qfY = hiveY - 2 + qfT * 14; // falling down
+                  c.fillStyle = 'rgba(217,119,6,' + ((1 - qfT) * 0.7).toFixed(3) + ')';
+                  c.beginPath(); c.arc(qfX, qfY, 1.2, 0, 6.28); c.fill();
+                }
+                c.restore();
+              }
+              // ── Buzz rings — the colony hum, made visible ──
+              // Real bees vibrate flight muscles continuously; the hive emits
+              // a constant audible buzz. Show 3 staggered expanding rings
+              // that radiate outward from the hive and fade. Frequency picks
+              // up with workforce density (more workers = louder hum).
+              if (season !== 3 && workers >= 1000) {
+                c.save();
+                var buzzCenterX = hiveX + hiveW / 2;
+                var buzzCenterY = hiveY + hiveH / 2;
+                var buzzPeriod = Math.max(900, 2400 - workers / 25); // ms — faster pings as colony grows
+                var buzzActivity = Math.min(1, workers / 25000);
+                for (var br = 0; br < 3; br++) {
+                  var brT = ((t2 * (1000 / buzzPeriod) * 0.016 + br * 0.33) % 1); // 0..1 each ring
+                  var brR = brT * hiveW * 1.8;
+                  var brAlpha = (1 - brT) * 0.18 * buzzActivity;
+                  if (brAlpha < 0.005) continue;
+                  c.strokeStyle = 'rgba(251,191,36,' + brAlpha.toFixed(3) + ')';
+                  c.lineWidth = 0.9;
+                  c.beginPath();
+                  c.ellipse(buzzCenterX, buzzCenterY, brR, brR * 0.55, 0, 0, 6.28);
+                  c.stroke();
+                }
+                c.restore();
+              }
               // Ground cast shadow (soft, wide ellipse — gives the hive weight)
               var csY = hiveY + hiveH + 6;
               var csGrad = c.createRadialGradient(hiveX + hiveW / 2, csY, 2, hiveX + hiveW / 2, csY, hiveW * 0.7);
@@ -6857,6 +7699,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillStyle = hg; c.beginPath(); c.roundRect(hiveX, hiveY, hiveW, hiveH, 10); c.fill();
               // Inner
               c.fillStyle = '#d4aa40'; c.beginPath(); c.roundRect(hiveX + 4, hiveY + 4, hiveW - 8, hiveH - 8, 7); c.fill();
+              // ── Brood warmth glow inside the hive ──
+              // The brood nest is held at 95°F (35°C) ± 0.5° year-round — more
+              // precise than most mammals. A soft warm orange radial gradient
+              // at hive center makes that thermoregulation visible. Intensity
+              // scales with brood count, dim in winter when the cluster is
+              // contracted and there's little active brood.
+              if (brood > 100) {
+                var broodCx = hiveX + hiveW / 2;
+                var broodCy = hiveY + hiveH * 0.55; // brood nest sits low-middle in a Langstroth
+                var broodStrength = Math.min(1, brood / 4000) * (season === 3 ? 0.5 : 1);
+                var broodR = hiveW * 0.42;
+                var broodGlow = c.createRadialGradient(broodCx, broodCy, 2, broodCx, broodCy, broodR);
+                broodGlow.addColorStop(0, 'rgba(251,146,60,' + (0.55 * broodStrength).toFixed(3) + ')');
+                broodGlow.addColorStop(0.5, 'rgba(251,191,36,' + (0.32 * broodStrength).toFixed(3) + ')');
+                broodGlow.addColorStop(1, 'rgba(251,191,36,0)');
+                c.fillStyle = broodGlow;
+                c.beginPath(); c.ellipse(broodCx, broodCy, broodR, broodR * 0.7, 0, 0, 6.28); c.fill();
+              }
               // Highlight
               c.fillStyle = 'rgba(255,255,255,0.08)'; c.fillRect(hiveX + 5, hiveY + 5, hiveW - 10, 12);
               // ── Stacked-super seams (3 visible Langstroth boxes separated by dark rails) ──
@@ -6914,6 +7774,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.rotate(Math.PI / 4);
               c.fillRect(-2.5, -2.5, 5, 5);
               c.restore();
+              // ── Snow cap on the roof (winter only) ──
+              // Thin layer of snow following both slopes of the peaked roof.
+              // Sits ON the shingles, with a few small icicles dripping from
+              // the eaves. Reinforces "this hive has been through some weather"
+              // and gives winter a foreground depth-anchor it otherwise lacks.
+              if (season === 3) {
+                c.fillStyle = '#ffffff';
+                c.beginPath();
+                c.moveTo(hiveX - 4, hiveY + 2);
+                c.lineTo(hiveX - 2, hiveY + 0.5);
+                c.lineTo(hiveX + hiveW / 2, hiveY - roofH - 1.2);
+                c.lineTo(hiveX + hiveW + 2, hiveY + 0.5);
+                c.lineTo(hiveX + hiveW + 4, hiveY + 2);
+                c.lineTo(hiveX + hiveW + 1, hiveY + 1);
+                c.lineTo(hiveX + hiveW / 2, hiveY - roofH + 1.5);
+                c.lineTo(hiveX - 1, hiveY + 1);
+                c.closePath(); c.fill();
+                // Soft blue-shadow at the snow-shingle seam
+                c.fillStyle = 'rgba(180,200,225,0.55)';
+                c.beginPath();
+                c.moveTo(hiveX - 1, hiveY + 1.4);
+                c.lineTo(hiveX + hiveW / 2, hiveY - roofH + 1.9);
+                c.lineTo(hiveX + hiveW + 1, hiveY + 1.4);
+                c.lineTo(hiveX + hiveW + 1, hiveY + 1.9);
+                c.lineTo(hiveX + hiveW / 2, hiveY - roofH + 2.4);
+                c.lineTo(hiveX - 1, hiveY + 1.9);
+                c.closePath(); c.fill();
+                // Tiny icicles dripping from the eaves
+                c.fillStyle = 'rgba(225,240,250,0.85)';
+                var _icPositions = [
+                  { x: hiveX - 3,                 len: 3.5 },
+                  { x: hiveX + hiveW * 0.18,      len: 2.5 },
+                  { x: hiveX + hiveW * 0.38,      len: 4.0 },
+                  { x: hiveX + hiveW * 0.62,      len: 2.0 },
+                  { x: hiveX + hiveW * 0.82,      len: 3.2 },
+                  { x: hiveX + hiveW + 2,         len: 2.8 }
+                ];
+                for (var ic = 0; ic < _icPositions.length; ic++) {
+                  var _ic = _icPositions[ic];
+                  c.beginPath();
+                  c.moveTo(_ic.x - 0.7, hiveY + 2);
+                  c.lineTo(_ic.x + 0.7, hiveY + 2);
+                  c.lineTo(_ic.x,       hiveY + 2 + _ic.len);
+                  c.closePath(); c.fill();
+                  // Highlight on left side of icicle
+                  c.fillStyle = 'rgba(255,255,255,0.6)';
+                  c.beginPath();
+                  c.moveTo(_ic.x - 0.5, hiveY + 2.2);
+                  c.lineTo(_ic.x - 0.1, hiveY + 2.2);
+                  c.lineTo(_ic.x - 0.1, hiveY + 2 + _ic.len * 0.7);
+                  c.closePath(); c.fill();
+                  c.fillStyle = 'rgba(225,240,250,0.85)';
+                }
+              }
               c.restore();
               // Painted hive number/name plaque (top-left of hive body)
               c.save();
@@ -6966,6 +7880,82 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var pcX = hiveX + hiveW * 0.2 + ((pc + crumbSeed) % 5) * hiveW * 0.12;
                 var pcY = hiveY + hiveH + 3.5 + ((pc * 7) % 2) * 0.6;
                 c.beginPath(); c.arc(pcX, pcY, 0.8, 0, 6.28); c.fill();
+              }
+
+              // ── Bee beard — workers clustering OUTSIDE the entrance ──
+              // Real-world phenomenon: when the hive is overcrowded, too hot,
+              // or stressed, workers hang in a "beard" cluster from the
+              // bottom front of the box. Visible signal that the colony is
+              // population-bound. Beard size scales with workers + summer
+              // heat + acute stress (high varroa or low morale).
+              // Triangular cluster descending from the entrance, gentle sway.
+              (function() {
+                var beardBase = 0;
+                if (workers >= 18000) beardBase += Math.min(20, Math.floor((workers - 18000) / 700));
+                if (season === 1) beardBase += 5; // peak heat
+                if (varroaLevel >= 30 || morale < 30) beardBase += 4; // stress
+                if (season === 3) beardBase = 0; // never bearded in winter (clustering INSIDE)
+                if (beardBase < 3) return;
+                var beardCount = Math.min(30, beardBase);
+                var beardCx = hiveX + hiveW / 2;
+                var beardTopY = hiveY + hiveH + 1;
+                // Soft shadow blob behind the cluster so it doesn't look like floating dots
+                c.save();
+                c.fillStyle = 'rgba(120,80,30,0.20)';
+                c.beginPath(); c.ellipse(beardCx, beardTopY + 6, hiveW * 0.36, 8, 0, 0, 6.28); c.fill();
+                c.restore();
+                // Compute a slow horizontal sway for the whole cluster
+                var beardSway = Math.sin(t2 * 0.025) * 1.2;
+                for (var bb = 0; bb < beardCount; bb++) {
+                  // Layout: triangular packing — wider at top, narrower bottom
+                  var rowF = bb / Math.max(1, beardCount - 1); // 0..1 depth into cluster
+                  var rowWidth = (1 - rowF * 0.7) * hiveW * 0.32;
+                  var bbOff = (Math.cos(bb * 1.62) * 0.5 + 0.5) * 2 - 1; // -1..1 pseudo-rand
+                  var bbX = beardCx + bbOff * rowWidth + beardSway * (1 + rowF * 0.5);
+                  var bbY = beardTopY + rowF * 11 + Math.sin(t2 * 0.04 + bb * 0.7) * 0.3;
+                  // Body — small amber oval, dimmer as it descends (legs hanging from above)
+                  var bbA = 0.85 - rowF * 0.25;
+                  c.fillStyle = 'rgba(251,191,36,' + bbA.toFixed(3) + ')';
+                  c.beginPath(); c.ellipse(bbX, bbY, 1.8, 1.3, 0, 0, 6.28); c.fill();
+                  // Single dark stripe
+                  c.fillStyle = 'rgba(41,37,36,' + (bbA * 0.85).toFixed(3) + ')';
+                  c.fillRect(bbX - 0.2, bbY - 1.0, 0.4, 2.0);
+                  // Tiny wing glints on the upper bees only
+                  if (rowF < 0.3 && bb % 2 === 0) {
+                    c.fillStyle = 'rgba(207,232,255,0.35)';
+                    c.beginPath(); c.ellipse(bbX + 0.6, bbY - 0.6, 0.9, 0.45, 0.3, 0, 6.28); c.fill();
+                  }
+                }
+              })();
+
+              // ── Winter hive breath (condensation rising from entrance) ──
+              // Real-world phenomenon: in winter the cluster maintains brood at
+              // ~95°F by shivering flight muscles, and the moist warm air leaves
+              // the entrance as visible condensation against the cold morning
+              // air. Beekeepers use this as a quick "the hive is alive" check
+              // on a freezing day. Strongest at dawn (cold/warm contrast peak),
+              // softer through the rest of winter day.
+              if (season === 3) {
+                var _wbBreathBase = hiveX + hiveW / 2;
+                var _wbBreathTop  = hiveY + hiveH - 4;
+                // Stronger at dawn — _sunCycle wraps at 2/0 = sunrise
+                var _wbDawnX = Math.max(0, 1 - Math.min(_sunCycle, 2 - _sunCycle) / 0.3);
+                var _wbBaseStrength = 0.25 + _wbDawnX * 0.55;
+                c.save();
+                for (var wbr = 0; wbr < 5; wbr++) {
+                  var _wbPhase = ((t2 * 0.15 + wbr * 25) % 100) / 100; // 0..1 rise cycle
+                  var _wbRiseY = _wbBreathTop - _wbPhase * 28;
+                  var _wbDrift = Math.sin(t2 * 0.02 + wbr * 1.3) * 4;
+                  var _wbR = 3 + _wbPhase * 6;
+                  // Fade in at low _wbPhase, fade out at high
+                  var _wbAlpha = _wbBaseStrength * Math.sin(_wbPhase * Math.PI) * 0.55;
+                  if (_wbAlpha < 0.02) continue;
+                  c.fillStyle = 'rgba(240,248,255,' + _wbAlpha.toFixed(3) + ')';
+                  c.beginPath();
+                  c.ellipse(_wbBreathBase + _wbDrift, _wbRiseY, _wbR, _wbR * 0.75, 0, 0, 6.28);
+                  c.fill();
+                }
+                c.restore();
               }
 
               // ── Guard bees on the landing board (static sentries, face the entrance) ──
@@ -7121,6 +8111,118 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.globalAlpha = 1;
               }
 
+              // ── Action ripple feedback on the hive ──
+              // When the beekeeper performs an action (during the "perform"
+              // phase of bkAnim, 25-75% of the 5s window), the hive itself
+              // shows a matching visual effect so the action -> outcome
+              // connection is visceral, not just a toast message.
+              (function() {
+                var ba = ls.bkAnim;
+                if (!ba || !ba.startedAt) return;
+                var elapsed = Date.now() - ba.startedAt;
+                var dur = ba.duration || 5000;
+                if (elapsed > dur) return;
+                var tPhase = elapsed / dur;
+                if (tPhase < 0.20 || tPhase > 0.80) return; // perform window only
+                var perfT = (tPhase - 0.20) / 0.60; // 0..1 across the perform phase
+                var pulse = Math.sin(perfT * Math.PI); // 0..1..0 envelope
+                var hcx = hiveX + hiveW / 2;
+                var hcy = hiveY + hiveH / 2;
+                c.save();
+                if (ba.type === 'treat') {
+                  // Red pulsing ring — varroa treatment killing mites
+                  c.strokeStyle = 'rgba(248,113,113,' + (0.65 * pulse).toFixed(3) + ')';
+                  c.lineWidth = 3;
+                  var trR = hiveW * (0.6 + pulse * 0.4);
+                  c.beginPath(); c.ellipse(hcx, hcy, trR, trR * 0.85, 0, 0, 6.28); c.stroke();
+                  // Small "X" cross-hatches around the hive to represent dying mites
+                  c.fillStyle = 'rgba(220,38,38,' + (0.5 * pulse).toFixed(3) + ')';
+                  for (var tx = 0; tx < 6; tx++) {
+                    var txAng = (tx / 6) * 6.28 + t2 * 0.02;
+                    var txX = hcx + Math.cos(txAng) * trR * 0.7;
+                    var txY = hcy + Math.sin(txAng) * trR * 0.7;
+                    c.beginPath(); c.arc(txX, txY, 1.5, 0, 6.28); c.fill();
+                  }
+                } else if (ba.type === 'super') {
+                  // Blue glow rising from the hive — adding space for honey
+                  c.fillStyle = 'rgba(96,165,250,' + (0.4 * pulse).toFixed(3) + ')';
+                  for (var sp = 0; sp < 4; sp++) {
+                    var spT = ((perfT * 4 + sp * 0.25) % 1);
+                    var spX = hcx + Math.sin(sp + perfT * 2) * 6;
+                    var spY = hiveY - spT * 30;
+                    var spR = (1 - spT) * 4;
+                    c.beginPath(); c.arc(spX, spY, spR, 0, 6.28); c.fill();
+                  }
+                  // A "+" floats up
+                  c.font = 'bold 16px system-ui';
+                  c.fillStyle = 'rgba(96,165,250,' + (pulse * 0.9).toFixed(3) + ')';
+                  c.textAlign = 'center';
+                  c.fillText('+', hcx, hiveY - 8 - perfT * 14);
+                } else if (ba.type === 'harvest') {
+                  // Golden particle burst — honey flying out
+                  c.fillStyle = 'rgba(251,191,36,' + (0.8 * pulse).toFixed(3) + ')';
+                  for (var hr = 0; hr < 14; hr++) {
+                    var hrAng = (hr / 14) * 6.28;
+                    var hrDist = perfT * hiveW * 0.9;
+                    var hrX = hcx + Math.cos(hrAng) * hrDist;
+                    var hrY = hcy + Math.sin(hrAng) * hrDist;
+                    var hrR = (1 - perfT) * 2.5;
+                    c.beginPath(); c.arc(hrX, hrY, hrR, 0, 6.28); c.fill();
+                  }
+                  // Bright center flash
+                  var hbGrad = c.createRadialGradient(hcx, hcy, 0, hcx, hcy, hiveW * 0.5);
+                  hbGrad.addColorStop(0, 'rgba(254,243,199,' + (0.65 * pulse).toFixed(3) + ')');
+                  hbGrad.addColorStop(1, 'rgba(254,243,199,0)');
+                  c.fillStyle = hbGrad;
+                  c.beginPath(); c.arc(hcx, hcy, hiveW * 0.5, 0, 6.28); c.fill();
+                } else if (ba.type === 'feed') {
+                  // Amber liquid stream flowing into the entrance
+                  c.strokeStyle = 'rgba(217,119,6,' + (0.7 * pulse).toFixed(3) + ')';
+                  c.lineWidth = 3;
+                  c.beginPath();
+                  c.moveTo(hcx - 14, hiveY - 12);
+                  c.quadraticCurveTo(hcx - 4, hiveY + 6, hcx, hiveY + hiveH - 6);
+                  c.stroke();
+                  // Droplet at the tip
+                  c.fillStyle = 'rgba(251,191,36,' + (0.8 * pulse).toFixed(3) + ')';
+                  c.beginPath(); c.arc(hcx, hiveY + hiveH - 6 + Math.sin(t2 * 0.3) * 1.5, 2.2, 0, 6.28); c.fill();
+                } else if (ba.type === 'requeen') {
+                  // Purple swirl above the hive — new queen pheromone establishing
+                  c.strokeStyle = 'rgba(168,85,247,' + (0.55 * pulse).toFixed(3) + ')';
+                  c.lineWidth = 2;
+                  c.beginPath();
+                  for (var rq = 0; rq < 60; rq++) {
+                    var rqT = rq / 60;
+                    var rqAng = rqT * 8 + t2 * 0.08;
+                    var rqR = rqT * 12 + pulse * 4;
+                    var rqx = hcx + Math.cos(rqAng) * rqR;
+                    var rqy = hiveY - 6 - rqT * 18 + Math.sin(rqAng) * rqR * 0.4;
+                    if (rq === 0) c.moveTo(rqx, rqy); else c.lineTo(rqx, rqy);
+                  }
+                  c.stroke();
+                  // Crown emoji centered above
+                  c.font = (16 + pulse * 4).toFixed(0) + 'px system-ui';
+                  c.fillStyle = 'rgba(216,180,254,' + (0.95 * pulse).toFixed(3) + ')';
+                  c.textAlign = 'center';
+                  c.fillText('👑', hcx, hiveY - 22);
+                } else if (ba.type === 'inspect') {
+                  // Magnifying-glass shimmer over the hive
+                  c.strokeStyle = 'rgba(165,180,252,' + (0.6 * pulse).toFixed(3) + ')';
+                  c.lineWidth = 2.5;
+                  var inR = 16 + pulse * 6;
+                  c.beginPath(); c.arc(hcx, hcy - 6, inR, 0, 6.28); c.stroke();
+                  // Highlight glints inside the hive
+                  c.fillStyle = 'rgba(255,255,255,' + (0.4 * pulse).toFixed(3) + ')';
+                  for (var ig = 0; ig < 4; ig++) {
+                    var igAng = ig * 1.57 + t2 * 0.03;
+                    var igX = hcx + Math.cos(igAng) * 8;
+                    var igY = hcy - 6 + Math.sin(igAng) * 8;
+                    c.beginPath(); c.arc(igX, igY, 1, 0, 6.28); c.fill();
+                  }
+                }
+                c.restore();
+              })();
+
               // ── Bee shadows on ground (render BEFORE bees for proper layering) ──
               c.fillStyle = 'rgba(0,0,0,0.18)';
               bees.forEach(function(b) {
@@ -7150,17 +8252,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 if (_sp > _cap) { b.vx *= _cap / _sp; b.vy *= _cap / _sp; }
                 b.x += b.vx; b.y += b.vy;
                 if (Math.abs(b.x - tX) < 12 && Math.abs(b.y - tY) < 12) {
+                  // Set a brief landing-flash pulse when the bee reaches a
+                  // target — strong burst when reaching a flower (pollination
+                  // event), softer ping when reaching the hive (delivery).
+                  if (b.toFlower) {
+                    b.landFlash = 1.0;        // landed on flower — full sparkle
+                    b.landFlashType = 'flower';
+                  } else {
+                    b.landFlash = 0.6;        // returned to hive — gentler glow
+                    b.landFlashType = 'hive';
+                  }
+                  b.landFlashX = b.x; b.landFlashY = b.y;
                   b.toFlower = !b.toFlower;
                   b.carry = !b.toFlower;
+                }
+                // Decay landing flash each frame
+                if (b.landFlash) {
+                  b.landFlash -= 0.045;
+                  if (b.landFlash <= 0) { b.landFlash = 0; }
+                }
+                // ── Pollination flash — soft pulsing halo at the landing spot ──
+                // Fires for ~0.8s after a bee reaches its target. Flower
+                // landings get a full golden sparkle + 4 radial petals
+                // (pollination event); hive arrivals get a softer amber ping
+                // (delivery). Anchored to the LANDING coords, not the bee's
+                // current position, so the pulse stays put as the bee resumes.
+                if (b.landFlash > 0) {
+                  var lfX = b.landFlashX || b.x;
+                  var lfY = b.landFlashY || b.y;
+                  var lfStrength = b.landFlash;
+                  c.save();
+                  if (b.landFlashType === 'flower') {
+                    // Golden halo
+                    var lfGlow = c.createRadialGradient(lfX, lfY, 0, lfX, lfY, 14);
+                    lfGlow.addColorStop(0, 'rgba(254,243,199,' + (0.65 * lfStrength).toFixed(3) + ')');
+                    lfGlow.addColorStop(0.4, 'rgba(251,191,36,' + (0.40 * lfStrength).toFixed(3) + ')');
+                    lfGlow.addColorStop(1, 'rgba(251,191,36,0)');
+                    c.fillStyle = lfGlow;
+                    c.beginPath(); c.arc(lfX, lfY, 14, 0, 6.28); c.fill();
+                    // 4 radial petal sparks shooting outward
+                    c.fillStyle = 'rgba(252,211,77,' + (0.85 * lfStrength).toFixed(3) + ')';
+                    var lfReach = (1 - lfStrength) * 9 + 2; // expand outward as flash decays
+                    for (var ps = 0; ps < 4; ps++) {
+                      var psA = ps * 1.57 + Math.PI / 4;
+                      var psX = lfX + Math.cos(psA) * lfReach;
+                      var psY = lfY + Math.sin(psA) * lfReach;
+                      c.beginPath(); c.arc(psX, psY, 1.2 * lfStrength, 0, 6.28); c.fill();
+                    }
+                  } else {
+                    // Hive delivery — amber gentle ping
+                    c.strokeStyle = 'rgba(251,191,36,' + (0.50 * lfStrength).toFixed(3) + ')';
+                    c.lineWidth = 1.4;
+                    var lfR = (1 - lfStrength) * 10 + 2;
+                    c.beginPath(); c.arc(lfX, lfY, lfR, 0, 6.28); c.stroke();
+                  }
+                  c.restore();
                 }
                 b.wp += 0.45;
                 var angle = Math.atan2(b.vy, b.vx);
 
-                // Flight trail (fading dots behind bee)
+                // Flight trail (fading dots behind bee) — DIFFERENTIATED by
+                // forager state. Bees CARRYING pollen back to the hive leave
+                // a brighter orange-gold trail (the "loaded return flight");
+                // bees heading OUT toward the meadow leave a fainter pale
+                // yellow trail. Students can now read the foraging cycle by
+                // tracing the colored trails.
                 if (Math.hypot(b.vx, b.vy) > 0.4) {
-                  c.fillStyle = 'rgba(251,191,36,0.12)';
-                  c.beginPath(); c.arc(b.x - b.vx * 3, b.y - b.vy * 3, 1.2, 0, 6.28); c.fill();
-                  c.beginPath(); c.arc(b.x - b.vx * 6, b.y - b.vy * 6, 0.8, 0, 6.28); c.fill();
+                  if (b.carry) {
+                    // Returning forager — bright pollen-orange, 3 dots
+                    c.fillStyle = 'rgba(251,146,60,0.32)';
+                    c.beginPath(); c.arc(b.x - b.vx * 2.5, b.y - b.vy * 2.5, 1.5, 0, 6.28); c.fill();
+                    c.fillStyle = 'rgba(251,146,60,0.22)';
+                    c.beginPath(); c.arc(b.x - b.vx * 5, b.y - b.vy * 5, 1.1, 0, 6.28); c.fill();
+                    c.fillStyle = 'rgba(251,146,60,0.12)';
+                    c.beginPath(); c.arc(b.x - b.vx * 8, b.y - b.vy * 8, 0.7, 0, 6.28); c.fill();
+                  } else {
+                    // Outbound — faint pale yellow, 2 dots
+                    c.fillStyle = 'rgba(254,243,199,0.18)';
+                    c.beginPath(); c.arc(b.x - b.vx * 3, b.y - b.vy * 3, 1.2, 0, 6.28); c.fill();
+                    c.fillStyle = 'rgba(254,243,199,0.10)';
+                    c.beginPath(); c.arc(b.x - b.vx * 6, b.y - b.vy * 6, 0.8, 0, 6.28); c.fill();
+                  }
                 }
 
                 // Body glow
@@ -7242,17 +8414,286 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               vig.addColorStop(1, 'rgba(0,0,0,0.15)');
               c.fillStyle = vig; c.fillRect(0, 0, W, H);
 
+              // ── Time-of-day darkening (after vignette, before HUD) ──
+              // Subtle navy overlay that ramps in/out across dusk → night →
+              // dawn so the scene actually FEELS like a 24-hour cycle. Drawn
+              // before the HUD so the HUD stays readable at night.
+              //
+              // Phases follow the same _sunCycle 0..2 that drives the sun arc:
+              //   clockT 0.0-0.9  → full day      (no dim)
+              //   clockT 0.9-1.1  → dusk          (warm orange tint, ramps up)
+              //   clockT 1.1-1.9  → night         (deep blue overlay, peaks at 1.5 = midnight)
+              //   clockT 1.9-2.0  → dawn          (warm orange tint, ramps down)
+              var _tdT = (((t2 * 0.0004) % 2) + 2) % 2;
+              if (_tdT > 0.9 && _tdT < 2.0) {
+                if (_tdT < 1.1) {
+                  // Dusk — orange/pink tint, alpha ramps 0 → 0.20
+                  var duskA = ((_tdT - 0.9) / 0.2) * 0.20;
+                  c.fillStyle = 'rgba(196,93,69,' + duskA.toFixed(3) + ')'; // warm sunset
+                  c.fillRect(0, 0, W, H);
+                } else if (_tdT < 1.9) {
+                  // Night — deep navy. Bell curve peaks at clockT=1.5.
+                  var nightBell = 1 - Math.abs(_tdT - 1.5) / 0.4; // 0..1
+                  var nightA = nightBell * 0.32;
+                  c.fillStyle = 'rgba(10,20,46,' + nightA.toFixed(3) + ')'; // deep navy
+                  c.fillRect(0, 0, W, H);
+                } else {
+                  // Dawn — orange/pink, alpha ramps 0.20 → 0
+                  var dawnA = (1 - (_tdT - 1.9) / 0.1) * 0.20;
+                  c.fillStyle = 'rgba(232,140,90,' + dawnA.toFixed(3) + ')'; // soft dawn
+                  c.fillRect(0, 0, W, H);
+                }
+              }
+
+              // ── Starfield + honey-dipper constellation + occasional shooting star ──
+              // Drawn AFTER the navy time-of-day overlay so stars punch through.
+              // Visibility ramps in at dusk and out at dawn, just like the moon.
+              // Twinkling uses per-star phase so the field shimmers naturally.
+              // The "honey dipper" is a 5-star pattern (loose Big Dipper analog)
+              // that anchors the eye and gives a memorable shape kids can find
+              // night after night.
+              if (_tdT >= 0.95 && _tdT <= 2.05) {
+                var _stVis = 1;
+                if (_tdT < 1.05)      _stVis = (_tdT - 0.95) / 0.10;
+                else if (_tdT > 1.95) _stVis = 1 - (_tdT - 1.95) / 0.10;
+                _stVis = Math.max(0, Math.min(1, _stVis));
+                c.save();
+                // Background star field — 60 deterministic positions, varied brightness
+                for (var sf = 0; sf < 60; sf++) {
+                  var _stX = ((sf * 137) % W) + (sf * 7 % 5);
+                  var _stY = (Math.floor(sf / 8) * 11) + (sf * 13 % 9) + 6;
+                  if (_stY > H * 0.55) continue; // stay above horizon haze
+                  var _stTwinkle = 0.55 + Math.sin(t2 * 0.04 + sf * 1.3) * 0.45;
+                  var _stMag = sf % 7 === 0 ? 0.95 : sf % 3 === 0 ? 0.75 : 0.55;
+                  var _stA = _stMag * _stTwinkle * _stVis;
+                  if (_stA < 0.04) continue;
+                  c.fillStyle = 'rgba(245,245,220,' + _stA.toFixed(3) + ')';
+                  c.beginPath();
+                  c.arc(_stX, _stY, sf % 11 === 0 ? 1.2 : 0.7, 0, 6.28);
+                  c.fill();
+                  // 4-point cross-glint on the brightest few
+                  if (sf % 11 === 0 && _stA > 0.5) {
+                    c.strokeStyle = 'rgba(255,255,235,' + (_stA * 0.6).toFixed(3) + ')';
+                    c.lineWidth = 0.45;
+                    c.beginPath();
+                    c.moveTo(_stX - 2.4, _stY); c.lineTo(_stX + 2.4, _stY);
+                    c.moveTo(_stX, _stY - 2.4); c.lineTo(_stX, _stY + 2.4);
+                    c.stroke();
+                  }
+                }
+                // Honey-dipper constellation — 5 anchor stars + connecting lines.
+                // Looks like a hex-cell wand with a handle tilting down-right.
+                var _hdCx = W * 0.78, _hdCy = H * 0.12;
+                var _hdStars = [
+                  { x: _hdCx - 8,  y: _hdCy - 6, r: 1.6 },
+                  { x: _hdCx + 2,  y: _hdCy - 8, r: 1.4 },
+                  { x: _hdCx + 8,  y: _hdCy - 2, r: 1.7 },
+                  { x: _hdCx + 4,  y: _hdCy + 5, r: 1.3 },
+                  { x: _hdCx + 14, y: _hdCy + 10, r: 1.5 }
+                ];
+                c.strokeStyle = 'rgba(255,245,200,' + (0.25 * _stVis).toFixed(3) + ')';
+                c.lineWidth = 0.55;
+                c.beginPath();
+                for (var hd = 0; hd < _hdStars.length; hd++) {
+                  var hs = _hdStars[hd];
+                  hd === 0 ? c.moveTo(hs.x, hs.y) : c.lineTo(hs.x, hs.y);
+                }
+                c.stroke();
+                for (var hd2 = 0; hd2 < _hdStars.length; hd2++) {
+                  var hs2 = _hdStars[hd2];
+                  var _hdTw = 0.7 + Math.sin(t2 * 0.05 + hd2 * 1.7) * 0.3;
+                  c.fillStyle = 'rgba(255,250,210,' + (0.92 * _hdTw * _stVis).toFixed(3) + ')';
+                  c.beginPath(); c.arc(hs2.x, hs2.y, hs2.r, 0, 6.28); c.fill();
+                  // Tiny halo
+                  var _hdH = c.createRadialGradient(hs2.x, hs2.y, 0.5, hs2.x, hs2.y, hs2.r * 2.8);
+                  _hdH.addColorStop(0, 'rgba(255,245,200,' + (0.45 * _hdTw * _stVis).toFixed(3) + ')');
+                  _hdH.addColorStop(1, 'rgba(255,245,200,0)');
+                  c.fillStyle = _hdH;
+                  c.beginPath(); c.arc(hs2.x, hs2.y, hs2.r * 2.8, 0, 6.28); c.fill();
+                }
+                // Occasional shooting star — appears for ~1.2s once every ~25s of
+                // night time. Trajectory is a steep diagonal across the upper sky.
+                var _ssPeriod = 25000; // ms
+                var _ssEpoch = (Date.now() % _ssPeriod) / _ssPeriod; // 0..1
+                if (_ssEpoch < 0.05 && _tdT > 1.15 && _tdT < 1.85) {
+                  var _ssT = _ssEpoch / 0.05; // 0..1 within the 5% slice
+                  var _ssX0 = W * 0.10, _ssY0 = 12;
+                  var _ssX = _ssX0 + _ssT * (W * 0.55);
+                  var _ssY = _ssY0 + _ssT * (H * 0.20);
+                  var _ssTailLen = 32;
+                  var _ssA = Math.sin(_ssT * Math.PI) * _stVis; // fade in + out
+                  // Trail (gradient)
+                  var _ssG = c.createLinearGradient(_ssX, _ssY, _ssX - _ssTailLen, _ssY - _ssTailLen * 0.4);
+                  _ssG.addColorStop(0, 'rgba(255,250,220,' + (0.95 * _ssA).toFixed(3) + ')');
+                  _ssG.addColorStop(1, 'rgba(255,250,220,0)');
+                  c.strokeStyle = _ssG; c.lineWidth = 1.4;
+                  c.beginPath();
+                  c.moveTo(_ssX, _ssY);
+                  c.lineTo(_ssX - _ssTailLen, _ssY - _ssTailLen * 0.4);
+                  c.stroke();
+                  // Bright head
+                  c.fillStyle = 'rgba(255,255,255,' + (0.95 * _ssA).toFixed(3) + ')';
+                  c.beginPath(); c.arc(_ssX, _ssY, 1.6, 0, 6.28); c.fill();
+                }
+                c.restore();
+              }
+
+              // ── Moon (visible during the night phase) ──
+              // Rises in the east as the sun sets, peaks center-high at
+              // midnight, sets in the west as dawn approaches. Drawn AFTER
+              // the navy time-of-day overlay so it punches through. Subtle
+              // crater detail + a soft halo + slowly-cycling phase tied to
+              // day-of-month (so the moon waxes and wanes across the 30-day
+              // season — a sim "lunar month" that lines up tidily).
+              if (_tdT >= 0.95 && _tdT <= 2.05) {
+                var moonT = Math.max(0, Math.min(1, (_tdT - 1.0)));
+                var moonX = W * (0.12 + moonT * 0.76);
+                var moonY = H * 0.22 - Math.sin(moonT * Math.PI) * (H * 0.15);
+                var moonR = 14;
+                // Visibility ramps in at clockT 0.95-1.05 (dusk) and out at 1.95-2.05 (dawn)
+                var moonVis = 1;
+                if (_tdT < 1.05)      moonVis = (_tdT - 0.95) / 0.10;
+                else if (_tdT > 1.95) moonVis = 1 - (_tdT - 1.95) / 0.10;
+                moonVis = Math.max(0, Math.min(1, moonVis));
+                c.save();
+                // Soft halo
+                var moonGlow = c.createRadialGradient(moonX, moonY, moonR * 0.6, moonX, moonY, moonR * 2.5);
+                moonGlow.addColorStop(0, 'rgba(255,250,235,' + (0.45 * moonVis).toFixed(3) + ')');
+                moonGlow.addColorStop(1, 'rgba(255,250,235,0)');
+                c.fillStyle = moonGlow;
+                c.beginPath(); c.arc(moonX, moonY, moonR * 2.5, 0, 6.28); c.fill();
+                // Disc — pale cream-white with slight cool tint
+                c.globalAlpha = moonVis;
+                c.fillStyle = '#f5f0d8';
+                c.beginPath(); c.arc(moonX, moonY, moonR, 0, 6.28); c.fill();
+                // Phase shading — a subtle dark crescent overlaid based on
+                // day-of-month progress (cycles full → new → full across 30 sim days).
+                var phaseT = ((day % 30) / 30); // 0..1
+                // -1..1 where 0 = full, ±1 = new
+                var phaseLerp = Math.cos(phaseT * 2 * Math.PI); // full at start/end, new mid-month
+                if (Math.abs(phaseLerp) < 0.92) {
+                  c.fillStyle = 'rgba(30,41,59,' + (0.45 * Math.abs(phaseLerp)).toFixed(3) + ')';
+                  c.beginPath();
+                  c.arc(moonX + phaseLerp * moonR * 0.55, moonY, moonR * 0.95, 0, 6.28);
+                  c.fill();
+                }
+                // Three subtle craters (always on illuminated side)
+                c.fillStyle = 'rgba(184,170,140,0.35)';
+                c.beginPath(); c.arc(moonX - 3, moonY - 4, 1.8, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(moonX + 4, moonY + 2, 2.2, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(moonX - 1, moonY + 4, 1.3, 0, 6.28); c.fill();
+                c.restore();
+              }
+
+              // ── Night lights: warm glow from the hive entrance + apiary sign ──
+              // Painted AFTER the time-of-day dim, so the lights actually cut
+              // through the darkness instead of getting dimmed away. The hive
+              // shows that the colony is still metabolically active at night
+              // (workers vibrating flight muscles to keep brood at 95°F),
+              // and the apiary sign gets a small spotlight so the world
+              // still reads as inhabited.
+              if (_tdT >= 1.05 && _tdT <= 1.95) {
+                var nightFactor = _tdT > 1.5 ? (1 - (_tdT - 1.5) / 0.45) : ((_tdT - 1.05) / 0.45);
+                nightFactor = Math.max(0, Math.min(1, nightFactor));
+                // Hive entrance glow — warm orange, intensity scales with brood
+                if (brood > 100) {
+                  var hgX = hiveX + hiveW / 2;
+                  var hgY = hiveY + hiveH - 8;
+                  var hgStrength = Math.min(1, brood / 4000) * nightFactor;
+                  var hgGlow = c.createRadialGradient(hgX, hgY, 1, hgX, hgY, 28);
+                  hgGlow.addColorStop(0,   'rgba(254,215,170,' + (0.85 * hgStrength).toFixed(3) + ')'); // bright warm core
+                  hgGlow.addColorStop(0.3, 'rgba(251,146,60,'  + (0.45 * hgStrength).toFixed(3) + ')'); // orange mid
+                  hgGlow.addColorStop(1,   'rgba(251,146,60,0)');
+                  c.fillStyle = hgGlow;
+                  c.beginPath(); c.ellipse(hgX, hgY, 28, 16, 0, 0, 6.28); c.fill();
+                  // Tiny bright dot at the actual entrance opening
+                  c.fillStyle = 'rgba(255,237,213,' + (0.95 * hgStrength).toFixed(3) + ')';
+                  c.beginPath(); c.arc(hgX, hgY, 1.6 + 0.6 * Math.sin(t2 * 0.12), 0, 6.28); c.fill();
+                }
+                // Apiary sign spotlight — soft amber pool around the sign post (right of hive)
+                var signX = hiveX + hiveW + 35;
+                var signY = H * 0.76;
+                var sgStrength = nightFactor * 0.7;
+                var sgGlow = c.createRadialGradient(signX, signY, 2, signX, signY, 38);
+                sgGlow.addColorStop(0,   'rgba(254,243,199,' + (0.45 * sgStrength).toFixed(3) + ')');
+                sgGlow.addColorStop(0.6, 'rgba(254,215,170,' + (0.18 * sgStrength).toFixed(3) + ')');
+                sgGlow.addColorStop(1,   'rgba(254,215,170,0)');
+                c.fillStyle = sgGlow;
+                c.beginPath(); c.ellipse(signX, signY, 38, 22, 0, 0, 6.28); c.fill();
+              }
+
+              // ── Fireflies dance over the meadow (dusk/night, spring + summer) ──
+              // Tiny pulsing glows wandering above the grass. Each one has its
+              // own pulse phase so the field never blinks in unison. Cold-night
+              // winter and fall are too cold for them in real life — gated to
+              // spring + summer. Brighter at full dark (around _tdT=1.5).
+              if ((season === 0 || season === 1) && _tdT > 1.0 && _tdT < 2.0) {
+                var _ffVis = _tdT < 1.5 ? (_tdT - 1.0) / 0.5 : Math.min(1, (2.0 - _tdT) / 0.5);
+                _ffVis = Math.max(0, Math.min(1, _ffVis));
+                var _ffCount = season === 1 ? 14 : 9;
+                c.save();
+                for (var ff = 0; ff < _ffCount; ff++) {
+                  var _ffX = ((ff * 47 + 19) % W) + Math.sin(t2 * 0.012 + ff * 0.9) * 22;
+                  var _ffY = H * 0.72 + ((ff * 7) % Math.floor(H * 0.22)) + Math.cos(t2 * 0.009 + ff * 1.7) * 14;
+                  var _ffPulseRaw = Math.sin(t2 * 0.06 + ff * 1.4);
+                  var _ffPulse = _ffPulseRaw > 0 ? Math.pow(_ffPulseRaw, 1.4) : 0;
+                  var _ffA = _ffPulse * _ffVis;
+                  if (_ffA < 0.02) continue;
+                  var _ffG = c.createRadialGradient(_ffX, _ffY, 0.5, _ffX, _ffY, 7);
+                  _ffG.addColorStop(0,    'rgba(250,255,180,' + (0.75 * _ffA).toFixed(3) + ')');
+                  _ffG.addColorStop(0.45, 'rgba(220,255,150,' + (0.30 * _ffA).toFixed(3) + ')');
+                  _ffG.addColorStop(1,    'rgba(220,255,150,0)');
+                  c.fillStyle = _ffG;
+                  c.beginPath(); c.arc(_ffX, _ffY, 7, 0, 6.28); c.fill();
+                  c.fillStyle = 'rgba(255,255,210,' + (0.95 * _ffA).toFixed(3) + ')';
+                  c.beginPath(); c.arc(_ffX, _ffY, 0.9, 0, 6.28); c.fill();
+                }
+                c.restore();
+              }
+
               // ── HUD overlay (glass morphism style) ──
+              // Bigger panel: season + day + time-of-day clock, year +
+              // workers, and 3 zone-colored stat chips at the bottom.
+              // Border tints red when ANY stat is in danger so a glance
+              // reads colony state instantly.
+              var hudW = 174, hudH = 66, hudX = W - hudW - 6, hudY = 4;
+              var _clockT = (((t2 * 0.0004) % 2) + 2) % 2;
+              var _clockHr = (6 + _clockT * 12) % 24;
+              var _clockH = Math.floor(_clockHr);
+              var _clockM = Math.floor((_clockHr - _clockH) * 60);
+              var _clockIcon = (_clockH < 6 || _clockH >= 19) ? '\uD83C\uDF19' : (_clockH < 9 ? '\uD83C\uDF05' : (_clockH < 17 ? '\u2600\uFE0F' : '\uD83C\uDF07'));
+              var _clockStr = _clockH + ':' + (_clockM < 10 ? '0' + _clockM : _clockM);
+              var hudDanger = (varroaLevel >= 25) || (morale < 30) || (queenHealth < 40) || (season === 3 && honey < 20);
               c.save();
-              c.fillStyle = 'rgba(15,23,42,0.6)';
-              c.beginPath(); c.roundRect(W - 138, 4, 132, 56, 10); c.fill();
-              c.strokeStyle = 'rgba(255,255,255,0.08)'; c.lineWidth = 1;
-              c.beginPath(); c.roundRect(W - 138, 4, 132, 56, 10); c.stroke();
-              c.font = 'bold 10px system-ui'; c.fillStyle = '#fbbf24'; c.textAlign = 'right';
-              c.fillText(seasonNames[season] + ' \u2022 Day ' + day, W - 12, 20);
-              c.font = '8px system-ui'; c.fillStyle = '#e2e8f0';
-              c.fillText('Year ' + year + ' \u2022 \uD83D\uDC1D ' + Math.round(safeWorkers).toLocaleString(), W - 12, 33);
-              c.fillText('\uD83C\uDF6F ' + Math.round(safeHoney) + ' lbs \u2022 \u2764\uFE0F ' + (morale || 0) + '% \u2022 \uD83E\uDDA0 ' + (varroaLevel || 0) + '%', W - 12, 46);
+              c.fillStyle = 'rgba(15,23,42,0.72)';
+              c.beginPath(); c.roundRect(hudX, hudY, hudW, hudH, 10); c.fill();
+              c.strokeStyle = hudDanger ? 'rgba(248,113,113,0.6)' : 'rgba(255,255,255,0.13)';
+              c.lineWidth = hudDanger ? 1.6 : 1;
+              c.beginPath(); c.roundRect(hudX, hudY, hudW, hudH, 10); c.stroke();
+              c.font = 'bold 11px system-ui'; c.fillStyle = '#fbbf24'; c.textAlign = 'left';
+              c.fillText(seasonNames[season] + ' \u2022 Day ' + day, hudX + 8, hudY + 16);
+              c.textAlign = 'right';
+              c.font = '10px system-ui'; c.fillStyle = '#fef3c7';
+              c.fillText(_clockIcon + ' ' + _clockStr, hudX + hudW - 8, hudY + 16);
+              c.textAlign = 'left'; c.font = '9px system-ui'; c.fillStyle = '#e2e8f0';
+              c.fillText('Year ' + year + ' \u2022 \uD83D\uDC1D ' + Math.round(safeWorkers).toLocaleString() + ' workers', hudX + 8, hudY + 31);
+              var _chipY = hudY + hudH - 18;
+              function _drawHudChip(cx, label, val, suffix, zone) {
+                var txt = label + ' ' + val + suffix;
+                c.font = 'bold 9px system-ui';
+                var w = c.measureText(txt).width + 10;
+                var bg = zone === 'high' ? 'rgba(248,113,113,0.30)' : zone === 'warn' ? 'rgba(251,191,36,0.30)' : 'rgba(74,222,128,0.22)';
+                var fg = zone === 'high' ? '#fecaca' : zone === 'warn' ? '#fef3c7' : '#d1fae5';
+                c.fillStyle = bg;
+                c.beginPath(); c.roundRect(cx, _chipY, w, 14, 6); c.fill();
+                c.fillStyle = fg;
+                c.fillText(txt, cx + 5, _chipY + 10);
+                return cx + w + 4;
+              }
+              var chipX = hudX + 8;
+              chipX = _drawHudChip(chipX, '\uD83C\uDF6F', Math.round(safeHoney), 'lb', (season === 3 && safeHoney < 20) ? 'high' : (safeHoney < 15 ? 'warn' : 'ok'));
+              chipX = _drawHudChip(chipX, '\u2764\uFE0F', (morale || 0), '%', morale < 30 ? 'high' : (morale < 50 ? 'warn' : 'ok'));
+              chipX = _drawHudChip(chipX, '\uD83E\uDDA0', (varroaLevel || 0), '%', varroaLevel >= 25 ? 'high' : (varroaLevel >= 15 ? 'warn' : 'ok'));
               c.restore();
 
               // Garden bonus badge
@@ -7291,7 +8732,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         // ── Keyboard shortcuts (ref-based to read latest state) ──
         var _keyState = React.useRef({});
-        _keyState.current = { colonySurvived: colonySurvived, quizOpen: quizOpen, showInspect: showInspect, showBadges: showBadges, soundOn: soundOn, viewMode: viewMode };
+        _keyState.current = { colonySurvived: colonySurvived, quizOpen: quizOpen, showInspect: showInspect, showBadges: showBadges, soundOn: soundOn, viewMode: viewMode, autoAdvance: !!d.autoAdvance };
         React.useEffect(function() {
           function onKey(e) {
             // Don't capture when typing in inputs
@@ -7302,6 +8743,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (ks.quizOpen) return; // Don't capture shortcuts during quiz
             var key = e.key.toLowerCase();
             if (key === 'n') { e.preventDefault(); if (ks.colonySurvived) advanceDay(); }
+            else if (key === ' ') { e.preventDefault(); upd('autoAdvance', !ks.autoAdvance); }
             else if (key === 't') { e.preventDefault(); treatVarroa(); }
             else if (key === 's') { e.preventDefault(); addSuper(); }
             else if (key === 'h') { e.preventDefault(); harvestHoney(); }
@@ -7323,6 +8765,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           }
           document.addEventListener('keydown', onKey);
           return function() { document.removeEventListener('keydown', onKey); };
+        }, []);
+
+        // ── Auto-advance loop (▶ play / ⏸ pause time) ──
+        // Driven by d.autoAdvance (bool) + d.autoSpeed (1=slow/2s, 2=med/1s, 3=fast/0.4s).
+        // Uses a ref so the interval reads the latest survival/view/mode flags
+        // without retriggering the effect on every render. Auto-stops if the
+        // colony dies, the user leaves beekeeper view, or a modal opens — so it
+        // never quietly progresses past a teachable moment the student wanted
+        // to read.
+        var _autoRef = React.useRef({});
+        _autoRef.current = {
+          autoAdvance: !!d.autoAdvance,
+          autoSpeed: d.autoSpeed || 2,
+          colonySurvived: colonySurvived,
+          viewMode: viewMode,
+          showInspect: showInspect,
+          quizOpen: quizOpen,
+          showBadges: showBadges,
+          showTreatModal: !!d.showTreatModal,
+          activeEvent: !!activeEvent,
+          advanceDay: advanceDay,
+          stopAuto: function() { upd('autoAdvance', false); }
+        };
+        React.useEffect(function() {
+          // Tick interval is 250ms; per-day cadence is gated by lastAt + period.
+          var lastAt = 0;
+          var iv = setInterval(function() {
+            var s = _autoRef.current;
+            if (!s.autoAdvance) return;
+            // Pause conditions: dead colony, wrong view, modal open, event banner
+            if (!s.colonySurvived || s.viewMode !== 'beekeeper' ||
+                s.showInspect || s.quizOpen || s.showBadges ||
+                s.showTreatModal || s.activeEvent) return;
+            // Speed → ms-per-day: 1=slow (2.0s), 2=med (1.0s), 3=fast (0.4s)
+            var period = s.autoSpeed === 1 ? 2000 : s.autoSpeed === 3 ? 400 : 1000;
+            var now = Date.now();
+            if (now - lastAt < period) return;
+            lastAt = now;
+            s.advanceDay();
+          }, 200);
+          return function() { clearInterval(iv); };
         }, []);
 
         // ═══════════════════════════════════════════════════════════════
@@ -7572,11 +9055,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var cosP = Math.cos(ds.pitch), sinP = Math.sin(ds.pitch);
 
             // Project 3D to 2D (perspective)
+            // Pitch math: world rotates by -pitch relative to a camera that
+            // rotated by +pitch. The previous version used +pitch in both
+            // sin terms, which made ground objects (y=0) project ABOVE the
+            // horizon line when the bee was nose-up — flowers and trees
+            // appeared to float in the sky. Two sign flips below restore
+            // the standard pinhole-camera projection.
             function project(wx, wy, wz) {
               var rx = (wx - ds.x) * cosY + (wz - ds.z) * sinY;
               var rz = -(wx - ds.x) * sinY + (wz - ds.z) * cosY;
-              var ry2 = (wy - ds.y) * cosP - rz * sinP;
-              var rz2 = (wy - ds.y) * sinP + rz * cosP;
+              var ry2 = (wy - ds.y) * cosP + rz * sinP;
+              var rz2 = -(wy - ds.y) * sinP + rz * cosP;
               if (rz2 >= -1) return null; // behind camera
               var fov = 300;
               var sx = halfW + (rx / -rz2) * fov;
@@ -7625,7 +9114,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
             c.lineTo(W * 2, horizonY); c.closePath(); c.fill();
 
-            c.restore();
+            // NOTE: Roll rotation extends THROUGH all world objects below so
+            // clouds, flowers, trees, drones, birds, and queens tilt with the
+            // horizon when the camera rolls. Without this, world objects stayed
+            // upright in screen-space while the horizon tilted around them —
+            // the "floating in certain perspectives" bug.
 
             // Render clouds
             ds.clouds.forEach(function(cl) {
@@ -7716,7 +9209,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.arc(pCanopyCenter.x, pCanopyCenter.y, ob.h * 0.25 * pCanopyCenter.s, 0, 6.28); c.fill();
                 c.globalAlpha = 1;
               } else if (ob.type === 'building') {
-                c.fillStyle = '#6b7280';
+                c.fillStyle = '#94a3b8';
                 var bldW = 20 * pBase.s;
                 c.fillRect(pBase.x - bldW / 2, pTop.y, bldW, fullH);
                 c.fillStyle = '#4b5563';
@@ -7782,6 +9275,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.restore();
             });
 
+            // End of rolled world frame — hit flash + HUD must NOT be rotated.
+            c.restore();
+
             // ── Bird hit flash ──
             if (ds.hitFlash > 0) {
               c.fillStyle = 'rgba(239,68,68,' + (ds.hitFlash * 0.4) + ')';
@@ -7802,12 +9298,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // Compass ring
             c.strokeStyle = 'rgba(255,255,255,0.15)'; c.lineWidth = 1.5;
             c.beginPath(); c.arc(compX, compY, compR, 0, 6.28); c.stroke();
-            // Cardinal directions
-            c.font = 'bold 7px system-ui'; c.fillStyle = 'rgba(255,255,255,0.3)'; c.textAlign = 'center';
-            c.fillText('N', compX, compY - compR + 7);
-            c.fillText('S', compX, compY + compR - 2);
-            c.fillText('E', compX + compR - 4, compY + 3);
-            c.fillText('W', compX - compR + 4, compY + 3);
+            // Cardinal directions — bumped from 7px @ 30% opacity to 10px @
+            // 75% opacity. The original was a WCAG-AA contrast fail compound
+            // (tiny + transparent against a dark sky); compass orientation is
+            // genuinely useful for the drone-flight student so it should be
+            // legible at a glance.
+            c.font = 'bold 10px system-ui'; c.fillStyle = 'rgba(255,255,255,0.75)'; c.textAlign = 'center';
+            c.fillText('N', compX, compY - compR + 9);
+            c.fillText('S', compX, compY + compR - 1);
+            c.fillText('E', compX + compR - 4, compY + 4);
+            c.fillText('W', compX - compR + 4, compY + 4);
             // Drone direction (white triangle)
             c.fillStyle = 'rgba(255,255,255,0.5)';
             c.beginPath();
@@ -7966,7 +9466,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.moveTo(aiX, aiY - 3); c.lineTo(aiX, aiY + 3);
             c.stroke();
             // Gauge ring
-            c.strokeStyle = '#64748b'; c.lineWidth = 2;
+            c.strokeStyle = '#94a3b8'; c.lineWidth = 2;
             c.beginPath(); c.arc(aiX, aiY, aiR, 0, 6.28); c.stroke();
             // Label
             c.font = 'bold 7px system-ui'; c.textAlign = 'center'; c.fillStyle = '#94a3b8';
@@ -8009,7 +9509,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.save();
             c.fillStyle = 'rgba(15,23,42,0.75)';
             c.beginPath(); c.arc(asX, asY, asR + 2, 0, 6.28); c.fill();
-            c.strokeStyle = '#64748b'; c.lineWidth = 2;
+            c.strokeStyle = '#94a3b8'; c.lineWidth = 2;
             c.beginPath(); c.arc(asX, asY, asR, 0, 6.28); c.stroke();
             // Speed needle (0-10 speed maps to 3/4 arc)
             var asAng = -Math.PI * 0.75 + Math.min(1, ds.speed / 10) * Math.PI * 1.5;
@@ -8670,19 +10170,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('p', { className: 'text-xs ' + (dk ? 'text-slate-200' : 'text-slate-600') }, 'Manage a living superorganism — 50,000 minds, one purpose'))),
               h('div', { className: 'flex items-center gap-1' },
                 h('button', { onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': soundOn ? 'Mute' : 'Unmute', className: 'p-1.5 rounded-lg text-sm ' + (dk ? 'hover:bg-slate-700' : 'hover:bg-slate-100') }, soundOn ? '🔊' : '🔇'))),
-            // Mode tabs
-            h('div', { className: 'flex gap-1 p-1 rounded-xl ' + (dk ? 'bg-slate-800' : 'bg-slate-100'), role: 'tablist' },
+            // Mode tabs — hive-amber gradient strip + lifted active state.
+            // Inactive tabs gain a soft amber wash on hover so the row
+            // reads as a glowing honeycomb-bar instead of a slate slab.
+            h('div', {
+              role: 'tablist',
+              className: 'flex gap-1 p-1.5 rounded-xl',
+              style: {
+                background: dk
+                  ? 'linear-gradient(180deg,#3a2a14 0%,#1f1408 100%)'
+                  : 'linear-gradient(180deg,#fef3c7 0%,#fde68a 100%)',
+                boxShadow: dk
+                  ? 'inset 0 1px 0 rgba(251,191,36,0.20),inset 0 -1px 0 rgba(15,23,42,0.5),0 6px 18px -10px rgba(15,23,42,0.5)'
+                  : 'inset 0 1px 0 rgba(255,255,255,0.7),inset 0 -1px 0 rgba(180,83,9,0.10),0 4px 14px -10px rgba(15,23,42,0.10)'
+              }
+            },
               [
                 { id: 'beekeeper', icon: '🧑‍🌾', label: 'Beekeeper' },
-                { id: 'queen', icon: '👑', label: 'Queen RTS' },
-                { id: 'drone', icon: '🚀', label: 'Drone Flight' }
+                { id: 'queen',     icon: '👑',         label: 'Queen RTS' },
+                { id: 'drone',     icon: '🚀',         label: 'Drone Flight' }
               ].map(function(tab) {
                 var active = viewMode === tab.id;
-                return h('button', { key: tab.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                return h('button', {
+                  key: tab.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
                   onClick: function() { upd('viewMode', tab.id); },
-                  className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold ' + (active ? (dk ? 'bg-amber-700 text-white' : 'bg-white text-amber-800') : (dk ? 'text-slate-400' : 'text-slate-500')) },
-                  h('span', { 'aria-hidden': 'true' }, tab.icon), ' ', tab.label);
-              })),
+                  className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all',
+                  style: {
+                    background: active
+                      ? 'linear-gradient(135deg,#f59e0b 0%,#b45309 100%)'
+                      : 'transparent',
+                    color: active
+                      ? '#ffffff'
+                      : (dk ? '#cbd5e1' : '#92400e'),
+                    boxShadow: active
+                      ? '0 4px 14px rgba(180,83,9,0.45),inset 0 1px 0 rgba(255,255,255,0.20)'
+                      : 'none',
+                    textShadow: active ? '0 1px 1px rgba(15,23,42,0.4)' : 'none',
+                    border: active ? 'none' : '1px solid transparent'
+                  }
+                },
+                  h('span', { 'aria-hidden': 'true' }, tab.icon), ' ', tab.label
+                );
+              })
+            ),
+
+            // ── Topic-accent hero band per mode ──
+            (function() {
+              var MODE_META = {
+                beekeeper: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)', icon: '🧑‍🌾', title: 'Beekeeper — manage a real colony', hint: '11 educational views (anatomy, physics, life cycle, waggle dance, thermoreg, honey chem) + a live colony to inspect, feed, and treat for varroa. Most US hobbyist beekeepers lose ~40% of colonies per winter — the science here is what reduces that.' },
+                queen:     { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '👑', title: 'Queen RTS — strategy from the throne',   hint: 'You are the queen. Allocate workers to forage, nurse, build, defend. Pheromone signals propagate through the hive — the colony is a single super-organism, not a collection of individuals. Hives without a queen die in 3 weeks.' },
+                drone:     { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🚀', title: 'Drone flight — pollinator aerodynamics', hint: 'Fly a worker bee through a meadow, collecting nectar + pollen. Wings beat at ~200 Hz; flight uses the leading-edge vortex (same trick fighter jets use at high angle of attack). Foragers visit ~1,000 flowers per trip.' }
+              };
+              var meta = MODE_META[viewMode] || MODE_META.beekeeper;
+              return h('div', {
+                className: 'mt-2',
+                style: {
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                h('div', { style: { flex: 1, minWidth: 220 } },
+                  h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  h('p', { style: { margin: '3px 0 0', color: dk ? '#cbd5e1' : '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
             // View selector: educational canvas views (beekeeper only).
             // Wraps on narrow screens. Keyboard 1–9 also switch views.
             // position:relative + z-index lifts tabs above the global AlloBot avatar (which was overlapping tabs like "Waggle Dance").
@@ -8721,13 +10278,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             viewMode === 'beekeeper' && h('div', {
                 id: 'beehive-canvas-wrap',
                 className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-amber-600/50' : 'border-amber-400'),
-                style: { height: '500px', background: '#000', boxShadow: dk ? '0 0 20px rgba(251,191,36,0.08), 0 4px 16px rgba(0,0,0,0.4)' : '0 0 16px rgba(251,191,36,0.1), 0 4px 16px rgba(0,0,0,0.1)' }
+                // Hive-dark gradient instead of flat black: deep amber
+                // brown at the top fading into charcoal, with a stronger
+                // honey glow so the canvas reads as "looking into a
+                // warm hollow" rather than a black slab.
+                style: {
+                  height: '500px',
+                  background: 'linear-gradient(180deg,#3f2f18 0%,#1f160a 60%,#0c0905 100%)',
+                  boxShadow: dk
+                    ? '0 0 32px rgba(251,191,36,0.18), 0 0 0 1px rgba(251,191,36,0.18), inset 0 1px 0 rgba(251,191,36,0.20), 0 6px 22px rgba(0,0,0,0.55)'
+                    : '0 0 28px rgba(251,191,36,0.22), 0 0 0 1px rgba(251,191,36,0.30), inset 0 1px 0 rgba(254,240,138,0.30), 0 4px 18px rgba(0,0,0,0.20)'
+                }
               },
               h('canvas', {
                 ref: _cvRef,
                 role: 'img',
-                'aria-label': 'Animated beehive simulation. Workers: ' + workers + ', Honey: ' + honey + ' lbs, Season: ' + seasonNames[season],
-                style: { width: '100%', height: '100%', display: 'block' }
+                'aria-label': 'Animated beehive simulation. Workers: ' + workers + ', Honey: ' + honey + ' lbs, Season: ' + seasonNames[season] + '. Click parts of the scene: hive opens the inspector, beekeeper shows last action, sunflowers jump to pollination tab.',
+                style: { width: '100%', height: '100%', display: 'block', cursor: beeView === 'scene' ? 'pointer' : 'default' },
+                onMouseMove: beeView === 'scene' ? function(e) {
+                  // Cursor hinting: pointer over interactive zones, default elsewhere.
+                  // Hit-zones use canvas-relative ratios so they line up at every size.
+                  var cv = e.currentTarget;
+                  var rect = cv.getBoundingClientRect();
+                  if (rect.width === 0) return;
+                  var rx = (e.clientX - rect.left) / rect.width;
+                  var ry = (e.clientY - rect.top) / rect.height;
+                  var overHive = rx > 0.10 && rx < 0.24 && ry > 0.45 && ry < 0.85;
+                  var overBk = rx > 0.90 && rx < 1.00 && ry > 0.55 && ry < 0.95;
+                  var overSun = rx > 0.45 && rx < 1.00 && ry > 0.20 && ry < 0.65 && !overHive && !overBk;
+                  cv.style.cursor = (overHive || overBk || overSun) ? 'pointer' : 'default';
+                } : null,
+                onClick: beeView === 'scene' ? function(e) {
+                  // ── Canvas hotspot click ──
+                  // Hive (left side) → open the Hive Inspector modal.
+                  // Beekeeper (far right) → echo a "what they\'re up to" toast.
+                  // Sunflowers / meadow (right of hive, upper-mid) → jump to
+                  //   Pollination canvas tab — the obvious place students go
+                  //   when they wonder "why does any of this matter?"
+                  var cv = e.currentTarget;
+                  var rect = cv.getBoundingClientRect();
+                  if (rect.width === 0) return;
+                  var rx = (e.clientX - rect.left) / rect.width;
+                  var ry = (e.clientY - rect.top) / rect.height;
+                  if (rx > 0.10 && rx < 0.24 && ry > 0.45 && ry < 0.85) {
+                    upd('showInspect', true);
+                    triggerBeekeeperAction('inspect', 'Opening the hive — let\'s see what\'s inside.', '🔍');
+                    return;
+                  }
+                  if (rx > 0.90 && rx < 1.00 && ry > 0.55 && ry < 0.95) {
+                    var bkAnim = d.bkAnim;
+                    var msg = bkAnim && bkAnim.caption
+                      ? '🐝 Beekeeper: ' + bkAnim.caption
+                      : '🐝 Beekeeper standing by. The action buttons below tell them what to do next.';
+                    if (addToast) addToast(msg, 'info');
+                    return;
+                  }
+                  if (rx > 0.45 && rx < 1.00 && ry > 0.20 && ry < 0.65) {
+                    upd('beeView', 'pollination');
+                    if (addToast) addToast('🌍 Switched to the Pollination view — why bees feed 1/3 of the food supply.', 'info');
+                    return;
+                  }
+                } : null
               }),
               // Fullscreen toggle button (top-right overlay)
               h('button', {
@@ -8748,77 +10359,569 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 title: 'Toggle fullscreen',
                 className: 'absolute top-2 right-2 z-10 px-2 py-1 rounded-md text-xs font-bold transition-all backdrop-blur-sm bg-black/45 hover:bg-black/65 text-amber-100 border border-amber-600/30',
                 style: { fontSize: '16px', lineHeight: 1, cursor: 'pointer' }
-              }, '⛶')
+              }, '⛶'),
+              // Click-to-explore hint chip (Scene view only) so the canvas
+              // interactivity is discoverable. aria-hidden because the
+              // canvas aria-label already announces this affordance.
+              beeView === 'scene' && h('div', {
+                'aria-hidden': 'true',
+                className: 'absolute bottom-2 left-2 z-10 px-2 py-1 rounded-md text-[10px] backdrop-blur-sm bg-black/45 text-amber-100 border border-amber-600/30 italic',
+                style: { lineHeight: 1.3, maxWidth: '60%' }
+              }, '💡 Tip: click the hive, beekeeper, or meadow to dive in')
             ),
+            // ── Live Scene narration strip ──
+            // Caption that auto-picks the most representative description of
+            // what students are seeing in the canvas right now, based on
+            // season, view, recent action, and colony health. Turns the
+            // ambient animation from "pretty" into "read what's happening."
+            viewMode === 'beekeeper' && colonySurvived && beeView === 'scene' && (function() {
+              var bkAnim = d.bkAnim;
+              var inAction = bkAnim && bkAnim.startedAt && (Date.now() - bkAnim.startedAt) < (bkAnim.duration || 5000);
+              // State-priority order: in-action caption > stress > seasonal narration
+              var line, icon;
+              if (inAction && bkAnim.caption) {
+                icon = bkAnim.emoji || '🔍';
+                line = bkAnim.caption;
+              } else if (varroaLevel >= 25) {
+                icon = '🦟';
+                line = 'Mites are hidden in the capped brood — about half the load is out of reach until cells uncap. You\'ll see foragers with shortened wings if Deformed Wing Virus is taking hold.';
+              } else if (morale < 30) {
+                icon = '😬';
+                line = 'The hum is anxious — alarm pheromone (isopentyl acetate, banana-scented) is in the air. Bees are jumpy, guards are defensive, and the queen\'s laying may slow.';
+              } else if (queenHealth < 40) {
+                icon = '👑';
+                line = 'The queen\'s pheromone signature is weakening. Watch for emergency queen cells along the comb edges — workers may be preparing to supersede her.';
+              } else if (season === 0) {
+                // Spring narrations cycle on day-of-season so the caption isn't static
+                var springLines = [
+                  'Nurses are warming brood at 95°F. Foragers scout the first dandelions and willow catkins — early-spring pollen rebuilds the colony fast.',
+                  'Workers are uncapping last year\'s honey stores and feeding the larvae. The first cleansing flights of the year are happening today.',
+                  'Spring buildup — population is doubling about every 21 days. The queen is laying near her peak: 1,500–2,000 eggs a day.'
+                ];
+                line = springLines[day % springLines.length];
+                icon = '🌱';
+              } else if (season === 1) {
+                var summerLines = [
+                  'Peak nectar flow — foragers return every 30–60 minutes loaded with pollen baskets on their hind legs. Fanners cool the entrance.',
+                  'Workers are evaporating water from nectar to make honey, fanning their wings at 230 Hz to drive the moisture content below 18%.',
+                  'Drones are flying to nearby Drone Congregation Areas, hovering 15–40 m up, waiting for virgin queens. Most won\'t return.'
+                ];
+                line = summerLines[day % summerLines.length];
+                icon = '☀️';
+              } else if (season === 2) {
+                var autumnLines = [
+                  'Autumn — drones are being evicted (no longer "earning" their share of stores). You\'ll see them turned out at the entrance.',
+                  'Workers are propolizing cracks and reducing the entrance — winter prep. The queen has slowed her laying to ~500 eggs a day.',
+                  'This is the moment to verify your varroa levels. Going into winter with even 3% mite load can collapse the cluster by January.'
+                ];
+                line = autumnLines[day % autumnLines.length];
+                icon = '🍂';
+              } else {
+                var winterLines = [
+                  'Winter cluster — workers vibrate flight muscles, generating heat to keep the queen at the 95°F core. They rotate from the cold outer shell inward.',
+                  'The colony eats roughly 1 lb of honey per week in winter. They never defecate inside the hive; they wait for warm cleansing-flight days.',
+                  'No brood right now in most colonies — which is exactly why winter is the perfect window for an oxalic acid varroa treatment.'
+                ];
+                line = winterLines[day % winterLines.length];
+                icon = '❄️';
+              }
+              return h('div', {
+                className: 'rounded-lg px-3 py-2 text-xs leading-relaxed italic border-l-4 ' + (dk ? 'bg-slate-800/40 border-amber-500/70 text-slate-200' : 'bg-amber-50/70 border-amber-400 text-slate-700'),
+                role: 'status', 'aria-live': 'polite', 'aria-label': 'Live scene narration'
+              },
+                h('span', { 'aria-hidden': 'true', className: 'mr-2 not-italic' }, icon),
+                h('span', null, line)
+              );
+            })(),
+            // ── "Dig deeper" recommended canvas tabs ──
+            // Surfaces 2-3 of the 18 educational canvas views that best match
+            // current state. Most students never discover what's behind the
+            // top tab strip; this row turns those tabs into context-aware
+            // suggestions tied to what's happening RIGHT NOW in their colony.
+            viewMode === 'beekeeper' && colonySurvived && beeView === 'scene' && (function() {
+              // State → recommended view-id, in priority order. Each entry
+              // has a `when` predicate so we only suggest tabs that match.
+              var ALL_TABS = [
+                { id: 'threats',     icon: '🚨', label: 'Threats',     why: 'See why mites + DWV cause Colony Collapse Disorder.' },
+                { id: 'lifecycle',   icon: '🥚', label: 'Life Cycle',  why: 'Egg → larva → pupa → adult in 21 days.' },
+                { id: 'pollination', icon: '🌍', label: 'Pollination', why: '$15B/year · 1/3 of the food supply.' },
+                { id: 'anatomy',     icon: '🔬', label: 'Anatomy',     why: 'What every part of a bee is for.' },
+                { id: 'thermo',      icon: '🌡️', label: 'Thermoreg',   why: 'How the colony holds 95°F at the brood.' },
+                { id: 'castes',      icon: '👑', label: 'Castes',      why: 'Queen, worker, drone — same genome, different lives.' },
+                { id: 'waggle',      icon: '💃', label: 'Waggle Dance',why: 'The symbolic language Karl von Frisch decoded.' },
+                { id: 'honey',       icon: '🍯', label: 'Honey Chem',  why: 'Why honey never spoils — chemistry of the comb.' },
+                { id: 'pheromones',  icon: '🧪', label: 'Pheromones',  why: 'The invisible chemical net that holds the colony together.' },
+                { id: 'cognition',   icon: '🧠', label: 'Cognition',   why: 'Bees count to 4, know zero, recognize faces.' },
+                { id: 'vision',      icon: '🌸', label: 'Vision',      why: 'See flowers the way a bee sees them — UV bullseyes.' },
+                { id: 'physics',     icon: '✈️', label: 'Flight Physics', why: 'How a bee flies — leading-edge vortex.' }
+              ];
+              function tab(id) { return ALL_TABS.filter(function(t) { return t.id === id; })[0]; }
+              // Build a state-sorted recommendation list. Higher score = more
+              // contextually relevant right now.
+              var recs = [];
+              if (varroaLevel >= 15 || diseaseRisk >= 25) recs.push({ tab: tab('threats'), prio: 100 });
+              if (gardenBonus > 0) recs.push({ tab: tab('pollination'), prio: 95 });
+              if (queenHealth < 60) recs.push({ tab: tab('castes'), prio: 92 });
+              if (season === 3) recs.push({ tab: tab('thermo'), prio: 90 });
+              if (workers >= 18000) recs.push({ tab: tab('waggle'), prio: 85 });
+              if (brood >= 3000) recs.push({ tab: tab('lifecycle'), prio: 80 });
+              if (day < 7) recs.push({ tab: tab('anatomy'), prio: 75 });
+              if (honey >= 30 && season === 1) recs.push({ tab: tab('honey'), prio: 70 });
+              if ((d.layersViewed || []).indexOf('pheromones') === -1) recs.push({ tab: tab('pheromones'), prio: 60 });
+              // "Always-on" fallbacks so the row never looks empty.
+              recs.push({ tab: tab('cognition'), prio: 50 });
+              recs.push({ tab: tab('vision'), prio: 48 });
+              recs.push({ tab: tab('physics'), prio: 45 });
+              // Dedup by tab.id, keeping the highest priority entry.
+              var seen = {};
+              recs = recs.filter(function(r) { if (seen[r.tab.id]) return false; seen[r.tab.id] = true; return true; });
+              recs.sort(function(a, b) { return b.prio - a.prio; });
+              var top3 = recs.slice(0, 3);
+              return h('div', { className: 'flex items-center gap-2 flex-wrap', role: 'navigation', 'aria-label': 'Recommended educational views based on current colony state' },
+                h('span', { className: 'text-[10px] font-bold uppercase tracking-wider flex-shrink-0 ' + (dk ? 'text-amber-400' : 'text-amber-700') }, '📚 Dig deeper'),
+                top3.map(function(r) {
+                  return h('button', {
+                    key: r.tab.id,
+                    onClick: function() {
+                      upd('beeView', r.tab.id);
+                      if (addToast) addToast(r.tab.icon + ' ' + r.tab.label + ' — ' + r.tab.why, 'info');
+                    },
+                    title: r.tab.why,
+                    'aria-label': 'Switch to ' + r.tab.label + ' canvas: ' + r.tab.why,
+                    className: 'text-[11px] px-2 py-1 rounded-full border transition-all ' + (dk ? 'bg-slate-800/60 border-amber-700/40 text-amber-200 hover:bg-amber-900/40' : 'bg-white border-amber-300 text-amber-800 hover:bg-amber-50')
+                  }, r.tab.icon + ' ' + r.tab.label + ' →');
+                })
+              );
+            })(),
             // ═══ QUEEN RTS UI ═══
             viewMode === 'queen' && h('div', { className: 'space-y-3' },
               !queenGameActive
-                ? h('div', { className: 'rounded-2xl border-2 p-8 text-center space-y-4 ' + (dk ? 'bg-gradient-to-b from-purple-900/40 to-amber-900/30 border-purple-600/50' : 'bg-gradient-to-b from-purple-50 to-amber-50 border-purple-300') },
-                    h('div', { className: 'text-5xl mb-2' }, '👑'),
-                    h('h3', { className: 'text-lg font-black ' + (dk ? 'text-purple-200' : 'text-purple-900') }, 'Queen Command: Hive RTS'),
-                    h('p', { className: 'text-xs max-w-md mx-auto leading-relaxed ' + (dk ? 'text-purple-300' : 'text-purple-700') },
-                      'You ARE the queen. Control your colony through pheromones — the chemical language of the hive. Lay eggs, allocate workers, build comb structures, and defend against invaders. You don\'t give orders directly — you emit pheromone signals that influence 50,000 workers.'),
-                    h('div', { className: 'grid grid-cols-4 gap-2 max-w-lg mx-auto' },
-                      [['💜', 'QMP', 'Suppress rebellion'], ['🚨', 'Alarm', 'Mobilize guards'], ['🏠', 'Nasonov', 'Rally foragers'], ['🥚', 'Brood', 'Stimulate nurses']].map(function(p) {
-                        return h('div', { key: p[0], className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-purple-700/30' : 'bg-white border-purple-200') },
-                          h('div', { className: 'text-lg' }, p[0]),
-                          h('div', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, p[1]),
-                          h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, p[2]));
-                      })),
-                    h('button', { onClick: startQueenGame,
-                      className: 'px-8 py-3 rounded-xl font-bold text-white text-sm shadow-lg transition-all hover:scale-105 ' + (dk ? 'bg-gradient-to-r from-purple-600 to-amber-600' : 'bg-gradient-to-r from-purple-500 to-amber-500'),
-                      style: { boxShadow: '0 4px 16px rgba(147,51,234,0.4)' }
-                    }, '👑 Begin Your Reign'))
-                : h('div', { className: 'space-y-3' },
-                    h('div', { role: 'status', 'aria-live': 'assertive', className: 'flex items-center justify-between px-4 py-2 rounded-xl text-xs font-bold ' +
-                      (queenPhase === 'swarm' ? (dk ? 'bg-purple-900/40 text-purple-300 border border-purple-600/40' : 'bg-purple-50 text-purple-800 border border-purple-300') :
-                       queenPhase === 'defend' ? (dk ? 'bg-red-900/30 text-red-300 border border-red-600/40' : 'bg-red-50 text-red-800 border border-red-300') :
-                       (dk ? 'bg-amber-900/30 text-amber-300 border border-amber-600/40' : 'bg-amber-50 text-amber-800 border border-amber-300')) },
-                      h('span', null, (queenPhase === 'swarm' ? '🐝 SWARM PHASE' : queenPhase === 'defend' ? '⚔️ DEFEND PHASE' : '🏗️ BUILD PHASE') + ' · Day ' + queenDay)),
-                    h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-purple-600/50' : 'border-purple-400'), style: { height: '400px', boxShadow: '0 0 20px rgba(147,51,234,0.1)' } },
-                      h('canvas', { ref: _queenCvRef, role: 'img', 'aria-label': 'Queen defense game: release pheromones and build structures to protect the colony from threats', style: { width: '100%', height: '100%', display: 'block' } })),
-                    h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-purple-900/20 border-purple-700/40' : 'bg-purple-50 border-purple-200') },
-                      h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-purple-300' : 'text-purple-800') }, '👑 Pheromone Commands'),
-                      h('div', { className: 'grid grid-cols-3 gap-1.5' },
-                        QUEEN_ACTIONS.map(function(qa) {
-                          return h('button', { key: qa.id, onClick: function() { queenAction(qa.id); }, title: qa.desc,
-                            className: 'text-left p-2 rounded-lg border ' + (dk ? 'bg-slate-800 border-purple-700/30 hover:bg-slate-700' : 'bg-white border-purple-100 hover:shadow-sm') },
-                            h('div', { className: 'flex items-center gap-1' },
-                              h('span', null, qa.icon),
-                              h('span', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-800') }, qa.label)),
-                            h('div', { className: 'text-[10px] mt-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-500') }, qa.desc));
-                        }))),
-                    h('div', { className: 'flex gap-2' },
-                      h('button', { onClick: advanceQueenDay,
-                        className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white ' + (dk ? 'bg-gradient-to-r from-purple-700 to-amber-600' : 'bg-gradient-to-r from-purple-600 to-amber-500') }, '⏩ Next Day'),
-                      h('button', { onClick: function() { updAll({ queen: Object.assign({}, queenData, { active: false }) }); },
-                        className: 'px-4 py-2.5 rounded-xl text-sm font-bold ' + (dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600') }, 'End Game')))
+                ? h('div', { className: 'rounded-2xl border-2 p-6 space-y-4 ' + (dk ? 'bg-gradient-to-b from-purple-900/40 to-amber-900/30 border-purple-600/50' : 'bg-gradient-to-b from-purple-50 to-amber-50 border-purple-300') },
+                    h('div', { className: 'text-center space-y-2' },
+                      h('div', { className: 'text-5xl mb-1' }, '👑'),
+                      h('h3', { className: 'text-lg font-black ' + (dk ? 'text-purple-200' : 'text-purple-900') }, 'Queen Command: Hive RTS'),
+                      h('p', { className: 'text-xs max-w-2xl mx-auto leading-relaxed ' + (dk ? 'text-purple-300' : 'text-purple-700') },
+                        'You ARE the queen. You don\'t give orders directly. You emit pheromones, and those chemical signals propagate through 50,000 workers and shape what they do next. Stockpile resources, lay eggs, defend the hive, and survive the seasons.')
+                    ),
+                    // ── How it works ──
+                    h('div', { className: 'rounded-xl p-3 ' + (dk ? 'bg-slate-900/60 border border-purple-700/40' : 'bg-white/70 border border-purple-200') },
+                      h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 ' + (dk ? 'text-amber-400' : 'text-amber-700') }, '📜 How to play'),
+                      h('ul', { className: 'list-disc list-inside text-[11px] leading-relaxed space-y-1 ' + (dk ? 'text-slate-200' : 'text-slate-700') },
+                        h('li', null, h('strong', null, 'Press an action'), ' to spend resources or release a pheromone. Effects show up on the HUD next turn.'),
+                        h('li', null, h('strong', null, 'Press Next Day'), ' to advance the simulation. Foragers bring nectar/pollen, builders make wax, nurses make royal jelly. Pheromones decay every day.'),
+                        h('li', null, h('strong', null, 'Watch QMP'), ' (Queen Mandibular Pheromone). If it drops below 20 your workers rebel. Below 5 they replace you.'),
+                        h('li', null, h('strong', null, 'Survive 60 days'), ' to win the reign. Threats and crowding scale up across three phases.')
+                      )
+                    ),
+                    // ── 3-phase preview ──
+                    h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
+                      [
+                        { phase: 'BUILD',  days: 'Days 1-10',  icon: '🏗️', goal: 'Stockpile resources, stabilize pheromones, grow your worker population before threats arrive.', color: '#fbbf24' },
+                        { phase: 'DEFEND', days: 'Days 11-24', icon: '⚔️', goal: 'Threats appear regularly. Keep alarm pheromone ready, build guard structures, hold the line.',         color: '#ef4444' },
+                        { phase: 'SWARM',  days: 'Day 25+',    icon: '🐝', goal: 'Colony is overcrowded. Keep QMP > 40 or half your workers leave with a rival queen.',                  color: '#a855f7' }
+                      ].map(function(p) {
+                        return h('div', { key: p.phase,
+                          className: 'rounded-xl p-3 border-2',
+                          style: {
+                            borderColor: p.color + '88',
+                            background: dk
+                              ? 'linear-gradient(135deg,' + p.color + '22 0%,rgba(15,23,42,0.5) 100%)'
+                              : 'linear-gradient(135deg,' + p.color + '1a 0%,rgba(255,255,255,0.6) 100%)',
+                            boxShadow: '0 0 14px ' + p.color + '22'
+                          }
+                        },
+                          h('div', { className: 'flex items-center gap-2 mb-1' },
+                            h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, p.icon),
+                            h('div', null,
+                              h('div', { className: 'text-[11px] font-black', style: { color: p.color } }, p.phase),
+                              h('div', { className: 'text-[10px] ' + (dk ? 'text-slate-300' : 'text-slate-500') }, p.days)
+                            )
+                          ),
+                          h('p', { className: 'text-[11px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, p.goal)
+                        );
+                      })
+                    ),
+                    // ── 4 pheromones legend ──
+                    h('div', null,
+                      h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-1.5 ' + (dk ? 'text-purple-300' : 'text-purple-800') }, '🧪 Your four pheromones'),
+                      h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
+                        [
+                          ['💜', 'QMP',     'Suppress rebellion · Holds colony together'],
+                          ['🚨', 'Alarm',   'Mobilize guards · Spike on threats'],
+                          ['🏠', 'Nasonov', 'Rally foragers · Mark safe entrance'],
+                          ['🥚', 'Brood',   'Stimulate nurses · Boosts brood care']
+                        ].map(function(p) {
+                          return h('div', { key: p[0], className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-purple-700/30' : 'bg-white border-purple-200') },
+                            h('div', { className: 'text-lg' }, p[0]),
+                            h('div', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, p[1]),
+                            h('div', { className: 'text-[10px] leading-tight ' + (dk ? 'text-slate-400' : 'text-slate-500') }, p[2]));
+                        }))
+                    ),
+                    // ── Begin button ──
+                    h('div', { className: 'text-center' },
+                      h('button', { onClick: startQueenGame,
+                        className: 'px-8 py-3 rounded-xl font-bold text-white text-sm shadow-lg transition-all hover:scale-105 ' + (dk ? 'bg-gradient-to-r from-purple-600 to-amber-600' : 'bg-gradient-to-r from-purple-500 to-amber-500'),
+                        style: { boxShadow: '0 4px 16px rgba(147,51,234,0.4)' }
+                      }, '👑 Begin Your Reign')
+                    )
+                  )
+                : (function() {
+                    // ── In-game UI: clarity pass ──
+                    // Old version showed a phase banner + canvas + 6 unlabeled
+                    // action buttons + Next Day. The pheromones, resources,
+                    // workers, threats, and event narrative were tracked in
+                    // state but never rendered, so the player pressed buttons
+                    // blind and had no idea why anything was happening. This
+                    // rewrite surfaces all that state.
+                    var phaseInfo = queenPhase === 'swarm'  ? { title: '🐝 SWARM PHASE',  days: 'Day 25+',     goal: 'Keep QMP above 40. The colony is overcrowded. Below 40 + 800 workers, half leave with a rebel queen.', color: '#a855f7', soft: 'rgba(168,85,247,0.18)', textCol: dk ? '#e9d5ff' : '#6b21a8' }
+                                  : queenPhase === 'defend' ? { title: '⚔️ DEFEND PHASE', days: 'Days 11-24',  goal: 'Threats appear ~15% of days. Build guard posts, keep alarm ready, watch for hornets and varroa spikes.', color: '#ef4444', soft: 'rgba(239,68,68,0.18)', textCol: dk ? '#fecaca' : '#991b1b' }
+                                  :                          { title: '🏗️ BUILD PHASE',  days: 'Days 1-10',   goal: 'Stockpile resources, lay worker eggs, hold QMP high. The first 10 days are a peaceful runway.',         color: '#fbbf24', soft: 'rgba(251,191,36,0.18)', textCol: dk ? '#fde68a' : '#92400e' };
+                    var qSeasonIdx = Math.floor((queenDay % 120) / 30);
+                    var seasonNames = ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'];
+                    var totalWorkers = (queenPopulation.nurses || 0) + (queenPopulation.builders || 0) + (queenPopulation.guards || 0) + (queenPopulation.foragers || 0) + (queenPopulation.scouts || 0);
+                    var seasonName = seasonNames[qSeasonIdx];
+
+                    // Affordability check used by action grid + cost preview.
+                    function canAfford(action) {
+                      if (!action.cost) return true;
+                      for (var k in action.cost) {
+                        if ((queenResources[k] || 0) < action.cost[k]) return false;
+                      }
+                      return true;
+                    }
+                    var resIcon = { nectar: '🍯', pollen: '🌼', wax: '🕯️', royalJelly: '👑' };
+                    var resLabel = { nectar: 'Nectar', pollen: 'Pollen', wax: 'Wax', royalJelly: 'Royal Jelly' };
+
+                    // Pheromone bar — width by value (0..100), color per pheromone,
+                    // warning glow when QMP < 20 (rebellion risk).
+                    function pheromoneBar(label, val, col, warnThreshold) {
+                      var warning = warnThreshold != null && val < warnThreshold;
+                      return h('div', { className: 'flex items-center gap-2', style: { fontSize: 10 } },
+                        h('span', { style: { minWidth: 56, fontWeight: 700, color: dk ? '#cbd5e1' : '#475569' } }, label),
+                        h('div', { className: 'flex-1 rounded-full overflow-hidden', style: { height: 8, background: dk ? '#1e293b' : '#e2e8f0', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.2)' } },
+                          h('div', { style: { width: Math.max(0, Math.min(100, val)) + '%', height: '100%', background: 'linear-gradient(90deg,' + col + 'aa,' + col + ')', boxShadow: warning ? '0 0 6px ' + col : '0 0 4px ' + col + '88', transition: 'width 0.4s ease' } })
+                        ),
+                        h('span', { style: { minWidth: 28, textAlign: 'right', fontFamily: 'monospace', fontWeight: 700, color: warning ? '#fca5a5' : (dk ? '#e2e8f0' : '#1e293b') } }, Math.round(val))
+                      );
+                    }
+
+                    return h('div', { className: 'space-y-3' },
+                      // ── Phase + day + season banner ──
+                      h('div', { role: 'status', 'aria-live': 'polite',
+                        className: 'rounded-xl px-4 py-3 border',
+                        style: {
+                          background: dk
+                            ? 'linear-gradient(135deg,' + phaseInfo.soft + ' 0%,rgba(15,23,42,0.6) 100%)'
+                            : 'linear-gradient(135deg,' + phaseInfo.soft + ' 0%,rgba(255,255,255,0.85) 100%)',
+                          borderColor: phaseInfo.color + '66',
+                          borderLeftWidth: 4, borderLeftColor: phaseInfo.color,
+                          boxShadow: '0 0 16px ' + phaseInfo.color + '22, inset 0 1px 0 rgba(255,255,255,0.06)'
+                        }
+                      },
+                        h('div', { className: 'flex items-center justify-between flex-wrap gap-2 mb-1' },
+                          h('div', { className: 'text-sm font-black', style: { color: phaseInfo.textCol } }, phaseInfo.title),
+                          h('div', { className: 'flex items-center gap-3 text-[11px] font-bold', style: { color: phaseInfo.textCol } },
+                            h('span', null, 'Day ' + queenDay + ' · ' + phaseInfo.days),
+                            h('span', null, seasonName),
+                            h('span', { style: { color: '#fbbf24' } }, '⭐ ' + queenScore)
+                          )
+                        ),
+                        h('p', { className: 'text-[11px] leading-relaxed', style: { color: dk ? '#cbd5e1' : '#475569', margin: 0 } }, phaseInfo.goal)
+                      ),
+
+                      // ── Canvas ──
+                      h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-purple-600/50' : 'border-purple-400'), style: { height: '400px', boxShadow: '0 0 20px ' + phaseInfo.color + '22' } },
+                        h('canvas', { ref: _queenCvRef, role: 'img', 'aria-label': 'Queen defense game canvas. Phase: ' + phaseInfo.title + '. Day ' + queenDay + '. ' + seasonName + '. Score ' + queenScore + '. Workers ' + totalWorkers + '. Threats ' + (queenThreats.length || 0) + '.', style: { width: '100%', height: '100%', display: 'block' } })
+                      ),
+
+                      // ── State HUD: pheromones + resources + workers + threats ──
+                      h('div', { className: 'rounded-xl border p-3 grid grid-cols-1 md:grid-cols-2 gap-3 ' + (dk ? 'bg-slate-900/60 border-purple-700/40' : 'bg-white border-purple-200'),
+                                  style: { boxShadow: dk ? '0 4px 14px rgba(7,11,24,0.45)' : '0 2px 10px rgba(15,23,42,0.06)' } },
+                        // Pheromones panel
+                        h('div', null,
+                          h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 ' + (dk ? 'text-purple-300' : 'text-purple-800') }, '🧪 Pheromones (decay each day)'),
+                          h('div', { className: 'space-y-1.5' },
+                            pheromoneBar('💜 QMP',     queenPheromones.qmp || 0,     '#a855f7', 25),
+                            pheromoneBar('🚨 Alarm',   queenPheromones.alarm || 0,   '#ef4444'),
+                            pheromoneBar('🏠 Nasonov', queenPheromones.nasonov || 0, '#f59e0b'),
+                            pheromoneBar('🥚 Brood',   queenPheromones.brood || 0,   '#fbbf24')
+                          ),
+                          (queenPheromones.qmp || 0) < 25 && h('div', { className: 'mt-2 text-[10px] font-bold rounded p-1.5', style: { color: '#fca5a5', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)' } }, '⚠ QMP critical. Workers risk rebellion. Press Emit QMP.')
+                        ),
+                        // Resources panel
+                        h('div', null,
+                          h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 ' + (dk ? 'text-amber-300' : 'text-amber-700') }, '📦 Resources'),
+                          h('div', { className: 'grid grid-cols-2 gap-1.5' },
+                            ['nectar', 'pollen', 'wax', 'royalJelly'].map(function(k) {
+                              return h('div', { key: k, className: 'rounded p-1.5 text-[11px] flex items-center justify-between ' + (dk ? 'bg-slate-800 border border-amber-700/30' : 'bg-amber-50 border border-amber-200') },
+                                h('span', null, resIcon[k] + ' ' + resLabel[k]),
+                                h('span', { style: { fontFamily: 'monospace', fontWeight: 700, color: dk ? '#fde68a' : '#92400e' } }, (queenResources[k] || 0).toFixed ? (queenResources[k] || 0).toFixed(1) : queenResources[k] || 0)
+                              );
+                            })
+                          )
+                        ),
+                        // Workers panel
+                        h('div', null,
+                          h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 ' + (dk ? 'text-sky-300' : 'text-sky-700') }, '👷 Workers (' + totalWorkers.toLocaleString() + ' total)'),
+                          h('div', { className: 'grid grid-cols-5 gap-1' },
+                            [
+                              ['🤱', 'Nurses',   queenPopulation.nurses],
+                              ['🔨', 'Builders', queenPopulation.builders],
+                              ['🛡', 'Guards',   queenPopulation.guards],
+                              ['🌼', 'Foragers', queenPopulation.foragers],
+                              ['🧭', 'Scouts',   queenPopulation.scouts]
+                            ].map(function(c) {
+                              return h('div', { key: c[1], className: 'text-center rounded p-1 ' + (dk ? 'bg-slate-800' : 'bg-sky-50') },
+                                h('div', { className: 'text-base', 'aria-hidden': 'true' }, c[0]),
+                                h('div', { className: 'text-[9px] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, c[1]),
+                                h('div', { className: 'text-[10px] font-bold', style: { fontFamily: 'monospace', color: dk ? '#7dd3fc' : '#0369a1' } }, c[2] || 0)
+                              );
+                            })
+                          )
+                        ),
+                        // Threats panel (or "all clear")
+                        h('div', null,
+                          h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 ' + (dk ? 'text-rose-300' : 'text-rose-700') }, '⚠ Threats'),
+                          (queenThreats || []).length > 0
+                            ? h('div', { className: 'space-y-1' },
+                                queenThreats.slice(0, 4).map(function(t, i) {
+                                  return h('div', { key: i, className: 'text-[11px] rounded p-1.5 flex items-center gap-2 ' + (dk ? 'bg-rose-900/30 border border-rose-700/40' : 'bg-rose-50 border border-rose-300') },
+                                    h('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, t.icon || '⚠'),
+                                    h('span', { className: 'flex-1 font-bold ' + (dk ? 'text-rose-200' : 'text-rose-800') }, t.label || t.type || 'Threat'),
+                                    h('span', { className: 'text-[10px] font-mono', style: { color: '#fca5a5' } }, 'STR ' + (t.strength || '?'))
+                                  );
+                                })
+                              )
+                            : h('div', { className: 'text-[11px] italic rounded p-2 ' + (dk ? 'bg-emerald-900/20 text-emerald-300 border border-emerald-700/30' : 'bg-emerald-50 text-emerald-700 border border-emerald-200') }, '✓ Hive secure. No active threats.')
+                        )
+                      ),
+
+                      // ── Action grid with cost preview + disabled state ──
+                      h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-purple-900/20 border-purple-700/40' : 'bg-purple-50 border-purple-200') },
+                        h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-purple-300' : 'text-purple-800') }, '👑 Pheromone Commands · click any to act'),
+                        h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-1.5' },
+                          QUEEN_ACTIONS.map(function(qa) {
+                            var afford = canAfford(qa);
+                            var costParts = qa.cost ? Object.keys(qa.cost).map(function(k) {
+                              return resIcon[k] + ' ' + qa.cost[k];
+                            }) : [];
+                            return h('button', {
+                              key: qa.id,
+                              onClick: function() { queenAction(qa.id); },
+                              disabled: !afford,
+                              'aria-disabled': !afford ? 'true' : 'false',
+                              title: qa.desc + (costParts.length ? ' [Costs ' + costParts.join(', ') + ']' : ' [Free]'),
+                              className: 'text-left p-2 rounded-lg border transition-all',
+                              style: {
+                                opacity: afford ? 1 : 0.5,
+                                cursor: afford ? 'pointer' : 'not-allowed',
+                                background: dk ? '#1e293b' : '#ffffff',
+                                borderColor: afford ? (dk ? '#7c3aed55' : '#c4b5fd') : (dk ? '#33415555' : '#cbd5e1')
+                              }
+                            },
+                              h('div', { className: 'flex items-center justify-between gap-1 mb-0.5' },
+                                h('div', { className: 'flex items-center gap-1' },
+                                  h('span', null, qa.icon),
+                                  h('span', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, qa.label)
+                                ),
+                                costParts.length
+                                  ? h('span', { className: 'text-[10px] font-mono px-1 py-0.5 rounded', style: { color: afford ? '#fbbf24' : '#fca5a5', background: afford ? 'rgba(251,191,36,0.12)' : 'rgba(239,68,68,0.12)' } }, costParts.join(' '))
+                                  : h('span', { className: 'text-[9px] font-bold px-1 py-0.5 rounded', style: { color: '#86efac', background: 'rgba(134,239,172,0.12)' } }, 'FREE')
+                              ),
+                              h('div', { className: 'text-[10px] leading-tight ' + (dk ? 'text-slate-400' : 'text-slate-600') }, qa.desc)
+                            );
+                          })
+                        )
+                      ),
+
+                      // ── Event log: last 5 events ──
+                      (queenEvents || []).length > 0 && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-slate-900/60 border-slate-700' : 'bg-slate-50 border-slate-200') },
+                        h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 ' + (dk ? 'text-slate-200' : 'text-slate-700') }, '📋 Recent events'),
+                        h('div', { className: 'space-y-1' },
+                          queenEvents.slice(-5).reverse().map(function(ev, i) {
+                            return h('div', { key: i, className: 'text-[11px] rounded p-1.5 leading-relaxed ' + (dk ? 'bg-slate-800 text-slate-200' : 'bg-white text-slate-700 border border-slate-200') },
+                              ev.text || ev.toString()
+                            );
+                          })
+                        )
+                      ),
+
+                      // ── Next day / End game ──
+                      h('div', { className: 'flex gap-2' },
+                        h('button', { onClick: advanceQueenDay,
+                          'aria-label': 'Advance to next day',
+                          className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white transition-all hover:brightness-110',
+                          style: {
+                            background: 'linear-gradient(135deg,#7c3aed 0%,#d97706 100%)',
+                            boxShadow: '0 4px 14px rgba(124,58,237,0.35)'
+                          }
+                        }, '⏩ Next Day · Day ' + (queenDay + 1)),
+                        h('button', { onClick: function() { updAll({ queen: Object.assign({}, queenData, { active: false }) }); },
+                          className: 'px-4 py-2.5 rounded-xl text-sm font-bold ' + (dk ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, 'End Game')
+                      )
+                    );
+                  })()
             ),
             // ═══ DRONE FLIGHT UI ═══
             viewMode === 'drone' && h('div', { className: 'space-y-3' },
               !droneFlightActive
-                ? h('div', { className: 'rounded-2xl border-2 p-8 text-center space-y-4 ' + (dk ? 'bg-gradient-to-b from-indigo-900/40 to-purple-900/30 border-indigo-600/50' : 'bg-gradient-to-b from-indigo-50 to-purple-50 border-indigo-300') },
-                    h('div', { className: 'text-5xl mb-2' }, '🚀'),
-                    h('h3', { className: 'text-lg font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, 'Drone Nuptial Flight'),
-                    h('p', { className: 'text-xs max-w-md mx-auto leading-relaxed ' + (dk ? 'text-indigo-300' : 'text-indigo-700') },
-                      'Experience life as a drone bee. Fly to the Drone Congregation Area (DCA) and find a queen to mate with. Only 1 in 1,000 succeeds — can you?'),
-                    droneHighScore > 0 && h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-600') }, '🏆 High Score: ' + droneHighScore),
-                    h('div', { className: 'flex gap-2 justify-center' },
+                ? h('div', { className: 'rounded-2xl border-2 p-6 space-y-4 ' + (dk ? 'bg-gradient-to-b from-indigo-900/40 to-purple-900/30 border-indigo-600/50' : 'bg-gradient-to-b from-indigo-50 to-purple-50 border-indigo-300') },
+                    // ── Title + science blurb ──
+                    h('div', { className: 'text-center space-y-2' },
+                      h('div', { className: 'text-5xl mb-1' }, '🚀'),
+                      h('h3', { className: 'text-lg font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, 'Drone Nuptial Flight'),
+                      h('p', { className: 'text-xs max-w-2xl mx-auto leading-relaxed ' + (dk ? 'text-indigo-300' : 'text-indigo-700') },
+                        'You are a male drone bee. Your one job is to fly to the Drone Congregation Area (a sky cluster of 200+ drones from miles around), find a virgin queen on her nuptial flight, and mate with her in midair. In real life only 1 in 1,000 drones succeeds. Mating is fatal for the drone (the endophallus tears off inside the queen). This is a one-shot biological lottery, and we are flying it.'),
+                      droneHighScore > 0 && h('div', { className: 'inline-block text-xs font-bold px-3 py-1 rounded-full ' + (dk ? 'bg-amber-900/40 text-amber-300 border border-amber-600/50' : 'bg-amber-100 text-amber-800 border border-amber-300') }, '🏆 High Score: ' + droneHighScore)
+                    ),
+                    // ── Controls reference ──
+                    h('div', { className: 'rounded-xl p-3 ' + (dk ? 'bg-slate-900/60 border border-indigo-700/40' : 'bg-white/80 border border-indigo-200') },
+                      h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, '🕹 Controls'),
+                      h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-2 text-[11px]' },
+                        [
+                          { keys: '↑ / W',  desc: 'Thrust forward' },
+                          { keys: '↓ / S',  desc: 'Brake / reverse' },
+                          { keys: '← → / A D', desc: 'Yaw left / right' },
+                          { keys: 'Space',  desc: 'Pitch up (climb)' },
+                          { keys: 'Shift',  desc: 'Pitch down (dive)' },
+                          { keys: 'Click canvas first', desc: 'Then keys are captured' }
+                        ].map(function(c, i) {
+                          return h('div', { key: i, className: 'flex items-center gap-2 rounded p-1.5 ' + (dk ? 'bg-slate-800' : 'bg-slate-50') },
+                            h('span', {
+                              style: {
+                                fontFamily: 'monospace', fontWeight: 700, fontSize: 10,
+                                padding: '2px 6px',
+                                borderRadius: 4,
+                                background: dk ? '#0f172a' : '#ffffff',
+                                border: '1px solid ' + (dk ? '#475569' : '#cbd5e1'),
+                                color: dk ? '#fbbf24' : '#92400e',
+                                whiteSpace: 'nowrap'
+                              }
+                            }, c.keys),
+                            h('span', { className: dk ? 'text-slate-300' : 'text-slate-700' }, c.desc)
+                          );
+                        })
+                      )
+                    ),
+                    // ── Goals panel ──
+                    h('div', { className: 'rounded-xl p-3 ' + (dk ? 'bg-slate-900/60 border border-amber-700/40' : 'bg-amber-50 border border-amber-200') },
+                      h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '🎯 Mission goals'),
+                      h('ul', { className: 'list-disc list-inside text-[11px] leading-relaxed space-y-1 ' + (dk ? 'text-slate-200' : 'text-slate-700') },
+                        h('li', null, h('strong', null, 'Reach the DCA'), ' (~800m to 1,800m away depending on difficulty). Watch the altitude bar marker labelled DCA.'),
+                        h('li', null, h('strong', null, 'Mate with a virgin queen'), ' once you arrive. +200 points. Game over for the drone (this is biologically realistic).'),
+                        h('li', null, h('strong', null, 'Collect 5 pollen flowers'), ' along the way for bonus points and free energy.'),
+                        h('li', null, h('strong', null, 'Ride thermals'), ' to gain altitude without burning energy. Look for shimmering air columns.'),
+                        h('li', null, h('strong', null, 'Avoid predator birds'), ' and obstacles (trees, poles, buildings). Birds will dive at you.'),
+                        h('li', null, h('strong', null, 'Beat the timer'), '. Energy depletes too. Manage both.')
+                      )
+                    ),
+                    // ── Phase preview ──
+                    h('div', { className: 'grid grid-cols-1 md:grid-cols-4 gap-2' },
                       [
-                        { id: 'easy', label: '🌱 Easy', col: 'green' },
-                        { id: 'normal', label: '🐝 Normal', col: 'amber' },
-                        { id: 'hard', label: '🔥 Hard', col: 'red' }
-                      ].map(function(diff) {
-                        return h('button', { key: diff.id, onClick: function() { startDroneFlight(diff.id); },
-                          className: 'px-4 py-3 rounded-xl font-bold text-sm shadow-lg ' +
-                            (dk ? 'bg-gradient-to-b from-' + diff.col + '-800 to-' + diff.col + '-900 text-' + diff.col + '-200 border border-' + diff.col + '-700/50'
-                                 : 'bg-gradient-to-b from-' + diff.col + '-50 to-' + diff.col + '-100 text-' + diff.col + '-800 border border-' + diff.col + '-300')
-                        }, diff.label);
-                      })))
-                : h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-indigo-600/50' : 'border-indigo-400'), style: { height: '500px', boxShadow: '0 0 20px rgba(99,102,241,0.15)' } },
-                    h('canvas', { ref: _droneCvRef, role: 'img', 'aria-label': 'Drone flight simulation — use arrow keys to fly', style: { width: '100%', height: '100%', display: 'block' } }),
-                    h('button', { onClick: function() { updAll({ drone: Object.assign({}, droneData, { active: false }) }); }, style: { position: 'absolute', top: '8px', left: '8px', zIndex: 10 },
-                      className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold bg-red-600/80 text-white hover:bg-red-600', 'aria-label': 'End flight' }, '✕ End Flight'))
+                        { p: 'LAUNCH',         icon: '🚀', goal: 'Build speed and climb. Energy is full.',                                 color: '#22c55e' },
+                        { p: 'CRUISE',         icon: '🐝', goal: 'Collect pollen, ride thermals, navigate around birds and obstacles.',  color: '#0ea5e9' },
+                        { p: 'FINAL APPROACH', icon: '🎯', goal: 'Approach the queen at the DCA. Match her altitude and bearing.',       color: '#f59e0b' },
+                        { p: 'MATING',         icon: '👑', goal: 'Contact the queen. +200 points. The drone\'s biological purpose ends.', color: '#a855f7' }
+                      ].map(function(ph) {
+                        return h('div', { key: ph.p,
+                          className: 'rounded-xl p-2.5 border-2',
+                          style: {
+                            borderColor: ph.color + '88',
+                            background: dk
+                              ? 'linear-gradient(135deg,' + ph.color + '22 0%,rgba(15,23,42,0.5) 100%)'
+                              : 'linear-gradient(135deg,' + ph.color + '1a 0%,rgba(255,255,255,0.6) 100%)',
+                            boxShadow: '0 0 12px ' + ph.color + '22'
+                          }
+                        },
+                          h('div', { className: 'flex items-center gap-1 mb-1' },
+                            h('span', { 'aria-hidden': 'true', style: { fontSize: 16 } }, ph.icon),
+                            h('span', { className: 'text-[11px] font-black', style: { color: ph.color } }, ph.p)
+                          ),
+                          h('p', { className: 'text-[10px] leading-tight ' + (dk ? 'text-slate-300' : 'text-slate-700') }, ph.goal)
+                        );
+                      })
+                    ),
+                    // ── Difficulty selector ──
+                    h('div', null,
+                      h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 text-center ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, 'Pick a difficulty to launch'),
+                      h('div', { className: 'flex gap-2 justify-center flex-wrap' },
+                        [
+                          { id: 'easy',   label: '🌱 Easy',   col: 'green',  blurb: '150s · 800m · 1 bird · 120 energy' },
+                          { id: 'normal', label: '🐝 Normal', col: 'amber',  blurb: '110s · 1,200m · 3 birds · 100 energy' },
+                          { id: 'hard',   label: '🔥 Hard',   col: 'red',    blurb: '75s · 1,800m · 5 birds · 80 energy' }
+                        ].map(function(diff) {
+                          return h('button', { key: diff.id, onClick: function() { startDroneFlight(diff.id); },
+                            className: 'flex-1 max-w-[180px] px-4 py-3 rounded-xl font-bold text-sm shadow-lg transition-all hover:scale-105 ' +
+                              (dk ? 'bg-gradient-to-b from-' + diff.col + '-800 to-' + diff.col + '-900 text-' + diff.col + '-200 border border-' + diff.col + '-700/50'
+                                   : 'bg-gradient-to-b from-' + diff.col + '-50 to-' + diff.col + '-100 text-' + diff.col + '-800 border border-' + diff.col + '-300')
+                          },
+                            h('div', null, diff.label),
+                            h('div', { className: 'text-[9px] font-mono mt-1 opacity-80' }, diff.blurb)
+                          );
+                        })
+                      )
+                    )
+                  )
+                : h('div', { className: 'space-y-3' },
+                    // ── Canvas ──
+                    h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-indigo-600/50' : 'border-indigo-400'), style: { height: '500px', boxShadow: '0 0 24px rgba(99,102,241,0.20), 0 0 0 1px rgba(99,102,241,0.30)' } },
+                      h('canvas', {
+                        ref: _droneCvRef, role: 'img',
+                        'aria-label': 'Drone nuptial flight in progress. Difficulty: ' + droneDifficulty + '. Use arrow keys to fly toward the Drone Congregation Area.',
+                        tabIndex: 0,
+                        style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair', outline: 'none' }
+                      }),
+                      // End Flight button (top-right so it doesn't overlap the score HUD top-left)
+                      h('button', {
+                        onClick: function() { updAll({ drone: Object.assign({}, droneData, { active: false }) }); },
+                        style: { position: 'absolute', top: '10px', right: '10px', zIndex: 10 },
+                        className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all bg-red-600/85 text-white hover:bg-red-700 backdrop-blur',
+                        'aria-label': 'End flight'
+                      }, '✕ End Flight')
+                    ),
+                    // ── Quick controls reference (always visible during flight) ──
+                    h('div', {
+                      className: 'rounded-xl border p-3 ' + (dk ? 'bg-slate-900/60 border-indigo-700/40' : 'bg-indigo-50 border-indigo-200'),
+                      style: { boxShadow: dk ? '0 4px 12px rgba(7,11,24,0.4)' : '0 2px 10px rgba(15,23,42,0.06)' }
+                    },
+                      h('div', { className: 'flex items-center justify-between flex-wrap gap-2' },
+                        h('div', { className: 'flex items-center gap-2' },
+                          h('span', { 'aria-hidden': 'true', style: { fontSize: 16 } }, '🕹'),
+                          h('span', { className: 'text-[11px] font-black uppercase tracking-wider ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, 'Flight controls'),
+                          h('span', { className: 'text-[10px] italic ' + (dk ? 'text-slate-400' : 'text-slate-500') }, '(' + droneDifficulty + ')')
+                        ),
+                        h('div', { className: 'flex flex-wrap gap-2' },
+                          [
+                            { k: '↑↓', l: 'Thrust' },
+                            { k: '←→', l: 'Turn'   },
+                            { k: 'Space', l: 'Climb'  },
+                            { k: 'Shift', l: 'Dive'   }
+                          ].map(function(c, i) {
+                            return h('span', { key: i, className: 'inline-flex items-center gap-1' },
+                              h('span', {
+                                style: {
+                                  fontFamily: 'monospace', fontWeight: 700, fontSize: 10,
+                                  padding: '2px 6px', borderRadius: 4,
+                                  background: dk ? '#0f172a' : '#ffffff',
+                                  border: '1px solid ' + (dk ? '#475569' : '#cbd5e1'),
+                                  color: dk ? '#fbbf24' : '#92400e'
+                                }
+                              }, c.k),
+                              h('span', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-700') }, c.l)
+                            );
+                          })
+                        ),
+                        h('button', {
+                          onClick: function() { startDroneFlight(droneDifficulty); },
+                          className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' + (dk ? 'bg-indigo-700 text-white hover:bg-indigo-600' : 'bg-indigo-600 text-white hover:bg-indigo-700'),
+                          'aria-label': 'Restart flight at current difficulty'
+                        }, '🔁 Restart')
+                      ),
+                      h('div', { className: 'mt-2 text-[10px] italic ' + (dk ? 'text-slate-400' : 'text-slate-500') },
+                        'Tip: click on the flight scene first so the keyboard sends to the drone, not the page.'
+                      )
+                    )
+                  )
             ),
             // SUBSPECIES PICKER (day 0) — IMPORTED FROM ORIGINAL (line 3295 in old file)
             // Stock picker collapses to compact summary once student has picked (or accepted default).
@@ -8831,7 +10934,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { className: 'flex-1 min-w-0' },
                     h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '🧬 Bee Stock: ' + activeSubspecies.name),
                     h('p', { className: 'text-[11px] truncate ' + (dk ? 'text-slate-300' : 'text-slate-600') }, activeSubspecies.note)),
-                  h('button', { onClick: function () { upd('stockPickerOpen', true); }, 'aria-label': 'Change bee stock', className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (dk ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-amber-500 text-white hover:bg-amber-600') }, 'Change ▾'));
+                  h('button', { onClick: function () { upd('stockPickerOpen', true); }, className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (dk ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-amber-500 text-white hover:bg-amber-600') }, 'Change ▾'));
               }
               return h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-500/60' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-label': 'Choose honeybee subspecies' },
                 h('div', { className: 'flex items-start justify-between gap-2' },
@@ -8839,7 +10942,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-700') }, '🧬 Choose Your Bee Stock'),
                     h('p', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Real honeybees come in distinct genetic lines, each adapted to different climates.'),
                     h('p', { className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-amber-500/70' : 'text-amber-600/70') }, 'Current selection: ' + activeSubspecies.emoji + ' ' + activeSubspecies.name)),
-                  d.subspecies && h('button', { onClick: function () { upd('stockPickerOpen', false); }, 'aria-label': 'Collapse stock picker', className: 'px-2 py-1 rounded text-[11px] font-bold ' + (dk ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200') }, '▲ Collapse')),
+                  d.subspecies && h('button', { onClick: function () { upd('stockPickerOpen', false); }, 'aria-label': 'Collapse stock picker', className: 'px-2 py-1 rounded text-[11px] font-bold ' + (dk ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-400') }, '▲ Collapse')),
                 h('div', { className: 'grid grid-cols-1 gap-2' },
                   SUBSPECIES.map(function(s) {
                     var active = activeSubspecies.id === s.id;
@@ -8855,21 +10958,202 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                           h('p', { className: 'text-[11px] mt-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, s.note))));
                   })));
             })(),
-            // Next Day + actions
-            viewMode === 'beekeeper' && colonySurvived && h('div', { className: 'space-y-2' },
-              h('div', { className: 'flex gap-2' },
-                h('button', { onClick: advanceDay, className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white ' + (dk ? 'bg-amber-600' : 'bg-amber-500') }, '⏩ Next Day'),
-                h('button', { onClick: function() { advanceDays(5); }, className: 'px-3 py-2.5 rounded-xl text-xs ' + (dk ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-700') }, '+5'),
-                h('button', { onClick: function() { advanceDays(30); }, className: 'px-3 py-2.5 rounded-xl text-xs ' + (dk ? 'bg-amber-900/30 text-amber-400' : 'bg-amber-50 text-amber-600') }, '+30')),
-              h('div', { className: 'grid grid-cols-4 gap-1.5' },
-                h('button', { onClick: function() { smokeHive(); }, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-stone-800/40 text-stone-300' : 'bg-stone-100 text-stone-700') }, '💨 Smoke'),
-                h('button', { onClick: function() { upd('showInspect', true); triggerBeekeeperAction('inspect', 'Opening the hive for an inspection.', '🔍'); }, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-indigo-900/30 text-indigo-300' : 'bg-indigo-50 text-indigo-700') }, '🔬 Inspect'),
-                h('button', { onClick: treatVarroa, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-red-900/30 text-red-300' : 'bg-red-50 text-red-700') }, '🧪 Treat'),
-                h('button', { onClick: addSuper, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-50 text-blue-700') }, '📦 Super'),
-                h('button', { onClick: harvestHoney, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-50 text-amber-700') }, '🍯 Harvest'),
-                h('button', { onClick: feedBees, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, '🥣 Feed'),
-                h('button', { onClick: requeenColony, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-purple-900/30 text-purple-300' : 'bg-purple-50 text-purple-700') }, '👑 Requeen'),
-                h('button', { onClick: function() { upd('showBadges', true); }, className: 'p-2 rounded-lg text-xs ' + (dk ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-50 text-amber-700') }, '🏅 Badges')))
+            // Next Day + actions (with Today's Priority coach card)
+            viewMode === 'beekeeper' && colonySurvived && (function() {
+              // ── Today's Priority: pick the single most urgent management
+              // action for the current state and explain WHY. Drives both the
+              // coach card UI AND the pulsing-ring highlight on the matching
+              // action button below, so a new beekeeper isn't staring at 8
+              // unlabeled icons wondering what to click first.
+              var coach;
+              if (varroaLevel >= 25) {
+                coach = { id: 'treat', emoji: '🧪', urgency: 'high', title: 'Treat varroa now — load is critical',
+                  why: 'Mite load is ' + varroaLevel + '% (≥25% causes colony collapse). Click 🧪 Treat and pick an IPM treatment that fits the season.' };
+              } else if (queenHealth < 30) {
+                coach = { id: 'requeen', emoji: '👑', urgency: 'high', title: 'Requeen — the queen is failing',
+                  why: 'Queen health is ' + queenHealth + '%. Egg-laying stops below ~30% and the colony declines fast. Click 👑 Requeen to install a new queen.' };
+              } else if (season === 3 && honey < 30) {
+                coach = { id: 'feed', emoji: '🥣', urgency: 'high', title: 'Feed bees — winter starvation risk',
+                  why: 'Honey stores ' + honey + ' lbs (need 60+ lbs to survive winter). Click 🥣 Feed to supplement with 1:1 sugar syrup.' };
+              } else if (morale < 30) {
+                coach = { id: 'smoke', emoji: '💨', urgency: 'high', title: 'Colony is stressed',
+                  why: 'Morale ' + morale + '% — bees agitated. Smoke calms them by masking alarm pheromone. Click 💨 Smoke before any other inspection.' };
+              } else if (diseaseRisk > 45) {
+                coach = { id: 'inspect', emoji: '🔬', urgency: 'warn', title: 'Inspect — disease risk rising',
+                  why: 'Disease risk ' + diseaseRisk + '%. Click 🔬 Inspect to look for foulbrood, chalkbrood, or nosema patterns.' };
+              } else if (honey < 15 && season !== 3) {
+                coach = { id: 'feed', emoji: '🥣', urgency: 'warn', title: 'Feed bees — stores running low',
+                  why: 'Honey ' + honey + ' lbs. During a nectar dearth the colony will starve before foragers can refill. Click 🥣 Feed.' };
+              } else if (honey >= 40 && (season === 1 || season === 2)) {
+                coach = { id: 'harvest', emoji: '🍯', urgency: 'ready', title: 'Honey surplus is ready to harvest',
+                  why: 'Honey ' + honey + ' lbs (≥15 lbs reserved for the colony, ' + Math.round((honey - 15) * 10) / 10 + ' lbs harvestable). Click 🍯 Harvest.' };
+              } else if (season === 1 && honey > 35 && wax < 15) {
+                coach = { id: 'super', emoji: '📦', urgency: 'ready', title: 'Add a super — they need more room',
+                  why: 'Peak nectar flow + ' + honey + ' lbs already stored. Without more comb space they\'ll swarm. Click 📦 Super.' };
+              } else if (day === 0) {
+                coach = { id: 'inspect', emoji: '🔍', urgency: 'ok', title: 'Welcome — start with a hive inspection',
+                  why: 'Click 🔬 Inspect to explore the colony across 9 biology layers, or ⏩ Next Day to advance time. Stats update with each day.' };
+              } else {
+                // Seasonal tip when nothing's urgent
+                var seasonalTips = [
+                  { id: 'inspect', emoji: '🌱', urgency: 'ok', title: 'Spring buildup — colony is growing',
+                    why: 'Population is climbing toward summer peak. Click 🔬 Inspect to watch role distribution shift, or ⏩ Next Day.' },
+                  { id: 'inspect', emoji: '☀️', urgency: 'ok', title: 'Summer nectar flow — peak season',
+                    why: 'Honey is filling. Watch for varroa creep (peak reproduction now). Click 🔬 Inspect for the bloom calendar layer.' },
+                  { id: 'inspect', emoji: '🍂', urgency: 'ok', title: 'Autumn prep — pivot to winter readiness',
+                    why: 'Drone eviction begins. Treat any lingering varroa now (broodless window opening). Click 🔬 Inspect → Native Bees to compare strategies.' },
+                  { id: 'inspect', emoji: '❄️', urgency: 'ok', title: 'Winter cluster — bees thermoregulate',
+                    why: 'Workers form a ball, vibrate flight muscles, and rotate the queen-warming core. Click 🔬 Inspect → Thermoregulation to see it live.' }
+                ];
+                coach = seasonalTips[season] || seasonalTips[0];
+              }
+              // Card palette per urgency
+              var coachStyles = {
+                high:  { card: dk ? 'border-red-500/70 bg-red-900/40'      : 'border-red-400 bg-red-50',
+                         label: dk ? 'text-red-300'    : 'text-red-700',    title: dk ? 'text-red-100'    : 'text-red-900',
+                         why:   dk ? 'text-red-200'    : 'text-red-800',    ring: 'ring-red-400'   },
+                warn:  { card: dk ? 'border-amber-500/70 bg-amber-900/30'  : 'border-amber-400 bg-amber-50',
+                         label: dk ? 'text-amber-300'  : 'text-amber-700',  title: dk ? 'text-amber-100'  : 'text-amber-900',
+                         why:   dk ? 'text-amber-200'  : 'text-amber-800',  ring: 'ring-amber-400' },
+                ready: { card: dk ? 'border-emerald-500/70 bg-emerald-900/30' : 'border-emerald-400 bg-emerald-50',
+                         label: dk ? 'text-emerald-300': 'text-emerald-700',title: dk ? 'text-emerald-100': 'text-emerald-900',
+                         why:   dk ? 'text-emerald-200': 'text-emerald-800',ring: 'ring-emerald-400' },
+                ok:    { card: dk ? 'border-sky-700/60 bg-sky-900/20'      : 'border-sky-300 bg-sky-50',
+                         label: dk ? 'text-sky-300'    : 'text-sky-700',    title: dk ? 'text-sky-100'    : 'text-sky-900',
+                         why:   dk ? 'text-sky-200'    : 'text-sky-800',    ring: 'ring-sky-400'   }
+              };
+              var cs = coachStyles[coach.urgency];
+              // Per-button pulse: only when urgency >= warn (don't yell during ok/ready resting state)
+              var pulseBtn = (coach.urgency === 'high' || coach.urgency === 'warn') ? coach.id : null;
+              function urgentCls(btnId) {
+                return btnId === pulseBtn ? ' ring-2 ring-offset-1 animate-pulse ' + cs.ring : '';
+              }
+              return h('div', { className: 'space-y-2' },
+                // Today's Priority coach card
+                h('div', {
+                  className: 'rounded-xl border-2 p-3 ' + cs.card,
+                  role: 'status', 'aria-live': 'polite',
+                  'aria-label': 'Today\'s Priority: ' + coach.title
+                },
+                  h('div', { className: 'flex items-start gap-3' },
+                    h('span', { className: 'text-2xl flex-shrink-0', 'aria-hidden': 'true', style: { lineHeight: '1' } }, coach.emoji),
+                    h('div', { className: 'flex-1 min-w-0' },
+                      h('div', { className: 'text-[10px] font-bold uppercase tracking-wider ' + cs.label }, 'Today\'s Priority' + (coach.urgency === 'high' ? ' · URGENT' : coach.urgency === 'ready' ? ' · READY' : '')),
+                      h('div', { className: 'text-sm font-bold leading-snug ' + cs.title }, coach.title),
+                      h('p', { className: 'text-[11px] mt-1 leading-relaxed ' + cs.why }, coach.why)
+                    )
+                  )
+                ),
+                h('div', { className: 'flex gap-2 items-stretch' },
+                  h('button', { onClick: advanceDay, title: 'Simulate one day — colony state updates with consumption, foraging, mite growth, and seasonal effects.', className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white ' + (dk ? 'bg-amber-600' : 'bg-amber-500') }, '⏩ Next Day'),
+                  h('button', { onClick: function() { advanceDays(5); }, title: 'Fast-forward 5 days (skip the routine, jump to the next decision).', className: 'px-3 py-2.5 rounded-xl text-xs ' + (dk ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-700') }, '+5'),
+                  h('button', { onClick: function() { advanceDays(30); }, title: 'Fast-forward a month — useful in winter when nothing\'s happening above ground.', className: 'px-3 py-2.5 rounded-xl text-xs ' + (dk ? 'bg-amber-900/30 text-amber-400' : 'bg-amber-50 text-amber-600') }, '+30'),
+                  // Auto-advance play/pause + speed selector. Pauses automatically
+                  // whenever a modal/event opens so the student isn't fighting the clock.
+                  (function() {
+                    var auto = !!d.autoAdvance;
+                    var spd = d.autoSpeed || 2;
+                    return h('div', { className: 'flex items-center gap-1 px-2 py-0.5 rounded-xl ' + (dk ? 'bg-slate-800/60 border border-slate-700' : 'bg-white border border-slate-200'), role: 'group', 'aria-label': 'Auto-advance controls' },
+                      h('button', {
+                        onClick: function() { upd('autoAdvance', !auto); },
+                        title: auto ? 'Pause auto-advance (Spacebar). Resume any time.' : 'Auto-advance — let days roll forward on their own at the chosen speed. Pauses automatically when modals open.',
+                        'aria-pressed': auto ? 'true' : 'false',
+                        'aria-label': auto ? 'Pause auto-advance' : 'Start auto-advance',
+                        className: 'px-2 py-1.5 rounded-lg text-xs font-bold ' + (auto ? (dk ? 'bg-emerald-700 text-white' : 'bg-emerald-500 text-white') : (dk ? 'bg-slate-700 text-slate-200' : 'bg-slate-100 text-slate-700'))
+                      }, auto ? '⏸ Auto' : '▶ Auto'),
+                      // Speed pills — only shown when auto is on, so they don't clutter the bar otherwise.
+                      auto && h('div', { className: 'flex items-center gap-0.5' },
+                        [1, 2, 3].map(function(sp) {
+                          var label = sp === 1 ? '🐢' : sp === 2 ? '🐝' : '⚡';
+                          var labelText = sp === 1 ? 'Slow (2s/day)' : sp === 2 ? 'Normal (1s/day)' : 'Fast (0.4s/day)';
+                          var active = spd === sp;
+                          return h('button', {
+                            key: sp,
+                            onClick: function() { upd('autoSpeed', sp); },
+                            title: labelText,
+                            'aria-pressed': active ? 'true' : 'false',
+                            'aria-label': labelText,
+                            className: 'px-1.5 py-1 rounded text-[11px] ' + (active ? (dk ? 'bg-emerald-900/60 text-emerald-200 ring-1 ring-emerald-500' : 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-400') : (dk ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-500 hover:bg-slate-100'))
+                          }, label);
+                        })
+                      )
+                    );
+                  })()
+                ),
+                h('div', { className: 'grid grid-cols-4 gap-1.5' },
+                  // Two-line action buttons: top line = icon + name, bottom line
+                  // = predicted outcome at current state. Makes every click a
+                  // transparent decision instead of a leap of faith.
+                  (function() {
+                    function actionBtn(opts) {
+                      return h('button', {
+                        onClick: opts.onClick,
+                        title: opts.title,
+                        className: 'p-2 rounded-lg text-xs flex flex-col items-center gap-0.5 ' + opts.cls + (opts.urgent || '')
+                      },
+                        h('div', { className: 'font-bold' }, opts.label),
+                        h('div', { className: 'text-[9px] opacity-70 leading-tight' }, opts.preview)
+                      );
+                    }
+                    var harvestable = honey >= 15 ? (Math.round((honey - 15) * 10) / 10) : 0;
+                    return [
+                      actionBtn({
+                        onClick: function() { smokeHive(); },
+                        title: 'Puff cool smoke at the entrance. Masks alarm pheromone and triggers bees to gorge on honey — calms them before any inspection.',
+                        cls: (dk ? 'bg-stone-800/40 text-stone-300' : 'bg-stone-100 text-stone-700'),
+                        urgent: urgentCls('smoke'), label: '💨 Smoke', preview: '+2 morale'
+                      }),
+                      actionBtn({
+                        onClick: function() { upd('showInspect', true); triggerBeekeeperAction('inspect', 'Opening the hive for an inspection.', '🔍'); },
+                        title: 'Open the hive inspector — 9 biology layers (roles, lifecycle, waggle dance, thermoregulation, pheromones, anatomy, native bees, bloom calendar, honey chemistry).',
+                        cls: (dk ? 'bg-indigo-900/30 text-indigo-300' : 'bg-indigo-50 text-indigo-700'),
+                        urgent: urgentCls('inspect'), label: '🔬 Inspect',
+                        preview: (((d.layersViewed || []).length) + ' / 9 layers seen')
+                      }),
+                      actionBtn({
+                        onClick: treatVarroa,
+                        title: 'Choose an Integrated Pest Management (IPM) treatment — oxalic acid, formic, thymol, sugar dust, or drone brood removal. Each has season-specific efficacy.',
+                        cls: (dk ? 'bg-red-900/30 text-red-300' : 'bg-red-50 text-red-700'),
+                        urgent: urgentCls('treat'), label: '🧪 Treat', preview: 'mites: ' + varroaLevel + '%'
+                      }),
+                      actionBtn({
+                        onClick: addSuper,
+                        title: 'Add a honey super (extra box) on top. Gives bees comb-building room and prevents swarming in peak nectar flow.',
+                        cls: (dk ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-50 text-blue-700'),
+                        urgent: urgentCls('super'), label: '📦 Super', preview: '+10 morale, +2 wax'
+                      }),
+                      actionBtn({
+                        onClick: harvestHoney,
+                        title: 'Extract honey — only the surplus above the 15-lb reserve. Identifies the varietal (which flowers dominated this batch).',
+                        cls: (dk ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-50 text-amber-700'),
+                        urgent: urgentCls('harvest'), label: '🍯 Harvest',
+                        preview: harvestable > 0 ? harvestable + ' lbs ready' : 'need 15+ lbs'
+                      }),
+                      actionBtn({
+                        onClick: feedBees,
+                        title: 'Supplement with 1:1 sugar syrup (spring) or 2:1 (autumn/winter). Use when honey stores drop below ~15 lbs or nectar dearth hits.',
+                        cls: (dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700'),
+                        urgent: urgentCls('feed'), label: '🥣 Feed', preview: '+5 honey, +5 morale'
+                      }),
+                      actionBtn({
+                        onClick: requeenColony,
+                        title: 'Install a new queen. Used when the old queen\'s laying drops, when temperament needs fixing, or after a swarm.',
+                        cls: (dk ? 'bg-purple-900/30 text-purple-300' : 'bg-purple-50 text-purple-700'),
+                        urgent: urgentCls('requeen'), label: '👑 Requeen',
+                        preview: 'queen: ' + queenHealth + '% → 100%'
+                      }),
+                      actionBtn({
+                        onClick: function() { upd('showBadges', true); },
+                        title: 'View your beekeeping badges. Each one rewards a real-world skill (Mite Manager, Honey Master, Winter Survivor, etc.).',
+                        cls: (dk ? 'bg-amber-900/30 text-amber-300' : 'bg-amber-50 text-amber-700'),
+                        urgent: '', label: '🏅 Badges',
+                        preview: badgeCount + ' / ' + BADGE_DEFS.length + ' earned'
+                      })
+                    ];
+                  })()
+                )
+              );
+            })()
           );
           console.log('[Beehive ORIGINAL] return succeeded, committing full tree');
           return _origRetval;
@@ -8944,7 +11228,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               var active = viewMode === tab.id;
               return h('button', { key: tab.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
                 onClick: function() { upd('viewMode', tab.id); },
-                className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold ' + (active ? (dk ? 'bg-amber-700 text-white' : 'bg-white text-amber-800') : (dk ? 'text-slate-400' : 'text-slate-500')) },
+                className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold ' + (active ? (dk ? 'bg-amber-700 text-white' : 'bg-white text-amber-800') : (dk ? 'text-slate-400' : 'text-slate-300')) },
                 h('span', { 'aria-hidden': 'true' }, tab.icon), ' ', tab.label);
             }));
         });
@@ -8986,21 +11270,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { className: 'flex items-center gap-1' },
               // Sound toggle
               h('button', { onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': soundOn ? 'Mute sound effects' : 'Enable sound effects', title: soundOn ? 'Sound on' : 'Sound off',
-                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-500') }, soundOn ? '🔊' : '🔇'),
+                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') }, soundOn ? '🔊' : '🔇'),
               // Quiz button
-              h('button', { onClick: startQuiz, 'aria-label': 'Take the Bee Knowledge Quiz', title: 'Bee Quiz' + (d.bestQuizScore ? ' (Best: ' + d.bestQuizScore + ')' : ''),
-                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-500') }, '🎓'),
+              h('button', { onClick: startQuiz, title: 'Bee Quiz' + (d.bestQuizScore ? ' (Best: ' + d.bestQuizScore + ')' : ''),
+                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') }, '🎓'),
               // Badges button
               h('button', { onClick: function() { upd('showBadges', !showBadges); }, 'aria-label': 'View badges (' + badgeCount + '/' + BADGE_DEFS.length + ' earned)', title: 'Badges: ' + badgeCount + '/' + BADGE_DEFS.length,
-                className: 'p-1.5 rounded-lg text-sm transition-all relative ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-500') },
+                className: 'p-1.5 rounded-lg text-sm transition-all relative ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') },
                 '🏅',
                 badgeCount > 0 && h('span', { className: 'absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center text-white bg-amber-500' }, badgeCount)),
               // Export colony report
-              h('button', { onClick: exportColonyReport, 'aria-label': 'Export colony report as markdown', title: 'Export colony report to clipboard',
-                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-500') }, '📄'),
+              h('button', { onClick: exportColonyReport, title: 'Export colony report to clipboard',
+                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') }, '📄'),
               // Keyboard help
               h('button', { onClick: function() { upd('showKeys', !d.showKeys); }, 'aria-label': 'Keyboard shortcuts', title: 'Keyboard shortcuts',
-                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-500') }, '⌨️'))),
+                className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') }, '⌨️'))),
 
           // ═══ MODE SELECTOR TABS ═══
           h('div', { className: 'flex gap-1 p-1 rounded-xl ' + (dk ? 'bg-slate-800' : 'bg-slate-100'), role: 'tablist', 'aria-label': 'Simulation perspective' },
@@ -9013,7 +11297,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               return h('button', { key: tab.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
                 onClick: function() { upd('viewMode', tab.id); },
                 className: 'flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all ' +
-                  (active ? (dk ? 'bg-amber-700 text-white shadow-md' : 'bg-white text-amber-800 shadow-md') : (dk ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'text-slate-500 hover:text-slate-700 hover:bg-white/50')),
+                  (active ? (dk ? 'bg-amber-700 text-white shadow-md' : 'bg-white text-amber-800 shadow-md') : (dk ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'text-slate-300 hover:text-slate-700 hover:bg-white/50')),
                 title: tab.desc
               }, h('span', { 'aria-hidden': 'true' }, tab.icon), tab.label);
             })),
@@ -9045,7 +11329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       return h('div', { key: g[0], className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-indigo-700/30' : 'bg-white border-indigo-200') },
                         h('div', { className: 'text-lg' }, g[0]),
                         h('div', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, g[1]),
-                        h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, g[2]));
+                        h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-300') }, g[2]));
                     })),
                   droneHighScore > 0 && h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-600') }, '🏆 High Score: ' + droneHighScore),
                   // Difficulty selector
@@ -9064,7 +11348,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('div', null, diff.label),
                         h('div', { className: 'text-[10px] mt-0.5 opacity-70' }, diff.desc));
                     })),
-                  h('p', { className: 'text-[11px] ' + (dk ? 'text-slate-500' : 'text-slate-400') }, 'Arrow keys / WASD = steer · Space = climb · Shift = descend · Fly low near glowing flowers to collect pollen!'))
+                  h('p', { className: 'text-[11px] ' + (dk ? 'text-slate-300' : 'text-slate-400') }, 'Arrow keys / WASD = steer · Space = climb · Shift = descend · Fly low near glowing flowers to collect pollen!'))
               : h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-indigo-600/50' : 'border-indigo-400'), style: { height: '400px', boxShadow: '0 0 20px rgba(99,102,241,0.15)' } },
                   h('canvas', { ref: _droneCvRef, role: 'img', 'aria-label': 'Drone flight simulation — use arrow keys to fly', style: { width: '100%', height: '100%', display: 'block' } }),
                   // Stop button overlay
@@ -9074,7 +11358,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             droneFlightActive && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200') },
               h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, '📚 Drone Science Facts Discovered'),
               (_droneState.current.facts || []).length === 0
-                ? h('p', { className: 'text-[11px] italic ' + (dk ? 'text-slate-500' : 'text-slate-400') }, 'Keep flying to discover facts...')
+                ? h('p', { className: 'text-[11px] italic ' + (dk ? 'text-slate-300' : 'text-slate-400') }, 'Keep flying to discover facts...')
                 : h('div', { className: 'space-y-1' },
                     (_droneState.current.facts || []).map(function(fact, fi) {
                       return h('div', { key: fi, className: 'text-[11px] p-2 rounded-lg border ' + (dk ? 'bg-slate-700 border-slate-600 text-slate-300' : 'bg-indigo-50 border-indigo-100 text-slate-600') }, fact);
@@ -9094,22 +11378,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       return h('div', { key: p[0], className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-purple-700/30' : 'bg-white border-purple-200') },
                         h('div', { className: 'text-lg' }, p[0]),
                         h('div', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, p[1]),
-                        h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, p[2]));
+                        h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-300') }, p[2]));
                     })),
                   // Phase progression explanation
                   h('div', { className: 'text-xs font-bold mt-2 ' + (dk ? 'text-purple-300' : 'text-purple-700') }, '📋 Three Phases of Your Reign'),
                   h('div', { className: 'grid grid-cols-3 gap-2 max-w-lg mx-auto' },
                     [
-                      { icon: '🏗️', phase: 'BUILD', days: 'Days 1–10', desc: 'Establish your colony. Build structures, lay eggs, stockpile resources. Threats are rare.', col: 'amber' },
-                      { icon: '⚔️', phase: 'DEFEND', days: 'Days 11–24', desc: 'Threats double. Wasps, robber bees, hornets attack. Build guard posts, keep alarm pheromone ready.', col: 'red' },
+                      { icon: '🏗️', phase: 'BUILD', days: 'Days 1-10', desc: 'Establish your colony. Build structures, lay eggs, stockpile resources. Threats are rare.', col: 'amber' },
+                      { icon: '⚔️', phase: 'DEFEND', days: 'Days 11-24', desc: 'Threats double. Wasps, robber bees, hornets attack. Build guard posts, keep alarm pheromone ready.', col: 'red' },
                       { icon: '🐝', phase: 'SWARM', days: 'Day 25+', desc: 'Colony wants to split! Keep QMP above 40 or half your workers leave. Survive the swarm impulse.', col: 'purple' }
                     ].map(function(ph) {
                       return h('div', { key: ph.phase, className: 'rounded-lg p-2.5 border text-left ' + (dk ? 'bg-slate-800 border-' + ph.col + '-700/30' : 'bg-white border-' + ph.col + '-200') },
                         h('div', { className: 'flex items-center gap-1 mb-1' },
                           h('span', null, ph.icon),
                           h('span', { className: 'text-[11px] font-black ' + (dk ? 'text-' + ph.col + '-300' : 'text-' + ph.col + '-700') }, ph.phase)),
-                        h('div', { className: 'text-[10px] font-bold mb-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-500') }, ph.days),
-                        h('div', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-500') }, ph.desc));
+                        h('div', { className: 'text-[10px] font-bold mb-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-300') }, ph.days),
+                        h('div', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-300') }, ph.desc));
                     })),
                   h('button', { onClick: startQueenGame,
                     className: 'px-8 py-3 rounded-xl font-bold text-white text-sm shadow-lg transition-all hover:scale-105 ' + (dk ? 'bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-500 hover:to-amber-500' : 'bg-gradient-to-r from-purple-500 to-amber-500 hover:from-purple-600 hover:to-amber-600'),
@@ -9137,7 +11421,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                           h('div', { className: 'flex items-center gap-1' },
                             h('span', null, qa.icon),
                             h('span', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-800') }, qa.label)),
-                          h('div', { className: 'text-[10px] mt-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-500') }, qa.desc));
+                          h('div', { className: 'text-[10px] mt-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-300') }, qa.desc));
                       }))),
                   // Build structures
                   h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-amber-900/20 border-amber-700/40' : 'bg-amber-50 border-amber-200') },
@@ -9151,7 +11435,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                           h('div', { className: 'flex items-center gap-1' },
                             h('span', null, st.icon),
                             h('span', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-800') }, st.label)),
-                          h('div', { className: 'text-[10px] mt-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-500') }, costStr || 'Free'));
+                          h('div', { className: 'text-[10px] mt-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-300') }, costStr || 'Free'));
                       }))),
                   // Advance day + events
                   h('div', { className: 'flex gap-2' },
@@ -9167,7 +11451,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         var evColor = ev.type === 'threat' || ev.type === 'rebellion' || ev.type === 'swarm' || ev.type === 'starve' ? (dk ? 'text-red-400' : 'text-red-600') :
                                      ev.type === 'victory' ? (dk ? 'text-green-400' : 'text-green-600') :
                                      ev.type === 'phase' || ev.type === 'season' ? (dk ? 'text-amber-400' : 'text-amber-700') :
-                                     (dk ? 'text-slate-400' : 'text-slate-500');
+                                     (dk ? 'text-slate-400' : 'text-slate-300');
                         return h('div', { key: ei, className: 'text-[11px] py-1 border-b last:border-0 ' + (dk ? 'border-slate-700 ' : 'border-slate-100 ') + evColor }, ev.text);
                       }))))),
 
@@ -9181,7 +11465,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', { className: 'flex-1 min-w-0' },
                   h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '🧬 Bee Stock: ' + activeSubspecies.name),
                   h('p', { className: 'text-[11px] truncate ' + (dk ? 'text-slate-300' : 'text-slate-600') }, activeSubspecies.note)),
-                h('button', { onClick: function () { upd('stockPickerOpen', true); }, 'aria-label': 'Change bee stock', className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (dk ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-amber-500 text-white hover:bg-amber-600') }, 'Change ▾'));
+                h('button', { onClick: function () { upd('stockPickerOpen', true); }, className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (dk ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-amber-500 text-white hover:bg-amber-600') }, 'Change ▾'));
             }
             return h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-500/60' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-label': 'Choose honeybee subspecies' },
               h('div', { className: 'flex items-start justify-between gap-2' },
@@ -9189,7 +11473,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-700') }, '🧬 Choose Your Bee Stock'),
                   h('p', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Real honeybees come in distinct genetic lines, each adapted to different climates. Pick a subspecies — it will modify honey yield, winter survival, spring buildup, and varroa resistance throughout your colony\'s life.'),
                   h('p', { className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-amber-500/70' : 'text-amber-600/70') }, 'Current selection: ' + activeSubspecies.emoji + ' ' + activeSubspecies.name + (d.subspecies ? '' : ' (default)'))),
-                d.subspecies && h('button', { onClick: function () { upd('stockPickerOpen', false); }, 'aria-label': 'Collapse stock picker', className: 'px-2 py-1 rounded text-[11px] font-bold ' + (dk ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200') }, '▲ Collapse')),
+                d.subspecies && h('button', { onClick: function () { upd('stockPickerOpen', false); }, 'aria-label': 'Collapse stock picker', className: 'px-2 py-1 rounded text-[11px] font-bold ' + (dk ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-400') }, '▲ Collapse')),
             h('div', { className: 'grid grid-cols-1 gap-2' },
               SUBSPECIES.map(function(s) {
                 var active = activeSubspecies.id === s.id;
@@ -9210,7 +11494,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('div', { className: 'flex items-center gap-2 flex-wrap' },
                         h('span', { className: 'text-sm font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, s.name),
                         h('span', { className: 'text-[11px] italic ' + (dk ? 'text-amber-400' : 'text-amber-600') }, s.sci),
-                        h('span', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, '· ' + s.origin),
+                        h('span', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-300') }, '· ' + s.origin),
                         active && h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded font-bold ' + (dk ? 'bg-amber-500 text-slate-900' : 'bg-amber-500 text-white') }, '✓ Selected')),
                       h('p', { className: 'text-[11px] mt-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, s.note),
                       // Trait bars
@@ -9224,7 +11508,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                           var pct = Math.max(0, Math.min(100, Math.round((t.v - 0.5) * 100)));
                           return h('div', { key: ti },
                             h('div', { className: 'flex justify-between text-[10px] mb-0.5' },
-                              h('span', { className: dk ? 'text-slate-400' : 'text-slate-500' }, t.k),
+                              h('span', { className: dk ? 'text-slate-400' : 'text-slate-300' }, t.k),
                               h('span', { className: dk ? 'text-slate-300' : 'text-slate-600' }, Math.round(t.v * 100) + '%')),
                             h('div', { className: 'h-1.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200') },
                               h('div', { style: { width: pct + '%' }, className: 'h-full bg-' + t.c + '-400 rounded-full' })));
@@ -9259,9 +11543,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         active && h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded font-bold ' + (dk ? 'bg-green-500 text-slate-900' : 'bg-green-500 text-white') }, '✓ Selected')),
                       h('p', { className: 'text-[11px] mt-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, s.note),
                       h('div', { className: 'flex gap-3 mt-2 text-[11px]' },
-                        h('span', { className: s.mods.forage > 1.0 ? (dk ? 'text-green-400' : 'text-green-700') : s.mods.forage < 1.0 ? (dk ? 'text-amber-400' : 'text-amber-700') : (dk ? 'text-slate-400' : 'text-slate-500') },
+                        h('span', { className: s.mods.forage > 1.0 ? (dk ? 'text-green-400' : 'text-green-700') : s.mods.forage < 1.0 ? (dk ? 'text-amber-400' : 'text-amber-700') : (dk ? 'text-slate-400' : 'text-slate-300') },
                           '🌸 Forage ' + Math.round(s.mods.forage * 100) + '%'),
-                        h('span', { className: s.mods.disease < 1.0 ? (dk ? 'text-green-400' : 'text-green-700') : s.mods.disease > 1.0 ? (dk ? 'text-red-400' : 'text-red-700') : (dk ? 'text-slate-400' : 'text-slate-500') },
+                        h('span', { className: s.mods.disease < 1.0 ? (dk ? 'text-green-400' : 'text-green-700') : s.mods.disease > 1.0 ? (dk ? 'text-red-400' : 'text-red-700') : (dk ? 'text-slate-400' : 'text-slate-300') },
                           '🦠 Disease ' + Math.round(s.mods.disease * 100) + '%')))));
               }))),
 
@@ -9338,7 +11622,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', { className: 'flex items-center gap-1.5' },
                       h('span', { className: 'text-base' }, s.emoji),
                       h('span', { className: 'text-xs font-black ' + (dk ? 'text-amber-300' : 'text-amber-800'), style: { fontFamily: 'monospace' } }, s.val)),
-                    h('div', { className: 'text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, s.label));
+                    h('div', { className: 'text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-300') }, s.label));
                 })),
               // Highlight paragraph
               h('div', { className: 'rounded-lg p-3 border text-xs ' + (dk ? 'bg-slate-800 border-amber-700/30 text-slate-300' : 'bg-white border-amber-200 text-slate-700') },
@@ -9383,7 +11667,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 ['5', 'Advance +5 Days'], ['3', 'Advance +30 Days'], ['?', 'This Help']
               ].map(function(pair) {
                 return h('div', { key: pair[0], className: 'flex items-center gap-2 text-[11px] py-0.5' },
-                  h('kbd', { className: 'inline-flex items-center justify-center w-6 h-6 rounded font-mono font-bold text-[11px] ' + (dk ? 'bg-slate-700 text-amber-300 border border-slate-600' : 'bg-slate-100 text-amber-700 border border-slate-200') }, pair[0]),
+                  h('kbd', { className: 'inline-flex items-center justify-center w-6 h-6 rounded font-mono font-bold text-[11px] ' + (dk ? 'bg-slate-700 text-amber-300 border border-slate-600' : 'bg-slate-100 text-amber-700 border border-slate-400') }, pair[0]),
                   h('span', { className: dk ? 'text-slate-300' : 'text-slate-600' }, pair[1]));
               }))),
 
@@ -9401,8 +11685,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 return h('div', { key: bd.id, className: 'flex items-start gap-2 p-2 rounded-lg border transition-all ' + (earned ? (dk ? 'bg-amber-900/30 border-amber-600/40' : 'bg-amber-50 border-amber-300') : (dk ? 'bg-slate-800/50 border-slate-700/50 opacity-50' : 'bg-slate-50 border-slate-200 opacity-50')), title: bd.desc },
                   h('span', { className: 'text-xl ' + (earned ? '' : 'grayscale') }, bd.icon),
                   h('div', null,
-                    h('div', { className: 'text-[11px] font-bold ' + (earned ? (dk ? 'text-amber-300' : 'text-amber-800') : (dk ? 'text-slate-500' : 'text-slate-400')) }, bd.label),
-                    h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-500') }, bd.desc),
+                    h('div', { className: 'text-[11px] font-bold ' + (earned ? (dk ? 'text-amber-300' : 'text-amber-800') : (dk ? 'text-slate-300' : 'text-slate-400')) }, bd.label),
+                    h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-300') }, bd.desc),
                     earned && newBadges[bd.id].day !== undefined && h('div', { className: 'text-[10px] ' + (dk ? 'text-amber-500' : 'text-amber-600') }, '✓ Day ' + newBadges[bd.id].day)));
               }))),
 
@@ -9470,9 +11754,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         t.moraleCost > 0 && h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded ' + (dk ? 'bg-amber-900/50 text-amber-300' : 'bg-amber-100 text-amber-700') }, '−' + t.moraleCost + ' morale'),
                         h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded ' + (dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, t.ap + ' AP'),
                         isIdealSeason && h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded font-bold ' + (dk ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-800') }, '✨ ideal season'),
-                        usedCount > 0 && h('span', { className: 'text-[11px] ' + (dk ? 'text-slate-500' : 'text-slate-400') }, 'used ' + usedCount + '×')),
+                        usedCount > 0 && h('span', { className: 'text-[11px] ' + (dk ? 'text-slate-300' : 'text-slate-400') }, 'used ' + usedCount + '×')),
                       h('p', { className: 'text-[11px] mt-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, t.desc),
-                      h('p', { className: 'text-[11px] mt-1 italic leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-500') }, '🔬 ' + t.note))));
+                      h('p', { className: 'text-[11px] mt-1 italic leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-300') }, '🔬 ' + t.note))));
               })),
             // Legend
             h('div', { className: 'text-[11px] p-2 rounded ' + (dk ? 'bg-slate-800/50 text-slate-400' : 'bg-slate-50 text-slate-600') },
@@ -9488,7 +11772,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', { className: 'text-xs ' + (dk ? 'text-slate-300' : 'text-slate-600') }, activeEvent.desc))),
             h('div', { className: 'rounded-lg p-3 text-xs border ' + (dk ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-white text-slate-700 border-slate-200') },
               h('strong', null, '🔬 Science: '), activeEvent.lesson),
-            h('button', { onClick: dismissEvent, 'aria-label': 'Acknowledge event', className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-bold hover:bg-amber-700 transition-all' }, '✓ Acknowledge')),
+            h('button', { onClick: dismissEvent, className: 'px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-bold hover:bg-amber-700 transition-all' }, '✓ Acknowledge')),
 
           // Status bar (beekeeper mode only)
           viewMode === 'beekeeper' && h('div', { className: 'flex flex-wrap gap-3 items-center text-xs font-bold', role: 'status', 'aria-live': 'polite', 'aria-label': 'Colony status: ' + seasonNames[season] + ', Day ' + ((day % 30) + 1) + ', ' + honey + ' lbs honey, ' + fmtPop(workers) + ' workers' },
@@ -9515,44 +11799,243 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
           // Colony Dashboard (beekeeper mode only)
           viewMode === 'beekeeper' && h('div', { className: 'rounded-xl border p-4 ' + (dk ? 'bg-gradient-to-br from-amber-900/30 to-yellow-900/20 border-amber-700/40' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200'), style: { boxShadow: dk ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.05)' }, role: 'region', 'aria-live': 'polite', 'aria-label': 'Colony dashboard showing population, resources, and health metrics' },
-            h('div', { className: 'flex items-center justify-between mb-3' },
+            h('div', { className: 'flex items-center justify-between mb-1' },
               h('div', { className: 'text-sm font-bold ' + (dk ? 'text-amber-300' : 'text-amber-900') }, '🐝 Colony Status'),
               h('div', { className: 'text-sm font-black ' + ratingColor }, colonyRating + ' (' + colonyHealth + ')')),
+            // ── Diagnostic sentence ──
+            // Builds a one-line narrative explanation of WHY the rating is
+            // what it is. Identifies the strongest dimension to anchor and
+            // the weakest one as a teaching nudge. Uses the same five
+            // weighted components that compute colonyHealth (workers 30%,
+            // queen 20%, anti-varroa 20%, morale 15%, honey 15%) so the
+            // sentence and the score always agree.
+            (function() {
+              // Score each dimension 0–100 — same conventions as colonyHealth math.
+              var dims = [
+                { id: 'workers', score: Math.min(100, workers / 300), label: 'workforce', value: fmtPop(workers),
+                  strong: 'a strong ' + fmtPop(workers) + ' workers',
+                  weak:  'workforce is rebuilding (' + fmtPop(workers) + ' workers — healthy colonies run 20,000+)' },
+                { id: 'queen', score: queenHealth, label: 'queen', value: queenHealth + '%',
+                  strong: 'a vigorous queen (' + queenHealth + '%)',
+                  weak:  'queen is failing (' + queenHealth + '% — egg-laying slows below 30%)' },
+                { id: 'varroa', score: 100 - varroaLevel, label: 'mite control', value: varroaLevel + '%',
+                  strong: 'mite load under control (' + varroaLevel + '%)',
+                  weak:  'mites are climbing (' + varroaLevel + '% — treat before 25%)' },
+                { id: 'morale', score: morale, label: 'morale', value: morale + '%',
+                  strong: 'high morale (' + morale + '%)',
+                  weak:  'morale is low (' + morale + '% — smoke, feed, or check the queen)' },
+                { id: 'honey', score: Math.min(100, honey * 3), label: 'honey stores', value: honey + ' lbs',
+                  strong: 'good honey stores (' + honey + ' lbs)',
+                  weak:  'honey stores are thin (' + honey + ' lbs — feed or harvest carefully)' }
+              ];
+              var sorted = dims.slice().sort(function(a, b) { return b.score - a.score; });
+              var strongest = sorted[0];
+              var weakest = sorted[sorted.length - 1];
+              var weakest2 = sorted[sorted.length - 2];
+              var sentence;
+              if (colonyHealth >= 80) {
+                sentence = 'Every dimension is healthy — ' + strongest.strong + ' is your standout. Keep the current rhythm.';
+              } else if (colonyHealth >= 55) {
+                sentence = 'Stable with ' + strongest.strong + ', but ' + weakest.weak + '.';
+              } else if (colonyHealth >= 35) {
+                sentence = weakest.weak.charAt(0).toUpperCase() + weakest.weak.slice(1) + ', and ' + weakest2.weak + ' — both are dragging the score down.';
+              } else {
+                sentence = 'Critical: ' + weakest.weak + ' AND ' + weakest2.weak + '. Risk of collapse — fix the most-urgent item the coach card flags first.';
+              }
+              return h('p', {
+                className: 'text-[11px] leading-relaxed mb-3 ' + (dk ? 'text-slate-200' : 'text-slate-600'),
+                role: 'status'
+              }, sentence);
+            })(),
+            // ── Workforce by Role (seasonal distribution) ──
+            // Bee roles are age-based AND season-modulated. Showing the
+            // shifting distribution as a stacked bar teaches a key concept:
+            // a hive isn\'t static — same workers, different jobs, by season.
+            // Winter is special — most workers cluster (no flying below ~50°F).
+            (function() {
+              // Season-shifted role percentages (sum to 100 within each row)
+              var ROLES_BY_SEASON = [
+                // Spring: rebuilding, brood-heavy, fewer foragers
+                { nurse: 35, builder: 20, forager: 25, guard: 5, scout: 5, fanner: 5, undertaker: 5, clusterer: 0 },
+                // Summer: peak production, foragers + fanners up, nurses down
+                { nurse: 20, builder: 15, forager: 45, guard: 5, scout: 5, fanner: 5, undertaker: 5, clusterer: 0 },
+                // Autumn: winterizing — fewer builders, fewer brood-tenders, more cleanup
+                { nurse: 20, builder: 10, forager: 40, guard: 5, scout: 5, fanner: 10, undertaker: 10, clusterer: 0 },
+                // Winter: cluster mode — flying impossible, most workers thermoregulate
+                { nurse: 5,  builder: 0,  forager: 0,  guard: 5, scout: 0, fanner: 0,  undertaker: 0,  clusterer: 90 }
+              ];
+              var dist = ROLES_BY_SEASON[season] || ROLES_BY_SEASON[0];
+              var roleDefs = [
+                { id: 'nurse',      label: 'Nurses',      color: '#f472b6', emoji: '🍼', note: 'Feed larvae royal jelly + bee bread (ages 3–10 days)' },
+                { id: 'builder',    label: 'Builders',    color: '#fbbf24', emoji: '🛠️', note: 'Secrete wax + draw comb (ages 11–17 days)' },
+                { id: 'forager',    label: 'Foragers',    color: '#84cc16', emoji: '🌸', note: 'Bring back nectar + pollen + water (ages 21+ days)' },
+                { id: 'guard',      label: 'Guards',      color: '#ef4444', emoji: '🛡️', note: 'Sentries at the entrance, recognize sister vs intruder' },
+                { id: 'scout',      label: 'Scouts',      color: '#a78bfa', emoji: '🧭', note: 'Find new forage + new nest sites (waggle dance)' },
+                { id: 'fanner',     label: 'Fanners',     color: '#22d3ee', emoji: '💨', note: 'Beat wings at 230 Hz to cool + evaporate honey moisture' },
+                { id: 'undertaker', label: 'Undertakers', color: '#94a3b8', emoji: '⚰️', note: 'Carry dead bees out of the hive (colony hygiene)' },
+                { id: 'clusterer',  label: 'Clusterers',  color: '#cbd5e1', emoji: '❄️', note: 'Vibrate flight muscles to keep the queen at 95°F all winter' }
+              ];
+              // Total to use is workers (not the per-role estimate). Build segments only for non-zero roles.
+              var segments = roleDefs.filter(function(r) { return (dist[r.id] || 0) > 0; });
+              if (segments.length === 0) return null;
+              return h('div', { className: 'mb-3', role: 'region', 'aria-label': 'Workforce role distribution for ' + seasonNames[season] },
+                h('div', { className: 'flex items-center justify-between mb-1' },
+                  h('div', { className: 'text-[11px] font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '👷 Workforce by role'),
+                  h('div', { className: 'text-[10px] italic ' + (dk ? 'text-slate-300' : 'text-slate-500') }, season === 3 ? 'Winter — no flying, mostly clustering' : 'Age-based + season-shifted')
+                ),
+                // Stacked bar
+                h('div', {
+                  className: 'flex h-3 rounded-full overflow-hidden border ' + (dk ? 'border-slate-700' : 'border-slate-300'),
+                  'aria-hidden': 'true'
+                },
+                  segments.map(function(r) {
+                    var pct = dist[r.id];
+                    return h('div', {
+                      key: r.id,
+                      title: r.emoji + ' ' + r.label + ': ' + Math.round(workers * pct / 100).toLocaleString() + ' (' + pct + '%) — ' + r.note,
+                      style: { width: pct + '%', background: r.color },
+                      className: 'transition-all'
+                    });
+                  })
+                ),
+                // Compact legend chips — clickable for the per-role pop tooltip via title
+                h('div', { className: 'flex flex-wrap gap-1 mt-1.5' },
+                  segments.map(function(r) {
+                    var pct = dist[r.id];
+                    var count = Math.round(workers * pct / 100);
+                    return h('span', {
+                      key: r.id,
+                      title: r.note,
+                      className: 'text-[10px] px-1.5 py-0.5 rounded inline-flex items-center gap-1 cursor-help ' + (dk ? 'bg-slate-800/60 text-slate-200' : 'bg-white text-slate-700'),
+                      style: { borderLeft: '3px solid ' + r.color }
+                    },
+                      h('span', { 'aria-hidden': 'true' }, r.emoji),
+                      h('span', { className: 'font-bold' }, r.label),
+                      h('span', { className: dk ? 'text-slate-300' : 'text-slate-500' }, count.toLocaleString() + ' (' + pct + '%)')
+                    );
+                  })
+                )
+              );
+            })(),
             h('div', { className: 'grid grid-cols-4 gap-2 text-center mb-3' },
               h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-amber-500', style: { fontFamily: 'monospace' } }, fmtPop(workers)), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, '👷 Workers')),
               h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-pink-500', style: { fontFamily: 'monospace' } }, fmtPop(brood)), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, '🥚 Brood')),
               h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black text-blue-400', style: { fontFamily: 'monospace' } }, drones), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, '♂ Drones')),
               h('div', { className: 'rounded-lg p-2 ' + (dk ? 'bg-slate-800' : 'bg-white'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } }, h('div', { className: 'text-lg font-black ' + (queenHealth > 70 ? 'text-purple-400' : 'text-red-500'), style: { fontFamily: 'monospace' } }, queenHealth + '%'), h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-200' : 'text-slate-600') }, '👑 Queen'))),
             // Meters
-            h('div', { className: 'space-y-2' },
-              // Varroa
-              h('div', null,
-                h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
-                  h('span', { className: 'font-bold ' + (dk ? 'text-red-400' : 'text-red-700') }, '🦟 Varroa Mites'),
-                  h('span', { className: varroaLevel > 30 ? 'text-red-500 font-bold' : (dk ? 'text-slate-200' : 'text-slate-600'), style: { fontFamily: 'monospace' } }, varroaLevel + '%')),
-                h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
-                  h('div', { style: { width: varroaLevel + '%' }, className: 'h-full bg-gradient-to-r from-red-500 to-red-400 rounded-full transition-all' }))),
-              // Morale
-              h('div', null,
-                h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
-                  h('span', { className: 'font-bold ' + (dk ? 'text-amber-300' : 'text-amber-700') }, '😊 Colony Morale'),
-                  h('span', { className: morale < 40 ? 'text-red-500 font-bold' : (dk ? 'text-slate-200' : 'text-slate-600'), style: { fontFamily: 'monospace' } }, morale + '%')),
-                h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
-                  h('div', { style: { width: morale + '%' }, className: 'h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all' }))),
-              // Foraging
-              h('div', null,
-                h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
-                  h('span', { className: 'font-bold ' + (dk ? 'text-green-300' : 'text-green-700') }, '🌸 Foraging Efficiency'),
-                  h('span', { className: dk ? 'text-slate-200' : 'text-slate-600', style: { fontFamily: 'monospace' } }, foragingEfficiency + '%' + (gardenBonus > 0 ? ' (+' + gardenBonus + '%)' : ''))),
-                h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
-                  h('div', { style: { width: Math.min(100, foragingEfficiency + gardenBonus) + '%' }, className: 'h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all' }))),
-              // Disease Risk
-              h('div', null,
-                h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
-                  h('span', { className: 'font-bold ' + (dk ? 'text-purple-300' : 'text-purple-700') }, '🦠 Disease Risk'),
-                  h('span', { className: diseaseRisk > 45 ? 'text-red-500 font-bold' : diseaseRisk > 25 ? 'text-amber-400 font-bold' : (dk ? 'text-slate-200' : 'text-slate-600'), style: { fontFamily: 'monospace' } }, diseaseRisk + '%' + (diseaseRisk > 45 ? ' ⚠ outbreak likely' : ''))),
-                h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
-                  h('div', { style: { width: diseaseRisk + '%' }, className: 'h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all' }))))),
+            (function() {
+              // ── Click-to-expand stat explainers ──
+              // Each meter is a button that toggles an inline panel teaching
+              // students what the metric means, its healthy range, the danger
+              // threshold, and the management response. Critical for clarity
+              // because the bar alone (e.g. "🦟 Varroa Mites · 18%") doesn't
+              // tell a new beekeeper what varroa ARE or why 18% matters.
+              var openExp = d.statExpand || null;
+              function toggle(id) { upd('statExpand', openExp === id ? null : id); }
+              function meterRow(id, color, emoji, label, valueStr, dangerCls, gradientCls, widthPct, explainer) {
+                var isOpen = openExp === id;
+                var arrow = isOpen ? '▼' : '▶';
+                return h('div', { className: 'rounded-md ' + (isOpen ? (dk ? 'bg-slate-800/40' : 'bg-slate-50') : '') },
+                  h('button', {
+                    onClick: function() { toggle(id); },
+                    'aria-expanded': isOpen ? 'true' : 'false',
+                    'aria-label': label + ' — ' + valueStr + (isOpen ? '. Hide explanation' : '. Show explanation'),
+                    title: isOpen ? 'Hide ' + label.toLowerCase() + ' explanation' : 'What is ' + label.toLowerCase() + '?',
+                    className: 'w-full text-left px-1.5 py-1 rounded-md transition-colors ' + (dk ? 'hover:bg-slate-800/60' : 'hover:bg-slate-100')
+                  },
+                    h('div', { className: 'flex justify-between items-center text-[11px] mb-0.5' },
+                      h('span', { className: 'font-bold ' + color },
+                        h('span', { className: 'mr-1 text-[10px] inline-block ' + (dk ? 'text-slate-300' : 'text-slate-400'), style: { width: 10 }, 'aria-hidden': 'true' }, arrow),
+                        emoji + ' ' + label),
+                      h('span', { className: dangerCls, style: { fontFamily: 'monospace' } }, valueStr)),
+                    h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), style: { boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)' } },
+                      h('div', { style: { width: widthPct + '%' }, className: 'h-full ' + gradientCls + ' rounded-full transition-all' }))
+                  ),
+                  isOpen && h('div', {
+                    className: 'mt-1 px-2 py-2 rounded-md text-[11px] leading-relaxed border-l-2 ' + explainer.cardCls,
+                    role: 'region', 'aria-label': label + ' explanation'
+                  },
+                    h('p', { className: 'mb-1 ' + (dk ? 'text-slate-100' : 'text-slate-700') }, explainer.what),
+                    h('div', { className: 'grid grid-cols-3 gap-1 mt-1.5 text-[10px]' },
+                      h('div', { className: 'rounded p-1 text-center ' + (dk ? 'bg-emerald-900/30 text-emerald-200' : 'bg-emerald-50 text-emerald-800') },
+                        h('div', { className: 'font-bold' }, '✓ Healthy'),
+                        h('div', null, explainer.healthy)),
+                      h('div', { className: 'rounded p-1 text-center ' + (dk ? 'bg-amber-900/30 text-amber-200' : 'bg-amber-50 text-amber-800') },
+                        h('div', { className: 'font-bold' }, '⚠ Watch'),
+                        h('div', null, explainer.watch)),
+                      h('div', { className: 'rounded p-1 text-center ' + (dk ? 'bg-red-900/30 text-red-200' : 'bg-red-50 text-red-800') },
+                        h('div', { className: 'font-bold' }, '⛔ Danger'),
+                        h('div', null, explainer.danger))
+                    ),
+                    h('p', { className: 'mt-2 italic ' + (dk ? 'text-slate-200' : 'text-slate-600') },
+                      h('strong', null, 'What to do: '), explainer.action)
+                  )
+                );
+              }
+              var widthFor = Math.min(100, foragingEfficiency + gardenBonus);
+              return h('div', { className: 'space-y-2' },
+                meterRow('varroa',
+                  dk ? 'text-red-400' : 'text-red-700', '🦟', 'Varroa Mites',
+                  varroaLevel + '%',
+                  varroaLevel > 30 ? 'text-red-500 font-bold' : (dk ? 'text-slate-200' : 'text-slate-600'),
+                  'bg-gradient-to-r from-red-500 to-red-400',
+                  varroaLevel,
+                  {
+                    cardCls: dk ? 'bg-red-900/15 border-red-500' : 'bg-red-50/70 border-red-300',
+                    what: 'Parasitic mites (Varroa destructor) that feed on bee hemolymph and brood fat bodies. They transmit Deformed Wing Virus and Acute Bee Paralysis Virus — the leading cause of colony collapse worldwide.',
+                    healthy: '1–5%',
+                    watch: '6–24%',
+                    danger: '25%+',
+                    action: 'Treat with IPM — 🧪 Treat picks the right one for the season (oxalic in winter, thymol in late summer, drone-brood trap in peak summer).'
+                  }
+                ),
+                meterRow('morale',
+                  dk ? 'text-amber-300' : 'text-amber-700', '😊', 'Colony Morale',
+                  morale + '%',
+                  morale < 40 ? 'text-red-500 font-bold' : (dk ? 'text-slate-200' : 'text-slate-600'),
+                  'bg-gradient-to-r from-amber-500 to-amber-400',
+                  morale,
+                  {
+                    cardCls: dk ? 'bg-amber-900/15 border-amber-500' : 'bg-amber-50/70 border-amber-300',
+                    what: 'Composite measure of pheromone harmony, queen status, food stores, and recent stressors. Low morale shows up as defensive bees, absconding risk, supersedure cells, and laying-worker chaos.',
+                    healthy: '70–100%',
+                    watch: '40–69%',
+                    danger: '<30%',
+                    action: '💨 Smoke before inspections; 🥣 Feed if dearth; check for queenlessness (👑 Requeen if she\'s failing).'
+                  }
+                ),
+                meterRow('foraging',
+                  dk ? 'text-green-300' : 'text-green-700', '🌸', 'Foraging Efficiency',
+                  foragingEfficiency + '%' + (gardenBonus > 0 ? ' (+' + gardenBonus + '% garden)' : ''),
+                  dk ? 'text-slate-200' : 'text-slate-600',
+                  'bg-gradient-to-r from-green-500 to-emerald-400',
+                  widthFor,
+                  {
+                    cardCls: dk ? 'bg-emerald-900/15 border-emerald-500' : 'bg-emerald-50/70 border-emerald-300',
+                    what: 'Percentage of forager-age workers actively bringing nectar + pollen home. Driven by weather, bloom availability, distance to forage, and pesticide load. Each forager visits 50–1,000 flowers per trip.',
+                    healthy: '70–100%',
+                    watch: '40–69%',
+                    danger: '<25%',
+                    action: 'Plant pollinator gardens via Companion Planting Lab (bonus stacks here). Reduce neighbor pesticide exposure. Diversify bloom across seasons.'
+                  }
+                ),
+                meterRow('disease',
+                  dk ? 'text-purple-300' : 'text-purple-700', '🦠', 'Disease Risk',
+                  diseaseRisk + '%' + (diseaseRisk > 45 ? ' ⚠ outbreak likely' : ''),
+                  diseaseRisk > 45 ? 'text-red-500 font-bold' : diseaseRisk > 25 ? 'text-amber-400 font-bold' : (dk ? 'text-slate-200' : 'text-slate-600'),
+                  'bg-gradient-to-r from-purple-500 to-pink-500',
+                  diseaseRisk,
+                  {
+                    cardCls: dk ? 'bg-purple-900/15 border-purple-500' : 'bg-purple-50/70 border-purple-300',
+                    what: 'Probability of a hive-level outbreak — American Foulbrood, European Foulbrood, Nosema, Chalkbrood, Sacbrood. Climbs with high humidity, weak queens, mite-borne viral co-infection, and low colony morale.',
+                    healthy: '0–24%',
+                    watch: '25–44%',
+                    danger: '45%+',
+                    action: '🔬 Inspect to see brood-pattern symptoms; replace failing 👑 queen; ventilate the hive; in extreme AFB cases burn affected frames (real beekeepers do this — it\'s federally regulated in many states).'
+                  }
+                )
+              );
+            })()),
 
           // ── Colony History Sparkline Chart ── (beekeeper only)
           viewMode === 'beekeeper' && history.length > 2 && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'), style: { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } },
@@ -9607,7 +12090,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   var lx = mx + li * (pw / 4);
                   cCtx.fillStyle = line.color;
                   cCtx.fillRect(lx, cH - 10, 8, 8);
-                  cCtx.fillStyle = dk ? '#94a3b8' : '#64748b';
+                  cCtx.fillStyle = dk ? '#94a3b8' : '#94a3b8';
                   cCtx.fillText(line.label, lx + 11, cH - 3);
                 });
               },
@@ -9615,6 +12098,86 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               'aria-label': 'Colony metrics history chart showing workers, honey, varroa, and morale over ' + history.length + ' days'
             })
           ),
+
+          // ── Reflection Question (state-aware Socratic prompt) ──
+          // Picks 1 of ~12 prompts tagged with trigger conditions so the
+          // question always relates to what the student is seeing right now.
+          // Turns the simulation into Socratic engagement: instead of just
+          // managing meters, students are asked to articulate WHY the system
+          // behaves the way it does. Includes a "Show another →" cycler.
+          viewMode === 'beekeeper' && colonySurvived && (function() {
+            // Each prompt: { id, q (question), think (hint to anchor), when (predicate or null=always) }
+            var ALL_PROMPTS = [
+              // ── Stress-triggered (highest priority — bounce the student off something visible)
+              { id: 'high_varroa',  when: function() { return varroaLevel >= 20; },
+                q: 'If you skipped treating the mites for another month, what do you predict would happen to your colony — and which numbers on the dashboard would shift first?',
+                think: 'Track the chain: more mites → more virus transmission (DWV) → more deformed bees → fewer foragers → less honey → starvation.' },
+              { id: 'queen_failing', when: function() { return queenHealth < 50; },
+                q: 'Your queen\'s health is dropping. If you DIDN\'T install a new one, the colony might raise its own emergency queen. What would they need to do that — and what would the timeline look like?',
+                think: 'Workers need eggs younger than 3 days old. They flood larvae with royal jelly → emergency queen cells. Eclosion in ~16 days, plus mating + first eggs = ~24 days of zero new brood.' },
+              { id: 'low_morale',   when: function() { return morale < 35; },
+                q: 'Bees don\'t have brains the way mammals do. What does "low morale" actually mean for a colony? What physical mechanisms produce that aggregate signal?',
+                think: 'Disrupted queen pheromone (QMP), alarm pheromone (isopentyl acetate) building up, fewer waggle dances recruiting foragers, reduced trophallaxis (food sharing).' },
+              { id: 'low_honey_winter', when: function() { return honey < 25 && season === 3; },
+                q: 'A wild colony with this little honey going into winter would almost certainly die. Should beekeepers always supplement? What\'s the argument FOR letting some colonies fail?',
+                think: 'Selection pressure breeds resistance. The opposing view: with varroa pressure as it is now, almost no untreated colony can survive — natural selection isn\'t working on bees the way it would.' },
+              // ── Seasonal
+              { id: 'spring_buildup', when: function() { return season === 0 && day > 5; },
+                q: 'In early spring, the queen lays ~1,500 eggs a day — but the population doesn\'t double every day. Where does the loss go, and what does that tell you about a worker\'s life expectancy?',
+                think: 'Summer-bee lifespan is ~6 weeks. Workers die at the same rate while new ones emerge — population is the integral of (birth rate − death rate).' },
+              { id: 'summer_swarm',   when: function() { return season === 1 && workers >= 30000; },
+                q: 'When a colony gets crowded in early summer, it often swarms — half the workers leave with the old queen to start a new hive. Why is swarming the colony\'s "default" success path, not a failure?',
+                think: 'Reproduction at the superorganism level. The colony IS the unit of evolution — splitting into two viable colonies is how bees reproduce as a species, not how individuals reproduce.' },
+              { id: 'autumn_drone',   when: function() { return season === 2; },
+                q: 'In autumn, worker bees evict the drones — push them out, refuse them re-entry. Is this cruel, ruthless, or rational? Whose perspective are you taking?',
+                think: 'From the colony\'s perspective, drones cost honey to feed and can\'t forage, sting, or warm the hive. From the drone\'s, he was bred for a mating flight he probably never got.' },
+              { id: 'winter_cluster', when: function() { return season === 3; },
+                q: 'The winter cluster maintains 95°F at the queen\'s core even when it\'s 0°F outside. The bees don\'t shiver the way we do — what ARE they doing, and how does the heat get distributed?',
+                think: 'They vibrate flight muscles without moving wings (asynchronous indirect flight muscles, like a car idling in neutral). Heat radiates outward; bees rotate from cold outer shell inward.' },
+              // ── Context-aware
+              { id: 'pollination_value', when: function() { return gardenBonus > 0 || (d.totalHarvested || 0) > 0; },
+                q: 'Honeybees provide ~$15 billion/year in U.S. pollination — way more than the honey itself. If you had to monetize their ecological role, would $15 billion be too high or too low? Compared to what?',
+                think: 'Doesn\'t count wild pollination of non-crop plants. Doesn\'t count the 4,000+ native bee species, many of which are more efficient. Ecosystem-service economics has hard edges.' },
+              { id: 'inspection_open', when: function() { return showInspect; },
+                q: 'Opening the hive disturbs the bees, releases alarm pheromone, and lowers morale briefly. What\'s the smallest inspection that still gives you useful information?',
+                think: 'Lift the inner cover (no frames pulled) and read the temperature + smell. Pull just one frame near the brood — a quick "are eggs being laid?" check. Match cadence to what you need to learn.' },
+              // ── Always-applicable fallbacks
+              { id: 'meta_individual',
+                q: 'A worker bee lives ~6 weeks in summer. The colony has been here for decades or centuries. Who is the "individual" — the bee, the colony, or both? Why does it matter how you decide?',
+                think: 'Superorganism biology. Many traits make sense at the colony level (swarming, role specialization, communication) and lose meaning at the bee level.' },
+              { id: 'meta_simplification',
+                q: 'This simulator turns 50+ variables into four meters. What real-world signals do you think are missing or oversimplified — and how would you check that against a real beekeeper\'s observations?',
+                think: 'Brood pattern (spotty vs solid), entrance traffic, defensive behavior, abdomen color, frame weight, smell, sound pitch. Real beekeepers read all of these in 30 seconds with their eyes + nose + ears.' }
+            ];
+            // Build available pool based on `when`
+            var pool = ALL_PROMPTS.filter(function(p) { return !p.when || p.when(); });
+            if (pool.length === 0) pool = ALL_PROMPTS.filter(function(p) { return !p.when; });
+            // Index cycles via d.reflectionIdx; clamp to pool size; show "think" hint behind a disclosure.
+            var rIdx = (d.reflectionIdx || 0) % pool.length;
+            var prompt = pool[rIdx];
+            var showThink = !!d.reflectionThink;
+            return h('div', { className: 'rounded-xl border-l-4 p-3 ' + (dk ? 'bg-indigo-900/15 border-indigo-500 text-slate-100' : 'bg-indigo-50 border-indigo-400 text-slate-700'),
+              role: 'region', 'aria-label': 'Reflection question' },
+              h('div', { className: 'flex items-center justify-between mb-1.5' },
+                h('div', { className: 'flex items-center gap-2' },
+                  h('span', { 'aria-hidden': 'true', className: 'text-base' }, '💭'),
+                  h('span', { className: 'text-[10px] font-bold uppercase tracking-wider ' + (dk ? 'text-indigo-300' : 'text-indigo-700') }, 'Reflection · think about it')
+                ),
+                pool.length > 1 && h('button', {
+                  onClick: function() { upd('reflectionIdx', rIdx + 1); upd('reflectionThink', false); },
+                  title: 'Show another reflection question',
+                  className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'text-indigo-300 hover:bg-indigo-900/40' : 'text-indigo-700 hover:bg-indigo-100')
+                }, 'Another →')
+              ),
+              h('p', { className: 'text-xs leading-relaxed ' + (dk ? 'text-slate-100' : 'text-slate-700') }, prompt.q),
+              h('button', {
+                onClick: function() { upd('reflectionThink', !showThink); },
+                'aria-expanded': showThink ? 'true' : 'false',
+                className: 'mt-2 text-[11px] font-bold flex items-center gap-1 ' + (dk ? 'text-indigo-300 hover:text-indigo-200' : 'text-indigo-700 hover:text-indigo-900')
+              }, (showThink ? '▼' : '▶') + ' ' + (showThink ? 'Hide hint' : 'Stuck? Anchor your thinking →')),
+              showThink && h('p', { className: 'mt-1.5 text-[11px] leading-relaxed italic px-2 py-1.5 rounded ' + (dk ? 'bg-indigo-900/30 text-slate-200' : 'bg-white/60 text-slate-600') }, prompt.think)
+            );
+          })(),
 
           // ── Hive Cross-Section Visual ── (beekeeper only)
           viewMode === 'beekeeper' && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-gradient-to-b from-amber-900/30 to-amber-950/20 border-amber-700/40' : 'bg-gradient-to-b from-amber-100 to-amber-50 border-amber-300'),
@@ -9720,8 +12283,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('div', { className: 'text-sm' }, seasonNamesShort[e.season] || '')),
                     h('div', { className: 'flex-1 leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, e.text || '—'));
                 })),
-              !expanded && journalEntries.length > 3 && h('div', { className: 'text-[11px] mt-1 text-center ' + (dk ? 'text-slate-500' : 'text-slate-400') }, '(' + (journalEntries.length - 3) + ' more entries hidden)'),
-              h('p', { className: 'text-[11px] italic mt-2 ' + (dk ? 'text-slate-500' : 'text-slate-500') }, 'Real beekeepers keep hive journals for every inspection. Patterns across weeks reveal colony trajectory that a single reading misses.'));
+              !expanded && journalEntries.length > 3 && h('div', { className: 'text-[11px] mt-1 text-center ' + (dk ? 'text-slate-300' : 'text-slate-400') }, '(' + (journalEntries.length - 3) + ' more entries hidden)'),
+              h('p', { className: 'text-[11px] italic mt-2 ' + (dk ? 'text-slate-300' : 'text-slate-300') }, 'Real beekeepers keep hive journals for every inspection. Patterns across weeks reveal colony trajectory that a single reading misses.'));
           })(),
 
           // Colony collapsed state (beekeeper only)
@@ -9777,14 +12340,147 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             )
           ),
 
-          // Seasonal goals (beekeeper only)
-          viewMode === 'beekeeper' && colonySurvived && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-indigo-900/20 border-indigo-700/40' : 'bg-indigo-50 border-indigo-200') },
-            h('div', { className: 'flex items-center gap-2 mb-1' },
-              h('span', null, SEASON_GOALS[season].emoji),
-              h('span', { className: 'text-xs font-bold ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, SEASON_GOALS[season].season + ' Goals'),
-              h('span', { className: 'text-[11px] ml-auto ' + (dk ? 'text-indigo-400' : 'text-indigo-500') }, '🎯 ' + actionPoints + '/3 actions left today')),
-            h('div', { className: 'flex flex-wrap gap-1' },
-              SEASON_GOALS[season].goals.map(function(g, i) { return h('span', { key: i, className: 'text-[11px] px-2 py-0.5 rounded border ' + (dk ? 'bg-slate-800 border-indigo-700/30 text-indigo-300' : 'bg-white border-indigo-100 text-indigo-700') }, g); }))),
+          // Seasonal goals — live checklist with ✓ / ⏳ markers
+          // Each goal is a predicate on current state so students can see at a
+          // glance which season-targets they\'ve hit and which are still open.
+          viewMode === 'beekeeper' && colonySurvived && (function() {
+            var goalPreds = [
+              // Spring
+              [
+                { label: SEASON_GOALS[0].goals[0], met: workers >= 20000 },
+                { label: SEASON_GOALS[0].goals[1], met: varroaLevel < 15 },
+                { label: SEASON_GOALS[0].goals[2], met: honey >= 30 }
+              ],
+              // Summer
+              [
+                { label: SEASON_GOALS[1].goals[0], met: (d.totalHarvested || 0) > 0 || (d.lifetimeHarvest || 0) > 0 },
+                { label: SEASON_GOALS[1].goals[1], met: wax >= 15 || (d.supersAdded || 0) > 0 },
+                { label: SEASON_GOALS[1].goals[2], met: (typeof gardenBonus !== 'undefined' && gardenBonus > 0) }
+              ],
+              // Autumn
+              [
+                { label: SEASON_GOALS[2].goals[0], met: honey >= 40 },
+                { label: SEASON_GOALS[2].goals[1], met: varroaLevel < 10 || (d.varroaTreats || 0) > 0 },
+                { label: SEASON_GOALS[2].goals[2], met: queenHealth >= 70 }
+              ],
+              // Winter
+              [
+                { label: SEASON_GOALS[3].goals[0], met: workers >= 10000 },
+                { label: SEASON_GOALS[3].goals[1], met: honey >= 10 },
+                { label: SEASON_GOALS[3].goals[2], met: habitat >= 60 || ((d.conservationActions || []).length > 0) }
+              ]
+            ];
+            var seasonGoalsList = goalPreds[season] || goalPreds[0];
+            var goalsHit = seasonGoalsList.filter(function(g) { return g.met; }).length;
+            return h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-indigo-900/20 border-indigo-700/40' : 'bg-indigo-50 border-indigo-200'),
+              role: 'region', 'aria-label': SEASON_GOALS[season].season + ' goals: ' + goalsHit + ' of ' + seasonGoalsList.length + ' complete' },
+              h('div', { className: 'flex items-center gap-2 mb-2' },
+                h('span', { 'aria-hidden': 'true' }, SEASON_GOALS[season].emoji),
+                h('span', { className: 'text-xs font-bold ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, SEASON_GOALS[season].season + ' Goals'),
+                h('span', {
+                  className: 'text-[11px] font-bold px-2 py-0.5 rounded-full ' + (goalsHit === seasonGoalsList.length ? (dk ? 'bg-emerald-900/50 text-emerald-300' : 'bg-emerald-100 text-emerald-700') : (dk ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-700'))
+                }, goalsHit + ' / ' + seasonGoalsList.length + (goalsHit === seasonGoalsList.length ? ' ✓ complete' : '')),
+                h('span', { className: 'text-[11px] ml-auto ' + (dk ? 'text-indigo-400' : 'text-indigo-500') }, '🎯 ' + actionPoints + '/3 actions today')
+              ),
+              h('ul', { className: 'space-y-1', role: 'list' },
+                seasonGoalsList.map(function(g, i) {
+                  return h('li', { key: i,
+                    className: 'flex items-start gap-2 text-[11px] leading-snug ' +
+                      (g.met ? (dk ? 'text-emerald-300' : 'text-emerald-700') : (dk ? 'text-slate-300' : 'text-slate-700')) },
+                    h('span', { 'aria-hidden': 'true', className: g.met ? '' : 'opacity-60', style: { width: 14, display: 'inline-block', textAlign: 'center' } }, g.met ? '✓' : '⏳'),
+                    h('span', null, g.label),
+                    h('span', { className: 'sr-only' }, g.met ? ' (complete)' : ' (in progress)')
+                  );
+                })
+              )
+            );
+          })(),
+
+          // ── Next badges (3 closest to earning) ──
+          // Gamification + clarity at once: instead of an opaque "13 badges
+          // exist somewhere" message, show the three the student is nearest
+          // to earning, with a real-time progress bar, the description, and
+          // a click-through to the full Badges sheet. Binary badges (e.g.,
+          // "Harvest honey for the first time") get a one-click-from-done
+          // treatment so they don't dominate the list with 0% bars.
+          viewMode === 'beekeeper' && colonySurvived && (function() {
+            // Per-badge progress: { now, target, isBinary }
+            function progressFor(id) {
+              switch (id) {
+                case 'first_day':       return { now: Math.min(day, 1),                    target: 1,     isBinary: true };
+                case 'survive_30':      return { now: Math.min(day, 30),                   target: 30 };
+                case 'survive_120':     return { now: Math.min(day, 120),                  target: 120 };
+                case 'honey_harvest':   return { now: (d.totalHarvested || 0) > 0 ? 1 : 0, target: 1,     isBinary: true };
+                case 'varroa_fighter':  return { now: Math.min((d.varroaTreats || 0), 3),  target: 3 };
+                case 'conservationist': return { now: Math.min((d.conservationsDone || 0), 5), target: 5 };
+                case 'garden_friend':   return { now: Math.min(gardenPollinators, 3),      target: 3 };
+                case 'thriving':        return { now: Math.min(colonyHealth, 80),          target: 80 };
+                case 'big_colony':      return { now: Math.min(workers, 25000),            target: 25000 };
+                case 'quiz_master':     return { now: Math.min((d.bestQuizScore || 0), 8), target: 8 };
+                case 'inspector':       return { now: Math.min((d.layersViewed || []).length, 9), target: 9 };
+                case 'weather_wise':    return { now: Math.min((d.weatherEventsHandled || 0), 3), target: 3 };
+                case 'varietal_master': return { now: Math.min(Object.keys(d.varietals || {}).length, 4), target: 4 };
+                case 'event_handler':   return { now: Math.min((d.eventsHandled || 0), 5), target: 5 };
+                default:                return { now: 0, target: 1 };
+              }
+            }
+            var unearned = BADGE_DEFS.filter(function(bd) { return !newBadges[bd.id]; });
+            if (unearned.length === 0) {
+              return h('div', { className: 'rounded-xl border-2 p-3 ' + (dk ? 'bg-gradient-to-r from-amber-900/30 to-yellow-900/20 border-amber-500/60' : 'bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-400'),
+                role: 'status' },
+                h('div', { className: 'flex items-center gap-2' },
+                  h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, '🏆'),
+                  h('div', null,
+                    h('div', { className: 'text-sm font-bold ' + (dk ? 'text-amber-200' : 'text-amber-900') }, 'All ' + BADGE_DEFS.length + ' badges earned!'),
+                    h('p', { className: 'text-[11px] ' + (dk ? 'text-amber-300' : 'text-amber-700') }, 'Master beekeeper. You\'ve seen the full sim — try the Queen RTS or Drone Flight modes next.')
+                  )
+                ));
+            }
+            // Sort by progress % desc, with a tiny epsilon so binary (1-of-1) badges
+            // don't all tie at 100% and drown out scalar progress bars.
+            var withProg = unearned.map(function(bd) {
+              var p = progressFor(bd.id);
+              var pct = p.target > 0 ? (p.now / p.target) : 0;
+              // Demote pure-zero progress so we don't show 3 untouched 0% bars.
+              if (p.now === 0) pct -= 0.001;
+              return { bd: bd, prog: p, pct: pct };
+            }).sort(function(a, b) { return b.pct - a.pct; }).slice(0, 3);
+            return h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-amber-900/15 border-amber-700/40' : 'bg-amber-50 border-amber-200'),
+              role: 'region', 'aria-label': 'Next badges to earn' },
+              h('div', { className: 'flex items-center justify-between mb-2' },
+                h('div', { className: 'flex items-center gap-2' },
+                  h('span', { 'aria-hidden': 'true' }, '🎖️'),
+                  h('span', { className: 'text-xs font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Next Badges'),
+                  h('span', { className: 'text-[10px] px-1.5 py-0.5 rounded ' + (dk ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-700') }, badgeCount + ' / ' + BADGE_DEFS.length + ' earned')
+                ),
+                h('button', {
+                  onClick: function() { upd('showBadges', true); },
+                  title: 'See all badges and their requirements',
+                  className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'text-amber-400 hover:bg-amber-900/40' : 'text-amber-700 hover:bg-amber-100')
+                }, 'See all →')
+              ),
+              h('div', { className: 'space-y-1.5' },
+                withProg.map(function(item) {
+                  var bd = item.bd;
+                  var p = item.prog;
+                  var pctDisplay = Math.max(0, Math.min(100, Math.round(item.pct * 100)));
+                  var nearlyThere = pctDisplay >= 75;
+                  return h('div', { key: bd.id, className: 'flex items-start gap-2 p-1.5 rounded-md ' + (nearlyThere ? (dk ? 'bg-amber-900/30' : 'bg-amber-100/60') : '') },
+                    h('span', { className: 'text-xl flex-shrink-0', 'aria-hidden': 'true', style: { lineHeight: '1' } }, bd.icon),
+                    h('div', { className: 'flex-1 min-w-0' },
+                      h('div', { className: 'flex items-baseline justify-between gap-2' },
+                        h('span', { className: 'text-xs font-bold ' + (dk ? 'text-amber-100' : 'text-amber-900') }, bd.label),
+                        h('span', { className: 'text-[10px] font-mono ' + (nearlyThere ? (dk ? 'text-amber-300 font-bold' : 'text-amber-700 font-bold') : (dk ? 'text-slate-300' : 'text-slate-500')) },
+                          p.isBinary ? (p.now > 0 ? '✓' : 'not yet') : (p.now + ' / ' + p.target))),
+                      h('p', { className: 'text-[10px] leading-snug ' + (dk ? 'text-slate-300' : 'text-slate-600') }, bd.desc),
+                      h('div', { className: 'h-1 mt-1 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200') },
+                        h('div', { style: { width: pctDisplay + '%' }, className: 'h-full bg-gradient-to-r from-amber-400 to-yellow-300 rounded-full transition-all' }))
+                    )
+                  );
+                })
+              )
+            );
+          })(),
 
           // Habitat & Pesticide meters (beekeeper only)
           viewMode === 'beekeeper' && colonySurvived && h('div', { className: 'grid grid-cols-2 gap-2' },
@@ -9805,8 +12501,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           viewMode === 'beekeeper' && colonySurvived && h('div', { className: 'space-y-2' },
             // Primary actions row
             h('div', { className: 'flex gap-2 items-center' },
-              h('button', { onClick: advanceDay, 'aria-label': 'Advance one day', className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white shadow-sm transition-all hover:shadow-md hover:scale-[1.01] ' + (dk ? 'bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500' : 'bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600'), style: { boxShadow: '0 2px 8px rgba(217,119,6,0.25)' } }, '\u23E9 Next Day'),
-              h('button', { onClick: function() { advanceDays(5); }, 'aria-label': 'Advance 5 days', className: 'px-3 py-2.5 rounded-xl text-sm font-bold transition-all ' + (dk ? 'bg-amber-900/40 text-amber-300 hover:bg-amber-800/50' : 'bg-amber-100 text-amber-700 hover:bg-amber-200') }, '\u23ED +5'),
+              h('button', { onClick: advanceDay, className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white shadow-sm transition-all hover:shadow-md hover:scale-[1.01] ' + (dk ? 'bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500' : 'bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600'), style: { boxShadow: '0 2px 8px rgba(217,119,6,0.25)' } }, '\u23E9 Next Day'),
+              h('button', { onClick: function() { advanceDays(5); }, className: 'px-3 py-2.5 rounded-xl text-sm font-bold transition-all ' + (dk ? 'bg-amber-900/40 text-amber-300 hover:bg-amber-800/50' : 'bg-amber-100 text-amber-700 hover:bg-amber-200') }, '\u23ED +5'),
               h('button', { onClick: function() { advanceDays(30); }, 'aria-label': 'Advance 30 days (1 month)', className: 'px-3 py-2.5 rounded-xl text-sm font-bold transition-all ' + (dk ? 'bg-amber-900/30 text-amber-400 hover:bg-amber-800/40' : 'bg-amber-50 text-amber-600 hover:bg-amber-100') }, '\u23ED +30')
             ),
             // Management actions
@@ -9925,7 +12621,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ),
               aiError && h('p', { className: 'text-[11px] text-rose-500', role: 'alert' }, aiError),
               aiText && h('p', { className: 'text-xs leading-relaxed rounded-lg p-2 ' + (dk ? 'bg-slate-900 text-slate-200 border border-purple-500/30' : 'bg-white text-slate-700 border border-purple-100') }, aiText),
-              !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic ' + (dk ? 'text-slate-400' : 'text-slate-500') }, 'Click \u201CExplain\u201D for the AI tutor to describe the current view.')
+              !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic ' + (dk ? 'text-slate-400' : 'text-slate-300') }, 'Click \u201CExplain\u201D for the AI tutor to describe the current view.')
             );
           })(),
 

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Contribute a Lesson or Tool to AlloFlow</title>
+<meta name="description" content="Share a student-authored lesson or educator-built STEM Lab tool with the AlloFlow community. Submissions are reviewed before public listing." />
+<style>
+  :root {
+    --navy: #1e3a5f;
+    --slate: #475569;
+    --soft: #f1f5f9;
+    --rule: #cbd5e1;
+    --accent: #0c7a8a;
+    --error: #b91c1c;
+    --warn: #b45309;
+    --ok: #047857;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #0f172a;
+    background: #fff;
+    margin: 0;
+    padding: 0;
+  }
+  main { max-width: 780px; margin: 0 auto; padding: 32px 24px 80px; }
+  h1 { font-size: 28px; line-height: 1.2; color: var(--navy); margin: 0 0 8px; }
+  h2 { font-size: 18px; line-height: 1.3; color: var(--navy); margin: 24px 0 8px; }
+  p, li { margin: 8px 0; }
+  a { color: var(--accent); }
+  .lede { color: var(--slate); }
+  hr { border: 0; border-top: 1px solid var(--rule); margin: 24px 0; }
+  label { display: block; margin: 14px 0 4px; font-weight: 600; font-size: 14px; }
+  .help { color: var(--slate); font-size: 13px; margin-top: 4px; font-weight: 400; }
+  input[type="text"], input[type="number"], textarea, select {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    font: inherit;
+    background: #fdfdff;
+  }
+  textarea { font-family: ui-monospace, "Cascadia Code", Menlo, monospace; font-size: 13px; min-height: 220px; }
+  input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  button {
+    font: inherit;
+    padding: 10px 18px;
+    border-radius: 6px;
+    border: 1px solid var(--rule);
+    background: #fff;
+    cursor: pointer;
+  }
+  button.primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  button.primary[disabled] { background: #94a3b8; border-color: #94a3b8; cursor: not-allowed; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .row > * { flex: 1 1 200px; }
+  .panel {
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 14px 16px;
+    background: var(--soft);
+    margin: 12px 0;
+  }
+  .panel h3 { margin: 0 0 6px; font-size: 14px; color: var(--navy); }
+  .pii-flag { color: var(--warn); font-weight: 600; }
+  .pii-clean { color: var(--ok); font-weight: 600; }
+  .checkbox-row { display: flex; align-items: flex-start; gap: 8px; margin: 10px 0; }
+  .checkbox-row input { margin-top: 4px; }
+  .checkbox-row label { margin: 0; font-weight: 400; font-size: 14px; line-height: 1.4; }
+  .status {
+    padding: 12px 14px;
+    border-radius: 6px;
+    margin: 12px 0;
+    border: 1px solid var(--rule);
+  }
+  .status.ok { background: #ecfdf5; border-color: var(--ok); color: var(--ok); }
+  .status.error { background: #fef2f2; border-color: var(--error); color: var(--error); }
+  .footer { color: var(--slate); font-size: 13px; margin-top: 32px; }
+  code { background: var(--soft); padding: 1px 4px; border-radius: 3px; font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Contribute a Lesson or Tool</h1>
+  <p class="lede">Share a student-authored lesson or educator-built STEM Lab tool with the AlloFlow community. Submissions are reviewed before public listing. By default, submissions are anonymous; you can opt in to a credit line.</p>
+
+  <hr />
+
+  <h2>1. Paste or upload your JSON</h2>
+  <p class="help">If you saved a lesson or tool from inside AlloFlow, you should have a <code>.json</code> file. Drag it in, click to upload, or paste the contents below.</p>
+
+  <input type="file" id="fileInput" accept=".json,application/json" aria-label="Upload JSON file" />
+  <label for="jsonInput">JSON content</label>
+  <textarea id="jsonInput" aria-describedby="jsonHelp" placeholder='{ "title": "...", "payload": { ... } }'></textarea>
+  <p id="jsonHelp" class="help">Schema: top-level <code>payload</code> object plus metadata (title, subject, grade_level, etc.). The validator will tell you if anything is missing.</p>
+
+  <div id="schemaPanel" class="panel" hidden>
+    <h3>Schema check</h3>
+    <div id="schemaResult"></div>
+  </div>
+
+  <hr />
+
+  <h2>2. Metadata</h2>
+  <p class="help">A few fields the catalog needs for browsing and filtering.</p>
+
+  <label for="metaTitle">Title <span aria-hidden="true">*</span></label>
+  <input type="text" id="metaTitle" required maxlength="120" />
+
+  <div class="row">
+    <div>
+      <label for="metaSubject">Subject <span aria-hidden="true">*</span></label>
+      <select id="metaSubject" required>
+        <option value="">Choose one</option>
+        <option>Math</option>
+        <option>Science</option>
+        <option>ELA / Literacy</option>
+        <option>Social Studies</option>
+        <option>SEL / Character</option>
+        <option>Art / Music</option>
+        <option>World Languages</option>
+        <option>STEM (cross-disciplinary)</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div>
+      <label for="metaGrade">Grade level <span aria-hidden="true">*</span></label>
+      <input type="text" id="metaGrade" required placeholder="e.g., 6-8, K-2, 11" />
+      <p class="help">A range or single grade. Use Pre-K, K, or numbers.</p>
+    </div>
+  </div>
+
+  <label for="metaTags">Tags</label>
+  <input type="text" id="metaTags" placeholder="comma-separated, e.g., photosynthesis, peer-teaching, multilingual" />
+
+  <label for="metaCredit">Credit (optional)</label>
+  <input type="text" id="metaCredit" placeholder='e.g., "Anya G., 7th grade" or leave blank for anonymous' maxlength="80" />
+  <p class="help">By default, submissions are <strong>anonymous</strong>. You may add a short credit line. Do not include full names of minors.</p>
+
+  <label for="metaLicense">License</label>
+  <select id="metaLicense">
+    <option value="CC-BY-SA-4.0">CC-BY-SA-4.0 (recommended; remix and share alike)</option>
+    <option value="CC-BY-4.0">CC-BY-4.0 (remix freely with attribution)</option>
+    <option value="CC0">CC0 (public domain dedication)</option>
+  </select>
+
+  <hr />
+
+  <h2>3. Privacy scan</h2>
+  <p class="help">Before submitting, we scan your JSON for patterns that look like personally identifiable information (names, emails, phone numbers, addresses). The scan runs entirely in your browser.</p>
+
+  <button type="button" id="scanBtn">Run privacy scan</button>
+
+  <div id="piiPanel" class="panel" hidden>
+    <h3>Privacy scan results</h3>
+    <div id="piiResult"></div>
+  </div>
+
+  <hr />
+
+  <h2>4. Affirmations</h2>
+
+  <div class="checkbox-row">
+    <input type="checkbox" id="affAuthor" />
+    <label for="affAuthor">I am the author of this content, or I have explicit permission from the author to submit it. If the author is a minor, an adult educator or guardian is making this submission on their behalf.</label>
+  </div>
+  <div class="checkbox-row">
+    <input type="checkbox" id="affPii" />
+    <label for="affPii">I have reviewed the privacy scan and confirm there is no personally identifiable information in this submission. I have removed student names, classmate names, school names, contact information, and any identifying medical or diagnostic content.</label>
+  </div>
+  <div class="checkbox-row">
+    <input type="checkbox" id="affLicense" />
+    <label for="affLicense">I agree to publish this submission under the license selected above. I understand it may be downloaded, modified, and redistributed by other AlloFlow users.</label>
+  </div>
+  <div class="checkbox-row">
+    <input type="checkbox" id="affAge" />
+    <label for="affAge">I am 18 or older, OR I am a teacher / parent / guardian submitting on behalf of a student under 18.</label>
+  </div>
+
+  <hr />
+
+  <h2>5. Submit</h2>
+  <button type="button" id="submitBtn" class="primary" disabled>Submit for review</button>
+  <p class="help">After submission, an AlloFlow maintainer will review and either publish to the public catalog or reach out with questions.</p>
+
+  <div id="submitStatus" class="status" hidden></div>
+
+  <hr />
+  <p class="footer">AlloFlow is open-source under AGPL v3. The full source code is at <a href="https://github.com/Apomera/AlloFlow">github.com/Apomera/AlloFlow</a>. Questions or issues with the catalog: open a GitHub issue or contact the project maintainer.</p>
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+
+  const SCHEMA_VERSION = "1.0";
+
+  // PII detection regexes (intentionally conservative; flag for review, not auto-redact)
+  const PII_PATTERNS = [
+    { type: "email", re: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi },
+    { type: "phone (US)", re: /\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g },
+    { type: "SSN", re: /\b\d{3}-\d{2}-\d{4}\b/g },
+    { type: "URL with personal slug", re: /\b(?:facebook\.com|instagram\.com|tiktok\.com|linkedin\.com)\/[A-Za-z0-9._-]+/gi },
+    { type: "street address", re: /\b\d{1,5}\s+[A-Z][A-Za-z]+\s+(?:Street|St\.?|Avenue|Ave\.?|Road|Rd\.?|Boulevard|Blvd\.?|Drive|Dr\.?|Lane|Ln\.?|Way|Court|Ct\.?)\b/gi },
+    { type: "Mr./Mrs./Dr. + name", re: /\b(?:Mr|Mrs|Ms|Dr|Mx)\.?\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?\b/g },
+    { type: "diagnostic acronym", re: /\b(?:ADHD|ASD|ODD|OCD|PTSD|TBI|SLD|EBD|OHI|IEP|504\sPlan)\b/g },
+  ];
+
+  function runPiiScan(text) {
+    const findings = [];
+    PII_PATTERNS.forEach(p => {
+      const matches = text.match(p.re);
+      if (matches && matches.length > 0) {
+        findings.push({ type: p.type, count: matches.length, samples: matches.slice(0, 3) });
+      }
+    });
+    return findings;
+  }
+
+  function validateSchema(jsonText) {
+    try {
+      const obj = JSON.parse(jsonText);
+      if (typeof obj !== "object" || obj === null) {
+        return { ok: false, error: "Top-level value must be an object." };
+      }
+      if (!obj.payload && !obj.title && !obj.lesson_content && !obj.tool && !obj.world && !obj.adventure) {
+        return { ok: false, error: "JSON does not look like an AlloFlow lesson or tool. Expected at least one of: payload, lesson_content, tool, world, adventure." };
+      }
+      return { ok: true, parsed: obj };
+    } catch (e) {
+      return { ok: false, error: "Could not parse JSON: " + e.message };
+    }
+  }
+
+  // ---- DOM wiring ----
+  const $ = id => document.getElementById(id);
+
+  $("fileInput").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const text = await file.text();
+    $("jsonInput").value = text;
+    if (!$("metaTitle").value) {
+      try {
+        const obj = JSON.parse(text);
+        if (obj.title) $("metaTitle").value = obj.title;
+        else if (obj.payload?.title) $("metaTitle").value = obj.payload.title;
+        else if (obj.metadata?.title) $("metaTitle").value = obj.metadata.title;
+      } catch {}
+    }
+    runSchemaCheck();
+  });
+
+  function runSchemaCheck() {
+    const text = $("jsonInput").value.trim();
+    if (!text) { $("schemaPanel").hidden = true; return; }
+    const r = validateSchema(text);
+    $("schemaPanel").hidden = false;
+    $("schemaResult").innerHTML = r.ok
+      ? '<span class="pii-clean">Schema OK.</span> JSON parsed successfully.'
+      : '<span class="pii-flag">Schema error:</span> ' + escapeHtml(r.error);
+    updateSubmitState();
+  }
+
+  $("jsonInput").addEventListener("input", () => {
+    runSchemaCheck();
+    // re-arm scan if json changed
+    $("piiPanel").hidden = true;
+    state.scanComplete = false;
+    updateSubmitState();
+  });
+
+  $("scanBtn").addEventListener("click", () => {
+    const text = $("jsonInput").value;
+    if (!text.trim()) {
+      $("piiPanel").hidden = false;
+      $("piiResult").textContent = "No JSON to scan.";
+      return;
+    }
+    const findings = runPiiScan(text);
+    $("piiPanel").hidden = false;
+    if (findings.length === 0) {
+      $("piiResult").innerHTML = '<span class="pii-clean">No common PII patterns detected.</span> The scan is conservative; please still review your content carefully for any names or identifying details before submitting.';
+    } else {
+      const list = findings.map(f =>
+        `<li><span class="pii-flag">${escapeHtml(f.type)}:</span> ${f.count} match${f.count !== 1 ? "es" : ""} (e.g., ${f.samples.map(s => "<code>" + escapeHtml(s) + "</code>").join(", ")})</li>`
+      ).join("");
+      $("piiResult").innerHTML = `<p><span class="pii-flag">Possible PII detected.</span> Review and edit your JSON to remove anything below before submitting:</p><ul>${list}</ul>`;
+    }
+    state.scanComplete = true;
+    updateSubmitState();
+  });
+
+  const state = { scanComplete: false };
+
+  ["affAuthor","affPii","affLicense","affAge","metaTitle","metaSubject","metaGrade"].forEach(id => {
+    $(id).addEventListener("change", updateSubmitState);
+    $(id).addEventListener("input", updateSubmitState);
+  });
+
+  function updateSubmitState() {
+    const schema = validateSchema($("jsonInput").value || "{}").ok;
+    const meta = $("metaTitle").value.trim() && $("metaSubject").value && $("metaGrade").value.trim();
+    const affs = ["affAuthor","affPii","affLicense","affAge"].every(id => $(id).checked);
+    const ready = schema && meta && state.scanComplete && affs;
+    $("submitBtn").disabled = !ready;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  // ---- Firebase init (auto-config from Firebase Hosting) ----
+  let db = null;
+  let userUid = null;
+
+  async function initFirebase() {
+    try {
+      const cfgRes = await fetch("/__/firebase/init.json");
+      if (!cfgRes.ok) throw new Error("Could not load Firebase Hosting auto-config. This page must be served from Firebase Hosting.");
+      const cfg = await cfgRes.json();
+      const app = initializeApp(cfg);
+      db = getFirestore(app);
+      const auth = getAuth(app);
+      onAuthStateChanged(auth, u => { userUid = u?.uid || null; });
+      await signInAnonymously(auth);
+    } catch (e) {
+      console.error("Firebase init failed:", e);
+      const s = $("submitStatus");
+      s.hidden = false;
+      s.className = "status error";
+      s.textContent = "Firebase failed to initialize. The submission form requires Firebase Hosting. Error: " + e.message;
+    }
+  }
+  initFirebase();
+
+  $("submitBtn").addEventListener("click", async () => {
+    const btn = $("submitBtn");
+    btn.disabled = true;
+    btn.textContent = "Submitting...";
+    const status = $("submitStatus");
+    status.hidden = false;
+    status.className = "status";
+    status.textContent = "Submitting...";
+
+    const validation = validateSchema($("jsonInput").value);
+    if (!validation.ok) {
+      status.className = "status error";
+      status.textContent = "Schema invalid: " + validation.error;
+      btn.disabled = false;
+      btn.textContent = "Submit for review";
+      return;
+    }
+
+    const payload = {
+      schema_version: SCHEMA_VERSION,
+      status: "pending",
+      submitted_at: serverTimestamp(),
+      submitted_by_uid: userUid || null,
+      metadata: {
+        title: $("metaTitle").value.trim(),
+        subject: $("metaSubject").value,
+        grade_level: $("metaGrade").value.trim(),
+        tags: $("metaTags").value.split(",").map(t => t.trim()).filter(Boolean),
+        credit: $("metaCredit").value.trim() || null,
+        license: $("metaLicense").value,
+      },
+      pii_scan: {
+        ran_at_submit: state.scanComplete,
+        findings: runPiiScan($("jsonInput").value),
+      },
+      affirmations: {
+        author_or_authorized: $("affAuthor").checked,
+        no_pii: $("affPii").checked,
+        license_agreed: $("affLicense").checked,
+        age_eligible: $("affAge").checked,
+      },
+      json_payload: validation.parsed,
+    };
+
+    try {
+      if (!db) throw new Error("Firestore not initialized.");
+      const ref = await addDoc(collection(db, "catalog_submissions"), payload);
+      status.className = "status ok";
+      status.innerHTML = `<strong>Submitted.</strong> Reference: <code>${ref.id}</code>. A maintainer will review and either publish to the public catalog or reach out with questions. You may close this tab.`;
+      btn.textContent = "Submitted";
+    } catch (e) {
+      console.error(e);
+      status.className = "status error";
+      status.textContent = "Submission failed: " + e.message;
+      btn.disabled = false;
+      btn.textContent = "Submit for review";
+    }
+  });
+</script>
+</body>
+</html>

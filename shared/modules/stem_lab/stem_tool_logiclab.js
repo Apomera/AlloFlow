@@ -19,6 +19,15 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _logiclAC = null;
@@ -808,6 +817,34 @@ window.StemLab = window.StemLab || {
 
             ),
 
+            // ── Topic-accent hero band per mode ──
+            (function() {
+              var MODE_META = {
+                truth:      { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCCA', title: 'Truth Tables \u2014 every input combination, every output', hint: 'For n variables, the table has 2\u207F rows. AND, OR, NOT, XOR, IFF \u2014 each gate is just a column. Boolean algebra (Boole 1854) underlies every digital circuit, every search query, every conditional in code.' },
+                proof:      { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83E\uDDE9', title: 'Proof Builder \u2014 derive conclusions step by step',     hint: 'Modus ponens, modus tollens, hypothetical syllogism, disjunctive syllogism \u2014 the eight inference rules cover most introductory propositional logic. Each step justifies itself by NAME, not vibe.' },
+                challenges: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\u26A1',         title: 'Challenges \u2014 graded tautology + contradiction puzzles', hint: 'Tautology = always true; contradiction = always false; contingency = sometimes both. Aristotle\u2019s law of non-contradiction (350 BCE) is the oldest published rule. AP CS Principles practice + intro discrete math.' },
+                gates:      { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\u26A1\uFE0F', title: 'Logic Gates \u2014 transistors all the way down',         hint: 'NAND is functionally complete \u2014 you can build every other gate from NAND alone. A modern CPU contains ~10 billion transistors implementing the same boolean math you\u2019re building here.' }
+              };
+              var meta = MODE_META[mode] || MODE_META.truth;
+              return React.createElement('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
 
 
             // ═══ MODE 1: TRUTH TABLES ═══
@@ -828,7 +865,7 @@ window.StemLab = window.StemLab || {
                   React.createElement("div", { className: "text-xs font-black text-violet-400 uppercase tracking-wider" }, "Variables"),
                   React.createElement("div", { className: "flex flex-wrap gap-2" },
                     ['P','Q','R','S'].map(function(v) {
-                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                      return React.createElement("div", { 
                         key: v, draggable: true,
                         onDragStart: function(e) { _drag.sym = v; e.dataTransfer.effectAllowed='copy'; },
                         onClick: function() { upd({ expression: expr + v }); },
@@ -840,7 +877,7 @@ window.StemLab = window.StemLab || {
                   React.createElement("div", { className: "text-xs font-black text-violet-400 uppercase tracking-wider" }, "Connectives"),
                   React.createElement("div", { className: "flex flex-wrap gap-2" },
                     ['\u2227','\u2228','\u00AC','\u2192','\u2194','\u2295'].map(function(sym) {
-                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                      return React.createElement("div", { 
                         key: sym, draggable: true,
                         onDragStart: function(e) { _drag.sym = ' '+sym+' '; e.dataTransfer.effectAllowed='copy'; },
                         onClick: function() { upd({ expression: expr+' '+sym+' ' }); },
@@ -850,7 +887,7 @@ window.StemLab = window.StemLab || {
                       }, sym + ' ' + (CONN[sym] ? CONN[sym].eng : ''));
                     }),
                     ['(',')'].map(function(v) {
-                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                      return React.createElement("div", { 
                         key: v, draggable: true,
                         onDragStart: function(e) { _drag.sym = v; e.dataTransfer.effectAllowed='copy'; },
                         onClick: function() { upd({ expression: expr+v }); },
@@ -878,7 +915,7 @@ window.StemLab = window.StemLab || {
                               return React.createElement("span", {
                                 key: ti,
                                 className: "inline-flex items-center justify-center px-2 py-1 rounded-lg font-black text-white text-sm shadow-sm",
-                                style: { background: _symColor[tok] || '#64748b', animation: ti===toks.length-1?'logicPop 0.25s ease-out':'none' }
+                                style: { background: _symColor[tok] || '#94a3b8', animation: ti===toks.length-1?'logicPop 0.25s ease-out':'none' }
                               }, tok);
                             });
                       })()
@@ -1083,9 +1120,11 @@ window.StemLab = window.StemLab || {
 
                       },
 
-                      className: "px-3 py-1 rounded-full text-xs font-bold border transition-all " + (aiExplain ? "bg-purple-100 text-purple-700 border-purple-300" : "bg-violet-50 text-violet-600 border-violet-200 hover:bg-violet-100"),
+                      className: "px-3 py-1 rounded-full text-xs font-bold border transition-all " + (aiExplain ? "bg-purple-100 text-purple-700 border-purple-600" : "bg-violet-50 text-violet-600 border-violet-200 hover:bg-violet-100"),
 
-                      disabled: aiLoading
+                      disabled: aiLoading,
+
+                    'aria-busy': aiLoading
 
                     }, aiExplain ? "\u25B2 Hide" : "\uD83E\uDDE0 Explain")
 
@@ -1231,7 +1270,9 @@ window.StemLab = window.StemLab || {
 
                     style: { background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: 'white', boxShadow: '0 2px 8px rgba(124,58,237,0.3)' },
 
-                    disabled: aiLoading
+                    disabled: aiLoading,
+
+                  'aria-busy': aiLoading
 
                   }, "\uD83E\uDD16 AI-Generate Proof Challenge"),
 
@@ -1375,7 +1416,7 @@ window.StemLab = window.StemLab || {
 
                         onClick: function() { upd({ proofSteps: [], proofComplete: false, selectedSteps: [] }); },
 
-                        className: "px-3 py-1.5 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-all"
+                        className: "px-3 py-1.5 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-400 rounded-lg transition-all"
 
                       }, "\uD83D\uDD04 Reset")
 
@@ -1597,7 +1638,7 @@ window.StemLab = window.StemLab || {
                         else { if (stemBeep) stemBeep(220, 120); }
                       },
 
-                      className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-300 transition-all hover:shadow-md text-sm"
+                      className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-600 transition-all hover:shadow-md text-sm"
 
                     }, "\u2705 Valid"),
 
@@ -1610,7 +1651,7 @@ window.StemLab = window.StemLab || {
                         else { if (stemBeep) stemBeep(220, 120); }
                       },
 
-                      className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-300 transition-all hover:shadow-md text-sm"
+                      className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-600 transition-all hover:shadow-md text-sm"
 
                     }, "\u274C Invalid (Fallacy)")
 
@@ -1655,7 +1696,9 @@ window.StemLab = window.StemLab || {
 
                         style: { background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: 'white', boxShadow: '0 2px 8px rgba(124,58,237,0.3)' },
 
-                        disabled: aiLoading
+                        disabled: aiLoading,
+
+                      'aria-busy': aiLoading
 
                       }, "\uD83E\uDD16 AI Generate")
 
@@ -1697,7 +1740,7 @@ window.StemLab = window.StemLab || {
 
                       onClick: function() { var c = af.valid === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI fallacy detected'); },
 
-                      className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-300 transition-all text-sm"
+                      className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm"
 
                     }, "\u2705 Valid"),
 
@@ -1705,7 +1748,7 @@ window.StemLab = window.StemLab || {
 
                       onClick: function() { var c = af.valid === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI fallacy detected'); },
 
-                      className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-300 transition-all text-sm"
+                      className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-600 transition-all text-sm"
 
                     }, "\u274C Invalid (Fallacy)")
 
@@ -1737,7 +1780,9 @@ window.StemLab = window.StemLab || {
 
                       style: { background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: 'white' },
 
-                      disabled: aiLoading
+                      disabled: aiLoading,
+
+                    'aria-busy': aiLoading
 
                     }, "\uD83E\uDD16 Generate Another")
 
@@ -1905,9 +1950,9 @@ window.StemLab = window.StemLab || {
 
                   challengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
 
-                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = det.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-300 transition-all text-sm" }, "\u2705 Yes"),
+                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = det.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm" }, "\u2705 Yes"),
 
-                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = det.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-300 transition-all text-sm" }, "\u274C No"),
+                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = det.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-600 transition-all text-sm" }, "\u274C No"),
 
                     React.createElement("button", { "aria-label": "Can't tell", onClick: function() { var c = 'wrong'; upd({ challengeAnswer: c }); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, "\u2753 Can't tell")
 
@@ -1923,7 +1968,7 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("div", { className: "flex gap-2 mt-3" },
 
-                      React.createElement("button", { "aria-label": "Next", onClick: function() { upd({ challengeIdx: challengeIdx + 1, challengeAnswer: null, aiDetective: null }); }, className: "px-4 py-2 bg-violet-600 text-white text-xs font-bold rounded-lg hover:bg-violet-700 transition-all" }, "Next \u2192"),
+                      React.createElement("button", { onClick: function() { upd({ challengeIdx: challengeIdx + 1, challengeAnswer: null, aiDetective: null }); }, className: "px-4 py-2 bg-violet-600 text-white text-xs font-bold rounded-lg hover:bg-violet-700 transition-all" }, "Next \u2192"),
 
                       React.createElement("button", { "aria-label": "AI Mystery",
 
@@ -1939,7 +1984,9 @@ window.StemLab = window.StemLab || {
 
                         style: { background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: 'white', boxShadow: '0 2px 8px rgba(124,58,237,0.3)' },
 
-                        disabled: aiLoading
+                        disabled: aiLoading,
+
+                      'aria-busy': aiLoading
 
                       }, "\uD83D\uDD75\uFE0F AI Mystery")
 
@@ -1975,9 +2022,9 @@ window.StemLab = window.StemLab || {
 
                   challengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
 
-                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = ad.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-300 transition-all text-sm" }, "\u2705 Yes"),
+                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = ad.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm" }, "\u2705 Yes"),
 
-                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = ad.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-300 transition-all text-sm" }, "\u274C No"),
+                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = ad.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl border-2 border-red-600 transition-all text-sm" }, "\u274C No"),
 
                     React.createElement("button", { "aria-label": "Can't tell", onClick: function() { upd({ challengeAnswer: 'wrong' }); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, "\u2753 Can't tell")
 
@@ -2005,7 +2052,9 @@ window.StemLab = window.StemLab || {
 
                       style: { background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: 'white' },
 
-                      disabled: aiLoading
+                      disabled: aiLoading,
+
+                    'aria-busy': aiLoading
 
                     }, "\uD83D\uDD75\uFE0F Generate Another")
 
@@ -2190,7 +2239,7 @@ window.StemLab = window.StemLab || {
                       ["Distributive","P\u2227(Q\u2228R) \u2261 (P\u2227Q)\u2228(P\u2227R)"],
                       ["Commutative","P\u2227Q \u2261 Q\u2227P"]
                     ].map(function(law) {
-                      return React.createElement("div", { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+                      return React.createElement("div", { 
                         key: law[0],
                         className: "flex items-center gap-2 p-2 bg-white rounded-lg border border-violet-100 cursor-pointer hover:border-violet-300 hover:shadow-sm transition-all",
                         onClick: function() { upd({ expression: law[1].split(' \u2261 ')[0].trim(), mode: 'truth' }); if(addToast) addToast('Loaded in Truth Tables!','info'); }

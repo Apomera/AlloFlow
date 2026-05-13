@@ -1418,7 +1418,7 @@ var d = labToolData || {};
 
                 onChange: function (e) { upd('econDifficulty', e.target.value); if (addToast) addToast('Difficulty: ' + e.target.value.toUpperCase(), 'info'); },
 
-                className: 'text-[11px] bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5 text-slate-600 outline-none cursor-pointer'
+                className: 'text-[11px] bg-slate-100 border border-slate-400 rounded-full px-2 py-0.5 text-slate-600 outline-none cursor-pointer'
 
               },
 
@@ -1841,7 +1841,7 @@ var d = labToolData || {};
             ),
 
             // === HISTORIC ECONOMIC EVENTS TIMELINE ===
-            React.createElement('div', { className: 'bg-gradient-to-r from-slate-50 to-zinc-50 rounded-xl p-4 border border-slate-200 mb-4' },
+            React.createElement('div', { className: 'bg-gradient-to-r from-slate-50 to-zinc-50 rounded-xl p-4 border border-slate-400 mb-4' },
               React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                 React.createElement('h4', { className: 'text-sm font-bold text-slate-800' }, '\uD83D\uDCC5 Economic History Timeline'),
                 React.createElement('button', {
@@ -2415,7 +2415,7 @@ var d = labToolData || {};
 
               'aria-label': 'Interactive economics lab supply and demand visualization', tabIndex: 0,
 
-              className: 'w-full rounded-xl border border-slate-200',
+              className: 'w-full rounded-xl border border-slate-400',
 
               style: { height: '250px', background: '#0f172a' }
 
@@ -2902,7 +2902,7 @@ var d = labToolData || {};
 
                 ].map(function (s) {
 
-                  return React.createElement('div', { key: s.label, className: 'bg-white rounded-xl p-3 border border-slate-200 text-center' },
+                  return React.createElement('div', { key: s.label, className: 'bg-white rounded-xl p-3 border border-slate-400 text-center' },
 
                     React.createElement('div', { className: 'text-lg' }, s.icon),
 
@@ -3084,7 +3084,7 @@ var d = labToolData || {};
 
               // History log
 
-              (d.pfHistory || []).length > 0 && React.createElement('div', { className: 'mt-4 bg-white rounded-xl border border-slate-200 p-3 max-h-40 overflow-y-auto' },
+              (d.pfHistory || []).length > 0 && React.createElement('div', { className: 'mt-4 bg-white rounded-xl border border-slate-400 p-3 max-h-40 overflow-y-auto' },
 
                 React.createElement('h4', { className: 'text-xs font-bold text-slate-500 mb-2' }, '\uD83D\uDCDC Life History'),
 
@@ -3110,7 +3110,7 @@ var d = labToolData || {};
 
                 onClick: function () { upd('pfAge', 22); upd('pfCash', 2000); upd('pfDebt', 0); upd('pfSalary', 35000); upd('pfHappiness', 70); upd('pfCredit', 650); upd('pfCareer', null); upd('pfInsurance', false); upd('pfHistory', []); upd('lifeEvent', null); if (addToast) addToast('\u267B Starting over at age 22!', 'info'); },
 
-                className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200'
+                className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-500 border border-slate-400'
 
               }, '\u267B New Life')
 
@@ -3229,7 +3229,7 @@ var d = labToolData || {};
 
                   // Selected company detail
 
-                  smCompanies[smSelected] && React.createElement('div', { className: 'bg-gradient-to-r from-slate-50 to-gray-50 rounded-xl p-3 border border-slate-200 mb-3' },
+                  smCompanies[smSelected] && React.createElement('div', { className: 'bg-gradient-to-r from-slate-50 to-gray-50 rounded-xl p-3 border border-slate-400 mb-3' },
 
                     React.createElement('div', { className: 'flex justify-between items-center' },
 
@@ -3501,7 +3501,7 @@ var d = labToolData || {};
 
                   // Portfolio summary
 
-                  React.createElement('div', { className: 'bg-white rounded-xl border border-slate-200 p-3 text-xs' },
+                  React.createElement('div', { className: 'bg-white rounded-xl border border-slate-400 p-3 text-xs' },
 
                     React.createElement('div', { className: 'flex justify-between mb-2' },
 
@@ -3527,7 +3527,7 @@ var d = labToolData || {};
 
                     // Portfolio Analytics
 
-                    smDay > 0 && React.createElement('div', { className: 'mt-3 bg-slate-50 rounded-xl p-3 border border-slate-200' },
+                    smDay > 0 && React.createElement('div', { className: 'mt-3 bg-slate-50 rounded-xl p-3 border border-slate-400' },
 
                       React.createElement('h4', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2' }, '\uD83D\uDCC8 Portfolio Analytics'),
 
@@ -3573,7 +3573,7 @@ var d = labToolData || {};
 
                       onClick: function () { upd('smCompanies', null); upd('smPortfolio', {}); upd('smCash', 10000); upd('smDay', 0); upd('smInput', ''); upd('smNewsEvent', null); if (addToast) addToast('\u267B Market reset! Create a new one.', 'info'); },
 
-                      className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200'
+                      className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-500 border border-slate-400'
 
                     }, '\u267B Reset Market & Generate New Companies')
 
@@ -3889,7 +3889,7 @@ var d = labToolData || {};
 
               // Stats + History
 
-              (d.enBizHistory || []).length > 0 && React.createElement('div', { className: 'bg-white rounded-xl border border-slate-200 p-3' },
+              (d.enBizHistory || []).length > 0 && React.createElement('div', { className: 'bg-white rounded-xl border border-slate-400 p-3' },
 
                 React.createElement('h4', { className: 'text-xs font-bold text-slate-500 mb-2' }, '\uD83D\uDCC8 Business History'),
 
@@ -3917,7 +3917,7 @@ var d = labToolData || {};
 
                 onClick: function () { upd('enBusiness', null); upd('enInput', ''); if (addToast) addToast('Business closed. Start a new one!', 'info'); },
 
-                className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200'
+                className: 'mt-2 w-full py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-500 border border-slate-400'
 
               }, '\u267B Close Business & Start New')
 
