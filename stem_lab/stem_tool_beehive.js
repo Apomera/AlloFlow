@@ -7589,8 +7589,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 if (_sp > _cap) { b.vx *= _cap / _sp; b.vy *= _cap / _sp; }
                 b.x += b.vx; b.y += b.vy;
                 if (Math.abs(b.x - tX) < 12 && Math.abs(b.y - tY) < 12) {
+                  // Set a brief landing-flash pulse when the bee reaches a
+                  // target — strong burst when reaching a flower (pollination
+                  // event), softer ping when reaching the hive (delivery).
+                  if (b.toFlower) {
+                    b.landFlash = 1.0;        // landed on flower — full sparkle
+                    b.landFlashType = 'flower';
+                  } else {
+                    b.landFlash = 0.6;        // returned to hive — gentler glow
+                    b.landFlashType = 'hive';
+                  }
+                  b.landFlashX = b.x; b.landFlashY = b.y;
                   b.toFlower = !b.toFlower;
                   b.carry = !b.toFlower;
+                }
+                // Decay landing flash each frame
+                if (b.landFlash) {
+                  b.landFlash -= 0.045;
+                  if (b.landFlash <= 0) { b.landFlash = 0; }
+                }
+                // ── Pollination flash — soft pulsing halo at the landing spot ──
+                // Fires for ~0.8s after a bee reaches its target. Flower
+                // landings get a full golden sparkle + 4 radial petals
+                // (pollination event); hive arrivals get a softer amber ping
+                // (delivery). Anchored to the LANDING coords, not the bee's
+                // current position, so the pulse stays put as the bee resumes.
+                if (b.landFlash > 0) {
+                  var lfX = b.landFlashX || b.x;
+                  var lfY = b.landFlashY || b.y;
+                  var lfStrength = b.landFlash;
+                  c.save();
+                  if (b.landFlashType === 'flower') {
+                    // Golden halo
+                    var lfGlow = c.createRadialGradient(lfX, lfY, 0, lfX, lfY, 14);
+                    lfGlow.addColorStop(0, 'rgba(254,243,199,' + (0.65 * lfStrength).toFixed(3) + ')');
+                    lfGlow.addColorStop(0.4, 'rgba(251,191,36,' + (0.40 * lfStrength).toFixed(3) + ')');
+                    lfGlow.addColorStop(1, 'rgba(251,191,36,0)');
+                    c.fillStyle = lfGlow;
+                    c.beginPath(); c.arc(lfX, lfY, 14, 0, 6.28); c.fill();
+                    // 4 radial petal sparks shooting outward
+                    c.fillStyle = 'rgba(252,211,77,' + (0.85 * lfStrength).toFixed(3) + ')';
+                    var lfReach = (1 - lfStrength) * 9 + 2; // expand outward as flash decays
+                    for (var ps = 0; ps < 4; ps++) {
+                      var psA = ps * 1.57 + Math.PI / 4;
+                      var psX = lfX + Math.cos(psA) * lfReach;
+                      var psY = lfY + Math.sin(psA) * lfReach;
+                      c.beginPath(); c.arc(psX, psY, 1.2 * lfStrength, 0, 6.28); c.fill();
+                    }
+                  } else {
+                    // Hive delivery — amber gentle ping
+                    c.strokeStyle = 'rgba(251,191,36,' + (0.50 * lfStrength).toFixed(3) + ')';
+                    c.lineWidth = 1.4;
+                    var lfR = (1 - lfStrength) * 10 + 2;
+                    c.beginPath(); c.arc(lfX, lfY, lfR, 0, 6.28); c.stroke();
+                  }
+                  c.restore();
                 }
                 b.wp += 0.45;
                 var angle = Math.atan2(b.vy, b.vx);
