@@ -7296,6 +7296,118 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.globalAlpha = 1;
               }
 
+              // ── Action ripple feedback on the hive ──
+              // When the beekeeper performs an action (during the "perform"
+              // phase of bkAnim, 25-75% of the 5s window), the hive itself
+              // shows a matching visual effect so the action -> outcome
+              // connection is visceral, not just a toast message.
+              (function() {
+                var ba = ls.bkAnim;
+                if (!ba || !ba.startedAt) return;
+                var elapsed = Date.now() - ba.startedAt;
+                var dur = ba.duration || 5000;
+                if (elapsed > dur) return;
+                var tPhase = elapsed / dur;
+                if (tPhase < 0.20 || tPhase > 0.80) return; // perform window only
+                var perfT = (tPhase - 0.20) / 0.60; // 0..1 across the perform phase
+                var pulse = Math.sin(perfT * Math.PI); // 0..1..0 envelope
+                var hcx = hiveX + hiveW / 2;
+                var hcy = hiveY + hiveH / 2;
+                c.save();
+                if (ba.type === 'treat') {
+                  // Red pulsing ring — varroa treatment killing mites
+                  c.strokeStyle = 'rgba(248,113,113,' + (0.65 * pulse).toFixed(3) + ')';
+                  c.lineWidth = 3;
+                  var trR = hiveW * (0.6 + pulse * 0.4);
+                  c.beginPath(); c.ellipse(hcx, hcy, trR, trR * 0.85, 0, 0, 6.28); c.stroke();
+                  // Small "X" cross-hatches around the hive to represent dying mites
+                  c.fillStyle = 'rgba(220,38,38,' + (0.5 * pulse).toFixed(3) + ')';
+                  for (var tx = 0; tx < 6; tx++) {
+                    var txAng = (tx / 6) * 6.28 + t2 * 0.02;
+                    var txX = hcx + Math.cos(txAng) * trR * 0.7;
+                    var txY = hcy + Math.sin(txAng) * trR * 0.7;
+                    c.beginPath(); c.arc(txX, txY, 1.5, 0, 6.28); c.fill();
+                  }
+                } else if (ba.type === 'super') {
+                  // Blue glow rising from the hive — adding space for honey
+                  c.fillStyle = 'rgba(96,165,250,' + (0.4 * pulse).toFixed(3) + ')';
+                  for (var sp = 0; sp < 4; sp++) {
+                    var spT = ((perfT * 4 + sp * 0.25) % 1);
+                    var spX = hcx + Math.sin(sp + perfT * 2) * 6;
+                    var spY = hiveY - spT * 30;
+                    var spR = (1 - spT) * 4;
+                    c.beginPath(); c.arc(spX, spY, spR, 0, 6.28); c.fill();
+                  }
+                  // A "+" floats up
+                  c.font = 'bold 16px system-ui';
+                  c.fillStyle = 'rgba(96,165,250,' + (pulse * 0.9).toFixed(3) + ')';
+                  c.textAlign = 'center';
+                  c.fillText('+', hcx, hiveY - 8 - perfT * 14);
+                } else if (ba.type === 'harvest') {
+                  // Golden particle burst — honey flying out
+                  c.fillStyle = 'rgba(251,191,36,' + (0.8 * pulse).toFixed(3) + ')';
+                  for (var hr = 0; hr < 14; hr++) {
+                    var hrAng = (hr / 14) * 6.28;
+                    var hrDist = perfT * hiveW * 0.9;
+                    var hrX = hcx + Math.cos(hrAng) * hrDist;
+                    var hrY = hcy + Math.sin(hrAng) * hrDist;
+                    var hrR = (1 - perfT) * 2.5;
+                    c.beginPath(); c.arc(hrX, hrY, hrR, 0, 6.28); c.fill();
+                  }
+                  // Bright center flash
+                  var hbGrad = c.createRadialGradient(hcx, hcy, 0, hcx, hcy, hiveW * 0.5);
+                  hbGrad.addColorStop(0, 'rgba(254,243,199,' + (0.65 * pulse).toFixed(3) + ')');
+                  hbGrad.addColorStop(1, 'rgba(254,243,199,0)');
+                  c.fillStyle = hbGrad;
+                  c.beginPath(); c.arc(hcx, hcy, hiveW * 0.5, 0, 6.28); c.fill();
+                } else if (ba.type === 'feed') {
+                  // Amber liquid stream flowing into the entrance
+                  c.strokeStyle = 'rgba(217,119,6,' + (0.7 * pulse).toFixed(3) + ')';
+                  c.lineWidth = 3;
+                  c.beginPath();
+                  c.moveTo(hcx - 14, hiveY - 12);
+                  c.quadraticCurveTo(hcx - 4, hiveY + 6, hcx, hiveY + hiveH - 6);
+                  c.stroke();
+                  // Droplet at the tip
+                  c.fillStyle = 'rgba(251,191,36,' + (0.8 * pulse).toFixed(3) + ')';
+                  c.beginPath(); c.arc(hcx, hiveY + hiveH - 6 + Math.sin(t2 * 0.3) * 1.5, 2.2, 0, 6.28); c.fill();
+                } else if (ba.type === 'requeen') {
+                  // Purple swirl above the hive — new queen pheromone establishing
+                  c.strokeStyle = 'rgba(168,85,247,' + (0.55 * pulse).toFixed(3) + ')';
+                  c.lineWidth = 2;
+                  c.beginPath();
+                  for (var rq = 0; rq < 60; rq++) {
+                    var rqT = rq / 60;
+                    var rqAng = rqT * 8 + t2 * 0.08;
+                    var rqR = rqT * 12 + pulse * 4;
+                    var rqx = hcx + Math.cos(rqAng) * rqR;
+                    var rqy = hiveY - 6 - rqT * 18 + Math.sin(rqAng) * rqR * 0.4;
+                    if (rq === 0) c.moveTo(rqx, rqy); else c.lineTo(rqx, rqy);
+                  }
+                  c.stroke();
+                  // Crown emoji centered above
+                  c.font = (16 + pulse * 4).toFixed(0) + 'px system-ui';
+                  c.fillStyle = 'rgba(216,180,254,' + (0.95 * pulse).toFixed(3) + ')';
+                  c.textAlign = 'center';
+                  c.fillText('👑', hcx, hiveY - 22);
+                } else if (ba.type === 'inspect') {
+                  // Magnifying-glass shimmer over the hive
+                  c.strokeStyle = 'rgba(165,180,252,' + (0.6 * pulse).toFixed(3) + ')';
+                  c.lineWidth = 2.5;
+                  var inR = 16 + pulse * 6;
+                  c.beginPath(); c.arc(hcx, hcy - 6, inR, 0, 6.28); c.stroke();
+                  // Highlight glints inside the hive
+                  c.fillStyle = 'rgba(255,255,255,' + (0.4 * pulse).toFixed(3) + ')';
+                  for (var ig = 0; ig < 4; ig++) {
+                    var igAng = ig * 1.57 + t2 * 0.03;
+                    var igX = hcx + Math.cos(igAng) * 8;
+                    var igY = hcy - 6 + Math.sin(igAng) * 8;
+                    c.beginPath(); c.arc(igX, igY, 1, 0, 6.28); c.fill();
+                  }
+                }
+                c.restore();
+              })();
+
               // ── Bee shadows on ground (render BEFORE bees for proper layering) ──
               c.fillStyle = 'rgba(0,0,0,0.18)';
               bees.forEach(function(b) {
