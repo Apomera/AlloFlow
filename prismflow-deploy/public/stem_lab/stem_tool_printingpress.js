@@ -1342,7 +1342,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 }, lab.txt);
               })(),
               h('svg', {
-                width: '100%', viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: 520, display: 'block', margin: '0 auto', background: '#2a1f15', borderRadius: 8 },
+                width: '100%', viewBox: '0 0 ' + W + ' ' + H, style: { maxWidth: 520, display: 'block', margin: '0 auto', background: '#1f1610', borderRadius: 8 },
                 role: 'img',
                 'aria-label': 'Side view of a Gutenberg-style screw press in state: ' + pressState
               },
@@ -1440,8 +1440,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     h('stop', { offset: '0%',  stopColor: '#fef3c7', stopOpacity: 0.6 }),
                     h('stop', { offset: '50%', stopColor: '#fbbf24', stopOpacity: 0.2 }),
                     h('stop', { offset: '100%', stopColor: '#fbbf24', stopOpacity: 0 })
+                  ),
+                  // Workshop wall gradient — dim plaster wall behind the
+                  // press. Slightly warmer at the top (the rafters catch
+                  // window light) and darker at the bottom (the wall
+                  // recedes into shadow at floor level).
+                  h('linearGradient', { id: 'pp-wall', x1: 0, y1: 0, x2: 0, y2: 1 },
+                    h('stop', { offset: '0%',  stopColor: '#3a2a1c' }),
+                    h('stop', { offset: '60%', stopColor: '#241a12' }),
+                    h('stop', { offset: '100%', stopColor: '#1a120a' })
+                  ),
+                  // Window-light beam — diagonal linear gradient, warm
+                  // amber, fading from the upper-left to mid-right. Reads
+                  // as morning sun coming through a high window onto the
+                  // press. Low opacity so it suggests light, doesn't shout.
+                  h('linearGradient', { id: 'pp-window-beam', x1: 0, y1: 0, x2: 1, y2: 1 },
+                    h('stop', { offset: '0%',   stopColor: '#fbbf24', stopOpacity: 0.18 }),
+                    h('stop', { offset: '40%',  stopColor: '#fbbf24', stopOpacity: 0.06 }),
+                    h('stop', { offset: '100%', stopColor: '#fbbf24', stopOpacity: 0 })
+                  ),
+                  // Wooden floorboards — horizontal planks under the press
+                  // base. Each plank ~80px wide; the pattern repeats.
+                  h('pattern', { id: 'pp-floorboards', x: 0, y: 0, width: 96, height: 50, patternUnits: 'userSpaceOnUse' },
+                    h('rect', { width: 96, height: 50, fill: '#3d2914' }),
+                    // Plank seams (vertical between boards)
+                    h('rect', { x: 0,  y: 0, width: 0.8, height: 50, fill: '#1a0d05', opacity: 0.7 }),
+                    h('rect', { x: 95, y: 0, width: 0.8, height: 50, fill: '#1a0d05', opacity: 0.7 }),
+                    // Grain streaks
+                    h('rect', { x: 0, y: 12, width: 96, height: 0.5, fill: '#2a1c0e', opacity: 0.5 }),
+                    h('rect', { x: 0, y: 28, width: 96, height: 0.6, fill: '#2a1c0e', opacity: 0.45 }),
+                    h('rect', { x: 0, y: 38, width: 96, height: 0.4, fill: '#2a1c0e', opacity: 0.4 }),
+                    // Subtle highlight (waxed plank sheen)
+                    h('rect', { x: 0, y: 18, width: 96, height: 0.3, fill: '#5a3a1f', opacity: 0.35 })
                   )
                 ),
+                // ── Workshop scene backdrop ──
+                // Dark plaster wall behind the press, then a wooden floor
+                // strip below the press base, then a soft window-light beam
+                // angled across the upper-left (suggests morning light from
+                // a high window). All decorative — drawn before the press
+                // so the press parts render on top of the scene.
+                h('rect', { x: 0, y: 0, width: W, height: H, fill: 'url(#pp-wall)' }),
+                h('polygon', { points: '0,0 200,0 0,300', fill: 'url(#pp-window-beam)', 'aria-hidden': 'true' }),
+                h('rect', { x: 0, y: 312, width: W, height: H - 312, fill: 'url(#pp-floorboards)' }),
+                // Subtle floor-line shadow where the floor meets the wall
+                h('rect', { x: 0, y: 311, width: W, height: 1.5, fill: '#0c0805', opacity: 0.7 }),
                 // ── Wooden frame ── (now using wood-grain patterns for richness)
                 h('rect', { x: 60, y: 30, width: 25, height: 280, fill: 'url(#pp-woodgrain)', stroke: '#3d2914', strokeWidth: 2 }),
                 h('rect', { x: 395, y: 30, width: 25, height: 280, fill: 'url(#pp-woodgrain)', stroke: '#3d2914', strokeWidth: 2 }),
