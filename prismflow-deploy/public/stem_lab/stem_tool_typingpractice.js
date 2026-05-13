@@ -298,6 +298,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       id: 'maine',
       label: 'Maine Pack',
       icon: '🦞',
+      accent: '#0ea5e9',
+      accentSoft: 'rgba(14,165,233,0.12)',
       description: 'Seven hand-written passages about Maine — lighthouses, lobstering, Mount Katahdin, the Penobscot River, Wabanaki history, blueberry barrens, Portland fog. One per grade band, K through high school.',
       author: 'AlloFlow editorial team, Portland ME',
       passages: [
@@ -335,6 +337,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       id: 'self-advocacy',
       label: 'Self-Advocacy Phrases',
       icon: '🗣️',
+      accent: '#14b8a6',
+      accentSoft: 'rgba(20,184,166,0.12)',
       description: 'Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.',
       author: 'AlloFlow editorial team — designed with school-psych guidance for IEP/504 self-advocacy',
       passages: [
@@ -372,6 +376,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       id: 'calming',
       label: 'Mind & Body Calming',
       icon: '🌬️',
+      accent: '#a78bfa',
+      accentSoft: 'rgba(167,139,250,0.14)',
       description: 'Seven self-regulation passages a student can type — and read aloud — when feelings get big. Includes box-breathing language, the 5-4-3-2-1 grounding technique, the "feelings are waves" frame, the "pause is not giving up" reframe, and the "anxiety lies" CBT script. Designed by school-psych guidance; not a substitute for clinical care, but a typing-rhythm anchor a student can use in the moment.',
       author: 'AlloFlow editorial team — designed with school-psych guidance for affect regulation',
       passages: [
@@ -409,6 +415,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       id: 'growth-mindset',
       label: 'Growth Mindset & "Yet"',
       icon: '🌱',
+      accent: '#22c55e',
+      accentSoft: 'rgba(34,197,94,0.14)',
       description: 'Seven passages on effort, struggle, and the small word YET. Built on Carol Dweck\'s growth-mindset research and current brain-plasticity science. Pairs with Mind & Body Calming (regulate) and Self-Advocacy (speak up) to form a complete SEL arc — regulate, reframe, advocate. K through high school.',
       author: 'AlloFlow editorial team — aligned with EL Education Habits of Heart and Mind',
       passages: [
@@ -1420,6 +1428,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '@keyframes tp-view-in-cyber   { 0% { opacity: 0; clip-path: inset(0 100% 0 0); } 60% { opacity: 1; clip-path: inset(0 0 0 0); } 65% { opacity: 0.7; } 100% { opacity: 1; clip-path: inset(0 0 0 0); } }',
       '@keyframes tp-view-in-kawaii  { 0% { opacity: 0; transform: scale(0.96) translateY(10px); } 60% { opacity: 1; transform: scale(1.01) translateY(-1px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }',
       '@keyframes tp-view-in-neutral { 0% { opacity: 0; } 100% { opacity: 1; } }',
+      '@keyframes tp-pack-card-in { 0% { opacity: 0; transform: translateY(6px) scale(0.985); } 100% { opacity: 1; transform: translateY(0) scale(1); } }',
+      '.tp-pack-card { transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease; }',
+      '.tp-pack-card:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.18); }',
+      '@media (prefers-reduced-motion: reduce) { .tp-pack-card { animation: none !important; transition: none !important; } .tp-pack-card:hover { transform: none !important; } }',
 
       '.tp-root .tp-view-enter { animation: tp-view-in-default 240ms ease-out 1; }',
       '.tp-root.tp-theme-steampunk .tp-view-enter { animation: tp-view-in-steam 260ms ease-out 1; }',
@@ -4524,93 +4536,188 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             ) : null,
 
             // ─── Curated packs ───
-            // Hand-written passage bundles. Currently: Maine Pack (7
-            // passages spanning K through 9-12). Imports prepend to
-            // aiPassageLibrary with fresh ids and timestamps; dedup by
-            // text so re-importing the same pack doesn't fill the slot
-            // with duplicates. Future packs slot in by adding entries
-            // to CURATED_PACKS — UI iterates the array.
+            // Hand-written passage bundles. Each pack carries its own
+            // accent color, a circular icon badge, a passage-count chip,
+            // a grade-range chip, a one-line snippet preview from a
+            // representative passage, and an author line. Imports prepend
+            // to aiPassageLibrary with fresh ids and timestamps; dedup
+            // by text so re-importing doesn't double-fill. Future packs
+            // slot in by adding entries to CURATED_PACKS — UI iterates.
             !genLoading ? h('div', {
               style: {
                 marginTop: '20px',
-                padding: '14px',
+                padding: '16px',
                 background: palette.surface,
                 border: '1px solid ' + palette.border,
-                borderRadius: '10px'
+                borderRadius: '12px'
               }
             },
-              h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px', fontWeight: 700 } },
-                '📦 Curated packs'),
-              h('p', { style: { fontSize: '11px', color: palette.textMute, margin: '0 0 12px 0', lineHeight: '1.5' } },
-                'Hand-written passage sets that work without AI. Imported passages join your saved library and can be drilled like any AI-generated one.'),
-              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
-                CURATED_PACKS.map(function(pack) {
-                  // Was this pack already fully imported? Compare each pack
-                  // passage text against the current library; if all are
-                  // present, show "Imported" instead of an active button so
-                  // students don't re-import on every visit.
+              // Section header — title row + subtitle
+              h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px', marginBottom: '4px' } },
+                h('div', { style: { fontSize: '12px', color: palette.text, fontWeight: 800, letterSpacing: '0.04em' } },
+                  '📦 Curated packs'),
+                h('div', { style: { fontSize: '10px', color: palette.textMute, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                  CURATED_PACKS.length + ' pack' + (CURATED_PACKS.length === 1 ? '' : 's') + ' · ' +
+                  CURATED_PACKS.reduce(function(s, p) { return s + p.passages.length; }, 0) + ' passages'
+                )
+              ),
+              h('p', { style: { fontSize: '11px', color: palette.textMute, margin: '0 0 14px 0', lineHeight: '1.5' } },
+                'Hand-written passage sets that work without AI. Imported passages join your saved library; same passage week-after-week is a fairer baseline for IEP trend than re-generated text.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '10px' } },
+                CURATED_PACKS.map(function(pack, packIdx) {
                   var lib = state.aiPassageLibrary || [];
                   var libTexts = {};
                   lib.forEach(function(p) { libTexts[p.text] = true; });
                   var allPresent = pack.passages.every(function(p) { return libTexts[p.text]; });
+                  var anyPresent = pack.passages.some(function(p) { return libTexts[p.text]; });
+                  // Grade range from first/last passage entries (assumes
+                  // pack passages are authored in grade-band order — true
+                  // for all current packs).
+                  var firstGrade = pack.passages[0].gradeLevel;
+                  var lastGrade = pack.passages[pack.passages.length - 1].gradeLevel;
+                  var gradeRange = firstGrade === lastGrade ? firstGrade : (firstGrade + '–' + lastGrade);
+                  // Snippet preview — take the middle passage's first
+                  // sentence so older students see depth, younger see
+                  // accessibility, and the chosen sentence is short.
+                  var midPassage = pack.passages[Math.floor(pack.passages.length / 2)];
+                  var firstSentenceEnd = midPassage.text.search(/[.!?]\s/);
+                  var snippet = firstSentenceEnd > 0
+                    ? midPassage.text.slice(0, firstSentenceEnd + 1)
+                    : (midPassage.text.length > 80 ? midPassage.text.slice(0, 78) + '…' : midPassage.text);
+                  var accent = pack.accent || palette.accent;
+                  var accentSoft = pack.accentSoft || (accent + '20');
                   return h('div', {
                     key: 'pack-' + pack.id,
+                    className: 'tp-pack-card',
                     style: {
-                      padding: '12px',
+                      padding: '14px',
                       background: palette.bg,
                       border: '1px solid ' + (allPresent ? palette.success : palette.border),
-                      borderRadius: '8px',
+                      borderLeft: '4px solid ' + (allPresent ? palette.success : accent),
+                      borderRadius: '10px',
                       display: 'flex',
-                      gap: '12px',
-                      alignItems: 'flex-start'
+                      flexDirection: 'column',
+                      gap: '10px',
+                      position: 'relative',
+                      animation: 'tp-pack-card-in 360ms cubic-bezier(0.2, 0.7, 0.3, 1) ' + (packIdx * 60) + 'ms both'
                     }
                   },
-                    h('div', { style: { fontSize: '24px', flexShrink: 0, lineHeight: 1 } }, pack.icon),
-                    h('div', { style: { flex: 1, minWidth: 0 } },
-                      h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '3px' } }, pack.label),
-                      h('div', { style: { fontSize: '11px', color: palette.textMute, lineHeight: '1.5', marginBottom: '6px' } }, pack.description),
-                      h('div', { style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic' } }, pack.author)
-                    ),
-                    h('button', {
-                      onClick: function() {
-                        if (allPresent) return;
-                        var existing = (state.aiPassageLibrary || []).slice();
-                        var existingTexts = {};
-                        existing.forEach(function(p) { existingTexts[p.text] = true; });
-                        var nowIso = new Date().toISOString();
-                        var fresh = pack.passages
-                          .filter(function(p) { return !existingTexts[p.text]; })
-                          .map(function(p, i) {
-                            return {
-                              id: 'pack-' + pack.id + '-' + Date.now() + '-' + i,
-                              text: p.text,
-                              gradeLevel: p.gradeLevel,
-                              topic: p.topic,
-                              difficulty: p.difficulty,
-                              language: p.language || 'en',
-                              generatedAt: nowIso,
-                              source: 'curated:' + pack.id
-                            };
-                          });
-                        if (fresh.length === 0) {
-                          addToast('Pack already imported.');
-                          return;
+                    // Header row: circular icon badge + label + chips
+                    h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: '10px' } },
+                      // Circular soft-accent icon badge
+                      h('div', {
+                        'aria-hidden': 'true',
+                        style: {
+                          width: '40px', height: '40px', borderRadius: '50%',
+                          background: accentSoft,
+                          border: '1.5px solid ' + accent,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '22px', flexShrink: 0, lineHeight: 1
                         }
-                        // Prepend fresh passages, then trim to cap.
-                        var nextLib = fresh.concat(existing).slice(0, MAX_PASSAGE_LIBRARY);
-                        updMulti({ aiPassageLibrary: nextLib });
-                        addToast('Imported ' + fresh.length + ' passage' + (fresh.length === 1 ? '' : 's') + ' from ' + pack.label + '.');
-                      },
-                      disabled: allPresent,
-                      'aria-label': allPresent ? pack.label + ' already imported' : 'Import ' + pack.label,
-                      style: Object.assign({}, allPresent ? secondaryBtnStyle(palette) : primaryBtnStyle(palette), {
-                        fontSize: '11px',
-                        padding: '6px 12px',
-                        flexShrink: 0,
-                        cursor: allPresent ? 'default' : 'pointer',
-                        opacity: allPresent ? 0.7 : 1
-                      })
-                    }, allPresent ? '✓ Imported' : 'Import ' + pack.passages.length)
+                      }, pack.icon),
+                      h('div', { style: { flex: 1, minWidth: 0 } },
+                        h('div', { style: { fontSize: '13px', fontWeight: 800, color: palette.text, lineHeight: 1.3, marginBottom: '4px' } }, pack.label),
+                        // Chip row — passage count + grade range + import status
+                        h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' } },
+                          h('span', {
+                            style: {
+                              padding: '2px 7px', borderRadius: '10px',
+                              background: accentSoft,
+                              color: accent,
+                              fontSize: '10px', fontWeight: 700,
+                              fontFamily: 'ui-monospace, Menlo, monospace'
+                            }
+                          }, pack.passages.length + ' passages'),
+                          h('span', {
+                            style: {
+                              padding: '2px 7px', borderRadius: '10px',
+                              background: palette.surface,
+                              color: palette.textDim,
+                              fontSize: '10px', fontWeight: 700,
+                              fontFamily: 'ui-monospace, Menlo, monospace'
+                            }
+                          }, 'grades ' + gradeRange),
+                          allPresent ? h('span', {
+                            style: {
+                              padding: '2px 7px', borderRadius: '10px',
+                              background: palette.success + '22',
+                              color: palette.success,
+                              fontSize: '10px', fontWeight: 700
+                            }
+                          }, '✓ in library') : (anyPresent ? h('span', {
+                            style: {
+                              padding: '2px 7px', borderRadius: '10px',
+                              background: palette.warning ? palette.warning + '22' : 'rgba(251,191,36,0.18)',
+                              color: palette.warning || '#fbbf24',
+                              fontSize: '10px', fontWeight: 700
+                            }
+                          }, 'partial') : null)
+                        )
+                      )
+                    ),
+                    // Description
+                    h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.55' } }, pack.description),
+                    // Snippet preview — italic, accent-bordered quote block
+                    h('div', {
+                      style: {
+                        padding: '8px 10px', borderRadius: '6px',
+                        background: accentSoft,
+                        borderLeft: '2px solid ' + accent,
+                        fontSize: '11px', lineHeight: '1.55',
+                        color: palette.text, fontStyle: 'italic'
+                      }
+                    },
+                      h('span', { style: { color: accent, fontWeight: 700, marginRight: '4px' } }, '“'),
+                      snippet,
+                      h('span', { style: { color: accent, fontWeight: 700, marginLeft: '2px' } }, '”'),
+                      h('div', { style: { fontSize: '9px', color: palette.textMute, fontStyle: 'normal', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 } },
+                        'sample · grade ' + midPassage.gradeLevel)
+                    ),
+                    // Footer row — author + import button
+                    h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginTop: 'auto' } },
+                      h('div', { style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic', flex: 1, lineHeight: 1.4 } }, pack.author),
+                      h('button', {
+                        onClick: function() {
+                          if (allPresent) return;
+                          var existing = (state.aiPassageLibrary || []).slice();
+                          var existingTexts = {};
+                          existing.forEach(function(p) { existingTexts[p.text] = true; });
+                          var nowIso = new Date().toISOString();
+                          var fresh = pack.passages
+                            .filter(function(p) { return !existingTexts[p.text]; })
+                            .map(function(p, i) {
+                              return {
+                                id: 'pack-' + pack.id + '-' + Date.now() + '-' + i,
+                                text: p.text,
+                                gradeLevel: p.gradeLevel,
+                                topic: p.topic,
+                                difficulty: p.difficulty,
+                                language: p.language || 'en',
+                                generatedAt: nowIso,
+                                source: 'curated:' + pack.id
+                              };
+                            });
+                          if (fresh.length === 0) { addToast('Pack already imported.'); return; }
+                          var nextLib = fresh.concat(existing).slice(0, MAX_PASSAGE_LIBRARY);
+                          updMulti({ aiPassageLibrary: nextLib });
+                          addToast('Imported ' + fresh.length + ' passage' + (fresh.length === 1 ? '' : 's') + ' from ' + pack.label + '.');
+                        },
+                        disabled: allPresent,
+                        'aria-label': allPresent ? pack.label + ' already imported' : 'Import ' + pack.label,
+                        style: Object.assign({}, primaryBtnStyle(palette), {
+                          fontSize: '11px',
+                          padding: '6px 12px',
+                          flexShrink: 0,
+                          background: allPresent ? palette.surface : accent,
+                          color: allPresent ? palette.textMute : '#0f172a',
+                          border: '1px solid ' + (allPresent ? palette.border : accent),
+                          cursor: allPresent ? 'default' : 'pointer',
+                          opacity: allPresent ? 0.65 : 1,
+                          fontWeight: 700,
+                          letterSpacing: '0.02em'
+                        })
+                      }, allPresent ? '✓ Imported' : (anyPresent ? 'Add ' + pack.passages.filter(function(p) { return !libTexts[p.text]; }).length + ' more' : 'Import pack'))
+                    )
                   );
                 })
               )
