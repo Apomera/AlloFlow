@@ -7782,6 +7782,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              // ── Moon (visible during the night phase) ──
+              // Rises in the east as the sun sets, peaks center-high at
+              // midnight, sets in the west as dawn approaches. Drawn AFTER
+              // the navy time-of-day overlay so it punches through. Subtle
+              // crater detail + a soft halo + slowly-cycling phase tied to
+              // day-of-month (so the moon waxes and wanes across the 30-day
+              // season — a sim "lunar month" that lines up tidily).
+              if (_tdT >= 0.95 && _tdT <= 2.05) {
+                var moonT = Math.max(0, Math.min(1, (_tdT - 1.0)));
+                var moonX = W * (0.12 + moonT * 0.76);
+                var moonY = H * 0.22 - Math.sin(moonT * Math.PI) * (H * 0.15);
+                var moonR = 14;
+                // Visibility ramps in at clockT 0.95-1.05 (dusk) and out at 1.95-2.05 (dawn)
+                var moonVis = 1;
+                if (_tdT < 1.05)      moonVis = (_tdT - 0.95) / 0.10;
+                else if (_tdT > 1.95) moonVis = 1 - (_tdT - 1.95) / 0.10;
+                moonVis = Math.max(0, Math.min(1, moonVis));
+                c.save();
+                // Soft halo
+                var moonGlow = c.createRadialGradient(moonX, moonY, moonR * 0.6, moonX, moonY, moonR * 2.5);
+                moonGlow.addColorStop(0, 'rgba(255,250,235,' + (0.45 * moonVis).toFixed(3) + ')');
+                moonGlow.addColorStop(1, 'rgba(255,250,235,0)');
+                c.fillStyle = moonGlow;
+                c.beginPath(); c.arc(moonX, moonY, moonR * 2.5, 0, 6.28); c.fill();
+                // Disc — pale cream-white with slight cool tint
+                c.globalAlpha = moonVis;
+                c.fillStyle = '#f5f0d8';
+                c.beginPath(); c.arc(moonX, moonY, moonR, 0, 6.28); c.fill();
+                // Phase shading — a subtle dark crescent overlaid based on
+                // day-of-month progress (cycles full → new → full across 30 sim days).
+                var phaseT = ((day % 30) / 30); // 0..1
+                // -1..1 where 0 = full, ±1 = new
+                var phaseLerp = Math.cos(phaseT * 2 * Math.PI); // full at start/end, new mid-month
+                if (Math.abs(phaseLerp) < 0.92) {
+                  c.fillStyle = 'rgba(30,41,59,' + (0.45 * Math.abs(phaseLerp)).toFixed(3) + ')';
+                  c.beginPath();
+                  c.arc(moonX + phaseLerp * moonR * 0.55, moonY, moonR * 0.95, 0, 6.28);
+                  c.fill();
+                }
+                // Three subtle craters (always on illuminated side)
+                c.fillStyle = 'rgba(184,170,140,0.35)';
+                c.beginPath(); c.arc(moonX - 3, moonY - 4, 1.8, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(moonX + 4, moonY + 2, 2.2, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(moonX - 1, moonY + 4, 1.3, 0, 6.28); c.fill();
+                c.restore();
+              }
+
               // ── Night lights: warm glow from the hive entrance + apiary sign ──
               // Painted AFTER the time-of-day dim, so the lights actually cut
               // through the darkness instead of getting dimmed away. The hive
