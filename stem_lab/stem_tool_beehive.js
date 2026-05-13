@@ -7315,6 +7315,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.arc(pcX, pcY, 0.8, 0, 6.28); c.fill();
               }
 
+              // ── Bee beard — workers clustering OUTSIDE the entrance ──
+              // Real-world phenomenon: when the hive is overcrowded, too hot,
+              // or stressed, workers hang in a "beard" cluster from the
+              // bottom front of the box. Visible signal that the colony is
+              // population-bound. Beard size scales with workers + summer
+              // heat + acute stress (high varroa or low morale).
+              // Triangular cluster descending from the entrance, gentle sway.
+              (function() {
+                var beardBase = 0;
+                if (workers >= 18000) beardBase += Math.min(20, Math.floor((workers - 18000) / 700));
+                if (season === 1) beardBase += 5; // peak heat
+                if (varroaLevel >= 30 || morale < 30) beardBase += 4; // stress
+                if (season === 3) beardBase = 0; // never bearded in winter (clustering INSIDE)
+                if (beardBase < 3) return;
+                var beardCount = Math.min(30, beardBase);
+                var beardCx = hiveX + hiveW / 2;
+                var beardTopY = hiveY + hiveH + 1;
+                // Soft shadow blob behind the cluster so it doesn't look like floating dots
+                c.save();
+                c.fillStyle = 'rgba(120,80,30,0.20)';
+                c.beginPath(); c.ellipse(beardCx, beardTopY + 6, hiveW * 0.36, 8, 0, 0, 6.28); c.fill();
+                c.restore();
+                // Compute a slow horizontal sway for the whole cluster
+                var beardSway = Math.sin(t2 * 0.025) * 1.2;
+                for (var bb = 0; bb < beardCount; bb++) {
+                  // Layout: triangular packing — wider at top, narrower bottom
+                  var rowF = bb / Math.max(1, beardCount - 1); // 0..1 depth into cluster
+                  var rowWidth = (1 - rowF * 0.7) * hiveW * 0.32;
+                  var bbOff = (Math.cos(bb * 1.62) * 0.5 + 0.5) * 2 - 1; // -1..1 pseudo-rand
+                  var bbX = beardCx + bbOff * rowWidth + beardSway * (1 + rowF * 0.5);
+                  var bbY = beardTopY + rowF * 11 + Math.sin(t2 * 0.04 + bb * 0.7) * 0.3;
+                  // Body — small amber oval, dimmer as it descends (legs hanging from above)
+                  var bbA = 0.85 - rowF * 0.25;
+                  c.fillStyle = 'rgba(251,191,36,' + bbA.toFixed(3) + ')';
+                  c.beginPath(); c.ellipse(bbX, bbY, 1.8, 1.3, 0, 0, 6.28); c.fill();
+                  // Single dark stripe
+                  c.fillStyle = 'rgba(41,37,36,' + (bbA * 0.85).toFixed(3) + ')';
+                  c.fillRect(bbX - 0.2, bbY - 1.0, 0.4, 2.0);
+                  // Tiny wing glints on the upper bees only
+                  if (rowF < 0.3 && bb % 2 === 0) {
+                    c.fillStyle = 'rgba(207,232,255,0.35)';
+                    c.beginPath(); c.ellipse(bbX + 0.6, bbY - 0.6, 0.9, 0.45, 0.3, 0, 6.28); c.fill();
+                  }
+                }
+              })();
+
               // ── Guard bees on the landing board (static sentries, face the entrance) ──
               var lbY = hiveY + hiveH + 0.5;
               var lbL = hiveX + hiveW * 0.24, lbR = hiveX + hiveW * 0.76;
