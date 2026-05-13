@@ -1157,7 +1157,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mr-1' }, 'View:'),
               [
                 { id: 'topdown', label: 'Top-down', icon: '📐', sub: 'physics view' },
-                { id: '3d', label: '3D Scene', icon: '🎥', sub: 'immersive' }
+                { id: '3d', label: '3D Scene', icon: '🎥', sub: 'immersive' },
+                { id: 'helmet', label: 'Helmet POV', icon: '🥽', sub: 'first-person' }
               ].map(function (m) {
                 var sel = (beadView === m.id);
                 return h('button', {
@@ -1197,6 +1198,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               M: M,
               TH: TH,
               mat: mat,
+              ariaLabel: canvasAriaLabel
+            }),
+            // Helmet POV — first-person view through an auto-darkening
+            // welding hood. Pure Canvas2D (no Three.js dependency for this
+            // mode). Teaches what a welder actually sees: most of the world
+            // goes dark when the lens darkens to ~Shade 11; the arc is a
+            // bright bloom; the plate is a faint glow around it. Most
+            // students don't know visibility is this limited.
+            beadView === 'helmet' && h(WeldBeadLabHelmet, {
+              liveRef: liveRef,
+              P: P,
               ariaLabel: canvasAriaLabel
             }),
             // Stat cards
@@ -1685,6 +1697,259 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             h('span', null, '⚙ Wheel to zoom'),
             h('span', null, '⌨ Arrow keys + / − for keyboard control'),
             h('span', { className: 'text-slate-400' }, '— same V/A/TS controls above drive both views')
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
+      // MODULE 2 (companion): WELD BEAD HELMET POV
+      // ─────────────────────────────────────────────────────
+      // First-person view through an auto-darkening welding hood. Pure
+      // Canvas2D — no Three.js needed (the educational point is about
+      // *lighting* and *limited visibility*, not 3D geometry).
+      //
+      // Why this view exists: most students think welders see the work
+      // clearly. They don't. The auto-darkening lens drops to roughly
+      // Shade 11 within ~1 ms of arc strike. Once the arc is going, the
+      // welder sees: the bright arc itself, an orange penumbra immediately
+      // around the weld pool, sparks, and almost nothing else. Plate
+      // edges are faint dark shapes. The gloved hand on the torch is in
+      // peripheral vision.
+      //
+      // This view teaches:
+      //   1. Why auto-darkening helmets matter (vs old fixed-shade hoods)
+      //   2. Why welding takes years — you're working partly by feel
+      //   3. The role of the "starting point" you established before
+      //      striking the arc (you can't see fine detail once it's lit)
+      //
+      // Visual recipe per frame:
+      //   - Mostly black canvas (the inside of the lens at Shade 11)
+      //   - Vignette: darker at edges (helmet bezel cuts the FOV)
+      //   - Arc bloom: bright yellow-white radial gradient at arc position
+      //   - Plate around arc: orange-glowing penumbra
+      //   - Bead trail: dim orange line behind the arc
+      //   - Plate edges: faint dark grey rectangle outline
+      //   - Sparks: bright yellow streaks
+      //   - Gloved hands silhouette: dark shapes in bottom corners
+      //   - Top-left HUD: "Shade 11 — auto-darkened" status
+      //
+      // Honors prefers-reduced-motion: arc holds at end position, no
+      // pulsing, no sparks, no per-frame redraw.
+      function WeldBeadLabHelmet(props) {
+        var canvasRef = useRef(null);
+        var rafRef = useRef(null);
+        var startRef = useRef(0);
+        var liveRef = props.liveRef;
+
+        useEffect(function () {
+          var canvas = canvasRef.current;
+          if (!canvas) return;
+          if (window.StemLab && window.StemLab.setupHiDPI) {
+            window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+          }
+          var ctxC = canvas.getContext('2d');
+          if (canvas._dpr) ctxC.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
+          var W = canvas._logicalW || canvas.width;
+          var H = canvas._logicalH || canvas.height;
+          startRef.current = performance.now();
+
+          function draw(now) {
+            if (!canvasRef.current) return;
+            var live = liveRef.current || {};
+            var elapsed = (now - startRef.current) / 1000;
+            var travelTime = 6.0 * (12 / Math.max(3, live.TS || 12));
+            var t = _prefersReducedMotion ? 0.95 : ((elapsed % travelTime) / travelTime);
+
+            // ── Background: deep black (Shade 11 lens) ──
+            ctxC.fillStyle = '#020308';
+            ctxC.fillRect(0, 0, W, H);
+
+            // Plate edges — faint dark-grey rectangle. Welder DOES see this
+            // even through Shade 11 because it's the main shape they work
+            // with, but it's barely there. Coordinates align with the 2D
+            // top-down view's plate so spatial reasoning is consistent.
+            var plateY0 = H * 0.30;
+            var plateY1 = H * 0.78;
+            var plateX0 = W * 0.05;
+            var plateX1 = W * 0.95;
+            ctxC.strokeStyle = 'rgba(60, 60, 70, 0.85)';
+            ctxC.lineWidth = 1.2;
+            ctxC.strokeRect(plateX0, plateY0, plateX1 - plateX0, plateY1 - plateY0);
+            // Very faint plate fill — just enough to see edge separation
+            ctxC.fillStyle = 'rgba(20, 22, 28, 0.6)';
+            ctxC.fillRect(plateX0, plateY0, plateX1 - plateX0, plateY1 - plateY0);
+
+            // Joint center line where the bead lays
+            var jointY = (plateY0 + plateY1) / 2;
+            var beadStartX = W * 0.08;
+            var beadEndX = W * 0.92;
+            var arcX = beadStartX + (beadEndX - beadStartX) * t;
+
+            // ── Bead trail — dim orange line behind the arc ──
+            // The bead is glowing-hot when the welder lays it; visible
+            // through the lens because of its own emission.
+            var beadPxWidth = ((live.beadWidth || 0.2) / 0.5) * 18;
+            var beadGrad = ctxC.createLinearGradient(beadStartX, 0, arcX, 0);
+            beadGrad.addColorStop(0, 'rgba(80, 25, 8, 0.6)');
+            beadGrad.addColorStop(0.6, 'rgba(180, 60, 15, 0.8)');
+            beadGrad.addColorStop(1, 'rgba(255, 130, 30, 1)');
+            ctxC.fillStyle = beadGrad;
+            ctxC.fillRect(beadStartX, jointY - beadPxWidth / 2, arcX - beadStartX, beadPxWidth);
+
+            // ── Penumbra: orange glow around the arc ──
+            // The hot weld pool radiates visible light through the lens.
+            // Radial gradient that fades to nothing at ~120 px radius.
+            var penumbraR = 130;
+            var penumbra = ctxC.createRadialGradient(arcX, jointY, 8, arcX, jointY, penumbraR);
+            penumbra.addColorStop(0,   'rgba(255, 200, 80, 0.85)');
+            penumbra.addColorStop(0.25,'rgba(255, 140, 40, 0.55)');
+            penumbra.addColorStop(0.6, 'rgba(180, 60, 20, 0.18)');
+            penumbra.addColorStop(1,   'rgba(120, 30, 10, 0)');
+            ctxC.fillStyle = penumbra;
+            ctxC.beginPath();
+            ctxC.arc(arcX, jointY, penumbraR, 0, Math.PI * 2);
+            ctxC.fill();
+
+            // ── Arc bloom: bright yellow-white core ──
+            if (t < 0.99) {
+              var pulse = _prefersReducedMotion ? 1 : (0.78 + 0.22 * Math.sin(elapsed * 28));
+              // Outer glow
+              var bloomR = 50;
+              var bloom = ctxC.createRadialGradient(arcX, jointY, 0, arcX, jointY, bloomR);
+              bloom.addColorStop(0,   'rgba(255, 255, 240, ' + pulse + ')');
+              bloom.addColorStop(0.18,'rgba(255, 240, 180, ' + (0.85 * pulse) + ')');
+              bloom.addColorStop(0.5, 'rgba(255, 180, 80, 0.4)');
+              bloom.addColorStop(1,   'rgba(255, 120, 40, 0)');
+              ctxC.fillStyle = bloom;
+              ctxC.beginPath();
+              ctxC.arc(arcX, jointY, bloomR, 0, Math.PI * 2);
+              ctxC.fill();
+              // Bright core
+              ctxC.fillStyle = 'rgba(255, 255, 255, ' + Math.min(1, pulse + 0.1) + ')';
+              ctxC.beginPath();
+              ctxC.arc(arcX, jointY, 4 + 2 * pulse, 0, Math.PI * 2);
+              ctxC.fill();
+
+              // ── Sparks — bright streaks ──
+              if (!_prefersReducedMotion) {
+                var sparkCount = 10;
+                ctxC.lineWidth = 1.4;
+                for (var sp = 0; sp < sparkCount; sp++) {
+                  var sphase = (elapsed * 55 + sp * 1.7) % 1;
+                  var sangle = (sp / sparkCount) * Math.PI * 2 + elapsed * 7 + sp;
+                  var sdist = 6 + sphase * 36;
+                  var x1 = arcX + Math.cos(sangle) * (sdist - 6);
+                  var y1 = jointY + Math.sin(sangle) * (sdist - 6) * 0.45;
+                  var x2 = arcX + Math.cos(sangle) * sdist;
+                  var y2 = jointY + Math.sin(sangle) * sdist * 0.45;
+                  var sparkAlpha = (1 - sphase) * 0.95;
+                  ctxC.strokeStyle = 'rgba(255, ' + Math.round(200 + 55 * (1 - sphase)) + ', 100, ' + sparkAlpha + ')';
+                  ctxC.beginPath();
+                  ctxC.moveTo(x1, y1);
+                  ctxC.lineTo(x2, y2);
+                  ctxC.stroke();
+                }
+              }
+            }
+
+            // ── Gloved hand silhouette (bottom-right corner) ──
+            // Welder's right hand on the torch handle — dark shape that
+            // partially occludes the bottom-right of the field of view.
+            // Stylized; not anatomically precise.
+            ctxC.fillStyle = 'rgba(15, 12, 8, 0.95)';
+            ctxC.beginPath();
+            // Hand + cuff blob in lower-right
+            ctxC.moveTo(W * 0.62, H);
+            ctxC.lineTo(W * 0.92, H);
+            ctxC.lineTo(W * 0.95, H * 0.78);
+            ctxC.bezierCurveTo(W * 0.86, H * 0.74, W * 0.78, H * 0.78, W * 0.72, H * 0.86);
+            ctxC.bezierCurveTo(W * 0.66, H * 0.92, W * 0.62, H * 0.96, W * 0.62, H);
+            ctxC.closePath();
+            ctxC.fill();
+            // Torch shaft going from glove up toward arc
+            ctxC.strokeStyle = 'rgba(40, 38, 35, 0.85)';
+            ctxC.lineWidth = 7;
+            ctxC.beginPath();
+            ctxC.moveTo(W * 0.78, H * 0.85);
+            ctxC.lineTo(arcX + 14, jointY + 18);
+            ctxC.stroke();
+            // Torch nozzle (small dark wedge at tip)
+            ctxC.fillStyle = 'rgba(60, 56, 52, 0.9)';
+            ctxC.beginPath();
+            ctxC.moveTo(arcX + 8, jointY + 6);
+            ctxC.lineTo(arcX + 18, jointY + 22);
+            ctxC.lineTo(arcX + 22, jointY + 16);
+            ctxC.lineTo(arcX + 14, jointY + 2);
+            ctxC.closePath();
+            ctxC.fill();
+
+            // ── Helmet bezel vignette ──
+            // The welder's view is clipped by the inside of the hood. Dark
+            // radial gradient from edges inward simulates this.
+            var vig = ctxC.createRadialGradient(W / 2, H * 0.48, Math.min(W, H) * 0.30, W / 2, H * 0.48, Math.max(W, H) * 0.78);
+            vig.addColorStop(0, 'rgba(0, 0, 0, 0)');
+            vig.addColorStop(0.55, 'rgba(0, 0, 0, 0.35)');
+            vig.addColorStop(1, 'rgba(0, 0, 0, 0.92)');
+            ctxC.fillStyle = vig;
+            ctxC.fillRect(0, 0, W, H);
+
+            // ── HUD: lens shade indicator (top-left) ──
+            ctxC.fillStyle = 'rgba(180, 200, 220, 0.75)';
+            ctxC.font = 'bold 11px ui-monospace, Consolas, monospace';
+            ctxC.textAlign = 'left';
+            ctxC.fillText('🥽 Auto-darkening helmet', 14, 22);
+            ctxC.fillStyle = 'rgba(140, 160, 180, 0.6)';
+            ctxC.font = '10px ui-monospace, Consolas, monospace';
+            ctxC.fillText(t < 0.99 ? 'Lens: Shade 11 (active)' : 'Lens: Shade 4 (idle)', 14, 36);
+            // Process label
+            var procLabel = (live.P === 'mig' ? 'MIG' : live.P === 'tig' ? 'TIG' : live.P === 'stick' ? 'Stick' : 'Oxy-Fuel');
+            ctxC.fillStyle = 'rgba(160, 180, 200, 0.65)';
+            ctxC.fillText('Process: ' + procLabel, 14, 50);
+
+            if (!_prefersReducedMotion) {
+              rafRef.current = requestAnimationFrame(draw);
+            }
+          }
+
+          rafRef.current = requestAnimationFrame(draw);
+          return function () {
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
+          };
+        }, [props.P, props.M]);
+
+        var procLabel = props.P === 'mig' ? 'MIG' : props.P === 'tig' ? 'TIG' : props.P === 'stick' ? 'Stick' : 'Oxy-Fuel';
+        var helmetAria = 'First-person view through an auto-darkening welding hood. Lens at Shade 11 darkens the field of view to near-black; the arc and immediate weld pool are the only clearly visible elements. Process: ' + procLabel + '. ' + (props.ariaLabel || '');
+
+        return h('div', { className: 'space-y-3' },
+          h('div', { className: 'bg-black rounded-2xl shadow border-2 border-slate-700 p-3' },
+            h('canvas', {
+              ref: canvasRef,
+              width: 900,
+              height: 360,
+              role: 'img',
+              'aria-label': helmetAria,
+              className: 'w-full block rounded-lg'
+            })
+          ),
+          // Educational explainer below — what students are seeing & why it matters
+          h('div', { className: 'bg-slate-900 text-slate-200 rounded-2xl border-2 border-slate-700 p-4' },
+            h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-400 mb-2' }, '🥽 What you are seeing'),
+            h('p', { className: 'text-sm leading-relaxed mb-3' },
+              'This is approximately what a welder sees through an auto-darkening hood with the lens at Shade 11. The lens darkens within about 1 millisecond of arc strike. Most of the visual world goes black; the arc and the immediate weld pool are nearly the only things visible. The faint rectangle is the plate; the dark shape in the lower-right is your gloved hand on the torch.'),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 text-xs' },
+              h('div', { className: 'bg-slate-800/60 rounded-lg p-3 border border-slate-700' },
+                h('div', { className: 'font-bold text-amber-300 mb-1' }, 'Why so dark?'),
+                h('div', { className: 'text-slate-300 leading-relaxed' }, 'A welding arc is roughly as bright as the surface of the sun. Without lens shading, retinal damage happens in milliseconds. Shade 11 reduces visible light by ~99.9% and blocks UV / IR.')
+              ),
+              h('div', { className: 'bg-slate-800/60 rounded-lg p-3 border border-slate-700' },
+                h('div', { className: 'font-bold text-amber-300 mb-1' }, 'Why this teaches the craft'),
+                h('div', { className: 'text-slate-300 leading-relaxed' }, 'You can\'t see fine detail once the arc is lit — you set up your torch position, work angle, and travel speed BEFORE striking, then run by muscle memory + the small visible region around the pool. That is what years of practice build.')
+              ),
+              h('div', { className: 'bg-slate-800/60 rounded-lg p-3 border border-slate-700' },
+                h('div', { className: 'font-bold text-amber-300 mb-1' }, 'Auto vs fixed-shade'),
+                h('div', { className: 'text-slate-300 leading-relaxed' }, 'Old fixed-shade hoods stayed at Shade 11 always — you flipped them down only after striking. Many old welders developed cataracts or had \'flash burn\' incidents. Auto-darkening (1980s+) lets you see clearly until the moment you strike.')
+              )
+            )
           )
         );
       }
