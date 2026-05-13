@@ -5857,6 +5857,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillRect(fhX - 4, fhY - 14, 8, 1);
               }
 
+              // ── Atmospheric haze band on the horizon (air-perspective depth) ──
+              // A soft horizontal band of color between sky and mountains
+              // softens the far edge of the world and gives the scene real
+              // distance-feel. Winter is pale-gray, fall is warm beige, summer
+              // is heavy heat-haze, spring is dewy blue. Drifts very slowly.
+              (function() {
+                var hzCol = season === 3 ? 'rgba(220,228,235,0.55)' :
+                             season === 2 ? 'rgba(230,200,160,0.40)' :
+                             season === 1 ? 'rgba(240,225,180,0.50)' :
+                                            'rgba(210,225,235,0.40)';
+                var hzY = H * 0.56;
+                var hzH = 22;
+                var hzG = c.createLinearGradient(0, hzY, 0, hzY + hzH);
+                hzG.addColorStop(0, 'rgba(255,255,255,0)');
+                hzG.addColorStop(0.5, hzCol);
+                hzG.addColorStop(1, 'rgba(255,255,255,0)');
+                c.fillStyle = hzG;
+                c.fillRect(0, hzY, W, hzH);
+                // Drifting mist tufts riding the haze band
+                c.fillStyle = season === 3 ? 'rgba(245,250,255,0.35)' : 'rgba(255,250,235,0.28)';
+                for (var hzi = 0; hzi < 5; hzi++) {
+                  var hzx = ((hzi * W * 0.24 + t2 * (0.05 + hzi * 0.02) + hzi * 33) % (W + 120)) - 60;
+                  var hzy = hzY + 6 + (hzi % 3) * 3 + Math.sin(t2 * 0.003 + hzi) * 1.5;
+                  c.beginPath();
+                  c.ellipse(hzx, hzy, 32 + hzi * 6, 4 + (hzi % 2), 0, 0, 6.28);
+                  c.fill();
+                }
+              })();
+
               // ── Distant mountain silhouettes (depth layer, non-winter uses blue-gray) ──
               var mtnColor = season === 3 ? 'rgba(140,160,180,0.55)' : season === 2 ? 'rgba(120,95,70,0.5)' : 'rgba(100,130,160,0.45)';
               c.fillStyle = mtnColor;
@@ -5934,34 +5963,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
-              // ── Distant birds (seasonal: V-formation migrating in autumn, scattered swooping in spring/summer) ──
-              if (season !== 3) {
-                c.strokeStyle = season === 2 ? 'rgba(40,30,20,0.55)' : 'rgba(40,40,60,0.4)'; c.lineWidth = 1.2;
-                var birdFlyX = (t2 * 0.6) % (W + 120) - 60;
-                if (season === 2) {
-                  // V-formation of migrating geese
-                  for (var bd = 0; bd < 7; bd++) {
-                    var bdOffX = -bd * 14;
-                    var bdOffY = Math.abs(bd - 3) * 6;
-                    var bdx = birdFlyX + bdOffX;
-                    var bdy = H * 0.16 + bdOffY + Math.sin(t2 * 0.01 + bd) * 1;
-                    c.beginPath();
-                    c.moveTo(bdx - 4, bdy + 1); c.quadraticCurveTo(bdx - 2, bdy - 2, bdx, bdy);
-                    c.quadraticCurveTo(bdx + 2, bdy - 2, bdx + 4, bdy + 1);
-                    c.stroke();
-                  }
-                } else {
-                  // Single swallow or scattered swooping birds
-                  for (var bd2 = 0; bd2 < 2; bd2++) {
-                    var bdx2 = (birdFlyX + bd2 * 300) % (W + 80) - 40;
-                    var bdy2 = H * 0.22 + Math.sin(t2 * 0.008 + bd2 * 2) * 12;
-                    c.beginPath();
-                    c.moveTo(bdx2 - 5, bdy2 + 1); c.quadraticCurveTo(bdx2 - 2, bdy2 - 3, bdx2, bdy2);
-                    c.quadraticCurveTo(bdx2 + 2, bdy2 - 3, bdx2 + 5, bdy2 + 1);
-                    c.stroke();
-                  }
+              // ── Cherry-blossom petals drifting (spring) ──
+              // Soft pink ovals tumbling down with horizontal sway — reads
+              // immediately as "spring" without needing a label. Each petal
+              // gets its own rotation + sway frequency so the whole field
+              // never settles into a grid.
+              if (season === 0) {
+                for (var cb = 0; cb < 22; cb++) {
+                  var _cbY = ((cb * 23 + t2 * 0.32) % (H + 30)) - 15;
+                  var _cbBaseX = (cb * 37 + 13) % W;
+                  var _cbX = _cbBaseX + Math.sin(t2 * 0.015 + cb * 0.6) * 18;
+                  var _cbRot = t2 * 0.012 + cb * 1.3;
+                  var _cbCol = cb % 3 === 0 ? 'rgba(252,231,243,0.85)' :
+                                cb % 3 === 1 ? 'rgba(251,207,232,0.85)' :
+                                               'rgba(244,114,182,0.65)';
+                  c.save();
+                  c.translate(_cbX, _cbY);
+                  c.rotate(_cbRot);
+                  c.fillStyle = _cbCol;
+                  c.beginPath();
+                  c.ellipse(0, 0, 2.6, 1.3, 0, 0, 6.28);
+                  c.fill();
+                  c.restore();
                 }
               }
+
+              // ── Falling maple leaves (fall) ──
+              // Larger than petals, with a stem and an irregular notched
+              // outline; they tumble with both translation drift and a slow
+              // rotation. Three autumn colors mix across the population.
+              if (season === 2) {
+                for (var lf = 0; lf < 14; lf++) {
+                  var _lfY = ((lf * 41 + t2 * 0.45) % (H + 40)) - 20;
+                  var _lfBaseX = (lf * 53 + 29) % W;
+                  var _lfX = _lfBaseX + Math.sin(t2 * 0.018 + lf * 0.7) * 22 + Math.cos(t2 * 0.011 + lf) * 6;
+                  var _lfRot = Math.sin(t2 * 0.025 + lf) * 1.2 + lf * 0.5;
+                  var _lfCol = lf % 3 === 0 ? 'rgba(220,90,30,0.85)' :
+                                lf % 3 === 1 ? 'rgba(200,140,40,0.85)' :
+                                               'rgba(180,50,30,0.85)';
+                  var _lfStem = lf % 3 === 0 ? 'rgba(110,60,20,0.85)' :
+                                 lf % 3 === 1 ? 'rgba(120,80,30,0.85)' :
+                                                'rgba(90,40,20,0.85)';
+                  c.save();
+                  c.translate(_lfX, _lfY);
+                  c.rotate(_lfRot);
+                  c.fillStyle = _lfCol;
+                  // 5-pointed maple shape via star polygon
+                  c.beginPath();
+                  for (var lk = 0; lk < 10; lk++) {
+                    var _lfA = (lk / 10) * 6.28 - 1.57;
+                    var _lfR = lk % 2 === 0 ? 3.4 : 1.4;
+                    var _lpx = Math.cos(_lfA) * _lfR;
+                    var _lpy = Math.sin(_lfA) * _lfR;
+                    lk === 0 ? c.moveTo(_lpx, _lpy) : c.lineTo(_lpx, _lpy);
+                  }
+                  c.closePath();
+                  c.fill();
+                  // Stem
+                  c.strokeStyle = _lfStem; c.lineWidth = 0.6;
+                  c.beginPath(); c.moveTo(0, 2.8); c.lineTo(0, 5); c.stroke();
+                  // Faint center vein highlight
+                  c.strokeStyle = 'rgba(255,255,255,0.25)'; c.lineWidth = 0.4;
+                  c.beginPath(); c.moveTo(0, -3); c.lineTo(0, 3); c.stroke();
+                  c.restore();
+                }
+              }
+
+              // ── Summer heat shimmer over the ground (subtle band that wavers) ──
+              // Just above the meadow line in peak summer, the air ripples.
+              // Pure visual — no text, no measurement — but kids notice it.
+              if (season === 1) {
+                c.save();
+                c.globalAlpha = 0.10;
+                c.fillStyle = '#fef3c7';
+                for (var hs = 0; hs < 8; hs++) {
+                  var _hsy = H * 0.76 - 8 + hs * 1.2;
+                  var _hsoff = Math.sin(t2 * 0.04 + hs * 0.8) * 1.5;
+                  c.beginPath();
+                  c.moveTo(0, _hsy);
+                  for (var _hsx = 0; _hsx <= W; _hsx += 14) {
+                    var _hsdy = _hsy + Math.sin(t2 * 0.03 + _hsx * 0.04 + hs * 0.5) * 1.2 + _hsoff;
+                    c.lineTo(_hsx, _hsdy);
+                  }
+                  c.lineTo(W, _hsy + 1); c.lineTo(0, _hsy + 1); c.closePath();
+                  c.fill();
+                }
+                c.restore();
+              }
+
+              // (Distant birds handled earlier — hawk circling in spring/summer, V-formation in fall)
 
               // ── Ground flora: clover + dandelions scattered in grass ──
               if (season === 0 || season === 1) {
