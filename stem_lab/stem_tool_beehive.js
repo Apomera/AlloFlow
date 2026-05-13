@@ -6883,6 +6883,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               })();
 
               // ── Hive (detailed cross-section with 3D-ish look) ──
+              // ── Health-responsive aura ──
+              // Drawn FIRST so the shadow + hive paint on top. The aura color
+              // and intensity reflect colonyHealth so students get a constant
+              // ambient signal of how the colony is doing without reading any
+              // numbers. Gently pulses via sine(t2) to feel alive — disabled
+              // visually flat under prefers-reduced-motion via the 0.85-1.0
+              // amplitude floor (no full strobe even on max).
+              var auraCx = hiveX + hiveW / 2;
+              var auraCy = hiveY + hiveH * 0.45;
+              var auraR = hiveW * 1.7;
+              var auraColor, auraAlpha;
+              if (colonyHealth >= 80)      { auraColor = '254,224,138';  auraAlpha = 0.28; } // amber-200, vibrant
+              else if (colonyHealth >= 55) { auraColor = '252,211,77';   auraAlpha = 0.22; } // amber-300
+              else if (colonyHealth >= 35) { auraColor = '217,119,6';    auraAlpha = 0.18; } // amber-600, dim warm
+              else                         { auraColor = '220,38,38';    auraAlpha = 0.20; } // red-600, distinctly distressed
+              var auraPulse = 0.92 + Math.sin(t2 * 0.018) * 0.08; // 0.84..1.00 — soft breathing
+              auraAlpha *= auraPulse;
+              var auraGrad = c.createRadialGradient(auraCx, auraCy, hiveW * 0.2, auraCx, auraCy, auraR);
+              auraGrad.addColorStop(0, 'rgba(' + auraColor + ',' + auraAlpha.toFixed(3) + ')');
+              auraGrad.addColorStop(0.55, 'rgba(' + auraColor + ',' + (auraAlpha * 0.4).toFixed(3) + ')');
+              auraGrad.addColorStop(1, 'rgba(' + auraColor + ',0)');
+              c.fillStyle = auraGrad;
+              c.beginPath(); c.ellipse(auraCx, auraCy, auraR, auraR * 0.8, 0, 0, 6.28); c.fill();
+              // ── Stress haze drifting from entrance when morale low or varroa high ──
+              // A subtle wisp of "alarm pheromone" pink-red leaving the
+              // entrance — invisible biology made just barely visible.
+              if (morale < 40 || varroaLevel >= 25) {
+                var hazeStrength = Math.max(0, Math.min(1, ((40 - morale) / 40) + ((varroaLevel - 15) / 50)));
+                if (hazeStrength > 0.05) {
+                  c.save();
+                  c.globalAlpha = 0.18 * hazeStrength;
+                  for (var hz = 0; hz < 5; hz++) {
+                    var hzT = ((t2 * 0.4 + hz * 22) % 60) / 60; // 0..1 rise
+                    var hzX = hiveX + hiveW / 2 + Math.sin(t2 * 0.03 + hz) * 6 + (hz - 2) * 3;
+                    var hzY = hiveY + hiveH - hzT * 60;
+                    var hzR = 4 + hzT * 10;
+                    var hzAlpha = (1 - hzT) * 0.6;
+                    c.fillStyle = 'rgba(248,113,113,' + hzAlpha.toFixed(3) + ')';
+                    c.beginPath(); c.arc(hzX, hzY, hzR, 0, 6.28); c.fill();
+                  }
+                  c.restore();
+                }
+              }
               // Ground cast shadow (soft, wide ellipse — gives the hive weight)
               var csY = hiveY + hiveH + 6;
               var csGrad = c.createRadialGradient(hiveX + hiveW / 2, csY, 2, hiveX + hiveW / 2, csY, hiveW * 0.7);
@@ -7286,16 +7329,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillStyle = vig; c.fillRect(0, 0, W, H);
 
               // ── HUD overlay (glass morphism style) ──
+              // Bigger panel: season + day + time-of-day clock, year +
+              // workers, and 3 zone-colored stat chips at the bottom.
+              // Border tints red when ANY stat is in danger so a glance
+              // reads colony state instantly.
+              var hudW = 174, hudH = 66, hudX = W - hudW - 6, hudY = 4;
+              var _clockT = (((t2 * 0.0004) % 2) + 2) % 2;
+              var _clockHr = (6 + _clockT * 12) % 24;
+              var _clockH = Math.floor(_clockHr);
+              var _clockM = Math.floor((_clockHr - _clockH) * 60);
+              var _clockIcon = (_clockH < 6 || _clockH >= 19) ? '\uD83C\uDF19' : (_clockH < 9 ? '\uD83C\uDF05' : (_clockH < 17 ? '\u2600\uFE0F' : '\uD83C\uDF07'));
+              var _clockStr = _clockH + ':' + (_clockM < 10 ? '0' + _clockM : _clockM);
+              var hudDanger = (varroaLevel >= 25) || (morale < 30) || (queenHealth < 40) || (season === 3 && honey < 20);
               c.save();
-              c.fillStyle = 'rgba(15,23,42,0.6)';
-              c.beginPath(); c.roundRect(W - 138, 4, 132, 56, 10); c.fill();
-              c.strokeStyle = 'rgba(255,255,255,0.08)'; c.lineWidth = 1;
-              c.beginPath(); c.roundRect(W - 138, 4, 132, 56, 10); c.stroke();
-              c.font = 'bold 10px system-ui'; c.fillStyle = '#fbbf24'; c.textAlign = 'right';
-              c.fillText(seasonNames[season] + ' \u2022 Day ' + day, W - 12, 20);
-              c.font = '8px system-ui'; c.fillStyle = '#e2e8f0';
-              c.fillText('Year ' + year + ' \u2022 \uD83D\uDC1D ' + Math.round(safeWorkers).toLocaleString(), W - 12, 33);
-              c.fillText('\uD83C\uDF6F ' + Math.round(safeHoney) + ' lbs \u2022 \u2764\uFE0F ' + (morale || 0) + '% \u2022 \uD83E\uDDA0 ' + (varroaLevel || 0) + '%', W - 12, 46);
+              c.fillStyle = 'rgba(15,23,42,0.72)';
+              c.beginPath(); c.roundRect(hudX, hudY, hudW, hudH, 10); c.fill();
+              c.strokeStyle = hudDanger ? 'rgba(248,113,113,0.6)' : 'rgba(255,255,255,0.13)';
+              c.lineWidth = hudDanger ? 1.6 : 1;
+              c.beginPath(); c.roundRect(hudX, hudY, hudW, hudH, 10); c.stroke();
+              c.font = 'bold 11px system-ui'; c.fillStyle = '#fbbf24'; c.textAlign = 'left';
+              c.fillText(seasonNames[season] + ' \u2022 Day ' + day, hudX + 8, hudY + 16);
+              c.textAlign = 'right';
+              c.font = '10px system-ui'; c.fillStyle = '#fef3c7';
+              c.fillText(_clockIcon + ' ' + _clockStr, hudX + hudW - 8, hudY + 16);
+              c.textAlign = 'left'; c.font = '9px system-ui'; c.fillStyle = '#e2e8f0';
+              c.fillText('Year ' + year + ' \u2022 \uD83D\uDC1D ' + Math.round(safeWorkers).toLocaleString() + ' workers', hudX + 8, hudY + 31);
+              var _chipY = hudY + hudH - 18;
+              function _drawHudChip(cx, label, val, suffix, zone) {
+                var txt = label + ' ' + val + suffix;
+                c.font = 'bold 9px system-ui';
+                var w = c.measureText(txt).width + 10;
+                var bg = zone === 'high' ? 'rgba(248,113,113,0.30)' : zone === 'warn' ? 'rgba(251,191,36,0.30)' : 'rgba(74,222,128,0.22)';
+                var fg = zone === 'high' ? '#fecaca' : zone === 'warn' ? '#fef3c7' : '#d1fae5';
+                c.fillStyle = bg;
+                c.beginPath(); c.roundRect(cx, _chipY, w, 14, 6); c.fill();
+                c.fillStyle = fg;
+                c.fillText(txt, cx + 5, _chipY + 10);
+                return cx + w + 4;
+              }
+              var chipX = hudX + 8;
+              chipX = _drawHudChip(chipX, '\uD83C\uDF6F', Math.round(safeHoney), 'lb', (season === 3 && safeHoney < 20) ? 'high' : (safeHoney < 15 ? 'warn' : 'ok'));
+              chipX = _drawHudChip(chipX, '\u2764\uFE0F', (morale || 0), '%', morale < 30 ? 'high' : (morale < 50 ? 'warn' : 'ok'));
+              chipX = _drawHudChip(chipX, '\uD83E\uDDA0', (varroaLevel || 0), '%', varroaLevel >= 25 ? 'high' : (varroaLevel >= 15 ? 'warn' : 'ok'));
               c.restore();
 
               // Garden bonus badge
