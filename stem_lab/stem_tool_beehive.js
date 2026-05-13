@@ -5788,6 +5788,86 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 // Soft gray overlay across the whole scene
                 c.fillStyle = 'rgba(50,60,80,' + (0.12 * _wxRain).toFixed(3) + ')';
                 c.fillRect(0, 0, W, H * 0.78);
+                // ── Lightning bolts (rare; ~2-3 per rain phase) ──
+                // Sharp white-blue flash that briefly illuminates the entire sky.
+                // Period: every ~14s during heavy rain only (_wxRain > 0.4).
+                if (_wxRain > 0.4) {
+                  var _ltPeriod = 14000;
+                  var _ltPhase = (Date.now() % _ltPeriod) / _ltPeriod;
+                  if (_ltPhase < 0.025) {
+                    var _ltT = _ltPhase / 0.025;
+                    var _ltFlash = Math.sin(_ltT * Math.PI);
+                    // Full-screen flash
+                    c.fillStyle = 'rgba(220,230,255,' + (0.55 * _ltFlash * _wxRain).toFixed(3) + ')';
+                    c.fillRect(0, 0, W, H);
+                    // Jagged bolt — descend with random zigzag
+                    var _ltOriginX = W * 0.45 + Math.sin(_ltPeriod * 0.0001) * W * 0.25;
+                    c.save();
+                    c.strokeStyle = 'rgba(245,250,255,' + (0.9 * _ltFlash).toFixed(3) + ')';
+                    c.lineWidth = 1.4;
+                    c.beginPath();
+                    var _ltCurX = _ltOriginX, _ltCurY = 0;
+                    c.moveTo(_ltCurX, _ltCurY);
+                    for (var lts = 0; lts < 8; lts++) {
+                      _ltCurX += (lts % 2 === 0 ? -1 : 1) * (4 + (lts * 7) % 6);
+                      _ltCurY += H * 0.075;
+                      c.lineTo(_ltCurX, _ltCurY);
+                    }
+                    c.stroke();
+                    // Inner brighter core
+                    c.strokeStyle = 'rgba(255,255,255,' + (0.95 * _ltFlash).toFixed(3) + ')';
+                    c.lineWidth = 0.6;
+                    c.beginPath();
+                    _ltCurX = _ltOriginX; _ltCurY = 0;
+                    c.moveTo(_ltCurX, _ltCurY);
+                    for (var lts2 = 0; lts2 < 8; lts2++) {
+                      _ltCurX += (lts2 % 2 === 0 ? -1 : 1) * (4 + (lts2 * 7) % 6);
+                      _ltCurY += H * 0.075;
+                      c.lineTo(_ltCurX, _ltCurY);
+                    }
+                    c.stroke();
+                    // Small branching fork halfway down
+                    c.strokeStyle = 'rgba(245,250,255,' + (0.6 * _ltFlash).toFixed(3) + ')';
+                    c.lineWidth = 0.8;
+                    c.beginPath();
+                    var _ltBrX = _ltOriginX + (8 % 2 === 0 ? -1 : 1) * 5;
+                    var _ltBrY = H * 0.30;
+                    c.moveTo(_ltBrX, _ltBrY);
+                    c.lineTo(_ltBrX + 10, _ltBrY + H * 0.10);
+                    c.lineTo(_ltBrX + 6, _ltBrY + H * 0.18);
+                    c.stroke();
+                    c.restore();
+                  }
+                }
+              }
+              // ── Wet-ground puddle lingering after rain (post-rain wetness) ──
+              // The ground darkens for ~60s after the rain ends, with two soft
+              // puddles in low spots that catch a thin reflective sheen.
+              var _wxWet = 0;
+              if (_wxPhase >= 0.80 && _wxPhase < 0.95) {
+                _wxWet = Math.max(0, 1 - (_wxPhase - 0.80) / 0.15);
+              } else if (_wxRain > 0) {
+                _wxWet = _wxRain;
+              }
+              if (_wxWet > 0.08) {
+                c.save();
+                // Two puddles in the meadow
+                var _wpPuddles = [
+                  { x: W * 0.34, y: H * 0.86, rx: 9, ry: 1.4 },
+                  { x: W * 0.69, y: H * 0.88, rx: 7, ry: 1.1 }
+                ];
+                _wpPuddles.forEach(function(wp) {
+                  // Puddle body — pale gray water
+                  c.fillStyle = 'rgba(140,160,180,' + (0.55 * _wxWet).toFixed(3) + ')';
+                  c.beginPath(); c.ellipse(wp.x, wp.y, wp.rx, wp.ry, 0, 0, 6.28); c.fill();
+                  // Sky reflection (faint blue-white)
+                  c.fillStyle = 'rgba(200,220,240,' + (0.40 * _wxWet).toFixed(3) + ')';
+                  c.beginPath(); c.ellipse(wp.x, wp.y - 0.2, wp.rx - 1.5, wp.ry * 0.55, 0, 0, 6.28); c.fill();
+                  // Highlight (sun gleam)
+                  c.fillStyle = 'rgba(255,255,255,' + (0.45 * _wxWet).toFixed(3) + ')';
+                  c.beginPath(); c.ellipse(wp.x - wp.rx * 0.4, wp.y - 0.3, wp.rx * 0.35, wp.ry * 0.3, 0, 0, 6.28); c.fill();
+                });
+                c.restore();
               }
               // ── Rainbow (arcs across the sky as the rain dies away) ──
               if (_wxRainbow > 0.1) {
@@ -9713,6 +9793,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.beginPath(); c.arc(spX + 2, spY + 1, 0.9, 0, 6.28); c.fill();
                 }
               }
+
+              // ── Digital hive scale (real beekeeping equipment) ──
+              // Modern beekeepers weigh hives daily — the curve tells you when
+              // honey flow starts, when bees rob, and when winter stores cross
+              // the survival threshold. A small wedge sits under one corner of
+              // the hive stand with a tiny LCD display showing weight in kg.
+              // Weight derived from existing colony stats: brood + honey + bees.
+              (function() {
+                var _hsclX = hiveX + hiveW * 0.85;
+                var _hsclY = hiveY + hiveH + 14;
+                // Scale platform — flat metal pad slightly wider than the hive corner
+                c.fillStyle = '#3a2510';
+                c.fillRect(_hsclX - 6, _hsclY - 2, 12, 2);
+                c.fillStyle = '#78716c';
+                c.fillRect(_hsclX - 5.5, _hsclY - 1.6, 11, 1.2);
+                // Top edge highlight
+                c.fillStyle = 'rgba(255,255,255,0.25)';
+                c.fillRect(_hsclX - 5.5, _hsclY - 1.6, 11, 0.3);
+                // Tiny LCD readout — black panel with cyan-green numbers
+                var _hsclLcdX = _hsclX + 7.5;
+                var _hsclLcdY = _hsclY - 4;
+                c.fillStyle = '#1c1917';
+                c.fillRect(_hsclLcdX - 4, _hsclLcdY - 2, 8, 4);
+                c.strokeStyle = '#57534e';
+                c.lineWidth = 0.3;
+                c.strokeRect(_hsclLcdX - 4, _hsclLcdY - 2, 8, 4);
+                // Compute weight (kg) from live state — brood + honey + workers + drones
+                // Rough conversion: honey lbs to kg ≈ 0.45, workers ~ 0.1g each
+                var _hsclWt = (honey || 0) * 0.45 + (brood || 0) * 0.0005 + ((workers || 0) + (drones || 0)) * 0.0001;
+                _hsclWt = Math.min(99.9, Math.max(0, _hsclWt));
+                var _hsclStr = _hsclWt.toFixed(1) + 'kg';
+                c.fillStyle = '#4ade80';
+                c.font = 'bold 2.6px monospace';
+                c.textAlign = 'center';
+                c.textBaseline = 'middle';
+                c.fillText(_hsclStr, _hsclLcdX, _hsclLcdY);
+                c.textAlign = 'start';
+                c.textBaseline = 'alphabetic';
+                // Tiny solar panel above the LCD (wireless scales are solar-powered in real life)
+                c.fillStyle = '#1e3a8a';
+                c.fillRect(_hsclLcdX - 4, _hsclLcdY - 5, 8, 2);
+                c.strokeStyle = '#0c1d4a';
+                c.lineWidth = 0.2;
+                for (var hp = 0; hp < 4; hp++) {
+                  c.beginPath();
+                  c.moveTo(_hsclLcdX - 4 + hp * 2, _hsclLcdY - 5);
+                  c.lineTo(_hsclLcdX - 4 + hp * 2, _hsclLcdY - 3);
+                  c.stroke();
+                }
+                // Cable from scale to LCD
+                c.strokeStyle = '#3a2510';
+                c.lineWidth = 0.4;
+                c.beginPath();
+                c.moveTo(_hsclX + 5.5, _hsclY - 1);
+                c.lineTo(_hsclLcdX - 4, _hsclLcdY);
+                c.stroke();
+              })();
 
               // ── Wooden hive stand (elevates hive off ground — protects from ants + damp) ──
               var standY = hiveY + hiveH + 4;

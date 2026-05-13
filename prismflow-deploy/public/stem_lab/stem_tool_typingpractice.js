@@ -176,7 +176,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
   // Maximum size of the saved-passage library. Keep low to avoid clutter —
   // students who want more have Custom Drill for arbitrary text.
-  var MAX_PASSAGE_LIBRARY = 8;
+  var MAX_PASSAGE_LIBRARY = 12;
 
   // Visual-mode gallery cap. 3 images × ~80 KB base64 PNG = ~240 KB, well
   // within localStorage comfort. More than 3 and students lose track of
@@ -278,6 +278,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     '6-8': '6th to 8th grade. 12 to 20 word sentences. Academic and domain-specific vocabulary. Compound and complex sentences. Transitional phrases. Target CCSS.ELA-LITERACY.RF.9-10 (middle school literacy).',
     '9-12': 'High school. Sophisticated vocabulary and varied complex sentence structures. Subordinate clauses, appositives, participial phrases allowed. Domain-specific academic content.'
   };
+
+  // ─────────────────────────────────────────────────────────
+  // CURATED PACKS — hand-written passages organized by theme.
+  // Three reasons to ship these alongside AI generation:
+  //   (1) Works offline — no callGemini required.
+  //   (2) Consistent baseline across sessions: a clinician-vetted
+  //       passage drilled three weeks running gives a fair WPM
+  //       comparison that AI-regenerated text never can.
+  //   (3) Cultural specificity AI is bad at — Wabanaki history
+  //       and place names need a human author, not a model that
+  //       might fabricate detail.
+  // Each pack has a label, description, and an array of passage
+  // objects in the same shape generatePassage produces. Imports
+  // are prepended to aiPassageLibrary with fresh ids+timestamps.
+  // ─────────────────────────────────────────────────────────
+  var CURATED_PACKS = [
+    {
+      id: 'maine',
+      label: 'Maine Pack',
+      icon: '🦞',
+      description: 'Seven hand-written passages about Maine — lighthouses, lobstering, Mount Katahdin, the Penobscot River, Wabanaki history, blueberry barrens, Portland fog. One per grade band, K through high school.',
+      author: 'AlloFlow editorial team, Portland ME',
+      passages: [
+        {
+          gradeLevel: 'K', topic: 'Maine bees', difficulty: 'on-level', language: 'en',
+          text: 'Bees in Maine make sweet honey. They live in white boxes by the trees. They fly to blue and yellow flowers all summer long.'
+        },
+        {
+          gradeLevel: '1', topic: 'lighthouse', difficulty: 'on-level', language: 'en',
+          text: 'A lighthouse stands on the rocks by the sea. Its bright light spins around in the dark. Boats see the light and find their way home through the fog.'
+        },
+        {
+          gradeLevel: '2-3', topic: 'lobster boats', difficulty: 'on-level', language: 'en',
+          text: 'Lobster boats leave Portland harbor before the sun comes up. The traps sit on the cold ocean floor. Each trap has a colored buoy floating on top of the water. The colors tell the harbor master whose trap it is.'
+        },
+        {
+          gradeLevel: '4-5', topic: 'Mount Katahdin', difficulty: 'on-level', language: 'en',
+          text: 'Mount Katahdin is the tallest mountain in Maine. Its name means greatest mountain in the language of the Penobscot people. The Appalachian Trail begins in Georgia and ends right at the very top of Katahdin. Some hikers walk for six whole months to get there.'
+        },
+        {
+          gradeLevel: '4-5', topic: 'wild blueberries', difficulty: 'on-level', language: 'en',
+          text: 'Wild blueberries grow low to the ground on rocky barrens in eastern Maine. The Wabanaki people have harvested them here for thousands of years. Every August, families come out with long-handled wooden rakes and gather the small dark berries by the bucket.'
+        },
+        {
+          gradeLevel: '6-8', topic: 'the Penobscot River', difficulty: 'on-level', language: 'en',
+          text: 'The Penobscot River runs from the deep woods of northern Maine all the way down to the Atlantic Ocean. For more than twelve thousand years, the Penobscot Nation has lived along its banks and depended on it for fish, travel, and food. In 2012 and 2013, the state of Maine removed two old dams. Salmon and shad began returning to the upper river for the first time in over a hundred years.'
+        },
+        {
+          gradeLevel: '9-12', topic: 'Portland in fog', difficulty: 'on-level', language: 'en',
+          text: 'On certain September mornings in Portland, a cool inland breeze meets warm Atlantic water and the harbor disappears into fog. The Portland Head Light sounds its low horn every twenty seconds. Ferries to Peaks Island and Long Island run on schedule but slowly, navigating by radar and old instinct. By midmorning the sun usually wins, the fog lifts, and the working waterfront returns to view, smelling of salt, diesel, and bait.'
+        }
+      ]
+    }
+  ];
 
   // ─────────────────────────────────────────────────────────
   // SECTION 2: DRILL CATALOG (minimal for skeleton — expanded in later steps)
@@ -4356,6 +4410,99 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 'Last passage: grade ' + cached.gradeLevel + (cached.topic ? ' · ' + cached.topic : '')),
               h('div', { style: { fontSize: '13px', color: palette.textDim, fontStyle: 'italic', lineHeight: '1.5' } },
                 '"' + (cached.text.length > 140 ? cached.text.slice(0, 140) + '…' : cached.text) + '"')
+            ) : null,
+
+            // ─── Curated packs ───
+            // Hand-written passage bundles. Currently: Maine Pack (7
+            // passages spanning K through 9-12). Imports prepend to
+            // aiPassageLibrary with fresh ids and timestamps; dedup by
+            // text so re-importing the same pack doesn't fill the slot
+            // with duplicates. Future packs slot in by adding entries
+            // to CURATED_PACKS — UI iterates the array.
+            !genLoading ? h('div', {
+              style: {
+                marginTop: '20px',
+                padding: '14px',
+                background: palette.surface,
+                border: '1px solid ' + palette.border,
+                borderRadius: '10px'
+              }
+            },
+              h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px', fontWeight: 700 } },
+                '📦 Curated packs'),
+              h('p', { style: { fontSize: '11px', color: palette.textMute, margin: '0 0 12px 0', lineHeight: '1.5' } },
+                'Hand-written passage sets that work without AI. Imported passages join your saved library and can be drilled like any AI-generated one.'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+                CURATED_PACKS.map(function(pack) {
+                  // Was this pack already fully imported? Compare each pack
+                  // passage text against the current library; if all are
+                  // present, show "Imported" instead of an active button so
+                  // students don't re-import on every visit.
+                  var lib = state.aiPassageLibrary || [];
+                  var libTexts = {};
+                  lib.forEach(function(p) { libTexts[p.text] = true; });
+                  var allPresent = pack.passages.every(function(p) { return libTexts[p.text]; });
+                  return h('div', {
+                    key: 'pack-' + pack.id,
+                    style: {
+                      padding: '12px',
+                      background: palette.bg,
+                      border: '1px solid ' + (allPresent ? palette.success : palette.border),
+                      borderRadius: '8px',
+                      display: 'flex',
+                      gap: '12px',
+                      alignItems: 'flex-start'
+                    }
+                  },
+                    h('div', { style: { fontSize: '24px', flexShrink: 0, lineHeight: 1 } }, pack.icon),
+                    h('div', { style: { flex: 1, minWidth: 0 } },
+                      h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '3px' } }, pack.label),
+                      h('div', { style: { fontSize: '11px', color: palette.textMute, lineHeight: '1.5', marginBottom: '6px' } }, pack.description),
+                      h('div', { style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic' } }, pack.author)
+                    ),
+                    h('button', {
+                      onClick: function() {
+                        if (allPresent) return;
+                        var existing = (state.aiPassageLibrary || []).slice();
+                        var existingTexts = {};
+                        existing.forEach(function(p) { existingTexts[p.text] = true; });
+                        var nowIso = new Date().toISOString();
+                        var fresh = pack.passages
+                          .filter(function(p) { return !existingTexts[p.text]; })
+                          .map(function(p, i) {
+                            return {
+                              id: 'pack-' + pack.id + '-' + Date.now() + '-' + i,
+                              text: p.text,
+                              gradeLevel: p.gradeLevel,
+                              topic: p.topic,
+                              difficulty: p.difficulty,
+                              language: p.language || 'en',
+                              generatedAt: nowIso,
+                              source: 'curated:' + pack.id
+                            };
+                          });
+                        if (fresh.length === 0) {
+                          addToast('Pack already imported.');
+                          return;
+                        }
+                        // Prepend fresh passages, then trim to cap.
+                        var nextLib = fresh.concat(existing).slice(0, MAX_PASSAGE_LIBRARY);
+                        updMulti({ aiPassageLibrary: nextLib });
+                        addToast('Imported ' + fresh.length + ' passage' + (fresh.length === 1 ? '' : 's') + ' from ' + pack.label + '.');
+                      },
+                      disabled: allPresent,
+                      'aria-label': allPresent ? pack.label + ' already imported' : 'Import ' + pack.label,
+                      style: Object.assign({}, allPresent ? secondaryBtnStyle(palette) : primaryBtnStyle(palette), {
+                        fontSize: '11px',
+                        padding: '6px 12px',
+                        flexShrink: 0,
+                        cursor: allPresent ? 'default' : 'pointer',
+                        opacity: allPresent ? 0.7 : 1
+                      })
+                    }, allPresent ? '✓ Imported' : 'Import ' + pack.passages.length)
+                  );
+                })
+              )
             ) : null,
 
             // Saved passages library — reusable stash of previously generated
