@@ -7010,6 +7010,146 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              // ── Beekeeper footprints in the snow (winter, gate → hive) ──
+              // Real homestead storytelling: the keeper checks the hive every
+              // few days even in winter. Two parallel rows of boot prints from
+              // the fence gate toward the hive entrance, slightly snowed-over
+              // (real fresh-prints would be sharper). Visible the second week
+              // of winter onward (gives the snow time to accumulate first).
+              if (season === 3 && (day % 30) >= 5) {
+                var _bfGateX = W * 0.42; // matches the gate position
+                var _bfHiveX = hiveX + hiveW + 2;
+                var _bfCount = 10;
+                for (var bf = 0; bf < _bfCount; bf++) {
+                  var _bfT = bf / (_bfCount - 1);
+                  var _bfX = _bfGateX + (_bfHiveX - _bfGateX) * _bfT;
+                  var _bfRow = bf % 2 === 0 ? -1 : 1;
+                  var _bfY = H * 0.86 + _bfRow * 1.4;
+                  // Foot oval — slightly elongated
+                  c.fillStyle = 'rgba(220,225,235,0.55)';
+                  c.beginPath(); c.ellipse(_bfX, _bfY, 1.5, 0.85, _bfRow * 0.05, 0, 6.28); c.fill();
+                  // Darker depression inside the print
+                  c.fillStyle = 'rgba(160,175,200,0.45)';
+                  c.beginPath(); c.ellipse(_bfX, _bfY, 1.0, 0.55, _bfRow * 0.05, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Mailbox on a post at the meadow path edge (rural homestead) ──
+              // Standard US-rural mailbox: domed steel body with a red flag, on
+              // a wooden post stuck in the ground at the very right edge.
+              // The flag goes UP when there's outgoing mail (here: rotates
+              // between up + down on a slow ~3 min cycle to suggest someone
+              // dropping off + a carrier picking up).
+              (function() {
+                var _mbX = W * 0.97, _mbY = H * 0.78;
+                // Skip if mailbox would overlap firewood pile
+                if (_mbX > W - 10) _mbX = W - 8;
+                // Post (wooden)
+                c.fillStyle = season === 3 ? '#5a3f25' : '#7a5230';
+                c.fillRect(_mbX - 0.7, _mbY, 1.4, 14);
+                // Post shadow
+                c.fillStyle = 'rgba(0,0,0,0.20)';
+                c.beginPath(); c.ellipse(_mbX, _mbY + 14.5, 2.5, 0.6, 0, 0, 6.28); c.fill();
+                // Mailbox body — domed rectangle (silver-blue steel)
+                var _mbBodyG = c.createLinearGradient(_mbX - 4, _mbY - 6, _mbX + 4, _mbY - 6);
+                _mbBodyG.addColorStop(0, '#78716c');
+                _mbBodyG.addColorStop(0.5, '#c2c0ba');
+                _mbBodyG.addColorStop(1, '#57534e');
+                c.fillStyle = _mbBodyG;
+                // Body rectangle
+                c.fillRect(_mbX - 4, _mbY - 4, 8, 4);
+                // Top arch (half-circle)
+                c.beginPath();
+                c.arc(_mbX, _mbY - 4, 4, Math.PI, 2 * Math.PI);
+                c.fill();
+                // Front door + handle
+                c.fillStyle = '#57534e';
+                c.fillRect(_mbX - 3.5, _mbY - 3.5, 0.6, 3);
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_mbX - 3.2, _mbY - 2, 0.3, 0, 6.28); c.fill();
+                // House numbers on the side
+                c.fillStyle = '#1c1917';
+                c.font = 'bold 2px sans-serif';
+                c.textAlign = 'center';
+                c.fillText('14', _mbX, _mbY - 1.5);
+                c.textAlign = 'start';
+                // Red flag — rotates between UP (vertical) and DOWN (horizontal)
+                // every ~3 min cycle. Indicates "mail to send" vs "no mail."
+                var _mbFlagPeriod = 180000;
+                var _mbFlagT = (Date.now() % _mbFlagPeriod) / _mbFlagPeriod;
+                var _mbFlagUp = _mbFlagT < 0.5; // half the time up, half down
+                c.save();
+                c.translate(_mbX + 4, _mbY - 4);
+                if (_mbFlagUp) {
+                  c.rotate(-Math.PI / 2); // flag points up
+                } else {
+                  c.rotate(0); // flag points right (down position)
+                }
+                c.fillStyle = '#dc2626';
+                c.fillRect(0, -0.5, 2.5, 1.5);
+                // Flag pole
+                c.strokeStyle = '#3a2510';
+                c.lineWidth = 0.3;
+                c.beginPath(); c.moveTo(0, 0); c.lineTo(0, -3.5); c.stroke();
+                c.restore();
+                // Snow cap on top in winter
+                if (season === 3) {
+                  c.fillStyle = '#ffffff';
+                  c.beginPath();
+                  c.arc(_mbX, _mbY - 4.5, 4, Math.PI, 2 * Math.PI);
+                  c.fill();
+                  c.fillRect(_mbX - 4, _mbY - 4.5, 8, 0.7);
+                }
+              })();
+
+              // ── Bumblebee burrow at the meadow edge (real biology) ──
+              // Real biology: bumblebees nest in abandoned mouse holes or
+              // small ground cavities, NOT in hives like honeybees. They form
+              // small annual colonies (50-400 bees vs honeybee 50,000+).
+              // Show a small ground entrance with a fuzzy bumblebee approaching.
+              if (season === 0 || season === 1) {
+                var _bbnX = W * 0.45, _bbnY = H * 0.88;
+                // Dirt mound around entrance
+                c.fillStyle = 'rgba(120,90,55,0.55)';
+                c.beginPath(); c.ellipse(_bbnX, _bbnY, 5, 1.3, 0, 0, 6.28); c.fill();
+                // Lighter sandy rim
+                c.fillStyle = 'rgba(160,130,80,0.4)';
+                c.beginPath(); c.ellipse(_bbnX, _bbnY - 0.3, 3.8, 0.9, 0, 0, 6.28); c.fill();
+                // Dark entrance hole
+                c.fillStyle = '#1a1208';
+                c.beginPath(); c.ellipse(_bbnX, _bbnY - 0.3, 1.5, 0.7, 0, 0, 6.28); c.fill();
+                // Tuft of dried grass partially covering the hole (camouflage)
+                c.strokeStyle = season === 1 ? '#92702a' : '#a3a36b';
+                c.lineWidth = 0.4;
+                for (var bbb = 0; bbb < 3; bbb++) {
+                  var _bbbX = _bbnX - 1.5 + bbb * 1.5;
+                  c.beginPath();
+                  c.moveTo(_bbbX, _bbnY - 0.5);
+                  c.quadraticCurveTo(_bbbX + 0.5, _bbnY - 3, _bbbX + 1.5, _bbnY - 3.5);
+                  c.stroke();
+                }
+                // A worker bumblebee approaching with pollen (periodic)
+                var _bbnVisitT = ((t2 * 0.04 + 22) % 50) / 50;
+                if (_bbnVisitT < 0.6) {
+                  var _bbnApprX = _bbnX + 8 - _bbnVisitT * 13;
+                  var _bbnApprY = _bbnY - 2 - Math.sin(_bbnVisitT * 4) * 1.5;
+                  // Fuzzy bumblebee — small
+                  c.fillStyle = 'rgba(251,191,36,0.45)';
+                  c.beginPath(); c.ellipse(_bbnApprX, _bbnApprY, 2.0, 1.4, 0, 0, 6.28); c.fill();
+                  c.fillStyle = '#facc15';
+                  c.beginPath(); c.ellipse(_bbnApprX, _bbnApprY, 1.6, 1.1, 0, 0, 6.28); c.fill();
+                  c.fillStyle = '#1c1917';
+                  c.fillRect(_bbnApprX - 0.7, _bbnApprY - 0.9, 0.4, 1.8);
+                  c.fillRect(_bbnApprX + 0.3, _bbnApprY - 0.9, 0.4, 1.8);
+                  // Tiny pollen ball on hind leg
+                  c.fillStyle = '#fde047';
+                  c.beginPath(); c.arc(_bbnApprX + 0.2, _bbnApprY + 1.1, 0.35, 0, 6.28); c.fill();
+                  // Wing blur
+                  c.fillStyle = 'rgba(220,240,255,0.5)';
+                  c.beginPath(); c.ellipse(_bbnApprX, _bbnApprY - 1.2, 1.5, 0.5, 0, 0, 6.28); c.fill();
+                }
+              }
+
               // ── Bear paw prints in winter snow (rare biology cameo) ──
               // Real beekeeping risk noted in the forest habitat: "Bears
               // occasionally investigate — consider electric fencing." In
