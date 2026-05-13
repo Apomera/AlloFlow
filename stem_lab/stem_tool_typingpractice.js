@@ -404,6 +404,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           text: 'Anxiety lies. It tells me a thing is dangerous when it is only unfamiliar. It tells me I am alone in this when I am not. It tells me this feeling will never end when in fact it always ends. I can hear what anxiety is saying to me without believing every word of it. I can name it, breathe through it, and keep doing what matters to me, even while it is still talking.'
         }
       ]
+    },
+    {
+      id: 'growth-mindset',
+      label: 'Growth Mindset & "Yet"',
+      icon: '🌱',
+      description: 'Seven passages on effort, struggle, and the small word YET. Built on Carol Dweck\'s growth-mindset research and current brain-plasticity science. Pairs with Mind & Body Calming (regulate) and Self-Advocacy (speak up) to form a complete SEL arc — regulate, reframe, advocate. K through high school.',
+      author: 'AlloFlow editorial team — aligned with EL Education Habits of Heart and Mind',
+      passages: [
+        {
+          gradeLevel: 'K', topic: 'I cannot do this YET', difficulty: 'on-level', language: 'en',
+          text: 'I cannot do this YET. I am still learning. My brain grows a little bit each time I try.'
+        },
+        {
+          gradeLevel: '1', topic: 'hard means brain working', difficulty: 'on-level', language: 'en',
+          text: 'When something feels hard, that means my brain is working. Hard things help me grow new ideas. I am still learning every day.'
+        },
+        {
+          gradeLevel: '2-3', topic: 'mistakes wake the brain', difficulty: 'on-level', language: 'en',
+          text: 'Mistakes are part of learning. When I get something wrong, my brain wakes up and pays more attention to it. The next time I try, I will know a little more than I did before. That is exactly how it is supposed to work.'
+        },
+        {
+          gradeLevel: '4-5', topic: 'label vs journey', difficulty: 'on-level', language: 'en',
+          text: 'I do not say I am bad at math. I say I am still learning math. Those two sentences sound almost the same but they mean very different things. The first one is a label that closes a door. The second one is a journey that opens one. I am on the journey.'
+        },
+        {
+          gradeLevel: '4-5', topic: 'first try vs hundredth try', difficulty: 'on-level', language: 'en',
+          text: 'It is not fair to compare my first try at something with someone else\'s hundredth try. They had more practice. They had more help. They had more time. My first try is exactly where my first try should be. The hundredth try comes later, when it is supposed to come.'
+        },
+        {
+          gradeLevel: '6-8', topic: 'the word YET', difficulty: 'on-level', language: 'en',
+          text: 'When I hear myself say I cannot do this, I can add the small word YET to the end of the sentence. I cannot read this YET. I cannot do this math YET. I do not know how to type this fast YET. That tiny three-letter word turns a locked door into a door I just have not opened yet.'
+        },
+        {
+          gradeLevel: '9-12', topic: 'frustration is the sound of learning', difficulty: 'on-level', language: 'en',
+          text: 'My brain is still forming. Current neuroscience research shows it keeps changing well into my twenties, and continues changing in smaller ways for the rest of my life. When I struggle with something hard and stick with it anyway, I am literally helping it grow new connections. The frustration I feel right now is not a sign that I am failing at this. It is part of how learning actually happens inside a brain. I get to choose to stay with it a little longer.'
+        }
+      ]
     }
   ];
 
