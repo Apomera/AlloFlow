@@ -5971,6 +5971,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   c.fill();
                 }
                 c.restore();
+                // Hawk shadow on the ground — tracks the same parametric circle
+                // as the hawk silhouette overhead (spring/summer only). Offset
+                // slightly down-right because sun is mostly overhead, not at
+                // the horizon. Tiny — reinforces scale (real hawk shadow is
+                // small relative to a meadow this size).
+                if (season === 0 || season === 1) {
+                  var _hsT = t2 * 0.003;
+                  var _hsCx = W * 0.55 + Math.sin(t2 * 0.0008) * 30;
+                  var _hsX_g = _hsCx + Math.cos(_hsT) * 36 + 8;
+                  var _hsY_g = H * 0.83;
+                  c.save();
+                  c.globalAlpha = 0.18 * _csDay;
+                  c.fillStyle = '#0f172a';
+                  c.translate(_hsX_g, _hsY_g);
+                  c.rotate(_hsT + Math.PI / 2);
+                  c.beginPath();
+                  c.ellipse(0, 0, 6, 1.8, 0, 0, 6.28);
+                  c.fill();
+                  c.restore();
+                }
               }
               // Snow
               if (season === 3) {
@@ -6069,6 +6089,105 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }
 
               // (Distant birds handled earlier — hawk circling in spring/summer, V-formation in fall)
+
+              // ── Spider web in the upper-left corner (year-round naturalist detail) ──
+              // Anchored to the top + left edges of the canvas frame as if spun
+              // overnight between the apiary's posts. 8 radial spokes from a
+              // hub at (~6%W, ~4%H), 4 concentric polygon rings. A faint dew
+              // glint slides along one spoke during dawn. The hub gets a tiny
+              // resident spider silhouette.
+              (function() {
+                var _wbCx = W * 0.06, _wbCy = H * 0.04;
+                var _wbRMax = 38;
+                var _wbAlpha = season === 3 ? 0.32 : 0.22;
+                c.save();
+                c.strokeStyle = 'rgba(220,225,235,' + _wbAlpha.toFixed(3) + ')';
+                c.lineWidth = 0.35;
+                // Spokes — only the 4 reaching down-right are drawn (the others
+                // would extend off-canvas top/left). Quadrant angles ≈ 0..π/2.
+                var _wbAngles = [0.05, 0.32, 0.65, 0.95, 1.25, 1.50];
+                var _wbEnds = [];
+                for (var sp = 0; sp < _wbAngles.length; sp++) {
+                  var _wbEx = _wbCx + Math.cos(_wbAngles[sp]) * _wbRMax;
+                  var _wbEy = _wbCy + Math.sin(_wbAngles[sp]) * _wbRMax;
+                  _wbEnds.push({ x: _wbEx, y: _wbEy, a: _wbAngles[sp] });
+                  c.beginPath();
+                  c.moveTo(_wbCx, _wbCy);
+                  c.lineTo(_wbEx, _wbEy);
+                  c.stroke();
+                }
+                // Concentric rings — polyline along the spokes at 4 radii
+                var _wbRings = [10, 18, 26, 34];
+                for (var rg = 0; rg < _wbRings.length; rg++) {
+                  c.beginPath();
+                  for (var sp2 = 0; sp2 < _wbEnds.length; sp2++) {
+                    var _wbA2 = _wbEnds[sp2].a;
+                    var _wbPx = _wbCx + Math.cos(_wbA2) * _wbRings[rg];
+                    var _wbPy = _wbCy + Math.sin(_wbA2) * _wbRings[rg];
+                    sp2 === 0 ? c.moveTo(_wbPx, _wbPy) : c.lineTo(_wbPx, _wbPy);
+                  }
+                  c.stroke();
+                }
+                // Dawn dew glint — slides outward along one spoke
+                var _wbDewDawn = Math.max(0, 1 - Math.min(_sunCycle, 2 - _sunCycle) / 0.2);
+                if (_wbDewDawn > 0.05) {
+                  var _wbGlT = ((t2 * 0.4) % 100) / 100; // 0..1 sweep
+                  var _wbGlA = _wbEnds[3].a; // mid spoke
+                  var _wbGx = _wbCx + Math.cos(_wbGlA) * _wbRMax * _wbGlT;
+                  var _wbGy = _wbCy + Math.sin(_wbGlA) * _wbRMax * _wbGlT;
+                  c.fillStyle = 'rgba(255,255,255,' + (0.85 * _wbDewDawn).toFixed(3) + ')';
+                  c.beginPath(); c.arc(_wbGx, _wbGy, 1, 0, 6.28); c.fill();
+                }
+                // Tiny resident spider at the hub
+                c.fillStyle = 'rgba(30,25,20,0.78)';
+                c.beginPath(); c.ellipse(_wbCx, _wbCy, 1.4, 1, 0, 0, 6.28); c.fill();
+                c.strokeStyle = 'rgba(30,25,20,0.55)'; c.lineWidth = 0.3;
+                for (var lg = 0; lg < 4; lg++) {
+                  var _lgA = lg * 0.35 + 0.25;
+                  c.beginPath();
+                  c.moveTo(_wbCx, _wbCy);
+                  c.lineTo(_wbCx + Math.cos(_lgA) * 2.5, _wbCy + Math.sin(_lgA) * 2.5);
+                  c.stroke();
+                }
+                c.restore();
+              })();
+
+              // ── Mushroom cluster in autumn shade (decomposer story) ──
+              // Three small mushrooms tucked at the base of the apple-tree
+              // shadow in fall only — completes the seasonal-decomposer arc
+              // (leaves fall, mushrooms surface to break them down).
+              if (season === 2) {
+                var _msX0 = W * 0.42, _msY0 = H * 0.84;
+                var _msShapes = [
+                  { dx:  0, dy:  0, capR: 4.5, stem: 3.5, cap: '#a16207', cream: '#fde68a' },
+                  { dx:  6, dy:  2, capR: 3.2, stem: 2.6, cap: '#92400e', cream: '#fef3c7' },
+                  { dx: -5, dy:  3, capR: 2.6, stem: 2.0, cap: '#b45309', cream: '#fef3c7' }
+                ];
+                for (var ms = 0; ms < _msShapes.length; ms++) {
+                  var msh = _msShapes[ms];
+                  var _msX = _msX0 + msh.dx, _msY = _msY0 + msh.dy;
+                  // Shadow under cap
+                  c.fillStyle = 'rgba(40,25,10,0.30)';
+                  c.beginPath(); c.ellipse(_msX, _msY + 2, msh.capR * 0.9, 1.2, 0, 0, 6.28); c.fill();
+                  // Stem (cream)
+                  c.fillStyle = msh.cream;
+                  c.fillRect(_msX - msh.stem * 0.25, _msY - msh.stem, msh.stem * 0.5, msh.stem);
+                  // Cap — half ellipse for the dome
+                  c.fillStyle = msh.cap;
+                  c.beginPath();
+                  c.ellipse(_msX, _msY - msh.stem + 0.5, msh.capR, msh.capR * 0.65, 0, Math.PI, 2 * Math.PI);
+                  c.fill();
+                  // Cap highlight (upper-left arc)
+                  c.fillStyle = 'rgba(255,235,180,0.35)';
+                  c.beginPath();
+                  c.ellipse(_msX - msh.capR * 0.3, _msY - msh.stem - 0.2, msh.capR * 0.55, msh.capR * 0.25, -0.2, Math.PI, 2 * Math.PI);
+                  c.fill();
+                  // Two tiny white dots on the cap (Amanita-style flecks)
+                  c.fillStyle = 'rgba(255,250,235,0.85)';
+                  c.beginPath(); c.arc(_msX + msh.capR * 0.2, _msY - msh.stem - 0.1, 0.55, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_msX - msh.capR * 0.4, _msY - msh.stem + 0.3, 0.4, 0, 6.28); c.fill();
+                }
+              }
 
               // ── Ground flora: clover + dandelions scattered in grass ──
               if (season === 0 || season === 1) {
