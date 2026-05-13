@@ -330,6 +330,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           text: 'On certain September mornings in Portland, a cool inland breeze meets warm Atlantic water and the harbor disappears into fog. The Portland Head Light sounds its low horn every twenty seconds. Ferries to Peaks Island and Long Island run on schedule but slowly, navigating by radar and old instinct. By midmorning the sun usually wins, the fog lifts, and the working waterfront returns to view, smelling of salt, diesel, and bait.'
         }
       ]
+    },
+    {
+      id: 'self-advocacy',
+      label: 'Self-Advocacy Phrases',
+      icon: '🗣️',
+      description: 'Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.',
+      author: 'AlloFlow editorial team — designed with school-psych guidance for IEP/504 self-advocacy',
+      passages: [
+        {
+          gradeLevel: 'K', topic: 'asking for help', difficulty: 'on-level', language: 'en',
+          text: 'I need help. Can someone please show me how? It is okay to ask. I will say thank you when you are done.'
+        },
+        {
+          gradeLevel: '1', topic: 'asking for a break', difficulty: 'on-level', language: 'en',
+          text: 'I am working hard right now. My hands and my brain get tired sometimes. Can I take a quick break and come right back, please?'
+        },
+        {
+          gradeLevel: '2-3', topic: 'audio learning', difficulty: 'on-level', language: 'en',
+          text: 'I learn best when I can hear the words read out loud. The audio book helps me stay with the class. May I use the headphones for reading time today, please?'
+        },
+        {
+          gradeLevel: '4-5', topic: 'fidget tools', difficulty: 'on-level', language: 'en',
+          text: 'My fidget tool helps me focus during class. It is not a toy for play. When my hands are busy with it, my brain has an easier time listening. I am not being rude when I use it during a lesson.'
+        },
+        {
+          gradeLevel: '4-5', topic: 'IEP extra time', difficulty: 'on-level', language: 'en',
+          text: 'My IEP says I get extra time on tests. That does not make me less smart than other kids. It means my brain shows what I know best when it does not feel rushed. Asking for the time I am supposed to get is part of taking care of myself.'
+        },
+        {
+          gradeLevel: '6-8', topic: 'recess and sensory needs', difficulty: 'on-level', language: 'en',
+          text: 'I want to be friends with you, but recess can be hard for me. Loud games like tag or kickball make my body feel like too much is happening at once. Could we play something quieter sometimes? I like drawing, building with blocks, or walking around the field and talking.'
+        },
+        {
+          gradeLevel: '9-12', topic: 'lighting and migraines', difficulty: 'on-level', language: 'en',
+          text: 'I would like to talk to you about something that has been hard for me in this class. The fluorescent lighting in this room can trigger my migraines, and by third period I can usually feel one starting. Could we work together to find a different seat near the window, or maybe a different room when one is available? I am asking because I want to do my best work in here, not less of it.'
+        }
+      ]
     }
   ];
 
