@@ -809,10 +809,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           voice: { name: 'Catherine Coleman Flowers', role: 'Founder, Center for Rural Enterprise & Environmental Justice (Lowndes County, Alabama); MacArthur Fellow', quote: 'We are not a sacrifice zone.', source: 'Waste: One Woman\u2019s Fight Against America\u2019s Dirty Secret (2020); Senate testimony 2021' } },
         { id: 'seasia', name: 'Southeast Asia Coastal', emoji: '\uD83C\uDDFB\uD83C\uDDF3', risk: 'high', type: 'Typhoons, sea level, saltwater intrusion', emPct: 4.0, pop: '680M',
           story: 'Vietnam, Philippines, and Indonesia face rising seas and intensifying storms. Jakarta is sinking so fast Indonesia is building a new capital. Communities lead mangrove restoration.',
-          resilience: 'Mangrove planting, floating communities, aquaculture adaptation' },
+          resilience: 'Mangrove planting, floating communities, aquaculture adaptation',
+          voice: { name: 'Yeb Sa\u00F1o', role: 'Filipino climate negotiator; walked out of COP19 after Typhoon Haiyan killed 6,300 people in his country', quote: 'We can stop this madness right here in Warsaw.', source: 'COP19 opening plenary, Warsaw, 11 November 2013' } },
         { id: 'andes', name: 'Andean Communities', emoji: '\uD83C\uDDF5\uD83C\uDDEA', risk: 'high', type: 'Glacier retreat, water scarcity', emPct: 1.0, pop: '50M',
           story: 'Andean glaciers provide drinking water for millions. They have lost 30-50% of volume since the 1970s. Indigenous communities combine traditional and modern water management.',
-          resilience: 'Ancient qocha (reservoir) systems, glacier monitoring, watershed reforestation' },
+          resilience: 'Ancient qocha (reservoir) systems, glacier monitoring, watershed reforestation',
+          voice: { name: 'Tarcila Rivera Zea', role: 'Quechua activist; founder of CHIRAPAQ (Center for Indigenous Cultures of Peru); FAO Special Ambassador for Indigenous Peoples', quote: 'We do not inherit the land from our ancestors. We borrow it from our grandchildren \u2014 and the climate crisis is the bill coming due.', source: 'UN Permanent Forum on Indigenous Issues sessions; CHIRAPAQ public statements' } },
         { id: 'wabanaki', name: 'Wabanaki Nations (Maine)', emoji: '\uD83C\uDF05', risk: 'high', type: 'Sea level on the coast, warming rivers, ash dieback, shellfish loss', emPct: 0.01, pop: '~8,000 enrolled across 4 nations',
           story: 'The Wabanaki Confederacy \u2014 Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq \u2014 have lived in what is now Maine for at least 12,000 years. "Wabanaki" means "people of the dawn." They contribute almost nothing to global emissions yet face concentrated coastal-climate impacts at home: saltwater intruding on freshwater wells at Sipayik (Pleasant Point), warming Penobscot River water stressing fisheries, brown ash trees (the wood used for traditional Wabanaki baskets) dying from the emerald ash borer expanding north on warmer winters. Wabanaki representatives sit on the Maine Climate Council and have led both adaptation planning and the legal recognition of natural rivers as rights-bearing entities.',
           resilience: 'Tribal climate adaptation plans (Penobscot Nation 2014, Passamaquoddy 2020), seed-saving of cold-climate brown ash, restoration of the Penobscot River (largest river restoration east of the Mississippi, removed two dams 2012\u20132013), federal recognition as climate-action partners',
@@ -2484,7 +2486,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('br'),
                   '• All of Africa (1.4 billion people, ~18% of world): ~3% of historical emissions — but some of the most severe impacts.',
                   el('br'),
-                  '• This is why the 2022 COP27 created the "Loss & Damage" fund — high-emitting countries pay into a pool for vulnerable nations.'
+                  '• This is why the 2022 COP27 created the "Loss & Damage" fund — high-emitting countries pay into a pool for vulnerable nations.',
+                  el('br'),
+                  '• So far, total pledges to that fund are ~0.16% of one year of the lower-bound estimated need (see Loss & Damage Fund tracker below).'
                 )
               )
             ),
