@@ -2009,7 +2009,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         // Track which challenges the student has completed this session.
         // Map of challenge.id → true. Used by the picker to render a star
         // badge next to completed phrases. Session-only by design (a
-        // student returning fresh should see all four challenges open).
+        // student returning fresh should see all challenges open).
         var challengesDoneRaw = useState({});
         var challengesDone = challengesDoneRaw[0], setChallengesDone = challengesDoneRaw[1];
         useEffect(function () {
@@ -2721,8 +2721,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             })
           ),
 
-          solved && calloutBox('ok', 'Set! Now you understand why apprenticeships were 7 years.',
-            'A skilled compositor in 1450 could set ~1,000 characters per hour, mirror-reversed, from memory of where every letter in the case sat. Modern keyboard typists do ~12,000 characters per hour. The compositor was a craft profession that required years of training — and a press with a single bad compositor produced unreadable books.'),
+          solved && (function () {
+            // Per-challenge solve flavor. Each phrase pays off with a
+            // historically-anchored note tied to *that* phrase, not a
+            // generic compositor-speed line.
+            var SOLVE_FLAVOR = {
+              IN_PRINT: {
+                title: 'Set! Now you understand why apprenticeships were 7 years.',
+                body: 'A skilled compositor in 1450 could set ~1,000 characters per hour, mirror-reversed, from memory of where every letter in the case sat. Modern keyboard typists do ~12,000 characters per hour. The compositor was a craft profession that required years of training, and a press with a single bad compositor produced unreadable books.'
+              },
+              FIRST_PROOF: {
+                title: 'Set — with the fi-ligature in place.',
+                body: 'A real 1450 case held about 150 different sorts, not just 26 letters. Dozens of ligatures (fi, fl, ff, ffi, ffl, ct, st) lived alongside the letters, plus accented letters, fractions, and punctuation. A compositor who reached for the wrong drawer cost the shop a whole proof pull.'
+              },
+              FALMOUTH: {
+                title: 'Set the way Wait and Titcomb set it in January 1785.',
+                body: 'The first issue of the Falmouth Gazette ran four pages and sold for sixpence. Within fifteen years there were nine newspapers in what would become Maine. The press in Falmouth (now Portland) was a few hundred yards from the wharves where the paper, type, and ink arrived from Boston by sloop.'
+              },
+              COMMON_SENSE: {
+                title: 'Set the highest-leverage pamphlet in colonial America.',
+                body: 'Common Sense was reprinted by dozens of printers across the thirteen colonies in 1776. Total run is estimated at 150,000 copies in a population of about 2.5 million. Per capita, that is the equivalent of around 20 million copies in the United States today, and it was set by hand in shops the size of a large bedroom.'
+              },
+              AD_FONTES: {
+                title: 'BENE FACTUM. Erasmus would have said it that way.',
+                body: 'AD FONTES, "back to the sources," was the rallying cry that drove a huge share of the printed output of the 1500s. Scholars wanted Greek New Testaments, Hebrew Old Testaments, and classical Latin from before a thousand years of hand-copying had introduced errors. Print made comparison possible: ten copies of the same passage on ten desks at once.'
+              }
+            };
+            var flavor = (CHALLENGE && SOLVE_FLAVOR[CHALLENGE.id]) || SOLVE_FLAVOR.IN_PRINT;
+            return calloutBox('ok', flavor.title, flavor.body);
+          })(),
 
           // ── Press impression preview ──
           // Once the phrase is fully composed, the student sees "Press!" and
