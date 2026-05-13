@@ -7224,6 +7224,203 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              // ── Wheelbarrow with tools (homestead realism, year-round) ──
+              // Tipped slightly to one side as if just set down. A coiled
+              // garden hose loops over the rim. Reads as "lived-in apiary."
+              (function() {
+                var _wbX = W * 0.30, _wbY = H * 0.86;
+                // Shadow under wheel
+                c.fillStyle = 'rgba(0,0,0,0.25)';
+                c.beginPath(); c.ellipse(_wbX - 5, _wbY + 3.5, 3, 0.8, 0, 0, 6.28); c.fill();
+                // Wheel
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_wbX - 5, _wbY + 2, 2.4, 0, 6.28); c.fill();
+                // Wheel hub
+                c.fillStyle = '#78716c';
+                c.beginPath(); c.arc(_wbX - 5, _wbY + 2, 0.7, 0, 6.28); c.fill();
+                // Spokes (3 visible)
+                c.strokeStyle = '#57534e';
+                c.lineWidth = 0.4;
+                for (var wbs = 0; wbs < 3; wbs++) {
+                  var _wbsA = wbs * 2.09 + t2 * 0.001;
+                  c.beginPath();
+                  c.moveTo(_wbX - 5, _wbY + 2);
+                  c.lineTo(_wbX - 5 + Math.cos(_wbsA) * 2.2, _wbY + 2 + Math.sin(_wbsA) * 2.2);
+                  c.stroke();
+                }
+                // Barrow body — green/red tray
+                c.fillStyle = season === 3 ? '#7a3a18' : '#a83e1d';
+                c.beginPath();
+                c.moveTo(_wbX - 9, _wbY + 1);
+                c.lineTo(_wbX + 7, _wbY - 2);
+                c.lineTo(_wbX + 6, _wbY + 2);
+                c.lineTo(_wbX - 8, _wbY + 3);
+                c.closePath(); c.fill();
+                // Rim highlight
+                c.fillStyle = 'rgba(255,255,255,0.25)';
+                c.beginPath();
+                c.moveTo(_wbX - 9, _wbY + 1);
+                c.lineTo(_wbX + 7, _wbY - 2);
+                c.lineTo(_wbX + 7, _wbY - 1.3);
+                c.lineTo(_wbX - 9, _wbY + 1.7);
+                c.closePath(); c.fill();
+                // Handles extending right (tilted up)
+                c.strokeStyle = season === 3 ? '#5a3f25' : '#8a6238';
+                c.lineWidth = 1;
+                c.beginPath();
+                c.moveTo(_wbX + 6, _wbY + 1.5);
+                c.lineTo(_wbX + 14, _wbY - 0.5);
+                c.stroke();
+                c.beginPath();
+                c.moveTo(_wbX + 7, _wbY - 1);
+                c.lineTo(_wbX + 14, _wbY - 2);
+                c.stroke();
+                // Handle grip dots
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_wbX + 14, _wbY - 0.5, 0.5, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_wbX + 14, _wbY - 2, 0.5, 0, 6.28); c.fill();
+                // Cargo inside barrow — varies by season
+                if (season === 0) {
+                  // Spring — bag of soil + a small trowel handle
+                  c.fillStyle = '#3a2510';
+                  c.beginPath(); c.ellipse(_wbX - 2, _wbY - 0.5, 3.5, 1.5, 0.1, 0, 6.28); c.fill();
+                  c.strokeStyle = '#8a6238';
+                  c.lineWidth = 0.8;
+                  c.beginPath(); c.moveTo(_wbX + 2, _wbY - 2.5); c.lineTo(_wbX + 4, _wbY - 4); c.stroke();
+                } else if (season === 1) {
+                  // Summer — green clipped grass / hay
+                  c.fillStyle = '#65a30d';
+                  c.beginPath(); c.ellipse(_wbX - 1, _wbY - 0.8, 4, 1.5, 0, 0, 6.28); c.fill();
+                  c.strokeStyle = '#84cc16';
+                  c.lineWidth = 0.35;
+                  for (var wbg = 0; wbg < 5; wbg++) {
+                    c.beginPath();
+                    c.moveTo(_wbX - 3 + wbg * 1.5, _wbY - 1);
+                    c.lineTo(_wbX - 3 + wbg * 1.5 + 0.3, _wbY - 2.2);
+                    c.stroke();
+                  }
+                } else if (season === 2) {
+                  // Fall — autumn leaves
+                  c.fillStyle = '#a16207';
+                  c.beginPath(); c.ellipse(_wbX - 2, _wbY - 0.5, 3, 1.2, 0, 0, 6.28); c.fill();
+                  c.fillStyle = '#b91c1c';
+                  c.beginPath(); c.arc(_wbX, _wbY - 1.5, 0.8, 0, 6.28); c.fill();
+                  c.fillStyle = '#facc15';
+                  c.beginPath(); c.arc(_wbX + 2, _wbY - 1, 0.7, 0, 6.28); c.fill();
+                } else {
+                  // Winter — covered in snow
+                  c.fillStyle = '#ffffff';
+                  c.beginPath(); c.ellipse(_wbX - 1, _wbY - 1.5, 4, 1.2, 0, 0, 6.28); c.fill();
+                }
+              })();
+
+              // ── Stacked firewood pile (right edge, winter survival prep) ──
+              // Roundhouse-cut wood logs stacked in a 3-row pile. Spring is
+              // the smallest stack (used through winter), fall is the tallest
+              // (newly split + stacked for the coming winter).
+              (function() {
+                var _fwX = W * 0.91, _fwY = H * 0.83;
+                var _fwRows = season === 0 ? 2 : season === 1 ? 3 : season === 2 ? 4 : 3;
+                var _fwLogsPerRow = 6;
+                // Wooden back-frame posts holding the stack vertical
+                c.fillStyle = '#3a2510';
+                c.fillRect(_fwX - 11, _fwY - 4 * 2 - 4, 1.2, 4 * 2 + 6);
+                c.fillRect(_fwX + 11, _fwY - 4 * 2 - 4, 1.2, 4 * 2 + 6);
+                // Stack of logs
+                for (var fwr = 0; fwr < _fwRows; fwr++) {
+                  for (var fwl = 0; fwl < _fwLogsPerRow; fwl++) {
+                    var _fwLx = _fwX - 9 + fwl * 3.2 + (fwr % 2) * 0.6;
+                    var _fwLy = _fwY - fwr * 2.5;
+                    // Log circle — end-grain view
+                    c.fillStyle = '#a07810';
+                    c.beginPath(); c.arc(_fwLx, _fwLy, 1.5, 0, 6.28); c.fill();
+                    // Inner growth rings
+                    c.strokeStyle = '#7a5808';
+                    c.lineWidth = 0.25;
+                    c.beginPath(); c.arc(_fwLx, _fwLy, 1.0, 0, 6.28); c.stroke();
+                    c.beginPath(); c.arc(_fwLx, _fwLy, 0.6, 0, 6.28); c.stroke();
+                    // Center dot
+                    c.fillStyle = '#5a3a08';
+                    c.beginPath(); c.arc(_fwLx, _fwLy, 0.25, 0, 6.28); c.fill();
+                    // Bark edge (darker outer)
+                    c.strokeStyle = '#3a2510';
+                    c.lineWidth = 0.35;
+                    c.beginPath(); c.arc(_fwLx, _fwLy, 1.5, 0, 6.28); c.stroke();
+                  }
+                }
+                // Snow cap on top in winter
+                if (season === 3) {
+                  c.fillStyle = '#ffffff';
+                  c.fillRect(_fwX - 11, _fwY - _fwRows * 2.5 - 1.5, 22, 1.5);
+                  c.beginPath();
+                  c.moveTo(_fwX - 11, _fwY - _fwRows * 2.5 - 1.5);
+                  for (var fws = 0; fws <= 22; fws += 3) {
+                    c.lineTo(_fwX - 11 + fws, _fwY - _fwRows * 2.5 - 1.5 - Math.abs(Math.sin(fws * 0.4)) * 1);
+                  }
+                  c.lineTo(_fwX + 11, _fwY - _fwRows * 2.5 - 1.5);
+                  c.closePath(); c.fill();
+                }
+              })();
+
+              // ── Sugar-syrup feeder jar at hive entrance (summer dearth biology) ──
+              // Real beekeeping: between spring tree bloom (~day 5-15) and the
+              // late-summer goldenrod flow (~day 18+ of summer + all of fall),
+              // there's often a 2-3 week "dearth" with little nectar flow.
+              // Workers may rob other hives unless fed. Beekeepers invert a
+              // mason jar with tiny holes in the lid at the entrance so syrup
+              // drips down for the colony. Visible day 22-28 of season 1.
+              if (season === 1 && (day % 30) >= 22 && (day % 30) <= 28) {
+                var _fjX = hiveX + hiveW * 0.5 - 4;
+                var _fjY = hiveY + hiveH - 4;
+                // Inverted jar shadow
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.beginPath(); c.ellipse(_fjX, _fjY + 6, 4, 0.8, 0, 0, 6.28); c.fill();
+                // Jar body — glass mason jar with sugar syrup inside (amber)
+                var _fjGrad = c.createLinearGradient(_fjX - 2.5, _fjY, _fjX + 2.5, _fjY);
+                _fjGrad.addColorStop(0, 'rgba(254,243,199,0.92)');
+                _fjGrad.addColorStop(0.5, 'rgba(251,191,36,0.78)');
+                _fjGrad.addColorStop(1, 'rgba(217,119,6,0.55)');
+                c.fillStyle = _fjGrad;
+                c.fillRect(_fjX - 2.5, _fjY - 4, 5, 8);
+                // Glass highlight
+                c.fillStyle = 'rgba(255,255,255,0.45)';
+                c.fillRect(_fjX - 2.2, _fjY - 3.5, 0.6, 6);
+                // Threaded neck (narrower band at the bottom — jar is INVERTED so threads at bottom)
+                c.fillStyle = 'rgba(180,140,40,0.6)';
+                c.fillRect(_fjX - 2.5, _fjY + 3, 5, 1);
+                c.strokeStyle = 'rgba(120,80,20,0.7)';
+                c.lineWidth = 0.3;
+                c.beginPath(); c.moveTo(_fjX - 2.5, _fjY + 3.3); c.lineTo(_fjX + 2.5, _fjY + 3.3); c.stroke();
+                c.beginPath(); c.moveTo(_fjX - 2.5, _fjY + 3.7); c.lineTo(_fjX + 2.5, _fjY + 3.7); c.stroke();
+                // Perforated lid (at the bottom, since inverted) — small dark dots
+                c.fillStyle = '#3a2510';
+                c.fillRect(_fjX - 2.5, _fjY + 4, 5, 1.2);
+                c.fillStyle = '#1c1917';
+                for (var fjd = 0; fjd < 5; fjd++) {
+                  c.beginPath();
+                  c.arc(_fjX - 2 + fjd * 1, _fjY + 4.6, 0.18, 0, 6.28);
+                  c.fill();
+                }
+                // Tiny syrup drip — slow drop every few seconds
+                var _fjDripT = ((t2 * 0.04) % 100) / 100;
+                if (_fjDripT < 0.4) {
+                  var _fjDy = _fjY + 5.2 + _fjDripT * 4;
+                  c.fillStyle = 'rgba(251,191,36,' + (0.9 * (1 - _fjDripT * 0.5)).toFixed(3) + ')';
+                  c.beginPath();
+                  c.ellipse(_fjX, _fjDy, 0.4, 0.7, 0, 0, 6.28);
+                  c.fill();
+                }
+                // 3 bees clustering at the perforated lid (feeding)
+                for (var fjb = 0; fjb < 3; fjb++) {
+                  var _fjbX = _fjX - 1.5 + fjb * 1.5;
+                  var _fjbY = _fjY + 5.5 + Math.sin(t2 * 0.06 + fjb * 1.7) * 0.2;
+                  c.fillStyle = '#fbbf24';
+                  c.beginPath(); c.ellipse(_fjbX, _fjbY, 1.0, 0.6, 0, 0, 6.28); c.fill();
+                  c.fillStyle = '#1c1917';
+                  c.fillRect(_fjbX - 0.2, _fjbY - 0.5, 0.3, 1.0);
+                }
+              }
+
               // ── Spare Langstroth super box stacked beside the hive (equipment realism) ──
               // Beekeepers always have spare supers ready for honey flow — this
               // empty box sits to the right of the working hive, half-tucked
