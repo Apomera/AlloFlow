@@ -367,6 +367,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           text: 'I would like to talk to you about something that has been hard for me in this class. The fluorescent lighting in this room can trigger my migraines, and by third period I can usually feel one starting. Could we work together to find a different seat near the window, or maybe a different room when one is available? I am asking because I want to do my best work in here, not less of it.'
         }
       ]
+    },
+    {
+      id: 'calming',
+      label: 'Mind & Body Calming',
+      icon: '🌬️',
+      description: 'Seven self-regulation passages a student can type — and read aloud — when feelings get big. Includes box-breathing language, the 5-4-3-2-1 grounding technique, the "feelings are waves" frame, the "pause is not giving up" reframe, and the "anxiety lies" CBT script. Designed by school-psych guidance; not a substitute for clinical care, but a typing-rhythm anchor a student can use in the moment.',
+      author: 'AlloFlow editorial team — designed with school-psych guidance for affect regulation',
+      passages: [
+        {
+          gradeLevel: 'K', topic: 'simple breathing', difficulty: 'on-level', language: 'en',
+          text: 'I am safe right now. I can breathe in slow. I can breathe out slow. I am here.'
+        },
+        {
+          gradeLevel: '1', topic: 'three deep breaths', difficulty: 'on-level', language: 'en',
+          text: 'My body feels big right now. I can take three deep breaths. One. Two. Three. Now I feel a little better than before.'
+        },
+        {
+          gradeLevel: '2-3', topic: 'noticing my heart slow down', difficulty: 'on-level', language: 'en',
+          text: 'When I am scared or upset, my heart beats really fast. That is normal. I can put my hand on my chest and feel it slow down again. My body knows how to come back.'
+        },
+        {
+          gradeLevel: '4-5', topic: 'feelings are waves', difficulty: 'on-level', language: 'en',
+          text: 'Big feelings are like ocean waves. They come up high and then they go back down. I do not have to make them stop. I just have to stay safe and breathe while they pass over me. The wave will not stay forever. It never does.'
+        },
+        {
+          gradeLevel: '4-5', topic: '5-4-3-2-1 grounding', difficulty: 'on-level', language: 'en',
+          text: 'I notice five things I can see. I notice four things I can hear. I notice three things I can touch. I notice two things I can smell. I notice one thing I can taste. I am here. I am present in my body.'
+        },
+        {
+          gradeLevel: '6-8', topic: 'pausing is not giving up', difficulty: 'on-level', language: 'en',
+          text: 'When my brain feels too full, I can pause. I do not have to answer right away. I do not have to fix everything at once. I can put my hand on my desk, feel my feet on the floor, take one slow breath, and then choose what to do next. Pausing is not giving up. Pausing is taking care of myself.'
+        },
+        {
+          gradeLevel: '9-12', topic: 'anxiety lies', difficulty: 'on-level', language: 'en',
+          text: 'Anxiety lies. It tells me a thing is dangerous when it is only unfamiliar. It tells me I am alone in this when I am not. It tells me this feeling will never end when in fact it always ends. I can hear what anxiety is saying to me without believing every word of it. I can name it, breathe through it, and keep doing what matters to me, even while it is still talking.'
+        }
+      ]
     }
   ];
 
