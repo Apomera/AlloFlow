@@ -9736,6 +9736,166 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              // ── Bee-shaped weathervane on a tall pole (wind direction indicator) ──
+              // Rotates to point into the wind. Uses the same coherent wind
+              // wave as the rest of the meadow so it always "agrees" with the
+              // grass + flower + wind chime motion. The pointer is a stylized
+              // metal bee with stripes + wings, in classic black silhouette
+              // against the sky. Compass-points (N/E/S/W) fixed below.
+              (function() {
+                var _wvX = signX - 15;
+                var _wvTopY = signY - 15;
+                var _wvBaseY = signY + 18;
+                // Tall metal pole
+                c.strokeStyle = '#3a2510';
+                c.lineWidth = 0.6;
+                c.beginPath(); c.moveTo(_wvX, _wvTopY); c.lineTo(_wvX, _wvBaseY); c.stroke();
+                // Tiny ball cap at top
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_wvX, _wvTopY, 0.7, 0, 6.28); c.fill();
+                // Fixed compass cross (N/E/S/W rods) just below the pivot
+                c.strokeStyle = '#3a2510';
+                c.lineWidth = 0.35;
+                var _wvCrossY = _wvTopY + 8;
+                c.beginPath();
+                c.moveTo(_wvX - 3, _wvCrossY); c.lineTo(_wvX + 3, _wvCrossY);
+                c.moveTo(_wvX, _wvCrossY - 3); c.lineTo(_wvX, _wvCrossY + 3);
+                c.stroke();
+                // Compass letters
+                c.fillStyle = '#3a2510';
+                c.font = 'bold 1.6px sans-serif';
+                c.textAlign = 'center';
+                c.fillText('N', _wvX, _wvCrossY - 3.7);
+                c.fillText('S', _wvX, _wvCrossY + 4.5);
+                c.fillText('W', _wvX - 4, _wvCrossY + 0.6);
+                c.fillText('E', _wvX + 4, _wvCrossY + 0.6);
+                c.textAlign = 'start';
+                // Wind direction from the coherent wave (positive = blowing right)
+                var _wvWind = Math.sin(t2 * 0.025);
+                // Rotation: bee points INTO the wind (head-into-wind, like a real vane)
+                var _wvRot = -_wvWind * 0.6;
+                c.save();
+                c.translate(_wvX, _wvTopY + 3);
+                c.rotate(_wvRot);
+                // Bee body — black silhouette
+                c.fillStyle = '#1c1917';
+                c.beginPath();
+                c.ellipse(0, 0, 3, 1.3, 0, 0, 6.28);
+                c.fill();
+                // Yellow stripes (visible at silhouette scale)
+                c.fillStyle = '#facc15';
+                c.fillRect(-0.5, -1.2, 0.4, 2.4);
+                c.fillRect(1, -1.1, 0.3, 2.2);
+                // Head (smaller circle at one end)
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(-2.5, 0, 0.9, 0, 6.28); c.fill();
+                // Stinger tail point
+                c.beginPath();
+                c.moveTo(3, 0);
+                c.lineTo(4, -0.4);
+                c.lineTo(4, 0.4);
+                c.closePath(); c.fill();
+                // Tiny antennae
+                c.strokeStyle = '#1c1917';
+                c.lineWidth = 0.25;
+                c.beginPath(); c.moveTo(-3, -0.5); c.lineTo(-3.8, -1.5); c.stroke();
+                c.beginPath(); c.moveTo(-3, 0.5); c.lineTo(-3.8, 1.5); c.stroke();
+                // Wing — semi-transparent gray
+                c.fillStyle = 'rgba(200,210,220,0.7)';
+                c.beginPath(); c.ellipse(-0.5, -1.6, 1.8, 0.7, -0.3, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(-0.5,  1.6, 1.8, 0.7,  0.3, 0, 6.28); c.fill();
+                c.restore();
+              })();
+
+              // ── Small chalkboard with daily hive notes (mounted beside apiary sign) ──
+              // Real beekeeping practice: keepers chalk inspection observations
+              // on a slate at the apiary. Shows current day count + honey
+              // weight + colony health note. Updates live with the colony.
+              (function() {
+                var _cbX = signX + 20, _cbY = signY + 12;
+                // Frame
+                c.fillStyle = '#3a2510';
+                c.fillRect(_cbX - 8, _cbY - 5, 16, 11);
+                // Chalkboard surface
+                c.fillStyle = '#1a3530';
+                c.fillRect(_cbX - 7.2, _cbY - 4.2, 14.4, 9.4);
+                // Chalk header line
+                c.fillStyle = '#fafaf9';
+                c.font = 'bold 2px sans-serif';
+                c.textAlign = 'center';
+                c.fillText('HIVE LOG', _cbX, _cbY - 2.3);
+                // Header underline
+                c.strokeStyle = '#fafaf9';
+                c.lineWidth = 0.25;
+                c.beginPath(); c.moveTo(_cbX - 5, _cbY - 1.8); c.lineTo(_cbX + 5, _cbY - 1.8); c.stroke();
+                // Day count
+                c.font = 'bold 1.5px sans-serif';
+                c.fillStyle = '#fde047';
+                c.textAlign = 'left';
+                c.fillText('Day ' + (day || 0), _cbX - 6.5, _cbY);
+                // Honey weight
+                c.fillStyle = '#fafaf9';
+                c.fillText('Honey: ' + Math.round(honey || 0) + ' lb', _cbX - 6.5, _cbY + 1.6);
+                // Colony health code
+                var _healthLetter = (colonyHealth || 50) >= 70 ? 'A' : (colonyHealth || 50) >= 50 ? 'B' : (colonyHealth || 50) >= 30 ? 'C' : 'D';
+                var _healthCol = _healthLetter === 'A' ? '#4ade80' : _healthLetter === 'B' ? '#facc15' : _healthLetter === 'C' ? '#fb923c' : '#dc2626';
+                c.fillStyle = _healthCol;
+                c.fillText('Grade: ' + _healthLetter, _cbX - 6.5, _cbY + 3.2);
+                // Tiny chalk dust on the bottom rim
+                c.fillStyle = 'rgba(250,250,249,0.45)';
+                c.fillRect(_cbX - 6, _cbY + 5.5, 12, 0.4);
+                // Piece of chalk resting on the rim
+                c.fillStyle = '#fafaf9';
+                c.fillRect(_cbX + 4, _cbY + 5.2, 2.5, 0.7);
+                c.fillStyle = '#a8a29e';
+                c.fillRect(_cbX + 6.3, _cbY + 5.2, 0.4, 0.7);
+                c.textAlign = 'start';
+              })();
+
+              // ── Yarrow flower patch (medicinal herb, real beekeeping plant) ──
+              // Real biology: yarrow (Achillea millefolium) is a major nectar
+              // source AND has propolis-like antibiotic compounds bees collect
+              // for hive sanitation. White flat-topped umbel clusters on tall
+              // ferny stems. Bloom: summer + early fall.
+              if (season === 1 || (season === 2 && (day % 30) <= 12)) {
+                var _yrCx = W * 0.55, _yrCy = H * 0.84;
+                for (var yr = 0; yr < 6; yr++) {
+                  var _yrX = _yrCx + (yr - 2.5) * 2.5;
+                  var _yrY = _yrCy + (yr % 2) * 1;
+                  var _yrWind = Math.sin(t2 * 0.025 - _yrX * 0.015) * 1.2;
+                  // Stem
+                  c.strokeStyle = '#65a30d';
+                  c.lineWidth = 0.4;
+                  c.beginPath();
+                  c.moveTo(_yrX, _yrY + 1);
+                  c.quadraticCurveTo(_yrX + _yrWind * 0.5, _yrY - 3, _yrX + _yrWind, _yrY - 7);
+                  c.stroke();
+                  // Ferny side leaves (3 pairs)
+                  c.strokeStyle = 'rgba(101,163,13,0.7)';
+                  c.lineWidth = 0.25;
+                  for (var yrl = 0; yrl < 3; yrl++) {
+                    var _yrlY = _yrY - 1 - yrl * 1.8;
+                    var _yrlX = _yrX + _yrWind * (yrl / 3);
+                    c.beginPath(); c.moveTo(_yrlX, _yrlY); c.lineTo(_yrlX - 1.5, _yrlY - 0.3); c.stroke();
+                    c.beginPath(); c.moveTo(_yrlX, _yrlY); c.lineTo(_yrlX + 1.5, _yrlY - 0.3); c.stroke();
+                  }
+                  // Flat-topped umbel cluster — many tiny white florets
+                  var _yrFlowerX = _yrX + _yrWind;
+                  var _yrFlowerY = _yrY - 7;
+                  c.fillStyle = '#fafaf9';
+                  for (var yrf = 0; yrf < 9; yrf++) {
+                    var _yrfA = (yrf / 9) * 6.28;
+                    var _yrfR = (yrf % 3) * 0.6 + 0.2;
+                    var _yrfX = _yrFlowerX + Math.cos(_yrfA) * _yrfR;
+                    var _yrfY = _yrFlowerY + Math.sin(_yrfA) * _yrfR * 0.6;
+                    c.beginPath(); c.arc(_yrfX, _yrfY, 0.35, 0, 6.28); c.fill();
+                  }
+                  // Yellow center dot per cluster
+                  c.fillStyle = '#facc15';
+                  c.beginPath(); c.arc(_yrFlowerX, _yrFlowerY, 0.25, 0, 6.28); c.fill();
+                }
+              }
+
               // ── Wind chime hanging off the apiary post (visual wind indicator) ──
               // Suspended from a small bracket on the right of the post,
               // beneath the sign. The chime swings in the same coherent wind
