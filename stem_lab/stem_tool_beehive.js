@@ -6066,6 +6066,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              // ── Summer pollen drift (golden particles riding the wind) ──
+              // A wave of pollen carried on the L→R wind that already moves the
+              // grass and flowers. Different from the existing pollination-feed
+              // particle stream (which streams meadow→hive); this is ambient
+              // atmosphere — pollen counts peak in summer, and the meadow air
+              // is literally yellow at midday. Suppressed at dusk/dawn (the
+              // wind dies and the bees stop kicking pollen into the air).
+              if (season === 1) {
+                var _pdDay = Math.max(0, Math.sin(_sunT_arc * Math.PI));
+                if (_pdDay > 0.1) {
+                  c.save();
+                  for (var pd = 0; pd < 26; pd++) {
+                    var _pdBaseX = (pd * 47 + 11) % W;
+                    var _pdDrift = (t2 * 0.18) % (W + 60);
+                    var _pdX = (_pdBaseX + _pdDrift) % (W + 60) - 30;
+                    var _pdY = H * 0.45 + ((pd * 13) % Math.floor(H * 0.30)) + Math.sin(t2 * 0.025 + pd * 0.9) * 5;
+                    var _pdSz = 0.55 + (pd % 4) * 0.18;
+                    var _pdA = (0.35 + (pd % 3) * 0.15) * _pdDay;
+                    c.fillStyle = 'rgba(250,204,21,' + _pdA.toFixed(3) + ')';
+                    c.beginPath(); c.arc(_pdX, _pdY, _pdSz, 0, 6.28); c.fill();
+                  }
+                  c.restore();
+                }
+              }
+
               // ── Summer heat shimmer over the ground (subtle band that wavers) ──
               // Just above the meadow line in peak summer, the air ripples.
               // Pure visual — no text, no measurement — but kids notice it.
@@ -7043,6 +7068,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(fl.x + sw, fl.y, bsz * 0.22, 0, 6.28); c.fill();
               });
 
+              // ── Frozen birdbath in winter (ice + frost rim) ──
+              // Closes the seasonal arc for the water station: the bath doesn't
+              // disappear when winter hits, it freezes. Hexagonal frost cracks
+              // hint at the ice; the rim wears a thin layer of snow. No bees —
+              // they're inside, clustering on the brood.
+              if (season === 3) {
+                var _fbCx = W * 0.62, _fbCy = H * 0.88;
+                var _fbW = 16, _fbH = 5;
+                c.fillStyle = 'rgba(0,0,0,0.18)';
+                c.beginPath(); c.ellipse(_fbCx + 1, _fbCy + 2.5, _fbW + 1.5, _fbH * 0.6, 0, 0, 6.28); c.fill();
+                c.fillStyle = '#a8a29e';
+                c.fillRect(_fbCx - 4, _fbCy - 1, 8, 5);
+                c.fillStyle = '#78716c';
+                c.fillRect(_fbCx - 4, _fbCy + 3, 8, 1.5);
+                // Ceramic rim w/ snow on top
+                c.fillStyle = '#e7e5e4';
+                c.beginPath(); c.ellipse(_fbCx, _fbCy - 1, _fbW, _fbH, 0, 0, 6.28); c.fill();
+                c.fillStyle = '#ffffff';
+                c.beginPath(); c.ellipse(_fbCx, _fbCy - 2.4, _fbW, _fbH * 0.55, 0, Math.PI, 2 * Math.PI); c.fill();
+                // Inner shadow ring
+                c.fillStyle = '#a8a29e';
+                c.beginPath(); c.ellipse(_fbCx, _fbCy - 0.6, _fbW - 2.5, _fbH - 1.2, 0, 0, 6.28); c.fill();
+                // Ice surface — pale blue-white gradient
+                var _fbIg = c.createRadialGradient(_fbCx - 2, _fbCy - 1.5, 0.5, _fbCx, _fbCy - 1, _fbW - 3);
+                _fbIg.addColorStop(0, 'rgba(241,250,255,0.95)');
+                _fbIg.addColorStop(1, 'rgba(186,230,253,0.85)');
+                c.fillStyle = _fbIg;
+                c.beginPath(); c.ellipse(_fbCx, _fbCy - 1, _fbW - 3.5, _fbH - 1.8, 0, 0, 6.28); c.fill();
+                // Frost crack lines — radial fractures from one off-center point
+                c.strokeStyle = 'rgba(125,170,210,0.55)';
+                c.lineWidth = 0.4;
+                var _fbCrX = _fbCx - 2, _fbCrY = _fbCy - 1.4;
+                for (var fc = 0; fc < 6; fc++) {
+                  var _fcA = fc * 1.04 + 0.3;
+                  var _fcLen = 4 + (fc % 3);
+                  c.beginPath();
+                  c.moveTo(_fbCrX, _fbCrY);
+                  c.lineTo(_fbCrX + Math.cos(_fcA) * _fcLen, _fbCrY + Math.sin(_fcA) * _fcLen * 0.45);
+                  c.stroke();
+                }
+                // Tiny ice-shine glint (slowly travels)
+                var _fbShT = ((t2 * 0.04) % 100) / 100;
+                if (_fbShT < 0.4) {
+                  c.fillStyle = 'rgba(255,255,255,' + (0.7 * (1 - _fbShT / 0.4)).toFixed(3) + ')';
+                  c.beginPath();
+                  c.ellipse(_fbCx - 5 + _fbShT * 10, _fbCy - 1.8, 1.6, 0.4, 0, 0, 6.28);
+                  c.fill();
+                }
+              }
+
               // ── Water station: ceramic birdbath with water-forager bees ──
               // Real bee biology: in warm months, a colony dedicates ~6-12 workers
               // to water foraging. They collect droplets and bring them home to
@@ -7699,6 +7774,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.rotate(Math.PI / 4);
               c.fillRect(-2.5, -2.5, 5, 5);
               c.restore();
+              // ── Snow cap on the roof (winter only) ──
+              // Thin layer of snow following both slopes of the peaked roof.
+              // Sits ON the shingles, with a few small icicles dripping from
+              // the eaves. Reinforces "this hive has been through some weather"
+              // and gives winter a foreground depth-anchor it otherwise lacks.
+              if (season === 3) {
+                c.fillStyle = '#ffffff';
+                c.beginPath();
+                c.moveTo(hiveX - 4, hiveY + 2);
+                c.lineTo(hiveX - 2, hiveY + 0.5);
+                c.lineTo(hiveX + hiveW / 2, hiveY - roofH - 1.2);
+                c.lineTo(hiveX + hiveW + 2, hiveY + 0.5);
+                c.lineTo(hiveX + hiveW + 4, hiveY + 2);
+                c.lineTo(hiveX + hiveW + 1, hiveY + 1);
+                c.lineTo(hiveX + hiveW / 2, hiveY - roofH + 1.5);
+                c.lineTo(hiveX - 1, hiveY + 1);
+                c.closePath(); c.fill();
+                // Soft blue-shadow at the snow-shingle seam
+                c.fillStyle = 'rgba(180,200,225,0.55)';
+                c.beginPath();
+                c.moveTo(hiveX - 1, hiveY + 1.4);
+                c.lineTo(hiveX + hiveW / 2, hiveY - roofH + 1.9);
+                c.lineTo(hiveX + hiveW + 1, hiveY + 1.4);
+                c.lineTo(hiveX + hiveW + 1, hiveY + 1.9);
+                c.lineTo(hiveX + hiveW / 2, hiveY - roofH + 2.4);
+                c.lineTo(hiveX - 1, hiveY + 1.9);
+                c.closePath(); c.fill();
+                // Tiny icicles dripping from the eaves
+                c.fillStyle = 'rgba(225,240,250,0.85)';
+                var _icPositions = [
+                  { x: hiveX - 3,                 len: 3.5 },
+                  { x: hiveX + hiveW * 0.18,      len: 2.5 },
+                  { x: hiveX + hiveW * 0.38,      len: 4.0 },
+                  { x: hiveX + hiveW * 0.62,      len: 2.0 },
+                  { x: hiveX + hiveW * 0.82,      len: 3.2 },
+                  { x: hiveX + hiveW + 2,         len: 2.8 }
+                ];
+                for (var ic = 0; ic < _icPositions.length; ic++) {
+                  var _ic = _icPositions[ic];
+                  c.beginPath();
+                  c.moveTo(_ic.x - 0.7, hiveY + 2);
+                  c.lineTo(_ic.x + 0.7, hiveY + 2);
+                  c.lineTo(_ic.x,       hiveY + 2 + _ic.len);
+                  c.closePath(); c.fill();
+                  // Highlight on left side of icicle
+                  c.fillStyle = 'rgba(255,255,255,0.6)';
+                  c.beginPath();
+                  c.moveTo(_ic.x - 0.5, hiveY + 2.2);
+                  c.lineTo(_ic.x - 0.1, hiveY + 2.2);
+                  c.lineTo(_ic.x - 0.1, hiveY + 2 + _ic.len * 0.7);
+                  c.closePath(); c.fill();
+                  c.fillStyle = 'rgba(225,240,250,0.85)';
+                }
+              }
               c.restore();
               // Painted hive number/name plaque (top-left of hive body)
               c.save();
