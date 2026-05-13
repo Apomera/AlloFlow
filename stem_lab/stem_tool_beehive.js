@@ -8076,6 +8076,99 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              // ── Starfield + honey-dipper constellation + occasional shooting star ──
+              // Drawn AFTER the navy time-of-day overlay so stars punch through.
+              // Visibility ramps in at dusk and out at dawn, just like the moon.
+              // Twinkling uses per-star phase so the field shimmers naturally.
+              // The "honey dipper" is a 5-star pattern (loose Big Dipper analog)
+              // that anchors the eye and gives a memorable shape kids can find
+              // night after night.
+              if (_tdT >= 0.95 && _tdT <= 2.05) {
+                var _stVis = 1;
+                if (_tdT < 1.05)      _stVis = (_tdT - 0.95) / 0.10;
+                else if (_tdT > 1.95) _stVis = 1 - (_tdT - 1.95) / 0.10;
+                _stVis = Math.max(0, Math.min(1, _stVis));
+                c.save();
+                // Background star field — 60 deterministic positions, varied brightness
+                for (var sf = 0; sf < 60; sf++) {
+                  var _stX = ((sf * 137) % W) + (sf * 7 % 5);
+                  var _stY = (Math.floor(sf / 8) * 11) + (sf * 13 % 9) + 6;
+                  if (_stY > H * 0.55) continue; // stay above horizon haze
+                  var _stTwinkle = 0.55 + Math.sin(t2 * 0.04 + sf * 1.3) * 0.45;
+                  var _stMag = sf % 7 === 0 ? 0.95 : sf % 3 === 0 ? 0.75 : 0.55;
+                  var _stA = _stMag * _stTwinkle * _stVis;
+                  if (_stA < 0.04) continue;
+                  c.fillStyle = 'rgba(245,245,220,' + _stA.toFixed(3) + ')';
+                  c.beginPath();
+                  c.arc(_stX, _stY, sf % 11 === 0 ? 1.2 : 0.7, 0, 6.28);
+                  c.fill();
+                  // 4-point cross-glint on the brightest few
+                  if (sf % 11 === 0 && _stA > 0.5) {
+                    c.strokeStyle = 'rgba(255,255,235,' + (_stA * 0.6).toFixed(3) + ')';
+                    c.lineWidth = 0.45;
+                    c.beginPath();
+                    c.moveTo(_stX - 2.4, _stY); c.lineTo(_stX + 2.4, _stY);
+                    c.moveTo(_stX, _stY - 2.4); c.lineTo(_stX, _stY + 2.4);
+                    c.stroke();
+                  }
+                }
+                // Honey-dipper constellation — 5 anchor stars + connecting lines.
+                // Looks like a hex-cell wand with a handle tilting down-right.
+                var _hdCx = W * 0.78, _hdCy = H * 0.12;
+                var _hdStars = [
+                  { x: _hdCx - 8,  y: _hdCy - 6, r: 1.6 },
+                  { x: _hdCx + 2,  y: _hdCy - 8, r: 1.4 },
+                  { x: _hdCx + 8,  y: _hdCy - 2, r: 1.7 },
+                  { x: _hdCx + 4,  y: _hdCy + 5, r: 1.3 },
+                  { x: _hdCx + 14, y: _hdCy + 10, r: 1.5 }
+                ];
+                c.strokeStyle = 'rgba(255,245,200,' + (0.25 * _stVis).toFixed(3) + ')';
+                c.lineWidth = 0.55;
+                c.beginPath();
+                for (var hd = 0; hd < _hdStars.length; hd++) {
+                  var hs = _hdStars[hd];
+                  hd === 0 ? c.moveTo(hs.x, hs.y) : c.lineTo(hs.x, hs.y);
+                }
+                c.stroke();
+                for (var hd2 = 0; hd2 < _hdStars.length; hd2++) {
+                  var hs2 = _hdStars[hd2];
+                  var _hdTw = 0.7 + Math.sin(t2 * 0.05 + hd2 * 1.7) * 0.3;
+                  c.fillStyle = 'rgba(255,250,210,' + (0.92 * _hdTw * _stVis).toFixed(3) + ')';
+                  c.beginPath(); c.arc(hs2.x, hs2.y, hs2.r, 0, 6.28); c.fill();
+                  // Tiny halo
+                  var _hdH = c.createRadialGradient(hs2.x, hs2.y, 0.5, hs2.x, hs2.y, hs2.r * 2.8);
+                  _hdH.addColorStop(0, 'rgba(255,245,200,' + (0.45 * _hdTw * _stVis).toFixed(3) + ')');
+                  _hdH.addColorStop(1, 'rgba(255,245,200,0)');
+                  c.fillStyle = _hdH;
+                  c.beginPath(); c.arc(hs2.x, hs2.y, hs2.r * 2.8, 0, 6.28); c.fill();
+                }
+                // Occasional shooting star — appears for ~1.2s once every ~25s of
+                // night time. Trajectory is a steep diagonal across the upper sky.
+                var _ssPeriod = 25000; // ms
+                var _ssEpoch = (Date.now() % _ssPeriod) / _ssPeriod; // 0..1
+                if (_ssEpoch < 0.05 && _tdT > 1.15 && _tdT < 1.85) {
+                  var _ssT = _ssEpoch / 0.05; // 0..1 within the 5% slice
+                  var _ssX0 = W * 0.10, _ssY0 = 12;
+                  var _ssX = _ssX0 + _ssT * (W * 0.55);
+                  var _ssY = _ssY0 + _ssT * (H * 0.20);
+                  var _ssTailLen = 32;
+                  var _ssA = Math.sin(_ssT * Math.PI) * _stVis; // fade in + out
+                  // Trail (gradient)
+                  var _ssG = c.createLinearGradient(_ssX, _ssY, _ssX - _ssTailLen, _ssY - _ssTailLen * 0.4);
+                  _ssG.addColorStop(0, 'rgba(255,250,220,' + (0.95 * _ssA).toFixed(3) + ')');
+                  _ssG.addColorStop(1, 'rgba(255,250,220,0)');
+                  c.strokeStyle = _ssG; c.lineWidth = 1.4;
+                  c.beginPath();
+                  c.moveTo(_ssX, _ssY);
+                  c.lineTo(_ssX - _ssTailLen, _ssY - _ssTailLen * 0.4);
+                  c.stroke();
+                  // Bright head
+                  c.fillStyle = 'rgba(255,255,255,' + (0.95 * _ssA).toFixed(3) + ')';
+                  c.beginPath(); c.arc(_ssX, _ssY, 1.6, 0, 6.28); c.fill();
+                }
+                c.restore();
+              }
+
               // ── Moon (visible during the night phase) ──
               // Rises in the east as the sun sets, peaks center-high at
               // midnight, sets in the west as dawn approaches. Drawn AFTER
