@@ -6590,6 +6590,144 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              // ── Squirrel running along the top of the fence (year-round cameo) ──
+              // Real biology: gray squirrels stay active all winter (no
+              // hibernation), unlike groundhogs and chipmunks. They cache
+              // acorns and visit them through the cold months. Direction is
+              // left→right (counters the rabbit which moves right→left), with
+              // a 4-leg bounding gait and bushy curled tail.
+              (function() {
+                var _sqCycle = ((t2 + 600) % 1500) / 1500; // 0..1 every ~25s, offset from rabbit
+                if (_sqCycle < 0.25 || _sqCycle > 0.85) return;
+                var _sqProgress = (_sqCycle - 0.25) / 0.60;
+                var _sqX = -10 + _sqProgress * (W + 20);
+                // Run along fence top — fenceBaseY is computed below, recompute here
+                var _sqFenceY = H * 0.775 - 2;
+                var _sqBoundPhase = Math.sin(_sqX * 0.15) * 0.5 + 0.5; // 0..1 bound
+                var _sqY = _sqFenceY - 2 - _sqBoundPhase * 3;
+                // Skip when squirrel would overlap the hive
+                if (_sqX > hiveX - 18 && _sqX < hiveX + hiveW + 18) return;
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.beginPath(); c.ellipse(_sqX, _sqFenceY + 0.5, 3.5, 0.8, 0, 0, 6.28); c.fill();
+                // Body — reddish-gray
+                var _sqBody = season === 3 ? '#78716c' : '#8a6a4a';
+                c.fillStyle = _sqBody;
+                c.beginPath(); c.ellipse(_sqX, _sqY, 3.8, 2.4, -0.15, 0, 6.28); c.fill();
+                // Head
+                c.beginPath(); c.arc(_sqX + 3.2, _sqY - 0.6, 1.8, 0, 6.28); c.fill();
+                // Ear tufts (two small triangles)
+                c.fillStyle = season === 3 ? '#57534e' : '#6b5238';
+                c.beginPath();
+                c.moveTo(_sqX + 2.5, _sqY - 2.2);
+                c.lineTo(_sqX + 3.0, _sqY - 3.2);
+                c.lineTo(_sqX + 3.4, _sqY - 2.2);
+                c.closePath(); c.fill();
+                c.beginPath();
+                c.moveTo(_sqX + 3.5, _sqY - 2.2);
+                c.lineTo(_sqX + 4.0, _sqY - 3.0);
+                c.lineTo(_sqX + 4.2, _sqY - 2.0);
+                c.closePath(); c.fill();
+                // Eye dot
+                c.fillStyle = '#0a0a0a';
+                c.beginPath(); c.arc(_sqX + 4, _sqY - 0.9, 0.35, 0, 6.28); c.fill();
+                // Tiny pale belly
+                c.fillStyle = season === 3 ? '#d6d3d1' : '#d4b896';
+                c.beginPath(); c.ellipse(_sqX + 1, _sqY + 1.3, 1.6, 0.7, -0.1, 0, 6.28); c.fill();
+                // Bushy curled tail (S-curve up and over the back)
+                c.strokeStyle = _sqBody;
+                c.lineWidth = 2.6;
+                c.lineCap = 'round';
+                c.beginPath();
+                c.moveTo(_sqX - 3, _sqY);
+                c.quadraticCurveTo(_sqX - 6, _sqY - 4, _sqX - 4, _sqY - 5);
+                c.quadraticCurveTo(_sqX - 1, _sqY - 6, _sqX + 1, _sqY - 4);
+                c.stroke();
+                c.lineCap = 'butt';
+                // Tail darker tip
+                c.fillStyle = season === 3 ? '#57534e' : '#6b5238';
+                c.beginPath(); c.arc(_sqX + 1, _sqY - 3.8, 1, 0, 6.28); c.fill();
+                // Acorn in mouth (fall only, when caching)
+                if (season === 2) {
+                  c.fillStyle = '#8b4513';
+                  c.beginPath(); c.ellipse(_sqX + 4.8, _sqY - 0.2, 0.9, 0.7, 0, 0, 6.28); c.fill();
+                  c.fillStyle = '#3a2010';
+                  c.fillRect(_sqX + 4.4, _sqY - 0.7, 0.8, 0.4);
+                }
+                // Legs (visible mid-bound)
+                if (_sqBoundPhase > 0.4) {
+                  c.fillStyle = _sqBody;
+                  c.fillRect(_sqX - 1.5, _sqY + 1.5, 0.8, 1.5);
+                  c.fillRect(_sqX + 1, _sqY + 1.5, 0.8, 1.5);
+                }
+              })();
+
+              // ── Dragonfly zigzagging over the meadow (summer only) ──
+              // Distinct flight pattern from bees/butterflies/hummingbirds —
+              // straight darts with sudden 90° direction changes. Real biology:
+              // dragonflies are visual predators that hunt mosquitoes mid-air
+              // and patrol territories near water (note: spawned near the
+              // birdbath, even though the small ceramic dish doesn't really
+              // attract them — visually it ties the water + dragonfly together).
+              if (season === 1) {
+                var _dfT = ((Date.now() / 80) % 1000) / 1000; // smooth 0..1
+                // 4-waypoint zigzag — turn sharply between segments
+                var _dfWaypoints = [
+                  { x: W * 0.55, y: H * 0.78 },
+                  { x: W * 0.70, y: H * 0.66 },
+                  { x: W * 0.62, y: H * 0.82 },
+                  { x: W * 0.50, y: H * 0.70 }
+                ];
+                var _dfSeg = Math.floor(_dfT * 4);
+                var _dfSegT = (_dfT * 4) - _dfSeg;
+                var _dfA = _dfWaypoints[_dfSeg];
+                var _dfB = _dfWaypoints[(_dfSeg + 1) % 4];
+                var _dfx = _dfA.x + (_dfB.x - _dfA.x) * _dfSegT;
+                var _dfy = _dfA.y + (_dfB.y - _dfA.y) * _dfSegT;
+                var _dfHeading = Math.atan2(_dfB.y - _dfA.y, _dfB.x - _dfA.x);
+                c.save();
+                c.translate(_dfx, _dfy);
+                c.rotate(_dfHeading);
+                // Long thin abdomen — iridescent blue
+                var _dfAbdomenG = c.createLinearGradient(-5, 0, 5, 0);
+                _dfAbdomenG.addColorStop(0, '#0891b2');
+                _dfAbdomenG.addColorStop(0.5, '#06b6d4');
+                _dfAbdomenG.addColorStop(1, '#0e7490');
+                c.fillStyle = _dfAbdomenG;
+                c.fillRect(-5, -0.4, 10, 0.8);
+                // Segment lines on abdomen
+                c.strokeStyle = 'rgba(8,47,73,0.55)';
+                c.lineWidth = 0.3;
+                for (var dfs = 0; dfs < 4; dfs++) {
+                  var _dfsX = -3 + dfs * 2;
+                  c.beginPath(); c.moveTo(_dfsX, -0.4); c.lineTo(_dfsX, 0.4); c.stroke();
+                }
+                // Thorax (slightly thicker, where wings attach)
+                c.fillStyle = '#0e7490';
+                c.beginPath(); c.ellipse(-4.5, 0, 1.4, 0.8, 0, 0, 6.28); c.fill();
+                // Head (big compound eyes)
+                c.fillStyle = '#155e75';
+                c.beginPath(); c.arc(-6, 0, 1.1, 0, 6.28); c.fill();
+                c.fillStyle = '#22d3ee';
+                c.beginPath(); c.arc(-6.4, -0.5, 0.5, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(-6.4,  0.5, 0.5, 0, 6.28); c.fill();
+                // 4 transparent wings (forewings + hindwings) — blurry from beat speed
+                var _dfWingFlap = Math.abs(Math.sin(t2 * 0.4)) * 0.4;
+                c.fillStyle = 'rgba(220,240,255,0.45)';
+                // Forewings
+                c.beginPath(); c.ellipse(-3, -2.4 + _dfWingFlap, 3.5, 1.0, -0.05, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(-3,  2.4 - _dfWingFlap, 3.5, 1.0,  0.05, 0, 6.28); c.fill();
+                // Hindwings (slightly wider)
+                c.beginPath(); c.ellipse(-1, -2.6 + _dfWingFlap, 3.0, 1.2, -0.05, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(-1,  2.6 - _dfWingFlap, 3.0, 1.2,  0.05, 0, 6.28); c.fill();
+                // Wing vein hint
+                c.strokeStyle = 'rgba(120,180,210,0.45)';
+                c.lineWidth = 0.25;
+                c.beginPath(); c.moveTo(-5, -2.2); c.lineTo(-1, -2.2); c.stroke();
+                c.beginPath(); c.moveTo(-5,  2.2); c.lineTo(-1,  2.2); c.stroke();
+                c.restore();
+              }
+
               // ── Rabbit hopping across the meadow (periodic cameo, every ~20s) ──
               if (season !== 3) {
                 var rbCycle = (t2 % 1200) / 1200; // 0..1 over ~20s
