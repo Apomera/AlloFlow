@@ -7224,6 +7224,242 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               }
 
+              // ── Clothesline with laundry (wind-driven, spring/summer/fall) ──
+              // Strung between two posts in the meadow background — three items
+              // hang and SWAY with the same coherent wind wave that already
+              // animates grass, flowers, and the wind chime. Visible cue that
+              // ties yet another foreground element into the wind system.
+              if (season !== 3) {
+                var _clX1 = W * 0.50, _clY = H * 0.66;
+                var _clX2 = W * 0.66;
+                // Posts holding the line
+                c.fillStyle = '#5a3f25';
+                c.fillRect(_clX1 - 0.8, _clY, 1.6, 18);
+                c.fillRect(_clX2 - 0.8, _clY, 1.6, 18);
+                c.fillStyle = '#3a2510';
+                c.fillRect(_clX1 - 1.2, _clY, 2.4, 1);
+                c.fillRect(_clX2 - 1.2, _clY, 2.4, 1);
+                // The line itself — slight catenary sag, drawn as a curve
+                c.strokeStyle = 'rgba(60,45,30,0.7)';
+                c.lineWidth = 0.4;
+                c.beginPath();
+                c.moveTo(_clX1, _clY + 1);
+                c.quadraticCurveTo((_clX1 + _clX2) / 2, _clY + 3, _clX2, _clY + 1);
+                c.stroke();
+                // Three items hanging on the line, each pinned with 2 clips
+                var _clItems = [
+                  { tFrac: 0.20, w: 7,  h: 8, col: '#fef3c7', shape: 'kerchief' },
+                  { tFrac: 0.50, w: 9,  h: 11, col: '#3b82f6', shape: 'shirt' },
+                  { tFrac: 0.78, w: 6,  h: 10, col: '#e7e5e4', shape: 'towel' }
+                ];
+                _clItems.forEach(function(it, ci) {
+                  var _clItX = _clX1 + (_clX2 - _clX1) * it.tFrac;
+                  var _clSagY = _clY + 1 + Math.sin(it.tFrac * 3.14) * 2.2;
+                  // Wind sway from the coherent wave — match grass/flowers
+                  var _clWind = Math.sin(t2 * 0.025 - _clItX * 0.015) * 1.8;
+                  // Item-specific jitter (lighter items wobble more)
+                  var _clJit = Math.sin(t2 * 0.04 + ci * 0.9) * 0.4;
+                  var _clShiftX = _clWind + _clJit;
+                  // Two clothespin clips at the top
+                  c.fillStyle = '#92400e';
+                  c.fillRect(_clItX - it.w / 2 - 0.5, _clSagY - 1, 1, 1.6);
+                  c.fillRect(_clItX + it.w / 2 - 0.5, _clSagY - 1, 1, 1.6);
+                  c.save();
+                  c.translate(_clItX, _clSagY);
+                  // Slight rotation in the wind (heavier items tilt less)
+                  var _clRot = (_clWind * 0.04) / (it.w / 6);
+                  c.rotate(_clRot);
+                  c.translate(_clShiftX, 0);
+                  if (it.shape === 'shirt') {
+                    // T-shirt silhouette
+                    c.fillStyle = it.col;
+                    // Sleeves
+                    c.fillRect(-it.w / 2, 0.5, 2, 4);
+                    c.fillRect( it.w / 2 - 2, 0.5, 2, 4);
+                    // Body
+                    c.fillRect(-it.w / 2 + 1.5, 0, it.w - 3, it.h);
+                    // Collar dip
+                    c.fillStyle = '#1e3a8a';
+                    c.beginPath();
+                    c.moveTo(-1.2, 0); c.lineTo(1.2, 0); c.lineTo(0, 1.2);
+                    c.closePath(); c.fill();
+                    // Highlight
+                    c.fillStyle = 'rgba(255,255,255,0.25)';
+                    c.fillRect(-it.w / 2 + 2, 1, 1, it.h - 2);
+                  } else if (it.shape === 'kerchief') {
+                    // Yellow handkerchief — square with hem stitching
+                    c.fillStyle = it.col;
+                    c.fillRect(-it.w / 2, 0.4, it.w, it.h);
+                    // Hem stitch
+                    c.strokeStyle = '#ca8a04';
+                    c.lineWidth = 0.3;
+                    c.strokeRect(-it.w / 2 + 0.4, 0.8, it.w - 0.8, it.h - 0.8);
+                    // Tiny printed dots
+                    c.fillStyle = '#ca8a04';
+                    c.beginPath(); c.arc(-1.5, 3, 0.3, 0, 6.28); c.fill();
+                    c.beginPath(); c.arc( 1.5, 5, 0.3, 0, 6.28); c.fill();
+                  } else {
+                    // Towel — pale rectangle with horizontal stripes
+                    c.fillStyle = it.col;
+                    c.fillRect(-it.w / 2, 0.4, it.w, it.h);
+                    c.fillStyle = '#0284c7';
+                    c.fillRect(-it.w / 2, it.h * 0.3, it.w, 0.6);
+                    c.fillRect(-it.w / 2, it.h * 0.6, it.w, 0.6);
+                    // Frayed bottom edge
+                    c.strokeStyle = it.col;
+                    c.lineWidth = 0.4;
+                    for (var fb = 0; fb < it.w; fb += 0.8) {
+                      c.beginPath();
+                      c.moveTo(-it.w / 2 + fb, it.h + 0.4);
+                      c.lineTo(-it.w / 2 + fb, it.h + 1);
+                      c.stroke();
+                    }
+                  }
+                  c.restore();
+                });
+              }
+
+              // ── Wooden ladder leaning against the apple tree (year-round) ──
+              // Real beekeepers + orchardists keep a small ladder out for
+              // pruning + harvest. Leans against the apple-tree trunk on the
+              // left side. Made of two parallel rails + 5 rungs.
+              if (hiveX > 40) {
+                var _ldAtX = hiveX * 0.55;
+                var _ldX1 = _ldAtX - 12;
+                var _ldY1 = H * 0.86;  // ladder foot
+                var _ldX2 = _ldAtX - 4; // ladder top (against trunk)
+                var _ldY2 = H * 0.76 - 32; // ~2/3 up trunk
+                // Rail 1 (left side, viewer's perspective)
+                c.strokeStyle = season === 3 ? '#5a3f25' : '#8a6238';
+                c.lineWidth = 1.4;
+                c.beginPath(); c.moveTo(_ldX1, _ldY1); c.lineTo(_ldX2, _ldY2); c.stroke();
+                // Rail 2 (offset right ~3px to suggest depth)
+                c.beginPath(); c.moveTo(_ldX1 + 3, _ldY1); c.lineTo(_ldX2 + 3, _ldY2); c.stroke();
+                // 5 rungs
+                c.lineWidth = 1;
+                for (var ldr = 0; ldr < 5; ldr++) {
+                  var _ldRT = (ldr + 1) / 6; // 0.16..0.83 along the ladder
+                  var _ldRX1 = _ldX1 + (_ldX2 - _ldX1) * _ldRT;
+                  var _ldRY1 = _ldY1 + (_ldY2 - _ldY1) * _ldRT;
+                  var _ldRX2 = _ldX1 + 3 + (_ldX2 + 3 - _ldX1 - 3) * _ldRT;
+                  var _ldRY2 = _ldY1 + (_ldY2 - _ldY1) * _ldRT;
+                  c.beginPath(); c.moveTo(_ldRX1, _ldRY1); c.lineTo(_ldRX2, _ldRY2); c.stroke();
+                }
+                // Foot of ladder shadow on grass
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.beginPath(); c.ellipse(_ldX1 + 1.5, _ldY1 + 0.5, 4, 0.8, 0, 0, 6.28); c.fill();
+                // Snow accumulated on rungs in winter
+                if (season === 3) {
+                  c.strokeStyle = '#ffffff';
+                  c.lineWidth = 0.7;
+                  for (var lds = 0; lds < 5; lds++) {
+                    var _ldsT = (lds + 1) / 6;
+                    var _ldsX1 = _ldX1 + (_ldX2 - _ldX1) * _ldsT;
+                    var _ldsY1 = _ldY1 + (_ldY2 - _ldY1) * _ldsT - 0.6;
+                    var _ldsX2 = _ldX1 + 3 + (_ldX2 + 3 - _ldX1 - 3) * _ldsT;
+                    c.beginPath(); c.moveTo(_ldsX1, _ldsY1); c.lineTo(_ldsX2, _ldsY1); c.stroke();
+                  }
+                }
+              }
+
+              // ── Bird feeder hanging from a fence post (year-round, chickadee cameo) ──
+              // Small wooden hopper feeder with seed inside. A chickadee
+              // (or junco in winter) periodically flies in to grab a seed.
+              // Pairs with the existing songbird+owl+crow fence-post coverage.
+              (function() {
+                var _bdPostX = 20 + 7 * 70 + 1.25; // 8th post from left
+                if (_bdPostX > W - 20) return;
+                if (_bdPostX > hiveX - 18 && _bdPostX < hiveX + hiveW + 18) return;
+                var _bdHookY = fenceBaseY - 4;
+                var _bdY = _bdHookY + 6;
+                // Hook
+                c.strokeStyle = '#3a2510';
+                c.lineWidth = 0.5;
+                c.beginPath();
+                c.moveTo(_bdPostX, _bdHookY);
+                c.quadraticCurveTo(_bdPostX + 2, _bdHookY + 1, _bdPostX + 2, _bdHookY + 3);
+                c.stroke();
+                // Hanging chain (3 small links)
+                c.beginPath();
+                for (var bdl = 0; bdl < 3; bdl++) {
+                  var _bdlY = _bdHookY + 3 + bdl * 0.8;
+                  c.moveTo(_bdPostX + 1.7, _bdlY); c.lineTo(_bdPostX + 2.3, _bdlY + 0.5);
+                  c.moveTo(_bdPostX + 2.3, _bdlY + 0.4); c.lineTo(_bdPostX + 1.7, _bdlY + 0.9);
+                }
+                c.stroke();
+                // Roof — angled triangular wooden top
+                c.fillStyle = '#5a3a18';
+                c.beginPath();
+                c.moveTo(_bdPostX - 3, _bdY - 1);
+                c.lineTo(_bdPostX + 2, _bdY - 3);
+                c.lineTo(_bdPostX + 7, _bdY - 1);
+                c.lineTo(_bdPostX + 7, _bdY);
+                c.lineTo(_bdPostX - 3, _bdY);
+                c.closePath(); c.fill();
+                // Roof highlight
+                c.fillStyle = 'rgba(255,255,255,0.18)';
+                c.beginPath();
+                c.moveTo(_bdPostX - 3, _bdY - 1);
+                c.lineTo(_bdPostX + 2, _bdY - 3);
+                c.lineTo(_bdPostX + 2, _bdY - 2.5);
+                c.lineTo(_bdPostX - 2.5, _bdY - 0.8);
+                c.closePath(); c.fill();
+                // Glass hopper (clear w/ seed silhouette inside)
+                c.fillStyle = 'rgba(220,240,255,0.35)';
+                c.fillRect(_bdPostX - 2.5, _bdY, 9, 5);
+                c.strokeStyle = '#3a2510';
+                c.lineWidth = 0.3;
+                c.strokeRect(_bdPostX - 2.5, _bdY, 9, 5);
+                // Seed inside (yellow/brown specks)
+                c.fillStyle = '#a16207';
+                for (var bds = 0; bds < 8; bds++) {
+                  var _bdsX = _bdPostX - 2 + (bds * 1.1) % 8;
+                  var _bdsY = _bdY + 1 + (bds * 0.7) % 3.5;
+                  c.beginPath(); c.arc(_bdsX, _bdsY, 0.35, 0, 6.28); c.fill();
+                }
+                // Perch tray at the bottom
+                c.fillStyle = '#5a3a18';
+                c.fillRect(_bdPostX - 3.5, _bdY + 5, 11, 1.2);
+                c.fillRect(_bdPostX - 1, _bdY + 5.5, 4, 1.5);
+                // Seed scattered on the ground beneath
+                c.fillStyle = '#a16207';
+                for (var bdg = 0; bdg < 6; bdg++) {
+                  var _bdgX = _bdPostX - 4 + (bdg * 1.7) % 9;
+                  c.beginPath();
+                  c.arc(_bdgX, fenceBaseY + 4 + (bdg % 2) * 0.5, 0.3, 0, 6.28);
+                  c.fill();
+                }
+                // Chickadee/junco visiting periodically (~every 15s) — daytime only
+                if (_sunCycle < 0.95) {
+                  var _bdBirdT = ((t2 + 200) % 900) / 900;
+                  if (_bdBirdT > 0.45 && _bdBirdT < 0.70) {
+                    var _bdBirdProg = (_bdBirdT - 0.45) / 0.25;
+                    var _bdBirdX = _bdPostX + 3 + Math.sin(_bdBirdProg * Math.PI) * 2;
+                    var _bdBirdY = _bdY + 4 - Math.sin(_bdBirdProg * Math.PI) * 1.5;
+                    // Body — chickadee black+white in non-winter, junco gray in winter
+                    var _bdBird = season === 3 ? '#57534e' : '#1c1917';
+                    c.fillStyle = _bdBird;
+                    c.beginPath(); c.ellipse(_bdBirdX, _bdBirdY, 1.8, 1.3, 0, 0, 6.28); c.fill();
+                    // White breast
+                    c.fillStyle = season === 3 ? '#d6d3d1' : '#fafaf9';
+                    c.beginPath(); c.ellipse(_bdBirdX + 0.6, _bdBirdY + 0.5, 1, 0.8, 0, 0, 6.28); c.fill();
+                    // Head + black cap (chickadee signature)
+                    c.fillStyle = _bdBird;
+                    c.beginPath(); c.arc(_bdBirdX - 1.3, _bdBirdY - 0.4, 0.9, 0, 6.28); c.fill();
+                    // Eye dot
+                    c.fillStyle = '#fafaf9';
+                    c.beginPath(); c.arc(_bdBirdX - 1.5, _bdBirdY - 0.6, 0.2, 0, 6.28); c.fill();
+                    // Tiny beak
+                    c.fillStyle = '#1c1917';
+                    c.beginPath();
+                    c.moveTo(_bdBirdX - 2.1, _bdBirdY - 0.3);
+                    c.lineTo(_bdBirdX - 2.7, _bdBirdY - 0.2);
+                    c.lineTo(_bdBirdX - 2.1, _bdBirdY);
+                    c.closePath(); c.fill();
+                  }
+                }
+              })();
+
               // ── Wheelbarrow with tools (homestead realism, year-round) ──
               // Tipped slightly to one side as if just set down. A coiled
               // garden hose loops over the rim. Reads as "lived-in apiary."

@@ -2751,6 +2751,131 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 '💡 Every movement needs voices across generations. These are just six — Fridays for Future alone has mobilized students in 170+ countries. You don\'t need to be famous to matter. Local action is where almost every one of these leaders started.')
             ),
 
+            // ═══ "YOUR MOVE" ACTION LADDER ═══
+            // Awareness without action is the privilege of the unaffected.
+            // Each rung connects back to one of the panels above so the
+            // tab reads as a single arc — see-the-injustice, then-act-on-
+            // it. Maine-specific organizations are named because Aaron's
+            // King Middle students need real local channels, not generic
+            // "join a movement" hand-waves. Difficulty cues label each
+            // rung so a 7th grader sees the LADDER aspect (some today,
+            // some grow into) rather than a flat to-do list.
+            (function() {
+              var ACTIONS = [
+                {
+                  rung: 1,
+                  title: 'Know your household number',
+                  difficulty: 'Anyone, today',
+                  difficultyColor: '#86efac',
+                  connects: 'Per-capita inversion chart',
+                  why: 'An average American emits ~16 tons CO₂ per year. Average Bangladeshi: ~0.5 tons. Knowing where you actually sit tells you where the leverage is in YOUR life — heating, car, flights, beef are the big four for most US households.',
+                  how: 'Open the Carbon Calculator tab in this tool and walk through the inputs honestly. Print your number. Set one specific reduction goal for your household.'
+                },
+                {
+                  rung: 2,
+                  title: 'Welcome the people the climate is already moving',
+                  difficulty: 'Anyone, ongoing',
+                  difficultyColor: '#86efac',
+                  connects: 'Climate Displacement panel',
+                  why: 'About 376 million people have already been forced to flee weather disasters since 2008. Maine resettles refugees every year — many through Portland — and welcoming them is climate action you can do without leaving your zip code.',
+                  how: 'Volunteer with Catholic Charities Maine, Greater Portland Family Promise, or the Immigrant Resource Center of Maine. Tutoring, food drives, and English-conversation partnerships are the most-asked-for roles.'
+                },
+                {
+                  rung: 3,
+                  title: 'Pressure the Loss & Damage Fund pledge upward',
+                  difficulty: 'Anyone, ~5 minutes',
+                  difficultyColor: '#fbbf24',
+                  connects: 'Loss & Damage Fund tracker',
+                  why: 'The US pledged $17.5M to the fund despite causing ~25% of historical CO₂. A 100× increase would still be a fraction of what proportional responsibility implies. Constituent calls move this kind of number more than people think.',
+                  how: 'Maine has two Senators (Collins, King) and two Representatives (Pingree, Golden), each with constituent comment lines. Call one. Say: "I want to see the US contribution to the COP27 Loss and Damage Fund increased to match our historical responsibility."'
+                },
+                {
+                  rung: 4,
+                  title: 'Read the people you just heard from',
+                  difficulty: 'Anyone, this month',
+                  difficultyColor: '#fbbf24',
+                  connects: 'Front-line voices in the region cards',
+                  why: 'Quotes are starting points. Books are arguments. The voices in this tab are scientists, lawyers, organizers, and elected officials — what they wrote tells you why the quote is true.',
+                  how: 'Portland Public Library carries Sherri Mitchell\'s Sacred Instructions, Sheila Watt-Cloutier\'s The Right to Be Cold, and Catherine Coleman Flowers\' Waste in their environmental and Indigenous-studies sections. Ask the reference desk for the climate-justice reading list.'
+                },
+                {
+                  rung: 5,
+                  title: 'Show up where the decisions actually get made',
+                  difficulty: 'High schooler+, periodic',
+                  difficultyColor: '#fda4af',
+                  connects: 'Youth Climate Leaders + Maine Policy Pathways tab',
+                  why: 'The Maine Climate Council, the Portland City Council climate workgroup, and the Maine Public Utilities Commission all take public comment. This is where the actual policy gets shaped — and youth voices are documented to shift outcomes when they show up.',
+                  how: 'Subscribe to Maine Climate Action Now or Maine Youth for Climate Justice. Both list upcoming public meetings, hearings, and youth-led actions across the state.'
+                }
+              ];
+              return el('div', {
+                style: {
+                  marginTop: 20, padding: 16, borderRadius: 12,
+                  background: 'linear-gradient(135deg, rgba(34,197,94,0.07), rgba(96,165,250,0.06))',
+                  border: '1px solid rgba(34,197,94,0.30)'
+                }
+              },
+                el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 } },
+                  el('span', { style: { fontSize: 22 } }, '🪜'),
+                  el('div', null,
+                    el('div', { style: { color: '#86efac', fontSize: 14, fontWeight: 900 } }, 'Your move — climate justice action ladder'),
+                    el('div', { style: { color: '#94a3b8', fontSize: 11, lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' } },
+                      'Awareness without action is the privilege of the unaffected. Each rung connects to a panel above so this is one arc, not five. Some rungs you can do today; some you grow into. Maine-specific channels listed where they exist.')
+                  )
+                ),
+                el('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 } },
+                  ACTIONS.map(function(a) {
+                    return el('div', { key: a.rung,
+                      style: {
+                        padding: 12, borderRadius: 10,
+                        background: 'rgba(0,0,0,0.18)',
+                        border: '1px solid rgba(148,163,184,0.12)',
+                        borderLeft: '3px solid ' + a.difficultyColor
+                      }
+                    },
+                      el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, flexWrap: 'wrap' } },
+                        el('div', {
+                          style: {
+                            width: 26, height: 26, borderRadius: '50%',
+                            background: a.difficultyColor + '25',
+                            border: '1.5px solid ' + a.difficultyColor,
+                            color: a.difficultyColor, fontSize: 12, fontWeight: 900,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            flexShrink: 0
+                          }
+                        }, a.rung),
+                        el('div', { style: { color: '#e2e8f0', fontSize: 13, fontWeight: 800, flex: 1, minWidth: 200 } }, a.title),
+                        el('div', {
+                          style: {
+                            padding: '2px 8px', borderRadius: 12,
+                            background: a.difficultyColor + '15',
+                            color: a.difficultyColor, fontSize: 10, fontWeight: 700,
+                            whiteSpace: 'nowrap'
+                          }
+                        }, a.difficulty)
+                      ),
+                      el('div', { style: { color: '#94a3b8', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 2, marginBottom: 6 } },
+                        '↑ connects to: ', a.connects),
+                      el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.55, marginBottom: 6 } },
+                        el('strong', { style: { color: '#7dd3fc' } }, 'Why: '),
+                        a.why),
+                      el('div', { style: { color: '#cbd5e1', fontSize: 11, lineHeight: 1.55 } },
+                        el('strong', { style: { color: '#86efac' } }, 'How: '),
+                        a.how)
+                    );
+                  })
+                ),
+                el('div', {
+                  style: {
+                    marginTop: 12, padding: 10, borderRadius: 8,
+                    background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.20)',
+                    color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic', textAlign: 'center'
+                  }
+                },
+                  'You don\'t need to climb every rung. You need to climb the next one.')
+              );
+            })(),
+
             // Discussion prompt
             el('div', { style: { marginTop: 20, padding: 16, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', textAlign: 'center' } },
               el('div', { style: { color: '#a5b4fc', fontSize: 13, fontWeight: 800, marginBottom: 6 } }, '\uD83D\uDDE3\uFE0F Discussion Questions'),
