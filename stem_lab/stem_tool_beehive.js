@@ -8399,6 +8399,229 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 });
               })();
 
+              // ── Snowman in the winter meadow ──
+              // A small classic three-ball snowman with carrot nose, twig
+              // arms, coal eyes, and a red scarf that flutters with the
+              // same coherent wind wave as the rest of the meadow.
+              if (season === 3) {
+                var _smX = W * 0.26, _smY = H * 0.86;
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.beginPath(); c.ellipse(_smX, _smY + 3, 7, 1, 0, 0, 6.28); c.fill();
+                // Bottom snowball (largest)
+                c.fillStyle = '#fafaf9';
+                c.beginPath(); c.arc(_smX, _smY, 5.5, 0, 6.28); c.fill();
+                // Slight cool shadow on right side
+                c.fillStyle = 'rgba(190,210,225,0.55)';
+                c.beginPath(); c.arc(_smX + 1.5, _smY + 0.5, 5, 0, 6.28); c.fill();
+                c.fillStyle = '#ffffff';
+                c.beginPath(); c.arc(_smX - 0.5, _smY - 0.5, 5, 0, 6.28); c.fill();
+                // Three coal buttons on the bottom
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_smX, _smY - 2, 0.5, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_smX, _smY, 0.5, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_smX, _smY + 2, 0.5, 0, 6.28); c.fill();
+                // Middle snowball
+                var _smMy = _smY - 7;
+                c.fillStyle = 'rgba(190,210,225,0.55)';
+                c.beginPath(); c.arc(_smX + 1, _smMy + 0.4, 4, 0, 6.28); c.fill();
+                c.fillStyle = '#ffffff';
+                c.beginPath(); c.arc(_smX - 0.4, _smMy - 0.4, 4, 0, 6.28); c.fill();
+                c.fillStyle = '#fafaf9';
+                c.beginPath(); c.arc(_smX, _smMy, 4, 0, 6.28); c.fill();
+                // Twig arms — slightly raked back by the wind
+                var _smArmWind = Math.sin(t2 * 0.025 - _smX * 0.015) * 0.5;
+                c.strokeStyle = '#5a3a18';
+                c.lineWidth = 0.6;
+                c.beginPath();
+                c.moveTo(_smX - 3, _smMy);
+                c.lineTo(_smX - 6.5 + _smArmWind, _smMy - 2.5);
+                c.stroke();
+                c.beginPath();
+                c.moveTo(_smX - 6.5 + _smArmWind, _smMy - 2.5);
+                c.lineTo(_smX - 7.5 + _smArmWind, _smMy - 4);
+                c.stroke();
+                c.beginPath();
+                c.moveTo(_smX - 6.5 + _smArmWind, _smMy - 2.5);
+                c.lineTo(_smX - 6 + _smArmWind, _smMy - 4);
+                c.stroke();
+                // Right arm
+                c.beginPath();
+                c.moveTo(_smX + 3, _smMy);
+                c.lineTo(_smX + 6.5 + _smArmWind, _smMy - 2.5);
+                c.stroke();
+                c.beginPath();
+                c.moveTo(_smX + 6.5 + _smArmWind, _smMy - 2.5);
+                c.lineTo(_smX + 7.5 + _smArmWind, _smMy - 4);
+                c.stroke();
+                c.beginPath();
+                c.moveTo(_smX + 6.5 + _smArmWind, _smMy - 2.5);
+                c.lineTo(_smX + 6 + _smArmWind, _smMy - 4);
+                c.stroke();
+                // Red scarf — flutters with wind
+                c.fillStyle = '#dc2626';
+                c.beginPath();
+                c.ellipse(_smX, _smMy - 3.5, 4.2, 1, 0, 0, 6.28);
+                c.fill();
+                // Scarf stripes
+                c.strokeStyle = '#fafaf9';
+                c.lineWidth = 0.3;
+                c.beginPath(); c.moveTo(_smX - 3.5, _smMy - 3.5); c.lineTo(_smX + 3.5, _smMy - 3.7); c.stroke();
+                // Trailing scarf tail fluttering in the wind
+                c.fillStyle = '#dc2626';
+                c.beginPath();
+                c.moveTo(_smX + 3, _smMy - 3.5);
+                c.lineTo(_smX + 7 + _smArmWind * 3, _smMy - 2 + _smArmWind);
+                c.lineTo(_smX + 6.5 + _smArmWind * 3, _smMy - 0.5 + _smArmWind);
+                c.lineTo(_smX + 3, _smMy - 3);
+                c.closePath(); c.fill();
+                // Top snowball (head)
+                var _smHy = _smMy - 6;
+                c.fillStyle = 'rgba(190,210,225,0.55)';
+                c.beginPath(); c.arc(_smX + 0.7, _smHy + 0.4, 2.8, 0, 6.28); c.fill();
+                c.fillStyle = '#ffffff';
+                c.beginPath(); c.arc(_smX - 0.4, _smHy - 0.4, 2.8, 0, 6.28); c.fill();
+                c.fillStyle = '#fafaf9';
+                c.beginPath(); c.arc(_smX, _smHy, 2.8, 0, 6.28); c.fill();
+                // Coal eyes
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_smX - 0.9, _smHy - 0.5, 0.4, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_smX + 0.9, _smHy - 0.5, 0.4, 0, 6.28); c.fill();
+                // Eye glints
+                c.fillStyle = '#ffffff';
+                c.beginPath(); c.arc(_smX - 0.8, _smHy - 0.6, 0.15, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_smX + 1.0, _smHy - 0.6, 0.15, 0, 6.28); c.fill();
+                // Carrot nose
+                c.fillStyle = '#f97316';
+                c.beginPath();
+                c.moveTo(_smX, _smHy);
+                c.lineTo(_smX + 2.5, _smHy);
+                c.lineTo(_smX + 0.3, _smHy + 0.7);
+                c.closePath(); c.fill();
+                c.strokeStyle = '#c2410c';
+                c.lineWidth = 0.2;
+                c.beginPath(); c.moveTo(_smX + 1, _smHy + 0.2); c.lineTo(_smX + 1.5, _smHy + 0.3); c.stroke();
+                // Smile (5 coal dots in an arc)
+                c.fillStyle = '#1c1917';
+                for (var smm = 0; smm < 5; smm++) {
+                  var _smmA = -0.8 + smm * 0.4;
+                  c.beginPath();
+                  c.arc(_smX + Math.sin(_smmA) * 1.6, _smHy + 1 + Math.cos(_smmA) * 0.6, 0.18, 0, 6.28);
+                  c.fill();
+                }
+                // Top hat
+                c.fillStyle = '#1c1917';
+                c.fillRect(_smX - 2.5, _smHy - 3, 5, 0.7); // brim
+                c.fillRect(_smX - 1.8, _smHy - 5.5, 3.6, 2.5); // crown
+                // Hat band (red)
+                c.fillStyle = '#dc2626';
+                c.fillRect(_smX - 1.8, _smHy - 3.5, 3.6, 0.6);
+                // Snowflakes drifting around the snowman
+                c.fillStyle = 'rgba(255,255,255,0.7)';
+                for (var sf = 0; sf < 4; sf++) {
+                  var _sfX = _smX - 8 + ((sf * 19 + t2 * 0.4) % 16);
+                  var _sfY = _smHy - 8 + ((sf * 11 + t2 * 0.5) % 14);
+                  c.beginPath(); c.arc(_sfX, _sfY, 0.6, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Fairy mushroom ring in fall meadow (folklore + real biology) ──
+              // Real biology: "fairy rings" form when a single mushroom mycelium
+              // grows outward in a circle through soil, fruiting bodies emerging
+              // at the radius edge. Common in late autumn. 8 small russet
+              // mushrooms in a ring near the back fence.
+              if (season === 2 && (day % 30) >= 12) {
+                var _frCx = W * 0.06, _frCy = H * 0.84;
+                var _frR = 4.5;
+                for (var fri = 0; fri < 8; fri++) {
+                  var _frA = (fri / 8) * 6.28;
+                  var _frX = _frCx + Math.cos(_frA) * _frR;
+                  var _frY = _frCy + Math.sin(_frA) * _frR * 0.55;
+                  // Shadow
+                  c.fillStyle = 'rgba(0,0,0,0.18)';
+                  c.beginPath(); c.ellipse(_frX, _frY + 1, 1.3, 0.4, 0, 0, 6.28); c.fill();
+                  // Stem (cream)
+                  c.fillStyle = '#fde68a';
+                  c.fillRect(_frX - 0.4, _frY - 1.8, 0.8, 1.8);
+                  // Cap (russet) — half ellipse dome
+                  c.fillStyle = fri % 2 === 0 ? '#a16207' : '#92400e';
+                  c.beginPath();
+                  c.ellipse(_frX, _frY - 1.6, 1.4, 0.9, 0, Math.PI, 2 * Math.PI);
+                  c.fill();
+                  // Cap highlight
+                  c.fillStyle = 'rgba(254,243,199,0.45)';
+                  c.beginPath();
+                  c.ellipse(_frX - 0.4, _frY - 2.0, 0.7, 0.3, -0.2, Math.PI, 2 * Math.PI);
+                  c.fill();
+                  // Tiny white speckles on cap
+                  c.fillStyle = 'rgba(255,250,235,0.9)';
+                  c.beginPath(); c.arc(_frX + 0.4, _frY - 1.8, 0.15, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_frX - 0.2, _frY - 1.5, 0.1, 0, 6.28); c.fill();
+                }
+                // Faint mycelium glow ring on the ground inside the ring (folklore touch)
+                c.strokeStyle = 'rgba(254,215,170,0.18)';
+                c.lineWidth = 0.4;
+                c.beginPath(); c.ellipse(_frCx, _frCy, _frR, _frR * 0.55, 0, 0, 6.28); c.stroke();
+              }
+
+              // ── Small wooden picnic table beside the Adirondack chair w/ honey jar ──
+              // A folding side table where the keeper can set tea + a HONEY
+              // jar to taste-test the season's batch. Year-round but stripped
+              // in winter.
+              (function() {
+                var _ptX = W * 0.51, _ptY = H * 0.88;
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.20)';
+                c.beginPath(); c.ellipse(_ptX, _ptY + 1.8, 5, 0.7, 0, 0, 6.28); c.fill();
+                // Crossed leg base
+                c.strokeStyle = season === 3 ? '#5a3f25' : '#7a5230';
+                c.lineWidth = 0.7;
+                c.beginPath();
+                c.moveTo(_ptX - 3, _ptY + 1.5);
+                c.lineTo(_ptX + 2, _ptY - 4);
+                c.stroke();
+                c.beginPath();
+                c.moveTo(_ptX + 3, _ptY + 1.5);
+                c.lineTo(_ptX - 2, _ptY - 4);
+                c.stroke();
+                // Round wooden tabletop
+                c.fillStyle = season === 3 ? '#7a5230' : '#a07248';
+                c.beginPath(); c.ellipse(_ptX, _ptY - 4, 4, 1.2, 0, 0, 6.28); c.fill();
+                // Top highlight
+                c.fillStyle = 'rgba(255,255,255,0.18)';
+                c.beginPath(); c.ellipse(_ptX, _ptY - 4.3, 4, 0.4, 0, 0, 6.28); c.fill();
+                // Tabletop edge shadow
+                c.fillStyle = 'rgba(0,0,0,0.20)';
+                c.beginPath(); c.ellipse(_ptX, _ptY - 3.6, 4, 0.3, 0, 0, 6.28); c.fill();
+                // Honey jar on table (always there)
+                var _ptJX = _ptX - 0.5, _ptJY = _ptY - 5.5;
+                var _ptJG = c.createLinearGradient(_ptJX - 0.8, _ptJY, _ptJX + 0.8, _ptJY);
+                _ptJG.addColorStop(0, 'rgba(254,243,199,0.92)');
+                _ptJG.addColorStop(0.5, 'rgba(217,119,6,0.92)');
+                _ptJG.addColorStop(1, 'rgba(154,76,5,0.85)');
+                c.fillStyle = _ptJG;
+                c.fillRect(_ptJX - 0.8, _ptJY - 1.5, 1.6, 2.5);
+                // Brass lid
+                c.fillStyle = '#a16207';
+                c.fillRect(_ptJX - 0.9, _ptJY - 1.9, 1.8, 0.5);
+                // Tiny "HONEY" label
+                c.fillStyle = 'rgba(255,255,255,0.9)';
+                c.fillRect(_ptJX - 0.7, _ptJY - 0.5, 1.4, 0.6);
+                c.fillStyle = '#3a2510';
+                c.font = 'bold 0.8px sans-serif';
+                c.textAlign = 'center';
+                c.fillText('HONEY', _ptJX, _ptJY - 0.05);
+                c.textAlign = 'start';
+                // A small spoon resting on the tabletop (spring/summer/fall)
+                if (season !== 3) {
+                  c.strokeStyle = '#a8a29e';
+                  c.lineWidth = 0.4;
+                  c.beginPath(); c.moveTo(_ptX + 1.5, _ptY - 4.2); c.lineTo(_ptX + 3, _ptY - 4); c.stroke();
+                  c.fillStyle = '#a8a29e';
+                  c.beginPath(); c.ellipse(_ptX + 3.2, _ptY - 4, 0.5, 0.3, 0.3, 0, 6.28); c.fill();
+                }
+              })();
+
               // ── Wheelbarrow with tools (homestead realism, year-round) ──
               // Tipped slightly to one side as if just set down. A coiled
               // garden hose loops over the rim. Reads as "lived-in apiary."
