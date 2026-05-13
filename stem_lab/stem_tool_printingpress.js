@@ -5203,6 +5203,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         var detPicked = detPickedRaw[0], setDetPicked = detPickedRaw[1];
         var detScoreRaw = useState(0);
         var detScore = detScoreRaw[0], setDetScore = detScoreRaw[1];
+        // AI-generated round override — when set, displayed instead of the
+        // static cycle. Cleared on Next sample / Play again so static stays
+        // the predictable curated path.
+        var detAiRoundRaw = useState(null);
+        var detAiRound = detAiRoundRaw[0], setDetAiRound = detAiRoundRaw[1];
+        var detGenStateRaw = useState({ loading: false, error: null });
+        var detGenState = detGenStateRaw[0], setDetGenState = detGenStateRaw[1];
         return h('div', { style: { padding: 20, maxWidth: 860, margin: '0 auto', color: T.text } },
           backBar('🔤 Typography Today'),
           dropCapPara('Open any document on your laptop. Word, Google Docs, a text message. The vocabulary you see (font, leading, kerning, em-dash, justified, italic) is the vocabulary of a 1450 print shop. The medium changed; the language did not.'),
@@ -5586,8 +5593,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 why: 'Helvetica. Swiss post-war design philosophy: neutral, geometric, no ornament. Designed in 1957. Now the default of subway signs, corporate logos, and modernist branding.' }
             ];
             var ERAS = ['1450s', '1500s', '1700s', '1800s', '1900s'];
-            var round = ROUNDS[detRound % ROUNDS.length];
-            var done = detRound >= ROUNDS.length;
+            // Era → canonical font + italic preset, used when an AI round
+            // is generated so the visual rendering matches the period.
+            // Same fonts as the static ROUNDS so the visual vocabulary is
+            // consistent across static + generated rounds.
+            var ERA_FONT = {
+              '1450s': { font: '"UnifrakturMaguntia", "Old English Text MT", "Goudy Old Style", serif', italic: false, label: 'Blackletter' },
+              '1500s': { font: '"Cambria", "Georgia", serif', italic: true, label: 'Aldine italic' },
+              '1700s': { font: '"Big Caslon", "Caslon Pro", "Hoefler Text", "Georgia", serif', italic: false, label: 'Caslon' },
+              '1800s': { font: '"Bodoni 72", "Didot", "Cambria", serif', italic: false, label: 'Bodoni' },
+              '1900s': { font: '"Helvetica", "Helvetica Neue", "Arial", sans-serif', italic: false, label: 'Helvetica' }
+            };
+            var round = detAiRound || ROUNDS[detRound % ROUNDS.length];
+            var isAiRound = !!detAiRound;
+            var done = detRound >= ROUNDS.length && !detAiRound;
+
+            function generateNewRound() {
+              if (!callGemini) {
+                setDetGenState({ loading: false, error: 'AI tutor unavailable in this build.' });
+                return;
+              }
+              setDetGenState({ loading: true, error: null });
+              var prompt = 'Generate ONE typeface-detective round. Pick ONE era from this exact list: 1450s | 1500s | 1700s | 1800s | 1900s. ' +
+                'Then write a 1-4 word sample text that would feel period-appropriate for that era — register matching the typeface tradition: ' +
+                '1450s = scriptural / sacred Latin (Verbum Domini, Pater Noster, Sanctus); ' +
+                '1500s = Renaissance humanist Latin or Italian motto (Festina lente, Aldus, Cogito); ' +
+                '1700s = Enlightenment / colonial English (Liberty or Death, Common Sense, We the People); ' +
+                '1800s = Victorian / Romantic English or French (Madame Bovary, Wuthering Heights, Les Misérables); ' +
+                '1900s = modernist / post-war English (EXIT, METRO, NEW YORK, USE OTHER DOOR). ' +
+                'Respond with ONLY a JSON object. NO markdown fences, NO commentary outside the JSON. Exact shape: ' +
+                '{"sample": "<the period-appropriate text>", "era": "<one of 1450s|1500s|1700s|1800s|1900s>", "why": "<1-2 sentence explanation tying the visual style of the era\'s typeface to its historical context>"}.';
+              callGemini(prompt, { maxOutputTokens: 350 })
+                .then(function(resp) {
+                  var raw = (resp && (resp.text || resp.content || (typeof resp === 'string' ? resp : ''))) || '';
+                  var braceMatch = raw.match(/\{[\s\S]*\}/);
+                  if (!braceMatch) {
+                    setDetGenState({ loading: false, error: 'AI returned no JSON object. Try again.' });
+                    return;
+                  }
+                  var parsed;
+                  try { parsed = JSON.parse(braceMatch[0]); }
+                  catch (e) {
+                    setDetGenState({ loading: false, error: 'AI returned an unparseable response. Try again.' });
+                    return;
+                  }
+                  if (!parsed || !parsed.sample || !parsed.era || !parsed.why) {
+                    setDetGenState({ loading: false, error: 'AI response missing required fields. Try again.' });
+                    return;
+                  }
+                  if (ERAS.indexOf(parsed.era) === -1) {
+                    setDetGenState({ loading: false, error: 'AI named an era outside the allowed list. Try again.' });
+                    return;
+                  }
+                  // Look up canonical font for the era so the rendering
+                  // matches what the typeface gallery taught.
+                  var typo = ERA_FONT[parsed.era];
+                  setDetAiRound({
+                    sample: String(parsed.sample),
+                    era: parsed.era,
+                    font: typo.font,
+                    italic: typo.italic,
+                    why: String(parsed.why)
+                  });
+                  setDetPicked(null);
+                  setDetGenState({ loading: false, error: null });
+                  announce('New AI-generated typeface sample loaded.');
+                })
+                .catch(function(err) {
+                  setDetGenState({ loading: false, error: 'Could not reach the AI: ' + ((err && err.message) || 'unknown error') });
+                });
+            }
+
             function pick(era) {
               if (detPicked !== null) return;
               setDetPicked(era);
@@ -5595,20 +5671,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               announce(era === round.era ? 'Correct.' : 'Not that one. Correct era is now shown.');
             }
             function nextRound() {
+              // Always advance the static index — AI rounds clear here too
+              // so the user returns to the curated cycle.
+              setDetAiRound(null);
               setDetRound(detRound + 1);
               setDetPicked(null);
+              setDetGenState({ loading: false, error: null });
             }
             function reset() {
+              setDetAiRound(null);
               setDetRound(0);
               setDetPicked(null);
               setDetScore(0);
+              setDetGenState({ loading: false, error: null });
             }
             return h('div', { style: { background: T.card, border: '1px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10, flexWrap: 'wrap', gap: 6 } },
-                h('div', { style: { fontSize: 11, color: T.dim, fontFamily: 'ui-monospace, monospace' } },
-                  done ? 'Round complete' : ('Round ' + (detRound + 1) + ' of ' + ROUNDS.length)),
+                h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
+                  h('div', { style: { fontSize: 11, color: T.dim, fontFamily: 'ui-monospace, monospace' } },
+                    done ? 'Round complete' : (isAiRound ? 'AI round (off-cycle)' : ('Round ' + (detRound + 1) + ' of ' + ROUNDS.length))),
+                  isAiRound && h('span', {
+                    style: { fontSize: 10, color: T.warn, fontStyle: 'italic', padding: '2px 8px', background: 'rgba(245,215,126,0.12)', borderRadius: 4, border: '1px solid ' + T.warn }
+                  }, '\u{1F916} AI-generated round')
+                ),
                 h('div', { style: { fontSize: 11, color: T.accentHi, fontFamily: 'Georgia, serif', fontWeight: 700 } }, 'Score: ' + detScore + ' / ' + ROUNDS.length)
               ),
+              // AI generation status — error or loading
+              detGenState.error && h('div', {
+                'aria-live': 'polite', role: 'alert',
+                style: { padding: 8, borderRadius: 4, fontSize: 11, marginBottom: 10, background: '#3d2810', border: '1px dashed ' + T.warn, color: '#fed7aa' }
+              }, '⚠ ' + detGenState.error),
               !done && h(React.Fragment, null,
                 // The sample
                 h('div', { style: { background: T.parchment, color: T.ink, padding: '20px 18px', border: '2px solid ' + T.wood, borderRadius: 6, marginBottom: 12, textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.4) inset' } },
@@ -5647,9 +5739,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                     h('div', { style: { fontStyle: 'italic', opacity: 0.92 } }, round.why)
                   );
                 })(),
-                detPicked !== null && h('div', { className: 'printingpress-no-print', style: { textAlign: 'center' } },
+                detPicked !== null && h('div', { className: 'printingpress-no-print', style: { textAlign: 'center', display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' } },
                   h('button', { onClick: nextRound, style: btnPrimary({ padding: '8px 16px', fontSize: 12 }) },
-                    detRound < ROUNDS.length - 1 ? 'Next sample →' : 'See score →')
+                    isAiRound ? 'Back to curated cycle →' : (detRound < ROUNDS.length - 1 ? 'Next sample →' : 'See score →')),
+                  callGemini && h('button', {
+                    onClick: generateNewRound,
+                    disabled: detGenState.loading,
+                    'aria-label': 'Generate a new AI typeface round',
+                    style: btn({
+                      padding: '8px 14px', fontSize: 12,
+                      opacity: detGenState.loading ? 0.6 : 1,
+                      cursor: detGenState.loading ? 'wait' : 'pointer',
+                      borderColor: T.warn, color: T.warn
+                    })
+                  }, detGenState.loading ? '\u{1F916} Generating…' : '\u{1F916} Generate (AI)')
                 )
               ),
               done && h('div', { style: { padding: 14, background: detScore >= 4 ? '#1f3d28' : '#3d2810', border: '1px solid ' + (detScore >= 4 ? T.ok : T.warn), borderRadius: 8, color: detScore >= 4 ? '#bbf7d0' : '#fed7aa', textAlign: 'center' } },
@@ -5659,9 +5762,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   detScore === ROUNDS.length ? 'Type historians would shake your hand. You can date a book by glance.' :
                   detScore >= 3 ? 'Solid eye for period style. Another browse through the typeface gallery and you would be at 5/5.' :
                   'The patterns become obvious with a few more passes. Try the typeface gallery again, then come back.'),
-                h('button', { className: 'printingpress-no-print',
-                  onClick: reset,
-                  style: btnPrimary({ padding: '8px 14px', fontSize: 12 }) }, '↻ Play again')
+                h('div', { className: 'printingpress-no-print', style: { display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' } },
+                  h('button', {
+                    onClick: reset,
+                    style: btnPrimary({ padding: '8px 14px', fontSize: 12 }) }, '↻ Play again'),
+                  callGemini && h('button', {
+                    onClick: generateNewRound,
+                    disabled: detGenState.loading,
+                    'aria-label': 'Generate a new AI typeface round',
+                    style: btn({
+                      padding: '8px 14px', fontSize: 12,
+                      opacity: detGenState.loading ? 0.6 : 1,
+                      cursor: detGenState.loading ? 'wait' : 'pointer',
+                      borderColor: T.warn, color: T.warn
+                    })
+                  }, detGenState.loading ? '\u{1F916} Generating…' : '\u{1F916} Generate bonus (AI)')
+                )
               )
             );
           })(),
