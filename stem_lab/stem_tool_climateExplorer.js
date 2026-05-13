@@ -806,7 +806,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           resilience: 'Mangrove planting, floating communities, aquaculture adaptation' },
         { id: 'andes', name: 'Andean Communities', emoji: '\uD83C\uDDF5\uD83C\uDDEA', risk: 'high', type: 'Glacier retreat, water scarcity', emPct: 1.0, pop: '50M',
           story: 'Andean glaciers provide drinking water for millions. They have lost 30-50% of volume since the 1970s. Indigenous communities combine traditional and modern water management.',
-          resilience: 'Ancient qocha (reservoir) systems, glacier monitoring, watershed reforestation' }
+          resilience: 'Ancient qocha (reservoir) systems, glacier monitoring, watershed reforestation' },
+        { id: 'wabanaki', name: 'Wabanaki Nations (Maine)', emoji: '\uD83C\uDF05', risk: 'high', type: 'Sea level on the coast, warming rivers, ash dieback, shellfish loss', emPct: 0.01, pop: '~8,000 enrolled across 4 nations',
+          story: 'The Wabanaki Confederacy \u2014 Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq \u2014 have lived in what is now Maine for at least 12,000 years. "Wabanaki" means "people of the dawn." They contribute almost nothing to global emissions yet face concentrated coastal-climate impacts at home: saltwater intruding on freshwater wells at Sipayik (Pleasant Point), warming Penobscot River water stressing fisheries, brown ash trees (the wood used for traditional Wabanaki baskets) dying from the emerald ash borer expanding north on warmer winters. Wabanaki representatives sit on the Maine Climate Council and have led both adaptation planning and the legal recognition of natural rivers as rights-bearing entities.',
+          resilience: 'Tribal climate adaptation plans (Penobscot Nation 2014, Passamaquoddy 2020), seed-saving of cold-climate brown ash, restoration of the Penobscot River (largest river restoration east of the Mississippi, removed two dams 2012\u20132013), federal recognition as climate-action partners' }
       ];
 
       var riskColors = { extreme: '#ef4444', high: '#f59e0b', moderate: '#3b82f6' };
