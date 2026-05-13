@@ -10812,7 +10812,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       onMouseOut: function(e) { if (unlocked) e.currentTarget.style.borderColor = isFavorite ? palette.accent : palette.border; }
     },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px' } },
-        h('span', { style: { fontSize: '24px' } }, drill.icon),
+        // Circular accent badge for the drill icon — matches the curated-
+        // pack badge aesthetic. Soft accent fill + 1.5px solid accent ring
+        // when unlocked; muted border-only when locked. Adds visual mass
+        // and distinguishes drill cards from generic surfaces.
+        h('div', {
+          'aria-hidden': 'true',
+          style: {
+            width: '38px', height: '38px', borderRadius: '50%',
+            background: unlocked ? (palette.accent + '22') : 'transparent',
+            border: '1.5px solid ' + (unlocked ? palette.accent : palette.border),
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '20px', flexShrink: 0, lineHeight: 1
+          }
+        }, drill.icon),
         h('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', marginRight: '20px' } },
           // Theme-voiced AI chip — surfaces only on drills that route
           // through the AI pipeline (currently just 'passage'). Visually
