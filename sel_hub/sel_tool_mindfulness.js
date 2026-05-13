@@ -1226,6 +1226,15 @@ window.SelHub = window.SelHub || {
 
               callGemini && gratDraft.trim().length > 10 && h('button', { 'aria-label': 'Toggle sound',
                 onClick: function() {
+                  // Safety pre-check on free-write gratitude draft. Block on
+                  // critical content (gratitude entries CAN contain dark thoughts).
+                  var gSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                    ? window.SelHub.safeRehearseCheck(gratDraft, { toolId: 'mindfulness', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+                    : { action: 'continue' };
+                  if (gSafety.action === 'block') {
+                    upd({ gratAiResp: window.SelHub.rehearseBreakCharacterText(gSafety.severity), gratAiLoading: false, _lastTier: 3 });
+                    return;
+                  }
                   upd('gratAiLoading', true);
                   var prompt = 'You are a warm mindfulness coach. A ' + band + ' school student wrote this gratitude entry:\n\n"' + gratDraft + '"\n\n' +
                     'In 2-3 sentences, reflect back what you notice about their gratitude. ' +
@@ -1249,6 +1258,8 @@ window.SelHub = window.SelHub || {
               )
             ),
 
+            // Surface 988 / Crisis Text Line block when last gratitude draft was tier-3.
+            (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
             // AI response
             gratAiResp && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 12, background: '#8b5cf618', border: '1px solid #8b5cf644' } },
               h('p', { style: { fontSize: 10, color: '#a78bfa', fontWeight: 700, marginBottom: 6 } }, '\u2728 Mindfulness Coach'),
@@ -2289,6 +2300,7 @@ window.SelHub = window.SelHub || {
       // ── Final Render ──
       // ══════════════════════════════════════════════════════════
       return h('div', { style: { minHeight: '100%' } },
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('mindfulness', h, ctx) : null),
         tabBar,
         heroBand,
         badgePopup,

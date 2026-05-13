@@ -675,6 +675,14 @@ window.SelHub = window.SelHub || {
       // ── Ask a follow-up question ──
       var askFollowUp = function(question) {
         if (!callGemini || !question) return;
+        // Safety pre-check on free-text follow-up question.
+        var ceSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+          ? window.SelHub.safeRehearseCheck(question, { toolId: 'cultureexplorer', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+          : { action: 'continue' };
+        if (ceSafety.action === 'block') {
+          updMulti({ followUpAnswer: window.SelHub.rehearseBreakCharacterText(ceSafety.severity), aiLoading: false, _lastTier: 3 });
+          return;
+        }
         upd('aiLoading', true);
         var prompt = 'A ' + (gradeLevel || '5th grade') + ' student is learning about ' + selectedCulture + '. They ask: "' + question + '"\n\n' +
           'Answer respectfully and accurately in 2-3 paragraphs. Acknowledge complexity. ' +
@@ -903,6 +911,7 @@ window.SelHub = window.SelHub || {
           exploredCultures.length > 0 && h('span', { className: 'bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-xs font-bold' }, exploredCultures.length + ' explored')
         ),
 
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('cultureExplorer', h, ctx) : null),
         // Tabs (expanded)
         h('div', { role: 'tablist', 'aria-label': 'Culture Explorer tabs', className: 'flex flex-wrap gap-1 bg-cyan-50 rounded-xl p-1 border border-cyan-200' },
           [

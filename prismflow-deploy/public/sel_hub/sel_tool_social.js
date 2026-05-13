@@ -1116,6 +1116,13 @@ window.SelHub = window.SelHub || {
 
               callGemini && convoDraft.trim().length > 5 && h('button', { 'aria-label': 'ai_practice',
                 onClick: function() {
+                  var cSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                    ? window.SelHub.safeRehearseCheck(convoDraft, { toolId: 'social_convo', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+                    : { action: 'continue' };
+                  if (cSafety.action === 'block') {
+                    upd({ convoAiResp: window.SelHub.rehearseBreakCharacterText(cSafety.severity), convoAiLoading: false, convoRevealed: true, _lastTier: 3 });
+                    return;
+                  }
                   upd('convoAiLoading', true);
                   var prompt = 'You are a social skills coach for a ' + band + ' school student. They were given this social situation:\n\n"' + current.prompt + '"\n\nThey responded: "' + convoDraft + '"\n\n' +
                     'In 2-3 sentences, give specific feedback on their response. What did they do well? What could be stronger? ' +
@@ -1867,6 +1874,13 @@ window.SelHub = window.SelHub || {
 
               callGemini && ldDraft.trim().length > 5 && h('button', { 'aria-label': 'summarize the key points and emotions',
                 onClick: function() {
+                  var lSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                    ? window.SelHub.safeRehearseCheck(ldDraft, { toolId: 'social_listen', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+                    : { action: 'continue' };
+                  if (lSafety.action === 'block') {
+                    upd({ ldAiResp: window.SelHub.rehearseBreakCharacterText(lSafety.severity), ldAiLoading: false, ldRevealed: true, _lastTier: 3 });
+                    return;
+                  }
                   upd('ldAiLoading', true);
                   var aiPrompt = 'You are an active listening coach for a ' + band + ' school student. They heard this from a peer named ' + currentLd.speaker + ':\n\n"' + currentLd.text + '"\n\nThe listening skill being practiced is: ' + currentLd.skill + '\n\nThe student responded: "' + ldDraft + '"\n\nIn 2-3 sentences, evaluate their response. Did they successfully ' +
                     (currentLd.skill === 'paraphrase' ? 'paraphrase (restate in own words)' :
@@ -2180,6 +2194,7 @@ window.SelHub = window.SelHub || {
       // ── Final Render ──
       // ══════════════════════════════════════════════════════════
       return h('div', { style: { minHeight: '100%' } },
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('social', h, ctx) : null),
         tabBar,
         badgePopup,
         convoContent,

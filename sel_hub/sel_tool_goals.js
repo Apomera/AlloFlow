@@ -785,6 +785,14 @@ window.SelHub = window.SelHub || {
           if (!callGemini || aiLoading) return;
           sfxClick();
           var question = aiInput.trim() || 'Help me with my goals.';
+          // Safety pre-check on free-text question.
+          var gSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+            ? window.SelHub.safeRehearseCheck(question, { toolId: 'goals_coach', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+            : { action: 'continue' };
+          if (gSafety.action === 'block') {
+            upd({ aiResponse: window.SelHub.rehearseBreakCharacterText(gSafety.severity), aiLoading: false, aiAsked: true, _lastTier: 3 });
+            return;
+          }
           var goalSummary = goals.length > 0 ? goals.map(function(g) { return g.text + ' (' + g.progress + '% done, ' + (g.steps || []).length + ' steps)'; }).join('; ') : 'No goals yet';
           var prompt = 'You are an encouraging, practical goal coach for a ' + band + ' school student (grade: ' + gradeLevel + '). ' +
             'Their current goals: ' + goalSummary + '. Streak: ' + streak + ' days. ' +
@@ -1181,6 +1189,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Tabs
+          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('goals', h, ctx) : null),
           h('div', { role: 'tablist', style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.8)', overflowX: 'auto' } },
             [{ id: 'goals', label: '\uD83C\uDFAF Goals' }, { id: 'habits', label: '\uD83D\uDD01 Habits' }, { id: 'vision', label: '\uD83C\uDF1F Vision' }, { id: 'smart', label: '\uD83E\uDDE0 SMART' }, { id: 'coach', label: '\uD83E\uDD16 Coach' }, { id: 'checkin', label: '\uD83D\uDCDD Check-In' }, { id: 'progress', label: '\uD83D\uDCCA Progress' }].map(function(tb) {
               var active = tab === tb.id;

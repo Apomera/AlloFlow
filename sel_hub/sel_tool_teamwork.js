@@ -881,6 +881,16 @@ window.SelHub = window.SelHub || {
                       var r = roles.find(function(x) { return x.id === rid; });
                       return r ? r.name : rid;
                     }).join(', ');
+                    // Safety pre-check on role-reflection free-text.
+                    var rrSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                      ? window.SelHub.safeRehearseCheck(roleReflection, { toolId: 'teamwork_role', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+                      : { action: 'continue' };
+                    if (rrSafety.action === 'block') {
+                      upd('coachResponse', window.SelHub.rehearseBreakCharacterText(rrSafety.severity));
+                      upd('coachLoading', false);
+                      upd('_lastTier', 3);
+                      return;
+                    }
                     var prompt = 'You are a supportive teamwork coach for ' + band + ' school students.\n\n' +
                       'The student identified their team roles as: ' + selNames + '\n' +
                       'Their reflection: "' + roleReflection + '"\n\n' +
@@ -1144,6 +1154,16 @@ window.SelHub = window.SelHub || {
                 onClick: function() {
                   if (!coachPrompt.trim()) { addToast('Describe your teamwork challenge first!', 'info'); return; }
                   if (!callGemini) { addToast('AI not available.', 'error'); return; }
+                  // Safety pre-check on the teamwork-challenge free-text.
+                  var cpSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                    ? window.SelHub.safeRehearseCheck(coachPrompt, { toolId: 'teamwork_coach', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+                    : { action: 'continue' };
+                  if (cpSafety.action === 'block') {
+                    upd('coachResponse', window.SelHub.rehearseBreakCharacterText(cpSafety.severity));
+                    upd('coachLoading', false);
+                    upd('_lastTier', 3);
+                    return;
+                  }
                   upd('coachLoading', true);
                   upd('coachResponse', null);
                   var prompt = 'You are a warm, knowledgeable teamwork coach for ' + band + ' school students.\n\n' +
@@ -1822,6 +1842,16 @@ window.SelHub = window.SelHub || {
                   if (!conflictInput.trim()) { addToast('Describe the conflict first!', 'info'); return; }
                   if (conflictInput.trim().length < 15) { addToast('Please describe the conflict in more detail.', 'info'); return; }
                   if (!callGemini) { addToast('AI not available.', 'error'); return; }
+                  // Safety pre-check on conflict-description free-text.
+                  var cnSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                    ? window.SelHub.safeRehearseCheck(conflictInput, { toolId: 'teamwork_conflict', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+                    : { action: 'continue' };
+                  if (cnSafety.action === 'block') {
+                    upd('conflictResult', window.SelHub.rehearseBreakCharacterText(cnSafety.severity));
+                    upd('conflictLoading', false);
+                    upd('_lastTier', 3);
+                    return;
+                  }
                   upd('conflictLoading', true);
                   upd('conflictResult', null);
                   var prompt = 'You are a teamwork mediator and collaboration coach for ' + band + ' school students.\n\n' +
@@ -2195,6 +2225,7 @@ window.SelHub = window.SelHub || {
         var content = rolesContent || challengesContent || scenariosContent || commStyleContent || virtualTeamContent || conflictToolContent || retroContent || quizContent || contractContent || progressContent;
 
         return h('div', { className: 'selh-teamwork', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('teamwork', h, ctx) : null),
           tabBar,
           heroBand,
           badgePopup,

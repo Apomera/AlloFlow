@@ -1518,6 +1518,14 @@ window.SelHub = window.SelHub || {
               onClick: function() {
                 if (!aiPrompt.trim()) { addToast('Describe a situation first!', 'info'); return; }
                 if (!callGemini) { addToast('AI coach is not available right now.', 'error'); return; }
+                // Safety pre-check: student free-text describing a "social situation."
+                var pSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                  ? window.SelHub.safeRehearseCheck(aiPrompt, { toolId: 'perspective', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+                  : { action: 'continue' };
+                if (pSafety.action === 'block') {
+                  upd({ aiLoading: false, aiResponse: window.SelHub.rehearseBreakCharacterText(pSafety.severity), _lastTier: 3 });
+                  return;
+                }
                 upd('aiLoading', true);
                 upd('aiResponse', null);
                 var systemPrompt = 'You are a perspective-taking coach for ' + band + ' school students. ' +
@@ -1616,6 +1624,14 @@ window.SelHub = window.SelHub || {
                 var text = journalText.trim();
                 if (text.split(/\s+/).length < 10) { addToast('Write a bit more first — at least a few sentences!', 'info'); return; }
                 if (!callGemini) { addToast('AI feedback is not available right now.', 'error'); return; }
+                // Safety pre-check on the reflective journal free-write.
+                var jSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                  ? window.SelHub.safeRehearseCheck(text, { toolId: 'perspective_journal', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+                  : { action: 'continue' };
+                if (jSafety.action === 'block') {
+                  upd({ journalAiLoad: false, journalAiResp: window.SelHub.rehearseBreakCharacterText(jSafety.severity), _lastTier: 3 });
+                  return;
+                }
                 upd('journalAiLoad', true);
                 upd('journalAiResp', null);
                 var sysPrompt = 'You are a compassionate perspective-taking coach for ' + band + ' school students. ' +
@@ -1742,6 +1758,14 @@ window.SelHub = window.SelHub || {
                 var text = respondText.trim();
                 if (text.split(/\s+/).length < 8) { addToast('Write a bit more about what you\'d do and why!', 'info'); return; }
                 if (!callGemini) { addToast('AI evaluation is not available right now.', 'error'); return; }
+                // Safety pre-check on response free-text.
+                var rSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                  ? window.SelHub.safeRehearseCheck(text, { toolId: 'perspective_respond', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+                  : { action: 'continue' };
+                if (rSafety.action === 'block') {
+                  upd({ respondAiLoad: false, respondAiResp: window.SelHub.rehearseBreakCharacterText(rSafety.severity), _lastTier: 3 });
+                  return;
+                }
                 upd('respondAiLoad', true);
                 upd('respondAiResp', null);
                 var sysPrompt = 'You are an empathy and perspective-taking evaluator for ' + band + ' school students.\n\n' +
@@ -2378,6 +2402,7 @@ window.SelHub = window.SelHub || {
       var content = scenContent || swapContent || storiesContent || exercisesContent || biasContent || emContent || hfContent || journalContent || guidedJContent || respondContent || coachContent || progressContent;
 
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('perspective', h, ctx) : null),
         tabBar,
         heroBand,
         badgePopup,

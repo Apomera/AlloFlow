@@ -1229,6 +1229,16 @@
       function renderAIReframe() {
         function runReframe() {
           if (!rfInput.trim() || !callGemini) return;
+          // Safety pre-check: kids type comparison thoughts here ("I'll never
+          // be like them" / darker variants). Block on critical content;
+          // surface crisis resources instead of an AI reframe.
+          var rfSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+            ? window.SelHub.safeRehearseCheck(rfInput, { toolId: 'digitalwellbeing', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+            : { action: 'continue' };
+          if (rfSafety.action === 'block') {
+            upd({ rfLoading: false, rfReply: window.SelHub.rehearseBreakCharacterText(rfSafety.severity), _lastTier: 3 });
+            return;
+          }
           upd({ rfLoading: true, rfReply: '' });
           var prompt =
             'A teenager wrote down a thought they had after seeing something on social media. The thought is below. ' +
@@ -1300,6 +1310,8 @@
             ),
             !callGemini && h('p', { style: { fontSize: 11, color: '#9d174d', marginTop: 6 } },
               'AI features need a connection. While offline: try writing what the kindest person in your life would say back to you.'),
+            // Surface 988 / Crisis Text Line block when last reframe input was tier-3.
+            (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
             rfReply && h('div', { 'aria-live': 'polite', style: {
               marginTop: 12, padding: 14, background: '#fff', border: '1px dashed #f9a8d4',
               borderRadius: 8, fontSize: 14, lineHeight: 1.6, color: '#0f172a', whiteSpace: 'pre-wrap'
@@ -3152,6 +3164,7 @@
 
       return h('div', { className: 'dw-root', style: { fontFamily: 'system-ui, -apple-system, sans-serif', color: '#0f172a' } },
         renderHeader(),
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('digitalWellbeing', h, ctx) : null),
         content,
         renderBadgePopup()
       );

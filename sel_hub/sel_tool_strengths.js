@@ -993,6 +993,14 @@ window.SelHub = window.SelHub || {
           if (!callGemini || aiLoading) return;
           sfxReflect();
           var question = aiInput.trim() || 'Based on my selected strengths, give me personalized advice.';
+          // Safety pre-check on the student's typed question.
+          var sSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+            ? window.SelHub.safeRehearseCheck(question, { toolId: 'strengths_coach', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+            : { action: 'continue' };
+          if (sSafety.action === 'block') {
+            upd({ aiResponse: window.SelHub.rehearseBreakCharacterText(sSafety.severity), aiLoading: false, aiAsked: true, _lastTier: 3 });
+            return;
+          }
           var strengthList = selectedStrengths.map(function(s) { return s.emoji + ' ' + s.label; }).join(', ') || 'None selected yet';
           var prompt = 'You are a warm, encouraging strengths-based coach for a ' + band + ' school student (grade level: ' + gradeLevel + '). ' +
             'Their selected strengths are: ' + strengthList + '. ' +
@@ -1068,8 +1076,9 @@ window.SelHub = window.SelHub || {
           ),
 
           // Tabs (scrollable row)
+          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('strengths', h, ctx) : null),
           h('div', { role: 'tablist', style: { display: 'flex', overflowX: 'auto', borderBottom: '1px solid rgba(245,158,11,0.15)', background: 'rgba(15,23,42,0.8)', scrollbarWidth: 'none' } },
-            [{ id: 'discover', label: '\u2B50 Discover' }, { id: 'interview', label: '\uD83C\uDF99\uFE0F Interview' }, { id: 'scenarios', label: '\uD83C\uDFAD Scenarios' }, { id: 'quiz', label: '\uD83E\uDDE9 Quiz' }, { id: 'reflect', label: '\uD83D\uDCDD Reflect' }, { id: 'stories', label: '\uD83D\uDCD6 Stories' }, { id: 'compare', label: '\uD83D\uDD0D Compare' }, { id: 'challenge', label: '\u26A1 Challenge' }, { id: 'gratitude', label: '\uD83D\uDE4F Gratitude' }, { id: 'planner', label: '\uD83D\uDCCB Planner' }, { id: 'peers', label: '\uD83D\uDC65 Peers' }, { id: 'affirm', label: '\uD83D\uDCAC Affirm' }, { id: 'coach', label: '\uD83E\uDD16 Coach' }, { id: 'profile', label: '\uD83D\uDCCA Profile' }].map(function(t) {
+            [{ id: 'discover', label: '\u2B50 Discover' }, { id: 'interview', label: '\uD83C\uDF99\uFE0F Interview' }, { id: 'scenarios', label: '\uD83C\uDFAD Scenarios' }, { id: 'quiz', label: '\uD83E\uDDE9 Quiz' }, { id: 'reflect', label: '\uD83D\uDCDD Reflect' }, { id: 'stories', label: '\uD83D\uDCD6 Stories' }, { id: 'compare', label: '\uD83D\uDD0D Compare' }, { id: 'challenge', label: '\u26A1 Challenge' }, { id: 'gratitude', label: '\uD83D\uDE4F Gratitude' }, { id: 'planner', label: '\uD83D\uDCCB Planner' }, { id: 'peers', label: '\uD83D\uDC65 Peers' }, { id: 'affirm', label: '\uD83D\uDCAC Affirm' }, { id: 'coach', label: '\uD83E\uDD16 Coach' }, { id: 'profile', label: '\uD83D\uDCCA Profile' }, { id: 'print', label: '\uD83D\uDDA8 Print' }].map(function(t) {
               var active = tab === t.id;
               return h('button', { 'aria-label': 'nowrap', key: t.id, role: 'tab', 'aria-selected': active, onClick: function() { sfxSelect(); var tv = tabsVisited.indexOf(t.id) < 0 ? tabsVisited.concat([t.id]) : tabsVisited; upd({ tab: t.id, tabsVisited: tv }); }, style: { flex: '0 0 auto', padding: '10px 10px', fontSize: 10, fontWeight: 'bold', color: active ? '#fbbf24' : '#94a3b8', background: active ? 'rgba(245,158,11,0.1)' : 'transparent', border: 'none', borderBottom: active ? '2px solid #f59e0b' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap' } }, t.label);
             })
@@ -1195,6 +1204,14 @@ window.SelHub = window.SelHub || {
                 var answerText = questions.map(function(q, i) {
                   return 'Q' + (i + 1) + ': ' + q.question + '\nA: ' + (interviewAnswers[q.id] || '(skipped)');
                 }).join('\n\n');
+                // Safety pre-check on combined interview answers.
+                var iSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                  ? window.SelHub.safeRehearseCheck(answerText, { toolId: 'strengths_interview', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+                  : { action: 'continue' };
+                if (iSafety.action === 'block') {
+                  upd({ interviewResult: window.SelHub.rehearseBreakCharacterText(iSafety.severity), interviewAnalyzing: false, interviewComplete: true, _lastTier: 3 });
+                  return;
+                }
                 var prompt = 'You are a strengths-based coach analyzing a ' + band + ' school student\'s (grade ' + gradeLevel + ') self-discovery interview.\n\n' +
                   'Their answers:\n' + answerText + '\n\n' +
                   'Based on these answers, identify 3-5 strengths this student likely has. For each strength, explain briefly WHY their answers suggest it.\n' +
@@ -1577,6 +1594,14 @@ window.SelHub = window.SelHub || {
                 var storyText = storyPrompts.map(function(p) {
                   return p.label.replace('[STRENGTH]', storyStrength.label) + '\n' + (storyDraft[p.id] || '');
                 }).join('\n\n');
+                // Safety pre-check on the student's full story draft.
+                var stSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                  ? window.SelHub.safeRehearseCheck(storyText, { toolId: 'strengths_story', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+                  : { action: 'continue' };
+                if (stSafety.action === 'block') {
+                  upd({ storyAiResponse: window.SelHub.rehearseBreakCharacterText(stSafety.severity), storyAiLoading: false, _lastTier: 3 });
+                  return;
+                }
                 var prompt = 'You are a warm, encouraging strengths-based coach for a ' + band + ' school student (grade ' + gradeLevel + '). ' +
                   'They wrote a story about using their strength of "' + storyStrength.label + '". Here is their story:\n\n' +
                   storyText + '\n\n' +
@@ -2271,6 +2296,61 @@ window.SelHub = window.SelHub || {
                         }),
                         // Filled shape
                         selectedStrengths.length > 0 ? h('polygon', { points: polygonPoints, fill: 'rgba(245,158,11,0.2)', stroke: '#f59e0b', strokeWidth: 2 }) : null,
+            tab === 'print' ? (function() {
+              var printPanel = h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 12, fontSize: 12.5, color: '#fde68a', lineHeight: 1.65 } },
+                h('strong', null, '\uD83D\uDDA8 My strengths summary. '),
+                'A one-page artifact: your selected strengths grouped by virtue category, your reflections, and the strengths-stories you logged. Useful for IEPs, student-led conferences, college applications, or carrying with you on a low day. Companion to your One-Page Profile.'
+              );
+              var printBtn = h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
+                h('button', { onClick: function() { try { window.print(); } catch (e) {} }, 'aria-label': 'Print or save as PDF',
+                  style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
+              );
+              var printStyle = h('style', null,
+                '@media print { body * { visibility: hidden !important; } ' +
+                '#strengths-print-region, #strengths-print-region * { visibility: visible !important; } ' +
+                '#strengths-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #fff !important; color: #0f172a !important; } ' +
+                '#strengths-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
+                '.no-print { display: none !important; } }'
+              );
+              var printRegion = h('div', { id: 'strengths-print-region', style: { padding: 18, borderRadius: 12, background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0' } },
+                h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
+                  h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#0f172a' } }, 'My Strengths Profile'),
+                  h('div', { style: { fontSize: 11, color: '#475569' } }, 'VIA Institute · Peterson & Seligman 2004')
+                ),
+                h('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: '#78350f' } },
+                  h('strong', null, 'Date: '), new Date().toLocaleDateString(), ' \u00b7 ',
+                  h('strong', null, ' Strengths selected: '), selectedStrengths.length
+                ),
+
+                STRENGTH_CATEGORIES.map(function(cat) {
+                  var catStrengths = selectedStrengths.filter(function(s) { return s.category === cat.id; });
+                  if (catStrengths.length === 0) return null;
+                  return h('div', { key: cat.id, style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+                    h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, cat.emoji + ' ' + cat.label),
+                    h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                      catStrengths.map(function(s) {
+                        return h('div', { key: s.id, style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #92400e', background: '#fef3c7', fontSize: 11.5, color: '#78350f', fontWeight: 600 } }, s.emoji + ' ' + s.label);
+                      })
+                    )
+                  );
+                }),
+
+                reflections && reflections.length > 0 ? h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 10, pageBreakInside: 'avoid' } },
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, 'My reflections'),
+                  reflections.slice(0, 5).map(function(r, i) {
+                    return h('div', { key: i, style: { marginBottom: 8, paddingBottom: 6, borderBottom: i < Math.min(4, reflections.length - 1) ? '1px dashed #cbd5e1' : 'none' } },
+                      h('div', { style: { fontSize: 11.5, color: '#475569', fontStyle: 'italic', marginBottom: 2 } }, r.prompt),
+                      h('div', { style: { fontSize: 12.5, color: '#0f172a', lineHeight: 1.55, whiteSpace: 'pre-wrap' } }, r.response)
+                    );
+                  })
+                ) : null,
+
+                h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: '#475569', lineHeight: 1.5 } },
+                  'Source: VIA Institute on Character (viacharacter.org) \u00b7 Peterson, C. & Seligman, M. E. P. (2004), Character Strengths and Virtues. The full VIA survey is at viacharacter.org. Printed from AlloFlow SEL Hub.'
+                )
+              );
+              return h('div', null, printPanel, printBtn, printStyle, printRegion);
+            })() : null,
                         // Dots
                         points.map(function(p, pi) {
                           return h('circle', { key: 'dot' + pi, cx: p.x, cy: p.y, r: 4, fill: p.color, stroke: '#0f172a', strokeWidth: 2 });

@@ -330,6 +330,21 @@ window.SelHub = window.SelHub || {
       // ── AI Chat Send ──
       var sendChat = useCallback(async function(userMsg) {
         if (!callGemini || !aiScenario || !userMsg.trim()) return;
+        // Safety pre-check on student's typed peer-roleplay message. If
+        // critical-tier content, halt the AI peer's response and surface
+        // a coach-style break + crisis resources.
+        var slSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+          ? window.SelHub.safeRehearseCheck(userMsg, { toolId: 'sociallab', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+          : { action: 'continue' };
+        if (slSafety.action === 'block') {
+          setChatHistory(chatHistory.concat([
+            { role: 'user', text: userMsg.trim() },
+            { role: 'coach', text: window.SelHub.rehearseBreakCharacterText(slSafety.severity) }
+          ]));
+          setChatInput('');
+          setChatLoading(false);
+          return;
+        }
         var newHistory = chatHistory.concat([{ role: 'user', text: userMsg.trim() }]);
         setChatHistory(newHistory);
         setChatInput('');
@@ -406,6 +421,7 @@ window.SelHub = window.SelHub || {
       // ── Menu ──
       if (mode === 'menu') {
         return h('div', { style: { maxWidth: '650px', margin: '0 auto', padding: '20px' } },
+          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('sociallab', h, ctx) : null),
           h('div', { style: { textAlign: 'center', marginBottom: '24px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '🎭'),
             h('h2', { style: { fontSize: '24px', fontWeight: 900, color: '#1e293b' } }, 'Social Skills Lab'),
