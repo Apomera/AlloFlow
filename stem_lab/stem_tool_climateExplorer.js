@@ -2451,7 +2451,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                         '\u2014 ', r.voice.name),
                       el('div', { style: { color: '#94a3b8', fontSize: 9, marginTop: 2, lineHeight: 1.4 } },
                         r.voice.role),
-                      el('div', { style: { color: '#64748b', fontSize: 9, marginTop: 4, fontStyle: 'italic' } },
+                      el('div', { style: { color: '#94a3b8', fontSize: 9, marginTop: 4, fontStyle: 'italic' } },
                         '\uD83D\uDCDA ', r.voice.source)
                     ),
                     el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.15)' } },
@@ -2593,7 +2593,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   ' (the Bangladeshi voice quoted above) was the lead architect of this fund — he pushed for it across nine consecutive COPs from 2013 to his death in 2023, and lived just long enough to see it formally created. The fund is sometimes called "the Saleemul Huq fund" by negotiators who worked with him.'),
                 el('div', {
                   style: {
-                    marginTop: 6, color: '#64748b', fontSize: 9, lineHeight: 1.5, fontStyle: 'italic'
+                    marginTop: 6, color: '#94a3b8', fontSize: 9, lineHeight: 1.5, fontStyle: 'italic'
                   }
                 },
                   '📚 Pledges from official COP28 communiqués (Nov–Dec 2023). Need estimate from Stockholm Environment Institute 2023 ($400B/yr lower bound). Contributions converted to USD at end-2023 rates; some pledges remain unfulfilled or extend over multiple years. Updated reporting: UNFCCC Loss and Damage Fund Board minutes.')
@@ -2723,7 +2723,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   ' people forced across an international border by climate are not yet recognized as refugees under the 1951 UN Refugee Convention, which only covers persecution. In 2020 the UN Human Rights Committee ruled in Teitiota v. New Zealand that countries cannot deport people back to climate-existential danger — a landmark non-binding step. The legal category of "climate refugee" is still being built.'),
                 el('div', {
                   style: {
-                    marginTop: 6, color: '#64748b', fontSize: 9, lineHeight: 1.5, fontStyle: 'italic'
+                    marginTop: 6, color: '#94a3b8', fontSize: 9, lineHeight: 1.5, fontStyle: 'italic'
                   }
                 },
                   '📚 IDMC Global Report on Internal Displacement 2024 (annual data); World Bank Groundswell Part II report (2021, 216M internal climate displaced by 2050 across 6 world regions on current trajectory). Figures exclude international migration, slow-onset displacement, and most drought-related movement, so they are conservative lower bounds.')
@@ -3677,7 +3677,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   )
                 ),
                 el('p', { style: { margin: '0 0 10px 0', color: '#e2e8f0', fontSize: 13.5, lineHeight: 1.6 } }, path.aiReadResponse),
-                el('div', { style: { fontSize: 11, color: '#64748b', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
+                el('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
                   'AI climate-policy educator. ',
                   el('strong', null, 'It is not a Wabanaki person, not a real climate strategist or policy maker, and does not speak for any Wabanaki nation, agency, or organization.'),
                   ' For authoritative voice on Maine climate policy: Penobscot Nation CHPD, Wabanaki Public Health and Wellness, Maine Climate Council, Maine Department of Environmental Protection, Sunrise Movement Maine, Maine Climate Action Now.'
@@ -3802,7 +3802,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8', cursor: 'pointer', background: 'rgba(56,189,248,0.15)', color: '#bae6fd', fontWeight: 700 } }, '\ud83d\udd01 Replay same conditions')
                 ),
                 el('div', { style: { padding: 8, background: '#0f172a', borderRadius: 8, fontSize: 11.5, color: '#94a3b8', fontFamily: 'ui-monospace, monospace' } },
-                  el('span', { style: { color: '#64748b' } }, 'Campaign seed: '),
+                  el('span', { style: { color: '#94a3b8' } }, 'Campaign seed: '),
                   el('strong', { style: { color: '#cbd5e1' } }, path.seed)
                 )
               );
@@ -3905,7 +3905,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                         return el('div', { key: si, style: { background: '#1e293b', padding: 6, borderRadius: 6, textAlign: 'center' } },
                           el('div', { style: { fontSize: 10, color: '#94a3b8' } }, st[0]),
                           el('div', { style: { fontSize: 15, fontWeight: 800, color: st[2] } }, st[1]),
-                          el('div', { style: { fontSize: 9, color: '#64748b' } }, 'goal ' + st[3])
+                          el('div', { style: { fontSize: 9, color: '#94a3b8' } }, 'goal ' + st[3])
                         );
                       })
                     ),
@@ -3934,7 +3934,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               path.yearActions.length > 0 ? el('div', { style: { background: '#0f172a', borderRadius: 10, padding: 10, fontSize: 12, color: '#cbd5e1' } },
                 el('div', { style: { fontWeight: 700, color: '#e2e8f0', marginBottom: 4 } }, 'Period actions'),
                 path.yearActions.map(function(a, ai) { return el('div', { key: ai }, '\u00b7 ' + a.tech + ' \u2192 ' + a.target + ' (' + a.hours + 'h)'); })
-              ) : el('div', { style: { fontSize: 12, color: '#64748b', fontStyle: 'italic' } }, 'No actions yet this period. Pick a sector, pick a technique.')
+              ) : el('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, 'No actions yet this period. Pick a sector, pick a technique.')
             );
           })()
         )
