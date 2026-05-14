@@ -2953,6 +2953,75 @@
               )
             ),
             EMERALD
+          ),
+
+          // ─── Therapeutic antibodies + mAbs ──────────────────────
+          sectionCard('🛡️ Therapeutic monoclonal antibodies — biology as medicine',
+            (function() {
+              var MAB_TOPICS = [
+                { id: 'overview', name: 'What therapeutic mAbs are', emoji: '🧬',
+                  body: 'A monoclonal antibody (mAb) is a laboratory-produced version of an antibody — the Y-shaped immune molecule the body uses to recognize + neutralize specific targets. Therapeutic mAbs are engineered to bind a SPECIFIC protein (a cancer-cell receptor, an inflammatory cytokine, a viral surface protein) + either block its function, mark it for immune destruction, or deliver a payload to it. mAbs are now the largest single drug class by sales globally — about $200+ billion per year + growing fast. The 10 top-selling mAbs include Humira (rheumatoid arthritis), Keytruda (cancer immunotherapy), Dupixent (asthma + eczema), and several others.',
+                  caveat: 'Therapeutic mAbs are NOT a cure-all. Each one is highly specific to a single target; the breadth of conditions they treat is large but the depth of cure is variable. They are also extremely expensive — typically $5,000-$150,000+ per year of treatment, with no generic option until the patent expires. The economics shape access dramatically.'
+                },
+                { id: 'history', name: 'How they were invented', emoji: '🔬',
+                  body: 'Köhler + Milstein (Cambridge, 1975) figured out how to make CLONAL antibody-producing cell lines: fuse an antibody-producing B cell with an immortal myeloma cell, producing a hybridoma that grows forever + secretes one specific antibody. Nobel Prize 1984. Köhler famously did not patent the technique — he believed it should be freely available — which contributed to the explosion of mAb research over the following decades. The first FDA-approved therapeutic mAb (muromonab-CD3, for organ transplant rejection) came in 1986.',
+                  caveat: 'Early therapeutic mAbs were MOUSE antibodies, which the human immune system saw as foreign + cleared rapidly (HAMA response — Human Anti-Mouse Antibody). The clinical breakthrough required HUMANIZATION: replacing mouse constant regions with human ones (chimeric mAbs, then humanized, then fully-human mAbs). This was an engineering achievement, not a clinical one — but it transformed the field.'
+                },
+                { id: 'cancer', name: 'Cancer treatment mAbs', emoji: '🎗️',
+                  body: 'The cancer-mAb revolution accelerated after rituximab (Rituxan, 1997) — a chimeric mAb targeting CD20 on B cells, transformed treatment of non-Hodgkin lymphoma. Trastuzumab (Herceptin, 1998) targets HER2 on breast cancers, dramatically improving outcomes in HER2-positive cases (~15-20% of breast cancers). Pembrolizumab (Keytruda, 2014) + nivolumab (Opdivo, 2014) are CHECKPOINT INHIBITORS — they block proteins (PD-1 / PD-L1) that cancer cells use to hide from T cells, "releasing the brakes" on the immune system. This restored long-term remission in a fraction of patients with melanoma, lung cancer, kidney cancer, and many other types — formerly almost-uniformly fatal cases. James Allison + Tasuku Honjo won the 2018 Nobel for the discovery of checkpoint inhibition.',
+                  caveat: 'Checkpoint inhibitors work spectacularly in ~15-25% of cancer patients (the "long tail" of long-term survivors) + minimally or not at all in the rest. Predicting WHO will respond is still imperfect. Immune-related adverse events (autoimmune-like toxicities affecting skin, gut, liver, lungs, thyroid, even heart) can be severe + sometimes permanent. The technology is a major advance + not the universal cancer answer.'
+                },
+                { id: 'autoimmune', name: 'Autoimmune + inflammatory mAbs', emoji: '🛡️',
+                  body: 'Autoimmune diseases are driven by inflammatory CYTOKINES — proteins that signal between immune cells. Therapeutic mAbs that block specific cytokines have transformed treatment. Anti-TNF (adalimumab/Humira, infliximab/Remicade, etanercept/Enbrel — a fusion protein, not strictly a mAb) revolutionized rheumatoid arthritis, ankylosing spondylitis, psoriatic arthritis, Crohn\'s + ulcerative colitis. Anti-IL-17 (ixekizumab/Taltz, secukinumab/Cosentyx) for psoriasis. Anti-IL-6 (tocilizumab/Actemra) for giant-cell arteritis + severe COVID. Anti-IL-23 (ustekinumab/Stelara, guselkumab/Tremfya) for psoriasis + IBD. Anti-IgE (omalizumab/Xolair) for severe allergic asthma. Anti-IL-5 (mepolizumab/Nucala) for eosinophilic asthma.',
+                  caveat: 'Cytokine-blocking mAbs change quality of life dramatically for many patients — Humira alone treats over a million people in the US for rheumatoid arthritis, IBD, + skin conditions. They also increase infection risk (especially TB reactivation), are immunosuppressive in non-trivial ways, + cost $4000-$8000/month at list price (sometimes reduced by rebates that primarily benefit insurers + pharmacy benefit managers, not patients).'
+                },
+                { id: 'covid', name: 'mAbs during COVID-19', emoji: '🦠',
+                  body: 'During COVID-19, monoclonal antibodies became a major treatment + prevention tool, then quickly lost much of their utility as the virus evolved. Bamlanivimab + casirivimab/imdevimab (Regeneron) + sotrovimab + bebtelovimab were each developed against the SARS-CoV-2 spike protein. Each was effective against the strain it was designed for + lost activity against the next major variant within months. This is the SELECTION-PRESSURE problem: anti-viral mAbs target a single epitope; the virus evolves around it. By mid-2022, no anti-SARS-CoV-2 mAb retained activity against circulating Omicron lineages. Tixagevimab + cilgavimab (Evusheld, used for prophylaxis in immunocompromised patients) was withdrawn in 2023 for the same reason.',
+                  caveat: 'The COVID mAb experience showed both the promise + the limits of the technology. Speed: developed + deployed in record time (months from variant emergence to FDA EUA). Limit: viral evolution outpaced the development cycle. Cocktail mAbs (binding multiple epitopes) hold up longer than single-mAb products but are more expensive + complex. The technology is being adapted for influenza + RSV + other rapidly-evolving viruses with similar tradeoffs.'
+                },
+                { id: 'adc', name: 'Antibody-drug conjugates (ADCs)', emoji: '💉',
+                  body: 'An ADC is an antibody chemically linked to a toxic chemotherapy payload. The antibody finds cancer cells expressing a specific surface marker; the chemo gets delivered selectively to those cells; healthy cells without the marker are mostly spared. Brentuximab vedotin (Adcetris, 2011, for Hodgkin lymphoma + anaplastic large-cell lymphoma) was the first FDA-approved ADC. Trastuzumab deruxtecan (Enhertu, 2019) revolutionized HER2-low + HER2-positive breast cancer; trial results in 2022 changed clinical practice. Sacituzumab govitecan (Trodelvy, 2020) treats triple-negative breast cancer.',
+                  caveat: 'ADCs are powerful but tricky. The linker chemistry must be stable in the bloodstream + release the payload only inside cancer cells. Linker engineering is most of the design work; the antibody + payload are individually old technology. Toxicities include neuropathy, ocular toxicity, interstitial lung disease — sometimes serious + sometimes lifelong. ADCs are not "gentle alternatives" to chemotherapy; they are more-targeted versions of it with their own toxicity profiles.'
+                },
+                { id: 'bispecific', name: 'Bispecifics + engagers', emoji: '🔗',
+                  body: 'A BISPECIFIC antibody binds TWO different targets at once. The most clinically transformative class so far is T-CELL ENGAGERS (BiTEs): one arm grabs a tumor antigen, the other arm grabs CD3 on a T cell, physically forcing the immune cell to kill the cancer cell. Blinatumomab (Blincyto, 2014) for relapsed acute lymphoblastic leukemia (ALL) was the first to be approved + transformed pediatric leukemia care. Newer T-cell engagers (teclistamab, talquetamab, elranatamab) target multiple myeloma + are reshaping that field rapidly since 2022-2023.',
+                  caveat: 'T-cell engagers can cause severe CYTOKINE RELEASE SYNDROME (a sudden inflammatory storm during initial doses) requiring hospital monitoring. They are also expensive + complex to administer. The early-2020s expansion of approved bispecific + tri-specific therapies has been one of the fastest-moving areas in clinical oncology.'
+                },
+                { id: 'production', name: 'How they are manufactured', emoji: '🏭',
+                  body: 'Therapeutic mAbs are produced in mammalian cell culture, typically Chinese Hamster Ovary (CHO) cells, in stirred bioreactors of 2,000-25,000 liters. The cells are engineered to produce + secrete the desired antibody; the antibody is then purified via Protein-A affinity chromatography + multiple downstream purification steps. A single batch can yield kilograms of pure antibody worth tens to hundreds of millions of dollars. Manufacturing facilities are heavily regulated + run continuously; building a new one takes 3-5 years + costs $500M-$2B.',
+                  caveat: 'Mammalian-cell mAb production is one of the most demanding bioprocesses in industry. Bacterial cells (E. coli) cannot make properly-folded + glycosylated full antibodies. Yeast can but rarely match CHO output. Manufacturing capacity is a real bottleneck during pandemics + supply emergencies; COVID drove massive expansion that the industry is now somewhat oversupplied with. Biosimilars (cheaper "generic-like" mAbs allowed once a brand-name mAb\'s patent expires) are gradually entering the market but face strong incumbent + regulatory headwinds.'
+                }
+              ];
+              var sel = d.selectedMab || 'overview';
+              var topic = MAB_TOPICS.find(function(t) { return t.id === sel; }) || MAB_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'Monoclonal antibodies are now the dominant drug class by sales + one of the most active areas of biomedical research. They use the immune system\'s own protein technology to treat cancer, autoimmune disease, asthma, COVID, organ rejection, + many other conditions. The technology connects directly to the immune-system biology in the rest of this tab — but turned into precision medicine that is among the most expensive in healthcare.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  MAB_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedMab: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#0ea5e9' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #0ea5e9' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#7dd3fc', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
+                  h('strong', null, 'The access question: '),
+                  'mAbs are extraordinarily effective for many patients + extraordinarily expensive. List prices of $5,000-$500,000+ per year of treatment are common. Insurance coverage in the US is uneven + patient cost-share can still be unaffordable. Globally, most patients with diseases mAbs could treat cannot access them at all. Biosimilars + tiered pricing in lower-income countries help slowly. School psychologists working with families navigating these treatments may need to help with prior-authorization paperwork, copay-assistance programs, + the emotional reality of a family-bankrupting-but-life-saving drug.'
+                )
+              );
+            })(),
+            '#0ea5e9'
           )
         );
       }

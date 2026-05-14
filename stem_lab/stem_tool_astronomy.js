@@ -2347,6 +2347,79 @@
               );
             })(),
             '#f97316'
+          ),
+
+          // ─── Stellar nucleosynthesis (origin of elements) ───────
+          sectionCard('⚛️ Where every atom in your body came from',
+            (function() {
+              var NS_TOPICS = [
+                { id: 'overview', name: 'Why this matters', emoji: '🌟',
+                  body: 'Every atom in your body other than hydrogen was forged inside a star. The calcium in your bones, the iron in your blood, the carbon + nitrogen + oxygen in your DNA, the iodine in your thyroid, the zinc in your hand — all of it was assembled inside one or more stars, scattered into space by stellar death, and eventually incorporated into the Solar System + into you. The original "star stuff" framing by Carl Sagan is not poetic; it is biochemistry. Understanding stellar nucleosynthesis is understanding where you, every element of your home, and every element of every world we know about, originally came from.',
+                  caveat: 'The full story took ~13.8 billion years to play out, with different elements coming from different stellar processes at different times. No single "type" of nucleosynthesis made everything. Tracing a specific atom\'s origin requires knowing not just what physics formed it but which population of stars at which time + where they ended up.'
+                },
+                { id: 'bbn', name: 'Big Bang nucleosynthesis (~3 minutes)', emoji: '💥',
+                  body: 'In the first ~3 minutes after the Big Bang, the universe was a hot, dense plasma of protons + neutrons + electrons + photons + neutrinos. As it cooled below ~10⁹ K, protons + neutrons combined into deuterium (²H, one proton + one neutron), then helium-4 (4 nucleons), and trace amounts of lithium-7 + helium-3. The neutron-to-proton ratio when the temperature dropped below the freeze-out point determined the final hydrogen/helium ratio — about 75% H + 25% He by mass. After ~20 minutes the universe was too cool + diffuse for fusion to continue. The remaining elements had to wait for stars.',
+                  caveat: 'Big Bang nucleosynthesis (BBN) predictions match observation to ~5% for helium-4 (the easiest to measure) but a known mystery exists for lithium-7: theory predicts ~3× more than is observed in old halo stars (the "cosmological lithium problem"). The discrepancy may be a stellar-mixing effect, an issue in nuclear cross-section measurements, or a hint of new physics. Still unresolved.'
+                },
+                { id: 'main', name: 'Main-sequence stars (pp + CNO)', emoji: '☀️',
+                  body: 'Ordinary stars fuse hydrogen into helium in their cores. Sun-like stars (mass <1.3 M_sun) use the PROTON-PROTON (pp) chain: four protons → one helium-4 + 2 positrons + 2 neutrinos + energy. This is what powers our Sun. Heavier stars (>1.3 M_sun) use the CNO cycle: carbon, nitrogen, oxygen act as catalysts in a cyclic process that net converts hydrogen to helium more rapidly at higher temperatures. Both processes produce helium-4 + release ~7 MeV of energy per nucleon (the strongest binding-energy step in fusion). Stars spend ~90% of their visible life in this main-sequence phase.',
+                  caveat: 'Main-sequence fusion does not produce significant amounts of any other elements. The Sun has been fusing for ~4.6 billion years + the only elements it has measurably increased are helium + (in CNO-cycle stars) some carbon/nitrogen redistribution. Everything heavier comes from LATER stellar processes.'
+                },
+                { id: 'giants', name: 'Red giants + AGB stars', emoji: '🔴',
+                  body: 'When a star\'s core runs out of hydrogen, the core contracts + heats up, while the outer envelope expands + cools (a red giant). Helium fusion begins in the core (3 helium-4 → carbon-12 via the triple-alpha process, requiring a key resonance Fred Hoyle predicted in 1953 — the "Hoyle state"). Beyond carbon, helium captures continue to produce oxygen-16, neon-20, magnesium-24. AGB (Asymptotic Giant Branch) stars also drive the s-process — slow neutron capture — building up about half the heavy elements past iron (zirconium, barium, lead). Material from the outer envelope is shed via stellar winds during the red-giant + AGB phases, returning enriched material to the interstellar medium.',
+                  caveat: 'AGB stars contribute most of the carbon + nitrogen + s-process heavy elements in the universe. The Sun + Solar System inherited about half its carbon from AGB stars + about half from supernovae. Without the Hoyle resonance, carbon-based life would be impossible — a fine-tuning observation Hoyle himself remarked on extensively.'
+                },
+                { id: 'super', name: 'Core-collapse supernovae (Type II)', emoji: '💫',
+                  body: 'Stars more massive than ~8 M_sun continue fusing past carbon into neon, magnesium, silicon, then silicon into iron-56. Iron-56 has the highest binding energy per nucleon of any element — beyond iron, fusion REQUIRES energy rather than releasing it. When an iron core grows beyond ~1.4 M_sun (the Chandrasekhar mass), electron degeneracy pressure can no longer support it. The core collapses in less than a second, electrons + protons combine into neutrons (with neutrino emission), and a neutron star (or black hole) forms. The released gravitational energy + neutrino pressure drives a shockwave outward, blowing off the rest of the star as a Type-II supernova. In the explosion, the r-process — rapid neutron capture — creates about half the elements heavier than iron, including most uranium, thorium, and gold.',
+                  caveat: 'Supernovae are the dominant source of oxygen, neon, magnesium, silicon, sulfur, calcium, iron — the bulk of the heavier elements that make up rocky planets + biology. The galactic frequency is ~1-2 per century per Milky-Way-sized galaxy; the last observable one in our galaxy was Kepler\'s in 1604. SN 1987A in the Large Magellanic Cloud was the closest naked-eye supernova in 400 years.'
+                },
+                { id: 'iaSN', name: 'Type Ia supernovae', emoji: '🌟',
+                  body: 'A different kind of supernova: a white dwarf in a binary system accretes matter from its companion until it nears the Chandrasekhar mass, then ignites runaway thermonuclear fusion of its carbon + oxygen core. The entire star is consumed in seconds. Because the trigger mass is the same (~1.4 M_sun) and the physics is similar, Type Ia supernovae have nearly standard luminosity — they are the "standard candles" used to measure the cosmic distance scale + discover dark energy. Type Ia events are the dominant source of IRON-PEAK elements (iron, nickel, cobalt) in the universe; the iron in your blood is mostly Type-Ia-supernova iron.',
+                  caveat: 'The precise progenitor system of Type Ia supernovae is still debated — single-degenerate (white dwarf + non-degenerate companion) vs double-degenerate (white-dwarf merger). Both probably occur. The fact that they still appear nearly standard despite this mixture is one of nature\'s slightly fortunate accidents for cosmology.'
+                },
+                { id: 'merger', name: 'Neutron-star mergers', emoji: '✨',
+                  body: 'When two neutron stars in a binary system spiral together and merge, the violent collision ejects neutron-rich material that undergoes RAPID r-process nucleosynthesis. The kilonova GW170817 (2017, see the Gravitational Waves section in the Galaxies tab) was the first direct observation: spectroscopy of the explosion showed signatures of newly-formed gold, platinum, and other heavy elements. This single event probably produced ~100 Earth-masses of gold + similar amounts of platinum. Neutron-star mergers are now believed to be a MAJOR source of r-process elements, possibly the dominant source — supernovae alone may not be able to produce enough.',
+                  caveat: 'The relative contribution of supernovae vs neutron-star mergers to r-process nucleosynthesis is still being worked out. Galactic chemical-evolution models with only supernovae underpredict observed europium abundances; adding neutron-star mergers fits better. The picture is becoming clearer with each multi-messenger detection.'
+                },
+                { id: 'spallation', name: 'Cosmic-ray spallation', emoji: '⚛️',
+                  body: 'A few light elements — lithium, beryllium, boron — are produced in TRACE amounts by Big Bang nucleosynthesis but in much LARGER amounts by cosmic-ray spallation: high-energy cosmic-ray particles (mostly protons + alpha particles) crashing into interstellar atoms (C, N, O) + breaking them into smaller nuclei. This is essentially the ONLY significant source of beryllium-9, boron-10, and boron-11 in the universe. The boron in your bones, the lithium in mood-stabilizer medications, the beryllium in some metal alloys — all originally formed when cosmic rays hit interstellar gas billions of years ago.',
+                  caveat: 'Cosmic-ray spallation produces only trace amounts of any element — Li/Be/B are among the rarest in the universe. They survive in trace amounts but stellar interiors quickly destroy them; that\'s why solar lithium is so much lower than the primordial lithium abundance. The science of "Li/Be/B production" is sometimes called "light-element nucleosynthesis" + has its own specialty literature.'
+                },
+                { id: 'maine', name: 'Reading the abundance map', emoji: '📊',
+                  body: 'The relative abundances of elements in the universe — about 75% hydrogen + 24% helium + 1% everything heavier ("metals" in astronomical jargon) — reflect this cascade of processes. Each element\'s relative abundance is a signature of how + where + when it was made. Iron is common because supernovae make a lot of it. Gold is rare because the r-process is rare. Lithium is rare because stars destroy it. By measuring stellar spectra at different distances + ages, astronomers can read the galactic chemical evolution: stars formed in the early universe are "metal-poor" (~1/1000 solar metallicity); newer stars (like the Sun) carry the accumulated nucleosynthesis of ~9 billion years of previous stellar generations. Population III stars (the very first generation, made from pure H + He) have never been directly observed; finding one would be a major discovery.',
+                  caveat: 'The "metal" jargon is unusual. To an astronomer, carbon + nitrogen + oxygen are "metals." This causes some confusion with chemistry students. The convention reflects how stellar spectroscopy was first developed — bulk classification by hydrogen-helium vs everything-else.'
+                }
+              ];
+              var sel = d.selectedNS || 'overview';
+              var topic = NS_TOPICS.find(function(t) { return t.id === sel; }) || NS_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  '"We are made of star stuff" is biochemistry, not poetry. Every atom heavier than hydrogen in your body came from a specific stellar process — most of it from inside long-dead stars. The cascade of nuclear reactions that built the periodic table happened in roughly five distinct settings, each producing different elements, over billions of years. Tracing it is one of the great achievements of 20th-century astrophysics.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  NS_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedNS: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#ec4899' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #ec4899' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(236,72,153,0.08)', border: '1px solid rgba(236,72,153,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#f9a8d4', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
+                  h('strong', null, 'A specific atom\'s journey: '),
+                  'A single iron atom in your hemoglobin formed either (a) in the silicon-burning shell of a star >8 M_sun, ejected by a Type-II supernova ~6-10 billion years ago, OR (b) in a Type-Ia supernova when a white dwarf detonated. It then drifted through the interstellar medium for hundreds of millions of years, eventually condensed into the cloud that became our Solar System ~4.6 billion years ago, was incorporated into Earth\'s core during planetary differentiation, was brought near the surface by volcanism + plate tectonics, was eaten by a plant + a cow + you, and is now carrying oxygen between your cells. The "you are stardust" line is literally + scientifically true.'
+                )
+              );
+            })(),
+            '#ec4899'
           )
         );
       }

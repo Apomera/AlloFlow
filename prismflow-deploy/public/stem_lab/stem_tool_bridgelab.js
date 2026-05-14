@@ -3232,8 +3232,88 @@
             selected.id === 'millennium' ? millenniumPedestrianDemo() : null
           ),
           aestheticsAndIconicBridges(),
-          militaryAndEmergencyBridgesSection()
+          militaryAndEmergencyBridgesSection(),
+          ancientEngineeringSection()
         );
+
+        function ancientEngineeringSection() {
+          var ANC = [
+            { id: 'roman', name: 'Roman stone arch', emoji: '🏛️', when: '~300 BCE-400 CE',
+              what: 'The Romans inherited the arch from the Etruscans + Mesopotamians but turned it into a systematic engineering technology. A Roman stone arch consists of wedge-shaped voussoirs that lock together via gravity + friction; the keystone at the apex holds everything in compression. The Romans built ~900 arch bridges across their empire, of which dozens still stand + are in active use 2000 years later. The Pont du Gard (France, ~50 CE) is a three-tier aqueduct bridge 49 m tall + 275 m long. The Alcantara Bridge (Spain, 106 CE) spans the Tagus river with arches up to 28.6 m + continues to carry vehicle traffic.',
+              how: 'Roman concrete (opus caementicium — pozzolanic ash + lime + water + aggregate) is a remarkable material. The pozzolanic component (volcanic ash from Pozzuoli near Naples) reacts with lime to form calcium-aluminum-silicate hydrates similar to modern concrete, but with self-healing properties: hairline cracks fill in over centuries as seawater drives further reactions. The Pantheon in Rome (118-128 CE) has a 43.4 m unreinforced concrete dome still standing. The Romans built without iron rebar; modern reinforced concrete typically lasts 75-150 years before rebar corrosion destroys it.',
+              legacy: 'Roman bridge + concrete engineering was lost during the early medieval period in Western Europe + partially preserved + extended in the Byzantine + Islamic worlds. The technical knowledge was substantially re-discovered during the Renaissance. Modern engineers studying Roman concrete (notably MIT\'s Admir Masic in the 2020s) have found that the hot-mixed quicklime technique gives Roman concrete its self-healing property + are using it to develop greener concretes today.'
+            },
+            { id: 'mesopotamian', name: 'Mesopotamian + earliest bridges', emoji: '⛲', when: '~4000-300 BCE',
+              what: 'The earliest known constructed bridges were in Mesopotamia + the Indus Valley. The Sumerians built brick-arch culverts ~3500 BCE. The Persian Royal Road (built under Darius I ~500 BCE, running 2700 km from Susa to Sardis) included multiple stone-pier bridges + pontoon crossings. Herodotus describes Xerxes\' pontoon bridge across the Hellespont (480 BCE) — 674 boats lashed together with flax + papyrus cables tensioned across the strait, decked over with brushwood + earth.',
+              how: 'Early Mesopotamian bridges used mud-brick arches that limited their span (typically <10 m) + service life (frequent rebuilding required after floods). Persian engineers introduced fired-brick + stone construction for greater durability. The Xerxes pontoon used a quintessentially "good engineering" technique even for a military expedition: redundant cables (two cable lines), distributed load (many small boats), repairable in segments, and replaceable after the campaign.',
+              legacy: 'Most early Mesopotamian + Persian bridges have eroded or been replaced. Their direct material legacy is small but the engineering vocabulary they developed (arches, abutments, pontoons, retaining walls, paved road approaches) was inherited via the Persian + Hellenistic worlds + ultimately by Rome. Some surviving Persian-era bridges in Iran (Khaju Bridge in Isfahan, 1650 — late Safavid rather than ancient Persian) preserve the architectural genre.'
+            },
+            { id: 'inca', name: 'Inca rope suspension bridges', emoji: '🪢', when: '~1200-1533 CE',
+              what: 'The Inca empire connected its Andean territory with a road system (Qhapaq Nan) ~40000 km long, traversing terrain that included deep gorges where conventional stone arches were impractical. Their solution: grass-rope suspension bridges, woven from ichu grass into massive cables 30-40 cm thick + spans up to ~50 m. The bridge at Q\'eswachaka, near Cusco, is rebuilt annually by local communities (Quehue, Huinchiri, Ccollana Quehue, Choccayhua) as both functional infrastructure + cultural ceremony — recognized by UNESCO as Intangible Cultural Heritage of Humanity.',
+              how: 'The annual Q\'eswachaka rebuild uses ~700 villagers over 4 days. Women braid small ropes from ichu grass; men twist these into thicker strands, then six main cables. The old cables are cut down + the new ones strung across the gorge using a simple traction system. The bridge then receives a deck of mats + safety ropes. The whole structure is held by stone abutments + relies entirely on tension in the rope cables.',
+              legacy: 'The Q\'eswachaka tradition is one of the oldest continuously-practiced engineering traditions in the world. The communities are working to extend it: similar bridges elsewhere in Peru + Bolivia have been revived in the past 30 years as cultural + tourist projects. Engineering schools (including MIT + Cornell) have studied the bridge as an example of sustainable indigenous engineering — local materials, distributed labor, integrated community ownership, end-of-life biodegradability.'
+            },
+            { id: 'chinese', name: 'Chinese ancient bridges', emoji: '🐉', when: '~600 BCE-1400 CE',
+              what: 'Chinese bridge engineering developed independently + produced sophisticated stone-arch + cantilever structures. The Anji Bridge (Zhao Zhou Bridge, c. 605 CE, Hebei) is a STONE SEGMENTAL ARCH — the arch is a section of a circle rather than a semicircle, giving a flatter + much wider span (37 m) with less rise. It is the world\'s oldest segmental-arch bridge + still in active use after 1400+ years. The Anping Bridge in Fujian (1138 CE) is 2 km long, the longest stone bridge of its time. Chinese covered wooden cantilever bridges in the mountains of southern China are unique surviving examples of medieval timber engineering.',
+              how: 'The Anji Bridge\'s innovation: SPANDREL openings (smaller arches above the main arch) reduce dead weight + provide flood relief without compromising the main load path. Designer Li Chun (~605 CE) appears to have intuited stress-flow optimization centuries before formal structural mechanics. Chinese builders also pioneered iron bracing within stone arches + used dovetailed stone joints that resist tension across the joint — a refinement that allowed flatter, longer spans than European Roman-tradition arches.',
+              legacy: 'Chinese bridge engineering was independently sophisticated + parallel to (sometimes ahead of) European traditions. Joseph Needham\'s "Science + Civilisation in China" (1954-present, ongoing multi-volume) documents this in encyclopedic detail. Modern Chinese long-span bridges (the world\'s longest + tallest + most numerous as of 2024) reflect continuing investment in the tradition.'
+            },
+            { id: 'islamic', name: 'Islamic Golden Age bridges', emoji: '☪️', when: '~750-1500 CE',
+              what: 'Throughout the Islamic Golden Age, engineers from Iberia to Persia + India built sophisticated bridges that combined Roman, Persian, + indigenous traditions with innovations of their own. The Pol-e Khaju (Khaju Bridge, Isfahan, Iran, 1650) is a 132 m two-tier bridge + dam combining bridge + water-management functions. The Pul-i Khishti (Brick Bridge) of Kabul, the Mostar Bridge (Bosnia, 1566, an Ottoman commission by architect Mimar Hayruddin, destroyed during the Balkan War 1993 + faithfully rebuilt 2004) all reflect this design tradition.',
+              how: 'Islamic-period engineers built advanced stone arches with refined hydraulic mortars + decorative elements that did not compromise structural integrity. The Mostar Bridge\'s single 28.7 m pointed arch is a masterpiece of stone construction: a tenon-and-mortice joint system within the masonry, lead-jointed iron pins reinforcing the keystone, and a precisely-tapered arch shape that minimizes lateral thrust. The reconstruction (1996-2004, UNESCO-supervised) used identical methods + materials, including the same stone quarry.',
+              legacy: 'Many Islamic-era bridges remain in service or have been restored. The technical literature (in Arabic) of this period included substantial discussion of bridge engineering, hydraulics, surveying, + materials. This work transmitted Roman + Greek engineering knowledge to medieval + Renaissance Europe via Arabic translations + the libraries of Cordoba, Toledo, Sicily, and Baghdad.'
+            },
+            { id: 'pontvieux', name: 'Medieval European bridges', emoji: '🏰', when: '~1100-1500 CE',
+              what: 'After the collapse of Roman engineering knowledge in Western Europe, bridge building was rebuilt over several centuries. The Pont d\'Avignon (1185 CE, France, partially destroyed by flood + warfare), the Pont Saint-Bénézet (also Avignon), the Old London Bridge (1209-1831 CE, a multi-arch stone bridge famously covered with houses + shops), and the Charles Bridge in Prague (1357 CE) are major surviving examples. Many medieval bridges were also FORTIFIED — gatehouses, tower defenses, drawbridges integrated into the bridge itself for military purposes.',
+              how: 'Medieval European bridges relied on stone arches, often supported by massive cut-water piers projecting upstream + downstream. The piers themselves restricted the river\'s flow, sometimes creating dangerous rapids beneath the bridge (Old London Bridge\'s arches were so narrow that "shooting the bridge" by boat was famously dangerous). Construction methods were often slower than Roman techniques + required generations to complete. Religious orders (Frères Pontifes — "bridge-building brothers") sponsored many medieval bridges as acts of charity + infrastructure.',
+              legacy: 'Many medieval European bridges remained in service for centuries; some still are. The integrated bridge-as-community pattern (residences + shops on the bridge) survives at the Ponte Vecchio in Florence (1345 CE) + the Rialto Bridge in Venice (1591 CE). These structures shaped how medieval cities used + organized riverine space.'
+            },
+            { id: 'mughal', name: 'Mughal India bridges + waterworks', emoji: '🕌', when: '~1500-1700 CE',
+              what: 'The Mughal Empire built sophisticated bridges + waterworks combining Islamic, Persian, + South Asian traditions. The Shahi Bridge at Jaunpur (1568 CE) crosses the Gomti River with 10 arches over 200 m. The Lakkad Pul (wooden bridge) tradition + the masonry-arch tradition coexisted. Mughal canal + qanat systems (extending from the older Persian model) integrated water management with bridge crossings + were a major imperial concern.',
+              how: 'Mughal stone-arch construction used sophisticated lime-pozzolan mortars (similar in chemistry to Roman concrete) + interlocking masonry techniques. Decorative elements — calligraphic friezes, arched panels — were integrated with structure rather than added afterward, reflecting the strong design tradition that also produced the Taj Mahal + Red Fort.',
+              legacy: 'Many Mughal bridges remain in use after 400+ years. The integration of bridge engineering with broader water-management systems (irrigation, drinking water, defense) is a model still influential in contemporary South Asian infrastructure design.'
+            },
+            { id: 'lessons', name: 'What the ancients knew', emoji: '🎓', when: 'Across traditions',
+              what: 'Ancient bridges that are still standing have several lessons: (a) MASSIVE redundancy — Roman stone arches typically have safety factors of 5-10× modern design loads, intentional over-design vs imprecise material knowledge. (b) HEAVY foundations — most ancient bridges that fail do so at the foundations (scour, settlement), not in the superstructure. The Romans dredged + replaced soil under their piers; later traditions did the same. (c) STONE + LIME chemistry — pozzolanic mortar self-heals; Portland cement does not. (d) MAINTENANCE traditions — the Q\'eswachaka rebuild model treats infrastructure as a recurring community obligation, not a one-time capital investment. (e) HONEST acknowledgment of impermanence — many ancient bridges had successors built next door + the old structures were retired with respect rather than insisted-upon perpetually.',
+              how: 'Modern engineering has rediscovered some of these principles: self-healing concrete research, life-cycle cost accounting, indigenous + traditional ecological knowledge integration in infrastructure design. The Anji Bridge segmental arch was rediscovered in Europe centuries later as the "depressed arch." Roman concrete chemistry is informing modern sustainable concrete research. Q\'eswachaka-style community-engineering models are studied as alternatives to extractive infrastructure procurement.',
+              legacy: 'The "ancients had primitive technology" framing is wrong + condescending. They had different priorities, different materials, different labor systems, + sometimes deeper knowledge than we credit. A Roman aqueduct that delivered clean water to 1 million people for 500 years arguably outperforms many 20th-century equivalents. Honoring ancient engineering means studying it, not displaying it as a curiosity.'
+            }
+          ];
+          var sel = d.selectedAnc || 'roman';
+          var topic = ANC.find(function(t) { return t.id === sel; }) || ANC[0];
+          return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🏛️ Ancient + traditional bridge engineering'),
+            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+              'Modern bridge engineering is the inheritor of at least 4000 years of trial-and-error + cultural transmission. Several pre-modern bridge traditions produced structures that still carry traffic, span rivers, + serve communities today — sometimes outperforming their 20th-century successors. Honoring these traditions is intellectual honesty AND practical: ancient engineering has lessons modern engineering is rediscovering.'
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              ANC.map(function(t) {
+                var on = t.id === sel;
+                return h('button', {
+                  key: t.id,
+                  onClick: function() { upd({ selectedAnc: t.id }); },
+                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
+                }, t.emoji + ' ' + t.name);
+              })
+            ),
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
+              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, fontStyle: 'italic' } }, 'Period: ' + topic.when),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What was built'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.what)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it worked'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.how)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.06)', borderLeft: '3px solid #a78bfa' } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Legacy + lessons'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.legacy)
+              )
+            )
+          );
+        }
 
         function militaryAndEmergencyBridgesSection() {
           var MIL = [
