@@ -3022,6 +3022,75 @@
               );
             })(),
             '#0ea5e9'
+          ),
+
+          // ─── mRNA vaccines + lipid nanoparticles ────────────────
+          sectionCard('💉 mRNA vaccines + lipid nanoparticles — the technology behind COVID + beyond',
+            (function() {
+              var MRNA_TOPICS = [
+                { id: 'overview', name: 'What an mRNA vaccine is', emoji: '🧬',
+                  body: 'A traditional vaccine introduces an inactivated/attenuated pathogen or a piece of one (a protein) to train your immune system. An mRNA vaccine instead delivers GENETIC INSTRUCTIONS — a strand of messenger RNA — that gets your OWN cells to temporarily make the pathogen\'s key protein. Your immune system sees that protein, mounts a response, + remembers it. The mRNA itself degrades within hours to days; the immune memory persists. Pfizer-BioNTech BNT162b2 + Moderna mRNA-1273, both for COVID-19, were the first mRNA vaccines authorized for human use anywhere — Pfizer in December 2020 (UK first, then US EUA December 11), Moderna a week later.',
+                  caveat: 'Speed of development was the headline. mRNA vaccine PLATFORMS had been in development since the 1990s; what was new for COVID was applying the platform to a specific pathogen + scaling to billions of doses. The "new" technology is roughly 30 years old in the lab; the FIRST clinical product was new in 2020.'
+                },
+                { id: 'kariko', name: 'Karikó + Weissman — the unsung breakthrough', emoji: '🏆',
+                  body: 'Katalin Karikó (Hungarian biochemist) + Drew Weissman (immunologist) at the University of Pennsylvania spent ~20 years working on mRNA therapeutics, often in obscurity + with limited funding. Karikó was demoted, denied tenure, + nearly forced out of academia in the mid-1990s for persisting with mRNA when grant agencies considered it a dead end. Their key 2005 breakthrough: replacing uridine with pseudouridine in synthetic mRNA dramatically reduced inflammatory response + increased protein production. Without this modification, every previous attempt at therapeutic mRNA had triggered too much innate immune activation to be useful. They won the 2023 Nobel Prize in Medicine for this work — finally vindicated.',
+                  caveat: 'The Karikó/Weissman story illustrates how scientific funding + career structures can almost prevent transformative discoveries. Karikó was rejected for promotions, denied grants, repeatedly told her line of research was hopeless. Without persistence + a series of small breakthroughs that finally clicked together, COVID mRNA vaccines almost certainly would not have been ready in 2020. The mRNA vaccine story is also a story about scientific institutions falling short of supporting genuinely innovative work.'
+                },
+                { id: 'lnp', name: 'Lipid nanoparticles — the delivery vehicle', emoji: '🧪',
+                  body: 'mRNA is fragile. Naked mRNA injected into a person gets degraded by RNases in seconds + cannot enter cells anyway. The mRNA must be ENCAPSULATED in a delivery vehicle that protects it + delivers it intracellularly. LIPID NANOPARTICLES (LNPs) are the current answer: tiny lipid bilayer spheres ~80-100 nm in diameter containing 4 distinct lipid types in a specific ratio. (1) IONIZABLE CATIONIC LIPID (the patented ALC-0315 by Pfizer, SM-102 by Moderna) that becomes charged at low pH + helps mRNA escape the endosome after cellular uptake. (2) STRUCTURAL PHOSPHOLIPID (like DSPC) for membrane formation. (3) CHOLESTEROL for membrane fluidity. (4) PEG-LIPID for stability + circulation half-life. Manufacturing requires precise microfluidic mixing under tightly controlled conditions.',
+                  caveat: 'LNP technology is the harder-than-mRNA part of the mRNA-vaccine story. Manufacturing has been a bottleneck globally; the patent landscape around ionizable lipids is contested (Acuitas Therapeutics + Arbutus Biopharma + Genevant have ongoing litigation against Moderna). The technology also has limits: current LNPs preferentially go to the liver after intramuscular injection; getting them to other tissues requires further engineering.'
+                },
+                { id: 'covid', name: 'COVID-19 development timeline', emoji: '⏱️',
+                  body: 'January 10, 2020: SARS-CoV-2 genome sequence published online by Chinese scientists. January 11 (Pfizer/BioNTech start) + January 13 (Moderna start): vaccine design teams begin work. By mid-March 2020: candidate vaccines are in animal trials. March 16: first human Phase 1 dose (Moderna). November 9: Pfizer/BioNTech reports Phase 3 efficacy ~95%. November 16: Moderna reports similar Phase 3 results. December 2: UK MHRA first emergency authorization (Pfizer). December 11: US FDA EUA. December 14: first dose administered in a NY hospital (ICU nurse Sandra Lindsay). The cycle from genome sequence to authorized vaccine was 11 months — by far the fastest vaccine development in history.',
+                  caveat: 'The speed was real + not magic. It worked because: (a) decades of mRNA + LNP research had already happened; (b) Operation Warp Speed + similar programs pre-funded manufacturing capacity for vaccines that were not yet known to work; (c) trials were run in parallel rather than sequentially; (d) the pandemic provided huge case counts that made efficacy detectable quickly. None of these compromised scientific rigor. The trials were the same Phase 1/2/3 design + sample sizes as routine vaccine development; what was compressed was logistical, not scientific.'
+                },
+                { id: 'efficacy', name: 'How well they worked + still work', emoji: '📊',
+                  body: 'Initial efficacy against COVID-19 infection: ~95% for Pfizer + Moderna against the original Wuhan strain. Against severe disease + hospitalization + death, efficacy remained very high (~90%+) for many months. Against new variants (Delta, Omicron + sub-variants), efficacy against INFECTION dropped substantially (to ~30-50% against Omicron after a few months) but efficacy against SEVERE outcomes remained good (~70-90% protection from hospitalization with up-to-date boosters). Estimated lives saved in the first 12 months of US vaccination: ~700,000 (Watson 2022 Lancet); globally ~14-20 million in the first year (Watson et al. 2022).',
+                  caveat: 'Talking honestly about waning effectiveness is important + politically difficult. Anti-vaccine actors weaponized waning data + reduced infection-blocking efficacy against newer variants to claim the vaccines "do not work." The honest framing: they reliably prevent severe disease + death; they do not reliably prevent every infection; the protection wanes over months requiring updated boosters; the benefit-risk ratio remains overwhelmingly favorable. School psychologists fielding vaccine questions from families benefit from being able to articulate this nuance.'
+                },
+                { id: 'safety', name: 'Safety profile', emoji: '🛡️',
+                  body: 'Most common side effects: arm soreness, fatigue, headache, muscle aches, fever — typically resolving within 1-3 days, more pronounced after the second dose. Rare serious events: myocarditis / pericarditis (~1-10 per 100,000 vaccinations, much higher rate in young adult males after second mRNA dose, almost all cases mild + resolving — the same condition is far more common after COVID infection itself). Anaphylaxis (~3-5 per million doses). No causal link to fertility issues, no link to long-term unknown effects (the mRNA degrades in days; LNPs in weeks; what remains is the immune memory). Surveillance systems (VAERS in US, EudraVigilance in EU, V-safe pregnancy registry) have monitored billions of doses.',
+                  caveat: 'Safety monitoring at this scale is unprecedented. Real adverse events have been identified (myocarditis was identified in spring 2021 + properly characterized + dosing guidance updated). The system worked as designed. Misinformation persists; some claims are recycled anti-vaccine themes from earlier eras (mercury, autism, microchip — none of which apply to mRNA vaccines). Honest engagement with families means acknowledging real adverse events while contextualizing them against the much-larger risks of unmitigated COVID.'
+                },
+                { id: 'future', name: 'mRNA beyond COVID', emoji: '🚀',
+                  body: 'The mRNA platform is now being adapted for many other diseases. INFLUENZA mRNA vaccines (Moderna mRNA-1010, Pfizer + others) are in Phase 3 trials — potentially offering better effectiveness than the long-standing egg-based annual flu shot. RSV mRNA vaccines are in late-stage trials. CMV (cytomegalovirus, a major cause of birth defects + transplant complications) Moderna mRNA-1647 in Phase 3. ZIKA, EBV (Epstein-Barr virus), HIV, MALARIA — all have mRNA candidates in development. The biggest potential leap: CANCER VACCINES. Moderna mRNA-4157 + Merck partnership has shown promising results in melanoma; the strategy is to identify neoantigens unique to a patient\'s tumor + create a personalized mRNA vaccine teaching the immune system to find + destroy those specific cells. The personalized cancer-vaccine field is moving rapidly.',
+                  caveat: 'Many mRNA candidates in development will not work. Disease biology matters more than platform — RSV may be a good mRNA target while HIV remains very hard. The mRNA platform is a tool, not a magic. The biggest near-term commercial promise (combined influenza + COVID seasonal mRNA shot) faces real regulatory + uptake challenges. And mRNA vaccines do nothing for diseases that require non-protein antigens (most polysaccharide-encapsulated bacteria) or for which neutralizing antibodies do not protect.'
+                },
+                { id: 'access', name: 'The access + equity problem', emoji: '🌍',
+                  body: 'mRNA vaccines for COVID-19 were unevenly distributed globally. By end of 2021, ~75% of wealthy-country adults had been vaccinated while ~5% of low-income-country adults had been. COVAX (the WHO + GAVI + CEPI joint initiative) aimed for equitable distribution + fell far short of its goals due to manufacturing constraints + wealthy-country hoarding. South Africa + India sought patent waivers under WTO TRIPS provisions; the negotiation was slow + the outcome partial. mRNA technology transfer hubs (the WHO mRNA Vaccine Technology Transfer Hub at Afrigen in Cape Town, established 2021) are working to build manufacturing capacity in lower-income countries; first vaccine candidates went into Phase 1 trials in 2024.',
+                  caveat: 'mRNA vaccines saved millions of lives + the rollout deepened global health inequity in ways that are still being analyzed. The COVAX experience has spurred ongoing reforms in pandemic preparedness, vaccine financing, + technology transfer. The pandemic preparedness treaty negotiations at WHO (ongoing 2024-2025) include provisions for equitable access during future pandemics. Whether the final treaty has real teeth or is mostly aspirational remains to be seen.'
+                }
+              ];
+              var sel = d.selectedMrna || 'overview';
+              var topic = MRNA_TOPICS.find(function(t) { return t.id === sel; }) || MRNA_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'mRNA vaccines went from never-before-used-in-humans to billions of doses administered in under three years. The technology was decades in the making — and almost did not happen because the scientific establishment dismissed it for years. Understanding mRNA vaccines means understanding the biology, the engineering, the history of how it was developed, and the social context in which it was deployed.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  MRNA_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedMrna: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#ec4899' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #ec4899' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(236,72,153,0.08)', border: '1px solid rgba(236,72,153,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#f9a8d4', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
+                  h('strong', null, 'For school psychologists + counselors: '),
+                  'Vaccine conversations with families benefit from speaking specifics rather than generalities. Knowing what mRNA is, how it differs from older vaccine technologies, what real (not imagined) adverse events look like, how the technology was developed + by whom, and where the genuine uncertainties lie — all of these support honest conversations that respect both science + family decision-making. Dismissing vaccine concerns rarely changes minds; engaging the substance often does.'
+                )
+              );
+            })(),
+            '#ec4899'
           )
         );
       }

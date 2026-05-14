@@ -791,6 +791,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_learning_lab.js',
     'stem_lab/stem_tool_llm_literacy.js',
     'stem_lab/stem_tool_nutritionlab.js',
+    'stem_lab/stem_tool_kitchenlab.js',
     'stem_lab/stem_tool_roadready.js',
     'stem_lab/stem_tool_typingpractice.js',
     'stem_lab/stem_tool_weldlab.js',

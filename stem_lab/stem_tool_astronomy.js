@@ -1503,6 +1503,75 @@
               );
             })(),
             '#22c55e'
+          ),
+
+          // ─── Fermi Paradox + SETI ───────────────────────────────
+          sectionCard('🛸 The Fermi paradox + SETI — where is everybody?',
+            (function() {
+              var FP_TOPICS = [
+                { id: 'fermi', name: 'The Fermi paradox itself', emoji: '❓',
+                  body: 'In 1950, during a lunch conversation at Los Alamos, physicist Enrico Fermi reportedly asked "But where is everybody?" The argument: the galaxy is ~10 billion years old. Even at a small fraction of the speed of light, a civilization could colonize the entire Milky Way in ~10 million years — a tiny fraction of cosmic time. If there are many intelligent civilizations, the galaxy should be VISIBLY occupied, with engineered megastructures, signals, or visits. Instead we see silence. This contradiction between "there should be many civilizations" + "we see none" is the Fermi paradox.',
+                  caveat: 'The paradox depends on assumptions that may all be wrong: that civilizations arise reasonably often, that they expand (rather than turning inward), that they last long enough to leave evidence, that we would recognize evidence if we saw it, that the Drake equation\'s factors are all non-zero. The "paradox" is a useful framing rather than a settled finding — it constrains possibilities but does not prove any specific answer.'
+                },
+                { id: 'drake', name: 'The Drake equation', emoji: '📐',
+                  body: 'Frank Drake (1961) wrote down an equation to estimate the number of communicating civilizations in our galaxy: N = R* × f_p × n_e × f_l × f_i × f_c × L. Rate of star formation × fraction with planets × planets per system in habitable zone × fraction that develop life × fraction with intelligence × fraction that develop communicating technology × lifetime of communicating phase. Modern values for the first three factors are reasonably well-known (R* ~ 1-3 stars/yr, f_p ~ 0.5+, n_e ~ 0.1-0.4 from exoplanet surveys). The last four are essentially unknown — they could each be anywhere from 0.001 to ~1. Plug in optimistic values: thousands of civilizations. Pessimistic values: we are alone in the galaxy.',
+                  caveat: 'The Drake equation does not GIVE an answer; it organizes uncertainty. Its real value is making clear which factors are dominant + which we have observational handles on. Drake originally proposed it as a discussion structure for a SETI workshop, not as a predictive formula.'
+                },
+                { id: 'filter', name: 'The Great Filter', emoji: '🚧',
+                  body: 'Robin Hanson (1996) proposed the Great Filter: somewhere between "non-life chemistry" and "intergalactic civilization," there is at least one extremely improbable step. We do not know where the Filter is. If it is BEHIND us (the origin of life, or the eukaryote transition, or the emergence of intelligence), then we are an extreme outlier + most worlds remain barren — bad for the galaxy, good news for us. If it is AHEAD of us (technological civilizations consistently destroy themselves, or hit an energy/resource ceiling, or get hit by something), then we should expect to fail too — bad news for us. Finding life on Mars or Europa, if it happens, would shift the Great Filter EARLIER and therefore most likely AHEAD of us. As Nick Bostrom put it, "No news is good news. News of life is bad news."',
+                  caveat: 'The Great Filter is a probabilistic argument, not a deterministic one. Many specific Filters have been proposed: gamma-ray bursts, asteroid impacts, runaway greenhouse, nuclear war, engineered pandemics, AI catastrophe, self-replicating nanotechnology, social collapse, energy depletion, ecosystem failure. We do not know which (if any) operate; some may be cumulative. The Filter is a label for the gap between expected and observed civilizations, not a specific cause.'
+                },
+                { id: 'seti', name: 'SETI — the actual searches', emoji: '📡',
+                  body: 'Active scientific Search for Extraterrestrial Intelligence dates to Frank Drake\'s Project Ozma (1960, 200 hours of observation on two stars). The Allen Telescope Array (ATA, California, 42 dishes since 2007) is the most dedicated continuing facility. Breakthrough Listen (2015-present, $100M from Yuri Milner, using Green Bank + Parkes + others) is the largest current effort: ~$10M/year scanning ~1 million nearby stars + ~100 galaxies. Most SETI looks for narrow-band radio signals (artificial frequency stability) that natural sources cannot produce. Optical SETI searches for laser pulses. So far: ~70+ years of effort + ZERO confirmed detections.',
+                  caveat: 'SETI nulls are interpretable in many ways. We may be looking at the wrong frequencies, the wrong sky, the wrong way, or the wrong epoch. We have searched ~10⁻¹⁰ of possible signal phase space according to some estimates. "No signals after 70 years" mostly tells us "no civilization is BLASTING signals at us at megawatt level on the frequencies we monitor." That is a much weaker statement than "no one is out there."'
+                },
+                { id: 'wow', name: 'Notable signals', emoji: '📻',
+                  body: 'The WOW! signal (1977, Big Ear Radio Observatory, Ohio) was a 72-second strong narrow-band radio burst at 1420 MHz (the hydrogen line frequency, often suggested as a natural SETI channel) that has never been explained or repeated. It remains the strongest candidate signal in SETI history. More recent: BLC1 (2019, detected by Breakthrough Listen toward Proxima Centauri, 982 MHz) generated headlines + was eventually traced to terrestrial RFI. Tabby\'s Star / KIC 8462852 (Boyajian 2015) showed unprecedented irregular dimming that briefly invited speculation about Dyson swarms; explanations now favor dust + comet families. Each case has driven new analysis methods + community RFI-mitigation work.',
+                  caveat: 'Every notable SETI signal so far has either turned out to be terrestrial interference or remained ambiguous. The community has developed extensive verification protocols (cross-check at independent observatories, look for repetition, check signal properties against equipment expectations). This is good science — exactly what should happen — and an honest source of disappointment for anyone hoping for a definitive yes.'
+                },
+                { id: 'meti', name: 'Should we broadcast back? (METI)', emoji: '📤',
+                  body: 'Active METI (Messaging Extraterrestrial Intelligence) deliberately broadcasts signals INTO space rather than just listening. The Arecibo Message (1974, 3-minute pictogram aimed at globular cluster M13) was the first major active METI attempt. Several METI projects have run since (Cosmic Call 1999 + 2003, A Message From Earth 2008, Lone Signal 2013, others). The METI debate is genuinely contentious. Proponents (some at METI International) argue: silence guarantees we never communicate, and a civilization advanced enough to receive us is advanced enough to find us already. Opponents (Stephen Hawking, the Asilomar SETI Protocol signatories) warn: advertising our presence + location to an unknown audience may be catastrophically unwise; we have no way to assess risk.',
+                  caveat: 'METI raises real ethical questions about who has the right to speak for humanity. The 1974 Arecibo Message was sent without anything resembling democratic consultation. Modern international guidelines (the IAA Declaration of Principles Concerning Activities Following the Detection of Extraterrestrial Intelligence) call for global consultation before any active reply, but compliance is voluntary. The debate is not whether the technology works (it does) but whether using it is wise.'
+                },
+                { id: 'solutions', name: 'Proposed Fermi resolutions', emoji: '💡',
+                  body: 'Many serious + semi-serious proposals: (1) The Rare Earth hypothesis (Ward + Brownlee, 2000) — Earth-like life-supporting worlds are extremely rare due to many simultaneous requirements. (2) The Zoo hypothesis (Ball 1973) — they know about us + are watching, but not interacting (a galactic Prime Directive). (3) The Dark Forest hypothesis (Liu Cixin 2008) — civilizations stay quiet for fear of predators. (4) The Transcension hypothesis — advanced civilizations turn inward + disappear into virtual reality or black holes. (5) Self-destruction — most civilizations end shortly after developing the means to do so. (6) Slow expansion — colonization is slow + we may simply be too early. (7) Detection limit — we have not searched enough sky long enough. (8) Aestivation hypothesis (Sandberg) — they sleep through the hot era waiting for a cooler universe.',
+                  caveat: 'No proposal is widely accepted. The honest answer is "we don\'t know." Each hypothesis emphasizes different fears + hopes; the Dark Forest reflects competitive thinking, the Zoo reflects cooperative thinking, Rare Earth reflects astrobiological humility, Transcension reflects technological speculation. All are about us as much as about them.'
+                },
+                { id: 'meaning', name: 'Why this matters', emoji: '🌍',
+                  body: 'The Fermi paradox is not a puzzle about aliens. It is a puzzle about US. Whatever the answer turns out to be, it tells us something profound: either intelligence is so rare we are precious, or intelligence so dangerous we are about to disappear, or the universe is so vast we may always be alone, or signals exist we cannot yet detect. Any answer reshapes how we think about cosmic ethics, our own survival, the value of preserving biodiversity, the importance of not being our own Great Filter. For students, the paradox is a doorway: serious astronomical thinking that opens into philosophy, ethics, biology, sociology, and self-knowledge.',
+                  caveat: 'Reasonable people of good faith reach very different conclusions about the Fermi paradox. Religious, secular, technological, ecological frameworks all engage with it. The most important thing is to think about it seriously rather than dismiss it. A culture that takes the question seriously is more likely to survive long enough to find or write the answer.'
+                }
+              ];
+              var sel = d.selectedFermi || 'fermi';
+              var topic = FP_TOPICS.find(function(t) { return t.id === sel; }) || FP_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'If the galaxy contains hundreds of billions of stars, and many have planets, and some have life — where is everyone? This question, asked at a 1950 lunch table by Enrico Fermi, has become one of the most generative puzzles in modern astronomy. It connects exoplanet science to philosophy + ethics + the future of humanity. There is no settled answer; what we know is that whatever the answer is, it tells us something important about ourselves.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  FP_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedFermi: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#a78bfa' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #a78bfa' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#c4b5fd', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
+                  h('strong', null, 'Citizen science you can join: '),
+                  'SETI@home shut down in 2020 after 20 years, but Breakthrough Listen makes its data publicly available + the Open SETI project (setisearcher.com) lets volunteers help with signal classification. The SETI Institute (seti.org) has student programs + summer research opportunities. For students at King Middle, this is one of the most accessible advanced research domains — anyone with a laptop can engage with real published data + contribute to the search.'
+                )
+              );
+            })(),
+            '#a78bfa'
           )
         );
       }

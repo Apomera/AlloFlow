@@ -89,7 +89,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
     {
       function: 'Attention',
       functionAbbrev: 'ATT',
-      icon: '👀', color: '#3b82f6',
+      icon: '👀', color: '#60a5fa',
       problemEx: 'Calling out, clowning, dramatic falls, "fake" injury reports',
       replacement: 'Recruit-attention skills: raise hand and wait, tap shoulder, use a "help" card, ask "can you check my work?", request a 1-on-1 conversation at scheduled times.',
       teaching: 'Plan a daily attention budget the student can spend on appropriate bids — 3 scheduled check-ins per day, no questions asked. Reinforces appropriate seeking and removes the artificial scarcity that drives the problem behavior.',
@@ -168,11 +168,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       signs: 'Provocative behavior aimed at getting a reaction: blame, intimidation, escalating language, threats, refusal to engage with anyone, scripted "I don\'t care" responses.',
       doThis: 'Stay quiet. Stay close enough to be safe, far enough to give space. Clear the audience if possible — peers in the room raise the stakes. State only what is absolutely necessary, in short sentences.',
       dontDo: 'Don\'t take the bait. Don\'t match the volume. Don\'t threaten consequences mid-cycle. Don\'t deliver speeches. Most adult mistakes happen here — Phase 4 is the moment teachers get pulled into being part of the escalation.' },
-    { phase: 5, name: 'Peak', icon: '🔥', color: '#dc2626',
+    { phase: 5, name: 'Peak', icon: '🔥', color: '#ef4444',
       signs: 'Physical aggression, property destruction, elopement, full meltdown. The student is no longer in cognitive control. The thinking brain has gone offline.',
       doThis: 'Safety first. Move other students if needed. Use minimal language. Restraint only as a last resort with proper training and policy backing. Most of the work at Peak is just keeping the room safe and waiting.',
       dontDo: 'Don\'t teach. Don\'t reason. Don\'t process. Don\'t threaten. Don\'t give consequences mid-Peak. Recording the incident for documentation is appropriate; processing is not — yet.' },
-    { phase: 6, name: 'De-escalation', icon: '🌧️', color: '#3b82f6',
+    { phase: 6, name: 'De-escalation', icon: '🌧️', color: '#60a5fa',
       signs: 'Exhausted, emotional, often quiet or tearful. Student may be embarrassed, dissociated, or sleepy. Sometimes apologizes; sometimes goes silent.',
       doThis: 'Stay present without demanding interaction. Offer water, a quiet space, a familiar object. Let the body finish processing. This phase is real and takes time — minutes to over an hour for some students.',
       dontDo: 'Don\'t debrief yet. Don\'t lecture about what happened. Don\'t require apology in this phase — it produces hollow performance, not actual repair.' },
@@ -192,7 +192,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
   // ─────────────────────────────────────────────────────────
   var FBA_STEPS = [
     {
-      step: 1, name: 'Indirect assessment', icon: '📞', color: '#3b82f6',
+      step: 1, name: 'Indirect assessment', icon: '📞', color: '#60a5fa',
       duration: '1-2 weeks',
       what: 'Talk to the people who see the behavior. Structured interviews with the classroom teacher, parent / guardian, paraeducator, and (when developmentally appropriate) the student. Cumulative records review (prior IEPs, medical history, prior FBAs). Standardized rating scales when warranted: FAST (Functional Analysis Screening Tool), MAS (Motivation Assessment Scale), QABF (Questions About Behavioral Function).',
       key: 'The interview question that opens up an FBA: "Walk me through the last time it happened — what was happening 5 minutes before, what exactly did the student do, and what happened immediately after?" Three timeframes, in that order.',
@@ -306,7 +306,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
   // ─────────────────────────────────────────────────────────
   var BIP_COMPONENTS = [
     {
-      part: 1, name: 'Cover info + FBA reference', icon: '📑', color: '#3b82f6',
+      part: 1, name: 'Cover info + FBA reference', icon: '📑', color: '#60a5fa',
       what: 'Student name, IEP team members, BIP draft date + review date, FBA author and date, parent / guardian signature line, student signature line (when developmentally appropriate). The BIP is a legal document — start it like one.',
       sample: 'Student: A. Pomera | DOB: 2014-03-12 | Grade: 6 | IEP team: Garcia (sped), Liu (gen ed), Pomera (school psych), Mom + Dad (parents), A. (student) | FBA completed: 2026-04-22 by S. Pomera | BIP draft: 2026-04-29 | Review date: 2026-07-29',
       pitfall: 'Don\'t skip the student signature line for older elementary and up. A BIP the student has not been told about and does not understand has roughly zero chance of working.'
@@ -386,7 +386,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       pitfall: 'Don\'t skip the family component. Card-home + signature is what makes CICO different from generic teacher feedback. It builds the home-school feedback loop and gives families a daily window into how the day actually went.'
     },
     {
-      step: 4, name: 'Goal threshold + scoring', icon: '🎯', color: '#3b82f6',
+      step: 4, name: 'Goal threshold + scoring', icon: '🎯', color: '#60a5fa',
       time: 'set at intake',
       what: 'Default threshold: 80% of total possible points. For a typical 6-period day with 3 expectations rated 0-2, max = 36 points; 80% = 29. Lower the bar at intake if the student is far below baseline (start at 50% with rapid step-up rather than guarantee 6 weeks of "failure"). Decision rule: 4-6 weeks of 80%+ = ready to fade; 4-6 weeks of <80% = escalate to Tier 3.',
       script: 'At intake meeting: "We\'re going to start your goal at 65% for the first two weeks — we want you to feel the win first. After that we\'ll bump it to 75%, then 80%."',
@@ -428,7 +428,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
     },
     {
       finding: 'Race × restraint and seclusion',
-      icon: '✋', color: '#dc2626',
+      icon: '✋', color: '#ef4444',
       stat: 'Students with disabilities account for ~12% of enrollment but ~75% of restraint cases nationally.',
       detail: 'Within that already-disproportionate use, Black students with disabilities are restrained at higher rates than white students with similar profiles. The compound disparity at the most coercive end of the discipline spectrum is the largest and most consistent finding across federal datasets.',
       source: 'OCR Civil Rights Data Collection; GAO-18-258'
@@ -488,7 +488,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
     { name: 'Less-restrictive-alternative principle', icon: '🔓', color: '#22c55e',
       content: 'Every restraint or seclusion use must be the least restrictive option available to manage the immediate safety concern. If a student can be safely de-escalated by clearing the room of others, that comes before restraint. If a student can be safely supported with verbal de-escalation, that comes before clearing the room. The hierarchy is built into law and ethics — not optional.',
       counter: 'Common misuse: restraint or seclusion used as a consequence ("if you do that again, you will go to the calm room"). That converts an emergency tool into a punishment, which is both unethical and frequently illegal under disability law.' },
-    { name: 'After every incident — the debrief', icon: '📝', color: '#3b82f6',
+    { name: 'After every incident — the debrief', icon: '📝', color: '#60a5fa',
       content: 'Within ~24-48 hours: an incident report (what happened, who, when, duration, less-restrictive alternatives tried first). A staff debrief about what could be done differently next time. Parent notification (Maine requires same-day or next-business-day). A team meeting to revise the BIP if the incident reveals a pattern. The student debrief — when the student is fully recovered — to hear their perspective.',
       counter: 'Common gap: incidents get documented but the BIP never gets revised. Three or more incidents of the same antecedent in a quarter is a system signal that the BIP itself is failing — not a kid signal. Pattern-blindness is the most common documentation problem.' },
     { name: 'The disability-community position', icon: '✋', color: '#f472b6',

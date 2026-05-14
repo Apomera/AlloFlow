@@ -2933,8 +2933,79 @@
             ),
             AMBER
           ),
-          cableSpinningSection()
+          cableSpinningSection(),
+          windTunnelTestingSection()
         );
+
+        function windTunnelTestingSection() {
+          var WT = [
+            { id: 'why', name: 'Why bridges need wind testing', emoji: '🌬️',
+              what: 'Long-span bridges interact with wind in complex ways. STATIC loading (a constant push against the side of the deck) is easy to calculate from drag coefficients. DYNAMIC loading is what causes failures. Vortex shedding produces alternating side-pressure that can drive lateral oscillation. Flutter (the Tacoma failure mode, also called aeroelastic flutter or galloping in some forms) couples vertical + torsional motion with wind energy in a self-reinforcing feedback. Buffet from gusts excites resonance at natural frequencies. None of these can be predicted from first-principle aerodynamics for a real bridge cross-section; you have to TEST.',
+              limit: 'CFD (computational fluid dynamics) has improved enough that some preliminary studies can be done in simulation. But for a major long-span project, regulatory authorities REQUIRE physical wind-tunnel testing on a scale model of the actual deck. Skipping this is professional malpractice + a code violation in most jurisdictions.'
+            },
+            { id: 'history', name: 'A field forged by failure', emoji: '🏚️',
+              what: 'Bridge wind-engineering as a discipline was created by the Tacoma Narrows failure of 1940. Before Tacoma, engineers knew about static wind loads but did not seriously analyze aerodynamic instability for long spans. Theodore von Karman + others applied aeronautical aeroelasticity (a field developed for aircraft wings) to bridge decks in the late 1940s. Robert Scanlan + Alan Davenport in the 1960s-1970s developed the modern wind-tunnel test protocols + the AERODYNAMIC DERIVATIVE framework (flutter coefficients h*, p*, a*) that engineers still use. Davenport\'s Boundary Layer Wind Tunnel Laboratory at Western Ontario remains a leading test facility for long-span bridges.',
+              limit: 'The discipline is mature but still evolving. New deck shapes (especially curved + asymmetric decks for cable-stayed bridges, plus the very-long-span suspension proposals that approach the Akashi 1991m record) require testing because their behavior cannot be reliably extrapolated from existing experience. Every new long-span design faces real wind-engineering risk.'
+            },
+            { id: 'section', name: 'Section model tests', emoji: '📦',
+              what: 'The most common bridge wind-tunnel test uses a SECTION MODEL — a rigid scale model of a typical cross-section of the bridge deck (5-10 m long at 1:30 to 1:50 scale), suspended in a wind tunnel on springs that match the natural vibration modes of the actual bridge. Wind is blown across at various angles + speeds. The model is instrumented with strain gauges + force balances + sometimes optical tracking. The data tells you the flutter coefficients, vortex-shedding frequency, drag/lift coefficients, and (most importantly) the CRITICAL FLUTTER SPEED — the wind speed at which the deck would begin self-amplifying oscillation.',
+              limit: 'Section model tests assume the bridge behaves the same along its length (the typical-section assumption). This is reasonable for long, prismatic suspension bridges. It is NOT reasonable for cable-stayed bridges where the deck stiffness varies, for asymmetric pylons, or for bridges with complex 3D mode shapes. For those, fuller models are needed.'
+            },
+            { id: 'aeroelastic', name: 'Full-bridge aeroelastic models', emoji: '🏗️',
+              what: 'For the most demanding designs, engineers build a FULL AEROELASTIC MODEL — a scale replica of the entire bridge, towers + cables + deck, with springs + masses tuned so the model\'s natural frequencies match the prototype\'s natural frequencies. The Tsing Ma + Akashi Kaikyo + Storebaelt + (most recently) the Çanakkale 1915 Bridge (2022 opening, Turkey, world\'s longest main span until eclipsed) were all tested with full aeroelastic models. The model can be 20-50 m long + costs millions of dollars to build + test. Wind comes from many angles + over many speed ranges; the model is observed for divergence, flutter, buffet response, vortex-induced vibration, parametric excitation.',
+              limit: 'Aeroelastic modeling is the most accurate test, but every model is an approximation. Reynolds number cannot be matched (the model is small + the wind speeds are different); turbulence intensity of the natural wind has to be simulated; the testing of one cross-section variant takes weeks. Decisions to build still rely on engineering judgment + safety factors, not pure measurement.'
+            },
+            { id: 'cfd', name: 'Computational + LES validation', emoji: '💻',
+              what: 'Computational Fluid Dynamics (CFD) — Large Eddy Simulation (LES), Detached Eddy Simulation (DES) — is now used alongside wind-tunnel testing. CFD allows parameter sweeps that would take months in a physical wind tunnel: try 50 minor variations of a deck shape, find the most aerodynamically stable, then build a physical model of THAT design. The Hong Kong-Zhuhai-Macao Bridge (2018 opening, 55 km world\'s longest sea crossing) used extensive CFD alongside physical wind tunnels in its design process.',
+              limit: 'CFD is necessary + insufficient. Reynolds-Averaged Navier-Stokes (RANS) is too coarse for vortex-shedding + flutter prediction; LES + DES are computationally expensive + still have grid + turbulence-model sensitivities. CFD that "predicts" Tacoma flutter retroactively does not mean CFD can predict the next flutter case without physical validation. The industry consensus: use CFD to OPTIMIZE, use physical wind tunnels to VERIFY.'
+            },
+            { id: 'mods', name: 'Aerodynamic countermeasures', emoji: '🔧',
+              what: 'When wind testing reveals a problem, engineers can add aerodynamic modifications. STREAMLINE THE DECK SHAPE (a streamlined box girder cross-section, with sloped edges + chamfered corners, is far more aerodynamically stable than the open-truss Tacoma deck). FAIRINGS at the deck edges break up vortex shedding. EDGE BAFFLES guide flow. TUNED MASS DAMPERS (TMDs) physically counteract specific modes of vibration. AERO-CONTROL SURFACES (deployable winglets) are an experimental approach for very long spans. The Verrazzano-Narrows + the Akashi Kaikyo both have multiple TMDs + edge fairings as standard aerodynamic countermeasures.',
+              limit: 'Adding aerodynamic countermeasures after testing reveals problems is expensive + can compromise other design goals (deck depth, drainage, lighting, maintenance access). The integration of aerodynamics with structural + functional design needs to happen early, not at the testing stage. Late-stage retrofitting was the Millennium Bridge story (post-opening); long-span bridges cannot afford that mistake at scale.'
+            },
+            { id: 'sites', name: 'Test facilities around the world', emoji: '🌐',
+              what: 'Major bridge wind-tunnel facilities: Boundary Layer Wind Tunnel Laboratory at Western Ontario (Canada, the discipline\'s leading site), CSTB at Nantes (France), Polytechnic of Milan, FORCE Technology in Denmark, BMT Fluid Mechanics in the UK, the Tongji University tunnel in Shanghai, the Japan Wind Engineering Institute. The biggest of these can test bridge decks at near-full Reynolds number; most are at reduced Reynolds. Some have movable floors + walls to simulate boundary-layer flow + topographic effects.',
+              limit: 'Wind-tunnel testing is a small industry by total revenue (perhaps $50-100M globally per year). The facilities are expensive to build + maintain. As fewer engineering schools train bridge wind specialists, the field faces succession concerns. New long-span designs increasingly come from a handful of design firms (Aas-Jakobsen, COWI, Ove Arup, Parsons Brinckerhoff) who keep this specialty alive.'
+            },
+            { id: 'maine', name: 'When local bridges need testing', emoji: '🌉',
+              what: 'Wind-tunnel testing is mostly for long-span suspension + cable-stayed bridges (typical threshold: spans >250 m). For ordinary girder + truss bridges (which is most bridges in Maine + most US states), the standard AASHTO design code provides sufficient wind-load formulas without testing. Pedestrian bridges, footbridges, and very lightly-built structures sometimes need testing for their specific dynamic-response issues (Millennium Bridge syndrome — see the cases tab) even if not for aerodynamic flutter.',
+              limit: 'Code-based wind loading is conservative for typical bridges + sometimes UNCONSERVATIVE for unusual geometries. Engineers should not assume "small bridge = no wind problem" — many small pedestrian + bicycle bridges with low natural frequencies have surprised their designers. When in doubt, run a dynamic analysis or, for high-profile bridges, a wind-tunnel test even at smaller scales.'
+            }
+          ];
+          var sel = d.selectedWT || 'why';
+          var topic = WT.find(function(t) { return t.id === sel; }) || WT[0];
+          return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🌪️ Wind tunnel testing of long-span bridges'),
+            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+              'A long-span bridge that has never been in a wind tunnel is a long-span bridge that has skipped a fundamental design check. The discipline was forged in the wake of the 1940 Tacoma Narrows collapse + has matured into one of the most distinctive specialties in civil engineering. Every major suspension + cable-stayed bridge built since the 1970s has been wind-tunnel tested before construction.'
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              WT.map(function(t) {
+                var on = t.id === sel;
+                return h('button', {
+                  key: t.id,
+                  onClick: function() { upd({ selectedWT: t.id }); },
+                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
+                }, t.emoji + ' ' + t.name);
+              })
+            ),
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What it is + how it works'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.what)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limit'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.limit)
+              )
+            ),
+            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
+              h('strong', null, 'A classroom demonstration: '),
+              'Students can build a simple section-model wind tunnel from a box fan, a length of cardboard for an airfoil-like deck cross-section, and rubber bands as springs. Hang the cross-section on rubber bands in the airflow + slowly increase the fan speed. Bluff-shaped sections (rectangular cardboard) flutter at relatively low wind speeds; streamlined sections (curved + tapered) remain stable at higher speeds. This is exactly the same principle that distinguished the original Tacoma deck from modern long-span bridge cross-sections. The Khan Academy + Bridge Design + Engineering YouTube channels have demonstrations.'
+            )
+          );
+        }
 
         function cableSpinningSection() {
           var STEPS = [

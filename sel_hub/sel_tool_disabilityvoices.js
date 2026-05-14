@@ -53,7 +53,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
     {
       name: 'Ari Ne\'eman',
       role: 'Co-founder, Autism Self Advocacy Network (ASAN); first openly autistic appointee to the National Council on Disability (Obama, 2010); now teaching at Harvard School of Public Health.',
-      icon: '🎙️', color: '#3b82f6',
+      icon: '🎙️', color: '#60a5fa',
       quote: 'Nothing about us without us.',
       context: 'ASAN\'s founding principle, adopted from the broader disability-rights movement (originally a Latin phrase, "Nihil de nobis, sine nobis," used in 16th-century Polish constitutional debates). Ne\'eman has used it for 20+ years to frame the demand that disabled people themselves shape disability policy and research, not be subjects of it.',
       source: 'ASAN founding documents, 2006-present; widely echoed across disability-rights work'
@@ -139,7 +139,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
   var ORGANIZATIONS = [
     {
       name: 'Autism Self Advocacy Network (ASAN)',
-      scope: 'National', icon: '🏛️', color: '#3b82f6',
+      scope: 'National', icon: '🏛️', color: '#60a5fa',
       what: 'The largest autistic-led national advocacy organization in the US. Co-founded by Ari Ne\'eman in 2006. Publishes plain-language policy briefs, position statements on ABA / restraint / supported decision-making, and the foundational "Welcome to the Autistic Community" booklet for newly diagnosed adolescents and adults.',
       web: 'autisticadvocacy.org',
       maine: false
@@ -399,7 +399,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                 // Context
                 h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 8 } }, v.context),
                 // Source
-                h('div', { style: { fontSize: 10, color: '#64748b', fontStyle: 'italic', lineHeight: 1.5, paddingTop: 8, borderTop: '1px dashed rgba(100,116,139,0.25)' } },
+                h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic', lineHeight: 1.5, paddingTop: 8, borderTop: '1px dashed rgba(100,116,139,0.25)' } },
                   '📚 ', v.source)
               );
             })
@@ -523,7 +523,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                     ),
                     h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 6 } }, o.what),
                     h('div', { style: {
-                      fontSize: 10, color: '#64748b', fontStyle: 'italic',
+                      fontSize: 10, color: '#94a3b8', fontStyle: 'italic',
                       paddingTop: 6, borderTop: '1px dashed rgba(100,116,139,0.25)',
                       fontFamily: 'ui-monospace, Menlo, monospace'
                     } },

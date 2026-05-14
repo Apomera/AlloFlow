@@ -3214,6 +3214,11 @@
                 color: 'green', ready: true
               },
               {
+                id: 'kitchenLab', icon: '🍳', label: 'Kitchen Lab',
+                desc: 'Cooking life skills + culinary science: USDA safe temps + bacteria danger zone, knife cuts (dice/julienne/chiffonade/brunoise), heat techniques (sauté/sear/simmer/braise/roast/fry/steam), Maillard chemistry, top-9 allergens, real-time recipe sim (coming next ship). Sister to NutritionLab + BakingScience.',
+                color: 'orange', ready: true
+              },
+              {
                 id: 'evoLab', icon: '🧬', label: 'EvoLab: Evolution',
                 desc: 'Evolution + natural selection: Selection Sandbox, Galápagos Beak Lab, Phylogenetic Tree Builder, plus quick labs on Hardy-Weinberg, genetic drift, common ancestry, evolution misconceptions. Maine wildlife examples.',
                 color: 'emerald', ready: true
@@ -4451,6 +4456,7 @@
             weldLab: true,
             nutritionLab: true,
             evoLab: true,
+            kitchenLab: true,
             statsLab: true,
             learningLab: true,
             llmLiteracy: true,
