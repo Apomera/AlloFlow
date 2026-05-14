@@ -6006,6 +6006,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.restore();
               }
 
+              // ── Small flock of sheep grazing in the back pasture (spring/summer/fall) ──
+              // Real Maine farm scene: a few sheep scattered across the pasture,
+              // bodies down to graze. White fluffy bodies, dark faces + legs.
+              // Distinct from the horse (positioned to its left, grazing low).
+              if (season !== 3) {
+                var _shFlock = [
+                  { dx: -25, dy: 0,  size: 1.0 },
+                  { dx: -18, dy: 2,  size: 0.9 },
+                  { dx: -32, dy: 1.5, size: 1.1 },
+                  { dx: -22, dy: 4,  size: 0.85 }
+                ];
+                _shFlock.forEach(function(sh) {
+                  var _shX = W * 0.66 + sh.dx;
+                  var _shY = H * 0.74 + sh.dy;
+                  var _shS = sh.size;
+                  // Shadow
+                  c.fillStyle = 'rgba(0,0,0,0.20)';
+                  c.beginPath(); c.ellipse(_shX, _shY + 2.5 * _shS, 3.5 * _shS, 0.6 * _shS, 0, 0, 6.28); c.fill();
+                  // Body — fluffy white cloud-shaped silhouette
+                  c.fillStyle = '#fafaf9';
+                  c.beginPath(); c.ellipse(_shX, _shY, 3.2 * _shS, 2 * _shS, 0, 0, 6.28); c.fill();
+                  // Soft fluff bumps
+                  c.beginPath(); c.arc(_shX - 1.8 * _shS, _shY - 0.5 * _shS, 1.2 * _shS, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_shX + 1.8 * _shS, _shY - 0.5 * _shS, 1.2 * _shS, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_shX, _shY - 1.3 * _shS, 1.3 * _shS, 0, 6.28); c.fill();
+                  // Subtle cool shadow on lower-right
+                  c.fillStyle = 'rgba(180,200,225,0.45)';
+                  c.beginPath(); c.ellipse(_shX + 0.6 * _shS, _shY + 0.7 * _shS, 2.5 * _shS, 1.2 * _shS, 0, 0, 6.28); c.fill();
+                  // Dark head (sheep face is darker)
+                  c.fillStyle = '#3a3025';
+                  c.beginPath(); c.ellipse(_shX - 3 * _shS, _shY + 0.5 * _shS, 0.9 * _shS, 0.7 * _shS, -0.2, 0, 6.28); c.fill();
+                  // Ear flop
+                  c.beginPath(); c.ellipse(_shX - 3.2 * _shS, _shY - 0.2 * _shS, 0.4 * _shS, 0.6 * _shS, -0.4, 0, 6.28); c.fill();
+                  // Eye glint
+                  c.fillStyle = '#fafaf9';
+                  c.beginPath(); c.arc(_shX - 2.8 * _shS, _shY + 0.4 * _shS, 0.1 * _shS, 0, 6.28); c.fill();
+                  // Four dark legs
+                  c.fillStyle = '#3a3025';
+                  c.fillRect(_shX - 2 * _shS, _shY + 1.5 * _shS, 0.4 * _shS, 1.5 * _shS);
+                  c.fillRect(_shX - 0.6 * _shS, _shY + 1.5 * _shS, 0.4 * _shS, 1.5 * _shS);
+                  c.fillRect(_shX + 1 * _shS, _shY + 1.5 * _shS, 0.4 * _shS, 1.5 * _shS);
+                  c.fillRect(_shX + 2 * _shS, _shY + 1.5 * _shS, 0.4 * _shS, 1.5 * _shS);
+                });
+              }
+
               // ── Horse silhouette grazing in the back pasture (Maine farm detail) ──
               // Distant horse silhouette near the farmhouse — a calm sentinel
               // grazing in the back pasture. Head goes down to graze, lifts
@@ -9432,6 +9477,129 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillStyle = '#3a2510';
                 c.beginPath(); c.arc(_swBranchX - 2.5, _swBranchY, 0.5, 0, 6.28); c.fill();
                 c.beginPath(); c.arc(_swBranchX + 2.5, _swBranchY, 0.5, 0, 6.28); c.fill();
+              }
+
+              // ── Beekeeper tool rack mounted on a fence post (year-round) ──
+              // Real beekeeping kit hanging from a wall-mounted rack: hive
+              // tool, bee brush, smoker fuel can. Mounted on the 3rd post
+              // from the left.
+              (function() {
+                var _trPostX = 20 + 2 * 70 + 1.25;
+                if (_trPostX > hiveX - 18 && _trPostX < hiveX + hiveW + 18) return;
+                var _trBackY = fenceBaseY - 8;
+                // Wooden mounting board
+                c.fillStyle = season === 3 ? '#5a3f25' : '#7a5230';
+                c.fillRect(_trPostX - 5, _trBackY, 10, 6);
+                // Board grain
+                c.strokeStyle = 'rgba(60,40,15,0.5)';
+                c.lineWidth = 0.25;
+                c.beginPath(); c.moveTo(_trPostX - 5, _trBackY + 2); c.lineTo(_trPostX + 5, _trBackY + 2); c.stroke();
+                c.beginPath(); c.moveTo(_trPostX - 5, _trBackY + 4); c.lineTo(_trPostX + 5, _trBackY + 4); c.stroke();
+                // 3 nail hooks across the top
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_trPostX - 3, _trBackY + 0.5, 0.3, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_trPostX,     _trBackY + 0.5, 0.3, 0, 6.28); c.fill();
+                c.beginPath(); c.arc(_trPostX + 3, _trBackY + 0.5, 0.3, 0, 6.28); c.fill();
+                // Hive tool — flat metal pry bar (left hook)
+                c.fillStyle = '#a8a29e';
+                c.fillRect(_trPostX - 3.5, _trBackY + 1, 1, 4);
+                c.fillStyle = '#57534e';
+                c.fillRect(_trPostX - 3.5, _trBackY + 4.5, 1, 0.5);
+                // Bee brush — wooden handle + bristles (center hook)
+                c.fillStyle = '#5a3a18';
+                c.fillRect(_trPostX - 0.4, _trBackY + 1, 0.8, 2.5);
+                // Bristles (white tuft)
+                c.fillStyle = '#fef3c7';
+                c.fillRect(_trPostX - 0.8, _trBackY + 3.3, 1.6, 1.5);
+                // Bristle texture lines
+                c.strokeStyle = '#d4a574';
+                c.lineWidth = 0.15;
+                for (var trb = 0; trb < 4; trb++) {
+                  c.beginPath();
+                  c.moveTo(_trPostX - 0.7 + trb * 0.4, _trBackY + 3.5);
+                  c.lineTo(_trPostX - 0.7 + trb * 0.4, _trBackY + 4.8);
+                  c.stroke();
+                }
+                // Smoker fuel can (small) — right hook
+                c.fillStyle = '#78716c';
+                c.fillRect(_trPostX + 2.3, _trBackY + 1.5, 1.4, 3);
+                c.fillStyle = '#3a3025';
+                c.fillRect(_trPostX + 2.3, _trBackY + 1.5, 1.4, 0.5);
+                // Can label
+                c.fillStyle = '#fbbf24';
+                c.fillRect(_trPostX + 2.4, _trBackY + 2.5, 1.2, 0.8);
+                c.fillStyle = '#1c1917';
+                c.font = 'bold 0.7px sans-serif';
+                c.textAlign = 'center';
+                c.fillText('FUEL', _trPostX + 3, _trBackY + 3.1);
+                c.textAlign = 'start';
+              })();
+
+              // ── Worn watering can beside the vegetable garden (spring/summer) ──
+              // Tilted galvanized-metal can with the spout pointing into the
+              // garden. Drips a tiny water bead at dawn when the keeper
+              // recently used it. Brought indoors for winter.
+              if (season !== 3) {
+                var _wcnX = W * 0.04, _wcnY = H * 0.88;
+                if (_wcnX < hiveX + hiveW + 8) {
+                  // Shadow
+                  c.fillStyle = 'rgba(0,0,0,0.22)';
+                  c.beginPath(); c.ellipse(_wcnX, _wcnY + 2, 5, 0.7, 0, 0, 6.28); c.fill();
+                  // Can body — galvanized gray gradient
+                  var _wcnBodyG = c.createLinearGradient(_wcnX - 3, _wcnY, _wcnX + 3, _wcnY);
+                  _wcnBodyG.addColorStop(0, '#78716c');
+                  _wcnBodyG.addColorStop(0.5, '#d6d3d1');
+                  _wcnBodyG.addColorStop(1, '#57534e');
+                  c.fillStyle = _wcnBodyG;
+                  c.fillRect(_wcnX - 2.5, _wcnY - 4, 5, 5);
+                  // Top rim
+                  c.fillStyle = '#57534e';
+                  c.fillRect(_wcnX - 2.7, _wcnY - 4.2, 5.4, 0.5);
+                  // Handle arc (top + side)
+                  c.strokeStyle = '#57534e';
+                  c.lineWidth = 0.6;
+                  c.beginPath();
+                  c.arc(_wcnX, _wcnY - 5.5, 1.8, Math.PI * 1.1, Math.PI * 1.9);
+                  c.stroke();
+                  // Side handle (vertical)
+                  c.strokeStyle = '#57534e';
+                  c.lineWidth = 0.5;
+                  c.beginPath();
+                  c.moveTo(_wcnX - 3, _wcnY - 3);
+                  c.lineTo(_wcnX - 3.5, _wcnY - 0.5);
+                  c.lineTo(_wcnX - 2.5, _wcnY);
+                  c.stroke();
+                  // Long spout
+                  c.fillStyle = '#a8a29e';
+                  c.beginPath();
+                  c.moveTo(_wcnX + 2.5, _wcnY - 3);
+                  c.lineTo(_wcnX + 6.5, _wcnY - 4);
+                  c.lineTo(_wcnX + 6.5, _wcnY - 3);
+                  c.lineTo(_wcnX + 2.5, _wcnY - 2);
+                  c.closePath(); c.fill();
+                  // Spout rose (perforated end)
+                  c.fillStyle = '#3a3025';
+                  c.beginPath(); c.ellipse(_wcnX + 6.5, _wcnY - 3.5, 0.7, 1, 0, 0, 6.28); c.fill();
+                  // Spout holes (tiny lighter dots)
+                  c.fillStyle = '#a8a29e';
+                  c.beginPath(); c.arc(_wcnX + 6.5, _wcnY - 4, 0.1, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_wcnX + 6.5, _wcnY - 3.5, 0.1, 0, 6.28); c.fill();
+                  c.beginPath(); c.arc(_wcnX + 6.5, _wcnY - 3, 0.1, 0, 6.28); c.fill();
+                  // Surface highlights on body
+                  c.fillStyle = 'rgba(255,255,255,0.35)';
+                  c.fillRect(_wcnX - 2, _wcnY - 3.5, 0.4, 4);
+                  // Water drip at dawn
+                  var _wcnDawn = Math.max(0, 1 - Math.min(_sunCycle, 2 - _sunCycle) / 0.2);
+                  if (_wcnDawn > 0.2) {
+                    c.fillStyle = 'rgba(160,200,230,' + (0.8 * _wcnDawn).toFixed(3) + ')';
+                    var _wcnDripT = ((t2 * 0.08) % 30) / 30;
+                    var _wcnDripY = _wcnY - 3 + _wcnDripT * 5;
+                    c.beginPath(); c.ellipse(_wcnX + 6.5, _wcnDripY, 0.3, 0.55, 0, 0, 6.28); c.fill();
+                  }
+                  // Small dirt smudge on the side
+                  c.fillStyle = 'rgba(80,55,25,0.45)';
+                  c.beginPath(); c.ellipse(_wcnX - 0.5, _wcnY + 0, 1, 0.4, 0.3, 0, 6.28); c.fill();
+                }
               }
 
               // ── Mason bee hotel mounted on a fence post (year-round fixture) ──

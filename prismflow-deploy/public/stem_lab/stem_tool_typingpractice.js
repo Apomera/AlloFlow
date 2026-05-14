@@ -3857,7 +3857,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 textAlign: 'center'
               }
             },
-              h('div', { style: { fontSize: '44px', marginBottom: '10px' } }, drill.icon),
+              // Centered circular accent badge for the drill icon — same
+              // vocabulary as drill cards, pack cards, milestone rows,
+              // drill-of-the-day, and quick-resume. 64px (largest in the
+              // tool) so it anchors this 'ready to type' moment as the
+              // visual focal point. Soft accent fill + 2px solid ring.
+              h('div', {
+                'aria-hidden': 'true',
+                style: {
+                  width: '64px', height: '64px', borderRadius: '50%',
+                  background: palette.accent + '1a',
+                  border: '2px solid ' + palette.accent,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '34px', lineHeight: 1,
+                  margin: '0 auto 14px',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.10)'
+                }
+              }, drill.icon),
               h('h3', { style: { margin: '0 0 6px 0', color: palette.text, fontSize: '22px', fontWeight: 700 } }, drill.name),
               h('p', { style: { margin: '0 0 20px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5' } }, drill.description),
 
