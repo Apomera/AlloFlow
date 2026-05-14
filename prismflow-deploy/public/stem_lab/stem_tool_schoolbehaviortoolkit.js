@@ -229,6 +229,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
   ];
 
   // ─────────────────────────────────────────────────────────
+  // BIP template — the Tier 3 artifact school psychs write most
+  // often. Companion to FBA: the FBA names the function; the BIP
+  // is the plan. Eight components in the order most commonly
+  // used in IDEA-compliant BIPs. Sources: BACB ethical practice
+  // standards; PBIS.org BIP technical guide; OSEP BIP guidance;
+  // Iris Center BIP module.
+  // ─────────────────────────────────────────────────────────
+  var BIP_COMPONENTS = [
+    {
+      part: 1, name: 'Cover info + FBA reference', icon: '📑', color: '#3b82f6',
+      what: 'Student name, IEP team members, BIP draft date + review date, FBA author and date, parent / guardian signature line, student signature line (when developmentally appropriate). The BIP is a legal document — start it like one.',
+      sample: 'Student: A. Pomera | DOB: 2014-03-12 | Grade: 6 | IEP team: Garcia (sped), Liu (gen ed), Pomera (school psych), Mom + Dad (parents), A. (student) | FBA completed: 2026-04-22 by S. Pomera | BIP draft: 2026-04-29 | Review date: 2026-07-29',
+      pitfall: 'Don\'t skip the student signature line for older elementary and up. A BIP the student has not been told about and does not understand has roughly zero chance of working.'
+    },
+    {
+      part: 2, name: 'Function statement (from FBA)', icon: '🎯', color: '#fbbf24',
+      what: 'One-sentence hypothesis carried directly from the FBA. Standard format: "Under [antecedent / setting event], [operationally-defined behavior] occurs to obtain / avoid [consequence], maintained by [function]." This sentence is the spine of every other component below — every strategy in the BIP must trace back to this hypothesis.',
+      sample: '"When given a writing task longer than 10 minutes after a poor-sleep night (setting event), Avery rips the worksheet (tearing, balling, throwing) to escape the demand, maintained by removal of the task by the teacher (escape function)."',
+      pitfall: 'A BIP without a function statement is a punishment plan. If yours doesn\'t name a function, the FBA hasn\'t been completed — go back upstream.'
+    },
+    {
+      part: 3, name: 'Antecedent strategies (preventive)', icon: '🛡️', color: '#a78bfa',
+      what: 'What changes BEFORE the trigger so the trigger doesn\'t evoke the behavior. Address the setting events you can (sleep hygiene communication with family, snack at arrival). Modify the immediate antecedent (chunked writing tasks of 10-min or less; visual countdown; choice of writing topic). Pre-correction immediately before the known-trigger moment.',
+      sample: 'For Avery: (a) Daily sleep-quality check at morning CICO (counts as a setting-event monitor); (b) writing tasks chunked into 10-min blocks with a 1-min stretch break between; (c) choice of 3 writing topics offered each day; (d) pre-correction script before each writing block: "Remember, you have a break card if you need it."',
+      pitfall: 'Antecedent strategies do the most work and get the least attention in most BIPs. School psychs who weight reactive strategies heavier than antecedent strategies typically end up with BIPs that fail. The work is at the front end of the cycle.'
+    },
+    {
+      part: 4, name: 'Replacement behavior + teaching plan', icon: '🔄', color: '#22c55e',
+      what: 'The replacement that meets the same function (per the Replacement Behaviors tab). Operationally defined. Teaching plan: who teaches it, when, how prompted, what fidelity looks like during teaching trials. The replacement must be (1) easier than the problem behavior, (2) more efficient (faster reinforcement), (3) reinforced first, conditions added later.',
+      sample: 'Replacement: hand the teacher a printed BREAK card (in pencil case at all times) → teacher hands a 3-min sand timer → student walks to the calm corner (designated, in classroom) → returns when timer ends. Teaching: 5-min daily practice for 2 weeks at non-trigger times; physical prompt fading over 5 sessions; 100% honor rate for 4 weeks before any conditions added.',
+      pitfall: 'Don\'t teach a replacement during the actual trigger moment. Teach it cold — when the student is calm — until fluent, then make it available during triggers. Teaching during dysregulation is teaching during Phase 3-4 of the Acting-Out Cycle, when the thinking brain is offline.'
+    },
+    {
+      part: 5, name: 'Reinforcement plan', icon: '⭐', color: '#0ea5e9',
+      what: 'What follows the replacement behavior. The reinforcer must (a) be functionally relevant (an escape-function replacement = the break itself is the reinforcer), (b) match or exceed the magnitude of what the problem behavior obtains, (c) be delivered immediately, every time, for the first several weeks. Magnitude tapers over time as the replacement becomes habitual.',
+      sample: 'For Avery: the 3-min break IS the reinforcement (escape from demand) — primary reinforcer. PLUS: each break-card use earns 1 point on the CICO sheet (token reinforcement). PLUS: end-of-day acknowledgment in CICO check-out ("you used your card 3 times today and got back to work each time"). Three-layer reinforcement, all functionally relevant.',
+      pitfall: 'Don\'t use functionally-irrelevant reinforcers. Stickers do not work for an escape-function behavior. Removing the demand IS the reinforcer. Get the function right and the reinforcer designs itself.'
+    },
+    {
+      part: 6, name: 'Response procedures (when problem behavior still happens)', icon: '🌧️', color: '#94a3b8',
+      what: 'What staff actually do when the problem behavior happens despite the plan. Tied to the Acting-Out Cycle phases: Phase 2-3 → soft de-escalation, redirect to replacement; Phase 4-5 → safety-first, less talking, clear audience. NOT a list of consequences. Staff response language is scripted so all adults respond the same way (consistency is the variable that matters most).',
+      sample: 'Phase 2-3 script: "I see this is hard. Your break card is right here." Phase 4: physically move to safe distance, no verbal demands. Phase 5: clear other students from immediate area, signal admin via radio, follow district safety protocol. Phase 7 (recovery): debrief 1-on-1 with school psych, no consequences delivered until full recovery.',
+      pitfall: 'Putting consequences in the response-procedures section is the most common BIP-writing error. Consequences are punishment, not response procedure. They go in the school discipline policy, not the BIP. The BIP describes how staff support the cycle, not how staff sanction the student.'
+    },
+    {
+      part: 7, name: 'Crisis plan', icon: '🚨', color: '#ef4444',
+      what: 'When a Phase 5 (Peak) crisis happens — concrete protocol for safety. Who is called, in what order. Where the student is supported. When parents are notified (Maine Chapter 33 = same-day). Restraint and seclusion authorization (which staff are CPI/NCI/Mandt-trained for this student) — only when documented imminent serious physical injury, never as a planned consequence. Required incident-report timeline.',
+      sample: 'Crisis sequence for Avery: (1) signal Garcia (sped) via radio. (2) Garcia clears other students. (3) Liu (gen ed) calls main office; admin walks to room. (4) Pomera (school psych) called; arrives within 5 min. (5) If physical safety threatened: Garcia + admin (both CPI-trained for Avery) follow restraint protocol per Chapter 33. (6) Mom + Dad notified by Pomera same-day. (7) Incident report drafted within 24 hours; team debrief within 48 hours.',
+      pitfall: 'Don\'t leave the crisis plan as boilerplate ("call the office"). Name the people. Map the room. Specify the timing. A vague crisis plan is the absence of a crisis plan — and the document the team reaches for at exactly the worst moment.'
+    },
+    {
+      part: 8, name: 'Data collection + fidelity + review', icon: '📊', color: '#14b8a6',
+      what: 'What gets measured (frequency of problem behavior, frequency of replacement, percent of staff using prescribed antecedent strategies). Who measures it (designated observer, not the implementing teacher — observer effects matter). How often (daily for first 4 weeks, then weekly). Fidelity checklist for staff implementation (yes/no items; weekly observation). Formal team review date (typically 4-6 weeks).',
+      sample: 'Daily measurements: (a) frequency of ripping worksheet (Garcia tally, period-by-period); (b) frequency of break-card use (Garcia tally); (c) CICO daily total (per CICO Template tab). Weekly: 5-min fidelity observation by Pomera against checklist (10 items). Team review: 6 weeks from BIP start (2026-06-10).',
+      pitfall: 'Designing data collection that is too burdensome to actually run. If the data plan requires more time than the staff have, the data won\'t get collected — and you\'ll be reviewing a BIP at 6 weeks with no data to review. Smaller, sustainable data > comprehensive, abandoned data.'
+    }
+  ];
+
+  // ─────────────────────────────────────────────────────────
   // CICO — Check-In/Check-Out: the most-used Tier 2 intervention
   // in US schools. PBIS panel mentions it; this section makes the
   // structure concrete enough to actually run. Sources: Crone &
@@ -476,7 +535,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 border: '1px solid rgba(20,184,166,0.40)',
                 color: '#5eead4', fontSize: 10, fontWeight: 700,
                 fontFamily: 'ui-monospace, Menlo, monospace'
-              } }, '9 sections')
+              } }, '10 sections')
             ),
             h('p', { style: { margin: 0, fontSize: 12, color: '#94a3b8', fontWeight: 600, lineHeight: 1.5 } }, 'Applied K-12 practice. PBIS · Replacement Behaviors · Setting Events · Acting-Out Cycle · Restraint Ethics · Equity & Disparities.')
           )
@@ -487,6 +546,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         var tabs = [
           { id: 'pbis', label: 'PBIS Tiers', icon: '🏫' },
           { id: 'fba', label: 'FBA Process', icon: '🔬' },
+          { id: 'bip', label: 'BIP Template', icon: '📑' },
           { id: 'replacement', label: 'Replacement Behaviors', icon: '🔄' },
           { id: 'setting', label: 'Setting Events', icon: '🕰️' },
           { id: 'cycle', label: 'Acting-Out Cycle', icon: '🌀' },
@@ -779,6 +839,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         );
       }
 
+      // ── Section: BIP Template ──
+      function renderBip() {
+        return h('div', null,
+          panelHeader('📑 BIP Template — the Tier 3 artifact',
+            'The Behavior Intervention Plan is the document school psychs write most often at Tier 3. The FBA names the function; the BIP is the plan. Eight components in the order most commonly used in IDEA-compliant BIPs. Each component shows what to write + a sample entry + the most-common writing pitfall.'),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+            BIP_COMPONENTS.map(function(c) {
+              return h('div', { key: 'bip-' + c.part,
+                style: {
+                  background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
+                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + c.color
+                } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                  h('div', { 'aria-hidden': 'true',
+                    style: { width: 36, height: 36, borderRadius: '50%', background: c.color + '22', border: '1.5px solid ' + c.color,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: c.color, fontFamily: 'ui-monospace, Menlo, monospace', flexShrink: 0 }
+                  }, c.part),
+                  h('div', { style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, c.icon),
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: c.color, lineHeight: 1.2 } }, c.name)
+                ),
+                h('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'What to write'),
+                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } }, c.what),
+                h('div', {
+                  style: {
+                    padding: '8px 10px', borderRadius: 6,
+                    background: c.color + '10',
+                    borderLeft: '2px solid ' + c.color,
+                    marginBottom: 8
+                  }
+                },
+                  h('div', { style: { fontSize: 9, fontWeight: 800, color: c.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '📝 Sample entry'),
+                  h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55, fontStyle: 'italic' } }, c.sample)
+                ),
+                h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                  h('span', { style: { color: '#fb923c', fontWeight: 800, marginRight: 4, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, '🪤 Common pitfall:'),
+                  c.pitfall)
+              );
+            })
+          ),
+          sourceFooter('🎯 The BIP rule of thumb: every component must trace back to the function statement. If a strategy in the BIP cannot be defended by reference to the FBA hypothesis, it does not belong. The BIP is one document but it asks one question across all eight parts: how do we make the replacement behavior more efficient than the problem behavior? Sources: BACB ethical practice standards; PBIS.org BIP technical guide; OSEP BIP guidance; Iris Center BIP module.')
+        );
+      }
+
       // ── Section: CICO Template ──
       function renderCico() {
         return h('div', null,
@@ -934,6 +1037,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       else if (section === 'cycle') content = renderCycle();
       else if (section === 'restraint') content = renderRestraint();
       else if (section === 'fba') content = renderFba();
+      else if (section === 'bip') content = renderBip();
       else if (section === 'cico') content = renderCico();
       else if (section === 'equity') content = renderEquity();
       else if (section === 'connect') content = renderConnect();
