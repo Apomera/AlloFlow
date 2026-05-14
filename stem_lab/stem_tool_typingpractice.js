@@ -9136,13 +9136,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 } else if (tm === 'neutral') {
                   rowStyle.borderRadius = '6px';
                 }
+                // Split label into leading icon + rest. Most milestones
+                // are formatted as 'EMOJI Title' (e.g. '🌱 First session').
+                // Splitting at the first space gives us the icon to put in
+                // a circular badge and the title to render as plain text.
+                var labelParts = ms.label.split(/ (.+)/);
+                var leadingIcon = labelParts.length > 1 ? labelParts[0] : '';
+                var titleText = labelParts.length > 1 ? labelParts[1] : ms.label;
                 return h('div', {
                   key: 'ach-' + entry.id,
                   role: 'listitem',
                   style: rowStyle
                 },
-                  h('div', { style: { fontSize: '14px', color: palette.text, fontWeight: 600 } }, ms.label),
-                  h('div', { style: { fontSize: '11px', color: palette.textMute, fontVariantNumeric: 'tabular-nums' } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 } },
+                    // Circular success-colored badge for the milestone icon
+                    leadingIcon ? h('div', {
+                      'aria-hidden': 'true',
+                      style: {
+                        width: '34px', height: '34px', borderRadius: '50%',
+                        background: palette.success + '20',
+                        border: '1.5px solid ' + palette.success,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '18px', flexShrink: 0, lineHeight: 1
+                      }
+                    }, leadingIcon) : null,
+                    h('div', { style: { fontSize: '14px', color: palette.text, fontWeight: 600 } }, titleText)
+                  ),
+                  h('div', { style: { fontSize: '11px', color: palette.textMute, fontVariantNumeric: 'tabular-nums', flexShrink: 0 } },
                     entry.date ? new Date(entry.date).toLocaleDateString() : 'earned'
                   )
                 );
