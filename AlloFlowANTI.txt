@@ -5615,6 +5615,21 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [activeSessionCode, setActiveSessionCode] = useState(null);
   const [activeSessionAppId, setActiveSessionAppId] = useState(appId);
   const [showLivePollingPanel, setShowLivePollingPanel] = useState(false);
+  React.useEffect(() => {
+    const handler = () => {
+      if (!isTeacherMode) {
+        addToast && addToast('Live Polling is teacher-mode only.', 'info');
+        return;
+      }
+      if (!activeSessionCode) {
+        addToast && addToast('Start a live session first to use Live Polling.', 'info');
+        return;
+      }
+      setShowLivePollingPanel(true);
+    };
+    window.addEventListener('alloflow:open-live-polling', handler);
+    return () => window.removeEventListener('alloflow:open-live-polling', handler);
+  }, [isTeacherMode, activeSessionCode]);
     React.useEffect(() => {
         if (!activeSessionCode || !isTeacherMode || !db || !appId) return;
         const sessionCleanupOnUnload = () => {
@@ -9021,10 +9036,18 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     //   timelineDisplayMode: 'list' | 'cuttable-strips'
     //   conceptSortInteractive: true (drag-to-sort JS in interactive mode) | false
     //   brainstormDisplayMode: 'grid' (default cards) | 'mindmap' (central topic + spokes)
+    //   faqAccordion: true (HTML FAQ collapses each Q; click reveals A) | false
+    //   mathHideSolution: true (teacher view collapses steps+answer behind a
+    //     reveal button) | false (flat display)
+    //   glossarySelfTest: true (table-mode definitions hidden until clicked) |
+    //     false (default flat display)
     glossaryDisplayMode: 'table',
     timelineDisplayMode: 'list',
     conceptSortInteractive: true,
     brainstormDisplayMode: 'grid',
+    faqAccordion: true,
+    mathHideSolution: true,
+    glossarySelfTest: false,
   });
   const exportPreviewRef = useRef(null);
   const [a11yInspectMode, setA11yInspectMode] = useState(false);
@@ -22837,6 +22860,33 @@ Return ONLY valid JSON in this format:
         onClose={handleCloseStudentEntry}
         onConfirm={handleStudentEntryConfirm}
       />
+      {/* Live Polling (WebRTC peer-to-peer). Signaling docs at signaling/{sessionCode}/peers/{uid} */}
+      {/* contain only SDP+ICE+codename and are deleted on connection. All poll/response data flows */}
+      {/* browser-to-browser, never persisted. See live_polling_module.js + feedback_session_tier1_tier2. */}
+      {isTeacherMode && activeSessionCode && (
+        <button
+          onClick={() => setShowLivePollingPanel(true)}
+          aria-label="Open live polling"
+          style={{position:'fixed',bottom:'1rem',right:'1rem',zIndex:9999,background:'#1e3a8a',color:'white',border:'none',borderRadius:24,padding:'0.6rem 1rem',fontWeight:700,fontSize:'0.85rem',cursor:'pointer',boxShadow:'0 8px 20px rgba(30,58,138,0.35)'}}
+        >
+          Live Polling
+        </button>
+      )}
+      {isTeacherMode && activeSessionCode && window.AlloModules && window.AlloModules.LivePolling && window.AlloModules.LivePolling.HostPanel &&
+        React.createElement(window.AlloModules.LivePolling.HostPanel, {
+          sessionCode: activeSessionCode,
+          isOpen: showLivePollingPanel,
+          onClose: () => setShowLivePollingPanel(false),
+        })
+      }
+      {!isTeacherMode && activeSessionCode && user && user.uid && window.AlloModules && window.AlloModules.LivePolling && window.AlloModules.LivePolling.GuestOverlay &&
+        React.createElement(window.AlloModules.LivePolling.GuestOverlay, {
+          sessionCode: activeSessionCode,
+          userUid: user.uid,
+          codename: studentNickname || 'Guest',
+          enabled: true,
+        })
+      }
       {/* ── BridgeSendModal extracted to view_gemini_bridge_module.js (CDN) ── */}
       {(bridgeSendOpen && isTeacherMode) && window.AlloModules && window.AlloModules.BridgeSendModal && React.createElement(window.AlloModules.BridgeSendModal, {
           activeSessionCode, addToast, appId, bridgeChatMessages, bridgeChatOpen,
