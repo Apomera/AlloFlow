@@ -9190,6 +9190,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              // ── Chopping log w/ axe stuck in it (beside firewood, year-round) ──
+              // Real Maine homestead: the wood-splitting block where logs get
+              // halved before being stacked. Always has the axe stuck in the
+              // top of the block, ready for the next splitting session.
+              (function() {
+                var _clX = W * 0.88, _clY = H * 0.87;
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.25)';
+                c.beginPath(); c.ellipse(_clX, _clY + 2.5, 4.5, 0.7, 0, 0, 6.28); c.fill();
+                // Log stump body — side view (cylindrical)
+                c.fillStyle = '#8a6238';
+                c.fillRect(_clX - 3.5, _clY - 3, 7, 5);
+                // End-grain top (oval — growth rings visible from above)
+                c.fillStyle = '#a07248';
+                c.beginPath(); c.ellipse(_clX, _clY - 3, 3.5, 1.2, 0, 0, 6.28); c.fill();
+                // Growth rings on top
+                c.strokeStyle = '#5a3a18';
+                c.lineWidth = 0.25;
+                c.beginPath(); c.ellipse(_clX, _clY - 3, 2.5, 0.85, 0, 0, 6.28); c.stroke();
+                c.beginPath(); c.ellipse(_clX, _clY - 3, 1.5, 0.5, 0, 0, 6.28); c.stroke();
+                c.beginPath(); c.ellipse(_clX, _clY - 3, 0.7, 0.25, 0, 0, 6.28); c.stroke();
+                // Bark texture on side (vertical streaks)
+                c.strokeStyle = 'rgba(60,40,15,0.5)';
+                c.lineWidth = 0.3;
+                for (var clb = 0; clb < 4; clb++) {
+                  var _clbX = _clX - 2.5 + clb * 1.7;
+                  c.beginPath(); c.moveTo(_clbX, _clY - 2); c.lineTo(_clbX + 0.2, _clY + 1.5); c.stroke();
+                }
+                // Hatchet/splitting axe stuck in the top
+                var _axBladeX = _clX - 0.3, _axBladeY = _clY - 3.8;
+                // Wooden handle — leaning slightly to the right
+                c.strokeStyle = '#a07248';
+                c.lineWidth = 0.9;
+                c.beginPath();
+                c.moveTo(_axBladeX + 0.5, _axBladeY - 0.5);
+                c.lineTo(_axBladeX + 4, _axBladeY - 9);
+                c.stroke();
+                // Handle grip stripes
+                c.strokeStyle = '#5a3a18';
+                c.lineWidth = 0.3;
+                c.beginPath(); c.moveTo(_axBladeX + 2, _axBladeY - 4); c.lineTo(_axBladeX + 2.5, _axBladeY - 4.5); c.stroke();
+                c.beginPath(); c.moveTo(_axBladeX + 2.5, _axBladeY - 5); c.lineTo(_axBladeX + 3, _axBladeY - 5.5); c.stroke();
+                // Axe head — silver wedge embedded
+                c.fillStyle = '#78716c';
+                c.beginPath();
+                c.moveTo(_axBladeX - 1, _axBladeY);
+                c.lineTo(_axBladeX + 2, _axBladeY - 1);
+                c.lineTo(_axBladeX + 2.5, _axBladeY + 0.5);
+                c.lineTo(_axBladeX, _axBladeY + 0.8);
+                c.closePath(); c.fill();
+                // Axe head highlight
+                c.fillStyle = '#d6d3d1';
+                c.beginPath();
+                c.moveTo(_axBladeX - 0.8, _axBladeY - 0.1);
+                c.lineTo(_axBladeX + 0.5, _axBladeY - 0.7);
+                c.lineTo(_axBladeX + 0.5, _axBladeY - 0.4);
+                c.lineTo(_axBladeX - 0.8, _axBladeY + 0.3);
+                c.closePath(); c.fill();
+                // Wood chips scattered on the ground
+                c.fillStyle = '#a07248';
+                c.beginPath(); c.ellipse(_clX - 5, _clY + 1.5, 0.6, 0.3, 0.3, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(_clX + 4, _clY + 1.8, 0.5, 0.2, -0.4, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(_clX - 3, _clY + 2.2, 0.4, 0.2, 0.5, 0, 6.28); c.fill();
+                c.fillStyle = '#5a3a18';
+                c.beginPath(); c.ellipse(_clX + 5, _clY + 2, 0.35, 0.15, 0, 0, 6.28); c.fill();
+              })();
+
               // ── Stacked firewood pile (right edge, winter survival prep) ──
               // Roundhouse-cut wood logs stacked in a 3-row pile. Spring is
               // the smallest stack (used through winter), fall is the tallest
@@ -9896,6 +9963,113 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              // ── Rose-covered wooden archway above the gate ──
+              // Classic New England touch — a curved wooden arbor straddling
+              // the gate, with climbing pink roses in spring/summer, hips +
+              // bare canes in fall, and just the wooden arch + snow in winter.
+              (function() {
+                var _arX = W * 0.42; // matches gate X
+                if (_arX > hiveX - 20 && _arX < hiveX + hiveW + 20) return;
+                var _arBaseY = fenceBaseY + 4;
+                var _arTopY = fenceBaseY - 18;
+                var _arHalfW = 9;
+                // Two vertical posts beside the gate posts
+                c.fillStyle = season === 3 ? '#5a3f25' : season === 2 ? '#7a5230' : '#8a6238';
+                c.fillRect(_arX - _arHalfW - 1, _arTopY + 3, 1.4, _arBaseY - _arTopY - 3);
+                c.fillRect(_arX + _arHalfW - 0.4, _arTopY + 3, 1.4, _arBaseY - _arTopY - 3);
+                // Top curved arch — bezier curve from one post to the other
+                c.strokeStyle = season === 3 ? '#5a3f25' : season === 2 ? '#7a5230' : '#8a6238';
+                c.lineWidth = 1.4;
+                c.beginPath();
+                c.moveTo(_arX - _arHalfW, _arTopY + 3);
+                c.quadraticCurveTo(_arX, _arTopY - 1, _arX + _arHalfW, _arTopY + 3);
+                c.stroke();
+                // 4 crossbar slats inside the arch
+                c.lineWidth = 0.4;
+                for (var arc = 1; arc < 5; arc++) {
+                  var _arcY = _arTopY + 3 + arc * ((_arBaseY - _arTopY - 3) / 5);
+                  c.beginPath();
+                  c.moveTo(_arX - _arHalfW + 0.5, _arcY);
+                  c.lineTo(_arX + _arHalfW - 0.5, _arcY);
+                  c.stroke();
+                }
+                // Climbing vine along the arch — green in spring/summer, brown in fall, bare winter
+                if (season !== 3) {
+                  var _arVineCol = season === 2 ? '#7a5530' : '#15803d';
+                  c.strokeStyle = _arVineCol;
+                  c.lineWidth = 0.7;
+                  c.beginPath();
+                  c.moveTo(_arX - _arHalfW - 0.3, _arBaseY - 2);
+                  for (var arv = 0; arv <= 1; arv += 0.04) {
+                    var _arvAng = Math.PI + arv * Math.PI; // π to 2π
+                    var _arvX = _arX + Math.cos(_arvAng) * _arHalfW + Math.sin(arv * 12) * 0.6;
+                    var _arvY = _arTopY + 3 + Math.sin(_arvAng) * 4;
+                    c.lineTo(_arvX, _arvY);
+                  }
+                  c.lineTo(_arX + _arHalfW + 0.3, _arBaseY - 2);
+                  c.stroke();
+                  // Leaves dotted along the vine
+                  if (season === 0 || season === 1) {
+                    c.fillStyle = '#22c55e';
+                    for (var arl = 0; arl < 12; arl++) {
+                      var _arlAng = Math.PI + (arl / 11) * Math.PI;
+                      var _arlX = _arX + Math.cos(_arlAng) * (_arHalfW + 1);
+                      var _arlY = _arTopY + 3 + Math.sin(_arlAng) * 5;
+                      c.beginPath();
+                      c.ellipse(_arlX, _arlY, 1.0, 0.5, _arlAng + 1.5, 0, 6.28);
+                      c.fill();
+                    }
+                    // Pink roses scattered along the arch (5-petal flat circles)
+                    var _arRoses = [
+                      { angT: 0.15, col: '#ec4899' },
+                      { angT: 0.30, col: '#f472b6' },
+                      { angT: 0.50, col: '#ec4899' },
+                      { angT: 0.70, col: '#f9a8d4' },
+                      { angT: 0.85, col: '#ec4899' }
+                    ];
+                    _arRoses.forEach(function(rs) {
+                      var _rsAng = Math.PI + rs.angT * Math.PI;
+                      var _rsX = _arX + Math.cos(_rsAng) * (_arHalfW + 0.4);
+                      var _rsY = _arTopY + 3 + Math.sin(_rsAng) * 4.5;
+                      // 5 petal dots arranged in a pentagon
+                      c.fillStyle = rs.col;
+                      for (var rsp = 0; rsp < 5; rsp++) {
+                        var _rspA = (rsp / 5) * 6.28;
+                        c.beginPath();
+                        c.arc(_rsX + Math.cos(_rspA) * 0.7, _rsY + Math.sin(_rspA) * 0.7, 0.6, 0, 6.28);
+                        c.fill();
+                      }
+                      // Yellow center stamen
+                      c.fillStyle = '#facc15';
+                      c.beginPath(); c.arc(_rsX, _rsY, 0.35, 0, 6.28); c.fill();
+                    });
+                  } else {
+                    // Fall — rose hips instead (red-orange berries)
+                    c.fillStyle = '#dc2626';
+                    for (var arh = 0; arh < 5; arh++) {
+                      var _arhAngT = 0.15 + arh * 0.18;
+                      var _arhAng = Math.PI + _arhAngT * Math.PI;
+                      var _arhX = _arX + Math.cos(_arhAng) * (_arHalfW + 0.3);
+                      var _arhY = _arTopY + 3 + Math.sin(_arhAng) * 4.5;
+                      c.beginPath(); c.arc(_arhX, _arhY, 0.7, 0, 6.28); c.fill();
+                      // Brown stem cap
+                      c.fillStyle = '#3a2510';
+                      c.beginPath(); c.arc(_arhX, _arhY - 0.6, 0.3, 0, 6.28); c.fill();
+                      c.fillStyle = '#dc2626';
+                    }
+                  }
+                }
+                // Snow on top of the arch in winter
+                if (season === 3) {
+                  c.strokeStyle = '#ffffff';
+                  c.lineWidth = 2;
+                  c.beginPath();
+                  c.moveTo(_arX - _arHalfW + 0.5, _arTopY + 2);
+                  c.quadraticCurveTo(_arX, _arTopY - 2, _arX + _arHalfW - 0.5, _arTopY + 2);
+                  c.stroke();
+                }
+              })();
+
               // ── Wooden gate in the fence (homestead detail) ──
               // Breaks up the long horizontal fence with a hinged gate.
               // Placed off-center on the right side so it doesn't conflict with
@@ -9944,6 +10118,116 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 // Worn ground path through the gate (slight dirt patch)
                 c.fillStyle = 'rgba(120,90,55,0.30)';
                 c.beginPath(); c.ellipse(_gtX, fenceBaseY + 5, _gtW * 0.6, 1.2, 0, 0, 6.28); c.fill();
+              })();
+
+              // ── Rooster crowing on a fence post at dawn (year-round) ──
+              // Real Maine farm: roosters crow at dawn from a high perch.
+              // Visible all year, prominent at dawn — head tilted up + open
+              // beak forming a "cawing" silhouette during the sunrise window.
+              (function() {
+                var _rsPostX = 20 + 1 * 70 + 1.25; // 2nd post from left (different from songbird)
+                if (_rsPostX > hiveX - 18 && _rsPostX < hiveX + hiveW + 18) return;
+                var _rsY = fenceBaseY - 2 - 0.5;
+                // Detect dawn for crowing pose
+                var _rsDawn = Math.max(0, 1 - Math.min(_sunCycle, 2 - _sunCycle) / 0.3);
+                var _rsCrowing = _rsDawn > 0.3;
+                var _rsBob = Math.sin(t2 * 0.04) * 0.3;
+                // Body — rusty red-brown rooster
+                c.fillStyle = '#9a3412';
+                c.beginPath(); c.ellipse(_rsPostX, _rsY + _rsBob, 3.2, 2.5, -0.05, 0, 6.28); c.fill();
+                // Lighter wing feathers
+                c.fillStyle = '#c2410c';
+                c.beginPath(); c.ellipse(_rsPostX + 1, _rsY + _rsBob, 2.2, 1.6, -0.1, 0, 6.28); c.fill();
+                // Iridescent green tail (rooster's signature long curved tail feathers)
+                c.fillStyle = '#15803d';
+                c.beginPath();
+                c.moveTo(_rsPostX + 2.5, _rsY + _rsBob - 0.5);
+                c.quadraticCurveTo(_rsPostX + 6, _rsY + _rsBob - 4, _rsPostX + 5, _rsY + _rsBob - 5);
+                c.quadraticCurveTo(_rsPostX + 4, _rsY + _rsBob - 3, _rsPostX + 2.5, _rsY + _rsBob + 0.5);
+                c.closePath(); c.fill();
+                c.fillStyle = '#166534';
+                c.beginPath();
+                c.moveTo(_rsPostX + 2.5, _rsY + _rsBob);
+                c.quadraticCurveTo(_rsPostX + 5, _rsY + _rsBob - 2.5, _rsPostX + 4.5, _rsY + _rsBob - 4);
+                c.quadraticCurveTo(_rsPostX + 3.5, _rsY + _rsBob - 2, _rsPostX + 2.5, _rsY + _rsBob + 1);
+                c.closePath(); c.fill();
+                // Head — angled UP when crowing, level otherwise
+                var _rsHeadAng = _rsCrowing ? -0.6 : -0.1;
+                var _rsHeadX = _rsPostX - 2.5;
+                var _rsHeadY = _rsY + _rsBob - 1.5;
+                c.save();
+                c.translate(_rsHeadX, _rsHeadY);
+                c.rotate(_rsHeadAng);
+                c.fillStyle = '#9a3412';
+                c.beginPath(); c.arc(0, 0, 1.5, 0, 6.28); c.fill();
+                // Red comb on top
+                c.fillStyle = '#dc2626';
+                c.beginPath();
+                c.moveTo(-0.6, -1.2);
+                c.lineTo(-0.4, -2.2);
+                c.lineTo(0.2, -1.5);
+                c.lineTo(0.7, -2.3);
+                c.lineTo(1.1, -1.3);
+                c.lineTo(0.8, -0.8);
+                c.closePath(); c.fill();
+                // Wattle (red flap below beak)
+                c.fillStyle = '#b91c1c';
+                c.beginPath(); c.ellipse(-0.5, 1.2, 0.5, 0.7, 0, 0, 6.28); c.fill();
+                // Beak — yellow triangle, open if crowing
+                c.fillStyle = '#facc15';
+                if (_rsCrowing) {
+                  c.beginPath();
+                  c.moveTo(-1.5, -0.2);
+                  c.lineTo(-3.5, -0.6);
+                  c.lineTo(-1.5, 0.3);
+                  c.closePath(); c.fill();
+                  // Lower beak
+                  c.beginPath();
+                  c.moveTo(-1.5, 0.3);
+                  c.lineTo(-3, 0.6);
+                  c.lineTo(-1.5, 0.5);
+                  c.closePath(); c.fill();
+                } else {
+                  c.beginPath();
+                  c.moveTo(-1.4, -0.2);
+                  c.lineTo(-2.5, 0.1);
+                  c.lineTo(-1.4, 0.4);
+                  c.closePath(); c.fill();
+                }
+                // Eye
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(-0.5, -0.3, 0.25, 0, 6.28); c.fill();
+                c.fillStyle = '#fafaf9';
+                c.beginPath(); c.arc(-0.45, -0.35, 0.1, 0, 6.28); c.fill();
+                c.restore();
+                // Yellow chicken-feet hooked over the post
+                c.strokeStyle = '#facc15';
+                c.lineWidth = 0.4;
+                c.beginPath(); c.moveTo(_rsPostX - 0.8, _rsY + 2); c.lineTo(_rsPostX - 0.8, _rsY + 3.2); c.stroke();
+                c.beginPath(); c.moveTo(_rsPostX + 0.6, _rsY + 2); c.lineTo(_rsPostX + 0.6, _rsY + 3.2); c.stroke();
+                // Toe details
+                c.beginPath(); c.moveTo(_rsPostX - 0.8, _rsY + 3.2); c.lineTo(_rsPostX - 1.4, _rsY + 3.6); c.stroke();
+                c.beginPath(); c.moveTo(_rsPostX - 0.8, _rsY + 3.2); c.lineTo(_rsPostX - 0.5, _rsY + 3.6); c.stroke();
+                c.beginPath(); c.moveTo(_rsPostX + 0.6, _rsY + 3.2); c.lineTo(_rsPostX + 1.2, _rsY + 3.6); c.stroke();
+                c.beginPath(); c.moveTo(_rsPostX + 0.6, _rsY + 3.2); c.lineTo(_rsPostX + 0.3, _rsY + 3.6); c.stroke();
+                // "Cock-a-doodle-doo" musical note motes during dawn
+                if (_rsCrowing) {
+                  for (var rsm = 0; rsm < 3; rsm++) {
+                    var _rsmT = ((t2 * 0.05 + rsm * 25) % 80) / 80;
+                    if (_rsmT > 0.85) continue;
+                    var _rsmX = _rsHeadX - 4 - _rsmT * 8;
+                    var _rsmY = _rsHeadY - 2 - _rsmT * 6;
+                    var _rsmA = (1 - _rsmT) * 0.8 * _rsDawn;
+                    c.fillStyle = 'rgba(254,243,150,' + _rsmA.toFixed(3) + ')';
+                    c.beginPath(); c.arc(_rsmX, _rsmY, 0.6, 0, 6.28); c.fill();
+                    c.strokeStyle = 'rgba(254,243,150,' + _rsmA.toFixed(3) + ')';
+                    c.lineWidth = 0.3;
+                    c.beginPath();
+                    c.moveTo(_rsmX + 0.3, _rsmY);
+                    c.lineTo(_rsmX + 0.3, _rsmY - 2);
+                    c.stroke();
+                  }
+                }
               })();
 
               // ── Songbird perched on a fence post (spring/summer/fall day) ──
