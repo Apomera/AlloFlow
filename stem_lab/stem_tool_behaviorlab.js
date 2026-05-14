@@ -384,6 +384,53 @@ var d = labToolData || {};
             { term: 'Token Economy', def: 'A system where tokens (conditioned reinforcers) are earned for target behaviors and exchanged for backup reinforcers.' }
           ];
 
+          // === Replacement Behaviors — the missing FBA → BIP bridge ===
+          // Knowing the function is half the work. The other half is
+          // teaching a replacement that meets the same function while
+          // being socially acceptable, easier, and more efficient than
+          // the problem behavior. Without that, an FBA is just a
+          // sophisticated label — and most BIPs that fail, fail here.
+          // Mapped to the same FOUR_FUNCTIONS taxonomy so students see
+          // one continuous arc: function → replacement → instruction.
+          var REPLACEMENT_BEHAVIORS = [
+            {
+              function: 'Attention',
+              functionAbbrev: 'ATT',
+              icon: '👀', color: '#3b82f6',
+              problemEx: 'Calling out, clowning, dramatic falls, "fake" injury reports',
+              replacement: 'Recruit-attention skills: raise hand and wait, tap shoulder, use a "help" card, ask "can you check my work?", request a 1-on-1 conversation at scheduled times.',
+              teaching: 'Plan a daily attention budget the student can spend on appropriate bids — 3 scheduled check-ins per day, no questions asked. Reinforces appropriate seeking and removes the artificial scarcity that drives the problem behavior.',
+              pitfall: 'Don\'t teach a replacement that gets MORE attention than the problem behavior. The replacement has to be efficient — if "raise your hand" gets ignored for 8 minutes while calling out gets a response in 2 seconds, the kid will keep calling out. Honor the bid fast, every time, for several weeks before fading.'
+            },
+            {
+              function: 'Escape / Avoidance',
+              functionAbbrev: 'ESC',
+              icon: '🚪', color: '#ef4444',
+              problemEx: 'Work refusal, ripping the worksheet, eloping from the classroom, aggression to end the demand',
+              replacement: 'Break-request: a single break card the student can hand to the teacher (or tap on the desk, or use AAC) for a known-duration break in a known location. Plus a "need help" signal that pulls a teacher over instead of removing the demand.',
+              teaching: 'Pre-teach when the student is calm. Practice handing the card. Honor it the first 50+ times no matter what — even if the student "abuses" it. Frequency naturally drops as the student trusts the system. Then layer in expectations (finish 3 problems, then break) once the trust is established.',
+              pitfall: 'Don\'t front-load conditions. "You can have a break IF you finish your work" is just a re-skinned demand. The break has to be unconditional first. Counterintuitive, but data consistently shows: contingent breaks at the start kill the system. Earned breaks come later.'
+            },
+            {
+              function: 'Tangible',
+              functionAbbrev: 'TAN',
+              icon: '🎮', color: '#f59e0b',
+              problemEx: 'Grabbing items off others, screaming for a toy, negotiating endlessly for screen time',
+              replacement: 'Functional Communication Training (FCT): a clear request response — vocal ("Can I have it?"), AAC tap, PECS exchange, or sign — taught in tightly controlled sessions until fluent, then generalized.',
+              teaching: 'Model the request, prompt physically if needed, then immediately deliver the item the first dozen+ times. The replacement has to be a more efficient route to the item than grabbing was. Once fluent, layer in waiting tolerance (1 second, then 3, then 10).',
+              pitfall: 'Don\'t teach a replacement that is harder than the problem behavior. If "Please may I have a turn?" requires a long sentence while grabbing requires zero language, you have engineered a failure. Start with the absolute simplest possible request the student can produce, and build complexity later.'
+            },
+            {
+              function: 'Sensory / Automatic',
+              functionAbbrev: 'AUT',
+              icon: '🪀', color: '#8b5cf6',
+              problemEx: 'Hand-flapping, vocal stimming, chewing on shirt collar, head-banging (when self-injurious)',
+              replacement: 'MATCH THE SENSORY MODALITY. Oral input → gum, chewy necklace, crunchy snack. Proprioceptive → weighted lap pad, wall push-ups, heavy work. Tactile → fidget cube, putty. Vestibular → wobble cushion, spinning chair. Auditory → noise-canceling headphones or preferred music.',
+              teaching: 'This is mostly accommodation, not extinction. Most stims serve real regulatory functions and do not need to be replaced — they need to be allowed and supported. The exception is genuinely dangerous self-injury, which needs a sensory-matched alternative AND mental-health consultation, not just a behavior plan.',
+              pitfall: 'Do NOT default to extinguishing harmless stims because they "look weird." That is masking, and the autistic-community research is consistent on long-term cost (anxiety, burnout, identity harm). A flapping kid is regulating — not misbehaving.'
+            }
+          ];
+
           // === Acting-Out Cycle — the seven-phase escalation model ===
           // Geoff Colvin's framework (late 1990s) is the spine of every
           // major crisis-intervention curriculum (CPI, Boys Town, NCI,
@@ -4564,6 +4611,90 @@ var d = labToolData || {};
                   })
                 )
               )
+            ),
+
+            // === REPLACEMENT BEHAVIORS — function → BIP bridge ===
+            // Sits adjacent to Four Functions so the function → replacement
+            // narrative reads as one continuous arc. Four cards mapped to
+            // the same FOUR_FUNCTIONS taxonomy. Each card shows the
+            // problem-behavior example, the replacement behavior(s),
+            // teaching strategy, and the most-common pitfall — the place
+            // school psychs report seeing BIPs fail in real K-12 work.
+            React.createElement("div", {
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(34,197,94,0.25)' }, glass)
+            },
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🔄 Replacement Behaviors — function → BIP"),
+                React.createElement("button", { onClick: function() { upd('blShowReplace', !d.blShowReplace); },
+                  className: "text-[11px] text-emerald-400 hover:text-emerald-300"
+                }, d.blShowReplace ? 'Hide' : 'View →')
+              ),
+              d.blShowReplace && React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-3", style: { lineHeight: 1.55 } },
+                "Knowing the function is half the work. The other half is teaching a replacement that meets the same function while being socially acceptable, easier, and more efficient than the problem behavior. Without the replacement, an FBA is just a sophisticated label — and most BIPs that fail, fail right here. One card per function:"),
+              d.blShowReplace && React.createElement("div", { className: "space-y-2" },
+                REPLACEMENT_BEHAVIORS.map(function(rb, rbi) {
+                  return React.createElement("div", {
+                    key: 'rb-' + rbi,
+                    style: {
+                      background: 'rgba(15,23,42,0.6)',
+                      borderRadius: 10,
+                      padding: '10px 12px',
+                      border: '1px solid rgba(100,116,139,0.25)',
+                      borderLeft: '4px solid ' + rb.color
+                    }
+                  },
+                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                      React.createElement("div", {
+                        'aria-hidden': 'true',
+                        style: {
+                          width: 36, height: 36, borderRadius: '50%',
+                          background: rb.color + '22',
+                          border: '1.5px solid ' + rb.color,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 17, lineHeight: 1, flexShrink: 0
+                        }
+                      }, rb.icon),
+                      React.createElement("div", { style: { flex: 1 } },
+                        React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: rb.color, lineHeight: 1.2 } }, rb.function),
+                        React.createElement("div", { style: { fontSize: 9, color: rb.color + 'cc', fontFamily: 'ui-monospace, Menlo, monospace', letterSpacing: '0.04em', marginTop: 1 } }, 'function: ' + rb.functionAbbrev)
+                      )
+                    ),
+                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr', gap: 6 } },
+                      React.createElement("div", null,
+                        React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: '#f87171', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '⚠ Problem behavior typically looks like'),
+                        React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, rb.problemEx)
+                      ),
+                      React.createElement("div", null,
+                        React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3, marginTop: 4 } }, '↪ Replacement behavior'),
+                        React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, rb.replacement)
+                      ),
+                      React.createElement("div", null,
+                        React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3, marginTop: 4 } }, '🎓 How to teach it'),
+                        React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, rb.teaching)
+                      ),
+                      React.createElement("div", { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)', marginTop: 4 } },
+                        React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '🪤 Common pitfall'),
+                        React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, rb.pitfall)
+                      )
+                    )
+                  );
+                })
+              ),
+              d.blShowReplace && React.createElement("div", {
+                style: {
+                  marginTop: 10, padding: 10, borderRadius: 8,
+                  background: 'rgba(34,197,94,0.06)',
+                  border: '1px solid rgba(34,197,94,0.20)',
+                  color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic'
+                }
+              },
+                "🎯 The replacement-behavior rule of thumb: the new behavior must be ",
+                React.createElement("b", null, "(1) easier"),
+                " than the problem behavior, ",
+                React.createElement("b", null, "(2) more efficient"),
+                " (faster reinforcement, every time, no negotiation), and ",
+                React.createElement("b", null, "(3) reinforced first, conditions added later"),
+                ". Most BIPs front-load conditions and wonder why they fail. Trust comes before contingency.")
             ),
 
             // === FAMOUS BEHAVIORISTS ===
