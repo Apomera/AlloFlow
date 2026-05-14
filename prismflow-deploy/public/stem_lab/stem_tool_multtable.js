@@ -1,8 +1,11 @@
 // ═══════════════════════════════════════════
-// stem_tool_multtable.js — Multiplication Table Plugin
-// Interactive 12×12 grid with Quick Quiz, Speed Run,
-// streaks, adaptive difficulty, wrong-answer review,
-// sound effects, badges, AI tutor & keyboard shortcuts
+// stem_tool_multtable.js — Multiplication Table Plugin (Enhanced v3)
+// 3 tabs: Practice, Visual (area-model bridge), Patterns (discovery)
+// + sound effects (mutable), 12 badges, AI tutor, Quick Quiz, Speed Run,
+//   streaks, adaptive difficulty, wrong-answer review, hidden mode,
+//   dot-array visualization with skip-count overlay + commutativity twin,
+//   interactive pattern explorer (5s, 9s, squares, doubles, distributive),
+//   atmospheric backgrounds per tab, keyboard shortcuts
 // ═══════════════════════════════════════════
 
 window.StemLab = window.StemLab || {
@@ -36,12 +39,69 @@ window.StemLab = window.StemLab || {
     document.body.appendChild(liveRegion);
   })();
 
+  // MultTable v3: atmospheric backgrounds + dot-array animations
+  (function() {
+    if (document.getElementById('allo-multtable-v3-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-multtable-v3-css';
+    st.textContent = [
+      '@keyframes allo-mt-dot-in { 0% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.15); } 100% { transform: scale(1); opacity: 1; } }',
+      '@keyframes allo-mt-cell-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(236,72,153,0.55); } 50% { box-shadow: 0 0 0 6px rgba(236,72,153,0); } }',
+      '.allo-mt-dot { animation: allo-mt-dot-in 0.22s ease-out backwards; }',
+      '.allo-mt-pattern-cell { animation: allo-mt-cell-pulse 1.6s ease-in-out 2; }',
+      '.allo-mt-bg-practice { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(236,72,153,0.10) 0%, rgba(236,72,153,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '.allo-mt-bg-visual   { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(217,119,6,0.10)  0%, rgba(217,119,6,0.04)  35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '.allo-mt-bg-patterns { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(99,102,241,0.10)  0%, rgba(99,102,241,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '@media (prefers-reduced-motion: reduce) { .allo-mt-dot, .allo-mt-pattern-cell { animation: none !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
 
   // ── Difficulty presets ──
   var DIFFICULTY = {
     easy:   { min: 2, max: 5,  label: 'Easy' },
     medium: { min: 2, max: 9,  label: 'Medium' },
     hard:   { min: 2, max: 12, label: 'Hard' }
+  };
+
+  // ── Tricky Middle: the 15 commonly-hardest facts ──
+  // These are the facts that need real recall (everything else has a rule:
+  // 1s identity, 2s doubles, 5s end-in-0/5, 9s digit-sum, 10s add-zero, 11s repeat).
+  // Pairs are unordered; quiz will randomize commutative direction.
+  var TRICKY_15 = [
+    [6,7], [6,8], [6,9],
+    [7,7], [7,8], [7,9],
+    [8,8], [8,9],
+    [9,9],
+    [6,11], [6,12],
+    [7,11], [7,12],
+    [8,11], [8,12]
+  ];
+
+  // ── Memory tricks for the trickiest facts (and a few peripherals) ──
+  // Keyed by min-max for commutative dedupe ("6x7" == "7x6").
+  function tkey(a, b) { return Math.min(a,b) + 'x' + Math.max(a,b); }
+  var MEMORY_TRICKS = {
+    '6x7':  { trick: '"6 times 7 is 42." A jingle works here.',     icon: '🎵' },
+    '6x8':  { trick: '6×8 = 48. Tip: 6×8 is 6×(10−2) = 60−12 = 48.', icon: '✂️' },
+    '6x9':  { trick: '6×9 = 54. Digits 5+4=9, and 5 is one less than 6.', icon: '9️⃣' },
+    '7x7':  { trick: '7×7 = 49. "Sevens lucky, forty-nine."',        icon: '⭐' },
+    '7x8':  { trick: '7×8 = 56. "5, 6, 7, 8 — fifty-six = seven times eight." The digits march in order.', icon: '🎯' },
+    '7x9':  { trick: '7×9 = 63. Digits 6+3=9, and 6 is one less than 7.', icon: '9️⃣' },
+    '8x8':  { trick: '8×8 = 64. "I ate and ate till I was sick on the floor — 8×8 is 64."', icon: '🎵' },
+    '8x9':  { trick: '8×9 = 72. Digits 7+2=9, and 7 is one less than 8.', icon: '9️⃣' },
+    '9x9':  { trick: '9×9 = 81. Digits 8+1=9, and 8 is one less than 9. All 9s × 1-10 work this way.', icon: '9️⃣' },
+    '6x11': { trick: '6×11 = 66. For 11 × 1-9, the answer is just the digit doubled.', icon: '1️⃣1️⃣' },
+    '7x11': { trick: '7×11 = 77. Digit-doubling trick for 11 × 1-9.', icon: '1️⃣1️⃣' },
+    '8x11': { trick: '8×11 = 88. Digit-doubling trick for 11 × 1-9.', icon: '1️⃣1️⃣' },
+    '6x12': { trick: '6×12 = 72. Split: 6×12 = 6×10 + 6×2 = 60 + 12 = 72.', icon: '✂️' },
+    '7x12': { trick: '7×12 = 84. Split: 7×12 = 7×10 + 7×2 = 70 + 14 = 84.', icon: '✂️' },
+    '8x12': { trick: '8×12 = 96. Split: 8×12 = 8×10 + 8×2 = 80 + 16 = 96.', icon: '✂️' },
+    '9x11': { trick: '9×11 = 99. 9s digits sum to 9 AND 11s repeat the digit.', icon: '🎯' },
+    '9x12': { trick: '9×12 = 108. Split: 9×12 = 9×10 + 9×2 = 90 + 18 = 108.', icon: '✂️' },
+    '11x12':{ trick: '11×12 = 132. Split: 11×12 = 11×10 + 11×2 = 110 + 22 = 132.', icon: '✂️' },
+    '12x12':{ trick: '12×12 = 144. A gross. Worth memorizing.',     icon: '⭐' }
   };
 
   // ── Adaptive engine ──
@@ -57,6 +117,12 @@ window.StemLab = window.StemLab || {
   }
 
   function pickFactors(difficulty, adaptiveHistory) {
+    // Tricky 15: pick from the curated hard-facts set, randomizing commutative direction
+    if (difficulty === 'tricky') {
+      var pair = TRICKY_15[Math.floor(Math.random() * TRICKY_15.length)];
+      if (Math.random() < 0.5) return { a: pair[0], b: pair[1] };
+      return { a: pair[1], b: pair[0] };
+    }
     var range;
     if (difficulty === 'adaptive') {
       range = getAdaptiveRange(adaptiveHistory);
@@ -69,6 +135,12 @@ window.StemLab = window.StemLab || {
     return { a: a, b: b };
   }
 
+  // Tricky 15 membership check (commutative)
+  function isTrickyFact(a, b) {
+    var key = tkey(a, b);
+    return TRICKY_15.some(function(p) { return tkey(p[0], p[1]) === key; });
+  }
+
   // ── Sound effects ──
   var _audioCtx = null;
   function getAudioCtx() {
@@ -76,6 +148,7 @@ window.StemLab = window.StemLab || {
     return _audioCtx;
   }
   function playSound(type) {
+    if (window._multTableMuted) return;  // global mute flag, set by the tool when state changes
     try {
       var ac = getAudioCtx();
       var o = ac.createOscillator();
@@ -172,7 +245,10 @@ window.StemLab = window.StemLab || {
     { id: 'hiddenHero',    icon: '\uD83D\uDE48', label: 'Hidden Hero', desc: '10 correct in Hidden mode' },
     { id: 'adaptiveAce',   icon: '\uD83C\uDFAF', label: 'Adaptive Ace', desc: 'Reach Hard difficulty in Adaptive' },
     { id: 'centurion',     icon: '\uD83C\uDFC5', label: 'Centurion',   desc: '100 total correct answers' },
-    { id: 'mathlete',      icon: '\uD83C\uDFC6', label: 'Mathlete',    desc: '50 correct in one session' }
+    { id: 'mathlete',      icon: '\uD83C\uDFC6', label: 'Mathlete',    desc: '50 correct in one session' },
+    { id: 'trickyMaster',  icon: '\uD83E\uDDE9', label: 'Tricky Master', desc: '10 correct on Tricky 15 facts' },
+    { id: 'patternFinder', icon: '\uD83D\uDD0D', label: 'Pattern Finder', desc: 'Explore 5+ patterns in the Patterns tab' },
+    { id: 'visualLearner', icon: '\uD83D\uDFE9', label: 'Visual Learner', desc: 'Explore 10 facts in the Visual tab' }
   ];
 
   window.StemLab.registerTool('multtable', {
@@ -228,6 +304,20 @@ window.StemLab = window.StemLab || {
           return Object.assign({}, prev, { _multExt: Object.assign({}, prev._multExt || _ext, obj) });
         });
       };
+
+      // ── v3: tab + visual + patterns state (all in _multExt for persistence) ──
+      var mtTab = _ext.mtTab || 'practice';       // practice | visual | patterns
+      var muted = _ext.muted || false;
+      window._multTableMuted = muted;             // synced flag read by playSound (module-scope fn)
+      var visualA = _ext.visualA || 7;            // current visual-mode factor a (rows)
+      var visualB = _ext.visualB || 8;            // current visual-mode factor b (cols)
+      var visualSkipOn = _ext.visualSkipOn !== false;  // default ON (skip-count overlay)
+      var patternId = _ext.patternId || null;     // selected pattern in Patterns tab
+
+      // Round-2 additions
+      var quizMode = _ext.quizMode || 'mult';     // 'mult' | 'div' | 'mixed'
+      var factScores = _ext.factScores || {};     // { tkey: { attempts, correct } } persistent
+      var showHeatmap = _ext.showHeatmap || false;
 
       // Timer tick — ref-based interval
       if (_mt.active && !labToolData._multTimerInterval) {
@@ -300,7 +390,13 @@ window.StemLab = window.StemLab || {
       // ── Generate next problem ──
       function nextProblem() {
         var factors = pickFactors(exploreDifficulty, (_mt.adaptiveHistory || []));
-        setMultTableChallenge({ a: factors.a, b: factors.b });
+        // Decide presentation mode based on quizMode
+        var mode = 'mult';
+        if (quizMode === 'div') mode = 'div';
+        else if (quizMode === 'mixed') mode = (Math.random() < 0.5 ? 'mult' : 'div');
+        // For division, randomize which factor is the divisor
+        var divisor = (mode === 'div') ? (Math.random() < 0.5 ? factors.a : factors.b) : null;
+        setMultTableChallenge({ a: factors.a, b: factors.b, mode: mode, divisor: divisor });
         setMultTableAnswer('');
         setMultTableFeedback(null);
         setHighlightCell(null);
@@ -310,9 +406,23 @@ window.StemLab = window.StemLab || {
       // ── Check answer ──
       function checkMult() {
         if (!multTableChallenge || inputDisabled) return;
-        var correct = multTableChallenge.a * multTableChallenge.b;
+        // Compute the correct answer based on mode (mult or div)
+        var correct;
+        if (multTableChallenge.mode === 'div') {
+          // For division: answer is the non-divisor factor
+          correct = (multTableChallenge.divisor === multTableChallenge.a) ? multTableChallenge.b : multTableChallenge.a;
+        } else {
+          correct = multTableChallenge.a * multTableChallenge.b;
+        }
         var ok = parseInt(multTableAnswer) === correct;
         announceToSR(ok ? 'Correct!' : 'Incorrect, try again');
+
+        // Per-fact mastery tracking (persistent across sessions)
+        var fkey = tkey(multTableChallenge.a, multTableChallenge.b);
+        var prevScore = factScores[fkey] || { attempts: 0, correct: 0 };
+        var newScore = { attempts: prevScore.attempts + 1, correct: prevScore.correct + (ok ? 1 : 0) };
+        var newFactScores = Object.assign({}, factScores);
+        newFactScores[fkey] = newScore;
 
         // Sound
         playSound(ok ? 'correct' : 'wrong');
@@ -326,12 +436,38 @@ window.StemLab = window.StemLab || {
         // Streak sound
         if (ok && newStreak >= 3 && newStreak % 5 === 0) playSound('streak');
 
+        // Build fact family AND mode-appropriate feedback text.
+        // The fact family is the same regardless of presentation mode \u2014 same numbers, four faces.
+        var product = multTableChallenge.a * multTableChallenge.b;
+        var factFamily = null;
+        if (ok && multTableChallenge.a !== multTableChallenge.b) {
+          factFamily = multTableChallenge.a + ' \u00D7 ' + multTableChallenge.b + ' = ' + product +
+            ',  ' + multTableChallenge.b + ' \u00D7 ' + multTableChallenge.a + ' = ' + product +
+            ',  ' + product + ' \u00F7 ' + multTableChallenge.a + ' = ' + multTableChallenge.b +
+            ',  ' + product + ' \u00F7 ' + multTableChallenge.b + ' = ' + multTableChallenge.a;
+        } else if (ok) {
+          factFamily = multTableChallenge.a + ' \u00D7 ' + multTableChallenge.a + ' = ' + product +
+            ',  ' + product + ' \u00F7 ' + multTableChallenge.a + ' = ' + multTableChallenge.a;
+        }
+
+        // Equation string for the current presentation mode
+        var eqStr;
+        if (multTableChallenge.mode === 'div') {
+          eqStr = product + ' \u00F7 ' + multTableChallenge.divisor + ' = ' + correct;
+        } else {
+          eqStr = multTableChallenge.a + ' \u00D7 ' + multTableChallenge.b + ' = ' + correct;
+        }
+
         setMultTableFeedback(ok ? {
           correct: true,
-          msg: '\u2705 Correct! ' + multTableChallenge.a + ' \u00D7 ' + multTableChallenge.b + ' = ' + correct + (newStreak >= 3 ? '  \uD83D\uDD25 ' + newStreak + ' streak!' : '')
+          msg: '\u2705 Correct! ' + eqStr + (newStreak >= 3 ? '  \uD83D\uDD25 ' + newStreak + ' streak!' : ''),
+          factFamily: factFamily,
+          isTricky: isTrickyFact(multTableChallenge.a, multTableChallenge.b)
         } : {
           correct: false,
-          msg: '\u274C Not quite. You said ' + multTableAnswer + ' \u2014 ' + multTableChallenge.a + ' \u00D7 ' + multTableChallenge.b + ' = ' + correct
+          msg: '\u274C Not quite. You said ' + multTableAnswer + ' \u2014 ' + eqStr,
+          isTricky: isTrickyFact(multTableChallenge.a, multTableChallenge.b),
+          trickKey: tkey(multTableChallenge.a, multTableChallenge.b)
         });
 
         setExploreScore(function(prev) {
@@ -359,6 +495,8 @@ window.StemLab = window.StemLab || {
               return ns;
             });
           }
+          // Persist factScores on wrong answers too (the if(ok) branch handles correct path)
+          extUpd({ factScores: newFactScores });
         }
 
         // Badge checks
@@ -371,8 +509,9 @@ window.StemLab = window.StemLab || {
           var newRows = Object.assign({}, _ext.rowsAnswered || {});
           newRows[multTableChallenge.a] = true;
           newRows[multTableChallenge.b] = true;
+          var newTricky = (_ext.trickySolved || 0) + (isTrickyFact(multTableChallenge.a, multTableChallenge.b) ? 1 : 0);
 
-          extUpd({ totalCorrect: newTotal, sessionCorrect: newSession, hiddenCorrect: newHidden, squaresAnswered: newSquares, rowsAnswered: newRows });
+          extUpd({ totalCorrect: newTotal, sessionCorrect: newSession, hiddenCorrect: newHidden, squaresAnswered: newSquares, rowsAnswered: newRows, trickySolved: newTricky, factScores: newFactScores });
 
           // Check adaptive reaching hard
           var reachedHard = exploreDifficulty === 'adaptive' && getAdaptiveRange(newHistory) === DIFFICULTY.hard;
@@ -386,7 +525,10 @@ window.StemLab = window.StemLab || {
             hiddenHero: newHidden >= 10,
             adaptiveAce: reachedHard,
             centurion: newTotal >= 100,
-            mathlete: newSession >= 50
+            mathlete: newSession >= 50,
+            trickyMaster: newTricky >= 10,
+            patternFinder: Object.keys(_ext.patternsExplored || {}).length >= 5,
+            visualLearner: Object.keys(_ext.visualExplored || {}).length >= 10
           });
         }
 
@@ -463,7 +605,8 @@ window.StemLab = window.StemLab || {
         { id: 'easy',     label: 'Easy',     range: '2-5' },
         { id: 'medium',   label: 'Medium',   range: '2-9' },
         { id: 'hard',     label: 'Hard',     range: '2-12' },
-        { id: 'adaptive', label: 'Adaptive', range: 'Auto' }
+        { id: 'adaptive', label: 'Adaptive', range: 'Auto' },
+        { id: 'tricky',   label: 'Tricky 15', range: 'Hard facts' }
       ];
 
       // ── Build missed-problems deduped list ──
@@ -480,6 +623,334 @@ window.StemLab = window.StemLab || {
       // ── Count earned badges ──
       var earnedBadges = BADGES.filter(function(b) { return _ext.badges[b.id]; });
       var earnedCount = earnedBadges.length;
+
+      // ═══ VISUAL TAB: dot-array bridge for multiplication facts ═══
+      // For dyscalculic kids: memorization comes AFTER understanding. Showing 7×8
+      // as a 7-row-by-8-col dot grid, with skip-count totals down the side, lets
+      // them count to find the answer. Then the commutativity twin (8×7) shows
+      // "learn one, know two."
+      var renderVisual = function() {
+        var a = Math.max(1, Math.min(12, visualA));
+        var b = Math.max(1, Math.min(12, visualB));
+        var product = a * b;
+        var trickyHere = isTrickyFact(a, b);
+        var trickHere = trickyHere ? MEMORY_TRICKS[tkey(a, b)] : null;
+        // Track exploration for the Visual Learner badge (dedupe by fact key)
+        // Fire-and-forget; only updates when the fact key changes.
+        var visExplored = _ext.visualExplored || {};
+        var curKey = tkey(a, b);
+        if (!visExplored[curKey]) {
+          setTimeout(function() {
+            var explored = Object.assign({}, _ext.visualExplored || {});
+            explored[curKey] = true;
+            extUpd({ visualExplored: explored });
+            if (Object.keys(explored).length >= 10 && !_ext.badges.visualLearner) {
+              checkBadges({
+                firstCorrect: !!_ext.badges.firstCorrect, streak5: !!_ext.badges.streak5,
+                streak10: !!_ext.badges.streak10, streak20: !!_ext.badges.streak20,
+                squareMaster: !!_ext.badges.squareMaster, hiddenHero: !!_ext.badges.hiddenHero,
+                adaptiveAce: !!_ext.badges.adaptiveAce, centurion: !!_ext.badges.centurion,
+                mathlete: !!_ext.badges.mathlete, trickyMaster: !!_ext.badges.trickyMaster,
+                patternFinder: !!_ext.badges.patternFinder,
+                visualLearner: Object.keys(explored).length >= 10
+              });
+            }
+          }, 0);
+        }
+        // Color the rows so each row of 8 dots is visually one "skip"
+        var rowColors = ['#dc2626', '#ea580c', '#d97706', '#16a34a', '#0891b2', '#2563eb', '#7c3aed', '#db2777', '#65a30d', '#0f766e', '#9333ea', '#be185d'];
+        var dotSize = b <= 8 ? 18 : (b <= 10 ? 15 : 13);
+        var dotGap = b <= 8 ? 6 : 4;
+
+        var rows = [];
+        for (var ri = 0; ri < a; ri++) {
+          var dots = [];
+          for (var ci = 0; ci < b; ci++) {
+            dots.push(h('div', {
+              key: 'dot-' + ri + '-' + ci,
+              className: 'allo-mt-dot rounded-full',
+              style: {
+                width: dotSize, height: dotSize,
+                backgroundColor: rowColors[ri % rowColors.length],
+                animationDelay: (ri * 0.04 + ci * 0.015) + 's'
+              }
+            }));
+          }
+          var runningTotal = (ri + 1) * b;
+          rows.push(h('div', { key: 'vrow-' + ri, className: 'flex items-center gap-2' },
+            visualSkipOn && h('div', { className: 'text-xs font-bold text-amber-700 font-mono w-12 text-right pr-1', style: { fontVariantNumeric: 'tabular-nums' } },
+              (ri === 0 ? b : '+' + b),
+              h('span', { className: 'block text-[10px] text-amber-500' }, '=' + runningTotal)
+            ),
+            h('div', { className: 'flex', style: { gap: dotGap } }, dots)
+          ));
+        }
+
+        return h('div', { className: 'space-y-3' },
+          // Factor selectors
+          h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
+            h('div', { className: 'grid grid-cols-2 gap-3' },
+              h('div', {},
+                h('label', { className: 'block text-xs font-bold text-amber-800 mb-1' }, 'Rows (a)'),
+                h('input', { type: 'range', min: '1', max: '12', value: a,
+                  onChange: function(e) { extUpd({ visualA: parseInt(e.target.value, 10) }); },
+                  'aria-label': 'Factor a (rows)',
+                  className: 'w-full accent-amber-600'
+                }),
+                h('div', { className: 'text-center text-xl font-bold text-amber-800' }, a)
+              ),
+              h('div', {},
+                h('label', { className: 'block text-xs font-bold text-amber-800 mb-1' }, 'Columns (b)'),
+                h('input', { type: 'range', min: '1', max: '12', value: b,
+                  onChange: function(e) { extUpd({ visualB: parseInt(e.target.value, 10) }); },
+                  'aria-label': 'Factor b (columns)',
+                  className: 'w-full accent-amber-600'
+                }),
+                h('div', { className: 'text-center text-xl font-bold text-amber-800' }, b)
+              )
+            ),
+            h('div', { className: 'flex flex-wrap items-center gap-3 mt-2 text-[11px]' },
+              h('label', { className: 'font-bold text-amber-700 flex items-center gap-1 cursor-pointer' },
+                h('input', { type: 'checkbox', checked: visualSkipOn,
+                  onChange: function() { playSound('default'); extUpd({ visualSkipOn: !visualSkipOn }); }
+                }),
+                'Skip-count overlay (column of running totals)'
+              ),
+              h('button', {
+                onClick: function() { extUpd({ visualA: visualB, visualB: visualA }); announceToSR('Swapped to ' + visualB + ' by ' + visualA); },
+                'aria-label': 'Swap factors (commutativity)',
+                className: 'ml-auto px-2 py-1 rounded bg-violet-100 text-violet-700 border border-violet-300 font-bold hover:bg-violet-200'
+              }, '⇄ Swap (commutativity)')
+            )
+          ),
+
+          // The big visualization
+          h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4 overflow-x-auto' },
+            h('div', { className: 'text-center mb-3' },
+              h('p', { className: 'text-2xl font-bold text-amber-900 font-mono' },
+                a + ' × ' + b + ' = ',
+                h('span', { className: 'text-3xl text-amber-700 ml-2' }, product)
+              ),
+              h('p', { className: 'text-[11px] text-amber-700 italic mt-1' },
+                a + ' rows of ' + b + ' = ' + a + ' groups of ' + b + ' = ' + b + ' added ' + a + ' times'
+              )
+            ),
+            h('div', { className: 'flex flex-col gap-2 items-center justify-center' }, rows)
+          ),
+
+          // Repeated-addition row + commutativity twin
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+            h('div', { className: 'bg-amber-50 rounded-lg p-3 border border-amber-200' },
+              h('p', { className: 'text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1' }, '➕ Repeated addition'),
+              h('p', { className: 'text-sm font-mono font-bold text-amber-900' },
+                Array.from({ length: a }, function() { return b; }).join(' + ') + ' = ' + product
+              )
+            ),
+            h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-200' },
+              h('p', { className: 'text-[10px] font-bold text-violet-700 uppercase tracking-wider mb-1' }, '⇄ Commutativity twin'),
+              h('p', { className: 'text-sm font-mono font-bold text-violet-900' },
+                a + ' × ' + b + ' = ' + b + ' × ' + a + ' = ' + product
+              ),
+              h('p', { className: 'text-[10px] text-violet-700 italic mt-0.5' },
+                'Same dots, just turned sideways. Learn one fact, know two.'
+              )
+            )
+          ),
+
+          // Memory trick (when this fact is in TRICKY_15)
+          trickHere && h('div', { className: 'bg-fuchsia-50 rounded-xl p-3 border-2 border-fuchsia-300' },
+            h('p', { className: 'text-[11px] font-bold text-fuchsia-800 uppercase tracking-wider mb-1' },
+              trickHere.icon + ' Memory trick for ' + a + ' × ' + b
+            ),
+            h('p', { className: 'text-sm text-fuchsia-900 leading-relaxed' }, trickHere.trick),
+            h('p', { className: 'text-[10px] text-fuchsia-700 italic mt-1' },
+              'This is one of the Tricky 15 facts — the small set that needs real recall. Switch to Practice → "Tricky 15" mode to drill it.'
+            )
+          ),
+
+          // Fact family (multiplication ↔ division bridge)
+          h('div', { className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200' },
+            h('p', { className: 'text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-1' }, '👨‍👩‍👧 Fact family — multiplication ↔ division'),
+            h('p', { className: 'text-xs font-mono font-bold text-emerald-900' },
+              a + ' × ' + b + ' = ' + product +
+              (a === b ? '' : ',  ' + b + ' × ' + a + ' = ' + product) +
+              ',  ' + product + ' ÷ ' + a + ' = ' + b +
+              (a === b ? '' : ',  ' + product + ' ÷ ' + b + ' = ' + a)
+            ),
+            h('p', { className: 'text-[10px] text-emerald-700 italic mt-1' },
+              'Same numbers, four faces. Knowing one fact gives you the others.'
+            )
+          ),
+
+          // Quick presets focusing on hard facts (the "tricky middle" of the table)
+          h('div', { className: 'flex flex-wrap items-center gap-1.5' },
+            h('span', { className: 'text-[11px] font-bold text-amber-700 self-center mr-1' }, 'Tricky facts to visualize:'),
+            [[6,7],[6,8],[6,9],[7,7],[7,8],[7,9],[8,8],[8,9],[9,9],[11,12],[12,12]].map(function(pair) {
+              return h('button', { key: 'vp-' + pair[0] + '-' + pair[1],
+                onClick: function() { extUpd({ visualA: pair[0], visualB: pair[1] }); },
+                className: 'px-2 py-0.5 rounded text-[11px] font-mono bg-white text-amber-700 border border-amber-300 hover:bg-amber-100'
+              }, pair[0] + '×' + pair[1]);
+            })
+          )
+        );
+      };
+
+      // ═══ PATTERNS TAB: discover the structure of the times table ═══
+      // Click a pattern chip → cells light up on the table + an explanation appears.
+      // Builds number-sense ("WHY 9s digits add to 9") not just rote recall.
+      var PATTERNS = [
+        {
+          id: 'fives', label: '5s end in 0 or 5', icon: '5️⃣', accent: '#0891b2',
+          cellMatches: function(r, c) { return (r + 1) === 5 || (c + 1) === 5; },
+          explain: 'Every multiple of 5 ends in either 0 or 5. Look: 5×1=5, 5×2=10, 5×3=15, 5×4=20… alternating. This is the easiest column to memorize first.'
+        },
+        {
+          id: 'nines', label: '9s digits sum to 9', icon: '9️⃣', accent: '#dc2626',
+          cellMatches: function(r, c) { return (r + 1) === 9 || (c + 1) === 9; },
+          explain: 'For 9 × 1-10: the two digits of the answer always add to 9. 9×3=27 (2+7=9). 9×7=63 (6+3=9). Also: the tens digit is one less than what you multiplied by (9×7 → tens is 6, one less than 7).'
+        },
+        {
+          id: 'squares', label: 'Perfect squares', icon: '⬛', accent: '#7c3aed',
+          cellMatches: function(r, c) { return r === c; },
+          explain: 'The diagonal: n × n. 1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144. Memorize these and you cut a quarter of the table in half — every fact off the diagonal has a twin (commutativity).'
+        },
+        {
+          id: 'doubles', label: 'Doubles (×2)', icon: '🔁', accent: '#16a34a',
+          cellMatches: function(r, c) { return (r + 1) === 2 || (c + 1) === 2; },
+          explain: '×2 is just doubling — adding the number to itself. 7×2 = 7+7 = 14. If you know your doubles, you also know ×4 (double again) and ×8 (double once more).'
+        },
+        {
+          id: 'tens', label: '×10 adds a zero', icon: '🔟', accent: '#0f766e',
+          cellMatches: function(r, c) { return (r + 1) === 10 || (c + 1) === 10; },
+          explain: '×10 is the easiest: just put a 0 at the end. 7×10 = 70. This works because our number system is base 10. ×100 puts two zeros, ×1000 puts three, etc.'
+        },
+        {
+          id: 'elevens', label: '11s repeat the digit (×1-9)', icon: '1️⃣1️⃣', accent: '#9333ea',
+          cellMatches: function(r, c) { return (r + 1) === 11 || (c + 1) === 11; },
+          explain: 'For 11 × 1 through 11 × 9: the answer is just that digit doubled. 11×3=33, 11×7=77. (11×10 breaks the pattern: 110. 11×11=121, 11×12=132.)'
+        },
+        {
+          id: 'distributive', label: '7s = 5s + 2s (distributive)', icon: '✂️', accent: '#d97706',
+          cellMatches: function(r, c) { return (r + 1) === 7 || (c + 1) === 7; },
+          explain: 'Forgot 7×8? Split: 7×8 = (5+2)×8 = 5×8 + 2×8 = 40 + 16 = 56. Any "hard" fact can be split into two "easy" facts using the distributive property.'
+        }
+      ];
+
+      var renderPatterns = function() {
+        var selectedPattern = patternId ? PATTERNS.find(function(p) { return p.id === patternId; }) : null;
+
+        // Build the 12×12 table with pattern highlighting
+        var headerRow = [h('th', { key: 'corner', scope: 'col', className: 'w-8 h-8 text-[11px] font-bold text-indigo-400' }, '×')];
+        for (var hc = 0; hc < maxNum; hc++) {
+          var isColHighlight = selectedPattern && (selectedPattern.cellMatches(-1, hc) || selectedPattern.cellMatches(hc, hc));
+          // Actually simpler: header is highlighted if the column has any highlighted cells
+          var colHasMatch = false;
+          if (selectedPattern) {
+            for (var rr = 0; rr < maxNum; rr++) { if (selectedPattern.cellMatches(rr, hc)) { colHasMatch = true; break; } }
+          }
+          headerRow.push(h('th', { key: 'h' + hc, scope: 'col',
+            className: 'w-8 h-8 text-xs font-bold ' + (colHasMatch ? 'text-white' : 'text-indigo-500'),
+            style: colHasMatch ? { backgroundColor: selectedPattern.accent } : null
+          }, hc + 1));
+        }
+        var bodyRows = [];
+        for (var br = 0; br < maxNum; br++) {
+          var rowHasMatch = false;
+          if (selectedPattern) {
+            for (var cc = 0; cc < maxNum; cc++) { if (selectedPattern.cellMatches(br, cc)) { rowHasMatch = true; break; } }
+          }
+          var cells = [h('td', { key: 'rh-' + br,
+            className: 'w-8 h-8 text-xs font-bold ' + (rowHasMatch ? 'text-white' : 'text-indigo-500'),
+            style: rowHasMatch ? { backgroundColor: selectedPattern.accent } : null
+          }, br + 1)];
+          for (var bc = 0; bc < maxNum; bc++) {
+            var val = (br + 1) * (bc + 1);
+            var isMatch = selectedPattern && selectedPattern.cellMatches(br, bc);
+            cells.push(h('td', {
+              key: 'pc-' + br + '-' + bc,
+              className: 'w-8 h-8 text-[11px] font-mono border border-slate-100 transition-all ' +
+                (isMatch ? 'font-bold text-white allo-mt-pattern-cell' : 'text-slate-600'),
+              style: isMatch ? { backgroundColor: selectedPattern.accent, opacity: 0.92 } : null
+            }, val));
+          }
+          bodyRows.push(h('tr', { key: 'br-' + br }, cells));
+        }
+
+        return h('div', { className: 'space-y-3' },
+          // Pattern chip selector
+          h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
+            h('p', { className: 'text-[11px] font-bold text-indigo-800 mb-2' },
+              '🔍 Pick a pattern to highlight. The table is full of structure — once you see it, half the facts become predictable.'
+            ),
+            h('div', { className: 'flex flex-wrap gap-1.5' },
+              PATTERNS.map(function(p) {
+                var active = patternId === p.id;
+                return h('button', {
+                  key: 'pat-' + p.id,
+                  onClick: function() {
+                    playSound('default');
+                    // Track pattern exploration for the Pattern Finder badge
+                    var explored = Object.assign({}, _ext.patternsExplored || {});
+                    explored[p.id] = true;
+                    extUpd({ patternId: active ? null : p.id, patternsExplored: explored });
+                    if (!active && Object.keys(explored).length >= 5 && !_ext.badges.patternFinder) {
+                      checkBadges({
+                        firstCorrect: !!_ext.badges.firstCorrect, streak5: !!_ext.badges.streak5,
+                        streak10: !!_ext.badges.streak10, streak20: !!_ext.badges.streak20,
+                        squareMaster: !!_ext.badges.squareMaster, hiddenHero: !!_ext.badges.hiddenHero,
+                        adaptiveAce: !!_ext.badges.adaptiveAce, centurion: !!_ext.badges.centurion,
+                        mathlete: !!_ext.badges.mathlete, trickyMaster: !!_ext.badges.trickyMaster,
+                        visualLearner: !!_ext.badges.visualLearner,
+                        patternFinder: Object.keys(explored).length >= 5
+                      });
+                    }
+                    announceToSR(active ? 'Pattern off' : 'Pattern: ' + p.label);
+                  },
+                  'aria-pressed': active,
+                  className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ' +
+                    (active ? 'text-white shadow-sm' : 'bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-100'),
+                  style: active ? { backgroundColor: p.accent, borderColor: p.accent } : null
+                }, p.icon + ' ' + p.label);
+              })
+            )
+          ),
+
+          // The table with highlighting
+          h('div', { className: 'bg-white rounded-xl border-2 border-indigo-200 p-3 overflow-x-auto' },
+            h('table', { className: 'border-collapse w-full text-center', 'aria-label': 'Multiplication table with pattern highlighting' },
+              h('caption', { className: 'sr-only' }, selectedPattern ? 'Showing pattern: ' + selectedPattern.label : 'Multiplication table'),
+              h('thead', null, h('tr', null, headerRow)),
+              h('tbody', null, bodyRows)
+            )
+          ),
+
+          // Explanation for the selected pattern
+          selectedPattern && h('div', { className: 'bg-white rounded-xl border-2 p-3', style: { borderColor: selectedPattern.accent + '88' } },
+            h('p', { className: 'text-sm font-bold mb-1', style: { color: selectedPattern.accent } }, selectedPattern.icon + ' ' + selectedPattern.label),
+            h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, selectedPattern.explain)
+          ),
+
+          !selectedPattern && h('p', { className: 'text-xs text-indigo-700 italic text-center' },
+            '👆 Click any pattern above to light up the cells and read the rule. Multiple patterns may overlap (e.g., 5×5 is both a "5s multiple" and a "perfect square").'
+          ),
+
+          // Pedagogy note
+          h('details', { className: 'bg-white rounded-xl border border-indigo-200 p-3' },
+            h('summary', { className: 'text-xs font-bold text-indigo-700 cursor-pointer' }, '💡 Why patterns beat brute memorization'),
+            h('div', { className: 'mt-2 space-y-2 text-xs text-slate-700' },
+              h('p', {}, h('b', {}, 'You only need to memorize about a third of the table. '),
+                'Anything in the 1s, 2s, 5s, 10s, 11s columns has an easy rule. The squares are a small set (12 facts). What remains is the "tricky middle" — about 15 facts — that needs real recall: 6×7, 6×8, 6×9, 7×8, 7×9, 8×9 and their twins.'
+              ),
+              h('p', {}, h('b', {}, 'Distributive shortcut for the tricky middle. '),
+                'Forget 7×8? 7×8 = 5×8 + 2×8 = 40 + 16 = 56. Build the hard fact from two easy ones. After enough repetitions, the answer becomes automatic.'
+              ),
+              h('p', {}, h('b', {}, 'For dyscalculia specifically: '),
+                'Visualizing each fact as an area-model rectangle (Visual tab) or a pattern (this tab) gives you a path to the answer that does not require automatic recall. Recall builds eventually, but not from drilling alone.'
+              )
+            )
+          )
+        );
+      };
 
       // ═══════════════════════════════
       // ═══ RENDER ═══
@@ -520,9 +991,63 @@ window.StemLab = window.StemLab || {
             h('button', { onClick: askAI,
               className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-600 text-purple-600 hover:bg-purple-100 transition-all',
               title: 'AI Tutor (?)'
-            }, '\uD83E\uDDE0 AI')
+            }, '\uD83E\uDDE0 AI'),
+            // Mute toggle (v3)
+            h('button', {
+              onClick: function() {
+                var next = !muted;
+                extUpd({ muted: next });
+                window._multTableMuted = next;
+                if (!next) { setTimeout(function() { playSound('default'); }, 0); }
+                announceToSR(next ? 'Sound muted' : 'Sound on');
+              },
+              'aria-label': muted ? 'Unmute sound effects' : 'Mute sound effects',
+              'aria-pressed': muted,
+              title: muted ? 'Unmute (sounds are off)' : 'Mute (sounds are on)',
+              className: 'text-base px-1.5 py-0.5 rounded-full hover:bg-slate-100 transition-colors ' + (muted ? 'text-slate-400' : 'text-pink-700')
+            }, muted ? '\uD83D\uDD07' : '\uD83D\uDD0A'),
+            // Reset (v3)
+            h('button', {
+              onClick: function() {
+                setMultTableChallenge(null); setMultTableAnswer(''); setMultTableFeedback(null);
+                setMultTableHover(null); setMultTableRevealed(new Set());
+                setHighlightCell(null); setInputDisabled(false);
+                if (_mt.active) { _mtUpd({ active: false }); if (labToolData._multTimerInterval) clearInterval(labToolData._multTimerInterval); }
+                extUpd({ patternId: null, mtTab: 'practice', visualA: 7, visualB: 8 });
+                announceToSR('Multiplication table reset');
+              },
+              'aria-label': 'Reset',
+              title: 'Reset all',
+              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-all'
+            }, '\u21BA Reset')
           )
         ),
+
+        // Tab bar (v3)
+        h('div', { className: 'flex gap-1 bg-pink-50 rounded-xl p-1 border border-pink-200', role: 'tablist', 'aria-label': 'Multiplication Table sections' },
+          [
+            { id: 'practice', icon: '\uD83C\uDFAF', label: 'Practice' },
+            { id: 'visual',   icon: '\uD83D\uDFE9', label: 'Visual' },
+            { id: 'patterns', icon: '\uD83D\uDD0D', label: 'Patterns' }
+          ].map(function(tb) {
+            var active = mtTab === tb.id;
+            return h('button', { key: 'mtt-' + tb.id,
+              onClick: function() { playSound('default'); extUpd({ mtTab: tb.id }); },
+              role: 'tab', 'aria-selected': active,
+              className: 'flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all ' +
+                (active ? 'bg-white text-pink-800 shadow-sm' : 'text-pink-600 hover:text-pink-800')
+            }, tb.icon + ' ' + tb.label);
+          })
+        ),
+
+        // VISUAL TAB content
+        mtTab === 'visual' && h('div', { className: 'allo-mt-bg-visual' }, renderVisual()),
+
+        // PATTERNS TAB content
+        mtTab === 'patterns' && h('div', { className: 'allo-mt-bg-patterns' }, renderPatterns()),
+
+        // PRACTICE TAB content (existing body, wrapped)
+        mtTab === 'practice' && h('div', { className: 'space-y-4 allo-mt-bg-practice' },
 
         // ── Badge panel ──
         _ext.showBadges && h('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200' },
@@ -579,6 +1104,7 @@ window.StemLab = window.StemLab || {
                   ? dm.id === 'easy' ? 'bg-green-700 text-white shadow-sm'
                     : dm.id === 'medium' ? 'bg-blue-700 text-white shadow-sm'
                     : dm.id === 'hard' ? 'bg-red-700 text-white shadow-sm'
+                    : dm.id === 'tricky' ? 'bg-fuchsia-700 text-white shadow-sm'
                     : 'bg-purple-500 text-white shadow-sm'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-400')
             }, dm.label + ' (' + dm.range + ')');
@@ -787,7 +1313,9 @@ window.StemLab = window.StemLab || {
         // ── Challenge area ──
         multTableChallenge && h('div', { className: 'bg-pink-50 rounded-lg p-3 border border-pink-200' },
           h('p', { className: 'text-lg font-bold text-pink-800 mb-2 text-center' },
-            multTableChallenge.a + ' \u00D7 ' + multTableChallenge.b + ' = ?'),
+            multTableChallenge.mode === 'div'
+              ? ((multTableChallenge.a * multTableChallenge.b) + ' \u00F7 ' + multTableChallenge.divisor + ' = ?')
+              : (multTableChallenge.a + ' \u00D7 ' + multTableChallenge.b + ' = ?')),
           h('div', { className: 'flex gap-2 items-center justify-center' },
             h('input', {
               type: 'number',
@@ -818,6 +1346,24 @@ window.StemLab = window.StemLab || {
           multTableFeedback && h('p', {
             className: 'text-sm font-bold mt-2 text-center ' + (multTableFeedback.correct ? 'text-green-600' : 'text-red-600')
           }, multTableFeedback.msg),
+
+          // Fact family (correct answer + bridge to division)
+          multTableFeedback && multTableFeedback.correct && multTableFeedback.factFamily && h('div', {
+            className: 'mt-2 mx-auto bg-pink-50 rounded-lg px-3 py-2 border border-pink-200 max-w-md text-center'
+          },
+            h('p', { className: 'text-[10px] font-bold text-pink-700 uppercase tracking-wider mb-1' }, '👨‍👩‍👧 Fact family — same numbers, four faces'),
+            h('p', { className: 'text-[11px] font-mono text-pink-900' }, multTableFeedback.factFamily)
+          ),
+
+          // Memory trick (when wrong AND the fact is in TRICKY_15)
+          multTableFeedback && !multTableFeedback.correct && multTableFeedback.isTricky && MEMORY_TRICKS[multTableFeedback.trickKey] && h('div', {
+            className: 'mt-2 mx-auto bg-amber-50 rounded-lg px-3 py-2 border border-amber-200 max-w-md'
+          },
+            h('p', { className: 'text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1' },
+              MEMORY_TRICKS[multTableFeedback.trickKey].icon + ' Memory trick'
+            ),
+            h('p', { className: 'text-[12px] text-amber-900 leading-relaxed' }, MEMORY_TRICKS[multTableFeedback.trickKey].trick)
+          ),
           // Auto-advance indicator + Skip button
           multTableFeedback && inputDisabled && h('div', { className: 'flex items-center justify-center gap-2 mt-1' },
             h('p', { className: 'text-[11px] text-slate-600 animate-pulse' }, 'Next question coming...'),
@@ -848,6 +1394,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'ml-3 inline-block w-3 h-3 bg-pink-500 rounded mr-1' }), ' Selected',
           h('span', { className: 'ml-3 inline-block w-3 h-3 bg-amber-400 border border-amber-500 rounded mr-1' }), ' Correct answer'
         )
+        )  // end of Practice tab wrapper
       );
     }
   });
