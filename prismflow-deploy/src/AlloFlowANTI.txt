@@ -1689,6 +1689,60 @@ const generateUUID = () => {
     return v.toString(16);
   });
 };
+// FERPA-by-design boundary for live-session sync. Tier-1 = sync-safe aggregates
+// and pseudonymous tokens. Anything NOT on this list is Tier-2 (student-identifying
+// or individual artifacts: real names, free text, AI transcripts, generated images)
+// and must NOT touch any backend, even ephemerally. New session-doc writes should
+// route through writeToSession() below; existing writes were audited and either
+// gated by _isCanvasEnv or restricted to Tier-1 fields.
+const SESSION_TIER1_LEAVES = new Set([
+  'displayToken', 'nicknameToken', 'xp', 'level', 'energy', 'gold', 'progress',
+  'groupId', 'groupConfig', 'readingLevel', 'language', 'ttsSpeed',
+  'submitted', 'timestamp', 'itemType', 'conceptLabel', 'phase', 'stage',
+  'vote', 'rating', 'choice', 'questionIdx',
+  'currentScene', 'sceneImage', 'xpToNextLevel', 'inventory',
+  'currentResourceId', 'activeAdventureScene', 'activeAdventureState',
+  'pushedBy', 'forceStatic', 'createdAt', 'expiresAt',
+]);
+const writeToSession = async (sessionRef, payload) => {
+  if (!sessionRef || !payload || typeof payload !== 'object') {
+    return Promise.reject(new Error('writeToSession: invalid arguments'));
+  }
+  const violations = [];
+  Object.keys(payload).forEach(key => {
+    const leaf = key.split('.').pop();
+    if (!SESSION_TIER1_LEAVES.has(leaf)) violations.push(key);
+  });
+  if (violations.length > 0) {
+    console.error(
+      '[AlloFlow Privacy] Refusing Tier-2 sync to session doc. Fields:', violations,
+      '\nKeep this data local-only, add the field to SESSION_TIER1_LEAVES with justification, or use a WebRTC peer channel.'
+    );
+    return Promise.reject(new Error('Tier-2 sync refused: ' + violations.join(', ')));
+  }
+  return updateDoc(sessionRef, payload);
+};
+if (typeof window !== 'undefined') {
+  window.__alloWriteToSession = writeToSession;
+  window.__alloSessionTier1Leaves = SESSION_TIER1_LEAVES;
+}
+// Friendly per-session display token derived deterministically from the Firebase
+// Auth UID. Used as the teacher-facing identifier in live sessions so the teacher
+// can do manual roster operations (group assignment, naming) without any
+// user-typed nickname being synced. Symbol Studio social stories still use the
+// student's local nickname directly — that path is local-only and unaffected.
+const TOKEN_ADJECTIVES = ['Gold','Silver','Sky','Sunny','Misty','Forest','Coral','Sage','Plum','Ocean','Snow','Amber','Crimson','Indigo','Mint','Rose','Cobalt','Maple','Lilac','Ember','Quiet','Brave','Swift','Kind'];
+const TOKEN_ANIMALS = ['Bee','Cat','Fox','Owl','Bear','Deer','Wolf','Otter','Whale','Hawk','Sparrow','Robin','Crane','Heron','Lynx','Hare','Moth','Newt','Toad','Eel','Mole','Wren','Finch','Stag'];
+const friendlyToken = (uid) => {
+  if (!uid || typeof uid !== 'string') return 'Guest';
+  let h = 0;
+  for (let i = 0; i < uid.length; i++) h = ((h << 5) - h + uid.charCodeAt(i)) | 0;
+  h = Math.abs(h);
+  return TOKEN_ADJECTIVES[h % TOKEN_ADJECTIVES.length] + TOKEN_ANIMALS[(Math.floor(h / TOKEN_ADJECTIVES.length)) % TOKEN_ANIMALS.length];
+};
+if (typeof window !== 'undefined') {
+  window.__alloFriendlyToken = friendlyToken;
+}
 // ── Session asset sync extracted to module_scope_extras_module.js (CDN) ──
 // uploadSessionAssets / hydrateSessionAssets — Firestore data:image ↔ doc-ref swap.
 let uploadSessionAssets = async (appId, resources) => {
@@ -7814,8 +7868,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           const targetAppId = activeSessionAppId || appId;
           const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
           const updateData = {};
-          updateData[`roster.${user.uid}.name`] = studentNickname || "Student";
           updateData[`roster.${user.uid}.xp`] = globalPoints;
+          updateData[`roster.${user.uid}.displayToken`] = friendlyToken(user.uid);
+          if (!_isCanvasEnv) {
+              updateData[`roster.${user.uid}.name`] = studentNickname || "Student";
+          }
           updateDoc(sessionRef, updateData).catch(e => warnLog("Roster sync skipped", e));
       }
   }, [globalPoints, activeSessionCode, isTeacherMode, user, studentNickname, activeSessionAppId]);
@@ -13733,14 +13790,20 @@ Return ONLY valid JSON in this format:
       if (!activeSessionCode || !user || !user.uid) return;
       if (!payload || typeof payload.questionIdx !== 'number') return;
       const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+      const STRUCTURED_ITEM_TYPES = new Set(['mcq', 'multiple-choice', 'true-false', 'tf', 'match', 'sequence', 'numeric', 'order']);
+      const isStructured = STRUCTURED_ITEM_TYPES.has(String(payload.itemType || 'mcq').toLowerCase());
+      const responsePayload = {
+          itemType: payload.itemType || 'mcq',
+          timestamp: payload.timestamp || Date.now(),
+          conceptLabel: payload.conceptLabel || '',
+          submitted: true,
+      };
+      if (isStructured) {
+          responsePayload.answer = payload.answer;
+      }
       try {
         await updateDoc(sessionRef, {
-            [`quizState.allResponses.${user.uid}.${payload.questionIdx}`]: {
-                answer: payload.answer,
-                itemType: payload.itemType || 'mcq',
-                timestamp: payload.timestamp || Date.now(),
-                conceptLabel: payload.conceptLabel || '',
-            }
+            [`quizState.allResponses.${user.uid}.${payload.questionIdx}`]: responsePayload
         });
       } catch (error) {
            warnLog("Error submitting live answer:", error);
