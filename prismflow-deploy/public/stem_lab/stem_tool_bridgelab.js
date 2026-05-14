@@ -1062,20 +1062,23 @@
             '#86efac'
           ),
 
-          sectionCard('A note on this analysis',
-            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.65 } },
-              useExact
-                ? h('span', null,
-                    h('strong', { style: { color: '#86efac' } }, '✓ Exact analysis (Method of Joints). '),
-                    'Forces are computed from 2D pin-jointed equilibrium: for each joint, sum of forces in x and sum of forces in y both equal zero. ',
-                    'The resulting linear system (' + (2 * spec.joints.length) + ' equations, ' + (spec.members.length + Object.keys(spec.supports).reduce(function(acc, jid) { return acc + (spec.supports[jid] === 'pin' ? 2 : 1); }, 0)) + ' unknowns) is solved by Gaussian elimination with partial pivoting. Hover over any member in the diagram to see its exact tension or compression force. The maximum chord force (' + analysis.maxChord.toFixed(0) + ' kN) and maximum diagonal force (' + analysis.maxDiag.toFixed(0) + ' kN) are now the actual peak member forces, not deep-beam approximations.'
-                  )
-                : h('span', null,
-                    h('strong', { style: { color: '#fbbf24' } }, '⚠ Deep-beam approximation. '),
-                    'K-trusses use the deep-beam approximation: the truss is treated like a single beam carrying the same total load. Maximum chord force ≈ M / h, where M is the bending moment and h is the truss height. The qualitative pattern (max chord at center, max diagonal force at ends) is correct, but per-member forces are not exact. Warren, Pratt, and Howe trusses use the exact Method of Joints solver.'
-                  )
-            )
-          )
+          (function() {
+            var useExact = moj && moj.ok && spec;
+            return sectionCard('A note on this analysis',
+              h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.65 } },
+                useExact
+                  ? h('span', null,
+                      h('strong', { style: { color: '#86efac' } }, '✓ Exact analysis (Method of Joints). '),
+                      'Forces are computed from 2D pin-jointed equilibrium: for each joint, sum of forces in x and sum of forces in y both equal zero. ',
+                      'The resulting linear system (' + (2 * spec.joints.length) + ' equations, ' + (spec.members.length + Object.keys(spec.supports).reduce(function(acc, jid) { return acc + (spec.supports[jid] === 'pin' ? 2 : 1); }, 0)) + ' unknowns) is solved by Gaussian elimination with partial pivoting. Hover over any member in the diagram to see its exact tension or compression force. The maximum chord force (' + analysis.maxChord.toFixed(0) + ' kN) and maximum diagonal force (' + analysis.maxDiag.toFixed(0) + ' kN) are now the actual peak member forces, not deep-beam approximations.'
+                    )
+                  : h('span', null,
+                      h('strong', { style: { color: '#fbbf24' } }, '⚠ Deep-beam approximation. '),
+                      'K-trusses use the deep-beam approximation: the truss is treated like a single beam carrying the same total load. Maximum chord force ≈ M / h, where M is the bending moment and h is the truss height. The qualitative pattern (max chord at center, max diagonal force at ends) is correct, but per-member forces are not exact. Warren, Pratt, and Howe trusses use the exact Method of Joints solver.'
+                    )
+              )
+            );
+          })()
         );
 
         function sliderControl(label, value, min, max, step, onChange, accent) {
