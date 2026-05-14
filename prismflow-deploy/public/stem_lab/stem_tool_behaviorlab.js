@@ -384,6 +384,53 @@ var d = labToolData || {};
             { term: 'Token Economy', def: 'A system where tokens (conditioned reinforcers) are earned for target behaviors and exchanged for backup reinforcers.' }
           ];
 
+          // === Beyond Pure ABA — neurodiversity-affirming + trauma-informed ===
+          // The critical lens that's often missing from operant-conditioning
+          // pedagogy. ABA is a powerful set of tools AND has been used in
+          // ways the autistic community has documented as harmful. Modern
+          // school-psych practice holds both truths at once. Sources:
+          // Autism Self Advocacy Network position statements; Damian Milton
+          // 'Double Empathy Problem'; Kupferstein 2018 ABA-PTSD survey;
+          // updated BACB ethical guidance; NDBI research literature.
+          var BEYOND_ABA = [
+            {
+              name: 'The autism community critique',
+              icon: '🌟', color: '#a78bfa',
+              desc: 'Adult autistic advocates — including many who experienced early ABA — have documented serious concerns about historical practice: 40-hour-week intensity, "indistinguishable from peers" as a goal (which trains masking), targeting stimming and eye-contact "deficits" without considering their function, and the use of contingencies that look like coercion when the client cannot meaningfully consent or refuse.',
+              source: 'Autism Self Advocacy Network position statements; Kupferstein 2018 ABA-PTSD survey'
+            },
+            {
+              name: 'Neurodiversity-affirming ABA',
+              icon: '🌱', color: '#22c55e',
+              desc: 'Modern ethical practice has shifted: client assent (not just guardian consent) is required throughout sessions, "normalization" goals are increasingly declined, stimming is recognized as self-regulation rather than a target for reduction, and client-chosen goals replace clinician-imposed ones. The acronym stays; the values inside it have moved.',
+              source: 'Updated BACB ethical guidance (2022+); Schreibman et al. on naturalistic developmental behavioral interventions (NDBI)'
+            },
+            {
+              name: 'Trauma-informed behavior practice',
+              icon: '🤗', color: '#f472b6',
+              desc: 'Some "non-compliance" is a trauma response, not a learning deficit. A child who freezes, flees, or fights at a familiar demand may be telling you the demand has become a threat cue. Regulation comes before reasoning; co-regulation comes before self-regulation. Contingency analysis still matters — it just is not the whole picture.',
+              source: 'Bruce Perry Neurosequential Model; Stuart Shanker self-regulation framework'
+            },
+            {
+              name: 'The Double Empathy Problem',
+              icon: '⇄', color: '#22d3ee',
+              desc: 'Research by autistic scholar Damian Milton reframes "social skill deficits" as a two-way mismatch in mutual understanding between autistic and non-autistic people, not a one-sided deficit located in the autistic person. This changes what we measure as a "behavior problem" — and who needs to do the changing.',
+              source: 'Milton 2012; Crompton et al. 2020 (autistic-to-autistic communication research)'
+            },
+            {
+              name: 'What ABA does well',
+              icon: '✅', color: '#fbbf24',
+              desc: 'Honest accounting matters. Functional communication training for non-speaking learners has changed lives. Reduction of self-injurious or dangerous behavior is sometimes the difference between a kid going to school and a kid getting hospitalized. Self-help skills the client actively wants. Schedules of reinforcement explain real classroom outcomes. The science is real; the application has to be ethical.',
+              source: 'Carr et al. on FCT; CER literature on dangerous-behavior reduction'
+            },
+            {
+              name: 'What ABA cannot do alone',
+              icon: '🧩', color: '#94a3b8',
+              desc: 'Operant conditioning is one tool. It does not replace mental-health treatment for trauma or anxiety. It does not address the sensory environment a building creates. It does not substitute for autistic community and identity. Good practice integrates ABA with OT (sensory), SLP (communication), mental health (regulation), and — crucially — autistic adult mentorship that the child can grow into.',
+              source: 'Autism Self Advocacy Network "Real Communities" framework; OT/SLP integrative-care literature'
+            }
+          ];
+
           // === ABA Ethics Principles ===
           var ABA_ETHICS = [
             { name: 'Benefit Others', icon: '\u2764', desc: 'ABA practitioners have a responsibility to promote the well-being of their clients above all other considerations.' },
@@ -4533,7 +4580,66 @@ var d = labToolData || {};
               )
             ),
 
-            
+            // === BEYOND PURE ABA — neurodiversity-affirming + trauma-informed ===
+            // Critical-lens panel that other ABA tools rarely include. Holds
+            // both 'ABA does real work' AND 'ABA has been used in ways
+            // autistic adults document as harmful' as simultaneously true.
+            // School-psych voice.
+            React.createElement("div", {
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(167,139,250,0.25)' }, glass)
+            },
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🧭 Beyond Pure ABA — neurodiversity-affirming + trauma-informed"),
+                React.createElement("button", { onClick: function() { upd('blShowBeyond', !d.blShowBeyond); },
+                  className: "text-[11px] text-purple-400 hover:text-purple-300"
+                }, d.blShowBeyond ? 'Hide' : 'View →')
+              ),
+              d.blShowBeyond && React.createElement("div", null,
+                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-3", style: { lineHeight: 1.55 } },
+                  "Operant conditioning is a powerful set of tools AND has been used in ways the autistic community has documented as harmful. Good modern practice holds both truths at once. School psychs and BCBAs working in K-12 settings need the critical lens to apply ABA ethically — not just the technical mechanics."),
+                React.createElement("div", { className: "space-y-2" },
+                  BEYOND_ABA.map(function(b, bi) {
+                    return React.createElement("div", {
+                      key: 'beyond-' + bi,
+                      style: {
+                        background: 'rgba(15,23,42,0.6)',
+                        borderRadius: 10,
+                        padding: '10px 12px',
+                        border: '1px solid rgba(100,116,139,0.25)',
+                        borderLeft: '3px solid ' + b.color
+                      }
+                    },
+                      React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                        React.createElement("div", {
+                          'aria-hidden': 'true',
+                          style: {
+                            width: 32, height: 32, borderRadius: '50%',
+                            background: b.color + '22',
+                            border: '1.5px solid ' + b.color,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 16, lineHeight: 1, flexShrink: 0
+                          }
+                        }, b.icon),
+                        React.createElement("div", { style: { fontSize: 12, fontWeight: 800, color: b.color } }, b.name)
+                      ),
+                      React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 6 } }, b.desc),
+                      React.createElement("div", { style: { fontSize: 9, color: '#64748b', fontStyle: 'italic', letterSpacing: '0.02em' } },
+                        '📚 ', b.source)
+                    );
+                  })
+                ),
+                React.createElement("div", {
+                  style: {
+                    marginTop: 10, padding: 10, borderRadius: 8,
+                    background: 'rgba(96,165,250,0.06)',
+                    border: '1px solid rgba(96,165,250,0.18)',
+                    color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic'
+                  }
+                },
+                  "💡 Identity-first language follows community-consensus norms (Kenny et al. 2016; Bury et al. 2020; Taboas et al. 2023). The Behavior Lab teaches the science of behavior; this panel teaches the ethics of applying it to humans who can tell us what they want.")
+              )
+            ),
+
             // === SCHEDULE COMPARISON CANVAS ===
             React.createElement("div", {
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(245,158,11,0.2)' }, glass)
