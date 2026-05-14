@@ -4885,7 +4885,11 @@ var d = (labToolData.companionPlanting) || {};
                         var btPhase = t * 0.4 + bti * 2.1;
                         var btCx = W * (0.2 + (bti / btCount) * 0.7) + Math.sin(btPhase) * 70;
                         var btCy = H * 0.42 + Math.sin(btPhase * 2) * 28;
-                        var wingPh = Math.sin(t * 14 + bti) * 0.55 + 0.45;
+                        // Math.sin * 0.55 + 0.45 ranges [-0.10, 1.00] — Math.abs collapses the
+                        // wing-flap into a 0→1 oscillation (wings opening/closing both look the
+                        // same visually) and guarantees a non-negative ellipse radiusX below.
+                        // Floor at 0.05 so the wing never goes to a zero-width line.
+                        var wingPh = Math.max(0.05, Math.abs(Math.sin(t * 14 + bti)));
                         var btCol = btColors[bti % btColors.length];
                         gctx.fillStyle = btCol;
                         // 4 wings (paired fore + hind)
