@@ -1,8 +1,11 @@
 // ═══════════════════════════════════════════
-// stem_tool_areamodel.js — Area Model Plugin (Enhanced v2)
-// 3 tabs: Basic Grid, Distributive, Partial Products
-// + sound effects, 12 badges, AI tutor, streak tracking,
-//   more challenge types, commutative toggle, keyboard shortcuts
+// stem_tool_areamodel.js — Area Model Plugin (Enhanced v3)
+// 4 tabs: Basic Grid, Distributive, Partial Products, Word Problems
+// + sound effects (mutable), 14 badges, AI tutor, streak tracking,
+//   commutative toggle, skip-count overlay (mult as repeated addition),
+//   word-problem mode using real-world contexts (garden, parking lot, etc.),
+//   atmospheric backgrounds, smooth cell transitions, reset button,
+//   keyboard shortcuts
 // ═══════════════════════════════════════════
 
 window.StemLab = window.StemLab || {
@@ -34,6 +37,25 @@ window.StemLab = window.StemLab || {
     liveRegion.className = 'sr-only';
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
+  })();
+
+  // Area-model v3: atmospheric backgrounds + smooth cell transitions
+  (function() {
+    if (document.getElementById('allo-areamodel-v3-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-areamodel-v3-css';
+    st.textContent = [
+      '@keyframes allo-am-cell-pulse { 0% { transform: scale(0.92); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }',
+      '@keyframes allo-am-pop { 0% { transform: scale(1); } 30% { transform: scale(1.1); } 100% { transform: scale(1); } }',
+      '.allo-am-cell { transition: background-color 0.22s ease, border-color 0.22s ease, transform 0.18s ease; }',
+      '.allo-am-cell-fill { animation: allo-am-cell-pulse 0.32s ease-out; }',
+      '.allo-am-bg-basic        { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(217,119,6,0.10) 0%, rgba(217,119,6,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '.allo-am-bg-distributive { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(147,51,234,0.10) 0%, rgba(147,51,234,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '.allo-am-bg-multidigit   { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(8,145,178,0.10) 0%, rgba(8,145,178,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '.allo-am-bg-word         { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(16,185,129,0.10) 0%, rgba(16,185,129,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '@media (prefers-reduced-motion: reduce) { .allo-am-cell, .allo-am-cell-fill { transition: none !important; animation: none !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
   })();
 
 
@@ -71,6 +93,7 @@ window.StemLab = window.StemLab || {
         return _audioCtx;
       };
       var playTone = function(freq, dur, type, vol) {
+        if (_a.muted) return;
         var ac = getAudio(); if (!ac) return;
         try {
           var osc = ac.createOscillator();
@@ -121,6 +144,12 @@ window.StemLab = window.StemLab || {
       var fracSolved = _a.fracSolved || 0;
       var fracNums = _a.fracNums || { an: 1, ad: 2, bn: 1, bd: 3 };
 
+      // v3 additions
+      var muted = _a.muted || false;                                    // global mute (read by playTone)
+      var showSkipCount = _a.showSkipCount !== false;                   // skip-count overlay on basic grid (default ON)
+      var wordCtxIdx = _a.wordCtxIdx != null ? _a.wordCtxIdx : 0;       // word problem context index
+      var wordDims = _a.wordDims || { a: 4, b: 6 };                     // word problem factors
+
       // Effective dims
       var rows = swapped ? dims.cols : dims.rows;
       var cols = swapped ? dims.rows : dims.cols;
@@ -154,7 +183,7 @@ window.StemLab = window.StemLab || {
         { id: 'basicPro', icon: '\uD83D\uDFE9', name: 'Grid Pro', desc: 'Solve 5 basic grid challenges', check: function(u) { return u.basicSolved >= 5; } },
         { id: 'distPro', icon: '\u2702\uFE0F', name: 'Distributor', desc: 'Solve 5 distributive challenges', check: function(u) { return u.distSolved >= 5; } },
         { id: 'multiPro', icon: '\uD83D\uDCCA', name: 'Partial Pro', desc: 'Solve 5 multi-digit challenges', check: function(u) { return u.multiSolved >= 5; } },
-        { id: 'allModes', icon: '\uD83C\uDF08', name: 'Well Rounded', desc: 'Solve challenges in all 3 modes', check: function(u) { return u.typesUsed >= 3; } },
+        { id: 'allModes', icon: '\uD83C\uDF08', name: 'Well Rounded', desc: 'Solve challenges in all 4 modes', check: function(u) { return u.typesUsed >= 4; } },
         { id: 'commutative', icon: '\u21C4', name: 'Commuter', desc: 'Use the commutative toggle', check: function(u) { return u.usedCommutative; } },
         { id: 'aiLearner', icon: '\uD83E\uDD16', name: 'AI Learner', desc: 'Ask the AI tutor a question', check: function(u) { return u.aiAsked >= 1; } },
         { id: 'wordPro', icon: '\uD83D\uDCDD', name: 'Word Wizard', desc: 'Solve 5 word problems', check: function(u) { return u.wordSolved >= 5; } },
@@ -236,6 +265,7 @@ window.StemLab = window.StemLab || {
         var newBasic = basicSolved + (ok && challenge.mode === 'basic' ? 1 : 0);
         var newDist = distSolved + (ok && challenge.mode === 'distributive' ? 1 : 0);
         var newMulti = multiSolved + (ok && challenge.mode === 'multidigit' ? 1 : 0);
+        var newWord = wordSolved + (ok && challenge.mode === 'word' ? 1 : 0);
 
         if (ok) {
           sfxCorrect();
@@ -252,14 +282,14 @@ window.StemLab = window.StemLab || {
             : { correct: false, msg: '\u274C Try again. ' + challenge.a + ' \u00d7 ' + challenge.b + ' = ' + challenge.answer },
           score: { correct: newCorrect, total: score.total + 1 },
           streak: newStreak, bestStreak: newBest,
-          basicSolved: newBasic, distSolved: newDist, multiSolved: newMulti
+          basicSolved: newBasic, distSolved: newDist, multiSolved: newMulti, wordSolved: newWord
         });
         if (ok) awardXP('areamodel', 5, 'area model');
 
         checkBadges({
           correct: newCorrect, streak: newStreak,
           typesUsed: Object.keys(challengeTypesUsed).length,
-          basicSolved: newBasic, distSolved: newDist, multiSolved: newMulti,
+          basicSolved: newBasic, distSolved: newDist, multiSolved: newMulti, wordSolved: newWord,
           usedCommutative: _a.usedCommutative || false,
           aiAsked: _a.aiAsked || 0
         });
@@ -299,6 +329,7 @@ window.StemLab = window.StemLab || {
           if (e.key === 'b' || e.key === 'B') { sfxClick(); upd({ viewMode: 'basic' }); }
           else if (e.key === 'd' || e.key === 'D') { sfxClick(); upd({ viewMode: 'distributive' }); }
           else if (e.key === 'p' || e.key === 'P') { sfxClick(); upd({ viewMode: 'multidigit' }); }
+          else if (e.key === 'w' || e.key === 'W') { sfxClick(); upd({ viewMode: 'word' }); }
           else if (e.key === 'n' || e.key === 'N') { genChallenge(viewMode); }
           else if (e.key === 'c' || e.key === 'C') {
             sfxClick();
@@ -318,22 +349,60 @@ window.StemLab = window.StemLab || {
           var c = i % cols;
           var isHigh = r < highlight.rows && c < highlight.cols;
           (function(ri, ci) {
-            cells.push(h('div', { 
+            cells.push(h('div', {
               key: i,
               onClick: function() { sfxClick(); upd({ highlight: { rows: ri + 1, cols: ci + 1 } }); },
-              className: 'aspect-square rounded-sm border cursor-pointer transition-all hover:scale-110 ' +
-                (isHigh ? 'bg-amber-400 border-amber-500 shadow-sm' : 'bg-amber-100 border-amber-200 hover:bg-amber-200')
+              className: 'allo-am-cell aspect-square rounded-sm border cursor-pointer hover:scale-110 ' +
+                (isHigh ? 'bg-amber-400 border-amber-500 shadow-sm allo-am-cell-fill' : 'bg-amber-100 border-amber-200 hover:bg-amber-200')
             }));
           })(r, c);
         }
         return h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4' },
-          h('div', {
-            className: 'grid gap-1 mx-auto',
-            style: {
-              gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))',
-              maxWidth: (cols <= 6 ? Math.min(cols * 52, 340) : cols <= 9 ? cols * 38 : cols * 32) + 'px'
-            }
-          }, cells)
+          // Skip-count overlay header (column scale + toggle)
+          h('div', { className: 'flex flex-wrap items-center gap-2 mb-2' },
+            h('label', { className: 'text-[11px] font-bold text-amber-800 flex items-center gap-1 cursor-pointer' },
+              h('input', { type: 'checkbox', checked: showSkipCount,
+                onChange: function() { sfxClick(); upd({ showSkipCount: !showSkipCount }); }
+              }),
+              '🔢 Skip-count overlay (multiplication as repeated addition)'
+            )
+          ),
+
+          // Side-by-side: row-totals column + grid
+          h('div', { className: 'flex items-start gap-2 justify-center' },
+            // Row-total column (cumulative skip count down the rows)
+            showSkipCount && h('div', {
+              className: 'flex flex-col gap-1',
+              'aria-hidden': 'false',
+              style: { fontVariantNumeric: 'tabular-nums' }
+            },
+              h('div', { className: 'text-[10px] font-bold text-amber-700 text-right pr-1 mb-0.5' }, 'total'),
+              Array.from({ length: rows }, function(_, ri) {
+                var runningTotal = (ri + 1) * cols;
+                var stepLabel = '+' + cols;
+                var isInHL = ri < highlight.rows;
+                return h('div', {
+                  key: 'rt-' + ri,
+                  className: 'aspect-square rounded text-xs font-bold flex flex-col items-center justify-center px-2 ' +
+                    (isInHL ? 'bg-orange-100 text-orange-800 border border-orange-300' : 'bg-amber-50 text-amber-700 border border-amber-100'),
+                  style: { minWidth: 48 }
+                },
+                  h('span', { className: 'text-[10px] text-amber-500 leading-none' }, ri === 0 ? cols : stepLabel),
+                  h('span', { className: 'text-base leading-tight' }, runningTotal)
+                );
+              })
+            ),
+            h('div', {
+              className: 'grid gap-1',
+              style: {
+                gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))',
+                maxWidth: (cols <= 6 ? Math.min(cols * 52, 340) : cols <= 9 ? cols * 38 : cols * 32) + 'px'
+              }
+            }, cells)
+          ),
+          showSkipCount && h('p', { className: 'text-[11px] text-amber-700 italic mt-2 text-center' },
+            'Each row adds ' + cols + '. ' + cols + ' + ' + cols + ' + ... (' + rows + ' times) = ' + cols + ' × ' + rows + ' = ' + (rows * cols)
+          )
         );
       };
 
@@ -491,6 +560,126 @@ window.StemLab = window.StemLab || {
         );
       };
 
+      // ═══ VIEW: WORD PROBLEMS ═══
+      // Real-world contexts make multiplication stick. Each prompt renders as a story
+      // PLUS the visual grid that matches it, so students see the rows-and-columns
+      // underneath the language. UDL: multiple means of representation, on the same
+      // mathematical fact.
+      var renderWordProblem = function() {
+        var wpA = wordDims.a, wpB = wordDims.b;
+        var ctx = WORD_CONTEXTS[wordCtxIdx % WORD_CONTEXTS.length] || WORD_CONTEXTS[0];
+        var story = ctx.replace(/\{a\}/g, wpA).replace(/\{b\}/g, wpB);
+        var product = wpA * wpB;
+
+        // Build the matching grid (a rows × b cols, small cells)
+        var cells = [];
+        for (var i = 0; i < wpA * wpB; i++) {
+          cells.push(h('div', { key: 'wp-' + i,
+            className: 'allo-am-cell aspect-square rounded-sm border bg-emerald-300 border-emerald-500'
+          }));
+        }
+
+        return h('div', { className: 'space-y-3' },
+          // Context picker + dims
+          h('div', { className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200 space-y-2' },
+            h('div', { className: 'flex flex-wrap items-center gap-2' },
+              h('span', { className: 'text-xs font-bold text-emerald-800' }, 'Story:'),
+              h('select', {
+                value: wordCtxIdx,
+                onChange: function(e) { sfxClick(); upd({ wordCtxIdx: parseInt(e.target.value, 10) }); },
+                'aria-label': 'Word problem context',
+                className: 'flex-1 px-2 py-1 text-xs border border-emerald-300 rounded bg-white'
+              },
+                WORD_CONTEXTS.map(function(t, i) {
+                  return h('option', { key: 'wpc-' + i, value: i }, t.replace(/\{a\}/g, 'A').replace(/\{b\}/g, 'B').slice(0, 60) + (t.length > 60 ? '…' : ''));
+                })
+              ),
+              h('button', {
+                onClick: function() { sfxClick(); upd({ wordCtxIdx: (wordCtxIdx + 1) % WORD_CONTEXTS.length }); },
+                'aria-label': 'Next story context',
+                className: 'px-2 py-1 text-[11px] font-bold bg-emerald-600 text-white rounded hover:bg-emerald-700'
+              }, '🔀 Next')
+            ),
+            h('div', { className: 'grid grid-cols-2 gap-2' },
+              h('div', {},
+                h('label', { className: 'block text-[10px] font-bold text-emerald-700 mb-0.5' }, 'A (rows / groups)'),
+                h('input', { type: 'range', min: '2', max: '12', value: wpA,
+                  onChange: function(e) { upd({ wordDims: { a: parseInt(e.target.value, 10), b: wpB } }); },
+                  'aria-label': 'A factor',
+                  className: 'w-full accent-emerald-600'
+                }),
+                h('div', { className: 'text-center text-base font-bold text-emerald-800' }, wpA)
+              ),
+              h('div', {},
+                h('label', { className: 'block text-[10px] font-bold text-emerald-700 mb-0.5' }, 'B (per row / per group)'),
+                h('input', { type: 'range', min: '2', max: '12', value: wpB,
+                  onChange: function(e) { upd({ wordDims: { a: wpA, b: parseInt(e.target.value, 10) } }); },
+                  'aria-label': 'B factor',
+                  className: 'w-full accent-emerald-600'
+                }),
+                h('div', { className: 'text-center text-base font-bold text-emerald-800' }, wpB)
+              )
+            )
+          ),
+
+          // The story prompt itself
+          h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-4' },
+            h('p', { className: 'text-sm font-bold text-emerald-900 leading-relaxed mb-3' }, '📖 ' + story),
+            h('div', { className: 'flex flex-col items-center gap-2' },
+              h('div', { className: 'text-[10px] font-bold text-emerald-700 uppercase tracking-wider' }, 'What the picture shows:'),
+              h('div', {
+                className: 'grid gap-0.5',
+                style: {
+                  gridTemplateColumns: 'repeat(' + wpB + ', minmax(0, 1fr))',
+                  maxWidth: (wpB <= 6 ? wpB * 36 : wpB * 28) + 'px'
+                }
+              }, cells)
+            ),
+            h('div', { className: 'mt-3 text-center bg-emerald-50 rounded-lg p-2 border border-emerald-100' },
+              h('p', { className: 'text-xs text-emerald-700' },
+                wpA + ' groups of ' + wpB + ' = ',
+                h('span', { className: 'font-mono font-bold' }, wpA + ' × ' + wpB),
+                ' = ',
+                h('span', { className: 'text-2xl font-bold text-emerald-900' }, product)
+              ),
+              h('p', { className: 'text-[10px] text-emerald-600 italic mt-1' }, 'The grid is the picture. Multiplication is the math.')
+            )
+          ),
+
+          // Word-problem challenge: pose a random story with hidden answer
+          h('div', { className: 'bg-emerald-50 rounded-xl p-3 border border-emerald-200' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
+              h('p', { className: 'text-[11px] font-bold text-emerald-800' }, '🎯 Word problem challenge'),
+              h('button', {
+                onClick: function() {
+                  // Generate a random challenge: pick a context, factors, and ask for the product
+                  sfxNewChallenge();
+                  var max = difficulty === 'easy' ? 6 : difficulty === 'hard' ? 12 : 9;
+                  var a2 = randInt(2, max);
+                  var b2 = randInt(2, max);
+                  var ctxIdx = Math.floor(Math.random() * WORD_CONTEXTS.length);
+                  var ctxStr = WORD_CONTEXTS[ctxIdx].replace(/\{a\}/g, a2).replace(/\{b\}/g, b2);
+                  var newTypes = Object.assign({}, challengeTypesUsed);
+                  newTypes.word = true;
+                  upd({
+                    viewMode: 'word',
+                    wordCtxIdx: ctxIdx,
+                    wordDims: { a: a2, b: b2 },
+                    challenge: { a: a2, b: b2, answer: a2 * b2, question: ctxStr, mode: 'word' },
+                    answer: '', feedback: null, challengeTypesUsed: newTypes
+                  });
+                },
+                'aria-label': 'New word problem',
+                className: 'px-3 py-1 bg-emerald-700 text-white text-xs font-bold rounded hover:bg-emerald-800'
+              }, '▶ New word problem')
+            ),
+            h('p', { className: 'text-[11px] text-emerald-700 italic' },
+              'Pick a story. Look at the matching grid. Multiplication is the count of things in a rectangle. 5 solved earns the 📝 Word Wizard badge.'
+            )
+          )
+        );
+      };
+
       // ═══ BADGES PANEL ═══
       var renderBadges = function() {
         var earned = Object.keys(badges).length;
@@ -556,16 +745,47 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'ml-auto flex items-center gap-3' },
             streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
             bestStreak > 0 && h('span', { className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak),
-            h('span', { className: 'text-xs font-bold text-amber-600' }, score.correct + '/' + score.total)
+            h('span', { className: 'text-xs font-bold text-amber-600' }, score.correct + '/' + score.total),
+            h('button', {
+              onClick: function() {
+                var next = !muted;
+                upd({ muted: next });
+                if (!next) { setTimeout(function() { playTone(660, 0.08, 'sine', 0.08); }, 0); }
+                announceToSR(next ? 'Sound muted' : 'Sound on');
+              },
+              'aria-label': muted ? 'Unmute sound effects' : 'Mute sound effects',
+              'aria-pressed': muted,
+              title: muted ? 'Unmute (sounds are off)' : 'Mute (sounds are on)',
+              className: 'p-1 rounded-md text-base hover:bg-slate-100 transition-colors ' + (muted ? 'text-slate-400' : 'text-amber-700')
+            }, muted ? '\uD83D\uDD07' : '\uD83D\uDD0A'),
+            h('button', {
+              onClick: function() {
+                sfxClick();
+                upd({
+                  dims: { rows: 4, cols: 6 },
+                  highlight: { rows: 0, cols: 0 },
+                  challenge: null, answer: '', feedback: null,
+                  swapped: false, splitAt: 3,
+                  multiDims: { a: 23, b: 14 },
+                  wordCtxIdx: 0, wordDims: { a: 4, b: 6 },
+                  streak: 0, viewMode: 'basic'
+                });
+                announceToSR('Area model reset to defaults');
+              },
+              'aria-label': 'Reset everything',
+              title: 'Reset all dimensions and challenges',
+              className: 'px-2 py-0.5 rounded text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-all'
+            }, '\u21BA Reset')
           )
         ),
 
         // Mode tabs
-        h('div', { className: 'flex gap-1 bg-amber-50 rounded-xl p-1 border border-amber-200' },
+        h('div', { className: 'flex gap-1 bg-amber-50 rounded-xl p-1 border border-amber-200', role: 'tablist', 'aria-label': 'Area Model modes' },
           [
             { id: 'basic', icon: '\uD83D\uDFE7', label: 'Basic Grid' },
             { id: 'distributive', icon: '\u2702\uFE0F', label: 'Distributive' },
-            { id: 'multidigit', icon: '\uD83D\uDCCA', label: 'Partial Products' }
+            { id: 'multidigit', icon: '\uD83D\uDCCA', label: 'Partial Products' },
+            { id: 'word', icon: '\uD83D\uDCDD', label: 'Word Problems' }
           ].map(function(m) {
             return h('button', { key: m.id,
               onClick: function() { sfxClick(); upd({ viewMode: m.id }); },
@@ -580,7 +800,8 @@ window.StemLab = window.StemLab || {
           var MODE_META = {
             basic:        { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDFE7', title: 'Basic Grid \u2014 multiplication as area',                hint: 'a \u00d7 b is the area of an a-by-b rectangle. This is THE bridge from skip-counting to multiplication. Common Core 3.MD.7: relate area to multiplication and addition.' },
             distributive: { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\u2702',         title: 'Distributive \u2014 split the rectangle, keep the area', hint: 'a(b+c) = ab + ac. Cut a 4\u00d77 grid into a 4\u00d75 + 4\u00d72; same total. The distributive property is the algebraic backbone of every later expansion. Common Core 3.OA.5.' },
-            multidigit:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDCCA', title: 'Partial Products \u2014 23 \u00d7 47 made visible',       hint: 'Break factors by place value: 23\u00d747 = (20+3)(40+7) = 800 + 140 + 120 + 21 = 1081. Bridge to the lattice method, then standard algorithm. Common Core 4.NBT.5.' }
+            multidigit:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDCCA', title: 'Partial Products \u2014 23 \u00d7 47 made visible',       hint: 'Break factors by place value: 23\u00d747 = (20+3)(40+7) = 800 + 140 + 120 + 21 = 1081. Bridge to the lattice method, then standard algorithm. Common Core 4.NBT.5.' },
+            word:         { accent: '#059669', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83D\uDCDD', title: 'Word Problems \u2014 multiplication in the world',   hint: 'A garden with 4 rows of 6 plants. A theater with 8 rows of 12 seats. Every multiplication fact lives inside a real-world rectangle. Common Core 3.OA.3, 4.OA.2.' }
           };
           var meta = MODE_META[viewMode] || MODE_META.basic;
           return h('div', {
@@ -626,10 +847,11 @@ window.StemLab = window.StemLab || {
           )
         ),
 
-        // Grid / Visualization
-        viewMode === 'basic' && renderBasicGrid(),
-        viewMode === 'distributive' && renderDistributive(),
-        viewMode === 'multidigit' && renderMultiDigit(),
+        // Grid / Visualization (wrapped in mode-specific atmospheric background)
+        viewMode === 'basic' && h('div', { className: 'allo-am-bg-basic' }, renderBasicGrid()),
+        viewMode === 'distributive' && h('div', { className: 'allo-am-bg-distributive' }, renderDistributive()),
+        viewMode === 'multidigit' && h('div', { className: 'allo-am-bg-multidigit' }, renderMultiDigit()),
+        viewMode === 'word' && h('div', { className: 'allo-am-bg-word' }, renderWordProblem()),
 
         // Product display (basic mode, no active challenge)
         viewMode === 'basic' && !(challenge && !feedback) && h('div', { className: 'bg-white rounded-xl p-4 border border-amber-100 text-center' },
@@ -675,23 +897,40 @@ window.StemLab = window.StemLab || {
                 })
               )
             ),
-            h('span', { className: 'text-[11px] text-slate-600' }, Object.keys(challengeTypesUsed).length + '/3 modes')
+            h('span', { className: 'text-[11px] text-slate-600' }, Object.keys(challengeTypesUsed).length + '/4 modes')
           ),
 
           !challenge
-            ? h('div', { className: 'flex gap-2' },
+            ? h('div', { className: 'flex gap-2 flex-wrap' },
                 h('button', { 'aria-label': 'Grid Challenge',
                   onClick: function() { genChallenge('basic'); },
-                  className: 'flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md'
+                  className: 'flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md min-w-[140px]'
                 }, '\uD83D\uDFE7 Grid Challenge'),
                 h('button', { 'aria-label': 'Distributive',
                   onClick: function() { genChallenge('distributive'); },
-                  className: 'flex-1 py-2.5 bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold rounded-xl text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md'
+                  className: 'flex-1 py-2.5 bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold rounded-xl text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md min-w-[140px]'
                 }, '\u2702\uFE0F Distributive'),
                 h('button', { 'aria-label': 'Partial',
                   onClick: function() { genChallenge('multidigit'); },
-                  className: 'flex-1 py-2.5 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold rounded-xl text-sm hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md'
-                }, '\uD83D\uDCCA Partial')
+                  className: 'flex-1 py-2.5 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold rounded-xl text-sm hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md min-w-[140px]'
+                }, '\uD83D\uDCCA Partial'),
+                h('button', { 'aria-label': 'Word Problem',
+                  onClick: function() {
+                    sfxNewChallenge();
+                    var max = difficulty === 'easy' ? 6 : difficulty === 'hard' ? 12 : 9;
+                    var a2 = randInt(2, max);
+                    var b2 = randInt(2, max);
+                    var ctxIdx = Math.floor(Math.random() * WORD_CONTEXTS.length);
+                    var ctxStr = WORD_CONTEXTS[ctxIdx].replace(/\{a\}/g, a2).replace(/\{b\}/g, b2);
+                    var newTypes = Object.assign({}, challengeTypesUsed); newTypes.word = true;
+                    upd({
+                      viewMode: 'word', wordCtxIdx: ctxIdx, wordDims: { a: a2, b: b2 },
+                      challenge: { a: a2, b: b2, answer: a2 * b2, question: ctxStr, mode: 'word' },
+                      answer: '', feedback: null, challengeTypesUsed: newTypes
+                    });
+                  },
+                  className: 'flex-1 py-2.5 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-bold rounded-xl text-sm hover:from-emerald-600 hover:to-green-600 transition-all shadow-md min-w-[140px]'
+                }, '\uD83D\uDCDD Word Problem')
               )
             : h('div', { className: 'space-y-2' },
                 h('div', { className: 'flex items-center gap-2' },
@@ -735,7 +974,7 @@ window.StemLab = window.StemLab || {
 
         // Keyboard hints
         h('div', { className: 'text-center text-[11px] text-slate-600 mt-2' },
-          '\u2328\uFE0F B/D/P: switch mode | N: new challenge | C: commutative | ?: AI tutor'
+          '\u2328\uFE0F B/D/P/W: switch mode | N: new challenge | C: commutative | ?: AI tutor'
         )
       );
     }

@@ -1,7 +1,10 @@
 // ═══════════════════════════════════════════
-// stem_tool_numberline.js — Number Line Plugin (Enhanced v2)
-// 3 tabs: Explore, Challenges, Skip Count
+// stem_tool_numberline.js — Number Line Plugin (Enhanced v3)
+// 4 tabs: Explore, Challenges, Skip Count, Fractions↔Decimals
 // + sound effects, 12 badges, AI tutor, 6 challenge types,
+//   fraction/decimal/percent equivalence with 4 simultaneous viz
+//   (length bar, pie/area, hundred grid, dot set), drag-the-marker,
+//   famous-fraction landmarks, repeating-decimal indicator,
 //   skip counting, rounding, fractions, keyboard shortcuts
 // ═══════════════════════════════════════════
 
@@ -34,6 +37,32 @@ window.StemLab = window.StemLab || {
     liveRegion.className = 'sr-only';
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
+  })();
+
+  // Fractions ↔ Decimals tab: visual juice (CSS keyframes + transition classes)
+  (function() {
+    if (document.getElementById('allo-numberline-fd-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-numberline-fd-css';
+    st.textContent = [
+      '@keyframes allo-fd-marker-pulse { 0% { filter: drop-shadow(0 0 0 rgba(220,38,38,0.6)); } 50% { filter: drop-shadow(0 0 6px rgba(220,38,38,0.65)); } 100% { filter: drop-shadow(0 0 0 rgba(220,38,38,0.6)); } }',
+      '@keyframes allo-fd-landmark-pop { 0% { transform: scale(1); } 30% { transform: scale(1.18); } 60% { transform: scale(0.96); } 100% { transform: scale(1); } }',
+      '@keyframes allo-fd-repeat-shimmer { 0%,100% { opacity: 0.55; } 50% { opacity: 0.95; } }',
+      '.allo-fd-marker { filter: drop-shadow(0 1px 2px rgba(220,38,38,0.45)); animation: allo-fd-marker-pulse 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }',
+      '.allo-fd-marker-slide { transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1); }',
+      '.allo-fd-marker-celebrate { animation: allo-fd-landmark-pop 0.6s ease-out; transform-box: fill-box; transform-origin: center; }',
+      'svg[role="slider"]:focus { outline: 3px solid rgba(14, 116, 144, 0.55); outline-offset: 2px; border-radius: 4px; }',
+      'svg[role="slider"]:focus-visible { outline: 3px solid rgba(14, 116, 144, 0.55); outline-offset: 2px; border-radius: 4px; }',
+      '.allo-fd-fill { transition: fill 0.28s ease, opacity 0.28s ease, width 0.28s ease, transform 0.28s ease; }',
+      '.allo-fd-repeat-dot { animation: allo-fd-repeat-shimmer 1.8s ease-in-out infinite; }',
+      '.allo-fd-bg { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(14,116,144,0.10) 0%, rgba(14,116,144,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '.allo-nl-bg-explore { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(37,99,235,0.10) 0%, rgba(37,99,235,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '.allo-nl-bg-challenges { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(217,119,6,0.10) 0%, rgba(217,119,6,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '.allo-nl-bg-skipcount { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(147,51,234,0.10) 0%, rgba(147,51,234,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '.allo-fd-card-pulse { animation: allo-fd-landmark-pop 0.6s ease-out; }',
+      '@media (prefers-reduced-motion: reduce) { .allo-fd-marker, .allo-fd-marker-celebrate, .allo-fd-card-pulse, .allo-fd-repeat-dot { animation: none !important; } .allo-fd-fill, .allo-fd-marker-slide { transition: none !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
   })();
 
 
@@ -77,6 +106,7 @@ window.StemLab = window.StemLab || {
             return _audioCtx;
           };
           var playTone = function(freq, dur, type, vol) {
+            if (muted) return;
             var ac = getAudio(); if (!ac) return;
             try {
               var osc = ac.createOscillator();
@@ -130,6 +160,34 @@ window.StemLab = window.StemLab || {
 
           // Hover value for interactive line
           var hoverVal = _n.hoverVal || null;
+
+          // Global mute (affects ALL sounds across all tabs)
+          var muted = _n.muted || false;
+
+          // Recent-positions trail (most-recent prev values from arithmetic; only on fracdec)
+          var fdTrail = Array.isArray(_n.fdTrail) ? _n.fdTrail : [];
+
+          // ── Fractions ↔ Decimals tab state ──
+          var fdValue = _n.fdValue != null ? _n.fdValue : 0.5;
+          var fdDen = _n.fdDen || 4;
+          var fdMin = _n.fdMin != null ? _n.fdMin : 0;
+          var fdMax = _n.fdMax != null ? _n.fdMax : 1;
+          var fdShowBar = _n.fdShowBar !== false;       // default ON (length model)
+          var fdShowReps = _n.fdShowReps !== false;     // default ON (pie + grid + dots)
+          var fdShowMoney = _n.fdShowMoney || false;
+          var fdShowExpansion = _n.fdShowExpansion || false;
+          var fdSnap = _n.fdSnap !== false;             // default ON (snap clicks to denominator)
+          var fdCompareOn = _n.fdCompareOn || false;
+          var fdCompareValue = _n.fdCompareValue != null ? _n.fdCompareValue : 0.75;
+          var fdLastLandmark = _n.fdLastLandmark != null ? _n.fdLastLandmark : null;
+          var fdCelebrate = _n.fdCelebrate || false;    // brief pulse flag after landmark hit
+
+          // Fraction-arithmetic + common-denominator hunter state
+          var fdLastOpText = _n.fdLastOpText || '';
+          var fdCDN1 = _n.fdCDN1 != null ? _n.fdCDN1 : 1;
+          var fdCDD1 = _n.fdCDD1 != null ? _n.fdCDD1 : 2;
+          var fdCDN2 = _n.fdCDN2 != null ? _n.fdCDN2 : 1;
+          var fdCDD2 = _n.fdCDD2 != null ? _n.fdCDD2 : 3;
 
           var randInt = function(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; };
           var pick = function(arr) { return arr[Math.floor(Math.random() * arr.length)]; };
@@ -321,12 +379,57 @@ window.StemLab = window.StemLab || {
               if (key === '1') { sfxClick(); upd({ tab: 'explore' }); }
               else if (key === '2') { sfxClick(); upd({ tab: 'challenges' }); }
               else if (key === '3') { sfxClick(); upd({ tab: 'skipcount' }); }
+              else if (key === '4') { sfxClick(); upd({ tab: 'fracdec' }); }
               else if (key === 'n' || key === 'N') { if (tab === 'challenges') genChallenge(); }
               else if (key === '?' || key === '/') { upd({ showAITutor: !showAITutor }); }
             };
             window.addEventListener('keydown', handler);
             return function() { window.removeEventListener('keydown', handler); };
           }, [tab, showAITutor]);
+
+          // ═══ FRACTIONS↔DECIMALS LANDMARK DETECTION ═══
+          // When the marker lands on a famous fraction (1/2, 1/4, 1/3…), brief
+          // celebration: sound + toast + pulse animation. Encodes a real
+          // mathematical observation (these decimals/fractions are the foundation
+          // of fluency) as a discoverable moment instead of a worksheet.
+          React.useEffect(function() {
+            if (tab !== 'fracdec') return;
+            var landmarks = [
+              { v: 0,       name: 'Zero',                        dec: '0',    emoji: '⭐' },
+              { v: 0.1,     name: 'One tenth',                   dec: '1/10', emoji: '⭐' },
+              { v: 0.125,   name: 'One eighth',                  dec: '1/8',  emoji: '⭐' },
+              { v: 0.2,     name: 'One fifth',                   dec: '1/5',  emoji: '⭐' },
+              { v: 0.25,    name: 'One quarter',                 dec: '1/4',  emoji: '¼' },
+              { v: 1/3,     name: 'One third (repeats forever)', dec: '1/3',  emoji: '🔁' },
+              { v: 0.375,   name: 'Three eighths',               dec: '3/8',  emoji: '⭐' },
+              { v: 0.4,     name: 'Two fifths',                  dec: '2/5',  emoji: '⭐' },
+              { v: 0.5,     name: 'One half',                    dec: '1/2',  emoji: '½' },
+              { v: 0.6,     name: 'Three fifths',                dec: '3/5',  emoji: '⭐' },
+              { v: 0.625,   name: 'Five eighths',                dec: '5/8',  emoji: '⭐' },
+              { v: 2/3,     name: 'Two thirds (repeats forever)',dec: '2/3',  emoji: '🔁' },
+              { v: 0.75,    name: 'Three quarters',              dec: '3/4',  emoji: '¾' },
+              { v: 0.8,     name: 'Four fifths',                 dec: '4/5',  emoji: '⭐' },
+              { v: 0.875,   name: 'Seven eighths',               dec: '7/8',  emoji: '⭐' },
+              { v: 1,       name: 'One whole',                   dec: '1',    emoji: '⭐' }
+            ];
+            var hit = null;
+            for (var i = 0; i < landmarks.length; i++) {
+              if (Math.abs(fdValue - landmarks[i].v) < 0.004) { hit = landmarks[i]; break; }
+            }
+            var lastKey = fdLastLandmark != null ? fdLastLandmark : 'none';
+            var thisKey = hit ? hit.dec : 'none';
+            if (thisKey !== lastKey) {
+              if (hit) {
+                upd({ fdLastLandmark: thisKey, fdCelebrate: true });
+                sfxStreak();
+                addToast(hit.emoji + ' Landmark: ' + hit.name + ' = ' + hit.dec, 'success');
+                if (typeof awardXP === 'function') awardXP('numberlineLandmark', 3, 'landmark');
+                setTimeout(function() { upd({ fdCelebrate: false }); }, 700);
+              } else {
+                upd({ fdLastLandmark: thisKey });
+              }
+            }
+          }, [fdValue, tab]);
 
           // ═══ SVG NUMBER LINE RENDERER ═══
           var W = 700, H = 120, PAD = 40;
@@ -398,23 +501,49 @@ window.StemLab = window.StemLab || {
               );
             });
 
-            // Skip count markers
+            // Skip count markers + arc-shaped hops (visual repeated addition)
             var skipEls = [];
             if (skipMarkersList && skipMarkersList.length > 0) {
               skipMarkersList.forEach(function(sm, i) {
                 var sx = PAD + (sm - rMin) / rL * (W - 2 * PAD);
                 if (sx >= PAD && sx <= W - PAD) {
                   skipEls.push(h('g', { key: 'skip-' + i },
-                    h('circle', { cx: sx, cy: 60, r: 7, fill: '#8b5cf6', stroke: '#fff', strokeWidth: 1.5, opacity: 0.8 }),
+                    h('circle', { cx: sx, cy: 60, r: 7, fill: '#8b5cf6', stroke: '#fff', strokeWidth: 1.5, opacity: 0.85 }),
                     h('text', { x: sx, y: 22, textAnchor: 'middle', fill: '#7c3aed', fontSize: '10', fontWeight: 'bold' }, sm)
                   ));
                   if (i > 0) {
                     var prevSx = PAD + (skipMarkersList[i - 1] - rMin) / rL * (W - 2 * PAD);
-                    skipEls.push(h('line', {
-                      key: 'skip-line-' + i,
-                      x1: prevSx, y1: 55, x2: sx, y2: 55,
-                      stroke: '#a78bfa', strokeWidth: 1.5, strokeDasharray: '4 2', opacity: 0.6
+                    var midX = (prevSx + sx) / 2;
+                    var hopWidth = Math.abs(sx - prevSx);
+                    var arcHeight = Math.min(30, Math.max(14, hopWidth * 0.38));
+                    var peakY = 56 - arcHeight;
+                    skipEls.push(h('path', {
+                      key: 'skip-arc-' + i,
+                      d: 'M ' + prevSx + ' 56 Q ' + midX + ' ' + peakY + ' ' + sx + ' 56',
+                      fill: 'none',
+                      stroke: '#a78bfa',
+                      strokeWidth: 2,
+                      strokeLinecap: 'round',
+                      opacity: 0.8
                     }));
+                    // Small downward triangle at landing — "hop ends here"
+                    skipEls.push(h('polygon', {
+                      key: 'skip-arrow-' + i,
+                      points: (sx - 3) + ',52 ' + sx + ',58 ' + (sx + 3) + ',52',
+                      fill: '#8b5cf6',
+                      opacity: 0.9
+                    }));
+                    // Small "+by" label at the arc peak
+                    if (hopWidth > 30) {
+                      var stepVal = sm - skipMarkersList[i - 1];
+                      var hopLabel = (stepVal >= 0 ? '+' : '') + stepVal;
+                      skipEls.push(h('text', {
+                        key: 'skip-step-' + i,
+                        x: midX, y: peakY - 2,
+                        textAnchor: 'middle',
+                        fill: '#7c3aed', fontSize: 9, fontWeight: 'bold', fontFamily: 'monospace'
+                      }, hopLabel));
+                    }
                   }
                 }
               });
@@ -453,7 +582,7 @@ window.StemLab = window.StemLab || {
 
           // ═══ TAB: EXPLORE ═══
           var renderExplore = function() {
-            return h('div', { className: 'space-y-4' },
+            return h('div', { className: 'space-y-4 allo-nl-bg-explore' },
               // Range controls
               h('div', { className: 'grid grid-cols-2 gap-3' },
                 h('div', { className: 'bg-blue-50 rounded-lg p-3 border border-blue-100' },
@@ -526,7 +655,7 @@ window.StemLab = window.StemLab || {
 
           // ═══ TAB: CHALLENGES ═══
           var renderChallenges = function() {
-            return h('div', { className: 'space-y-4' },
+            return h('div', { className: 'space-y-4 allo-nl-bg-challenges' },
               // Number line (with challenge arrow)
               h('div', { className: 'bg-white rounded-xl border-2 border-blue-200 p-6 flex flex-col items-center' },
                 renderNumberLine(range, challenge ? challenge._arrowValue : null, null)
@@ -595,7 +724,7 @@ window.StemLab = window.StemLab || {
             var skipMin = skipFrom - skipBy;
             var skipMax = skipFrom + skipCount * skipBy + skipBy;
 
-            return h('div', { className: 'space-y-4' },
+            return h('div', { className: 'space-y-4 allo-nl-bg-skipcount' },
               // Controls
               h('div', { className: 'grid grid-cols-3 gap-3' },
                 h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-100' },
@@ -663,6 +792,861 @@ window.StemLab = window.StemLab || {
             );
           };
 
+          // ═══ TAB: FRACTIONS ↔ DECIMALS ═══
+          // Pedagogical goal: make fraction-decimal-percent equivalence VISIBLE.
+          // Same point on the line, three names. Four simultaneous visualizations
+          // (length bar, pie/area, hundred grid, dot set) showing the SAME quantity
+          // so students see conservation across representations.
+          var renderFracDec = function() {
+            var fdLen = fdMax - fdMin;
+            if (fdLen <= 0) fdLen = 1;
+
+            var gcdFn = function(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var t = b; b = a % b; a = t; } return a || 1; };
+
+            var snapValue = function(v) {
+              if (!fdSnap) return v;
+              var step = 1 / fdDen;
+              return Math.round((v - fdMin) / step) * step + fdMin;
+            };
+
+            // Current value as fraction at fdDen
+            var nearestNum = Math.round(fdValue * fdDen);
+            var isExactFrac = Math.abs(fdValue * fdDen - nearestNum) < 0.005;
+            var g = gcdFn(nearestNum, fdDen);
+            var simpNum = nearestNum / g;
+            var simpDen = fdDen / g;
+            var decimal = Math.round(fdValue * 10000) / 10000;
+            var percent = Math.round(fdValue * 10000) / 100;
+
+            // Repeating-decimal detection: terminates iff simplified denominator
+            // factors into only 2s and 5s. 1/4 = 0.25 (terminates), 1/3 = 0.333… (repeats).
+            var isRepeatingDecimal = (function() {
+              if (!isExactFrac || simpNum === 0) return false;
+              var d = simpDen;
+              while (d % 2 === 0) d /= 2;
+              while (d % 5 === 0) d /= 5;
+              return d !== 1;
+            })();
+
+            var moneyStr = '$' + (fdValue < 0 ? '-' : '') + Math.abs(fdValue).toFixed(2);
+
+            // Place-value expansion: 0.625 = 6/10 + 2/100 + 5/1000
+            var expansion = (function() {
+              var parts = [];
+              var sign = fdValue < 0 ? '-' : '';
+              var abs = Math.abs(fdValue);
+              var intPart = Math.floor(abs);
+              if (intPart !== 0) parts.push(sign + intPart);
+              var frac = abs - intPart;
+              var divisors = [10, 100, 1000, 10000];
+              for (var p = 0; p < 4 && frac > 0.00001; p++) {
+                frac *= 10;
+                var digit = Math.floor(frac + 0.0000001);
+                frac -= digit;
+                if (digit !== 0) parts.push((p === 0 && sign ? sign : '') + digit + '/' + divisors[p]);
+              }
+              return parts.join(' + ') || '0';
+            })();
+
+            // Mixed-number form for values ≥ 1 (improper → mixed)
+            // 3/2 = 1 1/2. The bridge between abstract improper notation and
+            // the "amount more than one whole" intuition.
+            var mixedNumber = (function() {
+              if (!isExactFrac || Math.abs(fdValue) < 1) return null;
+              var sign = fdValue < 0 ? '-' : '';
+              var abs = Math.abs(fdValue);
+              var wholePart = Math.floor(abs);
+              var remainingFrac = abs - wholePart;
+              if (remainingFrac < 0.005) return { whole: wholePart, num: 0, den: 1, sign: sign };
+              var rNum = Math.round(remainingFrac * fdDen);
+              var rG = gcdFn(rNum, fdDen);
+              return { whole: wholePart, num: rNum / rG, den: fdDen / rG, sign: sign };
+            })();
+
+            // Equivalent fractions — the same value with proportionally larger denominators.
+            // 1/2 = 2/4 = 3/6 = 4/8 = 5/10. Makes the "infinite names, same point" point.
+            var equivalentFractions = (function() {
+              if (!isExactFrac || simpNum === 0 || simpDen === 0) return [];
+              var equivs = [];
+              for (var k = 1; k <= 6; k++) {
+                var n = simpNum * k;
+                var d = simpDen * k;
+                if (d > 100) break;
+                equivs.push({ n: n, d: d, k: k });
+              }
+              return equivs;
+            })();
+
+            // Plain-English fraction reading
+            var fracInWords = (function() {
+              if (!isExactFrac) return '';
+              if (simpNum === 0) return 'zero';
+              var denWord = { 2: 'half', 3: 'third', 4: 'quarter', 5: 'fifth', 6: 'sixth', 8: 'eighth', 10: 'tenth', 12: 'twelfth', 16: 'sixteenth', 20: 'twentieth' }[simpDen] || ('over ' + simpDen);
+              if (simpDen === 2 && simpNum === 1) return 'one half';
+              var plural = simpNum > 1 && denWord.indexOf('over') === -1 ? denWord + 's' : denWord;
+              var numWord = { 1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five', 6: 'six', 7: 'seven', 8: 'eight', 9: 'nine', 10: 'ten' }[simpNum] || simpNum;
+              return numWord + ' ' + plural;
+            })();
+
+            // Drag-the-marker (pointer events). Tap places; drag glides without snap;
+            // release snaps to denominator if snap is on.
+            var startPointer = function(e) {
+              if (e.cancelable) e.preventDefault();
+              var svgEl = e.currentTarget;
+              var rect = svgEl.getBoundingClientRect();
+              var W_ = 700, PAD_ = 50;
+              var clampMove = function(clientX) {
+                var scaleX = W_ / rect.width;
+                var x = (clientX - rect.left) * scaleX;
+                var frac = (x - PAD_) / (W_ - 2 * PAD_);
+                var v = fdMin + frac * fdLen;
+                if (v < fdMin) v = fdMin;
+                if (v > fdMax) v = fdMax;
+                return v;
+              };
+              var v0 = clampMove(e.clientX);
+              upd({ fdValue: v0 });
+              var move = function(ev) {
+                var v = clampMove(ev.clientX);
+                upd({ fdValue: v });
+              };
+              var up = function() {
+                window.removeEventListener('pointermove', move);
+                window.removeEventListener('pointerup', up);
+                window.removeEventListener('pointercancel', up);
+                if (fdSnap && typeof ctx.setToolData === 'function') {
+                  ctx.setToolData(function(prev) {
+                    var nl = (prev && prev._numberline) || {};
+                    var curVal = nl.fdValue != null ? nl.fdValue : 0.5;
+                    var step = 1 / (nl.fdDen || fdDen);
+                    var mn = nl.fdMin != null ? nl.fdMin : fdMin;
+                    var snapped = Math.round((curVal - mn) / step) * step + mn;
+                    return Object.assign({}, prev, { _numberline: Object.assign({}, nl, { fdValue: snapped }) });
+                  });
+                }
+              };
+              window.addEventListener('pointermove', move);
+              window.addEventListener('pointerup', up);
+              window.addEventListener('pointercancel', up);
+            };
+
+            // ── Fraction arithmetic on the line ──
+            // Adding 1/4 to 1/4 makes the marker SLIDE to 1/2 — visible motion,
+            // not magic. Auto-extends the line if you drift past the edge.
+            var applyArith = function(op, n, d) {
+              if (!d || d === 0) return;
+              var delta = n / d;
+              var prev = fdValue;
+              var next = op === '+' ? prev + delta : prev - delta;
+              var newMin = fdMin, newMax = fdMax;
+              if (next > newMax) newMax = Math.ceil(next * 2) / 2 + 0.0001 > Math.ceil(next) ? Math.ceil(next) : Math.ceil(next * 2) / 2;
+              if (next < newMin) newMin = Math.floor(next * 2) / 2;
+              var prevR = Math.round(prev * 1000) / 1000;
+              var nextR = Math.round(next * 1000) / 1000;
+              var eqText = prevR + ' ' + op + ' ' + n + '/' + d + ' = ' + nextR;
+              // Push prev into the ghost trail (cap at 5 entries, oldest first)
+              var newTrail = (fdTrail || []).concat([prev]);
+              if (newTrail.length > 5) newTrail = newTrail.slice(-5);
+              sfxClick();
+              upd({ fdValue: next, fdMin: newMin, fdMax: newMax, fdLastOpText: eqText, fdTrail: newTrail });
+              announceToSR(eqText);
+            };
+
+            // ── Common-denominator hunter (LCM-based) ──
+            // To add 1/2 and 1/3, you need a shared denominator. LCM(2,3)=6 works.
+            // 1/2 = 3/6, 1/3 = 2/6, sum = 5/6. Shows the whole renaming step explicitly.
+            var lcmCalc = function(a, b) {
+              if (a <= 0 || b <= 0) return 1;
+              return Math.abs(a * b) / gcdFn(a, b);
+            };
+            var lcmOfDen = lcmCalc(fdCDD1 || 1, fdCDD2 || 1);
+            var cd1Mult = lcmOfDen / (fdCDD1 || 1);
+            var cd2Mult = lcmOfDen / (fdCDD2 || 1);
+            var cd1ScaledN = fdCDN1 * cd1Mult;
+            var cd2ScaledN = fdCDN2 * cd2Mult;
+            var cdSumN = cd1ScaledN + cd2ScaledN;
+            var cdSumD = lcmOfDen;
+            var cdSumG = gcdFn(cdSumN, cdSumD);
+            var cdSumSimpN = cdSumN / cdSumG;
+            var cdSumSimpD = cdSumD / cdSumG;
+            var cdSumValue = cdSumN / cdSumD;
+
+            // Keyboard navigation: nudge marker by 1/fdDen, jump by 5 with Shift,
+            // Home/End to endpoints, PageUp/PageDown by 5 steps. Marker must be focusable.
+            var stepBy = function(steps) {
+              var step = 1 / fdDen;
+              var next = fdValue + steps * step;
+              if (next < fdMin) next = fdMin;
+              if (next > fdMax) next = fdMax;
+              upd({ fdValue: next });
+              announceToSR((Math.round(next * 1000) / 1000) + '');
+            };
+            var handleLineKey = function(e) {
+              var key = e.key;
+              var handled = true;
+              if (key === 'ArrowLeft' || key === 'ArrowDown') stepBy(e.shiftKey ? -5 : -1);
+              else if (key === 'ArrowRight' || key === 'ArrowUp') stepBy(e.shiftKey ? 5 : 1);
+              else if (key === 'Home') { upd({ fdValue: fdMin }); announceToSR(fdMin + ''); }
+              else if (key === 'End') { upd({ fdValue: fdMax }); announceToSR(fdMax + ''); }
+              else if (key === 'PageDown') stepBy(-5);
+              else if (key === 'PageUp') stepBy(5);
+              else handled = false;
+              if (handled) { e.preventDefault(); sfxClick(); }
+            };
+
+            // Custom number line for this tab
+            var renderFdLine = function() {
+              var W = 700, H = 170, PAD = 50;
+              // Rotate labels at high denominators to prevent overlap
+              var rotate = fdDen >= 12;
+              var rotateAngle = fdDen >= 16 ? -45 : -30;
+              var fracFontSize = fdDen >= 16 ? 10 : 12;
+              var ticks = [];
+              for (var i = 0; i <= fdDen; i++) {
+                var tickFrac = fdMin + i * fdLen / fdDen;
+                var x = PAD + (i / fdDen) * (W - 2 * PAD);
+                var fracLabel = (i === 0) ? '0' : (i === fdDen && fdMax === 1 ? '1' : (i + '/' + fdDen));
+                var decLabel = '' + (Math.round(tickFrac * 1000) / 1000);
+                var fracTextProps = {
+                  x: x, y: rotate ? 56 : 60, textAnchor: rotate ? 'end' : 'middle',
+                  fill: '#155e75', fontSize: fracFontSize, fontWeight: 'bold', fontFamily: 'monospace'
+                };
+                if (rotate) fracTextProps.transform = 'rotate(' + rotateAngle + ' ' + x + ' ' + 56 + ')';
+                var decTextProps = {
+                  x: x, y: rotate ? 122 : 118, textAnchor: rotate ? 'start' : 'middle',
+                  fill: '#475569', fontSize: 10, fontFamily: 'monospace'
+                };
+                if (rotate) decTextProps.transform = 'rotate(' + rotateAngle + ' ' + x + ' ' + 122 + ')';
+                ticks.push(h('g', { key: 'fdt-' + i },
+                  h('line', { x1: x, y1: 70, x2: x, y2: 100, stroke: '#0e7490', strokeWidth: 2 }),
+                  h('text', fracTextProps, fracLabel),
+                  h('text', decTextProps, decLabel)
+                ));
+              }
+              var mx = PAD + ((fdValue - fdMin) / fdLen) * (W - 2 * PAD);
+              var markerCls = 'allo-fd-marker allo-fd-marker-slide' + (fdCelebrate ? ' allo-fd-marker-celebrate' : '');
+              // Render the marker at x=0 in its inner geometry, then translate the
+              // whole group to mx with a CSS transition — smooth slide on value change.
+              var markerEl = h('g', { key: 'fd-marker', className: markerCls,
+                style: { transform: 'translate(' + mx + 'px, 0px)' }
+              },
+                h('line', { x1: 0, y1: 30, x2: 0, y2: 85, stroke: '#dc2626', strokeWidth: 2.5 }),
+                h('circle', { cx: 0, cy: 85, r: 9, fill: '#dc2626', stroke: '#fff', strokeWidth: 2 }),
+                h('polygon', { points: '-6,30 6,30 0,40', fill: '#dc2626' }),
+                h('text', { x: 0, y: 24, textAnchor: 'middle', fill: '#dc2626', fontSize: 11, fontWeight: 'bold' }, decimal)
+              );
+
+              // Ghost trail: prior arithmetic positions, fading by age
+              var trailEls = [];
+              if (fdTrail && fdTrail.length >= 1) {
+                fdTrail.forEach(function(tv, ti) {
+                  if (tv < fdMin || tv > fdMax) return;
+                  var tx = PAD + ((tv - fdMin) / fdLen) * (W - 2 * PAD);
+                  var age = fdTrail.length - 1 - ti;   // 0 = most recent, larger = older
+                  var op = Math.max(0.12, 0.45 - age * 0.08);
+                  trailEls.push(h('g', { key: 'fd-trail-' + ti, opacity: op },
+                    h('circle', { cx: tx, cy: 85, r: 6, fill: 'none', stroke: '#dc2626', strokeWidth: 1.5, strokeDasharray: '2 2' }),
+                    h('text', { x: tx, y: 76, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9, fontFamily: 'monospace' }, Math.round(tv * 100) / 100)
+                  ));
+                });
+              }
+              var compareEl = null;
+              if (fdCompareOn) {
+                var cmx = PAD + ((fdCompareValue - fdMin) / fdLen) * (W - 2 * PAD);
+                compareEl = h('g', { key: 'fd-cmp' },
+                  h('line', { x1: cmx, y1: 85, x2: cmx, y2: 140, stroke: '#0891b2', strokeWidth: 2.5, strokeDasharray: '4 2', className: 'allo-fd-fill' }),
+                  h('circle', { cx: cmx, cy: 140, r: 7, fill: '#0891b2', stroke: '#fff', strokeWidth: 2, className: 'allo-fd-fill' }),
+                  h('text', { x: cmx, y: 156, textAnchor: 'middle', fill: '#0e7490', fontSize: 11, fontWeight: 'bold' }, (Math.round(fdCompareValue * 1000) / 1000))
+                );
+              }
+              var svgH = rotate ? 190 : H;
+              return h('svg', {
+                width: '100%', height: svgH, viewBox: '0 0 ' + W + ' ' + svgH, className: 'max-w-full',
+                style: { cursor: 'grab', touchAction: 'none', userSelect: 'none', outline: 'none' },
+                role: 'slider',
+                tabIndex: 0,
+                'aria-valuemin': fdMin,
+                'aria-valuemax': fdMax,
+                'aria-valuenow': Math.round(fdValue * 1000) / 1000,
+                'aria-valuetext': decimal + ', which is ' + simpNum + ' over ' + simpDen + (isRepeatingDecimal ? ', repeating decimal' : ''),
+                'aria-label': 'Number line marker. Use arrow keys to move, Home/End for endpoints, Shift for larger steps.',
+                onPointerDown: startPointer,
+                onKeyDown: handleLineKey
+              },
+                h('line', { x1: PAD, y1: 85, x2: W - PAD, y2: 85, stroke: '#0e7490', strokeWidth: 3, strokeLinecap: 'round' }),
+                ticks,
+                trailEls,
+                markerEl,
+                compareEl,
+                h('polygon', { points: (W - PAD) + ',78 ' + (W - PAD + 10) + ',85 ' + (W - PAD) + ',92', fill: '#0e7490' }),
+                h('polygon', { points: PAD + ',78 ' + (PAD - 10) + ',85 ' + PAD + ',92', fill: '#0e7490' })
+              );
+            };
+
+            // Fraction bar (length model)
+            var renderFracBar = function() {
+              var W = 700, H = 70, PAD = 50;
+              var barH = 40, barY = 12;
+              var segW = (W - 2 * PAD) / fdDen;
+              var segs = [];
+              for (var i = 0; i < fdDen; i++) {
+                var x = PAD + i * segW;
+                var fillFrac = 0;
+                var scaledVal = fdValue * fdDen;
+                if (scaledVal >= i + 1) fillFrac = 1;
+                else if (scaledVal > i) fillFrac = scaledVal - i;
+                segs.push(h('g', { key: 'bar-' + i },
+                  h('rect', { x: x, y: barY, width: segW, height: barH, fill: '#ecfeff', stroke: '#0e7490', strokeWidth: 1.5 }),
+                  fillFrac > 0 && h('rect', { x: x, y: barY, width: segW * fillFrac, height: barH, fill: '#06b6d4', opacity: 0.85, className: 'allo-fd-fill' })
+                ));
+                if (segW > 30) {
+                  segs.push(h('text', { key: 'bar-lbl-' + i,
+                    x: x + segW / 2, y: barY + barH + 14,
+                    textAnchor: 'middle', fill: '#155e75', fontSize: 10, fontFamily: 'monospace'
+                  }, (i + 1) + '/' + fdDen));
+                }
+              }
+              return h('svg', {
+                width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, className: 'max-w-full',
+                role: 'img',
+                'aria-label': 'Fraction bar showing approximately ' + simpNum + ' out of ' + simpDen + ' parts filled'
+              }, segs);
+            };
+
+            // Pie / circle (area model)
+            var renderFracPie = function() {
+              var W = 180, H = 180, cx = 90, cy = 90, r = 72;
+              var slices = [];
+              var scaled = fdValue * fdDen;
+              var fullCount = Math.floor(scaled + 0.0000001);
+              var partial = scaled - fullCount;
+              if (partial < 0.001) partial = 0;
+              if (fullCount > fdDen) { fullCount = fdDen; partial = 0; }
+              var wedgePath = function(startFrac, endFrac) {
+                var a1 = startFrac * 2 * Math.PI - Math.PI / 2;
+                var a2 = endFrac * 2 * Math.PI - Math.PI / 2;
+                var x1 = cx + r * Math.cos(a1);
+                var y1 = cy + r * Math.sin(a1);
+                var x2 = cx + r * Math.cos(a2);
+                var y2 = cy + r * Math.sin(a2);
+                var large = (a2 - a1) > Math.PI ? 1 : 0;
+                return 'M ' + cx + ' ' + cy + ' L ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 ' + large + ' 1 ' + x2 + ' ' + y2 + ' Z';
+              };
+              for (var i = 0; i < fdDen; i++) {
+                slices.push(h('path', { key: 'pie-bg-' + i, d: wedgePath(i / fdDen, (i + 1) / fdDen), fill: '#ecfeff', stroke: '#0e7490', strokeWidth: 1.5 }));
+              }
+              for (var j = 0; j < fullCount; j++) {
+                slices.push(h('path', { key: 'pie-f-' + j, d: wedgePath(j / fdDen, (j + 1) / fdDen), fill: '#06b6d4', opacity: 0.88, stroke: '#0e7490', strokeWidth: 1.5, className: 'allo-fd-fill' }));
+              }
+              if (partial > 0 && fullCount < fdDen) {
+                slices.push(h('path', { key: 'pie-partial', d: wedgePath(fullCount / fdDen, (fullCount + partial) / fdDen), fill: '#67e8f9', opacity: 0.65, stroke: '#0e7490', strokeWidth: 1.5, className: 'allo-fd-fill' }));
+              }
+              return h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Circle in ' + fdDen + ' wedges, ' + (isExactFrac ? simpNum + ' of ' + simpDen : 'about ' + nearestNum + '/' + fdDen) + ' filled' }, slices);
+            };
+
+            // Hundred-grid (10×10, bridge to percent)
+            var renderFracGrid = function() {
+              var W = 180, H = 180, PAD = 4;
+              var cellSize = (W - 2 * PAD) / 10;
+              var fillCount = Math.round(fdValue * 100);
+              if (fillCount < 0) fillCount = 0;
+              if (fillCount > 100) fillCount = 100;
+              var cells = [];
+              for (var rr = 0; rr < 10; rr++) {
+                for (var cc = 0; cc < 10; cc++) {
+                  var idx = rr * 10 + cc;
+                  var filled = idx < fillCount;
+                  cells.push(h('rect', {
+                    key: 'g-' + idx,
+                    x: PAD + cc * cellSize, y: PAD + rr * cellSize,
+                    width: cellSize - 0.5, height: cellSize - 0.5,
+                    fill: filled ? '#06b6d4' : '#ecfeff',
+                    stroke: '#0e7490', strokeWidth: 0.5,
+                    opacity: filled ? 0.88 : 1,
+                    className: filled ? 'allo-fd-fill' : null
+                  }));
+                }
+              }
+              cells.push(h('line', { key: 'mid-v', x1: PAD + 5 * cellSize, y1: PAD, x2: PAD + 5 * cellSize, y2: PAD + 10 * cellSize, stroke: '#0e7490', strokeWidth: 1.2, opacity: 0.5 }));
+              cells.push(h('line', { key: 'mid-h', x1: PAD, y1: PAD + 5 * cellSize, x2: PAD + 10 * cellSize, y2: PAD + 5 * cellSize, stroke: '#0e7490', strokeWidth: 1.2, opacity: 0.5 }));
+              return h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': fillCount + ' of 100 squares filled, which is ' + percent + ' percent' }, cells);
+            };
+
+            // Dot-set (discrete / NCTM set model)
+            var renderFracDots = function() {
+              var W = 180, H = 180, PAD = 12;
+              var cols = fdDen <= 5 ? fdDen : (fdDen <= 10 ? 5 : (fdDen <= 12 ? 4 : (fdDen <= 16 ? 4 : 5)));
+              var rows = Math.ceil(fdDen / cols);
+              var scaled = fdValue * fdDen;
+              var fullCount = Math.floor(scaled + 0.0000001);
+              var partial = scaled - fullCount;
+              if (partial < 0.001) partial = 0;
+              if (fullCount > fdDen) { fullCount = fdDen; partial = 0; }
+              var spacingX = (W - 2 * PAD) / cols;
+              var spacingY = (H - 2 * PAD) / rows;
+              var dotR = Math.min(spacingX, spacingY) * 0.36;
+              var dots = [];
+              for (var i = 0; i < fdDen; i++) {
+                var c = i % cols;
+                var rIdx = Math.floor(i / cols);
+                var dcx = PAD + spacingX * (c + 0.5);
+                var dcy = PAD + spacingY * (rIdx + 0.5);
+                var isFull = i < fullCount;
+                var isPartial = i === fullCount && partial > 0;
+                dots.push(h('circle', {
+                  key: 'd-' + i,
+                  cx: dcx, cy: dcy, r: dotR,
+                  fill: isFull ? '#06b6d4' : (isPartial ? '#67e8f9' : '#ecfeff'),
+                  stroke: '#0e7490', strokeWidth: 1.5,
+                  opacity: isFull ? 0.9 : (isPartial ? 0.65 : 1),
+                  className: (isFull || isPartial) ? 'allo-fd-fill' : null
+                }));
+              }
+              return h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': fullCount + ' of ' + fdDen + ' dots filled' + (partial > 0 ? ', plus a partial one' : '') }, dots);
+            };
+
+            var presetFracs = [
+              { n: 1, d: 2, dec: '0.5' },
+              { n: 1, d: 3, dec: '0.333…' }, { n: 2, d: 3, dec: '0.667…' },
+              { n: 1, d: 4, dec: '0.25' }, { n: 3, d: 4, dec: '0.75' },
+              { n: 1, d: 5, dec: '0.2' }, { n: 2, d: 5, dec: '0.4' }, { n: 3, d: 5, dec: '0.6' }, { n: 4, d: 5, dec: '0.8' },
+              { n: 1, d: 8, dec: '0.125' }, { n: 3, d: 8, dec: '0.375' }, { n: 5, d: 8, dec: '0.625' }, { n: 7, d: 8, dec: '0.875' },
+              { n: 1, d: 10, dec: '0.1' }, { n: 1, d: 100, dec: '0.01' }
+            ];
+
+            return h('div', { className: 'space-y-4 allo-fd-bg' },
+              h('div', { className: 'bg-cyan-50 rounded-lg p-3 border border-cyan-200' },
+                h('div', { className: 'flex flex-wrap items-center gap-2 mb-2' },
+                  h('span', { className: 'text-xs font-bold text-cyan-800' }, 'Divide the line into:'),
+                  [2, 3, 4, 5, 6, 8, 10, 12, 16, 20].map(function(d) {
+                    return h('button', {
+                      key: d,
+                      'aria-pressed': fdDen === d,
+                      onClick: function() { sfxClick(); upd({ fdDen: d }); },
+                      className: 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all ' +
+                        (fdDen === d ? 'bg-cyan-700 text-white shadow-sm' : 'bg-white text-cyan-700 border border-cyan-300 hover:bg-cyan-100')
+                    }, d + ' parts');
+                  })
+                ),
+                h('div', { className: 'flex flex-wrap items-center gap-3 text-[11px]' },
+                  h('label', { className: 'font-bold text-cyan-700 flex items-center gap-1 cursor-pointer' },
+                    h('input', { type: 'checkbox', checked: fdSnap, onChange: function() { upd({ fdSnap: !fdSnap }); } }),
+                    'Snap to fractions of ' + fdDen
+                  ),
+                  h('label', { className: 'font-bold text-cyan-700 flex items-center gap-1 cursor-pointer' },
+                    h('input', { type: 'checkbox', checked: fdShowBar, onChange: function() { upd({ fdShowBar: !fdShowBar }); } }),
+                    'Bar'
+                  ),
+                  h('label', { className: 'font-bold text-cyan-700 flex items-center gap-1 cursor-pointer' },
+                    h('input', { type: 'checkbox', checked: fdShowReps, onChange: function() { upd({ fdShowReps: !fdShowReps }); } }),
+                    'Pie + grid + dots'
+                  )
+                )
+              ),
+
+              fdShowBar && h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-3' },
+                h('p', { className: 'text-[11px] font-bold text-cyan-700 mb-1' }, '▒ Fraction bar — length model (' + fdDen + ' equal parts)'),
+                renderFracBar()
+              ),
+
+              h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-3' },
+                h('div', { className: 'flex items-center justify-between mb-1' },
+                  h('p', { className: 'text-[11px] font-bold text-cyan-700' }, '📏 Number line — fractions above, decimals below'),
+                  h('span', { className: 'text-[11px] text-slate-600 italic' }, 'Tap or drag the marker')
+                ),
+                renderFdLine()
+              ),
+
+              fdShowReps && h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-3' + (fdCelebrate ? ' allo-fd-card-pulse' : '') },
+                h('p', { className: 'text-[11px] font-bold text-cyan-700 mb-2' },
+                  '🔄 Same amount, three more visuals. Quantity is conserved across every representation.'
+                ),
+                h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
+                  h('div', { className: 'flex flex-col items-center bg-cyan-50/40 rounded-lg p-2 border border-cyan-100' },
+                    h('p', { className: 'text-[10px] font-bold text-cyan-800 mb-1 uppercase tracking-wider' }, '◐ Pie (area)'),
+                    renderFracPie(),
+                    h('p', { className: 'text-[10px] text-slate-700 italic mt-1 text-center' },
+                      isExactFrac ? (simpNum + ' of ' + simpDen + ' wedges') : ('~' + nearestNum + '/' + fdDen + ' wedges')
+                    )
+                  ),
+                  h('div', { className: 'flex flex-col items-center bg-cyan-50/40 rounded-lg p-2 border border-cyan-100' },
+                    h('p', { className: 'text-[10px] font-bold text-cyan-800 mb-1 uppercase tracking-wider' }, '⊞ Hundred grid'),
+                    renderFracGrid(),
+                    h('p', { className: 'text-[10px] text-slate-700 italic mt-1 text-center' },
+                      Math.round(fdValue * 100) + ' of 100 squares = ' + percent + '%'
+                    )
+                  ),
+                  h('div', { className: 'flex flex-col items-center bg-cyan-50/40 rounded-lg p-2 border border-cyan-100' },
+                    h('p', { className: 'text-[10px] font-bold text-cyan-800 mb-1 uppercase tracking-wider' }, '● Dots (set)'),
+                    renderFracDots(),
+                    h('p', { className: 'text-[10px] text-slate-700 italic mt-1 text-center' },
+                      Math.floor(fdValue * fdDen) + ' of ' + fdDen + ' dots filled'
+                    )
+                  )
+                ),
+                h('p', { className: 'text-[10px] text-slate-600 italic mt-2 text-center' },
+                  'Length, area, base-10 area, discrete count. Four ways to see ' + (isExactFrac ? simpNum + '/' + simpDen : decimal) + '.'
+                )
+              ),
+
+              h('div', { className: 'grid grid-cols-3 gap-2' },
+                h('div', { className: 'bg-cyan-50 rounded-xl p-3 border-2 border-cyan-300 text-center' + (fdCelebrate ? ' allo-fd-card-pulse' : '') },
+                  h('p', { className: 'text-[10px] font-bold text-cyan-700 uppercase tracking-wider mb-1' }, 'Fraction'),
+                  h('p', { className: 'text-2xl font-bold text-cyan-900 font-mono' },
+                    isExactFrac ? (simpNum + '/' + simpDen) : ('≈ ' + nearestNum + '/' + fdDen)
+                  ),
+                  mixedNumber && mixedNumber.whole > 0 && h('p', { className: 'text-sm font-bold text-cyan-700 font-mono mt-0.5' },
+                    mixedNumber.sign + mixedNumber.whole + (mixedNumber.num > 0 ? ' ' + mixedNumber.num + '/' + mixedNumber.den : '') + ' (mixed)'
+                  ),
+                  isExactFrac
+                    ? h('p', { className: 'text-[10px] text-cyan-700 italic mt-1' }, fracInWords)
+                    : h('p', { className: 'text-[10px] text-slate-500 italic mt-1' }, 'not exact at ' + fdDen + 'ths')
+                ),
+                h('div', { className: 'bg-amber-50 rounded-xl p-3 border-2 border-amber-300 text-center' + (fdCelebrate ? ' allo-fd-card-pulse' : '') },
+                  h('p', { className: 'text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1' },
+                    'Decimal',
+                    isRepeatingDecimal && h('span', { className: 'allo-fd-repeat-dot ml-1', title: 'This decimal repeats forever' }, ' ↻')
+                  ),
+                  h('p', { className: 'text-2xl font-bold text-amber-900 font-mono' }, decimal + (isRepeatingDecimal ? '…' : '')),
+                  isRepeatingDecimal
+                    ? h('p', { className: 'text-[10px] text-amber-700 italic mt-1' }, simpNum + ' ÷ ' + simpDen + ' = repeats forever')
+                    : h('p', { className: 'text-[10px] text-amber-700 italic mt-1' }, simpNum + ' ÷ ' + simpDen + ' = ' + decimal)
+                ),
+                h('div', { className: 'bg-emerald-50 rounded-xl p-3 border-2 border-emerald-300 text-center' + (fdCelebrate ? ' allo-fd-card-pulse' : '') },
+                  h('p', { className: 'text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-1' }, 'Percent'),
+                  h('p', { className: 'text-2xl font-bold text-emerald-900 font-mono' }, percent + '%'),
+                  h('p', { className: 'text-[10px] text-emerald-700 italic mt-1' }, 'per hundred')
+                )
+              ),
+
+              // ── Fraction arithmetic on the line (slide the marker) ──
+              h('div', { className: 'bg-fuchsia-50 rounded-xl p-3 border border-fuchsia-200' },
+                h('p', { className: 'text-[11px] font-bold text-fuchsia-800 mb-1' },
+                  '➕➖ Move the marker by a fraction — fraction arithmetic on the line'
+                ),
+                h('p', { className: 'text-[10px] text-fuchsia-700 italic mb-2' },
+                  'Click a chip below. The marker slides; all four visuals update. The line auto-extends if you drift past the edge.'
+                ),
+                h('div', { className: 'space-y-1.5' },
+                  ['+', '−'].map(function(op) {
+                    return h('div', { key: 'arith-row-' + op, className: 'flex flex-wrap items-center gap-1.5' },
+                      h('span', { className: 'text-base font-bold text-fuchsia-700 w-5 text-center', 'aria-hidden': 'true' }, op),
+                      [[1,2], [1,3], [1,4], [1,5], [1,6], [1,8], [1,10], [2,3], [3,4], [1,1]].map(function(pair) {
+                        return h('button', {
+                          key: op + '-' + pair[0] + '-' + pair[1],
+                          onClick: function() { applyArith(op, pair[0], pair[1]); },
+                          'aria-label': op + ' ' + pair[0] + ' over ' + pair[1],
+                          className: 'px-2 py-1 rounded-lg text-[11px] font-bold font-mono transition-all ' +
+                            'bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-100 hover:shadow-sm'
+                        }, op + pair[0] + '/' + pair[1]);
+                      })
+                    );
+                  })
+                ),
+                fdLastOpText && h('p', {
+                  className: 'text-xs font-bold text-fuchsia-900 font-mono mt-2 bg-white rounded px-2 py-1 inline-block border border-fuchsia-200',
+                  'aria-live': 'polite'
+                }, '🧮 ' + fdLastOpText)
+              ),
+
+              // ── Common-denominator hunter (LCM-based fraction addition) ──
+              h('div', { className: 'bg-rose-50 rounded-xl p-3 border border-rose-200' },
+                h('p', { className: 'text-[11px] font-bold text-rose-800 mb-1' },
+                  '🤝 Common-denominator hunter — how to add fractions with different denominators'
+                ),
+                h('p', { className: 'text-[10px] text-rose-700 italic mb-2' },
+                  'You cannot add 1/2 + 1/3 directly. First find a shared denominator (the LCM works), rename each fraction, then add the numerators.'
+                ),
+                h('div', { className: 'flex flex-wrap items-center gap-1 mb-2 text-sm font-mono' },
+                  h('input', { type: 'number', value: fdCDN1, min: 0, max: 100, step: 1,
+                    onChange: function(e) { var v = parseInt(e.target.value, 10); if (!isNaN(v) && v >= 0) upd({ fdCDN1: v }); },
+                    'aria-label': 'First fraction numerator',
+                    className: 'w-12 px-1 py-0.5 border border-rose-300 rounded text-center' }),
+                  h('span', { className: 'text-rose-700 font-bold' }, '/'),
+                  h('input', { type: 'number', value: fdCDD1, min: 1, max: 100, step: 1,
+                    onChange: function(e) { var v = parseInt(e.target.value, 10); if (!isNaN(v) && v > 0) upd({ fdCDD1: v }); },
+                    'aria-label': 'First fraction denominator',
+                    className: 'w-12 px-1 py-0.5 border border-rose-300 rounded text-center' }),
+                  h('span', { className: 'mx-2 text-rose-700 font-bold text-base' }, '+'),
+                  h('input', { type: 'number', value: fdCDN2, min: 0, max: 100, step: 1,
+                    onChange: function(e) { var v = parseInt(e.target.value, 10); if (!isNaN(v) && v >= 0) upd({ fdCDN2: v }); },
+                    'aria-label': 'Second fraction numerator',
+                    className: 'w-12 px-1 py-0.5 border border-rose-300 rounded text-center' }),
+                  h('span', { className: 'text-rose-700 font-bold' }, '/'),
+                  h('input', { type: 'number', value: fdCDD2, min: 1, max: 100, step: 1,
+                    onChange: function(e) { var v = parseInt(e.target.value, 10); if (!isNaN(v) && v > 0) upd({ fdCDD2: v }); },
+                    'aria-label': 'Second fraction denominator',
+                    className: 'w-12 px-1 py-0.5 border border-rose-300 rounded text-center' }),
+                  h('span', { className: 'ml-2 text-rose-700 font-bold' }, '= ?')
+                ),
+                h('div', { className: 'text-xs space-y-1 text-rose-900 mb-2 bg-white/60 rounded p-2 border border-rose-100' },
+                  h('p', {}, 'Smallest common denominator: ',
+                    h('b', { className: 'font-mono text-base text-rose-900' }, 'LCM(' + fdCDD1 + ', ' + fdCDD2 + ') = ' + lcmOfDen)
+                  ),
+                  h('p', { className: 'font-mono' },
+                    '  ' + fdCDN1 + '/' + fdCDD1 + ' → ' + cd1ScaledN + '/' + lcmOfDen,
+                    h('span', { className: 'text-[10px] text-rose-600 ml-2' }, '(× ' + cd1Mult + '/' + cd1Mult + ' top and bottom)')
+                  ),
+                  h('p', { className: 'font-mono' },
+                    '  ' + fdCDN2 + '/' + fdCDD2 + ' → ' + cd2ScaledN + '/' + lcmOfDen,
+                    h('span', { className: 'text-[10px] text-rose-600 ml-2' }, '(× ' + cd2Mult + '/' + cd2Mult + ' top and bottom)')
+                  ),
+                  h('p', { className: 'font-mono font-bold' },
+                    '  Sum: ' + cd1ScaledN + '/' + lcmOfDen + ' + ' + cd2ScaledN + '/' + lcmOfDen + ' = ' + cdSumN + '/' + lcmOfDen +
+                    (cdSumSimpD !== cdSumD ? ' = ' + cdSumSimpN + '/' + cdSumSimpD : '') +
+                    ' ≈ ' + (Math.round(cdSumValue * 1000) / 1000)
+                  )
+                ),
+                h('button', {
+                  onClick: function() {
+                    var newMax = fdMax;
+                    if (cdSumValue > newMax) newMax = Math.ceil(cdSumValue);
+                    sfxClick();
+                    upd({
+                      fdValue: cdSumValue, fdDen: cdSumD, fdMax: newMax,
+                      fdLastOpText: fdCDN1 + '/' + fdCDD1 + ' + ' + fdCDN2 + '/' + fdCDD2 + ' = ' + cdSumSimpN + '/' + cdSumSimpD
+                    });
+                    announceToSR('Sum plotted: ' + cdSumSimpN + ' over ' + cdSumSimpD);
+                  },
+                  className: 'px-3 py-1.5 bg-rose-700 text-white text-xs font-bold rounded hover:bg-rose-800 transition-all'
+                }, '→ Plot the sum on the line'),
+                h('div', { className: 'flex flex-wrap gap-1 mt-2' },
+                  h('span', { className: 'text-[10px] font-bold text-rose-700 self-center mr-1' }, 'Try:'),
+                  [[1,2,1,3], [1,4,1,3], [2,3,1,6], [3,4,1,8], [1,5,2,5], [1,2,1,4]].map(function(q, idx) {
+                    return h('button', {
+                      key: 'cdq-' + idx,
+                      onClick: function() { sfxClick(); upd({ fdCDN1: q[0], fdCDD1: q[1], fdCDN2: q[2], fdCDD2: q[3] }); },
+                      className: 'px-2 py-0.5 rounded text-[10px] font-mono bg-white text-rose-700 border border-rose-300 hover:bg-rose-100'
+                    }, q[0] + '/' + q[1] + ' + ' + q[2] + '/' + q[3]);
+                  })
+                )
+              ),
+
+              // ── Equivalent fractions ribbon (same point, many names) ──
+              equivalentFractions.length > 1 && h('div', { className: 'bg-teal-50 rounded-xl p-3 border border-teal-200' },
+                h('p', { className: 'text-[11px] font-bold text-teal-800 mb-2' },
+                  '∞ Equivalent fractions — same point, many names. Click to re-divide the line.'
+                ),
+                h('div', { className: 'flex flex-wrap items-center gap-1.5' },
+                  equivalentFractions.map(function(eq, idx) {
+                    var active = eq.d === fdDen;
+                    return h(React.Fragment, { key: 'eq-' + eq.d },
+                      idx > 0 && h('span', { className: 'text-teal-500 font-bold text-xs' }, '='),
+                      h('button', {
+                        'aria-label': eq.n + ' over ' + eq.d + (active ? ' (current)' : ''),
+                        'aria-pressed': active,
+                        onClick: function() {
+                          sfxClick();
+                          upd({ fdDen: eq.d });
+                          announceToSR(eq.n + ' over ' + eq.d);
+                        },
+                        className: 'px-2 py-1 rounded-lg text-xs font-bold font-mono transition-all ' +
+                          (active ? 'bg-teal-700 text-white shadow-sm' : 'bg-white text-teal-700 border border-teal-300 hover:bg-teal-100')
+                      }, eq.n + '/' + eq.d)
+                    );
+                  })
+                ),
+                h('p', { className: 'text-[10px] text-teal-700 italic mt-2' },
+                  'Multiply (or divide) the top AND bottom by the same number → same value, different name. The marker does not move.'
+                )
+              ),
+
+              h('div', { className: 'bg-slate-50 rounded-xl p-3 border border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-3' },
+                h('div', {},
+                  h('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, 'Type a fraction, plot it:'),
+                  h('div', { className: 'flex items-center gap-1' },
+                    h('input', { type: 'number', placeholder: 'n', min: 0, id: 'fdNum',
+                      'aria-label': 'Fraction numerator',
+                      className: 'w-14 px-2 py-1 text-sm border border-slate-300 rounded text-center font-mono' }),
+                    h('span', { className: 'text-xl font-bold text-slate-600' }, '/'),
+                    h('input', { type: 'number', placeholder: 'd', min: 1, id: 'fdDenInput',
+                      'aria-label': 'Fraction denominator',
+                      className: 'w-14 px-2 py-1 text-sm border border-slate-300 rounded text-center font-mono' }),
+                    h('button', { 'aria-label': 'Plot fraction',
+                      onClick: function() {
+                        var nEl = document.getElementById('fdNum');
+                        var dEl = document.getElementById('fdDenInput');
+                        if (!nEl || !dEl) return;
+                        var nv = parseFloat(nEl.value), dv = parseFloat(dEl.value);
+                        if (isNaN(nv) || isNaN(dv) || dv === 0) { addToast('Enter a numerator and non-zero denominator.', 'warning'); return; }
+                        var v = nv / dv;
+                        var newMin = fdMin, newMax = fdMax;
+                        if (v > newMax) newMax = Math.ceil(v);
+                        if (v < newMin) newMin = Math.floor(v);
+                        sfxClick();
+                        upd({ fdValue: v, fdDen: dv, fdMin: newMin, fdMax: newMax });
+                        announceToSR(nv + ' over ' + dv + ' equals ' + (Math.round(v * 1000) / 1000));
+                      },
+                      className: 'px-2.5 py-1 bg-cyan-700 text-white text-xs font-bold rounded hover:bg-cyan-800 transition-all'
+                    }, '→ Plot')
+                  )
+                ),
+                h('div', {},
+                  h('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, 'Type a decimal, plot it:'),
+                  h('div', { className: 'flex items-center gap-1' },
+                    h('input', { type: 'number', step: 0.01, placeholder: '0.00', id: 'fdDec',
+                      'aria-label': 'Decimal value',
+                      className: 'flex-1 px-2 py-1 text-sm border border-slate-300 rounded font-mono' }),
+                    h('button', { 'aria-label': 'Plot decimal',
+                      onClick: function() {
+                        var dEl = document.getElementById('fdDec');
+                        if (!dEl) return;
+                        var v = parseFloat(dEl.value);
+                        if (isNaN(v)) { addToast('Enter a decimal.', 'warning'); return; }
+                        var newMin = fdMin, newMax = fdMax;
+                        if (v > newMax) newMax = Math.ceil(v);
+                        if (v < newMin) newMin = Math.floor(v);
+                        sfxClick();
+                        upd({ fdValue: v, fdMin: newMin, fdMax: newMax });
+                        announceToSR(v + ' on the line');
+                      },
+                      className: 'px-2.5 py-1 bg-amber-700 text-white text-xs font-bold rounded hover:bg-amber-800 transition-all'
+                    }, '→ Plot')
+                  )
+                )
+              ),
+
+              h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200' },
+                h('p', { className: 'text-[11px] font-bold text-indigo-700 mb-2' }, '📌 Quick conversions (click to plot):'),
+                h('div', { className: 'flex flex-wrap gap-1.5' },
+                  presetFracs.map(function(pf) {
+                    var v = pf.n / pf.d;
+                    var active = Math.abs(v - fdValue) < 0.001 && fdDen === pf.d;
+                    return h('button', {
+                      key: pf.n + '_' + pf.d,
+                      'aria-label': pf.n + ' over ' + pf.d + ' equals ' + pf.dec,
+                      onClick: function() {
+                        sfxClick();
+                        var nextMax = fdMax;
+                        if (v > fdMax) nextMax = Math.ceil(v);
+                        upd({ fdValue: v, fdDen: pf.d, fdMax: nextMax });
+                        announceToSR(pf.n + ' over ' + pf.d + ' equals ' + pf.dec);
+                      },
+                      className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all font-mono ' +
+                        (active ? 'bg-indigo-700 text-white shadow-sm' : 'bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-100')
+                    }, pf.n + '/' + pf.d + ' = ' + pf.dec);
+                  })
+                )
+              ),
+
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+                h('div', { className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200' },
+                  h('div', { className: 'flex items-center justify-between mb-1' },
+                    h('p', { className: 'text-[11px] font-bold text-emerald-800' }, '💵 Money view'),
+                    h('button', {
+                      onClick: function() { upd({ fdShowMoney: !fdShowMoney }); },
+                      'aria-expanded': fdShowMoney,
+                      className: 'text-[10px] font-bold text-emerald-700 hover:underline'
+                    }, fdShowMoney ? 'hide' : 'show')
+                  ),
+                  fdShowMoney && h('div', {},
+                    h('p', { className: 'text-lg font-bold text-emerald-900 font-mono' }, moneyStr + ' of $1.00'),
+                    h('p', { className: 'text-[11px] text-emerald-700 mt-1' },
+                      'A quarter is $0.25 = 1/4 of a dollar. A dime is $0.10 = 1/10. Coins are decimal-fraction practice.'
+                    )
+                  )
+                ),
+                h('div', { className: 'bg-sky-50 rounded-lg p-3 border border-sky-200' },
+                  h('div', { className: 'flex items-center justify-between mb-1' },
+                    h('p', { className: 'text-[11px] font-bold text-sky-800' }, '🔍 Place-value expansion'),
+                    h('button', {
+                      onClick: function() { upd({ fdShowExpansion: !fdShowExpansion }); },
+                      'aria-expanded': fdShowExpansion,
+                      className: 'text-[10px] font-bold text-sky-700 hover:underline'
+                    }, fdShowExpansion ? 'hide' : 'show')
+                  ),
+                  fdShowExpansion && h('div', {},
+                    h('p', { className: 'text-base font-bold text-sky-900 font-mono' }, decimal + ' = ' + expansion),
+                    h('p', { className: 'text-[11px] text-sky-700 mt-1 italic' },
+                      'Every decimal place IS a fraction. 1st place: tenths, 2nd: hundredths, 3rd: thousandths.'
+                    )
+                  )
+                )
+              ),
+
+              h('div', { className: 'bg-purple-50 rounded-xl p-3 border border-purple-200' },
+                h('div', { className: 'flex items-center justify-between mb-2' },
+                  h('p', { className: 'text-[11px] font-bold text-purple-800' }, '↔ Compare two values'),
+                  h('label', { className: 'text-[11px] font-bold text-purple-700 flex items-center gap-1 cursor-pointer' },
+                    h('input', { type: 'checkbox', checked: fdCompareOn, onChange: function() { upd({ fdCompareOn: !fdCompareOn }); } }),
+                    'enabled'
+                  )
+                ),
+                fdCompareOn && h('div', {},
+                  h('div', { className: 'flex flex-wrap items-center gap-2 mb-1' },
+                    h('span', { className: 'text-xs font-bold text-purple-700' }, 'Second value:'),
+                    h('input', { type: 'number', value: fdCompareValue, step: 0.01, min: fdMin, max: fdMax,
+                      onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) upd({ fdCompareValue: v }); },
+                      'aria-label': 'Second value',
+                      className: 'w-24 px-2 py-1 text-sm border border-purple-300 rounded font-mono'
+                    }),
+                    h('span', { className: 'text-xs font-mono text-purple-700' }, '≈ ' + Math.round(fdCompareValue * fdDen) + '/' + fdDen)
+                  ),
+                  h('p', { className: 'text-[11px] text-purple-800' },
+                    (function() {
+                      var a = fdValue, b = fdCompareValue;
+                      var aR = Math.round(a * 1000) / 1000, bR = Math.round(b * 1000) / 1000;
+                      if (Math.abs(a - b) < 0.001) return '= Equal: both are ' + aR + '.';
+                      if (a > b) return aR + ' > ' + bR + ' (red marker is to the right).';
+                      return aR + ' < ' + bR + ' (red marker is to the left).';
+                    })()
+                  )
+                )
+              ),
+
+              h('div', { className: 'flex flex-wrap items-center gap-2 text-[11px]' },
+                h('span', { className: 'font-bold text-slate-600' }, 'Line range:'),
+                h('label', { className: 'flex items-center gap-1' }, 'min',
+                  h('input', { type: 'number', value: fdMin, step: 1,
+                    onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v) && v < fdMax) upd({ fdMin: v }); },
+                    'aria-label': 'Line minimum',
+                    className: 'w-16 px-2 py-0.5 border border-slate-300 rounded font-mono'
+                  })
+                ),
+                h('label', { className: 'flex items-center gap-1' }, 'max',
+                  h('input', { type: 'number', value: fdMax, step: 1,
+                    onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v) && v > fdMin) upd({ fdMax: v }); },
+                    'aria-label': 'Line maximum',
+                    className: 'w-16 px-2 py-0.5 border border-slate-300 rounded font-mono'
+                  })
+                ),
+                h('button', { onClick: function() { sfxClick(); upd({ fdMin: 0, fdMax: 1 }); },
+                  className: 'px-2 py-0.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold' }, '0 to 1'),
+                h('button', { onClick: function() { sfxClick(); upd({ fdMin: 0, fdMax: 2 }); },
+                  className: 'px-2 py-0.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold' }, '0 to 2'),
+                h('button', { onClick: function() { sfxClick(); upd({ fdMin: -1, fdMax: 1 }); },
+                  className: 'px-2 py-0.5 rounded bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold' }, '-1 to 1'),
+                h('button', {
+                  onClick: function() {
+                    sfxClick();
+                    upd({
+                      fdValue: 0.5, fdDen: 4, fdMin: 0, fdMax: 1,
+                      fdShowBar: true, fdShowReps: true, fdSnap: true,
+                      fdShowMoney: false, fdShowExpansion: false,
+                      fdCompareOn: false, fdCompareValue: 0.75,
+                      fdLastLandmark: null, fdCelebrate: false,
+                      fdLastOpText: '', fdTrail: [],
+                      fdCDN1: 1, fdCDD1: 2, fdCDN2: 1, fdCDD2: 3
+                    });
+                    announceToSR('Frac Dec reset to defaults');
+                  },
+                  'aria-label': 'Reset Frac Dec tab to defaults',
+                  className: 'ml-auto px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-bold'
+                }, '↺ Reset Frac↔Dec')
+              ),
+
+              h('details', { className: 'bg-white rounded-xl border border-cyan-200 p-3' },
+                h('summary', { className: 'text-xs font-bold text-cyan-700 cursor-pointer' }, '💡 Why fractions and decimals are the same thing'),
+                h('div', { className: 'mt-2 space-y-2 text-xs text-slate-700' },
+                  h('p', {}, h('b', {}, 'A fraction IS a division problem. '), '3/4 means "3 divided by 4." Type 3 ÷ 4 into any calculator: 0.75. The slash and ÷ mean the same thing.'),
+                  h('p', {}, h('b', {}, 'A decimal IS a fraction with a hidden denominator. '), '0.6 means "6 tenths," 6/10. 0.25 means "25 hundredths," 25/100, which simplifies to 1/4.'),
+                  h('p', {}, h('b', {}, 'The number line proves it. '), 'The point at 1/4 is the same point as the point at 0.25. Same spot, two names.'),
+                  h('p', {}, h('b', {}, 'Some terminate, some repeat. '), '1/2 = 0.5 (stops). 1/4 = 0.25 (stops). 1/3 = 0.333… (repeats forever). The denominator decides: if it factors into only 2s and 5s, it terminates. Otherwise it repeats. Watch the ↻ symbol on the decimal card.')
+                )
+              )
+            );
+          };
+
           // ═══ BADGES PANEL ═══
           var renderBadges = function() {
             var earned = Object.keys(badges).length;
@@ -727,7 +1711,8 @@ window.StemLab = window.StemLab || {
           var tabs = [
             { id: 'explore', icon: '\uD83D\uDCCF', label: 'Explore' },
             { id: 'challenges', icon: '\uD83C\uDFAF', label: 'Challenges' },
-            { id: 'skipcount', icon: '\uD83D\uDD22', label: 'Skip Count' }
+            { id: 'skipcount', icon: '\uD83D\uDD22', label: 'Skip Count' },
+            { id: 'fracdec', icon: '\u00BD', label: 'Frac \u2194 Dec' }
           ];
 
           return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
@@ -739,7 +1724,20 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'ml-auto flex items-center gap-3' },
                 streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
                 bestStreak > 0 && h('span', { className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak),
-                h('span', { className: 'text-xs font-bold text-blue-600' }, score.correct + '/' + score.total)
+                h('span', { className: 'text-xs font-bold text-blue-600' }, score.correct + '/' + score.total),
+                h('button', {
+                  onClick: function() {
+                    var next = !muted;
+                    upd({ muted: next });
+                    if (!next) { /* unmuting: chirp once so user knows it's on */ setTimeout(function() { playTone(660, 0.08, 'sine', 0.08); }, 0); }
+                    announceToSR(next ? 'Sound muted' : 'Sound on');
+                  },
+                  'aria-label': muted ? 'Unmute sound effects' : 'Mute sound effects',
+                  'aria-pressed': muted,
+                  title: muted ? 'Unmute (sounds are off)' : 'Mute (sounds are on)',
+                  className: 'p-1 rounded-md text-base hover:bg-slate-100 transition-colors ' +
+                    (muted ? 'text-slate-400' : 'text-blue-600')
+                }, muted ? '\uD83D\uDD07' : '\uD83D\uDD0A')
               )
             ),
 
@@ -760,7 +1758,8 @@ window.StemLab = window.StemLab || {
               var TAB_META = {
                 explore:    { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '\uD83D\uDCCF', title: 'Explore \u2014 the visual home for number sense',  hint: 'Numbers as positions on a line, not just symbols. Negatives mirror across zero. Fractions sit BETWEEN integers; decimals are the same idea finer-grained. Common Core 2.MD.6, 3.NF.2, 6.NS.6.' },
                 challenges: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)', icon: '\uD83C\uDFAF', title: 'Challenges \u2014 estimate, locate, compare',          hint: 'Where does 7/8 sit? What about \u22122.4? Estimation builds magnitude sense. Studies (Siegler 2009) show number-line precision predicts later math success better than rote facts.' },
-                skipcount:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83D\uDD22', title: 'Skip Count \u2014 the bridge to multiplication',     hint: '2, 4, 6, 8\u2026 = the 2 times table walking. Skip counting by 5s and 10s pre-builds money and time. Counting backward by 3s pre-builds subtraction and division. The line shows the rhythm.' }
+                skipcount:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83D\uDD22', title: 'Skip Count \u2014 the bridge to multiplication',     hint: '2, 4, 6, 8\u2026 = the 2 times table walking. Skip counting by 5s and 10s pre-builds money and time. Counting backward by 3s pre-builds subtraction and division. The line shows the rhythm.' },
+                fracdec:    { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '\u00BD', title: 'Fractions \u2194 Decimals, same point, two names', hint: 'A fraction is a division problem. A decimal is a fraction with a hidden denominator of 10, 100, 1000\u2026 1/4 and 0.25 are the SAME spot on the line. Common Core 4.NF.6, 4.NF.7, 5.NBT.3.' }
               };
               var meta = TAB_META[tab] || TAB_META.explore;
               return h('div', {
@@ -786,6 +1785,7 @@ window.StemLab = window.StemLab || {
             tab === 'explore' && renderExplore(),
             tab === 'challenges' && renderChallenges(),
             tab === 'skipcount' && renderSkipCount(),
+            tab === 'fracdec' && renderFracDec(),
 
             // Badges
             renderBadges(),
@@ -801,7 +1801,7 @@ window.StemLab = window.StemLab || {
 
             // Keyboard hints
             h('div', { className: 'text-center text-[11px] text-slate-600 mt-2' },
-              '\u2328\uFE0F 1-3: tabs | N: new challenge | ?: AI tutor'
+              '\u2328\uFE0F 1-4: tabs | N: new challenge | ?: AI tutor | \u2190 \u2192 on marker: nudge | Home/End: ends'
             )
           );
         }; // End of _NumberLineComponent
