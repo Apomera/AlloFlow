@@ -1208,8 +1208,75 @@
               h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Why it matters'),
               h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } }, selected.sciFact)
             )
-          )
+          ),
+          extremophilesAstrobiologySection()
         );
+
+        function extremophilesAstrobiologySection() {
+          var EXT = [
+            { id: 'classes', name: 'Classes of extremophiles', emoji: '🌡️',
+              body: 'Extremophiles are organisms that thrive in environments hostile to most life. The major classes (often combined in one organism): THERMOPHILES grow above 45°C; HYPERTHERMOPHILES above 80°C (the current record holder, Methanopyrus kandleri, grows at 122°C, well above water\'s normal boiling point — sustained by hydrostatic pressure at hydrothermal vents). PSYCHROPHILES grow below 15°C, including some that grow at -20°C in saline brines inside Antarctic sea ice. ACIDOPHILES grow at pH below 5 (Picrophilus oshimae grows at pH 0.06, more acidic than battery acid). ALKALIPHILES grow above pH 9 (soda lakes). HALOPHILES grow in saturated salt (Halobacterium needs >2 M NaCl). PIEZOPHILES (barophiles) grow at high pressures, including the bottom of the Mariana Trench (1100 atm, 11 km depth). RADIATION-RESISTANT organisms like Deinococcus radiodurans survive 5000 Gy of ionizing radiation — about 3000× the lethal dose for humans.',
+              caveat: 'The "extremophile" label is anthropocentric. From the organism\'s perspective, ITS environment is normal, and the moderate-temperature surface biosphere we live in is the strange edge case. Some extremophile environments (deep-sea hydrothermal vents, subsurface basalt, deep aquifers) are far more common on Earth + likely in the universe than the conditions we consider familiar.'
+            },
+            { id: 'vents', name: 'Hydrothermal vents + life origins', emoji: '🌋',
+              body: 'Discovered in 1977 by the Alvin submersible at the Galápagos Rift, hydrothermal vents support entire ecosystems based on CHEMOSYNTHESIS — bacteria + archaea that oxidize hydrogen sulfide (instead of using sunlight) to fix carbon, supporting tube worms, clams, shrimp, and crabs. This was the first proof that complex life can exist without sunlight. Black-smoker vents at mid-ocean ridges reach 400°C, with mineral-rich fluids reacting with cold seawater to precipitate iron + zinc sulfides. White-smoker vents are cooler + dominated by barium + calcium minerals. The Lost City hydrothermal field (Atlantic, 2000) is an alkaline serpentinite-driven vent system — possibly closer to where life on Earth originated, because serpentinization produces hydrogen + methane + organic precursors in conditions favorable to early metabolism (Mike Russell + Bill Martin\'s "alkaline vent" hypothesis).',
+              caveat: 'Whether life on Earth originated AT vents is debated. Competing hypotheses include warm shallow tidal pools (Darwin\'s original guess), volcanic islands, mineral-templated surfaces, and even subsurface aquifers. Vents have the right chemistry; the kinetics + thermodynamics of life\'s first steps remain hard to reconstruct in lab simulations.'
+            },
+            { id: 'subsurface', name: 'The deep biosphere', emoji: '⛏️',
+              body: 'About 1.6 × 10²⁹ microbial cells live in the upper few kilometers of Earth\'s crust — roughly equal to the total cell count in the surface biosphere, possibly more. This "deep biosphere" was unsuspected until the 1990s; it has since been documented in deep mines (the Mponeng mine in South Africa at 3.6 km depth has 60°C basalt aquifers full of bacteria + archaea), oil reservoirs, the seabed sediments down to 1+ km, and even basalt cores from drilling expeditions. These organisms grow EXTREMELY slowly (some have estimated doubling times of centuries to millennia), feeding on hydrogen produced by radiolysis of water from natural uranium + thorium decay, or on serpentinization-derived hydrogen + methane. The deep biosphere may be the LARGEST single ecosystem on Earth by biomass.',
+              caveat: 'Sample contamination is a constant problem in deep biosphere science. Drilling fluids, packers, even the drill string carry surface microbes down with them. Distinguishing genuine indigenous deep-life from contamination requires multiple geochemical controls + meticulous procedures. The field has gradually built credibility but each new "deep life" claim still faces scrutiny.'
+            },
+            { id: 'tardigrade', name: 'Tardigrades + survival extremes', emoji: '🐻',
+              body: 'Tardigrades ("water bears") are tiny invertebrates (~0.5 mm) that can survive desiccation, freezing to -200°C, heating to 150°C, vacuum + UV (briefly), and ~1000× the radiation dose lethal to humans. Their survival mechanism involves a state called CRYPTOBIOSIS: nearly complete shutdown of metabolism, replacement of cellular water with trehalose (a sugar that stabilizes proteins), and protective Damage-Suppressing (Dsup) proteins that wrap around DNA. Tardigrades survived a 2007 ESA experiment that exposed them to open space for 10 days; most revived after rehydration. Tardigrades are NOT technically extremophiles (they live in damp moss + lake sediments, which are not extreme), but they CAN survive extreme exposures via cryobiosis.',
+              caveat: 'Tardigrades are wildly over-represented in popular astrobiology narratives. They cannot GROW or REPRODUCE in extreme conditions; they can only survive them as inert cysts. A tardigrade does not represent a colonizing life form for Mars or Europa. They DO represent useful proof that complex eukaryotic life can survive transport through space, which is relevant for panspermia + planetary protection.'
+            },
+            { id: 'mars', name: 'Mars + the search for past life', emoji: '🔴',
+              body: 'Mars almost certainly had liquid water on its surface 3-4 billion years ago + may still have it intermittently in subsurface aquifers. The Perseverance rover (landed 2021 in Jezero Crater) is selecting samples for a future Mars Sample Return mission (planned 2030s — schedule + budget uncertain). Curiosity rover detected organic molecules + methane plumes (varying seasonally, intriguingly) in Gale Crater. The chemistry of Mars is consistent with past microbial life, but no biosignatures have been confirmed. If past life existed on Mars, the most likely habitat was the subsurface (where liquid water + warmth could persist) — and we have not yet directly sampled deep enough.',
+              caveat: 'Mars surface today is severely hostile: ~6 mbar atmosphere (less than 1% of Earth), surface temperature -60°C average, perchlorate-laced regolith (toxic to most Earth life), heavy UV + cosmic radiation. Direct surface life today is implausible. Subsurface life — if it exists — would be at temperatures + chemistries similar to deep Earth biosphere. Conclusively detecting it would be one of the biggest scientific events in history; conclusively ruling it out is impossible without much deeper drilling than current missions can do.'
+            },
+            { id: 'europa', name: 'Europa + ocean worlds', emoji: '🌊',
+                  body: 'Europa is Jupiter\'s ice-covered moon. Beneath ~20-30 km of water ice lies a global liquid-water ocean estimated at 100+ km deep — more liquid water than all of Earth\'s oceans combined. Tidal heating from Jupiter\'s gravity keeps the ocean liquid. The Europa Clipper mission (launched October 2024, arriving 2030) will conduct ~50 close flybys to characterize the ice + ocean chemistry. Enceladus (Saturn moon) has similar geology + has been observed venting water + organic molecules + hydrogen from south-pole jets — direct sampling of subsurface ocean material was achieved by the Cassini mission (2005-2017). Titan (also Saturn) has methane lakes + a presumed subsurface water ocean. Triton (Neptune), Ganymede (Jupiter), Callisto (Jupiter) all probably have subsurface oceans.',
+                  caveat: 'Detecting life in a subsurface ocean is hard — we would need to either find it venting through the ice (Enceladus already gives us samples) or drill through 20+ km of ice (decades of technology development at minimum). Europa Clipper is NOT a life-detection mission. It is preparing the ground for a future lander. Setting realistic expectations matters: even a successful Clipper mission probably will not "find life on Europa."'
+            },
+            { id: 'panspermia', name: 'Panspermia + planetary protection', emoji: '🚀',
+              body: 'Panspermia is the hypothesis that life on Earth originated elsewhere + was delivered here by meteorites, comets, or interstellar dust. Tardigrades + bacterial spores can plausibly survive space transit (proven experimentally). Mars meteorites HAVE reached Earth via natural impact ejection. So the mechanism is feasible; the question is whether it happened. Most astrobiologists are agnostic — there is no positive evidence FOR panspermia + the alternative (independent origin on Earth) requires no special mechanism. Planetary protection is the related practical concern: NASA + ESA spend significant effort sterilizing spacecraft going to Mars or Europa, both to avoid contaminating those worlds with Earth life + to avoid false-positive biosignature detections from hitchhiking microbes. The COSPAR (Committee on Space Research) Planetary Protection Policy categorizes missions by destination + contamination risk.',
+              caveat: 'Some flavors of panspermia (Hoyle + Wickramasinghe\'s strong version, or Loeb\'s recent speculations on \'Oumuamua + IM1) are not seriously considered. The mild version — that organic precursors reached early Earth from comets — is well-supported by the chemistry of carbonaceous chondrite meteorites. Full living-cell panspermia is plausible but unsupported.'
+            },
+            { id: 'biosig', name: 'Biosignatures + agnostic biology', emoji: '🔬',
+              body: 'A biosignature is something only living processes can produce. On Earth, the giveaways are: chiral homochirality (life uses only L-amino acids + D-sugars; chemistry produces racemic mixtures), isotopic fractionation (life prefers lighter carbon-12 over carbon-13 by ~25 parts per thousand), specific gas combinations far from equilibrium (oxygen + methane together), patterned mineralogy (biologically-produced minerals like the magnetite chains in magnetotactic bacteria), and specific complex molecules (chlorophyll, hopanes, biopolymers). The challenge: alien life might not use the same chemistry. "Agnostic biosignatures" — patterns that any complex molecular system would create regardless of underlying biochemistry — are an active research area (Sara Walker + Lee Cronin\'s "assembly theory" is one current candidate).',
+              caveat: 'The history of "we have detected life on Mars" claims is humbling. Viking 1976 labeled-release experiments → debated for 50 years, still unsettled. ALH84001 meteorite microfossils 1996 → mostly abiotic explanations now accepted. Mars methane plumes → not yet linked to biology. Any future claim will face an extremely high burden of proof; the field has earned its caution the hard way.'
+            }
+          ];
+          var sel = d.selectedExtremo || 'classes';
+          var topic = EXT.find(function(t) { return t.id === sel; }) || EXT[0];
+          return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.25)' } },
+            h('h3', { style: { margin: '0 0 6px', color: '#a5b4fc', fontSize: 16 } }, '🌌 Extremophiles + astrobiology'),
+            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+              'The discovery of extremophiles on Earth — life in boiling springs, frozen brine, deep crustal rock, salt-saturated lakes, acidic vents — has expanded our sense of where life CAN exist. Every new extremophile habitat we find on Earth opens a new candidate habitat in the solar system + beyond. This is microbiology meeting astronomy in the most literal way.'
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              EXT.map(function(t) {
+                var on = t.id === sel;
+                return h('button', {
+                  key: t.id,
+                  onClick: function() { upd({ selectedExtremo: t.id }); },
+                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#6366f1' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #6366f1' : '1px solid #334155' }
+                }, t.emoji + ' ' + t.name);
+              })
+            ),
+            h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.35)' } },
+              h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#c7d2fe', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+              h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                h('strong', null, 'Honest framing: '), topic.caveat
+              )
+            ),
+            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.65 } },
+              h('strong', null, 'The cross-tool connection: '),
+              'This section pairs naturally with the Astronomy tool\'s exoplanet + habitable-zone + Drake-equation sections. The biology side (what kind of life COULD exist) and the astronomy side (where habitable worlds COULD be) are now converging into a single field called ASTROBIOLOGY. NASA + ESA both have active astrobiology programs (NASA has the Astrobiology Institute + NExSS network; ESA has the ExoMars + planned ENVISION missions). It is one of the most genuinely interdisciplinary fields in modern science.'
+            )
+          );
+        }
       }
 
       // MICROSCOPE — scale visualizer

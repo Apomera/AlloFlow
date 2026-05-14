@@ -1442,6 +1442,67 @@
               h('p', { style: { margin: '8px 0 0' } }, 'JWST and future missions (Habitable Worlds Observatory, ARIEL) are now probing exoplanet atmospheres for biosignatures: gas combinations like oxygen + methane that, on Earth, only persist because life keeps producing them.')
             ),
             '#22c55e'
+          ),
+
+          // ─── JWST exoplanet atmosphere spectroscopy ─────────────
+          sectionCard('🔬 JWST exoplanet atmosphere spectroscopy',
+            (function() {
+              var JWST_TOPICS = [
+                { id: 'how', name: 'How transmission spectroscopy works', emoji: '🌫️',
+                  body: 'When a planet transits its star, a small fraction of starlight passes through the planet\'s ATMOSPHERE on its way to us. Different gases absorb at different wavelengths (water at ~1.4 + ~1.9 microns, methane at ~3.3, CO2 at ~4.3, ozone at ~9.6). By comparing the depth of the transit at different wavelengths, we can detect which gases are present. The signal is tiny — for a hot Jupiter, the transit depth varies by about 0.01-0.1% across wavelengths. For a small rocky planet like TRAPPIST-1e, the signal is closer to 0.001% — at or below the noise floor of even JWST. JWST\'s 6.5-meter mirror + cold infrared detectors are the first instrument capable of doing this routinely.',
+                  caveat: 'Transmission spectroscopy only probes the TERMINATOR (day-night boundary) of the planet, not the whole atmosphere. You see the upper layers, not the surface. Clouds + haze can flatten the spectrum entirely (the "muted feature" problem) and reduce sensitivity dramatically. Many JWST exoplanet observations to date have shown features less sharp than predicted — clouds matter more than early models assumed.'
+                },
+                { id: 'wasp39b', name: 'WASP-39b — the first big JWST exoplanet', emoji: '☀️',
+                  body: 'WASP-39b is a hot Saturn-mass gas giant about 700 light-years away. In July-August 2022, JWST took its first transmission spectrum, detecting water vapor (H2O), carbon dioxide (CO2 — the first unambiguous CO2 detection in an exoplanet atmosphere), carbon monoxide (CO), and sulfur dioxide (SO2). The SO2 detection was the surprise: it requires photochemistry — UV light from the star breaking up other molecules to produce SO2 — which had been predicted but not previously observed. This is exoplanet "photochemistry" caught in the act. The chemistry tells us about the planet\'s composition, formation location, and metallicity.',
+                  caveat: 'WASP-39b is a hot puffy planet ideal for transmission spectroscopy (large atmosphere, high temperature, big signal). Detection of CO2 + SO2 there does NOT mean we can detect those gases on smaller cooler planets. It does mean the TECHNIQUES work — and as JWST keeps observing, smaller + cooler targets become possible with longer integration times.'
+                },
+                { id: 'trappist', name: 'TRAPPIST-1 planets', emoji: '🌍',
+                  body: 'TRAPPIST-1 is an ultra-cool red-dwarf star 40 light-years away with seven Earth-sized planets, three (TRAPPIST-1e, f, g) in the habitable zone. JWST has now observed TRAPPIST-1b (the innermost, NOT habitable — much too close to the star). Result: thermal-emission measurements show TRAPPIST-1b is too hot for thick atmosphere on its dayside, suggesting most or all of its atmosphere was stripped by stellar activity. TRAPPIST-1c results (2023) suggested similar atmospheric loss. The implication is concerning for the outer planets: red-dwarf stars are flare-prone in their youth, and stripping atmospheres from close-in rocky planets is apparently common.',
+                  caveat: 'Not all TRAPPIST-1 planets have been observed yet, and the habitable-zone planets (e, f, g) are further out + experience less stellar bombardment than b + c. Whether they retained atmospheres is still genuinely unknown. JWST observations of TRAPPIST-1e are scheduled + ongoing. The narrative "red dwarf planets are doomed" is premature; we are still gathering data.'
+                },
+                { id: 'k218b', name: 'K2-18b — the DMS controversy', emoji: '🌊',
+                  body: 'K2-18b is a sub-Neptune-sized planet 124 light-years away, in the habitable zone of a red-dwarf star. In September 2023, a Cambridge team (Madhusudhan et al.) reported JWST detection of methane (CH4) + carbon dioxide (CO2) + a tentative signal of dimethyl sulfide (DMS) — on Earth, DMS is produced almost exclusively by marine plankton. They proposed K2-18b might be a "Hycean world" (hydrogen-rich atmosphere over a global ocean) with possibly LIFE. The story made global headlines. The follow-up has been more cautious: independent re-analyses suggest the DMS signal is at most ~1-2σ, well below the 5σ threshold for "discovery." The methane + CO2 detections are robust; DMS is not.',
+                  caveat: 'This case is a textbook example of how exoplanet biosignature science needs to be communicated carefully. The Cambridge paper itself called the DMS detection "tentative" + said much more data was needed. Headlines lost the "tentative" word. A year later (May 2024), the same team published much more JWST data on K2-18b that REDUCED their DMS confidence further. Honest status: K2-18b has interesting chemistry but no confirmed biosignature. The DMS hunt continues.'
+                },
+                { id: 'wasp107b', name: 'WASP-107b — atmospheric escape + sulfur clouds', emoji: '💨',
+                  body: 'WASP-107b is a low-density "puffy" exoplanet — Neptune-mass in a Jupiter-size envelope. JWST 2023 observations revealed (a) water vapor + sulfur dioxide + carbon dioxide, (b) HIGH-altitude silicate clouds, (c) ATMOSPHERIC ESCAPE — molecules being stripped off the planet by stellar wind. The escape is so vigorous that ~ 0.01-1 Earth masses of atmosphere have been lost over the planet\'s lifetime. This is one of the cleanest detections of "evaporating" exoplanets, important for understanding the demographic gap of planet sizes between Earth-size + Neptune-size (the "radius valley"): one hypothesis is that small Neptunes evaporate their atmospheres + shrink to super-Earths over time.',
+                  caveat: 'Atmospheric escape is a major shaping force in exoplanet evolution. JWST + Hubble are now mapping it. The escape rate depends on stellar UV + X-ray flux (which varies hugely between star types) + on planet mass + composition (water atmospheres escape more easily than nitrogen). Generalizing from one planet is dangerous; building a population sample is what matters.'
+                },
+                { id: 'biosig', name: 'The biosignature problem', emoji: '🧪',
+                  body: 'What gas combinations on an exoplanet would PROVE life? Oxygen alone is not enough (it can be produced abiotically by UV photolysis of water vapor). Methane alone is not enough (it can be produced by serpentinization + volcanism). Together, O2 + CH4 is a strong biosignature because they react with each other; on Earth, they only coexist because biology keeps replenishing both. But: false positives exist. Hot rocky planets can produce abiotic O2 from runaway water photolysis. And false negatives exist: early Earth (3 billion years ago) had life but very little O2. The "biosignature pyramid" requires multiple independent lines of evidence — atmospheric composition, climate stability, surface conditions, lack of plausible abiotic explanation.',
+                  caveat: 'JWST cannot prove life. It CAN find planets so chemically unusual that we send larger missions (Habitable Worlds Observatory in the 2040s) to look harder. The honest scientific framing: ANY biosignature claim will face an enormous burden of proof, and any single claim from any single mission should be treated as the start of a debate, not the end.'
+                },
+                { id: 'limits', name: 'What JWST cannot do', emoji: '🚧',
+                  body: 'JWST is transformative for HOT + WARM exoplanets around small stars. It is much less capable for the holy grail: cool Earth-like planets around Sun-like stars. The reason is geometry. A Sun-like star is ~100× brighter than a red dwarf, so the planet-star contrast for an Earth-analog is much worse. Also, an Earth-analog transit lasts only a few hours, once per year, with a tiny depth. Building up enough signal-to-noise on a single planet would take decades of integration time. JWST will probably never observe an Earth-twin atmosphere well. That has to wait for direct-imaging missions with coronagraphs (Habitable Worlds Observatory, LIFE, others — concepts in development).',
+                  caveat: 'JWST will operate at least until the early-to-mid 2030s (fuel-limited). Its exoplanet program is huge + only a few percent of expected observations have been published. The story is still in chapter one. Expect surprises — JWST has already overturned predictions about cloud properties + chemistry in multiple systems.'
+                }
+              ];
+              var sel = d.selectedJWST || 'how';
+              var topic = JWST_TOPICS.find(function(t) { return t.id === sel; }) || JWST_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'The James Webb Space Telescope (JWST, launched Dec 25, 2021) was designed largely to study early-universe galaxies — but its biggest impact so far may turn out to be exoplanet atmospheres. By using transmission spectroscopy + thermal emission, JWST is, for the first time, building a real chemical inventory of worlds around other stars.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  JWST_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedJWST: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#22c55e' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #22c55e' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#86efac', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                )
+              );
+            })(),
+            '#22c55e'
           )
         );
       }

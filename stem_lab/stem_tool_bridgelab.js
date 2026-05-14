@@ -1729,8 +1729,82 @@
             );
           });
           })(),
-          pedestrianAccessibleBridgesSection()
+          pedestrianAccessibleBridgesSection(),
+          movableBridgesSection()
         );
+
+        function movableBridgesSection() {
+          var MOV = [
+            { id: 'bascule', name: 'Bascule (drawbridge)', emoji: '⚖️',
+              how: 'A bascule bridge has one or two leaves that pivot upward around a horizontal axis at the abutment. The deck is balanced by a heavy counterweight on the opposite side of the pivot, so the actual lifting force required is small. The Tower Bridge in London (1894) is the most famous example; the Pelham Bay Park Bridge + the McCarter Highway lift bridges in the US are more typical municipal examples. Double-leaf bascules meet in the middle when closed; single-leaf bascules pivot from one end.',
+              forces: 'When raised, the deck cantilevers from the pivot, putting enormous bending moment on the trunnion (pivot bearing). The counterweight is sized to exactly balance the deck weight, so the gear motor only fights friction + wind + ice. Modern bascules use anti-friction roller bearings; older bridges used plain bronze sleeve bearings that required regular lubrication.',
+              fail: 'Counterweight failure is the main concern. If a counterweight pin shears or its support cracks, the deck either crashes down (if more than half-open) or flies open uncontrollably (if less than half-open). The 1988 Sgt. Daniel Faulkner Memorial Bridge counterweight failure in Philadelphia destroyed the lifting machinery + closed the bridge for months. Modern bascule design requires redundant counterweight retention + emergency hand-cranks.'
+            },
+            { id: 'swing', name: 'Swing bridge', emoji: '🔄',
+              how: 'A swing bridge rotates horizontally around a central pivot pier (or sometimes an asymmetric pivot near one end). When closed, it spans the channel; when open, it sits parallel to the channel, allowing boats through. Swing bridges were the dominant movable type in the 19th century; the Steel Bridge in Portland Oregon (1912) + the Sault Ste Marie railroad bridge are classic surviving examples. Most railroad movable bridges over navigable rivers are swing bridges.',
+              forces: 'When closed, the swing bridge acts as a continuous beam over the pivot + two end supports. When open, it cantilevers from the pivot pier in BOTH directions (the deck on both sides of the pivot). This puts heavy load on the central pier; the pier itself is usually a massive masonry or concrete structure carrying the bridge weight + traffic load + the rotational mechanism (a big circular bearing or a "rim-bearing" track).',
+              fail: 'Swing bridges are vulnerable to BARGE STRIKES because the central pier sits in the navigation channel, exactly where boats are passing close by. The 1993 Big Bayou Canot rail disaster in Alabama (Amtrak Sunset Limited derailed after a barge struck the bridge approaches in fog, 47 dead) is the deadliest US railroad disaster in 50 years. Modern navigation regulations + pier fenders are partial answers; replacement with vertical-lift or bascule designs is increasingly common.'
+            },
+            { id: 'lift', name: 'Vertical lift bridge', emoji: '⬆️',
+              how: 'A vertical lift bridge has a deck that rises straight up between two tall towers, raised by cables + counterweights at each tower. The deck remains horizontal throughout the lift; only its elevation changes. The Aerial Lift Bridge in Duluth Minnesota (1929, the city\'s iconic landmark) and the Arthur Kill Vertical Lift Bridge between Staten Island + New Jersey (1959, the world\'s longest vertical-lift span at 558 ft) are well-known US examples. Lift bridges work well where the navigation channel is wide (no central pier wanted) + the air-draft requirement is moderate (not so tall that the lift towers become unreasonable).',
+              forces: 'The lift towers experience the full weight of the deck PLUS the counterweights (suspended at the tower tops). The cables are huge — typically 6-8 cables per corner, each rated for many tons. Cable inspection + replacement is a major maintenance item; cables stretch over time + must be re-tensioned. Wind loading on a raised deck is significant (much larger sail area than the closed configuration).',
+              fail: 'Cable failure is the dominant catastrophic risk. The Mianus River Bridge in Connecticut (1983) failed because of pin failure in a suspended span, not because of lift operation, but the lesson generalizes: hidden corrosion in heavily-loaded steel connections is hard to detect. Modern lift bridges require ultrasonic + acoustic monitoring of cables + pins. Vertical lift bridges also accumulate ICE on the underside of the deck in winter, which can throw off the carefully-tuned counterweight balance + jam the mechanism.'
+            },
+            { id: 'retract', name: 'Retractable (rolling) bridge', emoji: '↩️',
+              how: 'A retractable bridge slides horizontally along its own axis to clear the navigation channel, like a giant drawer. The Pegasus Bridge variant + the Inner Harbor Navigation Canal Bridge (New Orleans, demolished 2014) are examples. The Rolling Bridge in Paddington Basin London (Heatherwick, 2004) curls up into an octagon — a pedestrian-only sculptural example. Retractables are rare today because they require space for the deck to retract INTO, which is hard to find at most water crossings.',
+              forces: 'When retracted, the bridge cantilevers from the abutment on one side — putting bending moment on the retracted-position support. The rolling track must be precisely aligned + level over its entire length; settlement or thermal expansion that moves the track even slightly can cause jamming. Hydraulic rams or rack-and-pinion drives provide motion.',
+              fail: 'Retractable bridges are sensitive to debris in the rolling track. A fallen leaf or a piece of trash can stop a multi-ton bridge motion. Track ice in winter is a persistent problem. The mechanism wears more than a bascule or swing (more sliding contact area). Most retractable bridges built before 1950 have been replaced; the type is mostly a historical curiosity now.'
+            },
+            { id: 'transporter', name: 'Transporter bridge', emoji: '🚠',
+              how: 'A transporter bridge is a permanent high-level truss span with a "gondola" suspended from a trolley that runs along the underside of the truss, carrying passengers + vehicles across the channel. The bridge itself never moves; only the gondola moves. Air clearance for shipping is provided by the bridge\'s permanent high deck, ~70+ meters above water. About 25 transporter bridges have ever been built worldwide; ~8 still operate (Newport UK, Middlesbrough UK, Rendsburg Germany, Osten Germany, Bizerte Tunisia, Buenos Aires Argentina, Bilbao Spain — the Vizcaya Bridge, UNESCO World Heritage Site).',
+              forces: 'The high-level truss is essentially a long-span steel truss with a hanging trolley track on its underside. Loading is unusual: the moving gondola creates a CONCENTRATED moving load that sweeps the entire span. The truss is designed for this asymmetric loading + for the dynamic effects of acceleration + braking. Wind loading on the high truss is significant.',
+              fail: 'Transporter bridges are slow + low-capacity. They carry maybe 5-10 cars at a time; a single round trip takes 5-10 minutes. They cannot scale to handle modern traffic. The reason most have been demolished or replaced is not failure — they simply could not move the volume of vehicles required as cities grew. Those that remain are usually preserved as heritage + tourist attractions.'
+            },
+            { id: 'submarine', name: 'Submersible (submerged-floating) bridges', emoji: '🌊',
+              how: 'A submersible or "submerged floating tunnel" bridge is partially or fully underwater, supported by buoyancy + held in place by anchors or tension legs to the seabed (or hanging from pontoons floating on the surface). No examples are yet in service for full road traffic, but Norway has approved an SFT for the Sognefjord crossing (E39 coastal highway) — the world\'s first planned submerged floating bridge for highway use, estimated 2030s completion. China + Korea + Italy have also studied designs.',
+              forces: 'The bridge experiences buoyancy (upward) + the weight of the tunnel + traffic load. Wave + current loads are the design driver — particularly the SLOW oscillation of long structures in waves (resonance). Earthquake response is complex (the structure moves with the surrounding water rather than with the seabed). The technology challenge is high; no SFT has been built at full road scale yet.',
+              fail: 'The risks are real + not fully characterized. A sunken-tunnel rupture below the waterline is a fundamentally different evacuation scenario from a traditional bridge collapse. Fire + smoke trapping is a major concern. SFT designs include emergency-pump-out systems, redundant tunnel cells, and high-spec fire suppression — but the failure modes have not been tested at scale by operating examples.'
+            },
+            { id: 'pontoon', name: 'Floating (pontoon) bridge', emoji: '🛟',
+              how: 'A floating bridge rests directly on the water — typically on hollow concrete pontoons connected to form a continuous deck. The pontoons are anchored to the lakebed by cables or piles. The Evergreen Point + Lacey V. Murrow bridges in Washington State (Lake Washington, Seattle) are the world\'s longest floating bridges. The Hood Canal Bridge has a movable section that opens for naval submarine traffic. Floating bridges work where the water is too deep or too soft-bottomed for conventional piers (Lake Washington is 200+ ft deep with mud bottom).',
+              forces: 'The pontoons support the deck by buoyancy. Wind + waves are the design driver. Lake Washington bridges have storm-failure history: the original Lacey V. Murrow Bridge sank in a storm in 1990 (pontoons that had been opened for repair filled with water + lost buoyancy). The replacement design includes much more redundancy. Modern floating bridges are designed for 100-year storms + can withstand significant wave loading without losing buoyancy reserves.',
+              fail: 'Floating bridges are vulnerable to over-wash (waves coming over the deck), tow-line failure (an unattended barge drifts into the bridge), and the slow-cumulative-damage of years of mild wave action. They also have a finite design life (~50-75 years for the pontoons) because concrete in continuous contact with water eventually deteriorates. Replacement is a major civic event.'
+            }
+          ];
+          var sel = d.selectedMov || 'bascule';
+          var topic = MOV.find(function(t) { return t.id === sel; }) || MOV[0];
+          return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🚧 Movable + unusual bridge types'),
+            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+              'Most bridges are fixed structures. But where waterborne traffic must pass + a low fixed bridge would block tall ships, engineers have developed a whole family of movable + unusual bridge types. Each one is a specific solution to a specific geometric constraint, with its own forces, failure modes, and historical contexts.'
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              MOV.map(function(t) {
+                var on = t.id === sel;
+                return h('button', {
+                  key: t.id,
+                  onClick: function() { upd({ selectedMov: t.id }); },
+                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
+                }, t.emoji + ' ' + t.name);
+              })
+            ),
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.how)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Forces + structural logic'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.forces)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Failure modes + history'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.fail)
+              )
+            )
+          );
+        }
 
         function pedestrianAccessibleBridgesSection() {
           var ACC = [
