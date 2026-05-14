@@ -3902,6 +3902,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_renewables.js',
         'stem_lab/stem_tool_pets.js',
         'stem_lab/stem_tool_fireecology.js',
+        'stem_lab/stem_tool_stewardship.js',
         'stem_lab/stem_tool_lifeskills.js',
         'stem_lab/stem_tool_spacecolony.js',
         'stem_lab/stem_tool_worldbuilder.js',
