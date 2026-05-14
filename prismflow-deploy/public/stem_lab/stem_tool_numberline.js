@@ -907,6 +907,12 @@ window.StemLab = window.StemLab || {
               if (e.cancelable) e.preventDefault();
               var svgEl = e.currentTarget;
               var W_ = 700, PAD_ = 50, USABLE_ = 600;
+              // Disable the marker's 420ms transform-transition during drag so it
+              // tracks the cursor in real time. Pointermove fires every ~16ms; if
+              // each new position has to animate over 420ms, the marker perpetually
+              // lags behind. Re-enabled on release so the snap-to-fraction motion
+              // still feels smooth.
+              window._fdDragging = true;
               var clampMove = function(clientX, clientY) {
                 var x;
                 if (svgEl && typeof svgEl.getScreenCTM === 'function' && typeof svgEl.createSVGPoint === 'function') {
@@ -942,6 +948,9 @@ window.StemLab = window.StemLab || {
                 window.removeEventListener('pointermove', move);
                 window.removeEventListener('pointerup', up);
                 window.removeEventListener('pointercancel', up);
+                // Drag is over — re-enable the smooth transition so the snap-to-grid
+                // motion (below) animates instead of teleporting.
+                window._fdDragging = false;
                 if (fdSnap && typeof ctx.setToolData === 'function') {
                   ctx.setToolData(function(prev) {
                     var nl = (prev && prev._numberline) || {};
@@ -1052,7 +1061,10 @@ window.StemLab = window.StemLab || {
                 ));
               }
               var mx = PAD + ((fdValue - fdMin) / fdLen) * (W - 2 * PAD);
-              var markerCls = 'allo-fd-marker allo-fd-marker-slide' + (fdCelebrate ? ' allo-fd-marker-celebrate' : '');
+              // During drag, suppress the slide-transition class so the marker
+              // tracks the cursor without the 420ms chase lag.
+              var isDragging = typeof window !== 'undefined' && window._fdDragging === true;
+              var markerCls = 'allo-fd-marker' + (isDragging ? '' : ' allo-fd-marker-slide') + (fdCelebrate ? ' allo-fd-marker-celebrate' : '');
               // Render the marker at x=0 in its inner geometry, then translate the
               // whole group to mx with a CSS transition — smooth slide on value change.
               var markerEl = h('g', { key: 'fd-marker', className: markerCls,

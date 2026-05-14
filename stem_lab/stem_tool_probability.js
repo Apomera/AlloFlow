@@ -49,7 +49,7 @@ window.StemLab = window.StemLab || {
   // ── Audio + WCAG (auto-injected) ──
   var _probAC = null;
   function getProbAC() { if (!_probAC) { try { _probAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_probAC && _probAC.state==="suspended") { try { _probAC.resume(); } catch(e) {} } return _probAC; }
-  function probTone(f,d,tp,v) { var ac=getProbAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function probTone(f,d,tp,v) { if (window._probabilityMuted) return; var ac=getProbAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxProbClick() { probTone(600,0.03,"sine",0.04); }
   function sfxProbSuccess() { probTone(523,0.08,"sine",0.07); setTimeout(function(){probTone(659,0.08,"sine",0.07);},70); setTimeout(function(){probTone(784,0.1,"sine",0.08);},140); }
   if(!document.getElementById("prob-a11y")){var _s=document.createElement("style");_s.id="prob-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-600{color:#64748b!important}";document.head.appendChild(_s);}
@@ -129,6 +129,8 @@ window.StemLab = window.StemLab || {
       // ── Tool body (probability) ──
       return (function() {
 var d = (labToolData.probability) || {};
+          // Sync persistent mute state to module flag read by probTone
+          window._probabilityMuted = !!d.muted;
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -205,7 +207,15 @@ var d = (labToolData.probability) || {};
 
               if (d.mode === 'coin') results.push(Math.random() < 0.5 ? 'H' : 'T');
 
-              else if (d.mode === 'dice') results.push(Math.floor(Math.random() * 6) + 1);
+              else if (d.mode === 'dice') results.push(Math.floor(Math.random() * (d.diceSides || 6)) + 1);
+              else if (d.mode === 'dice2') {
+                var _ds2 = d.diceSides || 6;
+                var _r1 = Math.floor(Math.random() * _ds2) + 1;
+                var _r2 = Math.floor(Math.random() * _ds2) + 1;
+                results.push(_r1 + _r2);
+                // Save the last pair on the LAST iteration for display rendering
+                if (i === n - 1) { upd('_lastPair', [_r1, _r2]); }
+              }
 
               else if (d.mode === 'spinner') results.push(['Red', 'Blue', 'Green', 'Yellow'][Math.floor(Math.random() * 4)]);
 
@@ -330,7 +340,7 @@ var d = (labToolData.probability) || {};
 
             if (total > 0) {
 
-              var firstKey = d.mode === 'coin' ? 'H' : d.mode === 'dice' ? 1 : d.mode === 'spinner' ? 'Red' : d.mode === 'sports' ? activeSport.outcomes[0] : d.mode === 'pi' ? 'inside' : customOutcomes[0] ? customOutcomes[0].label : 'Red';
+              var firstKey = d.mode === 'coin' ? 'H' : d.mode === 'dice' ? 1 : d.mode === 'dice2' ? 2 : d.mode === 'spinner' ? 'Red' : d.mode === 'sports' ? activeSport.outcomes[0] : d.mode === 'pi' ? 'inside' : customOutcomes[0] ? customOutcomes[0].label : 'Red';
 
               var cnt = results.filter(function (r) { return r === firstKey; }).length;
 
@@ -421,7 +431,12 @@ var d = (labToolData.probability) || {};
 
               } else if (_pd.mode === 'dice') {
 
-                _res.push(Math.floor(Math.random() * 6) + 1);
+                _res.push(Math.floor(Math.random() * (_pd.diceSides || 6)) + 1);
+
+              } else if (_pd.mode === 'dice2') {
+
+                var _pds2 = _pd.diceSides || 6;
+                _res.push((Math.floor(Math.random() * _pds2) + 1) + (Math.floor(Math.random() * _pds2) + 1));
 
               } else if (_pd.mode === 'spinner') {
 
@@ -465,7 +480,7 @@ var d = (labToolData.probability) || {};
 
               if (_res.length > 0) {
 
-                var _fk3 = _pd.mode === 'coin' ? 'H' : _pd.mode === 'dice' ? 1 : _pd.mode === 'spinner' ? 'Red' : _pd.mode === 'sports' ? _asp2.outcomes[0] : _pd.mode === 'pi' ? 'inside' : (_cos3[0] ? _cos3[0].label : 'Red');
+                var _fk3 = _pd.mode === 'coin' ? 'H' : _pd.mode === 'dice' ? 1 : _pd.mode === 'dice2' ? 2 : _pd.mode === 'spinner' ? 'Red' : _pd.mode === 'sports' ? _asp2.outcomes[0] : _pd.mode === 'pi' ? 'inside' : (_cos3[0] ? _cos3[0].label : 'Red');
 
                 var _cnt4 = _res.filter(function(r) { return r === _fk3; }).length;
 
@@ -497,7 +512,23 @@ var d = (labToolData.probability) || {};
 
           if (d.mode === 'coin') expected = { H: 0.5, T: 0.5 };
 
-          else if (d.mode === 'dice') expected = { 1: 1 / 6, 2: 1 / 6, 3: 1 / 6, 4: 1 / 6, 5: 1 / 6, 6: 1 / 6 };
+          else if (d.mode === 'dice') {
+            // Uniform 1/N across all faces of the selected die
+            expected = {};
+            var _ds3 = d.diceSides || 6;
+            for (var _di = 1; _di <= _ds3; _di++) expected[_di] = 1 / _ds3;
+          }
+          else if (d.mode === 'dice2') {
+            // Two-dice sum: triangular distribution. ways(k) / N^2 for k in [2, 2N].
+            // For 2dN: ways(k) = min(k-1, 2N-k+1)
+            expected = {};
+            var _ds4 = d.diceSides || 6;
+            var _ttl = _ds4 * _ds4;
+            for (var _ds5 = 2; _ds5 <= 2 * _ds4; _ds5++) {
+              var ways = Math.min(_ds5 - 1, 2 * _ds4 - _ds5 + 1);
+              expected[_ds5] = ways / _ttl;
+            }
+          }
 
           else if (d.mode === 'spinner') expected = { Red: 0.25, Blue: 0.25, Green: 0.25, Yellow: 0.25 };
 
@@ -569,46 +600,145 @@ var d = (labToolData.probability) || {};
 
           var convHist = d.convergenceHistory || [];
 
-          var convExpected = d.mode === 'coin' ? 50 : d.mode === 'dice' ? 16.67 : d.mode === 'spinner' ? 25 : d.mode === 'sports' ? activeSport.probs[0] * 100 : d.mode === 'pi' ? Math.PI / 4 * 100 : customOutcomes[0] ? customOutcomes[0].prob * 100 : 50;
+          var convExpected = d.mode === 'coin' ? 50
+            : d.mode === 'dice' ? (100 / (d.diceSides || 6))
+            : d.mode === 'dice2' ? (100 / ((d.diceSides || 6) * (d.diceSides || 6)) * Math.min(2 - 1, 2 * (d.diceSides || 6) - 2 + 1))  // P of the smallest sum (2)
+            : d.mode === 'spinner' ? 25
+            : d.mode === 'sports' ? activeSport.probs[0] * 100
+            : d.mode === 'pi' ? Math.PI / 4 * 100
+            : customOutcomes[0] ? customOutcomes[0].prob * 100 : 50;
 
 
 
           // Dice face SVG
 
-          var diceFace = function (val, size) {
-
+          // Multi-sided die SVG renderer. For d6 we keep the iconic pip layout.
+          // For other shapes (d4/d8/d10/d12/d20) we render the canonical face polygon
+          // for the corresponding Platonic solid (tetrahedron/octahedron/etc.) with
+          // the number centered inside. Each die-type gets its own color so the
+          // student can tell a d8 from a d20 at a glance even with the same number.
+          var DIE_SHAPES = {
+            4:  { fill: '#3b82f6', stroke: '#1e3a8a', points: function(s){ return [s*0.5,s*0.08, s*0.92,s*0.85, s*0.08,s*0.85]; }, textY: function(s){ return s*0.72; } },
+            6:  { fill: '#ef4444', stroke: '#991b1b' },  // special-cased to pips below
+            8:  { fill: '#10b981', stroke: '#065f46', points: function(s){ return [s*0.08,s*0.18, s*0.92,s*0.18, s*0.5,s*0.92]; }, textY: function(s){ return s*0.56; } },
+            10: { fill: '#8b5cf6', stroke: '#5b21b6', points: function(s){ return [s*0.5,s*0.08, s*0.9,s*0.5, s*0.5,s*0.92, s*0.1,s*0.5]; }, textY: function(s){ return s*0.6; } },
+            12: { fill: '#f59e0b', stroke: '#92400e', points: function(s){ return [s*0.5,s*0.08, s*0.92,s*0.38, s*0.78,s*0.88, s*0.22,s*0.88, s*0.08,s*0.38]; }, textY: function(s){ return s*0.62; } },
+            20: { fill: '#0d9488', stroke: '#134e4a', points: function(s){ return [s*0.5,s*0.05, s*0.95,s*0.88, s*0.05,s*0.88]; }, textY: function(s){ return s*0.72; } }
+          };
+          var diceFace = function (val, size, sides) {
             var s = size || 60;
-
-            var dotPositions = {
-
-              1: [[s / 2, s / 2]],
-
-              2: [[s * 0.3, s * 0.3], [s * 0.7, s * 0.7]],
-
-              3: [[s * 0.3, s * 0.3], [s / 2, s / 2], [s * 0.7, s * 0.7]],
-
-              4: [[s * 0.3, s * 0.3], [s * 0.7, s * 0.3], [s * 0.3, s * 0.7], [s * 0.7, s * 0.7]],
-
-              5: [[s * 0.3, s * 0.3], [s * 0.7, s * 0.3], [s / 2, s / 2], [s * 0.3, s * 0.7], [s * 0.7, s * 0.7]],
-
-              6: [[s * 0.3, s * 0.25], [s * 0.7, s * 0.25], [s * 0.3, s / 2], [s * 0.7, s / 2], [s * 0.3, s * 0.75], [s * 0.7, s * 0.75]]
-
-            };
-
-            var dots = dotPositions[val] || [];
-
-            return React.createElement("svg", { viewBox: "0 0 " + s + " " + s, width: s, height: s },
-
-              React.createElement("rect", { x: 2, y: 2, width: s - 4, height: s - 4, rx: 8, fill: "white", stroke: "#94a3b8", strokeWidth: 2 }),
-
-              dots.map(function (pos, i) {
-
-                return React.createElement("circle", { key: i, cx: pos[0], cy: pos[1], r: s * 0.08, fill: "#1e293b" });
-
-              })
-
+            var dSides = sides || 6;
+            // Classic d6 with pips
+            if (dSides === 6 && val >= 1 && val <= 6) {
+              var dotPositions = {
+                1: [[s/2, s/2]],
+                2: [[s*0.3, s*0.3], [s*0.7, s*0.7]],
+                3: [[s*0.3, s*0.3], [s/2, s/2], [s*0.7, s*0.7]],
+                4: [[s*0.3, s*0.3], [s*0.7, s*0.3], [s*0.3, s*0.7], [s*0.7, s*0.7]],
+                5: [[s*0.3, s*0.3], [s*0.7, s*0.3], [s/2, s/2], [s*0.3, s*0.7], [s*0.7, s*0.7]],
+                6: [[s*0.3, s*0.25], [s*0.7, s*0.25], [s*0.3, s/2], [s*0.7, s/2], [s*0.3, s*0.75], [s*0.7, s*0.75]]
+              };
+              var dots = dotPositions[val] || [];
+              return React.createElement("svg", { viewBox: "0 0 " + s + " " + s, width: s, height: s },
+                React.createElement("rect", { x: 2, y: 2, width: s - 4, height: s - 4, rx: 8, fill: "white", stroke: "#94a3b8", strokeWidth: 2 }),
+                dots.map(function (pos, i) {
+                  return React.createElement("circle", { key: i, cx: pos[0], cy: pos[1], r: s * 0.08, fill: "#1e293b" });
+                })
+              );
+            }
+            // Polyhedral shape with number for d4/d8/d10/d12/d20 (and fallback for unusual values)
+            var shape = DIE_SHAPES[dSides] || DIE_SHAPES[20];
+            var pts = shape.points(s);
+            var pointsStr = '';
+            for (var pi = 0; pi < pts.length; pi += 2) pointsStr += pts[pi].toFixed(1) + ',' + pts[pi+1].toFixed(1) + ' ';
+            var fontSize = (s * (val >= 10 ? 0.32 : 0.42));
+            return React.createElement("svg", { viewBox: "0 0 " + s + " " + s, width: s, height: s, 'aria-label': 'd' + dSides + ' showing ' + val },
+              React.createElement("polygon", { points: pointsStr, fill: shape.fill, stroke: shape.stroke, strokeWidth: 2.5, strokeLinejoin: 'round' }),
+              React.createElement("text", { x: s/2, y: shape.textY(s), textAnchor: 'middle', fontSize: fontSize, fontWeight: 900, fill: 'white', style: { paintOrder: 'stroke', stroke: shape.stroke, strokeWidth: 0.5 } }, val)
             );
+          };
+          var DICE_TYPES = [4, 6, 8, 10, 12, 20];
+          var diceSides = d.diceSides || 6;
 
+          // Two-dice sum: NxN sample-space grid. Every (d1, d2) pair plotted in a
+          // table, each cell colored by its SUM and labeled with the sum number.
+          // The diagonals visually demonstrate why 7 has 6 ways but 2 and 12 only 1:
+          // the (1,1) cell is alone in the top-left corner, the diagonal d1+d2=7
+          // sweeps through 6 cells, and (6,6) is alone in the bottom-right. The
+          // triangular distribution becomes spatial intuition. Skipped for d12+
+          // because 144 / 400 cells is too crowded to read.
+          var renderTwoDiceGrid = function(sides, lastSum) {
+            if (sides > 10) return null;  // d12/d20 grids would be unreadable
+            var cellSize = sides <= 6 ? 32 : (sides <= 8 ? 26 : 22);
+            var pad = 22;
+            var gridW = sides * cellSize;
+            var svgW = gridW + pad + 6;
+            var svgH = gridW + pad + 6;
+            var midSum = sides + 1;  // most common sum
+            var rows = [];
+            // Top-edge labels (die 2 values)
+            var topLabels = [];
+            for (var c = 1; c <= sides; c++) {
+              topLabels.push(React.createElement("text", {
+                key: 'cl-' + c,
+                x: pad + (c - 0.5) * cellSize, y: pad - 4,
+                textAnchor: 'middle', fontSize: cellSize <= 22 ? 10 : 11, fontWeight: 700, fill: '#475569'
+              }, c));
+            }
+            // Left-edge labels (die 1 values)
+            var leftLabels = [];
+            for (var r = 1; r <= sides; r++) {
+              leftLabels.push(React.createElement("text", {
+                key: 'rl-' + r,
+                x: pad - 4, y: pad + (r - 0.5) * cellSize + 4,
+                textAnchor: 'end', fontSize: cellSize <= 22 ? 10 : 11, fontWeight: 700, fill: '#475569'
+              }, r));
+            }
+            for (var ri = 1; ri <= sides; ri++) {
+              for (var ci = 1; ci <= sides; ci++) {
+                var sum = ri + ci;
+                var dist = Math.abs(sum - midSum);
+                var maxDist = sides;
+                var hue = 220 - (dist / maxDist) * 220;  // red center, blue tails
+                var isHighlight = lastSum === sum;
+                rows.push(React.createElement("g", { key: 'gc-' + ri + '-' + ci },
+                  React.createElement("rect", {
+                    x: pad + (ci - 1) * cellSize,
+                    y: pad + (ri - 1) * cellSize,
+                    width: cellSize - 1,
+                    height: cellSize - 1,
+                    fill: 'hsl(' + Math.round(hue) + ', ' + (isHighlight ? '85' : '65') + '%, ' + (isHighlight ? '50' : '70') + '%)',
+                    stroke: isHighlight ? '#0f172a' : 'rgba(255,255,255,0.6)',
+                    strokeWidth: isHighlight ? 2 : 0.8,
+                    rx: 3
+                  }),
+                  React.createElement("text", {
+                    x: pad + (ci - 0.5) * cellSize,
+                    y: pad + (ri - 0.5) * cellSize + 4,
+                    textAnchor: 'middle',
+                    fontSize: cellSize <= 22 ? 10 : 12,
+                    fontWeight: 700,
+                    fill: isHighlight ? '#fff' : '#1e293b'
+                  }, sum)
+                ));
+              }
+            }
+            return React.createElement("div", { className: 'mb-3 rounded-xl p-3', style: { background: isDark || isContrast ? 'rgba(185,28,28,0.08)' : '#fff', border: '2px solid ' + (isDark || isContrast ? 'rgba(185,28,28,0.3)' : '#fecaca') } },
+              React.createElement("p", { className: 'text-[11px] font-bold mb-1', style: { color: isDark || isContrast ? '#fca5a5' : '#991b1b' } },
+                '🎯 Sample space — all ' + (sides * sides) + ' (d1, d2) pairs, colored by sum'
+              ),
+              React.createElement("p", { className: 'text-[10px] italic mb-2', style: { color: isDark || isContrast ? '#fca5a5' : '#7f1d1d' } },
+                'The diagonals from top-right to bottom-left are constant sums. The longest diagonal (sum = ' + midSum + ') has ' + sides + ' cells — that is why ' + midSum + ' is the most common. Sum = 2 and sum = ' + (2 * sides) + ' each have only 1 cell.'
+              ),
+              React.createElement("div", { className: 'flex justify-center overflow-x-auto' },
+                React.createElement("svg", { width: svgW, height: svgH, viewBox: '0 0 ' + svgW + ' ' + svgH, 'aria-label': sides + ' by ' + sides + ' sample space grid for two-dice sums' },
+                  topLabels, leftLabels, rows
+                )
+              ),
+              lastSum != null && React.createElement("p", { className: 'text-[10px] mt-1 text-center font-bold', style: { color: isDark || isContrast ? '#fca5a5' : '#991b1b' } },
+                'Last roll = ' + lastSum + '. Highlighted cells: all the (d1, d2) pairs that produce that sum.'
+              )
+            );
           };
 
 
@@ -721,7 +851,26 @@ var d = (labToolData.probability) || {};
 
 
 
-          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200", style: { color: _text } },
+          // ── Mode-tinted atmospheric background (matches the hero-band accent) ──
+          var MODE_ACCENT = {
+            coin: 'rgba(148,163,184,0.10)', dice: 'rgba(220,38,38,0.10)', dice2: 'rgba(185,28,28,0.10)', spinner: 'rgba(147,51,234,0.10)',
+            sports: 'rgba(8,145,178,0.10)', marbleBag: 'rgba(14,165,233,0.10)', custom: 'rgba(217,119,6,0.10)',
+            tree: 'rgba(22,163,74,0.10)', pi: 'rgba(234,88,12,0.10)', birthday: 'rgba(236,72,153,0.10)',
+            monty: 'rgba(99,102,241,0.10)', galton: 'rgba(15,118,110,0.10)'
+          };
+          var modeAccent = MODE_ACCENT[d.mode] || MODE_ACCENT.coin;
+          var outerBg = (isDark || isContrast) ? undefined :
+            'radial-gradient(ellipse 1100px 480px at 50% -10%, ' + modeAccent + ' 0%, ' + modeAccent.replace('0.10', '0.04') + ' 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)';
+
+          return React.createElement("div", {
+            className: "max-w-3xl mx-auto animate-in fade-in duration-200",
+            style: {
+              color: _text,
+              background: outerBg,
+              borderRadius: outerBg ? 16 : undefined,
+              padding: outerBg ? 10 : undefined
+            }
+          },
 
             React.createElement("style", null, '@keyframes coinFlip{0%{transform:scaleX(1)}25%{transform:scaleX(0.05) translateY(-10px)}60%{transform:scaleX(1.08) translateY(-4px)}100%{transform:scaleX(1) translateY(0)}} @keyframes diceRoll{0%{transform:rotate(0deg)scale(1)}25%{transform:rotate(-24deg)scale(1.12)}55%{transform:rotate(19deg)scale(1.08)}80%{transform:rotate(-8deg)scale(1.04)}100%{transform:rotate(0deg)scale(1)}} @keyframes resultPop{0%{transform:scale(0.78);opacity:0.35}55%{transform:scale(1.09);opacity:1}100%{transform:scale(1);opacity:1}} @keyframes sportBounce{0%{transform:translateY(0)scale(1)}40%{transform:translateY(-20px)scale(1.12)}70%{transform:translateY(-6px)scale(1.06)}100%{transform:translateY(0)scale(1)}}'),
 
@@ -733,7 +882,23 @@ var d = (labToolData.probability) || {};
 
               d.trials > 0 && React.createElement("span", { className: "ml-2 px-2 py-0.5 text-xs font-bold rounded-full", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.2)' : 'rgba(139,92,246,0.1)', color: _accent } }, d.trials + " trials"),
 
-              (d._bestStreak || 0) >= 3 && React.createElement("span", { className: "ml-1 px-2 py-0.5 text-xs font-bold rounded-full", style: { background: isDark || isContrast ? 'rgba(239,68,68,0.25)' : 'rgba(239,68,68,0.08)', color: '#ef4444' } }, '🔥 Best: ' + (d._bestStreak || 0))
+              (d._bestStreak || 0) >= 3 && React.createElement("span", { className: "ml-1 px-2 py-0.5 text-xs font-bold rounded-full", style: { background: isDark || isContrast ? 'rgba(239,68,68,0.25)' : 'rgba(239,68,68,0.08)', color: '#ef4444' } }, '🔥 Best: ' + (d._bestStreak || 0)),
+
+              // Mute toggle (wraps probTone at the source via window._probabilityMuted)
+              React.createElement("button", {
+                onClick: function() {
+                  var next = !d.muted;
+                  upd('muted', next);
+                  window._probabilityMuted = next;
+                  if (!next) { setTimeout(function() { probTone(660, 0.08, 'sine', 0.06); }, 0); }
+                  if (typeof announceToSR === 'function') announceToSR(next ? 'Sound muted' : 'Sound on');
+                },
+                'aria-label': d.muted ? 'Unmute sound effects' : 'Mute sound effects',
+                'aria-pressed': !!d.muted,
+                title: d.muted ? 'Unmute (sounds are off)' : 'Mute (sounds are on)',
+                className: 'ml-auto p-1 rounded-md text-base hover:bg-slate-100 transition-colors',
+                style: { color: d.muted ? '#94a3b8' : (_accent || '#7c3aed') }
+              }, d.muted ? '🔇' : '🔊')
 
             ),
 
@@ -743,7 +908,7 @@ var d = (labToolData.probability) || {};
 
             React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
 
-              [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', '\u2699\uFE0F Custom'], ['tree', '\uD83C\uDF33 Tree'], ['pi', '\uD83E\uDD67 Pi'], ['birthday', '\uD83C\uDF82 Birthday'], ['monty', '\uD83D\uDEAA Monty Hall'], ['galton', '\u2699\uFE0F Galton Board']].map(([m, label]) =>
+              [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['dice2', '\uD83C\uDFB2\u00D72 Two-Dice Sum'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', '\u2699\uFE0F Custom'], ['tree', '\uD83C\uDF33 Tree'], ['pi', '\uD83E\uDD67 Pi'], ['birthday', '\uD83C\uDF82 Birthday'], ['monty', '\uD83D\uDEAA Monty Hall'], ['galton', '\u2699\uFE0F Galton Board']].map(([m, label]) =>
 
                 React.createElement("button", { "aria-label": "Select mode: " + label, key: m, onClick: () => { if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; } if (_galtonAnim.interval) { clearInterval(_galtonAnim.interval); _galtonAnim.interval = null; } if (_piAnim.interval) { clearInterval(_piAnim.interval); _piAnim.interval = null; } upd('mode', m); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); upd('_mbRemaining', null); upd('_piPoints', null); upd('_autoRunning', false); upd('galtonFalling', []); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
 
@@ -755,7 +920,8 @@ var d = (labToolData.probability) || {};
             (function() {
               var MODE_META = {
                 coin:      { accent: '#94a3b8', soft: 'rgba(148,163,184,0.10)', icon: '\uD83E\uDE99', title: 'Coin \u2014 the simplest 50/50',                  hint: 'P(H) = P(T) = 0.5. Law of large numbers: as trials grow, the proportion of heads converges to 0.5. After 1,000 flips you\u2019ll be within ~3% of 50%, but in any short streak anything is possible.' },
-                dice:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',   icon: '\uD83C\uDFB2', title: 'Dice \u2014 uniform 1/6 each',                       hint: 'Each face equally likely. Roll two dice and the SUM is no longer uniform \u2014 7 has 6 ways, 2 and 12 only 1 each. The basis of every Monopoly, D&D, and Settlers turn.' },
+                dice:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',   icon: '\uD83C\uDFB2', title: 'Dice \u2014 uniform 1/N each (d4 / d6 / d8 / d10 / d12 / d20)', hint: 'Pick any die size. Each face equally likely: P = 1/N. The math is identical across die types \u2014 what changes is the denominator. d4 is 1/4, d20 is 1/20.' },
+                dice2:     { accent: '#b91c1c', soft: 'rgba(185,28,28,0.10)',   icon: '\uD83C\uDFB2', title: 'Two-Dice Sum \u2014 the triangular distribution',     hint: 'Roll TWO dice of the chosen type and add. The sum is no longer uniform: middle sums are MUCH more common. For 2d6, P(7)=6/36, P(2)=1/36. This is why orange properties in Monopoly get landed on the most \u2014 6, 7, 8 are the most common sums after rolling from Jail.' },
                 spinner:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\uD83C\uDFA1', title: 'Spinner \u2014 4-color uniform',                    hint: 'Equal-area sectors = equal probability. Unequal sectors → weighted draws. Spinners are the gentlest path into discrete distributions for elementary students.' },
                 sports:    { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',   icon: '\uD83C\uDFC6', title: 'Sports \u2014 weighted real-world odds',             hint: 'Free-throw 75%, NBA 3-point 36%, MLB hit ~25%. Probability isn\u2019t always 50/50 \u2014 the math handles unequal weights the same way, just with different denominators.' },
                 marbleBag: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83C\uDFB1', title: 'Marble Bag \u2014 with vs without replacement',     hint: 'With replacement: independent draws. Without: probabilities CHANGE each pull \u2014 conditional probability. The exact mechanism behind hypergeometric distribution and card-game odds.' },
@@ -787,6 +953,51 @@ var d = (labToolData.probability) || {};
 
 
             // â”€â”€ Marble Bag mode config â”€â”€
+
+            // ── Dice-type selector (d4 / d6 / d8 / d10 / d12 / d20) ──
+            // Appears in single-die or two-dice-sum modes. Each die-type gets its
+            // own color (matches the SVG fill in diceFace) so students see at a
+            // glance how the "denominator" of the probability changes: P=1/4 for
+            // d4, P=1/20 for d20, etc. Same uniform-distribution math, different N.
+            (d.mode === 'dice' || d.mode === 'dice2') && React.createElement("div", {
+              className: 'mb-3 rounded-xl p-3',
+              style: { background: isDark || isContrast ? 'rgba(220,38,38,0.08)' : 'linear-gradient(135deg, #fef2f2, #fef9e7)', border: '2px solid ' + (isDark || isContrast ? 'rgba(220,38,38,0.3)' : '#fecaca') }
+            },
+              React.createElement("p", { className: 'text-[11px] font-bold mb-2', style: { color: isDark || isContrast ? '#fca5a5' : '#991b1b' } },
+                '🎲 Die type — P(any face) = 1/' + diceSides + (d.mode === 'dice2' ? ', summed over 2 dice' : '')
+              ),
+              React.createElement("div", { className: 'flex flex-wrap gap-1.5' },
+                DICE_TYPES.map(function(sides) {
+                  var active = diceSides === sides;
+                  var dieColor = (DIE_SHAPES[sides] || {}).fill || '#888';
+                  return React.createElement("button", {
+                    key: 'dt-' + sides,
+                    onClick: function() {
+                      sfxProbClick();
+                      upd('diceSides', sides);
+                      upd('results', []); upd('trials', 0);
+                      upd('convergenceHistory', []); upd('lastResult', null); upd('_lastPair', null);
+                    },
+                    'aria-pressed': active,
+                    'aria-label': 'd' + sides + ', P equals one over ' + sides,
+                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all border-2',
+                    style: active
+                      ? { background: dieColor, color: '#fff', borderColor: dieColor, boxShadow: '0 2px 4px ' + dieColor + '55' }
+                      : { background: '#fff', color: dieColor, borderColor: dieColor + '88' }
+                  },
+                    'd' + sides + ' · 1/' + sides
+                  );
+                })
+              ),
+              React.createElement("p", { className: 'text-[10px] italic mt-2', style: { color: isDark || isContrast ? '#fca5a5' : '#7f1d1d' } },
+                d.mode === 'dice2'
+                  ? 'Two dice of the same type, summed. Sum range: 2 to ' + (2 * diceSides) + '. The most-common sum is always the middle (' + (diceSides + 1) + '). 2 and ' + (2 * diceSides) + ' tie for least common. This is the foundation of every 2-dice board game.'
+                  : 'All faces equally likely. The "denominator" of probability changes with die type, but the uniform-distribution math is identical.'
+              )
+            ),
+
+            // ── Sample-space grid for two-dice sum (only when small enough to read) ──
+            d.mode === 'dice2' && renderTwoDiceGrid(diceSides, d.lastResult),
 
             d.mode === 'marbleBag' && React.createElement("div", { className: "mb-4 rounded-xl p-4", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.08)' : 'linear-gradient(135deg, #fdf4ff, #faf5ff, #f5f3ff)', border: '2px solid ' + (isDark || isContrast ? 'rgba(168,85,247,0.3)' : '#c4b5fd') } },
 
@@ -1899,7 +2110,18 @@ var d = (labToolData.probability) || {};
 
               d.mode === 'coin' && React.createElement("div", { style: { animation: (d.animTick||0)>0?'coinFlip 0.42s cubic-bezier(0.25,0.46,0.45,0.94)':'none', transformOrigin:'center' } }, coinSvg(d.lastResult || 'H')),
 
-              d.mode === 'dice' && React.createElement("div", { style: { animation: (d.animTick||0)>0?'diceRoll 0.38s cubic-bezier(0.34,1.3,0.64,1)':'none', transformOrigin:'center' } }, diceFace(d.lastResult || 1, 80)),
+              d.mode === 'dice' && React.createElement("div", { style: { animation: (d.animTick||0)>0?'diceRoll 0.38s cubic-bezier(0.34,1.3,0.64,1)':'none', transformOrigin:'center' } }, diceFace(d.lastResult || 1, 80, diceSides)),
+              d.mode === 'dice2' && React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 12 } },
+                React.createElement("div", { style: { animation: (d.animTick||0)>0?'diceRoll 0.38s cubic-bezier(0.34,1.3,0.64,1)':'none', transformOrigin:'center' } },
+                  diceFace((d._lastPair && d._lastPair[0]) || 1, 60, diceSides)
+                ),
+                React.createElement("span", { style: { fontSize: 28, fontWeight: 900, color: _accent } }, '+'),
+                React.createElement("div", { style: { animation: (d.animTick||0)>0?'diceRoll 0.38s cubic-bezier(0.34,1.3,0.64,1) 0.06s':'none', transformOrigin:'center' } },
+                  diceFace((d._lastPair && d._lastPair[1]) || 1, 60, diceSides)
+                ),
+                React.createElement("span", { style: { fontSize: 28, fontWeight: 900, color: _accent } }, '='),
+                React.createElement("span", { style: { fontSize: 36, fontWeight: 900, color: _accent, minWidth: 50, textAlign: 'center' } }, d.lastResult || (2))
+              ),
 
               d.mode === 'spinner' && spinnerSvg(d.lastResult, d.animTick),
 
@@ -2010,7 +2232,15 @@ var d = (labToolData.probability) || {};
               // Color resolver — maps an outcome label to a display color per mode.
               function colorFor(label) {
                 if (d.mode === 'coin') return label === 'H' ? '#fbbf24' : '#94a3b8'; // gold heads / silver tails
-                if (d.mode === 'dice') return ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'][(label - 1) % 6];
+                if (d.mode === 'dice') return ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#0891b2', '#84cc16', '#a855f7', '#f43f5e', '#0ea5e9', '#fbbf24', '#6366f1', '#10b981', '#dc2626', '#7c3aed', '#059669', '#9333ea', '#d97706'][(label - 1) % 20];
+                if (d.mode === 'dice2') {
+                  // Peak in the middle (most common sum) → red; tails (least common) → blue
+                  var mid = (diceSides || 6) + 1;
+                  var dist = Math.abs(label - mid);
+                  var maxDist = diceSides || 6;
+                  var hue = 220 - (dist / maxDist) * 220;  // 220 (blue) at extremes, 0 (red) at center
+                  return 'hsl(' + Math.round(hue) + ', 70%, 55%)';
+                }
                 if (d.mode === 'spinner') return { 'Red': '#ef4444', 'Blue': '#3b82f6', 'Green': '#22c55e', 'Yellow': '#eab308' }[label] || '#94a3b8';
                 if (d.mode === 'sports') {
                   // Sports outcomes get a gradient across hues

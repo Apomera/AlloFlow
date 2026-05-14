@@ -1730,8 +1730,88 @@
           });
           })(),
           pedestrianAccessibleBridgesSection(),
-          movableBridgesSection()
+          movableBridgesSection(),
+          tunnelsAndUnderwaterSection()
         );
+
+        function tunnelsAndUnderwaterSection() {
+          var TUN = [
+            { id: 'cutcover', name: 'Cut-and-cover tunnel', emoji: '⛏️', era: '1850s-present',
+              how: 'The simplest tunnel method. Dig an open trench, build the tunnel structure inside it (cast-in-place concrete box, precast segments, or arched masonry), then backfill on top to restore the surface. Used for shallow tunnels (typically <15 m deep), urban subway lines, utility tunnels, and stormwater systems. Most early subways (London Metropolitan 1863, NYC IRT 1904) were built cut-and-cover.',
+              forces: 'The completed tunnel box must resist VERTICAL load from the fill + traffic above (compressive arch action or beam-bending in the roof slab) + LATERAL earth pressure on the side walls + uplift if groundwater rises. Box-section reinforced-concrete construction is standard. The trench walls during construction need temporary support (sheet piles, soldier-pile + lagging, slurry walls).',
+              limit: 'Massively disruptive to the surface during construction. Cut-and-cover for the Boston Big Dig (1991-2007) caused decades of construction nightmare + cost overruns from ~$2.6B to ~$15B. Used today only when (a) the depth is shallow + the surface is available, (b) no alternative method works (cross-streets, soft river fill, very large bore diameters).'
+            },
+            { id: 'tbm', name: 'Tunnel Boring Machine (TBM)', emoji: '⚙️', era: '1850s-present',
+              how: 'A massive cylindrical machine that bores through rock or soil, lining the tunnel behind it with precast concrete segments. The cutterhead at the front rotates with hardened picks or disk cutters; excavated spoil is conveyed back through the machine + out of the tunnel. Modern TBMs are 5-20 m diameter, 100-200 m long with all support equipment, and can advance 10-40 m per day depending on geology. The Channel Tunnel (1988-1994) used 11 TBMs to bore three parallel 50-km tunnels under the English Channel.',
+              forces: 'The tunnel lining (typically precast concrete bolted segments forming a circular ring) carries hoop compression from the surrounding earth + groundwater pressure. The cutterhead must resist the reaction torque + thrust from cutting forces. Shield-type TBMs (slurry or Earth-Pressure-Balance, EPB) pressurize the cutter chamber against soil + water inflow.',
+              limit: 'TBMs are expensive ($30-100M+ for a major one) + slow to set up. Once excavating, they are essentially one-way: turning around or backing up is impractical. They CAN encounter unexpected ground conditions (boulders, hard inclusions, fault zones, voids) that stop progress for weeks. The Bertha TBM in Seattle (Highway 99 tunnel, 2013-2017) stalled for 2 years after damaging its seals on an unidentified pipe; recovery was a major engineering project.'
+            },
+            { id: 'natm', name: 'New Austrian Tunneling Method (NATM)', emoji: '⛰️', era: '1960s-present',
+              how: 'A philosophy + technique for rock tunneling that uses the surrounding rock mass itself as part of the structural support. Excavate small sections; immediately install shotcrete + rock bolts to support the rock + let it reach equilibrium; monitor deformation; install final concrete lining only after the rock stabilizes. NATM allows non-circular tunnel cross-sections (useful for road tunnels with wide flat ceilings) + works well in moderately weak rock. The Mont Blanc Tunnel + Gotthard Base Tunnel + many alpine + urban road tunnels use NATM.',
+              forces: 'NATM treats the rock as an active structural element rather than a passive load. The shotcrete layer (a thin reinforced-concrete shell) carries some load while the rock arches its own load to either side. Rock bolts (steel rods grouted into drilled holes) tie loose rock to deeper stable rock. Continuous monitoring (extensometers, convergence pins) tracks deformation; deformation matches predicted curve = the system is stable.',
+              limit: 'NATM requires highly skilled geotechnical + structural engineering. Misreading the rock behavior or being too aggressive with excavation sequencing can cause catastrophic collapse. The 1994 Heathrow Express tunnel collapse during construction was attributed to NATM misapplication. The technique is excellent when done right + dangerous when done wrong.'
+            },
+            { id: 'immersed', name: 'Immersed-tube tunnel', emoji: '🌊', era: '1910s-present',
+              how: 'A submerged tunnel built in segments at a dry dock + then floated, sunk, and connected end-to-end in a trench dredged into the riverbed or seabed. Each segment is a reinforced-concrete or steel box ~100-200 m long, 30-50 m wide, with end bulkheads sealed shut for floating. After positioning, the bulkheads are removed underwater + the segments connected with watertight joints. Used for Boston Sumner + Callahan + Ted Williams tunnels, the BART Transbay Tube (San Francisco), the Øresund Tunnel (Denmark-Sweden), and others.',
+              forces: 'When submerged + connected, the tunnel is BUOYANT (most of its weight is concrete + air-filled rooms inside; surrounding water is denser overall). It must be ballasted to stay seated on the trench bottom + protected from uplift by an earth cover of typically 1-3 m of fill. Joints between segments are flexible to accommodate seismic + thermal motion.',
+              limit: 'Limited to relatively shallow depths (rare immersed tunnels exceed 60 m below water surface). Requires a clear dredgeable trench, which is hard in rocky seabeds + impossible in deep oceans. The Channel Tunnel could NOT have been built as immersed-tube because the geology + currents made dredging impractical; that\'s why TBMs were used.'
+            },
+            { id: 'subsea', name: 'Subsea bored tunnel', emoji: '🏊', era: '1990s-present',
+              how: 'A tunnel bored deep below the seabed using TBMs, often used for major sub-aqueous crossings. Distinct from immersed tube — the bored subsea tunnel goes well below the seabed in deep rock, while immersed tube sits on or in the seabed surface. The Channel Tunnel is the most famous example (50 km long, 75 m below seabed in chalk marl). The Eiksund Tunnel (Norway, 2008) is 287 m deep at its lowest point. The undersea portion of the Tokyo Bay Aqua-Line combines an immersed tube section (Kawasaki side) with a bored tunnel section (Kisarazu side).',
+              forces: 'Hydrostatic water pressure at depth is enormous (~10 bar per 100 m of water depth above the tunnel). The tunnel lining must resist this through hoop compression. Groundwater inflow can be catastrophic; subsea tunnels use heavy waterproofing + drainage systems + sometimes inert-gas pressurization during construction.',
+              limit: 'Geology is everything. If the rock turns out softer or more fractured than predicted, projects can stall for years. The Channel Tunnel\'s chalk marl was ideal; many less-favorable proposed sub-aqueous crossings (Bering Strait, Atlantic Tunnel) face huge geological + economic obstacles that make them currently impractical.'
+            },
+            { id: 'ventilation', name: 'Ventilation + fire safety', emoji: '🌬️', era: 'Universal',
+              how: 'Long road tunnels must remove vehicle exhaust + smoke. The two main approaches: LONGITUDINAL VENTILATION (jet fans push air along the tunnel axis, exhaust at portals — economic + works for tunnels <3 km) + TRANSVERSE VENTILATION (parallel supply + exhaust ducts run the tunnel length, with vertical shafts to surface vent buildings — necessary for long tunnels + tunnels with poor portal positions). Fire safety adds smoke-extraction systems, fire-resistant linings (typically 2-4 hour rating), emergency egress passages, cross-passage doors between parallel tunnels, deluge sprinklers in critical zones, and water-mist suppression.',
+              forces: 'Ventilation must handle peak vehicle-emission scenarios + worst-case fire scenarios. Modern road-tunnel fire-design temperatures reach 1300°C (the RWS curve, Rijkswaterstaat, Dutch standard) — far hotter than typical building fires (~600°C cellulosic). Concrete linings spall explosively at these temperatures unless designed with polypropylene fibers that melt out + relieve vapor pressure.',
+              limit: 'Tunnel fires have killed dozens to hundreds at once when ventilation + suppression failed: Mont Blanc Tunnel 1999 (39 dead), Tauern Tunnel 1999 (12 dead), Gotthard 2001 (11 dead). Modern fire-safety design for new tunnels is far more conservative; retrofitting old tunnels to current standards is costly + sometimes impossible. The Boring Company\'s LA + Las Vegas tunnels have notably weaker fire safety than transit-tunnel standards — a tradeoff that has drawn engineering criticism.'
+            },
+            { id: 'channel', name: 'Channel Tunnel — the big one', emoji: '🚇', era: '1988-1994',
+              how: 'Three parallel tunnels (two running, one service) connecting the UK + France under the English Channel. Total length 50.45 km, with 38 km under sea. Bored using 11 TBMs (one for each tunnel section, working from both ends + meeting in the middle). The geology — Cenomanian chalk marl — was extremely favorable: soft enough to bore quickly, impermeable enough that water inflow was manageable. The two TBMs that met in the middle in 1990 achieved an alignment accuracy of better than 30 cm laterally + 60 cm vertically over the 38 km undersea distance.',
+              forces: 'Each running tunnel is ~7.6 m internal diameter, lined with 500-mm precast reinforced-concrete segments. Service tunnel is 4.8 m. The tunnels run 30-65 m below seabed; total length submerged about 38 km. Trains run at 160 km/h (passenger Eurostar) or 140 km/h (Le Shuttle vehicle trains). Loading from the trains + temperature changes + tunnel curvature all considered in fatigue design.',
+              limit: 'The Channel Tunnel\'s cost overran ~80% (£4.65B vs £2.6B original); the original Eurotunnel company went through several restructurings before becoming financially viable. The 1996 + 2008 + 2015 + 2022 fires all damaged sections of tunnel that required months of repair + reduced capacity. Recovery is slow because the tunnel cannot easily be closed for maintenance without disrupting major international transit.'
+            },
+            { id: 'limits', name: 'When NOT to tunnel', emoji: '🚫', era: 'Engineering judgment',
+              how: 'Tunnels are extraordinarily expensive + slow to build. A 5-km road tunnel typically costs $500M-2B+. Construction usually takes 5-10+ years. Lifetime maintenance costs (ventilation, pumping, fire safety, lining inspection) far exceed those of a bridge of equivalent capacity. Tunnels also have HIGHER fatality rates per vehicle-mile than equivalent surface roads (fires + crashes + emergency egress challenges).',
+              forces: 'The right structure depends on the obstacle. SHORT spans (< 200 m) over land or shallow water: bridge almost always wins. MEDIUM spans (200 m-2 km) over deep water or busy navigation: bridge or immersed tube. LONG crossings (>5 km) under deep water or through mountains: tunnels are sometimes the only option. ALWAYS NEEDED: when surface land must be preserved (urban districts, ecological + cultural protection), tunnels become attractive despite their cost.',
+              limit: 'The honest engineering answer: tunnels are often built for political or aesthetic reasons rather than cost-optimal ones. The Big Dig + the now-permanent Embarcadero Freeway removal + the Sydney Harbour Tunnel parallel to its bridge all have advocates who consider them money well spent. They are large interventions in the urban fabric + deserve scrutiny on the same terms as bridges — beauty, utility, public benefit, distributional equity. Tunnels are not automatically "better" because they are underground.'
+            }
+          ];
+          var sel = d.selectedTunnel || 'cutcover';
+          var topic = TUN.find(function(t) { return t.id === sel; }) || TUN[0];
+          return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🚇 Tunnels + underwater bridges'),
+            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+              'Tunnels are the siblings of bridges in transportation engineering — used to cross when going OVER won\'t work. They share many fundamentals (forces, fatigue, foundations) + have their own demanding specifics (ventilation, fire safety, hydrostatic pressure, ground behavior). Understanding tunnels alongside bridges gives the full picture of how engineers move people + freight across geographical obstacles.'
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              TUN.map(function(t) {
+                var on = t.id === sel;
+                return h('button', {
+                  key: t.id,
+                  onClick: function() { upd({ selectedTunnel: t.id }); },
+                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
+                }, t.emoji + ' ' + t.name);
+              })
+            ),
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
+              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, fontStyle: 'italic' } }, 'Era: ' + topic.era),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.how)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Forces + design logic'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.forces)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limits'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.limit)
+              )
+            )
+          );
+        }
 
         function movableBridgesSection() {
           var MOV = [

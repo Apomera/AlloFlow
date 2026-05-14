@@ -3149,8 +3149,92 @@
               h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'For deeper learning'),
               h('div', { style: { fontSize: 12, color: '#dcfce7', lineHeight: 1.6 } }, selected.practical)
             )
-          )
+          ),
+          crossCulturalTraditionsSection()
         );
+
+        function crossCulturalTraditionsSection() {
+          var TRADS = [
+            { id: 'polynesian', name: 'Polynesian wayfinding', region: 'Pacific Ocean', emoji: '🌊',
+              what: 'Pacific Islanders crossed the world\'s largest ocean (more than 3000 km between many island groups) without compasses, sextants, or written maps. Navigators carried in their heads a star compass of ~32 points marking the rising + setting positions of major stars (Hawaiki, Mahiku, Hokuleia, etc.), seasonal wind patterns, ocean swell directions, bird flight paths to land, the color + temperature of water, and cloud formations over islands. This knowledge was transmitted orally over generations.',
+              proof: 'The Polynesian Voyaging Society\'s replica double-hulled canoe Hokulea has sailed throughout the Pacific since 1976 using only traditional wayfinding under master navigator Mau Piailug (Satawal Island, Micronesia) + later Nainoa Thompson (Hawaii). Hokulea\'s 2014-2017 worldwide voyage (Malama Honua) circumnavigated Earth without modern instruments, confirming the methods that brought the first Polynesians to Hawaii, New Zealand, and Easter Island.',
+              limit: 'Wayfinding knowledge was nearly lost between 1800 + 1976; colonial suppression + missionary schools systematically erased it. The current revival relies on a few elders + their students; the chain of transmission was threatened + remains fragile. The Polynesian Voyaging Society works actively with Pacific communities to restore + extend this knowledge.'
+            },
+            { id: 'egyptian', name: 'Ancient Egyptian astronomy', region: 'Nile valley, 3000 BCE-300 CE', emoji: '☥',
+              what: 'Egyptians used the heliacal rising of Sirius (Sopdet) to predict the annual Nile flood — the most economically consequential single piece of astronomical knowledge of the ancient world. Their calendar of 365 days (12 months of 30 days + 5 epagomenal days) was the basis for the later Julian + Gregorian calendars. The Decanal stars (36 star clusters rising at 10-day intervals through the year) marked time for the dead in the afterlife. The Pyramid Texts contain extensive astronomical references. The Dendera Zodiac (Greco-Egyptian, ~50 BCE) is the oldest surviving relatively complete zodiac.',
+              proof: 'Pyramids are precisely aligned to cardinal directions (within ~0.06° for the Great Pyramid of Khufu) — implying methodical observation of celestial alignments. Egyptian astronomical knowledge was transmitted to Greece (via Thales + Pythagoras visiting Egypt) + influenced the development of Greek astronomy.',
+              limit: 'The Egyptian astronomical record is fragmentary; much was destroyed in the fires of the Library of Alexandria (multiple times, 48 BCE through 642 CE). The 365-day calendar drifted ~1 day every 4 years (no leap year correction) until the Roman period.'
+            },
+            { id: 'mesopotamian', name: 'Babylonian + Mesopotamian', region: 'Modern Iraq, 1800 BCE-100 CE', emoji: '🏛️',
+              what: 'The Babylonians invented systematic astronomical observation. They recorded eclipses, planetary positions, and conjunctions on clay tablets for over 1500 years — one of the longest continuous scientific datasets in human history. They divided the day into hours, the hour into 60 minutes, and the circle into 360 degrees (still our base-60 timekeeping). They named the 12 zodiac signs we still use. They predicted lunar eclipses centuries in advance using the Saros cycle (18 years, 11 days, 8 hours) — discovered ~600 BCE. The MUL.APIN tablets (~1000 BCE) are the oldest comprehensive star catalogs.',
+              proof: 'Babylonian eclipse predictions matched observations to within hours, which is remarkable given they had no modern physics. The records were inherited by Greek astronomers (Ptolemy, Hipparchus) + form the foundation of Western astronomy. Without Babylonian data Hipparchus could not have discovered precession of the equinoxes.',
+              limit: 'The Babylonian system was procedural — they could predict eclipses without knowing WHY. Their model of the universe was tied to religion + omens; astronomy + astrology were inseparable in their tradition. The line between "they knew" and "they recorded that something repeated" is sometimes hard to draw cleanly.'
+            },
+            { id: 'chinese', name: 'Chinese astronomy', region: 'China, 1500 BCE-present', emoji: '🐉',
+              what: 'Chinese astronomers kept the world\'s most continuous astronomical record — eclipse + supernova + comet observations span ~3000 years. Their records of the 1054 CE supernova (Tianguan-keshing, "guest star") are the primary historical record of what is now the Crab Nebula + the Crab Pulsar. They observed Halley\'s Comet regularly back to ~240 BCE. They mapped 283 constellations divided into 4 quadrants of 7 lunar mansions each, fundamentally different from Western constellation patterns. The Beijing Ancient Observatory operated continuously from 1442 until 1929. The Su Song astronomical clock tower (1090 CE) is widely considered one of the most sophisticated mechanical devices of medieval times.',
+              proof: 'The Chinese 1054 supernova record allowed modern astronomers to date the Crab Nebula expansion + the pulsar age. Crab is one of the most-studied objects in modern astronomy + the Chinese observation IS the calibration point. Their long comet records + lunar/solar eclipse records remain useful primary sources for studying solar activity + Earth\'s rotation deceleration.',
+              limit: 'Imperial Chinese astronomy was a state enterprise tied to dynastic legitimacy + omen interpretation. Reporting unfavorable omens could be politically dangerous; some records may have been edited. The system was conservative + slow to adopt heliocentrism + Newtonian physics; Jesuit missionaries brought European astronomy in the 17th century but Chinese astronomy did not fully integrate it until the 19th.'
+            },
+            { id: 'maya', name: 'Maya astronomy', region: 'Mesoamerica, 200-900 CE peak', emoji: '🐆',
+              what: 'The Classic Maya developed sophisticated astronomical knowledge linked to a complex calendrical system. Their Venus tables (Dresden Codex, ~1100 CE compilation of earlier data) predict the heliacal risings of Venus to within a day over ~104 years. Their Long Count calendar combined 5 cycles (k\'in, winal, tun, k\'atun, b\'ak\'tun) to give precise long-range dates. They observed solar + lunar eclipses, equinoxes, solstices, and Venus + Mars + Mercury cycles. The El Caracol observatory at Chichen Itza is precisely aligned to Venus extremes; Tikal + Palenque structures align with solstices.',
+              proof: 'Maya Venus predictions match modern calculations to better than 0.1% over centuries. Their accuracy in predicting eclipses + the Venus cycle was equal to or better than contemporary European astronomy. Modern Maya communities (Yucatec, K\'iche\', Q\'eqchi\', many others) maintain elements of this calendrical knowledge to this day.',
+              limit: 'The "2012 Maya apocalypse" was a Western misinterpretation. The end of a b\'ak\'tun was a calendar reset, not a doomsday — the way our Y2K was the end of a millennium without being the end of the world. Maya scholars + Maya descendants both spent years correcting this New-Age misreading. Honor the actual sophistication of the tradition rather than the projected mysticism.'
+            },
+            { id: 'aboriginal', name: 'Aboriginal Australian', region: 'Australia, 60000+ BCE-present', emoji: '🌌',
+              what: 'Aboriginal Australian sky knowledge is plausibly the oldest continuous astronomical tradition on Earth — some sky stories may be 60,000+ years old, with corroborating evidence in ethnographic + archaeoastronomical analysis. The Emu in the Sky is a DARK-cloud constellation (silhouetted against the Milky Way) extending from the Coalsack to Scorpius — readable across multiple Aboriginal nations + only visible because the southern Milky Way is much richer than the northern. Aboriginal traditions encode information about meteor showers, supernovae (the Boorong people\'s observation of a "red star" in 1844 may be a long-period variable), eclipses, and tides linked to the moon.',
+              proof: 'Anthropologist Duane Hamacher + colleagues have systematically documented Aboriginal astronomical knowledge with sky correlations. The Wardaman traditions about Eta Carinae outburst dates fit the historical record. The continuous transmission across tens of thousands of years (longer than any other human cultural tradition) is supported by genetic + archaeological evidence of population continuity.',
+              limit: 'Much Aboriginal sky knowledge was suppressed by colonial Australia (forced child removal, mission schools, English-only laws); recovery work is ongoing + sometimes contested. Different Aboriginal nations have DIFFERENT astronomical traditions — there is no monolithic "Aboriginal astronomy." Respect specific traditions to specific communities; some knowledge is restricted + not for outside audiences.'
+            },
+            { id: 'islamic', name: 'Islamic Golden Age astronomy', region: 'Cordoba, Baghdad, Damascus, Samarkand, 800-1500 CE', emoji: '☪️',
+              what: 'Between 800 + 1500 CE, scholars working in Arabic produced the most sophisticated astronomy of the medieval world. Al-Battani (c.858-929) measured the length of the year to within minutes; his data was still used by Copernicus. Ibn al-Haytham (965-1040) founded modern optics + critiqued Ptolemy\'s lunar model. Al-Tusi (1201-1274) developed the Tusi couple — a geometric construction later used by Copernicus + Galileo. Ulugh Beg (Samarkand, 1394-1449) built the Samarkand Observatory with a 40-meter-tall sextant + produced a star catalog of 1018 stars matching Hipparchus + Ptolemy in precision. Most modern star names (Aldebaran, Algol, Altair, Vega, Rigel, Betelgeuse, Deneb) are from Arabic.',
+              proof: 'European astronomy from Copernicus onward rests on Islamic mathematical innovations. The Tusi couple, the trigonometry of al-Battani + al-Khwarizmi, and the Arabic translations of Greek + Indian astronomy preserved knowledge that would otherwise have been lost. "Almagest" (Ptolemy\'s textbook) survives in its Arabic form; "algebra" is from Arabic al-jabr; "algorithm" is from al-Khwarizmi.',
+              limit: 'The Islamic Golden Age in astronomy is often invisible in Western curricula. Multiple cultural + political factors slowed the tradition after ~1500 (Mongol invasions, Ottoman consolidation, European intellectual centralization). Some accounts romanticize a continuous "decline narrative" that does not reflect the actual range + complexity of post-1500 Islamic scientific work. Honest history shows multi-century scientific activity across the Islamic world, with varying degrees of state + scholarly support, that contributed substantially to global astronomy.'
+            },
+            { id: 'inca', name: 'Inca astronomy', region: 'Andes, 1400-1533 CE peak', emoji: '🏔️',
+              what: 'Inca astronomy was woven into both agricultural cycles + state ceremony. Cusco was laid out so that 41 ceque (sight lines) radiated from the Coricancha (Temple of the Sun) to mark celestial alignments + ritual paths. The Inti Raymi (Festival of the Sun) marked the June solstice. The Pleiades (Qollqa, "the storehouse") helped predict the rainy season — if they appeared dim at heliacal rising in June, drought was expected. Modern research has confirmed that Pleiades visibility is actually correlated with El Niño / La Niña years via high-altitude cirrus clouds, validating the indigenous observational technique. The Inca recognized DARK constellations in the Milky Way (the llama, the fox, the toad) alongside the bright-star patterns.',
+              proof: 'The Inti Raymi celebration continues in modern Cusco (~250,000 attendees annually). Pleiades-as-rainfall-predictor was independently confirmed by Orlove + colleagues (2000) in a Nature paper showing the ENSO connection. Andean farmers in remote villages continue to use these methods alongside modern weather forecasts.',
+              limit: 'Most Inca astronomical records were destroyed by Spanish conquest + the Inquisition. Sources are reconstructed from colonial Spanish chronicles, Quechua oral tradition, and archaeoastronomical alignment studies. Specifics are sometimes contested; the broad pattern (sophisticated calendrical astronomy linked to agriculture + state ritual) is solidly established. Honor what we have + acknowledge what was lost.'
+            }
+          ];
+          var sel = d.selectedTrad || 'polynesian';
+          var topic = TRADS.find(function(t) { return t.id === sel; }) || TRADS[0];
+          return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.25)' } },
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🌐 Cross-cultural astronomy traditions'),
+            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+              'Western astronomy is one tradition among many. Cultures across every continent independently developed astronomical knowledge linked to agriculture, navigation, ritual, calendar-keeping, and pure observation. Some of these traditions remain active today; others were suppressed, lost, or are being recovered by descendant communities + scholars. Honoring this diversity is intellectual honesty AND practical: indigenous astronomical observations are sometimes the longest single-source datasets we have.'
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              TRADS.map(function(t) {
+                var on = t.id === sel;
+                return h('button', {
+                  key: t.id,
+                  onClick: function() { upd({ selectedTrad: t.id }); },
+                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
+                }, t.emoji + ' ' + t.name);
+              })
+            ),
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
+              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, fontStyle: 'italic' } }, topic.region),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What the tradition knew'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.what)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Evidence + impact'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.proof)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.06)', borderLeft: '3px solid #a78bfa' } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#c4b5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limits + framing'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.limit)
+              )
+            ),
+            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
+              h('strong', null, 'Why this section matters: '),
+              'Reducing "real" astronomy to Western tradition both impoverishes the curriculum + erases knowledge that took millennia to develop. The Polynesian wayfinding revival, the Aboriginal sky-story documentation projects, the Maya descendant calendrical work, and the recovery of Inca + indigenous astronomy globally all matter intellectually + ethically. Wabanaki sky stories are covered separately in this same tab — they are part of THIS continent\'s deep astronomical heritage that students at King Middle can encounter close to home.'
+            )
+          );
+        }
       }
 
       // ──────────────────────────────────────────────────────────────

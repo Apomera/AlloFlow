@@ -449,6 +449,13 @@ window.SelHub = window.SelHub || {
       // Toolbox state (saved favorite strategies)
       var myToolbox = d.myToolbox || [];
 
+      // Re-check follow-up state (added v3) — when set, show a post-save panel
+      // offering the student a 10-minute re-check reminder to close the loop on
+      // whether the strategy helped. Also a top-level banner when timer expires.
+      var lastSaveTs   = d.lastSaveTs || 0;
+      var lastSaveZone = d.lastSaveZone || null;
+      var reCheckAt    = d.reCheckAt || 0;
+
       // Badge state
       var earnedBadges    = d.earnedBadges || {};
       var showBadgePopup  = d.showBadgePopup || null; // badge id to show popup for
@@ -484,6 +491,97 @@ window.SelHub = window.SelHub || {
           callTTS(text);
         }
       }
+
+      // ══════════════════════════════════════════════════════════
+      // ── Pattern surfacing (v3 addition) ──
+      // Analyzes recent check-ins (last 7) and returns a gentle observation when
+      // a cluster is strong enough to be worth mentioning. School-psych voice:
+      // non-alarming, supportive, names a trusted adult as the next step.
+      // Returns null if there's no clear pattern OR not enough data (< 5 entries).
+      // ══════════════════════════════════════════════════════════
+      var analyzeRecentPattern = function(log) {
+        var recent = (log || []).slice(-7);
+        if (recent.length < 5) return null;
+        var counts = { blue: 0, green: 0, yellow: 0, red: 0 };
+        recent.forEach(function(e) { if (counts[e.zone] != null) counts[e.zone]++; });
+        var total = recent.length;
+        var fracBlue = counts.blue / total;
+        var fracRed = counts.red / total;
+        var fracYellow = counts.yellow / total;
+        var fracGreen = counts.green / total;
+        // High threshold ≥ 60% — only surface clear patterns, avoid over-inferring
+        if (fracBlue >= 0.6) {
+          return {
+            zone: 'blue',
+            kind: 'blue_heavy',
+            count: counts.blue,
+            total: total,
+            color: '#3b82f6',
+            emoji: '💙',
+            headline: band === 'elementary'
+              ? 'You’ve been feeling low-energy a lot lately.'
+              : 'Recent check-ins have clustered in the Blue Zone.',
+            body: band === 'elementary'
+              ? 'It’s okay to feel tired or sad sometimes. Talking to a trusted adult—a parent, teacher, school counselor—can help.'
+              : (band === 'middle'
+                  ? 'Low energy or sadness over multiple days is your body’s signal that something needs attention. A trusted adult (counselor, advisor, family member) is a good next step.'
+                  : 'Multi-day clustering in low-affect states warrants a conversation with someone who can help—a school counselor, mental health professional, or trusted family member.')
+          };
+        }
+        if (fracRed >= 0.6) {
+          return {
+            zone: 'red',
+            kind: 'red_heavy',
+            count: counts.red,
+            total: total,
+            color: '#ef4444',
+            emoji: '🔥',
+            headline: band === 'elementary'
+              ? 'You’ve been feeling really big feelings a lot.'
+              : 'Recent check-ins have clustered in the Red Zone.',
+            body: band === 'elementary'
+              ? 'Feeling really angry or out-of-control often means something is overwhelming. A trusted adult can help you figure it out.'
+              : (band === 'middle'
+                  ? 'Frequent overwhelm or anger over multiple check-ins is worth talking through. A school counselor or trusted adult can help you find what’s underneath.'
+                  : 'Frequent high-arousal distress states are worth bringing to a school counselor or mental health professional. You don’t have to figure it out alone.')
+          };
+        }
+        if (fracYellow >= 0.6) {
+          return {
+            zone: 'yellow',
+            kind: 'yellow_heavy',
+            count: counts.yellow,
+            total: total,
+            color: '#eab308',
+            emoji: '⚡',
+            headline: band === 'elementary'
+              ? 'Lots of bouncy / wiggly / nervous feelings lately.'
+              : 'Recent check-ins have clustered in the Yellow Zone.',
+            body: band === 'elementary'
+              ? 'Being excited or worried a lot is okay—and the breathing tools can help. If it feels like too much, talk to a trusted adult.'
+              : (band === 'middle'
+                  ? 'Sustained anxiety or restlessness is common during transitions. Try the breathing tools, and if it persists, a counselor can help.'
+                  : 'Persistent activation may indicate anxiety worth addressing. Combine self-regulation strategies with a counselor’s support if needed.')
+          };
+        }
+        if (fracGreen >= 0.6) {
+          return {
+            zone: 'green',
+            kind: 'green_heavy',
+            count: counts.green,
+            total: total,
+            color: '#22c55e',
+            emoji: '✅',
+            headline: band === 'elementary'
+              ? 'Nice — you’ve been feeling regulated and ready.'
+              : 'Recent check-ins show consistent regulation.',
+            body: band === 'elementary'
+              ? 'Keep doing what’s working! Notice what helps you stay in the Green Zone.'
+              : 'Whatever strategies you’re using, they’re working. Stay aware of the inputs (sleep, food, social, movement) that keep you here.'
+          };
+        }
+        return null;  // no clear pattern → don't surface
+      };
 
       // ══════════════════════════════════════════════════════════
       // ── Tab Navigation ──
@@ -745,7 +843,10 @@ window.SelHub = window.SelHub || {
                   checkInLog: newLog,
                   selectedZone: null,
                   checkInNote: '',
-                  intensityLevel: 5
+                  intensityLevel: 5,
+                  // v3: remember this save so the post-save panel can offer a re-check
+                  lastSaveTs: Date.now(),
+                  lastSaveZone: selectedZone
                 });
                 if (soundEnabled) sfxCheckin();
                 awardXP(10);
@@ -786,6 +887,43 @@ window.SelHub = window.SelHub || {
               onClick: function() { upd('activeTab', 'breathe'); },
               style: { marginTop: 8, width: '100%', padding: '10px 0', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: '#94a3b8', fontWeight: 600, fontSize: 12, cursor: 'pointer' }
             }, '\uD83C\uDF2C\uFE0F Need help calming down? Try a breathing exercise')
+          ),
+
+          // v3: Post-save re-check offer \u2014 shows briefly after save (90-second window).
+          // Closes the loop: did the strategy help? A re-check captures that.
+          (lastSaveTs && (Date.now() - lastSaveTs) < 90000 && lastSaveZone && lastSaveZone !== 'green' && !reCheckAt) && h('div', {
+            role: 'region', 'aria-label': 'Post check-in re-check offer',
+            style: { marginTop: 16, padding: 14, borderRadius: 14, background: 'rgba(124,58,237,0.10)', border: '1px solid #7c3aed', borderLeft: '4px solid #7c3aed' }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
+              h('div', { style: { fontSize: 22, flexShrink: 0 }, 'aria-hidden': 'true' }, '\uD83D\uDD14'),
+              h('div', { style: { flex: 1 } },
+                h('p', { style: { margin: 0, color: '#a78bfa', fontSize: 13, fontWeight: 700 } },
+                  band === 'elementary' ? 'Check in again in 10 minutes?' : 'Re-check in 10 minutes?'
+                ),
+                h('p', { style: { margin: '4px 0 10px', color: '#cbd5e1', fontSize: 11, lineHeight: 1.4 } },
+                  band === 'elementary'
+                    ? 'After you try a strategy, come back and see how you feel. It helps you learn what works for YOU.'
+                    : 'After trying a strategy, a quick re-check tells you whether it actually helped. Building self-awareness is the whole point.'
+                ),
+                h('div', { style: { display: 'flex', gap: 8 } },
+                  h('button', {
+                    onClick: function() {
+                      if (soundEnabled) sfxClick();
+                      upd({ reCheckAt: Date.now() + 10 * 60 * 1000, lastSaveTs: 0, lastSaveZone: null });
+                      announceToSR('Re-check timer set for 10 minutes');
+                    },
+                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+                    'aria-label': 'Set 10-minute re-check timer'
+                  }, '\uD83D\uDD14 Set 10-min timer'),
+                  h('button', {
+                    onClick: function() { upd({ lastSaveTs: 0, lastSaveZone: null }); },
+                    style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #475569', background: 'transparent', color: '#94a3b8', fontSize: 12, fontWeight: 600, cursor: 'pointer' },
+                    'aria-label': 'Dismiss re-check offer'
+                  }, 'Not this time')
+                )
+              )
+            )
           )
         );
       }
@@ -1584,8 +1722,33 @@ window.SelHub = window.SelHub || {
       var historyContent = null;
       if (activeTab === 'history') {
         var log = checkInLog || [];
+        var pattern = analyzeRecentPattern(log);
         historyContent = h('div', { style: { padding: 20, maxWidth: 600, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 16, color: '#f1f5f9', fontSize: 18 } }, 'My Check-In History'),
+
+          // Pattern surfacing callout (v3) — gentle observation when a cluster is clear
+          pattern && h('div', {
+            role: 'region',
+            'aria-label': 'Recent pattern notice',
+            style: {
+              marginBottom: 16, padding: 14, borderRadius: 14,
+              background: pattern.color + '15',
+              border: '1px solid ' + pattern.color + '55',
+              borderLeft: '4px solid ' + pattern.color
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
+              h('div', { style: { fontSize: 26, flexShrink: 0 }, 'aria-hidden': 'true' }, pattern.emoji),
+              h('div', { style: { flex: 1 } },
+                h('p', { style: { margin: 0, color: pattern.color, fontSize: 14, fontWeight: 800, lineHeight: 1.25 } }, pattern.headline),
+                h('p', { style: { margin: '6px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, pattern.body),
+                h('p', { style: { margin: '8px 0 0', color: '#94a3b8', fontSize: 10, fontStyle: 'italic' } },
+                  pattern.count + ' of your last ' + pattern.total + ' check-ins were in the ' + pattern.zone.charAt(0).toUpperCase() + pattern.zone.slice(1) + ' Zone.'
+                )
+              )
+            )
+          ),
+
           log.length === 0
             ? h('div', { style: { textAlign: 'center', padding: 40, color: '#94a3b8' } },
                 h('p', { style: { fontSize: 32, marginBottom: 8 } }, '\uD83D\uDCDD'),
@@ -1746,9 +1909,48 @@ window.SelHub = window.SelHub || {
       }, []);
 
       // ══════════════════════════════════════════════════════════
+      // ── Re-check expiry banner (v3) ──
+      // When the 10-minute timer has elapsed, surface a top-level banner across
+      // every tab inviting the student to do a follow-up check-in. Closes the
+      // loop on "did the strategy I chose actually help?"
+      // ══════════════════════════════════════════════════════════
+      var reCheckBanner = (reCheckAt && Date.now() >= reCheckAt) ? h('div', {
+        role: 'region', 'aria-label': 'Re-check reminder',
+        style: { padding: '10px 14px', background: 'linear-gradient(90deg, #7c3aed 0%, #a855f7 100%)', color: '#fff', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }
+      },
+        h('span', { style: { fontSize: 20 }, 'aria-hidden': 'true' }, '🔔'),
+        h('div', { style: { flex: 1, minWidth: 200 } },
+          h('p', { style: { margin: 0, fontSize: 13, fontWeight: 700 } },
+            band === 'elementary' ? 'Time for a re-check! How are you feeling now?' : 'Time for your re-check.'
+          ),
+          h('p', { style: { margin: '2px 0 0', fontSize: 11, opacity: 0.9 } },
+            band === 'elementary'
+              ? 'Did the strategy help? Let\'s find out.'
+              : 'See whether the strategy you chose actually helped.'
+          )
+        ),
+        h('button', {
+          onClick: function() {
+            if (soundEnabled) sfxClick();
+            upd({ activeTab: 'checkin', reCheckAt: 0 });
+            announceToSR('Opening check-in tab');
+          },
+          style: { padding: '7px 14px', borderRadius: 8, border: 'none', background: '#fff', color: '#7c3aed', fontSize: 12, fontWeight: 800, cursor: 'pointer' },
+          'aria-label': 'Open check-in tab now'
+        }, '🚦 Check in now'),
+        h('button', {
+          onClick: function() { upd({ reCheckAt: 0 }); },
+          style: { padding: '7px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.5)', background: 'transparent', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer' },
+          'aria-label': 'Dismiss re-check reminder'
+        }, 'Dismiss')
+      ) : null;
+
+      // ══════════════════════════════════════════════════════════
       // ── Final Render ──
       // ══════════════════════════════════════════════════════════
       return h('div', { style: { minHeight: '100%' } },
+        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('zones', h, ctx) : null),
+        reCheckBanner,
         tabBar,
         heroBand,
         badgePopup,

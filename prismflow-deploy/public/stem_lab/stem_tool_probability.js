@@ -49,7 +49,7 @@ window.StemLab = window.StemLab || {
   // ── Audio + WCAG (auto-injected) ──
   var _probAC = null;
   function getProbAC() { if (!_probAC) { try { _probAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_probAC && _probAC.state==="suspended") { try { _probAC.resume(); } catch(e) {} } return _probAC; }
-  function probTone(f,d,tp,v) { var ac=getProbAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function probTone(f,d,tp,v) { if (window._probabilityMuted) return; var ac=getProbAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxProbClick() { probTone(600,0.03,"sine",0.04); }
   function sfxProbSuccess() { probTone(523,0.08,"sine",0.07); setTimeout(function(){probTone(659,0.08,"sine",0.07);},70); setTimeout(function(){probTone(784,0.1,"sine",0.08);},140); }
   if(!document.getElementById("prob-a11y")){var _s=document.createElement("style");_s.id="prob-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-600{color:#64748b!important}";document.head.appendChild(_s);}
@@ -70,6 +70,8 @@ window.StemLab = window.StemLab || {
 
   // Module-level: persists across React renders without causing re-render
   var _autoRun = { interval: null };
+  var _galtonAnim = { interval: null };
+  var _piAnim = { interval: null };
 
   window.StemLab.registerTool('probability', {
     icon: '\uD83C\uDFB2',
@@ -127,6 +129,8 @@ window.StemLab = window.StemLab || {
       // ── Tool body (probability) ──
       return (function() {
 var d = (labToolData.probability) || {};
+          // Sync persistent mute state to module flag read by probTone
+          window._probabilityMuted = !!d.muted;
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -203,7 +207,15 @@ var d = (labToolData.probability) || {};
 
               if (d.mode === 'coin') results.push(Math.random() < 0.5 ? 'H' : 'T');
 
-              else if (d.mode === 'dice') results.push(Math.floor(Math.random() * 6) + 1);
+              else if (d.mode === 'dice') results.push(Math.floor(Math.random() * (d.diceSides || 6)) + 1);
+              else if (d.mode === 'dice2') {
+                var _ds2 = d.diceSides || 6;
+                var _r1 = Math.floor(Math.random() * _ds2) + 1;
+                var _r2 = Math.floor(Math.random() * _ds2) + 1;
+                results.push(_r1 + _r2);
+                // Save the last pair on the LAST iteration for display rendering
+                if (i === n - 1) { upd('_lastPair', [_r1, _r2]); }
+              }
 
               else if (d.mode === 'spinner') results.push(['Red', 'Blue', 'Green', 'Yellow'][Math.floor(Math.random() * 4)]);
 
@@ -328,7 +340,7 @@ var d = (labToolData.probability) || {};
 
             if (total > 0) {
 
-              var firstKey = d.mode === 'coin' ? 'H' : d.mode === 'dice' ? 1 : d.mode === 'spinner' ? 'Red' : d.mode === 'sports' ? activeSport.outcomes[0] : d.mode === 'pi' ? 'inside' : customOutcomes[0] ? customOutcomes[0].label : 'Red';
+              var firstKey = d.mode === 'coin' ? 'H' : d.mode === 'dice' ? 1 : d.mode === 'dice2' ? 2 : d.mode === 'spinner' ? 'Red' : d.mode === 'sports' ? activeSport.outcomes[0] : d.mode === 'pi' ? 'inside' : customOutcomes[0] ? customOutcomes[0].label : 'Red';
 
               var cnt = results.filter(function (r) { return r === firstKey; }).length;
 
@@ -419,7 +431,12 @@ var d = (labToolData.probability) || {};
 
               } else if (_pd.mode === 'dice') {
 
-                _res.push(Math.floor(Math.random() * 6) + 1);
+                _res.push(Math.floor(Math.random() * (_pd.diceSides || 6)) + 1);
+
+              } else if (_pd.mode === 'dice2') {
+
+                var _pds2 = _pd.diceSides || 6;
+                _res.push((Math.floor(Math.random() * _pds2) + 1) + (Math.floor(Math.random() * _pds2) + 1));
 
               } else if (_pd.mode === 'spinner') {
 
@@ -463,7 +480,7 @@ var d = (labToolData.probability) || {};
 
               if (_res.length > 0) {
 
-                var _fk3 = _pd.mode === 'coin' ? 'H' : _pd.mode === 'dice' ? 1 : _pd.mode === 'spinner' ? 'Red' : _pd.mode === 'sports' ? _asp2.outcomes[0] : _pd.mode === 'pi' ? 'inside' : (_cos3[0] ? _cos3[0].label : 'Red');
+                var _fk3 = _pd.mode === 'coin' ? 'H' : _pd.mode === 'dice' ? 1 : _pd.mode === 'dice2' ? 2 : _pd.mode === 'spinner' ? 'Red' : _pd.mode === 'sports' ? _asp2.outcomes[0] : _pd.mode === 'pi' ? 'inside' : (_cos3[0] ? _cos3[0].label : 'Red');
 
                 var _cnt4 = _res.filter(function(r) { return r === _fk3; }).length;
 
@@ -495,7 +512,23 @@ var d = (labToolData.probability) || {};
 
           if (d.mode === 'coin') expected = { H: 0.5, T: 0.5 };
 
-          else if (d.mode === 'dice') expected = { 1: 1 / 6, 2: 1 / 6, 3: 1 / 6, 4: 1 / 6, 5: 1 / 6, 6: 1 / 6 };
+          else if (d.mode === 'dice') {
+            // Uniform 1/N across all faces of the selected die
+            expected = {};
+            var _ds3 = d.diceSides || 6;
+            for (var _di = 1; _di <= _ds3; _di++) expected[_di] = 1 / _ds3;
+          }
+          else if (d.mode === 'dice2') {
+            // Two-dice sum: triangular distribution. ways(k) / N^2 for k in [2, 2N].
+            // For 2dN: ways(k) = min(k-1, 2N-k+1)
+            expected = {};
+            var _ds4 = d.diceSides || 6;
+            var _ttl = _ds4 * _ds4;
+            for (var _ds5 = 2; _ds5 <= 2 * _ds4; _ds5++) {
+              var ways = Math.min(_ds5 - 1, 2 * _ds4 - _ds5 + 1);
+              expected[_ds5] = ways / _ttl;
+            }
+          }
 
           else if (d.mode === 'spinner') expected = { Red: 0.25, Blue: 0.25, Green: 0.25, Yellow: 0.25 };
 
@@ -567,46 +600,145 @@ var d = (labToolData.probability) || {};
 
           var convHist = d.convergenceHistory || [];
 
-          var convExpected = d.mode === 'coin' ? 50 : d.mode === 'dice' ? 16.67 : d.mode === 'spinner' ? 25 : d.mode === 'sports' ? activeSport.probs[0] * 100 : d.mode === 'pi' ? Math.PI / 4 * 100 : customOutcomes[0] ? customOutcomes[0].prob * 100 : 50;
+          var convExpected = d.mode === 'coin' ? 50
+            : d.mode === 'dice' ? (100 / (d.diceSides || 6))
+            : d.mode === 'dice2' ? (100 / ((d.diceSides || 6) * (d.diceSides || 6)) * Math.min(2 - 1, 2 * (d.diceSides || 6) - 2 + 1))  // P of the smallest sum (2)
+            : d.mode === 'spinner' ? 25
+            : d.mode === 'sports' ? activeSport.probs[0] * 100
+            : d.mode === 'pi' ? Math.PI / 4 * 100
+            : customOutcomes[0] ? customOutcomes[0].prob * 100 : 50;
 
 
 
           // Dice face SVG
 
-          var diceFace = function (val, size) {
-
+          // Multi-sided die SVG renderer. For d6 we keep the iconic pip layout.
+          // For other shapes (d4/d8/d10/d12/d20) we render the canonical face polygon
+          // for the corresponding Platonic solid (tetrahedron/octahedron/etc.) with
+          // the number centered inside. Each die-type gets its own color so the
+          // student can tell a d8 from a d20 at a glance even with the same number.
+          var DIE_SHAPES = {
+            4:  { fill: '#3b82f6', stroke: '#1e3a8a', points: function(s){ return [s*0.5,s*0.08, s*0.92,s*0.85, s*0.08,s*0.85]; }, textY: function(s){ return s*0.72; } },
+            6:  { fill: '#ef4444', stroke: '#991b1b' },  // special-cased to pips below
+            8:  { fill: '#10b981', stroke: '#065f46', points: function(s){ return [s*0.08,s*0.18, s*0.92,s*0.18, s*0.5,s*0.92]; }, textY: function(s){ return s*0.56; } },
+            10: { fill: '#8b5cf6', stroke: '#5b21b6', points: function(s){ return [s*0.5,s*0.08, s*0.9,s*0.5, s*0.5,s*0.92, s*0.1,s*0.5]; }, textY: function(s){ return s*0.6; } },
+            12: { fill: '#f59e0b', stroke: '#92400e', points: function(s){ return [s*0.5,s*0.08, s*0.92,s*0.38, s*0.78,s*0.88, s*0.22,s*0.88, s*0.08,s*0.38]; }, textY: function(s){ return s*0.62; } },
+            20: { fill: '#0d9488', stroke: '#134e4a', points: function(s){ return [s*0.5,s*0.05, s*0.95,s*0.88, s*0.05,s*0.88]; }, textY: function(s){ return s*0.72; } }
+          };
+          var diceFace = function (val, size, sides) {
             var s = size || 60;
-
-            var dotPositions = {
-
-              1: [[s / 2, s / 2]],
-
-              2: [[s * 0.3, s * 0.3], [s * 0.7, s * 0.7]],
-
-              3: [[s * 0.3, s * 0.3], [s / 2, s / 2], [s * 0.7, s * 0.7]],
-
-              4: [[s * 0.3, s * 0.3], [s * 0.7, s * 0.3], [s * 0.3, s * 0.7], [s * 0.7, s * 0.7]],
-
-              5: [[s * 0.3, s * 0.3], [s * 0.7, s * 0.3], [s / 2, s / 2], [s * 0.3, s * 0.7], [s * 0.7, s * 0.7]],
-
-              6: [[s * 0.3, s * 0.25], [s * 0.7, s * 0.25], [s * 0.3, s / 2], [s * 0.7, s / 2], [s * 0.3, s * 0.75], [s * 0.7, s * 0.75]]
-
-            };
-
-            var dots = dotPositions[val] || [];
-
-            return React.createElement("svg", { viewBox: "0 0 " + s + " " + s, width: s, height: s },
-
-              React.createElement("rect", { x: 2, y: 2, width: s - 4, height: s - 4, rx: 8, fill: "white", stroke: "#94a3b8", strokeWidth: 2 }),
-
-              dots.map(function (pos, i) {
-
-                return React.createElement("circle", { key: i, cx: pos[0], cy: pos[1], r: s * 0.08, fill: "#1e293b" });
-
-              })
-
+            var dSides = sides || 6;
+            // Classic d6 with pips
+            if (dSides === 6 && val >= 1 && val <= 6) {
+              var dotPositions = {
+                1: [[s/2, s/2]],
+                2: [[s*0.3, s*0.3], [s*0.7, s*0.7]],
+                3: [[s*0.3, s*0.3], [s/2, s/2], [s*0.7, s*0.7]],
+                4: [[s*0.3, s*0.3], [s*0.7, s*0.3], [s*0.3, s*0.7], [s*0.7, s*0.7]],
+                5: [[s*0.3, s*0.3], [s*0.7, s*0.3], [s/2, s/2], [s*0.3, s*0.7], [s*0.7, s*0.7]],
+                6: [[s*0.3, s*0.25], [s*0.7, s*0.25], [s*0.3, s/2], [s*0.7, s/2], [s*0.3, s*0.75], [s*0.7, s*0.75]]
+              };
+              var dots = dotPositions[val] || [];
+              return React.createElement("svg", { viewBox: "0 0 " + s + " " + s, width: s, height: s },
+                React.createElement("rect", { x: 2, y: 2, width: s - 4, height: s - 4, rx: 8, fill: "white", stroke: "#94a3b8", strokeWidth: 2 }),
+                dots.map(function (pos, i) {
+                  return React.createElement("circle", { key: i, cx: pos[0], cy: pos[1], r: s * 0.08, fill: "#1e293b" });
+                })
+              );
+            }
+            // Polyhedral shape with number for d4/d8/d10/d12/d20 (and fallback for unusual values)
+            var shape = DIE_SHAPES[dSides] || DIE_SHAPES[20];
+            var pts = shape.points(s);
+            var pointsStr = '';
+            for (var pi = 0; pi < pts.length; pi += 2) pointsStr += pts[pi].toFixed(1) + ',' + pts[pi+1].toFixed(1) + ' ';
+            var fontSize = (s * (val >= 10 ? 0.32 : 0.42));
+            return React.createElement("svg", { viewBox: "0 0 " + s + " " + s, width: s, height: s, 'aria-label': 'd' + dSides + ' showing ' + val },
+              React.createElement("polygon", { points: pointsStr, fill: shape.fill, stroke: shape.stroke, strokeWidth: 2.5, strokeLinejoin: 'round' }),
+              React.createElement("text", { x: s/2, y: shape.textY(s), textAnchor: 'middle', fontSize: fontSize, fontWeight: 900, fill: 'white', style: { paintOrder: 'stroke', stroke: shape.stroke, strokeWidth: 0.5 } }, val)
             );
+          };
+          var DICE_TYPES = [4, 6, 8, 10, 12, 20];
+          var diceSides = d.diceSides || 6;
 
+          // Two-dice sum: NxN sample-space grid. Every (d1, d2) pair plotted in a
+          // table, each cell colored by its SUM and labeled with the sum number.
+          // The diagonals visually demonstrate why 7 has 6 ways but 2 and 12 only 1:
+          // the (1,1) cell is alone in the top-left corner, the diagonal d1+d2=7
+          // sweeps through 6 cells, and (6,6) is alone in the bottom-right. The
+          // triangular distribution becomes spatial intuition. Skipped for d12+
+          // because 144 / 400 cells is too crowded to read.
+          var renderTwoDiceGrid = function(sides, lastSum) {
+            if (sides > 10) return null;  // d12/d20 grids would be unreadable
+            var cellSize = sides <= 6 ? 32 : (sides <= 8 ? 26 : 22);
+            var pad = 22;
+            var gridW = sides * cellSize;
+            var svgW = gridW + pad + 6;
+            var svgH = gridW + pad + 6;
+            var midSum = sides + 1;  // most common sum
+            var rows = [];
+            // Top-edge labels (die 2 values)
+            var topLabels = [];
+            for (var c = 1; c <= sides; c++) {
+              topLabels.push(React.createElement("text", {
+                key: 'cl-' + c,
+                x: pad + (c - 0.5) * cellSize, y: pad - 4,
+                textAnchor: 'middle', fontSize: cellSize <= 22 ? 10 : 11, fontWeight: 700, fill: '#475569'
+              }, c));
+            }
+            // Left-edge labels (die 1 values)
+            var leftLabels = [];
+            for (var r = 1; r <= sides; r++) {
+              leftLabels.push(React.createElement("text", {
+                key: 'rl-' + r,
+                x: pad - 4, y: pad + (r - 0.5) * cellSize + 4,
+                textAnchor: 'end', fontSize: cellSize <= 22 ? 10 : 11, fontWeight: 700, fill: '#475569'
+              }, r));
+            }
+            for (var ri = 1; ri <= sides; ri++) {
+              for (var ci = 1; ci <= sides; ci++) {
+                var sum = ri + ci;
+                var dist = Math.abs(sum - midSum);
+                var maxDist = sides;
+                var hue = 220 - (dist / maxDist) * 220;  // red center, blue tails
+                var isHighlight = lastSum === sum;
+                rows.push(React.createElement("g", { key: 'gc-' + ri + '-' + ci },
+                  React.createElement("rect", {
+                    x: pad + (ci - 1) * cellSize,
+                    y: pad + (ri - 1) * cellSize,
+                    width: cellSize - 1,
+                    height: cellSize - 1,
+                    fill: 'hsl(' + Math.round(hue) + ', ' + (isHighlight ? '85' : '65') + '%, ' + (isHighlight ? '50' : '70') + '%)',
+                    stroke: isHighlight ? '#0f172a' : 'rgba(255,255,255,0.6)',
+                    strokeWidth: isHighlight ? 2 : 0.8,
+                    rx: 3
+                  }),
+                  React.createElement("text", {
+                    x: pad + (ci - 0.5) * cellSize,
+                    y: pad + (ri - 0.5) * cellSize + 4,
+                    textAnchor: 'middle',
+                    fontSize: cellSize <= 22 ? 10 : 12,
+                    fontWeight: 700,
+                    fill: isHighlight ? '#fff' : '#1e293b'
+                  }, sum)
+                ));
+              }
+            }
+            return React.createElement("div", { className: 'mb-3 rounded-xl p-3', style: { background: isDark || isContrast ? 'rgba(185,28,28,0.08)' : '#fff', border: '2px solid ' + (isDark || isContrast ? 'rgba(185,28,28,0.3)' : '#fecaca') } },
+              React.createElement("p", { className: 'text-[11px] font-bold mb-1', style: { color: isDark || isContrast ? '#fca5a5' : '#991b1b' } },
+                '🎯 Sample space — all ' + (sides * sides) + ' (d1, d2) pairs, colored by sum'
+              ),
+              React.createElement("p", { className: 'text-[10px] italic mb-2', style: { color: isDark || isContrast ? '#fca5a5' : '#7f1d1d' } },
+                'The diagonals from top-right to bottom-left are constant sums. The longest diagonal (sum = ' + midSum + ') has ' + sides + ' cells — that is why ' + midSum + ' is the most common. Sum = 2 and sum = ' + (2 * sides) + ' each have only 1 cell.'
+              ),
+              React.createElement("div", { className: 'flex justify-center overflow-x-auto' },
+                React.createElement("svg", { width: svgW, height: svgH, viewBox: '0 0 ' + svgW + ' ' + svgH, 'aria-label': sides + ' by ' + sides + ' sample space grid for two-dice sums' },
+                  topLabels, leftLabels, rows
+                )
+              ),
+              lastSum != null && React.createElement("p", { className: 'text-[10px] mt-1 text-center font-bold', style: { color: isDark || isContrast ? '#fca5a5' : '#991b1b' } },
+                'Last roll = ' + lastSum + '. Highlighted cells: all the (d1, d2) pairs that produce that sum.'
+              )
+            );
           };
 
 
@@ -719,7 +851,26 @@ var d = (labToolData.probability) || {};
 
 
 
-          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200", style: { color: _text } },
+          // ── Mode-tinted atmospheric background (matches the hero-band accent) ──
+          var MODE_ACCENT = {
+            coin: 'rgba(148,163,184,0.10)', dice: 'rgba(220,38,38,0.10)', dice2: 'rgba(185,28,28,0.10)', spinner: 'rgba(147,51,234,0.10)',
+            sports: 'rgba(8,145,178,0.10)', marbleBag: 'rgba(14,165,233,0.10)', custom: 'rgba(217,119,6,0.10)',
+            tree: 'rgba(22,163,74,0.10)', pi: 'rgba(234,88,12,0.10)', birthday: 'rgba(236,72,153,0.10)',
+            monty: 'rgba(99,102,241,0.10)', galton: 'rgba(15,118,110,0.10)'
+          };
+          var modeAccent = MODE_ACCENT[d.mode] || MODE_ACCENT.coin;
+          var outerBg = (isDark || isContrast) ? undefined :
+            'radial-gradient(ellipse 1100px 480px at 50% -10%, ' + modeAccent + ' 0%, ' + modeAccent.replace('0.10', '0.04') + ' 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)';
+
+          return React.createElement("div", {
+            className: "max-w-3xl mx-auto animate-in fade-in duration-200",
+            style: {
+              color: _text,
+              background: outerBg,
+              borderRadius: outerBg ? 16 : undefined,
+              padding: outerBg ? 10 : undefined
+            }
+          },
 
             React.createElement("style", null, '@keyframes coinFlip{0%{transform:scaleX(1)}25%{transform:scaleX(0.05) translateY(-10px)}60%{transform:scaleX(1.08) translateY(-4px)}100%{transform:scaleX(1) translateY(0)}} @keyframes diceRoll{0%{transform:rotate(0deg)scale(1)}25%{transform:rotate(-24deg)scale(1.12)}55%{transform:rotate(19deg)scale(1.08)}80%{transform:rotate(-8deg)scale(1.04)}100%{transform:rotate(0deg)scale(1)}} @keyframes resultPop{0%{transform:scale(0.78);opacity:0.35}55%{transform:scale(1.09);opacity:1}100%{transform:scale(1);opacity:1}} @keyframes sportBounce{0%{transform:translateY(0)scale(1)}40%{transform:translateY(-20px)scale(1.12)}70%{transform:translateY(-6px)scale(1.06)}100%{transform:translateY(0)scale(1)}}'),
 
@@ -731,7 +882,23 @@ var d = (labToolData.probability) || {};
 
               d.trials > 0 && React.createElement("span", { className: "ml-2 px-2 py-0.5 text-xs font-bold rounded-full", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.2)' : 'rgba(139,92,246,0.1)', color: _accent } }, d.trials + " trials"),
 
-              (d._bestStreak || 0) >= 3 && React.createElement("span", { className: "ml-1 px-2 py-0.5 text-xs font-bold rounded-full", style: { background: isDark || isContrast ? 'rgba(239,68,68,0.25)' : 'rgba(239,68,68,0.08)', color: '#ef4444' } }, '🔥 Best: ' + (d._bestStreak || 0))
+              (d._bestStreak || 0) >= 3 && React.createElement("span", { className: "ml-1 px-2 py-0.5 text-xs font-bold rounded-full", style: { background: isDark || isContrast ? 'rgba(239,68,68,0.25)' : 'rgba(239,68,68,0.08)', color: '#ef4444' } }, '🔥 Best: ' + (d._bestStreak || 0)),
+
+              // Mute toggle (wraps probTone at the source via window._probabilityMuted)
+              React.createElement("button", {
+                onClick: function() {
+                  var next = !d.muted;
+                  upd('muted', next);
+                  window._probabilityMuted = next;
+                  if (!next) { setTimeout(function() { probTone(660, 0.08, 'sine', 0.06); }, 0); }
+                  if (typeof announceToSR === 'function') announceToSR(next ? 'Sound muted' : 'Sound on');
+                },
+                'aria-label': d.muted ? 'Unmute sound effects' : 'Mute sound effects',
+                'aria-pressed': !!d.muted,
+                title: d.muted ? 'Unmute (sounds are off)' : 'Mute (sounds are on)',
+                className: 'ml-auto p-1 rounded-md text-base hover:bg-slate-100 transition-colors',
+                style: { color: d.muted ? '#94a3b8' : (_accent || '#7c3aed') }
+              }, d.muted ? '🔇' : '🔊')
 
             ),
 
@@ -741,9 +908,9 @@ var d = (labToolData.probability) || {};
 
             React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
 
-              [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', '\u2699\uFE0F Custom'], ['tree', '\uD83C\uDF33 Tree'], ['pi', '\uD83E\uDD67 Pi'], ['birthday', '\uD83C\uDF82 Birthday']].map(([m, label]) =>
+              [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['dice2', '\uD83C\uDFB2\u00D72 Two-Dice Sum'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', '\u2699\uFE0F Custom'], ['tree', '\uD83C\uDF33 Tree'], ['pi', '\uD83E\uDD67 Pi'], ['birthday', '\uD83C\uDF82 Birthday'], ['monty', '\uD83D\uDEAA Monty Hall'], ['galton', '\u2699\uFE0F Galton Board']].map(([m, label]) =>
 
-                React.createElement("button", { "aria-label": "Select mode: " + label, key: m, onClick: () => { if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; } upd('mode', m); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); upd('_mbRemaining', null); upd('_piPoints', null); upd('_autoRunning', false); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
+                React.createElement("button", { "aria-label": "Select mode: " + label, key: m, onClick: () => { if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; } if (_galtonAnim.interval) { clearInterval(_galtonAnim.interval); _galtonAnim.interval = null; } if (_piAnim.interval) { clearInterval(_piAnim.interval); _piAnim.interval = null; } upd('mode', m); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); upd('_mbRemaining', null); upd('_piPoints', null); upd('_autoRunning', false); upd('galtonFalling', []); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
 
               )
 
@@ -753,7 +920,8 @@ var d = (labToolData.probability) || {};
             (function() {
               var MODE_META = {
                 coin:      { accent: '#94a3b8', soft: 'rgba(148,163,184,0.10)', icon: '\uD83E\uDE99', title: 'Coin \u2014 the simplest 50/50',                  hint: 'P(H) = P(T) = 0.5. Law of large numbers: as trials grow, the proportion of heads converges to 0.5. After 1,000 flips you\u2019ll be within ~3% of 50%, but in any short streak anything is possible.' },
-                dice:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',   icon: '\uD83C\uDFB2', title: 'Dice \u2014 uniform 1/6 each',                       hint: 'Each face equally likely. Roll two dice and the SUM is no longer uniform \u2014 7 has 6 ways, 2 and 12 only 1 each. The basis of every Monopoly, D&D, and Settlers turn.' },
+                dice:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',   icon: '\uD83C\uDFB2', title: 'Dice \u2014 uniform 1/N each (d4 / d6 / d8 / d10 / d12 / d20)', hint: 'Pick any die size. Each face equally likely: P = 1/N. The math is identical across die types \u2014 what changes is the denominator. d4 is 1/4, d20 is 1/20.' },
+                dice2:     { accent: '#b91c1c', soft: 'rgba(185,28,28,0.10)',   icon: '\uD83C\uDFB2', title: 'Two-Dice Sum \u2014 the triangular distribution',     hint: 'Roll TWO dice of the chosen type and add. The sum is no longer uniform: middle sums are MUCH more common. For 2d6, P(7)=6/36, P(2)=1/36. This is why orange properties in Monopoly get landed on the most \u2014 6, 7, 8 are the most common sums after rolling from Jail.' },
                 spinner:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\uD83C\uDFA1', title: 'Spinner \u2014 4-color uniform',                    hint: 'Equal-area sectors = equal probability. Unequal sectors → weighted draws. Spinners are the gentlest path into discrete distributions for elementary students.' },
                 sports:    { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',   icon: '\uD83C\uDFC6', title: 'Sports \u2014 weighted real-world odds',             hint: 'Free-throw 75%, NBA 3-point 36%, MLB hit ~25%. Probability isn\u2019t always 50/50 \u2014 the math handles unequal weights the same way, just with different denominators.' },
                 marbleBag: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83C\uDFB1', title: 'Marble Bag \u2014 with vs without replacement',     hint: 'With replacement: independent draws. Without: probabilities CHANGE each pull \u2014 conditional probability. The exact mechanism behind hypergeometric distribution and card-game odds.' },
@@ -785,6 +953,51 @@ var d = (labToolData.probability) || {};
 
 
             // â”€â”€ Marble Bag mode config â”€â”€
+
+            // ── Dice-type selector (d4 / d6 / d8 / d10 / d12 / d20) ──
+            // Appears in single-die or two-dice-sum modes. Each die-type gets its
+            // own color (matches the SVG fill in diceFace) so students see at a
+            // glance how the "denominator" of the probability changes: P=1/4 for
+            // d4, P=1/20 for d20, etc. Same uniform-distribution math, different N.
+            (d.mode === 'dice' || d.mode === 'dice2') && React.createElement("div", {
+              className: 'mb-3 rounded-xl p-3',
+              style: { background: isDark || isContrast ? 'rgba(220,38,38,0.08)' : 'linear-gradient(135deg, #fef2f2, #fef9e7)', border: '2px solid ' + (isDark || isContrast ? 'rgba(220,38,38,0.3)' : '#fecaca') }
+            },
+              React.createElement("p", { className: 'text-[11px] font-bold mb-2', style: { color: isDark || isContrast ? '#fca5a5' : '#991b1b' } },
+                '🎲 Die type — P(any face) = 1/' + diceSides + (d.mode === 'dice2' ? ', summed over 2 dice' : '')
+              ),
+              React.createElement("div", { className: 'flex flex-wrap gap-1.5' },
+                DICE_TYPES.map(function(sides) {
+                  var active = diceSides === sides;
+                  var dieColor = (DIE_SHAPES[sides] || {}).fill || '#888';
+                  return React.createElement("button", {
+                    key: 'dt-' + sides,
+                    onClick: function() {
+                      sfxProbClick();
+                      upd('diceSides', sides);
+                      upd('results', []); upd('trials', 0);
+                      upd('convergenceHistory', []); upd('lastResult', null); upd('_lastPair', null);
+                    },
+                    'aria-pressed': active,
+                    'aria-label': 'd' + sides + ', P equals one over ' + sides,
+                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all border-2',
+                    style: active
+                      ? { background: dieColor, color: '#fff', borderColor: dieColor, boxShadow: '0 2px 4px ' + dieColor + '55' }
+                      : { background: '#fff', color: dieColor, borderColor: dieColor + '88' }
+                  },
+                    'd' + sides + ' · 1/' + sides
+                  );
+                })
+              ),
+              React.createElement("p", { className: 'text-[10px] italic mt-2', style: { color: isDark || isContrast ? '#fca5a5' : '#7f1d1d' } },
+                d.mode === 'dice2'
+                  ? 'Two dice of the same type, summed. Sum range: 2 to ' + (2 * diceSides) + '. The most-common sum is always the middle (' + (diceSides + 1) + '). 2 and ' + (2 * diceSides) + ' tie for least common. This is the foundation of every 2-dice board game.'
+                  : 'All faces equally likely. The "denominator" of probability changes with die type, but the uniform-distribution math is identical.'
+              )
+            ),
+
+            // ── Sample-space grid for two-dice sum (only when small enough to read) ──
+            d.mode === 'dice2' && renderTwoDiceGrid(diceSides, d.lastResult),
 
             d.mode === 'marbleBag' && React.createElement("div", { className: "mb-4 rounded-xl p-4", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.08)' : 'linear-gradient(135deg, #fdf4ff, #faf5ff, #f5f3ff)', border: '2px solid ' + (isDark || isContrast ? 'rgba(168,85,247,0.3)' : '#c4b5fd') } },
 
@@ -1122,6 +1335,530 @@ var d = (labToolData.probability) || {};
 
 
             // ── Birthday Problem Calculator ──
+            // ── Monty Hall (canonical counter-intuitive probability) ──
+            // State machine: pick → host-reveal → stay/switch → outcome.
+            // Stats tracked separately for stay vs switch, so the 1/3-vs-2/3
+            // gap emerges visibly across runs. Auto-run does 500 silent trials
+            // of each strategy for fast statistical proof.
+            d.mode === 'monty' && (function() {
+              var m = d.monty || { stage: 'pick', prizeDoor: null, picked: null, revealed: null, finalChoice: null, won: false };
+              var ms = d.montyStats || { switchWins: 0, switchN: 0, stayWins: 0, stayN: 0 };
+              // Lazy-init the round if no prize is set
+              if (m.prizeDoor == null) {
+                setTimeout(function() {
+                  upd('monty', { stage: 'pick', prizeDoor: Math.floor(Math.random() * 3), picked: null, revealed: null, finalChoice: null, won: false });
+                }, 0);
+                return React.createElement('div', { className: 'text-center text-slate-500 p-6 text-sm' }, 'Loading Monty Hall…');
+              }
+
+              function newRound() {
+                sfxProbClick();
+                upd('monty', { stage: 'pick', prizeDoor: Math.floor(Math.random() * 3), picked: null, revealed: null, finalChoice: null, won: false });
+              }
+              function pickDoor(idx) {
+                if (m.stage !== 'pick') return;
+                sfxProbClick();
+                // Host opens a door that is NOT the player's pick AND NOT the prize
+                var candidates = [0, 1, 2].filter(function(x) { return x !== idx && x !== m.prizeDoor; });
+                var reveal = candidates[Math.floor(Math.random() * candidates.length)];
+                upd('monty', Object.assign({}, m, { picked: idx, revealed: reveal, stage: 'choice' }));
+              }
+              function decide(action) {
+                if (m.stage !== 'choice') return;
+                var finalChoice = action === 'stay'
+                  ? m.picked
+                  : [0, 1, 2].filter(function(x) { return x !== m.picked && x !== m.revealed; })[0];
+                var won = finalChoice === m.prizeDoor;
+                if (won) sfxProbSuccess(); else sfxProbClick();
+                // Update per-strategy stats
+                var nextStats = Object.assign({}, ms);
+                if (action === 'stay') {
+                  nextStats.stayN = (nextStats.stayN || 0) + 1;
+                  if (won) nextStats.stayWins = (nextStats.stayWins || 0) + 1;
+                } else {
+                  nextStats.switchN = (nextStats.switchN || 0) + 1;
+                  if (won) nextStats.switchWins = (nextStats.switchWins || 0) + 1;
+                }
+                // Per-strategy outcome strip — records ONLY manual plays, so
+                // the visual reflects what the student personally witnessed.
+                // (Autorun bulks aren't included; they'd flood the strip with
+                // outcomes the student didn't see.)
+                var nextStrip = Object.assign({ stay: [], switch: [] }, d.montyStrip || {});
+                nextStrip[action] = (nextStrip[action] || []).concat([won]);
+                if (nextStrip[action].length > 20) nextStrip[action] = nextStrip[action].slice(-20);
+                upd('monty', Object.assign({}, m, { stage: 'reveal', finalChoice: finalChoice, won: won }));
+                upd('montyStats', nextStats);
+                upd('montyStrip', nextStrip);
+                upd('totalTrials', (d.totalTrials || 0) + 1);
+                upd('experimentsUsed', Object.assign({}, d.experimentsUsed || {}, { monty: true }));
+              }
+              function autoRun(n) {
+                sfxProbClick();
+                // Simulate n rounds with BOTH strategies silently. Each round
+                // has its own random prize + initial pick + host reveal, then
+                // we evaluate stay-vs-switch on the SAME scenario for fairness.
+                var nextStats = Object.assign({}, ms);
+                for (var i = 0; i < n; i++) {
+                  var prize = Math.floor(Math.random() * 3);
+                  var pick = Math.floor(Math.random() * 3);
+                  // Strategy: STAY
+                  nextStats.stayN++;
+                  if (pick === prize) nextStats.stayWins++;
+                  // Strategy: SWITCH
+                  // Host opens any non-pick, non-prize. Player switches to the remaining door.
+                  // After switch: wins iff initial pick was wrong (prize ≠ pick).
+                  nextStats.switchN++;
+                  if (pick !== prize) nextStats.switchWins++;
+                }
+                upd('montyStats', nextStats);
+                upd('totalTrials', (d.totalTrials || 0) + n * 2);
+                upd('experimentsUsed', Object.assign({}, d.experimentsUsed || {}, { monty: true }));
+                if (typeof addToast === 'function') addToast('Simulated ' + n + ' rounds of each strategy', 'success');
+              }
+              function resetStats() {
+                sfxProbClick();
+                upd('montyStats', { switchWins: 0, switchN: 0, stayWins: 0, stayN: 0 });
+              }
+
+              var stayPct = ms.stayN > 0 ? Math.round(ms.stayWins / ms.stayN * 100) : 0;
+              var switchPct = ms.switchN > 0 ? Math.round(ms.switchWins / ms.switchN * 100) : 0;
+
+              function door(idx) {
+                var isPicked = m.picked === idx;
+                var isRevealed = m.revealed === idx;
+                var isFinal = m.stage === 'reveal' && m.finalChoice === idx;
+                var isWinDoor = m.stage === 'reveal' && m.prizeDoor === idx;
+                var showOpen = isRevealed || (m.stage === 'reveal');
+                // Door color/state
+                var bg, label, emoji;
+                if (showOpen) {
+                  if (idx === m.prizeDoor) { bg = 'linear-gradient(180deg, #fef3c7, #fbbf24)'; emoji = '🚗'; label = 'Prize!'; }
+                  else { bg = 'linear-gradient(180deg, #e5e7eb, #9ca3af)'; emoji = '🐐'; label = 'Goat'; }
+                } else {
+                  bg = isPicked ? 'linear-gradient(180deg, #c4b5fd, #8b5cf6)' : 'linear-gradient(180deg, #a5b4fc, #6366f1)';
+                  emoji = '🚪'; label = 'Door ' + (idx + 1);
+                }
+                var clickable = m.stage === 'pick';
+                var borderColor = isFinal ? (m.won ? '#16a34a' : '#dc2626') : isPicked ? '#7c3aed' : '#475569';
+                return React.createElement('button', {
+                  key: 'door-' + idx,
+                  onClick: clickable ? function() { pickDoor(idx); } : null,
+                  disabled: !clickable && m.stage !== 'reveal',
+                  'aria-label': 'Door ' + (idx + 1) + (isPicked ? ', your pick' : '') + (isRevealed ? ', revealed as a goat' : '') + (isFinal ? (m.won ? ', your final choice — you won!' : ', your final choice — you lost') : ''),
+                  className: 'relative flex flex-col items-center justify-center rounded-xl transition-transform ' + (clickable ? 'hover:scale-105 cursor-pointer' : 'cursor-default'),
+                  style: {
+                    width: '110px', height: '170px', background: bg,
+                    border: '4px solid ' + borderColor,
+                    boxShadow: isFinal ? '0 0 24px ' + (m.won ? 'rgba(34,197,94,0.6)' : 'rgba(220,38,38,0.6)') : '0 6px 12px rgba(0,0,0,0.15)'
+                  }
+                },
+                  React.createElement('div', { style: { fontSize: '52px', lineHeight: 1 } }, emoji),
+                  React.createElement('div', { style: { marginTop: '8px', fontSize: '13px', fontWeight: 700, color: '#0f172a', textShadow: '0 1px 2px rgba(255,255,255,0.7)' } }, label),
+                  isPicked && !isFinal && React.createElement('div', { style: { position: 'absolute', top: '-12px', right: '-8px', background: '#7c3aed', color: '#fff', padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: 800 } }, 'YOUR PICK'),
+                  isFinal && React.createElement('div', { style: { position: 'absolute', top: '-12px', right: '-8px', background: m.won ? '#16a34a' : '#dc2626', color: '#fff', padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: 800 } }, m.won ? 'WIN ✓' : 'LOSS ✗')
+                );
+              }
+
+              return React.createElement('div', { className: 'rounded-xl p-4 mb-4', style: { background: 'linear-gradient(135deg, #312e81 0%, #6366f1 100%)', color: 'white' } },
+                React.createElement('div', { className: 'text-center mb-3' },
+                  React.createElement('div', { className: 'text-lg font-bold' }, '🚪 The Monty Hall Problem'),
+                  React.createElement('div', { className: 'text-[11px] text-indigo-100 mt-1 italic max-w-xl mx-auto' }, 'Behind one door: a prize. Behind two: goats. Pick a door, the host opens a goat-door, then you choose: stay or switch?')
+                ),
+                // Stage instruction
+                React.createElement('div', { className: 'text-center mb-3 text-sm font-bold' },
+                  m.stage === 'pick' && '👉 Pick one of the three doors',
+                  m.stage === 'choice' && '🤔 Stay with your pick, or switch to the remaining closed door?',
+                  m.stage === 'reveal' && (m.won
+                    ? React.createElement('span', { className: 'text-emerald-200' }, '🎉 You ' + (m.finalChoice === m.picked ? 'STAYED' : 'SWITCHED') + ' and won!')
+                    : React.createElement('span', { className: 'text-rose-200' }, '💔 You ' + (m.finalChoice === m.picked ? 'STAYED' : 'SWITCHED') + ' and missed. The prize was behind Door ' + (m.prizeDoor + 1) + '.'))
+                ),
+                // Doors row
+                React.createElement('div', { className: 'flex justify-center items-center gap-4 mb-3' }, [door(0), door(1), door(2)]),
+                // Action buttons
+                React.createElement('div', { className: 'flex justify-center gap-2 mb-4' },
+                  m.stage === 'choice' && [
+                    React.createElement('button', { key: 'stay', onClick: function() { decide('stay'); }, className: 'px-4 py-2 rounded-lg font-bold bg-slate-200 text-slate-800 hover:bg-slate-100 focus:ring-2 focus:ring-white focus:outline-none' }, '🛡 Stay'),
+                    React.createElement('button', { key: 'switch', onClick: function() { decide('switch'); }, className: 'px-4 py-2 rounded-lg font-bold bg-amber-400 text-amber-900 hover:bg-amber-300 focus:ring-2 focus:ring-white focus:outline-none' }, '🔄 Switch')
+                  ],
+                  m.stage === 'reveal' && React.createElement('button', { onClick: newRound, className: 'px-5 py-2 rounded-lg font-bold bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-2 focus:ring-white focus:outline-none' }, '↻ Play another round')
+                ),
+                // Strategy stats — side by side comparison + outcome strip
+                (ms.stayN > 0 || ms.switchN > 0) && (function() {
+                  var strip = d.montyStrip || { stay: [], switch: [] };
+                  function renderStrip(outcomes, winColor) {
+                    // Pad to 20 slots: empty placeholders for unused positions
+                    var slots = [];
+                    for (var si = 0; si < 20; si++) {
+                      var actualIdx = outcomes.length - 20 + si;
+                      var hasValue = actualIdx >= 0;
+                      var won = hasValue ? outcomes[actualIdx] : null;
+                      slots.push(React.createElement('span', {
+                        key: 'slot-' + si,
+                        style: {
+                          display: 'inline-block', width: '11px', height: '11px',
+                          borderRadius: '2px', margin: '1px',
+                          background: hasValue ? (won ? winColor : '#7f1d1d') : 'rgba(255,255,255,0.08)',
+                          border: hasValue ? '1px solid rgba(0,0,0,0.25)' : '1px dashed rgba(255,255,255,0.18)',
+                          boxShadow: hasValue && won ? '0 0 4px ' + winColor + '80' : 'none'
+                        },
+                        title: hasValue ? (won ? 'Win' : 'Loss') : 'No play yet'
+                      }));
+                    }
+                    return slots;
+                  }
+                  return React.createElement('div', { className: 'rounded-lg p-3 bg-white/10 border border-white/20' },
+                    React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-indigo-100 mb-2 text-center' }, '📊 Strategy Win Rates'),
+                    React.createElement('div', { className: 'grid grid-cols-2 gap-3 text-center' },
+                      React.createElement('div', null,
+                        React.createElement('div', { className: 'text-xs font-bold text-slate-200' }, '🛡 Stay'),
+                        React.createElement('div', { className: 'text-2xl font-bold mt-1', style: { color: stayPct >= 50 ? '#fde047' : '#fff' } }, stayPct + '%'),
+                        React.createElement('div', { className: 'text-[10px] text-indigo-200' }, ms.stayWins + ' wins / ' + ms.stayN + ' trials'),
+                        React.createElement('div', { className: 'w-full h-2 rounded-full bg-black/30 overflow-hidden mt-1' },
+                          React.createElement('div', { className: 'h-full bg-slate-300', style: { width: stayPct + '%' } })
+                        ),
+                        // Outcome strip — last 20 manual plays of this strategy
+                        React.createElement('div', { className: 'mt-2', 'aria-label': 'Last 20 manual Stay plays — green wins, dark red losses' },
+                          renderStrip(strip.stay || [], '#22c55e')
+                        )
+                      ),
+                      React.createElement('div', null,
+                        React.createElement('div', { className: 'text-xs font-bold text-amber-200' }, '🔄 Switch'),
+                        React.createElement('div', { className: 'text-2xl font-bold mt-1', style: { color: switchPct >= 50 ? '#fde047' : '#fff' } }, switchPct + '%'),
+                        React.createElement('div', { className: 'text-[10px] text-amber-100' }, ms.switchWins + ' wins / ' + ms.switchN + ' trials'),
+                        React.createElement('div', { className: 'w-full h-2 rounded-full bg-black/30 overflow-hidden mt-1' },
+                          React.createElement('div', { className: 'h-full bg-amber-400', style: { width: switchPct + '%' } })
+                        ),
+                        React.createElement('div', { className: 'mt-2', 'aria-label': 'Last 20 manual Switch plays — green wins, dark red losses' },
+                          renderStrip(strip.switch || [], '#fbbf24')
+                        )
+                      )
+                    ),
+                    ((strip.stay || []).length > 0 || (strip.switch || []).length > 0) && React.createElement('div', { className: 'text-[9px] text-center mt-2 italic text-indigo-200' },
+                      'Outcome strips show your last 20 manual plays — green = win, red = loss. Visible streaks tell you what randomness actually feels like.'
+                    ),
+                    (ms.stayN + ms.switchN) >= 30 && React.createElement('div', { className: 'text-[10px] text-center mt-2 italic text-indigo-100' },
+                      'Math says: Stay wins ≈ 1/3 (33%). Switch wins ≈ 2/3 (67%). With enough trials, the math wins out.'
+                    )
+                  );
+                })(),
+                // Auto-run row + reset
+                React.createElement('div', { className: 'flex flex-wrap gap-2 justify-center mt-3' },
+                  [100, 500, 1000].map(function(n) {
+                    return React.createElement('button', {
+                      key: 'auto-' + n,
+                      onClick: function() { autoRun(n); },
+                      className: 'px-3 py-1.5 rounded-md text-[11px] font-bold bg-white/15 hover:bg-white/25 text-white focus:ring-2 focus:ring-white focus:outline-none',
+                      'aria-label': 'Simulate ' + n + ' rounds of each strategy'
+                    }, '⚡ +' + n + ' of each');
+                  }),
+                  (ms.stayN > 0 || ms.switchN > 0) && React.createElement('button', {
+                    onClick: resetStats,
+                    className: 'px-3 py-1.5 rounded-md text-[11px] font-bold bg-rose-500/30 hover:bg-rose-500/50 text-rose-100 ml-auto'
+                  }, '↻ Reset stats')
+                )
+              );
+            })(),
+
+            // ── Galton Board / Quincunx — binomial → normal emergence ──
+            // Balls drop through a peg grid. Each peg deflects them 50/50
+            // left or right. Bins at the bottom accumulate counts. As N grows,
+            // the histogram converges to a bell curve (Central Limit Theorem
+            // in its simplest form). Theoretical normal overlay shows the
+            // expected shape so students see the math vs the empirical fit.
+            d.mode === 'galton' && (function() {
+              var GB_ROWS = 12;           // peg rows
+              var GB_BINS = GB_ROWS + 1;  // bottom bins (always rows+1)
+              var bins = d.galtonBins || (function() {
+                var a = []; for (var bi = 0; bi < GB_BINS; bi++) a.push(0); return a;
+              })();
+              var totalDropped = bins.reduce(function(a, b) { return a + b; }, 0);
+              // Compute mean + std dev of bin distribution (treating each bin index as a value)
+              var mean = 0, stdDev = 0;
+              if (totalDropped > 0) {
+                for (var bi = 0; bi < bins.length; bi++) mean += bi * bins[bi];
+                mean /= totalDropped;
+                for (var bi = 0; bi < bins.length; bi++) stdDev += bins[bi] * (bi - mean) * (bi - mean);
+                stdDev = Math.sqrt(stdDev / totalDropped);
+              }
+              // Theoretical binomial mean = nRows × p = 12 × 0.5 = 6
+              // Theoretical std dev = sqrt(n × p × (1-p)) = sqrt(3) ≈ 1.732
+              var theoryMean = GB_ROWS * 0.5;
+              var theoryStdDev = Math.sqrt(GB_ROWS * 0.25);
+
+              // SVG geometry — declared early so it can be shared with the
+              // path-precompute helper below.
+              var svgW = 360, svgH = 280;
+              var pegAreaH = 160;
+              var binAreaY = pegAreaH + 10;
+              var binAreaH = svgH - binAreaY - 24;
+              var colW = svgW / GB_BINS;
+              var rowSpacing = (pegAreaH - 30) / Math.max(1, GB_ROWS - 1);
+              var pegSpacing = svgW / (GB_ROWS + 2);
+
+              // Precompute the screen-space path for an animated ball with the
+              // given deflection sequence. Returns an array of {x, y} points;
+              // pts[0] = top of board, pts[r+1] = after r deflections (i.e.,
+              // between peg-row r-1 and r). Final point = bin center.
+              function precomputePath(deflections) {
+                var pts = [{ x: svgW / 2, y: 6 }]; // start at top
+                var xOff = 0;
+                for (var r = 0; r < GB_ROWS; r++) {
+                  xOff += deflections[r] ? 0.5 : -0.5;
+                  var x = svgW / 2 + xOff * pegSpacing;
+                  var y = 20 + r * rowSpacing + rowSpacing * 0.5;
+                  pts.push({ x: x, y: y });
+                }
+                var finalBin = deflections.reduce(function(a, b) { return a + b; }, 0);
+                pts.push({ x: finalBin * colW + colW / 2, y: binAreaY + binAreaH - 4 });
+                return { pts: pts, bin: finalBin };
+              }
+
+              // Simulate dropping a single ball (instant — used in large-N mode).
+              function simulateBall() {
+                var rights = 0;
+                for (var r = 0; r < GB_ROWS; r++) if (Math.random() < 0.5) rights++;
+                return rights;
+              }
+              // Pacing: small drops animate, large drops are instant so the
+              // student can see the bell curve emerge without 1000-ball waits.
+              var ANIMATE_THRESHOLD = 10;
+              function dropN(n) {
+                sfxProbClick();
+                upd('totalTrials', (d.totalTrials || 0) + n);
+                upd('experimentsUsed', Object.assign({}, d.experimentsUsed || {}, { galton: true }));
+                if (n > ANIMATE_THRESHOLD) {
+                  // Instant mode for large drops — bell curve emerges without delay
+                  var next = bins.slice();
+                  for (var i = 0; i < n; i++) next[simulateBall()]++;
+                  upd('galtonBins', next);
+                  sfxProbSuccess();
+                  return;
+                }
+                // Animated mode — show the random walk through the peg grid.
+                // Each ball has a precomputed path; balls spawn staggered every
+                // other tick so multiple balls cascade visibly.
+                if (_galtonAnim.interval) clearInterval(_galtonAnim.interval);
+                var queue = [];
+                for (var i = 0; i < n; i++) {
+                  var defs = [];
+                  for (var r = 0; r < GB_ROWS; r++) defs.push(Math.random() < 0.5 ? 0 : 1);
+                  var p = precomputePath(defs);
+                  queue.push({ id: Date.now() + '-' + i, pts: p.pts, bin: p.bin, step: 0 });
+                }
+                var falling = []; var spawnIdx = 0; var tickCount = 0;
+                var workingBins = bins.slice();
+                _galtonAnim.interval = setInterval(function() {
+                  tickCount++;
+                  // Spawn next ball every 2 ticks (so balls visibly cascade)
+                  if (spawnIdx < queue.length && (tickCount % 2 === 0 || tickCount === 1)) {
+                    falling.push(queue[spawnIdx++]);
+                  }
+                  // Advance every active ball one step
+                  var still = [];
+                  for (var bi = 0; bi < falling.length; bi++) {
+                    var b = falling[bi];
+                    b.step++;
+                    if (b.step >= b.pts.length - 1) {
+                      // Landed — commit to bin
+                      workingBins[b.bin]++;
+                    } else {
+                      still.push(b);
+                    }
+                  }
+                  falling = still;
+                  // Commit state once per tick
+                  upd('galtonBins', workingBins.slice());
+                  upd('galtonFalling', falling.map(function(b) { return { id: b.id, x: b.pts[b.step].x, y: b.pts[b.step].y }; }));
+                  if (spawnIdx >= queue.length && falling.length === 0) {
+                    clearInterval(_galtonAnim.interval);
+                    _galtonAnim.interval = null;
+                    upd('galtonFalling', []);
+                    sfxProbSuccess();
+                  }
+                }, 100);
+              }
+              function resetBoard() {
+                sfxProbClick();
+                if (_galtonAnim.interval) { clearInterval(_galtonAnim.interval); _galtonAnim.interval = null; }
+                var blank = []; for (var bi = 0; bi < GB_BINS; bi++) blank.push(0);
+                upd('galtonBins', blank);
+                upd('galtonFalling', []);
+              }
+
+              // ── Binomial coefficients for theoretical bin probabilities ──
+              // C(12, k) for k = 0..12. Used to compute expected counts and
+              // color-code each bar by how closely it matches theory.
+              var BINOM_12 = [1, 12, 66, 220, 495, 792, 924, 792, 495, 220, 66, 12, 1];
+              var BINOM_TOTAL = 4096; // 2^12
+              function expectedCountFor(bin) { return totalDropped * BINOM_12[bin] / BINOM_TOTAL; }
+
+              // Build peg-grid SVG elements
+              var pegs = [];
+              for (var r = 0; r < GB_ROWS; r++) {
+                var pegsInRow = r + 1;
+                var rowY = 20 + (r * (pegAreaH - 30) / Math.max(1, GB_ROWS - 1));
+                for (var c = 0; c < pegsInRow; c++) {
+                  var pegX = svgW / 2 + (c - (pegsInRow - 1) / 2) * (svgW / (GB_ROWS + 2));
+                  pegs.push(React.createElement('circle', { key: 'peg-' + r + '-' + c, cx: pegX, cy: rowY, r: 2.5, fill: '#94a3b8' }));
+                }
+              }
+              // Maxbin computed from EITHER observed counts OR theoretical
+              // expected counts so the theoretical curve isn't clipped when
+              // empirical is sparse.
+              var maxObs = Math.max.apply(Math, bins.concat([1]));
+              var maxExp = 0;
+              if (totalDropped > 0) {
+                for (var bi = 0; bi < GB_BINS; bi++) maxExp = Math.max(maxExp, expectedCountFor(bi));
+              }
+              var maxBin = Math.max(maxObs, maxExp);
+
+              // Build histogram bars with theory-deviation coloring.
+              // Below 30 drops, use the original rainbow palette (deviation
+              // is too noisy to be meaningful). Above 30, color by how close
+              // each bar is to the binomial expected count.
+              var bars = bins.map(function(count, idx) {
+                var barH = (count / maxBin) * binAreaH;
+                var barX = idx * colW + 2;
+                var barY = binAreaY + binAreaH - barH;
+                var fillColor;
+                if (totalDropped < 30) {
+                  // Rainbow (the original) — noise is the signal at low N
+                  var hue = 270 - (Math.abs(idx - (GB_BINS - 1) / 2) / ((GB_BINS - 1) / 2)) * 100;
+                  fillColor = 'hsl(' + hue + ', 70%, 55%)';
+                } else {
+                  // Color by ratio to expected
+                  var expected = expectedCountFor(idx);
+                  if (expected < 0.5) {
+                    fillColor = '#cbd5e1'; // tail bin with negligible expected mass
+                  } else {
+                    var ratio = count / expected;
+                    if (ratio >= 0.85 && ratio <= 1.15) fillColor = '#10b981';      // green — within 15%
+                    else if (ratio >= 0.6 && ratio <= 1.4) fillColor = '#f59e0b';   // amber — within 40%
+                    else fillColor = '#ef4444';                                     // red — significant deviation
+                  }
+                }
+                return React.createElement('g', { key: 'bar-' + idx },
+                  React.createElement('rect', {
+                    x: barX, y: barY, width: colW - 4, height: barH,
+                    fill: fillColor,
+                    rx: 2
+                  }),
+                  count > 0 && React.createElement('text', {
+                    x: barX + (colW - 4) / 2, y: barY - 2,
+                    fill: '#475569', fontSize: 9, textAnchor: 'middle', fontWeight: 'bold'
+                  }, count)
+                );
+              });
+
+              // Render falling balls (animation in-flight). Read from state.
+              var fallingNow = d.galtonFalling || [];
+              var fallingBalls = fallingNow.map(function(b) {
+                return React.createElement('circle', {
+                  key: 'fall-' + b.id,
+                  cx: b.x, cy: b.y, r: 4,
+                  fill: '#fbbf24',
+                  stroke: '#92400e',
+                  strokeWidth: 0.8,
+                  style: { filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))' }
+                });
+              });
+              // Theoretical normal curve overlay: for each bin, expected count
+              // = totalDropped × C(n, k) / 2^n. We just sample the analytic
+              // normal-approximation curve over a denser x range.
+              var theoryPath = '';
+              if (totalDropped >= 50) {
+                var pts = [];
+                for (var x = 0; x <= GB_BINS * 4; x++) {
+                  var bx = x / 4; // bin-coord
+                  var z = (bx - theoryMean) / theoryStdDev;
+                  var pdfVal = Math.exp(-0.5 * z * z) / (theoryStdDev * Math.sqrt(2 * Math.PI));
+                  // Scale to histogram space: peak pdf ≈ 1/(σ√(2π)). Multiply
+                  // by totalDropped to get expected count per unit bin.
+                  var expectedCount = pdfVal * totalDropped;
+                  var px = bx * colW + colW / 2;
+                  var py = binAreaY + binAreaH - (expectedCount / maxBin) * binAreaH;
+                  pts.push((x === 0 ? 'M' : 'L') + px + ',' + py);
+                }
+                theoryPath = pts.join(' ');
+              }
+
+              return React.createElement('div', { className: 'rounded-xl p-4 mb-4', style: { background: 'linear-gradient(135deg, #0c4a6e 0%, #155e75 100%)', color: 'white' } },
+                React.createElement('div', { className: 'text-center mb-3' },
+                  React.createElement('div', { className: 'text-lg font-bold' }, '⚙️ The Galton Board'),
+                  React.createElement('div', { className: 'text-[11px] text-cyan-100 mt-1 italic max-w-xl mx-auto' }, 'Drop balls through a peg grid. Each peg deflects 50/50 left or right. After enough balls, the histogram becomes a bell curve — the Central Limit Theorem in action.')
+                ),
+                // SVG board
+                React.createElement('div', { className: 'flex justify-center mb-3' },
+                  React.createElement('svg', {
+                    viewBox: '0 0 ' + svgW + ' ' + svgH,
+                    width: svgW, height: svgH,
+                    style: { background: 'rgba(255,255,255,0.05)', borderRadius: 8 },
+                    'aria-label': 'Galton board with ' + GB_ROWS + ' peg rows and ' + GB_BINS + ' histogram bins below'
+                  },
+                    pegs,
+                    // Divider line between pegs and bins
+                    React.createElement('line', { x1: 0, y1: binAreaY, x2: svgW, y2: binAreaY, stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1 }),
+                    bars,
+                    theoryPath && React.createElement('path', {
+                      d: theoryPath,
+                      fill: 'none',
+                      stroke: 'rgba(251,191,36,0.85)',
+                      strokeWidth: 2,
+                      strokeDasharray: '4 3'
+                    }),
+                    // Falling balls (animation in flight) — rendered LAST so
+                    // they sit on top of pegs and bars.
+                    fallingBalls,
+                    // Bin index labels
+                    bins.map(function(_, idx) {
+                      return React.createElement('text', {
+                        key: 'lbl-' + idx,
+                        x: idx * colW + colW / 2, y: svgH - 6,
+                        fill: 'rgba(255,255,255,0.5)', fontSize: 8, textAnchor: 'middle'
+                      }, idx);
+                    })
+                  )
+                ),
+                // Stats row — empirical vs theoretical
+                React.createElement('div', { className: 'grid grid-cols-2 gap-3 mb-3 px-2' },
+                  React.createElement('div', { className: 'rounded-lg p-2 bg-white/10 text-center' },
+                    React.createElement('div', { className: 'text-[10px] font-bold text-cyan-100 uppercase tracking-wider' }, 'Empirical (your drops)'),
+                    totalDropped === 0
+                      ? React.createElement('div', { className: 'text-[12px] text-cyan-200 italic mt-1' }, 'Drop balls to see…')
+                      : [
+                          React.createElement('div', { key: 'em-n', className: 'text-[11px] mt-1' }, totalDropped + ' ball' + (totalDropped !== 1 ? 's' : '') + ' dropped'),
+                          React.createElement('div', { key: 'em-m', className: 'text-[11px]' }, 'mean ≈ ' + mean.toFixed(2)),
+                          React.createElement('div', { key: 'em-sd', className: 'text-[11px]' }, 'std dev ≈ ' + stdDev.toFixed(2))
+                        ]
+                  ),
+                  React.createElement('div', { className: 'rounded-lg p-2 bg-amber-400/15 border border-amber-400/30 text-center' },
+                    React.createElement('div', { className: 'text-[10px] font-bold text-amber-200 uppercase tracking-wider' }, 'Theoretical (math)'),
+                    React.createElement('div', { className: 'text-[11px] mt-1 text-amber-100' }, 'Binomial(' + GB_ROWS + ', 0.5)'),
+                    React.createElement('div', { className: 'text-[11px] text-amber-100' }, 'mean = ' + theoryMean.toFixed(2)),
+                    React.createElement('div', { className: 'text-[11px] text-amber-100' }, 'std dev = ' + theoryStdDev.toFixed(2))
+                  )
+                ),
+                // Drop controls
+                React.createElement('div', { className: 'flex flex-wrap gap-2 justify-center' },
+                  [1, 10, 100, 1000].map(function(n) {
+                    return React.createElement('button', {
+                      key: 'drop-' + n,
+                      onClick: function() { dropN(n); },
+                      className: 'px-4 py-2 rounded-lg font-bold bg-cyan-500 text-white hover:bg-cyan-400 focus:ring-2 focus:ring-white focus:outline-none transition',
+                      'aria-label': 'Drop ' + n + ' ball' + (n > 1 ? 's' : '')
+                    }, '⚪ Drop ' + n);
+                  }),
+                  totalDropped > 0 && React.createElement('button', {
+                    onClick: resetBoard,
+                    className: 'px-3 py-2 rounded-lg text-[12px] font-bold bg-rose-500/30 hover:bg-rose-500/50 text-rose-100 focus:ring-2 focus:ring-white focus:outline-none'
+                  }, '↻ Reset')
+                ),
+                totalDropped >= 50 && React.createElement('div', { className: 'text-[10px] text-center mt-3 italic text-amber-100' },
+                  '⬆ Gold dashed line: theoretical normal curve. Your empirical bars should hug it more closely with more drops.'
+                )
+              );
+            })(),
+
             d.mode === 'birthday' && (function() {
 
               var _bn = d.birthdayN || 23;
@@ -1234,7 +1971,134 @@ var d = (labToolData.probability) || {};
 
                   '📚 P = 1 − (365 × 364 × … × (366−n)) ÷ 365ⁿ — ' + _bn + ' people = ' + Math.round(_bn*(_bn-1)/2) + ' unique pairs. More pairs = more chances!'
 
-                )
+                ),
+
+                // ── Visual room simulator ──
+                // Students see N silhouettes with random birthdays. Matching
+                // birthdays get the same color + a connecting outline so the
+                // pairing is impossible to miss. The math says it; this shows it.
+                (function() {
+                  var sample = d.birthdaySample;
+                  // Lazy-init / re-init when N changes or no sample exists
+                  var needsResample = !sample || sample.length !== _bn;
+                  if (needsResample) {
+                    var s = [];
+                    for (var bi = 0; bi < _bn; bi++) s.push(Math.floor(Math.random() * 365));
+                    sample = s;
+                    // Defer state-set so we don't loop inside render
+                    setTimeout(function() { upd('birthdaySample', s); }, 0);
+                  }
+                  // Find groups of matching birthdays
+                  var groups = {};
+                  sample.forEach(function(bday, idx) {
+                    if (!groups[bday]) groups[bday] = [];
+                    groups[bday].push(idx);
+                  });
+                  var matchGroups = Object.keys(groups).filter(function(k) { return groups[k].length >= 2; });
+                  var anyMatch = matchGroups.length > 0;
+                  // Color palette for match groups
+                  var matchColors = ['#dc2626', '#16a34a', '#7c3aed', '#ea580c', '#0891b2', '#db2777', '#65a30d', '#7e22ce'];
+                  function colorForBday(idx) {
+                    var bday = sample[idx];
+                    if (groups[bday].length < 2) return null;
+                    var gi = matchGroups.indexOf(String(bday));
+                    return matchColors[gi % matchColors.length];
+                  }
+                  // Convert day-of-year to month/day for display
+                  function dayLabel(day) {
+                    var d = new Date(2025, 0, day + 1); // arbitrary leap-free year
+                    return (d.getMonth() + 1) + '/' + d.getDate();
+                  }
+                  function resample() {
+                    sfxProbClick();
+                    var s = [];
+                    for (var bi = 0; bi < _bn; bi++) s.push(Math.floor(Math.random() * 365));
+                    upd('birthdaySample', s);
+                  }
+                  function runMany() {
+                    sfxProbClick();
+                    var matched = 0;
+                    for (var t = 0; t < 100; t++) {
+                      var seen = {};
+                      var hit = false;
+                      for (var bi = 0; bi < _bn; bi++) {
+                        var bd = Math.floor(Math.random() * 365);
+                        if (seen[bd]) { hit = true; break; }
+                        seen[bd] = 1;
+                      }
+                      if (hit) matched++;
+                    }
+                    var prev = d.birthdayBatch || { runs: 0, matches: 0 };
+                    upd('birthdayBatch', { runs: prev.runs + 100, matches: prev.matches + matched });
+                    if (matched > 0) sfxProbSuccess();
+                  }
+                  function resetBatch() {
+                    sfxProbClick();
+                    upd('birthdayBatch', { runs: 0, matches: 0 });
+                  }
+                  // Grid sizing — for up to 70 people, 10 columns is comfortable
+                  var cols = _bn <= 20 ? Math.min(_bn, 10) : 10;
+                  var batch = d.birthdayBatch || { runs: 0, matches: 0 };
+                  var batchPct = batch.runs > 0 ? Math.round(batch.matches / batch.runs * 100) : null;
+
+                  return React.createElement('div', { className: 'mt-3 rounded-xl p-3', style: { background: isDark||isContrast?'rgba(251,191,36,0.04)':'#fffbeb', border: '1px solid ' + (isDark||isContrast?'rgba(251,191,36,0.2)':'#fde68a') } },
+                    React.createElement('div', { className: 'flex items-center justify-between mb-2 flex-wrap gap-2' },
+                      React.createElement('span', { className: 'text-[11px] font-bold uppercase tracking-wider', style: { color: isDark||isContrast?'#fbbf24':'#b45309' } }, '🎂 Simulate the Room'),
+                      anyMatch
+                        ? React.createElement('span', { className: 'text-[11px] font-bold px-2 py-1 rounded-full', style: { background: '#16a34a', color: '#fff' } }, '✨ ' + matchGroups.length + ' match' + (matchGroups.length > 1 ? 'es' : '') + ' found!')
+                        : React.createElement('span', { className: 'text-[11px] font-bold px-2 py-1 rounded-full', style: { background: '#fbbf24', color: '#000' } }, 'No matches this time')
+                    ),
+                    // Avatar grid
+                    React.createElement('div', { className: 'mb-2', style: { display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', 1fr)', gap: '4px' } },
+                      sample.map(function(bday, idx) {
+                        var mColor = colorForBday(idx);
+                        var matched = mColor !== null;
+                        return React.createElement('div', {
+                          key: 'p-' + idx,
+                          className: 'flex flex-col items-center p-1 rounded-md text-[8px] font-mono transition',
+                          style: {
+                            background: matched ? mColor + '33' : (isDark||isContrast?'rgba(255,255,255,0.04)':'#fff'),
+                            border: matched ? '2px solid ' + mColor : '1px solid ' + (isDark||isContrast?'rgba(255,255,255,0.1)':'#fde68a'),
+                            boxShadow: matched ? '0 0 8px ' + mColor + '60' : 'none'
+                          },
+                          title: 'Person ' + (idx + 1) + ': born ' + dayLabel(bday) + (matched ? ' (MATCH)' : '')
+                        },
+                          React.createElement('div', { style: { fontSize: '20px', lineHeight: 1, filter: matched ? 'none' : 'grayscale(0.4)' } }, '🧑'),
+                          React.createElement('div', { style: { color: matched ? mColor : (isDark||isContrast?'#fde68a':'#92400e'), fontWeight: matched ? 800 : 600 } }, dayLabel(bday))
+                        );
+                      })
+                    ),
+                    // Action buttons
+                    React.createElement('div', { className: 'flex flex-wrap gap-2 items-center' },
+                      React.createElement('button', {
+                        onClick: resample,
+                        className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition',
+                        style: { background: '#f59e0b', color: '#fff' },
+                        'aria-label': 'Re-randomize all birthdays'
+                      }, '🎲 Resample'),
+                      React.createElement('button', {
+                        onClick: runMany,
+                        className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition',
+                        style: { background: '#16a34a', color: '#fff' },
+                        'aria-label': 'Run 100 simulations of this room size'
+                      }, '⚡ Run 100 rooms'),
+                      batch.runs > 0 && React.createElement('div', { className: 'flex-1 text-[11px]', style: { color: isDark||isContrast?'#fde68a':'#92400e' } },
+                        React.createElement('span', { className: 'font-bold' }, '📊 ' + batch.matches + ' / ' + batch.runs + ' rooms had a match'),
+                        React.createElement('span', { className: 'ml-2 font-mono font-bold', style: { color: '#16a34a' } }, '(' + batchPct + '%)'),
+                        React.createElement('span', { className: 'ml-1 italic' }, '— theory says ' + _bpct + '%')
+                      ),
+                      batch.runs > 0 && React.createElement('button', {
+                        onClick: resetBatch,
+                        className: 'px-2 py-1 rounded-md text-[10px] font-bold transition',
+                        style: { background: 'rgba(220,38,38,0.15)', color: '#dc2626' },
+                        'aria-label': 'Reset simulation counts'
+                      }, '↻')
+                    ),
+                    React.createElement('p', { className: 'text-[10px] italic mt-2 text-center', style: { color: isDark||isContrast?'#fcd34d':'#b45309' } },
+                      'Each 🧑 has a random birthday. Same color + glow = matching pair. Resample to see how often matches appear.'
+                    )
+                  );
+                })()
 
               );
 
@@ -1242,11 +2106,22 @@ var d = (labToolData.probability) || {};
 
             // Visual result display (hidden in tree mode)
 
-            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'pi' && React.createElement("div", { key: 'result-' + (d.animTick || 0), className: "flex items-center justify-center gap-6 mb-4 py-4 rounded-xl", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.08)' : 'linear-gradient(to bottom, #f5f3ff, #fff)', border: '2px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.25)' : '#ddd6fe'), animation: (d.animTick || 0) > 0 ? 'resultPop 0.35s ease-out' : 'none' } },
+            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'pi' && d.mode !== 'galton' && React.createElement("div", { key: 'result-' + (d.animTick || 0), className: "flex items-center justify-center gap-6 mb-4 py-4 rounded-xl", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.08)' : 'linear-gradient(to bottom, #f5f3ff, #fff)', border: '2px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.25)' : '#ddd6fe'), animation: (d.animTick || 0) > 0 ? 'resultPop 0.35s ease-out' : 'none' } },
 
               d.mode === 'coin' && React.createElement("div", { style: { animation: (d.animTick||0)>0?'coinFlip 0.42s cubic-bezier(0.25,0.46,0.45,0.94)':'none', transformOrigin:'center' } }, coinSvg(d.lastResult || 'H')),
 
-              d.mode === 'dice' && React.createElement("div", { style: { animation: (d.animTick||0)>0?'diceRoll 0.38s cubic-bezier(0.34,1.3,0.64,1)':'none', transformOrigin:'center' } }, diceFace(d.lastResult || 1, 80)),
+              d.mode === 'dice' && React.createElement("div", { style: { animation: (d.animTick||0)>0?'diceRoll 0.38s cubic-bezier(0.34,1.3,0.64,1)':'none', transformOrigin:'center' } }, diceFace(d.lastResult || 1, 80, diceSides)),
+              d.mode === 'dice2' && React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 12 } },
+                React.createElement("div", { style: { animation: (d.animTick||0)>0?'diceRoll 0.38s cubic-bezier(0.34,1.3,0.64,1)':'none', transformOrigin:'center' } },
+                  diceFace((d._lastPair && d._lastPair[0]) || 1, 60, diceSides)
+                ),
+                React.createElement("span", { style: { fontSize: 28, fontWeight: 900, color: _accent } }, '+'),
+                React.createElement("div", { style: { animation: (d.animTick||0)>0?'diceRoll 0.38s cubic-bezier(0.34,1.3,0.64,1) 0.06s':'none', transformOrigin:'center' } },
+                  diceFace((d._lastPair && d._lastPair[1]) || 1, 60, diceSides)
+                ),
+                React.createElement("span", { style: { fontSize: 28, fontWeight: 900, color: _accent } }, '='),
+                React.createElement("span", { style: { fontSize: 36, fontWeight: 900, color: _accent, minWidth: 50, textAlign: 'center' } }, d.lastResult || (2))
+              ),
 
               d.mode === 'spinner' && spinnerSvg(d.lastResult, d.animTick),
 
@@ -1345,8 +2220,75 @@ var d = (labToolData.probability) || {};
               );
             })(),
 
+            // ── Outcome strip (last 20 results) ──
+            // Visible streaks and patterns are pedagogically important: students
+            // need to FEEL that "5 heads in a row" or "three Reds in a row" is
+            // normal random texture, not evidence of a biased system. The strip
+            // makes that pattern visible at a glance for coin/dice/spinner/sports/
+            // marble/custom modes. Skipped for pi (uses its own scatter plot),
+            // tree/birthday/monty/galton (have their own visuals).
+            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'pi' && (d.results || []).length > 0 && (function() {
+              var last20 = (d.results || []).slice(-20);
+              // Color resolver — maps an outcome label to a display color per mode.
+              function colorFor(label) {
+                if (d.mode === 'coin') return label === 'H' ? '#fbbf24' : '#94a3b8'; // gold heads / silver tails
+                if (d.mode === 'dice') return ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#0891b2', '#84cc16', '#a855f7', '#f43f5e', '#0ea5e9', '#fbbf24', '#6366f1', '#10b981', '#dc2626', '#7c3aed', '#059669', '#9333ea', '#d97706'][(label - 1) % 20];
+                if (d.mode === 'dice2') {
+                  // Peak in the middle (most common sum) → red; tails (least common) → blue
+                  var mid = (diceSides || 6) + 1;
+                  var dist = Math.abs(label - mid);
+                  var maxDist = diceSides || 6;
+                  var hue = 220 - (dist / maxDist) * 220;  // 220 (blue) at extremes, 0 (red) at center
+                  return 'hsl(' + Math.round(hue) + ', 70%, 55%)';
+                }
+                if (d.mode === 'spinner') return { 'Red': '#ef4444', 'Blue': '#3b82f6', 'Green': '#22c55e', 'Yellow': '#eab308' }[label] || '#94a3b8';
+                if (d.mode === 'sports') {
+                  // Sports outcomes get a gradient across hues
+                  var idx = (activeSport.outcomes || []).indexOf(label);
+                  return ['#3b82f6', '#22c55e', '#ef4444', '#f97316', '#a855f7'][idx % 5] || '#94a3b8';
+                }
+                // custom + marbleBag — read color from customOutcomes
+                var co = (customOutcomes || []).find(function(o) { return o.label === label; });
+                return co ? co.color : '#94a3b8';
+              }
+              function labelText(label) {
+                if (d.mode === 'coin') return label;
+                if (d.mode === 'dice') return String(label);
+                return label.length > 2 ? label.charAt(0) : label;
+              }
+              return React.createElement('div', {
+                className: 'rounded-xl p-2 mb-3',
+                style: { background: isDark || isContrast ? 'rgba(139,92,246,0.06)' : '#faf5ff', border: '1px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.18)' : '#e9d5ff') },
+                'aria-label': 'Last 20 outcomes: ' + last20.join(', ')
+              },
+                React.createElement('div', { className: 'flex items-center gap-2 flex-wrap' },
+                  React.createElement('span', { className: 'text-[10px] font-bold uppercase tracking-wider', style: { color: isDark || isContrast ? '#c4b5fd' : '#7c3aed' } }, 'Last ' + last20.length + ':'),
+                  React.createElement('div', { className: 'flex flex-wrap items-center gap-0.5' },
+                    last20.map(function(r, idx) {
+                      return React.createElement('span', {
+                        key: 'strip-' + idx,
+                        title: String(r),
+                        style: {
+                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                          width: '20px', height: '20px',
+                          borderRadius: '4px',
+                          background: colorFor(r),
+                          color: '#fff',
+                          fontSize: '10px',
+                          fontWeight: 800,
+                          textShadow: '0 1px 1px rgba(0,0,0,0.4)',
+                          border: '1px solid rgba(0,0,0,0.15)'
+                        }
+                      }, labelText(r));
+                    })
+                  ),
+                  React.createElement('span', { className: 'text-[9px] italic ml-auto', style: { color: isDark || isContrast ? '#a78bfa' : '#9333ea' } }, 'streaks are normal random texture')
+                )
+              );
+            })(),
+
             // ── Auto-Run Controls ──
-            d.mode !== 'tree' && d.mode !== 'birthday' && React.createElement("div", { className: "flex flex-wrap gap-2 mb-3 justify-center items-center" },
+            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && React.createElement("div", { className: "flex flex-wrap gap-2 mb-3 justify-center items-center" },
 
               React.createElement("button", { "aria-label": "Toggle auto-run simulation",
 
@@ -1400,7 +2342,7 @@ var d = (labToolData.probability) || {};
 
             // Trial buttons (hidden in tree mode)
 
-            d.mode !== 'tree' && d.mode !== 'birthday' && React.createElement("div", { className: "flex gap-2 mb-4 justify-center flex-wrap" },
+            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && React.createElement("div", { className: "flex gap-2 mb-4 justify-center flex-wrap" },
 
               [1, 10, 50, 100, 500].map(n => React.createElement("button", { "aria-label": "Run " + n + " trials", key: n, onClick: () => runTrial(n), className: "px-4 py-2 bg-violet-100 text-violet-700 font-bold rounded-lg hover:bg-violet-200 transition-colors text-sm" }, "+" + n)),
 
@@ -1514,7 +2456,7 @@ var d = (labToolData.probability) || {};
 
             // Statistical analysis
 
-            d.trials >= 10 && d.mode !== 'birthday' && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: _statBg, border: '1px solid ' + _border } },
+            d.trials >= 10 && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: _statBg, border: '1px solid ' + _border } },
 
               React.createElement("p", { className: "text-[11px] font-bold uppercase tracking-wider mb-2", style: { color: _accent } }, "\uD83D\uDCCA Statistical Analysis"),
 
@@ -1584,7 +2526,7 @@ var d = (labToolData.probability) || {};
 
             // â”€â”€ Did You Know? â€” Pedagogical Insights â”€â”€
 
-            d.trials >= 10 && d.mode !== 'birthday' && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: isDark || isContrast ? 'rgba(251,191,36,0.06)' : '#fffbeb', border: '1px solid ' + (isDark || isContrast ? 'rgba(251,191,36,0.2)' : '#fde68a') } },
+            d.trials >= 10 && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: isDark || isContrast ? 'rgba(251,191,36,0.06)' : '#fffbeb', border: '1px solid ' + (isDark || isContrast ? 'rgba(251,191,36,0.2)' : '#fde68a') } },
 
               React.createElement("p", { className: "text-xs font-bold mb-1", style: { color: isDark || isContrast ? '#fbbf24' : '#b45309' } }, "\uD83D\uDCA1 Did You Know?"),
 
@@ -1779,7 +2721,45 @@ var d = (labToolData.probability) || {};
 
                     ),
 
-                    React.createElement("p", { className:"text-[11px] italic leading-relaxed text-center", style:{color:_muted} }, '~10k points needed for 2 decimal places of π')
+                    React.createElement("p", { className:"text-[11px] italic leading-relaxed text-center", style:{color:_muted} }, '~10k points needed for 2 decimal places of π'),
+
+                    // ── Slow Drop: animated dot deposition ──
+                    // Drops 100 points one at a time over ~10 seconds so students
+                    // can SEE the convergence happen. Standard +N buttons stay
+                    // fast for batch mode; this is the "show your work" mode.
+                    React.createElement("button", {
+                      onClick: function() {
+                        if (_piAnim.interval) {
+                          // Toggle off if already running
+                          clearInterval(_piAnim.interval); _piAnim.interval = null;
+                          return;
+                        }
+                        sfxProbClick();
+                        var dropped = 0;
+                        _piAnim.interval = setInterval(function() {
+                          // Re-read current toolData so we accumulate cleanly even
+                          // if user clicks +N during animation.
+                          var freshPts = (labToolData && labToolData.probability && labToolData.probability._piPoints) || [];
+                          var x = Math.random(), y = Math.random();
+                          var inside = (x * x + y * y) <= 1;
+                          var nextPts = freshPts.concat([{ x: x, y: y, inside: inside }]);
+                          if (nextPts.length > 1000) nextPts = nextPts.slice(-1000);
+                          upd('_piPoints', nextPts);
+                          // Also bump the standard trial counter so the existing
+                          // estimate / error / convergence panels stay in sync.
+                          upd('trials', (labToolData.probability.trials || 0) + 1);
+                          upd('results', ((labToolData.probability.results || []).concat([inside ? 'inside' : 'outside'])));
+                          dropped++;
+                          if (dropped >= 100) {
+                            clearInterval(_piAnim.interval); _piAnim.interval = null;
+                            sfxProbSuccess();
+                          }
+                        }, 100);
+                      },
+                      className: 'mt-2 w-full px-3 py-2 rounded-lg text-[11px] font-bold transition',
+                      style: { background: _piAnim.interval ? '#dc2626' : '#7c3aed', color: '#fff' },
+                      'aria-label': _piAnim.interval ? 'Stop slow-drop animation' : 'Slow-drop 100 points one at a time'
+                    }, _piAnim.interval ? '⏹ Stop animation' : '🔬 Slow-drop 100 (watch them land)')
 
                   )
 

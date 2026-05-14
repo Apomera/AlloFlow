@@ -1622,6 +1622,100 @@
             '#6ee7b7'
           ),
 
+          // ─── Antibiotic chemistry + history + pipeline ──────────
+          sectionCard('💊 Antibiotic classes — chemistry, history, and the pipeline problem',
+            (function() {
+              var ABX = [
+                { id: 'beta', name: 'Beta-lactams (penicillin family)', emoji: '🧪', year: '1928',
+                  who: 'Alexander Fleming (penicillin, 1928); Howard Florey + Ernst Chain (purification, 1940); Norman Heatley (production)',
+                  chem: 'A four-membered β-lactam ring fused to a five- or six-membered ring. Penicillins (penicillin G, amoxicillin), cephalosporins (cephalexin, ceftriaxone, cefepime, ceftaroline), carbapenems (meropenem, ertapenem), monobactams (aztreonam). The β-lactam ring covalently binds + inactivates penicillin-binding proteins (PBPs) — enzymes that crosslink peptidoglycan in the bacterial cell wall. Bacteria die because they cannot maintain cell-wall integrity during growth.',
+                  use: 'Still the largest single class of antibiotics by prescription volume + by infections covered. Carbapenems are "last-line" for many gram-negative infections. Cephalosporins span generations from very narrow-spectrum (1st gen, skin infections) to extended-spectrum (3rd gen, meningitis + sepsis) to anti-MRSA (5th gen, ceftaroline).',
+                  resist: 'Bacteria fight back with β-lactamases — enzymes that hydrolyze the β-lactam ring. Extended-spectrum β-lactamases (ESBLs) + carbapenemases (KPC, NDM, OXA-48) defeat even carbapenems. β-lactamase inhibitors (clavulanic acid, tazobactam, avibactam, vaborbactam) restore activity by inhibiting the enzymes.'
+                },
+                { id: 'amino', name: 'Aminoglycosides', emoji: '⚙️', year: '1944',
+                  who: 'Selman Waksman + Albert Schatz (streptomycin, 1944; Nobel 1952)',
+                  chem: 'Sugar-amino-cyclitol compounds. Streptomycin, gentamicin, tobramycin, amikacin, neomycin. They bind irreversibly to the 30S bacterial ribosomal subunit, causing misreading of mRNA + production of nonfunctional proteins. Bactericidal at higher concentrations.',
+                  use: 'Streptomycin was the FIRST effective antibiotic against tuberculosis. Modern aminoglycosides are used for serious gram-negative infections (sepsis, hospital-acquired pneumonia, complicated UTI) often in combination with β-lactams. Tobramycin nebulized is standard for cystic fibrosis Pseudomonas infections.',
+                  resist: 'Toxicities limit dosing: ototoxicity (permanent hearing loss in 10-30% with prolonged use), nephrotoxicity, neuromuscular blockade. Aminoglycoside-modifying enzymes are the dominant resistance mechanism. Aminoglycoside resistance is rising globally; new derivatives (plazomicin, FDA-approved 2018) extend the class but with the same toxicity profile.'
+                },
+                { id: 'tetra', name: 'Tetracyclines + glycylcyclines', emoji: '🟡', year: '1948',
+                  who: 'Benjamin Duggar (chlortetracycline from Streptomyces aureofaciens, 1948)',
+                  chem: 'Four fused 6-membered rings — hence "tetra-cycline." Doxycycline (the most-prescribed), minocycline, tetracycline, the newer tigecycline + omadacycline + eravacycline (glycylcyclines, extended-spectrum versions). They bind the 30S ribosomal subunit at a different site than aminoglycosides, blocking tRNA binding. Bacteriostatic — they STOP growth but rely on the immune system to clear the infection.',
+                  use: 'Doxycycline is workhorse for Lyme disease, atypical pneumonia (Mycoplasma, Chlamydia), acne, malaria prophylaxis, anthrax post-exposure. Tigecycline is reserved for multi-drug-resistant infections. The class is increasingly important as gram-negative resistance grows.',
+                  resist: 'Tetracycline efflux pumps + ribosomal protection proteins are the main resistance mechanisms. Resistance is widespread because tetracyclines have been used in livestock for decades; agricultural use selects for human-pathogen resistance via the One Health pathway.'
+                },
+                { id: 'macro', name: 'Macrolides + lincosamides', emoji: '🔄', year: '1952',
+                  who: 'Erythromycin discovered by Filipino chemist Abelardo Aguilar working at Eli Lilly (1949-1952); not credited at the time',
+                  chem: 'Large macrocyclic lactone rings. Erythromycin, azithromycin (the "Z-pack"), clarithromycin, fidaxomicin. They bind the 50S ribosomal subunit + block protein chain elongation. Mostly bacteriostatic; azithromycin has a long tissue half-life (so 5-day courses give 10-day antibiotic exposure).',
+                  use: 'Azithromycin is the most-prescribed antibiotic in the US for outpatient respiratory infections (often inappropriately). Erythromycin + clarithromycin are used for atypical pneumonia, pertussis, gastroparesis. Fidaxomicin is selective for Clostridioides difficile (replaces vancomycin in some C. diff cases).',
+                  resist: 'Macrolide resistance is now ~30-50% in US Streptococcus pneumoniae + 50%+ in Mycoplasma genitalium. The "Z-pack overuse" problem is a key driver — most viral respiratory infections do NOT benefit from azithromycin but it is prescribed anyway. FDA + CDC have pushed for antibiotic stewardship campaigns since the 2010s with partial success.'
+                },
+                { id: 'fluoro', name: 'Fluoroquinolones', emoji: '⚡', year: '1962',
+                  who: 'George Lesher at Sterling-Winthrop (nalidixic acid, 1962); ciprofloxacin developed by Bayer in 1981',
+                  chem: 'Fluorinated quinolone ring system. Ciprofloxacin, levofloxacin, moxifloxacin, delafloxacin. They inhibit bacterial DNA gyrase + topoisomerase IV, blocking DNA replication. Bactericidal across a broad spectrum.',
+                  use: 'Once heavily prescribed for UTI, prostatitis, atypical pneumonia, anthrax, travelers\' diarrhea. Now used much more cautiously. The FDA has issued multiple Black Box Warnings since 2016 — tendon rupture (especially Achilles), peripheral neuropathy, retinal detachment, aortic aneurysm + dissection, mental health effects. Some patients develop permanent disability ("floxed" community organizes around fluoroquinolone toxicity).',
+                  resist: 'Resistance accumulates by point mutations in gyrase + topo IV. E. coli UTI resistance to ciprofloxacin is now ~25-35% in the US, making it an unreliable first-line choice. The new agent delafloxacin (FDA 2017) has good activity vs MRSA but the class as a whole has been demoted in many guidelines.'
+                },
+                { id: 'glyco', name: 'Glycopeptides + lipoglycopeptides', emoji: '🛡️', year: '1958',
+                  who: 'Vancomycin isolated from Streptomyces orientalis (Borneo soil sample, 1953); approved 1958',
+                  chem: 'Large glycopeptide molecules. Vancomycin, teicoplanin, telavancin, oritavancin, dalbavancin. They bind the D-Ala-D-Ala terminus of peptidoglycan precursors, preventing crosslinking — a different mechanism than β-lactams.',
+                  use: 'Vancomycin has been the workhorse for MRSA + serious gram-positive infections for 60+ years. It is given IV for systemic infections + orally for severe C. difficile colitis. Daptomycin (FDA 2003), a lipopeptide, is now another major MRSA option.',
+                  resist: 'Vancomycin-resistant Enterococcus (VRE) emerged in the 1980s; vancomycin-resistant Staphylococcus aureus (VRSA) is rare but exists (~16 confirmed cases worldwide). The resistance mechanism (changing D-Ala-D-Ala to D-Ala-D-Lac) was likely acquired by horizontal transfer from soil organisms that naturally make vancomycin-like compounds.'
+                },
+                { id: 'newer', name: 'Newer classes (oxazolidinones + others)', emoji: '🆕', year: '2000',
+                  who: 'Linezolid (Pharmacia, 2000); newer agents over the past 25 years',
+                  chem: 'Linezolid + tedizolid (oxazolidinones, bind 50S ribosome at a unique site). Lefamulin (pleuromutilin, FDA 2019). Eravacycline + omadacycline (extended tetracyclines). Plazomicin (aminoglycoside, 2018). Cefiderocol (siderophore cephalosporin, 2019 — hijacks bacterial iron-uptake to deliver itself across the outer membrane of gram-negatives).',
+                  use: 'Mostly reserved for multi-drug-resistant or otherwise-difficult cases. Cefiderocol is among the few options against carbapenem-resistant Acinetobacter + Pseudomonas. Linezolid is used for VRE + MRSA when other options fail.',
+                  resist: 'Linezolid resistance has appeared (cfr gene mediates it). Resistance to every new agent emerges within years of introduction. The pace of new antibiotic discovery has slowed dramatically: the last truly novel antibiotic class (pleuromutilins for systemic use was lefamulin in 2019) was approved 5+ years ago, and the pipeline is alarmingly thin.'
+                },
+                { id: 'pipeline', name: 'Why the pipeline is empty', emoji: '🏚️', year: 'Ongoing crisis',
+                  who: 'The pharmaceutical-economics problem',
+                  chem: 'New antibiotic development is unprofitable. A new chronic-disease medicine generates $1-10B+ over its patent lifetime; a new antibiotic typically generates $20-100M. Reasons: (1) antibiotics are SHORT-COURSE (5-14 days, not lifelong), (2) doctors RESERVE new antibiotics for resistant cases, reducing volume, (3) generics dominate the market once patents expire (the older antibiotics are mostly off-patent + cheap).',
+                  use: 'In the past 20 years, 6 of the world\'s top 10 pharma companies have EXITED antibiotic research entirely (Roche, Eli Lilly, GSK, Sanofi, Novartis, Bristol-Myers Squibb). Small biotechs that develop new antibiotics often go bankrupt before or shortly after FDA approval (Achaogen + Aradigm + Tetraphase all failed despite approved products). The vacuum is genuine + dangerous.',
+                  resist: 'Solutions being tried: PUSH funding (NIH BARDA + CARB-X grants for early R&D), PULL funding (UK NHS subscription model paying for access rather than per-dose, EU + US PASTEUR Act proposals). Phage therapy + monoclonal antibodies + anti-virulence drugs offer adjuncts but cannot replace the antibiotic class. Antibiotic stewardship (using existing drugs more carefully to slow resistance) is the most actionable short-term lever. None of this is a fix; collectively it may slow the crisis enough that new mechanisms emerge.'
+                }
+              ];
+              var sel = d.selectedAbx || 'beta';
+              var topic = ABX.find(function(t) { return t.id === sel; }) || ABX[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'Antibiotics are not a single drug; they are roughly a dozen chemical classes with completely different mechanisms, spectrums, toxicities, and resistance patterns. Understanding the classes helps make sense of why doctors prescribe what they do, why courses sometimes change, and why the world is facing a slow-motion crisis in antibiotic discovery + use.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  ABX.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedAbx: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#6ee7b7' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #6ee7b7' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(110,231,183,0.06)', border: '1px solid rgba(110,231,183,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#6ee7b7', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, fontStyle: 'italic' } }, 'First introduced: ' + topic.year + ' · ' + topic.who),
+                  h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
+                    h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Chemistry + mechanism'),
+                    h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.chem)
+                  ),
+                  h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
+                    h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Clinical use'),
+                    h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.use)
+                  ),
+                  h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
+                    h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Resistance + limits'),
+                    h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.resist)
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
+                  h('strong', null, 'The honest stewardship message: '),
+                  'The most important thing any individual + healthcare system can do is USE EXISTING ANTIBIOTICS APPROPRIATELY: not for viral infections (most colds, flu, most sore throats, most bronchitis), only for the right organism in the right dose for the right duration, with culture confirmation when possible. Every inappropriate course shortens the useful life of the entire class. CDC Be Antibiotics Aware + WHO World Antimicrobial Awareness Week campaigns reinforce this. School nurses + counselors are positioned to support family conversations about this without dismissing genuine illness.'
+                )
+              );
+            })(),
+            '#6ee7b7'
+          ),
+
           // ─── Public health surveillance ──────────────────────────
           sectionCard('🏛️ Public health surveillance — how we watch for outbreaks',
             (function() {
