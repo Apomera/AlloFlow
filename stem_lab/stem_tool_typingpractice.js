@@ -119,6 +119,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     // milestonesEarned — array of milestone IDs the student has crossed.
     // Additive only; we never un-earn to avoid guilt patterns.
     milestonesEarned: [],
+    // Battle Mode (Solo Cascade — Phase 1). Optional game-mode surface,
+    // explicitly opt-in. Words rise from the bottom; type the top word
+    // to clear; stack-hits-ceiling = match end (NOT "game over" — non-
+    // shaming session summary). Personal best tracked but never shown
+    // as leaderboard. Reduced-motion respected. Default cadence is
+    // generous (15s/row) for accommodation-friendly first plays.
+    battle: {
+      view: 'menu',              // 'menu' | 'playing' | 'summary'
+      difficulty: 'mercy',       // 'mercy' | 'standard' | 'challenge'
+      lastResult: null,          // last match summary
+      personalBest: { cleared: 0, longestStreak: 0, durationSec: 0 }
+    },
     // favoriteDrills — drill IDs the student has starred. Sort first on menu.
     favoriteDrills: [],
     // Custom drill — teacher or student can author their own practice text
@@ -177,6 +189,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // Maximum size of the saved-passage library. Keep low to avoid clutter —
   // students who want more have Custom Drill for arbitrary text.
   var MAX_PASSAGE_LIBRARY = 12;
+
+  // ── Battle Mode (Solo Cascade) — Phase 1 ──
+  // Curated word bank, ~80 entries, mixed lengths 4-9 chars, common
+  // English words students at all grade bands can recognize. Pre-
+  // categorized by difficulty:
+  //   short (4-5 chars) — score 1, color green
+  //   medium (6-7 chars) — score 2, color amber
+  //   long (8+ chars) — score 3, color rose
+  // No proper nouns, no edge-case spellings, no homophones (those
+  // come in Phase 3 as "send slot" attack words). All entries
+  // hand-picked for clear pronunciation + standard spelling.
+  var BATTLE_WORDBANK = {
+    short: [
+      'cake', 'milk', 'snow', 'tree', 'rain', 'fire', 'star', 'moon', 'home', 'song',
+      'book', 'desk', 'door', 'lamp', 'bird', 'fish', 'rock', 'sand', 'wind', 'gold',
+      'apple', 'beach', 'cloud', 'dream', 'flame', 'green', 'house', 'juice', 'light', 'mouse',
+      'piano', 'queen', 'river', 'silly', 'table', 'under', 'voice', 'water', 'young', 'zebra'
+    ],
+    medium: [
+      'banana', 'castle', 'dragon', 'eleven', 'forest', 'garden', 'hammer', 'island', 'jungle', 'kitten',
+      'ladder', 'meadow', 'orange', 'pencil', 'rabbit', 'silver', 'tunnel', 'window', 'yellow', 'zigzag',
+      'compass', 'desktop', 'evening', 'fountain', 'gallery', 'harvest', 'journey', 'kingdom', 'lantern', 'mineral'
+    ],
+    long: [
+      'adventure', 'beautiful', 'classroom', 'discovery', 'elephants', 'fascinate', 'gathering', 'happiness', 'imagining', 'judgement',
+      'lighthouse', 'monastery', 'navigator', 'orchestra', 'paragraph', 'questions', 'remarkable', 'symphonic', 'transform', 'umbrella'
+    ]
+  };
+  // Per-difficulty pacing knobs. 'mercy' = friendly default; rises slowly
+  // and pauses briefly after every clear so falling behind is recoverable.
+  // 'standard' = brisk but achievable. 'challenge' = real time pressure.
+  var BATTLE_DIFFICULTY = {
+    mercy:     { riseMs: 18000, postClearPauseMs: 1500, lengthMix: { short: 0.7, medium: 0.3, long: 0.0 }, label: '🌱 Mercy',     blurb: 'Slow rise. Generous pause after each clear. Recommended first time.' },
+    standard:  { riseMs: 12000, postClearPauseMs: 600,  lengthMix: { short: 0.5, medium: 0.4, long: 0.1 }, label: '⚡ Standard',  blurb: 'Brisk rise. Most students after a few rounds.' },
+    challenge: { riseMs: 7000,  postClearPauseMs: 0,    lengthMix: { short: 0.3, medium: 0.5, long: 0.2 }, label: '🔥 Challenge', blurb: 'Real time pressure. Long words. No mercy pause.' }
+  };
+  var BATTLE_STACK_LIMIT = 9; // rows. Stack hits this height → match end.
 
   // Visual-mode gallery cap. 3 images × ~80 KB base64 PNG = ~240 KB, well
   // within localStorage comfort. More than 3 and students lose track of
@@ -3570,6 +3619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               renderNavButton('📊 Progress & Goals', function() { go('progress'); }, palette, (state.sessions || []).length === 0),
               renderNavButton('⚙️ Accommodations', function() { go('settings'); }, palette, false),
               renderNavButton('🏅 Achievements', function() { go('achievements'); }, palette, false),
+              renderNavButton('🌊 Battle Mode', function() { go('battle'); }, palette, false),
               renderNavButton('? Shortcuts', function() { go('shortcuts'); }, palette, false),
               state.iepGoal ? h('div', {
                 style: {
@@ -9389,6 +9439,367 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         }
 
         // ═════════════════════════════════════════════════════
+        // BATTLE MODE — Solo Cascade (Phase 1)
+        // Optional opt-in game-mode surface. Words rise from the
+        // bottom; type the top word to clear; stack hits ceiling →
+        // match-end with non-shaming summary. Three views: menu /
+        // playing / summary. Personal best tracked but not surfaced
+        // as leaderboard.
+        // ═════════════════════════════════════════════════════
+        var battleStateRaw = useState({
+          stack: [], typed: '', startedAt: 0, lastRiseAt: 0, pauseUntil: 0,
+          cleared: 0, errors: 0, combo: 0, bestCombo: 0,
+          paused: false, ended: false
+        });
+        var battleSt = battleStateRaw[0];
+        var setBattleSt = battleStateRaw[1];
+
+        function pickBattleWord(mix) {
+          var r = Math.random();
+          var bucket;
+          if (r < mix.short) bucket = BATTLE_WORDBANK.short;
+          else if (r < mix.short + mix.medium) bucket = BATTLE_WORDBANK.medium;
+          else bucket = BATTLE_WORDBANK.long;
+          // Avoid same-word-twice-in-a-row by quick retry
+          var pick = bucket[Math.floor(Math.random() * bucket.length)];
+          return pick;
+        }
+
+        function startBattle() {
+          var diff = BATTLE_DIFFICULTY[(state.battle && state.battle.difficulty) || 'mercy'];
+          var initialStack = [pickBattleWord(diff.lengthMix), pickBattleWord(diff.lengthMix), pickBattleWord(diff.lengthMix)];
+          setBattleSt({
+            stack: initialStack, typed: '', startedAt: Date.now(), lastRiseAt: Date.now(), pauseUntil: 0,
+            cleared: 0, errors: 0, combo: 0, bestCombo: 0,
+            paused: false, ended: false
+          });
+          updMulti({ battle: Object.assign({}, state.battle, { view: 'playing' }) });
+        }
+
+        // Animation tick — advances rise timer + checks game-end
+        useEffect(function() {
+          if (state.battle.view !== 'playing') return;
+          if (battleSt.ended || battleSt.paused) return;
+          var diff = BATTLE_DIFFICULTY[state.battle.difficulty || 'mercy'];
+          var iv = setInterval(function() {
+            var now = Date.now();
+            // Honor post-clear pause window
+            if (battleSt.pauseUntil > now) return;
+            // Time to rise?
+            if (now - battleSt.lastRiseAt >= diff.riseMs) {
+              var next = battleSt.stack.concat([pickBattleWord(diff.lengthMix)]);
+              if (next.length >= BATTLE_STACK_LIMIT) {
+                // Match ends — stash result, switch to summary
+                var result = {
+                  cleared: battleSt.cleared, errors: battleSt.errors,
+                  bestCombo: battleSt.bestCombo,
+                  durationSec: Math.round((now - battleSt.startedAt) / 1000),
+                  difficulty: state.battle.difficulty
+                };
+                setBattleSt(Object.assign({}, battleSt, { ended: true, stack: next }));
+                // Compute new personal best (additive; never lower)
+                var pb = state.battle.personalBest || { cleared: 0, longestStreak: 0, durationSec: 0 };
+                var newPb = {
+                  cleared: Math.max(pb.cleared, result.cleared),
+                  longestStreak: Math.max(pb.longestStreak, result.bestCombo),
+                  durationSec: Math.max(pb.durationSec, result.durationSec)
+                };
+                updMulti({ battle: Object.assign({}, state.battle, { view: 'summary', lastResult: result, personalBest: newPb }) });
+              } else {
+                setBattleSt(Object.assign({}, battleSt, { stack: next, lastRiseAt: now }));
+              }
+            }
+          }, 250);
+          return function() { clearInterval(iv); };
+        }, [state.battle.view, state.battle.difficulty, battleSt.ended, battleSt.paused, battleSt.lastRiseAt, battleSt.pauseUntil, battleSt.stack.length]);
+
+        // Keystroke handler for Battle mode — separate from drill mode
+        useEffect(function() {
+          if (state.battle.view !== 'playing') return;
+          if (battleSt.ended) return;
+          function onKey(e) {
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
+            // Allow Esc to pause
+            if (e.key === 'Escape') {
+              setBattleSt(Object.assign({}, battleSt, { paused: !battleSt.paused }));
+              return;
+            }
+            if (battleSt.paused) return;
+            if (battleSt.stack.length === 0) return;
+            var topWord = battleSt.stack[0];
+            // Backspace — undo one char
+            if (e.key === 'Backspace') {
+              if (battleSt.typed.length > 0) {
+                setBattleSt(Object.assign({}, battleSt, { typed: battleSt.typed.slice(0, -1) }));
+                e.preventDefault();
+              }
+              return;
+            }
+            if (e.key.length !== 1) return;
+            e.preventDefault();
+            var expected = topWord[battleSt.typed.length];
+            if (e.key.toLowerCase() === expected.toLowerCase()) {
+              var nextTyped = battleSt.typed + e.key;
+              if (nextTyped.length === topWord.length) {
+                // Word cleared
+                var diff = BATTLE_DIFFICULTY[state.battle.difficulty || 'mercy'];
+                var newCombo = battleSt.combo + 1;
+                setBattleSt(Object.assign({}, battleSt, {
+                  stack: battleSt.stack.slice(1),
+                  typed: '',
+                  cleared: battleSt.cleared + 1,
+                  combo: newCombo,
+                  bestCombo: Math.max(battleSt.bestCombo, newCombo),
+                  pauseUntil: Date.now() + diff.postClearPauseMs
+                }));
+              } else {
+                setBattleSt(Object.assign({}, battleSt, { typed: nextTyped }));
+              }
+            } else {
+              // Forgiveness mode (default): error logged, but typed not advanced
+              setBattleSt(Object.assign({}, battleSt, { errors: battleSt.errors + 1, combo: 0 }));
+            }
+          }
+          window.addEventListener('keydown', onKey);
+          return function() { window.removeEventListener('keydown', onKey); };
+        }, [state.battle.view, battleSt.ended, battleSt.paused, battleSt.stack, battleSt.typed, battleSt.combo, battleSt.bestCombo, battleSt.cleared, battleSt.errors]);
+
+        function renderBattleMenu() {
+          var diff = state.battle.difficulty || 'mercy';
+          var pb = state.battle.personalBest || { cleared: 0, longestStreak: 0, durationSec: 0 };
+          return h('div', {
+            style: { padding: 24, maxWidth: 720, margin: '0 auto', color: palette.text, fontFamily: fontFamily, background: palette.bg, minHeight: '60vh' }
+          },
+            renderBackButton(function() { go('menu'); }, palette),
+            h('div', {
+              style: {
+                display: 'flex', alignItems: 'center', gap: 14, marginTop: 16, marginBottom: 16, padding: '14px 16px',
+                background: 'radial-gradient(ellipse 60% 100% at 0% 50%, rgba(244,114,182,0.10), transparent 70%), rgba(15,23,42,0.45)',
+                border: '1px solid rgba(244,114,182,0.20)', borderLeft: '4px solid #f472b6', borderRadius: 14
+              }
+            },
+              h('div', { 'aria-hidden': 'true', style: {
+                width: 56, height: 56, borderRadius: '50%',
+                background: 'rgba(244,114,182,0.18)', border: '2px solid #f472b6',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 28, lineHeight: 1, flexShrink: 0,
+                boxShadow: '0 4px 16px rgba(244,114,182,0.25)'
+              } }, '🌊'),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('h2', { style: { margin: 0, color: '#f9a8d4', fontSize: 22, fontWeight: 900, letterSpacing: '-0.01em' } }, 'Solo Cascade — Battle Mode'),
+                h('p', { style: { margin: '4px 0 0', fontSize: 12, color: palette.textMute, lineHeight: 1.55 } },
+                  'Optional game mode. Words rise from the bottom; type the top word to clear it. Stack hits the ceiling and the match ends. No leaderboard, no streak guilt — just personal best.')
+              )
+            ),
+            // Difficulty picker
+            h('div', { style: { marginBottom: 16 } },
+              h('div', { style: { fontSize: 11, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800, marginBottom: 8 } }, 'Pick a difficulty'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 } },
+                Object.keys(BATTLE_DIFFICULTY).map(function(key) {
+                  var d2 = BATTLE_DIFFICULTY[key];
+                  var active = diff === key;
+                  return h('button', {
+                    key: 'diff-' + key,
+                    onClick: function() { updMulti({ battle: Object.assign({}, state.battle, { difficulty: key }) }); },
+                    'aria-pressed': active ? 'true' : 'false',
+                    style: {
+                      padding: '12px 14px', borderRadius: 10,
+                      border: '1.5px solid ' + (active ? '#f472b6' : palette.border),
+                      background: active ? 'rgba(244,114,182,0.10)' : palette.surface,
+                      color: active ? '#f9a8d4' : palette.text,
+                      fontSize: 13, fontWeight: active ? 800 : 600, textAlign: 'left', cursor: 'pointer',
+                      fontFamily: 'inherit'
+                    }
+                  },
+                    h('div', { style: { fontSize: 14, fontWeight: 800, marginBottom: 4 } }, d2.label),
+                    h('div', { style: { fontSize: 11, color: palette.textMute, fontStyle: 'italic', lineHeight: 1.5 } }, d2.blurb)
+                  );
+                })
+              )
+            ),
+            // Personal best chip — only if any prior play
+            (pb.cleared > 0) ? h('div', {
+              style: {
+                marginBottom: 16, padding: '10px 14px', borderRadius: 8,
+                background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)',
+                display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center', fontVariantNumeric: 'tabular-nums'
+              }
+            },
+              h('span', { style: { fontSize: 11, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800 } }, '🏁 Personal best'),
+              h('span', { style: { fontSize: 12, color: palette.textDim } }, h('strong', { style: { color: palette.success, fontWeight: 800 } }, pb.cleared), ' cleared'),
+              h('span', { style: { fontSize: 12, color: palette.textDim } }, 'longest streak: ', h('strong', { style: { color: palette.text, fontWeight: 800 } }, pb.longestStreak))
+            ) : null,
+            h('button', {
+              onClick: startBattle,
+              style: Object.assign({}, primaryBtnStyle(palette), {
+                width: '100%', padding: '14px 20px', fontSize: 15, fontWeight: 800,
+                background: '#f472b6', borderColor: '#f472b6', color: '#0f172a'
+              })
+            }, '▶ Start Cascade'),
+            h('div', { style: { marginTop: 14, padding: '10px 12px', borderRadius: 8, background: palette.surface, border: '1px solid ' + palette.border, fontSize: 11, color: palette.textMute, lineHeight: 1.55, fontStyle: 'italic' } },
+              '🎯 This mode adds time pressure on purpose. Most students grow more from the regular drills, where there\'s no clock. Cascade is here for when you want a different shape of practice — fast, snappy, with stakes that reset every match.')
+          );
+        }
+
+        function renderBattlePlay() {
+          var topWord = battleSt.stack[0] || '';
+          var stack = battleSt.stack;
+          var risePct = Math.min(100, (stack.length / BATTLE_STACK_LIMIT) * 100);
+          var diff = BATTLE_DIFFICULTY[state.battle.difficulty || 'mercy'];
+          function colorForLen(w) {
+            if (w.length <= 5) return '#22c55e';
+            if (w.length <= 7) return '#fbbf24';
+            return '#f472b6';
+          }
+          return h('div', {
+            style: { padding: 24, maxWidth: 720, margin: '0 auto', color: palette.text, fontFamily: fontFamily, background: palette.bg, minHeight: '60vh' }
+          },
+            // HUD bar
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
+              h('button', {
+                onClick: function() { setBattleSt(Object.assign({}, battleSt, { paused: !battleSt.paused })); },
+                style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: 11, padding: '5px 10px' })
+              }, battleSt.paused ? '▶ Resume' : '⏸ Pause'),
+              h('button', {
+                onClick: function() { updMulti({ battle: Object.assign({}, state.battle, { view: 'menu' }) }); },
+                style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: 11, padding: '5px 10px' })
+              }, '✕ Quit'),
+              h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 12, fontVariantNumeric: 'tabular-nums', fontSize: 12 } },
+                h('span', { style: { color: palette.textMute } }, 'Cleared: ', h('strong', { style: { color: palette.success } }, battleSt.cleared)),
+                h('span', { style: { color: palette.textMute } }, 'Combo: ', h('strong', { style: { color: battleSt.combo >= 3 ? '#f472b6' : palette.text } }, battleSt.combo))
+              )
+            ),
+            // Pressure gauge
+            h('div', {
+              role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': BATTLE_STACK_LIMIT, 'aria-valuenow': stack.length,
+              'aria-label': 'Stack height: ' + stack.length + ' of ' + BATTLE_STACK_LIMIT + ' rows',
+              style: { width: '100%', height: 6, background: palette.surface, borderRadius: 3, marginBottom: 14, overflow: 'hidden' }
+            },
+              h('div', { style: {
+                width: risePct + '%', height: '100%',
+                background: risePct < 60 ? palette.success : risePct < 85 ? '#fbbf24' : '#ef4444',
+                transition: 'width 250ms ease, background 250ms ease'
+              } })
+            ),
+            // Playfield — vertical stack with the TOP word at the top, growing downward
+            h('div', { style: {
+              maxWidth: 360, margin: '0 auto', padding: 12,
+              background: 'linear-gradient(180deg, rgba(244,114,182,0.06), rgba(15,23,42,0.4))',
+              border: '2px solid rgba(244,114,182,0.20)', borderRadius: 12, minHeight: 360,
+              display: 'flex', flexDirection: 'column', gap: 6
+            } },
+              // Top word (active typing target) — large, with character feedback
+              stack.length > 0 ? h('div', {
+                style: {
+                  padding: '14px 12px', borderRadius: 10,
+                  background: '#0f172a', border: '2px solid ' + colorForLen(topWord),
+                  fontSize: 26, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 700,
+                  textAlign: 'center', letterSpacing: '0.08em',
+                  boxShadow: '0 4px 12px rgba(244,114,182,0.20)'
+                },
+                'aria-live': 'off'
+              },
+                topWord.split('').map(function(ch, i) {
+                  var typed = battleSt.typed[i];
+                  var color, bg;
+                  if (typed === undefined) { color = palette.textMute; bg = 'transparent'; }
+                  else if (typed.toLowerCase() === ch.toLowerCase()) { color = '#22c55e'; bg = 'rgba(34,197,94,0.10)'; }
+                  else { color = '#ef4444'; bg = 'rgba(239,68,68,0.10)'; }
+                  return h('span', { key: i, style: { color: color, background: bg, padding: '2px 1px', borderRadius: 3 } }, ch);
+                })
+              ) : null,
+              // Remaining stack — preview of incoming words
+              stack.slice(1).map(function(word, i) {
+                var c = colorForLen(word);
+                return h('div', {
+                  key: 'stack-' + i + '-' + word,
+                  style: {
+                    padding: '8px 12px', borderRadius: 6,
+                    background: 'rgba(15,23,42,0.6)', border: '1px solid ' + c + '55',
+                    fontSize: 16, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 600,
+                    textAlign: 'center', color: c, letterSpacing: '0.04em'
+                  }
+                }, word);
+              }),
+              // Pause overlay note
+              battleSt.paused ? h('div', {
+                role: 'status',
+                style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)', textAlign: 'center', color: '#fcd34d', fontSize: 13, fontWeight: 700 }
+              }, '⏸ Paused — your stack is frozen. Press Resume or Esc to continue.') : null
+            ),
+            // Difficulty + cadence reminder (small, footer)
+            h('div', { style: { marginTop: 14, fontSize: 11, color: palette.textMute, textAlign: 'center', fontStyle: 'italic' } },
+              diff.label + ' · rise every ' + Math.round(diff.riseMs / 1000) + 's · Esc to pause')
+          );
+        }
+
+        function renderBattleSummary() {
+          var r = state.battle.lastResult || { cleared: 0, errors: 0, bestCombo: 0, durationSec: 0, difficulty: 'mercy' };
+          var pb = state.battle.personalBest || { cleared: 0, longestStreak: 0, durationSec: 0 };
+          var newPbCleared = r.cleared > 0 && r.cleared >= pb.cleared;
+          var newPbStreak = r.bestCombo > 0 && r.bestCombo >= pb.longestStreak;
+          var diff = BATTLE_DIFFICULTY[r.difficulty || 'mercy'];
+          return h('div', {
+            style: { padding: 24, maxWidth: 720, margin: '0 auto', color: palette.text, fontFamily: fontFamily, background: palette.bg, minHeight: '60vh' }
+          },
+            renderBackButton(function() { go('menu'); }, palette),
+            h('div', {
+              style: {
+                marginTop: 16, padding: 24, borderRadius: 14, textAlign: 'center',
+                background: 'radial-gradient(ellipse at 50% 30%, rgba(244,114,182,0.12), rgba(15,23,42,0.4))',
+                border: '1px solid rgba(244,114,182,0.30)'
+              }
+            },
+              h('div', { style: { fontSize: 48, lineHeight: 1, marginBottom: 8 } }, '🌊'),
+              h('h2', { style: { margin: '0 0 4px', color: '#f9a8d4', fontSize: 22, fontWeight: 900 } }, 'Match complete'),
+              h('p', { style: { margin: '0 0 16px', fontSize: 12, color: palette.textMute, fontStyle: 'italic' } },
+                'You cleared ' + r.cleared + ' word' + (r.cleared === 1 ? '' : 's') + ' on ' + diff.label + '. Every run resets the stack.')
+            ),
+            // Stat grid
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginTop: 14, marginBottom: 14 } },
+              [
+                { label: 'Cleared', value: r.cleared, color: palette.success, isPb: newPbCleared },
+                { label: 'Best streak', value: r.bestCombo, color: '#f472b6', isPb: newPbStreak },
+                { label: 'Duration', value: r.durationSec + 's', color: palette.text, isPb: false },
+                { label: 'Errors', value: r.errors, color: palette.textMute, isPb: false }
+              ].map(function(s, i) {
+                return h('div', { key: i, style: {
+                  padding: '12px 14px', background: palette.surface, border: '1px solid ' + (s.isPb ? palette.success : palette.border), borderRadius: 10
+                } },
+                  h('div', { style: { fontSize: 10, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800 } }, s.label),
+                  h('div', { style: { fontSize: 22, fontWeight: 800, color: s.color, fontVariantNumeric: 'tabular-nums', marginTop: 2 } }, s.value),
+                  s.isPb ? h('div', { style: { fontSize: 10, color: palette.success, fontWeight: 700, marginTop: 2 } }, '★ Personal best') : null
+                );
+              })
+            ),
+            // Actions
+            h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
+              h('button', {
+                onClick: startBattle,
+                style: Object.assign({}, primaryBtnStyle(palette), {
+                  background: '#f472b6', borderColor: '#f472b6', color: '#0f172a', fontSize: 13, padding: '10px 18px'
+                })
+              }, '↻ Try again'),
+              h('button', {
+                onClick: function() { updMulti({ battle: Object.assign({}, state.battle, { view: 'menu' }) }); },
+                style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: 13, padding: '10px 18px' })
+              }, 'Battle menu'),
+              h('button', {
+                onClick: function() { go('menu'); },
+                style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: 13, padding: '10px 18px' })
+              }, 'Main menu')
+            )
+          );
+        }
+
+        function renderBattle() {
+          var v = state.battle.view || 'menu';
+          if (v === 'playing') return renderBattlePlay();
+          if (v === 'summary') return renderBattleSummary();
+          return renderBattleMenu();
+        }
+
+        // ═════════════════════════════════════════════════════
         // ROUTER
         // ═════════════════════════════════════════════════════
         var viewContent;
@@ -9402,6 +9813,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           case 'custom-setup':   viewContent = renderCustomSetup(); break;
           case 'shortcuts':      viewContent = renderShortcuts(); break;
           case 'achievements':   viewContent = renderAchievements(); break;
+          case 'battle':         viewContent = renderBattle(); break;
           case 'menu':
           default:               viewContent = renderMenu();
         }
