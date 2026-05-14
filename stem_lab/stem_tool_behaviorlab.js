@@ -431,6 +431,48 @@ var d = labToolData || {};
             }
           ];
 
+          // === PBIS — Positive Behavioral Interventions and Supports ===
+          // Three-tier framework that holds individual ABA work inside a
+          // school-wide system. Tier 1 = all students (universal),
+          // Tier 2 = ~15% needing targeted (small-group) supports,
+          // Tier 3 = ~5% needing intensive individualized FBA-driven
+          // plans. Most school psychs spend 80% of their time inside
+          // this framework. PBIS is the dominant US K-12 behavior model
+          // and was absent from BehaviorLab — adding it gives operant
+          // mechanics a system-level frame.
+          var PBIS_TIERS = [
+            {
+              tier: 1,
+              name: 'Tier 1 — Universal',
+              icon: '🟢', color: '#22c55e',
+              who: 'All students. Every classroom, every period, every staff member.',
+              percent: '~80% of students need only Tier 1 to be successful.',
+              examples: 'School-wide expectations posted in every space (be safe, be respectful, be responsible). Common-area lessons (cafeteria, hallway, bus). Positive-reinforcement systems (school store, recognition, "caught being kind" cards). Pre-correction before known transition points. Predictable classroom routines, visual schedules, "first/then" boards as default not accommodation.',
+              data: 'Office discipline referrals (ODRs) per 100 students per day. Attendance. Climate surveys. If Tier 1 is working, ODRs should be low and concentrated in a small subset of students.',
+              escalate: 'When a student\'s ODRs cross threshold (often 2+ in a month), or when teachers consistently flag concern, screen for Tier 2. The point of Tier 1 data is to find the kids who need more, before they accumulate failure.'
+            },
+            {
+              tier: 2,
+              name: 'Tier 2 — Targeted',
+              icon: '🟡', color: '#fbbf24',
+              who: 'Students who don\'t respond fully to Tier 1 alone — usually due to consistent attention-seeking, low-grade work avoidance, social skills gaps, or emerging mental health needs.',
+              percent: '~15% of students benefit from Tier 2 added supports.',
+              examples: 'Check-In / Check-Out (CICO) — daily morning + afternoon meeting with a positive adult, with a goal sheet. Social skills small groups. Anxiety or anger-management groups. Targeted mentoring. Daily progress reports home. Pre-teaching content for academic anxiety. Modified seating arrangements.',
+              data: 'CICO daily point sheets (looking for 80%+ goal hit). Goal-attainment scaling. Brief functional screening (Easy as ABC, BIP-Lite). Decision rule: if 4-6 weeks of Tier 2 is not moving the data, do not just "try harder" — escalate to Tier 3 or change the function hypothesis.',
+              escalate: 'When Tier 2 is not producing data movement after a documented trial period, OR when the behavior pattern indicates a clear specific function that needs an FBA — move to Tier 3.'
+            },
+            {
+              tier: 3,
+              name: 'Tier 3 — Intensive',
+              icon: '🔴', color: '#ef4444',
+              who: 'Students whose behavior poses safety concerns, or who have not responded to Tier 1 + Tier 2, or who have specific intensive needs (autism, severe trauma, complex disability).',
+              percent: '~5% of students need Tier 3 individualized supports.',
+              examples: 'Full functional behavior assessment (FBA) by a trained BCBA or school psych. Individualized BIP with replacement behavior, environmental modifications, reinforcement plan, crisis plan. Wraparound team meetings (school + family + outside providers). 1-on-1 paraprofessional support when justified. Therapeutic services (counseling, OT, SLP integration). Sometimes specialized placement.',
+              data: 'Direct observation data (frequency, duration, ABC). Pre/post intervention comparison with clear baseline. IEP goal progress. Behavior decreasing, replacement increasing. Social validity from the student and family.',
+              escalate: 'When a student is in crisis daily, when restraint/seclusion is being used, when the BIP is not moving data after fidelity is verified — bring in district behavior specialist + outside consultation. Stagnation at Tier 3 is a system signal, not a kid signal.'
+            }
+          ];
+
           // === Acting-Out Cycle — the seven-phase escalation model ===
           // Geoff Colvin's framework (late 1990s) is the spine of every
           // major crisis-intervention curriculum (CPI, Boys Town, NCI,
@@ -4809,6 +4851,100 @@ var d = labToolData || {};
                   })
                 )
               )
+            ),
+
+            // === PBIS THREE TIERS — the system around individual ABA ===
+            // Three cards in a vertical stack so the tier numbers and
+            // student-percent breakdown read top-down. Each card has the
+            // tier badge, who-it-serves, examples, data signals, and
+            // escalation criteria. Closes the gap between operant
+            // conditioning (a science) and the K-12 system (a framework
+            // most school psychs spend most of their time inside).
+            React.createElement("div", {
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(34,211,238,0.25)' }, glass)
+            },
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🏫 PBIS — Three Tiers of Support"),
+                React.createElement("button", { onClick: function() { upd('blShowPbis', !d.blShowPbis); },
+                  className: "text-[11px] text-cyan-400 hover:text-cyan-300"
+                }, d.blShowPbis ? 'Hide' : 'View →')
+              ),
+              d.blShowPbis && React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-3", style: { lineHeight: 1.55 } },
+                "Positive Behavioral Interventions and Supports is the school-wide framework that holds individual ABA work inside a system. Most school psychs spend 80% of their time inside this framework — not in 1-on-1 ABA. Three tiers, with the % of students each tier typically serves:"),
+              d.blShowPbis && React.createElement("div", { className: "space-y-2" },
+                PBIS_TIERS.map(function(pt, pti) {
+                  return React.createElement("div", {
+                    key: 'pbis-' + pt.tier,
+                    style: {
+                      background: 'rgba(15,23,42,0.6)',
+                      borderRadius: 10,
+                      padding: '12px 14px',
+                      border: '1px solid rgba(100,116,139,0.25)',
+                      borderLeft: '4px solid ' + pt.color
+                    }
+                  },
+                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                      React.createElement("div", {
+                        'aria-hidden': 'true',
+                        style: {
+                          width: 36, height: 36, borderRadius: '50%',
+                          background: pt.color + '22',
+                          border: '1.5px solid ' + pt.color,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 13, fontWeight: 800, color: pt.color,
+                          fontFamily: 'ui-monospace, Menlo, monospace',
+                          flexShrink: 0
+                        }
+                      }, pt.tier),
+                      React.createElement("div", { style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, pt.icon),
+                      React.createElement("div", { style: { flex: 1 } },
+                        React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: pt.color, lineHeight: 1.2 } }, pt.name),
+                        React.createElement("div", { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, pt.percent)
+                      )
+                    ),
+                    React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } },
+                      React.createElement("b", { style: { color: '#e2e8f0' } }, 'Who it serves: '),
+                      pt.who),
+                    React.createElement("div", null,
+                      React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'Concrete examples'),
+                      React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } }, pt.examples)
+                    ),
+                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
+                      React.createElement("div", {
+                        style: {
+                          padding: 8, borderRadius: 6,
+                          background: 'rgba(96,165,250,0.06)',
+                          border: '1px solid rgba(96,165,250,0.20)'
+                        }
+                      },
+                        React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '📊 Data signal'),
+                        React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, pt.data)
+                      ),
+                      React.createElement("div", {
+                        style: {
+                          padding: 8, borderRadius: 6,
+                          background: 'rgba(251,146,60,0.06)',
+                          border: '1px solid rgba(251,146,60,0.20)'
+                        }
+                      },
+                        React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '⏫ When to escalate'),
+                        React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, pt.escalate)
+                      )
+                    )
+                  );
+                })
+              ),
+              d.blShowPbis && React.createElement("div", {
+                style: {
+                  marginTop: 10, padding: 10, borderRadius: 8,
+                  background: 'rgba(34,211,238,0.06)',
+                  border: '1px solid rgba(34,211,238,0.20)',
+                  color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic'
+                }
+              },
+                "🎯 The PBIS rule of thumb: a building where ",
+                React.createElement("b", null, "Tier 1 is weak"),
+                " will need MORE Tier 2 and Tier 3 capacity than the staffing model can support — and Tier 3 plans will fail because they are trying to compensate for missing universal supports. The math is unforgiving: if your universal expectations aren't taught, posted, and reinforced consistently, no individual BIP can rescue the system. Strong Tier 1 is the highest-leverage school-psych work there is.")
             ),
 
             // === SETTING EVENTS — slow triggers K-12 BIPs miss ===
