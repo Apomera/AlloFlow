@@ -183,6 +183,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
   ];
 
   // ─────────────────────────────────────────────────────────
+  // Equity & disproportionality — the federal data + audit
+  // tool school psychs use in IEP and team meetings. The
+  // disparities are measured, documented, and the largest
+  // single source of disability + race-based system harm in
+  // K-12. Sources: U.S. Department of Education Office for
+  // Civil Rights (OCR) 2020-21 Civil Rights Data Collection;
+  // GAO-18-258 report on K-12 discipline disparities;
+  // Maine DOE Special Services data.
+  // ─────────────────────────────────────────────────────────
+  var EQUITY_DATA = [
+    {
+      finding: 'Race × discipline',
+      icon: '⚖️', color: '#ef4444',
+      stat: 'Black students are ~3× more likely to be suspended than white students for similar offenses.',
+      detail: 'OCR 2020-21 data: Black students are 15% of public school enrollment but 38% of in-school suspensions and 39% of out-of-school suspensions. The gap is largest for "subjective" infractions (defiance, disrespect, disruption) — categories where adult judgment, not bright-line rules, drives the referral.',
+      source: 'U.S. Department of Education Office for Civil Rights, Civil Rights Data Collection 2020-21'
+    },
+    {
+      finding: 'Disability × discipline',
+      icon: '🦮', color: '#fbbf24',
+      stat: 'Students with disabilities are ~2× more likely to be suspended than nondisabled peers.',
+      detail: 'Students receiving IDEA services are 13% of enrollment but 25% of out-of-school suspensions and 24% of expulsions. For Black boys with disabilities the rates roughly double again — a compound disparity. IDEA technically protects against discipline for behavior that is a manifestation of the disability, but the manifestation-determination process is uneven and often skipped.',
+      source: 'OCR 2020-21; IDEA discipline-data review by NCLD and similar advocacy reporting'
+    },
+    {
+      finding: 'Race × restraint and seclusion',
+      icon: '✋', color: '#dc2626',
+      stat: 'Students with disabilities account for ~12% of enrollment but ~75% of restraint cases nationally.',
+      detail: 'Within that already-disproportionate use, Black students with disabilities are restrained at higher rates than white students with similar profiles. The compound disparity at the most coercive end of the discipline spectrum is the largest and most consistent finding across federal datasets.',
+      source: 'OCR Civil Rights Data Collection; GAO-18-258'
+    },
+    {
+      finding: 'Pre-K suspension',
+      icon: '🧒', color: '#a78bfa',
+      stat: 'Pre-K students are suspended and expelled at rates higher than any other grade level.',
+      detail: 'Boys are 80% of pre-K suspensions despite being ~50% of pre-K enrollment. Black children are about 18% of pre-K enrollment but ~48% of pre-K suspensions. The disparity begins before age 5 — well before any test score, well before any academic gap. The data tells a story about adult perception, not about child behavior.',
+      source: 'OCR 2014 first-of-kind pre-K data, sustained in 2020-21 collection'
+    },
+    {
+      finding: 'Subjective vs objective offenses',
+      icon: '🔍', color: '#22c55e',
+      stat: 'The disparity gap is widest for "defiance" / "disrespect" / "disruption" referrals.',
+      detail: 'For objective violations (weapons, drugs, fighting), referral rates are similar across racial groups. For subjective violations — categories that depend almost entirely on adult judgment — the gap widens dramatically. This is the single most useful diagnostic for whether a discipline disparity is implicit-bias-driven: look at the disproportionality category by category. Subjective spike = bias signal.',
+      source: 'Skiba et al. 2014 (the foundational meta-analysis); OCR data'
+    }
+  ];
+
+  var EQUITY_AUDIT_QUESTIONS = [
+    {
+      q: 'Pull last year\'s ODR (office discipline referral) data, broken down by race × disability × grade × offense category. Is your building\'s disproportionality concentrated in subjective-offense categories?',
+      why: 'If yes, the intervention is not a stricter discipline policy. The intervention is teacher coaching on what triggers a referral and implicit-bias work. Discipline policy reform is downstream of referral-decision reform.'
+    },
+    {
+      q: 'For your top 5 most-referred students this year, do you have FBA-level functional understanding of why each is being referred — or do you have repeated incident reports and no plan?',
+      why: 'Repeated referrals without a function hypothesis is a signal the team has been documenting, not problem-solving. The disability-discipline disparity is partly built on this gap: documenting noncompliance instead of asking why noncompliance is happening.'
+    },
+    {
+      q: 'When a manifestation determination is required (after 10 cumulative removal days for an IDEA student), is your team running the actual two-prong analysis — or skipping to "we need to discipline them"?',
+      why: 'The two prongs: (1) was the conduct caused by, or had a direct and substantial relationship to, the disability? (2) was the conduct the direct result of failure to implement the IEP? Skipping this analysis is the most common compliance failure in restrictive-discipline cases — and one of the most common bases for state due-process complaints.'
+    },
+    {
+      q: 'Are restraint/seclusion incidents disaggregated by student demographics in your district reporting? If not, who else is reviewing the patterns?',
+      why: 'You cannot see what you do not measure. Federal OCR collects this data biennially but the building-level pattern often is not visible to the IEP teams making real-time decisions. School psychs who pull and review this data quarterly find patterns the formal reporting cycle misses.'
+    },
+    {
+      q: 'When a Black student with a disability is repeatedly restrained, is the response a BIP revision OR an environmental review of WHO is calling for restraint and on WHAT antecedents?',
+      why: 'Sometimes the BIP works fine in some classrooms and fails in others. That is a STAFF pattern, not a student pattern. Naming it explicitly is hard but is often the most accurate intervention target. The disproportionality data points back to adult decision-making more often than to student behavior.'
+    }
+  ];
+
+  // ─────────────────────────────────────────────────────────
   // Restraint and seclusion — the highest-stakes content
   // ─────────────────────────────────────────────────────────
   var RESTRAINT_PRINCIPLES = [
@@ -283,6 +354,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           { id: 'setting', label: 'Setting Events', icon: '🕰️' },
           { id: 'cycle', label: 'Acting-Out Cycle', icon: '🌀' },
           { id: 'restraint', label: 'Restraint & Seclusion', icon: '🛑' },
+          { id: 'equity', label: 'Equity & Disparities', icon: '⚖️' },
           { id: 'connect', label: 'Connect', icon: '🔗' }
         ];
         return h('div', { role: 'tablist', 'aria-label': 'School Behavior Toolkit sections',
@@ -505,6 +577,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         );
       }
 
+      // ── Section: Equity & Disparities ──
+      function renderEquity() {
+        return h('div', null,
+          panelHeader('⚖️ Equity & Disparities — the data school psychs need to see',
+            'Federal data on race × disability × discipline disparities. The largest single source of system-level harm in K-12 behavior practice. Every school psych working in IEP teams should know these numbers.'),
+          // Data findings
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 } },
+            EQUITY_DATA.map(function(eq, i) {
+              return h('div', { key: 'eq-' + i,
+                style: {
+                  background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
+                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + eq.color
+                } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                  circularBadge(eq.icon, eq.color, 36),
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: eq.color, lineHeight: 1.2 } }, eq.finding)
+                ),
+                h('div', { style: { fontSize: 13, color: '#e2e8f0', fontWeight: 700, lineHeight: 1.45, marginBottom: 8, padding: '8px 10px', background: eq.color + '12', borderLeft: '3px solid ' + eq.color, borderRadius: 6 } }, eq.stat),
+                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 8 } }, eq.detail),
+                h('div', { style: { fontSize: 10, color: '#64748b', fontStyle: 'italic', lineHeight: 1.5, paddingTop: 6, borderTop: '1px dashed rgba(100,116,139,0.25)' } },
+                  '📚 ', eq.source)
+              );
+            })
+          ),
+          // Audit questions
+          h('div', { style: {
+            padding: '14px 16px', borderRadius: 10,
+            background: 'rgba(20,184,166,0.08)',
+            border: '1px solid rgba(20,184,166,0.30)',
+            borderLeft: '4px solid #14b8a6'
+          } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
+              circularBadge('🔍', '#14b8a6', 36),
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#5eead4' } }, 'School-psych equity audit — five questions')
+            ),
+            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 12, fontStyle: 'italic' } },
+              'Practical questions to bring into your next discipline-data review or PBIS team meeting. The federal numbers describe the pattern. These questions help your building see where your specific patterns sit and what to do about them.'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+              EQUITY_AUDIT_QUESTIONS.map(function(eaq, i) {
+                return h('div', { key: 'eaq-' + i,
+                  style: { background: 'rgba(15,23,42,0.6)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(100,116,139,0.25)' } },
+                  h('div', { style: { display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 6 } },
+                    h('div', { 'aria-hidden': 'true',
+                      style: { width: 24, height: 24, borderRadius: '50%', background: 'rgba(20,184,166,0.18)', border: '1.5px solid #14b8a6',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#5eead4', fontFamily: 'ui-monospace, Menlo, monospace', flexShrink: 0 }
+                    }, i + 1),
+                    h('div', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 700, lineHeight: 1.55, flex: 1 } }, eaq.q)
+                  ),
+                  h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.55, fontStyle: 'italic', paddingLeft: 34 } },
+                    h('span', { style: { color: '#5eead4', fontWeight: 700, marginRight: 4 } }, 'Why:'),
+                    eaq.why)
+                );
+              })
+            )
+          ),
+          sourceFooter('🎯 The pattern across all five findings: discipline disparities are most concentrated where adult judgment, not bright-line rules, drives the decision. Subjective offense categories. Manifestation determinations. Restraint authorization decisions. The intervention is rarely "stricter discipline policy." It is more often "tighter referral-decision review, deeper FBA practice, and explicit attention to the pattern of who is making which calls in which classrooms."')
+        );
+      }
+
       // ── Section: Connect (cross-tool navigation) ──
       function renderConnect() {
         return h('div', null,
@@ -550,6 +681,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       else if (section === 'setting') content = renderSetting();
       else if (section === 'cycle') content = renderCycle();
       else if (section === 'restraint') content = renderRestraint();
+      else if (section === 'equity') content = renderEquity();
       else if (section === 'connect') content = renderConnect();
       else content = renderPbis();
 
