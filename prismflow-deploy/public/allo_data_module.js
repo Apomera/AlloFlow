@@ -652,7 +652,7 @@ If they are asking to change settings (like grade level, topic, interests, langu
 If they are explicitly asking to create, generate, start, or build the lesson/resources (e.g., "Create the lesson now", "Generate it", "Let's go", "Make a quiz", "Build the timeline", "Generate a 10-resource full pack"), return:
 {
   "intent": "GENERATE",
-  "resourceType": "string (optional - one of: 'simplified', 'glossary', 'quiz', 'outline', 'image', 'timeline', 'concept-sort', 'sentence-frames', 'brainstorm', 'adventure', 'faq', 'lesson-plan', 'analysis', 'persona'). Omit for full-pack / guided flow.",
+  "resourceType": "string (optional - one of: 'simplified', 'glossary', 'quiz', 'outline', 'image', 'timeline', 'concept-sort', 'sentence-frames', 'brainstorm', 'adventure', 'faq', 'lesson-plan', 'analysis', 'persona', 'dbq', 'math', 'alignment-report'). Omit for full-pack / guided flow.",
   "mode": "string (optional - 'single' | 'full-pack'. Use 'full-pack' when the user asks for a full resource pack or lesson pack. Omit for single-resource generation.)",
   "count": "number (optional - only meaningful when mode='full-pack'; 1-20 or omit for 'Auto')",
   "targetGroup": "string (optional - for mode='full-pack', roster group key)",
@@ -674,7 +674,7 @@ If they want to ADD MORE items to an existing resource (e.g., "add 3 more quiz q
 If they are asking "Where is..." or "How do I find..." a specific feature (e.g. "Where is the glossary?", "How do I export?"), return:
 {
   "intent": "SHOW_UI",
-  "target": "string (one of: 'language', 'glossary', 'quiz', 'export', 'profiles', 'text', 'simplified', 'source', 'analysis', 'outline', 'visual', 'faq', 'scaffolds', 'brainstorm', 'timeline', 'concept', 'adventure', 'alignment', 'udl', 'history', 'settings', 'tools')",
+  "target": "string (one of: 'language', 'glossary', 'quiz', 'export', 'profiles', 'simplified', 'source', 'analysis', 'outline', 'image', 'faq', 'sentence-frames', 'brainstorm', 'timeline', 'concept-sort', 'dbq', 'persona', 'math', 'adventure', 'lesson-plan', 'alignment', 'udl', 'history', 'settings', 'tools')",
 }
 If they want to navigate/go to a specific tool view (e.g., "take me to the glossary", "open the quiz", "go to input", "switch to timeline"), return:
 {
@@ -753,14 +753,18 @@ const UI_ELEMENT_MAP = {
   "analysis": "tour-tool-analysis",
   "outline": "tour-tool-outline",
   "visual": "tour-tool-visual",
+  "image": "tour-tool-visual",
   "faq": "tour-tool-faq",
   "scaffolds": "tour-tool-scaffolds",
+  "sentence-frames": "tour-tool-scaffolds",
   "brainstorm": "tour-tool-brainstorm",
   "timeline": "tour-tool-timeline",
   "concept": "tour-tool-concept-sort",
+  "concept-sort": "tour-tool-concept-sort",
   "dbq": "tour-tool-dbq",
   "adventure": "tour-tool-adventure",
   "alignment": "tour-tool-alignment",
+  "alignment-report": "tour-tool-alignment",
   "udl": "tour-tool-udl",
   "history": "tour-history-panel",
   "settings": "tour-header-settings",
@@ -770,6 +774,7 @@ const UI_ELEMENT_MAP = {
   "stem": "tour-tool-math",
   "lesson": "tour-tool-lesson-plan",
   "plan": "tour-tool-lesson-plan",
+  "lesson-plan": "tour-tool-lesson-plan",
   "persona": "tour-tool-persona",
   "interview": "tour-tool-persona",
   "dashboard": "tour-header-tools",

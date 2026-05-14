@@ -366,6 +366,16 @@
     const [showResearchSetup, setShowResearchSetup] = React.useState(false);
     const [researchFirstVisit, setResearchFirstVisit] = React.useState(true);
     const [showAssessmentGuide, setShowAssessmentGuide] = React.useState(false);
+    const bundleFileInputRef = React.useRef(null);
+    // Custom survey-items editor state. Custom items live on the active
+    // researchMode.customQuestions[population] and are included in the
+    // study bundle export/import. When no custom items exist for a
+    // population, renderSurveyModal falls back to the built-in template.
+    const [showCustomQuestions, setShowCustomQuestions] = React.useState(false);
+    const [customQuestionsPopulation, setCustomQuestionsPopulation] = React.useState('student');
+    const [customQuestionsDraft, setCustomQuestionsDraft] = React.useState([]);
+    const [cqImageGenInput, setCqImageGenInput] = React.useState({ qid: null, idx: null, prompt: '', mode: 'generate' });
+    const [cqImageGenBusy, setCqImageGenBusy] = React.useState(false);
     React.useEffect(() => {
       if (typeof loadPsychometricProbes === 'function') {
         loadPsychometricProbes();
@@ -1717,6 +1727,81 @@
       addToast && addToast('Survey responses exported (' + allResponses.length + ' responses)', 'success');
     };
 
+    // ── Full study bundle export/import (Canvas-persistence path) ──
+    // localStorage is ephemeral in Gemini Canvas sandboxes (the origin can
+    // change between conversations), so a long-running study must save its
+    // full state to a JSON file the teacher downloads and re-imports next
+    // session. Bundle contains all 6 Research Suite localStorage keys plus
+    // a version stamp for future migration compatibility.
+    const STUDY_BUNDLE_KEYS = [
+      'alloflow_research_mode',
+      'alloflow_fidelity_log',
+      'alloflow_survey_responses',
+      'alloflow_session_counter',
+      'alloflow_external_cbm',
+      'alloflow_rti_goals'
+    ];
+    const exportStudyBundle = () => {
+      const bundle = { schemaVersion: 1, exportedAt: new Date().toISOString() };
+      STUDY_BUNDLE_KEYS.forEach(function (k) {
+        try {
+          const raw = localStorage.getItem(k);
+          bundle[k] = raw ? JSON.parse(raw) : null;
+        } catch {
+          bundle[k] = null;
+        }
+      });
+      const studyName = (bundle.alloflow_research_mode && bundle.alloflow_research_mode.studyName) || 'study';
+      const safeName = String(studyName).replace(/[^a-z0-9_-]/gi, '_').slice(0, 40);
+      const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'AlloFlow_Study_Bundle_' + safeName + '_' + new Date().toISOString().split('T')[0] + '.json';
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+      addToast && addToast('Study bundle exported. Re-import to restore in a future Canvas session.', 'success');
+    };
+    const importStudyBundle = (file) => {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        let bundle;
+        try {
+          bundle = JSON.parse(String(e.target.result || '{}'));
+        } catch (err) {
+          addToast && addToast('Import failed: invalid JSON', 'error');
+          return;
+        }
+        if (!bundle || typeof bundle !== 'object' || !bundle.schemaVersion) {
+          addToast && addToast('Import failed: not a study bundle', 'error');
+          return;
+        }
+        STUDY_BUNDLE_KEYS.forEach(function (k) {
+          if (Object.prototype.hasOwnProperty.call(bundle, k)) {
+            try {
+              if (bundle[k] === null || bundle[k] === undefined) {
+                localStorage.removeItem(k);
+              } else {
+                localStorage.setItem(k, JSON.stringify(bundle[k]));
+              }
+            } catch {}
+          }
+        });
+        // Update in-component React state immediately so the UI reflects the
+        // imported bundle without a reload.
+        try { setResearchMode(bundle.alloflow_research_mode || null); } catch {}
+        try { setFidelityLog(bundle.alloflow_fidelity_log || []); } catch {}
+        try { setSurveyResponses(bundle.alloflow_survey_responses || {}); } catch {}
+        try { setSessionCounter(parseInt(bundle.alloflow_session_counter, 10) || 0); } catch {}
+        try { setExternalCBMScores(bundle.alloflow_external_cbm || {}); } catch {}
+        // rtiGoals lives in the parent App scope; notify it so it can re-read.
+        try { window.dispatchEvent(new CustomEvent('alloflow:study-bundle-imported', { detail: { keys: STUDY_BUNDLE_KEYS } })); } catch {}
+        addToast && addToast('Study bundle imported. Active study: ' + ((bundle.alloflow_research_mode && bundle.alloflow_research_mode.studyName) || '(none)'), 'success');
+      };
+      reader.onerror = function () { addToast && addToast('Import failed: file read error', 'error'); };
+      reader.readAsText(file);
+    };
+
     const [externalCBMScores, setExternalCBMScores] = React.useState(() => {
       try {
         return JSON.parse(localStorage.getItem('alloflow_external_cbm') || '{}');
@@ -2040,9 +2125,19 @@
     };
     const renderSurveyModal = () => {
       if (!showSurveyModal) return null;
-      const questions = SURVEY_QUESTIONS[showSurveyModal] || [];
+      // Prefer teacher-authored custom questions when present; fall back to
+      // the built-in RTI templates. Custom items can include per-label
+      // images (data: URLs) generated via the AI image pipeline.
+      const customForPop = researchMode && researchMode.customQuestions && researchMode.customQuestions[showSurveyModal];
+      const questions = (Array.isArray(customForPop) && customForPop.length > 0) ? customForPop : (SURVEY_QUESTIONS[showSurveyModal] || []);
       const typeLabel = showSurveyModal.charAt(0).toUpperCase() + showSurveyModal.slice(1);
-      const allAnswered = questions.every(q => surveyAnswers[q.id] !== undefined);
+      const isAnswered = (q) => {
+        const a = surveyAnswers[q.id];
+        if (q.type === 'freetext') return typeof a === 'string' && a.trim().length > 0;
+        if (q.type === 'numeric') return typeof a === 'number' || (typeof a === 'string' && a.trim() !== '');
+        return a !== undefined && a !== null;
+      };
+      const allAnswered = questions.every(isAnswered);
       return React.createElement('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
         className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200'
       }, React.createElement('div', {
@@ -2075,21 +2170,46 @@
         onClick: () => setSurveyTimepoint(tp)
       }, tp === 'pre' ? 'Pre-Study' : tp === 'mid' ? 'Mid-Study' : 'Post-Study')))), React.createElement('div', {
         className: 'space-y-4'
-      }, ...questions.map(q => React.createElement('div', {
-        key: q.id,
-        className: 'bg-slate-50 rounded-xl p-3'
-      }, React.createElement('p', {
-        className: 'text-sm font-medium text-slate-700 mb-2'
-      }, q.text), React.createElement('div', {
-        className: 'flex gap-1'
-      }, ...q.labels.map((label, idx) => React.createElement('button', {
-        key: idx,
-        className: 'flex-1 py-2 px-1 rounded-lg text-xs font-medium transition-all ' + (surveyAnswers[q.id] === idx + 1 ? 'bg-purple-600 text-white shadow-md scale-105' : 'bg-white border border-slate-400 text-slate-600 hover:bg-purple-50 hover:border-purple-600'),
-        onClick: () => setSurveyAnswers(p => ({
-          ...p,
-          [q.id]: idx + 1
-        }))
-      }, label)))))), React.createElement('div', {
+      }, ...questions.map(q => {
+        const qType = q.type || 'likert';
+        const cells = q.labels || q.options || [];
+        const innerInput = qType === 'freetext'
+          ? React.createElement('textarea', {
+              'aria-label': q.text, rows: 3,
+              className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-sm',
+              value: typeof surveyAnswers[q.id] === 'string' ? surveyAnswers[q.id] : '',
+              onChange: (e) => setSurveyAnswers(p => Object.assign({}, p, { [q.id]: e.target.value })),
+              placeholder: 'Type your response...'
+            })
+          : qType === 'numeric'
+          ? React.createElement('input', {
+              'aria-label': q.text, type: 'number',
+              className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-sm',
+              value: surveyAnswers[q.id] !== undefined ? surveyAnswers[q.id] : '',
+              onChange: (e) => setSurveyAnswers(p => Object.assign({}, p, { [q.id]: e.target.value === '' ? '' : Number(e.target.value) }))
+            })
+          : React.createElement('div', { className: 'flex gap-1 flex-wrap' },
+              ...cells.map((rawLabel, idx) => {
+                const label = (typeof rawLabel === 'string') ? { text: rawLabel, image: null } : (rawLabel || {});
+                const value = qType === 'mcq' ? (label.text || ('Option ' + (idx + 1))) : (idx + 1);
+                const selected = surveyAnswers[q.id] === value;
+                return React.createElement('button', {
+                  key: idx,
+                  className: 'flex-1 min-w-[60px] py-2 px-1 rounded-lg text-xs font-medium transition-all flex flex-col items-center gap-1 ' + (selected ? 'bg-purple-600 text-white shadow-md scale-105' : 'bg-white border border-slate-400 text-slate-600 hover:bg-purple-50 hover:border-purple-600'),
+                  onClick: () => setSurveyAnswers(p => Object.assign({}, p, { [q.id]: value }))
+                },
+                  label.image ? React.createElement('img', { src: label.image, alt: label.text || '', style: { width: 36, height: 36, objectFit: 'contain' } }) : null,
+                  React.createElement('span', null, label.text || ('Option ' + (idx + 1)))
+                );
+              })
+            );
+        return React.createElement('div', {
+          key: q.id,
+          className: 'bg-slate-50 rounded-xl p-3'
+        }, React.createElement('p', {
+          className: 'text-sm font-medium text-slate-700 mb-2'
+        }, q.text), innerInput);
+      })), React.createElement('div', {
         className: 'flex justify-end gap-2 mt-5'
       }, React.createElement('button', {
         className: 'px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors',
@@ -2110,6 +2230,245 @@
         }
       }, 'Submit Survey'))));
     };
+
+    // ── Custom Survey Items Editor ─────────────────────────────────────
+    // Teacher-authored questions (per population) with optional generated
+    // image icons per Likert label / MCQ option. Uses window.callGeminiImageEdit
+    // for both text-to-image and image-to-image (refinement) — same pipeline
+    // used by glossary visuals + adventure mode artwork.
+    const cqNewId = () => 'cq_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    const generateLabelImage = async (prompt, existingImage) => {
+      const fn = (typeof window !== 'undefined') && window.callGeminiImageEdit;
+      if (typeof fn !== 'function') {
+        addToast && addToast('Image generation unavailable (callGeminiImageEdit not loaded)', 'error');
+        return null;
+      }
+      const styled = 'Simple, friendly, flat vector-art icon on a white background. ' + (prompt || 'concept icon');
+      try {
+        if (existingImage && typeof existingImage === 'string' && existingImage.includes(',')) {
+          const rawBase64 = existingImage.split(',')[1];
+          return await fn(styled, rawBase64);
+        }
+        return await fn(styled);
+      } catch (err) {
+        console.warn('[Research Suite] image generation failed:', err && err.message);
+        addToast && addToast('Image generation failed: ' + (err && err.message || 'unknown error'), 'error');
+        return null;
+      }
+    };
+    const openCustomQuestions = (population) => {
+      const pop = population || 'student';
+      setCustomQuestionsPopulation(pop);
+      const existing = (researchMode && researchMode.customQuestions && researchMode.customQuestions[pop]) || [];
+      setCustomQuestionsDraft(existing.map(q => JSON.parse(JSON.stringify(q))));
+      setCqImageGenInput({ qid: null, idx: null, prompt: '', mode: 'generate' });
+      setShowCustomQuestions(true);
+    };
+    const saveCustomQuestions = () => {
+      const base = researchMode || { active: false };
+      const updatedMode = Object.assign({}, base, {
+        customQuestions: Object.assign({}, base.customQuestions || {}, {
+          [customQuestionsPopulation]: customQuestionsDraft
+        })
+      });
+      // Use the existing toggleResearchMode persistence path. If no study is
+      // active, mark inactive so the config saves without auto-prompting.
+      toggleResearchMode(Object.assign({}, updatedMode, { active: !!updatedMode.active }));
+      setShowCustomQuestions(false);
+      addToast && addToast('Custom questions saved for ' + customQuestionsPopulation + ' survey.', 'success');
+    };
+    const cqAddQuestion = () => {
+      setCustomQuestionsDraft(prev => prev.concat([{
+        id: cqNewId(),
+        text: 'New question',
+        type: 'likert',
+        labels: [{ text: 'Strongly disagree', image: null }, { text: 'Disagree', image: null }, { text: 'Neutral', image: null }, { text: 'Agree', image: null }, { text: 'Strongly agree', image: null }],
+        options: []
+      }]));
+    };
+    const cqRemoveQuestion = (qid) => {
+      setCustomQuestionsDraft(prev => prev.filter(q => q.id !== qid));
+    };
+    const cqUpdateQuestion = (qid, patch) => {
+      setCustomQuestionsDraft(prev => prev.map(q => q.id === qid ? Object.assign({}, q, patch) : q));
+    };
+    const cqUpdateCell = (qid, idx, patch, field) => {
+      const fieldName = field || 'labels';
+      setCustomQuestionsDraft(prev => prev.map(q => {
+        if (q.id !== qid) return q;
+        const arr = (q[fieldName] || []).slice();
+        const existing = (typeof arr[idx] === 'string') ? { text: arr[idx], image: null } : (arr[idx] || { text: '', image: null });
+        arr[idx] = Object.assign({}, existing, patch);
+        return Object.assign({}, q, { [fieldName]: arr });
+      }));
+    };
+    const cqAddOption = (qid) => {
+      setCustomQuestionsDraft(prev => prev.map(q => {
+        if (q.id !== qid) return q;
+        const opts = (q.options || []).slice();
+        opts.push({ text: 'New option', image: null });
+        return Object.assign({}, q, { options: opts });
+      }));
+    };
+    const cqRemoveOption = (qid, idx) => {
+      setCustomQuestionsDraft(prev => prev.map(q => {
+        if (q.id !== qid) return q;
+        const opts = (q.options || []).slice();
+        opts.splice(idx, 1);
+        return Object.assign({}, q, { options: opts });
+      }));
+    };
+    const runCqImageGen = async () => {
+      const { qid, idx, prompt, mode, field } = cqImageGenInput;
+      if (!qid || idx === null || idx === undefined || !prompt.trim()) return;
+      setCqImageGenBusy(true);
+      const target = customQuestionsDraft.find(q => q.id === qid);
+      const fieldName = field || 'labels';
+      const existing = target && target[fieldName] && target[fieldName][idx] && (typeof target[fieldName][idx] === 'object') ? target[fieldName][idx].image : null;
+      const result = await generateLabelImage(prompt, mode === 'refine' ? existing : null);
+      setCqImageGenBusy(false);
+      if (result) {
+        cqUpdateCell(qid, idx, { image: result }, fieldName);
+        setCqImageGenInput({ qid: null, idx: null, prompt: '', mode: 'generate', field: null });
+      }
+    };
+    const renderCustomQuestionsEditor = () => {
+      if (!showCustomQuestions) return null;
+      const populations = ['student', 'teacher', 'parent'];
+      return React.createElement('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Custom Survey Items Editor',
+        className: 'fixed inset-0 z-[300] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200',
+        onClick: (e) => { if (e.target === e.currentTarget) setShowCustomQuestions(false); }
+      },
+        React.createElement('div', {
+          className: 'bg-white rounded-2xl shadow-2xl p-5 max-w-3xl w-full border-2 border-amber-200 max-h-[90vh] overflow-y-auto',
+          onClick: (e) => e.stopPropagation()
+        },
+          React.createElement('div', { className: 'flex items-start justify-between gap-3 mb-3' },
+            React.createElement('div', null,
+              React.createElement('h3', { className: 'text-lg font-black text-slate-800 flex items-center gap-2' },
+                React.createElement('span', null, '\u{1F58C}️'), 'Customize Survey Items'),
+              React.createElement('p', { className: 'text-xs text-slate-600 mt-1' },
+                'Replace the built-in RTI templates with study-specific items. Add per-option image icons via the AI image pipeline (text-to-image and image-to-image refinement supported).')
+            ),
+            React.createElement('button', {
+              className: 'px-3 py-1 text-sm text-slate-600 hover:bg-slate-100 rounded-lg',
+              onClick: () => setShowCustomQuestions(false)
+            }, 'Close')
+          ),
+          React.createElement('div', { className: 'flex gap-2 mb-4 border-b border-slate-200 pb-2' },
+            ...populations.map(p => React.createElement('button', {
+              key: p,
+              onClick: () => openCustomQuestions(p),
+              className: 'px-3 py-1.5 text-xs font-bold rounded-lg transition-all ' + (customQuestionsPopulation === p ? 'bg-amber-500 text-white shadow' : 'bg-white border border-slate-400 text-slate-700 hover:bg-amber-50')
+            }, p.charAt(0).toUpperCase() + p.slice(1) + ' Survey'))
+          ),
+          customQuestionsDraft.length === 0
+            ? React.createElement('p', { className: 'text-xs text-slate-500 italic mb-3' },
+                'No custom items yet for the ' + customQuestionsPopulation + ' survey. Click "Add Question" below to start. While the custom list is empty, the built-in RTI template is shown to respondents.')
+            : null,
+          React.createElement('div', { className: 'space-y-4' },
+            ...customQuestionsDraft.map((q) => {
+              const qType = q.type || 'likert';
+              const cells = qType === 'mcq' ? (q.options || []) : (q.labels || []);
+              const fieldName = qType === 'mcq' ? 'options' : 'labels';
+              return React.createElement('div', { key: q.id, className: 'bg-slate-50 border border-slate-200 rounded-xl p-3' },
+                React.createElement('div', { className: 'flex gap-2 mb-2' },
+                  React.createElement('input', {
+                    type: 'text', 'aria-label': 'Question text', value: q.text,
+                    onChange: (e) => cqUpdateQuestion(q.id, { text: e.target.value }),
+                    className: 'flex-1 px-2 py-1.5 border border-slate-400 rounded text-sm font-medium'
+                  }),
+                  React.createElement('select', {
+                    'aria-label': 'Question type', value: qType,
+                    onChange: (e) => cqUpdateQuestion(q.id, { type: e.target.value }),
+                    className: 'px-2 py-1.5 border border-slate-400 rounded text-xs'
+                  },
+                    React.createElement('option', { value: 'likert' }, '1-5 Likert'),
+                    React.createElement('option', { value: 'mcq' }, 'Multiple choice'),
+                    React.createElement('option', { value: 'freetext' }, 'Free text'),
+                    React.createElement('option', { value: 'numeric' }, 'Numeric')
+                  ),
+                  React.createElement('button', {
+                    className: 'px-2 py-1 text-xs bg-red-50 text-red-700 border border-red-300 rounded hover:bg-red-100',
+                    onClick: () => cqRemoveQuestion(q.id), title: 'Delete question'
+                  }, '✖')
+                ),
+                (qType === 'likert' || qType === 'mcq') ? React.createElement('div', { className: 'space-y-2' },
+                  ...cells.map((rawCell, idx) => {
+                    const cell = (typeof rawCell === 'string') ? { text: rawCell, image: null } : (rawCell || { text: '', image: null });
+                    const isActiveInput = cqImageGenInput.qid === q.id && cqImageGenInput.idx === idx && cqImageGenInput.field === fieldName;
+                    return React.createElement('div', { key: idx, className: 'flex items-start gap-2 p-2 bg-white border border-slate-200 rounded-lg' },
+                      cell.image ? React.createElement('img', { src: cell.image, alt: cell.text || '', style: { width: 48, height: 48, objectFit: 'contain', flexShrink: 0 } })
+                        : React.createElement('div', { style: { width: 48, height: 48, flexShrink: 0 }, className: 'bg-slate-100 rounded text-xs text-slate-400 flex items-center justify-center' }, 'No img'),
+                      React.createElement('div', { className: 'flex-1' },
+                        React.createElement('input', {
+                          type: 'text', 'aria-label': 'Option ' + (idx + 1) + ' text', value: cell.text || '',
+                          onChange: (e) => cqUpdateCell(q.id, idx, { text: e.target.value }, fieldName),
+                          className: 'w-full px-2 py-1 border border-slate-300 rounded text-xs mb-1'
+                        }),
+                        isActiveInput ? React.createElement('div', { className: 'flex gap-1' },
+                          React.createElement('input', {
+                            type: 'text', 'aria-label': 'Image prompt', placeholder: cqImageGenInput.mode === 'refine' ? 'How should the icon change?' : 'Describe the icon (e.g. "happy face")',
+                            value: cqImageGenInput.prompt,
+                            onChange: (e) => setCqImageGenInput(prev => Object.assign({}, prev, { prompt: e.target.value })),
+                            className: 'flex-1 px-2 py-1 border border-amber-400 rounded text-xs',
+                            autoFocus: true
+                          }),
+                          React.createElement('button', {
+                            disabled: cqImageGenBusy || !cqImageGenInput.prompt.trim(),
+                            onClick: runCqImageGen,
+                            className: 'px-2 py-1 text-xs font-bold rounded ' + (cqImageGenBusy ? 'bg-slate-300 text-slate-600' : 'bg-amber-600 text-white hover:bg-amber-700')
+                          }, cqImageGenBusy ? '…' : (cqImageGenInput.mode === 'refine' ? 'Refine' : 'Generate')),
+                          React.createElement('button', {
+                            onClick: () => setCqImageGenInput({ qid: null, idx: null, prompt: '', mode: 'generate', field: null }),
+                            className: 'px-2 py-1 text-xs text-slate-500 hover:bg-slate-100 rounded'
+                          }, '×')
+                        ) : React.createElement('div', { className: 'flex gap-1' },
+                          React.createElement('button', {
+                            onClick: () => setCqImageGenInput({ qid: q.id, idx: idx, prompt: '', mode: cell.image ? 'refine' : 'generate', field: fieldName }),
+                            className: 'px-2 py-0.5 text-[11px] font-medium rounded ' + (cell.image ? 'bg-violet-50 text-violet-700 border border-violet-300 hover:bg-violet-100' : 'bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100')
+                          }, cell.image ? '✨ Refine icon' : '🖼️ Generate icon'),
+                          cell.image ? React.createElement('button', {
+                            onClick: () => cqUpdateCell(q.id, idx, { image: null }, fieldName),
+                            className: 'px-2 py-0.5 text-[11px] text-slate-500 hover:bg-slate-100 rounded'
+                          }, 'Remove icon') : null,
+                          qType === 'mcq' ? React.createElement('button', {
+                            onClick: () => cqRemoveOption(q.id, idx),
+                            className: 'px-2 py-0.5 text-[11px] text-red-600 hover:bg-red-50 rounded ml-auto'
+                          }, 'Delete option') : null
+                        )
+                      )
+                    );
+                  }),
+                  qType === 'mcq' ? React.createElement('button', {
+                    onClick: () => cqAddOption(q.id),
+                    className: 'text-xs font-bold text-emerald-700 hover:bg-emerald-50 px-2 py-1 rounded border border-emerald-300 border-dashed'
+                  }, '+ Add option') : null
+                ) : React.createElement('p', { className: 'text-xs text-slate-500 italic' },
+                    qType === 'freetext' ? 'Respondents will type a free-text response.' : 'Respondents will enter a number.')
+              );
+            })
+          ),
+          React.createElement('div', { className: 'flex flex-wrap items-center gap-2 mt-4' },
+            React.createElement('button', {
+              onClick: cqAddQuestion,
+              className: 'px-3 py-1.5 text-xs font-bold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700'
+            }, '+ Add Question'),
+            React.createElement('span', { className: 'text-xs text-slate-500 italic ml-auto' },
+              customQuestionsDraft.length + ' custom question' + (customQuestionsDraft.length === 1 ? '' : 's') + ' for ' + customQuestionsPopulation),
+            React.createElement('button', {
+              onClick: () => setShowCustomQuestions(false),
+              className: 'px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg'
+            }, 'Cancel'),
+            React.createElement('button', {
+              onClick: saveCustomQuestions,
+              className: 'px-4 py-1.5 text-xs font-bold bg-amber-600 text-white rounded-lg hover:bg-amber-700'
+            }, 'Save Custom Items')
+          )
+        )
+      );
+    };
+
     const renderScatterPlot = studentName => {
       const snapshots = (rosterKey?.progressHistory?.[studentName] || []).filter(s => (s.wsAccuracy || 0) > 0 && (s.quizAvg || 0) > 0);
       if (snapshots.length < 2) return null;
@@ -2279,7 +2638,45 @@
         onClick: () => setShowSurveyModal('parent')
       }, React.createElement('span', null, '\u{1F46A}'), 'Parent/Guardian Survey', surveyCount > 0 ? React.createElement('span', {
         className: 'bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full text-[11px] font-bold'
-      }, surveyCount + ' responses') : null)));
+      }, surveyCount + ' responses') : null),
+      React.createElement('button', {
+        className: 'col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-lg border-2 border-amber-400 hover:bg-amber-50 transition-all text-xs font-bold text-amber-800 mt-1',
+        onClick: () => openCustomQuestions(customQuestionsPopulation || 'student'),
+        title: 'Author study-specific survey items (Likert, MCQ, free text, numeric) with optional AI-generated image icons per option.'
+      }, React.createElement('span', null, '\u{1F58C}️'), 'Customize Survey Items (custom + image icons)'),
+      React.createElement('button', {
+        className: 'col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-lg border-2 border-amber-400 hover:bg-amber-50 transition-all text-xs font-bold text-amber-800 mt-1',
+        onClick: () => {
+          try { window.dispatchEvent(new CustomEvent('alloflow:open-live-polling')); } catch {}
+        },
+        title: 'Open the live polling panel. Application data (responses, free text) flows peer-to-peer via WebRTC and never persists on any server. Requires an active session.'
+      }, React.createElement('span', null, '\u{1F4CA}'), 'Live Polling (peer-to-peer, no server storage)'),
+      React.createElement('button', {
+        className: 'col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-lg border border-indigo-700 hover:bg-indigo-700 transition-all text-xs font-bold mt-1',
+        onClick: exportStudyBundle,
+        title: 'Save the active study config plus all surveys, fidelity log, session counter, CBM, and RTI goals as a single JSON file you can re-import in another session.'
+      }, React.createElement('span', null, '\u{1F4BE}'), 'Export Study Bundle (JSON)'),
+      React.createElement('button', {
+        className: 'col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-white text-indigo-700 rounded-lg border border-indigo-400 hover:bg-indigo-50 transition-all text-xs font-bold',
+        onClick: () => { if (bundleFileInputRef.current) bundleFileInputRef.current.click(); },
+        title: 'Restore a previously exported study bundle. Use this when reopening AlloFlow in a fresh Gemini Canvas conversation.'
+      }, React.createElement('span', null, '\u{1F4C2}'), 'Import Study Bundle (JSON)'),
+      React.createElement('input', {
+        ref: bundleFileInputRef,
+        type: 'file',
+        accept: 'application/json,.json',
+        style: { display: 'none' },
+        'aria-hidden': 'true',
+        onChange: (e) => {
+          const f = e.target.files && e.target.files[0];
+          if (f) importStudyBundle(f);
+          e.target.value = '';
+        }
+      }),
+      (typeof window !== 'undefined' && window._isCanvasEnv) ? React.createElement('p', {
+        className: 'col-span-2 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-1 leading-snug'
+      }, '⚠️ Gemini Canvas storage is ephemeral. Export the study bundle before closing this conversation, and import it next time to resume your study.') : null
+      ));
     };
     const [researchMode, setResearchMode] = React.useState(() => {
       try {
@@ -7228,7 +7625,7 @@
       className: "mt-6 bg-slate-50 rounded-xl p-4 border border-slate-400"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "text-sm font-bold text-slate-600 mb-3"
-    }, "\uD83D\uDCC8 Research Dashboard"), renderResearchDashboard()), showCBMImport && typeof renderCBMImportModal === 'function' && renderCBMImportModal(), showSurveyModal && typeof renderSurveyModal === 'function' && renderSurveyModal(), showResearchSetup && typeof renderResearchSetupModal === 'function' && renderResearchSetupModal(),
+    }, "\uD83D\uDCC8 Research Dashboard"), renderResearchDashboard()), showCBMImport && typeof renderCBMImportModal === 'function' && renderCBMImportModal(), showSurveyModal && typeof renderSurveyModal === 'function' && renderSurveyModal(), showResearchSetup && typeof renderResearchSetupModal === 'function' && renderResearchSetupModal(), showCustomQuestions && typeof renderCustomQuestionsEditor === 'function' && renderCustomQuestionsEditor(),
     // ── Probe Focus Overlays (full-screen with countdown + keyboard shortcuts) ──
     React.createElement(ProbeOverlay, {
       isActive: nwfProbeActive && !nwfProbeResults,

@@ -682,6 +682,11 @@ const MODULES = [
         name: 'Export',
         filename: 'export_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'LivePolling',
+        filename: 'live_polling_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
 
@@ -768,6 +773,9 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_skatelab.js',
     'stem_lab/stem_tool_statslab.js',
     'stem_lab/stem_tool_optics.js',
+    'stem_lab/stem_tool_astronomy.js',
+    'stem_lab/stem_tool_bridgelab.js',
+    'stem_lab/stem_tool_microbiology.js',
     // Catch-up batch (Apr 30 2026): tools that were live in AlloFlowANTI/App.jsx
     // toolModules array but missing here, so build.js couldn't bump their CDN
     // hash. Fixed alongside the atcTower casing + playlab/throwlab full wiring.

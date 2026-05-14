@@ -2857,6 +2857,7 @@ const AlloFlowContent = () => {
     { id: 'persona', label: 'Interview Mode' },
     { id: 'timeline', label: 'Sequence Builder' },
     { id: 'concept-sort', label: 'Concept Sort' },
+    { id: 'dbq', label: 'Document-Based Question' },
     { id: 'math', label: 'STEM Lab' },
     { id: 'adventure', label: 'Adventure Mode' },
     { id: 'quiz', label: 'Exit Ticket' },
@@ -5698,7 +5699,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     setPendingRole(null);
   };
   const handleToggleAllTools = () => {
-      const allToolIds = ['source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'image', 'faq', 'sentence-frames', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'math', 'adventure', 'quiz', 'lesson-plan'];
+      const allToolIds = ['source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'image', 'faq', 'sentence-frames', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'lesson-plan'];
       const areAllExpanded = allToolIds.every(id => expandedTools.includes(id));
       if (areAllExpanded) {
           setExpandedTools([]);
