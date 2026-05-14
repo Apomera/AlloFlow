@@ -622,14 +622,16 @@ var d = labToolData || {};
             }
           ];
 
-          // === Voices from the Disability Community ===
-          // Real autistic and disabled advocates whose work shaped (and
-          // critiqued) ABA. Same front-line-voices pattern shipped on
-          // ClimateExplorer's regions cards: name + role + documented
-          // quote + on-record source. Students learning ABA need to hear
-          // from the people the field has been done TO, not just the
-          // researchers and clinicians who designed it.
-          var DISABILITY_VOICES = [
+          // === Voices migrated to SEL Hub ===
+          // The named autistic + disabled voices that were previously
+          // in this tool now live in SEL Hub → "Disability Voices",
+          // intentionally NOT alongside Skinner-box imagery. The
+          // backlink callout below the Beyond Pure ABA panel points
+          // students to the new home. Original constant retained as a
+          // tombstone comment to preserve git-blame and explain why
+          // there's a gap here.
+          /* eslint-disable no-unused-vars */
+          var DISABILITY_VOICES_MOVED_TO_SEL_HUB = [
             {
               name: 'Ari Ne\'eman',
               role: 'Co-founder, Autism Self Advocacy Network (ASAN); first openly autistic appointee to the National Council on Disability (Obama, 2010); now at Harvard School of Public Health.',
@@ -5344,79 +5346,46 @@ var d = labToolData || {};
               )
             ),
 
-            // === VOICES FROM THE DISABILITY COMMUNITY ===
-            // Front-line-voices pattern from ClimateExplorer adapted for
-            // the autistic and disabled advocates whose work shaped (and
-            // critiqued) ABA. Each card shows a 🎙️ quote chip with role
-            // and on-record source. Pairs with Beyond Pure ABA above so
-            // the critique → voices → faces flow is unbroken.
+            // === Backlink to Disability Voices (SEL Hub) ===
+            // Named autistic + disabled voices belong in SEL Hub, NOT
+            // alongside Skinner-box imagery. This is the bridge — a
+            // clearly-marked callout that points students who have just
+            // read the critical-frame panels above to the dedicated
+            // tool where the people the field has been done TO are
+            // centered, not relegated to a sidebar in a behavior-
+            // science tool. Tonal/ethical boundary, deliberate.
             React.createElement("div", {
-              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(244,114,182,0.25)' }, glass)
+              style: Object.assign({
+                background: 'linear-gradient(135deg, rgba(244,114,182,0.10), rgba(167,139,250,0.06))',
+                borderRadius: 14,
+                padding: '14px 16px',
+                border: '1px solid rgba(244,114,182,0.30)',
+                borderLeft: '4px solid #f472b6'
+              }, glass)
             },
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🎙️ Voices from the disability community"),
-                React.createElement("button", { onClick: function() { upd('blShowVoices', !d.blShowVoices); },
-                  className: "text-[11px] text-pink-400 hover:text-pink-300"
-                }, d.blShowVoices ? 'Hide' : 'View →')
+              React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 } },
+                React.createElement("div", {
+                  'aria-hidden': 'true',
+                  style: {
+                    width: 44, height: 44, borderRadius: '50%',
+                    background: 'rgba(244,114,182,0.20)',
+                    border: '1.5px solid #f472b6',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 22, lineHeight: 1, flexShrink: 0
+                  }
+                }, '🎙️'),
+                React.createElement("div", null,
+                  React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: '#f9a8d4', lineHeight: 1.2 } }, "Continue in: Disability Voices (SEL Hub)"),
+                  React.createElement("div", { style: { fontSize: 10, color: '#94a3b8', marginTop: 3, fontStyle: 'italic' } }, "Named autistic and disabled advocates, not behavioral subjects")
+                )
               ),
-              d.blShowVoices && React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-3", style: { lineHeight: 1.55 } },
-                "Real autistic and disabled advocates whose work shaped — and critiqued — applied behavior analysis. Students learning ABA need to hear from the people the field has been done TO, not only from the researchers and clinicians who designed it. Each entry: name, role, documented quote, on-record source."),
-              d.blShowVoices && React.createElement("div", { className: "space-y-2" },
-                DISABILITY_VOICES.map(function(v, vi) {
-                  return React.createElement("div", {
-                    key: 'voice-' + vi,
-                    style: {
-                      background: 'rgba(15,23,42,0.6)',
-                      borderRadius: 10,
-                      padding: '12px 14px',
-                      border: '1px solid rgba(100,116,139,0.25)',
-                      borderLeft: '4px solid ' + v.color
-                    }
-                  },
-                    React.createElement("div", { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 } },
-                      React.createElement("div", {
-                        'aria-hidden': 'true',
-                        style: {
-                          width: 38, height: 38, borderRadius: '50%',
-                          background: v.color + '22',
-                          border: '1.5px solid ' + v.color,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 18, lineHeight: 1, flexShrink: 0
-                        }
-                      }, v.icon),
-                      React.createElement("div", { style: { flex: 1, minWidth: 0 } },
-                        React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: v.color, lineHeight: 1.2, marginBottom: 3 } }, v.name),
-                        React.createElement("div", { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.5 } }, v.role)
-                      )
-                    ),
-                    // Quote block — accent-bordered italic, mirrors the
-                    // ClimateExplorer voice-card pattern.
-                    React.createElement("div", {
-                      style: {
-                        padding: '10px 12px', borderRadius: 8,
-                        background: v.color + '12',
-                        borderLeft: '2px solid ' + v.color,
-                        marginBottom: 6
-                      }
-                    },
-                      React.createElement("span", { style: { color: v.color, fontWeight: 800, marginRight: 4 } }, '"'),
-                      React.createElement("span", { style: { fontSize: 12, color: '#e2e8f0', fontStyle: 'italic', lineHeight: 1.55 } }, v.quote),
-                      React.createElement("span", { style: { color: v.color, fontWeight: 800, marginLeft: 2 } }, '"')
-                    ),
-                    React.createElement("div", { style: { fontSize: 9, color: '#64748b', fontStyle: 'italic', lineHeight: 1.5 } },
-                      '📚 ', v.source)
-                  );
-                })
-              ),
-              d.blShowVoices && React.createElement("div", {
-                style: {
-                  marginTop: 10, padding: 10, borderRadius: 8,
-                  background: 'rgba(244,114,182,0.06)',
-                  border: '1px solid rgba(244,114,182,0.20)',
-                  color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic'
-                }
-              },
-                "🎯 If you are training to do ABA work, the most important continuing-education you can do is read the people the field has been done to. Start with ASAN's resources, follow autistic researchers (Milton, Pellicano, Den Houting), watch In My Language. The science is the science; the application is a relationship.")
+              React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 10 } },
+                "If you have just read the critical-frame panels above, the next step is to hear from the people whose work shaped — and critiqued — applied behavior analysis. ",
+                React.createElement("b", null, "We deliberately built that content in the SEL Hub, not here."),
+                " Putting named real autistic adults inside a tool whose central image is a Skinner box would be exactly what the disability community has documented as harmful. The tool you want includes Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Lydia X. Z. Brown, and Patty Berne — with documented quotes, context, and a curated reading list."),
+              React.createElement("div", { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.55, fontStyle: 'italic' } },
+                "Open SEL Hub → Identity & Care → ",
+                React.createElement("b", { style: { color: '#f9a8d4' } }, '"🎤 Disability Voices."'))
             ),
 
             // === SCHEDULE COMPARISON CANVAS ===

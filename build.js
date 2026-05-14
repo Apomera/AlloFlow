@@ -842,6 +842,7 @@ const PLUGIN_FILES = [
     'sel_hub/sel_tool_healthyrelationships.js',
     'sel_hub/sel_tool_substancepsychoed.js',
     'sel_hub/sel_tool_identitysupport.js',
+    'sel_hub/sel_tool_disabilityvoices.js',
     'sel_hub/sel_tool_strengths.js',
     'sel_hub/sel_tool_goals.js',
     'sel_hub/sel_tool_community.js',
