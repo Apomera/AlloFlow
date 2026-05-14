@@ -2435,8 +2435,79 @@
             })(),
             AMBER
           ),
-          extremeEnvironmentsSection()
+          extremeEnvironmentsSection(),
+          shmAndInspectionSection()
         );
+
+        function shmAndInspectionSection() {
+          var SHM = [
+            { id: 'visual', name: 'Visual inspection (NBIS)', emoji: '👁️',
+              tech: 'A trained inspector physically examines every accessible surface of the bridge, recording observed defects (cracks, spalls, corrosion, deformation, scour, debris) with photographs + notes + sketches. Findings get rated on a 0-9 scale (Federal Highway Administration NBI rating: 9 = excellent, 0 = failed) for each major component (deck, superstructure, substructure, channel). The full inspection becomes part of the National Bridge Inventory. Frequency: every 24 months for typical bridges, more often for fracture-critical or substandard structures. The 1971 National Bridge Inspection Standards (NBIS) was enacted directly in response to the 1967 Silver Bridge collapse.',
+              limit: 'Visual inspection only catches surface defects. Hidden corrosion inside steel members, internal voids in concrete, post-tensioning tendon failures, fatigue cracks beneath paint, and deterioration on the underside of decks all easily get missed. A 2008 FHWA study found that two different inspectors rating the same bridge often disagreed by 1-2 NBI grades. Inspection is necessary but not sufficient.'
+            },
+            { id: 'access', name: 'Hands-on access', emoji: '🪜',
+              tech: 'Many bridge components are not viewable from the deck. Inspectors need physical access via: snooper trucks (cherry-picker booms hanging out over the side), rope-access teams (rappelling specialists from the deck edge), boats (under-bridge inspection of piers + abutments over water), underwater divers (for submerged piers + piles), confined-space teams (inside box girders + cells), and bucket trucks. Major fracture-critical bridges (where the failure of one member could collapse the structure) require hands-on close inspection of every weld + connection.',
+              limit: 'Hands-on inspection is expensive, slow, and dangerous. Snooper-truck closures cost ~$10-50K per day in traffic disruption alone. Underwater diving on a cold turbid river is genuinely hazardous; inspector fatalities, while rare, do happen. Smaller agencies skip components they cannot afford to access, accepting the inspection gap.'
+            },
+            { id: 'drone', name: 'Drone-based inspection', emoji: '🛸',
+              tech: 'Drones (UAVs) equipped with high-resolution cameras, thermal infrared, and lidar can survey bridge surfaces from positions inspectors cannot easily reach: the underside of deep girders, the tops of tall pylons, the soffits of long-span structures, and the cliff faces beneath arch bridges. Photogrammetry software reconstructs millimeter-accurate 3D models from drone-captured photos. AI-assisted defect detection (trained on crack + spall image datasets) can flag suspected defects for human review. The Minnesota DOT + several state agencies have integrated drones into routine inspection workflows since around 2018.',
+              limit: 'Drones are now a useful supplement to visual inspection, NOT a replacement. They cannot strike-test concrete (sounding for delamination), cannot smell hot oil from a stressed bearing, cannot feel a vibration cycle that warns of impending fatigue. AI defect-detection works for the failures it was trained on; it misses categories not in the training data. Regulations + airspace rules + weather + battery life all constrain drone use.'
+            },
+            { id: 'sensor', name: 'Strain gauges + accelerometers', emoji: '📊',
+              tech: 'Strain gauges (foil resistance or fiber-optic) glued to steel members measure tiny length changes (microstrains, parts per million) caused by load. Accelerometers measure vibration acceleration. Tilt meters, displacement transducers, temperature sensors round out the suite. Data is transmitted by wireless or fiber-optic cables to a data-acquisition system. A typical large bridge SHM installation has 100-500 sensors continuously logging data; some monitor for decades. The Tsing Ma Bridge (Hong Kong) has had ~800 sensors operating since opening in 1997.',
+              limit: 'Sensors fail. The harshest environment for an electronic sensor is sometimes the harshest environment for the bridge itself (wet, cold, vibrating, salt-laden). Sensor lifespan is often shorter than bridge lifespan; replacing failed sensors mid-life is expensive. Wireless protocols change; data formats from a 1995 installation may not be readable by 2025 software. Maintaining the SHM system is its own ongoing engineering project.'
+            },
+            { id: 'fiber', name: 'Distributed fiber-optic sensing', emoji: '〰️',
+              tech: 'A single optical fiber, glued or embedded along a structural member, becomes thousands of distributed sensors. Brillouin or Rayleigh scattering analysis of the light passing through can measure strain + temperature at every point along the fiber (typically 1 m spatial resolution, mm-strain accuracy). Distributed fiber sensing is now used to monitor cracks in long-span girders, post-tensioning duct integrity, pile foundation settlement, and tunnel deformation. The Stonecutters Bridge (Hong Kong) + Russky Bridge (Russia) have both used distributed fiber sensing extensively.',
+              limit: 'Distributed sensing is data-rich; interpretation is hard. A single distributed fiber installation can generate gigabytes of data per day. Pattern recognition + machine learning are needed to extract actionable information from the noise. False alarms are common. The technology is mature but the analytical software + workflows are still maturing.'
+            },
+            { id: 'gpr', name: 'Ground-penetrating radar + ultrasonics', emoji: '📡',
+              tech: 'Ground-penetrating radar (GPR) sends microwave pulses into concrete, listening for reflections from voids, rebar, post-tensioning ducts, and delaminated layers. Ultrasonic pulse-echo + impact-echo tests do the same with sound waves. Both produce sub-surface "B-scan" images showing internal defects without physical excavation. Magnetic flux leakage (MFL) testing of post-tensioning strands can detect broken wires inside ducts. Acoustic emission monitoring can listen for active crack growth in real time. These nondestructive testing (NDT) methods have largely replaced destructive coring for routine internal-condition assessment.',
+              limit: 'NDT requires expertise to interpret. A GPR scan of a concrete deck looks like a noisy radar image; interpreting it correctly requires specific training + experience. False positives + false negatives both occur. NDT results should always be cross-checked against visual + physical evidence; treating them as oracle answers is a known way to make wrong calls.'
+            },
+            { id: 'genoa', name: 'When SHM fails — the Genoa case', emoji: '⚠️',
+              tech: 'The Morandi Bridge in Genoa, Italy collapsed on August 14, 2018, killing 43 people. The bridge had been monitored, including with sensors. Prior structural studies had identified deterioration of the post-tensioning tendons. Yet the collapse came suddenly, with little public warning. Subsequent investigations revealed: (1) some sensors were broken + not replaced, (2) interpretation of the data was compartmentalized + no single team had the full picture, (3) ownership disputes between the operator + the government delayed repair work, (4) the FRACTURE-CRITICAL nature of the bridge (cable-stayed with very few redundant load paths) was not adequately accounted for in inspection rigor.',
+              limit: 'SHM is not a substitute for judgment, redundancy, or accountability. A bridge with broken sensors + administrative paralysis is a bridge no SHM system can save. The lesson from Genoa is institutional + political, not technical. Italy has since passed legislation mandating SHM + clearer responsibility chains, but similar institutional fragmentation exists in many countries with aging infrastructure.'
+            },
+            { id: 'ml', name: 'AI + machine learning in inspection', emoji: '🤖',
+              tech: 'Deep-learning models trained on hundreds of thousands of labeled bridge defect images can now identify cracks, spalls, corrosion, and other defects in drone footage at accuracies approaching expert human inspectors for common defect types. Vision-transformer models + foundation models have improved sensitivity since ~2022. Several state DOTs are piloting AI-augmented inspection pipelines: drones capture imagery; an AI pre-screens for suspected defects; human inspectors review flagged regions in detail. This can multiply inspector productivity 5-10× for routine surface-defect scanning.',
+              limit: 'AI inspection has well-documented blind spots. Models trained on US bridges generalize poorly to European or Asian bridges with different concrete formulations + paint colors. Rare or novel defect types (the ones that cause unexpected failures) are exactly what AI under-trained on. Adversarial conditions (low light, wet surfaces, unusual angles) produce false positives + false negatives at unpredictable rates. The honest framing: AI is a productivity tool for routine inspection; humans remain accountable for the safety call.'
+            }
+          ];
+          var sel = d.selectedSHM || 'visual';
+          var topic = SHM.find(function(t) { return t.id === sel; }) || SHM[0];
+          return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🔍 Bridge inspection + Structural Health Monitoring (SHM)'),
+            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+              'A bridge is not designed once + left alone. It is inspected on a defined cycle, and increasingly, it is monitored continuously through sensors, drones, and AI-assisted analysis. The shift from "inspect every 2 years" to "monitor in real time" is one of the major operational changes in infrastructure engineering of the past 30 years. The technology is genuinely powerful + has clear limits.'
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              SHM.map(function(t) {
+                var on = t.id === sel;
+                return h('button', {
+                  key: t.id,
+                  onClick: function() { upd({ selectedSHM: t.id }); },
+                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
+                }, t.emoji + ' ' + t.name);
+              })
+            ),
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Technique + how it works'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.tech)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limit'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.limit)
+              )
+            ),
+            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
+              h('strong', null, 'The institutional reality: '),
+              'The technical tools for bridge monitoring have advanced enormously in the past 20 years. The institutional capacity to USE them — funding for sensor installation, trained personnel for data analysis, clear chains of responsibility, political will to close + repair structures when warning signs appear — has advanced less. Most major bridge tragedies of the past 50 years (Silver, Mianus, I-35W, Morandi/Genoa, Pittsburgh Fern Hollow) have been institutional failures as much as technical ones.'
+            )
+          );
+        }
 
         function extremeEnvironmentsSection() {
           var EXT = [

@@ -1528,6 +1528,71 @@
               )
             ),
             '#6ee7b7'
+          ),
+
+          // ─── Public health surveillance ──────────────────────────
+          sectionCard('🏛️ Public health surveillance — how we watch for outbreaks',
+            (function() {
+              var SURV_TOPICS = [
+                { id: 'overview', name: 'What surveillance is', emoji: '🔭',
+                  body: 'Public health surveillance is the ongoing systematic collection, analysis, and interpretation of health data — used to plan, implement, and evaluate public health practice. It is the immune system of a community. Categories: PASSIVE surveillance (clinicians report cases to health departments — standard for ~100+ reportable diseases including TB, HIV, measles, salmonella, hepatitis), ACTIVE surveillance (health workers proactively go look for cases — used during outbreaks), SYNDROMIC surveillance (counting symptoms or hospital visits in real time, sometimes before specific diagnosis — used after 9/11 + during COVID), SENTINEL surveillance (selected clinics report intensively, used for flu via the US Influenza Sentinel Provider Network), and ENVIRONMENTAL surveillance (wastewater, air, water, food testing).',
+                  caveat: 'Surveillance only works if (a) clinicians + labs report cases (often hard to enforce; in some US states reporting rates for certain diseases are below 50%), (b) the data gets to public health staff with time to act, (c) public health authorities have the power + capacity to respond. A surveillance system that detects an outbreak but cannot trigger a response is a tragic kind of theater.'
+                },
+                { id: 'wastewater', name: 'Wastewater surveillance', emoji: '🚰',
+                  body: 'Sewage carries traces of every infection passing through a community\'s gut + respiratory tract. By sampling wastewater treatment plant influent + analyzing it with quantitative PCR or sequencing, public health can detect polio, hepatitis A, salmonella, norovirus, and (since 2020) SARS-CoV-2 — often days BEFORE clinical cases peak. The CDC National Wastewater Surveillance System (NWSS) now covers ~1500 sites across all 50 states + the District of Columbia. Wastewater data caught the second + third COVID waves, the 2022-2023 RSV surge, mpox in 2022, polio reintroduction in New York 2022, and is now monitoring for H5N1 (bird flu) routinely.',
+                  caveat: 'Wastewater surveillance is anonymous + non-invasive, which is a real strength. It is also limited: small communities don\'t have central sewer systems; rural + tribal areas are systematically undercovered; some pathogens don\'t shed reliably in stool. Wastewater tells you "something is happening in this community" but cannot identify WHO. That is a feature for privacy, a limit for targeted intervention.'
+                },
+                { id: 'contact', name: 'Contact tracing', emoji: '🕸️',
+                  body: 'Contact tracing identifies + notifies people who have been exposed to a confirmed case so they can monitor symptoms, quarantine, get tested, or get prophylactic treatment. The technique was pioneered for syphilis in the 1930s + scaled massively for tuberculosis + HIV. Effective for diseases with relatively long incubation + identifiable exposure events. COVID-19 contact tracing was attempted at large scale in 2020-2021 with mixed results: where infection rates stayed low (initial wave, Vermont, New Zealand), it worked; where infection became widespread, the workforce was overwhelmed + contacts had often already exposed others before being notified. Effective contact tracing requires trust between communities + public health (often missing for marginalized populations) + adequate workforce.',
+                  caveat: 'Contact-tracing apps (Apple/Google Exposure Notification, various national apps) were tried during COVID. Their performance was mixed — uptake was generally too low to substantially change transmission dynamics. Privacy concerns + accuracy concerns were both real. The lesson: technology can supplement human tracing but cannot replace community trust + adequate staffing.'
+                },
+                { id: 'pulsenet', name: 'Genomic surveillance + PulseNet', emoji: '🧬',
+                  body: 'PulseNet is a network of US public health + food regulatory labs that fingerprint bacterial isolates from foodborne illness cases. Starting with pulsed-field gel electrophoresis in 1996 + now using whole-genome sequencing, PulseNet routinely identifies clusters of genetically related cases across multiple states — revealing outbreaks that would have been invisible (each state seeing only a few cases). PulseNet has detected hundreds of multistate outbreaks of E. coli, salmonella, listeria, campylobacter, cyclospora. The network catches contamination at central food processors + has cut typical outbreak detection time from weeks to days. GenomeTrakr is the parallel network for environmental + food samples.',
+                  caveat: 'Genomic surveillance is now standard for foodborne disease in the US + many wealthy countries. It is much less developed in low- + middle-income countries, where the disease burden is much higher. WHO\'s Global Antimicrobial Resistance Surveillance System (GLASS) is trying to extend coverage but capacity remains uneven. The pathogens that emerge globally typically emerge from regions with the weakest surveillance.'
+                },
+                { id: 'onehealth', name: 'One Health framework', emoji: '🌍',
+                  body: 'Most emerging human infections come from animals — Ebola, HIV, SARS, MERS, COVID-19, mpox, influenza, Lyme, West Nile, hantavirus. The One Health framework recognizes that human + animal + environmental health are inseparable: pathogens cross species barriers, antibiotic use in livestock drives resistance in human pathogens, climate change shifts disease vectors, deforestation increases human-wildlife contact. CDC, USDA, FDA, EPA, WHO, FAO, and OIE (World Organisation for Animal Health) increasingly coordinate. Practical examples: monitoring wildlife reservoirs for spillover risk (the Predict program, 2009-2020, identified ~1000 new viruses), surveillance of pig + poultry farms for novel influenza strains, watching tick populations for emerging Borrelia + Babesia species.',
+                  caveat: 'One Health is intellectually sound + funding-poor. Most public health infrastructure was built around human-only categories; integrating animal + environmental surveillance requires breaking institutional silos. Progress is real but slow. Pandemic risk is genuinely reducible with adequate One Health investment; the world\'s collective investment is genuinely inadequate.'
+                },
+                { id: 'mortality', name: 'Excess mortality + cause-of-death surveillance', emoji: '📋',
+                  body: 'Excess mortality is the difference between observed deaths (during a crisis or pandemic) + the expected baseline. It is a key surveillance output, often more accurate than confirmed-case counting (which depends on testing + reporting capacity that can be overwhelmed). The COVID-19 pandemic excess-mortality estimate worldwide is ~20-30 million deaths (2020-2024), well above the ~7 million CONFIRMED COVID deaths. Many of those excess deaths were COVID; some were collateral (delayed cancer treatment, disrupted maternal care, untreated chronic disease, mental health crises). Some were UNDERCOUNTING countries with weak vital statistics. The Economist + Lancet COVID Commission both produce excess-mortality dashboards.',
+                  caveat: 'Excess mortality is a clearer signal of total pandemic impact than confirmed-case counts. But it does not distinguish DIRECT vs INDIRECT effects without further analysis. And in countries without solid baseline vital statistics, the baseline itself is uncertain. The number remains the best single integrative measure of "what really happened" during a major health event.'
+                },
+                { id: 'epi', name: 'Epidemiologists do this work', emoji: '🩺',
+                  body: 'The professionals who run surveillance systems are epidemiologists, infection-prevention specialists, biostatisticians, lab scientists, public health nurses, and the Disease Detectives (CDC Epidemic Intelligence Service, EIS). EIS is a 2-year postdoctoral program founded in 1951; alumni have led most major US outbreak investigations of the past 70 years (the 1976 Legionnaire\'s outbreak, the 1981 HIV cluster recognition, the 1993 Sin Nombre hantavirus outbreak, the 2014 Ebola response, COVID-19). State + local health departments do the bulk of routine surveillance with thin budgets + small teams. CDC + FDA provide reference labs + multi-state outbreak coordination.',
+                  caveat: 'Public health workforce in the US has shrunk steadily for decades. ~50,000 state + local public health workers lost between 2008 + 2019; partial regrowth post-COVID. Many counties have 1-2 public-health staff covering 100,000+ population. The workforce gap is one reason the US response to COVID was uneven; it remains a serious vulnerability for the next emergency.'
+                },
+                { id: 'trust', name: 'The trust + politics layer', emoji: '⚖️',
+                  body: 'Surveillance depends on public trust + political support. Both are fragile. The COVID-19 era saw historic erosion of public health trust in the US, with sustained attacks on public health agencies + workers (CDC, state health officers, Fauci, local school nurses). Vaccination rates for routine childhood diseases (measles, whooping cough) have dropped since 2020; measles outbreaks in unvaccinated communities are now annual events. Surveillance data shared publicly during COVID was sometimes weaponized by political actors against vulnerable communities. Building back trust is a long-term + uncertain project. School psychologists + counselors are sometimes the most-trusted public-health-adjacent figures in a community; that role matters.',
+                  caveat: 'Public health is inherently political in the sense that it concerns COLLECTIVE health + requires COLLECTIVE action. That is not a flaw; that is its nature. But politicization that undermines surveillance, vaccination, or response capacity costs lives. Honest engagement with skepticism (rather than dismissal) + careful communication of what is known vs uncertain are the only paths forward. Lecturing + shaming have a long track record of failure.'
+                }
+              ];
+              var sel = d.selectedSurv || 'overview';
+              var topic = SURV_TOPICS.find(function(t) { return t.id === sel; }) || SURV_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'You do not see public health surveillance until it fails. The systems that scan wastewater for polio, sequence E. coli outbreaks to find their source, trace contacts during an Ebola scare, and track excess mortality in real time during a pandemic are how a society defends itself against infectious disease. They are also chronically underfunded, institutionally fragmented, and politically vulnerable. School-based health workers + counselors are often the closest most students get to the system.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  SURV_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedSurv: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#0ea5e9' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #0ea5e9' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#7dd3fc', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                )
+              );
+            })(),
+            '#0ea5e9'
           )
         );
       }
