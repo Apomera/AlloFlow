@@ -542,6 +542,342 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                       '🚨 Kitchen fire risk. Try again.';
         return { score: score, grade: grade, verdict: verdict, notes: notes };
       }
+    },
+
+    // ─────────────────────────────────────────────────────
+    // FRENCH OMELET (medium) — same eggs, harder finish
+    // ─────────────────────────────────────────────────────
+    omelet: {
+      id: 'omelet',
+      name: 'French Omelet',
+      icon: '🥚',
+      difficulty: 'medium',
+      targetTimeMin: 3,
+      description: 'Same eggs, faster + hotter. The classic French test: no browning, rolled finish, baby-soft interior.',
+      teaches: ['Heat control under pressure', 'Speed = different chemistry', 'Roll technique', 'Pan as a tool'],
+      ingredients: [
+        { id: 'butter',     name: 'Butter (1 tbsp)',     icon: '🧈', addAtStep: 1 },
+        { id: 'eggs',       name: 'Whisked eggs (2-3)',  icon: '🥚', addAtStep: 2 },
+        { id: 'roll',       name: 'Roll + plate',        icon: '🌯', addAtStep: 4 }
+      ],
+      steps: [
+        { id: 's0', title: 'Heat pan to MEDIUM-HIGH',
+          instruction: 'Crank to 6-7 out of 10. Aim for ~340-380°F. The omelet wants speed, not gentleness.',
+          target: { panTempF: { min: 320, max: 400 } }, completeWhen: 'panInRange',
+          teach: 'Scrambled eggs want low + slow — they\'re custard. Omelets want fast + hot — they\'re crepes made of egg. The whole cook is under 90 seconds.' },
+        { id: 's1', title: 'Add butter, swirl',
+          instruction: 'Drop butter, swirl until foaming subsides. Should take 5-10 seconds — the pan is hot.',
+          target: { itemAdded: 'butter' }, completeWhen: 'itemAdded',
+          teach: 'At medium-high heat, butter foams and clears fast. If butter browns immediately = pan too hot, restart.' },
+        { id: 's2', title: 'Pour eggs, swirl + stir vigorously',
+          instruction: 'Pour eggs in. Immediately start tilting + shaking the pan, scraping with a spatula. Goal: small, fast curds that build a flat sheet.',
+          target: { itemAdded: 'eggs' }, completeWhen: 'itemAdded',
+          teach: 'The French move: pan stays moving, spatula stays moving, 20-30 seconds of intense agitation. You\'re making thousands of tiny curds that fuse into a smooth sheet.' },
+        { id: 's3', title: 'Stop stirring — let bottom set',
+          instruction: 'When the curds are mostly set but the top still looks WET + glossy, stop stirring. Let the bottom set for 10-15 seconds.',
+          target: { activeTimeSec: { min: 20, max: 70 }, panTempF: { max: 410 } }, completeWhen: 'userClick',
+          teach: 'The bottom needs to set into a thin "skin" that can hold the roll. Top stays glossy + barely set = the silky interior the French call "baveuse" (drooly).' },
+        { id: 's4', title: 'Roll + plate',
+          instruction: 'Tilt pan toward you. Use spatula to fold the far third over the middle. Slide onto plate, using the pan edge to fold the near third under as it lands. Done.',
+          target: { itemAdded: 'roll' }, completeWhen: 'itemAdded',
+          teach: 'The roll is the test. A good French omelet looks like a small football — smooth, pale yellow, no brown spots, soft inside. This is the Escoffier classic.' }
+      ],
+      judge: function(state) {
+        var notes = []; var score = 100;
+        var maxT = state.maxPanTempF || 0;
+        var t = state.activeTimeSec || 0;
+        // Omelet wants HIGH heat but NOT browning. Above 420°F = brown spots.
+        if (maxT >= 460) { score -= 35; notes.push({ neg: true, label: '🔥 Browned + tough', detail: 'Pan hit ' + Math.round(maxT) + '°F. Real French omelets are PALE yellow — no browning. This one would have brown spots.' }); }
+        else if (maxT >= 420) { score -= 15; notes.push({ neg: true, label: '🌡️ Some browning', detail: 'Peak ' + Math.round(maxT) + '°F. Slight golden tinge — Julia Child would frown, but it\'s edible.' }); }
+        else if (maxT >= 320) { notes.push({ neg: false, label: '✓ Pan temp', detail: 'Peak ' + Math.round(maxT) + '°F — proper omelet zone.' }); }
+        else { score -= 25; notes.push({ neg: true, label: '🥶 Not hot enough', detail: 'Pan never got to omelet temp (' + Math.round(maxT) + '°F). Slow cook = scrambled eggs, not omelet.' }); }
+        // Omelet is fast: 30-75 seconds total is the window
+        if (t < 25) { score -= 15; notes.push({ neg: true, label: '⏱️ Too fast', detail: 'Cooked only ' + Math.round(t) + 's — interior would still be liquid.' }); }
+        else if (t > 90) { score -= 20; notes.push({ neg: true, label: '⏱️ Too slow', detail: 'Cooked ' + Math.round(t) + 's — the omelet should be DONE in 60-75s. This one would be overcooked + rubbery.' }); }
+        else { notes.push({ neg: false, label: '✓ Speed', detail: Math.round(t) + 's — properly fast. The French omelet rewards speed.' }); }
+        // Rolled?
+        if ((state.itemAddTimes || {}).roll) {
+          notes.push({ neg: false, label: '✓ Rolled', detail: 'You committed to the roll. That\'s the test.' });
+        } else {
+          score -= 10;
+          notes.push({ neg: true, label: '⚠️ Not rolled', detail: 'Skipping the roll = scrambled eggs on a plate. The roll is what makes it an omelet.' });
+        }
+        score = Math.max(0, Math.min(100, score));
+        var grade = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 60 ? 'D' : 'F';
+        var verdict = score >= 90 ? '🇫🇷 Worthy of Le Bernardin\'s line. Bravo.' :
+                      score >= 80 ? '👨‍🍳 Solid omelet. The neighbors would be impressed.' :
+                      score >= 70 ? '🥚 Recognizable as an omelet. Mostly.' :
+                      score >= 60 ? '😬 Closer to scrambled eggs that got hugged.' :
+                      '🚨 Julia Child would have notes.';
+        return { score: score, grade: grade, verdict: verdict, notes: notes };
+      },
+      renderVisual: function(h, state) {
+        var panTemp = state.panTemp, items = state.itemsInPan, t = state.activeTime;
+        var panColor = panTemp >= 400 ? '#7c2d12' : panTemp >= 320 ? '#a3461a' : '#57534e';
+        var hasButter = items.indexOf('butter') !== -1;
+        var hasEggs = items.indexOf('eggs') !== -1;
+        var rolled = items.indexOf('roll') !== -1;
+        // Omelet color: starts pale, browns above 420°F
+        var omColor = panTemp > 460 ? '#92400e' : panTemp > 420 ? '#fbbf24' : '#fef9c3';
+        return h('svg', { width: 280, height: 180, viewBox: '0 0 280 180', 'aria-hidden': 'true' },
+          panTemp >= 300 ? h('ellipse', { cx: 140, cy: 95, rx: 110, ry: 55, fill: 'rgba(251,146,60,' + Math.min(0.6, (panTemp - 300) / 300) + ')', opacity: 0.6 }) : null,
+          h('ellipse', { cx: 140, cy: 100, rx: 100, ry: 30, fill: panColor, stroke: '#1c1410', strokeWidth: 2 }),
+          h('ellipse', { cx: 140, cy: 95, rx: 92, ry: 25, fill: '#1c1410' }),
+          hasButter && !hasEggs ? h('ellipse', { cx: 140, cy: 95, rx: 60, ry: 16, fill: '#fde68a', opacity: 0.5 }) : null,
+          hasEggs && !rolled ? h('g', null,
+            h('ellipse', { cx: 140, cy: 95, rx: 80, ry: 22, fill: omColor, opacity: 0.97 }),
+            // Flat sheet — no curd bumps
+            t > 15 ? h('ellipse', { cx: 140, cy: 95, rx: 80, ry: 22, fill: omColor, stroke: 'rgba(0,0,0,0.1)', strokeWidth: 0.5 }) : null
+          ) : null,
+          // Rolled omelet — football shape
+          rolled ? h('g', null,
+            h('ellipse', { cx: 140, cy: 95, rx: 50, ry: 14, fill: omColor, stroke: 'rgba(180,140,80,0.6)', strokeWidth: 1 }),
+            // Roll seam
+            h('path', { d: 'M 100 95 Q 140 100 180 95', stroke: 'rgba(140,100,40,0.5)', strokeWidth: 1, fill: 'none' })
+          ) : null,
+          h('rect', { x: 232, y: 90, width: 40, height: 14, fill: '#1c1410', rx: 3 }),
+          h('circle', { cx: 140, cy: 130, r: 70, fill: 'none', stroke: panTemp >= 220 ? '#fb923c' : '#52525b', strokeWidth: 2, opacity: 0.4, strokeDasharray: '4 6' })
+        );
+      }
+    },
+
+    // ─────────────────────────────────────────────────────
+    // VEGETABLE STIR-FRY (medium) — high heat, order matters
+    // ─────────────────────────────────────────────────────
+    stirFry: {
+      id: 'stirFry',
+      name: 'Vegetable Stir-Fry',
+      icon: '🥦',
+      difficulty: 'medium',
+      targetTimeMin: 6,
+      description: 'Wok hei — the breath of the wok. Very high heat, prep first, ingredients in strict order: aromatics → hard veg → soft veg → sauce.',
+      teaches: ['Heat-as-tool (wok hei)', 'Mise en place', 'Ingredient ordering by cook time', 'Quick saucing'],
+      ingredients: [
+        { id: 'oil',       name: 'Oil (high smoke point)', icon: '🛢️', addAtStep: 0 },
+        { id: 'aromatics', name: 'Garlic + ginger',        icon: '🧄', addAtStep: 1 },
+        { id: 'hardVeg',   name: 'Broccoli + carrots',     icon: '🥕', addAtStep: 2 },
+        { id: 'softVeg',   name: 'Bell pepper + snap peas', icon: '🫑', addAtStep: 3 },
+        { id: 'sauce',     name: 'Soy sauce + sesame oil', icon: '🥢', addAtStep: 4 }
+      ],
+      steps: [
+        { id: 's0', title: 'CRANK heat to MAX + add oil',
+          instruction: 'Turn burner to 9-10. Get the pan/wok to ~430-475°F before adding oil. Drop oil in — should shimmer + ripple instantly.',
+          target: { panTempF: { min: 410, max: 500 }, itemAdded: 'oil' }, completeWhen: 'itemAdded',
+          teach: 'Wok hei means "breath of the wok" — that smoky depth Chinese stir-fries have. It needs VERY hot oil. Use avocado, peanut, or grapeseed — any oil with smoke point above 450°F. NOT olive oil.' },
+        { id: 's1', title: 'Add aromatics — 30 seconds MAX',
+          instruction: 'Drop garlic + ginger into the screaming-hot oil. Stir constantly. They should hiss + go fragrant in 10 seconds. Pull out or move on FAST.',
+          target: { itemAdded: 'aromatics' }, completeWhen: 'itemAdded',
+          teach: 'Garlic burns from gold to black in seconds at this heat. Burned garlic = bitter + ruined dish. You have ~30 seconds before the next ingredient must hit the pan.' },
+        { id: 's2', title: 'Add hard vegetables (broccoli, carrots)',
+          instruction: 'In they go. Toss + stir for ~90 seconds — they cook longer than softer veg. Keep the pan moving.',
+          target: { itemAdded: 'hardVeg' }, completeWhen: 'itemAdded',
+          teach: 'Order = cook time. Broccoli + carrots have dense cell walls — they need more time. Soft veg added first would turn to mush before the hard ones are done.' },
+        { id: 's3', title: 'Add soft vegetables',
+          instruction: 'Bell pepper, snap peas — anything that cooks in 30-60s. Toss + stir another minute. Vegetables should be bright-colored + just-tender.',
+          target: { itemAdded: 'softVeg' }, completeWhen: 'itemAdded',
+          teach: 'Soft veg join the party late. The goal: every vegetable finishes at the same moment, no mush, vibrant color.' },
+        { id: 's4', title: 'Add sauce + toss',
+          instruction: 'Pour soy sauce + sesame oil around the EDGE of the pan (not on top of veg) — it caramelizes on the hot metal for flavor depth. Toss to coat. 15-20 seconds. Done.',
+          target: { itemAdded: 'sauce' }, completeWhen: 'itemAdded',
+          teach: 'Pouring sauce on hot metal at the pan edge = instant Maillard + caramelization of the sauce sugars. That\'s another layer of "wok hei" flavor — the smoke + char layer Chinese cooks chase.' }
+      ],
+      judge: function(state) {
+        var notes = []; var score = 100;
+        var maxT = state.maxPanTempF || 0;
+        var t = state.activeTimeSec || 0;
+        var order = state.ingredientOrder || [];
+        // Stir-fry wants HIGH heat
+        if (maxT < 380) { score -= 25; notes.push({ neg: true, label: '🥶 Pan not hot enough', detail: 'Peak ' + Math.round(maxT) + '°F. Stir-fry needs 420°F+ for proper wok hei. This would be soggy steam-fried vegetables.' }); }
+        else if (maxT >= 380 && maxT < 450) { score -= 10; notes.push({ neg: true, label: '🌡️ Hot but not screaming', detail: 'Peak ' + Math.round(maxT) + '°F. Workable but not the smoky wok-hei depth.' }); }
+        else if (maxT >= 450) { notes.push({ neg: false, label: '🔥 Proper heat', detail: 'Peak ' + Math.round(maxT) + '°F. Real wok-hei temperature.' }); }
+        // Ingredient order check
+        var expectedOrder = ['oil', 'aromatics', 'hardVeg', 'softVeg', 'sauce'];
+        var orderCorrect = expectedOrder.every(function(id, i) { return order[i] === id; });
+        if (orderCorrect) {
+          notes.push({ neg: false, label: '✓ Ingredient order', detail: 'You followed the proper sequence. Each ingredient hit the pan at its right moment.' });
+        } else {
+          score -= 25;
+          var firstWrong = expectedOrder.findIndex(function(id, i) { return order[i] !== id; });
+          notes.push({ neg: true, label: '⚠️ Out of order', detail: 'Order matters in stir-fry. Expected: oil → aromatics → hard veg → soft veg → sauce. First mismatch at position ' + (firstWrong + 1) + '.' });
+        }
+        // Time
+        if (t < 180) { score -= 5; notes.push({ neg: true, label: '⏱️ Slightly rushed', detail: 'Total cook ' + Math.round(t) + 's. Stir-fry IS fast but veg need at least 3-4 min total.' }); }
+        else if (t > 360) { score -= 10; notes.push({ neg: true, label: '⏱️ Overcooked', detail: 'Cooked ' + Math.round(t) + 's. Veg would be mushy + faded by now.' }); }
+        else { notes.push({ neg: false, label: '✓ Timing', detail: Math.round(t) + 's — solid stir-fry pace.' }); }
+        score = Math.max(0, Math.min(100, score));
+        var grade = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 60 ? 'D' : 'F';
+        var verdict = score >= 90 ? '🥢 Wok hei achieved. The kind of stir-fry that smells like a great Chinese restaurant.' :
+                      score >= 80 ? '🍳 Good stir-fry. Crunchy, flavorful, balanced.' :
+                      score >= 70 ? '🥦 Stir-fried adjacent. Bit pale.' :
+                      score >= 60 ? '😬 Vegetable medley with extra steps.' :
+                      '🚨 Sad veggies. Maybe order takeout.';
+        return { score: score, grade: grade, verdict: verdict, notes: notes };
+      },
+      renderVisual: function(h, state) {
+        var panTemp = state.panTemp, items = state.itemsInPan;
+        var hasOil = items.indexOf('oil') !== -1;
+        var hasAr = items.indexOf('aromatics') !== -1;
+        var hasHard = items.indexOf('hardVeg') !== -1;
+        var hasSoft = items.indexOf('softVeg') !== -1;
+        var hasSauce = items.indexOf('sauce') !== -1;
+        var panColor = panTemp >= 450 ? '#1c1410' : panTemp >= 350 ? '#3a2418' : '#57534e';
+        return h('svg', { width: 280, height: 180, viewBox: '0 0 280 180', 'aria-hidden': 'true' },
+          // Wok glow / flame at high heat
+          panTemp >= 400 ? h('ellipse', { cx: 140, cy: 95, rx: 115, ry: 60, fill: 'rgba(251,146,60,0.7)' }) : null,
+          // Wok shape (deeper than pan)
+          h('ellipse', { cx: 140, cy: 100, rx: 100, ry: 35, fill: panColor, stroke: '#1c1410', strokeWidth: 2 }),
+          h('ellipse', { cx: 140, cy: 95, rx: 92, ry: 30, fill: '#1c1410' }),
+          // Oil sheen
+          hasOil ? h('ellipse', { cx: 140, cy: 95, rx: 70, ry: 18, fill: 'rgba(255,220,120,0.4)' }) : null,
+          // Aromatics (small bright dots)
+          hasAr ? h('g', null,
+            h('circle', { cx: 110, cy: 92, r: 3, fill: panTemp > 460 ? '#7c2d12' : '#fef3c7' }),
+            h('circle', { cx: 130, cy: 96, r: 2.5, fill: panTemp > 460 ? '#7c2d12' : '#fef3c7' }),
+            h('circle', { cx: 150, cy: 91, r: 3, fill: panTemp > 460 ? '#7c2d12' : '#fef3c7' }),
+            h('circle', { cx: 170, cy: 95, r: 2.5, fill: panTemp > 460 ? '#7c2d12' : '#fef3c7' })
+          ) : null,
+          // Hard veg (orange + green chunks)
+          hasHard ? h('g', null,
+            h('rect', { x: 100, y: 88, width: 12, height: 8, fill: '#22c55e', rx: 2 }),
+            h('rect', { x: 120, y: 90, width: 10, height: 7, fill: '#f97316', rx: 2 }),
+            h('rect', { x: 142, y: 88, width: 12, height: 8, fill: '#22c55e', rx: 2 }),
+            h('rect', { x: 162, y: 91, width: 11, height: 7, fill: '#f97316', rx: 2 }),
+            h('rect', { x: 178, y: 88, width: 10, height: 8, fill: '#22c55e', rx: 2 })
+          ) : null,
+          // Soft veg (peppers + peas)
+          hasSoft ? h('g', null,
+            h('rect', { x: 92, y: 98, width: 9, height: 6, fill: '#ef4444', rx: 1 }),
+            h('rect', { x: 132, y: 100, width: 8, height: 6, fill: '#eab308', rx: 1 }),
+            h('rect', { x: 156, y: 98, width: 9, height: 6, fill: '#ef4444', rx: 1 }),
+            h('rect', { x: 182, y: 100, width: 8, height: 6, fill: '#84cc16', rx: 1 })
+          ) : null,
+          // Sauce sheen
+          hasSauce ? h('ellipse', { cx: 140, cy: 100, rx: 80, ry: 12, fill: 'rgba(120,53,15,0.5)' }) : null,
+          // Wok hei smoke / flames
+          panTemp > 420 ? h('g', null,
+            h('path', { d: 'M 110 75 Q 105 60 115 45 Q 125 30 115 15', stroke: 'rgba(180,180,180,0.6)', strokeWidth: 2.5, fill: 'none' }),
+            h('path', { d: 'M 140 73 Q 138 55 148 40 Q 158 28 152 12', stroke: 'rgba(180,180,180,0.6)', strokeWidth: 2.5, fill: 'none' }),
+            h('path', { d: 'M 170 75 Q 165 58 175 42 Q 185 28 175 14', stroke: 'rgba(180,180,180,0.6)', strokeWidth: 2.5, fill: 'none' })
+          ) : null,
+          // Wok handle (longer than skillet)
+          h('rect', { x: 232, y: 92, width: 45, height: 10, fill: '#1c1410', rx: 2 }),
+          // Burner
+          h('circle', { cx: 140, cy: 135, r: 75, fill: 'none', stroke: panTemp >= 350 ? '#dc2626' : '#52525b', strokeWidth: 2.5, opacity: 0.5, strokeDasharray: '4 6' })
+        );
+      }
+    },
+
+    // ─────────────────────────────────────────────────────
+    // PAN-SEARED CHICKEN (medium) — Maillard + carryover
+    // ─────────────────────────────────────────────────────
+    panSeared: {
+      id: 'panSeared',
+      name: 'Pan-Seared Chicken',
+      icon: '🍗',
+      difficulty: 'medium',
+      targetTimeMin: 10,
+      description: 'The classic. Build a Maillard crust on high heat, finish through, rest before cutting. Tracks INTERNAL temp — pull at 155°F, rest brings it to 165°F.',
+      teaches: ['Maillard at scale', 'Internal vs surface temp', 'Carryover cooking', 'Thermometer use', 'Rest discipline'],
+      ingredients: [
+        { id: 'oil',     name: 'Oil (avocado or refined)', icon: '🛢️', addAtStep: 0 },
+        { id: 'chicken', name: 'Seasoned chicken breast',  icon: '🍗', addAtStep: 1 }
+      ],
+      steps: [
+        { id: 's0', title: 'Heat pan + add oil',
+          instruction: 'Crank burner to 7-8. Wait until pan reaches ~420°F. Add a tablespoon of high-smoke-point oil — should shimmer instantly.',
+          target: { panTempF: { min: 400, max: 470 }, itemAdded: 'oil' }, completeWhen: 'itemAdded',
+          teach: 'Chicken skin + a thoroughly heated pan = the only way to get golden-brown crust without grey rubber underneath. Cold pan = stuck + steamed.' },
+        { id: 's1', title: 'Lay chicken in — DO NOT MOVE',
+          instruction: 'Pat chicken DRY first. Lay it in the pan (skin/presentation side down). Don\'t poke it. Don\'t shake it. Don\'t flip it. 4-5 minutes.',
+          target: { itemAdded: 'chicken' }, completeWhen: 'itemAdded',
+          teach: 'Maillard takes time + contact. Every time you move the chicken, you interrupt the reaction. Set it down, walk away, trust the process.' },
+        { id: 's2', title: 'Flip when crust forms',
+          instruction: 'Lift a corner — if it sticks, give it 30 more seconds. If it releases easily + looks deep golden, flip. Now 4-5 more minutes on side 2.',
+          target: { activeTimeSec: { min: 180, max: 600 } }, completeWhen: 'userClick',
+          teach: 'The chicken tells you when it\'s ready to flip — protein releases from the pan once a proper crust has formed. If you fight it, you lose the crust.' },
+        { id: 's3', title: 'Lower heat — cook through to 155°F internal',
+          instruction: 'Drop burner to 4. Let internal temp climb to 155°F (use a meat thermometer — you can\'t guess this). About 3-5 more minutes.',
+          target: { foodInternalF: { min: 155, max: 175 }, panTempF: { min: 250, max: 380 } },
+          completeWhen: 'internalTempReached',
+          teach: 'High heat for crust → medium heat to finish. If you stay on high, the outside burns before the inside hits safe temp. The thermometer is non-negotiable.' },
+        { id: 's4', title: 'Pull off heat — REST',
+          instruction: 'Take pan off heat. Move chicken to a plate, tent loosely with foil. Let rest 5-10 min. Internal temp will rise to 165°F via carryover.',
+          target: { burnerLevel: 0 }, completeWhen: 'heatRemoved',
+          teach: 'Carryover is real physics — the outside of the chicken is much hotter than 155°F when you pulled it. That heat continues to migrate inward. Cutting now = juice everywhere. Resting = juice stays in the meat.' }
+      ],
+      judge: function(state) {
+        var notes = []; var score = 100;
+        var maxT = state.maxPanTempF || 0;
+        var foodT = state.foodInternalF || 40;
+        var t = state.activeTimeSec || 0;
+        // Maillard crust requires high initial heat
+        if (maxT < 380) { score -= 30; notes.push({ neg: true, label: '🥶 No crust possible', detail: 'Peak ' + Math.round(maxT) + '°F. Maillard threshold is ~280°F surface but you need 400°F+ pan temp to get there fast on a thick cut. This chicken would be gray + grim.' }); }
+        else if (maxT >= 380 && maxT < 480) { notes.push({ neg: false, label: '✓ Pan temp', detail: 'Peak ' + Math.round(maxT) + '°F — proper sear temperature.' }); }
+        else if (maxT >= 480) { score -= 10; notes.push({ neg: true, label: '🌡️ Bit too hot', detail: 'Peak ' + Math.round(maxT) + '°F. Crust likely burnt-black before inside cooked.' }); }
+        // Internal temp is the SAFETY check
+        if (foodT < 150) { score -= 40; notes.push({ neg: true, label: '☣️ FOOD SAFETY: undercooked', detail: 'Internal ' + Math.round(foodT) + '°F. USDA safe temp for poultry is 165°F. This chicken is salmonella risk.' }); }
+        else if (foodT < 158) { score -= 15; notes.push({ neg: true, label: '⚠️ Borderline', detail: 'Internal ' + Math.round(foodT) + '°F. With carryover, MIGHT reach 165°F but cutting it close. Pull at 155°F for safety margin.' }); }
+        else if (foodT < 175) { notes.push({ neg: false, label: '✓ Internal temp', detail: 'Internal ' + Math.round(foodT) + '°F — carryover will bring it to safe 165°F+.' }); }
+        else { score -= 15; notes.push({ neg: true, label: '🍂 Overcooked', detail: 'Internal ' + Math.round(foodT) + '°F. Over 175°F = dry chicken. Pull earlier next time + trust the carryover.' }); }
+        // Carryover detection
+        if (state.heatRemovedAt) {
+          notes.push({ neg: false, label: '✓ Carryover discipline', detail: 'You pulled it off heat. Most cooks keep cooking past done — you didn\'t.' });
+        }
+        // Time check
+        if (t < 240) { score -= 10; notes.push({ neg: true, label: '⏱️ Quick cook', detail: 'Only ' + Math.round(t) + 's. Chicken breast needs 8-12 min total for full cook-through.' }); }
+        score = Math.max(0, Math.min(100, score));
+        var grade = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 60 ? 'D' : 'F';
+        var verdict = score >= 90 ? '🍗 Restaurant-quality pan-seared chicken. Crust like glass, juicy inside.' :
+                      score >= 80 ? '👨‍🍳 Solid chicken. Dinner is served.' :
+                      score >= 70 ? '🍗 Edible, mostly. Some dry spots.' :
+                      score >= 60 ? '😬 Either tough or food-safety borderline.' :
+                      '🚨 Don\'t serve this. Order pizza.';
+        return { score: score, grade: grade, verdict: verdict, notes: notes };
+      },
+      renderVisual: function(h, state) {
+        var panTemp = state.panTemp, items = state.itemsInPan, t = state.activeTime, foodT = state.foodTemp;
+        var hasOil = items.indexOf('oil') !== -1;
+        var hasChicken = items.indexOf('chicken') !== -1;
+        var panColor = panTemp >= 400 ? '#7c2d12' : panTemp >= 320 ? '#a3461a' : '#57534e';
+        // Chicken color: deepens with cook time + temp
+        var crustColor = '#fde68a';
+        if (hasChicken) {
+          if (panTemp > 480 && t > 60) crustColor = '#1c1410'; // burnt
+          else if (panTemp > 380 && t > 180) crustColor = '#92400e'; // deep mahogany
+          else if (panTemp > 350 && t > 90) crustColor = '#c2410c'; // golden brown
+          else if (panTemp > 300 && t > 45) crustColor = '#d97706'; // light brown
+        }
+        return h('svg', { width: 280, height: 180, viewBox: '0 0 280 180', 'aria-hidden': 'true' },
+          panTemp >= 300 ? h('ellipse', { cx: 140, cy: 95, rx: 110, ry: 55, fill: 'rgba(251,146,60,' + Math.min(0.6, (panTemp - 300) / 300) + ')' }) : null,
+          h('ellipse', { cx: 140, cy: 100, rx: 100, ry: 30, fill: panColor, stroke: '#1c1410', strokeWidth: 2 }),
+          h('ellipse', { cx: 140, cy: 95, rx: 92, ry: 25, fill: '#1c1410' }),
+          // Oil sheen
+          hasOil && !hasChicken ? h('ellipse', { cx: 140, cy: 95, rx: 65, ry: 16, fill: 'rgba(255,220,120,0.4)' }) : null,
+          // Chicken breast — irregular oval shape
+          hasChicken ? h('g', null,
+            h('path', { d: 'M 95 85 Q 90 95 100 105 Q 110 110 140 110 Q 175 109 185 100 Q 188 88 175 82 Q 145 75 110 78 Q 100 80 95 85 Z',
+              fill: crustColor, stroke: 'rgba(120,53,15,0.7)', strokeWidth: 1 }),
+            // Sear marks
+            t > 90 ? h('g', null,
+              h('path', { d: 'M 105 92 L 175 90', stroke: 'rgba(60,30,10,0.5)', strokeWidth: 1.5 }),
+              h('path', { d: 'M 110 100 L 170 102', stroke: 'rgba(60,30,10,0.5)', strokeWidth: 1.5 })
+            ) : null,
+            // Juice pooling if rest started
+            state.itemsInPan.length > 0 && panTemp < 200 ? h('ellipse', { cx: 140, cy: 105, rx: 50, ry: 8, fill: 'rgba(180,90,40,0.4)' }) : null,
+            // Smoke if burning
+            panTemp > 480 && t > 60 ? h('g', null,
+              h('path', { d: 'M 120 70 Q 115 50 125 35', stroke: 'rgba(40,40,40,0.7)', strokeWidth: 3, fill: 'none' }),
+              h('path', { d: 'M 160 72 Q 165 55 155 40', stroke: 'rgba(40,40,40,0.7)', strokeWidth: 3, fill: 'none' })
+            ) : null,
+            // Internal temp readout
+            h('rect', { x: 92, y: 138, width: 96, height: 22, rx: 6, fill: 'rgba(0,0,0,0.75)' }),
+            h('text', { x: 140, y: 153, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: foodT >= 165 ? '#86efac' : foodT >= 155 ? '#fbbf24' : '#fca5a5', fontFamily: 'ui-monospace, Menlo, monospace' },
+              'Internal: ' + Math.round(foodT) + '°F')
+          ) : null,
+          h('rect', { x: 232, y: 90, width: 40, height: 14, fill: '#1c1410', rx: 3 }),
+          h('circle', { cx: 140, cy: 130, r: 70, fill: 'none', stroke: panTemp >= 220 ? '#fb923c' : '#52525b', strokeWidth: 2, opacity: 0.4, strokeDasharray: '4 6' })
+        );
+      }
     }
   };
 
@@ -550,12 +886,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
   // ───────────────────────────────────────────────────────────
   var RECIPE_CATALOG = [
     { id: 'scrambledEggs', name: 'Scrambled Eggs',       icon: '🍳', difficulty: 'easy',   unlocked: true,  blurb: 'Master the basics: low heat, constant motion, carryover.' },
-    { id: 'omelet',        name: 'French Omelet',        icon: '🥚', difficulty: 'medium', unlocked: false, blurb: 'Same eggs, harder finish. Coming in v0.4.' },
-    { id: 'stirFry',       name: 'Vegetable Stir-Fry',   icon: '🥦', difficulty: 'medium', unlocked: false, blurb: 'High heat, fast hands, hot wok. Coming in v0.4.' },
-    { id: 'pastaSauce',    name: 'Pasta + Pan Sauce',    icon: '🍝', difficulty: 'medium', unlocked: false, blurb: 'Multi-pot management. Coming in v0.4.' },
-    { id: 'panSeared',     name: 'Pan-Seared Chicken',   icon: '🍗', difficulty: 'medium', unlocked: false, blurb: 'Maillard mastery + carryover. Coming in v0.4.' },
-    { id: 'sheetPan',      name: 'Sheet-Pan Dinner',     icon: '🥘', difficulty: 'medium', unlocked: false, blurb: 'Oven roasting + timing. Coming in v0.4.' },
-    { id: 'roastChicken',  name: 'Whole Roast Chicken',  icon: '🍗', difficulty: 'hard',   unlocked: false, blurb: 'The full classic. Coming in v0.5.' }
+    { id: 'omelet',        name: 'French Omelet',        icon: '🥚', difficulty: 'medium', unlocked: true,  blurb: 'Same eggs, faster + hotter. Smooth pale finish, soft inside, classic roll.' },
+    { id: 'stirFry',       name: 'Vegetable Stir-Fry',   icon: '🥦', difficulty: 'medium', unlocked: true,  blurb: 'Wok hei — very high heat, ingredient ordering, fast hands. The most heat you\'ve used yet.' },
+    { id: 'panSeared',     name: 'Pan-Seared Chicken',   icon: '🍗', difficulty: 'medium', unlocked: true,  blurb: 'Maillard mastery + internal temp + carryover. Uses a meat thermometer for the first time.' },
+    { id: 'pastaSauce',    name: 'Pasta + Pan Sauce',    icon: '🍝', difficulty: 'medium', unlocked: false, blurb: 'Multi-pot management. Coming in v0.5.' },
+    { id: 'sheetPan',      name: 'Sheet-Pan Dinner',     icon: '🥘', difficulty: 'medium', unlocked: false, blurb: 'Oven roasting + timing. Coming in v0.5.' },
+    { id: 'roastChicken',  name: 'Whole Roast Chicken',  icon: '🍗', difficulty: 'hard',   unlocked: false, blurb: 'The full classic + Competition Mode. Coming in v0.5.' }
   ];
 
   // ───────────────────────────────────────────────────────────
@@ -610,7 +946,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       recipePanTempF: 70,                  // simulated pan temp (ambient start)
       recipeBurnerLevel: 0,                // 0-10
       recipeMaxPanTempF: 70,               // peak pan temp seen this run
+      recipeFoodInternalF: 40,             // simulated internal food temp (fridge start)
       recipeItemsInPan: [],                // array of ingredient ids
+      recipeIngredientOrder: [],           // order ingredients were added (for ordering checks)
       recipeItemAddTimes: {},              // { itemId: ms }
       recipeActiveTimeSec: 0,              // seconds with food in pan
       recipeHeatRemovedAt: null,           // when burner went to 0 with food in pan
@@ -1343,11 +1681,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           var now = Date.now();
           var dtSec = Math.max(0, (now - (prior.recipeLastTickAt || now)) / 1000);
           var newTemp = tickPanTemp(prior.recipePanTempF || 70, prior.recipeBurnerLevel || 0, dtSec);
-          var hasFood = (prior.recipeItemsInPan || []).some(function(id) { return id === 'eggs' || id === 'butter'; });
+          var hasFood = (prior.recipeItemsInPan || []).length > 0;
           var newActiveTime = (prior.recipeActiveTimeSec || 0) + (hasFood ? dtSec : 0);
+          // Food internal temp: rises toward pan temp at much slower rate
+          // (k=0.008 on heat; meat takes minutes to come up to temp).
+          // Off heat with food in pan: 30s of carryover (continues rising)
+          // then drifts toward ambient.
+          var curFood = prior.recipeFoodInternalF || 40;
+          var newFood = curFood;
+          if (hasFood) {
+            var foodK = (prior.recipeBurnerLevel || 0) > 0 ? 0.008 :
+              (prior.recipeHeatRemovedAt && (now - prior.recipeHeatRemovedAt) < 30000 ? 0.004 : -0.001);
+            newFood = curFood + (newTemp - curFood) * (1 - Math.exp(-Math.abs(foodK) * dtSec)) * Math.sign(foodK || 1);
+            // Clamp absurd values
+            newFood = Math.max(40, Math.min(550, newFood));
+          }
           return {
             recipePanTempF: newTemp,
             recipeMaxPanTempF: Math.max(prior.recipeMaxPanTempF || 0, newTemp),
+            recipeFoodInternalF: newFood,
             recipeActiveTimeSec: newActiveTime,
             recipeLastTickAt: now
           };
@@ -1382,7 +1734,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           recipePanTempF: 70,
           recipeBurnerLevel: 0,
           recipeMaxPanTempF: 70,
+          recipeFoodInternalF: 40,
           recipeItemsInPan: [],
+          recipeIngredientOrder: [],
           recipeItemAddTimes: {},
           recipeActiveTimeSec: 0,
           recipeHeatRemovedAt: null,
@@ -1409,8 +1763,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         setKL(function(prior) {
           if ((prior.recipeItemsInPan || []).indexOf(itemId) !== -1) return {};
           var newItems = (prior.recipeItemsInPan || []).slice(); newItems.push(itemId);
+          var newOrder = (prior.recipeIngredientOrder || []).slice(); newOrder.push(itemId);
           var newTimes = Object.assign({}, prior.recipeItemAddTimes || {}); newTimes[itemId] = Date.now();
-          return { recipeItemsInPan: newItems, recipeItemAddTimes: newTimes };
+          return { recipeItemsInPan: newItems, recipeIngredientOrder: newOrder, recipeItemAddTimes: newTimes };
         });
         klAnnounce('Added ' + itemId);
       }
@@ -1424,7 +1779,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             var snapshot = {
               maxPanTempF: prior.recipeMaxPanTempF || 0,
               activeTimeSec: prior.recipeActiveTimeSec || 0,
+              foodInternalF: prior.recipeFoodInternalF || 40,
               itemAddTimes: prior.recipeItemAddTimes || {},
+              ingredientOrder: prior.recipeIngredientOrder || [],
               heatRemovedAt: prior.recipeHeatRemovedAt,
               stepsCompleted: rec.steps.length,
               lastTickAt: prior.recipeLastTickAt,
@@ -1466,6 +1823,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           if ((d.recipeBurnerLevel || 0) === 0) {
             nextStep();
             klAnnounce('Heat removed — carryover cooking begins.');
+          }
+        } else if (auto === 'internalTempReached' && step.target.foodInternalF) {
+          var ft = d.recipeFoodInternalF || 40;
+          if (ft >= step.target.foodInternalF.min) {
+            nextStep();
+            klAnnounce('Internal temp ' + Math.round(ft) + '°F — step complete.');
           }
         }
       }
@@ -1626,7 +1989,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 '✓ Continue to next step') : h('div', { style: { fontSize: 11, color: '#94a3b8', padding: '12px 16px', background: 'rgba(15,23,42,0.5)', borderRadius: 8, fontStyle: 'italic', flex: 1, minWidth: 200 } },
                 step.completeWhen === 'panInRange' ? '⏳ Auto-advances when pan reaches target temperature' :
                 step.completeWhen === 'itemAdded' ? '⏳ Auto-advances when ingredient is added' :
-                step.completeWhen === 'heatRemoved' ? '⏳ Auto-advances when burner reaches 0' : '⏳ Continue when ready'),
+                step.completeWhen === 'heatRemoved' ? '⏳ Auto-advances when burner reaches 0' :
+                step.completeWhen === 'internalTempReached' ? '⏳ Auto-advances when internal food temperature reaches target — use the readout on the chicken' : '⏳ Continue when ready'),
               h('button', {
                 onClick: function() { if (confirm('Abandon this recipe?')) abortRecipe(); },
                 style: { padding: '12px 18px', background: 'transparent', color: '#fca5a5',
@@ -1637,6 +2001,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
       // ─── Visual pan rendering ───
       function renderPanCanvas(panTemp, itemsInPan, activeTime, rec) {
+        var state = { panTemp: panTemp, itemsInPan: itemsInPan || [], activeTime: activeTime,
+                      foodTemp: d.recipeFoodInternalF || 40 };
+        // Recipe-specific visual takes precedence; otherwise use default
+        if (rec && typeof rec.renderVisual === 'function') {
+          return h('div', { style: { display: 'flex', justifyContent: 'center', padding: '8px 0' } },
+            rec.renderVisual(h, state));
+        }
+        return renderDefaultPanVisual(h, state);
+      }
+      function renderDefaultPanVisual(h, state) {
+        var panTemp = state.panTemp;
+        var itemsInPan = state.itemsInPan;
+        var activeTime = state.activeTime;
         // Color of pan/contents based on temp
         var panColor = panTemp >= 400 ? '#7c2d12' : panTemp >= 320 ? '#a3461a' : panTemp >= 220 ? '#78350f' : panTemp >= 100 ? '#57534e' : '#3f3f46';
         var glow = panTemp >= 300 ? 'rgba(251,146,60,' + Math.min(0.6, (panTemp - 300) / 300) + ')' : 'transparent';
