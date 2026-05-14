@@ -171,12 +171,47 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
       function goto(v) { setDV({ view: v }); }
 
       function header() {
-        return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
+        return h('div', {
+          style: {
+            display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18, flexWrap: 'wrap',
+            // Pink/lavender atmospheric strip — soft glow at left, fades
+            // out across the header so it doesn't fight SEL Hub's parent
+            // palette. Confined to the header rather than the whole tool.
+            padding: '14px 16px',
+            borderRadius: 14,
+            background: 'radial-gradient(ellipse 60% 100% at 0% 50%, rgba(249,168,212,0.10), transparent 70%), rgba(15,23,42,0.45)',
+            border: '1px solid rgba(244,114,182,0.20)',
+            borderLeft: '4px solid #f472b6'
+          }
+        },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#cbd5e1', fontSize: 14 } }, '← Back'),
-          h('div', { style: { flex: 1, minWidth: 260 } },
-            h('h2', { style: { margin: 0, color: '#f9a8d4', fontSize: 22, fontWeight: 900 } }, '🎙️ Disability Voices'),
-            h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 4, lineHeight: 1.5 } },
+            style: { background: 'rgba(255,255,255,0.06)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#cbd5e1', fontSize: 14, flexShrink: 0 } }, '← Back'),
+          // Circular accent hero badge — same vocabulary as the rest
+          // of the design system. 56px hero size matches School
+          // Behavior Toolkit + TypingPractice drill-intro.
+          h('div', { 'aria-hidden': 'true',
+            style: {
+              width: 56, height: 56, borderRadius: '50%',
+              background: 'rgba(244,114,182,0.18)',
+              border: '2px solid #f472b6',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 28, lineHeight: 1, flexShrink: 0,
+              boxShadow: '0 4px 16px rgba(244,114,182,0.25)'
+            }
+          }, '🎙️'),
+          h('div', { style: { flex: 1, minWidth: 240 } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 } },
+              h('h2', { style: { margin: 0, color: '#f9a8d4', fontSize: 22, fontWeight: 900, letterSpacing: '-0.01em' } }, 'Disability Voices'),
+              // Meta-count chip showing total voices + reading entries
+              h('span', { style: {
+                padding: '2px 8px', borderRadius: 999,
+                background: 'rgba(244,114,182,0.12)',
+                border: '1px solid rgba(244,114,182,0.40)',
+                color: '#f9a8d4', fontSize: 10, fontWeight: 700,
+                fontFamily: 'ui-monospace, Menlo, monospace'
+              } }, VOICES.length + ' voices · ' + READING_LIST.length + ' readings')
+            ),
+            h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } },
               'Real autistic and disabled advocates whose work shaped, and critiqued, disability practice. The people the field has been done to.')
           )
         );
@@ -188,7 +223,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
           { id: 'reading', label: 'Reading list', icon: '📚' },
           { id: 'about', label: 'About this tool', icon: 'ℹ️' }
         ];
-        return h('div', { role: 'tablist', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
+        return h('div', { role: 'tablist', 'aria-label': 'Disability Voices sections',
+          style: {
+            display: 'flex', gap: 4, marginBottom: 16,
+            borderBottom: '1px solid rgba(244,114,182,0.15)',
+            alignItems: 'flex-end',
+            overflowX: 'auto'
+          }
+        },
           tabs.map(function(tab) {
             var active = view === tab.id;
             return h('button', {
@@ -197,16 +239,33 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
               'aria-selected': active ? 'true' : 'false',
               onClick: function() { goto(tab.id); },
               style: {
-                padding: '8px 14px',
-                borderRadius: 999,
-                border: '1px solid ' + (active ? '#f9a8d4' : '#334155'),
-                background: active ? 'rgba(249,168,212,0.10)' : 'rgba(255,255,255,0.02)',
-                color: active ? '#f9a8d4' : '#cbd5e1',
+                position: 'relative',
+                padding: '10px 14px 12px',
+                border: 'none',
+                background: active ? 'rgba(244,114,182,0.10)' : 'transparent',
+                color: active ? '#f9a8d4' : '#94a3b8',
                 fontSize: 12,
                 fontWeight: active ? 800 : 600,
-                cursor: 'pointer'
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+                borderRadius: '8px 8px 0 0',
+                borderTop: '1px solid ' + (active ? 'rgba(244,114,182,0.30)' : 'transparent'),
+                borderLeft: '1px solid ' + (active ? 'rgba(244,114,182,0.30)' : 'transparent'),
+                borderRight: '1px solid ' + (active ? 'rgba(244,114,182,0.30)' : 'transparent'),
+                marginBottom: -1,
+                transition: 'color 140ms ease, background 140ms ease'
               }
-            }, tab.icon + ' ' + tab.label);
+            },
+              h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, tab.icon),
+              h('span', null, tab.label),
+              active ? h('span', { 'aria-hidden': 'true',
+                style: {
+                  position: 'absolute', left: 6, right: 6, bottom: 0,
+                  height: 2, background: '#f472b6', borderRadius: '2px 2px 0 0'
+                }
+              }) : null
+            );
           })
         );
       }
