@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -12637,9 +12637,24 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   </div>
               `;
           }
+          // Self-test mode wraps each definition (and translation) cell in a
+          // <details> so students see the term first and reveal the definition
+          // to check themselves. Default off — opt-in via config. Worksheet
+          // mode disables it (paper printout should show everything flat).
+          const _glossarySelfTest = (cfg.glossarySelfTest === true && !isWorksheet);
+          const _hideCell = (content) => _glossarySelfTest
+              ? `<details class="alloflow-glossary-cell"><summary style="list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:#ecfdf5;color:#065f46;font-size:0.78em;font-weight:600;border:1px solid #6ee7b7;border-radius:9999px;outline-offset:2px;"><span class="alloflow-glossary-caret" aria-hidden="true">▶</span>Reveal</summary><div style="margin-top:6px;">${content}</div></details>`
+              : content;
           return `
-              <div class="section" id="${item.id}" style="border-left:4px solid #059669;border-radius:12px;">
+              <div class="section alloflow-glossary-section" id="${item.id}" data-glossary-section="${item.id}" style="border-left:4px solid #059669;border-radius:12px;">
                   ${enhancedHeader}
+                  ${_glossarySelfTest ? `
+                    <div class="alloflow-glossary-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+                        <button type="button" class="alloflow-glossary-reveal-all" data-glossary-target="${item.id}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;border-radius:9999px;cursor:pointer;">▾ Reveal all</button>
+                        <button type="button" class="alloflow-glossary-hide-all-tbl" data-glossary-target="${item.id}" style="padding:6px 12px;font-size:12px;font-weight:600;background:white;color:#475569;border:1px solid #cbd5e1;border-radius:9999px;cursor:pointer;">▸ Hide all</button>
+                        <span style="font-size:11px;color:#64748b;font-style:italic;">Self-test: try to recall each definition, then reveal to check.</span>
+                    </div>
+                  ` : ''}
                   <table style="border-radius:8px;overflow:hidden;">
                   <thead><tr style="background:#ecfdf5;">
                       ${hasAnyImages ? `<th scope="col" style="text-align: center; width: 70px;color:#059669;">${t('output.col_image') || 'Image'}</th>` : ''}
@@ -12654,13 +12669,37 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           <td style="text-align: ${align}">
                             <strong>${gItem.term}</strong>
                           </td>
-                          <td style="text-align: ${align}">${gItem.def}</td>
-                          ${hasAnyTranslations ? `<td style="text-align: ${align}">${Object.entries(gItem.translations || {}).map(([k, v]) => `<strong>${k}:</strong> ${v}`).join('<br><br>')}</td>` : ''}
+                          <td style="text-align: ${align}">${_hideCell(gItem.def)}</td>
+                          ${hasAnyTranslations ? `<td style="text-align: ${align}">${_hideCell(Object.entries(gItem.translations || {}).map(([k, v]) => `<strong>${k}:</strong> ${v}`).join('<br><br>'))}</td>` : ''}
                       </tr>
                       `).join('')}
                   </tbody>
                   </table>
                   ${wordSearchHtml}
+                  ${_glossarySelfTest ? `
+                    <style>
+                        .alloflow-glossary-section details.alloflow-glossary-cell summary::-webkit-details-marker { display: none; }
+                        .alloflow-glossary-section details.alloflow-glossary-cell summary::marker { content: ''; }
+                        .alloflow-glossary-section details.alloflow-glossary-cell[open] .alloflow-glossary-caret { transform: rotate(90deg); display:inline-block; }
+                        .alloflow-glossary-section details.alloflow-glossary-cell summary:focus-visible { outline: 2px solid #065f46; border-radius: 9999px; }
+                        @media print {
+                            .alloflow-glossary-controls { display: none !important; }
+                            .alloflow-glossary-section details.alloflow-glossary-cell > *:not(summary) { display: block !important; }
+                            .alloflow-glossary-section details.alloflow-glossary-cell summary { display: none !important; }
+                        }
+                    </style>
+                    <script>
+                        (function() {
+                            var sec = document.querySelector('[data-glossary-section="${item.id}"]');
+                            if (!sec) return;
+                            var items = sec.querySelectorAll('details.alloflow-glossary-cell');
+                            var btnShow = sec.querySelector('.alloflow-glossary-reveal-all');
+                            var btnHide = sec.querySelector('.alloflow-glossary-hide-all-tbl');
+                            if (btnShow) btnShow.addEventListener('click', function () { items.forEach(function (d) { d.open = true; }); });
+                            if (btnHide) btnHide.addEventListener('click', function () { items.forEach(function (d) { d.open = false; }); });
+                        })();
+                    </script>
+                  ` : ''}
               </div>
           `;
       } else if (item.type === 'outline') {
@@ -13603,22 +13642,78 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               </div>
           `;
       } else if (item.type === 'faq') {
+          // Default to accordion (click question to reveal answer) for screen
+          // use; print CSS force-opens details so paper output shows everything.
+          // Worksheet mode falls back to flat expanded list — students need to
+          // see all the text for paper-based reading.
+          const _faqAccordion = (cfg.faqAccordion !== false && !isWorksheet);
+          if (!_faqAccordion) {
+              return `
+                  <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+                      ${enhancedHeader}
+                      <div class="quiz-box">
+                          ${item.data.map((faq, i) => `
+                              <div role="article" style="margin-bottom:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;page-break-inside:avoid;">
+                                  <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
+                                      <span aria-hidden="true" style="background:#0891b2;color:white;font-weight:800;font-size:11px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</span>
+                                      <h3 style="font-weight:700;color:#0891b2;margin:0;font-size:1em;">${faq.question}</h3>
+                                  </div>
+                                  ${faq.question_en ? `<p style="font-size: 0.9em; color: #64748b; margin: 0 0 8px 34px; font-style: italic;">(${faq.question_en})</p>` : ''}
+                                  <p style="margin:0 0 0 34px;color:#334155;line-height:1.7;">${faq.answer}</p>
+                                  ${faq.answer_en ? `<p style="font-size: 0.9em; color: #64748b; margin: 4px 0 0 34px; font-style: italic;">(${faq.answer_en})</p>` : ''}
+                              </div>
+                          `).join('')}
+                      </div>
+                  </div>
+              `;
+          }
           return `
-              <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+              <div class="section alloflow-faq-section" id="${item.id}" data-faq-section="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
+                  <div class="alloflow-faq-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+                      <button type="button" class="alloflow-faq-expand" data-faq-target="${item.id}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfeff;color:#155e75;border:1px solid #a5f3fc;border-radius:9999px;cursor:pointer;">▾ Show all</button>
+                      <button type="button" class="alloflow-faq-collapse" data-faq-target="${item.id}" style="padding:6px 12px;font-size:12px;font-weight:600;background:white;color:#475569;border:1px solid #cbd5e1;border-radius:9999px;cursor:pointer;">▸ Hide all</button>
+                      <span style="font-size:11px;color:#64748b;font-style:italic;">Tap a question to reveal its answer.</span>
+                  </div>
                   <div class="quiz-box">
                       ${item.data.map((faq, i) => `
-                          <div role="article" style="margin-bottom:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;page-break-inside:avoid;">
-                              <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
+                          <details class="alloflow-faq-item" style="margin-bottom:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:0;page-break-inside:avoid;">
+                              <summary style="list-style:none;cursor:pointer;padding:14px 16px;display:flex;align-items:flex-start;gap:10px;outline-offset:2px;">
                                   <span aria-hidden="true" style="background:#0891b2;color:white;font-weight:800;font-size:11px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</span>
-                                  <h3 style="font-weight:700;color:#0891b2;margin:0;font-size:1em;">${faq.question}</h3>
+                                  <h3 style="font-weight:700;color:#0891b2;margin:0;font-size:1em;flex:1;">${faq.question}</h3>
+                                  <span class="alloflow-faq-caret" aria-hidden="true" style="color:#94a3b8;font-size:12px;flex-shrink:0;transition:transform 0.2s;">▼</span>
+                              </summary>
+                              ${faq.question_en ? `<p style="font-size: 0.9em; color: #64748b; margin: 0 16px 8px 50px; font-style: italic;">(${faq.question_en})</p>` : ''}
+                              <div class="alloflow-faq-answer" style="padding:0 16px 14px 50px;color:#334155;line-height:1.7;">
+                                  <p style="margin:0;">${faq.answer}</p>
+                                  ${faq.answer_en ? `<p style="font-size: 0.9em; color: #64748b; margin: 4px 0 0 0; font-style: italic;">(${faq.answer_en})</p>` : ''}
                               </div>
-                              ${faq.question_en ? `<p style="font-size: 0.9em; color: #64748b; margin: 0 0 8px 34px; font-style: italic;">(${faq.question_en})</p>` : ''}
-                              <p style="margin:0 0 0 34px;color:#334155;line-height:1.7;">${faq.answer}</p>
-                              ${faq.answer_en ? `<p style="font-size: 0.9em; color: #64748b; margin: 4px 0 0 34px; font-style: italic;">(${faq.answer_en})</p>` : ''}
-                          </div>
+                          </details>
                       `).join('')}
                   </div>
+                  <style>
+                      .alloflow-faq-section summary::-webkit-details-marker { display: none; }
+                      .alloflow-faq-section summary::marker { content: ''; }
+                      .alloflow-faq-section details[open] .alloflow-faq-caret { transform: rotate(180deg); }
+                      .alloflow-faq-section summary:focus-visible { outline: 2px solid #0891b2; border-radius: 8px; }
+                      @media print {
+                          .alloflow-faq-controls { display: none !important; }
+                          .alloflow-faq-section details { border: 1px solid #cbd5e1; }
+                          .alloflow-faq-section details > *:not(summary) { display: block !important; }
+                          .alloflow-faq-caret { display: none !important; }
+                      }
+                  </style>
+                  <script>
+                      (function() {
+                          var sec = document.querySelector('[data-faq-section="${item.id}"]');
+                          if (!sec) return;
+                          var items = sec.querySelectorAll('details.alloflow-faq-item');
+                          var btnExpand = sec.querySelector('.alloflow-faq-expand');
+                          var btnCollapse = sec.querySelector('.alloflow-faq-collapse');
+                          if (btnExpand) btnExpand.addEventListener('click', function () { items.forEach(function (d) { d.open = true; }); });
+                          if (btnCollapse) btnCollapse.addEventListener('click', function () { items.forEach(function (d) { d.open = false; }); });
+                      })();
+                  </script>
               </div>
           `;
       } else if (item.type === 'brainstorm') {
@@ -13835,12 +13930,24 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               const labelAttr = speakable ? ` aria-label="${speakable}"` : '';
               return `<span class="math-symbol" role="math"${labelAttr}>${processMathHTML(t)}</span>`;
           };
+          // When teacher view is rendered for screen reading, hide the steps +
+          // answer behind a "Show Solution" toggle so students can attempt the
+          // problem before checking. Print mode + worksheet mode show everything
+          // flat.
+          const _mathHideSolution = (cfg.mathHideSolution !== false && !isWorksheet);
           return `
-              <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+              <div class="section alloflow-math-section" id="${item.id}" data-math-section="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   ${graphData ? `
                     <div style="text-align:center; margin:20px 0; padding:20px; background:white; border:1px solid #cbd5e1; border-radius:8px;">
                         ${graphData}
+                    </div>
+                  ` : ''}
+                  ${(isTeacher && _mathHideSolution) ? `
+                    <div class="alloflow-math-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+                        <button type="button" class="alloflow-math-reveal-all" data-math-target="${item.id}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;border-radius:9999px;cursor:pointer;">▾ Show all solutions</button>
+                        <button type="button" class="alloflow-math-hide-all" data-math-target="${item.id}" style="padding:6px 12px;font-size:12px;font-weight:600;background:white;color:#475569;border:1px solid #cbd5e1;border-radius:9999px;cursor:pointer;">▸ Hide all solutions</button>
+                        <span style="font-size:11px;color:#64748b;font-style:italic;">Try the problem first, then reveal the steps.</span>
                     </div>
                   ` : ''}
                   <div style="background:#f8fafc; padding:20px; border:1px solid #e2e8f0; border-radius:8px;">
@@ -13852,8 +13959,38 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                       ${formatMath(p.question)}
                                   </div>
                               </div>
-                              ${isTeacher ? `
-                                  <!-- Teacher Key View -->
+                              ${isTeacher ? (_mathHideSolution ? `
+                                  <!-- Teacher Key View — collapsed solution -->
+                                  <details class="alloflow-math-solution" style="margin-left:25px;">
+                                      <summary style="list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:#ecfdf5;color:#065f46;font-size:0.85em;font-weight:700;border:1px solid #6ee7b7;border-radius:9999px;outline-offset:2px;">
+                                          <span class="alloflow-math-caret" aria-hidden="true">▶</span>
+                                          Show solution
+                                      </summary>
+                                      <div style="margin-top:12px;">
+                                          ${p.steps && p.steps.length > 0 ? `
+                                          <h4 style="color:#475569; margin-bottom:10px; font-size: 0.9em; text-transform: uppercase;">${t('math.display.steps_header')}</h4>
+                                          <ol style="padding-left:20px; color:#334155; margin-bottom: 15px;">
+                                              ${p.steps.map(s => `
+                                                  <li style="margin-bottom:10px;">
+                                                      <div style="font-weight:500; margin-bottom:4px;">${s.explanation}</div>
+                                                      ${s.latex ? `<div style="font-size:1.0em; color:#1e293b; background:white; display:inline-block; padding:4px 8px; border-radius:4px; border:1px solid #f1f5f9;">${formatMath(s.latex)}</div>` : ''}
+                                                  </li>
+                                              `).join('')}
+                                          </ol>
+                                          ` : ''}
+                                          <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:8px; margin-top:10px;">
+                                              <div style="font-size:0.8em; text-transform:uppercase; font-weight:bold; color:#166534; margin-bottom:5px;">${t('math.display.answer_header')}</div>
+                                              <div style="font-size:1.2em; font-weight:bold; color:#14532d;">${formatMath(p.answer)}</div>
+                                          </div>
+                                          ${p.realWorld ? `
+                                          <div style="margin-top:10px; padding:10px; background:#fff7ed; border:1px solid #ffedd5; border-radius:8px; color:#9a3412; font-size:0.9em;">
+                                              <strong>${t('math.display.connection_header')}:</strong> ${p.realWorld}
+                                          </div>
+                                          ` : ''}
+                                      </div>
+                                  </details>
+                              ` : `
+                                  <!-- Teacher Key View — flat -->
                                   <div style="margin-left: 25px;">
                                       ${p.steps && p.steps.length > 0 ? `
                                       <h4 style="color:#475569; margin-bottom:10px; font-size: 0.9em; text-transform: uppercase;">${t('math.display.steps_header')}</h4>
@@ -13876,7 +14013,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                       </div>
                                       ` : ''}
                                   </div>
-                              ` : `
+                              `) : `
                                   <!-- Student Worksheet View -->
                                   ${isWorksheet
                                       ? `<div style="margin-left:25px; border:1px solid #cbd5e1; border-radius:8px; background:white; padding:14px 16px;">
@@ -13891,6 +14028,30 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           </div>
                       `).join('')}
                   </div>
+                  ${(isTeacher && _mathHideSolution) ? `
+                    <style>
+                        .alloflow-math-section details summary::-webkit-details-marker { display: none; }
+                        .alloflow-math-section details summary::marker { content: ''; }
+                        .alloflow-math-section details[open] .alloflow-math-caret { transform: rotate(90deg); display:inline-block; }
+                        .alloflow-math-section summary:focus-visible { outline: 2px solid #065f46; border-radius: 9999px; }
+                        @media print {
+                            .alloflow-math-controls { display: none !important; }
+                            .alloflow-math-section details > *:not(summary) { display: block !important; }
+                            .alloflow-math-section details summary { display: none !important; }
+                        }
+                    </style>
+                    <script>
+                        (function() {
+                            var sec = document.querySelector('[data-math-section="${item.id}"]');
+                            if (!sec) return;
+                            var items = sec.querySelectorAll('details.alloflow-math-solution');
+                            var btnShow = sec.querySelector('.alloflow-math-reveal-all');
+                            var btnHide = sec.querySelector('.alloflow-math-hide-all');
+                            if (btnShow) btnShow.addEventListener('click', function () { items.forEach(function (d) { d.open = true; }); });
+                            if (btnHide) btnHide.addEventListener('click', function () { items.forEach(function (d) { d.open = false; }); });
+                        })();
+                    </script>
+                  ` : ''}
               </div>
           `;
       } else if (item.type === 'timeline') {
@@ -14591,8 +14752,90 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   const generateFullPackHTML = (historyItems, topic, isWorksheet = false, responses = {}, config = null) => {
       if (historyItems.length === 0) return `<p>${t('export_status.no_content')}</p>`;
       const cfg = { ...(config || exportConfig), isWorksheet };
-      const studentContent = historyItems.map(item => generateResourceHTML(item, false, responses, cfg)).join('');
-      const teacherContent = cfg.includeTeacherKey ? historyItems.map(item => generateResourceHTML(item, true, responses, cfg)).join('') : '';
+      // ── Tier 1 visual structure (May 13 2026): cover TOC + numbered section
+      // markers + decorative terminators. Mirrors the visibility logic in
+      // generateResourceHTML so we only TOC items that will actually render.
+      const _typeVisualsTOC = {
+        'simplified': { icon: '📖', color: '#2563eb', bg: '#eff6ff', label: 'Leveled Text' },
+        'analysis': { icon: '📊', color: '#7c3aed', bg: '#f5f3ff', label: 'Source Analysis' },
+        'glossary': { icon: '📚', color: '#059669', bg: '#ecfdf5', label: 'Glossary' },
+        'quiz': { icon: '❓', color: '#dc2626', bg: '#fef2f2', label: 'Quiz' },
+        'outline': { icon: '🗂️', color: '#d97706', bg: '#fffbeb', label: 'Graphic Organizer' },
+        'faq': { icon: '💬', color: '#0891b2', bg: '#ecfeff', label: 'FAQ' },
+        'sentence-frames': { icon: '✍️', color: '#4f46e5', bg: '#eef2ff', label: 'Sentence Frames' },
+        'image': { icon: '🎨', color: '#be185d', bg: '#fdf2f8', label: 'Visual Support' },
+        'math': { icon: '🔢', color: '#ea580c', bg: '#fff7ed', label: 'Math' },
+        'dbq': { icon: '📜', color: '#92400e', bg: '#fefce8', label: 'Document-Based Question' },
+        'lesson-plan': { icon: '📋', color: '#166534', bg: '#f0fdf4', label: 'Lesson Plan' },
+        'udl-advice': { icon: '🧩', color: '#7c3aed', bg: '#faf5ff', label: 'UDL Strategies' },
+        'brainstorm': { icon: '💡', color: '#ca8a04', bg: '#fefce8', label: 'Brainstorm' },
+        'fluency-record': { icon: '🎙️', color: '#0d9488', bg: '#f0fdfa', label: 'Fluency Record' },
+        'timeline': { icon: '📅', color: '#4338ca', bg: '#eef2ff', label: 'Timeline' },
+        'concept-sort': { icon: '🧩', color: '#6d28d9', bg: '#f5f3ff', label: 'Concept Sort' },
+      };
+      const _willRenderForCtx = (item, isTeacher) => {
+        const toggleMap = {
+          'lesson-plan': 'includeLessonPlan', 'simplified': 'includeSimplified', 'outline': 'includeOutline',
+          'glossary': 'includeGlossary', 'quiz': 'includeQuiz', 'faq': 'includeFaq',
+          'sentence-frames': 'includeSentenceFrames', 'image': 'includeImage', 'math': 'includeMath', 'dbq': 'includeDbq'
+        };
+        const key = toggleMap[item.type];
+        if (key && cfg[key] === false) return false;
+        if (item.type === 'analysis' || item.type === 'udl-advice' || item.type === 'brainstorm') {
+          const studentKey = item.type === 'analysis' ? 'includeAnalysis'
+                          : item.type === 'udl-advice' ? 'includeUdlAdvice' : 'includeBrainstorm';
+          if (!isTeacher && cfg[studentKey] === false) return false;
+        }
+        if (isTeacher) {
+          if (item.type === 'simplified' || item.type === 'outline' || item.type === 'image'
+              || item.type === 'faq' || item.type === 'sentence-frames') return false;
+        }
+        return true;
+      };
+      const _renderableStudent = historyItems.filter(it => _willRenderForCtx(it, false));
+      const _renderableTeacher = cfg.includeTeacherKey ? historyItems.filter(it => _willRenderForCtx(it, true)) : [];
+      const _wrapSection = (item, idx, total, html) => {
+        if (!html) return '';
+        const tv = _typeVisualsTOC[item.type] || { icon: '📄', color: '#475569', bg: '#f8fafc', label: 'Resource' };
+        // Marker pill above each section — number + type label. aria-hidden
+        // because the same info is in the section header (heading) below.
+        const marker = `<div class="alloflow-section-marker" aria-hidden="true" style="display:flex;align-items:center;gap:10px;margin:36px 0 -4px 4px;page-break-after:avoid;break-after:avoid;">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:${tv.color};color:white;font-weight:800;font-size:13px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.12);">${idx + 1}</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:${tv.bg};color:${tv.color};border:1px solid ${tv.color}33;border-radius:9999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">
+            <span>${tv.icon}</span>${tv.label || item.type}
+          </span>
+        </div>`;
+        const terminator = idx < total - 1
+          ? `<div aria-hidden="true" style="text-align:center;margin:18px 0 4px;color:${tv.color};opacity:0.45;font-size:14px;letter-spacing:10px;line-height:1;">◆ ◆ ◆</div>`
+          : '';
+        return marker + html + terminator;
+      };
+      const _buildTOC = (items, isTeacher) => {
+        if (items.length < 2) return '';  // single-resource exports don't need a TOC
+        const tocTitle = isTeacher ? (t('export.teacher_toc') || 'Teacher Contents') : (t('export.toc') || 'Contents');
+        return `
+          <nav class="alloflow-toc" aria-label="${tocTitle}" style="margin:0 0 36px;padding:22px 26px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;break-inside:avoid;page-break-inside:avoid;">
+            <h2 style="margin:0 0 14px;font-size:1.1rem;letter-spacing:-0.01em;display:flex;align-items:center;gap:8px;color:#1e293b;">
+              <span aria-hidden="true">📑</span>${tocTitle}
+            </h2>
+            <ol style="margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:6px 20px;">
+              ${items.map((item, i) => {
+                const tv = _typeVisualsTOC[item.type] || { icon: '📄', color: '#475569', bg: '#f8fafc', label: 'Resource' };
+                const title = item.title || getDefaultTitle(item.type);
+                return `<li style="display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px dashed #cbd5e1;">
+                  <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:${tv.color};color:white;font-weight:700;font-size:11px;flex-shrink:0;">${i + 1}</span>
+                  <span aria-hidden="true" style="font-size:1.05em;flex-shrink:0;">${tv.icon}</span>
+                  <a href="#${item.id}" style="color:#1e293b;text-decoration:none;font-weight:600;font-size:0.94rem;line-height:1.35;flex:1;">${title}</a>
+                </li>`;
+              }).join('')}
+            </ol>
+          </nav>
+        `;
+      };
+      const studentContent = _renderableStudent.map((item, i) => _wrapSection(item, i, _renderableStudent.length, generateResourceHTML(item, false, responses, cfg))).join('');
+      const teacherContent = _renderableTeacher.map((item, i) => _wrapSection(item, i, _renderableTeacher.length, generateResourceHTML(item, true, responses, cfg))).join('');
+      const studentTOC = _buildTOC(_renderableStudent, false);
+      const teacherTOC = _buildTOC(_renderableTeacher, true);
       const isRtl = isRtlLang(leveledTextLanguage);
       const direction = isRtl ? 'rtl' : 'ltr';
       const textAlign = isRtl ? 'right' : 'left';
@@ -14929,6 +15172,21 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           }
           .a11y-badge { margin-top: 2rem; padding: 12px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; font-size: 0.75rem; color: #166534; }
           .a11y-badge strong { display: block; margin-bottom: 4px; }
+          /* Tier 1 visual structure (May 13 2026): TOC + section markers +
+             decorative terminators. TOC links underline on hover and get a
+             visible focus ring (WCAG 2.4.7). Print mode strips the shadows
+             and the dingbat terminators stay since they're aria-hidden. */
+          .alloflow-toc a:hover { text-decoration: underline; }
+          .alloflow-toc a:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; border-radius: 4px; }
+          .alloflow-toc li { transition: background-color 0.12s; }
+          .alloflow-toc li:hover { background-color: rgba(241,245,249,0.6); }
+          @media print {
+            .alloflow-toc { background: #fff !important; border: 1.5px solid #cbd5e1 !important; page-break-after: always; break-after: page; }
+            .alloflow-toc a { color: #1e293b !important; text-decoration: none; }
+            .alloflow-section-marker { margin-top: 24px !important; }
+            .alloflow-section-marker span:first-child { box-shadow: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .alloflow-section-marker span:last-child { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          }
           ${theme.extraCSS || ''}
           ${customExportCSS ? `/* Custom AI-generated style */\n${customExportCSS}` : ''}
         </style>
@@ -14941,12 +15199,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           ${!isWorksheet ? `<p style="opacity:0.85;font-size:0.9rem;margin:0;"><strong>${topicLabel}:</strong> ${lessonTopic} &bull; ${dateLabel} ${new Date().toLocaleDateString()}</p>` : ''}
         </div>
         ${worksheetHeader}
+        ${studentTOC}
         ${studentContent || `<p>${noStudentMsg}</p>`}
         ${cfg.includeTeacherKey ? `
         <div class="page-break"></div>
         <div class="teacher-view">
             <h1>${t('export.teacher_key_title')}</h1>
             <p><em>${teacherIntro}</em></p>
+            ${teacherTOC}
             ${teacherContent || `<p>${noTeacherMsg}</p>`}
         </div>` : ''}
         <div class="a11y-badge" role="note" aria-label="Accessibility information">
@@ -15487,6 +15747,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     downloadBatchResults: _wrapAsync(downloadBatchResults),
   };
 };
+
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.createDocPipeline = createDocPipeline;
+window.AlloModules.DocPipelineModule = true;
+console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;

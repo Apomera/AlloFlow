@@ -24,8 +24,28 @@
   };
   var CheckCircle2 = _lazyIcon('CheckCircle2');
   var Pencil = _lazyIcon('Pencil');
+  var ChevronDown = _lazyIcon('ChevronDown');
 
   function FaqView(props) {
+  // Accordion state — which FAQ items are currently expanded.
+  // Editing mode + TTS playback force expansion separately (see isExpanded).
+  var expandedSet_state = React.useState(function () { return new Set(); });
+  var expandedSet = expandedSet_state[0];
+  var setExpandedSet = expandedSet_state[1];
+  var toggleFaq = function (idx) {
+    setExpandedSet(function (prev) {
+      var next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
+  };
+  var expandAll = function () {
+    if (!props.generatedContent) return;
+    var all = (props.generatedContent.data || []).map(function (_, i) { return i; });
+    setExpandedSet(new Set(all));
+  };
+  var collapseAll = function () { setExpandedSet(new Set()); };
   // State reads
   var t = props.t;
   var generatedContent = props.generatedContent;
@@ -104,16 +124,93 @@
     size: 14
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
-  }), isEditingFaq ? t('common.done_editing') : t('faq.edit'))), /*#__PURE__*/React.createElement("div", {
+  }), isEditingFaq ? t('common.done_editing') : t('faq.edit'))),
+  // Show all / Hide all controls (only when not editing — teacher needs everything visible to edit)
+  !isEditingFaq && generatedContent?.data?.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: expandAll,
+    className: "px-3 py-1 text-xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full hover:bg-cyan-100 transition-colors",
+    "aria-label": "Show all FAQ answers"
+  }, "▾ Show all"), /*#__PURE__*/React.createElement("button", {
+    onClick: collapseAll,
+    className: "px-3 py-1 text-xs font-semibold bg-white text-slate-600 border border-slate-300 rounded-full hover:bg-slate-50 transition-colors",
+    "aria-label": "Hide all FAQ answers"
+  }, "▸ Hide all"), /*#__PURE__*/React.createElement("span", {
+    className: "text-[11px] text-slate-500 italic ml-1"
+  }, "Tip: tap a question to reveal its answer")),
+  /*#__PURE__*/React.createElement("div", {
     className: "space-y-4"
   }, (() => {
-    let sentenceCounter = 0;
-    return generatedContent?.data.map((faq, idx) => /*#__PURE__*/React.createElement("div", {
+    // PASS 1: precompute sentence index ranges per FAQ so we can derive
+    // which FAQ contains the currently-playing TTS sentence (used to
+    // auto-expand the matching item).
+    var data = (generatedContent && generatedContent.data) || [];
+    var rangeStart = [];
+    var rangeEnd = [];
+    var _sCount = 0;
+    data.forEach(function (faq, idx) {
+      rangeStart[idx] = _sCount;
+      var qN = splitTextToSentences(faq.question).filter(function (s) { return s && s.trim().length > 0; }).length;
+      var aN = splitTextToSentences(faq.answer).filter(function (s) { return s && s.trim().length > 0; }).length;
+      _sCount += qN + aN;
+      rangeEnd[idx] = _sCount;
+    });
+    var currentlyReadingFaqIdx = -1;
+    if (isPlaying && playingContentId === 'faq-active' && playbackState && typeof playbackState.currentIdx === 'number') {
+      for (var ri = 0; ri < rangeStart.length; ri++) {
+        if (playbackState.currentIdx >= rangeStart[ri] && playbackState.currentIdx < rangeEnd[ri]) {
+          currentlyReadingFaqIdx = ri;
+          break;
+        }
+      }
+    }
+    // Side-effect: TTS auto-expand. When the reader reaches a new FAQ,
+    // persist that index into the expanded set so the answer is visible.
+    // Effect runs in render closure — safe because setState is no-op when
+    // value is already present.
+    React.useEffect(function () {
+      if (currentlyReadingFaqIdx >= 0 && !expandedSet.has(currentlyReadingFaqIdx)) {
+        setExpandedSet(function (prev) {
+          if (prev.has(currentlyReadingFaqIdx)) return prev;
+          var next = new Set(prev);
+          next.add(currentlyReadingFaqIdx);
+          return next;
+        });
+      }
+    }, [currentlyReadingFaqIdx]);
+    // PASS 2: actual render. Sentence indices come from rangeStart[idx] so
+    // they stay stable regardless of which FAQs are expanded/collapsed.
+    return generatedContent?.data.map((faq, idx) => {
+      var isExpanded = isEditingFaq || expandedSet.has(idx) || idx === currentlyReadingFaqIdx;
+      var qSentencesForCount = splitTextToSentences(faq.question).filter(function (s) { return s && s.trim().length > 0; });
+      var qBase = rangeStart[idx] || 0;
+      var aBase = qBase + qSentencesForCount.length;
+      return /*#__PURE__*/React.createElement("div", {
       key: idx,
       className: "bg-white p-5 rounded-lg border border-slate-400 shadow-sm",
       "data-help-key": "faq_item"
     }, /*#__PURE__*/React.createElement("div", {
-      className: "flex items-start gap-3"
+      className: "flex items-start gap-3" + (isEditingFaq ? "" : " cursor-pointer select-none"),
+      onClick: !isEditingFaq ? function (e) {
+        // Clicks on sentence spans stop propagation for TTS — so reaching
+        // the row handler means the user clicked the Q badge, the chevron,
+        // or whitespace, all of which should toggle.
+        toggleFaq(idx);
+      } : undefined,
+      role: !isEditingFaq ? "button" : undefined,
+      tabIndex: !isEditingFaq ? 0 : undefined,
+      "aria-expanded": !isEditingFaq ? isExpanded : undefined,
+      "aria-controls": !isEditingFaq ? ("faq-answer-" + idx) : undefined,
+      onKeyDown: !isEditingFaq ? function (e) {
+        if (e.key === ' ' || e.key === 'Enter') {
+          // Only fire if the target is the row itself (not a sentence span)
+          if (e.target === e.currentTarget) {
+            e.preventDefault();
+            toggleFaq(idx);
+          }
+        }
+      } : undefined
     }, /*#__PURE__*/React.createElement("div", {
       className: "bg-cyan-100 text-cyan-700 font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1"
     }, "Q"), /*#__PURE__*/React.createElement("div", {
@@ -153,8 +250,7 @@
     }, (() => {
       const qSentences = splitTextToSentences(faq.question).filter(s => s && s.trim().length > 0);
       return qSentences.map((s, sIdx) => {
-        const currentGlobalIdx = sentenceCounter;
-        sentenceCounter++;
+        const currentGlobalIdx = qBase + sIdx;
         const isActive = isPlaying && playingContentId === 'faq-active' && playbackState.currentIdx === currentGlobalIdx;
         return /*#__PURE__*/React.createElement("span", {
           key: sIdx,
@@ -166,15 +262,15 @@
           }
         }, formatInteractiveText(s, false), " ");
       });
-    })()), faq.question_en && /*#__PURE__*/React.createElement("p", {
+    })()), isExpanded && faq.question_en && /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-slate-600 italic mb-2"
-    }, "(", faq.question_en, ")"), /*#__PURE__*/React.createElement("div", {
-      className: "bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm leading-relaxed"
+    }, "(", faq.question_en, ")"), isExpanded && /*#__PURE__*/React.createElement("div", {
+      id: `faq-answer-${idx}`,
+      className: "bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200"
     }, (() => {
       const aSentences = splitTextToSentences(faq.answer).filter(s => s && s.trim().length > 0);
       return aSentences.map((s, sIdx) => {
-        const currentGlobalIdx = sentenceCounter;
-        sentenceCounter++;
+        const currentGlobalIdx = aBase + sIdx;
         const isActive = isPlaying && playingContentId === 'faq-active' && playbackState.currentIdx === currentGlobalIdx;
         return /*#__PURE__*/React.createElement("span", {
           key: sIdx,
@@ -188,7 +284,12 @@
       });
     })(), faq.answer_en && /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 mt-2 pt-2 border-t border-slate-200 italic"
-    }, "(", faq.answer_en, ")")))))));
+    }, "(", faq.answer_en, ")")))), !isEditingFaq && /*#__PURE__*/React.createElement("div", {
+      className: "shrink-0 mt-2 text-slate-400 transition-transform duration-200",
+      style: { transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' },
+      "aria-hidden": "true"
+    }, /*#__PURE__*/React.createElement(ChevronDown, { size: 20 }))));
+    });
   })()));
 }
 
