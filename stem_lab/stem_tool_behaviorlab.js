@@ -384,6 +384,53 @@ var d = labToolData || {};
             { term: 'Token Economy', def: 'A system where tokens (conditioned reinforcers) are earned for target behaviors and exchanged for backup reinforcers.' }
           ];
 
+          // === Setting events — the slow triggers K-12 behavior plans miss ===
+          // Most BIPs focus on the immediate antecedent (the worksheet, the
+          // transition, the demand). Setting events are the conditions
+          // hours or days earlier that *lower the threshold* — making the
+          // immediate antecedent more likely to evoke the problem behavior.
+          // Recognizing them shifts the question from 'why this behavior
+          // right now?' to 'why was today different?'. Under-taught and
+          // disproportionately useful in school settings.
+          var SETTING_EVENTS = [
+            {
+              category: 'Biological',
+              icon: '😴', color: '#a78bfa',
+              examples: 'Poor sleep last night · skipped breakfast · medication change · constipation · onset of illness · seasonal allergies flaring · pain (ear infection, headache, dental) · menstrual cycle for adolescents',
+              note: 'A kid who is in pain cannot perform the same way a kid who is not in pain can. Period.'
+            },
+            {
+              category: 'Home / family',
+              icon: '🏠', color: '#22d3ee',
+              examples: 'Witnessed a fight before school · parent left for a deployment or trip · sibling sick · housing change · weekend with the other parent · CPS involvement · loss of pet · move-out of an older sibling',
+              note: 'Schools often see the AFTERMATH of a home event hours later — student is more dysregulated than usual but cannot or will not say why.'
+            },
+            {
+              category: 'Schedule / setting',
+              icon: '🕒', color: '#fbbf24',
+              examples: 'Substitute teacher · changed lunch period · fire drill earlier · pep rally · early-release day · field trip the day before · holiday break ending · daylight-saving-time week',
+              note: 'Predictability is a reinforcer for many learners. Removing it changes thresholds across the whole day, not just the moment.'
+            },
+            {
+              category: 'Peer / social',
+              icon: '🧑‍🤝‍🧑', color: '#f472b6',
+              examples: 'Friendship conflict at recess · being excluded from a group chat · breakup · social media incident · ongoing bullying · best-friend absent · seating change',
+              note: 'Adolescent social events have a half-life of days, not minutes. Behavior on Wednesday may trace to Friday.'
+            },
+            {
+              category: 'Sensory / environmental',
+              icon: '🔊', color: '#4ade80',
+              examples: 'Loud fluorescent buzz · gym next door · cafeteria smell · new perfume on an adult · uniform/clothing change · temperature extreme · construction noise',
+              note: 'For sensory-sensitive learners, the environment itself is a continuous setting event. Reduce input and threshold rises.'
+            },
+            {
+              category: 'Mental health',
+              icon: '💭', color: '#94a3b8',
+              examples: 'Anxiety flare · low mood episode · recent therapy session that opened something · trauma anniversary · sensory overload accumulating across days · burnout from masking',
+              note: 'Trauma anniversaries and seasonal mental-health patterns are real and predictable. Calendar awareness is a clinical tool.'
+            }
+          ];
+
           // === Beyond Pure ABA — neurodiversity-affirming + trauma-informed ===
           // The critical lens that's often missing from operant-conditioning
           // pedagogy. ABA is a powerful set of tools AND has been used in
@@ -4578,6 +4625,75 @@ var d = labToolData || {};
                   })
                 )
               )
+            ),
+
+            // === SETTING EVENTS — slow triggers K-12 BIPs miss ===
+            // Six categories of conditions hours-to-days earlier that
+            // lower the behavior threshold. Each has a circular badge in
+            // its category color, the example list, and a school-psych
+            // pull-quote. Helps students see ABC analysis as a 3-day
+            // window, not a 3-second window.
+            React.createElement("div", {
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(244,114,182,0.25)' }, glass)
+            },
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🕰️ Setting events — the slow triggers most BIPs miss"),
+                React.createElement("button", { onClick: function() { upd('blShowSettingEvents', !d.blShowSettingEvents); },
+                  className: "text-[11px] text-pink-400 hover:text-pink-300"
+                }, d.blShowSettingEvents ? 'Hide' : 'View →')
+              ),
+              d.blShowSettingEvents && React.createElement("div", null,
+                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-3", style: { lineHeight: 1.55 } },
+                  "Most behavior plans focus on the immediate antecedent — the worksheet, the transition, the demand. ",
+                  React.createElement("b", { style: { color: '#f472b6' } }, "Setting events"),
+                  " are the conditions hours or days earlier that lower the behavior threshold. They make the immediate antecedent more likely to evoke the problem behavior. The shift is from ",
+                  React.createElement("i", null, "'why this behavior right now?'"),
+                  " to ",
+                  React.createElement("i", null, "'why was today different?'"),
+                  ". Under-taught, disproportionately useful in K-12.")
+              ),
+              d.blShowSettingEvents && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                SETTING_EVENTS.map(function(se, sei) {
+                  return React.createElement("div", {
+                    key: 'se-' + sei,
+                    style: {
+                      background: 'rgba(15,23,42,0.6)',
+                      borderRadius: 10,
+                      padding: '10px 12px',
+                      border: '1px solid rgba(100,116,139,0.25)',
+                      borderLeft: '3px solid ' + se.color
+                    }
+                  },
+                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                      React.createElement("div", {
+                        'aria-hidden': 'true',
+                        style: {
+                          width: 30, height: 30, borderRadius: '50%',
+                          background: se.color + '22',
+                          border: '1.5px solid ' + se.color,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 15, lineHeight: 1, flexShrink: 0
+                        }
+                      }, se.icon),
+                      React.createElement("div", { style: { fontSize: 12, fontWeight: 800, color: se.color } }, se.category)
+                    ),
+                    React.createElement("div", { style: { fontSize: 10, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 6 } }, se.examples),
+                    React.createElement("div", { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic', paddingTop: 6, borderTop: '1px dashed ' + se.color + '40' } },
+                      "💡 ", se.note)
+                  );
+                })
+              ),
+              d.blShowSettingEvents && React.createElement("div", {
+                style: {
+                  marginTop: 10, padding: 10, borderRadius: 8,
+                  background: 'rgba(244,114,182,0.06)',
+                  border: '1px solid rgba(244,114,182,0.20)',
+                  color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic'
+                }
+              },
+                "🎯 Practical tool: when you write a BIP, add a ",
+                React.createElement("b", null, "'morning check'"),
+                " row to the ABC data sheet. One quick rating each morning of the six categories above. Three weeks of data and the pattern emerges. School psychs who do this regularly report cutting BIP-revision cycles in half.")
             ),
 
             // === BEYOND PURE ABA — neurodiversity-affirming + trauma-informed ===
