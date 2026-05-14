@@ -183,6 +183,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
   ];
 
   // ─────────────────────────────────────────────────────────
+  // CICO — Check-In/Check-Out: the most-used Tier 2 intervention
+  // in US schools. PBIS panel mentions it; this section makes the
+  // structure concrete enough to actually run. Sources: Crone &
+  // Hawken's Behavior Education Program (the original CICO
+  // protocol); Center on PBIS implementation guides; multiple
+  // peer-reviewed efficacy studies (2010-2020).
+  // ─────────────────────────────────────────────────────────
+  var CICO_COMPONENTS = [
+    {
+      step: 1, name: 'Morning check-in', icon: '🌅', color: '#22c55e',
+      time: '3-5 minutes',
+      what: 'Student arrives at school, goes to a designated adult (NOT classroom teacher — usually a counselor, behavior interventionist, paraeducator, or other "positive adult"). Brief, predictable conversation: "How was last night? What\'s your goal today? Here\'s your point sheet."',
+      script: 'A 3-question morning script. (1) "How was your morning getting here?" (2) "What\'s one thing you want to do well today?" (3) "Here\'s your point sheet — same as yesterday. I\'ll see you at the end of the day."',
+      pitfall: 'Don\'t skip on busy mornings. The whole intervention rests on the daily relational anchor — missing 2 mornings in a row tells the student the system doesn\'t actually exist.'
+    },
+    {
+      step: 2, name: 'Point sheet — period-by-period', icon: '📋', color: '#a78bfa',
+      time: 'embedded in instruction',
+      what: 'Student carries a small card. Each period (or each chunk for elementary), the teacher gives a quick 0/1/2 score on 2-3 school-wide expectations (typical: Be Safe, Be Respectful, Be Responsible — same words posted school-wide). Takes ~30 seconds at end of period. Brief written comment optional.',
+      script: 'End-of-period script (teacher to student): "Here\'s your card back. 2 / 2 / 1 today — you nailed safe and respectful, and we talked about responsibility on the homework piece. Keep going."',
+      pitfall: 'The most common drift: teachers stop scoring honestly because "she had a hard day, I don\'t want to make it worse." Inflated scores destroy the data. Score what happened, not what you wish had happened. The kid will trust the system more, not less.'
+    },
+    {
+      step: 3, name: 'Afternoon check-out', icon: '🌇', color: '#fbbf24',
+      time: '3-5 minutes',
+      what: 'Same adult, end of day. Add up the total points, calculate percentage, compare to the goal threshold (usually 80%). Brief celebration if hit, brief problem-solving if missed. Card goes home for parent signature. Adult logs the daily total in a tracking spreadsheet.',
+      script: '"OK let\'s add it up. 18 out of 24 today — that\'s 75%. So close to your 80% goal. What got in the way 4th period? OK. Take it home, get a parent signature, see you tomorrow."',
+      pitfall: 'Don\'t skip the family component. Card-home + signature is what makes CICO different from generic teacher feedback. It builds the home-school feedback loop and gives families a daily window into how the day actually went.'
+    },
+    {
+      step: 4, name: 'Goal threshold + scoring', icon: '🎯', color: '#3b82f6',
+      time: 'set at intake',
+      what: 'Default threshold: 80% of total possible points. For a typical 6-period day with 3 expectations rated 0-2, max = 36 points; 80% = 29. Lower the bar at intake if the student is far below baseline (start at 50% with rapid step-up rather than guarantee 6 weeks of "failure"). Decision rule: 4-6 weeks of 80%+ = ready to fade; 4-6 weeks of <80% = escalate to Tier 3.',
+      script: 'At intake meeting: "We\'re going to start your goal at 65% for the first two weeks — we want you to feel the win first. After that we\'ll bump it to 75%, then 80%."',
+      pitfall: 'Too-high initial threshold = the student fails for weeks while the data accumulates "evidence" that CICO doesn\'t work. Too-low threshold = no challenge. The right starting threshold is the one the student can hit ~70% of days in their first two weeks. Adjust based on actual baseline data, not aspirational policy.'
+    },
+    {
+      step: 5, name: 'Fading + maintenance', icon: '🌱', color: '#0ea5e9',
+      time: 'after 4-6 weeks of success',
+      what: 'When student consistently hits goal: reduce check-in to weekly, then peer-mediated, then to a self-monitoring card. Goal is internal regulation, not lifetime CICO. Most students fade in 8-16 weeks; some need it longer; a few benefit from keeping a light-touch check-in indefinitely.',
+      script: '"You\'ve hit your goal 5 weeks in a row. Want to try a peer-mediated version — same card but you check in with [peer mentor] instead of me? We\'ll keep meeting Fridays."',
+      pitfall: 'Don\'t fade too fast. Sudden removal = behavior often returns at near-baseline rates within weeks. Plan the fade as carefully as the intake. The goal is a self-regulation skill, not just an absent intervention.'
+    }
+  ];
+
+  // ─────────────────────────────────────────────────────────
   // Equity & disproportionality — the federal data + audit
   // tool school psychs use in IEP and team meetings. The
   // disparities are measured, documented, and the largest
@@ -384,7 +430,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 border: '1px solid rgba(20,184,166,0.40)',
                 color: '#5eead4', fontSize: 10, fontWeight: 700,
                 fontFamily: 'ui-monospace, Menlo, monospace'
-              } }, '7 sections')
+              } }, '8 sections')
             ),
             h('p', { style: { margin: 0, fontSize: 12, color: '#94a3b8', fontWeight: 600, lineHeight: 1.5 } }, 'Applied K-12 practice. PBIS · Replacement Behaviors · Setting Events · Acting-Out Cycle · Restraint Ethics · Equity & Disparities.')
           )
@@ -398,6 +444,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           { id: 'setting', label: 'Setting Events', icon: '🕰️' },
           { id: 'cycle', label: 'Acting-Out Cycle', icon: '🌀' },
           { id: 'restraint', label: 'Restraint & Seclusion', icon: '🛑' },
+          { id: 'cico', label: 'CICO Template', icon: '📋' },
           { id: 'equity', label: 'Equity & Disparities', icon: '⚖️' },
           { id: 'connect', label: 'Connect', icon: '🔗' }
         ];
@@ -639,6 +686,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         );
       }
 
+      // ── Section: CICO Template ──
+      function renderCico() {
+        return h('div', null,
+          panelHeader('📋 CICO — Check-In/Check-Out template',
+            'The most-used Tier 2 intervention in US schools. PBIS panel mentions it; this section makes the structure concrete enough to actually run. Five steps, each with what-to-do, sample script language, and the most-common pitfall.'),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+            CICO_COMPONENTS.map(function(c) {
+              return h('div', { key: 'cico-' + c.step,
+                style: {
+                  background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
+                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + c.color
+                } },
+                // Step header
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                  h('div', { 'aria-hidden': 'true',
+                    style: { width: 36, height: 36, borderRadius: '50%', background: c.color + '22', border: '1.5px solid ' + c.color,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: c.color, fontFamily: 'ui-monospace, Menlo, monospace', flexShrink: 0 }
+                  }, c.step),
+                  h('div', { style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, c.icon),
+                  h('div', { style: { flex: 1, minWidth: 0 } },
+                    h('div', { style: { fontSize: 13, fontWeight: 800, color: c.color, lineHeight: 1.2 } }, c.name),
+                    h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic', fontFamily: 'ui-monospace, Menlo, monospace' } }, '⏱ ' + c.time)
+                  )
+                ),
+                // What
+                h('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'What it looks like'),
+                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } }, c.what),
+                // Script — quoted in monospace italic, clearly distinct
+                h('div', {
+                  style: {
+                    padding: '8px 10px', borderRadius: 6,
+                    background: c.color + '10',
+                    borderLeft: '2px solid ' + c.color,
+                    marginBottom: 8
+                  }
+                },
+                  h('div', { style: { fontSize: 9, fontWeight: 800, color: c.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '🗣 Sample script'),
+                  h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55, fontStyle: 'italic' } }, c.script)
+                ),
+                // Pitfall
+                h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                  h('span', { style: { color: '#fb923c', fontWeight: 800, marginRight: 4, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, '🪤 Common pitfall:'),
+                  c.pitfall)
+              );
+            })
+          ),
+          sourceFooter('🎯 The CICO rule of thumb: at intake, set the goal threshold to where the student can hit it ~70% of days in the first two weeks. Adjust based on actual baseline data, not aspirational policy. Most CICO programs that fail, fail at intake (threshold too high) or at fade (threshold removed too fast). Sources: Crone & Hawken Behavior Education Program; Center on PBIS implementation guides.')
+        );
+      }
+
       // ── Section: Equity & Disparities ──
       function renderEquity() {
         return h('div', null,
@@ -743,6 +840,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       else if (section === 'setting') content = renderSetting();
       else if (section === 'cycle') content = renderCycle();
       else if (section === 'restraint') content = renderRestraint();
+      else if (section === 'cico') content = renderCico();
       else if (section === 'equity') content = renderEquity();
       else if (section === 'connect') content = renderConnect();
       else content = renderPbis();
