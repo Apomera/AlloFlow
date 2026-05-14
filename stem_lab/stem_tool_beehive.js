@@ -7192,6 +7192,207 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.arc(_wsBottomX, _wsBottomY, 0.55, 0, 6.28); c.fill();
               })();
 
+              // ── Barn cat lounging in the sun (year-round homestead detail) ──
+              // Sits curled up near the Adirondack chair, occasionally
+              // twitching its tail. Black-and-white tuxedo coat, eyes
+              // closed mostly, eye-blink animation. Year-round but moves
+              // closer to the keeper home in winter (more shelter).
+              (function() {
+                var _bcX = season === 3 ? W * 0.49 : W * 0.50;
+                var _bcY = season === 3 ? H * 0.91 : H * 0.90;
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.beginPath(); c.ellipse(_bcX, _bcY + 1.5, 6, 0.8, 0, 0, 6.28); c.fill();
+                // Body — curled up oval
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.ellipse(_bcX, _bcY, 5, 2.3, 0, 0, 6.28); c.fill();
+                // White chest/belly patch
+                c.fillStyle = '#fafaf9';
+                c.beginPath(); c.ellipse(_bcX - 0.5, _bcY + 0.5, 2.5, 1.2, 0, 0, 6.28); c.fill();
+                // White paws
+                c.beginPath(); c.ellipse(_bcX - 2.5, _bcY + 1.5, 0.6, 0.4, 0, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(_bcX + 2.5, _bcY + 1.5, 0.6, 0.4, 0, 0, 6.28); c.fill();
+                // Head — slightly tilted
+                var _bcHeadX = _bcX - 3.5;
+                var _bcHeadY = _bcY - 0.5;
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_bcHeadX, _bcHeadY, 1.8, 0, 6.28); c.fill();
+                // White face mark
+                c.fillStyle = '#fafaf9';
+                c.beginPath(); c.ellipse(_bcHeadX - 0.2, _bcHeadY + 0.3, 0.8, 0.6, 0, 0, 6.28); c.fill();
+                // Triangular ears (pointed up)
+                c.fillStyle = '#1c1917';
+                c.beginPath();
+                c.moveTo(_bcHeadX - 1.4, _bcHeadY - 1.3);
+                c.lineTo(_bcHeadX - 1, _bcHeadY - 2.5);
+                c.lineTo(_bcHeadX - 0.3, _bcHeadY - 1.5);
+                c.closePath(); c.fill();
+                c.beginPath();
+                c.moveTo(_bcHeadX + 0.3, _bcHeadY - 1.5);
+                c.lineTo(_bcHeadX + 1, _bcHeadY - 2.5);
+                c.lineTo(_bcHeadX + 1.4, _bcHeadY - 1.3);
+                c.closePath(); c.fill();
+                // Eyes — closed slits most of the time, occasional blink open
+                var _bcBlink = ((t2 * 0.04) % 30) / 30;
+                var _bcEyesOpen = _bcBlink > 0.85 && _bcBlink < 0.97;
+                if (_bcEyesOpen) {
+                  // Open green-gold eyes
+                  c.fillStyle = '#84cc16';
+                  c.beginPath(); c.ellipse(_bcHeadX - 0.7, _bcHeadY - 0.2, 0.35, 0.25, 0, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_bcHeadX + 0.5, _bcHeadY - 0.2, 0.35, 0.25, 0, 0, 6.28); c.fill();
+                  // Pupil slits
+                  c.fillStyle = '#1c1917';
+                  c.fillRect(_bcHeadX - 0.75, _bcHeadY - 0.35, 0.1, 0.3);
+                  c.fillRect(_bcHeadX + 0.45, _bcHeadY - 0.35, 0.1, 0.3);
+                } else {
+                  // Closed eye slits
+                  c.strokeStyle = '#3a3025';
+                  c.lineWidth = 0.3;
+                  c.beginPath(); c.moveTo(_bcHeadX - 1, _bcHeadY - 0.2); c.lineTo(_bcHeadX - 0.4, _bcHeadY - 0.2); c.stroke();
+                  c.beginPath(); c.moveTo(_bcHeadX + 0.2, _bcHeadY - 0.2); c.lineTo(_bcHeadX + 0.8, _bcHeadY - 0.2); c.stroke();
+                }
+                // Pink nose
+                c.fillStyle = '#f472b6';
+                c.beginPath(); c.arc(_bcHeadX - 0.2, _bcHeadY + 0.5, 0.2, 0, 6.28); c.fill();
+                // Whiskers — 3 lines on each side
+                c.strokeStyle = 'rgba(220,220,220,0.7)';
+                c.lineWidth = 0.2;
+                for (var bcw = 0; bcw < 3; bcw++) {
+                  var _bcwY = _bcHeadY + 0.3 + bcw * 0.3;
+                  c.beginPath(); c.moveTo(_bcHeadX - 0.8, _bcwY); c.lineTo(_bcHeadX - 2.5, _bcwY - 0.1); c.stroke();
+                  c.beginPath(); c.moveTo(_bcHeadX + 0.4, _bcwY); c.lineTo(_bcHeadX + 2, _bcwY - 0.1); c.stroke();
+                }
+                // Curled tail with tip flick
+                var _bcTailFlick = Math.sin(t2 * 0.08) * 0.6;
+                c.strokeStyle = '#1c1917';
+                c.lineWidth = 1.4;
+                c.lineCap = 'round';
+                c.beginPath();
+                c.moveTo(_bcX + 4, _bcY);
+                c.quadraticCurveTo(_bcX + 7 + _bcTailFlick, _bcY - 1, _bcX + 7 + _bcTailFlick, _bcY + 1.5);
+                c.stroke();
+                c.lineCap = 'butt';
+                // White tail tip
+                c.fillStyle = '#fafaf9';
+                c.beginPath(); c.arc(_bcX + 7 + _bcTailFlick, _bcY + 1.5, 0.5, 0, 6.28); c.fill();
+              })();
+
+              // ── Traditional woven straw bee skep (historical bee artifact) ──
+              // Bee skeps are coiled-straw domed beehives, used by beekeepers
+              // for 2000+ years before modern Langstroth frames replaced them
+              // in the 1850s. Now mostly decorative — but they're THE iconic
+              // bee shape in folk art. Sits on a flat wooden base near the
+              // apiary sign.
+              (function() {
+                var _skX = W * 0.66, _skY = H * 0.84;
+                // Wooden base plank
+                c.fillStyle = '#5a3a18';
+                c.fillRect(_skX - 5, _skY, 10, 1.5);
+                c.fillStyle = '#3a2510';
+                c.fillRect(_skX - 5, _skY + 1.2, 10, 0.3);
+                // Skep body — dome shape with horizontal coiled-straw bands
+                var _skBandColors = ['#a07248', '#8a6238', '#7a5230', '#a07248', '#92703a', '#a07248'];
+                _skBandColors.forEach(function(col, ski) {
+                  var _skBandY = _skY - 1 - ski * 1.5;
+                  var _skBandWidth = ski === 0 ? 4 : ski === 1 ? 3.6 : ski === 2 ? 3.2 : ski === 3 ? 2.6 : ski === 4 ? 1.8 : 0.8;
+                  c.fillStyle = col;
+                  c.beginPath();
+                  c.ellipse(_skX, _skBandY, _skBandWidth, 0.9, 0, 0, 6.28);
+                  c.fill();
+                  // Highlight on upper-left of each band
+                  c.fillStyle = 'rgba(254,243,199,0.35)';
+                  c.beginPath();
+                  c.ellipse(_skX - _skBandWidth * 0.3, _skBandY - 0.3, _skBandWidth * 0.4, 0.3, -0.3, 0, 6.28);
+                  c.fill();
+                  // Dark shadow on lower edge of each band
+                  c.fillStyle = 'rgba(60,40,15,0.4)';
+                  c.beginPath();
+                  c.ellipse(_skX, _skBandY + 0.5, _skBandWidth, 0.2, 0, 0, 6.28);
+                  c.fill();
+                });
+                // Small entrance hole at the bottom
+                c.fillStyle = '#1a1208';
+                c.beginPath(); c.ellipse(_skX, _skY - 1, 0.9, 0.4, 0, 0, 6.28); c.fill();
+                // Bees visiting in spring/summer
+                if (season === 0 || season === 1) {
+                  for (var skb = 0; skb < 2; skb++) {
+                    var _skbT = ((t2 * 0.05 + skb * 30) % 80) / 80;
+                    if (_skbT > 0.5) continue;
+                    var _skbX = _skX - 4 + _skbT * 8 + Math.sin(_skbT * 6) * 1.5;
+                    var _skbY = _skY - 3 - Math.sin(_skbT * 3.14) * 2;
+                    c.fillStyle = '#fbbf24';
+                    c.beginPath(); c.ellipse(_skbX, _skbY, 0.8, 0.5, 0, 0, 6.28); c.fill();
+                    c.fillStyle = '#1c1917';
+                    c.fillRect(_skbX - 0.2, _skbY - 0.4, 0.2, 0.8);
+                    c.fillStyle = 'rgba(220,240,255,0.5)';
+                    c.beginPath(); c.ellipse(_skbX, _skbY - 0.5, 0.8, 0.3, 0, 0, 6.28); c.fill();
+                  }
+                }
+                // Tiny "TRADITION" plaque on the base
+                c.fillStyle = '#3a2510';
+                c.font = 'bold 1.4px sans-serif';
+                c.textAlign = 'center';
+                c.fillText('SKEP', _skX, _skY + 1);
+                c.textAlign = 'start';
+              })();
+
+              // ── Basket of fresh-picked apples beside the tree (fall harvest) ──
+              // Woven wicker basket with apples piled inside — late summer
+              // and fall only. Real Maine homestead detail.
+              if (season === 1 && (day % 30) >= 25 || season === 2) {
+                if (hiveX > 40) {
+                  var _baX = hiveX * 0.55 + 18;
+                  var _baY = H * 0.87;
+                  // Shadow
+                  c.fillStyle = 'rgba(0,0,0,0.25)';
+                  c.beginPath(); c.ellipse(_baX, _baY + 2.5, 4.5, 0.9, 0, 0, 6.28); c.fill();
+                  // Basket body — wicker
+                  c.fillStyle = '#a07248';
+                  c.beginPath(); c.ellipse(_baX, _baY + 1, 4, 1.5, 0, 0, 6.28); c.fill();
+                  c.fillRect(_baX - 4, _baY - 1, 8, 2.5);
+                  // Wicker weave pattern — alternating dark vertical lines
+                  c.strokeStyle = '#5a3a18';
+                  c.lineWidth = 0.25;
+                  for (var bw = 0; bw < 6; bw++) {
+                    var _bwX = _baX - 3.5 + bw * 1.4;
+                    c.beginPath(); c.moveTo(_bwX, _baY - 1); c.lineTo(_bwX, _baY + 1.5); c.stroke();
+                  }
+                  // Horizontal weave lines
+                  c.beginPath(); c.moveTo(_baX - 4, _baY - 0.2); c.lineTo(_baX + 4, _baY - 0.2); c.stroke();
+                  c.beginPath(); c.moveTo(_baX - 4, _baY + 0.6); c.lineTo(_baX + 4, _baY + 0.6); c.stroke();
+                  // Top rim (darker band)
+                  c.fillStyle = '#5a3a18';
+                  c.fillRect(_baX - 4, _baY - 1.3, 8, 0.5);
+                  // Apples piled inside (top-down view, visible from above the rim)
+                  var _baApples = [
+                    { dx: -2.5, dy: -1.8, r: 1.0, shade: '#b91c1c' },
+                    { dx:  0,   dy: -2.2, r: 1.1, shade: '#dc2626' },
+                    { dx:  2.5, dy: -1.7, r: 1.0, shade: '#991b1b' },
+                    { dx: -1,   dy: -2.8, r: 0.9, shade: '#b91c1c' },
+                    { dx:  1.4, dy: -2.9, r: 0.85, shade: '#dc2626' }
+                  ];
+                  _baApples.forEach(function(ap) {
+                    var _apX = _baX + ap.dx;
+                    var _apY = _baY + ap.dy;
+                    c.fillStyle = ap.shade;
+                    c.beginPath(); c.arc(_apX, _apY, ap.r, 0, 6.28); c.fill();
+                    // Highlight
+                    c.fillStyle = 'rgba(255,255,255,0.4)';
+                    c.beginPath(); c.arc(_apX - ap.r * 0.3, _apY - ap.r * 0.3, ap.r * 0.25, 0, 6.28); c.fill();
+                    // Stem
+                    c.strokeStyle = '#3a2010';
+                    c.lineWidth = 0.3;
+                    c.beginPath(); c.moveTo(_apX, _apY - ap.r); c.lineTo(_apX + 0.2, _apY - ap.r - 0.6); c.stroke();
+                  });
+                  // Handle arc
+                  c.strokeStyle = '#5a3a18';
+                  c.lineWidth = 0.5;
+                  c.beginPath();
+                  c.arc(_baX, _baY - 1, 4.5, Math.PI * 1.2, Math.PI * 1.8);
+                  c.stroke();
+                }
+              }
+
               // ── Rabbit hopping across the meadow (periodic cameo, every ~20s) ──
               if (season !== 3) {
                 var rbCycle = (t2 % 1200) / 1200; // 0..1 over ~20s
