@@ -441,6 +441,146 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
   ];
 
   // ───────────────────────────────────────────────────────────
+  // RECIPES — the Real-Time Recipe Simulator data
+  // ───────────────────────────────────────────────────────────
+  // Each recipe describes its ingredients + a sequence of steps,
+  // plus a judge() function that scores the finished dish based on
+  // what actually happened (pan temp history, timing, ingredient
+  // order). The runtime engine in renderRecipe drives state through
+  // these steps in real time.
+  //
+  // Step types:
+  //   completeWhen: 'panInRange'      — auto-advance when target panTempF reached
+  //                 'itemAdded'        — auto-advance when ingredient added
+  //                 'userClick'        — student clicks "Continue" when ready
+  //                 'heatRemoved'      — auto-advance when burner turned to 0
+  //
+  // Difficulty progression: scrambledEggs (easy) → omelet / stirFry (med)
+  // → pasta + saucePan (med) → roastChicken (hard). v0.3 ships only
+  // scrambledEggs. v0.4 adds 3-4 more.
+  var RECIPES = {
+    scrambledEggs: {
+      id: 'scrambledEggs',
+      name: 'Scrambled Eggs',
+      icon: '🍳',
+      difficulty: 'easy',
+      targetTimeMin: 5,
+      description: 'The foundation. Master eggs and you can make breakfast for life.',
+      teaches: ['Protein denaturation', 'Low + slow technique', 'Carryover cooking', 'Salt timing'],
+      ingredients: [
+        { id: 'butter',     name: 'Butter (1 tbsp)',     icon: '🧈', addAtStep: 1 },
+        { id: 'eggs',       name: 'Whisked eggs (3)',    icon: '🥚', addAtStep: 2 },
+        { id: 'saltPepper', name: 'Salt + pepper',       icon: '🧂', addAtStep: 5 }
+      ],
+      steps: [
+        { id: 's0', title: 'Heat pan to LOW',
+          instruction: 'Turn the burner to 2-3 out of 10. Let the pan reach about 250°F (120°C). Should take ~30-60 seconds.',
+          target: { panTempF: { min: 220, max: 290 } },
+          completeWhen: 'panInRange',
+          teach: 'Eggs are mostly protein + water. High heat seizes proteins tight = rubbery + dry. Low heat = slow denaturation = silky curds. Most home cooks crank the heat — that\'s why their eggs come out gray and tough.' },
+        { id: 's1', title: 'Add butter',
+          instruction: 'Drop a tablespoon of butter into the pan. Wait for it to foam, then settle.',
+          target: { itemAdded: 'butter' },
+          completeWhen: 'itemAdded',
+          teach: 'When butter foam subsides, the water has cooked off + the pan is at proper temp. The milk solids add flavor (and at higher heat, they\'d Maillard).' },
+        { id: 's2', title: 'Whisk + add eggs',
+          instruction: 'Pour the whisked eggs into the pan. They should sizzle GENTLY at the edges, not aggressively.',
+          target: { itemAdded: 'eggs' },
+          completeWhen: 'itemAdded',
+          teach: 'Whisking incorporates air + breaks the yolks evenly through the whites. Aggressive sizzle = pan too hot = rubbery outcome.' },
+        { id: 's3', title: 'Stir constantly, low + slow',
+          instruction: 'Push + fold the eggs with a spatula every 5-10 seconds. Keep the heat LOW. About 60-90 seconds total — when you can JUST see soft curds forming, you\'re close.',
+          target: { activeTimeSec: { min: 45, max: 150 }, panTempF: { max: 330 } },
+          completeWhen: 'userClick',
+          teach: 'Constant motion stops any one patch from over-cooking. Soft, glossy curds = perfect. Hard, dry curds = went too long or too hot.' },
+        { id: 's4', title: 'Pull OFF heat',
+          instruction: 'Turn the burner to 0 (or pull the pan off). The eggs should still look slightly underdone + glossy.',
+          target: { burnerLevel: 0 },
+          completeWhen: 'heatRemoved',
+          teach: 'Carryover cooking continues for 30-60 seconds off heat. If you wait until they look "done," they\'ll be overcooked by the time you plate. Pull early.' },
+        { id: 's5', title: 'Season + serve',
+          instruction: 'Sprinkle salt + pepper. Stir once. Plate immediately.',
+          target: { itemAdded: 'saltPepper' },
+          completeWhen: 'itemAdded',
+          teach: 'Salt at the END for scrambled eggs. Salt added early pulls water out of the proteins via osmosis — watery + tough eggs. Late salt just seasons.' }
+      ],
+      judge: function(state) {
+        // state has: maxPanTempF, activeTimeSec, itemAddTimes (map of id→ms),
+        // burnerAtPeakF, stepsCompleted
+        var notes = [];
+        var score = 100;
+        var maxT = state.maxPanTempF || 0;
+        // Pan temp scoring
+        if (maxT >= 380) { score -= 35; notes.push({ neg: true, label: '🔥 Way too hot', detail: 'Pan hit ' + Math.round(maxT) + '°F. Eggs browned, scrambled into hard curds. Browned eggs = rubber.' }); }
+        else if (maxT >= 340) { score -= 20; notes.push({ neg: true, label: '🌡️ A bit hot', detail: 'Pan got to ' + Math.round(maxT) + '°F. Eggs are firm + slightly dry. Aim for under 320°F next time.' }); }
+        else if (maxT >= 240) { notes.push({ neg: false, label: '✓ Pan temp', detail: 'Peak ' + Math.round(maxT) + '°F — right in the silky-curd zone.' }); }
+        else { score -= 25; notes.push({ neg: true, label: '🥶 Too cold', detail: 'Pan never got hot enough (' + Math.round(maxT) + '°F max). Eggs would still be wet + runny.' }); }
+        // Active time scoring
+        var t = state.activeTimeSec || 0;
+        if (t < 30) { score -= 20; notes.push({ neg: true, label: '⏱️ Way too fast', detail: 'Cooked only ' + Math.round(t) + 's. Curds didn\'t fully set — runny scrambled eggs.' }); }
+        else if (t < 45) { score -= 10; notes.push({ neg: true, label: '⏱️ A bit fast', detail: 'Cooked ' + Math.round(t) + 's — slightly wet. Aim for 60-90 seconds of active stirring.' }); }
+        else if (t > 180) { score -= 15; notes.push({ neg: true, label: '⏱️ Overcooked', detail: 'Cooked ' + Math.round(t) + 's. Eggs are dry + crumbly.' }); }
+        else { notes.push({ neg: false, label: '✓ Timing', detail: 'Active cook ' + Math.round(t) + 's — well-paced.' }); }
+        // Salt timing
+        var addT = state.itemAddTimes || {};
+        if (addT.saltPepper && addT.eggs && addT.saltPepper < addT.eggs) {
+          score -= 15;
+          notes.push({ neg: true, label: '🧂 Salt timing', detail: 'Salt was added BEFORE the eggs. Salt pulls water out of egg proteins — watery, tough curds.' });
+        } else if (addT.saltPepper) {
+          notes.push({ neg: false, label: '✓ Salt timing', detail: 'Salt added at the end. Eggs stay tender + properly seasoned.' });
+        }
+        // Heat removed before overcooking
+        if (state.heatRemovedAt && state.lastTickAt && state.heatRemovedBeforeOverdone) {
+          notes.push({ neg: false, label: '✓ Carryover', detail: 'Pulled off heat with eggs still glossy — carryover finished them perfectly.' });
+        }
+        score = Math.max(0, Math.min(100, score));
+        var grade = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 60 ? 'D' : 'F';
+        var verdict = score >= 90 ? '🌟 Restaurant-quality! These eggs would impress a chef.' :
+                      score >= 80 ? '👨‍🍳 Solid scrambled eggs. Family approved.' :
+                      score >= 70 ? '🍳 Edible. Not bad for a learning run.' :
+                      score >= 60 ? '😬 Technically scrambled eggs. Technically.' :
+                      '🚨 Kitchen fire risk. Try again.';
+        return { score: score, grade: grade, verdict: verdict, notes: notes };
+      }
+    }
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // RECIPE CATALOG (for the picker — includes locked future recipes)
+  // ───────────────────────────────────────────────────────────
+  var RECIPE_CATALOG = [
+    { id: 'scrambledEggs', name: 'Scrambled Eggs',       icon: '🍳', difficulty: 'easy',   unlocked: true,  blurb: 'Master the basics: low heat, constant motion, carryover.' },
+    { id: 'omelet',        name: 'French Omelet',        icon: '🥚', difficulty: 'medium', unlocked: false, blurb: 'Same eggs, harder finish. Coming in v0.4.' },
+    { id: 'stirFry',       name: 'Vegetable Stir-Fry',   icon: '🥦', difficulty: 'medium', unlocked: false, blurb: 'High heat, fast hands, hot wok. Coming in v0.4.' },
+    { id: 'pastaSauce',    name: 'Pasta + Pan Sauce',    icon: '🍝', difficulty: 'medium', unlocked: false, blurb: 'Multi-pot management. Coming in v0.4.' },
+    { id: 'panSeared',     name: 'Pan-Seared Chicken',   icon: '🍗', difficulty: 'medium', unlocked: false, blurb: 'Maillard mastery + carryover. Coming in v0.4.' },
+    { id: 'sheetPan',      name: 'Sheet-Pan Dinner',     icon: '🥘', difficulty: 'medium', unlocked: false, blurb: 'Oven roasting + timing. Coming in v0.4.' },
+    { id: 'roastChicken',  name: 'Whole Roast Chicken',  icon: '🍗', difficulty: 'hard',   unlocked: false, blurb: 'The full classic. Coming in v0.5.' }
+  ];
+
+  // ───────────────────────────────────────────────────────────
+  // RECIPE ENGINE HELPERS
+  // ───────────────────────────────────────────────────────────
+  // Newton-cooling thermal model for the pan. Burner level 0-10 sets
+  // target temp; pan approaches target at rate k. Off-heat (level 0)
+  // pan approaches ambient (70°F) at slower rate.
+  function burnerTargetTemp(level) {
+    if (level <= 0) return 70;
+    // Linear: level 1 → 220°F, level 10 → 500°F
+    return 70 + level * (430 / 10) + 150 * Math.min(1, level / 3);
+  }
+  function tickPanTemp(currentF, burnerLevel, dtSec) {
+    var target = burnerTargetTemp(burnerLevel);
+    // k = how fast pan approaches target. Faster on heat-up than cool-down.
+    var k = burnerLevel > 0 ? 0.08 : 0.025;
+    return currentF + (target - currentF) * (1 - Math.exp(-k * dtSec));
+  }
+
+  // Module-scope interval handle for the live cooking tick. Only one
+  // active recipe simulation at a time, so a single handle is fine.
+  var _recipeTickHandle = null;
+
+  // ───────────────────────────────────────────────────────────
   // STATE
   // ───────────────────────────────────────────────────────────
   function defaultState() {
@@ -461,6 +601,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       // Resources sub-view
       resourcesSub: 'glossary',  // glossary | smoke | conversions | troubleshoot | subs
       glossaryFilter: '',        // search filter
+      // Recipe Simulator state
+      recipeActiveId: null,                // which recipe is currently being cooked
+      recipePhase: 'idle',                 // 'idle' | 'cooking' | 'done'
+      recipeStartedAt: null,               // ms timestamp
+      recipeCurrentStep: 0,                // index into recipe.steps
+      recipeStepStartedAt: null,
+      recipePanTempF: 70,                  // simulated pan temp (ambient start)
+      recipeBurnerLevel: 0,                // 0-10
+      recipeMaxPanTempF: 70,               // peak pan temp seen this run
+      recipeItemsInPan: [],                // array of ingredient ids
+      recipeItemAddTimes: {},              // { itemId: ms }
+      recipeActiveTimeSec: 0,              // seconds with food in pan
+      recipeHeatRemovedAt: null,           // when burner went to 0 with food in pan
+      recipeLastTickAt: null,              // ms
+      recipeJudgement: null,               // set when phase = 'done'
+      recipeCompletedIds: [],              // which recipes have been beaten (for unlocks)
       // Progression
       klXp: 0,
       klAchievements: [],
@@ -513,7 +669,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       function setKL(patch) {
         setLabToolData(function(prev) {
           var prior = (prev && prev.kitchenLab) || defaultState();
-          var next = Object.assign({}, prior, patch);
+          // Allow patch to be a function (prior → patch) for live-tick updates
+          // that need access to the latest state without race conditions.
+          var nextPatch = typeof patch === 'function' ? patch(prior) : patch;
+          var next = Object.assign({}, prior, nextPatch);
           next.lastUpdated = todayISO();
           return Object.assign({}, prev, { kitchenLab: next });
         });
@@ -1172,18 +1331,415 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         );
       }
 
+      // ─────────────────────────────────────────────────────
+      // RECIPE TICK — live cooking simulation
+      // ─────────────────────────────────────────────────────
+      // Called every 500ms while cooking. Advances pan temp via the
+      // thermal model, accumulates active-time when food is in pan,
+      // tracks max pan temp for the final judgement.
+      function recipeTick() {
+        setKL(function(prior) {
+          if (prior.recipePhase !== 'cooking') return {};
+          var now = Date.now();
+          var dtSec = Math.max(0, (now - (prior.recipeLastTickAt || now)) / 1000);
+          var newTemp = tickPanTemp(prior.recipePanTempF || 70, prior.recipeBurnerLevel || 0, dtSec);
+          var hasFood = (prior.recipeItemsInPan || []).some(function(id) { return id === 'eggs' || id === 'butter'; });
+          var newActiveTime = (prior.recipeActiveTimeSec || 0) + (hasFood ? dtSec : 0);
+          return {
+            recipePanTempF: newTemp,
+            recipeMaxPanTempF: Math.max(prior.recipeMaxPanTempF || 0, newTemp),
+            recipeActiveTimeSec: newActiveTime,
+            recipeLastTickAt: now
+          };
+        });
+      }
+      function startRecipeTick() {
+        if (_recipeTickHandle) return;
+        _recipeTickHandle = setInterval(recipeTick, 500);
+      }
+      function stopRecipeTick() {
+        if (_recipeTickHandle) { clearInterval(_recipeTickHandle); _recipeTickHandle = null; }
+      }
+      // Auto-start/stop the tick based on phase (called from render below)
+      function ensureTickMatches(phase) {
+        if (phase === 'cooking' && !_recipeTickHandle) setTimeout(startRecipeTick, 0);
+        else if (phase !== 'cooking' && _recipeTickHandle) setTimeout(stopRecipeTick, 0);
+      }
+
+      // ─────────────────────────────────────────────────────
+      // Recipe action handlers
+      // ─────────────────────────────────────────────────────
+      function startRecipe(recipeId) {
+        var recipe = RECIPES[recipeId];
+        if (!recipe) return;
+        setKL({
+          recipeActiveId: recipeId,
+          recipePhase: 'cooking',
+          recipeStartedAt: Date.now(),
+          recipeLastTickAt: Date.now(),
+          recipeStepStartedAt: Date.now(),
+          recipeCurrentStep: 0,
+          recipePanTempF: 70,
+          recipeBurnerLevel: 0,
+          recipeMaxPanTempF: 70,
+          recipeItemsInPan: [],
+          recipeItemAddTimes: {},
+          recipeActiveTimeSec: 0,
+          recipeHeatRemovedAt: null,
+          recipeJudgement: null
+        });
+        klAnnounce('Started cooking ' + recipe.name + '. Step 1: ' + recipe.steps[0].title);
+        awardXP(5);
+      }
+      function abortRecipe() {
+        setKL({ recipePhase: 'idle', recipeActiveId: null, recipeJudgement: null });
+        klAnnounce('Recipe abandoned.');
+      }
+      function setBurner(level) {
+        setKL(function(prior) {
+          var patch = { recipeBurnerLevel: level };
+          // If turning to 0 while food is in pan, record heat-removal time
+          if (level === 0 && (prior.recipeItemsInPan || []).length > 0 && !prior.recipeHeatRemovedAt) {
+            patch.recipeHeatRemovedAt = Date.now();
+          }
+          return patch;
+        });
+      }
+      function addItem(itemId) {
+        setKL(function(prior) {
+          if ((prior.recipeItemsInPan || []).indexOf(itemId) !== -1) return {};
+          var newItems = (prior.recipeItemsInPan || []).slice(); newItems.push(itemId);
+          var newTimes = Object.assign({}, prior.recipeItemAddTimes || {}); newTimes[itemId] = Date.now();
+          return { recipeItemsInPan: newItems, recipeItemAddTimes: newTimes };
+        });
+        klAnnounce('Added ' + itemId);
+      }
+      function nextStep() {
+        setKL(function(prior) {
+          var rec = RECIPES[prior.recipeActiveId];
+          if (!rec) return {};
+          var next = (prior.recipeCurrentStep || 0) + 1;
+          if (next >= rec.steps.length) {
+            // Done — judge!
+            var snapshot = {
+              maxPanTempF: prior.recipeMaxPanTempF || 0,
+              activeTimeSec: prior.recipeActiveTimeSec || 0,
+              itemAddTimes: prior.recipeItemAddTimes || {},
+              heatRemovedAt: prior.recipeHeatRemovedAt,
+              stepsCompleted: rec.steps.length,
+              lastTickAt: prior.recipeLastTickAt,
+              heatRemovedBeforeOverdone: prior.recipeHeatRemovedAt && (prior.recipeActiveTimeSec || 0) < 150
+            };
+            var judgement = rec.judge(snapshot);
+            // Persist completion
+            var completed = (prior.recipeCompletedIds || []).slice();
+            if (completed.indexOf(rec.id) === -1) completed.push(rec.id);
+            return {
+              recipePhase: 'done',
+              recipeJudgement: judgement,
+              recipeCompletedIds: completed,
+              recipeCurrentStep: rec.steps.length - 1
+            };
+          }
+          return { recipeCurrentStep: next, recipeStepStartedAt: Date.now() };
+        });
+        awardXP(3);
+      }
+      // Check if current step's completion criteria are met (for auto-advance)
+      function maybeAutoAdvance() {
+        var rec = RECIPES[d.recipeActiveId];
+        if (!rec || d.recipePhase !== 'cooking') return;
+        var step = rec.steps[d.recipeCurrentStep || 0];
+        if (!step) return;
+        var auto = step.completeWhen;
+        if (auto === 'panInRange' && step.target.panTempF) {
+          var t = d.recipePanTempF || 0;
+          if (t >= step.target.panTempF.min && t <= step.target.panTempF.max) {
+            nextStep();
+            klAnnounce('Pan in range — step complete.');
+          }
+        } else if (auto === 'itemAdded' && step.target.itemAdded) {
+          if ((d.recipeItemsInPan || []).indexOf(step.target.itemAdded) !== -1) {
+            nextStep();
+          }
+        } else if (auto === 'heatRemoved') {
+          if ((d.recipeBurnerLevel || 0) === 0) {
+            nextStep();
+            klAnnounce('Heat removed — carryover cooking begins.');
+          }
+        }
+      }
+
+      // ─────────────────────────────────────────────────────
+      // The main recipe view
+      // ─────────────────────────────────────────────────────
       function renderRecipe() {
-        return comingSoonStub('Real-Time Recipe Simulator', '🍽️',
-          'The headline module. Run a real recipe in real time: juggle multiple pans, manage timers, adjust heat as ingredients call for it, handle interruptions, plate the finished dish. Mistakes have visible consequences. Success unlocks the next recipe.',
-          [
-            'Starter recipes: scrambled eggs, omelet, stir-fry, pasta + sauce, sheet-pan dinner, soup, roast chicken',
-            'Real-time pan visualization — see ingredients change color, bubble, brown, burn',
-            'Multi-pan management — toggle between burners, set timers, manage parallel tasks',
-            'Mistakes are visible: too hot = burnt + smoke alarm; too cold = gray + soggy; forgot to salt = bland feedback',
-            'Achievement system: Knife Master, Maillard Maestro, Safe Cook, Time Magician, Recipe Runner',
-            'Difficulty progression: Easy / Medium / Hard recipes unlock as you succeed',
-            'Gamified Competition mode (Phase 2) — Chopped-style mystery basket, time-limited rounds, AI judge feedback on technique + safety + presentation'
-          ]);
+        // Manage tick lifecycle based on current phase
+        ensureTickMatches(d.recipePhase);
+        // Auto-advance check on every render
+        if (d.recipePhase === 'cooking') setTimeout(maybeAutoAdvance, 0);
+
+        if (d.recipePhase === 'idle' || !d.recipeActiveId) return renderRecipePicker();
+        if (d.recipePhase === 'done') return renderRecipeResults();
+        return renderRecipeCockpit();
+      }
+
+      // ─── Recipe picker (idle screen) ───
+      function renderRecipePicker() {
+        var completed = d.recipeCompletedIds || [];
+        return h('div', null,
+          panelHeader('🍽️ Real-Time Recipe Simulator',
+            'Run an actual recipe in real time. Manage heat, time your additions, fix mistakes mid-cook. Mistakes have visible consequences. Success unlocks the next recipe.'),
+          // Status panel
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '🏆 Your kitchen progress'),
+            h('div', { style: { display: 'flex', gap: 20, flexWrap: 'wrap' } },
+              h('div', null,
+                h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace' } }, completed.length + ' / ' + RECIPE_CATALOG.length),
+                h('div', { style: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'recipes mastered')),
+              h('div', { style: { flex: 1, color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, minWidth: 240 } },
+                'v0.3 unlocks Scrambled Eggs — the foundation recipe. Complete it once to start understanding heat + timing. v0.4 will unlock 3-4 more (Omelet, Stir-Fry, Pasta + Pan Sauce, Pan-Seared Chicken). v0.5 ships the gamified Competition Mode with mystery baskets + AI judge.'))),
+
+          // Recipe cards
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 } },
+            RECIPE_CATALOG.map(function(r) {
+              var isCompleted = completed.indexOf(r.id) !== -1;
+              var isPlayable = r.unlocked;
+              var diffColor = r.difficulty === 'easy' ? '#86efac' : r.difficulty === 'medium' ? '#fbbf24' : '#fca5a5';
+              return h('div', { key: r.id,
+                style: { background: 'rgba(15,23,42,0.6)', border: '1px solid ' + (isPlayable ? 'rgba(251,146,60,0.45)' : 'rgba(100,116,139,0.25)'),
+                  borderRadius: 12, padding: '14px 16px', opacity: isPlayable ? 1 : 0.55 } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
+                  h('div', { 'aria-hidden': 'true', style: { fontSize: 36, lineHeight: 1, flexShrink: 0 } }, r.icon),
+                  h('div', { style: { flex: 1, minWidth: 0 } },
+                    h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fde68a', marginBottom: 2 } }, r.name),
+                    h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' } },
+                      h('span', { style: { fontSize: 9, fontWeight: 700, color: diffColor, background: diffColor + '20', padding: '2px 7px', borderRadius: 9999, textTransform: 'uppercase', letterSpacing: '0.05em' } }, r.difficulty),
+                      isCompleted ? h('span', { style: { fontSize: 9, fontWeight: 700, color: '#86efac', background: 'rgba(34,197,94,0.15)', padding: '2px 7px', borderRadius: 9999, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '✓ Mastered') : null,
+                      !isPlayable ? h('span', { style: { fontSize: 9, fontWeight: 700, color: '#94a3b8', background: 'rgba(100,116,139,0.2)', padding: '2px 7px', borderRadius: 9999, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🔒 Locked') : null))),
+                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 12 } }, r.blurb),
+                isPlayable ? h('button', {
+                  onClick: function() { startRecipe(r.id); },
+                  style: { width: '100%', padding: '10px 14px', background: '#fb923c', color: '#1c1410',
+                    border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
+                  isCompleted ? '🍳 Cook again' : '▶ Start cooking') :
+                h('div', { style: { padding: '10px 14px', background: 'rgba(100,116,139,0.15)', color: '#94a3b8',
+                    border: '1px dashed rgba(100,116,139,0.3)', borderRadius: 8, fontSize: 12, textAlign: 'center', fontStyle: 'italic' } },
+                  'Unlocks in a future ship'));
+            }))
+        );
+      }
+
+      // ─── Active cooking cockpit ───
+      function renderRecipeCockpit() {
+        var rec = RECIPES[d.recipeActiveId];
+        if (!rec) { abortRecipe(); return null; }
+        var stepIdx = d.recipeCurrentStep || 0;
+        var step = rec.steps[stepIdx] || rec.steps[0];
+        var panTemp = Math.round(d.recipePanTempF || 70);
+        var burnerLevel = d.recipeBurnerLevel || 0;
+        var activeTime = Math.round(d.recipeActiveTimeSec || 0);
+        var maxTemp = Math.round(d.recipeMaxPanTempF || 70);
+        // Temp color
+        var tempColor = panTemp >= 400 ? '#dc2626' : panTemp >= 340 ? '#fb923c' : panTemp >= 220 ? '#fbbf24' : panTemp >= 100 ? '#fde68a' : '#7dd3fc';
+        var tempLabel = panTemp >= 400 ? 'Smoking + risky' : panTemp >= 340 ? 'Hot — careful' : panTemp >= 220 ? 'Cooking range' : panTemp >= 100 ? 'Warming up' : 'Cold';
+        // Available ingredients to add (not yet in pan + step allows it)
+        var availableItems = rec.ingredients.filter(function(ing) {
+          return (d.recipeItemsInPan || []).indexOf(ing.id) === -1;
+        });
+        return h('div', null,
+          panelHeader(rec.icon + ' Cooking: ' + rec.name,
+            'Step ' + (stepIdx + 1) + ' of ' + rec.steps.length + ' — total elapsed: ' +
+            (d.recipeStartedAt ? Math.round((Date.now() - d.recipeStartedAt) / 1000) + 's' : '0s')),
+
+          // Current step prominently displayed
+          h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fb923c' }) },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 8, flexWrap: 'wrap' } },
+              h('div', { style: { fontSize: 11, color: '#fb923c', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Step ' + (stepIdx + 1)),
+              h('div', { style: { fontSize: 18, fontWeight: 800, color: '#fde68a', flex: 1, minWidth: 0 } }, step.title)),
+            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 12 } }, step.instruction),
+            h('div', { style: { background: 'rgba(125,211,252,0.08)', borderLeft: '3px solid #7dd3fc', padding: '8px 12px', borderRadius: 6, fontSize: 11, color: '#bae6fd', lineHeight: 1.55 } },
+              h('b', null, '🧠 What\'s happening: '), step.teach)),
+
+          // Pan + burner cockpit
+          h('div', { style: cardStyle() },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 16 } },
+              // Pan temp readout
+              h('div', { style: { background: 'rgba(15,23,42,0.6)', border: '1px solid ' + tempColor + '55', borderRadius: 10, padding: '12px 14px' } },
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, 'Pan temperature'),
+                h('div', { style: { fontSize: 28, fontWeight: 900, color: tempColor, fontFamily: 'ui-monospace, Menlo, monospace' } }, panTemp + '°F'),
+                h('div', { style: { fontSize: 11, color: tempColor, marginTop: 2 } }, tempLabel),
+                h('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, 'peak this run: ' + maxTemp + '°F')),
+              // Active cook time
+              h('div', { style: { background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: 10, padding: '12px 14px' } },
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, 'Food in pan'),
+                h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace' } }, activeTime + 's'),
+                h('div', { style: { fontSize: 11, color: (d.recipeItemsInPan || []).length > 0 ? '#86efac' : '#64748b', marginTop: 2 } }, (d.recipeItemsInPan || []).length > 0 ? '🟢 Cooking' : '— Empty pan'))),
+
+            // Burner slider
+            h('div', { style: { marginBottom: 12 } },
+              h('label', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 11, color: '#94a3b8', marginBottom: 6, fontWeight: 700 } },
+                h('span', null, 'Burner setting'),
+                h('span', { style: { color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 14, fontWeight: 800 } }, burnerLevel + ' / 10')),
+              h('input', { type: 'range', min: 0, max: 10, step: 1, value: burnerLevel,
+                onChange: function(e) { setBurner(parseInt(e.target.value, 10)); },
+                'aria-label': 'Burner level',
+                style: { width: '100%', accentColor: tempColor } }),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#64748b', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                h('span', null, '0 OFF'), h('span', null, 'low'), h('span', null, 'med'), h('span', null, 'high'), h('span', null, '10 MAX'))),
+
+            // Visual pan
+            renderPanCanvas(panTemp, d.recipeItemsInPan, activeTime, rec)),
+
+          // Ingredient tray
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '🧺 Ingredients tray'),
+            availableItems.length === 0 ?
+              h('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic', textAlign: 'center', padding: 12 } }, 'All ingredients are in the pan.') :
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                availableItems.map(function(ing) {
+                  return h('button', { key: ing.id,
+                    onClick: function() { addItem(ing.id); },
+                    style: { padding: '10px 14px', background: 'rgba(15,23,42,0.7)',
+                      border: '1px solid rgba(251,146,60,0.4)', borderRadius: 8,
+                      color: '#fde68a', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', gap: 8 } },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 20 } }, ing.icon),
+                    'Add ' + ing.name);
+                }))),
+
+          // Step progress + continue
+          h('div', { style: cardStyle() },
+            h('div', { style: { display: 'flex', gap: 6, marginBottom: 12 } },
+              rec.steps.map(function(s, i) {
+                var isPast = i < stepIdx;
+                var isCurrent = i === stepIdx;
+                return h('div', { key: i,
+                  style: { flex: 1, height: 6, borderRadius: 3,
+                    background: isPast ? '#22c55e' : isCurrent ? '#fb923c' : 'rgba(100,116,139,0.3)' } });
+              })),
+            h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
+              step.completeWhen === 'userClick' ? h('button', {
+                onClick: function() { nextStep(); klAnnounce('Step complete.'); },
+                style: { padding: '12px 24px', background: '#22c55e', color: '#052e16',
+                  border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
+                '✓ Continue to next step') : h('div', { style: { fontSize: 11, color: '#94a3b8', padding: '12px 16px', background: 'rgba(15,23,42,0.5)', borderRadius: 8, fontStyle: 'italic', flex: 1, minWidth: 200 } },
+                step.completeWhen === 'panInRange' ? '⏳ Auto-advances when pan reaches target temperature' :
+                step.completeWhen === 'itemAdded' ? '⏳ Auto-advances when ingredient is added' :
+                step.completeWhen === 'heatRemoved' ? '⏳ Auto-advances when burner reaches 0' : '⏳ Continue when ready'),
+              h('button', {
+                onClick: function() { if (confirm('Abandon this recipe?')) abortRecipe(); },
+                style: { padding: '12px 18px', background: 'transparent', color: '#fca5a5',
+                  border: '1px solid rgba(220,38,38,0.4)', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' } },
+                '✕ Abandon')))
+        );
+      }
+
+      // ─── Visual pan rendering ───
+      function renderPanCanvas(panTemp, itemsInPan, activeTime, rec) {
+        // Color of pan/contents based on temp
+        var panColor = panTemp >= 400 ? '#7c2d12' : panTemp >= 320 ? '#a3461a' : panTemp >= 220 ? '#78350f' : panTemp >= 100 ? '#57534e' : '#3f3f46';
+        var glow = panTemp >= 300 ? 'rgba(251,146,60,' + Math.min(0.6, (panTemp - 300) / 300) + ')' : 'transparent';
+        // Food appearance based on what's in
+        var hasButter = (itemsInPan || []).indexOf('butter') !== -1;
+        var hasEggs = (itemsInPan || []).indexOf('eggs') !== -1;
+        var eggsColor = '#fef3c7';
+        if (hasEggs && panTemp > 350 && activeTime > 30) eggsColor = '#92400e'; // browned
+        else if (hasEggs && panTemp > 320 && activeTime > 60) eggsColor = '#fbbf24'; // golden
+        else if (hasEggs && activeTime > 45) eggsColor = '#fef9c3'; // set
+        return h('div', { style: { display: 'flex', justifyContent: 'center', padding: '8px 0' } },
+          h('svg', { width: 280, height: 180, viewBox: '0 0 280 180', 'aria-label': 'Visual pan', 'aria-hidden': 'true' },
+            // Glow / heat shimmer
+            panTemp >= 300 ? h('ellipse', { cx: 140, cy: 95, rx: 110, ry: 55, fill: glow, opacity: 0.6 }) : null,
+            // Pan rim
+            h('ellipse', { cx: 140, cy: 100, rx: 100, ry: 30, fill: panColor, stroke: '#1c1410', strokeWidth: 2 }),
+            // Pan interior
+            h('ellipse', { cx: 140, cy: 95, rx: 92, ry: 25, fill: '#1c1410' }),
+            // Butter (when added, before fully melted)
+            hasButter && activeTime < 8 ? h('rect', { x: 130, y: 87, width: 20, height: 14, fill: '#fef3c7', rx: 2, opacity: 0.9 }) : null,
+            // Butter pool (melted)
+            hasButter && !hasEggs ? h('ellipse', { cx: 140, cy: 95, rx: 60, ry: 16, fill: '#fde68a', opacity: 0.5 }) : null,
+            // Eggs
+            hasEggs ? h('g', null,
+              h('ellipse', { cx: 140, cy: 95, rx: 78, ry: 22, fill: eggsColor, opacity: 0.95 }),
+              // Curd bumps
+              activeTime > 25 ? h('g', null,
+                h('ellipse', { cx: 105, cy: 90, rx: 12, ry: 5, fill: eggsColor, stroke: 'rgba(0,0,0,0.15)', strokeWidth: 0.5 }),
+                h('ellipse', { cx: 130, cy: 97, rx: 14, ry: 6, fill: eggsColor, stroke: 'rgba(0,0,0,0.15)', strokeWidth: 0.5 }),
+                h('ellipse', { cx: 155, cy: 91, rx: 13, ry: 5, fill: eggsColor, stroke: 'rgba(0,0,0,0.15)', strokeWidth: 0.5 }),
+                h('ellipse', { cx: 175, cy: 96, rx: 11, ry: 4, fill: eggsColor, stroke: 'rgba(0,0,0,0.15)', strokeWidth: 0.5 })
+              ) : null,
+              // Steam wisps if very hot
+              panTemp > 320 && activeTime > 15 ? h('g', null,
+                h('path', { d: 'M 110 78 Q 113 70 110 60', stroke: 'rgba(220,220,230,0.5)', strokeWidth: 2, fill: 'none' }),
+                h('path', { d: 'M 140 75 Q 145 65 138 55', stroke: 'rgba(220,220,230,0.5)', strokeWidth: 2, fill: 'none' }),
+                h('path', { d: 'M 170 78 Q 173 70 170 60', stroke: 'rgba(220,220,230,0.5)', strokeWidth: 2, fill: 'none' })
+              ) : null,
+              // Smoke + scorch warning if very hot for a while
+              panTemp > 400 && activeTime > 20 ? h('g', null,
+                h('path', { d: 'M 130 70 Q 135 50 125 35 Q 115 25 120 10', stroke: 'rgba(60,60,60,0.6)', strokeWidth: 3, fill: 'none' }),
+                h('path', { d: 'M 160 72 Q 155 55 165 40 Q 175 28 168 12', stroke: 'rgba(60,60,60,0.6)', strokeWidth: 3, fill: 'none' }),
+                h('text', { x: 140, y: 25, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#dc2626' }, '⚠️ BURNING')
+              ) : null
+            ) : null,
+            // Pan handle
+            h('rect', { x: 232, y: 90, width: 40, height: 14, fill: '#1c1410', rx: 3 }),
+            // Burner under pan
+            h('circle', { cx: 140, cy: 130, r: 70, fill: 'none', stroke: panTemp >= 220 ? '#fb923c' : '#52525b', strokeWidth: 2, opacity: 0.4, strokeDasharray: '4 6' })
+          ));
+      }
+
+      // ─── Results screen ───
+      function renderRecipeResults() {
+        var rec = RECIPES[d.recipeActiveId];
+        var j = d.recipeJudgement;
+        if (!rec || !j) return h('div', null, h('button', { onClick: abortRecipe }, 'Back'));
+        var gradeColor = j.score >= 90 ? '#86efac' : j.score >= 80 ? '#fbbf24' : j.score >= 70 ? '#fb923c' : '#fca5a5';
+        return h('div', null,
+          panelHeader(rec.icon + ' ' + rec.name + ' — Results',
+            'Your dish has been judged. Score breakdown below — read the notes to see what to do differently next time.'),
+
+          // Score hero
+          h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', padding: 32 }) },
+            h('div', { style: { fontSize: 14, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, 'Your score'),
+            h('div', { style: { fontSize: 96, fontWeight: 900, color: gradeColor, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, j.score),
+            h('div', { style: { fontSize: 48, fontWeight: 900, color: gradeColor, marginTop: 4 } }, 'Grade: ' + j.grade),
+            h('div', { style: { fontSize: 16, color: '#fde68a', marginTop: 18, fontWeight: 600 } }, j.verdict)),
+
+          // Detailed notes
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '📋 Judge\'s notes'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              j.notes.map(function(n, i) {
+                return h('div', { key: i,
+                  style: { background: n.neg ? 'rgba(220,38,38,0.08)' : 'rgba(34,197,94,0.08)',
+                    border: '1px solid ' + (n.neg ? 'rgba(220,38,38,0.3)' : 'rgba(34,197,94,0.3)'),
+                    borderLeft: '4px solid ' + (n.neg ? '#dc2626' : '#22c55e'),
+                    padding: '10px 14px', borderRadius: 8 } },
+                  h('div', { style: { fontSize: 13, fontWeight: 700, color: n.neg ? '#fca5a5' : '#86efac', marginBottom: 4 } }, n.label),
+                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.5 } }, n.detail));
+              }))),
+
+          // Lessons recap
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '📖 What this recipe teaches'),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+              rec.teaches.map(function(t, i) {
+                return h('div', { key: i, style: { padding: '8px 12px', background: 'rgba(251,146,60,0.12)',
+                  border: '1px solid rgba(251,146,60,0.3)', borderRadius: 8, fontSize: 12, color: '#fde68a', fontWeight: 600 } }, t);
+              }))),
+
+          // Action buttons
+          h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginTop: 8 } },
+            h('button', { onClick: function() { startRecipe(rec.id); awardXP(2); },
+              style: { padding: '12px 24px', background: '#fb923c', color: '#1c1410',
+                border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
+              '🔁 Cook again'),
+            h('button', { onClick: function() { setKL({ recipePhase: 'idle', recipeActiveId: null }); },
+              style: { padding: '12px 24px', background: 'transparent', color: '#fde68a',
+                border: '1px solid rgba(251,146,60,0.4)', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' } },
+              '🍽️ Back to recipe list'))
+        );
       }
 
       function renderResources() {
