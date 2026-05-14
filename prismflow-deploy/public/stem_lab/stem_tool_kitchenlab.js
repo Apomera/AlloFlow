@@ -215,6 +215,232 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
   ];
 
   // ───────────────────────────────────────────────────────────
+  // MAILLARD ZONES — surface temp → browning visual + chemistry
+  // ───────────────────────────────────────────────────────────
+  // The Maillard reaction kicks in around 280°F (140°C) for most
+  // amino-acid + reducing-sugar combos. Below that, food just
+  // dehydrates. Above ~400°F you start losing volatile aromatics
+  // to combustion, and above ~480°F starches form acrylamide.
+  var MAILLARD_ZONES = [
+    { maxF: 250, label: 'No browning (just heating)', color: '#f3e9d2', textColor: '#78716c',
+      visual: 'Pale + still pink (meat) or beige (bread). Surface water is evaporating; reaction hasn\'t started.',
+      science: 'Below ~250°F (120°C), water is still abundant at the surface. The Maillard reaction needs the surface to dry out so amino acids + reducing sugars can react directly — water dilutes them and absorbs the heat.' },
+    { maxF: 285, label: 'Maillard threshold', color: '#dcc18b', textColor: '#92400e',
+      visual: 'First hint of golden color. Faint sweet aroma starts. Looks "cooked" but not "seared."',
+      science: '250-285°F (120-140°C). The reaction has begun. Amino acids in the food are starting to react with reducing sugars (glucose, fructose, lactose), producing the first wave of brown pigment compounds (melanoidins) + dozens of volatile flavor molecules.' },
+    { maxF: 325, label: 'Active Maillard — golden brown', color: '#c08a3c', textColor: '#fef9c3',
+      visual: 'Clear golden-brown surface. Aromas are rich + nutty. This is the "perfect cook" zone for most things.',
+      science: '285-325°F (140-163°C). Reaction at full speed. The brown color comes from melanoidins; the smell from hundreds of volatile compounds (pyrazines, furans, thiophenes) — these don\'t exist in raw food at all.' },
+    { maxF: 375, label: 'Deep Maillard — mahogany', color: '#7c4a1f', textColor: '#fef3c7',
+      visual: 'Deep brown crust, intense aromas — almost roasted-coffee territory. The reaction has produced thousands of compounds.',
+      science: '325-375°F (163-190°C). Heavy reaction. Color compounds darken to brown-black. Some compounds start to bitter (pyrazines + carbonyls in higher concentration). Most "seared" outcomes happen here.' },
+    { maxF: 425, label: 'Bitter + charred', color: '#3f2419', textColor: '#fbbf24',
+      visual: 'Charred, bitter, often acrid smell. Volatile aromatics are burning off; bitter degradation products dominate.',
+      science: '375-425°F (190-218°C). Past the flavor peak. You\'re burning off the good volatiles + concentrating bitter degradation products. Smoke = vaporized oil + burned proteins.' },
+    { maxF: 600, label: '☠️ Acrylamide + acrolein zone', color: '#1c1410', textColor: '#fca5a5',
+      visual: 'Black, smoking, often on fire. Inedible. Carcinogenic compounds (acrylamide) form from starch + amino acid asparagine.',
+      science: 'Above 425°F (220°C). Starchy foods form acrylamide (probable human carcinogen per IARC). Oils break down to acrolein (toxic + bitter). This is why french fries should be deep golden, not dark brown — the FDA recommends "go for gold."' }
+  ];
+
+  // Browning examples — common foods + their Maillard story
+  var BROWNING_EXAMPLES = [
+    { food: 'Seared steak', emoji: '🥩', surfaceF: '350-450°F',
+      story: 'The crust is pure Maillard — beef\'s amino acids + the bit of glucose in the meat. Below 300°F you get gray boiled-beef; above 400°F you get crust within 60 seconds.' },
+    { food: 'Toasted bread', emoji: '🍞', surfaceF: '300-375°F',
+      story: 'The toaster\'s coils heat bread\'s surface above 300°F. Starches hydrolyze into reducing sugars, which then Maillard with bread\'s proteins. That\'s the brown crust + the warm toasty smell.' },
+    { food: 'Roasted coffee', emoji: '☕', surfaceF: '385-475°F',
+      story: 'Coffee bean roast levels are literally Maillard temperatures. Light roast (~410°F) stops at golden Maillard; dark roast (~470°F) pushes into bitter-charred territory. The smell change is the reaction running.' },
+    { food: 'Browned butter', emoji: '🧈', surfaceF: '250-350°F',
+      story: 'Milk solids in butter (proteins + lactose) Maillard once water boils off. The nutty smell is the same compound (2-methylbutanal) you find in seared steak.' },
+    { food: 'Caramelized onions', emoji: '🧅', surfaceF: '250-300°F',
+      story: 'Confusingly named — these are mostly Maillard, NOT caramelization. Onions have amino acids + sugars. True caramelization needs nearly pure sugar + higher temps (320°F+).' },
+    { food: 'Pretzel crust', emoji: '🥨', surfaceF: '350-425°F',
+      story: 'Pretzels get dipped in alkaline solution (lye or baked baking soda) before baking. Alkalinity ACCELERATES Maillard dramatically — that\'s why pretzels brown faster + darker than bread of the same dough.' }
+  ];
+
+  // Caramelization vs Maillard — common confusion
+  var CARAM_VS_MAILLARD = [
+    { aspect: 'What\'s reacting', caram: 'Sugar molecules alone (sucrose, fructose, glucose)', mai: 'Amino acids + reducing sugars together' },
+    { aspect: 'Temperature start', caram: '~320°F (160°C) for sucrose', mai: '~280°F (140°C)' },
+    { aspect: 'Foods', caram: 'Crème brûlée crust, hard candy, caramel sauce', mai: 'Almost everything else: steak, bread crust, roasted coffee, "caramelized" onions' },
+    { aspect: 'Color', caram: 'Amber → red-brown', mai: 'Light gold → mahogany → black' },
+    { aspect: 'Flavor', caram: 'Sweet, buttery, slightly bitter when dark', mai: 'Savory, meaty, nutty, complex (1000+ compounds)' },
+    { aspect: 'pH effect', caram: 'Acid slows it; alkaline pushes toward Maillard pathways', mai: 'Alkaline (baking soda) dramatically accelerates it' }
+  ];
+
+  // pH effects on browning
+  var PH_EFFECTS = [
+    { ph: 'Acidic (vinegar, lemon, wine)', effect: 'SLOWS Maillard. That\'s why brining + acid marinades produce paler crusts.', use: 'When you want browning, dry the surface + skip the acid until plating.' },
+    { ph: 'Neutral (plain water)', effect: 'Maillard runs at its baseline rate. Pure water means slow start (water has to evaporate first).', use: 'Standard cooking — most recipes assume neutral.' },
+    { ph: 'Alkaline (baking soda)', effect: 'DRAMATICALLY accelerates Maillard. A pinch of baking soda on diced onions makes them brown in 5 minutes instead of 30.', use: 'Hack: ¼ tsp baking soda per pound of onions before browning. Same trick on chicken skin for darker crust.' },
+    { ph: 'Very alkaline (lye / baked baking soda)', effect: 'Maximum Maillard. Pretzel dipping, ramen alkaline water, century-egg curing.', use: 'Industrial / traditional applications. Baked baking soda (350°F for 1 hour) becomes safer-to-handle but still very alkaline.' }
+  ];
+
+  // ───────────────────────────────────────────────────────────
+  // GLOSSARY — common culinary terms
+  // ───────────────────────────────────────────────────────────
+  var GLOSSARY = [
+    { term: 'Mise en place', pron: 'meez ahn plahs', defn: 'French for "everything in its place." All ingredients pre-measured, pre-cut, pre-prepared before heat goes on. The foundation of every recipe that turns out right — once cooking starts, you don\'t have time to chop the onion.', tag: 'prep' },
+    { term: 'Deglaze', defn: 'Add liquid (wine, stock, water) to a hot pan after sautéing/searing, to dissolve the browned fond. The result is the base for a pan sauce.', tag: 'technique' },
+    { term: 'Fond', pron: 'fohn', defn: 'The brown bits stuck to the pan after searing. Almost pure concentrated Maillard product — savory flavor gold. Deglaze + scrape to capture it.', tag: 'science' },
+    { term: 'Emulsify', defn: 'Mix two liquids that don\'t normally combine (oil + water) into a stable suspension. Mayo, vinaigrette, hollandaise, and pan sauces all rely on emulsification. Egg yolk + mustard are common emulsifiers — they have molecules with both oil-loving + water-loving ends.', tag: 'science' },
+    { term: 'Reduce', defn: 'Simmer a liquid uncovered so water evaporates, concentrating flavor + thickening texture. A sauce reduced "by half" has lost 50% of its original volume.', tag: 'technique' },
+    { term: 'Sweat', defn: 'Cook aromatics (onion, garlic, celery) low + slow in fat WITHOUT browning. Goal is to release flavors gently, soften texture, build a base. Different from sauté (which wants browning).', tag: 'technique' },
+    { term: 'Render', defn: 'Slowly cook fatty cuts so the solid fat melts into liquid + the protein crisps. Bacon cooked from cold pan renders perfectly. Schmaltz (chicken fat) + lardons are rendered.', tag: 'technique' },
+    { term: 'Score', defn: 'Cut shallow lines into the surface of meat or dough — usually a diamond pattern. Helps fat render, lets flavors penetrate, controls expansion (bread).', tag: 'technique' },
+    { term: 'Blanch', defn: 'Briefly cook in boiling water, then shock in ice water to stop cooking. Sets bright color in vegetables, loosens skins (tomatoes, peaches), partial-cooks for later finishing.', tag: 'technique' },
+    { term: 'Shock', defn: 'Plunge just-cooked food into ice water to stop cooking instantly. Locks vegetable color + texture. Paired with blanching.', tag: 'technique' },
+    { term: 'Temper', defn: 'Slowly raise the temperature of a delicate ingredient before combining with hot. Tempering eggs into hot stock prevents scrambled-egg soup. Tempering chocolate stabilizes its crystal structure for snap + shine.', tag: 'science' },
+    { term: 'Sear', defn: 'Briefly cook food at very high heat to brown the surface. Goal is crust + Maillard flavor, not internal doneness. Usually followed by another technique (oven, braise).', tag: 'technique' },
+    { term: 'Braise', defn: 'Sear, then partially submerge in liquid + cover + cook low + slow. Tough cuts become fork-tender as collagen converts to gelatin over hours.', tag: 'technique' },
+    { term: 'Confit', pron: 'kohn-fee', defn: 'Slow-cook in fat at low temp (180-200°F) for hours. Originally a preservation method — fat seals the meat against air. Duck confit is the classic; garlic confit is the easy entry point.', tag: 'technique' },
+    { term: 'Sous vide', pron: 'soo veed', defn: 'Cook food in a vacuum-sealed bag in a precisely temperature-controlled water bath. Lets you cook a steak to exactly 130°F internally with no overcooked margin. Then sear for crust.', tag: 'technique' },
+    { term: 'Mirepoix', pron: 'meer-pwah', defn: 'French aromatic base: 2 parts onion + 1 part carrot + 1 part celery, all diced. The starting flavor foundation for stocks, soups, stews, sauces.', tag: 'prep' },
+    { term: 'Sofrito', defn: 'Spanish + Latin American aromatic base, varies regionally. Usually includes onion + garlic + bell pepper + tomato cooked slowly in oil. Equivalent role to mirepoix.', tag: 'prep' },
+    { term: 'Roux', pron: 'roo', defn: 'Flour + fat cooked together to thicken sauces. White roux (briefly cooked) thickens béchamel; blond + brown rouxes have more cooking → less thickening power but more flavor (gumbo uses very dark roux).', tag: 'technique' },
+    { term: 'Slurry', defn: 'Cornstarch or arrowroot mixed with cold water, added to hot liquid to thicken. Faster than roux but produces a glossier, less stable thickening.', tag: 'technique' },
+    { term: 'Maillard reaction', pron: 'my-yar', defn: 'The chemistry of browning. Amino acids + reducing sugars react at ~280°F+ to produce brown pigments + complex flavors. Different from caramelization (sugar alone).', tag: 'science' },
+    { term: 'Caramelization', defn: 'Sugar alone breaking down at high heat (~320°F+ for sucrose). Sweet + slightly bitter. Crème brûlée + caramel are pure caramelization.', tag: 'science' },
+    { term: 'Brine', defn: 'Salt water solution that meat sits in before cooking. Salt diffuses into muscle, breaks down protein structure → meat holds more moisture during cooking. 1 hour per pound is typical.', tag: 'technique' },
+    { term: 'Cure', defn: 'Preserve food with salt + sometimes sugar + nitrites. Cured meats (bacon, ham, prosciutto) are salt-extracted then often smoked or aged.', tag: 'technique' },
+    { term: 'Render', defn: 'Slowly melt solid fat into liquid by gentle heat. See entry above.', tag: 'technique' },
+    { term: 'Truss', defn: 'Tie meat (often poultry) into a compact shape with kitchen twine before roasting. Keeps everything cooking at the same rate + improves presentation.', tag: 'technique' },
+    { term: 'Reduce by half', defn: 'Cook a liquid until its volume is 50% of original — common sauce instruction. Test by marking the pan side, or measure volume before + after.', tag: 'technique' },
+    { term: 'Au sec', pron: 'oh sek', defn: 'French for "to dry" — reduce a liquid until almost no liquid remains. Used for intense flavor concentration before adding the next ingredient.', tag: 'technique' },
+    { term: 'Beurre monté', pron: 'burr mon-tay', defn: 'A stable emulsion of butter + a little water. Lets butter stay melted without breaking. Used for finishing sauces + poaching delicate foods.', tag: 'technique' },
+    { term: 'Pan sauce', defn: 'Sauce built directly in the pan after searing — deglaze the fond + reduce + finish with butter. The classic 5-minute restaurant move.', tag: 'technique' },
+    { term: 'Resting (meat)', defn: 'Letting cooked meat sit 5-20 min before cutting. Lets the muscle fibers relax + juices redistribute. Cutting hot = juice runs out = dry meat.', tag: 'science' },
+    { term: 'Carryover cooking', defn: 'Internal temp continues rising after meat leaves heat — usually 5-10°F. Pull a steak at 125°F if you want it medium-rare (130-135°F final).', tag: 'science' },
+    { term: 'Bloom', defn: 'Sprinkle gelatin on cold liquid + let it absorb for 5 min before heating. Prevents lumps. Also applies to spices in hot oil (releasing essential oils).', tag: 'technique' },
+    { term: 'Acid bright', defn: 'A squeeze of lemon, splash of vinegar, or drop of wine at the end of cooking. Acid sharpens flavor perception; without it, rich dishes taste muddy. The "missing ingredient" most cooks discover late.', tag: 'principle' },
+    { term: 'Layer salt', defn: 'Salt at multiple stages of cooking, not just at the end. Aromatics, then vegetables, then protein, then final taste. Each layer seasons that ingredient specifically + builds depth.', tag: 'principle' },
+    { term: 'Steakhouse rule', defn: 'Take meat out of the fridge 30-60 min before cooking. Cold meat\'s outside overcooks before the inside warms. Room-temp meat cooks evenly.', tag: 'principle' }
+  ];
+
+  // ───────────────────────────────────────────────────────────
+  // SMOKE POINTS — oils ranked by smoke point
+  // ───────────────────────────────────────────────────────────
+  // The smoke point is the temp at which an oil starts visibly
+  // smoking — it's also where the oil starts breaking down into
+  // acrolein (bitter + toxic) and free fatty acids. Cooking above
+  // smoke point = bitter flavor + unhealthful compounds + fire risk.
+  var SMOKE_POINTS = [
+    { oil: 'Refined avocado oil', smokeF: 520, smokeC: 271, use: 'Highest-heat searing, frying, wok stir-fry', flavor: 'Neutral', notes: 'The highest commonly available smoke point. Workhorse for high-heat cooking.' },
+    { oil: 'Refined peanut oil', smokeF: 450, smokeC: 232, use: 'Deep frying, stir-fry, searing', flavor: 'Neutral to faintly nutty', notes: 'Classic deep-fry oil. Avoid if peanut-allergic guests.' },
+    { oil: 'Ghee (clarified butter)', smokeF: 485, smokeC: 252, use: 'Sautéing, frying, finishing', flavor: 'Rich, nutty, buttery', notes: 'Milk solids removed = no burning at high temps. Indian + South Asian cooking staple.' },
+    { oil: 'Light olive oil (refined)', smokeF: 465, smokeC: 240, use: 'High-heat sauté, frying', flavor: 'Mostly neutral', notes: 'Refined = filtered + processed = higher smoke point than EVOO but less flavor + fewer polyphenols.' },
+    { oil: 'Refined canola/sunflower', smokeF: 400, smokeC: 204, use: 'General cooking, baking, frying', flavor: 'Neutral', notes: 'Cheap workhorse oils. Less optimal fatty-acid profile than olive or avocado.' },
+    { oil: 'Vegetable oil (soybean)', smokeF: 400, smokeC: 204, use: 'General cooking, baking', flavor: 'Neutral', notes: 'Often a blend; check label.' },
+    { oil: 'Refined coconut oil', smokeF: 400, smokeC: 204, use: 'Sautéing, baking', flavor: 'Neutral (refined)', notes: 'Higher in saturated fat. Solid at room temp. Refined = neutral; virgin = coconut flavor.' },
+    { oil: 'Virgin coconut oil', smokeF: 350, smokeC: 177, use: 'Medium-heat cooking, baking', flavor: 'Distinct coconut', notes: 'Lower smoke point than refined. Use for flavor.' },
+    { oil: 'Extra virgin olive oil', smokeF: 375, smokeC: 191, use: 'Sauté, low-medium roasting, finishing', flavor: 'Fruity, peppery, varies by source', notes: 'Quality EVOO actually has a HIGHER smoke point than the common 320°F myth — but flavor degrades above 400°F regardless.' },
+    { oil: 'Butter (unclarified)', smokeF: 302, smokeC: 150, use: 'Low-heat sauté, finishing, baking', flavor: 'Rich, dairy', notes: 'Milk solids burn around 302°F. For higher-heat butter cooking, use ghee or clarify it yourself.' },
+    { oil: 'Sesame oil (toasted)', smokeF: 350, smokeC: 177, use: 'Finishing, low-heat aromatics', flavor: 'Strong toasted-nut', notes: 'Add at end of cooking. High heat destroys the flavor.' },
+    { oil: 'Flaxseed oil', smokeF: 225, smokeC: 107, use: 'Cold use ONLY — dressings, drizzles', flavor: 'Grassy, mild', notes: 'Never cook with this. Heat destroys the omega-3s + creates off-flavors fast.' }
+  ];
+
+  // ───────────────────────────────────────────────────────────
+  // CONVERSIONS — common kitchen math
+  // ───────────────────────────────────────────────────────────
+  var CONVERSIONS = [
+    { from: '1 cup', to: '16 tbsp / 48 tsp / ~240 ml / ~237 g (water)', notes: 'Cup volumes vary slightly by country (US: 240ml, UK: 250ml). Recipe assumes US unless stated.' },
+    { from: '1 tablespoon (tbsp)', to: '3 teaspoons (tsp) / ~15 ml', notes: 'The most reliable kitchen-math anchor.' },
+    { from: '1 stick of butter (US)', to: '1/2 cup / 8 tbsp / 113 g / 4 oz', notes: 'European butter blocks are 200-250g; convert by weight when possible.' },
+    { from: '1 lb', to: '454 g / 16 oz', notes: 'A pound of feathers + a pound of bricks weigh the same — the saying still works.' },
+    { from: '1 oz (weight)', to: '28.35 g', notes: 'Different from fluid oz (1 fl oz = 30 ml). Recipes ambiguous about which → check the unit.' },
+    { from: '1 fl oz (volume)', to: '~30 ml / 2 tbsp', notes: 'Bartender + recipe shared unit. NOT the same as weight oz for most things.' },
+    { from: '350°F oven', to: '175°C / Gas mark 4', notes: 'The "default" baking temp for most things. UK gas marks: 1=275°F, 2=300°F, 3=325°F, 4=350°F, 5=375°F, 6=400°F, 7=425°F, 8=450°F, 9=475°F.' },
+    { from: '1 cup flour (AP)', to: '125 g (BY WEIGHT) / ~130 g packed', notes: 'Volume measurements vary 20% based on how you scoop. Baking recipes that work use weight.' },
+    { from: '1 cup sugar (granulated)', to: '200 g', notes: 'Brown sugar packed: 220g. Powdered: 120g. By weight is the only consistent way.' },
+    { from: '1 large egg', to: '~50 g / 3 tbsp liquid (~30g white + ~20g yolk)', notes: 'Recipe scaling: 1 large egg ≈ 4 tbsp liquid equivalent. Useful when scaling up/down.' },
+    { from: '1 clove garlic', to: '~1 tsp minced / ~5 g', notes: 'Varies wildly with garlic size. Recipes assuming "medium" cloves mean roughly 5g.' }
+  ];
+
+  // ───────────────────────────────────────────────────────────
+  // SUBSTITUTIONS — emergency swaps
+  // ───────────────────────────────────────────────────────────
+  var SUBSTITUTIONS = [
+    { missing: 'Buttermilk (1 cup)', sub: '1 cup milk + 1 tbsp lemon juice or vinegar; rest 5 min',
+      why: 'Acid curdles the milk casein, mimicking buttermilk\'s tang + tenderizing acid.' },
+    { missing: 'Self-rising flour (1 cup)', sub: '1 cup AP flour + 1½ tsp baking powder + ¼ tsp salt',
+      why: 'Self-rising = pre-mixed AP + leavener. Same ratio in your bowl works identically.' },
+    { missing: 'Baking powder (1 tsp)', sub: '¼ tsp baking soda + ½ tsp cream of tartar (+ pinch cornstarch)',
+      why: 'Baking powder is baking soda + dry acid. Cream of tartar is the typical acid.' },
+    { missing: '1 egg', sub: '¼ cup unsweetened applesauce, OR 3 tbsp aquafaba (chickpea liquid), OR 1 tbsp ground flax + 3 tbsp water (rest 5 min)',
+      why: 'For binding only — applesauce works in baked goods. For lift/structure (soufflés, meringues), there\'s no real swap.' },
+    { missing: 'Heavy cream (1 cup) — for cooking, NOT whipping', sub: '¾ cup milk + ¼ cup melted butter',
+      why: 'Reconstructs fat content. Won\'t whip into peaks, but adds richness to sauces.' },
+    { missing: 'Sour cream', sub: 'Equal parts plain Greek yogurt',
+      why: 'Same tang + thickness. Greek yogurt is slightly more acidic — adjust salt slightly.' },
+    { missing: 'Wine for deglazing', sub: 'Equal parts broth + 1 tsp lemon juice or vinegar',
+      why: 'You\'re after acidity + flavor liquid. Acid replaces wine\'s acid; broth brings flavor.' },
+    { missing: 'Brown sugar (1 cup)', sub: '1 cup white sugar + 1 tbsp molasses',
+      why: 'Brown sugar IS white sugar + molasses, sold pre-mixed. Mix your own.' },
+    { missing: 'Cornstarch (1 tbsp, as thickener)', sub: '2 tbsp AP flour, OR 1 tbsp arrowroot, OR 1 tbsp potato starch',
+      why: 'All starches thicken via gelatinization. Flour needs longer cook to lose its raw taste; arrowroot is glossier; potato starch most neutral.' },
+    { missing: 'Yeast (1 packet)', sub: 'There\'s no quick swap. Sourdough starter works but needs hours. Baking powder works for soda-bread style — different result.',
+      why: 'Yeast does fermentation (CO2 + flavor compounds over hours). Chemical leaveners do CO2 only.' },
+    { missing: 'Lemon juice (1 tbsp)', sub: '1 tbsp white wine vinegar or apple cider vinegar (slightly less = more neutral)',
+      why: 'Both acids; vinegar slightly sharper. Don\'t swap in baking where color matters (lemon = clear, vinegar = clear; same).' },
+    { missing: 'Fresh herbs (1 tbsp)', sub: '1 tsp dried (rule of thumb 3:1 fresh:dried for hardy herbs; 2:1 for delicate)',
+      why: 'Dried herbs are more concentrated by volume; lower amount needed. Add dried early (needs heat to bloom); add fresh late.' }
+  ];
+
+  // ───────────────────────────────────────────────────────────
+  // TROUBLESHOOTING — "Why did my X fail?"
+  // ───────────────────────────────────────────────────────────
+  var TROUBLESHOOTING = [
+    { problem: 'My steak/chicken is gray, not browned', causes: [
+      'Pan wasn\'t hot enough (need 350-450°F for sear)',
+      'Surface was wet (water blocks Maillard — pat dry first)',
+      'Pan was crowded (steam from neighbors prevents browning — cook in batches)',
+      'You moved the food too soon (let it set 2-3 min before flipping for crust to form)'
+    ] },
+    { problem: 'My pasta water keeps boiling over', causes: [
+      'Pot too full (water needs ~6 inches of headroom for big rolling boil)',
+      'Heat too high — once at boil, drop to medium-high; you don\'t need full blast',
+      'Add a small amount of oil OR a wooden spoon across the top — both break surface tension',
+      'Modern fix: just don\'t fill the pot more than half full'
+    ] },
+    { problem: 'My sauce broke / split / curdled', causes: [
+      'Boiled an emulsion (mayo, hollandaise, beurre blanc) — too hot breaks the emulsion',
+      'Added cold dairy to hot pan too fast — temper it first',
+      'Acid hit hot dairy without temper — curdles instantly',
+      'Rescue: in a clean bowl with a tbsp warm water, slowly whisk broken sauce back in'
+    ] },
+    { problem: 'My rice is mushy or gummy', causes: [
+      'Too much water (typical: 1:1.5 ratio for white rice; check rice type)',
+      'Stirred during cooking (releases starch → gummy)',
+      'Didn\'t rinse before cooking (extra surface starch makes it sticky)',
+      'Wrong rice for the job (jasmine + basmati for fluffy; arborio + sushi for sticky)'
+    ] },
+    { problem: 'My eggs are rubbery / overcooked', causes: [
+      'Heat too high (eggs scramble best on low-medium with constant motion)',
+      'Cooked too far — eggs continue cooking off heat from residual warmth',
+      'No fat in the pan to insulate (butter/oil prevents direct egg-on-hot-metal contact)',
+      'Rule: pull eggs off heat when they look slightly underdone — carryover finishes them'
+    ] },
+    { problem: 'My vegetables are limp + lifeless after steaming/sautéing', causes: [
+      'Overcooked — most green vegetables go from bright to gray in 60 seconds',
+      'Cooked from cold (need to hit a hot pan to flash + retain color)',
+      'No shock after blanching (immediate ice bath stops the cook + sets color)',
+      'Pile too thick on sheet pan = steaming, not roasting → moisture trapped'
+    ] },
+    { problem: 'My roast/turkey/chicken is dry', causes: [
+      'Overcooked (use a thermometer; chicken at 165°F is done — not 180°F)',
+      'No rest after pulling from heat (5-20 min rest lets juices redistribute)',
+      'No brine on lean meat (chicken breast + turkey breast really benefit from brining)',
+      'Cut against the grain helps perceived moisture — across the muscle fibers, not along them'
+    ] },
+    { problem: 'My pan sauce is watery + thin', causes: [
+      'Didn\'t reduce far enough (keep reducing until coats the back of a spoon)',
+      'No fat to emulsify (finish with cold butter swirled in off heat = silky body)',
+      'No thickener (a touch of cornstarch slurry, or flour added to fat early)',
+      'Diluted by adding too much liquid at once — reduce in stages'
+    ] }
+  ];
+
+  // ───────────────────────────────────────────────────────────
   // STATE
   // ───────────────────────────────────────────────────────────
   function defaultState() {
@@ -230,6 +456,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       heatTechnique: 'saute',
       heatPanTempF: 350,
       heatTimeMin: 5,
+      // Maillard
+      maillardSurfaceF: 300,  // Surface temp slider
+      // Resources sub-view
+      resourcesSub: 'glossary',  // glossary | smoke | conversions | troubleshoot | subs
+      glossaryFilter: '',        // search filter
       // Progression
       klXp: 0,
       klAchievements: [],
@@ -262,7 +493,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         progress: function(d) { return (d && d.klViewedHeat) ? 'opened' : 'not yet'; } },
       { id: 'handwash_complete', label: 'Complete the WHO handwash timer', icon: '🧼',
         check: function(d) { return !!(d && d.klHandwashCompleted); },
-        progress: function(d) { return (d && d.klHandwashCompleted) ? 'completed' : 'not yet'; } }
+        progress: function(d) { return (d && d.klHandwashCompleted) ? 'completed' : 'not yet'; } },
+      { id: 'open_maillard', label: 'Explore the Maillard reaction', icon: '🟫',
+        check: function(d) { return !!(d && d.klViewedMaillard); },
+        progress: function(d) { return (d && d.klViewedMaillard) ? 'opened' : 'not yet'; } },
+      { id: 'open_resources', label: 'Browse the kitchen resources', icon: '📚',
+        check: function(d) { return !!(d && d.klViewedResources); },
+        progress: function(d) { return (d && d.klViewedResources) ? 'opened' : 'not yet'; } }
     ],
     render: function(ctx) {
       var React = ctx.React;
@@ -788,16 +1025,151 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       }
 
       function renderMaillard() {
-        return comingSoonStub('The Maillard Lab', '🟫',
-          'A deep dive on the browning reaction — the chemistry behind why seared steak, toasted bread, roasted coffee, and grilled vegetables all taste like more than the sum of their ingredients.',
-          [
-            'Side-by-side comparison: same steak at 100° / 140° / 180° / 220°C surface temp — see when Maillard starts (~140°C / 280°F)',
-            'Caramelization vs Maillard — different reactions, different temps, different chemistry (caramelization is sugar alone; Maillard needs amino acids + reducing sugars)',
-            'Amino acid + reducing sugar matchups — why each food browns to a different color/flavor',
-            'pH effects — alkaline boost (baking soda on pretzel dough, alkaline noodle water) accelerates Maillard dramatically',
-            'Acrylamide warning — the dark side of Maillard (potentially carcinogenic compound that forms in high-temp starch browning above ~250°F)',
-            'Why fond (the brown bits stuck to the pan) becomes pan sauce gold via deglazing'
-          ]);
+        var surfF = d.maillardSurfaceF || 300;
+        // Find current zone (zones have maxF — first one whose maxF >= surfF wins)
+        var zone = MAILLARD_ZONES.find(function(z) { return surfF < z.maxF; }) || MAILLARD_ZONES[MAILLARD_ZONES.length - 1];
+        var surfC = Math.round((surfF - 32) * 5 / 9);
+        return h('div', null,
+          panelHeader('🟫 The Maillard Lab',
+            'The browning reaction — the chemistry behind seared steak, toasted bread, roasted coffee, browned butter, and grilled vegetables. Discovered by Louis Camille Maillard in 1912; named after him in the 1950s when its mechanism was finally worked out.'),
+
+          // ─── What it is ───
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '🔬 What\'s actually happening'),
+            h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+              'Maillard is a cascade of chemical reactions between ',
+              h('b', { style: { color: '#fde68a' } }, 'amino acids'),
+              ' (the building blocks of protein) and ',
+              h('b', { style: { color: '#fde68a' } }, 'reducing sugars'),
+              ' (glucose, fructose, lactose — sugars that can give up an electron). It needs heat to start (~280°F / 140°C surface temp), and once running it produces:'),
+            h('ul', { style: { color: '#e2e8f0', fontSize: 12, lineHeight: 1.8, margin: '10px 0 0 0', padding: '0 0 0 20px' } },
+              h('li', null, h('b', { style: { color: '#fb923c' } }, 'Melanoidins'), ' — the brown pigments. Why crust is brown.'),
+              h('li', null, h('b', { style: { color: '#fb923c' } }, '1000+ volatile aroma compounds'), ' — pyrazines (nutty/roasty), furans (sweet/caramel), thiophenes (meaty/sulfury). These don\'t exist in raw food at all.'),
+              h('li', null, h('b', { style: { color: '#fb923c' } }, 'Complex flavor'), ' — Maillard is why seared beef tastes like more than the sum of "raw beef + salt." You\'re eating compounds that didn\'t exist 30 seconds earlier.'))),
+
+          // ─── Temperature explorer ───
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '🌡️ Temperature Explorer'),
+            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
+              'Drag the slider to see what\'s happening at different surface temperatures. Note: ',
+              h('b', { style: { color: '#fde68a' } }, 'surface temp ≠ internal temp'),
+              ' ≠ pan temp. Surface temp can be much higher than internal because the surface is touching the hot pan or air.'),
+            h('div', { style: { marginBottom: 16 } },
+              h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 6, fontWeight: 700 } },
+                h('span', null, 'Food surface temperature'),
+                h('span', { style: { color: zone.textColor === '#fef9c3' || zone.textColor === '#fef3c7' || zone.textColor === '#fbbf24' ? zone.color : '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                  surfF + '°F (' + surfC + '°C)')),
+              h('input', { type: 'range', min: 100, max: 500, step: 5, value: surfF,
+                onChange: function(e) { setKL({ maillardSurfaceF: parseInt(e.target.value, 10) }); },
+                'aria-label': 'Food surface temperature in Fahrenheit',
+                style: { width: '100%', accentColor: '#fb923c' } })),
+            // Visual swatch
+            h('div', { style: { display: 'flex', gap: 16, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap' } },
+              h('div', { 'aria-hidden': 'true',
+                style: { width: 120, height: 80, borderRadius: 12, background: zone.color,
+                  border: '2px solid rgba(100,116,139,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 11, fontWeight: 800, color: zone.textColor,
+                  textAlign: 'center', padding: 8, transition: 'background 0.3s' } },
+                'visual color'),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('div', { style: { fontSize: 14, fontWeight: 800, color: zone.color, marginBottom: 4 } }, zone.label),
+                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, zone.visual))),
+            h('div', { style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #7dd3fc', padding: '10px 12px', borderRadius: 8 } },
+              h('div', { style: { fontSize: 10, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, '⚗️ Science'),
+              h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, zone.science))),
+
+          // ─── All 6 zones reference ───
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '📊 All six zones at a glance'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+              MAILLARD_ZONES.map(function(z, i) {
+                var prevMax = i === 0 ? 100 : MAILLARD_ZONES[i - 1].maxF;
+                return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(15,23,42,0.5)', borderRadius: 8, padding: '8px 12px', border: '1px solid rgba(100,116,139,0.2)' } },
+                  h('div', { 'aria-hidden': 'true',
+                    style: { width: 42, height: 42, borderRadius: 8, background: z.color, flexShrink: 0,
+                      border: '1px solid rgba(255,255,255,0.15)' } }),
+                  h('div', { style: { flex: 1, minWidth: 0 } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fde68a', marginBottom: 2 } }, z.label),
+                    h('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                      prevMax + '–' + z.maxF + '°F (' + Math.round((prevMax - 32) * 5 / 9) + '–' + Math.round((z.maxF - 32) * 5 / 9) + '°C)')));
+              }))),
+
+          // ─── Caramelization vs Maillard ───
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '🆚 Caramelization vs Maillard'),
+            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
+              'Often confused — they\'re different reactions. Caramelization is sugar alone breaking down. Maillard needs amino acids + reducing sugars together. Most "browning" you see is Maillard, even when called "caramelizing."'),
+            h('div', { style: { overflowX: 'auto' } },
+              h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12 } },
+                h('thead', null,
+                  h('tr', { style: { borderBottom: '2px solid rgba(251,146,60,0.3)' } },
+                    h('th', { style: { textAlign: 'left', padding: '8px 12px', color: '#fb923c', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Aspect'),
+                    h('th', { style: { textAlign: 'left', padding: '8px 12px', color: '#fbbf24', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Caramelization'),
+                    h('th', { style: { textAlign: 'left', padding: '8px 12px', color: '#86efac', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Maillard'))),
+                h('tbody', null,
+                  CARAM_VS_MAILLARD.map(function(row, i) {
+                    return h('tr', { key: i, style: { borderBottom: '1px solid rgba(100,116,139,0.15)' } },
+                      h('td', { style: { padding: '10px 12px', color: '#fde68a', fontWeight: 700, verticalAlign: 'top' } }, row.aspect),
+                      h('td', { style: { padding: '10px 12px', color: '#fef3c7', verticalAlign: 'top', lineHeight: 1.5 } }, row.caram),
+                      h('td', { style: { padding: '10px 12px', color: '#dcfce7', verticalAlign: 'top', lineHeight: 1.5 } }, row.mai));
+                  }))))),
+
+          // ─── Browning examples ───
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '🍽️ Browning in the wild'),
+            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
+              'Same chemistry, different foods. Each carries its own characteristic flavor profile because amino acid + reducing sugar mixes differ.'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 } },
+              BROWNING_EXAMPLES.map(function(b, i) {
+                return h('div', { key: i,
+                  style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                    borderLeft: '4px solid #fb923c', borderRadius: 10, padding: '12px 14px' } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                    h('span', { style: { fontSize: 24 }, 'aria-hidden': 'true' }, b.emoji),
+                    h('div', { style: { flex: 1 } },
+                      h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a' } }, b.food),
+                      h('div', { style: { fontSize: 10, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } },
+                        'Surface: ' + b.surfaceF))),
+                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, b.story));
+              }))),
+
+          // ─── pH effects ───
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '⚗️ pH effects on Maillard'),
+            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
+              'The acidity of your food dramatically changes how fast Maillard runs. This is one of the most underused kitchen "cheat codes."'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 } },
+              PH_EFFECTS.map(function(p, i) {
+                var color = i === 0 ? '#fca5a5' : i === 1 ? '#94a3b8' : i === 2 ? '#86efac' : '#a78bfa';
+                return h('div', { key: i,
+                  style: { background: 'rgba(15,23,42,0.5)', border: '1px solid ' + color + '40',
+                    borderLeft: '3px solid ' + color, padding: '12px 14px', borderRadius: 8 } },
+                  h('div', { style: { fontSize: 12, fontWeight: 700, color: color, marginBottom: 6 } }, p.ph),
+                  h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55, marginBottom: 6 } }, p.effect),
+                  h('div', { style: { fontSize: 11, color: '#fde68a', lineHeight: 1.55, background: 'rgba(251,146,60,0.08)', padding: '6px 8px', borderRadius: 6 } },
+                    h('b', null, '💡 Use: '), p.use));
+              }))),
+
+          // ─── Acrylamide warning ───
+          h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #dc2626' }) },
+            h('div', { style: Object.assign({}, subheaderStyle(), { color: '#fca5a5' }) }, '☠️ The dark side: acrylamide'),
+            h('div', { style: { color: '#fecaca', fontSize: 12, lineHeight: 1.7 } },
+              h('p', { style: { margin: '0 0 10px 0' } },
+                'Above ~250°F (120°C), starchy foods + the amino acid ',
+                h('b', null, 'asparagine'),
+                ' react to form ',
+                h('b', null, 'acrylamide'),
+                ' — classified by IARC as a ',
+                h('em', null, 'probable human carcinogen'),
+                ' (Group 2A). It\'s the same compound used in some industrial polymer manufacturing.'),
+              h('p', { style: { margin: '0 0 10px 0' } },
+                'Foods most affected: french fries, potato chips, breakfast cereal, toast (especially dark), coffee, baked goods. The darker the brown, the more acrylamide. The FDA campaign tagline:'),
+              h('p', { style: { margin: '0 0 10px 0', padding: '8px 12px', background: 'rgba(220,38,38,0.15)', borderRadius: 8, fontWeight: 700, color: '#fde68a', textAlign: 'center' } },
+                '"Go for gold, not brown."'),
+              h('p', { style: { margin: 0 } },
+                'Practical advice: aim for golden-yellow on starchy foods, not deep brown. Don\'t store potatoes in the fridge (cold storage raises their reducing-sugar content → more acrylamide when cooked).')))
+        );
       }
 
       function renderRecipe() {
@@ -815,16 +1187,191 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       }
 
       function renderResources() {
-        return comingSoonStub('Resources & Glossary', '📚',
-          'Cooking terms, conversion charts, troubleshooting guides, printable cheat sheets, and the references for everything else in Kitchen Lab.',
-          [
-            'Culinary glossary: mise en place, deglaze, fond, emulsify, reduce, sweat, render, score, julienne, etc.',
-            'Conversion charts: weight ↔ volume, cup ↔ ml ↔ grams (with the warning: by weight is ALWAYS more accurate for baking)',
-            'Smoke-point chart: which oils for which temps (avocado highest, butter low, EVOO lower than people think)',
-            '"Why did my X fail?" troubleshooter — pick a failure mode, see the likely causes + fixes',
-            'Substitution chart: what to use if you don\'t have buttermilk / eggs / baking powder',
-            'Sources: USDA FSIS, FDA Food Code 2022, ServSafe, Harold McGee On Food and Cooking, Modernist Cuisine'
-          ]);
+        var sub = d.resourcesSub || 'glossary';
+        var filter = (d.glossaryFilter || '').toLowerCase().trim();
+        var SUBS = [
+          { id: 'glossary', label: 'Glossary', icon: '📖', count: GLOSSARY.length },
+          { id: 'smoke', label: 'Smoke Points', icon: '🛢️', count: SMOKE_POINTS.length },
+          { id: 'conversions', label: 'Conversions', icon: '📏', count: CONVERSIONS.length },
+          { id: 'subs', label: 'Substitutions', icon: '🔄', count: SUBSTITUTIONS.length },
+          { id: 'troubleshoot', label: 'Troubleshooter', icon: '🩺', count: TROUBLESHOOTING.length },
+          { id: 'sources', label: 'Sources', icon: '📜' }
+        ];
+        return h('div', null,
+          panelHeader('📚 Resources & Glossary',
+            'Reference material — terms, conversions, smoke points, substitutions, troubleshooting. The "lookup" half of Kitchen Lab. Bookmark this section.'),
+
+          // Sub-tab strip
+          h('div', { role: 'tablist', 'aria-label': 'Resources sub-sections',
+            style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
+            SUBS.map(function(s) {
+              var active = sub === s.id;
+              return h('button', { key: s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                onClick: function() { setKL({ resourcesSub: s.id }); awardXP(1); },
+                style: { padding: '8px 12px',
+                  background: active ? 'rgba(251,146,60,0.25)' : 'rgba(15,23,42,0.5)',
+                  color: active ? '#fde68a' : '#cbd5e1',
+                  border: '1px solid ' + (active ? 'rgba(251,146,60,0.6)' : 'rgba(100,116,139,0.3)'),
+                  borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 6 } },
+                h('span', { 'aria-hidden': 'true' }, s.icon),
+                s.label,
+                s.count ? h('span', { style: { fontSize: 10, color: active ? '#fb923c' : '#64748b', fontFamily: 'ui-monospace, Menlo, monospace' } }, ' (' + s.count + ')') : null);
+            })),
+
+          // ─── GLOSSARY ───
+          sub === 'glossary' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '📖 Culinary Glossary'),
+              h('div', { style: { marginBottom: 14 } },
+                h('input', { type: 'search', value: d.glossaryFilter || '',
+                  onChange: function(e) { setKL({ glossaryFilter: e.target.value }); },
+                  placeholder: 'Search terms... (e.g., "deglaze", "emulsify", "brine")',
+                  'aria-label': 'Filter glossary terms',
+                  style: { width: '100%', padding: '10px 14px',
+                    background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(100,116,139,0.4)',
+                    borderRadius: 8, color: '#f1f5f9', fontSize: 13, fontFamily: 'inherit' } })),
+              (function() {
+                var matches = GLOSSARY.filter(function(g) {
+                  if (!filter) return true;
+                  return g.term.toLowerCase().includes(filter) || g.defn.toLowerCase().includes(filter);
+                });
+                if (matches.length === 0) {
+                  return h('div', { style: { color: '#94a3b8', fontSize: 12, padding: '16px 0', textAlign: 'center', fontStyle: 'italic' } },
+                    'No matches for "' + filter + '". Try a partial word or check spelling.');
+                }
+                return h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
+                  matches.map(function(g, i) {
+                    var tagColor = g.tag === 'science' ? '#7dd3fc' :
+                                   g.tag === 'principle' ? '#a78bfa' :
+                                   g.tag === 'prep' ? '#fbbf24' : '#86efac';
+                    return h('div', { key: i,
+                      style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                        borderLeft: '3px solid ' + tagColor, padding: '10px 12px', borderRadius: 8 } },
+                      h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
+                        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a' } }, g.term),
+                        g.pron ? h('div', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, '/' + g.pron + '/') : null,
+                        h('span', { style: { fontSize: 9, fontWeight: 700, color: tagColor, background: tagColor + '15', padding: '1px 6px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.05em' } }, g.tag)),
+                      h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, g.defn));
+                  }));
+              })())) : null,
+
+          // ─── SMOKE POINTS ───
+          sub === 'smoke' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🛢️ Cooking Oil Smoke Points'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
+                'The smoke point is the temp at which an oil starts breaking down into acrolein (bitter, irritating) and free fatty acids. Cooking above smoke point = bitter taste + unhealthful compounds + real fire risk. Ranked highest to lowest.'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                SMOKE_POINTS.map(function(o, i) {
+                  // Color-code: green high, amber medium, red low
+                  var heatColor = o.smokeF >= 450 ? '#22c55e' : o.smokeF >= 375 ? '#fb923c' : '#dc2626';
+                  var heatLabel = o.smokeF >= 450 ? 'High-heat OK' : o.smokeF >= 375 ? 'Medium-heat' : 'Low-heat only';
+                  return h('div', { key: i,
+                    style: { display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 12, alignItems: 'center',
+                      background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                      borderLeft: '4px solid ' + heatColor, padding: '12px 14px', borderRadius: 8 } },
+                    h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 70 } },
+                      h('div', { style: { fontSize: 16, fontWeight: 900, color: heatColor, fontFamily: 'ui-monospace, Menlo, monospace' } }, o.smokeF + '°F'),
+                      h('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } }, o.smokeC + '°C')),
+                    h('div', null,
+                      h('div', { style: { fontSize: 13, fontWeight: 700, color: '#fde68a', marginBottom: 2 } }, o.oil),
+                      h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } },
+                        h('b', { style: { color: '#fb923c' } }, 'Use: '), o.use, ' • ',
+                        h('b', { style: { color: '#fb923c' } }, 'Flavor: '), o.flavor),
+                      h('div', { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic' } }, o.notes)),
+                    h('div', { style: { fontSize: 9, fontWeight: 800, color: heatColor, background: heatColor + '15', padding: '4px 8px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' } }, heatLabel));
+                })))) : null,
+
+          // ─── CONVERSIONS ───
+          sub === 'conversions' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '📏 Kitchen Conversions'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
+                'The most useful kitchen conversions, plus the notes that prevent the common "why didn\'t this work" moments. Pro tip for baking: ',
+                h('b', { style: { color: '#fde68a' } }, 'measure by weight when possible'),
+                ' — volume varies up to 20% depending on how you scoop.'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                CONVERSIONS.map(function(c, i) {
+                  return h('div', { key: i,
+                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                      borderLeft: '3px solid #38bdf8', padding: '10px 14px', borderRadius: 8 } },
+                    h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 4, flexWrap: 'wrap' } },
+                      h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace' } }, c.from),
+                      h('span', { 'aria-hidden': 'true', style: { color: '#fb923c', fontSize: 14, fontWeight: 700 } }, '→'),
+                      h('div', { style: { fontSize: 12, color: '#7dd3fc', fontFamily: 'ui-monospace, Menlo, monospace' } }, c.to)),
+                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, fontStyle: 'italic' } }, c.notes));
+                })))) : null,
+
+          // ─── SUBSTITUTIONS ───
+          sub === 'subs' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🔄 Emergency Substitutions'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
+                'When you start cooking + realize you don\'t have an ingredient, these are the swaps that actually work. Each entry includes ',
+                h('b', { style: { color: '#fde68a' } }, 'why'),
+                ' the swap works so you can adapt to similar situations.'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+                SUBSTITUTIONS.map(function(s, i) {
+                  return h('div', { key: i,
+                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                      borderLeft: '3px solid #a78bfa', padding: '12px 14px', borderRadius: 8 } },
+                    h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', marginBottom: 6 } },
+                      'Missing: ' + s.missing),
+                    h('div', { style: { fontSize: 12, color: '#dcfce7', lineHeight: 1.55, marginBottom: 6,
+                      background: 'rgba(34,197,94,0.08)', padding: '8px 10px', borderRadius: 6 } },
+                      h('b', { style: { color: '#86efac' } }, 'Use: '), s.sub),
+                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, fontStyle: 'italic' } },
+                      h('b', null, 'Why: '), s.why));
+                })))) : null,
+
+          // ─── TROUBLESHOOTER ───
+          sub === 'troubleshoot' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🩺 "Why did my X fail?" Troubleshooter'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
+                'The most common cooking failures + their likely causes. Most cooking problems are some combination of these — work through the list, fix the ones that apply, try again.'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+                TROUBLESHOOTING.map(function(t, i) {
+                  return h('details', { key: i,
+                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                      borderLeft: '3px solid #fbbf24', borderRadius: 8 } },
+                    h('summary', {
+                      style: { padding: '10px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: '#fde68a',
+                        listStyle: 'none', display: 'flex', alignItems: 'center', gap: 8 } },
+                      h('span', { 'aria-hidden': 'true', style: { color: '#fb923c' } }, '▶'),
+                      t.problem),
+                    h('ul', { style: { margin: '0 0 12px 0', padding: '0 14px 0 36px', color: '#e2e8f0', fontSize: 12, lineHeight: 1.7 } },
+                      t.causes.map(function(c, ci) { return h('li', { key: ci, style: { marginBottom: 4 } }, c); })));
+                })))) : null,
+
+          // ─── SOURCES ───
+          sub === 'sources' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '📜 Sources + Further Reading'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.7 } },
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  'Kitchen Lab content is anchored in publicly available food-safety guidance + culinary science references. Where temperatures or rules appear, the cited source is the authoritative one for the US:'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 } },
+                  [
+                    { name: 'USDA FSIS', topic: 'Safe cooking temps, meat handling, recall data', url: 'fsis.usda.gov' },
+                    { name: 'FDA Food Code 2022', topic: 'Bacteria danger zone, cross-contamination, allergens-9 (FASTER Act 2023 added sesame)', url: 'fda.gov/food/retail-food-protection/fda-food-code' },
+                    { name: 'CDC Foodsafety.gov', topic: 'Foodborne illness, handwashing protocols, kitchen hygiene', url: 'foodsafety.gov' },
+                    { name: 'WHO 12-step handwash', topic: 'The technical sequence used in healthcare + commercial kitchens worldwide', url: 'who.int' },
+                    { name: 'Harold McGee, "On Food and Cooking" (2nd ed.)', topic: 'The science reference for culinary curiosity — Maillard chemistry, emulsions, heat transfer', url: 'book' },
+                    { name: 'Modernist Cuisine (Myhrvold)', topic: 'Deep technical reference; Maillard temp data + heat transfer models', url: 'book' },
+                    { name: 'Kenji López-Alt, "The Food Lab"', topic: 'Practical kitchen science, accessible; technique + science integration', url: 'book' },
+                    { name: 'ServSafe instructor guide', topic: 'Industry-standard food safety certification training', url: 'servsafe.com' },
+                    { name: 'IARC monographs', topic: 'Acrylamide classification (Group 2A, probable human carcinogen)', url: 'monographs.iarc.who.int' }
+                  ].map(function(s, i) {
+                    return h('div', { key: i,
+                      style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                        borderLeft: '3px solid #fb923c', padding: '10px 12px', borderRadius: 8 } },
+                      h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fde68a', marginBottom: 4 } }, s.name),
+                      h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, s.topic),
+                      s.url !== 'book' ? h('div', { style: { fontSize: 10, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace' } }, s.url) : null);
+                  }))))) : null
+        );
       }
 
       // ─── Style helpers ───
