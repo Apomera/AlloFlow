@@ -1696,6 +1696,11 @@ const generateUUID = () => {
 // route through writeToSession() below; existing writes were audited and either
 // gated by _isCanvasEnv or restricted to Tier-1 fields.
 const SESSION_TIER1_LEAVES = new Set([
+  // 'name' is the curated adjective+animal codename from StudentEntryModal's two
+  // dropdowns (see prismflow-deploy/public/ui_modals_module.js); students cannot
+  // free-type so it's structurally non-PII. Do NOT promote 'name' to free-text
+  // entry without revisiting this allowlist.
+  'name',
   'displayToken', 'nicknameToken', 'xp', 'level', 'energy', 'gold', 'progress',
   'groupId', 'groupConfig', 'readingLevel', 'language', 'ttsSpeed',
   'submitted', 'timestamp', 'itemType', 'conceptLabel', 'phase', 'stage',
@@ -1725,23 +1730,6 @@ const writeToSession = async (sessionRef, payload) => {
 if (typeof window !== 'undefined') {
   window.__alloWriteToSession = writeToSession;
   window.__alloSessionTier1Leaves = SESSION_TIER1_LEAVES;
-}
-// Friendly per-session display token derived deterministically from the Firebase
-// Auth UID. Used as the teacher-facing identifier in live sessions so the teacher
-// can do manual roster operations (group assignment, naming) without any
-// user-typed nickname being synced. Symbol Studio social stories still use the
-// student's local nickname directly — that path is local-only and unaffected.
-const TOKEN_ADJECTIVES = ['Gold','Silver','Sky','Sunny','Misty','Forest','Coral','Sage','Plum','Ocean','Snow','Amber','Crimson','Indigo','Mint','Rose','Cobalt','Maple','Lilac','Ember','Quiet','Brave','Swift','Kind'];
-const TOKEN_ANIMALS = ['Bee','Cat','Fox','Owl','Bear','Deer','Wolf','Otter','Whale','Hawk','Sparrow','Robin','Crane','Heron','Lynx','Hare','Moth','Newt','Toad','Eel','Mole','Wren','Finch','Stag'];
-const friendlyToken = (uid) => {
-  if (!uid || typeof uid !== 'string') return 'Guest';
-  let h = 0;
-  for (let i = 0; i < uid.length; i++) h = ((h << 5) - h + uid.charCodeAt(i)) | 0;
-  h = Math.abs(h);
-  return TOKEN_ADJECTIVES[h % TOKEN_ADJECTIVES.length] + TOKEN_ANIMALS[(Math.floor(h / TOKEN_ADJECTIVES.length)) % TOKEN_ANIMALS.length];
-};
-if (typeof window !== 'undefined') {
-  window.__alloFriendlyToken = friendlyToken;
 }
 // ── Session asset sync extracted to module_scope_extras_module.js (CDN) ──
 // uploadSessionAssets / hydrateSessionAssets — Firestore data:image ↔ doc-ref swap.
@@ -7868,11 +7856,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           const targetAppId = activeSessionAppId || appId;
           const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
           const updateData = {};
+          updateData[`roster.${user.uid}.name`] = studentNickname || "Student";
           updateData[`roster.${user.uid}.xp`] = globalPoints;
-          updateData[`roster.${user.uid}.displayToken`] = friendlyToken(user.uid);
-          if (!_isCanvasEnv) {
-              updateData[`roster.${user.uid}.name`] = studentNickname || "Student";
-          }
           updateDoc(sessionRef, updateData).catch(e => warnLog("Roster sync skipped", e));
       }
   }, [globalPoints, activeSessionCode, isTeacherMode, user, studentNickname, activeSessionAppId]);
