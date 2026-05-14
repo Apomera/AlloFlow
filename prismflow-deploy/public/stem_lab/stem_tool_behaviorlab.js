@@ -384,15 +384,9 @@ var d = labToolData || {};
             { term: 'Token Economy', def: 'A system where tokens (conditioned reinforcers) are earned for target behaviors and exchanged for backup reinforcers.' }
           ];
 
-          // === Replacement Behaviors — the missing FBA → BIP bridge ===
-          // Knowing the function is half the work. The other half is
-          // teaching a replacement that meets the same function while
-          // being socially acceptable, easier, and more efficient than
-          // the problem behavior. Without that, an FBA is just a
-          // sophisticated label — and most BIPs that fail, fail here.
-          // Mapped to the same FOUR_FUNCTIONS taxonomy so students see
-          // one continuous arc: function → replacement → instruction.
-          var REPLACEMENT_BEHAVIORS = [
+          // === Replacement Behaviors — MOVED to School Behavior Toolkit ===
+          /* eslint-disable no-unused-vars */
+          var REPLACEMENT_BEHAVIORS_MOVED_TO_TOOLKIT = [
             {
               function: 'Attention',
               functionAbbrev: 'ATT',
@@ -431,16 +425,9 @@ var d = labToolData || {};
             }
           ];
 
-          // === PBIS — Positive Behavioral Interventions and Supports ===
-          // Three-tier framework that holds individual ABA work inside a
-          // school-wide system. Tier 1 = all students (universal),
-          // Tier 2 = ~15% needing targeted (small-group) supports,
-          // Tier 3 = ~5% needing intensive individualized FBA-driven
-          // plans. Most school psychs spend 80% of their time inside
-          // this framework. PBIS is the dominant US K-12 behavior model
-          // and was absent from BehaviorLab — adding it gives operant
-          // mechanics a system-level frame.
-          var PBIS_TIERS = [
+          // === PBIS Three Tiers — MOVED to School Behavior Toolkit ===
+          /* eslint-disable no-unused-vars */
+          var PBIS_TIERS_MOVED_TO_TOOLKIT = [
             {
               tier: 1,
               name: 'Tier 1 — Universal',
@@ -473,17 +460,9 @@ var d = labToolData || {};
             }
           ];
 
-          // === Restraint and Seclusion — the highest-stakes content ===
-          // Most ABA tools and most teacher-prep programs cover this
-          // briefly or not at all. School psychs have to know it because
-          // they sit on IEP teams that authorize, debrief, and revise
-          // BIPs in response to restraint/seclusion incidents. Maine
-          // Chapter 33 is more restrictive than federal default — this
-          // panel uses Maine specifics with notes about cross-state
-          // variation. Sources: Maine Chapter 33 (Maine Department of
-          // Education); ASAN restraint/seclusion position statements;
-          // U.S. Department of Education 2022 guidance.
-          var RESTRAINT_PRINCIPLES = [
+          // === Restraint and Seclusion — MOVED to School Behavior Toolkit ===
+          /* eslint-disable no-unused-vars */
+          var RESTRAINT_PRINCIPLES_MOVED_TO_TOOLKIT = [
             {
               name: 'What restraint IS (and is NOT)',
               icon: '⚖️', color: '#fbbf24',
@@ -522,15 +501,9 @@ var d = labToolData || {};
             }
           ];
 
-          // === Acting-Out Cycle — the seven-phase escalation model ===
-          // Geoff Colvin's framework (late 1990s) is the spine of every
-          // major crisis-intervention curriculum (CPI, Boys Town, NCI,
-          // Mandt). Each phase has its own intervention. Knowing which
-          // phase a student is in tells staff what will help and what
-          // will make it worse. The cycle is the most useful single thing
-          // a school psych teaches teachers, and it's almost never in
-          // operant-conditioning materials.
-          var ACTING_OUT_CYCLE = [
+          // === Acting-Out Cycle — MOVED to School Behavior Toolkit ===
+          /* eslint-disable no-unused-vars */
+          var ACTING_OUT_CYCLE_MOVED_TO_TOOLKIT = [
             {
               phase: 1, name: 'Calm', icon: '🌊', color: '#22c55e',
               signs: 'Baseline functioning. Engaged, cooperative, on-task. Predictable, regulated.',
@@ -575,15 +548,17 @@ var d = labToolData || {};
             }
           ];
 
-          // === Setting events — the slow triggers K-12 behavior plans miss ===
-          // Most BIPs focus on the immediate antecedent (the worksheet, the
-          // transition, the demand). Setting events are the conditions
-          // hours or days earlier that *lower the threshold* — making the
-          // immediate antecedent more likely to evoke the problem behavior.
-          // Recognizing them shifts the question from 'why this behavior
-          // right now?' to 'why was today different?'. Under-taught and
-          // disproportionately useful in school settings.
-          var SETTING_EVENTS = [
+          // === Setting events — MOVED to School Behavior Toolkit ===
+          // The applied-K-12 panels (PBIS Tiers, Setting Events, Acting-
+          // Out Cycle, Replacement Behaviors, Restraint & Seclusion) now
+          // live in stem_tool_schoolbehaviortoolkit.js. BehaviorLab
+          // stays focused on the science of operant conditioning so the
+          // Skinner-box visual frame is not adjacent to "how to handle
+          // a kid in crisis" content. Backlink callout below points
+          // students to the new home. Original constants retained as
+          // tombstone comments to preserve git-blame.
+          /* eslint-disable no-unused-vars */
+          var SETTING_EVENTS_MOVED_TO_TOOLKIT = [
             {
               category: 'Biological',
               icon: '😴', color: '#a78bfa',
@@ -4758,535 +4733,49 @@ var d = labToolData || {};
               )
             ),
 
-            // === REPLACEMENT BEHAVIORS — function → BIP bridge ===
-            // Sits adjacent to Four Functions so the function → replacement
-            // narrative reads as one continuous arc. Four cards mapped to
-            // the same FOUR_FUNCTIONS taxonomy. Each card shows the
-            // problem-behavior example, the replacement behavior(s),
-            // teaching strategy, and the most-common pitfall — the place
-            // school psychs report seeing BIPs fail in real K-12 work.
+            // === MIGRATED PANELS NOW LIVE IN SCHOOL BEHAVIOR TOOLKIT ===
+            // PBIS Three Tiers, Replacement Behaviors, Setting Events,
+            // Acting-Out Cycle, and Restraint & Seclusion previously sat
+            // here. They've been moved out of BehaviorLab so the Skinner-
+            // box visual frame is not adjacent to applied K-12 practice
+            // content. The new home is stem_tool_schoolbehaviortoolkit.js.
+            // This callout is the bridge — students who land in BehaviorLab
+            // can find the applied content one click away.
             React.createElement("div", {
-              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(34,197,94,0.25)' }, glass)
+              style: Object.assign({
+                background: 'linear-gradient(135deg, rgba(20,184,166,0.10), rgba(34,211,238,0.06))',
+                borderRadius: 14,
+                padding: '14px 16px',
+                border: '1px solid rgba(20,184,166,0.30)',
+                borderLeft: '4px solid #14b8a6'
+              }, glass)
             },
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🔄 Replacement Behaviors — function → BIP"),
-                React.createElement("button", { onClick: function() { upd('blShowReplace', !d.blShowReplace); },
-                  className: "text-[11px] text-emerald-400 hover:text-emerald-300"
-                }, d.blShowReplace ? 'Hide' : 'View →')
-              ),
-              d.blShowReplace && React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-3", style: { lineHeight: 1.55 } },
-                "Knowing the function is half the work. The other half is teaching a replacement that meets the same function while being socially acceptable, easier, and more efficient than the problem behavior. Without the replacement, an FBA is just a sophisticated label — and most BIPs that fail, fail right here. One card per function:"),
-              d.blShowReplace && React.createElement("div", { className: "space-y-2" },
-                REPLACEMENT_BEHAVIORS.map(function(rb, rbi) {
-                  return React.createElement("div", {
-                    key: 'rb-' + rbi,
-                    style: {
-                      background: 'rgba(15,23,42,0.6)',
-                      borderRadius: 10,
-                      padding: '10px 12px',
-                      border: '1px solid rgba(100,116,139,0.25)',
-                      borderLeft: '4px solid ' + rb.color
-                    }
-                  },
-                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
-                      React.createElement("div", {
-                        'aria-hidden': 'true',
-                        style: {
-                          width: 36, height: 36, borderRadius: '50%',
-                          background: rb.color + '22',
-                          border: '1.5px solid ' + rb.color,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 17, lineHeight: 1, flexShrink: 0
-                        }
-                      }, rb.icon),
-                      React.createElement("div", { style: { flex: 1 } },
-                        React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: rb.color, lineHeight: 1.2 } }, rb.function),
-                        React.createElement("div", { style: { fontSize: 9, color: rb.color + 'cc', fontFamily: 'ui-monospace, Menlo, monospace', letterSpacing: '0.04em', marginTop: 1 } }, 'function: ' + rb.functionAbbrev)
-                      )
-                    ),
-                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr', gap: 6 } },
-                      React.createElement("div", null,
-                        React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: '#f87171', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '⚠ Problem behavior typically looks like'),
-                        React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, rb.problemEx)
-                      ),
-                      React.createElement("div", null,
-                        React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3, marginTop: 4 } }, '↪ Replacement behavior'),
-                        React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, rb.replacement)
-                      ),
-                      React.createElement("div", null,
-                        React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3, marginTop: 4 } }, '🎓 How to teach it'),
-                        React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, rb.teaching)
-                      ),
-                      React.createElement("div", { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)', marginTop: 4 } },
-                        React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '🪤 Common pitfall'),
-                        React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, rb.pitfall)
-                      )
-                    )
-                  );
-                })
-              ),
-              d.blShowReplace && React.createElement("div", {
-                style: {
-                  marginTop: 10, padding: 10, borderRadius: 8,
-                  background: 'rgba(34,197,94,0.06)',
-                  border: '1px solid rgba(34,197,94,0.20)',
-                  color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic'
-                }
-              },
-                "🎯 The replacement-behavior rule of thumb: the new behavior must be ",
-                React.createElement("b", null, "(1) easier"),
-                " than the problem behavior, ",
-                React.createElement("b", null, "(2) more efficient"),
-                " (faster reinforcement, every time, no negotiation), and ",
-                React.createElement("b", null, "(3) reinforced first, conditions added later"),
-                ". Most BIPs front-load conditions and wonder why they fail. Trust comes before contingency.")
-            ),
-
-            // === FAMOUS BEHAVIORISTS ===
-            React.createElement("div", {
-              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(245,158,11,0.2)' }, glass)
-            },
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCDA Famous Behaviorists"),
-                React.createElement("button", { onClick: function() { upd('blShowBehaviorists', !d.blShowBehaviorists); },
-                  className: "text-[11px] text-amber-400 hover:text-amber-300"
-                }, d.blShowBehaviorists ? 'Hide' : 'Explore \u2192')
-              ),
-              d.blShowBehaviorists && React.createElement("div", { className: "relative pl-4 border-l-2 border-amber-700 space-y-2 max-h-64 overflow-y-auto" },
-                FAMOUS_BEHAVIORISTS.map(function(fb, fbi) {
-                  return React.createElement("div", { key: fbi, className: "relative" },
-                    React.createElement("div", { className: "absolute -left-[21px] top-1.5 w-3 h-3 rounded-full bg-amber-500" }),
-                    React.createElement("div", { className: "bg-slate-700/50 rounded-lg p-2 border border-slate-600" },
-                      React.createElement("div", { className: "flex items-center gap-2 mb-0.5" },
-                        React.createElement("span", { className: "text-sm" }, fb.icon),
-                        React.createElement("span", { className: "text-[11px] font-bold text-white" }, fb.name),
-                        React.createElement("span", { className: "ml-auto text-[11px] text-amber-400 font-mono" }, fb.year)
-                      ),
-                      React.createElement("div", { className: "text-[11px] px-1.5 py-0.5 rounded-full bg-amber-900/40 text-amber-300 inline-block mb-1" }, fb.field),
-                      React.createElement("div", { className: "text-[11px] text-slate-200" }, fb.contribution)
-                    )
-                  );
-                })
-              )
-            ),
-
-            // === REAL-WORLD ABA APPLICATIONS ===
-            React.createElement("div", {
-              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(34,197,94,0.2)' }, glass)
-            },
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83C\uDF0D ABA in the Real World"),
-                React.createElement("button", { onClick: function() { upd('blShowApps', !d.blShowApps); },
-                  className: "text-[11px] text-green-400 hover:text-green-300"
-                }, d.blShowApps ? 'Hide' : 'Explore \u2192')
-              ),
-              d.blShowApps && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-2" }, "ABA isn't just for the lab \u2014 its principles are used everywhere you look:"),
-                React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
-                  ABA_APPLICATIONS.map(function(app, appi) {
-                    return React.createElement("div", { key: appi, className: "bg-slate-700/50 rounded-lg p-2 border border-slate-600" },
-                      React.createElement("div", { className: "text-center mb-1" },
-                        React.createElement("div", { className: "text-lg" }, app.icon),
-                        React.createElement("div", { className: "text-[11px] font-bold text-white" }, app.name)
-                      ),
-                      React.createElement("div", { className: "text-[11px] text-slate-200" }, app.desc),
-                      React.createElement("div", { className: "text-[11px] text-green-400 mt-1 font-medium" }, "\uD83D\uDCCD " + app.setting)
-                    );
-                  })
-                )
-              )
-            ),
-
-            // === BEHAVIOR MEASUREMENT METHODS ===
-            React.createElement("div", {
-              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(6,182,212,0.2)' }, glass)
-            },
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCCA Behavior Measurement Methods"),
-                React.createElement("button", { onClick: function() { upd('blShowMeasure', !d.blShowMeasure); },
-                  className: "text-[11px] text-cyan-400 hover:text-cyan-300"
-                }, d.blShowMeasure ? 'Hide' : 'Learn \u2192')
-              ),
-              d.blShowMeasure && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-2" }, "How do behavior analysts measure behavior objectively? The measurement method depends on what aspect of the behavior is most important:"),
-                React.createElement("div", { className: "space-y-1.5" },
-                  MEASUREMENT_METHODS.map(function(mm, mmi) {
-                    var isActive = d.blMeasureIdx === mmi;
-                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: mmi,
-                      onClick: function() { upd('blMeasureIdx', isActive ? null : mmi); },
-                      className: "cursor-pointer rounded-lg p-2 border transition-all " + (isActive ? 'bg-cyan-900/30 border-cyan-600' : 'bg-slate-700/30 border-slate-600 hover:border-slate-500')
-                    },
-                      React.createElement("div", { className: "flex items-center gap-2" },
-                        React.createElement("span", { className: "text-sm" }, mm.icon),
-                        React.createElement("span", { className: "text-[11px] font-bold text-white" }, mm.name),
-                        React.createElement("span", { className: "ml-auto text-[11px] text-slate-200" }, isActive ? '\u25BC' : '\u25B6')
-                      ),
-                      isActive && React.createElement("div", { className: "mt-1.5 space-y-1" },
-                        React.createElement("div", { className: "text-[11px] text-cyan-300 font-medium" }, mm.def),
-                        React.createElement("div", { className: "text-[11px] text-slate-200" }, "\uD83D\uDCDD Example: " + mm.example),
-                        React.createElement("div", { className: "text-[11px] text-amber-400" }, "\u2753 When to use: " + mm.when)
-                      )
-                    );
-                  })
-                )
-              )
-            ),
-
-            // === ABA ETHICS ===
-            React.createElement("div", {
-              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(168,85,247,0.2)' }, glass)
-            },
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\u2696 Ethics in Applied Behavior Analysis"),
-                React.createElement("button", { onClick: function() { upd('blShowEthics', !d.blShowEthics); },
-                  className: "text-[11px] text-purple-400 hover:text-purple-300"
-                }, d.blShowEthics ? 'Hide' : 'View \u2192')
-              ),
-              d.blShowEthics && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-2" }, "With great power comes great responsibility. ABA practitioners follow strict ethical guidelines from the BACB (Behavior Analyst Certification Board):"),
-                React.createElement("div", { className: "grid grid-cols-2 gap-1.5" },
-                  ABA_ETHICS.map(function(eth, ethi) {
-                    return React.createElement("div", { key: ethi, className: "bg-slate-700/50 rounded-lg p-2 border border-purple-700/30 text-center" },
-                      React.createElement("div", { className: "text-lg mb-0.5" }, eth.icon),
-                      React.createElement("div", { className: "text-[11px] font-bold text-white" }, eth.name),
-                      React.createElement("div", { className: "text-[11px] text-slate-200 mt-0.5" }, eth.desc)
-                    );
-                  })
-                )
-              )
-            ),
-
-            // === PBIS THREE TIERS — the system around individual ABA ===
-            // Three cards in a vertical stack so the tier numbers and
-            // student-percent breakdown read top-down. Each card has the
-            // tier badge, who-it-serves, examples, data signals, and
-            // escalation criteria. Closes the gap between operant
-            // conditioning (a science) and the K-12 system (a framework
-            // most school psychs spend most of their time inside).
-            React.createElement("div", {
-              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(34,211,238,0.25)' }, glass)
-            },
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🏫 PBIS — Three Tiers of Support"),
-                React.createElement("button", { onClick: function() { upd('blShowPbis', !d.blShowPbis); },
-                  className: "text-[11px] text-cyan-400 hover:text-cyan-300"
-                }, d.blShowPbis ? 'Hide' : 'View →')
-              ),
-              d.blShowPbis && React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-3", style: { lineHeight: 1.55 } },
-                "Positive Behavioral Interventions and Supports is the school-wide framework that holds individual ABA work inside a system. Most school psychs spend 80% of their time inside this framework — not in 1-on-1 ABA. Three tiers, with the % of students each tier typically serves:"),
-              d.blShowPbis && React.createElement("div", { className: "space-y-2" },
-                PBIS_TIERS.map(function(pt, pti) {
-                  return React.createElement("div", {
-                    key: 'pbis-' + pt.tier,
-                    style: {
-                      background: 'rgba(15,23,42,0.6)',
-                      borderRadius: 10,
-                      padding: '12px 14px',
-                      border: '1px solid rgba(100,116,139,0.25)',
-                      borderLeft: '4px solid ' + pt.color
-                    }
-                  },
-                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
-                      React.createElement("div", {
-                        'aria-hidden': 'true',
-                        style: {
-                          width: 36, height: 36, borderRadius: '50%',
-                          background: pt.color + '22',
-                          border: '1.5px solid ' + pt.color,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 13, fontWeight: 800, color: pt.color,
-                          fontFamily: 'ui-monospace, Menlo, monospace',
-                          flexShrink: 0
-                        }
-                      }, pt.tier),
-                      React.createElement("div", { style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, pt.icon),
-                      React.createElement("div", { style: { flex: 1 } },
-                        React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: pt.color, lineHeight: 1.2 } }, pt.name),
-                        React.createElement("div", { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, pt.percent)
-                      )
-                    ),
-                    React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } },
-                      React.createElement("b", { style: { color: '#e2e8f0' } }, 'Who it serves: '),
-                      pt.who),
-                    React.createElement("div", null,
-                      React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'Concrete examples'),
-                      React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } }, pt.examples)
-                    ),
-                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
-                      React.createElement("div", {
-                        style: {
-                          padding: 8, borderRadius: 6,
-                          background: 'rgba(96,165,250,0.06)',
-                          border: '1px solid rgba(96,165,250,0.20)'
-                        }
-                      },
-                        React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '📊 Data signal'),
-                        React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, pt.data)
-                      ),
-                      React.createElement("div", {
-                        style: {
-                          padding: 8, borderRadius: 6,
-                          background: 'rgba(251,146,60,0.06)',
-                          border: '1px solid rgba(251,146,60,0.20)'
-                        }
-                      },
-                        React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '⏫ When to escalate'),
-                        React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, pt.escalate)
-                      )
-                    )
-                  );
-                })
-              ),
-              d.blShowPbis && React.createElement("div", {
-                style: {
-                  marginTop: 10, padding: 10, borderRadius: 8,
-                  background: 'rgba(34,211,238,0.06)',
-                  border: '1px solid rgba(34,211,238,0.20)',
-                  color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic'
-                }
-              },
-                "🎯 The PBIS rule of thumb: a building where ",
-                React.createElement("b", null, "Tier 1 is weak"),
-                " will need MORE Tier 2 and Tier 3 capacity than the staffing model can support — and Tier 3 plans will fail because they are trying to compensate for missing universal supports. The math is unforgiving: if your universal expectations aren't taught, posted, and reinforced consistently, no individual BIP can rescue the system. Strong Tier 1 is the highest-leverage school-psych work there is.")
-            ),
-
-            // === SETTING EVENTS — slow triggers K-12 BIPs miss ===
-            // Six categories of conditions hours-to-days earlier that
-            // lower the behavior threshold. Each has a circular badge in
-            // its category color, the example list, and a school-psych
-            // pull-quote. Helps students see ABC analysis as a 3-day
-            // window, not a 3-second window.
-            React.createElement("div", {
-              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(244,114,182,0.25)' }, glass)
-            },
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🕰️ Setting events — the slow triggers most BIPs miss"),
-                React.createElement("button", { onClick: function() { upd('blShowSettingEvents', !d.blShowSettingEvents); },
-                  className: "text-[11px] text-pink-400 hover:text-pink-300"
-                }, d.blShowSettingEvents ? 'Hide' : 'View →')
-              ),
-              d.blShowSettingEvents && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-3", style: { lineHeight: 1.55 } },
-                  "Most behavior plans focus on the immediate antecedent — the worksheet, the transition, the demand. ",
-                  React.createElement("b", { style: { color: '#f472b6' } }, "Setting events"),
-                  " are the conditions hours or days earlier that lower the behavior threshold. They make the immediate antecedent more likely to evoke the problem behavior. The shift is from ",
-                  React.createElement("i", null, "'why this behavior right now?'"),
-                  " to ",
-                  React.createElement("i", null, "'why was today different?'"),
-                  ". Under-taught, disproportionately useful in K-12.")
-              ),
-              d.blShowSettingEvents && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                SETTING_EVENTS.map(function(se, sei) {
-                  return React.createElement("div", {
-                    key: 'se-' + sei,
-                    style: {
-                      background: 'rgba(15,23,42,0.6)',
-                      borderRadius: 10,
-                      padding: '10px 12px',
-                      border: '1px solid rgba(100,116,139,0.25)',
-                      borderLeft: '3px solid ' + se.color
-                    }
-                  },
-                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
-                      React.createElement("div", {
-                        'aria-hidden': 'true',
-                        style: {
-                          width: 30, height: 30, borderRadius: '50%',
-                          background: se.color + '22',
-                          border: '1.5px solid ' + se.color,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 15, lineHeight: 1, flexShrink: 0
-                        }
-                      }, se.icon),
-                      React.createElement("div", { style: { fontSize: 12, fontWeight: 800, color: se.color } }, se.category)
-                    ),
-                    React.createElement("div", { style: { fontSize: 10, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 6 } }, se.examples),
-                    React.createElement("div", { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic', paddingTop: 6, borderTop: '1px dashed ' + se.color + '40' } },
-                      "💡 ", se.note)
-                  );
-                })
-              ),
-              d.blShowSettingEvents && React.createElement("div", {
-                style: {
-                  marginTop: 10, padding: 10, borderRadius: 8,
-                  background: 'rgba(244,114,182,0.06)',
-                  border: '1px solid rgba(244,114,182,0.20)',
-                  color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic'
-                }
-              },
-                "🎯 Practical tool: when you write a BIP, add a ",
-                React.createElement("b", null, "'morning check'"),
-                " row to the ABC data sheet. One quick rating each morning of the six categories above. Three weeks of data and the pattern emerges. School psychs who do this regularly report cutting BIP-revision cycles in half.")
-            ),
-
-            // === ACTING-OUT CYCLE — seven-phase escalation model ===
-            // Geoff Colvin's framework. Each phase = card with phase
-            // number badge, signs, do-this, don't-do — color-coded so the
-            // arc reads as a heat-map (green → yellow → orange → red →
-            // dark red → blue → lavender). The heat-map itself teaches:
-            // intensity rises through Phase 5 then resolves through 6-7.
-            React.createElement("div", {
-              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(239,68,68,0.25)' }, glass)
-            },
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🌀 The Acting-Out Cycle — seven phases of escalation"),
-                React.createElement("button", { onClick: function() { upd('blShowCycle', !d.blShowCycle); },
-                  className: "text-[11px] text-red-400 hover:text-red-300"
-                }, d.blShowCycle ? 'Hide' : 'View →')
-              ),
-              d.blShowCycle && React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-3", style: { lineHeight: 1.55 } },
-                "Geoff Colvin's seven-phase framework is the spine of every major crisis-intervention curriculum (CPI, Boys Town, NCI, Mandt). Each phase has its own intervention. Knowing which phase a student is in tells staff what will help and what will make it worse. Almost never in operant-conditioning materials, but probably the single most useful frame a school psych teaches teachers."),
-              d.blShowCycle && React.createElement("div", { className: "space-y-2" },
-                ACTING_OUT_CYCLE.map(function(ph, phi) {
-                  return React.createElement("div", {
-                    key: 'cycle-' + ph.phase,
-                    style: {
-                      background: 'rgba(15,23,42,0.6)',
-                      borderRadius: 10,
-                      padding: '10px 12px',
-                      border: '1px solid rgba(100,116,139,0.25)',
-                      borderLeft: '4px solid ' + ph.color
-                    }
-                  },
-                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
-                      // Phase number badge — large, color-keyed
-                      React.createElement("div", {
-                        'aria-hidden': 'true',
-                        style: {
-                          width: 36, height: 36, borderRadius: '50%',
-                          background: ph.color + '22',
-                          border: '1.5px solid ' + ph.color,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 13, fontWeight: 800, color: ph.color,
-                          fontFamily: 'ui-monospace, Menlo, monospace',
-                          flexShrink: 0
-                        }
-                      }, ph.phase),
-                      React.createElement("div", { style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, ph.icon),
-                      React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: ph.color, letterSpacing: '0.01em' } }, ph.name)
-                    ),
-                    React.createElement("div", { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, "Signs"),
-                    React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 8 } }, ph.signs),
-                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
-                      React.createElement("div", {
-                        style: {
-                          padding: 8, borderRadius: 6,
-                          background: 'rgba(34,197,94,0.06)',
-                          border: '1px solid rgba(34,197,94,0.20)'
-                        }
-                      },
-                        React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, "✓ Do this"),
-                        React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, ph.doThis)
-                      ),
-                      React.createElement("div", {
-                        style: {
-                          padding: 8, borderRadius: 6,
-                          background: 'rgba(239,68,68,0.06)',
-                          border: '1px solid rgba(239,68,68,0.20)'
-                        }
-                      },
-                        React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, "✗ Don't do"),
-                        React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, ph.dontDo)
-                      )
-                    )
-                  );
-                })
-              ),
-              d.blShowCycle && React.createElement("div", {
-                style: {
-                  marginTop: 10, padding: 10, borderRadius: 8,
-                  background: 'rgba(168,139,250,0.06)',
-                  border: '1px solid rgba(168,139,250,0.20)',
-                  color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic'
-                }
-              },
-                "🎯 Practical translation: a 5-second rule for staff during Phases 3-5 is ",
-                React.createElement("b", null, "less talking, more space, simpler language, fewer demands"),
-                ". Most adult escalation mistakes happen in Phase 4 (Acceleration) when we feel pulled to lecture, threaten, or argue. The cycle teaches that almost nothing said at Phase 4 lands — and most of what is said makes Phase 5 worse. Save the words for Phase 7.")
-            ),
-
-            // === RESTRAINT AND SECLUSION — the highest-stakes content ===
-            // Six-card panel covering definitions, Maine Chapter 33,
-            // less-restrictive-alternative principle, debrief protocol,
-            // and the disability-community position. Each card has a
-            // "what it IS / what it IS NOT" or "principle / common
-            // misuse" two-sided structure so students see the line
-            // between appropriate and inappropriate use clearly.
-            React.createElement("div", {
-              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(239,68,68,0.30)' }, glass)
-            },
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🛑 Restraint & Seclusion — emergency protocols and ethics"),
-                React.createElement("button", { onClick: function() { upd('blShowRestraint', !d.blShowRestraint); },
-                  className: "text-[11px] text-red-400 hover:text-red-300"
-                }, d.blShowRestraint ? 'Hide' : 'View →')
-              ),
-              d.blShowRestraint && React.createElement("div", null,
-                React.createElement("div", { style: {
-                  padding: '10px 12px', borderRadius: 8,
-                  background: 'rgba(239,68,68,0.08)',
-                  border: '1px solid rgba(239,68,68,0.30)',
-                  marginBottom: 12
-                } },
-                  React.createElement("div", { style: { fontSize: 11, color: '#fca5a5', fontWeight: 800, marginBottom: 4 } }, "⚠ This is education, not training."),
-                  React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } },
-                    "Reading this panel does not authorize anyone to perform restraint or seclusion. State law requires specific certified training (CPI / NCI / Mandt or equivalent) and authorized-staff designation. This panel teaches the framework and ethics so school psychs and IEP-team members can recognize appropriate use, document properly, and revise BIPs in response to incidents.")
-                ),
-                React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 12, fontStyle: 'italic' } },
-                  "Most ABA materials and most teacher-prep programs cover this briefly or not at all. School psychs sit on IEP teams that authorize, debrief, and revise BIPs in response to restraint and seclusion incidents. The content is high-stakes and deserves clear language. Maine specifics noted; cross-state variation flagged."),
-                React.createElement("div", { className: "space-y-2" },
-                  RESTRAINT_PRINCIPLES.map(function(rp, rpi) {
-                    return React.createElement("div", {
-                      key: 'restraint-' + rpi,
-                      style: {
-                        background: 'rgba(15,23,42,0.6)',
-                        borderRadius: 10,
-                        padding: '12px 14px',
-                        border: '1px solid rgba(100,116,139,0.25)',
-                        borderLeft: '4px solid ' + rp.color
-                      }
-                    },
-                      React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
-                        React.createElement("div", {
-                          'aria-hidden': 'true',
-                          style: {
-                            width: 36, height: 36, borderRadius: '50%',
-                            background: rp.color + '22',
-                            border: '1.5px solid ' + rp.color,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 17, lineHeight: 1, flexShrink: 0
-                          }
-                        }, rp.icon),
-                        React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: rp.color, lineHeight: 1.2 } }, rp.name)
-                      ),
-                      React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } }, rp.content),
-                      React.createElement("div", {
-                        style: {
-                          padding: 8, borderRadius: 6,
-                          background: 'rgba(251,146,60,0.06)',
-                          border: '1px solid rgba(251,146,60,0.20)',
-                          fontSize: 11, color: '#cbd5e1', lineHeight: 1.5
-                        }
-                      },
-                        React.createElement("span", { style: { color: '#fb923c', fontWeight: 800, marginRight: 4, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, '↪ Counter-line:'),
-                        rp.counter)
-                    );
-                  })
-                ),
+              React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 } },
                 React.createElement("div", {
+                  'aria-hidden': 'true',
                   style: {
-                    marginTop: 10, padding: 10, borderRadius: 8,
-                    background: 'rgba(239,68,68,0.06)',
-                    border: '1px solid rgba(239,68,68,0.20)',
-                    color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic'
+                    width: 44, height: 44, borderRadius: '50%',
+                    background: 'rgba(20,184,166,0.20)',
+                    border: '1.5px solid #14b8a6',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 22, lineHeight: 1, flexShrink: 0
                   }
-                },
-                  "🎯 The school-psych principle: every restraint is a signal the BIP and the cycle work above failed somewhere upstream — at Phase 1 prevention, at Phase 2 trigger-catching, or at Phase 3 de-escalation. The post-incident debrief is not just paperwork; it is data about which upstream phase needs more support next time. ",
-                  React.createElement("b", null, "If your data show the same student restrained on the same antecedent three times in a quarter, the BIP is the problem — not the student."))
-              )
+                }, '🏫'),
+                React.createElement("div", null,
+                  React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: '#5eead4', lineHeight: 1.2 } }, "Continue in: School Behavior Toolkit"),
+                  React.createElement("div", { style: { fontSize: 10, color: '#94a3b8', marginTop: 3, fontStyle: 'italic' } }, "Applied K-12 practice — what school psychs and educators DO with the science")
+                )
+              ),
+              React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 10 } },
+                "If you have just learned operant conditioning here in BehaviorLab, the next step is the K-12 practice that uses it. ",
+                React.createElement("b", null, "We deliberately built that content as a separate tool, not here."),
+                " The Skinner-box visual frame should not be adjacent to \"how to handle a kid in crisis\" content — different tonal space, different ethical weight. The Toolkit covers PBIS three-tier framework, replacement behaviors mapped to FBA functions, setting events (slow triggers most BIPs miss), Geoff Colvin's seven-phase Acting-Out Cycle for crisis de-escalation, and Restraint & Seclusion ethics anchored in Maine Chapter 33."),
+              React.createElement("div", { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.55, fontStyle: 'italic' } },
+                "Open STEM Lab → Behavioral Science → ",
+                React.createElement("b", { style: { color: '#5eead4' } }, '"🏫 School Behavior Toolkit."'))
             ),
 
-            // === BEYOND PURE ABA — neurodiversity-affirming + trauma-informed ===
+                        // === BEYOND PURE ABA — neurodiversity-affirming + trauma-informed ===
             // Critical-lens panel that other ABA tools rarely include. Holds
             // both 'ABA does real work' AND 'ABA has been used in ways
             // autistic adults document as harmful' as simultaneously true.

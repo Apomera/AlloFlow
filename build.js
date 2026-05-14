@@ -715,6 +715,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_rocks.js',
     'stem_lab/stem_tool_dissection.js',
     'stem_lab/stem_tool_behaviorlab.js',
+    'stem_lab/stem_tool_schoolbehaviortoolkit.js',
     'stem_lab/stem_tool_anatomy.js',
     'stem_lab/stem_tool_decomposer.js',
     'stem_lab/stem_tool_companionplanting.js',
