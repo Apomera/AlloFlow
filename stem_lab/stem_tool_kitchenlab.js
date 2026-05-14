@@ -878,6 +878,279 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           h('circle', { cx: 140, cy: 130, r: 70, fill: 'none', stroke: panTemp >= 220 ? '#fb923c' : '#52525b', strokeWidth: 2, opacity: 0.4, strokeDasharray: '4 6' })
         );
       }
+    },
+
+    // ─────────────────────────────────────────────────────
+    // SHEET-PAN ROASTED VEGETABLES (medium) — oven mode
+    // ─────────────────────────────────────────────────────
+    // First oven-mode recipe. Simulates ~25 min of cook time in
+    // ~2 min real-time via simSpeedMultiplier=12.
+    sheetPan: {
+      id: 'sheetPan',
+      name: 'Sheet-Pan Roasted Vegetables',
+      icon: '🥘',
+      difficulty: 'medium',
+      cookingMode: 'oven',
+      simSpeedMultiplier: 12,
+      targetTimeMin: 30,
+      description: 'Sheet-pan roasted veg: the easiest hot meal that still gets crispy + caramelized. Tests preheat discipline + single-layer pan capacity + doneness check.',
+      teaches: ['Oven preheat patience', 'Convection + Maillard at scale', 'Don\'t crowd the pan', 'Mid-cook flip discipline'],
+      ingredients: [
+        { id: 'oil',    name: 'Oil + salt toss',  icon: '🛢️', addAtStep: 1 },
+        { id: 'veg',    name: 'Mixed vegetables', icon: '🥕', addAtStep: 2 },
+        { id: 'flip',   name: 'Flip at halfway',  icon: '🔄', addAtStep: 3 }
+      ],
+      steps: [
+        { id: 's0', title: 'Preheat oven to 400°F',
+          instruction: 'Set the oven dial to 6-7 (about 400°F). Wait for the cavity to actually reach temp — ovens lie about preheat. Watch the real temperature climb.',
+          target: { panTempF: { min: 380, max: 420 } }, completeWhen: 'panInRange',
+          teach: 'Most home ovens say "preheated" 5-10 minutes before they actually are. Putting food in a cold oven means it steams in its own moisture before crisping. Patient preheat = crispy edges.' },
+        { id: 's1', title: 'Toss veg with oil + salt',
+          instruction: 'Drizzle 2 tbsp oil over vegetables in a bowl. Sprinkle with salt. Toss until every piece is coated.',
+          target: { itemAdded: 'oil' }, completeWhen: 'itemAdded',
+          teach: 'Oil does two jobs: it transfers heat to the vegetable surface AND it carries flavor (and salt). No oil = no Maillard = pale, sad veg.' },
+        { id: 's2', title: 'Spread on sheet pan in single layer',
+          instruction: 'Spread vegetables in a SINGLE LAYER on the pan. Pieces should not touch each other. If they\'re crowded, use two pans.',
+          target: { itemAdded: 'veg' }, completeWhen: 'itemAdded',
+          teach: 'Crowded pan = vegetables release water that hits other vegetables = steam trap = pale gray mush. Single layer = each piece gets direct hot air = Maillard browning.' },
+        { id: 's3', title: 'Roast until halfway, flip',
+          instruction: 'Place pan in oven. After ~15 sim-min, flip the vegetables with a spatula. Don\'t skip this step.',
+          target: { activeTimeSec: { min: 600, max: 1200 } }, completeWhen: 'userClick',
+          teach: 'The side touching the pan browns first. Flipping at halfway gets both sides golden. Skip the flip and one side burns while the other stays pale.' },
+        { id: 's4', title: 'Add the "flip" marker (simulates flipping)',
+          instruction: 'Click to flip the vegetables. They\'re committed to the second half now.',
+          target: { itemAdded: 'flip' }, completeWhen: 'itemAdded',
+          teach: 'Real-world flip is with a spatula scraping under each piece. Pieces should release easily if they\'ve browned. If they stick = not browned enough yet, give it 2 more minutes before flipping.' },
+        { id: 's5', title: 'Finish roasting, pull when done',
+          instruction: 'Let cook another ~15 sim-min. Pull when edges are deeply golden + a fork goes through easily. Then turn oven OFF.',
+          target: { burnerLevel: 0 }, completeWhen: 'heatRemoved',
+          teach: 'Oven veg is done when edges are dark golden + interior is fork-tender. Pull too early = raw inside; pull too late = charred + bitter.' }
+      ],
+      judge: function(state) {
+        var notes = []; var score = 100;
+        var maxT = state.maxPanTempF || 0;
+        var t = state.activeTimeSec || 0;
+        // Preheat verification — did the oven hit 400°F+?
+        if (maxT < 380) { score -= 25; notes.push({ neg: true, label: '🥶 No real preheat', detail: 'Oven only reached ' + Math.round(maxT) + '°F. Need 400°F+ for crispy roasted veg.' }); }
+        else if (maxT >= 380 && maxT < 450) { notes.push({ neg: false, label: '✓ Proper oven temp', detail: 'Peak ' + Math.round(maxT) + '°F — roasting zone.' }); }
+        else { score -= 10; notes.push({ neg: true, label: '🌡️ Too hot', detail: 'Peak ' + Math.round(maxT) + '°F. Above 450°F = veg can char before interior cooks. Watch it.' }); }
+        // Cook time — should be 1200-1800 sim-sec (20-30 min)
+        if (t < 600) { score -= 25; notes.push({ neg: true, label: '⏱️ Pulled too early', detail: 'Only ' + Math.round(t / 60) + ' min cook. Vegetables would still be hard + pale.' }); }
+        else if (t > 2400) { score -= 15; notes.push({ neg: true, label: '🔥 Overcooked', detail: Math.round(t / 60) + ' min of cook. Vegetables would be charred + shrunken.' }); }
+        else { notes.push({ neg: false, label: '✓ Cook duration', detail: Math.round(t / 60) + ' min — solid roast time.' }); }
+        // Did you flip?
+        if ((state.itemAddTimes || {}).flip) {
+          notes.push({ neg: false, label: '✓ Halfway flip', detail: 'You flipped. Both sides browned evenly.' });
+        } else {
+          score -= 15;
+          notes.push({ neg: true, label: '⚠️ No flip', detail: 'Skipped the flip — bottom side is dark, top is pale + uncrisped.' });
+        }
+        score = Math.max(0, Math.min(100, score));
+        var grade = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 60 ? 'D' : 'F';
+        var verdict = score >= 90 ? '🌟 Restaurant-roasted veg. Caramelized edges, tender inside.' :
+                      score >= 80 ? '👨‍🍳 Good roast. Healthy + tasty.' :
+                      score >= 70 ? '🥕 Mostly cooked. Some pieces better than others.' :
+                      score >= 60 ? '😬 Edible but flat. Pale roasted veg is sad.' :
+                      '🚨 Steam-veg meets oven. Not it.';
+        return { score: score, grade: grade, verdict: verdict, notes: notes };
+      },
+      renderVisual: function(h, state) {
+        var ovenTemp = state.panTemp;
+        var items = state.itemsInPan;
+        var t = state.activeTime;
+        var hasOil = items.indexOf('oil') !== -1;
+        var hasVeg = items.indexOf('veg') !== -1;
+        var flipped = items.indexOf('flip') !== -1;
+        // Veg browning increases with cook time × temp
+        var brownIntensity = Math.min(1, (t / 1500) * Math.max(0, (ovenTemp - 300)) / 200);
+        var vegColor = brownIntensity > 0.8 ? '#7c2d12' :
+                       brownIntensity > 0.5 ? '#c2410c' :
+                       brownIntensity > 0.25 ? '#ea580c' : '#fb923c';
+        return h('svg', { width: 280, height: 200, viewBox: '0 0 280 200', 'aria-hidden': 'true' },
+          // Oven cavity (rectangle with rounded corners)
+          h('rect', { x: 30, y: 20, width: 220, height: 160, fill: '#1c1410', stroke: '#3f2419', strokeWidth: 3, rx: 12 }),
+          // Heating elements (top + bottom glowing bars when oven is hot)
+          ovenTemp >= 200 ? h('g', null,
+            h('line', { x1: 50, y1: 32, x2: 230, y2: 32,
+              stroke: ovenTemp >= 400 ? '#fb923c' : '#a16207', strokeWidth: 3, opacity: 0.8, strokeDasharray: '4 2' }),
+            h('line', { x1: 50, y1: 168, x2: 230, y2: 168,
+              stroke: ovenTemp >= 400 ? '#fb923c' : '#a16207', strokeWidth: 3, opacity: 0.8, strokeDasharray: '4 2' })
+          ) : null,
+          // Glow inside oven when hot
+          ovenTemp >= 350 ? h('rect', { x: 35, y: 25, width: 210, height: 150, fill: 'rgba(251,146,60,' + Math.min(0.25, (ovenTemp - 300) / 600) + ')', rx: 10 }) : null,
+          // Sheet pan with veg
+          hasVeg ? h('g', null,
+            // Sheet pan (perspective shape)
+            h('rect', { x: 60, y: 90, width: 160, height: 60, fill: '#3f3f46', stroke: '#1c1410', strokeWidth: 1.5, rx: 4 }),
+            h('rect', { x: 64, y: 94, width: 152, height: 52, fill: '#1f1f24', rx: 3 }),
+            // Veg pieces (different shapes for variety)
+            h('rect', { x: 72,  y: 100, width: 12, height: 12, fill: vegColor, rx: 2 }),
+            h('rect', { x: 90,  y: 102, width: 14, height: 10, fill: vegColor, rx: 2, opacity: 0.95 }),
+            h('rect', { x: 110, y: 99,  width: 13, height: 13, fill: vegColor, rx: 2 }),
+            h('rect', { x: 128, y: 101, width: 12, height: 11, fill: vegColor, rx: 2, opacity: 0.92 }),
+            h('rect', { x: 146, y: 100, width: 14, height: 12, fill: vegColor, rx: 2 }),
+            h('rect', { x: 166, y: 102, width: 13, height: 10, fill: vegColor, rx: 2, opacity: 0.94 }),
+            h('rect', { x: 184, y: 99,  width: 12, height: 13, fill: vegColor, rx: 2 }),
+            h('rect', { x: 200, y: 101, width: 13, height: 11, fill: vegColor, rx: 2 }),
+            // Row 2
+            h('rect', { x: 80,  y: 125, width: 13, height: 11, fill: vegColor, rx: 2 }),
+            h('rect', { x: 100, y: 124, width: 12, height: 13, fill: vegColor, rx: 2, opacity: 0.93 }),
+            h('rect', { x: 120, y: 126, width: 14, height: 11, fill: vegColor, rx: 2 }),
+            h('rect', { x: 140, y: 124, width: 13, height: 12, fill: vegColor, rx: 2 }),
+            h('rect', { x: 160, y: 125, width: 12, height: 11, fill: vegColor, rx: 2, opacity: 0.96 }),
+            h('rect', { x: 178, y: 124, width: 13, height: 13, fill: vegColor, rx: 2 }),
+            h('rect', { x: 196, y: 126, width: 12, height: 11, fill: vegColor, rx: 2 }),
+            // Flip indicator
+            flipped ? h('text', { x: 140, y: 162, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#86efac' }, '↻ flipped') : null
+          ) : null,
+          // Oven door + window outline
+          h('rect', { x: 60, y: 165, width: 160, height: 14, fill: '#3f2419', rx: 2 }),
+          h('rect', { x: 90, y: 168, width: 100, height: 6, fill: '#86efac', opacity: 0.3, rx: 2 }),
+          // Temp readout
+          h('rect', { x: 90, y: 184, width: 100, height: 14, rx: 4, fill: 'rgba(0,0,0,0.75)' }),
+          h('text', { x: 140, y: 194, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', fill: ovenTemp >= 400 ? '#fb923c' : '#fde68a' },
+            'Cavity: ' + Math.round(ovenTemp) + '°F')
+        );
+      }
+    },
+
+    // ─────────────────────────────────────────────────────
+    // WHOLE ROAST CHICKEN (hard) — oven mode, two-stage temp,
+    // internal-temp tracking, mandatory rest
+    // ─────────────────────────────────────────────────────
+    roastChicken: {
+      id: 'roastChicken',
+      name: 'Whole Roast Chicken',
+      icon: '🍗',
+      difficulty: 'hard',
+      cookingMode: 'oven',
+      simSpeedMultiplier: 12,
+      targetTimeMin: 75,
+      description: 'The classic family dinner. Two-stage temperature (sear → finish), internal-temp tracking, mandatory rest. Tests everything.',
+      teaches: ['Two-stage temp strategy', 'Internal temp ≠ oven temp', 'Patience + thermometer', 'Carryover discipline'],
+      ingredients: [
+        { id: 'seasoning', name: 'Seasoning + truss', icon: '🧂', addAtStep: 1 },
+        { id: 'chicken',   name: 'Place chicken in oven', icon: '🍗', addAtStep: 2 }
+      ],
+      steps: [
+        { id: 's0', title: 'Preheat oven HIGH — 425°F',
+          instruction: 'Set the oven dial to 8 (about 425°F). Wait for the cavity to reach temp. We start hot for the skin, drop heat later.',
+          target: { panTempF: { min: 410, max: 460 } }, completeWhen: 'panInRange',
+          teach: 'High initial heat drives Maillard reactions in the skin — that\'s how you get crackly golden chicken skin. If you started low + slow, skin would render fat but stay flabby + pale.' },
+        { id: 's1', title: 'Season the chicken + truss',
+          instruction: 'Pat chicken DRY (water = no crispy skin). Rub salt + oil + pepper all over. Tie legs together with kitchen twine.',
+          target: { itemAdded: 'seasoning' }, completeWhen: 'itemAdded',
+          teach: 'Dry skin = crispy skin (water blocks Maillard). Trussing tucks the legs in so they cook at the same rate as the breast — without it, legs are done way before breast.' },
+        { id: 's2', title: 'Place breast-up in oven',
+          instruction: 'Chicken on a rack over a sheet pan (or in a roasting pan). Breast facing UP. Slide into oven.',
+          target: { itemAdded: 'chicken' }, completeWhen: 'itemAdded',
+          teach: 'Breast-up exposes the bigger muscle to direct radiant heat. Some cooks flip halfway through — purist option. For v1, breast-up the whole time is fine.' },
+        { id: 's3', title: 'After 15 sim-min, drop oven to 350°F',
+          instruction: 'After the initial high-heat phase (about 15 sim-min in), turn the oven dial DOWN to 5-6 (about 350°F). Continue roasting.',
+          target: { activeTimeSec: { min: 600, max: 1500 }, panTempF: { min: 330, max: 400 } }, completeWhen: 'userClick',
+          teach: 'The two-stage technique: high heat for crust + skin, then drop to medium to finish cooking without burning. A 425°F oven from start to finish would crisp the outside before the inside cooks through.' },
+        { id: 's4', title: 'Cook until internal temp hits 165°F',
+          instruction: 'Continue at 350°F. Watch the internal temp — pull at 165°F. Use a meat thermometer in the thickest part of the thigh.',
+          target: { foodInternalF: { min: 165, max: 185 } }, completeWhen: 'internalTempReached',
+          teach: 'Chicken is SAFE at 165°F internal (USDA). Going much higher = dry meat. The thermometer is non-negotiable — visual doneness checks are notoriously wrong on whole birds.' },
+        { id: 's5', title: 'Pull out + REST 15 sim-min',
+          instruction: 'Take chicken out of oven (turn off). Tent loosely with foil. Resting is MANDATORY — internal temp keeps climbing 5-10°F via carryover.',
+          target: { burnerLevel: 0 }, completeWhen: 'heatRemoved',
+          teach: 'Cutting a hot chicken = juice runs onto cutting board, chicken is dry. Rest = juice redistributes through the meat. The 10-15 minutes is not optional. Use it to make a pan sauce from the drippings.' }
+      ],
+      judge: function(state) {
+        var notes = []; var score = 100;
+        var maxT = state.maxPanTempF || 0;
+        var foodT = state.foodInternalF || 40;
+        var t = state.activeTimeSec || 0;
+        // Did you do the initial high heat?
+        if (maxT < 400) { score -= 25; notes.push({ neg: true, label: '🥶 No crust temp', detail: 'Oven peak ' + Math.round(maxT) + '°F. Need 410°F+ for the high-heat phase that builds skin crust.' }); }
+        else if (maxT >= 400 && maxT < 470) { notes.push({ neg: false, label: '✓ Crust-building temp', detail: 'Oven peaked ' + Math.round(maxT) + '°F. Proper high-heat phase.' }); }
+        else { score -= 5; notes.push({ neg: true, label: '🔥 A bit aggressive', detail: 'Oven hit ' + Math.round(maxT) + '°F. Above 475°F = risk of burning the skin before the bird cooks through.' }); }
+        // CRITICAL: Internal temp is the food-safety + doneness check
+        if (foodT < 160) { score -= 50; notes.push({ neg: true, label: '☣️ FOOD SAFETY: undercooked', detail: 'Internal ' + Math.round(foodT) + '°F. USDA requires 165°F for poultry. This bird is salmonella risk — do not serve.' }); }
+        else if (foodT < 168) { notes.push({ neg: false, label: '✓ Internal temp', detail: 'Internal ' + Math.round(foodT) + '°F — safely cooked with carryover bringing it higher during rest.' }); }
+        else if (foodT < 185) { score -= 10; notes.push({ neg: true, label: '🍂 Slightly overdone', detail: 'Internal ' + Math.round(foodT) + '°F — past the sweet spot. Pull at 165°F next time, the carryover does the rest.' }); }
+        else { score -= 20; notes.push({ neg: true, label: '🪵 Dry bird', detail: 'Internal ' + Math.round(foodT) + '°F. Very overcooked — texture will be dry + stringy.' }); }
+        // Rest discipline
+        if (state.heatRemovedAt) {
+          notes.push({ neg: false, label: '✓ Resting', detail: 'You pulled the bird off heat. Resting lets carryover finish the cook + juice redistribute.' });
+        }
+        // Did you cook long enough? Whole birds need 45-90 sim-min
+        if (t < 2400) { score -= 15; notes.push({ neg: true, label: '⏱️ Quick cook', detail: 'Only ' + Math.round(t / 60) + ' min total. A whole chicken really needs 45-75 min depending on size.' }); }
+        score = Math.max(0, Math.min(100, score));
+        var grade = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 60 ? 'D' : 'F';
+        var verdict = score >= 90 ? '🍗 Picture-perfect roast chicken. Crispy skin, juicy meat, family-dinner gold.' :
+                      score >= 80 ? '👨‍🍳 Solid roast bird. Sunday-dinner ready.' :
+                      score >= 70 ? '🍗 Edible chicken. Some dry spots.' :
+                      score >= 60 ? '😬 Either dry, undercooked, or both.' :
+                      '🚨 Don\'t serve this to people you love.';
+        return { score: score, grade: grade, verdict: verdict, notes: notes };
+      },
+      renderVisual: function(h, state) {
+        var ovenTemp = state.panTemp;
+        var items = state.itemsInPan;
+        var t = state.activeTime;
+        var foodT = state.foodTemp;
+        var hasChicken = items.indexOf('chicken') !== -1;
+        // Skin color shifts with time × temp
+        var skinColor = '#fde68a';
+        if (hasChicken) {
+          if (ovenTemp > 470 && t > 600) skinColor = '#1c1410'; // burnt
+          else if (ovenTemp > 380 && t > 1500) skinColor = '#92400e'; // deep mahogany
+          else if (ovenTemp > 350 && t > 900) skinColor = '#c2410c'; // golden brown
+          else if (ovenTemp > 300 && t > 450) skinColor = '#d97706'; // light brown
+        }
+        return h('svg', { width: 280, height: 220, viewBox: '0 0 280 220', 'aria-hidden': 'true' },
+          // Oven cavity
+          h('rect', { x: 30, y: 20, width: 220, height: 180, fill: '#1c1410', stroke: '#3f2419', strokeWidth: 3, rx: 12 }),
+          // Heating elements
+          ovenTemp >= 200 ? h('g', null,
+            h('line', { x1: 50, y1: 32, x2: 230, y2: 32, stroke: ovenTemp >= 400 ? '#fb923c' : '#a16207', strokeWidth: 3, opacity: 0.8, strokeDasharray: '4 2' }),
+            h('line', { x1: 50, y1: 188, x2: 230, y2: 188, stroke: ovenTemp >= 400 ? '#fb923c' : '#a16207', strokeWidth: 3, opacity: 0.8, strokeDasharray: '4 2' })
+          ) : null,
+          // Hot glow
+          ovenTemp >= 350 ? h('rect', { x: 35, y: 25, width: 210, height: 170, fill: 'rgba(251,146,60,' + Math.min(0.3, (ovenTemp - 300) / 500) + ')', rx: 10 }) : null,
+          // Roasting pan
+          hasChicken ? h('g', null,
+            h('rect', { x: 70, y: 130, width: 140, height: 50, fill: '#3f3f46', stroke: '#1c1410', strokeWidth: 1.5, rx: 4 }),
+            // Wire rack
+            h('line', { x1: 78, y1: 132, x2: 202, y2: 132, stroke: '#71717a', strokeWidth: 1 }),
+            h('line', { x1: 78, y1: 137, x2: 202, y2: 137, stroke: '#71717a', strokeWidth: 1 }),
+            // The chicken — pear-shaped body, drumsticks tucked
+            h('ellipse', { cx: 140, cy: 100, rx: 50, ry: 30, fill: skinColor, stroke: 'rgba(120,53,15,0.6)', strokeWidth: 1.5 }),
+            h('ellipse', { cx: 140, cy: 88, rx: 38, ry: 18, fill: skinColor, stroke: 'rgba(120,53,15,0.4)', strokeWidth: 1, opacity: 0.95 }),
+            // Drumsticks
+            h('ellipse', { cx: 105, cy: 122, rx: 10, ry: 14, fill: skinColor, stroke: 'rgba(120,53,15,0.6)', strokeWidth: 1, transform: 'rotate(-25 105 122)' }),
+            h('ellipse', { cx: 175, cy: 122, rx: 10, ry: 14, fill: skinColor, stroke: 'rgba(120,53,15,0.6)', strokeWidth: 1, transform: 'rotate(25 175 122)' }),
+            // Truss line (subtle)
+            h('line', { x1: 105, y1: 122, x2: 175, y2: 122, stroke: 'rgba(120,80,40,0.5)', strokeWidth: 1, strokeDasharray: '2 2' }),
+            // Texture / skin highlights when golden
+            t > 600 ? h('ellipse', { cx: 130, cy: 92, rx: 12, ry: 5, fill: 'rgba(255,235,180,0.3)' }) : null,
+            t > 1200 ? h('g', null,
+              h('path', { d: 'M 105 80 Q 115 75 130 78', stroke: 'rgba(120,53,15,0.4)', strokeWidth: 1, fill: 'none' }),
+              h('path', { d: 'M 150 76 Q 165 73 178 78', stroke: 'rgba(120,53,15,0.4)', strokeWidth: 1, fill: 'none' })
+            ) : null,
+            // Smoke if burning
+            ovenTemp > 470 && t > 600 ? h('g', null,
+              h('path', { d: 'M 120 60 Q 115 45 125 30', stroke: 'rgba(40,40,40,0.6)', strokeWidth: 2.5, fill: 'none' }),
+              h('path', { d: 'M 160 62 Q 165 47 155 32', stroke: 'rgba(40,40,40,0.6)', strokeWidth: 2.5, fill: 'none' })
+            ) : null
+          ) : null,
+          // Oven door + viewing window
+          h('rect', { x: 60, y: 188, width: 160, height: 10, fill: '#3f2419', rx: 2 }),
+          // Internal temp + oven temp readouts
+          h('rect', { x: 60, y: 202, width: 100, height: 14, rx: 4, fill: 'rgba(0,0,0,0.75)' }),
+          h('text', { x: 110, y: 212, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', fill: ovenTemp >= 400 ? '#fb923c' : '#fde68a' },
+            'Oven: ' + Math.round(ovenTemp) + '°F'),
+          hasChicken ? h('g', null,
+            h('rect', { x: 165, y: 202, width: 100, height: 14, rx: 4, fill: 'rgba(0,0,0,0.75)' }),
+            h('text', { x: 215, y: 212, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace',
+              fill: foodT >= 165 ? '#86efac' : foodT >= 150 ? '#fbbf24' : '#fca5a5' },
+              'Bird: ' + Math.round(foodT) + '°F')
+          ) : null
+        );
+      }
     }
   };
 
@@ -889,9 +1162,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     { id: 'omelet',        name: 'French Omelet',        icon: '🥚', difficulty: 'medium', unlocked: true,  blurb: 'Same eggs, faster + hotter. Smooth pale finish, soft inside, classic roll.' },
     { id: 'stirFry',       name: 'Vegetable Stir-Fry',   icon: '🥦', difficulty: 'medium', unlocked: true,  blurb: 'Wok hei — very high heat, ingredient ordering, fast hands. The most heat you\'ve used yet.' },
     { id: 'panSeared',     name: 'Pan-Seared Chicken',   icon: '🍗', difficulty: 'medium', unlocked: true,  blurb: 'Maillard mastery + internal temp + carryover. Uses a meat thermometer for the first time.' },
-    { id: 'pastaSauce',    name: 'Pasta + Pan Sauce',    icon: '🍝', difficulty: 'medium', unlocked: false, blurb: 'Multi-pot management. Coming in v0.5.' },
-    { id: 'sheetPan',      name: 'Sheet-Pan Dinner',     icon: '🥘', difficulty: 'medium', unlocked: false, blurb: 'Oven roasting + timing. Coming in v0.5.' },
-    { id: 'roastChicken',  name: 'Whole Roast Chicken',  icon: '🍗', difficulty: 'hard',   unlocked: false, blurb: 'The full classic + Competition Mode. Coming in v0.5.' }
+    { id: 'sheetPan',      name: 'Sheet-Pan Roasted Veg', icon: '🥘', difficulty: 'medium', unlocked: true,  blurb: 'Your first oven recipe. Preheat discipline, don\'t crowd the pan, the halfway flip.' },
+    { id: 'roastChicken',  name: 'Whole Roast Chicken',  icon: '🍗', difficulty: 'hard',   unlocked: true,  blurb: 'The classic family dinner. Two-stage temperature, internal temp, mandatory rest.' },
+    { id: 'pastaSauce',    name: 'Pasta + Pan Sauce',    icon: '🍝', difficulty: 'medium', unlocked: false, blurb: 'Multi-pot management — needs engine extension. Coming in v0.7.' }
   ];
 
   // ───────────────────────────────────────────────────────────
@@ -1017,10 +1290,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     // Linear: level 1 → 220°F, level 10 → 500°F
     return 70 + level * (430 / 10) + 150 * Math.min(1, level / 3);
   }
-  function tickPanTemp(currentF, burnerLevel, dtSec) {
-    var target = burnerTargetTemp(burnerLevel);
-    // k = how fast pan approaches target. Faster on heat-up than cool-down.
-    var k = burnerLevel > 0 ? 0.08 : 0.025;
+  function ovenTargetTemp(setting) {
+    if (setting <= 0) return 70;
+    // Linear: dial 1 → 175°F, dial 10 → 525°F (real oven range)
+    return 175 + (setting - 1) * (525 - 175) / 9;
+  }
+  // Recipes can opt into 'oven' cooking mode for a different thermal model:
+  // slower ramp (k_up=0.015), oven dial maps to absolute temperatures
+  // (175-525°F), and a sim-speed multiplier compresses 60-min cooks into
+  // a few real minutes of play. Default is stovetop ('pan').
+  function getRecipeThermal(rec) {
+    if (rec && rec.cookingMode === 'oven') {
+      return {
+        mode: 'oven',
+        targetTempFn: ovenTargetTemp,
+        k_up: 0.015,
+        k_down: 0.01,
+        controlLabel: 'Oven temperature dial',
+        controlSubLabel: function(level) {
+          if (level === 0) return 'OFF';
+          return Math.round(ovenTargetTemp(level)) + '°F';
+        }
+      };
+    }
+    return {
+      mode: 'pan',
+      targetTempFn: burnerTargetTemp,
+      k_up: 0.08,
+      k_down: 0.025,
+      controlLabel: 'Burner setting',
+      controlSubLabel: function(level) { return level + ' / 10'; }
+    };
+  }
+  function tickPanTemp(currentF, level, dtSec, thermal) {
+    thermal = thermal || getRecipeThermal(null);
+    var target = thermal.targetTempFn(level);
+    var k = level > 0 ? thermal.k_up : thermal.k_down;
     return currentF + (target - currentF) * (1 - Math.exp(-k * dtSec));
   }
 
@@ -1801,8 +2106,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         setKL(function(prior) {
           if (prior.recipePhase !== 'cooking') return {};
           var now = Date.now();
-          var dtSec = Math.max(0, (now - (prior.recipeLastTickAt || now)) / 1000);
-          var newTemp = tickPanTemp(prior.recipePanTempF || 70, prior.recipeBurnerLevel || 0, dtSec);
+          var rec = RECIPES[prior.recipeActiveId];
+          var simSpeed = (rec && rec.simSpeedMultiplier) || 1;
+          var thermal = getRecipeThermal(rec);
+          var dtRealSec = Math.max(0, (now - (prior.recipeLastTickAt || now)) / 1000);
+          var dtSec = dtRealSec * simSpeed;
+          var newTemp = tickPanTemp(prior.recipePanTempF || 70, prior.recipeBurnerLevel || 0, dtSec, thermal);
           var hasFood = (prior.recipeItemsInPan || []).length > 0;
           var newActiveTime = (prior.recipeActiveTimeSec || 0) + (hasFood ? dtSec : 0);
           // Food internal temp: rises toward pan temp at much slower rate
@@ -1893,7 +2202,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         for (var i = 0; i < constraints.length; i++) {
           if (constraints[i].timeLimitFrac) { timeFrac = constraints[i].timeLimitFrac; break; }
         }
-        var deadline = timeFrac ? Date.now() + (recipe.targetTimeMin * 60 * 1000 * (timeFrac + 0.4)) : null;
+        var simSpeed = recipe.simSpeedMultiplier || 1;
+        // Wall-clock deadline scales down by sim-speed (oven recipes are
+        // simulated at 12× so the deadline is 1/12 of the sim time).
+        var deadline = timeFrac ? Date.now() + (recipe.targetTimeMin * 60 * 1000 * (timeFrac + 0.4) / simSpeed) : null;
         // Reset everything + flag competition
         setKL({
           recipeActiveId: recipe.id,
@@ -2247,17 +2559,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace' } }, activeTime + 's'),
                 h('div', { style: { fontSize: 11, color: (d.recipeItemsInPan || []).length > 0 ? '#86efac' : '#64748b', marginTop: 2 } }, (d.recipeItemsInPan || []).length > 0 ? '🟢 Cooking' : '— Empty pan'))),
 
-            // Burner slider
-            h('div', { style: { marginBottom: 12 } },
-              h('label', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 11, color: '#94a3b8', marginBottom: 6, fontWeight: 700 } },
-                h('span', null, 'Burner setting'),
-                h('span', { style: { color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 14, fontWeight: 800 } }, burnerLevel + ' / 10')),
-              h('input', { type: 'range', min: 0, max: 10, step: 1, value: burnerLevel,
-                onChange: function(e) { setBurner(parseInt(e.target.value, 10)); },
-                'aria-label': 'Burner level',
-                style: { width: '100%', accentColor: tempColor } }),
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#64748b', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                h('span', null, '0 OFF'), h('span', null, 'low'), h('span', null, 'med'), h('span', null, 'high'), h('span', null, '10 MAX'))),
+            // Burner / oven-dial slider — labels adapt to cooking mode
+            (function() {
+              var thermal = getRecipeThermal(rec);
+              var isOven = thermal.mode === 'oven';
+              return h('div', { style: { marginBottom: 12 } },
+                h('label', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: 11, color: '#94a3b8', marginBottom: 6, fontWeight: 700 } },
+                  h('span', null, thermal.controlLabel),
+                  h('span', { style: { color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 14, fontWeight: 800 } }, thermal.controlSubLabel(burnerLevel))),
+                h('input', { type: 'range', min: 0, max: 10, step: 1, value: burnerLevel,
+                  onChange: function(e) { setBurner(parseInt(e.target.value, 10)); },
+                  'aria-label': isOven ? 'Oven temperature dial' : 'Burner level',
+                  style: { width: '100%', accentColor: tempColor } }),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#64748b', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                  isOven ? [
+                    h('span', { key: 'l1' }, 'OFF'), h('span', { key: 'l2' }, '175°'), h('span', { key: 'l3' }, '300°'),
+                    h('span', { key: 'l4' }, '425°'), h('span', { key: 'l5' }, '525°')
+                  ] : [
+                    h('span', { key: 'l1' }, '0 OFF'), h('span', { key: 'l2' }, 'low'), h('span', { key: 'l3' }, 'med'),
+                    h('span', { key: 'l4' }, 'high'), h('span', { key: 'l5' }, '10 MAX')
+                  ]));
+            })(),
 
             // Visual pan
             renderPanCanvas(panTemp, d.recipeItemsInPan, activeTime, rec)),
