@@ -13902,11 +13902,16 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               // in order. Answer key on a fresh page so teacher can withhold it.
               // Indices stamped onto each strip so kids can reference them
               // ("strip #3 goes after strip #1") and so teachers can call them out.
+              const _tlInteractive = (cfg.timelineInteractive !== false && !isWorksheet);
               const stripsHtml = `
-                  <div role="list" aria-label="Timeline events to sequence" style="margin-top:8px;">
+                  <div class="alloflow-tl-strips" data-tl-section="${item.id}" role="list" aria-label="Timeline events to sequence" style="margin-top:8px;">
                       ${rawItems.map((te, idx) => `
-                          <div role="listitem" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px dashed #94a3b8;border-radius:8px;margin-bottom:10px;background:white;break-inside:avoid;page-break-inside:avoid;">
-                              <div style="font-family:monospace;font-size:0.75em;color:#94a3b8;min-width:28px;" aria-hidden="true">✂ ${idx + 1}</div>
+                          <div class="alloflow-tl-strip" data-original-index="${idx}" data-strip-idx="${idx}" role="listitem" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px dashed #94a3b8;border-radius:8px;margin-bottom:10px;background:white;break-inside:avoid;page-break-inside:avoid;">
+                              <div class="alloflow-tl-scissor" style="font-family:monospace;font-size:0.75em;color:#94a3b8;min-width:28px;" aria-hidden="true">✂ ${idx + 1}</div>
+                              ${_tlInteractive ? `<div class="alloflow-tl-arrows" style="display:flex;flex-direction:column;gap:2px;">
+                                  <button type="button" class="alloflow-tl-up" aria-label="Move event up" title="Move up" style="width:24px;height:20px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:4px;cursor:pointer;font-size:11px;line-height:1;color:#475569;padding:0;">▲</button>
+                                  <button type="button" class="alloflow-tl-down" aria-label="Move event down" title="Move down" style="width:24px;height:20px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:4px;cursor:pointer;font-size:11px;line-height:1;color:#475569;padding:0;">▼</button>
+                              </div>` : ''}
                               ${te.image ? `<img src="${te.image}" alt="" style="width:60px;height:60px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;flex-shrink:0;" />` : ''}
                               <div style="flex:1;font-size:1em;line-height:1.5;color:#1e293b;">
                                   ${te.event}
@@ -13937,14 +13942,25 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               `;
               const instructionsHtml = `
                   <div style="background:#fefce8;border-left:4px solid #eab308;padding:12px 16px;border-radius:4px;margin-bottom:20px;font-size:0.9em;color:#713f12;break-inside:avoid;page-break-inside:avoid;">
-                      <strong>How to use:</strong> Cut along the dashed lines to separate each event. Mix them up and have students arrange them in chronological order. Each strip has a blank line where students can fill in the date once they figure out the sequence.
+                      <strong>How to use:</strong> ${_tlInteractive
+                          ? 'Use the <strong>▲▼ arrows</strong> on each strip to reorder events into chronological sequence, then press <strong>Check Order</strong>. Or print and cut along the dashed lines to arrange physically.'
+                          : 'Cut along the dashed lines to separate each event. Mix them up and have students arrange them in chronological order. Each strip has a blank line where students can fill in the date once they figure out the sequence.'}
                   </div>
               `;
+              const interactiveControlsHtml = _tlInteractive ? `
+                  <div class="alloflow-tl-controls" data-tl-section="${item.id}" style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 6px;align-items:center;">
+                      <button type="button" class="alloflow-tl-shuffle-btn" style="padding:8px 16px;background:#f8fafc;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85em;">🔀 Shuffle</button>
+                      <button type="button" class="alloflow-tl-check-btn" style="padding:8px 16px;background:#4f46e5;color:white;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9em;">🎯 Check Order</button>
+                      <button type="button" class="alloflow-tl-reset-btn" style="padding:8px 16px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85em;">↻ Reset</button>
+                      <div class="alloflow-tl-results" role="status" aria-live="polite" aria-atomic="true" style="font-size:0.95em;font-weight:700;color:#1e293b;margin-left:0.5rem;"></div>
+                  </div>
+              ` : '';
               return `
                   <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                       ${enhancedHeader}
                       ${progression ? `<div style="display:inline-block;background:#4338ca;color:white;padding:4px 12px;border-radius:999px;font-size:0.85em;font-weight:700;margin-bottom:12px;">${progression}</div>` : ''}
                       ${instructionsHtml}
+                      ${interactiveControlsHtml}
                       ${stripsHtml}
                       ${answerKeyHtml}
                   </div>
@@ -15277,6 +15293,118 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                             clearSelection();
                             resultsEl.textContent = '';
                         });
+                    });
+                })();
+                // ── Sequence Builder (timeline) interactive reorder ──
+                // Each cuttable-strips timeline section gets ▲▼ arrows on
+                // each strip plus Shuffle / Check Order / Reset buttons. The
+                // student rearranges strips into chronological order without
+                // needing internet (works offline as a standalone HTML file).
+                // Tap-driven (not HTML5 drag) so it works identically on
+                // desktop, iPad, and Chromebook. Print CSS hides the controls
+                // so the printed worksheet still cuts cleanly.
+                (function() {
+                    var sections = document.querySelectorAll('.alloflow-tl-controls');
+                    if (sections.length === 0) return;
+                    var tlStyle = document.createElement('style');
+                    tlStyle.textContent =
+                        '.alloflow-tl-strip { transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s, background 0.12s; }' +
+                        '.alloflow-tl-strip.alloflow-tl-correct { border-color: #16a34a !important; background: #f0fdf4 !important; }' +
+                        '.alloflow-tl-strip.alloflow-tl-wrong { border-color: #dc2626 !important; background: #fef2f2 !important; border-style: solid !important; }' +
+                        '.alloflow-tl-up:hover, .alloflow-tl-down:hover { background: #e0e7ff !important; border-color: #6366f1 !important; }' +
+                        '.alloflow-tl-up:focus-visible, .alloflow-tl-down:focus-visible { outline: 2px solid #4f46e5; outline-offset: 1px; }' +
+                        '@media print {' +
+                        '  .alloflow-tl-controls { display: none !important; }' +
+                        '  .alloflow-tl-arrows { display: none !important; }' +
+                        '}';
+                    document.head.appendChild(tlStyle);
+                    sections.forEach(function(ctrl) {
+                        var sectionId = ctrl.getAttribute('data-tl-section');
+                        var container = document.querySelector('.alloflow-tl-strips[data-tl-section="' + sectionId + '"]');
+                        if (!container) return;
+                        var shuffleBtn = ctrl.querySelector('.alloflow-tl-shuffle-btn');
+                        var checkBtn = ctrl.querySelector('.alloflow-tl-check-btn');
+                        var resetBtn = ctrl.querySelector('.alloflow-tl-reset-btn');
+                        var resultsEl = ctrl.querySelector('.alloflow-tl-results');
+                        var clearMarks = function() {
+                            container.querySelectorAll('.alloflow-tl-strip').forEach(function(s) {
+                                s.classList.remove('alloflow-tl-correct', 'alloflow-tl-wrong');
+                            });
+                            if (resultsEl) resultsEl.textContent = '';
+                        };
+                        var shuffleStrips = function() {
+                            clearMarks();
+                            var strips = Array.prototype.slice.call(container.querySelectorAll('.alloflow-tl-strip'));
+                            // Fisher–Yates
+                            for (var i = strips.length - 1; i > 0; i--) {
+                                var j = Math.floor(Math.random() * (i + 1));
+                                var tmp = strips[i]; strips[i] = strips[j]; strips[j] = tmp;
+                            }
+                            strips.forEach(function(s) { container.appendChild(s); });
+                            // Update scissor numbers to reflect new visual order
+                            renumberScissors();
+                        };
+                        var renumberScissors = function() {
+                            var strips = container.querySelectorAll('.alloflow-tl-strip');
+                            strips.forEach(function(s, i) {
+                                var scissor = s.querySelector('.alloflow-tl-scissor');
+                                if (scissor) scissor.textContent = '✂ ' + (i + 1);
+                            });
+                        };
+                        var moveUp = function(strip) {
+                            clearMarks();
+                            var prev = strip.previousElementSibling;
+                            if (prev && prev.classList.contains('alloflow-tl-strip')) {
+                                container.insertBefore(strip, prev);
+                                renumberScissors();
+                                if (strip.querySelector('.alloflow-tl-up')) strip.querySelector('.alloflow-tl-up').focus();
+                            }
+                        };
+                        var moveDown = function(strip) {
+                            clearMarks();
+                            var next = strip.nextElementSibling;
+                            if (next && next.classList.contains('alloflow-tl-strip')) {
+                                container.insertBefore(next, strip);
+                                renumberScissors();
+                                if (strip.querySelector('.alloflow-tl-down')) strip.querySelector('.alloflow-tl-down').focus();
+                            }
+                        };
+                        // Wire each strip's arrow buttons
+                        container.querySelectorAll('.alloflow-tl-strip').forEach(function(strip) {
+                            var up = strip.querySelector('.alloflow-tl-up');
+                            var down = strip.querySelector('.alloflow-tl-down');
+                            if (up) up.addEventListener('click', function(e) { e.stopPropagation(); moveUp(strip); });
+                            if (down) down.addEventListener('click', function(e) { e.stopPropagation(); moveDown(strip); });
+                        });
+                        if (shuffleBtn) shuffleBtn.addEventListener('click', shuffleStrips);
+                        if (checkBtn) checkBtn.addEventListener('click', function() {
+                            clearMarks();
+                            var strips = Array.prototype.slice.call(container.querySelectorAll('.alloflow-tl-strip'));
+                            var correct = 0;
+                            strips.forEach(function(s, i) {
+                                var expected = parseInt(s.getAttribute('data-original-index') || '-1', 10);
+                                if (expected === i) { s.classList.add('alloflow-tl-correct'); correct++; }
+                                else { s.classList.add('alloflow-tl-wrong'); }
+                            });
+                            var total = strips.length;
+                            var msg = correct + ' of ' + total + ' in the correct position';
+                            if (correct === total) msg = '🎉 Perfect! All ' + total + ' events in chronological order.';
+                            if (resultsEl) resultsEl.textContent = msg;
+                        });
+                        if (resetBtn) resetBtn.addEventListener('click', function() {
+                            clearMarks();
+                            var strips = Array.prototype.slice.call(container.querySelectorAll('.alloflow-tl-strip'));
+                            // Restore to AI's original chronological order (data-original-index ascending)
+                            strips.sort(function(a, b) {
+                                return parseInt(a.getAttribute('data-original-index') || '0', 10)
+                                     - parseInt(b.getAttribute('data-original-index') || '0', 10);
+                            });
+                            strips.forEach(function(s) { container.appendChild(s); });
+                            renumberScissors();
+                        });
+                        // Auto-shuffle on first load so the student opens to a puzzle
+                        // (vs. the AI's already-correct chronological order).
+                        shuffleStrips();
                     });
                 })();
                 // ── Brainstorm mind-map spoke expand/collapse (May 11 2026) ──
