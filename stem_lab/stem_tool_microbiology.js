@@ -1338,8 +1338,100 @@
             h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: '#fde68a', lineHeight: 1.55 } },
               h('strong', null, 'Limit: '), selected.limit
             )
-          )
+          ),
+          diagnosticTechniquesSection()
         );
+
+        function diagnosticTechniquesSection() {
+          var DX = [
+            { id: 'culture', name: 'Culture (classical)', emoji: '🧫',
+              speed: 'Hours to days', cost: 'Low',
+              how: 'A clinical sample (blood, urine, sputum, wound swab, CSF) is streaked onto culture media (blood agar, MacConkey, chocolate agar, Sabouraud, etc.) + incubated at 35-37°C for 18-72 hours. Colonies that grow are then identified by colony morphology, Gram stain, biochemistry, and antimicrobial susceptibility testing (Kirby-Bauer disk diffusion or automated platforms like VITEK + Phoenix + MicroScan).',
+              when: 'Still the workhorse of clinical microbiology for bacterial + fungal identification. Required for definitive antimicrobial susceptibility testing on the actual patient isolate. Slow-growing organisms (TB, fungi, anaerobes) may take weeks.',
+              limit: 'Slow. ~50% of clinical infections culture-negative — either because the organism does not grow on standard media, because the patient already had antibiotics, or because the sample was inadequate. Some pathogens (Mycobacterium tuberculosis: weeks; Tropheryma whipplei: months) effectively cannot be cultured outside research labs.'
+            },
+            { id: 'gram', name: 'Gram stain + microscopy', emoji: '🔍',
+              speed: 'Minutes', cost: 'Very low',
+              how: 'A sample smear on a glass slide is heat-fixed + stained sequentially: crystal violet (purple), Lugol\'s iodine (mordant), alcohol (decolorizer), safranin (counterstain). Gram-POSITIVE bacteria retain the violet (thick peptidoglycan). Gram-NEGATIVE bacteria decolorize + stain pink (thin peptidoglycan + outer membrane). Combined with morphology (cocci, rods, chains, clusters) + the Ziehl-Neelsen stain for acid-fast bacilli (M. tuberculosis), this still drives most initial antibiotic decisions in suspected infection.',
+              when: 'Used by every clinical lab + emergency department on every suspected infection sample, before culture results are available. Costs essentially nothing per test.',
+              limit: 'Gram stain misclassifies some bacteria (a few "Gram-variable" species), cannot identify down to species level, and gives no antibiotic susceptibility information. False negative if too few organisms in sample. Requires trained microscopist.'
+            },
+            { id: 'pcr', name: 'PCR + qPCR + multiplex', emoji: '🧬',
+              speed: '1-3 hours', cost: 'Medium ($20-200/test)',
+              how: 'Polymerase Chain Reaction (Kary Mullis 1983, Nobel 1993) amplifies a specific DNA target by ~10⁹-fold using a thermal-cycler + DNA polymerase + primers + nucleotides. Quantitative PCR (qPCR) adds a fluorescent probe that releases signal proportional to target copies, allowing concentration estimates. Multiplex PCR amplifies many targets simultaneously. Modern syndromic panels (BioFire, GenMark) detect 20+ respiratory pathogens or 20+ GI pathogens in a single 1-hour test.',
+              when: 'Standard for viral diagnostics (COVID, flu, RSV, HIV viral load, hepatitis), for pathogens that culture poorly (Chlamydia, gonorrhea, syphilis), for syndromic respiratory or GI workups in hospitalized patients, and for detection of resistance genes (mecA for MRSA, vanA for VRE).',
+              limit: 'PCR detects DNA/RNA — including from dead organisms, environmental contamination, or recent infections that have already cleared. Does not give antimicrobial susceptibility (except by detecting known resistance genes). False positives from contamination are a real lab problem. Cost per test is dropping but remains 10-100× higher than Gram stain.'
+            },
+            { id: 'maldi', name: 'MALDI-TOF mass spectrometry', emoji: '⚖️',
+              speed: 'Minutes (after isolate grown)', cost: 'High capital, low per-sample',
+              how: 'Matrix-Assisted Laser Desorption / Ionization, Time-of-Flight mass spectrometry. A bacterial or fungal colony is mixed with a chemical matrix on a target plate. A laser ionizes the proteins; they fly down a vacuum tube + a detector measures time-of-flight (which depends on mass). Each species produces a characteristic "protein fingerprint" mass spectrum, matched against a database of ~3000+ species. Identification accuracy: ~95-99% for common pathogens, in under 5 minutes per colony.',
+              when: 'Has revolutionized clinical microbiology since ~2010. Most US + European clinical labs now have MALDI-TOF instruments (Bruker MALDI Biotyper, bioMérieux VITEK MS). Replaces ~80% of traditional biochemical-identification panels. Faster, cheaper, more accurate. Especially valuable for fungi + difficult-to-identify gram-negative rods.',
+              limit: 'MALDI-TOF still requires a culture step first (you need biomass to test). Cannot distinguish closely-related species in some genera (Streptococcus pneumoniae vs S. mitis is hard; closely related Bacillus + Listeria species can be ambiguous). Capital cost ~$200-400K but per-test cost is now <$1.'
+            },
+            { id: 'sequencing', name: 'Whole-genome sequencing', emoji: '🧪',
+              speed: '12-48 hours', cost: 'Medium-high ($50-500/isolate)',
+              how: 'Next-generation sequencing (Illumina short-read, Oxford Nanopore long-read, PacBio HiFi) reads the complete bacterial genome from an isolate or directly from a patient sample (metagenomic NGS, mNGS). Bioinformatics pipelines compare the sequence to reference databases for species identification, virulence factor detection, resistance gene profiling, and outbreak strain-typing. Used by PulseNet for foodborne outbreak detection + by hospital infection-prevention teams for hospital outbreak investigation.',
+              when: 'Increasingly used for: outbreak investigation (multistate foodborne, hospital outbreaks), antimicrobial resistance surveillance, diagnosis of severe undiagnosed CNS infections via mNGS (CSF metagenomics), tuberculosis drug-resistance prediction. Routine clinical diagnostic use is still limited by cost + turnaround.',
+              limit: 'mNGS on clinical samples produces ~99% human DNA + ~1% pathogen DNA — bioinformatic filtering must separate them. Contamination from the lab + the patient\'s microbiome is a constant issue. Interpretation requires specialized expertise that small labs do not have. Cost continues to fall but is not yet at "first-line" diagnostic levels.'
+            },
+            { id: 'serology', name: 'Antibody (serology) tests', emoji: '🩸',
+              speed: '15 minutes to hours', cost: 'Low ($1-30/test)',
+              how: 'Detects ANTIBODIES (host immune response) rather than the pathogen itself. ELISA, lateral flow (the strip tests like home COVID tests + pregnancy tests), Western blot, complement fixation. Used to determine PRIOR exposure (IgG) or RECENT/CURRENT infection (IgM, IgA, rising titer). Major applications: HIV screening, hepatitis B + C diagnosis, syphilis screening, Lyme disease confirmation, measles + mumps + rubella immunity status, COVID antibody studies.',
+              when: 'Particularly useful when the pathogen is hard to culture (HIV, hepatitis viruses) or has cleared but left detectable immune response (mononucleosis, dengue, prior COVID). Lateral flow rapid tests have transformed home + point-of-care testing.',
+              limit: 'Antibodies take days to weeks to develop after infection (window period). Cross-reactivity between related pathogens can cause false positives. Cannot distinguish past from current infection by IgG alone. A negative result during early infection does not rule out the disease.'
+            },
+            { id: 'poc', name: 'Point-of-care testing', emoji: '🏥',
+              speed: '5-30 minutes', cost: 'Medium ($5-50/test)',
+              how: 'Tests done at the bedside, in the clinic, in pharmacies, or at home, without sending samples to a central lab. Examples: rapid strep test, rapid flu test, rapid HIV (OraQuick), home COVID antigen tests, finger-stick blood glucose, urine pregnancy. Technologies: lateral flow immunoassay, isothermal nucleic-acid amplification (LAMP), microfluidic cassettes (cobas Liat, GeneXpert, ID NOW), simple antigen detection.',
+              when: 'When fast actionable results matter more than maximum accuracy. Routine in emergency departments, urgent care, sexual health clinics, mass-screening contexts. The Abbott BinaxNOW + GeneXpert MTB/RIF have transformed tuberculosis diagnosis in low-resource settings (Xpert gives TB + rifampicin-resistance in 90 minutes, vs months for culture).',
+              limit: 'Lower sensitivity than central-lab tests (rapid strep ~70% vs culture ~95%; rapid COVID antigen ~50-70% vs PCR). False negatives can delay correct treatment. Quality control + operator training are often weak outside formal labs. Worth using when speed clearly outweighs the sensitivity tradeoff; not the default for serious infections.'
+            },
+            { id: 'future', name: 'What is coming', emoji: '🚀',
+              speed: 'Approaching minutes', cost: 'Approaching $1-10',
+              how: 'CRISPR-based detection (SHERLOCK, DETECTR — Cas12 + Cas13 enzymes that fluoresce when finding a target sequence), portable nanopore sequencing (a USB-stick-sized sequencer that can read pathogens at the bedside), AI-image-based bacterial identification (a microscope app that identifies organisms from a Gram stain via deep learning), microbiome-aware diagnostics (interpreting findings in the context of the normal microbiome), wearable + breath-based screening (exhaled volatile biomarkers indicating infection).',
+              when: 'Most of these are in trials or limited clinical use. The COVID-19 pandemic accelerated many; SHERLOCK got emergency FDA authorization in 2020. Within 5-10 years, expect bedside molecular diagnosis to be routine + cost-effective. The economic + workflow changes will be larger than any single technology.',
+              limit: 'New tests need to demonstrate clinical UTILITY — does using them lead to better patient outcomes? Many promising diagnostics fail at this hurdle. They are technically impressive + clinically uninformative. The bar is not "can it detect the bug" but "does detecting it change what the doctor does + does that change benefit the patient."'
+            }
+          ];
+          var sel = d.selectedDx || 'culture';
+          var topic = DX.find(function(t) { return t.id === sel; }) || DX[0];
+          return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.25)' } },
+            h('h3', { style: { margin: '0 0 6px', color: '#6ee7b7', fontSize: 16 } }, '🔬 Diagnostic microbiology — how labs actually identify pathogens'),
+            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+              'Every time someone is treated for a real infection, a clinical microbiology lab has gone through specific identification + susceptibility testing steps to determine WHICH organism is causing it + what will kill it. These methods range from a 19th-century Gram stain (cost: pennies) to whole-genome sequencing (cost: hundreds of dollars). Each has a place in the workflow; combining them is the art.'
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              DX.map(function(t) {
+                var on = t.id === sel;
+                return h('button', {
+                  key: t.id,
+                  onClick: function() { upd({ selectedDx: t.id }); },
+                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#10b981' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #10b981' : '1px solid #334155' }
+                }, t.emoji + ' ' + t.name);
+              })
+            ),
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#6ee7b7', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
+              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, fontStyle: 'italic' } }, 'Speed: ' + topic.speed + ' · Cost: ' + topic.cost),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.how)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'When to use it'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.when)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limits'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.limit)
+              )
+            ),
+            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
+              h('strong', null, 'The integrated workflow: '),
+              'A real clinical lab does NOT choose ONE technique. A blood culture grows; MALDI-TOF identifies the organism in minutes; an automated susceptibility panel runs in 6-8 hours; PCR for specific resistance genes runs in parallel; sequencing happens for outbreak investigations or unusual organisms. Each test has its place; combining them rapidly + interpreting them well is what separates a good lab from a great one. School psychologists + counselors who understand the diagnostic landscape can have more useful conversations with families about WHY a test takes 3 days, WHY it might be repeated, and WHY a treating clinician changes antibiotics partway through a course.'
+            )
+          );
+        }
       }
 
       // RESISTANCE

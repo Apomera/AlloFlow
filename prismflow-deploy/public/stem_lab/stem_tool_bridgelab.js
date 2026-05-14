@@ -2852,8 +2852,80 @@
               )
             ),
             AMBER
-          )
+          ),
+          cableSpinningSection()
         );
+
+        function cableSpinningSection() {
+          var STEPS = [
+            { id: 'anchor', name: '1. Anchorages first', emoji: '⚓', when: 'Months 1-12',
+              what: 'Before any cable can be spun, the ENDS need to be anchored. Suspension-bridge anchorages are huge concrete monoliths cast into bedrock at each shore — for the Akashi Kaikyō (1991 m main span) each anchorage required 350,000+ m³ of concrete + reinforced steel. The cable splay-saddle (where the main cable fans out into individual strands) sits at the top of the anchorage. Each cable strand will be ANCHORED individually inside the concrete via shoes + steel girders + bond.',
+              physics: 'The anchorage must resist the full HORIZONTAL component of cable tension — for a long-span bridge, that is tens of thousands of tons per anchor. Failure mode: the anchorage shears off + slides toward the river, slacking the cable + collapsing the deck. Design is extremely conservative (often safety factor 3+ on anchorage shear capacity).'
+            },
+            { id: 'towers', name: '2. Towers + saddles', emoji: '🗼', when: 'Months 6-18',
+              what: 'The towers (pylons) are built next, founded on deep piers usually socketed into bedrock. Tower height for major suspension bridges: 80-300 m. At the top of each tower sits a CABLE SADDLE — a curved steel casting that supports the main cable as it crosses the tower. The saddle is on rollers so it can slide horizontally during cable spinning (when cable tension is unequal between sides) + then be fixed in its final position.',
+              physics: 'Towers carry the VERTICAL component of cable tension — pure compression for free-standing towers, plus some bending from wind + thermal motion of the cable. Modern suspension towers are slender steel boxes or composite steel-concrete. The slenderness ratio is high; buckling check during construction (when the cable is partly installed) is a critical design case.'
+            },
+            { id: 'catwalk', name: '3. Catwalks + pilot ropes', emoji: '🚶', when: 'Month 18-24',
+              what: 'Before cables can be spun, workers need a way to access the path the cable will take. A series of PILOT ROPES is shot or laid across the gap (sometimes by helicopter, traditionally by floating across on a boat, historically by rocket or kite). These are progressively replaced with thicker ropes + finally with the CATWALK — a temporary suspended walkway hung from temporary catwalk ropes, running across the entire main span + side spans. The catwalk is suspended below where the main cable will sit + provides the working surface for spinning crew.',
+              physics: 'Catwalk loading is essentially the live load of workers + equipment + the catwalk itself. The catwalk follows roughly the same shape as the future main cable (a catenary). Catwalk construction is among the most dangerous moments in suspension-bridge building; high winds can shut it down for weeks.'
+            },
+            { id: 'spinning', name: '4. Cable spinning (the magic)', emoji: '🕷️', when: 'Months 24-30',
+              what: 'A SPINNING WHEEL travels back and forth across the catwalk, carrying loops of high-strength steel wire (5 mm diameter, ~1700 MPa yield strength). At each pass, the wheel deposits two wires (the loop) into temporary "strand shoes" at each anchorage. After ~400-500 round trips, ~400-500 wires are bundled into a STRAND. A typical major suspension bridge has 30-100+ strands per main cable, each containing 300-500 wires; the total cable contains ~10,000-40,000 individual wires. Spinning rate: ~10-50 mph of wire per minute. Total spinning time: months to a year.',
+              physics: 'Each wire shares the load roughly equally because they all hang in the same catenary curve. After spinning, the strands are bundled, compressed by hydraulic squeeze, and wrapped with helical wrapping wire + corrosion-protection sheath. The completed cable diameter on the Akashi Kaikyō is 1.12 m, containing 36,830 wires + carrying ~50,000 tons.'
+            },
+            { id: 'aerial', name: '5. Aerial Spun vs PPWS', emoji: '⚙️', when: 'Variable',
+              what: 'Two methods of cable construction: AERIAL SPUN (the historic method described above, used on Brooklyn Bridge through Golden Gate through modern bridges) + PARALLEL-WIRE STRAND (PPWS), where pre-fabricated strands of 100+ parallel wires are shop-coiled, then unspooled across the catwalk + anchored. PPWS is faster + reduces on-site labor; aerial spinning gives slightly more uniform wire tension. Most modern major suspension bridges use PPWS (Akashi, Great Belt, Storebælt). Some still use aerial spinning (Verrazzano-Narrows replacement cables, 2017-2019, used aerial spinning).',
+              physics: 'PPWS strands are shop-fabricated under controlled tension, leading to slightly different mechanical behavior than aerial-spun cables (aerial-spun wires are tensioned individually on-site). Connection between PPWS strands + anchorage uses different shoe geometry than aerial spinning.'
+            },
+            { id: 'hangers', name: '6. Hangers + suspenders', emoji: '🎯', when: 'Month 30-36',
+              what: 'With the main cable now in place + tensioned, vertical HANGER CABLES are attached at regular intervals (typically every 10-20 m along the main span) connecting the main cable down to the eventual deck. Hangers are stranded wire ropes or parallel-wire stays, typically 50-100 mm diameter. The number of hangers on a major suspension bridge is 200-400 per side of the span. Each hanger has its own connection sockets at top (to main cable) + bottom (to deck).',
+              physics: 'Each hanger carries the live + dead load of its tributary segment of deck. The hanger spacing is chosen to keep individual hanger forces manageable + to avoid resonance with wind-induced deck motions. Hangers are individually replaceable; cable replacement happens periodically over the bridge\'s life (Verrazzano replaced all suspender ropes 2017-2019).'
+            },
+            { id: 'deck', name: '7. Deck erection', emoji: '🚛', when: 'Month 36-48',
+              what: 'The deck (girder + roadway) is erected in segments, typically beginning at the towers + working outward toward midspan in both directions, hanging each segment from the previously-completed segment + the hangers above. For long spans, the deck segments are typically prefabricated steel-orthotropic-deck sections (10-40 m long, ~500-2000 tons each), barged out + lifted into place by gantry cranes traveling along the partly-completed deck. As more deck is added, the load on the cable + towers grows; the saddle position is monitored + sometimes adjusted.',
+              physics: 'During deck erection, the cable + tower stresses are CONTINUOUSLY changing. Stress monitoring during construction is essential. The final geometric form of the bridge (cable sag, tower top position, deck profile) is "tuned" by careful sequencing of deck segments. Errors in sequencing can leave the bridge with permanent unwanted deformations.'
+            },
+            { id: 'tuning', name: '8. Final tensioning + acceptance', emoji: '🎚️', when: 'Month 48+',
+              what: 'After deck completion, the bridge is tensioned to final geometry. Cable saddles are fixed in place. Hanger lengths are fine-tuned. Wind-tunnel testing is reviewed against actual measured wind response. Load testing applies known truck loads (often a coordinated parade of dump trucks) to verify deck deflections match design predictions within tolerances. SHM systems are activated (see Materials tab). The bridge is opened to traffic.',
+              physics: 'Acceptance testing typically loads the bridge to ~125% of design service load (NOT to the ultimate capacity, which would risk damage). Measured deflections should agree with calculations within ~5-10%. The very first traffic crossing — often a ceremonial walk for invited dignitaries + the public — is a tradition older than steel suspension bridges themselves.'
+            }
+          ];
+          var sel = d.selectedSpin || 'anchor';
+          var topic = STEPS.find(function(t) { return t.id === sel; }) || STEPS[0];
+          return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🏗️ How a long-span suspension bridge is actually built'),
+            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+              'You can hold a piece of cable in your hand: it is a few millimeters of high-tensile steel wire. A long-span suspension bridge\'s main cable contains tens of thousands of such wires, bundled, compressed, wrapped, and tensioned to carry 50,000+ tons. The CONSTRUCTION SEQUENCE is one of the most remarkable choreographies in modern engineering — each step depending on the previous + impossible without it.'
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              STEPS.map(function(t) {
+                var on = t.id === sel;
+                return h('button', {
+                  key: t.id,
+                  onClick: function() { upd({ selectedSpin: t.id }); },
+                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
+                }, t.emoji + ' ' + t.name);
+              })
+            ),
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
+              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, fontStyle: 'italic' } }, 'Timeline: ' + topic.when),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What happens'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.what)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e' } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Physics + structural logic'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.physics)
+              )
+            ),
+            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
+              h('strong', null, 'The Roebling lineage: '),
+              'John A. Roebling invented the aerial-spinning method while building the 1855 Niagara Falls railroad suspension bridge — the technique remains essentially unchanged 170 years later. He died in 1869 from injuries sustained during early construction of the Brooklyn Bridge; his son Washington took over + suffered decompression sickness ("caisson disease") supervising the pier sinking. His wife Emily Roebling effectively managed the project for the next decade. The Brooklyn Bridge opened in 1883 + still carries traffic today.'
+            )
+          );
+        }
       }
 
       // ──────────────────────────────────────────────────────────────

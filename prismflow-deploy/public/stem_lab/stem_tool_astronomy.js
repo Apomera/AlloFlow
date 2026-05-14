@@ -3584,6 +3584,93 @@
               );
             })(),
             '#8b5cf6'
+          ),
+
+          // ─── Multi-wavelength + multi-messenger observatories ───
+          sectionCard('🛰️ The instruments of modern astronomy',
+            (function() {
+              var INST_TOPICS = [
+                { id: 'radio', name: 'Radio telescopes', emoji: '📡',
+                  range: '~10 cm to 30 m wavelengths (~1 MHz to 3 GHz)',
+                  what: 'Radio telescopes are huge dish antennas that focus radio waves onto a feed horn + receiver. Pioneered by Karl Jansky (1932, accidental discovery of Milky Way radio noise) + Grote Reber (1937, first dedicated radio telescope, built in his Illinois back yard). Modern major facilities: the Very Large Array (VLA, New Mexico, 27 dishes), Atacama Large Millimeter Array (ALMA, Chile, 66 dishes at 5000 m altitude), Square Kilometre Array (SKA, under construction in South Africa + Australia, will be 1 km² total collecting area), FAST (China, 500 m fixed dish, the world\'s largest single-dish since 2016), Arecibo (Puerto Rico, collapsed 2020 after 57 years of service).',
+                  finds: 'Cold molecular clouds (CO emission), pulsars + magnetars, the cosmic microwave background, radio galaxies + quasar jets, fast radio bursts, the 21-cm line of neutral hydrogen (tracing galactic structure + the cosmic web), and the recent stochastic gravitational-wave background detected by pulsar timing arrays (NANOGrav + others, 2023).'
+                },
+                { id: 'mm', name: 'Millimeter + submillimeter', emoji: '〰️',
+                  range: '~0.3 mm to 10 mm (~30 GHz to 1 THz)',
+                  what: 'Bridging radio + infrared. ALMA (already mentioned) is the world leader. Other major: South Pole Telescope, CCAT-prime (planned), James Clerk Maxwell Telescope (Mauna Kea). The Event Horizon Telescope (EHT) is a global Very Long Baseline Interferometry array combining ALMA + other mm/submm sites to create an Earth-sized virtual telescope. EHT produced the first image of a black hole event horizon (M87*, 2019) + the first of Sagittarius A* (the Milky Way\'s central BH, 2022).',
+                  finds: 'Star + planet formation (dust grain growth, protoplanetary disks, debris disks), molecular line emission (~250 different molecular species detected in interstellar clouds), the CMB at high resolution (Planck 2013, BICEP3 ongoing), and black hole event horizons.'
+                },
+                { id: 'ir', name: 'Infrared telescopes', emoji: '🔥',
+                  range: '~0.75 to 1000 microns (~1000 nm to 1 mm)',
+                  what: 'Infrared light penetrates dust + reveals cool objects. The atmosphere blocks much of the IR, so the best IR telescopes are at high-altitude dry sites (Mauna Kea) or in space. Spitzer Space Telescope (NASA, 2003-2020). Herschel Space Observatory (ESA, 2009-2013). The James Webb Space Telescope (JWST, launched Dec 2021) is the current crown jewel — 6.5 m primary mirror, sunshield, L2 orbit, ultra-cold detectors, sensitive from 0.6 to 28 microns. JWST has revolutionized galaxy evolution, exoplanet atmospheres (see Exoplanets tab), star formation, and Solar System studies.',
+                  finds: 'Galaxies in the early universe (high redshift shifts visible light into the IR), the dust + ice + organics in protoplanetary disks + comets, the cold ISM, exoplanet atmospheres via transit spectroscopy, brown dwarfs.'
+                },
+                { id: 'optical', name: 'Optical / visible-light', emoji: '👁️',
+                  range: '~390 to 700 nm',
+                  what: 'The historical heart of astronomy. Modern ground-based behemoths use adaptive optics (laser guide stars + deformable mirrors) to correct for atmospheric blurring, achieving space-telescope-quality resolution from the ground. Major facilities: the Very Large Telescope (VLT, ESO Chile, four 8.2 m units), Gemini North + South, Subaru (Mauna Kea), Keck I + II (Mauna Kea, 10 m), and the Extremely Large Telescope (ELT, ESO Chile, under construction, 39 m primary scheduled first light 2028). The Vera C. Rubin Observatory (Chile, first light 2024-2025) will run a 10-year time-domain survey of the entire visible sky every few nights — about 30 trillion measurements.',
+                  finds: 'Stellar populations + ages, galaxy morphology + structure, asteroids + comets + transient phenomena (supernovae, kilonovae, microlensing events), exoplanet transits (Kepler 2009-2018, TESS 2018-present), spectroscopic chemistry of everything.'
+                },
+                { id: 'uv', name: 'Ultraviolet', emoji: '💜',
+                  range: '~10 to 400 nm',
+                  what: 'Earth\'s atmosphere (ozone layer) blocks most UV, so UV astronomy requires space telescopes. Hubble Space Telescope (1990-present) has UV imaging spectroscopy capabilities. GALEX (2003-2013) was a dedicated UV survey. Future: ULTRASAT (Israeli mission, 2025) for UV time-domain.',
+                  finds: 'Hot young stars (O + B types), white dwarfs, accretion disks around compact objects, the chemistry of the Local Bubble + the interstellar medium, the UV emission of star-forming galaxies (probing star formation history), and the auroras of giant planets.'
+                },
+                { id: 'xray', name: 'X-ray telescopes', emoji: '🩻',
+                  range: '~0.01 to 10 nm (~100 eV to 100 keV)',
+                  what: 'X-rays penetrate matter + cannot be focused by ordinary mirrors. They are focused by GRAZING INCIDENCE mirrors — nested cylindrical mirrors at very shallow angles. Chandra X-ray Observatory (1999-present, NASA flagship), XMM-Newton (1999-present, ESA), Athena (planned 2030s, large ESA flagship). NuSTAR (2012-present, hard-X-ray imaging). Recent: eROSITA (Russian-German, 2019, all-sky X-ray survey).',
+                  finds: 'Hot ionized gas around galaxy clusters, accretion disks around black holes + neutron stars, supernova remnants, the diffuse X-ray background (largely from active galactic nuclei). The 2024 controversy about the Hubble tension included new X-ray cluster measurements as part of the evidence.'
+                },
+                { id: 'gamma', name: 'Gamma-ray telescopes', emoji: '☢️',
+                  range: '~10 keV to >100 TeV',
+                  what: 'The most energetic photons. Above ~30 keV, ordinary mirror focusing fails entirely; gamma-ray detectors are direct-detection coded-aperture instruments (Fermi LAT, Compton, INTEGRAL) or Cherenkov telescopes (ground-based: detect the blue flash from gamma-rays striking the upper atmosphere). Fermi Gamma-ray Space Telescope (NASA, 2008-present), INTEGRAL (ESA, 2002-present), the Cherenkov Telescope Array (CTA, multi-site, under construction).',
+                  finds: 'Gamma-ray bursts (the most energetic explosions in the universe), pulsar high-energy emission, supernova remnants, blazars, the Galactic Center, possible dark-matter annihilation signatures, the diffuse gamma-ray background.'
+                },
+                { id: 'particles', name: 'Particle messengers', emoji: '⚛️',
+                  range: 'Non-photon: neutrinos, cosmic rays, gravitational waves',
+                  what: 'For decades, "astronomy" meant photons. Modern astronomy is multi-messenger. NEUTRINO observatories: Super-Kamiokande (Japan, 50 ktons of water), SNO (Canada, retired 2006, replaced by SNO+), IceCube (Antarctica, 1 km³ of instrumented ice), KM3NeT (Mediterranean, under construction). COSMIC RAY observatories: Pierre Auger Observatory (Argentina, 3000 km² of detectors), Telescope Array (Utah). GRAVITATIONAL WAVES: LIGO + Virgo + KAGRA (already covered in detail). Each messenger samples different physics + complements the photons.',
+                  finds: 'Neutrinos from the Sun + supernovae (SN 1987A famously seen as 24 neutrinos in 13 seconds, hours before the photons arrived) + active galactic nuclei (IceCube 2017 association of high-energy neutrinos with a flaring blazar). Cosmic rays of extreme energy (the "Oh-My-God" particle 1991, the "Amaterasu" particle 2023 at ~244 EeV). GW from BH + NS mergers.'
+                },
+                { id: 'limits', name: 'What we still cannot see', emoji: '🚫',
+                  range: 'The remaining frontiers',
+                  what: 'Each electromagnetic window has gaps + limitations. Far-infrared (~30-300 microns) sees the dustiest objects but requires cryogenic space telescopes (Herschel ran out of helium 2013; no current replacement). Hard X-ray + soft gamma-ray transition (~100 keV-1 MeV) is poorly mapped. Ultra-high-energy neutrinos (>10 PeV) are predicted but not yet confidently detected. Primordial gravitational waves (from inflation) require CMB-polarization B-mode detection, still elusive. The very-low-frequency GW band (microhertz to nanohertz) is covered by pulsar timing + space interferometers (LISA, ~2035).',
+                  finds: 'Future facilities aim at these gaps. Cosmic Explorer + Einstein Telescope (next-gen ground GW), Habitable Worlds Observatory (NASA flagship, 2040s, direct exoplanet imaging), LISA, SKA full-array, ELT, Athena. The field has never had more planned + funded major facilities than right now. The 2030s + 2040s will be remarkable for observational astronomy.'
+                }
+              ];
+              var sel = d.selectedInst || 'radio';
+              var topic = INST_TOPICS.find(function(t) { return t.id === sel; }) || INST_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'Light is just one of many messengers reaching us from the universe. Modern astronomy uses telescopes across the full electromagnetic spectrum — radio, infrared, optical, ultraviolet, X-ray, gamma-ray — plus neutrinos, cosmic rays, and gravitational waves. Each window reveals different physics. The same supernova looks completely different in X-rays + radio + visible light + neutrinos; combining them is how we understand it.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  INST_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedInst: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#0ea5e9' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #0ea5e9' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#7dd3fc', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, fontStyle: 'italic' } }, topic.range),
+                  h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
+                    h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How the instrument works'),
+                    h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.what)
+                  ),
+                  h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e' } },
+                    h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What it reveals'),
+                    h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.finds)
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
+                  h('strong', null, 'The honest meta-point: '),
+                  'No single observatory tells you the truth about an astrophysical source. Every major discovery of the past 30 years (the first exoplanet, the accelerating universe, the EHT black hole image, GW170817, dark energy, fast radio bursts) was confirmed by multi-instrument + multi-wavelength agreement. Astronomy has matured into a coordinated global enterprise; lone observers + single instruments now serve specific tasks within larger networks. The pre-print culture (arXiv, daily reports) + alert networks (TNS, GCN, ATEL) keep this enterprise running in near-real time.'
+                )
+              );
+            })(),
+            '#0ea5e9'
           )
         );
       }
