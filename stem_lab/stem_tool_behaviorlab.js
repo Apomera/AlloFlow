@@ -573,6 +573,58 @@ var d = labToolData || {};
             }
           ];
 
+          // === Voices from the Disability Community ===
+          // Real autistic and disabled advocates whose work shaped (and
+          // critiqued) ABA. Same front-line-voices pattern shipped on
+          // ClimateExplorer's regions cards: name + role + documented
+          // quote + on-record source. Students learning ABA need to hear
+          // from the people the field has been done TO, not just the
+          // researchers and clinicians who designed it.
+          var DISABILITY_VOICES = [
+            {
+              name: 'Ari Ne\'eman',
+              role: 'Co-founder, Autism Self Advocacy Network (ASAN); first openly autistic appointee to the National Council on Disability (Obama, 2010); now at Harvard School of Public Health.',
+              icon: '🎙️', color: '#3b82f6',
+              quote: 'Nothing about us without us.',
+              source: 'ASAN founding principle, 2006-present; widely echoed across disability-rights work'
+            },
+            {
+              name: 'Temple Grandin',
+              role: 'Professor of animal science, Colorado State; designed humane livestock handling systems used across North American agriculture; among the most-known autistic adults in the world.',
+              icon: '🐄', color: '#fbbf24',
+              quote: 'Different, not less.',
+              source: 'Thinking in Pictures (1995); HBO biopic (2010); decades of public lectures'
+            },
+            {
+              name: 'Damian Milton',
+              role: 'Autistic sociologist, University of Kent; developed the Double Empathy Problem framework that reframes autism social-skill "deficits" as two-way mismatches in mutual understanding.',
+              icon: '⇄', color: '#22d3ee',
+              quote: 'The autistic person and the non-autistic person are equally responsible for the breakdown in mutual understanding. The disability research field has historically located the problem in only one of them.',
+              source: 'Milton 2012, Disability & Society; expanded across his subsequent papers'
+            },
+            {
+              name: 'Henny Kupferstein',
+              role: 'Researcher; published the 2018 survey on PTSD outcomes following ABA exposure that became a major reference point for the autism community critique.',
+              icon: '📊', color: '#a78bfa',
+              quote: 'Adults and children exposed to ABA were significantly more likely to meet PTSD diagnostic criteria than those who were not exposed. This is data, not opinion.',
+              source: 'Kupferstein 2018, Advances in Autism (peer-reviewed). The methodology has been debated; the finding catalyzed industry-wide reckoning regardless.'
+            },
+            {
+              name: 'Kassiane Asasumasu',
+              role: 'Autistic and multiply disabled activist; coined the term "neurodivergent" in the early 2000s as an identity-claim alternative to deficit framings.',
+              icon: '🌈', color: '#f472b6',
+              quote: 'Neurodivergent is not a euphemism. It does not mean "we are all the same." It means our brains diverge from a constructed norm — and divergence is information, not pathology.',
+              source: 'Personal blog and community writing, mid-2000s; widely adopted across disability-justice movements'
+            },
+            {
+              name: 'Mel Baggs (1980–2020)',
+              role: 'Nonspeaking autistic activist, writer, and YouTuber. The 2007 video "In My Language" was the first widely-shared first-person account of nonspeaking autistic experience — viewed millions of times, taught in disability-studies courses since.',
+              icon: '✊', color: '#94a3b8',
+              quote: 'My language is not about designing words or even visual symbols for people to interpret. It is about being in a constant conversation with every aspect of my environment.',
+              source: 'In My Language (2007, YouTube); Ballastexistenz blog; CNN interview 2007'
+            }
+          ];
+
           // === Beyond Pure ABA — neurodiversity-affirming + trauma-informed ===
           // The critical lens that's often missing from operant-conditioning
           // pedagogy. ABA is a powerful set of tools AND has been used in
@@ -5160,6 +5212,81 @@ var d = labToolData || {};
                 },
                   "💡 Identity-first language follows community-consensus norms (Kenny et al. 2016; Bury et al. 2020; Taboas et al. 2023). The Behavior Lab teaches the science of behavior; this panel teaches the ethics of applying it to humans who can tell us what they want.")
               )
+            ),
+
+            // === VOICES FROM THE DISABILITY COMMUNITY ===
+            // Front-line-voices pattern from ClimateExplorer adapted for
+            // the autistic and disabled advocates whose work shaped (and
+            // critiqued) ABA. Each card shows a 🎙️ quote chip with role
+            // and on-record source. Pairs with Beyond Pure ABA above so
+            // the critique → voices → faces flow is unbroken.
+            React.createElement("div", {
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(244,114,182,0.25)' }, glass)
+            },
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🎙️ Voices from the disability community"),
+                React.createElement("button", { onClick: function() { upd('blShowVoices', !d.blShowVoices); },
+                  className: "text-[11px] text-pink-400 hover:text-pink-300"
+                }, d.blShowVoices ? 'Hide' : 'View →')
+              ),
+              d.blShowVoices && React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-3", style: { lineHeight: 1.55 } },
+                "Real autistic and disabled advocates whose work shaped — and critiqued — applied behavior analysis. Students learning ABA need to hear from the people the field has been done TO, not only from the researchers and clinicians who designed it. Each entry: name, role, documented quote, on-record source."),
+              d.blShowVoices && React.createElement("div", { className: "space-y-2" },
+                DISABILITY_VOICES.map(function(v, vi) {
+                  return React.createElement("div", {
+                    key: 'voice-' + vi,
+                    style: {
+                      background: 'rgba(15,23,42,0.6)',
+                      borderRadius: 10,
+                      padding: '12px 14px',
+                      border: '1px solid rgba(100,116,139,0.25)',
+                      borderLeft: '4px solid ' + v.color
+                    }
+                  },
+                    React.createElement("div", { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 } },
+                      React.createElement("div", {
+                        'aria-hidden': 'true',
+                        style: {
+                          width: 38, height: 38, borderRadius: '50%',
+                          background: v.color + '22',
+                          border: '1.5px solid ' + v.color,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 18, lineHeight: 1, flexShrink: 0
+                        }
+                      }, v.icon),
+                      React.createElement("div", { style: { flex: 1, minWidth: 0 } },
+                        React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: v.color, lineHeight: 1.2, marginBottom: 3 } }, v.name),
+                        React.createElement("div", { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.5 } }, v.role)
+                      )
+                    ),
+                    // Quote block — accent-bordered italic, mirrors the
+                    // ClimateExplorer voice-card pattern.
+                    React.createElement("div", {
+                      style: {
+                        padding: '10px 12px', borderRadius: 8,
+                        background: v.color + '12',
+                        borderLeft: '2px solid ' + v.color,
+                        marginBottom: 6
+                      }
+                    },
+                      React.createElement("span", { style: { color: v.color, fontWeight: 800, marginRight: 4 } }, '"'),
+                      React.createElement("span", { style: { fontSize: 12, color: '#e2e8f0', fontStyle: 'italic', lineHeight: 1.55 } }, v.quote),
+                      React.createElement("span", { style: { color: v.color, fontWeight: 800, marginLeft: 2 } }, '"')
+                    ),
+                    React.createElement("div", { style: { fontSize: 9, color: '#64748b', fontStyle: 'italic', lineHeight: 1.5 } },
+                      '📚 ', v.source)
+                  );
+                })
+              ),
+              d.blShowVoices && React.createElement("div", {
+                style: {
+                  marginTop: 10, padding: 10, borderRadius: 8,
+                  background: 'rgba(244,114,182,0.06)',
+                  border: '1px solid rgba(244,114,182,0.20)',
+                  color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic'
+                }
+              },
+                "🎯 If you are training to do ABA work, the most important continuing-education you can do is read the people the field has been done to. Start with ASAN's resources, follow autistic researchers (Milton, Pellicano, Den Houting), watch In My Language. The science is the science; the application is a relationship.")
             ),
 
             // === SCHEDULE COMPARISON CANVAS ===
