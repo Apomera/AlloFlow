@@ -2507,6 +2507,7 @@ var d = (labToolData.companionPlanting) || {};
           var cgPhase = cg.phase || 'plan'; // 'plan' | 'grow' | 'harvest'
           var cgSelectedPlant = cg.selectedPlant || null;
           var cgSpeed = cg.speed || 1;
+          var cgMaximized = cg.maximized === true;
           var cgSeasonHistory = cg.seasonHistory || []; // tracks what was planted each season for rotation
 
           // ── Enhanced Soil Chemistry (NPK + pH + organic matter) ──
@@ -3909,16 +3910,28 @@ var d = (labToolData.companionPlanting) || {};
               })(),
 
               // ═══ ISOMETRIC 2.5D GARDEN CANVAS ═══
-              h('canvas', {
+              // Wrapped in a positioned container so a maximize/minimize button
+              // can overlay the canvas. When cgMaximized, the container becomes
+              // a fullscreen overlay (position:fixed) and the canvas grows to
+              // fill it. A React key tied to cgMaximized forces a fresh canvas
+              // mount on toggle so the ref re-runs and rebinds sizing.
+              h('div', {
+                style: cgMaximized ? {
+                  position: 'fixed', inset: 0, zIndex: 9998, background: '#0a0f15',
+                  padding: 16, display: 'flex', flexDirection: 'column'
+                } : { position: 'relative' }
+              },
+                h('canvas', {
+                key: 'cg-canvas-' + (cgMaximized ? 'max' : 'norm'),
                 role: 'application',
                 'aria-label': 'Isometric community garden view. Click plots to plant or inspect.',
                 tabIndex: 0,
-                style: { width: '100%', height: '380px', borderRadius: '12px', display: 'block', cursor: cgPhase === 'plan' && cgSelectedPlant ? 'crosshair' : 'pointer', background: '#1a2810' },
+                style: { width: '100%', height: cgMaximized ? '100%' : '540px', borderRadius: cgMaximized ? '8px' : '12px', display: 'block', cursor: cgPhase === 'plan' && cgSelectedPlant ? 'crosshair' : 'pointer', background: '#1a2810', flex: cgMaximized ? '1' : 'unset' },
                 onMouseMove: function(e) {
                   var rect = e.currentTarget.getBoundingClientRect();
                   var mx = (e.clientX - rect.left) * (e.currentTarget.width / rect.width);
                   var my = (e.clientY - rect.top) * (e.currentTarget.height / rect.height);
-                  var isoOX2 = e.currentTarget.width / 2; var isoOY2 = 180; var iTW2 = 240; var iTH2 = 130; // must match draw-code constants
+                  var isoOX2 = e.currentTarget.width / 2; var isoOY2 = 300; var iTW2 = 240; var iTH2 = 130; // must match draw-code constants
                   var relX2 = mx - isoOX2; var relY2 = my - isoOY2;
                   var hCol = Math.floor((relX2 / (iTW2 / 2) + relY2 / (iTH2 / 2)) / 2);
                   var hRow = Math.floor((relY2 / (iTH2 / 2) - relX2 / (iTW2 / 2)) / 2);
@@ -3933,7 +3946,7 @@ var d = (labToolData.companionPlanting) || {};
                   // Record click location for the ripple effect (drawn in drawCG)
                   e.currentTarget._clickRipple = { x: mx, y: my, t0: performance.now() };
                   // Iso grid params (must match draw code)
-                  var isoOX = e.currentTarget.width / 2; var isoOY = 180;
+                  var isoOX = e.currentTarget.width / 2; var isoOY = 300;
                   var iTW = 240; var iTH = 130; // must match draw-code constants in canvas ref below
                   // Reverse isometric transform
                   var relX = mx - isoOX; var relY = my - isoOY;
@@ -3971,11 +3984,19 @@ var d = (labToolData.companionPlanting) || {};
                   if (cvEl._cgCanvasInit) return;
                   cvEl._cgCanvasInit = true;
                   var gctx = cvEl.getContext('2d');
+                  // Adaptive canvas resolution: track CSS size so the maximize
+                  // toggle (which changes CSS height from ~540px to 100vh) gets
+                  // proper internal resolution without blur. Re-applied via
+                  // ResizeObserver below so width/height stay in sync if the
+                  // window resizes too.
                   var W = cvEl.width = cvEl.offsetWidth * 2;
-                  var H = cvEl.height = 760;
+                  var H = cvEl.height = Math.max(760, cvEl.offsetHeight * 2);
                   var startT = performance.now();
-                  // Isometric tile parameters
-                  var isoOX = W / 2; var isoOY = 180; // origin (center-top of grid)
+                  // Isometric tile parameters. isoOY bumped 180 → 300 so the
+                  // top of the diamond sits comfortably below the horizon line
+                  // (at ~H*0.22) instead of right on it — keeps the plot
+                  // visually grounded rather than floating in the sky.
+                  var isoOX = W / 2; var isoOY = 300; // origin (center-top of grid)
                   // Tile width/height in iso space. Bumped from 90/50 → 240/130
                   // (~2.7×) so the 4×4 garden actually fills a meaningful share
                   // of the canvas instead of looking like a pinpoint in the
@@ -4009,7 +4030,28 @@ var d = (labToolData.companionPlanting) || {};
                   };
                   var defVis = { stemColor: '#4a7a2e', fruitColor: '#888', leafColor: '#50a030' };
 
+                  // ResizeObserver: re-sync internal canvas resolution when the
+                  // CSS box changes (maximize toggle, window resize). Reads the
+                  // current offsetWidth/Height so the canvas never blurs from
+                  // CSS stretch. W/H/isoOX are referenced as closure vars in
+                  // drawCG, so reassigning here updates the next frame.
+                  if (typeof ResizeObserver !== 'undefined') {
+                    var _cgRo = new ResizeObserver(function() {
+                      W = cvEl.width = cvEl.offsetWidth * 2;
+                      H = cvEl.height = Math.max(760, cvEl.offsetHeight * 2);
+                      isoOX = W / 2;
+                    });
+                    _cgRo.observe(cvEl);
+                    cvEl._cgRo = _cgRo;
+                  }
                   function drawCG() {
+                    // Stop animating if the canvas was detached (e.g. maximize
+                    // toggle remounted it via React key). Prevents orphan RAF
+                    // loops leaking after unmount.
+                    if (!document.contains(cvEl)) {
+                      if (cvEl._cgRo) { try { cvEl._cgRo.disconnect(); } catch (e) {} }
+                      return;
+                    }
                     cvEl._cgAnim = requestAnimationFrame(drawCG);
                     var t = (performance.now() - startT) / 1000;
                     var sSeason = cgSeason; // read directly (canvas re-mounts on state change)
@@ -4189,18 +4231,21 @@ var d = (labToolData.companionPlanting) || {};
                     })();
 
                     // ── Background trees (behind garden) ──
+                    // Tree size bumped 18-30 → 32-56 so they read proportionally
+                    // against the 240×130 plot diamond. Trunk also widened from
+                    // 4px → 6px so the trunk is visible at the larger canopy size.
                     var treeLine = isoOY - 40;
                     gctx.fillStyle = sSeason === 3 ? 'rgba(80,90,100,0.35)' : sSeason === 2 ? 'rgba(140,100,30,0.3)' : 'rgba(35,90,25,0.35)';
                     for (var bt = 0; bt < 8; bt++) {
                       var btx = W * 0.08 + bt * W * 0.12;
                       var bty = treeLine - 5 + Math.sin(bt * 2.3) * 8;
-                      var btSize = 18 + (bt % 3) * 6;
+                      var btSize = 32 + (bt % 3) * 12;
                       // Canopy
                       gctx.beginPath(); gctx.arc(btx, bty - btSize * 0.4, btSize, 0, Math.PI * 2); gctx.fill();
                       gctx.beginPath(); gctx.arc(btx + btSize * 0.3, bty - btSize * 0.2, btSize * 0.7, 0, Math.PI * 2); gctx.fill();
                       // Trunk
-                      gctx.fillStyle = 'rgba(80,50,20,0.25)';
-                      gctx.fillRect(btx - 2, bty, 4, 12);
+                      gctx.fillStyle = 'rgba(80,50,20,0.3)';
+                      gctx.fillRect(btx - 3, bty, 6, 20);
                       gctx.fillStyle = sSeason === 3 ? 'rgba(80,90,100,0.35)' : sSeason === 2 ? 'rgba(140,100,30,0.3)' : 'rgba(35,90,25,0.35)';
                     }
 
@@ -5697,6 +5742,21 @@ var d = (labToolData.companionPlanting) || {};
                   obs3.observe(document.body, { childList: true, subtree: true });
                 }
               }),
+                // Maximize / minimize toggle overlay button
+                h('button', {
+                  onClick: function() { cgUpd({ maximized: !cgMaximized }); },
+                  title: cgMaximized ? 'Exit maximized view' : 'Maximize garden view',
+                  'aria-label': cgMaximized ? 'Exit maximized garden view' : 'Maximize garden view',
+                  style: {
+                    position: 'absolute', top: cgMaximized ? 24 : 12, right: cgMaximized ? 24 : 12,
+                    zIndex: 10, padding: '6px 12px',
+                    background: 'rgba(15,23,42,0.85)', color: '#f1f5f9',
+                    border: '1px solid rgba(148,163,184,0.45)', borderRadius: 8,
+                    fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                    backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)'
+                  }
+                }, cgMaximized ? '✕ Close' : '⛶ Maximize')
+              ),
 
               // ── Companion interactions preview ──
               cgPhase === 'plan' && (function() {
