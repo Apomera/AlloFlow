@@ -393,11 +393,18 @@ window.StemLab = window.StemLab || {
               })
             ),
             h('div', {
-              className: 'grid gap-1',
-              style: {
-                gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))',
-                maxWidth: (cols <= 6 ? Math.min(cols * 52, 340) : cols <= 9 ? cols * 38 : cols * 32) + 'px'
-              }
+              className: 'grid gap-1 flex-shrink-0',
+              style: (function() {
+                // Fixed width prevents the grid from collapsing inside the flex parent
+                // when the skip-count column is showing. Each cell ends up the same
+                // size as before (aspect-square keeps them proportional).
+                var w = (cols <= 6 ? Math.min(cols * 52, 340) : cols <= 9 ? cols * 38 : cols * 32);
+                return {
+                  gridTemplateColumns: 'repeat(' + cols + ', minmax(0, 1fr))',
+                  width: w + 'px',
+                  maxWidth: '100%'
+                };
+              })()
             }, cells)
           ),
           showSkipCount && h('p', { className: 'text-[11px] text-amber-700 italic mt-2 text-center' },

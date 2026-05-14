@@ -1,7 +1,10 @@
 // ═══════════════════════════════════════════
-// stem_tool_volume.js — 3D Volume Explorer Plugin
-// Self-contained: all state stored in labToolData
-// Sound effects, badges, AI tutor & keyboard shortcuts
+// stem_tool_volume.js — 3D Volume Explorer Plugin (Enhanced v3)
+// 3 tabs: Slider, Freeform, Word Problems
+// + sound effects (mutable), 10 badges, AI tutor, keyboard shortcuts,
+//   prism + L-block + volume challenges, paint surface area, layer slider,
+//   real-world word problems (lunchbox / aquarium / pool / room / shipping),
+//   atmospheric backgrounds, mute toggle, reset button
 // ═══════════════════════════════════════════
 
 window.StemLab = window.StemLab || {
@@ -35,6 +38,21 @@ window.StemLab = window.StemLab || {
     document.body.appendChild(liveRegion);
   })();
 
+  // Volume v3: atmospheric backgrounds + cube-place pulse animation
+  (function() {
+    if (document.getElementById('allo-volume-v3-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-volume-v3-css';
+    st.textContent = [
+      '@keyframes allo-vol-cube-in { 0% { transform: scale(0.7); opacity: 0; } 60% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }',
+      '.allo-vol-bg-slider   { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(5,150,105,0.10) 0%, rgba(5,150,105,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '.allo-vol-bg-freeform { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(79,70,229,0.10) 0%, rgba(79,70,229,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '.allo-vol-bg-word     { background: radial-gradient(ellipse 1100px 480px at 50% -10%, rgba(217,119,6,0.10) 0%, rgba(217,119,6,0.04) 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 16px; padding: 10px; }',
+      '@media (prefers-reduced-motion: reduce) { .allo-vol-cube { animation: none !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
 
   // ── Sound effects ──
   var _audioCtx = null;
@@ -43,6 +61,7 @@ window.StemLab = window.StemLab || {
     return _audioCtx;
   }
   function playSound(type) {
+    if (window._volumeMuted) return;  // sync flag set by tool when muted state changes
     try {
       var ac = getAudioCtx();
       var o = ac.createOscillator();
@@ -116,6 +135,20 @@ window.StemLab = window.StemLab || {
     } catch (e) { /* audio not available */ }
   }
 
+  // ── Word problem contexts (real-world volume scenarios) ──
+  // Each context describes a rectangular-prism object with a relatable use case.
+  // Variables {l} {w} {h} get substituted with the current factors.
+  var WORD_CONTEXTS = [
+    { id: 'lunchbox',  label: 'Lunchbox',  icon: '🍱', story: 'A lunchbox is {l} units long, {w} units wide, and {h} units tall. How many unit cubes of food can fit inside?', unit: 'sandwich cubes', defaults: { l: 4, w: 3, h: 2 } },
+    { id: 'aquarium',  label: 'Fish tank', icon: '🐠', story: 'An aquarium is {l} units long, {w} units wide, and {h} units tall. How many unit cubes of water does it hold?', unit: 'cubes of water', defaults: { l: 5, w: 3, h: 4 } },
+    { id: 'shipping',  label: 'Shipping box', icon: '📦', story: 'A shipping box measures {l}×{w}×{h} units. How many unit cubes of packing material will it hold?', unit: 'cubic units', defaults: { l: 4, w: 4, h: 3 } },
+    { id: 'pool',      label: 'Swimming pool', icon: '🏊', story: 'A small pool is {l} units long, {w} units wide, and {h} units deep. How many unit cubes of water?', unit: 'cubic units', defaults: { l: 8, w: 4, h: 2 } },
+    { id: 'room',      label: 'Bedroom',   icon: '🛏', story: 'A bedroom is {l} units long, {w} units wide, with a ceiling {h} units high. How many unit cubes of air fill the room?', unit: 'cubic units', defaults: { l: 6, w: 5, h: 3 } },
+    { id: 'closet',    label: 'Closet',    icon: '🚪', story: 'A closet is {l} units wide, {w} units deep, and {h} units tall. How many unit cubes of storage?', unit: 'cubic units', defaults: { l: 3, w: 2, h: 4 } },
+    { id: 'sandbox',   label: 'Sandbox',   icon: '🏖', story: 'A sandbox is {l} units long, {w} units wide, and {h} units deep. How many unit cubes of sand fill it?', unit: 'cubes of sand', defaults: { l: 5, w: 4, h: 1 } },
+    { id: 'truck',     label: 'Truck bed', icon: '🚚', story: 'A truck bed is {l} units long, {w} units wide, and {h} units tall. How many unit-cube boxes can it carry?', unit: 'boxes', defaults: { l: 6, w: 3, h: 2 } }
+  ];
+
   // ── Badge definitions ──
   var BADGES = [
     { id: 'firstVolume',     icon: '\u2B50',       label: 'First Volume',      desc: 'Calculate your first volume correctly' },
@@ -127,7 +160,11 @@ window.StemLab = window.StemLab || {
     { id: 'surfaceExplorer', icon: '\uD83C\uDFA8', label: 'Surface Explorer',  desc: 'Use paint surface area mode' },
     { id: 'layerMaster',     icon: '\uD83C\uDF82', label: 'Layer Master',      desc: 'Explore layers with the slider' },
     { id: 'dimensionKing',   icon: '\uD83D\uDC51', label: 'Dimension King',    desc: 'Set all sliders to maximum (10)' },
-    { id: 'centurion',       icon: '\uD83C\uDFC5', label: 'Centurion',         desc: '100 total cubes placed in freeform' }
+    { id: 'centurion',       icon: '\uD83C\uDFC5', label: 'Centurion',         desc: '100 total cubes placed in freeform' },
+    { id: 'wordWizard',      icon: '\uD83D\uDCDD', label: 'Word Wizard',       desc: 'Solve 5 word problems correctly' },
+    { id: 'realWorldExpl',   icon: '\uD83C\uDF0D', label: 'Real-World Expl',   desc: 'Try all 8 word problem contexts' },
+    { id: 'netArchitect',    icon: '\uD83D\uDDFA', label: 'Net Architect',    desc: 'Unfold a prism into its net' },
+    { id: 'shapeEfficient',  icon: '\u2696\uFE0F', label: 'Shape Efficient',  desc: 'Discover same-volume comparison (square-cube law)' }
   ];
 
   window.StemLab.registerTool('volume', {
@@ -183,6 +220,18 @@ window.StemLab = window.StemLab || {
       var aiLoading = _v.aiLoading || false;
       var layerUsed = _v.layerUsed || false;
 
+      // v3 additions
+      var muted = _v.muted || false;
+      window._volumeMuted = muted;                  // synced flag read by playSound
+      var wpCtxIdx = _v.wpCtxIdx != null ? _v.wpCtxIdx : 0;
+      var wpDims = _v.wpDims || WORD_CONTEXTS[0].defaults;
+      var wpAnswer = _v.wpAnswer || '';
+      var wpFeedback = _v.wpFeedback || null;
+      var wpSolved = _v.wpSolved || 0;
+      var wpExplored = _v.wpExplored || {};
+      var showNet = _v.showNet || false;          // unfolded-net view (slider + word modes)
+      var showCompare = _v.showCompare || false;  // square-cube-law comparison panel
+
       // ── Badge checker ──
       function checkBadges(updates) {
         var changed = {};
@@ -220,7 +269,10 @@ window.StemLab = window.StemLab || {
         return area;
       };
 
-      var isSlider = mode === 'slider';
+      // Treat word mode as a slider variant (same 3D prism viewport)
+      var isWord = mode === 'word';
+      var isSlider = mode === 'slider' || isWord;
+      var isFreeform = mode === 'freeform';
       var volume = isSlider ? dims.l * dims.w * dims.h : posSet.size;
       var surfaceArea = isSlider
         ? 2 * (dims.l * dims.w + dims.l * dims.h + dims.w * dims.h)
@@ -517,8 +569,13 @@ window.StemLab = window.StemLab || {
       window._volumeKeyHandler = function(e) {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         var key = e.key.toLowerCase();
-        if (key === 's' && !isSlider) { e.preventDefault(); upd({ mode: 'slider', builderChallenge: null, builderFeedback: null }); }
-        if (key === 'f' && isSlider) { e.preventDefault(); upd({ mode: 'freeform', challenge: null, feedback: null }); }
+        if (key === 's' && mode !== 'slider') { e.preventDefault(); upd({ mode: 'slider', builderChallenge: null, builderFeedback: null, wpFeedback: null }); }
+        if (key === 'f' && !isFreeform) { e.preventDefault(); upd({ mode: 'freeform', challenge: null, feedback: null, wpFeedback: null }); }
+        if (key === 'w' && !isWord) {
+          e.preventDefault();
+          var ctx3 = WORD_CONTEXTS[wpCtxIdx % WORD_CONTEXTS.length];
+          upd({ mode: 'word', dims: ctx3.defaults, challenge: null, feedback: null, builderChallenge: null, builderFeedback: null, wpFeedback: null });
+        }
         if (key === 'n') {
           e.preventDefault();
           if (isSlider) {
@@ -534,12 +591,203 @@ window.StemLab = window.StemLab || {
       };
       window.addEventListener('keydown', window._volumeKeyHandler);
 
+      // ── Net visualization (unfolded 6-face cross layout) ──
+      // Pedagogical move: connect 3D surface area to its 2D unfolding.
+      // The 6 faces, laid flat, sum to the SA formula 2(lw + lh + wh).
+      // "Surface area is the wrapping paper you'd need" becomes literal.
+      var renderNet = function() {
+        var l = dims.l, w = dims.w, hh = dims.h;
+        // Layout cross: top above front, sides left/right of front, back to the right, bottom below front
+        var spanW = 2 * (l + w);   // total layout width in units
+        var spanH = 2 * w + hh;     // total layout height in units
+        var maxSpan = Math.max(spanW, spanH);
+        var unitSz = Math.min(32, Math.max(14, 380 / maxSpan));
+        var pad = 6;
+        var svgW = spanW * unitSz + pad * 2;
+        var svgH = spanH * unitSz + pad * 2;
+        var faces = [
+          { name: 'top',    x: w,         y: 0,       fw: l, fh: w,  fill: '#86efac', area: l*w, dims: l + '×' + w },
+          { name: 'left',   x: 0,         y: w,       fw: w, fh: hh, fill: '#34d399', area: w*hh, dims: w + '×' + hh },
+          { name: 'front',  x: w,         y: w,       fw: l, fh: hh, fill: '#10b981', area: l*hh, dims: l + '×' + hh },
+          { name: 'right',  x: w + l,     y: w,       fw: w, fh: hh, fill: '#059669', area: w*hh, dims: w + '×' + hh },
+          { name: 'back',   x: w + l + w, y: w,       fw: l, fh: hh, fill: '#047857', area: l*hh, dims: l + '×' + hh },
+          { name: 'bottom', x: w,         y: w + hh,  fw: l, fh: w,  fill: '#065f46', area: l*w, dims: l + '×' + w }
+        ];
+        var totalSA = 2 * (l*w + l*hh + w*hh);
+        var faceEls = faces.map(function(f, i) {
+          var px = f.x * unitSz + pad;
+          var py = f.y * unitSz + pad;
+          var pw = f.fw * unitSz;
+          var ph = f.fh * unitSz;
+          var labelFits = pw >= 36 && ph >= 28;
+          return h('g', { key: 'net-face-' + i },
+            h('rect', {
+              x: px, y: py, width: pw, height: ph,
+              fill: f.fill, stroke: '#064e3b', strokeWidth: 1.5, opacity: 0.92
+            }),
+            labelFits && h('text', {
+              x: px + pw / 2, y: py + ph / 2 - 4,
+              textAnchor: 'middle', fontSize: Math.min(12, pw / 5), fontWeight: 'bold', fill: '#fff',
+              style: { pointerEvents: 'none' }
+            }, f.name),
+            labelFits && h('text', {
+              x: px + pw / 2, y: py + ph / 2 + 10,
+              textAnchor: 'middle', fontSize: Math.min(11, pw / 6), fontFamily: 'monospace', fill: '#ecfdf5',
+              style: { pointerEvents: 'none' }
+            }, f.dims + ' = ' + f.area)
+          );
+        });
+        return h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-3' },
+          h('div', { className: 'flex items-center justify-between mb-2' },
+            h('p', { className: 'text-[11px] font-bold text-emerald-700' },
+              '🗺 Net — the 6 faces unfolded onto a 2D layout'
+            ),
+            h('button', {
+              onClick: function() { playSound('place'); upd({ showNet: false }); },
+              'aria-label': 'Hide net',
+              className: 'text-[10px] font-bold text-emerald-700 hover:underline'
+            }, 'Hide net ×')
+          ),
+          h('div', { className: 'flex justify-center overflow-x-auto' },
+            h('svg', {
+              width: svgW, height: svgH, viewBox: '0 0 ' + svgW + ' ' + svgH,
+              role: 'img',
+              'aria-label': 'Unfolded net of ' + l + ' by ' + w + ' by ' + hh + ' prism. Total surface area: ' + totalSA + ' square units.'
+            }, faceEls)
+          ),
+          h('div', { className: 'mt-2 bg-emerald-50 rounded-lg p-2 border border-emerald-200 text-center' },
+            h('p', { className: 'text-xs font-bold text-emerald-900 font-mono' },
+              '2(' + (l*w) + ') + 2(' + (l*hh) + ') + 2(' + (w*hh) + ') = ',
+              h('span', { className: 'text-base text-emerald-700 font-bold' }, totalSA),
+              ' square units'
+            ),
+            h('p', { className: 'text-[10px] text-emerald-700 italic mt-0.5' },
+              'Fold the net up and you get the prism. Surface area is the total area of all 6 faces — the wrapping paper or paint you would need.'
+            )
+          )
+        );
+      };
+
+      // ── Same-volume comparison (square-cube law) ──
+      // Given the current volume, find alternative integer factorizations.
+      // The cube (or closest-to-cube) has the minimum SA; thin "rod" or "slab"
+      // shapes have the maximum SA. Same volume, very different "skin."
+      var getFactorizations = function(V) {
+        var results = [];
+        if (V < 1 || V > 1000) return results;
+        for (var a = 1; a * a * a <= V; a++) {
+          if (V % a !== 0) continue;
+          var rem = V / a;
+          for (var b = a; b * b <= rem; b++) {
+            if (rem % b !== 0) continue;
+            var c = rem / b;
+            results.push([a, b, c]);
+          }
+        }
+        return results;
+      };
+      var describeShape = function(a, b, c) {
+        var srt = [a, b, c].sort(function(x, y) { return x - y; });
+        if (srt[0] === srt[2]) return 'cube';
+        if (srt[0] === 1 && srt[1] === 1) return 'rod';
+        if (srt[0] === 1) return 'slab';
+        if (srt[2] / srt[0] >= 4) return 'long box';
+        return 'box';
+      };
+      var renderCompare = function() {
+        var V = volume;
+        var allFactors = getFactorizations(V);
+        if (allFactors.length === 0) {
+          return h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-3 text-center text-xs text-slate-600' },
+            'Volume out of range for comparison. Try a smaller prism (V ≤ 1000).'
+          );
+        }
+        var allWithSA = allFactors.map(function(f) {
+          var sa = 2 * (f[0]*f[1] + f[0]*f[2] + f[1]*f[2]);
+          return { l: f[0], w: f[1], h: f[2], sa: sa };
+        });
+        allWithSA.sort(function(a, b) { return a.sa - b.sa; });
+        var minE = allWithSA[0];
+        var maxE = allWithSA[allWithSA.length - 1];
+        var curEntry = null;
+        for (var i = 0; i < allWithSA.length; i++) {
+          var e = allWithSA[i];
+          var srt1 = [e.l, e.w, e.h].sort(function(a,b){return a-b;});
+          var srt2 = [dims.l, dims.w, dims.h].sort(function(a,b){return a-b;});
+          if (srt1[0] === srt2[0] && srt1[1] === srt2[1] && srt1[2] === srt2[2]) { curEntry = e; break; }
+        }
+        // Build display list: current + min + max, deduped
+        var displayList = [];
+        if (curEntry) displayList.push({ entry: curEntry, label: 'Current', accent: '#3b82f6' });
+        if (!curEntry || (curEntry.sa !== minE.sa)) displayList.push({ entry: minE, label: 'Most efficient ✓', accent: '#16a34a' });
+        if (!curEntry || (curEntry.sa !== maxE.sa)) {
+          if (!displayList.some(function(d) { return d.entry.sa === maxE.sa; })) {
+            displayList.push({ entry: maxE, label: 'Least efficient', accent: '#dc2626' });
+          }
+        }
+        var maxSAvalue = maxE.sa;
+        return h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-3' },
+          h('div', { className: 'flex items-center justify-between mb-2' },
+            h('p', { className: 'text-[11px] font-bold text-emerald-700' },
+              '⚖️ Same volume (' + V + ' cubes), different surface areas — the square-cube law'
+            ),
+            h('button', {
+              onClick: function() { playSound('place'); upd({ showCompare: false }); },
+              'aria-label': 'Hide compare panel',
+              className: 'text-[10px] font-bold text-emerald-700 hover:underline'
+            }, 'Hide ×')
+          ),
+          h('div', { className: 'space-y-1.5' },
+            displayList.map(function(d, idx) {
+              var e = d.entry;
+              var pct = (e.sa / maxSAvalue) * 100;
+              var shape = describeShape(e.l, e.w, e.h);
+              return h('button', {
+                key: 'cmp-' + idx,
+                onClick: function() {
+                  playSound('place');
+                  upd({ dims: { l: e.l, w: e.w, h: e.h }, showLayers: null, challenge: null, feedback: null });
+                  announceToSR('Switched to ' + e.l + ' by ' + e.w + ' by ' + e.h);
+                },
+                'aria-label': d.label + ': ' + e.l + ' by ' + e.w + ' by ' + e.h + ', surface area ' + e.sa,
+                className: 'w-full flex items-center gap-2 px-2 py-1.5 rounded-lg border transition-all text-left hover:shadow-sm',
+                style: { borderColor: d.accent + '88', backgroundColor: d.accent + '0F' }
+              },
+                h('span', { className: 'text-[10px] font-bold uppercase tracking-wider w-24 flex-shrink-0', style: { color: d.accent } }, d.label),
+                h('span', { className: 'text-sm font-mono font-bold text-slate-800 w-24 flex-shrink-0' }, e.l + '×' + e.w + '×' + e.h),
+                h('span', { className: 'text-[10px] text-slate-600 italic w-16 flex-shrink-0' }, '(' + shape + ')'),
+                h('div', { className: 'flex-1 bg-slate-100 rounded h-3 overflow-hidden', 'aria-hidden': 'true' },
+                  h('div', {
+                    className: 'h-full rounded transition-all',
+                    style: { width: pct + '%', backgroundColor: d.accent }
+                  })
+                ),
+                h('span', { className: 'text-xs font-bold text-slate-800 w-20 text-right flex-shrink-0' }, 'SA = ' + e.sa)
+              );
+            })
+          ),
+          h('div', { className: 'mt-2 bg-emerald-50 rounded-lg p-2 border border-emerald-200' },
+            h('p', { className: 'text-[11px] text-emerald-900' },
+              h('b', {}, '💡 Square-cube law: '),
+              'volume grows as the cube of the dimension; surface area grows as the square. Same V, very different SA. ',
+              'A cube is the most surface-efficient prism shape. ',
+              'It is why elephants need thick legs (volume → mass scales faster than bone cross-section), ',
+              'why cells stay small (need surface area to absorb nutrients), and why insulation works (rounder shapes keep heat).'
+            ),
+            h('p', { className: 'text-[10px] text-emerald-700 italic mt-1' },
+              '👆 Tap any row above to swap the 3D prism to that shape — see the same volume in a different skin.'
+            )
+          )
+        );
+      };
+
       // ── Earned badges count ──
       var earnedBadges = BADGES.filter(function(b) { return badges[b.id]; });
       var earnedCount = earnedBadges.length;
 
       // ══════════ RENDER ══════════
-      return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
+      var bgClass = isWord ? 'allo-vol-bg-word' : (isFreeform ? 'allo-vol-bg-freeform' : 'allo-vol-bg-slider');
+      return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200 ' + bgClass },
         // Header
         h('div', { className: 'flex items-center gap-3 mb-2' },
           h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' },
@@ -560,18 +808,61 @@ window.StemLab = window.StemLab || {
             }, '\uD83E\uDDE0 AI')
           ),
           h('div', { className: 'flex-1' }),
-          // Mode toggle
-          h('div', { className: 'flex items-center gap-1 bg-emerald-50 rounded-lg p-1 border border-emerald-200' },
-            h('button', { 'aria-label': 'Slider',
+          // Mode toggle (now 3 options: Slider / Freeform / Word Problems)
+          h('div', { className: 'flex items-center gap-1 bg-emerald-50 rounded-lg p-1 border border-emerald-200', role: 'tablist', 'aria-label': 'Volume modes' },
+            h('button', { 'aria-label': 'Slider mode',
               onClick: function() { upd({ mode: 'slider', builderChallenge: null, builderFeedback: null }); },
-              className: 'px-3 py-1 rounded-md text-xs font-bold transition-all ' + (isSlider ? 'bg-white text-emerald-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
+              role: 'tab', 'aria-selected': mode === 'slider',
+              className: 'px-3 py-1 rounded-md text-xs font-bold transition-all ' + (mode === 'slider' ? 'bg-white text-emerald-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
               title: 'Slider mode (S)'
             }, '\uD83C\uDF9A\uFE0F Slider'),
-            h('button', { 'aria-label': 'Freeform',
+            h('button', { 'aria-label': 'Freeform mode',
               onClick: function() { upd({ mode: 'freeform', challenge: null, feedback: null }); },
-              className: 'px-3 py-1 rounded-md text-xs font-bold transition-all ' + (!isSlider ? 'bg-white text-indigo-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
+              role: 'tab', 'aria-selected': isFreeform,
+              className: 'px-3 py-1 rounded-md text-xs font-bold transition-all ' + (isFreeform ? 'bg-white text-indigo-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
               title: 'Freeform mode (F)'
-            }, '\uD83E\uDDF1 Freeform')),
+            }, '\uD83E\uDDF1 Freeform'),
+            h('button', { 'aria-label': 'Word Problems mode',
+              onClick: function() {
+                var ctx = WORD_CONTEXTS[wpCtxIdx % WORD_CONTEXTS.length];
+                upd({ mode: 'word', dims: ctx.defaults, challenge: null, feedback: null, builderChallenge: null, builderFeedback: null, wpFeedback: null });
+              },
+              role: 'tab', 'aria-selected': isWord,
+              className: 'px-3 py-1 rounded-md text-xs font-bold transition-all ' + (isWord ? 'bg-white text-amber-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
+              title: 'Word Problems mode (W)'
+            }, '\uD83D\uDCDD Word')),
+          // Mute toggle
+          h('button', {
+            onClick: function() {
+              var next = !muted;
+              upd({ muted: next });
+              window._volumeMuted = next;
+              if (!next) { setTimeout(function() { playSound('place'); }, 0); }
+              announceToSR(next ? 'Sound muted' : 'Sound on');
+            },
+            'aria-label': muted ? 'Unmute sound effects' : 'Mute sound effects',
+            'aria-pressed': muted,
+            title: muted ? 'Unmute (sounds are off)' : 'Mute (sounds are on)',
+            className: 'p-1 ml-2 rounded-md text-base hover:bg-slate-100 transition-colors ' + (muted ? 'text-slate-400' : 'text-emerald-700')
+          }, muted ? '\uD83D\uDD07' : '\uD83D\uDD0A'),
+          // Reset
+          h('button', {
+            onClick: function() {
+              playSound('place');
+              upd({
+                dims: {l:3,w:2,h:2}, mode: 'slider',
+                positions: [], rotation: {x:-25,y:-35}, scale: 1.0,
+                challenge: null, answer: '', feedback: null, showLayers: null,
+                builderChallenge: null, builderFeedback: null,
+                paintSurfaceArea: false,
+                wpAnswer: '', wpFeedback: null, wpCtxIdx: 0
+              });
+              announceToSR('Volume explorer reset');
+            },
+            'aria-label': 'Reset',
+            title: 'Reset everything',
+            className: 'text-[11px] font-bold px-2 py-0.5 ml-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-all'
+          }, '\u21BA Reset'),
           // Paint toggle
           h('button', { 'aria-label': 'Toggle paint (P)',
             onClick: function() {
@@ -633,9 +924,11 @@ window.StemLab = window.StemLab || {
         (function() {
           var MODE_META = {
             slider:   { accent: '#059669', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83C\uDF9A', title: 'Slider \u2014 V = l \u00d7 w \u00d7 h, watch it grow',     hint: 'Sliders snap to integer dimensions \u2014 great for the early visual: doubling each side multiplies volume by 8 (2\u00b3). Surface area scales as 2\u00b2; volume as 2\u00b3. The square-cube law explains why elephants have thick legs and shrews can fall safely.' },
-            freeform: { accent: '#4f46e5', soft: 'rgba(79,70,229,0.10)',  icon: '\uD83E\uDDF1', title: 'Freeform \u2014 build any shape, count cubes',         hint: 'L-blocks, hollow shapes, irregular prisms. Volume = total cubes regardless of arrangement. CCSS 5.MD.5: relate volume of a right rectangular prism to multiplication and addition (V = b\u00d7h or as the sum of partial volumes).' }
+            freeform: { accent: '#4f46e5', soft: 'rgba(79,70,229,0.10)',  icon: '\uD83E\uDDF1', title: 'Freeform \u2014 build any shape, count cubes',         hint: 'L-blocks, hollow shapes, irregular prisms. Volume = total cubes regardless of arrangement. CCSS 5.MD.5: relate volume of a right rectangular prism to multiplication and addition (V = b\u00d7h or as the sum of partial volumes).' },
+            word:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDCDD', title: 'Word Problems \u2014 volume in the real world',        hint: 'A fish tank with 5\u00d73\u00d74 = 60 cubes of water. A lunchbox of 4\u00d73\u00d72 = 24 sandwich cubes. Every multiplication of three dimensions is a real container with a real capacity. CCSS 5.MD.5b: solve real-world problems involving volume.' }
           };
-          var meta = MODE_META[isSlider ? 'slider' : 'freeform'];
+          var modeKey = isWord ? 'word' : (isFreeform ? 'freeform' : 'slider');
+          var meta = MODE_META[modeKey];
           return h('div', {
             style: {
               margin: '0 0 12px',
@@ -651,6 +944,107 @@ window.StemLab = window.StemLab || {
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
               h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
+        // Word problem story panel (when in word mode)
+        isWord && (function() {
+          var ctx2 = WORD_CONTEXTS[wpCtxIdx % WORD_CONTEXTS.length];
+          var story = ctx2.story.replace(/\{l\}/g, dims.l).replace(/\{w\}/g, dims.w).replace(/\{h\}/g, dims.h);
+          return h('div', { className: 'space-y-2' },
+            // Context picker row
+            h('div', { className: 'bg-amber-50 rounded-xl p-3 border border-amber-200' },
+              h('p', { className: 'text-[11px] font-bold text-amber-800 mb-2' }, '🌍 Pick a context to make volume real:'),
+              h('div', { className: 'flex flex-wrap gap-1.5' },
+                WORD_CONTEXTS.map(function(c, ci) {
+                  var active = wpCtxIdx === ci;
+                  return h('button', {
+                    key: 'wpc-' + c.id,
+                    onClick: function() {
+                      playSound('place');
+                      var newExpl = Object.assign({}, wpExplored); newExpl[c.id] = true;
+                      upd({ wpCtxIdx: ci, dims: c.defaults, wpAnswer: '', wpFeedback: null, wpExplored: newExpl });
+                      if (Object.keys(newExpl).length >= WORD_CONTEXTS.length) checkBadges({ realWorldExpl: true });
+                      announceToSR(c.label + ' context selected');
+                    },
+                    'aria-pressed': active,
+                    className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ' +
+                      (active ? 'bg-amber-700 text-white shadow-sm' : 'bg-white text-amber-700 border border-amber-300 hover:bg-amber-100')
+                  }, c.icon + ' ' + c.label);
+                })
+              )
+            ),
+            // Story prompt + answer input
+            h('div', { className: 'bg-white rounded-xl border-2 border-amber-200 p-4' },
+              h('p', { className: 'text-base font-bold text-amber-900 leading-relaxed mb-3' }, '📖 ' + story),
+              h('div', { className: 'flex gap-2 items-center' },
+                h('input', {
+                  type: 'number', value: wpAnswer,
+                  onChange: function(e) { upd({ wpAnswer: e.target.value }); },
+                  onKeyDown: function(e) {
+                    if (e.key === 'Enter' && wpAnswer) {
+                      var correct = dims.l * dims.w * dims.h;
+                      var ok = parseInt(wpAnswer) === correct;
+                      playSound(ok ? 'correct' : 'wrong');
+                      var newStreak = ok ? streak + 1 : 0;
+                      if (ok && newStreak >= 3 && newStreak % 5 === 0) playSound('streak');
+                      var newSolved = wpSolved + (ok ? 1 : 0);
+                      announceToSR(ok ? 'Correct!' : 'Try again');
+                      upd({
+                        wpFeedback: ok
+                          ? { correct: true, msg: '✅ Correct! ' + dims.l + '×' + dims.w + '×' + dims.h + ' = ' + correct + ' ' + ctx2.unit + (newStreak >= 3 ? '  🔥 ' + newStreak + ' streak!' : '') }
+                          : { correct: false, msg: '❌ V = l × w × h = ' + dims.l + ' × ' + dims.w + ' × ' + dims.h + ' = ' + correct + ' ' + ctx2.unit },
+                        score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
+                        streak: newStreak, wpSolved: newSolved
+                      });
+                      if (ok) {
+                        awardStemXP('volume', 5, 'word problem');
+                        checkBadges({ firstVolume: true, streak5: newStreak >= 5, streak10: newStreak >= 10, wordWizard: newSolved >= 5 });
+                      }
+                    }
+                  },
+                  placeholder: 'V = ?',
+                  'aria-label': 'Volume answer for word problem',
+                  className: 'flex-1 px-3 py-2 border-2 border-amber-600 rounded-lg text-base font-mono'
+                }),
+                h('span', { className: 'text-xs font-bold text-amber-700' }, ctx2.unit),
+                h('button', {
+                  onClick: function() {
+                    if (!wpAnswer) return;
+                    var correct = dims.l * dims.w * dims.h;
+                    var ok = parseInt(wpAnswer) === correct;
+                    playSound(ok ? 'correct' : 'wrong');
+                    var newStreak = ok ? streak + 1 : 0;
+                    if (ok && newStreak >= 3 && newStreak % 5 === 0) playSound('streak');
+                    var newSolved = wpSolved + (ok ? 1 : 0);
+                    announceToSR(ok ? 'Correct!' : 'Try again');
+                    upd({
+                      wpFeedback: ok
+                        ? { correct: true, msg: '✅ Correct! ' + dims.l + '×' + dims.w + '×' + dims.h + ' = ' + correct + ' ' + ctx2.unit + (newStreak >= 3 ? '  🔥 ' + newStreak + ' streak!' : '') }
+                        : { correct: false, msg: '❌ V = l × w × h = ' + dims.l + ' × ' + dims.w + ' × ' + dims.h + ' = ' + correct + ' ' + ctx2.unit },
+                      score: { correct: score.correct + (ok ? 1 : 0), total: score.total + 1 },
+                      streak: newStreak, wpSolved: newSolved
+                    });
+                    if (ok) {
+                      awardStemXP('volume', 5, 'word problem');
+                      checkBadges({ firstVolume: true, streak5: newStreak >= 5, streak10: newStreak >= 10, wordWizard: newSolved >= 5 });
+                    }
+                  },
+                  disabled: !wpAnswer,
+                  'aria-label': 'Check answer',
+                  className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 disabled:opacity-40 transition-all'
+                }, 'Check')
+              ),
+              wpFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (wpFeedback.correct ? 'text-green-700' : 'text-red-600'), 'aria-live': 'polite' }, wpFeedback.msg),
+              wpFeedback && wpFeedback.correct && h('div', { className: 'mt-2 bg-amber-50 rounded-lg px-3 py-2 border border-amber-200' },
+                h('p', { className: 'text-[11px] text-amber-700' },
+                  '💡 The rectangular prism above shows exactly what the words describe. Volume is the count of unit cubes that fit inside.'
+                )
+              )
+            ),
+            h('p', { className: 'text-[10px] text-amber-700 italic text-center' },
+              'Adjust the sliders below to match the story — or try a new context. Solve 5 word problems to earn 📝 Word Wizard. Visit all 8 contexts for 🌍 Real-World Explorer.'
             )
           );
         })(),
@@ -720,6 +1114,37 @@ window.StemLab = window.StemLab || {
             (showLayers != null ? showLayers : dims.h) + ' / ' + dims.h)
         ),
 
+        // Net visualization + same-volume comparison toggles (slider + word modes — rectangular prism only)
+        isSlider && h('div', { className: 'flex items-center gap-2 flex-wrap' },
+          h('button', {
+            onClick: function() {
+              playSound('place');
+              upd({ showNet: !showNet });
+              if (!badges.netArchitect) checkBadges({ netArchitect: true });
+            },
+            'aria-pressed': showNet,
+            'aria-label': showNet ? 'Hide net view' : 'Show net (unfolded prism)',
+            className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ' +
+              (showNet ? 'bg-emerald-700 text-white border-emerald-700 shadow-inner' : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50')
+          }, showNet ? '🗺 Hide net' : '🗺 Show net (unfolded faces)'),
+          h('button', {
+            onClick: function() {
+              playSound('place');
+              upd({ showCompare: !showCompare });
+              if (!badges.shapeEfficient) checkBadges({ shapeEfficient: true });
+            },
+            'aria-pressed': showCompare,
+            'aria-label': showCompare ? 'Hide same-volume comparison' : 'Show same-volume comparison',
+            className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ' +
+              (showCompare ? 'bg-emerald-700 text-white border-emerald-700 shadow-inner' : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50')
+          }, showCompare ? '⚖️ Hide compare' : '⚖️ Same volume, different shape'),
+          !showNet && !showCompare && h('span', { className: 'text-[10px] text-emerald-600 italic' },
+            'Unfold the prism, or compare same-volume shapes'
+          )
+        ),
+        isSlider && showNet && renderNet(),
+        isSlider && showCompare && renderCompare(),
+
         // Stats
         h('div', { className: 'grid grid-cols-2 gap-3' },
           h('div', { className: 'bg-white rounded-xl p-3 border border-emerald-100 text-center flex flex-col items-center justify-center' },
@@ -751,9 +1176,9 @@ window.StemLab = window.StemLab || {
           )
         ),
 
-        // Challenge buttons
-        h('div', { className: 'flex gap-2 flex-wrap' },
-          isSlider ? h(React.Fragment, null,
+        // Challenge buttons (skip in word mode — it has its own challenge built in)
+        !isWord && h('div', { className: 'flex gap-2 flex-wrap' },
+          mode === 'slider' ? h(React.Fragment, null,
             h('button', { 'aria-label': 'Random Challenge',
               onClick: function() {
                 var l = Math.floor(Math.random()*8)+1, w = Math.floor(Math.random()*6)+1, hh = Math.floor(Math.random()*6)+1;
@@ -838,6 +1263,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'text-[11px] text-slate-600 text-center space-x-3' },
           h('span', null, 'S Slider'),
           h('span', null, 'F Freeform'),
+          h('span', null, 'W Word'),
           h('span', null, 'N Challenge'),
           h('span', null, 'P Paint'),
           h('span', null, 'B Badges'),

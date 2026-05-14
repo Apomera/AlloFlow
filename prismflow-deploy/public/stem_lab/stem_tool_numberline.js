@@ -812,9 +812,17 @@ window.StemLab = window.StemLab || {
             // Current value as fraction at fdDen
             var nearestNum = Math.round(fdValue * fdDen);
             var isExactFrac = Math.abs(fdValue * fdDen - nearestNum) < 0.005;
-            var g = gcdFn(nearestNum, fdDen);
-            var simpNum = nearestNum / g;
-            var simpDen = fdDen / g;
+            // gcd(0, n) = n, which would collapse "0/4" to "0/1". Pedagogically we
+            // want to keep the original denominator visible (the student is exploring
+            // "fourths"). Special-case numerator-zero.
+            var g, simpNum, simpDen;
+            if (nearestNum === 0) {
+              g = 1; simpNum = 0; simpDen = fdDen;
+            } else {
+              g = gcdFn(nearestNum, fdDen);
+              simpNum = nearestNum / g;
+              simpDen = fdDen / g;
+            }
             var decimal = Math.round(fdValue * 10000) / 10000;
             var percent = Math.round(fdValue * 10000) / 100;
 
@@ -890,24 +898,44 @@ window.StemLab = window.StemLab || {
 
             // Drag-the-marker (pointer events). Tap places; drag glides without snap;
             // release snaps to denominator if snap is on.
+            // NOTE: uses svgEl.getScreenCTM().inverse() to map client coords to SVG
+            // coords. This handles viewBox + preserveAspectRatio="xMidYMid meet" (the
+            // default) correctly on wide screens where the viewBox is height-fit and
+            // horizontally centered with empty side-padding. Hand-rolled scaleX math
+            // breaks on wide containers and causes clicks to compress / snap leftward.
             var startPointer = function(e) {
               if (e.cancelable) e.preventDefault();
               var svgEl = e.currentTarget;
-              var rect = svgEl.getBoundingClientRect();
-              var W_ = 700, PAD_ = 50;
-              var clampMove = function(clientX) {
-                var scaleX = W_ / rect.width;
-                var x = (clientX - rect.left) * scaleX;
-                var frac = (x - PAD_) / (W_ - 2 * PAD_);
+              var W_ = 700, PAD_ = 50, USABLE_ = 600;
+              var clampMove = function(clientX, clientY) {
+                var x;
+                if (svgEl && typeof svgEl.getScreenCTM === 'function' && typeof svgEl.createSVGPoint === 'function') {
+                  var ctm = svgEl.getScreenCTM();
+                  if (ctm) {
+                    var pt = svgEl.createSVGPoint();
+                    pt.x = clientX;
+                    pt.y = clientY != null ? clientY : 0;
+                    var spt = pt.matrixTransform(ctm.inverse());
+                    x = spt.x;
+                  } else {
+                    // Fallback: simple linear mapping (only correct if rect.width matches viewBox)
+                    var rect = svgEl.getBoundingClientRect();
+                    x = (clientX - rect.left) * (W_ / rect.width);
+                  }
+                } else {
+                  var rect2 = svgEl.getBoundingClientRect();
+                  x = (clientX - rect2.left) * (W_ / rect2.width);
+                }
+                var frac = (x - PAD_) / USABLE_;
                 var v = fdMin + frac * fdLen;
                 if (v < fdMin) v = fdMin;
                 if (v > fdMax) v = fdMax;
                 return v;
               };
-              var v0 = clampMove(e.clientX);
+              var v0 = clampMove(e.clientX, e.clientY);
               upd({ fdValue: v0 });
               var move = function(ev) {
-                var v = clampMove(ev.clientX);
+                var v = clampMove(ev.clientX, ev.clientY);
                 upd({ fdValue: v });
               };
               var up = function() {
