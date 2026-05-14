@@ -183,6 +183,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
   ];
 
   // ─────────────────────────────────────────────────────────
+  // FBA process — the upstream of every Tier 3 BIP. Without
+  // an FBA, the BIP is just a guess. Five steps from indirect
+  // assessment through hypothesis testing to BIP development.
+  // Sources: BACB FBA practice standards; Iwata et al. (1994)
+  // founding functional analysis paper; Cooper, Heron, Heward
+  // ABA textbook (3rd ed.); Crone & Horner FBA practitioner guide.
+  // ─────────────────────────────────────────────────────────
+  var FBA_STEPS = [
+    {
+      step: 1, name: 'Indirect assessment', icon: '📞', color: '#3b82f6',
+      duration: '1-2 weeks',
+      what: 'Talk to the people who see the behavior. Structured interviews with the classroom teacher, parent / guardian, paraeducator, and (when developmentally appropriate) the student. Cumulative records review (prior IEPs, medical history, prior FBAs). Standardized rating scales when warranted: FAST (Functional Analysis Screening Tool), MAS (Motivation Assessment Scale), QABF (Questions About Behavioral Function).',
+      key: 'The interview question that opens up an FBA: "Walk me through the last time it happened — what was happening 5 minutes before, what exactly did the student do, and what happened immediately after?" Three timeframes, in that order.',
+      pitfall: 'Indirect assessment alone is not an FBA. Rating scales suggest a hypothesis but cannot confirm one. School psychs who skip direct observation and write the BIP from interview data alone get burned regularly — interview reports overweight memorable incidents and underweight context.'
+    },
+    {
+      step: 2, name: 'Direct observation — ABC data', icon: '👁️', color: '#a78bfa',
+      duration: 'minimum 5 sessions',
+      what: 'Trained observer collects ABC (Antecedent-Behavior-Consequence) data across at least 5 distinct sessions, ideally across multiple settings + times of day. For each instance: what happened immediately before, the operationally-defined behavior, what happened immediately after. Add a setting-event column (per the Setting Events tab) to catch slow triggers. Scatter plots layered on top of ABC catch time-of-day patterns interview data misses.',
+      key: 'The operational-definition test: would two different observers, using only the written definition, count the same instances as instances and the same non-instances as non-instances? "Off-task" fails this test. "Eyes off the assigned worksheet for 5+ continuous seconds" passes.',
+      pitfall: 'Don\'t code from memory at the end of the day. ABC entries written 4 hours after the fact are a different document from ABC entries written within 60 seconds of the incident. Train staff to carry the form (or the form is on a phone app) and write in the moment.'
+    },
+    {
+      step: 3, name: 'Hypothesis development', icon: '💡', color: '#fbbf24',
+      duration: 'after data collection',
+      what: 'Synthesize indirect + direct data into a function statement in standard format: "Under [antecedent / setting event], [operationally-defined behavior] occurs to obtain / avoid [consequence], maintained by [function: attention / escape / tangible / sensory]." One sentence. If you can\'t fit it in one sentence, the hypothesis is not yet sharp enough.',
+      key: 'Sample hypothesis statement: "When given a writing task longer than 10 minutes after a poor-sleep night (setting event), Avery rips the worksheet (operationally-defined: tearing, balling, throwing) to escape the demand, maintained by removal of the task by the teacher."',
+      pitfall: 'Resist the urge to write a hypothesis that includes multiple competing functions. "Behavior is maintained by attention OR escape" is not a hypothesis — it is two hypotheses. Pick the one your data most supports, or run hypothesis testing (next step) to disambiguate.'
+    },
+    {
+      step: 4, name: 'Hypothesis testing', icon: '🔬', color: '#22c55e',
+      duration: '2-5 sessions if needed',
+      what: 'Two paths. (a) Brief Functional Analysis (BFA) — controlled trials manipulating one variable at a time (attention condition, escape condition, tangible condition, alone condition) to confirm function. Done by a BCBA in school settings. (b) Confirmatory observation — additional ABC data targeted to test the hypothesis prediction (e.g., if hypothesis is escape-maintained, predict that adding a reasonable break opportunity will reduce frequency; collect data to check).',
+      key: 'You don\'t always need a BFA. For most school FBAs, the indirect + direct data converges clearly enough that confirmatory observation is sufficient. BFA is reserved for cases where (a) data is genuinely ambiguous, (b) the behavior is dangerous and getting it wrong is high-cost, or (c) prior interventions have failed.',
+      pitfall: 'Skipping hypothesis testing entirely and going straight to BIP development is the most common school-psych shortcut. It works when data is clean. It fails — sometimes spectacularly — when the hypothesis is wrong and the BIP reinforces the actual function.'
+    },
+    {
+      step: 5, name: 'BIP development', icon: '📝', color: '#ef4444',
+      duration: 'team meeting + draft cycle',
+      what: 'The hypothesis becomes the spine of the BIP. From the function statement, derive: (a) antecedent strategies that prevent the trigger or change its meaning, (b) replacement behavior that meets the same function (see Replacement Behaviors tab), (c) reinforcement plan that makes the replacement more efficient than the problem behavior, (d) response procedures for when the problem behavior still happens, (e) crisis plan, (f) data collection plan to monitor the BIP itself.',
+      key: 'A BIP without a function statement is a punishment plan. The function statement is what distinguishes a real BIP from a list of consequences. If your draft BIP doesn\'t name a function, you don\'t yet have an FBA-driven plan — you have a behavior-management policy.',
+      pitfall: 'The most common BIP failure mode: it is written, signed, and filed — but not implemented with fidelity in real classrooms. BIP fidelity checks (5-min observation against a fidelity checklist, weekly for the first month) catch implementation drift before the data shows it.'
+    }
+  ];
+
+  // ─────────────────────────────────────────────────────────
   // CICO — Check-In/Check-Out: the most-used Tier 2 intervention
   // in US schools. PBIS panel mentions it; this section makes the
   // structure concrete enough to actually run. Sources: Crone &
@@ -430,7 +476,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 border: '1px solid rgba(20,184,166,0.40)',
                 color: '#5eead4', fontSize: 10, fontWeight: 700,
                 fontFamily: 'ui-monospace, Menlo, monospace'
-              } }, '8 sections')
+              } }, '9 sections')
             ),
             h('p', { style: { margin: 0, fontSize: 12, color: '#94a3b8', fontWeight: 600, lineHeight: 1.5 } }, 'Applied K-12 practice. PBIS · Replacement Behaviors · Setting Events · Acting-Out Cycle · Restraint Ethics · Equity & Disparities.')
           )
@@ -440,6 +486,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       function renderTabs() {
         var tabs = [
           { id: 'pbis', label: 'PBIS Tiers', icon: '🏫' },
+          { id: 'fba', label: 'FBA Process', icon: '🔬' },
           { id: 'replacement', label: 'Replacement Behaviors', icon: '🔄' },
           { id: 'setting', label: 'Setting Events', icon: '🕰️' },
           { id: 'cycle', label: 'Acting-Out Cycle', icon: '🌀' },
@@ -686,6 +733,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         );
       }
 
+      // ── Section: FBA Process ──
+      function renderFba() {
+        return h('div', null,
+          panelHeader('🔬 FBA Process — the upstream of every Tier 3 BIP',
+            'Functional Behavior Assessment is the systematic process for identifying WHY a behavior is happening. Without an FBA, the BIP is just a guess. Five steps from indirect assessment through hypothesis testing to BIP development.'),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+            FBA_STEPS.map(function(s) {
+              return h('div', { key: 'fba-' + s.step,
+                style: {
+                  background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
+                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + s.color
+                } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                  h('div', { 'aria-hidden': 'true',
+                    style: { width: 36, height: 36, borderRadius: '50%', background: s.color + '22', border: '1.5px solid ' + s.color,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: s.color, fontFamily: 'ui-monospace, Menlo, monospace', flexShrink: 0 }
+                  }, s.step),
+                  h('div', { style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, s.icon),
+                  h('div', { style: { flex: 1, minWidth: 0 } },
+                    h('div', { style: { fontSize: 13, fontWeight: 800, color: s.color, lineHeight: 1.2 } }, s.name),
+                    h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 2, fontStyle: 'italic', fontFamily: 'ui-monospace, Menlo, monospace' } }, '⏱ ' + s.duration)
+                  )
+                ),
+                h('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, 'What to do'),
+                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } }, s.what),
+                h('div', {
+                  style: {
+                    padding: '8px 10px', borderRadius: 6,
+                    background: s.color + '10',
+                    borderLeft: '2px solid ' + s.color,
+                    marginBottom: 8
+                  }
+                },
+                  h('div', { style: { fontSize: 9, fontWeight: 800, color: s.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '🔑 Key idea'),
+                  h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55 } }, s.key)
+                ),
+                h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                  h('span', { style: { color: '#fb923c', fontWeight: 800, marginRight: 4, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, '🪤 Common pitfall:'),
+                  s.pitfall)
+              );
+            })
+          ),
+          sourceFooter('🎯 The FBA rule of thumb: the indirect assessment generates the candidate hypotheses, the direct ABC observation tests them, the function statement names the winner. A BIP without a function statement is a punishment plan. Sources: BACB FBA practice standards; Iwata et al. 1994 founding functional analysis paper; Crone & Horner FBA practitioner guide.')
+        );
+      }
+
       // ── Section: CICO Template ──
       function renderCico() {
         return h('div', null,
@@ -840,6 +933,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       else if (section === 'setting') content = renderSetting();
       else if (section === 'cycle') content = renderCycle();
       else if (section === 'restraint') content = renderRestraint();
+      else if (section === 'fba') content = renderFba();
       else if (section === 'cico') content = renderCico();
       else if (section === 'equity') content = renderEquity();
       else if (section === 'connect') content = renderConnect();
