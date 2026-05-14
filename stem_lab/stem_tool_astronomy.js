@@ -3519,7 +3519,72 @@
                 })
               )
             )
-          ) : null
+          ) : null,
+
+          // ─── Light pollution + dark-sky preservation ────────────
+          sectionCard('🌃 Light pollution + dark-sky preservation',
+            (function() {
+              var LP_TOPICS = [
+                { id: 'bortle', name: 'The Bortle scale', emoji: '🔭',
+                  body: 'John Bortle\'s 9-class scale (Sky & Telescope, 2001) is the standard for describing night-sky darkness from a human-perception perspective. Class 1: excellent dark site (Milky Way casts shadows, zodiacal light is obvious, faintest naked-eye stars are magnitude 7.6-8.0; about 1% of US population lives within reach of such a site). Class 4: rural-suburban transition (Milky Way visible but reduced detail, magnitude 6.1-6.5 naked-eye limit). Class 7: suburban-urban transition (only major constellations visible, sky has noticeable orange/grey glow throughout). Class 9: inner-city sky (only the brightest 20-30 stars visible, no Milky Way at all). About 99% of Americans + Europeans live under Class 5+ skies. About 80% of the world\'s population lives under light-polluted skies; about 1/3 of humanity cannot see the Milky Way at all from where they live.',
+                  caveat: 'The Bortle scale is somewhat subjective. Two observers at the same site can rate it differently based on dark-adaptation + acuity. Photometric measures (SQM, Sky Quality Meter) give numerical magnitudes per square arcsecond that are more reproducible. Modern satellite-based light-pollution maps (Falchi et al. 2016 World Atlas of Artificial Night Sky Brightness) give precise digital ratings everywhere on Earth.'
+                },
+                { id: 'sources', name: 'Where light pollution comes from', emoji: '💡',
+                  body: 'Five primary contributors. (1) Streetlights (the largest single contributor in most urban areas; older sodium-vapor lights had broad yellow output, modern LED conversions are often whiter + more sky-glow-producing if not properly shielded). (2) Commercial signage + parking-lot lighting (often over-illuminated, on all night). (3) Sports stadium + parking ramp lighting (peaks during specific events). (4) Vehicle headlights (rising with population + commuter patterns). (5) Residential exterior lighting (porch lights, landscape lighting, decorative lighting — small per-source but cumulative across millions of homes). Recent emerging concern: SATELLITE light pollution. Starlink + similar mega-constellations are adding hundreds of thousands of bright satellite trails to astronomical exposures. The brightest are visible to the naked eye for ~1-2 hours after sunset.',
+                  caveat: 'Light pollution has grown ~2% per year globally for decades, faster than population growth. The LED revolution (started ~2010) was supposed to reduce energy costs + light pollution; in practice, the cost reduction made cities INCREASE light output ("Jevons paradox" applied to illumination). Per-capita light emission has risen, not fallen, in most LED-converted cities. The technology itself was not the problem; the lack of design guidance was.'
+                },
+                { id: 'shielding', name: 'Solutions that actually work', emoji: '🔅',
+                  body: 'Engineering fixes: (a) FULL CUT-OFF fixtures (light directed ONLY downward, no light escaping above horizontal). The IDA-approved "Dark Sky Friendly" certification specifies this. (b) WARMER LED color temperature (≤ 3000 K, ideally 2200 K amber). Cooler/whiter light (4000-6000 K) scatters more in the atmosphere + harms wildlife circadian rhythms. (c) LOWER lumen output (most outdoor lighting is over-lit by 2-5×). (d) MOTION-ACTIVATED + scheduled DIMMING (light only when needed). (e) Avoid uplighting of buildings + landscape features. Phoenix, Tucson, Flagstaff (since 1958 — the FIRST dark-sky city), and parts of Hawaii (around Mauna Kea) have effective lighting ordinances. The International Dark-Sky Association (IDA, founded 1988) certifies "International Dark-Sky Places" — about 200 communities + parks worldwide as of 2024.',
+                  caveat: 'Dark-sky-friendly lighting has the same actual functional benefit (you can still see at night, walk safely, drive safely) as poorly-designed lighting + costs the same or less. The barriers are not technical. They are aesthetic + regulatory + sometimes safety-anxiety-driven (more lumens does NOT reliably improve safety; the evidence on lighting + crime + traffic safety is more mixed than commonly assumed).'
+                },
+                { id: 'wildlife', name: 'Effects on wildlife', emoji: '🦋',
+                  body: 'Artificial light at night (ALAN) disrupts wildlife in many measured ways. SEA TURTLE hatchlings use moonlight reflection on water to navigate to the ocean; beach lighting causes them to crawl inland + die — Florida coastal communities now have seasonal "lights out" ordinances. MIGRATORY BIRDS use stars + magnetic fields to navigate; brightly-lit buildings during migration nights cause millions of bird-strike deaths annually (NYC + Chicago + Toronto have "lights out" programs during spring + fall migration). INSECTS, especially moths + fireflies + mayflies, are disoriented by lights + drained of mating energy (the "vacuum effect"). Insect decline is now well-documented globally (~75% biomass loss in some European studies over 30 years); light pollution is ONE of several contributing factors. BATS, AMPHIBIANS, FISH all show measurable behavioral disruption from ALAN.',
+                  caveat: 'The wildlife case is solid + sometimes overstated. Light pollution is one of many simultaneous pressures on wildlife (habitat loss, climate change, pesticides, plastic, disease, invasive species). Reducing light pollution genuinely helps but does not by itself reverse declines. The framing should be: dark-sky measures are inexpensive, ecologically beneficial, and reduce energy costs — they should be done. They are not a singular solution to biodiversity loss.'
+                },
+                { id: 'health', name: 'Effects on human health', emoji: '😴',
+                  body: 'Disruption of circadian rhythm by night-time light exposure is well-established. Even relatively dim bedroom light (10 lux, dimmer than typical streetlight scatter) suppresses melatonin production + delays sleep onset. Long-term shift workers have higher rates of breast cancer, prostate cancer, metabolic syndrome, depression — the WHO classifies night-shift work as a "probable carcinogen" (Group 2A) based on this evidence. For typical residents under light-polluted skies: poorer sleep quality, more sleep onset latency, more vivid morning awakenings. Children + adolescents may be particularly affected; melatonin onset shifts later, contributing to school-night sleep deficits.',
+                  caveat: 'The dose-response for ALAN + chronic health outcomes is not fully characterized. Effects are probably real + small at typical light-pollution levels, more substantial for night-shift workers. Useful interventions: blackout curtains for bedrooms, eliminating bedside electronics, addressing intrusive exterior light from neighbors. School psychologists working with adolescent sleep issues should consider ambient light + screen time as one factor among several.'
+                },
+                { id: 'satellites', name: 'Mega-constellation problem', emoji: '🛰️',
+                  body: 'Starting in 2019, SpaceX began launching the Starlink satellite mega-constellation — eventually ~12,000 satellites in low Earth orbit, with full plans for ~42,000. Amazon Kuiper + OneWeb + Chinese constellations add more. Astronomical exposures now routinely show satellite streaks across the field of view. The Rubin Observatory (a 10-year all-sky survey starting 2025) will have ~30% of its exposures crossed by satellites; cleanup software helps but cannot fully recover lost data. Bright satellites also affect dark-sky tourism + indigenous astronomy. SpaceX has implemented "DarkSat" + "VisorSat" mitigations (dark coatings, visors blocking sunlight reflections) that have reduced visibility ~50%, helpful but not a full solution.',
+                  caveat: 'There is no international body that can regulate satellite reflectivity. The FCC licenses US satellite operators but lacks dark-sky authority. The IAU created a Centre for the Protection of the Dark and Quiet Sky from Satellite Constellation Interference in 2022, but it is advisory only. This problem will keep growing without a coordinated regulatory framework. Astronomy is increasingly negotiating with industry rather than pure science.'
+                },
+                { id: 'maine', name: 'Maine has real dark skies', emoji: '🌲',
+                  body: 'Northern + interior Maine (Aroostook, Piscataquis, parts of Washington county) still have Bortle Class 2-3 skies — the darkest in the northeastern US. Cobscook Bay State Park, Katahdin Woods + Waters National Monument, Acadia National Park (since 2009 an IDA-certified International Dark-Sky Park), and the Maine Astronomy Retreat in New Sharon all offer night sky access close to most school populations. The Maine Audubon + Penobscot Outdoor Education Center run public dark-sky events. For King Middle students + families, a 2-3 hour drive to the Greenville/Moosehead area puts you under skies most Americans have never seen.',
+                  caveat: 'Maine\'s dark skies are an asset that other regions are losing — and Maine itself is slowly losing some of them. South-coast development from Portland to Brunswick has noticeably brightened the southern Maine sky over the past 20 years. Wabanaki astronomers + ecological knowledge keepers have warned about this for longer. Protecting dark skies is conservation, not nostalgia.'
+                }
+              ];
+              var sel = d.selectedLP || 'bortle';
+              var topic = LP_TOPICS.find(function(t) { return t.id === sel; }) || LP_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'For most of human history, every clear night offered a Milky Way arching overhead. Today, about a third of humanity cannot see it at all from where they live. Light pollution is one of the most rapidly-growing + most easily-reversed forms of environmental degradation. It also threatens biodiversity, human sleep, and the very practice of astronomy that built our understanding of the cosmos.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  LP_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedLP: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#8b5cf6' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #8b5cf6' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#c4b5fd', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
+                  h('strong', null, 'Citizen science you can do tonight: '),
+                  'Globe at Night (globeatnight.org) — record visible constellations from your address, contributing to a global light-pollution map. Loss of the Night app (free, iOS + Android) — same concept. AAVSO variable-star observations (aavso.org) — submit brightness estimates of variable stars. CitizenSky + Zooniverse have many astronomy projects open to students. School psychologists + teachers can use these as low-friction outdoor learning experiences.'
+                )
+              );
+            })(),
+            '#8b5cf6'
+          )
         );
       }
 

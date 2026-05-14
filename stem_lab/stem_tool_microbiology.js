@@ -2132,6 +2132,71 @@
               )
             ),
             '#fbbf24'
+          ),
+
+          // ─── Microbes + climate change ───────────────────────────
+          sectionCard('🌡️ Microbes + climate change',
+            (function() {
+              var CC_TOPICS = [
+                { id: 'overview', name: 'Microbes shape the climate', emoji: '🌐',
+                  body: 'Microorganisms produce + consume most of Earth\'s greenhouse gases. They emit methane (CH4) from wetlands + rice paddies + animal guts + landfills. They emit nitrous oxide (N2O) from agricultural soils + livestock manure + sewage. They consume methane (methanotrophs in soils + oceans). They lock atmospheric CO2 into oceans via the biological pump (phytoplankton photosynthesis → particulate carbon → ocean depths). They release CO2 from soil + ocean respiration. Aggregate microbial activity dwarfs many human emission categories: soil microbial respiration alone emits about 60-90 Gt of CO2 per year, ten times more than all human fossil-fuel + cement emissions combined. The net climate effect depends on the BALANCE between microbial sources + sinks, which climate change is itself shifting.',
+                  caveat: 'It is critical to distinguish FLUXES (gross emissions) from NET balance. Microbes have been driving carbon + nitrogen cycles for billions of years; the natural fluxes are huge but were near steady state. Anthropogenic climate change is causing those fluxes to fall out of balance. Soil + ocean microbes are responding to warming + acidification + nutrient enrichment + drought in ways that mostly amplify warming (positive feedbacks). The microbial response is not a separate climate problem; it is the AMPLIFIER on the human one.'
+                },
+                { id: 'permafrost', name: 'The permafrost methane bomb', emoji: '❄️',
+                  body: 'Northern permafrost soils hold an estimated 1500 Gt of organic carbon — roughly twice as much carbon as is currently in the atmosphere. As warming thaws permafrost, dormant microbes (some of which can revive after thousands of years frozen) begin metabolizing previously-locked organic matter. In oxic conditions they produce CO2; in anoxic waterlogged conditions (the more common case in thawing peatland) they produce METHANE, which is ~80× more powerful as a greenhouse gas than CO2 over 20 years. The Yukon, Siberia, Alaska, and northern Canada are all warming 2-4× faster than the global average. Methane bubbling from thaw lakes is now directly observable + measurable. Estimated cumulative permafrost emissions through 2100 could be 100-300 Gt of carbon equivalent — comparable to a major industrial-sector\'s entire historical emissions.',
+                  caveat: 'The permafrost carbon timeline is uncertain. Some carbon will release fast (decades); much may take centuries. Some thawed organic matter may be partially re-stabilized by new vegetation growth (boreal forest expansion) + microbial communities that immobilize carbon. The "abrupt thaw" pathway (where ice-rich soils collapse + drain into large thaw lakes) releases methane far faster than the "gradual thaw" pathway. Current climate models are bad at handling abrupt thaw; observed emissions are running higher than modeled in some Siberian sites.'
+                },
+                { id: 'ocean', name: 'Ocean acidification + phytoplankton', emoji: '🌊',
+                  body: 'The ocean has absorbed about 30% of anthropogenic CO2 emissions since 1750, increasing seawater acidity by ~0.1 pH units (a 30% increase in hydrogen ion concentration). This affects shell-forming organisms (coccolithophores, foraminifera, pteropods, coral, mollusks) by making calcium carbonate precipitation more difficult. Some species are migrating poleward; others are facing population collapse. Microbial PHYTOPLANKTON drive ~50% of Earth\'s photosynthesis + are the base of the marine food web. Warming surface waters stratify more strongly, REDUCING nutrient mixing from deep water to the surface, REDUCING phytoplankton biomass in most ocean regions over the past 30 years (Boyce et al. 2010, debated; more recent studies confirm a decline in chlorophyll in subtropical gyres). At the same time, polar phytoplankton communities are responding to ice retreat with shifted timing + sometimes higher biomass.',
+                  caveat: 'Net marine carbon storage is changing in complex ways that are hard to summarize. The biological pump (sinking particulate carbon) may be slowing in some regions + holding steady in others. Marine microbes can adapt evolutionarily on relatively fast timescales (some species double in hours). Predictions about ocean carbon storage in 2100 vary substantially between models. The high-confidence statement: ocean ecosystems are changing fast + losing biodiversity, regardless of net carbon flux uncertainty.'
+                },
+                { id: 'methanotroph', name: 'Methanotrophs — the methane sink', emoji: '🧫',
+                  body: 'Methanotrophs are bacteria that use methane as their sole carbon + energy source, oxidizing it to CO2 + water. They live in soils (especially well-drained forest + grassland soils), water columns above sediments, and aerobic zones in landfills + sewage. Globally, methanotrophs consume ~30-50 Tg of methane per year — about 5-10% of total methane emissions. This is a "free" climate-mitigation service. Disturbance (tillage, drainage, nitrogen fertilizer, urbanization) reduces methanotroph populations + their methane uptake; one of the most measurable land-use-change effects on greenhouse gas balance. Engineered methanotroph systems are being trialed for landfill cover + livestock-barn off-gas treatment.',
+                  caveat: 'Methanotroph protection is a cheap climate intervention that gets little attention. Industrial agriculture practices that destroy soil structure also destroy methanotroph habitat; regenerative + conservation agriculture practices that preserve soil structure ALSO preserve methanotrophs. The same management practices that increase soil organic carbon (no-till, cover cropping, diverse rotations, agroforestry) generally also boost methane uptake. Microbe-friendly farming is climate-friendly farming.'
+                },
+                { id: 'fungi', name: 'Mycorrhizal fungi + soil carbon', emoji: '🍄',
+                  body: 'Mycorrhizal fungi form mutualistic associations with about 80% of terrestrial plant species, extending the plant\'s nutrient-absorbing surface area through fine hyphae that infiltrate soil pores too small for plant roots. The fungi receive ~10-20% of the plant\'s photosynthate sugars; the plant receives phosphorus, micronutrients, and water. Importantly, the carbon delivered to the fungi is partly stabilized as long-lived soil organic matter (via glomalin, a fungal glycoprotein that binds soil aggregates). Mycorrhizal fungi store an estimated 13 Gt of CO2 equivalent in soils PER YEAR — about 36% of annual fossil-fuel emissions. They are a major + previously underappreciated component of the terrestrial carbon sink.',
+                  caveat: 'Soil disturbance (especially tillage) breaks the mycorrhizal network + accelerates carbon decomposition. The "no-till revolution" of the past 30 years has measurably increased soil carbon + mycorrhizal biomass on millions of US acres, but adoption is incomplete + reversal during droughts (when farmers may till to control weeds) erases years of gains in a single season. Climate-smart agriculture programs (USDA Climate-Smart Commodities, EU CAP eco-schemes) increasingly target mycorrhizal-friendly practices, but funding + verification remain incomplete.'
+                },
+                { id: 'livestock', name: 'Livestock methane + the rumen microbiome', emoji: '🐄',
+                  body: 'Ruminants (cattle, sheep, goats, buffalo) produce methane through their forestomach microbiome — a community of archaea + bacteria + protozoa + fungi that ferment plant fiber into volatile fatty acids the animal can absorb. Methanogenic archaea use hydrogen from this fermentation to reduce CO2 to methane (CH4), which the animal then burps + farts out. Globally, ruminant methane is ~32% of all anthropogenic methane (rice paddies + landfills + fossil-fuel leaks + wastewater make up the rest). Interventions that DO work in trials: red seaweed (Asparagopsis taxiformis) added to feed at ~1% concentration reduces methane emissions by 50-90%. 3-NOP (Bovaer, approved in EU + Brazil + Australia, FDA review ongoing) reduces ~30%. Selective breeding for low-methane cattle is feasible + multiplicative with feed additives.',
+                  caveat: 'Methane-reduction additives are real + promising, but DEPLOY at scale + verify in commercial practice is harder than in controlled trials. Some additives (3-NOP) face consumer-acceptance concerns. Asparagopsis cultivation at the needed scale is unproven. Cattle population reduction (eating less beef) would also reduce emissions but faces obvious cultural + economic resistance. There is no single silver bullet; a combination of feed additives, breeding, methane-capturing barns, and dietary shifts will be needed if the sector is to meet climate commitments.'
+                },
+                { id: 'evolve', name: 'Microbes will evolve to cope', emoji: '🧬',
+                  body: 'Microbes have far shorter generation times than plants or animals (minutes to hours rather than years). They can respond evolutionarily to environmental change much faster. Warming + acidification + new substrate availability all select for variants that thrive under the new conditions. Marine bacteria have evolved measurable temperature tolerance shifts in just ~20 years of observation. Soil microbial communities reshuffle within a single growing season. This adaptability is a partial good news story (microbes will not "go extinct" the way large vertebrates might) + a partial bad news story (we cannot predict what NEW microbial-driven feedbacks will emerge as ecosystems reorganize).',
+                  caveat: 'Microbial evolution does not save us. The communities that evolve in response to anthropogenic stresses may be productive in the wrong ways (more methane, less carbon storage, more pathogens, fewer mutualisms). Counting on microbes to "adapt and save the climate" is wishful thinking. The honest framing: microbes are central actors in the climate system, their behavior IS the climate-feedback story, and protecting their healthy functioning (intact soils, healthy oceans, undisturbed permafrost) is a major climate priority that has been historically under-funded relative to its importance.'
+                }
+              ];
+              var sel = d.selectedClimate || 'overview';
+              var topic = CC_TOPICS.find(function(t) { return t.id === sel; }) || CC_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'When people picture climate change, they picture smokestacks + cars + coal plants. The microbial layer is invisible + far larger. Microorganisms produce + consume most of Earth\'s greenhouse gases; soil + ocean microbes set the carbon-cycle balance; permafrost microbes hold a billion-year-old carbon stockpile that is now waking up. Climate science + microbial ecology are inseparable.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  CC_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedClimate: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#22c55e' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #22c55e' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#86efac', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: '#fde68a', lineHeight: 1.65 } },
+                  h('strong', null, 'Cross-tool connection: '),
+                  'For King Middle\'s EL Education place-based pedagogy: Maine\'s salt marshes, bogs, forests, and Gulf of Maine waters all participate in these microbial-climate cycles. The Wells Reserve, the Schoodic Institute at Acadia, and the University of Maine Climate Change Institute run citizen-science programs that students can join. This section pairs with ClimateExplorer + Stewardship Studio in the broader AlloFlow curriculum.'
+                )
+              );
+            })(),
+            '#22c55e'
           )
         );
       }

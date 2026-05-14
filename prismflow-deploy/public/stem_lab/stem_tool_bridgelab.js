@@ -3079,8 +3079,90 @@
             // Pedestrian dynamic-loading panel — only on Millennium case
             selected.id === 'millennium' ? millenniumPedestrianDemo() : null
           ),
-          aestheticsAndIconicBridges()
+          aestheticsAndIconicBridges(),
+          militaryAndEmergencyBridgesSection()
         );
+
+        function militaryAndEmergencyBridgesSection() {
+          var MIL = [
+            { id: 'bailey', name: 'Bailey bridge', emoji: '🔩', year: '1941',
+              who: 'Donald Bailey (UK), Royal Engineers',
+              tech: 'A modular truss bridge system using prefabricated steel panels (each ~10 ft × 5 ft × 200 lb) that bolt together by hand into a Pratt-truss configuration. Two parallel trusses + transom + chess + ribbon assembly + ramp panels. By stacking panels in 1, 2, or 3 layers + adding 1 or 2 trusses side-by-side, the same kit can build bridges from 30 to 220 ft (and longer with intermediate piers). 8 men can assemble a 100-ft bridge in 12-24 hours; no heavy crane needed because the bridge is launched by cantilever extension from one bank.',
+              use: 'Originally for WWII military: replacing demolished bridges to keep advancing armies supplied. Now used worldwide for civilian emergencies: floods, earthquakes, structural collapse. The UK alone built ~2,500 Bailey bridges during WWII. After Hurricane Maria (2017) destroyed dozens of Puerto Rico\'s bridges, US Army Corps of Engineers + civilian contractors deployed Baileys to restore access within weeks. Maine + Vermont DOTs maintain Bailey stockpiles for spring flood season.',
+              caveat: 'Bailey bridges are temporary in concept + sometimes left in place for decades. Many "temporary" Bailey bridges built in the 1940s + 1950s on rural US + UK roads are still in service. The original Bailey design carries about 70 tons (military class 70) but maintenance + load monitoring matter — bolted truss panels need periodic re-tensioning + corrosion inspection. The Bailey system has been improved (acrow-panel, the modern derivative is essentially a stronger Bailey) + the concept remains the gold standard for emergency steel bridging.'
+            },
+            { id: 'pontoon', name: 'Military pontoon (ribbon) bridge', emoji: '🌉', year: '1950s-current',
+              who: 'US Army Corps + various NATO equivalents',
+              tech: 'A floating bridge built of standardized aluminum or steel floating bays that link together along a riverbank. The Improved Ribbon Bridge (IRB, US) uses bays ~22 ft long, each pre-folded into a small road-transportable package + unfolded automatically on water. A typical IRB crew of ~30 soldiers can lay a 200 m bridge across a river in 60-90 minutes. Carries military class 70-90 (heavy main battle tanks).',
+              use: 'Standard for crossing rivers wider than ~100 m where building a fixed bridge would take too long. Used by US Army in Iraq + Afghanistan, by Ukrainian + Russian forces in the 2022-2024 war (with high losses on both sides — pontoon bridges are attractive artillery + drone targets). Also used in disaster response — the 1993 Mississippi floods + Hurricane Katrina (2005) both involved military pontoon-bridge deployments to restore civilian access.',
+              caveat: 'Pontoon bridges are slow (vehicles move ~10 mph), vulnerable (any pontoon failure can collapse the whole bridge), and require constant maintenance during use (anchoring against current, ice, debris, flood-level changes). They are a stopgap, not a long-term solution. Modern fixed-bridge construction has gotten fast enough (ABC techniques, see Design Cycle tab) that pontoon usefulness has narrowed.'
+            },
+            { id: 'mab', name: 'Medium Girder Bridge (MGB)', emoji: '🛡️', year: '1971-current',
+              who: 'British military, manufactured by Williams Fairey Engineering',
+              tech: 'A through-truss bridge system made of welded aluminum-alloy panels, lighter than Bailey + faster to assemble. The basic kit builds bridges 9-31 m (single span) carrying military class 70. Variants with linked panels reach 49 m. Assembled by hand by 8-12 soldiers in 30-60 minutes for a 20 m span. Lighter than Bailey, faster to deploy, more standardized fittings — currently the British Army\'s main bridging system, also used by Canada, Australia, India, many NATO armies.',
+              use: 'Replaces Bailey in most military applications. Civilian use rarer than Bailey because civilian stockpiles tend to be Bailey-derived. The Stockport rail bridge failure (1972, UK) was bridged by a temporary MGB while the permanent replacement was built. Disaster response in Pakistan + Bangladesh has used MGB for cyclone-damaged bridges.',
+              caveat: 'MGB is designed for military traffic patterns (predictable + low volume). It is not ideal for sustained civilian commuter traffic; the deck wears + connection fittings loosen under repeated loading. After ~2-5 years of civilian use, replacement is usually preferable to ongoing maintenance.'
+            },
+            { id: 'logsfloating', name: 'Floating-log + improvised bridges', emoji: '🪵', year: 'Throughout history',
+              who: 'Various — civilian + military',
+              tech: 'In the absence of prefab systems, soldiers + civilians have always built emergency bridges from local materials: lashed logs across a stream (Roman + Greek armies), boats lashed side-by-side with planking laid across (Persian crossing of the Hellespont, 480 BCE, by Xerxes — Herodotus describes the engineering in detail), rope suspension bridges (Inca + Tibetan traditions). The Inca built rope suspension bridges across Andean canyons using twisted ichu grass; the last surviving one, Q\'eswachaka, is rebuilt annually by local communities (~30 m span, replaced by hand by ~700 villagers over 4 days).',
+              use: 'Disaster response in low-resource settings where prefab kits are unavailable + the gap is small enough to span with local materials. Indigenous traditional knowledge of bridge construction is often more contextually appropriate than imported military kits — locally-sourced, repairable with local skills, integrated with cultural practices.',
+              caveat: 'Improvised bridges have load + durability limits that should not be ignored. Wooden logs decay within 1-3 years; rope rots faster; lashed-log bridges fail without warning when supporting beams crack. The Inca rope-bridge tradition works because of the annual rebuild + the community ownership; it is not a "let it stand" system. Modern engineering should respect + sometimes learn from indigenous bridge traditions without romanticizing what they cannot do.'
+            },
+            { id: 'pucvr', name: 'PUC-VR (Pont à Utilisation Civile / civil-use pontoon)', emoji: '🚧', year: '1990s-current',
+              who: 'Various civilian + civil-protection agencies',
+              tech: 'A simplified civilian-grade pontoon system, lighter than military pontoons + designed for vehicle traffic up to about class 35 (school buses + medium trucks, not heavy military vehicles). Used by FEMA + state emergency-management agencies. Vermont, Maine, + NH stockpile pontoon segments for flood season. French civil protection (Sécurité Civile) maintains a national stockpile for European flood response.',
+              use: 'Spring flood response. The 2011 Vermont Tropical Storm Irene flooding washed out over 200 bridges + culverts; civilian pontoons + Bailey-derived kits + temporary fords kept communities connected for the 12-18 months until permanent replacements could be designed + built.',
+              caveat: 'Stockpiles only work if they are actually maintained. Bridge kits sitting in warehouses for 30+ years often have rusted hardware, missing parts, corroded fittings. Some state agencies have discovered (the hard way, during an actual emergency) that their stockpile is non-functional. Annual or biennial deployment exercises with the actual kit are the only way to verify readiness.'
+            },
+            { id: 'tactical', name: 'Tactical Floating Causeway / INLS', emoji: '⚓', year: '2000s-current',
+              who: 'US Navy + USACE',
+              tech: 'A floating dock + causeway system used to land military vehicles + supplies from ship to shore where no port exists. The Improved Navy Lighterage System (INLS) uses standardized barges connected end-to-end to form a 600-1500 ft causeway running from a deep-water roadstead to the beach. Joint Logistics Over-the-Shore (JLOTS) is the doctrine name. In 2024 the US deployed JLOTS in the eastern Mediterranean to deliver humanitarian aid to Gaza; the operation faced multiple breakages from sea state + was widely critiqued for its costs vs delivered tonnage.',
+              use: 'Emergency humanitarian delivery + military beach landings where port infrastructure is destroyed or inaccessible. Civilian disaster equivalent: the 2010 Haiti earthquake response used USACE INLS-derived causeways at Port-au-Prince when the main port was destroyed.',
+              caveat: 'JLOTS-style operations are vulnerable to weather + cost a fortune per ton of delivered aid. The 2024 Gaza pier operation became a high-profile example: about $230M for a pier that delivered roughly 20 million pounds of food before being damaged by sea state + abandoned. For most disaster response, restoring existing port + airport infrastructure is more efficient than running a parallel maritime supply chain.'
+            },
+            { id: 'lessons', name: 'What emergency bridges teach engineers', emoji: '🎓',
+              who: 'The integrated lesson',
+              tech: 'Bailey + MGB + pontoon bridges are not separate categories from civilian bridge engineering. They share the same fundamentals (trusses, buoyancy, load paths, fatigue) but optimize differently: SPEED of assembly over LONG-TERM elegance, REPAIRABILITY over MINIMUM maintenance, MODULARITY over CUSTOMIZATION. Many modern civilian techniques (Accelerated Bridge Construction, prefab elements, SPMT moves, modular foundations) descend directly from military bridging research. The 100-year arc of military bridge engineering — from Roman cribwork to Bailey to MGB to current modular composite systems — has had outsized influence on civilian practice.',
+              use: 'School engineering programs can use Bailey-bridge models as design exercises: students can prototype small Bailey-style panel systems with cardboard, paper, balsa wood + analyze the truss math. The K\'NEX Bridge Building Kit + similar educational products lean on this lineage. Maine\'s Project Lead The Way bridging modules use military-bridging-influenced kits.',
+              caveat: 'Honoring military engineering does not require glorifying war. The civilian benefits of military bridging research are real + most are net positive for society. The development context (wartime) raises ethical questions that students + teachers can engage with — about how research priorities are set + who benefits + whose lives are affected. Engineering does not happen in a moral vacuum; emergency-bridge engineering history makes that visible.'
+            }
+          ];
+          var sel = d.selectedMil || 'bailey';
+          var topic = MIL.find(function(t) { return t.id === sel; }) || MIL[0];
+          return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '⚒️ Military + emergency bridges'),
+            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+              'Most of the world\'s bridge engineering research between 1900 + 1990 happened in military contexts. The Bailey, Medium Girder, and ribbon-pontoon systems were designed to keep armies supplied across destroyed rivers — and now keep civilian communities connected after floods, earthquakes, hurricanes, and infrastructure failures. The modular + accelerated-construction techniques that dominate modern civilian bridge work descend directly from this lineage.'
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              MIL.map(function(t) {
+                var on = t.id === sel;
+                return h('button', {
+                  key: t.id,
+                  onClick: function() { upd({ selectedMil: t.id }); },
+                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
+                }, t.emoji + ' ' + t.name);
+              })
+            ),
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
+              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, fontStyle: 'italic' } }, 'Origin: ' + topic.who + ' · ' + topic.year),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Technical design'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.tech)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Operational use'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.use)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limits + ethics'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.caveat)
+              )
+            )
+          );
+        }
 
         function aestheticsAndIconicBridges() {
           var ICONIC = [
