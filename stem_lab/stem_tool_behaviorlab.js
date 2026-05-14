@@ -473,6 +473,55 @@ var d = labToolData || {};
             }
           ];
 
+          // === Restraint and Seclusion — the highest-stakes content ===
+          // Most ABA tools and most teacher-prep programs cover this
+          // briefly or not at all. School psychs have to know it because
+          // they sit on IEP teams that authorize, debrief, and revise
+          // BIPs in response to restraint/seclusion incidents. Maine
+          // Chapter 33 is more restrictive than federal default — this
+          // panel uses Maine specifics with notes about cross-state
+          // variation. Sources: Maine Chapter 33 (Maine Department of
+          // Education); ASAN restraint/seclusion position statements;
+          // U.S. Department of Education 2022 guidance.
+          var RESTRAINT_PRINCIPLES = [
+            {
+              name: 'What restraint IS (and is NOT)',
+              icon: '⚖️', color: '#fbbf24',
+              content: 'Restraint = physical holding that restricts a student\'s freedom of movement. Three types: physical (staff hands on student), mechanical (devices that restrict — almost never appropriate in schools), chemical (medication used for behavioral control rather than treatment — never appropriate without prescription).',
+              counter: 'NOT restraint: brief holding to prevent immediate injury (e.g., catching a falling kid); routine guidance (gentle hand on shoulder to redirect); typical physical contact in adapted PE or therapy. The line is restriction of freedom of movement.'
+            },
+            {
+              name: 'What seclusion IS (and is NOT)',
+              icon: '🚪', color: '#ef4444',
+              content: 'Seclusion = involuntary confinement of a student alone in a room or area from which the student is physically prevented from leaving. The "physically prevented from leaving" part is what makes it seclusion legally.',
+              counter: 'NOT seclusion: time-out where the student can leave (a "calm corner" with the door open); a quiet space chosen by the student; a sensory room used for regulation. Voluntary use of a separate space is not seclusion.'
+            },
+            {
+              name: 'Maine Chapter 33 — the rule',
+              icon: '🏛️', color: '#a78bfa',
+              content: 'Maine permits emergency physical restraint and seclusion ONLY when there is "imminent danger of serious physical injury" to the student or others. Property destruction alone is not sufficient justification. Documentation, debrief, and parent notification are mandatory within specific time windows. Specific staff training (currently CPI / NCI / Mandt or equivalent) is required for anyone authorized to perform restraint.',
+              counter: 'Other states vary: some prohibit prone restraint outright; some require court-ordered behavior plans for any restraint use; some are far more permissive. Always check current state regulation. Federal guidance (2022) recommends restricting school-based restraint/seclusion to genuine emergencies; some federal legislation has been proposed but not enacted.'
+            },
+            {
+              name: 'Less-restrictive-alternative principle',
+              icon: '🔓', color: '#22c55e',
+              content: 'Every restraint or seclusion use must be the least restrictive option available to manage the immediate safety concern. If a student can be safely de-escalated by clearing the room of others, that comes before restraint. If a student can be safely supported with verbal de-escalation, that comes before clearing the room. The hierarchy is built into law and ethics — not optional.',
+              counter: 'Common misuse: restraint or seclusion used as a consequence ("if you do that again, you will go to the calm room"). That converts an emergency tool into a punishment, which is both unethical and frequently illegal under disability law.'
+            },
+            {
+              name: 'After every incident — the debrief',
+              icon: '📝', color: '#3b82f6',
+              content: 'Within ~24-48 hours: an incident report (what happened, who, when, duration, less-restrictive alternatives tried first). A staff debrief about what could be done differently next time. Parent notification (Maine requires same-day or next-business-day). A team meeting to revise the BIP if the incident reveals a pattern. The student debrief — when the student is fully recovered — to hear their perspective.',
+              counter: 'Common gap: incidents get documented but the BIP never gets revised. Three or more incidents of the same antecedent in a quarter is a system signal that the BIP itself is failing — not a kid signal. Pattern-blindness is the most common documentation problem.'
+            },
+            {
+              name: 'The disability-community position',
+              icon: '✋', color: '#f472b6',
+              content: 'Major disability-rights organizations (ASAN, AAPD, COPAA, Disability Rights Network) have called for substantial federal restriction of school restraint and seclusion. Documented harms include physical injury, psychological trauma (PTSD outcomes are well-documented), and disproportionate use against students of color and students with disabilities. Federal data show students with disabilities account for ~12% of enrollment but ~75% of restraint cases.',
+              counter: 'Some BCBAs and behavior specialists argue restraint is occasionally necessary in genuine safety emergencies. Both positions can be true: emergencies happen AND the system overuses restraint by orders of magnitude. The ethical floor is "every restraint is one too many that should have been prevented earlier in the cycle."'
+            }
+          ];
+
           // === Acting-Out Cycle — the seven-phase escalation model ===
           // Geoff Colvin's framework (late 1990s) is the spine of every
           // major crisis-intervention curriculum (CPI, Boys Town, NCI,
@@ -5152,6 +5201,87 @@ var d = labToolData || {};
                 "🎯 Practical translation: a 5-second rule for staff during Phases 3-5 is ",
                 React.createElement("b", null, "less talking, more space, simpler language, fewer demands"),
                 ". Most adult escalation mistakes happen in Phase 4 (Acceleration) when we feel pulled to lecture, threaten, or argue. The cycle teaches that almost nothing said at Phase 4 lands — and most of what is said makes Phase 5 worse. Save the words for Phase 7.")
+            ),
+
+            // === RESTRAINT AND SECLUSION — the highest-stakes content ===
+            // Six-card panel covering definitions, Maine Chapter 33,
+            // less-restrictive-alternative principle, debrief protocol,
+            // and the disability-community position. Each card has a
+            // "what it IS / what it IS NOT" or "principle / common
+            // misuse" two-sided structure so students see the line
+            // between appropriate and inappropriate use clearly.
+            React.createElement("div", {
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(239,68,68,0.30)' }, glass)
+            },
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🛑 Restraint & Seclusion — emergency protocols and ethics"),
+                React.createElement("button", { onClick: function() { upd('blShowRestraint', !d.blShowRestraint); },
+                  className: "text-[11px] text-red-400 hover:text-red-300"
+                }, d.blShowRestraint ? 'Hide' : 'View →')
+              ),
+              d.blShowRestraint && React.createElement("div", null,
+                React.createElement("div", { style: {
+                  padding: '10px 12px', borderRadius: 8,
+                  background: 'rgba(239,68,68,0.08)',
+                  border: '1px solid rgba(239,68,68,0.30)',
+                  marginBottom: 12
+                } },
+                  React.createElement("div", { style: { fontSize: 11, color: '#fca5a5', fontWeight: 800, marginBottom: 4 } }, "⚠ This is education, not training."),
+                  React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } },
+                    "Reading this panel does not authorize anyone to perform restraint or seclusion. State law requires specific certified training (CPI / NCI / Mandt or equivalent) and authorized-staff designation. This panel teaches the framework and ethics so school psychs and IEP-team members can recognize appropriate use, document properly, and revise BIPs in response to incidents.")
+                ),
+                React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 12, fontStyle: 'italic' } },
+                  "Most ABA materials and most teacher-prep programs cover this briefly or not at all. School psychs sit on IEP teams that authorize, debrief, and revise BIPs in response to restraint and seclusion incidents. The content is high-stakes and deserves clear language. Maine specifics noted; cross-state variation flagged."),
+                React.createElement("div", { className: "space-y-2" },
+                  RESTRAINT_PRINCIPLES.map(function(rp, rpi) {
+                    return React.createElement("div", {
+                      key: 'restraint-' + rpi,
+                      style: {
+                        background: 'rgba(15,23,42,0.6)',
+                        borderRadius: 10,
+                        padding: '12px 14px',
+                        border: '1px solid rgba(100,116,139,0.25)',
+                        borderLeft: '4px solid ' + rp.color
+                      }
+                    },
+                      React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                        React.createElement("div", {
+                          'aria-hidden': 'true',
+                          style: {
+                            width: 36, height: 36, borderRadius: '50%',
+                            background: rp.color + '22',
+                            border: '1.5px solid ' + rp.color,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 17, lineHeight: 1, flexShrink: 0
+                          }
+                        }, rp.icon),
+                        React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: rp.color, lineHeight: 1.2 } }, rp.name)
+                      ),
+                      React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 8 } }, rp.content),
+                      React.createElement("div", {
+                        style: {
+                          padding: 8, borderRadius: 6,
+                          background: 'rgba(251,146,60,0.06)',
+                          border: '1px solid rgba(251,146,60,0.20)',
+                          fontSize: 11, color: '#cbd5e1', lineHeight: 1.5
+                        }
+                      },
+                        React.createElement("span", { style: { color: '#fb923c', fontWeight: 800, marginRight: 4, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } }, '↪ Counter-line:'),
+                        rp.counter)
+                    );
+                  })
+                ),
+                React.createElement("div", {
+                  style: {
+                    marginTop: 10, padding: 10, borderRadius: 8,
+                    background: 'rgba(239,68,68,0.06)',
+                    border: '1px solid rgba(239,68,68,0.20)',
+                    color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic'
+                  }
+                },
+                  "🎯 The school-psych principle: every restraint is a signal the BIP and the cycle work above failed somewhere upstream — at Phase 1 prevention, at Phase 2 trigger-catching, or at Phase 3 de-escalation. The post-incident debrief is not just paperwork; it is data about which upstream phase needs more support next time. ",
+                  React.createElement("b", null, "If your data show the same student restrained on the same antecedent three times in a quarter, the BIP is the problem — not the student."))
+              )
             ),
 
             // === BEYOND PURE ABA — neurodiversity-affirming + trauma-informed ===
