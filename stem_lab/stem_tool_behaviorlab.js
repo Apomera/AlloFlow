@@ -3130,24 +3130,61 @@ var d = labToolData || {};
               // Header
               React.createElement("h2", { id: "behaviorlab-main", className: "sr-only" }, "Behavior Lab — Level " + blLevel),
 
-              React.createElement("div", { className: "flex items-center gap-3 mb-2" },
-
+              // Hero header \u2014 matches the design system shipped on
+              // School Behavior Toolkit, Disability Voices, TypingPractice
+              // drill-intro, PrintingPress hero. Amber accent to signal
+              // "this is the science / Skinner-box space" \u2014 distinct from
+              // the teal of School Behavior Toolkit and the pink of
+              // Disability Voices. Three connected spaces, three accents.
+              React.createElement("div", {
+                style: {
+                  display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14, flexWrap: 'wrap',
+                  padding: '14px 16px',
+                  borderRadius: 14,
+                  background: 'radial-gradient(ellipse 60% 100% at 0% 50%, rgba(251,191,36,0.10), transparent 70%), rgba(15,23,42,0.45)',
+                  border: '1px solid rgba(251,191,36,0.25)',
+                  borderLeft: '4px solid #fbbf24'
+                }
+              },
                 React.createElement("button", {
-
                   onClick: function () { setStemLabTool(null); },
-
-                  className: "text-2xl hover:scale-110 transition-transform", 'aria-label': 'Back to tools'
-
-                }, "\u2B05"),
-
-                React.createElement("div", null,
-
-                  React.createElement("h2", { className: "text-lg font-extrabold text-white" }, "\uD83D\uDC2D Behavior Shaping Lab"),
-
-                  React.createElement("p", { className: "text-xs text-indigo-300" }, "Level " + blLevel + ": " + currentLevel.title + " \u2014 " + currentLevel.concept)
-
+                  'aria-label': 'Back to STEM Lab',
+                  style: {
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid #334155',
+                    borderRadius: 8, padding: '6px 10px',
+                    cursor: 'pointer', color: '#cbd5e1', fontSize: 14, flexShrink: 0
+                  }
+                }, '\u2190'),
+                // Circular accent hero badge \u2014 56px hero size matches
+                // School Behavior Toolkit + Disability Voices + TypingPractice
+                React.createElement("div", { 'aria-hidden': 'true',
+                  style: {
+                    width: 56, height: 56, borderRadius: '50%',
+                    background: 'rgba(251,191,36,0.18)',
+                    border: '2px solid #fbbf24',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 28, lineHeight: 1, flexShrink: 0,
+                    boxShadow: '0 4px 16px rgba(251,191,36,0.25)'
+                  }
+                }, '\uD83D\uDC2D'),
+                React.createElement("div", { style: { flex: 1, minWidth: 240 } },
+                  React.createElement("div", { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 } },
+                    React.createElement("h2", { style: { margin: 0, color: '#fbbf24', fontSize: 22, fontWeight: 900, letterSpacing: '-0.01em' } }, 'BehaviorLab'),
+                    // Level chip \u2014 replaces the old single-line subtitle with
+                    // a tabular-nums chip that reads at a glance
+                    React.createElement("span", { style: {
+                      padding: '2px 8px', borderRadius: 999,
+                      background: 'rgba(251,191,36,0.12)',
+                      border: '1px solid rgba(251,191,36,0.40)',
+                      color: '#fcd34d', fontSize: 10, fontWeight: 700,
+                      fontFamily: 'ui-monospace, Menlo, monospace'
+                    } }, 'Level ' + blLevel + ' / ' + LEVELS.length)
+                  ),
+                  React.createElement("div", { style: { fontSize: 12, color: '#cbd5e1', fontWeight: 600, lineHeight: 1.5 } },
+                    currentLevel.title + ' \u2014 ', React.createElement("span", { style: { color: '#94a3b8', fontStyle: 'italic' } }, currentLevel.concept)
+                  )
                 )
-
               ),
 
               // Level select
