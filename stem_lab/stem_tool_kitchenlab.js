@@ -895,6 +895,118 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
   ];
 
   // ───────────────────────────────────────────────────────────
+  // COMPETITION MODE — Chopped-style challenges
+  // ───────────────────────────────────────────────────────────
+  // Each constraint has a check() that takes the final cook state
+  // and returns { passed: bool, bonus: number, penalty: number,
+  // resultText: string }. The competition judge sums these with
+  // the base recipe score.
+  var COMPETITION_CONSTRAINTS = [
+    {
+      id: 'speedDemon',
+      label: '⚡ Speed Demon',
+      description: 'Finish the recipe in 60% of normal time.',
+      bonus: 25, penalty: -20,
+      timeLimitFrac: 0.6,
+      check: function(state, rec) {
+        var elapsed = state.elapsedSec || 0;
+        var limit = rec.targetTimeMin * 60 * 0.6;
+        var passed = elapsed <= limit;
+        return { passed: passed, value: Math.round(elapsed),
+          resultText: passed
+            ? 'Finished in ' + Math.round(elapsed) + 's (limit ' + Math.round(limit) + 's). +25 bonus.'
+            : 'Took ' + Math.round(elapsed) + 's, limit was ' + Math.round(limit) + 's. -20 penalty.' };
+      }
+    },
+    {
+      id: 'coldHandsHotPan',
+      label: '🔥 Cold Hands, Hot Pan',
+      description: 'Pan must hit at least 400°F at some point during the cook.',
+      bonus: 15, penalty: -15,
+      check: function(state) {
+        var passed = (state.maxPanTempF || 0) >= 400;
+        return { passed: passed, value: Math.round(state.maxPanTempF || 0),
+          resultText: passed
+            ? 'Pan peaked at ' + Math.round(state.maxPanTempF) + '°F. Maillard mastery. +15 bonus.'
+            : 'Pan only reached ' + Math.round(state.maxPanTempF || 0) + '°F — needed 400°F. -15 penalty.' };
+      }
+    },
+    {
+      id: 'noBurn',
+      label: '🛡️ Restraint Master',
+      description: 'Pan must NEVER exceed 380°F. Stay disciplined.',
+      bonus: 20, penalty: -10,
+      check: function(state) {
+        var passed = (state.maxPanTempF || 0) <= 380;
+        return { passed: passed, value: Math.round(state.maxPanTempF || 0),
+          resultText: passed
+            ? 'Max pan temp ' + Math.round(state.maxPanTempF) + '°F — held the line. +20 bonus.'
+            : 'Pan hit ' + Math.round(state.maxPanTempF) + '°F at peak (cap 380°F). -10 penalty.' };
+      }
+    },
+    {
+      id: 'minimalist',
+      label: '🥢 Minimalist',
+      description: 'Use only 2 burner-level changes total. No fiddling.',
+      bonus: 20, penalty: -10,
+      check: function(state) {
+        var changes = state.burnerChanges || 0;
+        var passed = changes <= 2;
+        return { passed: passed, value: changes,
+          resultText: passed
+            ? Math.round(changes) + ' burner adjustments. Disciplined hands. +20 bonus.'
+            : Math.round(changes) + ' burner adjustments — limit was 2. Tinkering hurts you. -10 penalty.' };
+      }
+    },
+    {
+      id: 'gradeA',
+      label: '🌟 Restaurant Standard',
+      description: 'Base recipe score must be at least 85 — no shortcuts.',
+      bonus: 30, penalty: -25,
+      check: function(state) {
+        var baseScore = state.baseScore || 0;
+        var passed = baseScore >= 85;
+        return { passed: passed, value: baseScore,
+          resultText: passed
+            ? 'Base score ' + baseScore + ' — restaurant-ready. +30 bonus.'
+            : 'Base score ' + baseScore + ', needed 85+. -25 penalty.' };
+      }
+    },
+    {
+      id: 'efficient',
+      label: '🌱 Heat Efficient',
+      description: 'Average burner level must be 5 or lower. Energy conservation.',
+      bonus: 15, penalty: -10,
+      check: function(state) {
+        var avg = state.avgBurnerLevel || 0;
+        var passed = avg <= 5;
+        return { passed: passed, value: avg.toFixed(1),
+          resultText: passed
+            ? 'Average burner ' + avg.toFixed(1) + '/10 — low + slow. +15 bonus.'
+            : 'Average burner ' + avg.toFixed(1) + '/10 (max 5). Cranked too high. -10 penalty.' };
+      }
+    },
+    {
+      id: 'oneShot',
+      label: '🎯 One Shot',
+      description: 'Don\'t abandon mid-cook. Complete the recipe on the first attempt.',
+      bonus: 10, penalty: -30,
+      check: function() { return { passed: true, value: 1, resultText: 'You stayed in the kitchen. +10 bonus.' }; }
+    }
+  ];
+
+  // Pick 2 random constraints — one easier, one harder
+  function rollCompetitionConstraints() {
+    var pool = COMPETITION_CONSTRAINTS.slice();
+    // Shuffle
+    for (var i = pool.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+    }
+    return pool.slice(0, 2);
+  }
+
+  // ───────────────────────────────────────────────────────────
   // RECIPE ENGINE HELPERS
   // ───────────────────────────────────────────────────────────
   // Newton-cooling thermal model for the pan. Burner level 0-10 sets
@@ -955,6 +1067,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       recipeLastTickAt: null,              // ms
       recipeJudgement: null,               // set when phase = 'done'
       recipeCompletedIds: [],              // which recipes have been beaten (for unlocks)
+      // Competition mode
+      competitionActive: false,            // is the current run a competition?
+      competitionConstraints: [],          // array of constraint definitions for this run
+      competitionDeadline: null,           // ms timestamp for hard time limit
+      competitionStartedAt: null,
+      competitionBurnerChanges: 0,         // count of unique burner level transitions
+      competitionBurnerLevelSum: 0,        // sum for averaging
+      competitionBurnerLevelTicks: 0,      // tick count for averaging
+      competitionBests: {},                // { recipeId: highScore }
+      competitionLastResult: null,         // { recipeId, score, baseScore, bonusTotal, isNewBest }
       // Progression
       klXp: 0,
       klAchievements: [],
@@ -1696,13 +1818,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             // Clamp absurd values
             newFood = Math.max(40, Math.min(550, newFood));
           }
-          return {
+          var patch = {
             recipePanTempF: newTemp,
             recipeMaxPanTempF: Math.max(prior.recipeMaxPanTempF || 0, newTemp),
             recipeFoodInternalF: newFood,
             recipeActiveTimeSec: newActiveTime,
             recipeLastTickAt: now
           };
+          // Competition mode: accumulate burner-level samples for the
+          // "heat efficient" constraint, and trip the deadline if we run
+          // out of time.
+          if (prior.competitionActive) {
+            patch.competitionBurnerLevelSum = (prior.competitionBurnerLevelSum || 0) + (prior.recipeBurnerLevel || 0) * dtSec;
+            patch.competitionBurnerLevelTicks = (prior.competitionBurnerLevelTicks || 0) + dtSec;
+          }
+          return patch;
         });
       }
       function startRecipeTick() {
@@ -1746,8 +1876,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         awardXP(5);
       }
       function abortRecipe() {
-        setKL({ recipePhase: 'idle', recipeActiveId: null, recipeJudgement: null });
+        setKL({ recipePhase: 'idle', recipeActiveId: null, recipeJudgement: null,
+          competitionActive: false, competitionConstraints: [], competitionDeadline: null });
         klAnnounce('Recipe abandoned.');
+      }
+
+      function startCompetition() {
+        // Pick a random unlocked recipe from the catalog
+        var unlocked = RECIPE_CATALOG.filter(function(r) { return r.unlocked; });
+        var pick = unlocked[Math.floor(Math.random() * unlocked.length)];
+        var recipe = RECIPES[pick.id];
+        if (!recipe) return;
+        var constraints = rollCompetitionConstraints();
+        // If any constraint imposes a time fraction, set deadline
+        var timeFrac = null;
+        for (var i = 0; i < constraints.length; i++) {
+          if (constraints[i].timeLimitFrac) { timeFrac = constraints[i].timeLimitFrac; break; }
+        }
+        var deadline = timeFrac ? Date.now() + (recipe.targetTimeMin * 60 * 1000 * (timeFrac + 0.4)) : null;
+        // Reset everything + flag competition
+        setKL({
+          recipeActiveId: recipe.id,
+          recipePhase: 'cooking',
+          recipeStartedAt: Date.now(),
+          recipeLastTickAt: Date.now(),
+          recipeStepStartedAt: Date.now(),
+          recipeCurrentStep: 0,
+          recipePanTempF: 70,
+          recipeBurnerLevel: 0,
+          recipeMaxPanTempF: 70,
+          recipeFoodInternalF: 40,
+          recipeItemsInPan: [],
+          recipeIngredientOrder: [],
+          recipeItemAddTimes: {},
+          recipeActiveTimeSec: 0,
+          recipeHeatRemovedAt: null,
+          recipeJudgement: null,
+          competitionActive: true,
+          competitionConstraints: constraints.map(function(c) { return c.id; }),
+          competitionDeadline: deadline,
+          competitionStartedAt: Date.now(),
+          competitionBurnerChanges: 0,
+          competitionBurnerLevelSum: 0,
+          competitionBurnerLevelTicks: 0
+        });
+        klAnnounce('Competition started: ' + recipe.name + '. Constraints: ' + constraints.map(function(c) { return c.label; }).join(', '));
+        awardXP(8);
       }
       function setBurner(level) {
         setKL(function(prior) {
@@ -1755,6 +1929,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // If turning to 0 while food is in pan, record heat-removal time
           if (level === 0 && (prior.recipeItemsInPan || []).length > 0 && !prior.recipeHeatRemovedAt) {
             patch.recipeHeatRemovedAt = Date.now();
+          }
+          // Competition mode: count distinct burner-level changes for the
+          // "minimalist" constraint. Only count if value actually changes.
+          if (prior.competitionActive && (prior.recipeBurnerLevel || 0) !== level) {
+            patch.competitionBurnerChanges = (prior.competitionBurnerChanges || 0) + 1;
           }
           return patch;
         });
@@ -1776,6 +1955,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           var next = (prior.recipeCurrentStep || 0) + 1;
           if (next >= rec.steps.length) {
             // Done — judge!
+            var elapsedSec = prior.recipeStartedAt ? (Date.now() - prior.recipeStartedAt) / 1000 : 0;
+            var avgBurner = prior.competitionBurnerLevelTicks > 0
+              ? (prior.competitionBurnerLevelSum / prior.competitionBurnerLevelTicks) : 0;
             var snapshot = {
               maxPanTempF: prior.recipeMaxPanTempF || 0,
               activeTimeSec: prior.recipeActiveTimeSec || 0,
@@ -1785,10 +1967,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               heatRemovedAt: prior.recipeHeatRemovedAt,
               stepsCompleted: rec.steps.length,
               lastTickAt: prior.recipeLastTickAt,
-              heatRemovedBeforeOverdone: prior.recipeHeatRemovedAt && (prior.recipeActiveTimeSec || 0) < 150
+              heatRemovedBeforeOverdone: prior.recipeHeatRemovedAt && (prior.recipeActiveTimeSec || 0) < 150,
+              // Competition context
+              elapsedSec: elapsedSec,
+              burnerChanges: prior.competitionBurnerChanges || 0,
+              avgBurnerLevel: avgBurner
             };
             var judgement = rec.judge(snapshot);
-            // Persist completion
+            var compResult = null;
+            // If competition: apply constraint modifiers
+            if (prior.competitionActive) {
+              snapshot.baseScore = judgement.score;
+              var bonusTotal = 0, penaltyTotal = 0;
+              var constraintResults = [];
+              (prior.competitionConstraints || []).forEach(function(cid) {
+                var c = COMPETITION_CONSTRAINTS.find(function(x) { return x.id === cid; });
+                if (!c) return;
+                var r = c.check(snapshot, rec);
+                if (r.passed) bonusTotal += c.bonus;
+                else penaltyTotal += c.penalty;
+                constraintResults.push({ id: cid, label: c.label, description: c.description,
+                  passed: r.passed, points: r.passed ? c.bonus : c.penalty, resultText: r.resultText });
+              });
+              var compScore = Math.max(0, Math.min(150, judgement.score + bonusTotal + penaltyTotal));
+              var prevBest = (prior.competitionBests || {})[rec.id] || 0;
+              var isNewBest = compScore > prevBest;
+              var newBests = Object.assign({}, prior.competitionBests || {});
+              if (isNewBest) newBests[rec.id] = compScore;
+              compResult = {
+                baseScore: judgement.score,
+                baseGrade: judgement.grade,
+                bonusTotal: bonusTotal,
+                penaltyTotal: penaltyTotal,
+                finalScore: compScore,
+                isNewBest: isNewBest,
+                previousBest: prevBest,
+                constraints: constraintResults
+              };
+              // Merge competition flavor into judgement.verdict
+              judgement = Object.assign({}, judgement, { compResult: compResult });
+              // Persist new best
+              return {
+                recipePhase: 'done',
+                recipeJudgement: judgement,
+                recipeCurrentStep: rec.steps.length - 1,
+                competitionBests: newBests,
+                competitionLastResult: compResult,
+                recipeCompletedIds: (prior.recipeCompletedIds || []).indexOf(rec.id) === -1
+                  ? (prior.recipeCompletedIds || []).slice().concat([rec.id])
+                  : (prior.recipeCompletedIds || [])
+              };
+            }
+            // Non-competition: persist completion as normal
             var completed = (prior.recipeCompletedIds || []).slice();
             if (completed.indexOf(rec.id) === -1) completed.push(rec.id);
             return {
@@ -1850,18 +2080,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       // ─── Recipe picker (idle screen) ───
       function renderRecipePicker() {
         var completed = d.recipeCompletedIds || [];
+        var unlockedCount = RECIPE_CATALOG.filter(function(r) { return r.unlocked; }).length;
+        var bests = d.competitionBests || {};
+        var bestEntries = Object.entries(bests).sort(function(a, b) { return b[1] - a[1]; });
         return h('div', null,
           panelHeader('🍽️ Real-Time Recipe Simulator',
             'Run an actual recipe in real time. Manage heat, time your additions, fix mistakes mid-cook. Mistakes have visible consequences. Success unlocks the next recipe.'),
-          // Status panel
+          // ─── COMPETITION MODE CARD (above the tutorial recipes) ───
+          h('div', { style: { background: 'linear-gradient(135deg, rgba(220,38,38,0.18), rgba(251,146,60,0.18))',
+              border: '2px solid rgba(251,146,60,0.6)', borderRadius: 14, padding: '20px 22px', marginBottom: 16,
+              boxShadow: '0 4px 14px rgba(251,146,60,0.15)' } },
+            h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 14, flexWrap: 'wrap' } },
+              h('div', { 'aria-hidden': 'true', style: { fontSize: 44, lineHeight: 1, flexShrink: 0 } }, '🏆'),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('div', { style: { fontSize: 18, fontWeight: 900, color: '#fde68a', letterSpacing: '-0.01em', marginBottom: 4 } }, 'Competition Mode'),
+                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 12 } },
+                  'Chopped-style challenge. Random recipe + 2 mystery constraints (time pressure, heat caps, ingredient discipline, restaurant-grade standard, and more). Combine recipe skill + constraint mastery for a score up to 150. Beat your personal best.'),
+                h('button', { onClick: function() { startCompetition(); awardXP(3); },
+                  style: { padding: '12px 22px', background: '#fb923c', color: '#1c1410',
+                    border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: 'pointer',
+                    boxShadow: '0 2px 6px rgba(251,146,60,0.4)' } },
+                  '🎲 Start a random challenge'))),
+            bestEntries.length > 0 ? h('div', { style: { marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(251,146,60,0.25)' } },
+              h('div', { style: { fontSize: 10, fontWeight: 700, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, '🥇 Your personal bests'),
+              h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
+                bestEntries.map(function(e) {
+                  var ridName = (RECIPE_CATALOG.find(function(x) { return x.id === e[0]; }) || {}).name || e[0];
+                  return h('div', { key: e[0],
+                    style: { background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(251,146,60,0.3)',
+                      padding: '6px 12px', borderRadius: 8, fontSize: 12, color: '#fde68a',
+                      display: 'flex', alignItems: 'center', gap: 8 } },
+                    h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800, color: '#86efac' } }, e[1]),
+                    h('span', { style: { fontSize: 11, color: '#cbd5e1' } }, ridName));
+                }))) : null),
+          // ─── Tutorial progress ───
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '🏆 Your kitchen progress'),
+            h('div', { style: subheaderStyle() }, '📖 Tutorial mode — recipes mastered'),
             h('div', { style: { display: 'flex', gap: 20, flexWrap: 'wrap' } },
               h('div', null,
-                h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace' } }, completed.length + ' / ' + RECIPE_CATALOG.length),
+                h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace' } }, completed.length + ' / ' + unlockedCount + ' unlocked'),
                 h('div', { style: { fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'recipes mastered')),
               h('div', { style: { flex: 1, color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, minWidth: 240 } },
-                'v0.3 unlocks Scrambled Eggs — the foundation recipe. Complete it once to start understanding heat + timing. v0.4 will unlock 3-4 more (Omelet, Stir-Fry, Pasta + Pan Sauce, Pan-Seared Chicken). v0.5 ships the gamified Competition Mode with mystery baskets + AI judge.'))),
+                'Tutorial mode is the unhurried run — no time pressure, no constraints. Use it to learn each recipe before taking it into competition. v0.5 adds Competition Mode + personal bests. v0.6 will unlock multi-pot recipes (Pasta + Pan Sauce, Sheet-Pan, Roast Chicken).'))),
 
           // Recipe cards
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 } },
@@ -1910,10 +2170,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var availableItems = rec.ingredients.filter(function(ing) {
           return (d.recipeItemsInPan || []).indexOf(ing.id) === -1;
         });
+        // Competition overlay data
+        var inCompetition = !!d.competitionActive;
+        var deadline = d.competitionDeadline;
+        var msLeft = deadline ? Math.max(0, deadline - Date.now()) : null;
+        var secLeft = msLeft != null ? Math.round(msLeft / 1000) : null;
+        var deadlineExceeded = msLeft != null && msLeft <= 0;
+        var deadlineWarn = secLeft != null && secLeft <= 30 && secLeft > 0;
+        // If deadline exceeded, force-judge (move to done with current state)
+        if (deadlineExceeded && d.recipePhase === 'cooking') {
+          setTimeout(function() {
+            // Skip to last step + trigger judge
+            setKL(function(prior) {
+              if (prior.recipePhase !== 'cooking') return {};
+              var r = RECIPES[prior.recipeActiveId];
+              return { recipeCurrentStep: r ? r.steps.length - 1 : 0 };
+            });
+            setTimeout(nextStep, 50);
+          }, 0);
+        }
+        // Active competition constraint definitions
+        var activeConstraints = (d.competitionConstraints || []).map(function(cid) {
+          return COMPETITION_CONSTRAINTS.find(function(x) { return x.id === cid; });
+        }).filter(Boolean);
+
         return h('div', null,
-          panelHeader(rec.icon + ' Cooking: ' + rec.name,
+          panelHeader(rec.icon + ' Cooking: ' + rec.name + (inCompetition ? ' 🏆 (Competition)' : ''),
             'Step ' + (stepIdx + 1) + ' of ' + rec.steps.length + ' — total elapsed: ' +
             (d.recipeStartedAt ? Math.round((Date.now() - d.recipeStartedAt) / 1000) + 's' : '0s')),
+
+          // ─── COMPETITION HUD (only in competition mode) ───
+          inCompetition ? h('div', { style: Object.assign({}, cardStyle(), {
+            background: 'linear-gradient(135deg, rgba(220,38,38,0.15), rgba(251,146,60,0.12))',
+            borderLeft: '4px solid ' + (deadlineWarn ? '#dc2626' : '#fb923c')
+          }) },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', marginBottom: 12 } },
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.08em' } }, '🏆 Competition'),
+              secLeft != null ? h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6 } },
+                h('span', { style: { fontSize: 32, fontWeight: 900, color: deadlineWarn ? '#dc2626' : '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } },
+                  Math.floor(secLeft / 60) + ':' + String(secLeft % 60).padStart(2, '0')),
+                h('span', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'time left')
+              ) : null),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 8 } },
+              activeConstraints.map(function(c, i) {
+                return h('div', { key: i,
+                  style: { background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(251,146,60,0.3)',
+                    borderLeft: '3px solid #fb923c', padding: '8px 10px', borderRadius: 6 } },
+                  h('div', { style: { fontSize: 12, fontWeight: 700, color: '#fde68a', marginBottom: 2 } }, c.label),
+                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.45 } }, c.description),
+                  h('div', { style: { fontSize: 10, color: '#86efac', marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                    '+' + c.bonus + ' bonus / ' + c.penalty + ' penalty'));
+              }))
+          ) : null,
 
           // Current step prominently displayed
           h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fb923c' }) },
@@ -2071,17 +2379,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var rec = RECIPES[d.recipeActiveId];
         var j = d.recipeJudgement;
         if (!rec || !j) return h('div', null, h('button', { onClick: abortRecipe }, 'Back'));
-        var gradeColor = j.score >= 90 ? '#86efac' : j.score >= 80 ? '#fbbf24' : j.score >= 70 ? '#fb923c' : '#fca5a5';
+        var compResult = j.compResult;
+        var displayScore = compResult ? compResult.finalScore : j.score;
+        var gradeColor = displayScore >= 90 ? '#86efac' : displayScore >= 80 ? '#fbbf24' : displayScore >= 70 ? '#fb923c' : '#fca5a5';
         return h('div', null,
-          panelHeader(rec.icon + ' ' + rec.name + ' — Results',
+          panelHeader(rec.icon + ' ' + rec.name + (compResult ? ' 🏆 — Competition Results' : ' — Results'),
             'Your dish has been judged. Score breakdown below — read the notes to see what to do differently next time.'),
+
+          // ─── Personal-best banner (competition only) ───
+          compResult && compResult.isNewBest ? h('div', { style: {
+            background: 'linear-gradient(135deg, #fde68a, #fb923c)', color: '#1c1410',
+            padding: '14px 20px', borderRadius: 12, marginBottom: 16, textAlign: 'center',
+            fontWeight: 900, fontSize: 16, boxShadow: '0 4px 12px rgba(251,146,60,0.3)' } },
+            '🥇 NEW PERSONAL BEST!  ',
+            h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace' } }, compResult.finalScore),
+            compResult.previousBest > 0 ? h('span', { style: { fontWeight: 600, fontSize: 13, opacity: 0.85, marginLeft: 8 } },
+              '(previous: ' + compResult.previousBest + ')') : null) : null,
 
           // Score hero
           h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', padding: 32 }) },
-            h('div', { style: { fontSize: 14, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, 'Your score'),
-            h('div', { style: { fontSize: 96, fontWeight: 900, color: gradeColor, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, j.score),
+            h('div', { style: { fontSize: 14, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } },
+              compResult ? 'Final competition score' : 'Your score'),
+            h('div', { style: { fontSize: 96, fontWeight: 900, color: gradeColor, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, displayScore),
+            compResult ? h('div', { style: { fontSize: 13, color: '#94a3b8', marginTop: 8, fontFamily: 'ui-monospace, Menlo, monospace' } },
+              'base ' + compResult.baseScore + (compResult.bonusTotal > 0 ? ' + ' + compResult.bonusTotal + ' bonus' : '') +
+              (compResult.penaltyTotal < 0 ? ' ' + compResult.penaltyTotal + ' penalty' : '')) : null,
             h('div', { style: { fontSize: 48, fontWeight: 900, color: gradeColor, marginTop: 4 } }, 'Grade: ' + j.grade),
             h('div', { style: { fontSize: 16, color: '#fde68a', marginTop: 18, fontWeight: 600 } }, j.verdict)),
+
+          // ─── Competition constraint results ───
+          compResult ? h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '🏆 Competition constraints'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              compResult.constraints.map(function(c, i) {
+                return h('div', { key: i,
+                  style: { background: c.passed ? 'rgba(34,197,94,0.08)' : 'rgba(220,38,38,0.08)',
+                    border: '1px solid ' + (c.passed ? 'rgba(34,197,94,0.3)' : 'rgba(220,38,38,0.3)'),
+                    borderLeft: '4px solid ' + (c.passed ? '#22c55e' : '#dc2626'),
+                    padding: '10px 14px', borderRadius: 8 } },
+                  h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 4 } },
+                    h('div', { style: { fontSize: 13, fontWeight: 700, color: c.passed ? '#86efac' : '#fca5a5' } },
+                      (c.passed ? '✓ ' : '✗ ') + c.label),
+                    h('div', { style: { fontSize: 14, fontWeight: 900, color: c.passed ? '#86efac' : '#fca5a5', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                      (c.points > 0 ? '+' : '') + c.points)),
+                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 3, fontStyle: 'italic' } }, c.description),
+                  h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.5 } }, c.resultText));
+              }))) : null,
 
           // Detailed notes
           h('div', { style: cardStyle() },
@@ -2108,11 +2451,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
 
           // Action buttons
           h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginTop: 8 } },
-            h('button', { onClick: function() { startRecipe(rec.id); awardXP(2); },
+            compResult ? h('button', { onClick: function() { startCompetition(); awardXP(2); },
               style: { padding: '12px 24px', background: '#fb923c', color: '#1c1410',
                 border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
-              '🔁 Cook again'),
-            h('button', { onClick: function() { setKL({ recipePhase: 'idle', recipeActiveId: null }); },
+              '🎲 Next challenge') :
+              h('button', { onClick: function() { startRecipe(rec.id); awardXP(2); },
+                style: { padding: '12px 24px', background: '#fb923c', color: '#1c1410',
+                  border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
+                '🔁 Cook again'),
+            h('button', { onClick: function() { setKL({ recipePhase: 'idle', recipeActiveId: null,
+                competitionActive: false, competitionConstraints: [], competitionDeadline: null }); },
               style: { padding: '12px 24px', background: 'transparent', color: '#fde68a',
                 border: '1px solid rgba(251,146,60,0.4)', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' } },
               '🍽️ Back to recipe list'))
