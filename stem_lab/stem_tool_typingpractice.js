@@ -3281,7 +3281,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   flexWrap: 'wrap'
                 }
               },
-                h('span', { style: { fontSize: '28px', flexShrink: 0 } }, drill.icon),
+                // Circular warn-colored icon badge — matches drill-card and
+                // pack-card vocabulary; warn accent ties to the borderLeft.
+                h('div', {
+                  'aria-hidden': 'true',
+                  style: {
+                    width: '44px', height: '44px', borderRadius: '50%',
+                    background: palette.warn + '22',
+                    border: '1.5px solid ' + palette.warn,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '22px', flexShrink: 0, lineHeight: 1
+                  }
+                }, drill.icon),
                 h('div', { style: { flex: '1 1 220px', minWidth: 0 } },
                   h('div', { style: { fontSize: '11px', color: palette.warn, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: '2px' } },
                     (function() {
@@ -3337,6 +3348,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   padding: '14px 16px',
                   background: palette.surface,
                   border: '1px solid ' + palette.border,
+                  borderLeft: '3px solid ' + palette.accent,
                   borderRadius: '10px',
                   display: 'flex',
                   gap: '14px',
@@ -3344,7 +3356,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   flexWrap: 'wrap'
                 }
               },
-                h('span', { style: { fontSize: '28px', flexShrink: 0 } }, lastDrill.icon),
+                // Circular accent-colored icon badge — matches drill-card
+                // and pack-card vocabulary. Accent (rather than warn) on
+                // this card distinguishes it from drill-of-the-day above.
+                h('div', {
+                  'aria-hidden': 'true',
+                  style: {
+                    width: '44px', height: '44px', borderRadius: '50%',
+                    background: palette.accent + '22',
+                    border: '1.5px solid ' + palette.accent,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '22px', flexShrink: 0, lineHeight: 1
+                  }
+                }, lastDrill.icon),
                 h('div', { style: { flex: '1 1 220px', minWidth: 0 } },
                   h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: '2px' } }, 'Last session · ' + ageLabel),
                   h('div', { style: { fontSize: '14px', fontWeight: 600, color: palette.text, lineHeight: '1.3' } }, resumeLabel),
