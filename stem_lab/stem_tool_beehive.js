@@ -6006,6 +6006,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.restore();
               }
 
+              // ── Horse silhouette grazing in the back pasture (Maine farm detail) ──
+              // Distant horse silhouette near the farmhouse — a calm sentinel
+              // grazing in the back pasture. Head goes down to graze, lifts
+              // occasionally to scan. Suppressed in winter (horses sheltered).
+              if (season !== 3) {
+                var _hrX = W * 0.66, _hrY = H * 0.74;
+                var _hrGrazeT = ((t2 * 0.005) % 1);
+                var _hrHeadUp = _hrGrazeT > 0.75 && _hrGrazeT < 0.92;
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.20)';
+                c.beginPath(); c.ellipse(_hrX, _hrY + 4, 7, 0.8, 0, 0, 6.28); c.fill();
+                // Body — chestnut brown silhouette
+                c.fillStyle = season === 2 ? '#5a3a18' : '#7a5230';
+                c.beginPath(); c.ellipse(_hrX, _hrY, 6.5, 2.3, 0, 0, 6.28); c.fill();
+                // Darker mane along back
+                c.fillStyle = season === 2 ? '#3a2510' : '#5a3f25';
+                c.fillRect(_hrX - 4, _hrY - 2, 8, 0.5);
+                // Four legs (slim brown rectangles)
+                c.fillStyle = season === 2 ? '#3a2510' : '#5a3a18';
+                c.fillRect(_hrX - 5, _hrY + 1.5, 0.8, 4);
+                c.fillRect(_hrX - 2.5, _hrY + 1.5, 0.8, 4);
+                c.fillRect(_hrX + 2, _hrY + 1.5, 0.8, 4);
+                c.fillRect(_hrX + 4.5, _hrY + 1.5, 0.8, 4);
+                // Tail — long flowing
+                c.strokeStyle = season === 2 ? '#3a2510' : '#5a3f25';
+                c.lineWidth = 1.0;
+                c.beginPath();
+                c.moveTo(_hrX + 6.5, _hrY - 1);
+                c.quadraticCurveTo(_hrX + 8.5, _hrY + 1, _hrX + 8, _hrY + 4);
+                c.stroke();
+                // Head + neck — angle depends on grazing/looking up
+                var _hrHeadY = _hrHeadUp ? _hrY - 4 : _hrY + 2;
+                var _hrHeadX = _hrX - 8;
+                c.strokeStyle = season === 2 ? '#5a3a18' : '#7a5230';
+                c.lineWidth = 2;
+                c.beginPath();
+                c.moveTo(_hrX - 5, _hrY - 1);
+                c.lineTo(_hrHeadX + 1.5, _hrHeadY);
+                c.stroke();
+                // Head — oval
+                c.fillStyle = season === 2 ? '#5a3a18' : '#7a5230';
+                c.beginPath(); c.ellipse(_hrHeadX, _hrHeadY, 2, 1.2, _hrHeadUp ? -0.3 : 0.5, 0, 6.28); c.fill();
+                // White blaze down face
+                c.fillStyle = 'rgba(254,243,199,0.8)';
+                c.fillRect(_hrHeadX - 0.3, _hrHeadY - 0.3, 0.3, 1.5);
+                // Two ears
+                c.fillStyle = season === 2 ? '#3a2510' : '#5a3a18';
+                c.beginPath();
+                c.moveTo(_hrHeadX - 0.5, _hrHeadY - 1.3);
+                c.lineTo(_hrHeadX - 0.2, _hrHeadY - 2);
+                c.lineTo(_hrHeadX, _hrHeadY - 1.2);
+                c.closePath(); c.fill();
+                c.beginPath();
+                c.moveTo(_hrHeadX + 0.5, _hrHeadY - 1.3);
+                c.lineTo(_hrHeadX + 0.8, _hrHeadY - 2);
+                c.lineTo(_hrHeadX + 1, _hrHeadY - 1.2);
+                c.closePath(); c.fill();
+                // Eye dot
+                c.fillStyle = '#1c1917';
+                c.beginPath(); c.arc(_hrHeadX - 0.3, _hrHeadY - 0.3, 0.2, 0, 6.28); c.fill();
+              }
+
               // ── Red barn next to the farmhouse (classic rural pairing) ──
               if (season !== 3) {
                 var bnX = W * 0.80, bnY = H * 0.70;
@@ -11446,6 +11508,146 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 // Side shadow on ground
                 c.fillStyle = 'rgba(0,0,0,0.22)';
                 c.beginPath(); c.ellipse(_hsX, _hsY + 1.3, 7.5, 0.7, 0, 0, 6.28); c.fill();
+              }
+
+              // ── Outdoor picnic table with red-checkered cloth (spring/summer/fall) ──
+              // Classic wooden picnic table with attached benches and a red-
+              // and-white checkered cloth. Bigger than the side table — this
+              // is the family-meal spot. Year-round structure but the cloth
+              // (and a small pitcher of lemonade) only appear in warmer months.
+              if (season !== 3) {
+                var _ptbX = W * 0.50, _ptbY = H * 0.88;
+                // Shadow
+                c.fillStyle = 'rgba(0,0,0,0.22)';
+                c.beginPath(); c.ellipse(_ptbX, _ptbY + 4, 14, 1.1, 0, 0, 6.28); c.fill();
+                // Bench legs (3 sets: A-frame style)
+                c.fillStyle = '#5a3a18';
+                c.fillRect(_ptbX - 11, _ptbY + 1, 1, 5);
+                c.fillRect(_ptbX - 11, _ptbY + 1, 6, 0.7);
+                c.fillRect(_ptbX + 10, _ptbY + 1, 1, 5);
+                c.fillRect(_ptbX + 5, _ptbY + 1, 6, 0.7);
+                // Bench seat planks (left + right)
+                c.fillStyle = '#7a5230';
+                c.fillRect(_ptbX - 12, _ptbY, 6, 1.2);
+                c.fillRect(_ptbX + 6, _ptbY, 6, 1.2);
+                // Table top — wooden planks
+                c.fillStyle = '#8a6238';
+                c.fillRect(_ptbX - 13, _ptbY - 4, 26, 2);
+                // Plank seam lines
+                c.strokeStyle = '#5a3a18';
+                c.lineWidth = 0.3;
+                c.beginPath(); c.moveTo(_ptbX - 13, _ptbY - 3); c.lineTo(_ptbX + 13, _ptbY - 3); c.stroke();
+                // Top edge highlight
+                c.fillStyle = 'rgba(255,255,255,0.18)';
+                c.fillRect(_ptbX - 13, _ptbY - 4, 26, 0.4);
+                // Red-and-white checkered cloth — drapes over the table
+                var _ptbCloth = [
+                  { x: -13, y: -4, w: 26, h: 5, draped: false } // tabletop part
+                ];
+                // Draw the cloth with checker pattern
+                c.save();
+                for (var ptr = 0; ptr < 4; ptr++) {
+                  for (var ptc = 0; ptc < 13; ptc++) {
+                    var _ptcColor = (ptr + ptc) % 2 === 0 ? '#dc2626' : '#fafaf9';
+                    c.fillStyle = _ptcColor;
+                    c.fillRect(_ptbX - 13 + ptc * 2, _ptbY - 4 + ptr * 1.2, 2, 1.2);
+                  }
+                }
+                // Drape on left side (hanging fabric)
+                c.fillStyle = '#dc2626';
+                c.beginPath();
+                c.moveTo(_ptbX - 13, _ptbY + 0.8);
+                c.lineTo(_ptbX - 10, _ptbY + 0.8);
+                c.lineTo(_ptbX - 10.5, _ptbY + 3);
+                c.lineTo(_ptbX - 13, _ptbY + 2.5);
+                c.closePath(); c.fill();
+                // Checker squares on drape
+                c.fillStyle = '#fafaf9';
+                c.fillRect(_ptbX - 12.5, _ptbY + 1, 1.5, 1);
+                c.fillRect(_ptbX - 11, _ptbY + 1.8, 1.2, 0.8);
+                // Drape on right side
+                c.fillStyle = '#dc2626';
+                c.beginPath();
+                c.moveTo(_ptbX + 10, _ptbY + 0.8);
+                c.lineTo(_ptbX + 13, _ptbY + 0.8);
+                c.lineTo(_ptbX + 13, _ptbY + 2.5);
+                c.lineTo(_ptbX + 10.5, _ptbY + 3);
+                c.closePath(); c.fill();
+                c.fillStyle = '#fafaf9';
+                c.fillRect(_ptbX + 11, _ptbY + 1, 1.5, 1);
+                c.restore();
+                // Glass pitcher of lemonade in the middle (summer only)
+                if (season === 1) {
+                  var _pjX = _ptbX, _pjY = _ptbY - 5;
+                  // Pitcher body — pale yellow lemonade
+                  c.fillStyle = 'rgba(254,240,138,0.92)';
+                  c.fillRect(_pjX - 1.2, _pjY - 3, 2.4, 4);
+                  // Glass outline
+                  c.strokeStyle = 'rgba(120,140,180,0.5)';
+                  c.lineWidth = 0.3;
+                  c.strokeRect(_pjX - 1.2, _pjY - 3, 2.4, 4);
+                  // Handle
+                  c.beginPath();
+                  c.arc(_pjX + 2, _pjY - 1.5, 1, -Math.PI / 2, Math.PI / 2);
+                  c.stroke();
+                  // Lemon slice on top
+                  c.fillStyle = '#facc15';
+                  c.beginPath(); c.arc(_pjX - 0.3, _pjY - 3.3, 0.6, 0, Math.PI); c.fill();
+                  c.fillStyle = 'rgba(255,255,255,0.55)';
+                  c.fillRect(_pjX - 1.0, _pjY - 2.5, 0.4, 3);
+                }
+              }
+
+              // ── Garter snake slithering between stepping stones (spring/summer) ──
+              // Real biology: garter snakes are the most common Maine snakes —
+              // harmless, beneficial (they eat slugs that munch garden plants),
+              // and active during warm daylight hours. S-curve body silhouette.
+              if ((season === 0 || season === 1) && _sunT_arc > 0.3) {
+                var _gsT = (t2 % 3600) / 3600;
+                if (_gsT > 0.4 && _gsT < 0.65) {
+                  var _gsProg = (_gsT - 0.4) / 0.25;
+                  var _gsHeadX = W * 0.42 + _gsProg * 12;
+                  var _gsHeadY = H * 0.825 - Math.sin(_gsProg * 6) * 0.5;
+                  // Snake body — undulating S-curve trailing the head
+                  c.strokeStyle = '#365314';
+                  c.lineWidth = 0.8;
+                  c.beginPath();
+                  c.moveTo(_gsHeadX, _gsHeadY);
+                  for (var gss = 1; gss < 14; gss++) {
+                    var _gssX = _gsHeadX - gss * 1.1;
+                    var _gssY = _gsHeadY + Math.sin(gss * 1.2 + _gsProg * 4) * 1.1;
+                    c.lineTo(_gssX, _gssY);
+                  }
+                  c.stroke();
+                  // Yellow lateral stripe (garter signature)
+                  c.strokeStyle = '#facc15';
+                  c.lineWidth = 0.3;
+                  c.beginPath();
+                  c.moveTo(_gsHeadX, _gsHeadY - 0.2);
+                  for (var gss2 = 1; gss2 < 14; gss2++) {
+                    var _gss2X = _gsHeadX - gss2 * 1.1;
+                    var _gss2Y = _gsHeadY + Math.sin(gss2 * 1.2 + _gsProg * 4) * 1.1 - 0.2;
+                    c.lineTo(_gss2X, _gss2Y);
+                  }
+                  c.stroke();
+                  // Head — tiny triangular dot
+                  c.fillStyle = '#365314';
+                  c.beginPath(); c.ellipse(_gsHeadX, _gsHeadY, 0.7, 0.5, 0, 0, 6.28); c.fill();
+                  // Eye
+                  c.fillStyle = '#1c1917';
+                  c.beginPath(); c.arc(_gsHeadX + 0.3, _gsHeadY - 0.2, 0.15, 0, 6.28); c.fill();
+                  // Forked tongue flicker
+                  if (Math.sin(t2 * 0.5) > 0.5) {
+                    c.strokeStyle = '#dc2626';
+                    c.lineWidth = 0.2;
+                    c.beginPath();
+                    c.moveTo(_gsHeadX + 0.6, _gsHeadY);
+                    c.lineTo(_gsHeadX + 1.4, _gsHeadY - 0.15);
+                    c.moveTo(_gsHeadX + 0.6, _gsHeadY);
+                    c.lineTo(_gsHeadX + 1.4, _gsHeadY + 0.15);
+                    c.stroke();
+                  }
+                }
               }
 
               // ── Stepping stones path leading from meadow to the hive ──
