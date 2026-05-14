@@ -19718,6 +19718,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Maine Winter Guide'),
               h('div', { style: { fontSize: '10px', color: '#bae6fd', marginTop: '2px' } }, 'Moose, ice, snow kit, tires')
             ),
+            h('button', { onClick: function() { upd('view', 'neurodivergentGuide'); },
+              style: { padding: '16px', borderRadius: '12px', border: '2px solid #a78bfa', background: 'linear-gradient(135deg, #4c1d95, #1e1b4b)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              h('div', { style: { fontSize: '28px' } }, '🧠'),
+              h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Neurodivergent Driver Guide'),
+              h('div', { style: { fontSize: '10px', color: '#c4b5fd', marginTop: '2px' } }, 'ADHD, autism, sensory, anxiety, IEP/504 road-test accommodations')
+            ),
             h('button', { onClick: function() { upd('view', 'nightVisionIntro'); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #818cf8', background: 'linear-gradient(135deg, #1e1b4b, #0f172a)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '🌃'),
@@ -21988,6 +21994,224 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               'At 40 mph on dry: ≈ 100 feet. ',
               'This is not opinion — it is v²/(2μg).'
             )
+          )
+        );
+      }
+
+      // ── NEURODIVERGENT DRIVER GUIDE ──
+      // School-psych-authored content covering the disability-relevant
+      // angles other driver's-ed tools skip: sensory overload, executive
+      // function load, ADHD attention dynamics, autistic predictability
+      // needs, and anxiety regulation behind the wheel. Plus the IEP/504
+      // road-test accommodation literacy students rarely learn elsewhere
+      // and concrete language for disclosing accommodations to instructors
+      // and BMV examiners. Identity-first language; non-pathologizing.
+      // Sources: Drexel Autism Driving Project, ADDitude Magazine,
+      // CHADD, Autism Self Advocacy Network, Maine BMV.
+      if (view === 'neurodivergentGuide') {
+        var ND_SECTIONS = [
+          {
+            id: 'sensory',
+            icon: '👁️‍🗨️',
+            title: 'Sensory load',
+            color: '#a78bfa',
+            tint: 'rgba(167,139,250,0.10)',
+            challenges: 'Driving is one of the most sensory-dense daily activities a person does. You take in lane lines, signs, mirrors, dashboard, weather, road texture, engine sound, other-driver behavior, and your own body all at once. For sensory-sensitive drivers (autistic, SPD, post-concussion, migraine-prone), the load can saturate fast — and saturation looks like missed signs, slowed reactions, or a shutdown response.',
+            strategies: [
+              'Cut what you can: turn the radio off entirely for the first 6 months of driving, not down. One less channel competing for attention.',
+              'Polarized sunglasses on bright days reduce glare-load even when it is not technically too sunny.',
+              'On long drives, stop every 30 minutes the first month. Sensory recovery is real recovery.',
+              'Avoid HUD/heads-up displays, dashboard cycling animations, and bright phone screens at night — all increase visual load.',
+              'Build the route mentally before driving it. Less in-the-moment processing means more capacity for unexpected things.'
+            ]
+          },
+          {
+            id: 'executive',
+            icon: '🧠',
+            title: 'Executive function — planning the drive',
+            color: '#22d3ee',
+            tint: 'rgba(34,211,238,0.10)',
+            challenges: 'Driving asks executive function constantly: holding a goal (the destination), sequencing steps (lane changes, turns), updating the plan when a road is closed, and inhibiting distracting impulses. For ADHD, autism, or executive-function-different brains, the cost of doing this in real time is real. The fix is not "try harder" — it is offloading the load.',
+            strategies: [
+              'Always navigate with audio turn-by-turn, even on routes you know. The voice frees your working memory for the road.',
+              'Pre-screen the route on a map BEFORE leaving. Note the tricky intersections. The plan you make in your kitchen is better than the plan you make at 45 mph.',
+              'Build a pre-drive checklist (mirrors, seat, phone mounted, GPS loaded, registration in glovebox) and run it the same way every single time. Routine offloads the planning.',
+              'If you miss a turn, take the next safe right and stop. Re-plan from a stopped car. Trying to recover at speed is where most novice mistakes happen.',
+              'Avoid driving when you are at the bottom of your executive-function tank — after a long school day, after a hard test, late at night. Tired EF = unsafe driver.'
+            ]
+          },
+          {
+            id: 'adhd',
+            icon: '⚡',
+            title: 'ADHD — attention regulation behind the wheel',
+            color: '#fbbf24',
+            tint: 'rgba(251,191,36,0.10)',
+            challenges: 'ADHD drivers face two opposite risks. On stimulating routes (city, weather, complex intersections) the brain is engaged and performance is often fine. On boring routes (long highway, repetitive suburb, late-night empty roads) attention drops fast — research consistently shows ADHD drivers crash more often in low-stimulation conditions, not high. Stimulant medication on board the day of driving is well-documented to reduce crash risk significantly.',
+            strategies: [
+              'On long highway stretches, scan actively: mirror, mirror, dash, mirror, scan-sides, mirror. Repeat. Active scanning fights highway hypnosis.',
+              'If you take stimulant medication, talk with your prescriber about coverage during driving hours. Driving on a wearing-off dose is not the same as driving medicated.',
+              'Use cruise control on long drives — it removes one demand and frees attention for scanning.',
+              'No phone, even for music selection, even at red lights. ADHD brains are not "good at multitasking" — that is a myth — and the cost of context-switching back to driving is documented in seconds, not milliseconds.',
+              'Hyperfocus on one detail (a billboard, a podcast, an argument in your head) is just as dangerous as distraction. Notice when you "wake up" and have not been tracking the road, and treat it as a real warning.'
+            ]
+          },
+          {
+            id: 'autism',
+            icon: '🌱',
+            title: 'Autism — predictability and novel situations',
+            color: '#4ade80',
+            tint: 'rgba(74,222,128,0.10)',
+            challenges: 'For many autistic drivers, the rules of the road are a strength: clear, learnable, follow-able. The hard parts are the un-rule-bound things — eye contact at four-way stops, reading whether the driver waving you on actually means it, an officer pulling you over and giving instructions you have never rehearsed, sudden detours that break the planned route. Practice handles most of this, and disclosure handles a lot of the rest.',
+            strategies: [
+              'Practice the same routes ten times before driving them alone. Familiarity radically lowers cognitive load and builds the confidence to handle exceptions when they appear.',
+              'Rehearse the "unspoken" interactions out loud with a parent or coach: the four-way-stop hand-wave, the merge wait-and-go, the construction worker holding a sign. Predictable scripts work.',
+              'Carry a one-page "if I am pulled over" card in the glovebox: license + registration + a written "I am autistic and may need a moment to process instructions. I am not being rude or evasive." A simple sentence dramatically de-escalates encounters that have gone wrong elsewhere.',
+              'Permission to take longer than peers to get to solo driving is a feature, not a deficit. The autism-driver research literature consistently finds that with adequate practice time, autistic drivers reach safe-solo readiness — it just takes more supervised hours.',
+              'When a route is unexpectedly closed, pull over to a parking lot before re-planning. Forcing yourself to improvise at speed is unsafe for any driver and especially costly when novelty itself raises load.'
+            ]
+          },
+          {
+            id: 'anxiety',
+            icon: '🌬️',
+            title: 'Anxiety — regulation while driving',
+            color: '#f472b6',
+            tint: 'rgba(244,114,182,0.10)',
+            challenges: 'Driving anxiety is common and almost never weakness. It can be highway-specific, bridge-specific, merging-specific, or just generalized. The body responds to perceived danger with the same chemistry whether the danger is real or anticipated, which is why white-knuckling does not "use up" the anxiety. Gradual exposure does.',
+            strategies: [
+              'Build up in tiers. Empty parking lot → empty residential street → quiet town road → light suburban → dense suburban → highway shoulder → on-ramp → highway. Stay at each tier until it is genuinely boring before moving up. Boring is the goal.',
+              'Box-breath through it: 4 in, hold 4, 4 out, hold 4. Three rounds. Works while driving because both hands stay on the wheel and you do not need to look away from the road.',
+              'If a panic response starts on the highway, the rule is: signal, take the next exit, pull into a parking lot, breathe. Do not try to "push through" at 65 mph.',
+              'Tell your parent or driving coach the specific things that scare you. Naming "I am scared of the merge from Forest Ave onto 295 north" makes it a specific problem to practice, not a vague identity ("I am bad at driving").',
+              'Anxiety lies. It tells you the merge is dangerous when in fact merges have a relatively low crash rate compared to intersections. You can hear what anxiety is saying without believing every word of it.'
+            ]
+          }
+        ];
+        var ROAD_TEST_ACCOMMODATIONS = [
+          'Extended time for the maneuvers (parallel park, three-point) without time-pressure penalty.',
+          'A familiar instructor present in the back seat as a comfort presence (varies by state — Maine BMV examiners can permit this on request).',
+          'A written script of what the examiner will ask, provided in advance (so the verbal-processing demand is reduced during the test itself).',
+          'A break partway through the test in a parking lot, especially for sensory-load reasons. Not a "do-over" — just a regulation pause.',
+          'A quieter route option (residential rather than commercial corridor) when route choice is at the examiner\'s discretion.',
+          'Permission to verbally narrate what you are doing ("checking left, signaling, merging") without it counting against you.'
+        ];
+        return h('div', { style: { padding: '20px', maxWidth: '820px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
+          h('div', { style: { background: 'linear-gradient(135deg, #4c1d95, #1e1b4b, #312e81)', borderRadius: '14px', padding: '22px', border: '1px solid #a78bfa', marginBottom: '16px', textAlign: 'center', boxShadow: '0 8px 24px rgba(76,29,149,0.3)' } },
+            h('div', { style: { fontSize: '44px', marginBottom: '6px' } }, '🧠'),
+            h('h2', { style: { fontSize: '22px', fontWeight: 900, color: '#fff', margin: '0 0 4px 0' } }, 'Neurodivergent Driver Guide'),
+            h('div', { style: { fontSize: '12px', color: '#c4b5fd', lineHeight: '1.5', maxWidth: '560px', margin: '0 auto' } }, 'For ADHD, autistic, anxious, sensory-different, and executive-function-different drivers. The disability-relevant angles other driver\'s-ed material skips. Identity-first; designed by school-psych guidance.')
+          ),
+          // Five condition panels
+          ND_SECTIONS.map(function(sec) {
+            return h('div', {
+              key: 'nd-sec-' + sec.id,
+              style: {
+                marginBottom: '12px',
+                padding: '14px 16px',
+                background: '#0f172a',
+                border: '1px solid #1e293b',
+                borderLeft: '4px solid ' + sec.color,
+                borderRadius: '10px'
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' } },
+                h('div', {
+                  'aria-hidden': 'true',
+                  style: {
+                    width: '40px', height: '40px', borderRadius: '50%',
+                    background: sec.tint,
+                    border: '1.5px solid ' + sec.color,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '20px', flexShrink: 0, lineHeight: 1
+                  }
+                }, sec.icon),
+                h('div', { style: { fontSize: '15px', fontWeight: 800, color: sec.color } }, sec.title)
+              ),
+              h('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.6', marginBottom: '10px' } }, sec.challenges),
+              h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } }, 'Concrete strategies'),
+              h('ul', { style: { margin: 0, paddingLeft: '18px', color: '#cbd5e1', fontSize: '12px', lineHeight: '1.7' } },
+                sec.strategies.map(function(s, i) {
+                  return h('li', { key: 'nd-' + sec.id + '-s-' + i, style: { marginBottom: '4px' } }, s);
+                })
+              )
+            );
+          }),
+          // IEP/504 road test accommodations panel
+          h('div', {
+            style: {
+              marginTop: '16px', marginBottom: '12px',
+              padding: '14px 16px',
+              background: 'linear-gradient(135deg, rgba(34,197,94,0.10), rgba(15,23,42,0))',
+              border: '1px solid rgba(34,197,94,0.35)',
+              borderLeft: '4px solid #22c55e',
+              borderRadius: '10px'
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' } },
+              h('div', {
+                'aria-hidden': 'true',
+                style: {
+                  width: '40px', height: '40px', borderRadius: '50%',
+                  background: 'rgba(34,197,94,0.16)',
+                  border: '1.5px solid #22c55e',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '20px', flexShrink: 0, lineHeight: 1
+                }
+              }, '📋'),
+              h('div', { style: { fontSize: '15px', fontWeight: 800, color: '#4ade80' } }, 'Road test accommodations you can request')
+            ),
+            h('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.6', marginBottom: '10px' } },
+              'You do not have to go into the BMV road test cold. Maine BMV examiners can grant accommodations on request when there is a documented disability — sometimes with paperwork, sometimes just with a reasonable conversation. Common ones, the same kind a 504 plan covers in school:'),
+            h('ul', { style: { margin: '0 0 8px 0', paddingLeft: '18px', color: '#cbd5e1', fontSize: '12px', lineHeight: '1.7' } },
+              ROAD_TEST_ACCOMMODATIONS.map(function(a, i) {
+                return h('li', { key: 'rt-acc-' + i, style: { marginBottom: '4px' } }, a);
+              })
+            ),
+            h('div', { style: { fontSize: '11px', color: '#86efac', fontStyle: 'italic', marginTop: '8px' } },
+              'Call ahead. Ask what documentation they need. Going in with a script and a request beats showing up unprepared.')
+          ),
+          // Disclosure guidance
+          h('div', {
+            style: {
+              marginBottom: '12px',
+              padding: '14px 16px',
+              background: 'linear-gradient(135deg, rgba(59,130,246,0.08), rgba(15,23,42,0))',
+              border: '1px solid rgba(59,130,246,0.30)',
+              borderLeft: '4px solid #60a5fa',
+              borderRadius: '10px'
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' } },
+              h('div', {
+                'aria-hidden': 'true',
+                style: {
+                  width: '40px', height: '40px', borderRadius: '50%',
+                  background: 'rgba(59,130,246,0.16)',
+                  border: '1.5px solid #60a5fa',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '20px', flexShrink: 0, lineHeight: 1
+                }
+              }, '🗣️'),
+              h('div', { style: { fontSize: '15px', fontWeight: 800, color: '#93c5fd' } }, 'Disclosure — when, how, to whom')
+            ),
+            h('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.65' } },
+              h('p', { style: { margin: '0 0 8px 0' } },
+                h('b', null, 'Driving instructor: '),
+                'Disclosure helps. They can pace differently, repeat instructions, route around your specific stressors. A simple sentence works: "I have ADHD. I will stay on task better if you tell me each instruction one at a time instead of stacking them."'),
+              h('p', { style: { margin: '0 0 8px 0' } },
+                h('b', null, 'BMV road-test examiner: '),
+                'Disclose if you are requesting an accommodation. Otherwise it is your choice. Some students disclose to manage their own pre-test anxiety; others find that examiners react better to a calm, plain-spoken driver of any neurotype.'),
+              h('p', { style: { margin: '0 0 8px 0' } },
+                h('b', null, 'Police at a stop: '),
+                'Optional. Many autistic and ADHD drivers carry a printed glovebox card to disclose without speaking — useful if speech production drops under stress. Sample text: "I am autistic. I may need a moment to process what you are asking. I am not being rude or evasive."'),
+              h('p', { style: { margin: 0 } },
+                h('b', null, 'Insurance company: '),
+                'Generally not required and can affect rates. Most disability advocates say disclose only if a specific incident, accommodation, or claim makes it relevant.'))
+          ),
+          // Sources
+          h('div', { style: { marginTop: '14px', padding: '10px 12px', background: 'rgba(15,23,42,0.6)', borderRadius: '8px', border: '1px solid #1e293b', color: '#94a3b8', fontSize: '10px', lineHeight: '1.6' } },
+            h('b', { style: { color: '#cbd5e1' } }, '📚 Sources: '),
+            'Drexel Autism Driving Project (peer-reviewed research on autistic driver outcomes); ADDitude Magazine + Russell Barkley\'s ADHD-and-driving research summaries; CHADD position statements on stimulant medication and driving safety; Autism Self Advocacy Network disclosure guidance; Maine BMV examiner-policy documentation. Identity-first language follows community-consensus norms (Kenny 2016, Bury 2020).'
           )
         );
       }
