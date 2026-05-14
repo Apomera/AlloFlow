@@ -4426,7 +4426,7 @@
             // Earth & Space
             galaxy: true, moonMission: true, plateTectonics: true, spaceColony: true, spaceExplorer: true,
             // Data & Logic
-            behaviorLab: true, dataStudio: true, economicsLab: true, logicLab: true,
+            behaviorLab: true, schoolBehaviorToolkit: true, dataStudio: true, economicsLab: true, logicLab: true,
             // Geography
             geoQuiz: true, geometryProver: true, geometryWorld: true,
             // Applied
