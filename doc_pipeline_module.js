@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -13289,13 +13289,118 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               </div>
           `;
       } else if (item.type === 'image') {
+          // Visual Support resource — render ALL panels (not just one),
+          // including AI labels + teacher-placed labels + leader lines so
+          // the export mirrors what's on screen. (Previously this branch
+          // emitted only `item.data.imageUrl` and dropped panels/labels.)
+          const _vpPlan = item.data.visualPlan;
+          const _vpAnnos = item.data.annotations || {};
+          const _vpUserLabels = _vpAnnos.userLabels || {};
+          const _vpAiPositions = _vpAnnos.aiLabelPositions || {};
+          const _vpAiAnchors = _vpAnnos.aiLabelAnchors || {};
+          const _vpCaptionOv = _vpAnnos.captionOverrides || {};
+          const _vpImageOv = _vpAnnos.imageOverrides || {};
+          const _vpOrder = Array.isArray(_vpAnnos.panelOrder) ? _vpAnnos.panelOrder : null;
+          const _vpLabelPos = {
+              'top-left':      { left: 6,  top: 6  },
+              'top-center':    { left: 50, top: 6  },
+              'top-right':     { left: 94, top: 6  },
+              'center-left':   { left: 6,  top: 50 },
+              'center':        { left: 50, top: 50 },
+              'center-right':  { left: 94, top: 50 },
+              'bottom-left':   { left: 6,  top: 85 },
+              'bottom-center': { left: 50, top: 85 },
+              'bottom-right':  { left: 94, top: 85 }
+          };
+          const _vpEsc = (s) => String(s == null ? '' : s)
+              .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+          const _vpRenderPanel = (panel, idx) => {
+              const _imgUrl = _vpImageOv[idx] || panel.imageUrl || '';
+              const _cap = (_vpCaptionOv[idx] !== undefined ? _vpCaptionOv[idx] : (panel.caption || ''));
+              const _aiLabels = Array.isArray(panel.labels) ? panel.labels : [];
+              const _userLs = Array.isArray(_vpUserLabels[idx]) ? _vpUserLabels[idx] : [];
+              // Resolve each AI label's position (override > default key > fallback)
+              const _resolved = _aiLabels.map((label, li) => {
+                  const text = typeof label === 'string' ? label : (label && label.text) || '';
+                  const posKey = (typeof label === 'object' && label && label.position) || 'bottom-center';
+                  const def = _vpLabelPos[posKey] || _vpLabelPos['bottom-center'];
+                  const ov = _vpAiPositions[idx + '-' + li];
+                  const left = ov && ov.left !== undefined ? parseFloat(ov.left) : def.left;
+                  const top  = ov && ov.top  !== undefined ? parseFloat(ov.top)  : def.top;
+                  const anchor = _vpAiAnchors[idx + '-' + li];
+                  return { text, left, top, anchor };
+              });
+              // Leader-line SVG: one line from each label to its anchor
+              const _lineParts = [];
+              _resolved.forEach((r) => {
+                  if (!r.anchor || r.anchor.x === undefined) return;
+                  const dist = Math.sqrt(Math.pow(r.left - r.anchor.x, 2) + Math.pow(r.top - r.anchor.y, 2));
+                  if (dist < 5) return;
+                  _lineParts.push(
+                      `<line x1="${r.left}" y1="${r.top}" x2="${r.anchor.x}" y2="${r.anchor.y}" stroke="#6366f1" stroke-width="0.5" stroke-dasharray="2 1.5" opacity="0.6"/>` +
+                      `<circle cx="${r.anchor.x}" cy="${r.anchor.y}" r="1.4" fill="#6366f1" stroke="white" stroke-width="0.4"/>`
+                  );
+              });
+              _userLs.forEach((l) => {
+                  if (l.anchorX === undefined || l.anchorX === null) return;
+                  const dist = Math.sqrt(Math.pow(l.x - l.anchorX, 2) + Math.pow(l.y - l.anchorY, 2));
+                  if (dist < 5) return;
+                  _lineParts.push(
+                      `<line x1="${l.x}" y1="${l.y}" x2="${l.anchorX}" y2="${l.anchorY}" stroke="#10b981" stroke-width="0.5" stroke-dasharray="2 1.5" opacity="0.7"/>` +
+                      `<circle cx="${l.anchorX}" cy="${l.anchorY}" r="1.4" fill="#10b981" stroke="white" stroke-width="0.4"/>`
+                  );
+              });
+              const _svgHtml = _lineParts.length
+                  ? `<svg class="vp-leader" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2;">${_lineParts.join('')}</svg>`
+                  : '';
+              // Label badges (AI = indigo, teacher = green)
+              const _aiLabelHtml = _resolved.filter(r => r.text).map(r =>
+                  `<div class="vp-label" style="left:${r.left}%;top:${r.top}%;">${_vpEsc(r.text)}</div>`
+              ).join('');
+              const _userLabelHtml = _userLs.filter(l => l && l.text).map(l =>
+                  `<div class="vp-label vp-label-user" style="left:${l.x}%;top:${l.y}%;">${_vpEsc(l.text)}</div>`
+              ).join('');
+              return `
+                  <figure class="vp-panel" style="margin:0;background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+                      <div class="vp-image-wrap" style="position:relative;">
+                          ${_imgUrl ? `<img loading="lazy" src="${_vpEsc(_imgUrl)}" alt="${_vpEsc(_cap || 'Panel ' + (idx + 1))}" style="width:100%;height:auto;display:block;" />` : '<div style="padding:32px;text-align:center;color:#94a3b8;">(no image)</div>'}
+                          ${_svgHtml}
+                          ${_aiLabelHtml}
+                          ${_userLabelHtml}
+                      </div>
+                      ${_cap ? `<figcaption class="vp-caption" style="font-style:italic;color:#475569;text-align:center;padding:8px;margin:0;font-size:14px;">${_vpEsc(_cap)}</figcaption>` : ''}
+                  </figure>
+              `;
+          };
+          // Decide between multi-panel layout and single-image fallback
+          let _vpBody;
+          if (_vpPlan && Array.isArray(_vpPlan.panels) && _vpPlan.panels.length > 0) {
+              const _indices = (_vpOrder && _vpOrder.length === _vpPlan.panels.length)
+                  ? _vpOrder
+                  : _vpPlan.panels.map((_, i) => i);
+              const _panelsHtml = _indices
+                  .map((i) => _vpPlan.panels[i] ? _vpRenderPanel(_vpPlan.panels[i], i) : '')
+                  .join('');
+              const _gridCols = _vpPlan.panels.length === 1 ? 1 : 2;
+              const _planTitle = _vpPlan.title ? `<p style="text-align:center;font-weight:600;color:#334155;margin:0 0 12px;">${_vpEsc(_vpPlan.title)}</p>` : '';
+              _vpBody = `${_planTitle}<div class="vp-grid" style="display:grid;grid-template-columns:repeat(${_gridCols},minmax(0,1fr));gap:14px;">${_panelsHtml}</div>`;
+          } else if (item.data.imageUrl) {
+              _vpBody = _vpRenderPanel(
+                  { imageUrl: item.data.imageUrl, caption: item.data.prompt || '', labels: [] },
+                  0
+              );
+          } else {
+              _vpBody = '<p style="text-align:center;color:#94a3b8;font-style:italic;">No visual content.</p>';
+          }
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
-                  <div style="text-align:center">
-                  <img loading="lazy" src="${item.data.imageUrl}" alt="${item.data.prompt || item.title || 'Visual support image'}" />
-                  <p><em>${item.data.prompt}</em></p>
-                  </div>
+                  <style>
+                      .vp-label { position:absolute; transform:translate(-50%,-50%); background:rgba(255,255,255,0.92); color:#1e293b; border:1px solid #6366f1; border-radius:4px; padding:2px 6px; font-size:12px; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.12); white-space:nowrap; z-index:3; pointer-events:none; }
+                      .vp-label-user { border-color:#10b981; background:rgba(236,253,245,0.95); }
+                  </style>
+                  ${_vpBody}
               </div>
           `;
       } else if (item.type === 'quiz') {
@@ -15254,11 +15359,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     downloadBatchResults: _wrapAsync(downloadBatchResults),
   };
 };
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
