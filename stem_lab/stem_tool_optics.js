@@ -3655,6 +3655,7 @@
             h('div', { style: { padding: 14, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', background: 'linear-gradient(135deg, ' + tierColor + '22, transparent)' } },
               h('div', { style: { position: 'relative', width: 88, height: 88, flexShrink: 0 } },
                 h('svg', { viewBox: '0 0 100 100', width: 88, height: 88,
+                  role: 'img',
                   'aria-label': 'Score: ' + d.quizCorrect + ' out of ' + d.quizQuestions.length
                 },
                   h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
@@ -3677,16 +3678,24 @@
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
                 d.quizQuestions.map(function(qq, qi) {
                   var isCorrect = ans[qi] === qq.correct;
+                  // WCAG 1.4.1 — quiz-result dot needs a non-color cue
+                  // for sighted users with red-green color vision
+                  // differences. Adding the ✓/✗ glyph inside the dot
+                  // gives a shape-based indicator that doesn't depend
+                  // on red-vs-green discrimination. aria-label below
+                  // already covered the screen-reader case.
                   return h('div', { key: qi,
-                    title: 'Q' + (qi + 1) + (isCorrect ? ' correct ✓' : ' incorrect'),
+                    title: 'Q' + (qi + 1) + (isCorrect ? ' correct ✓' : ' incorrect ✗'),
                     style: {
-                      width: 14, height: 14, borderRadius: 3,
+                      width: 16, height: 16, borderRadius: 3,
                       background: isCorrect ? '#22c55e' : '#ef4444',
                       border: '1.5px solid ' + (isCorrect ? '#15803d' : '#7f1d1d'),
-                      boxShadow: '0 1px 1px rgba(0,0,0,0.3)'
+                      boxShadow: '0 1px 1px rgba(0,0,0,0.3)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: '#fff', fontSize: 11, fontWeight: 800, lineHeight: 1
                     },
                     'aria-label': 'Q' + (qi + 1) + (isCorrect ? ' correct' : ' incorrect')
-                  });
+                  }, isCorrect ? '✓' : '✗');
                 })
               )
             ),

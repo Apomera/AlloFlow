@@ -21,6 +21,79 @@
       '  10%  { transform: translate(-50%, 0%);    opacity: 1; }',
       '  88%  { transform: translate(-50%, 0%);    opacity: 1; }',
       '  100% { transform: translate(-50%, -10%);  opacity: 0; }',
+      '}',
+      // Mirage heat-haze shimmer: subtle horizontal oscillation that gives
+      // the haze bands the visual "wavy heat" feeling. Disabled under
+      // prefers-reduced-motion via the .op-anim media query below.
+      '@keyframes opticslab-mirage-shimmer {',
+      '  0%   { transform: translateX(0px); }',
+      '  25%  { transform: translateX(2px); }',
+      '  50%  { transform: translateX(0px); }',
+      '  75%  { transform: translateX(-2px); }',
+      '  100% { transform: translateX(0px); }',
+      '}',
+      '.opticslab-mirage-haze { animation: opticslab-mirage-shimmer 1.6s ease-in-out infinite; transform-origin: center; }',
+      '.opticslab-mirage-haze:nth-child(2) { animation-duration: 2.1s; animation-delay: -0.4s; }',
+      '.opticslab-mirage-haze:nth-child(3) { animation-duration: 1.3s; animation-delay: -0.8s; }',
+
+      // Interference: expanding wavefronts radiating outward from a slit.
+      // We use r animation on <circle> elements (SVG attribute, NOT CSS prop).
+      // To keep transforms compatible, we scale up via CSS transform instead and
+      // place the circle with cx/cy on the SVG side, since some browsers do not
+      // animate SVG r via CSS yet. Each waveset is offset in time for ripple effect.
+      '@keyframes opticslab-wavefront {',
+      '  0%   { r: 4; opacity: 0.95; }',
+      '  100% { r: 110; opacity: 0; }',
+      '}',
+      '.opticslab-wavefront { animation: opticslab-wavefront 1.8s linear infinite; }',
+      '.opticslab-wavefront-2 { animation-delay: -0.6s; }',
+      '.opticslab-wavefront-3 { animation-delay: -1.2s; }',
+
+      // Photon dots traveling along a principal ray. We translate a small dot
+      // along an SVG path using offset-path / offset-distance (CSS Motion Path).
+      // Browsers without support fall back to a static dot (still visible).
+      '@keyframes opticslab-photon-travel {',
+      '  0%   { offset-distance: 0%;   opacity: 0; }',
+      '  10%  { opacity: 1; }',
+      '  90%  { opacity: 1; }',
+      '  100% { offset-distance: 100%; opacity: 0; }',
+      '}',
+      '.opticslab-photon { animation: opticslab-photon-travel 2.4s linear infinite; offset-rotate: 0deg; }',
+      '.opticslab-photon-2 { animation-delay: -0.8s; }',
+      '.opticslab-photon-3 { animation-delay: -1.6s; }',
+
+      // E-field vector oscillation — a perpendicular line that grows and shrinks
+      // in sync with the wave traveling through the polarizer system.
+      '@keyframes opticslab-efield-pulse {',
+      '  0%, 100% { transform: scaleY(1); opacity: 0.9; }',
+      '  50%      { transform: scaleY(-1); opacity: 0.9; }',
+      '}',
+      '.opticslab-efield-vec { animation: opticslab-efield-pulse 1.2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }',
+
+      // Quantum-twist "photon just landed" flash for the newest dot in the
+      // single-photon double-slit accumulator. Brief scale-up + glow that
+      // settles to the steady 1.5px dot.
+      '@keyframes opticslab-photon-land {',
+      '  0%   { transform: scale(3.5); opacity: 0.2; filter: drop-shadow(0 0 8px #fbbf24); }',
+      '  40%  { transform: scale(2.2); opacity: 1;   filter: drop-shadow(0 0 10px #fbbf24); }',
+      '  100% { transform: scale(1);   opacity: 1;   filter: none; }',
+      '}',
+      '.opticslab-photon-land { transform-origin: center; transform-box: fill-box; animation: opticslab-photon-land 360ms ease-out; }',
+
+      // Quantum-twist wavefront ripples emanating from each slit (continuous,
+      // not gated on photon firing). Two slits = two coherent sources.
+      '@keyframes opticslab-slit-wave {',
+      '  0%   { r: 2;  opacity: 0.65; }',
+      '  100% { r: 80; opacity: 0;    }',
+      '}',
+      '.opticslab-slit-wave { animation: opticslab-slit-wave 2.2s linear infinite; }',
+      '.opticslab-slit-wave-2 { animation-delay: -0.55s; }',
+      '.opticslab-slit-wave-3 { animation-delay: -1.10s; }',
+      '.opticslab-slit-wave-4 { animation-delay: -1.65s; }',
+
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .opticslab-mirage-haze, .opticslab-wavefront, .opticslab-photon, .opticslab-efield-vec,',
+      '  .opticslab-photon-land, .opticslab-slit-wave { animation: none !important; }',
       '}'
     ].join('');
     if (document.head) document.head.appendChild(_opStyle);
@@ -306,28 +379,79 @@
         h('text', { x: sx(objX), y: sy(hObj) - 6, fill: '#fbbf24', fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, 'Object'),
         // Three principal rays for curved mirrors (or single law-of-reflection for plane)
         (function() {
+          // Helper to push a photon dot along a path (CSS Motion Path)
+          function makePhoton(key, pathStr, color, delay) {
+            return h('circle', {
+              key: key, r: 3.2, fill: color,
+              stroke: '#fff', strokeWidth: 0.5,
+              style: {
+                offsetPath: 'path("' + pathStr + '")',
+                WebkitOffsetPath: 'path("' + pathStr + '")',
+                filter: 'drop-shadow(0 0 4px ' + color + ')',
+                animationDuration: '2.6s',
+                animationDelay: (delay || 0) + 's'
+              },
+              className: 'opticslab-photon',
+              cx: 0, cy: 0
+            });
+          }
           if (mt === 'plane') {
-            // Plane mirror: single ray from object tip to mirror at random angle, reflected
+            // Plane mirror: incidence + reflection ray
+            var planePath = 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(0) + ' L ' + sx(-objX) + ' ' + sy(hObj);
             return [
               h('line', { key: 'r1', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(0), stroke: '#10b981', strokeWidth: 1.5, strokeDasharray: '0' }),
               h('line', { key: 'r2', x1: sx(0), y1: sy(0), x2: sx(-objX), y2: sy(hObj), stroke: '#10b981', strokeWidth: 1.5, strokeDasharray: '4 3', opacity: 0.7 }),
               // Virtual image (behind mirror, dotted)
-              h('line', { key: 'rv', x1: sx(objX), y1: sy(hObj), x2: sx(-objX), y2: sy(hObj), stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.5 })
+              h('line', { key: 'rv', x1: sx(objX), y1: sy(hObj), x2: sx(-objX), y2: sy(hObj), stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.5 }),
+              makePhoton('pp1', planePath, '#10b981', 0)
             ];
           }
           // Curved mirror — 3 principal rays from object tip
           var children = [];
+          var photonPaths = [];
           var imgY = (hImg == null) ? 0 : hImg;
           var imgIsValid = imgX != null && _isNum(imgX) && _isNum(imgY);
+          // ── Light cones for concave-mirror real images ──
+          // Same visual logic as the lens: the object's tip emits light that
+          // fills the mirror aperture and (after reflection) reconverges at
+          // the image tip. For mirrors the image is on the SAME side as the
+          // object, so the two cones overlap in space — physically accurate:
+          // outgoing and reflected light occupy the same region.
+          if (mt === 'concave' && imgIsValid && d_i > 0) {
+            children.push(h('polygon', {
+              key: 'cone-in',
+              points: [
+                sx(objX), sy(hObj),
+                sx(0), sy(10),
+                sx(0), sy(-10)
+              ].join(' '),
+              fill: 'rgba(251,191,36,0.08)', stroke: 'rgba(251,191,36,0.15)', strokeWidth: 0.5
+            }));
+            children.push(h('polygon', {
+              key: 'cone-out',
+              points: [
+                sx(0), sy(10),
+                sx(0), sy(-10),
+                sx(imgX), sy(imgY)
+              ].join(' '),
+              fill: 'rgba(239,68,68,0.08)', stroke: 'rgba(239,68,68,0.15)', strokeWidth: 0.5
+            }));
+          }
           // Ray 1: parallel to axis from object tip → hits mirror at (0, hObj) → reflects through F
           children.push(h('line', { key: 'r1a', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(hObj), stroke: '#10b981', strokeWidth: 1.5 }));
           if (imgIsValid && d_i > 0) {
             children.push(h('line', { key: 'r1b', x1: sx(0), y1: sy(hObj), x2: sx(imgX), y2: sy(imgY), stroke: '#10b981', strokeWidth: 1.5 }));
+            photonPaths.push({ color: '#10b981',
+              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(hObj) + ' L ' + sx(imgX) + ' ' + sy(imgY) });
           } else if (imgIsValid && d_i < 0) {
             // Virtual: reflect away from F, dotted extension behind mirror to virtual image
             // The reflected ray, when extended backward, passes through the virtual image
-            children.push(h('line', { key: 'r1b', x1: sx(0), y1: sy(hObj), x2: sx(cmMax), y2: sy(hObj + (cmMax / Math.abs(f)) * hObj), stroke: '#10b981', strokeWidth: 1.5 }));
+            var divergedRightX = cmMax;
+            var divergedRightY = hObj + (cmMax / Math.abs(f)) * hObj;
+            children.push(h('line', { key: 'r1b', x1: sx(0), y1: sy(hObj), x2: sx(divergedRightX), y2: sy(divergedRightY), stroke: '#10b981', strokeWidth: 1.5 }));
             children.push(h('line', { key: 'r1c', x1: sx(0), y1: sy(hObj), x2: sx(imgX), y2: sy(imgY), stroke: '#10b981', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.6 }));
+            photonPaths.push({ color: '#10b981',
+              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(hObj) + ' L ' + sx(divergedRightX) + ' ' + sy(divergedRightY) });
           }
           // Ray 2: through F → reflects parallel
           if (mt === 'concave' && d_o > Math.abs(f)) {
@@ -337,6 +461,8 @@
             var yAtMirror = hObj + slope2 * (0 - objX);
             children.push(h('line', { key: 'r2a', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(yAtMirror), stroke: '#06b6d4', strokeWidth: 1.5 }));
             children.push(h('line', { key: 'r2b', x1: sx(0), y1: sy(yAtMirror), x2: sx(cmMax), y2: sy(yAtMirror), stroke: '#06b6d4', strokeWidth: 1.5 }));
+            photonPaths.push({ color: '#06b6d4',
+              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(yAtMirror) + ' L ' + sx(cmMax) + ' ' + sy(yAtMirror) });
           }
           // Ray 3: through C (center of curvature, at -2f) → reflects back along itself
           if (mt === 'concave') {
@@ -344,11 +470,23 @@
             var yAtMir3 = hObj + slope3 * (0 - objX);
             children.push(h('line', { key: 'r3a', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(yAtMir3), stroke: '#a855f7', strokeWidth: 1.5 }));
             children.push(h('line', { key: 'r3b', x1: sx(0), y1: sy(yAtMir3), x2: sx(objX), y2: sy(hObj), stroke: '#a855f7', strokeWidth: 1.5, strokeDasharray: '0' }));
+            photonPaths.push({ color: '#a855f7',
+              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(yAtMir3) + ' L ' + sx(objX) + ' ' + sy(hObj) });
           }
           // Image arrow
           if (imgIsValid) {
             var stroke = (d_i > 0) ? '#ef4444' : '#fca5a5';
             var dash = (d_i > 0) ? '0' : '3 3';
+            // Focus halo at real-image convergence point (same pattern as lens).
+            if (d_i > 0) {
+              children.push(h('circle', {
+                key: 'mimgfocus',
+                cx: sx(imgX), cy: sy(imgY), r: 5,
+                fill: 'none', stroke: '#ef4444', strokeWidth: 1.2,
+                className: 'opticslab-wavefront',
+                style: { animationDuration: '1.6s', transformOrigin: sx(imgX) + 'px ' + sy(imgY) + 'px' }
+              }));
+            }
             children.push(h('line', { key: 'img', x1: sx(imgX), y1: sy(0), x2: sx(imgX), y2: sy(imgY), stroke: stroke, strokeWidth: 3, strokeDasharray: dash, opacity: (d_i > 0) ? 1 : 0.7 }));
             var arrowY = imgY > 0 ? sy(imgY) - 2 : sy(imgY) + 2;
             var arrowOff = imgY > 0 ? 4 : -4;
@@ -359,6 +497,10 @@
             }));
             children.push(h('text', { key: 'imglab', x: sx(imgX), y: imgY > 0 ? sy(imgY) - 8 : sy(imgY) + 14, fill: stroke, fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, d_i > 0 ? 'Image (real)' : 'Image (virtual)'));
           }
+          // Add photon dots along each principal ray, staggered in time
+          photonPaths.forEach(function(pp, ppi) {
+            children.push(makePhoton('rphot' + ppi, pp.path, pp.color, -ppi * 0.8));
+          });
           return children;
         })(),
         // X axis label
@@ -582,6 +724,136 @@
           // TIR: draw the reflected ray as the strong outgoing ray (no transmitted light)
           h('text', { key: 'tir', x: cx, y: H - 8, fill: '#ef4444', fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, '⚡ TIR — no light transmitted into n₂')
         ],
+        // ── Animated photon dots along each ray ──
+        // Visualizes light traveling: incoming photon hits interface, splits
+        // into reflected (always) and refracted (when not TIR). Refracted
+        // photon's animation duration scales with n₂ so denser-medium light
+        // visibly slows down — the physics intuition behind Snell's law.
+        // Browsers without CSS Motion Path fall back to static dots.
+        (function() {
+          var photons = [];
+          var incPath = 'M ' + inX.toFixed(1) + ' ' + inY.toFixed(1) + ' L ' + cx + ' ' + cy;
+          var reflPath = 'M ' + cx + ' ' + cy + ' L ' + reflX.toFixed(1) + ' ' + reflY.toFixed(1);
+          // Incident photons — yellow, fast
+          photons.push(h('circle', {
+            key: 'pin1', r: 3.5, fill: '#fde047',
+            stroke: '#fff', strokeWidth: 0.6,
+            style: {
+              offsetPath: 'path("' + incPath + '")',
+              WebkitOffsetPath: 'path("' + incPath + '")',
+              filter: 'drop-shadow(0 0 4px #fde047)',
+              animationDuration: '1.8s'
+            },
+            className: 'opticslab-photon',
+            cx: 0, cy: 0
+          }));
+          photons.push(h('circle', {
+            key: 'pin2', r: 3,
+            fill: '#fde047', stroke: '#fff', strokeWidth: 0.4,
+            style: {
+              offsetPath: 'path("' + incPath + '")',
+              WebkitOffsetPath: 'path("' + incPath + '")',
+              filter: 'drop-shadow(0 0 3px #fde047)',
+              animationDuration: '1.8s',
+              animationDelay: '-0.9s'
+            },
+            className: 'opticslab-photon',
+            cx: 0, cy: 0
+          }));
+          // Reflected photons — green
+          photons.push(h('circle', {
+            key: 'pref1', r: 3, fill: '#34d399',
+            stroke: '#fff', strokeWidth: 0.4,
+            style: {
+              offsetPath: 'path("' + reflPath + '")',
+              WebkitOffsetPath: 'path("' + reflPath + '")',
+              filter: 'drop-shadow(0 0 3px #34d399)',
+              animationDuration: '1.8s'
+            },
+            className: 'opticslab-photon',
+            cx: 0, cy: 0
+          }));
+          // Refracted photons — cyan, slower in denser medium (×n2/n1 ≈ c/v)
+          if (!isTIR && theta2 != null) {
+            var refPath = 'M ' + cx + ' ' + cy + ' L ' + refrX.toFixed(1) + ' ' + refrY.toFixed(1);
+            // Photon visibly slows when n2 > n1. Cap so absurd durations don't kill animation.
+            var refDur = (1.8 * Math.max(0.5, Math.min(2.2, n2 / n1))).toFixed(2);
+            photons.push(h('circle', {
+              key: 'prefr1', r: 3.5, fill: '#22d3ee',
+              stroke: '#fff', strokeWidth: 0.5,
+              style: {
+                offsetPath: 'path("' + refPath + '")',
+                WebkitOffsetPath: 'path("' + refPath + '")',
+                filter: 'drop-shadow(0 0 4px #22d3ee)',
+                animationDuration: refDur + 's'
+              },
+              className: 'opticslab-photon',
+              cx: 0, cy: 0
+            }));
+            photons.push(h('circle', {
+              key: 'prefr2', r: 3, fill: '#22d3ee',
+              stroke: '#fff', strokeWidth: 0.4,
+              style: {
+                offsetPath: 'path("' + refPath + '")',
+                WebkitOffsetPath: 'path("' + refPath + '")',
+                filter: 'drop-shadow(0 0 3px #22d3ee)',
+                animationDuration: refDur + 's',
+                animationDelay: '-' + (parseFloat(refDur) / 2).toFixed(2) + 's'
+              },
+              className: 'opticslab-photon',
+              cx: 0, cy: 0
+            }));
+          }
+          // Interface impact glow — pulsing spot where photon strikes
+          photons.push(h('circle', {
+            key: 'impact',
+            cx: cx, cy: cy, r: 5,
+            fill: 'none',
+            stroke: isTIR ? '#ef4444' : '#fbbf24',
+            strokeWidth: 1.2,
+            className: 'opticslab-wavefront',
+            style: { animationDuration: '1.4s', transformOrigin: cx + 'px ' + cy + 'px' }
+          }));
+          // ── Wave crests: perpendicular tick marks that ride each ray ──
+          // The number of crests per cycle equals 1/(wavelength_relative). In
+          // the denser medium light moves slower (v = c/n) but frequency is
+          // conserved, so λ = v/f shrinks by 1/n. We render more ticks per
+          // cycle on the refracted ray so students see the wavelength visibly
+          // compress when light enters glass. The ticks use offsetRotate: 90deg
+          // so each rides the path perpendicular to its tangent.
+          function addCrests(pathStr, n_medium, n_baseCrests, color, dur, keyPrefix) {
+            var nCrests = Math.max(3, Math.round(n_baseCrests * n_medium));
+            for (var k = 0; k < nCrests; k++) {
+              // Wrap the line in a <g> for reliable CSS Motion Path support —
+              // some browsers don't honor offset-path on bare SVG primitives.
+              photons.push(h('g', {
+                key: keyPrefix + k,
+                style: {
+                  offsetPath: 'path("' + pathStr + '")',
+                  WebkitOffsetPath: 'path("' + pathStr + '")',
+                  offsetRotate: '90deg',
+                  WebkitOffsetRotate: '90deg',
+                  animationDuration: dur + 's',
+                  animationDelay: ((-k * dur) / nCrests).toFixed(2) + 's'
+                },
+                className: 'opticslab-photon'
+              },
+                h('line', {
+                  x1: -5, y1: 0, x2: 5, y2: 0,
+                  stroke: color, strokeWidth: 1.4, opacity: 0.55
+                })
+              ));
+            }
+          }
+          addCrests(incPath, n1, 4, '#fde047', '1.8', 'crestIn');
+          addCrests(reflPath, n1, 4, '#34d399', '1.8', 'crestRef');
+          if (!isTIR && theta2 != null) {
+            var refPath = 'M ' + cx + ' ' + cy + ' L ' + refrX.toFixed(1) + ' ' + refrY.toFixed(1);
+            var refDur = (1.8 * Math.max(0.5, Math.min(2.2, n2 / n1))).toFixed(2);
+            addCrests(refPath, n2, 4, '#22d3ee', refDur, 'crestRfr');
+          }
+          return photons;
+        })(),
         // Critical angle indicator (when n1 > n2)
         theta_c != null && h('text', { x: pad.l + 8, y: pad.t + 14, fill: '#fbbf24', fontSize: 10 }, 'θ_c = ' + radToDeg(theta_c).toFixed(2) + '°'),
         // Click hint
@@ -589,6 +861,11 @@
       ),
       h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' } },
         '🟡 incident  •  🟢 reflected (always present)  •  🔵 refracted  •  ⚡ red banner = total internal reflection'
+      ),
+      h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 2 } },
+        'Tip: count the wavelength tick marks on each ray. The refracted ray has more ticks per beat in dense media — that\'s ',
+        h('em', null, 'λ = v/f'),
+        ' compressing because v drops while f stays constant.'
       )
     );
   }
@@ -798,6 +1075,38 @@
           if (d_i == null || lens.error) return children;
           var imgY = m * hObj;
           var isVirtual = d_i < 0;
+          // ── Light cones: visualize the bundles of light traveling through
+          // the optical system. For a real image (converging lens, d_o > f),
+          // we draw two semi-transparent triangles to show:
+          //   (1) light from the OBJECT'S TIP fanning out to fill the lens, and
+          //   (2) light from the lens converging to the IMAGE'S TIP.
+          // The intersection at the lens is exactly where Snell-bent rays
+          // change direction. Students see "every point on the object emits
+          // light that fills the lens and converges to one image point."
+          if (lt === 'converging' && d_i > 0 && _isNum(imgY)) {
+            children.push(h('polygon', {
+              key: 'cone-in',
+              points: [
+                sx(objX), sy(hObj),
+                sx(0), sy(10),
+                sx(0), sy(-10)
+              ].join(' '),
+              fill: 'rgba(251,191,36,0.08)', stroke: 'rgba(251,191,36,0.15)', strokeWidth: 0.5
+            }));
+            children.push(h('polygon', {
+              key: 'cone-out',
+              points: [
+                sx(0), sy(10),
+                sx(0), sy(-10),
+                sx(imgX), sy(imgY)
+              ].join(' '),
+              fill: 'rgba(239,68,68,0.08)', stroke: 'rgba(239,68,68,0.15)', strokeWidth: 0.5
+            }));
+          }
+          // Collect ray-path strings so we can attach traveling photon dots that
+          // animate along each ray (CSS Motion Path). This gives students a
+          // visceral sense of light actually moving through the system.
+          var photonPaths = [];
           // Ray 1 — parallel to axis from tip → hits lens at (0, hObj) → bends through F' (right focus, at +fAbs)
           children.push(h('line', { key: 'r1a', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(hObj), stroke: '#10b981', strokeWidth: 1.5 }));
           if (lt === 'converging') {
@@ -807,6 +1116,8 @@
             var rightX = cmMax;
             var rightY = hObj + slope1 * (rightX - 0);
             children.push(h('line', { key: 'r1b', x1: sx(0), y1: sy(hObj), x2: sx(rightX), y2: sy(rightY), stroke: '#10b981', strokeWidth: 1.5 }));
+            photonPaths.push({ color: '#10b981',
+              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(hObj) + ' L ' + sx(rightX) + ' ' + sy(rightY) });
           } else {
             // Diverging: ray bends as if it came from the LEFT focus (F at -fAbs).
             // The outgoing ray's extension passes through (-fAbs, 0).
@@ -817,12 +1128,16 @@
             children.push(h('line', { key: 'r1b', x1: sx(0), y1: sy(hObj), x2: sx(rx), y2: sy(ry), stroke: '#10b981', strokeWidth: 1.5 }));
             // Dotted backward extension to F (the apparent virtual source)
             children.push(h('line', { key: 'r1c', x1: sx(0), y1: sy(hObj), x2: sx(-fAbs), y2: sy(0), stroke: '#10b981', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.5 }));
+            photonPaths.push({ color: '#10b981',
+              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(hObj) + ' L ' + sx(rx) + ' ' + sy(ry) });
           }
           // Ray 2 — through center of lens, undeviated
           var slope2 = (0 - hObj) / (0 - objX);
           var rx2 = cmMax;
           var ry2 = hObj + slope2 * (rx2 - objX);
           children.push(h('line', { key: 'r2', x1: sx(objX), y1: sy(hObj), x2: sx(rx2), y2: sy(ry2), stroke: '#06b6d4', strokeWidth: 1.5 }));
+          photonPaths.push({ color: '#06b6d4',
+            path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(rx2) + ' ' + sy(ry2) });
           // Ray 3 — through near focal point F (left, at -fAbs) emerges parallel to axis (converging only)
           if (lt === 'converging' && d_o > fAbs) {
             // Slope from (objX, hObj) through (-fAbs, 0)
@@ -830,13 +1145,48 @@
             var yAtLens = hObj + slope3 * (0 - objX);
             children.push(h('line', { key: 'r3a', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(yAtLens), stroke: '#a855f7', strokeWidth: 1.5 }));
             children.push(h('line', { key: 'r3b', x1: sx(0), y1: sy(yAtLens), x2: sx(cmMax), y2: sy(yAtLens), stroke: '#a855f7', strokeWidth: 1.5 }));
+            photonPaths.push({ color: '#a855f7',
+              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(yAtLens) + ' L ' + sx(cmMax) + ' ' + sy(yAtLens) });
           }
+          // Add traveling photon dots — one per ray, staggered in time.
+          // Uses CSS Motion Path (offset-path) so the dot follows the ray.
+          // Browsers without offset-path leave the dot at its origin (acceptable
+          // fallback because the ray lines themselves are already visible).
+          var photonClasses = ['opticslab-photon', 'opticslab-photon opticslab-photon-2', 'opticslab-photon opticslab-photon-3'];
+          photonPaths.forEach(function(pp, ppi) {
+            children.push(h('circle', {
+              key: 'photon' + ppi,
+              r: 3.5,
+              fill: pp.color,
+              stroke: '#fff', strokeWidth: 0.6,
+              className: photonClasses[ppi] || 'opticslab-photon',
+              style: {
+                offsetPath: 'path("' + pp.path + '")',
+                // WebKit prefix for older Safari
+                WebkitOffsetPath: 'path("' + pp.path + '")',
+                filter: 'drop-shadow(0 0 3px ' + pp.color + ')'
+              },
+              cx: 0, cy: 0
+            }));
+          });
           // Image arrow
           var imgIsValid = imgX != null && _isNum(imgX) && _isNum(imgY);
           if (imgIsValid) {
             var stroke = isVirtual ? '#fca5a5' : '#ef4444';
             var dash = isVirtual ? '3 3' : '0';
             var op = isVirtual ? 0.7 : 1;
+            // Real images get a subtle pulsing focus halo at the convergence
+            // point — it's the visual cue that light actually converges here
+            // (vs. virtual images, which are only "perceived" extensions).
+            if (!isVirtual) {
+              children.push(h('circle', {
+                key: 'imgfocus',
+                cx: sx(imgX), cy: sy(imgY), r: 5,
+                fill: 'none', stroke: '#ef4444', strokeWidth: 1.2,
+                className: 'opticslab-wavefront',
+                style: { animationDuration: '1.6s', transformOrigin: sx(imgX) + 'px ' + sy(imgY) + 'px' }
+              }));
+            }
             children.push(h('line', { key: 'img', x1: sx(imgX), y1: sy(0), x2: sx(imgX), y2: sy(imgY), stroke: stroke, strokeWidth: 3, strokeDasharray: dash, opacity: op }));
             var arrowOff = imgY > 0 ? 4 : -4;
             var arrowY = imgY > 0 ? sy(imgY) - 2 : sy(imgY) + 2;
@@ -1048,15 +1398,43 @@
         h('rect', { x: barX, y: slitTopY - 1, width: 6, height: 3, fill: '#000' }),
         h('rect', { x: barX, y: slitBotY - 1, width: 6, height: 3, fill: '#000' }),
         h('text', { x: barX + 3, y: pad.t + 10, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'barrier'),
-        // Wavefront semi-circles emanating from each slit (decorative — 4 arcs each)
+        // Live wavefronts: animated expanding circles from each slit, clipped
+        // to the right of the barrier so they look like wavefronts emerging
+        // toward the screen. Three staggered copies per slit create a ripple.
+        // The intersection of top + bottom wavefronts IS the interference —
+        // students can see the constructive/destructive zones forming live.
         (function() {
-          var arcs = [];
-          for (var k = 1; k <= 4; k++) {
-            var rPx = 18 + k * 25;
-            arcs.push(h('path', { key: 'wt' + k, d: 'M ' + (barX + 6) + ',' + (slitTopY - rPx) + ' A ' + rPx + ' ' + rPx + ' 0 0 1 ' + (barX + 6) + ' ' + (slitTopY + rPx), fill: 'none', stroke: color, strokeWidth: 0.6, opacity: 0.30 }));
-            arcs.push(h('path', { key: 'wb' + k, d: 'M ' + (barX + 6) + ',' + (slitBotY - rPx) + ' A ' + rPx + ' ' + rPx + ' 0 0 1 ' + (barX + 6) + ' ' + (slitBotY + rPx), fill: 'none', stroke: color, strokeWidth: 0.6, opacity: 0.30 }));
-          }
-          return arcs;
+          var defs = h('defs', { key: 'wf-defs' },
+            h('clipPath', { id: 'opt-int-clip-' + Math.abs((d_mm + L_m).toString().length) },
+              h('rect', { x: barX + 6, y: pad.t, width: screenX - barX - 6, height: H - pad.t - pad.b })
+            ),
+            h('filter', { id: 'opt-soft-glow' },
+              h('feGaussianBlur', { stdDeviation: '1.4', result: 'g' }),
+              h('feMerge', null,
+                h('feMergeNode', { in: 'g' }),
+                h('feMergeNode', { in: 'SourceGraphic' })
+              )
+            )
+          );
+          var clipId = 'opt-int-clip-' + Math.abs((d_mm + L_m).toString().length);
+          var rings = [];
+          ['', 'opticslab-wavefront-2', 'opticslab-wavefront-3'].forEach(function(extraCls, ki) {
+            rings.push(h('circle', {
+              key: 'wt' + ki, cx: barX + 6, cy: slitTopY, r: 4,
+              fill: 'none', stroke: color, strokeWidth: 1.2, opacity: 0.7,
+              filter: 'url(#opt-soft-glow)',
+              className: 'opticslab-wavefront ' + extraCls,
+              'clip-path': 'url(#' + clipId + ')'
+            }));
+            rings.push(h('circle', {
+              key: 'wb' + ki, cx: barX + 6, cy: slitBotY, r: 4,
+              fill: 'none', stroke: color, strokeWidth: 1.2, opacity: 0.7,
+              filter: 'url(#opt-soft-glow)',
+              className: 'opticslab-wavefront ' + extraCls,
+              'clip-path': 'url(#' + clipId + ')'
+            }));
+          });
+          return [defs].concat(rings);
         })(),
         // Screen
         h('rect', { x: screenX, y: screenTop, width: 8, height: screenHeight, fill: '#1e293b', stroke: '#475569', strokeWidth: 1 }),
@@ -1071,6 +1449,27 @@
             fill: color, opacity: alpha
           });
         }),
+        // Pulsing halo on the central maximum — softly breathes to communicate
+        // that the bright fringes are LIVE wave action, not a static print.
+        (function() {
+          var centerY = screenTop + screenHeight / 2;
+          return h('g', null,
+            h('circle', {
+              cx: screenX + 4, cy: centerY, r: 14,
+              fill: 'none', stroke: color, strokeWidth: 1.5,
+              opacity: 0.45,
+              className: 'opticslab-wavefront',
+              style: { animationDuration: '1.6s', transformOrigin: (screenX + 4) + 'px ' + centerY + 'px' }
+            }),
+            h('circle', {
+              cx: screenX + 4, cy: centerY, r: 14,
+              fill: 'none', stroke: color, strokeWidth: 1.2,
+              opacity: 0.45,
+              className: 'opticslab-wavefront',
+              style: { animationDuration: '1.6s', animationDelay: '-0.55s', transformOrigin: (screenX + 4) + 'px ' + centerY + 'px' }
+            })
+          );
+        })(),
         h('text', { x: screenX + 4, y: pad.t + 10, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'screen'),
         // Fringe-spacing annotation: vertical bracket between two adjacent maxima
         (function() {
@@ -1300,6 +1699,57 @@
             rays.push(h('line', { key: 'rr' + k, x1: slitX, y1: midY, x2: endX, y2: endY, stroke: color, strokeWidth: 0.6, opacity: 0.18 }));
           }
           return rays;
+        })(),
+        // ── Animated wavefronts emanating from slit(s) ──
+        // Single-slit: one source of expanding wavefronts that look like
+        // ripples spreading toward the screen.
+        // Grating: each slit emits its own wavefronts → mutual interference
+        // produces the sharp peak pattern.
+        // All wavefronts are clipped to the right side of the barrier so they
+        // don't leak backward through the source side.
+        (function() {
+          var slitX = barX + 6;
+          var clipId = 'opt-diff-clip-' + Math.abs((slitWidth_um + L_m * 100).toString().length);
+          var nodes = [];
+          // SVG defs: clip path + soft glow filter
+          nodes.push(h('defs', { key: 'diff-defs' },
+            h('clipPath', { id: clipId },
+              h('rect', { x: slitX, y: pad.t, width: screenX - slitX, height: H - pad.t - pad.b })
+            ),
+            h('filter', { id: 'opt-diff-glow' },
+              h('feGaussianBlur', { stdDeviation: '1.2', result: 'g' }),
+              h('feMerge', null,
+                h('feMergeNode', { in: 'g' }),
+                h('feMergeNode', { in: 'SourceGraphic' })
+              )
+            )
+          ));
+          // Wavefront origins: one for single-slit, several for grating
+          var origins;
+          if (mode === 'single') {
+            origins = [midY];
+          } else {
+            var nSlits = 6;
+            var spacing = 6;
+            var startY = midY - (nSlits / 2) * spacing;
+            origins = [];
+            for (var k = 0; k < nSlits; k++) origins.push(startY + k * spacing);
+          }
+          // Three staggered rings per origin
+          origins.forEach(function(oy, oi) {
+            ['', 'opticslab-wavefront-2', 'opticslab-wavefront-3'].forEach(function(extraCls, ki) {
+              nodes.push(h('circle', {
+                key: 'wfd-' + oi + '-' + ki,
+                cx: slitX, cy: oy, r: 4,
+                fill: 'none', stroke: color, strokeWidth: mode === 'single' ? 1.2 : 0.7,
+                opacity: mode === 'single' ? 0.7 : 0.45,
+                filter: 'url(#opt-diff-glow)',
+                className: 'opticslab-wavefront ' + extraCls,
+                'clip-path': 'url(#' + clipId + ')'
+              }));
+            });
+          });
+          return nodes;
         })(),
         // Screen
         h('rect', { x: screenX, y: screenTop, width: 8, height: screenHeight, fill: '#1e293b', stroke: '#475569', strokeWidth: 1 }),
@@ -1532,15 +1982,126 @@
         h('rect', { x: pad.l, y: midY - 8, width: 16, height: 16, fill: '#fef3c7', rx: 4 }),
         // Light beam segments — opacity scales with intensity
         h('rect', { x: pad.l + 16, y: midY - 6, width: disk1X - diskR - (pad.l + 16), height: 12, fill: '#fef3c7', opacity: I0 * 0.5 }),
+        // Unpolarized E-fields: scatter of 5 short vectors in random orientations
+        // to visually communicate "light vibrating in all directions"
+        (function() {
+          var n = 5;
+          var segX0 = pad.l + 16, segX1 = disk1X - diskR;
+          var pts = [];
+          for (var k = 0; k < n; k++) {
+            var cx = segX0 + (segX1 - segX0) * (k + 0.5) / n;
+            // Spread the angles across the beam so it reads as "all directions"
+            var angDeg = (k * 73) % 180;
+            var len = 7;
+            var dx = Math.cos(degToRad(angDeg)) * len;
+            var dy = Math.sin(degToRad(angDeg)) * len;
+            pts.push(h('line', {
+              key: 'eu' + k,
+              x1: cx - dx, y1: midY - dy, x2: cx + dx, y2: midY + dy,
+              stroke: '#facc15', strokeWidth: 1.4, strokeLinecap: 'round',
+              opacity: 0.95,
+              className: 'opticslab-efield-vec',
+              style: { animationDelay: (k * 0.18 - 0.6) + 's' }
+            }));
+          }
+          return pts;
+        })(),
         polarizerDisk(disk1X, 0, 'P₁', afterP1),
         h('rect', { x: disk1X + diskR, y: midY - 6, width: disk2X - diskR - (disk1X + diskR), height: 12, fill: '#fef3c7', opacity: afterP1 * 0.6 + 0.05 }),
+        // After P1: polarized along P1's 0° axis (vertical in our convention)
+        (function() {
+          var segX0 = disk1X + diskR, segX1 = disk2X - diskR;
+          var pts = [];
+          var n = 3;
+          for (var k = 0; k < n; k++) {
+            var cx = segX0 + (segX1 - segX0) * (k + 0.5) / n;
+            // P1 axis = 0° (we treat 0° as vertical in this view)
+            var len = 10;
+            var dx = Math.cos(degToRad(0 + 90)) * len;
+            var dy = Math.sin(degToRad(0 + 90)) * len;
+            pts.push(h('line', {
+              key: 'e1' + k,
+              x1: cx - dx, y1: midY - dy, x2: cx + dx, y2: midY + dy,
+              stroke: '#22d3ee', strokeWidth: 1.6, strokeLinecap: 'round',
+              opacity: Math.max(0.35, afterP1 * 1.6),
+              className: 'opticslab-efield-vec',
+              style: { animationDelay: (k * 0.2) + 's' }
+            }));
+          }
+          return pts;
+        })(),
         polarizerDisk(disk2X, theta2, 'P₂', afterP2),
         useP3 ? [
           h('rect', { key: 'beam23', x: disk2X + diskR, y: midY - 6, width: disk3X - diskR - (disk2X + diskR), height: 12, fill: '#fef3c7', opacity: afterP2 * 0.6 + 0.05 }),
+          // After P2 (axis = theta2)
+          (function() {
+            var segX0 = disk2X + diskR, segX1 = disk3X - diskR;
+            var pts = [];
+            var n = 2;
+            for (var k = 0; k < n; k++) {
+              var cx = segX0 + (segX1 - segX0) * (k + 0.5) / n;
+              var len = 8 + 4 * afterP2 / afterP1;
+              var dx = Math.cos(degToRad(theta2 + 90)) * len;
+              var dy = Math.sin(degToRad(theta2 + 90)) * len;
+              pts.push(h('line', {
+                key: 'e2' + k,
+                x1: cx - dx, y1: midY - dy, x2: cx + dx, y2: midY + dy,
+                stroke: '#22d3ee', strokeWidth: 1.6, strokeLinecap: 'round',
+                opacity: Math.max(0.25, afterP2 * 3),
+                className: 'opticslab-efield-vec',
+                style: { animationDelay: (k * 0.2) + 's' }
+              }));
+            }
+            return pts;
+          })(),
           polarizerDisk(disk3X, theta3, 'P₃', afterP3),
-          h('rect', { key: 'beamout', x: disk3X + diskR, y: midY - 6, width: W - pad.r - (disk3X + diskR), height: 12, fill: '#fef3c7', opacity: afterP3 * 0.6 + 0.05 })
+          h('rect', { key: 'beamout', x: disk3X + diskR, y: midY - 6, width: W - pad.r - (disk3X + diskR), height: 12, fill: '#fef3c7', opacity: afterP3 * 0.6 + 0.05 }),
+          // After P3 (axis = theta3)
+          (function() {
+            var segX0 = disk3X + diskR, segX1 = W - pad.r;
+            var pts = [];
+            var n = 2;
+            for (var k = 0; k < n; k++) {
+              var cx = segX0 + (segX1 - segX0) * (k + 0.5) / n;
+              if (afterP3 < 0.005) continue; // skip if extinguished
+              var len = 8 + 4 * afterP3 / Math.max(0.001, afterP2);
+              var dx = Math.cos(degToRad(theta3 + 90)) * len;
+              var dy = Math.sin(degToRad(theta3 + 90)) * len;
+              pts.push(h('line', {
+                key: 'e3' + k,
+                x1: cx - dx, y1: midY - dy, x2: cx + dx, y2: midY + dy,
+                stroke: '#22d3ee', strokeWidth: 1.6, strokeLinecap: 'round',
+                opacity: Math.max(0.25, afterP3 * 3),
+                className: 'opticslab-efield-vec',
+                style: { animationDelay: (k * 0.2) + 's' }
+              }));
+            }
+            return pts;
+          })()
         ] : [
-          h('rect', { key: 'beamout2', x: disk2X + diskR, y: midY - 6, width: W - pad.r - (disk2X + diskR), height: 12, fill: '#fef3c7', opacity: afterP2 * 0.6 + 0.05 })
+          h('rect', { key: 'beamout2', x: disk2X + diskR, y: midY - 6, width: W - pad.r - (disk2X + diskR), height: 12, fill: '#fef3c7', opacity: afterP2 * 0.6 + 0.05 }),
+          // After P2 (axis = theta2) — no P3
+          (function() {
+            var segX0 = disk2X + diskR, segX1 = W - pad.r;
+            var pts = [];
+            var n = 3;
+            for (var k = 0; k < n; k++) {
+              var cx = segX0 + (segX1 - segX0) * (k + 0.5) / n;
+              if (afterP2 < 0.005) continue;
+              var len = 8 + 4 * afterP2 / Math.max(0.001, afterP1);
+              var dx = Math.cos(degToRad(theta2 + 90)) * len;
+              var dy = Math.sin(degToRad(theta2 + 90)) * len;
+              pts.push(h('line', {
+                key: 'e2b' + k,
+                x1: cx - dx, y1: midY - dy, x2: cx + dx, y2: midY + dy,
+                stroke: '#22d3ee', strokeWidth: 1.6, strokeLinecap: 'round',
+                opacity: Math.max(0.25, afterP2 * 3),
+                className: 'opticslab-efield-vec',
+                style: { animationDelay: (k * 0.2) + 's' }
+              }));
+            }
+            return pts;
+          })()
         ],
         // Output indicator
         h('text', { x: W - pad.r - 4, y: midY - 14, fill: '#86efac', fontSize: 11, textAnchor: 'end', fontWeight: 700 },
@@ -1902,7 +2463,29 @@
       explain: '|m| compares image size to object size. |m| > 1 → enlarged. The SIGN of m tells you orientation (positive = upright, negative = inverted), separate from the SIZE.' },
     { tags: ['universal', 'em_spectrum'], q: 'Visible light wavelengths span approximately:',
       choices: ['10 nm to 100 nm', '400 nm to 700 nm', '1 μm to 100 μm', '1 mm to 1 cm'], correct: 1,
-      explain: 'Visible light: ~400 nm (violet) to ~700 nm (red). Below 400 nm = UV; above 700 nm = IR. Memorize this for AP.' }
+      explain: 'Visible light: ~400 nm (violet) to ~700 nm (red). Below 400 nm = UV; above 700 nm = IR. Memorize this for AP.' },
+    // ── Phenomena-tab questions (bridges AP equations into real-world observations) ──
+    { tags: ['phenomena', 'refraction', 'dispersion'], q: 'A primary rainbow appears at approximately what angle from the antisolar point (the shadow of your head)?',
+      choices: ['22°', '42°', '90°', '180°'], correct: 1,
+      explain: 'Primary rainbows are 42° from the antisolar point. This angle is the MINIMUM-deviation angle for light bouncing once inside a raindrop (one refraction in, one internal reflection, one refraction out). Different colors have slightly different n, so they bunch at slightly different angles — red at 42°, violet at 40°.' },
+    { tags: ['phenomena', 'refraction'], q: 'Why does a "puddle" appear on a hot road in the distance (mirage)?',
+      choices: ['Heat shimmer literally creates water vapor', 'Hot air has lower refractive index, so light from the sky curves upward off the road', 'Tar reflects sky', 'Optical illusion in the brain unrelated to physics'], correct: 1,
+      explain: 'Hot air is less dense → lower n. Light from the sky entering the hot layer above the road bends progressively away from the normal (Snell\'s law applied across n-gradient layers) and eventually curves upward. Your brain extrapolates the curved ray as straight, producing an apparent reflection of sky as if there were water on the road.' },
+    { tags: ['phenomena'], q: 'After staring at a bright red square for 15 seconds, looking at a blank gray wall produces a faint:',
+      choices: ['Red after-image (same color)', 'Cyan after-image (complementary color)', 'White after-image', 'No after-image'], correct: 1,
+      explain: 'L-cones (red-sensitive) desensitize from prolonged stimulation. When the eye then views neutral gray (which equally stimulates all three cone types), the L-cones underrespond → perceived color is the COMPLEMENT of the original. Red\'s complement is cyan. This bridges optics into retinal physiology.' },
+    { tags: ['phenomena'], q: 'A computer monitor and a printed page produce color through different processes. The monitor is _____, the printer is _____:',
+      choices: ['Subtractive (CMYK); additive (RGB)', 'Additive (RGB); subtractive (CMYK)', 'Both additive', 'Both subtractive'], correct: 1,
+      explain: 'Monitors EMIT light — red, green, blue subpixels add together to create perceived colors (additive: R+G+B = white). Printers absorb light — cyan ink absorbs red, magenta absorbs green, yellow absorbs blue. CMY together absorbs everything = black (subtractive). Real printers add a separate K (key/black) plate because real CMY inks make muddy brown.' },
+    { tags: ['phenomena', 'polarization'], q: 'Polarized sunglasses block horizontal polarization most strongly. Why is this oriented that way?',
+      choices: ['Vertical light is more harmful', 'Reflections off horizontal surfaces (water, road, snow) produce horizontally-polarized glare', 'It\'s an arbitrary manufacturing standard', 'Vertical polarization is invisible'], correct: 1,
+      explain: 'Light reflecting off a horizontal surface near Brewster\'s angle becomes strongly horizontally polarized. By blocking horizontal polarization, sunglasses eliminate the bulk of this glare while still letting through vertically-polarized scenery. Same Malus\'s law physics applied to a real-world annoyance.' },
+    { tags: ['phenomena', 'lenses'], q: 'The human eye keeps an image focused on the retina by changing what?',
+      choices: ['The distance from lens to retina', 'The shape (and therefore focal length) of the lens', 'The size of the pupil', 'The wavelength of incoming light'], correct: 1,
+      explain: 'The retina sits at a fixed distance behind the lens (~22.7 mm). For the thin-lens equation 1/f = 1/d_o + 1/d_i to balance as d_o changes, f must change. The ciliary muscle squeezes the lens fatter (shorter f) for nearby objects and lets it relax flatter for distant ones. As the lens stiffens with age (presbyopia), the near point retreats — typical onset at 40-45 years.' },
+    { tags: ['phenomena'], q: 'Why is the sky blue and the setting sun red?',
+      choices: ['Different molecules emit different colors', 'Rayleigh scattering removes short wavelengths from light passing through long atmospheric paths', 'The atmosphere acts as a prism', 'Eye sensitivity changes with sun angle'], correct: 1,
+      explain: 'Rayleigh scattering ∝ 1/λ⁴, so blue (470 nm) scatters about 9× more strongly than red (680 nm). At zenith, the short atmospheric path scatters some blue → blue sky. At sunset, the path becomes 10-40× longer; almost all blue scatters out before reaching you, leaving only red/orange — that\'s the long-wavelength survival you see in the sun itself.' }
   ];
 
   function _pickOpticsQuizQuestions(activeTab) {
@@ -2169,6 +2752,7 @@
             { id: 'interference', label: '✨ Interference', desc: 'Double-slit fringes' },
             { id: 'diffraction', label: '〰 Diffraction', desc: 'Single-slit + grating' },
             { id: 'polarization', label: '↕ Polarization', desc: "Malus's law" },
+            { id: 'phenomena', label: '🌈 Phenomena', desc: 'Rainbows · mirages · after-images · color · polarized sky' },
             { id: 'sleuth', label: '🕵️ Sleuth', desc: 'Predict image from setup' },
             { id: 'quiz', label: '📝 Quiz', desc: 'AP exam practice' },
             { id: 'mastery', label: '🏅 Mastery', desc: 'Concept progress + which questions you have nailed' }
@@ -2215,7 +2799,8 @@
           d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, tab: 'interference',
           title: "✨ Interference — Young's double-slit",
           sim: _renderInterferenceSim(d, upd, h),
-          calc: _renderInterferenceCalc(d, upd, h)
+          calc: _renderInterferenceCalc(d, upd, h),
+          extra: _renderPhQuantumTwist(d, upd, h)
         }),
         d.mode === 'diffraction' && _renderTopicPanel({
           d: d, upd: upd, h: h, addToast: addToast, awardXP: awardXP, callGemini: callGemini, tab: 'diffraction',
@@ -2229,6 +2814,7 @@
           sim: _renderPolarizationSim(d, upd, h),
           calc: _renderPolarizationCalc(d, upd, h)
         }),
+        d.mode === 'phenomena' && _renderPhenomenaPanel(d, upd, h),
         d.mode === 'sleuth' && _renderSleuthPanel(d, upd, h, addToast),
         d.mode === 'quiz' && _renderQuizPanel(d, upd, h, addToast, awardXP, setOpCeleb),
         d.mode === 'mastery' && _renderMasteryPanel(d, upd, h),
@@ -3069,6 +3655,7 @@
             h('div', { style: { padding: 14, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', background: 'linear-gradient(135deg, ' + tierColor + '22, transparent)' } },
               h('div', { style: { position: 'relative', width: 88, height: 88, flexShrink: 0 } },
                 h('svg', { viewBox: '0 0 100 100', width: 88, height: 88,
+                  role: 'img',
                   'aria-label': 'Score: ' + d.quizCorrect + ' out of ' + d.quizQuestions.length
                 },
                   h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
@@ -3091,16 +3678,24 @@
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
                 d.quizQuestions.map(function(qq, qi) {
                   var isCorrect = ans[qi] === qq.correct;
+                  // WCAG 1.4.1 — quiz-result dot needs a non-color cue
+                  // for sighted users with red-green color vision
+                  // differences. Adding the ✓/✗ glyph inside the dot
+                  // gives a shape-based indicator that doesn't depend
+                  // on red-vs-green discrimination. aria-label below
+                  // already covered the screen-reader case.
                   return h('div', { key: qi,
-                    title: 'Q' + (qi + 1) + (isCorrect ? ' correct ✓' : ' incorrect'),
+                    title: 'Q' + (qi + 1) + (isCorrect ? ' correct ✓' : ' incorrect ✗'),
                     style: {
-                      width: 14, height: 14, borderRadius: 3,
+                      width: 16, height: 16, borderRadius: 3,
                       background: isCorrect ? '#22c55e' : '#ef4444',
                       border: '1.5px solid ' + (isCorrect ? '#15803d' : '#7f1d1d'),
-                      boxShadow: '0 1px 1px rgba(0,0,0,0.3)'
+                      boxShadow: '0 1px 1px rgba(0,0,0,0.3)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: '#fff', fontSize: 11, fontWeight: 800, lineHeight: 1
                     },
                     'aria-label': 'Q' + (qi + 1) + (isCorrect ? ' correct' : ' incorrect')
-                  });
+                  }, isCorrect ? '✓' : '✗');
                 })
               )
             ),
@@ -3135,12 +3730,18 @@
     }
     // Topic-specific accent palette — keys off the tab id so each topic feels distinct
     var topicMeta = {
-      'reflection':   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', hint: 'Mirrors flip the path. Predict where the image lands before running the sim.' },
-      'refraction':   { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  hint: "Light slows in denser media. Snell's law: n\u2081 sin\u03B8\u2081 = n\u2082 sin\u03B8\u2082." },
-      'lenses':       { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', hint: 'Same equation as a mirror, different sign convention. Real vs virtual depends on object distance.' },
-      'interference': { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', hint: 'Two slits: bright fringes where path difference equals an integer number of wavelengths.' },
-      'diffraction':  { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',  hint: 'Light bends around edges. The narrower the slit relative to \u03BB, the more spread.' },
-      'polarization': { accent: '#10b981', soft: 'rgba(16,185,129,0.10)', hint: "Malus's law: I = I\u2080 cos\u00B2\u03B8. Two crossed polarizers: total extinction." }
+      'reflection':   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', hint: 'Mirrors flip the path. Predict where the image lands before running the sim.',
+        tryThis: 'Drag the object inside the focal length of a concave mirror. Predict whether the image will be real or virtual BEFORE you look \u2014 then check.' },
+      'refraction':   { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  hint: "Light slows in denser media. Snell's law: n\u2081 sin\u03B8\u2081 = n\u2082 sin\u03B8\u2082.",
+        tryThis: 'Push the angle past the critical angle (try water \u2192 air, n\u2081 = 1.33). Watch the refracted ray vanish into total internal reflection \u2014 the basis of fiber optics and diamond brilliance.' },
+      'lenses':       { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', hint: 'Same equation as a mirror, different sign convention. Real vs virtual depends on object distance.',
+        tryThis: 'Move the object from beyond 2f \u2192 exactly at 2f \u2192 between f and 2f \u2192 inside f. Watch the image flip from reduced to magnified, then jump to virtual the moment you cross f.' },
+      'interference': { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', hint: 'Two slits: bright fringes where path difference equals an integer number of wavelengths.',
+        tryThis: 'Halve the slit spacing d. Predict what happens to fringe spacing y = \u03BBL/d before changing it \u2014 then verify. Now try doubling \u03BB. Same prediction game.' },
+      'diffraction':  { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',  hint: 'Light bends around edges. The narrower the slit relative to \u03BB, the more spread.',
+        tryThis: 'Make the slit width comparable to \u03BB. Watch the central peak fill the screen. Now make it 100\u00D7 \u03BB \u2014 the peak collapses to a thin line. The slit/wavelength ratio is everything.' },
+      'polarization': { accent: '#10b981', soft: 'rgba(16,185,129,0.10)', hint: "Malus's law: I = I\u2080 cos\u00B2\u03B8. Two crossed polarizers: total extinction.",
+        tryThis: 'Cross two polarizers (90\u00B0) \u2014 output is zero. Now insert a third polarizer at 45\u00B0 between them. Output reappears. The intermediate polarizer creates light where there was none \u2014 a counterintuitive consequence of cos\u00B2\u03B8.' }
     };
     var meta = topicMeta[tab] || { accent: '#7dd3fc', soft: 'rgba(125,211,252,0.10)', hint: '' };
     return h('div', null,
@@ -3163,6 +3764,25 @@
           meta.hint && h('p', {
             style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.45, fontStyle: 'italic' }
           }, meta.hint)
+        )
+      ),
+      // "Try this" experiment prompt — concrete thing to do with the sim. Each
+      // topic has a curated prompt that turns "click around" into a directed
+      // exploration with a predict-then-verify loop.
+      meta.tryThis && h('div', {
+        style: {
+          background: 'rgba(34,197,94,0.07)',
+          border: '1px solid rgba(34,197,94,0.35)',
+          borderRadius: 10,
+          padding: '8px 12px', marginBottom: 12,
+          display: 'flex', alignItems: 'flex-start', gap: 10
+        },
+        role: 'note', 'aria-label': 'Suggested experiment'
+      },
+        h('span', { 'aria-hidden': 'true', style: { fontSize: 16, lineHeight: '20px', flexShrink: 0 } }, '🎯'),
+        h('div', null,
+          h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 2 } }, 'Try this'),
+          h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } }, meta.tryThis)
         )
       ),
       researchQuestion && h('div', {
@@ -3209,10 +3829,1727 @@
           opts.calc
         )
       ),
+      // Optional extra section (e.g., the quantum-twist panel for Interference)
+      opts.extra,
       // Pedagogical layers
       _renderMisconceptionsPanel(tab, h),
       _renderGlossaryPanel(tab, d, upd, h),
       _renderAiGrader(tab, d, upd, h, opts.addToast, opts.awardXP, opts.callGemini)
+    );
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // PHENOMENA PANEL — light-based real-world perceptual effects.
+  // Bridges the AP physics content into "you see this in the world":
+  // rainbows (dispersion + internal reflection), mirages (refraction in
+  // a temperature gradient), after-images (cone fatigue), color mixing
+  // (additive vs subtractive), polarized sky (Rayleigh scattering).
+  // Pure cognitive illusions (Müller-Lyer, Necker, etc.) intentionally
+  // belong in BrainAtlas / a perception tool, not here.
+  // ──────────────────────────────────────────────────────────────────
+  function _renderPhenomenaPanel(d, upd, h) {
+    var sub = d.phenoSub || 'rainbow';
+    var subModes = [
+      { id: 'rainbow',    label: '🌈 Rainbow',    desc: 'Drop geometry + dispersion' },
+      { id: 'prism',      label: '🔺 Prism',      desc: 'Newton\'s spectrometer — dispersion by material' },
+      { id: 'mirage',     label: '🏜️ Mirage',     desc: 'Hot-air refraction' },
+      { id: 'afterimage', label: '👁️ After-image', desc: 'Cone fatigue' },
+      { id: 'colormix',   label: '🎨 Color mix',  desc: 'Additive vs subtractive' },
+      { id: 'polsky',     label: '☀️ Polarized sky', desc: 'Why polarized lenses cut glare' },
+      { id: 'eye',        label: '👁 Eye & focus', desc: 'Accommodation + corrective lenses' },
+      { id: 'sunset',     label: '🌅 Sunset',     desc: 'Rayleigh scattering' }
+    ];
+    return h('div', null,
+      // Hero banner
+      h('div', {
+        style: {
+          background: 'linear-gradient(135deg, rgba(168,85,247,0.10) 0%, rgba(236,72,153,0.06) 50%, rgba(15,23,42,0.6) 100%)',
+          border: '1px solid rgba(168,85,247,0.45)',
+          borderLeft: '4px solid #a855f7',
+          borderRadius: 10, padding: '12px 14px', marginBottom: 12
+        }
+      },
+        h('h3', { style: { color: '#c4b5fd', fontSize: 18, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, '🌈 Light Phenomena — optics in the wild'),
+        h('p', { style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.45, fontStyle: 'italic' } },
+          'The AP equations show up in places you already see: rainbows, mirages, after-images, color screens, polarized sunglasses. Each sim isolates one phenomenon so you can play with the underlying optics.')
+      ),
+      // Sub-mode selector
+      h('div', { role: 'tablist', 'aria-label': 'Phenomena sub-explorers',
+        style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },
+        subModes.map(function(m) {
+          var sel = sub === m.id;
+          return h('button', {
+            key: m.id, role: 'tab', 'aria-selected': sel,
+            'data-op-focusable': 'true',
+            onClick: function() { upd('phenoSub', m.id); },
+            title: m.desc,
+            style: {
+              padding: '7px 11px',
+              background: sel ? 'linear-gradient(135deg,#7e22ce,#5b21b6)' : 'rgba(168,85,247,0.10)',
+              color: sel ? '#fff' : '#c4b5fd',
+              border: '1px solid ' + (sel ? '#7e22ce' : 'rgba(168,85,247,0.40)'),
+              borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, minHeight: 34
+            }
+          }, m.label);
+        })
+      ),
+      // Active sub
+      sub === 'rainbow'    && _renderPhRainbow(d, upd, h),
+      sub === 'prism'      && _renderPhPrism(d, upd, h),
+      sub === 'mirage'     && _renderPhMirage(d, upd, h),
+      sub === 'afterimage' && _renderPhAfterImage(d, upd, h),
+      sub === 'colormix'   && _renderPhColorMix(d, upd, h),
+      sub === 'polsky'     && _renderPhPolSky(d, upd, h),
+      sub === 'eye'        && _renderPhEye(d, upd, h),
+      sub === 'sunset'     && _renderPhSunset(d, upd, h)
+    );
+  }
+
+  // Shared layout: side-by-side SVG + explanation panel
+  function _phLayout(h, svg, controls, explanation) {
+    return h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(340px,1fr) minmax(260px,1fr)', gap: 12 } },
+      h('div', { style: { background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(99,102,241,0.30)', borderRadius: 10, padding: 12 } },
+        svg, controls
+      ),
+      h('div', { style: { background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.30)', borderRadius: 10, padding: 14 } },
+        explanation
+      )
+    );
+  }
+
+  // ── Rainbow geometry ─────────────────────────────────────────────
+  function _renderPhRainbow(d, upd, h) {
+    // Sky scene: sun, observer, raindrop curtain, AND the actual 42° rainbow arc.
+    // Previous version showed one drop with two rays — pedagogically correct but
+    // visually didn't look like a rainbow. This version shows what an observer
+    // actually sees: the geometric origin of the bow, with the live arc forming.
+    var W = 460, H = 320;
+    var sunAlt = d.phenoRbSunAlt != null ? d.phenoRbSunAlt : 25; // sun altitude (°)
+    var showRays = d.phenoRbShowRays !== false; // default on
+    var horizonY = H - 60;
+    // Observer at center bottom
+    var obsX = W / 2, obsY = horizonY - 8;
+    // Sun in the upper-left (rises with sunAlt)
+    var sunX = 60, sunY = horizonY - 220 * Math.sin(degToRad(sunAlt));
+    // Antisolar point — opposite the sun, BELOW the horizon when sun is up.
+    // We compute its projection above the horizon for the rainbow geometry.
+    // Rainbow is centered on antisolar point, radius = 42°. Visible portion lies
+    // above the horizon when sunAlt < 42°. Apex height (above horizon) = 42° − sunAlt.
+    var bowApexAboveHoriz = Math.max(0, 42 - sunAlt);
+    // Antisolar point projected onto the screen (below horizon)
+    var asX = W - sunX; // mirror of sun's X
+    var asY = horizonY + (sunY - horizonY) * -1; // mirror across horizon
+    // Bow center on screen: along the line from sun through observer's eye, extended.
+    // For visualization, just draw an arc centered at antisolar projection with radius
+    // proportional to the angular size (we'll use pixels per degree ≈ 4).
+    var pxPerDeg = 4.5;
+    var bowR = 42 * pxPerDeg;
+    // Build the rainbow as concentric color arcs (red outermost, violet innermost)
+    var spectrum = [
+      { color: '#ef4444', deg: 42.0 },
+      { color: '#fb923c', deg: 41.5 },
+      { color: '#facc15', deg: 41.0 },
+      { color: '#22c55e', deg: 40.5 },
+      { color: '#06b6d4', deg: 40.2 },
+      { color: '#3b82f6', deg: 40.0 },
+      { color: '#a855f7', deg: 39.7 }
+    ];
+    function arcPath(cx, cy, r) {
+      // Draw upper half arc visible above horizon
+      var x1 = cx - r, y1 = cy;
+      var x2 = cx + r, y2 = cy;
+      // Clip the arc to above horizon
+      return 'M ' + x1.toFixed(1) + ' ' + y1.toFixed(1) +
+             ' A ' + r.toFixed(1) + ' ' + r.toFixed(1) + ' 0 0 1 ' + x2.toFixed(1) + ' ' + y2.toFixed(1);
+    }
+    var arcs = spectrum.map(function(b, i) {
+      var r = b.deg * pxPerDeg;
+      return h('path', {
+        key: 'arc' + i,
+        d: arcPath(asX, asY, r),
+        fill: 'none',
+        stroke: b.color,
+        strokeWidth: 4,
+        opacity: bowApexAboveHoriz > 0 ? 0.85 : 0.15
+      });
+    });
+    // Drop curtain — 5 visible drops at different heights along the bow
+    var dropPositions = [];
+    for (var di = 0; di < 5; di++) {
+      var ang = (180 - 30 + di * 15) * Math.PI / 180; // arc parametrization
+      var dx = asX + bowR * Math.cos(ang);
+      var dy = asY + bowR * Math.sin(ang);
+      // Only keep drops above the horizon
+      if (dy < horizonY - 4 && dx > 100 && dx < W - 30) dropPositions.push({ x: dx, y: dy });
+    }
+    var drops = dropPositions.map(function(p, i) {
+      return h('circle', { key: 'drop' + i, cx: p.x, cy: p.y, r: 6, fill: 'rgba(125,211,252,0.55)', stroke: '#7dd3fc', strokeWidth: 1 });
+    });
+    // Sun rays: from sun to each drop (illustrative)
+    var sunRays = showRays ? dropPositions.map(function(p, i) {
+      return h('line', { key: 'sr' + i, x1: sunX, y1: sunY, x2: p.x, y2: p.y, stroke: '#fef9c3', strokeWidth: 0.8, opacity: 0.4, strokeDasharray: '3 2' });
+    }) : null;
+    // Returning rays from drops to observer eye (the bow rays)
+    var returnRays = showRays ? dropPositions.map(function(p, i) {
+      // Each drop returns red along one direction, violet along slightly different
+      var c = spectrum[i % spectrum.length].color;
+      return h('line', { key: 'rr' + i, x1: p.x, y1: p.y, x2: obsX, y2: obsY - 4, stroke: c, strokeWidth: 1.4, opacity: 0.85 });
+    }) : null;
+    // ── Animated photons traversing each drop ──
+    // Each drop gets two motion dots: a white "sunlight" photon traveling from
+    // the sun to the drop, and a colored photon traveling from the drop to the
+    // observer. Together they show the sun → drop → eye journey that makes the
+    // rainbow visible at 42°.
+    var dropPhotons = showRays ? (function() {
+      var nodes = [];
+      dropPositions.forEach(function(p, i) {
+        var c = spectrum[i % spectrum.length].color;
+        var inPath = 'M ' + sunX + ' ' + sunY + ' L ' + p.x.toFixed(1) + ' ' + p.y.toFixed(1);
+        var outPath = 'M ' + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ' L ' + obsX + ' ' + (obsY - 4);
+        // White incident photon
+        nodes.push(h('circle', {
+          key: 'rbpi' + i, r: 2.4, fill: '#fef9c3',
+          stroke: '#fff', strokeWidth: 0.3,
+          style: {
+            offsetPath: 'path("' + inPath + '")',
+            WebkitOffsetPath: 'path("' + inPath + '")',
+            filter: 'drop-shadow(0 0 4px #fef9c3)',
+            animationDuration: '3s',
+            animationDelay: (-i * 0.4) + 's'
+          },
+          className: 'opticslab-photon', cx: 0, cy: 0
+        }));
+        // Tiny "internal reflection" pulse INSIDE the drop —
+        // a small ring expanding briefly to suggest the back-wall bounce.
+        nodes.push(h('circle', {
+          key: 'rbpr' + i,
+          cx: p.x, cy: p.y, r: 1,
+          fill: 'none', stroke: c, strokeWidth: 0.8,
+          opacity: 0.85,
+          className: 'opticslab-wavefront',
+          style: {
+            animationDuration: '3s',
+            animationDelay: (-i * 0.4 + 0.6) + 's',
+            transformOrigin: p.x + 'px ' + p.y + 'px'
+          }
+        }));
+        // Colored returning photon (wavelength color of this drop)
+        nodes.push(h('circle', {
+          key: 'rbpo' + i, r: 2.6, fill: c,
+          stroke: '#fff', strokeWidth: 0.3,
+          style: {
+            offsetPath: 'path("' + outPath + '")',
+            WebkitOffsetPath: 'path("' + outPath + '")',
+            filter: 'drop-shadow(0 0 4px ' + c + ')',
+            animationDuration: '2.5s',
+            animationDelay: (-i * 0.4 + 1.2) + 's'
+          },
+          className: 'opticslab-photon', cx: 0, cy: 0
+        }));
+      });
+      return nodes;
+    })() : null;
+    var svg = h('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { width: '100%', height: 'auto', borderRadius: 8 },
+      role: 'img', 'aria-label': 'Rainbow scene — sun shines on a curtain of raindrops; light bouncing inside each drop returns toward the observer at 42° from the antisolar point, forming the colored bow.' },
+      // Sky gradient
+      h('defs', null,
+        h('linearGradient', { id: 'rbsky', x1: '0', y1: '0', x2: '0', y2: '1' },
+          h('stop', { offset: '0%', stopColor: '#1e3a5f' }),
+          h('stop', { offset: '60%', stopColor: '#7dd3fc' }),
+          h('stop', { offset: '100%', stopColor: '#dbeafe' })
+        )
+      ),
+      h('rect', { x: 0, y: 0, width: W, height: horizonY, fill: 'url(#rbsky)' }),
+      // Distant rain shower band
+      h('rect', { x: 250, y: 50, width: 130, height: horizonY - 50, fill: 'rgba(125,211,252,0.18)' }),
+      [0,1,2,3,4,5].map(function(i) {
+        return h('line', { key: 'rain' + i, x1: 260 + i * 22, y1: 70, x2: 250 + i * 22, y2: horizonY, stroke: '#7dd3fc', strokeWidth: 0.4, opacity: 0.4 });
+      }),
+      // Ground
+      h('rect', { x: 0, y: horizonY, width: W, height: H - horizonY, fill: '#3f6b35' }),
+      // Horizon line
+      h('line', { x1: 0, y1: horizonY, x2: W, y2: horizonY, stroke: '#475569', strokeWidth: 1, opacity: 0.5 }),
+      // Sun with halo
+      h('circle', { cx: sunX, cy: sunY, r: 24, fill: '#fef9c3', opacity: 0.4 }),
+      h('circle', { cx: sunX, cy: sunY, r: 14, fill: '#fde047' }),
+      // Sun rays (dashed)
+      sunRays,
+      // The rainbow arcs themselves
+      arcs,
+      // Drops
+      drops,
+      // Returning colored rays
+      returnRays,
+      // Animated photons traversing each drop
+      dropPhotons,
+      // Observer (small figure)
+      h('circle', { cx: obsX, cy: obsY - 14, r: 5, fill: '#1f2937' }),
+      h('rect', { x: obsX - 4, y: obsY - 10, width: 8, height: 14, fill: '#1f2937' }),
+      // Observer's antisolar shadow (just a small ground marker on the line opposite the sun)
+      h('line', { x1: obsX, y1: obsY + 4, x2: obsX + 30, y2: obsY + 4, stroke: '#1f2937', strokeWidth: 2, opacity: 0.4 }),
+      // Labels
+      h('text', { x: sunX, y: sunY - 30, fill: '#fef9c3', fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, 'sun'),
+      h('text', { x: obsX, y: H - 6, fill: '#fef3c7', fontSize: 10, textAnchor: 'middle' }, 'observer'),
+      bowApexAboveHoriz > 0 ?
+        h('text', { x: asX, y: asY - bowR - 8, fill: '#fef3c7', fontSize: 11, textAnchor: 'middle', fontWeight: 700 }, '42° rainbow arc') :
+        h('text', { x: W / 2, y: 18, fill: '#ef4444', fontSize: 11, textAnchor: 'middle', fontWeight: 700 }, 'Sun is too high — bow falls below the horizon (sun must be < 42° altitude)'),
+      h('text', { x: 12, y: 18, fill: '#fbbf24', fontSize: 10, fontFamily: 'monospace' }, 'sun ' + sunAlt + '°  •  apex ' + bowApexAboveHoriz.toFixed(1) + '° above horizon')
+    );
+    var controls = h('div', { style: { marginTop: 10, display: 'grid', gridTemplateColumns: '1fr auto', gap: 10 } },
+      h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: 8 } },
+        'Sun altitude:',
+        h('input', { type: 'range', min: 0, max: 70, step: 1, value: sunAlt,
+          onChange: function(e) { upd('phenoRbSunAlt', parseFloat(e.target.value)); },
+          'data-op-focusable': 'true', 'aria-label': 'Sun altitude above horizon',
+          style: { flex: 1 } }),
+        h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', minWidth: 38 } }, sunAlt + '°')
+      ),
+      h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: 4 } },
+        h('input', { type: 'checkbox', checked: showRays,
+          onChange: function(e) { upd('phenoRbShowRays', e.target.checked); },
+          'data-op-focusable': 'true', 'aria-label': 'Show light rays' }),
+        'Show rays')
+    );
+    var explanation = h('div', null,
+      h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 6 } }, 'Why rainbows have an angle'),
+      h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } },
+        'Sunlight enters a raindrop, refracts (Snell\'s law), reflects off the back wall, and refracts again on exit. The total path bends by 2θᵢ − 4θᵣ + 180°.'),
+      h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } },
+        'For most rays this deviation just spreads light. But there\'s a critical angle where the deviation is minimum — and rays from a band of impact parameters all exit at almost the same angle, so the light intensity bunches up. THAT bunching is what your eye sees as a rainbow.'),
+      h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } },
+        'Different colors have slightly different n (red 1.331, violet 1.343) — so they each have a slightly different minimum-deviation angle. Red sits at 42° from the antisolar point, violet at 40°. That ~2° spread is the rainbow.'),
+      h('p', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic', margin: 0 } },
+        'Try it outside: rainbows always sit at 42° from the shadow of your head. The bow is centered on the antisolar point — the spot directly opposite the sun.')
+    );
+    return _phLayout(h, svg, controls, explanation);
+  }
+
+  // ── Mirage simulator ─────────────────────────────────────────────
+  function _renderPhMirage(d, upd, h) {
+    // Hot-air mirage: rays from above curve UPWARD because n decreases near the
+    // hot ground (warmer air = lower density = lower n). Brain extrapolates rays
+    // straight back, sees an inverted reflection that looks like water.
+    var W = 420, H = 240;
+    var grad = d.phenoMirageGrad != null ? d.phenoMirageGrad : 0.6; // 0..1 strength
+    // Stack of layers — top cooler (n=1.0008), bottom hotter (n=1.0002 at max grad).
+    var nLayers = 12;
+    var groundY = H - 30;
+    var skyTop = 30;
+    function nAt(y) {
+      var t = (groundY - y) / (groundY - skyTop); // 1 at top, 0 at ground
+      return 1.0 + 0.0002 + 0.0006 * t * (1 - 0.0001 * (1 - grad));
+    }
+    // Ray starting from object (a tree) at the right side
+    var rays = [];
+    var startX = W - 60;
+    function tracedRay(initialAngle, color, opacity, rayIdx) {
+      var pts = [{ x: startX, y: 80 }];
+      var x = startX, y = 80;
+      var ang = initialAngle; // radians from horizontal, downward positive
+      var step = 4;
+      var prevN = nAt(y);
+      while (x > 20 && y < groundY - 4 && y > 5) {
+        x -= step * Math.cos(ang);
+        y += step * Math.sin(ang);
+        var newN = nAt(y);
+        // Snell at the boundary: n1 sin θ1 = n2 sin θ2. θ measured from vertical.
+        // Convert ang (from horizontal) to θ-from-vertical: θ = 90° - ang
+        var theta1 = Math.PI / 2 - ang;
+        var sinT2 = Math.sin(theta1) * prevN / newN;
+        if (Math.abs(sinT2) > 1) {
+          // Total internal reflection — flip the angle (this is what curves the ray upward)
+          ang = -ang;
+        } else {
+          var theta2 = Math.asin(sinT2);
+          ang = Math.PI / 2 - theta2;
+        }
+        prevN = newN;
+        pts.push({ x: x, y: y });
+        if (pts.length > 220) break;
+      }
+      // Build BOTH a polyline (static ray) AND a motion-path string for the
+      // animated photon that traces the same curve. Photons let students see
+      // light "flowing" through the hot air gradient — the curving path is
+      // the entire physics story of why a mirage looks like water.
+      var pathD = 'M ' + pts.map(function(p) { return p.x.toFixed(1) + ' ' + p.y.toFixed(1); }).join(' L ');
+      var polyPts = pts.map(function(p) { return p.x.toFixed(1) + ',' + p.y.toFixed(1); }).join(' ');
+      return [
+        h('polyline', {
+          key: 'line' + rayIdx,
+          points: polyPts,
+          fill: 'none', stroke: color, strokeWidth: 1.6, opacity: opacity
+        }),
+        h('circle', {
+          key: 'photon' + rayIdx,
+          r: 2.6, fill: color, stroke: '#fff', strokeWidth: 0.4,
+          className: 'opticslab-photon',
+          'aria-hidden': 'true',
+          style: {
+            offsetPath: 'path("' + pathD + '")',
+            animationDelay: (rayIdx * -0.6) + 's',
+            filter: 'drop-shadow(0 0 3px ' + color + ')'
+          }
+        })
+      ];
+    }
+    rays = rays.concat(tracedRay(0.05, '#fbbf24', 0.85, 0));   // shallow downward — bends up to viewer
+    rays = rays.concat(tracedRay(0.20, '#f59e0b', 0.70, 1));   // steeper — also bends
+    rays = rays.concat(tracedRay(-0.05, '#86efac', 0.85, 2));  // upward — direct path (no mirage)
+    var svg = h('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { width: '100%', height: 'auto', background: 'linear-gradient(180deg,#1e3a5f 0%,#7dd3fc 70%,#fef3c7 100%)', borderRadius: 8 },
+      role: 'img', 'aria-label': 'Hot-air mirage simulator — light rays from a distant tree curve upward as they pass through hot lower air. The viewer perceives an inverted image at the road surface that looks like a puddle of water.' },
+      // Heat haze layers — subtle CSS shimmer animation gives the visual
+      // "wavy heat" effect (disabled under prefers-reduced-motion).
+      [0,1,2,3].map(function(i) {
+        return h('rect', { key: 'haze' + i, className: 'opticslab-mirage-haze', x: 0, y: groundY - 4 - i * 5, width: W, height: 5, fill: 'rgba(252,165,20,' + (0.06 + i * 0.04 * grad) + ')' });
+      }),
+      // Ground
+      h('rect', { x: 0, y: groundY, width: W, height: H - groundY, fill: '#3f3f46' }),
+      // Lane stripes
+      [0,1,2,3,4].map(function(i) {
+        return h('rect', { key: 's' + i, x: 30 + i * 80, y: groundY + 8, width: 30, height: 3, fill: '#fde047' });
+      }),
+      // Tree (object)
+      h('rect', { x: startX - 4, y: 60, width: 8, height: 30, fill: '#5c3a1e' }),
+      h('circle', { cx: startX, cy: 55, r: 22, fill: '#16a34a' }),
+      // Viewer (eye)
+      h('circle', { cx: 30, cy: 80, r: 6, fill: '#fbbf24', stroke: '#000', strokeWidth: 1 }),
+      h('text', { x: 30, y: 100, fill: '#fef3c7', fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, 'eye'),
+      rays,
+      h('text', { x: W / 2, y: 18, fill: '#fef3c7', fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, 'Heat-gradient strength: ' + (grad * 100).toFixed(0) + '%')
+    );
+    var controls = h('div', { style: { marginTop: 10 } },
+      h('label', { style: { fontSize: 11, color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: 8 } },
+        'Ground-air heat gradient:',
+        h('input', { type: 'range', min: 0, max: 1, step: 0.05, value: grad,
+          onChange: function(e) { upd('phenoMirageGrad', parseFloat(e.target.value)); },
+          'data-op-focusable': 'true', 'aria-label': 'Heat gradient strength',
+          style: { flex: 1 } }),
+        h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', minWidth: 38 } }, (grad * 100).toFixed(0) + '%')
+      )
+    );
+    var explanation = h('div', null,
+      h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 6 } }, 'Why the road looks wet'),
+      h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } },
+        'Hot air is less dense → lower index of refraction. Just above a sun-baked road, air can be 30°C+ hotter than air a meter up.'),
+      h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } },
+        'A nearly-horizontal light ray entering the hot layer experiences a stack of n boundaries — at each, Snell\'s law bends it slightly away from the normal, until it eventually total-internal-reflects upward.'),
+      h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } },
+        'Your visual system extrapolates the bent ray as if it traveled in a straight line. So the sky\'s blue light, having curved up off the hot road, appears to come from BELOW the road surface — just like a reflection in a puddle.'),
+      h('p', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic', margin: 0 } },
+        'Same physics: superior mirage (cold air over warm water), looming, the green flash at sunset.')
+    );
+    return _phLayout(h, svg, controls, explanation);
+  }
+
+  // ── After-image trainer ──────────────────────────────────────────
+  function _renderPhAfterImage(d, upd, h) {
+    // Stare at color → tire those cones → look at gray → see complementary color.
+    var color = d.phenoAfterColor || '#dc2626';
+    var phase = d.phenoAfterPhase || 'idle'; // idle | staring | reveal
+    var startedAt = d.phenoAfterStartedAt || 0;
+    // Time math: when staring, count down from 12s. When reveal, show gray for 8s then back to idle.
+    var now = Date.now();
+    var elapsed = startedAt > 0 ? (now - startedAt) / 1000 : 0;
+    var stareDur = 12, revealDur = 8;
+    var remaining;
+    if (phase === 'staring') {
+      remaining = Math.max(0, stareDur - elapsed);
+      if (remaining === 0 && typeof setTimeout === 'function') {
+        setTimeout(function() { upd({ phenoAfterPhase: 'reveal', phenoAfterStartedAt: Date.now() }); }, 0);
+      }
+    } else if (phase === 'reveal') {
+      remaining = Math.max(0, revealDur - elapsed);
+      if (remaining === 0 && typeof setTimeout === 'function') {
+        setTimeout(function() { upd({ phenoAfterPhase: 'idle', phenoAfterStartedAt: 0 }); }, 0);
+      }
+    }
+    // Schedule a per-second re-render so the countdown updates
+    if (phase !== 'idle' && typeof setTimeout === 'function') {
+      setTimeout(function() { upd('phenoAfterTick', Date.now()); }, 250);
+    }
+    function complementHex(hex) {
+      var r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+      var cr = 255 - r, cg = 255 - g, cb = 255 - b;
+      return '#' + cr.toString(16).padStart(2,'0') + cg.toString(16).padStart(2,'0') + cb.toString(16).padStart(2,'0');
+    }
+    var stage;
+    if (phase === 'idle') {
+      stage = h('div', { style: { width: '100%', height: 240, background: '#1f2937', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 10 } },
+        h('div', { style: { color: '#cbd5e1', fontSize: 13, textAlign: 'center', maxWidth: 280 } }, 'Pick a color, then press Start. Stare at the + in the middle for 12 seconds without looking away.'),
+        h('button', {
+          onClick: function() { upd({ phenoAfterPhase: 'staring', phenoAfterStartedAt: Date.now() }); },
+          'data-op-focusable': 'true',
+          style: { padding: '8px 18px', background: '#7e22ce', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' }
+        }, '▶ Start (12 sec stare)')
+      );
+    } else if (phase === 'staring') {
+      stage = h('div', { style: { position: 'relative', width: '100%', height: 240, background: color, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+        h('div', { 'aria-hidden': 'true', style: { color: '#000', fontSize: 36, fontWeight: 900, mixBlendMode: 'difference' } }, '+'),
+        h('div', { style: { position: 'absolute', top: 8, right: 12, color: '#000', fontSize: 11, fontFamily: 'monospace', fontWeight: 800 } }, remaining.toFixed(0) + 's')
+      );
+    } else { // reveal
+      stage = h('div', { style: { position: 'relative', width: '100%', height: 240, background: '#9ca3af', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+        h('div', { 'aria-hidden': 'true', style: { color: '#000', fontSize: 36, fontWeight: 900 } }, '+'),
+        h('div', { style: { position: 'absolute', top: 8, right: 12, color: '#000', fontSize: 11, fontFamily: 'monospace', fontWeight: 800 } }, 'Look! ' + remaining.toFixed(0) + 's')
+      );
+    }
+    var controls = h('div', { style: { marginTop: 10, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
+      h('label', { style: { fontSize: 11, color: '#cbd5e1' } }, 'Color: ',
+        h('input', { type: 'color', value: color,
+          onChange: function(e) { upd('phenoAfterColor', e.target.value); },
+          disabled: phase !== 'idle',
+          'data-op-focusable': 'true', 'aria-label': 'Pick stare color',
+          style: { width: 40, height: 28, marginLeft: 6, verticalAlign: 'middle' } })
+      ),
+      phase !== 'idle' && h('button', {
+        onClick: function() { upd({ phenoAfterPhase: 'idle', phenoAfterStartedAt: 0 }); },
+        'data-op-focusable': 'true',
+        style: { padding: '5px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', borderRadius: 6, fontSize: 11, cursor: 'pointer' }
+      }, 'Cancel'),
+      h('div', { style: { fontSize: 10, color: '#94a3b8' } },
+        'Predicted after-image color: ',
+        h('span', { style: { display: 'inline-block', width: 18, height: 14, background: complementHex(color), border: '1px solid #475569', verticalAlign: 'middle', borderRadius: 3, marginLeft: 4 } })
+      )
+    );
+    var explanation = h('div', null,
+      h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 6 } }, 'Cone fatigue → complementary color'),
+      h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } },
+        'Your retina has three cone types: S (blue), M (green), L (red). Stare at red and the L-cones desensitize. When you then look at neutral gray (which equally stimulates all three), the L-cones underrespond → you perceive the COMPLEMENT (cyan).'),
+      h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } },
+        'Complement of any color = 255 − each RGB channel. Red (#dc2626) → cyan-ish. Green → magenta. Blue → yellow. Same trick painters use to make complementary colors "pop" off each other.'),
+      h('p', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic', margin: 0 } },
+        'This bridges optics (light + retinal physics) to neuroscience (cortical color processing). Pure-cognitive illusions like Müller-Lyer live in BrainAtlas — they\'re about brain interpretation, not light.')
+    );
+    return _phLayout(h, stage, controls, explanation);
+  }
+
+  // ── Color mixing (additive vs subtractive) ───────────────────────
+  function _renderPhColorMix(d, upd, h) {
+    var rI = d.phenoMixR != null ? d.phenoMixR : 1.0; // 0..1 intensity
+    var gI = d.phenoMixG != null ? d.phenoMixG : 1.0;
+    var bI = d.phenoMixB != null ? d.phenoMixB : 1.0;
+    var cI = d.phenoMixC != null ? d.phenoMixC : 1.0;
+    var mI = d.phenoMixM != null ? d.phenoMixM : 1.0;
+    var yI = d.phenoMixY != null ? d.phenoMixY : 1.0;
+    // Additive sum (RGB). Caps at 255.
+    function addClamp(a, b, c) { return Math.min(255, Math.round(a + b + c)); }
+    var addR = Math.round(255 * rI), addG = Math.round(255 * gI), addB = Math.round(255 * bI);
+    // Subtractive: each ink subtracts its complement. C absorbs R, M absorbs G, Y absorbs B.
+    var subR = Math.round(255 * (1 - cI));
+    var subG = Math.round(255 * (1 - mI));
+    var subB = Math.round(255 * (1 - yI));
+    var addCss = 'rgb(' + addR + ',' + addG + ',' + addB + ')';
+    var subCss = 'rgb(' + subR + ',' + subG + ',' + subB + ')';
+    function disk(cx, cy, r, color, opacity) {
+      return h('circle', { cx: cx, cy: cy, r: r, fill: color, opacity: opacity, style: { mixBlendMode: 'screen' } });
+    }
+    function diskSub(cx, cy, r, color, opacity) {
+      return h('circle', { cx: cx, cy: cy, r: r, fill: color, opacity: opacity, style: { mixBlendMode: 'multiply' } });
+    }
+    var addSvg = h('svg', { viewBox: '0 0 200 180', style: { width: '100%', height: 'auto', background: '#000', borderRadius: 8 }, role: 'img', 'aria-label': 'Additive color mixing — three light circles (red, green, blue) overlap. Where all three combine, the result is white.' },
+      disk(70, 80, 50, 'rgb(255,0,0)', rI),
+      disk(130, 80, 50, 'rgb(0,255,0)', gI),
+      disk(100, 130, 50, 'rgb(0,0,255)', bI),
+      h('text', { x: 100, y: 18, fill: '#cbd5e1', fontSize: 11, textAnchor: 'middle', fontWeight: 700 }, 'Additive (lights)')
+    );
+    var subSvg = h('svg', { viewBox: '0 0 200 180', style: { width: '100%', height: 'auto', background: '#fff', borderRadius: 8 }, role: 'img', 'aria-label': 'Subtractive color mixing — three pigment circles (cyan, magenta, yellow) overlap on white paper. Where all three combine, the result is black.' },
+      diskSub(70, 80, 50, 'rgb(0,255,255)', cI),
+      diskSub(130, 80, 50, 'rgb(255,0,255)', mI),
+      diskSub(100, 130, 50, 'rgb(255,255,0)', yI),
+      h('text', { x: 100, y: 18, fill: '#1f2937', fontSize: 11, textAnchor: 'middle', fontWeight: 700 }, 'Subtractive (pigments)')
+    );
+    function slider(label, val, key, color) {
+      return h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: '#cbd5e1' } },
+        h('span', { style: { color: color, fontWeight: 700, minWidth: 14 } }, label),
+        h('input', { type: 'range', min: 0, max: 1, step: 0.05, value: val,
+          onChange: function(e) { upd(key, parseFloat(e.target.value)); },
+          'data-op-focusable': 'true', 'aria-label': label + ' channel intensity',
+          style: { flex: 1 } }),
+        h('span', { style: { fontFamily: 'monospace', minWidth: 28, color: '#fbbf24' } }, (val * 100).toFixed(0) + '%')
+      );
+    }
+    var stage = h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } }, addSvg, subSvg);
+    var controls = h('div', { style: { marginTop: 10, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+      h('div', null,
+        h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800, marginBottom: 4 } }, 'Light channels'),
+        slider('R', rI, 'phenoMixR', '#ef4444'),
+        slider('G', gI, 'phenoMixG', '#22c55e'),
+        slider('B', bI, 'phenoMixB', '#3b82f6'),
+        h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 6 } }, 'Center: ', h('span', { style: { display: 'inline-block', width: 18, height: 14, background: addCss, border: '1px solid #475569', verticalAlign: 'middle', borderRadius: 3, marginLeft: 4 } }))
+      ),
+      h('div', null,
+        h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800, marginBottom: 4 } }, 'Pigment channels'),
+        slider('C', cI, 'phenoMixC', '#06b6d4'),
+        slider('M', mI, 'phenoMixM', '#ec4899'),
+        slider('Y', yI, 'phenoMixY', '#facc15'),
+        h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 6 } }, 'Center: ', h('span', { style: { display: 'inline-block', width: 18, height: 14, background: subCss, border: '1px solid #475569', verticalAlign: 'middle', borderRadius: 3, marginLeft: 4 } }))
+      )
+    );
+    var explanation = h('div', null,
+      h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 6 } }, 'Light adds. Pigment subtracts.'),
+      h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } },
+        'Your phone screen is RGB. Each pixel emits a tiny amount of red, green, blue — and your eye sums them. All three at full intensity = white. None = black. RGB is ADDITIVE.'),
+      h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } },
+        'Your printer is CMYK. Each ink ABSORBS one third of the visible spectrum. Cyan absorbs red. Magenta absorbs green. Yellow absorbs blue. All three together absorb everything → black. CMYK is SUBTRACTIVE.'),
+      h('p', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic', margin: 0 } },
+        'Why "K" in CMYK? Real-world C+M+Y inks make muddy brown, not true black. Printers add a separate black plate (Key) for actual black + crisp text.')
+    );
+    return _phLayout(h, stage, controls, explanation);
+  }
+
+  // ── Polarized sky ────────────────────────────────────────────────
+  function _renderPhPolSky(d, upd, h) {
+    var sunAz = d.phenoSkySunAz != null ? d.phenoSkySunAz : 30;     // degrees from east
+    var polDeg = d.phenoSkyPolDeg != null ? d.phenoSkyPolDeg : 0;   // polarizer rotation
+    var W = 420, H = 240;
+    // Sun position
+    var sunX = W * 0.5 + W * 0.35 * Math.cos(degToRad(sunAz));
+    var sunY = 80 - 30 * Math.sin(degToRad(sunAz));
+    // Polarization is strongest 90° from the sun. Visualize as a band of darker sky there.
+    var sunDir = Math.atan2(80 - sunY, sunX - W * 0.5);
+    // Build sky tiles, each tinted by Malus-like factor depending on polarizer angle vs the sky's local pol axis.
+    var tiles = [];
+    var cols = 24, rows = 8;
+    for (var iy = 0; iy < rows; iy++) {
+      for (var ix = 0; ix < cols; ix++) {
+        var tx = (ix + 0.5) * (W / cols);
+        var ty = (iy + 0.5) * (140 / rows);
+        var dxs = tx - sunX, dys = ty - sunY;
+        var distFromSun = Math.sqrt(dxs * dxs + dys * dys);
+        // Polarization strength peaks at 90° away (band shape)
+        var maxDim = Math.max(W, 140);
+        var normDist = Math.min(1, distFromSun / (maxDim * 0.5));
+        var bandStrength = 1 - Math.abs(normDist - 0.5) * 2; // peaks at half max
+        bandStrength = Math.max(0, bandStrength);
+        // Sky's local polarization axis is perpendicular to (sun → sky-point) direction
+        var localAxis = (Math.atan2(dys, dxs) * 180 / Math.PI) + 90;
+        // Malus on the polarizer
+        var deltaDeg = ((polDeg - localAxis) % 180 + 180) % 180;
+        var rad = degToRad(deltaDeg);
+        var passFrac = Math.cos(rad) * Math.cos(rad);
+        // Final brightness — base sky modulated by polarization strength × Malus factor
+        var dim = 1 - bandStrength * (1 - passFrac) * 0.85;
+        var blueR = Math.round(125 * dim);
+        var blueG = Math.round(180 * dim);
+        var blueB = Math.round(225 * dim);
+        tiles.push(h('rect', {
+          key: ix + ',' + iy,
+          x: ix * (W / cols), y: iy * (140 / rows),
+          width: W / cols + 0.5, height: 140 / rows + 0.5,
+          fill: 'rgb(' + blueR + ',' + blueG + ',' + blueB + ')'
+        }));
+      }
+    }
+    // ── Animated E-field vectors on the maximum-polarization band ──
+    // Where polarization peaks (90° from sun), draw small oscillating line
+    // segments perpendicular to the sun→point direction. As the polarizer
+    // axis rotates, each vector's opacity tracks Malus's cos²Δθ — students
+    // see the band brighten/dim AND the actual E-field direction at each
+    // sky position.
+    var efieldVectors = (function() {
+      var nodes = [];
+      var bandRadius = 90; // pixels from sun for the peak-polarization band
+      var nPts = 16;
+      for (var i = 0; i < nPts; i++) {
+        var angle = (i / nPts) * Math.PI * 2;
+        var vx = sunX + bandRadius * Math.cos(angle);
+        var vy = sunY + bandRadius * Math.sin(angle);
+        // Skip points outside the visible sky region (above ground, inside canvas)
+        if (vx < 8 || vx > W - 8 || vy < 8 || vy > 132) continue;
+        // Local axis: perpendicular to (sun → point), so add 90°
+        var localAxisDeg = (Math.atan2(vy - sunY, vx - sunX) * 180 / Math.PI) + 90;
+        var deltaDeg = ((polDeg - localAxisDeg) % 180 + 180) % 180;
+        var passFrac = Math.cos(degToRad(deltaDeg)) * Math.cos(degToRad(deltaDeg));
+        // Vector length scales with intensity transmitted through polarizer
+        var len = 4 + passFrac * 7;
+        var dx = Math.cos(degToRad(localAxisDeg)) * len;
+        var dy = Math.sin(degToRad(localAxisDeg)) * len;
+        nodes.push(h('line', {
+          key: 'ef' + i,
+          x1: vx - dx, y1: vy - dy, x2: vx + dx, y2: vy + dy,
+          stroke: '#facc15', strokeWidth: 1.4, strokeLinecap: 'round',
+          opacity: 0.35 + passFrac * 0.55,
+          className: 'opticslab-efield-vec',
+          style: { animationDelay: (i * 0.07 - 0.7) + 's' }
+        }));
+      }
+      return nodes;
+    })();
+
+    var svg = h('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { width: '100%', height: 'auto', borderRadius: 8 }, role: 'img', 'aria-label': 'Polarized sky simulator. Sky regions 90 degrees from the sun are most strongly polarized; rotating a polarizer dims them when its axis is crossed. Animated E-field vectors show the polarization direction at each point on the peak-polarization band.' },
+      tiles,
+      // Ground
+      h('rect', { x: 0, y: 140, width: W, height: H - 140, fill: '#3f6b35' }),
+      // E-field vector indicators on the peak-polarization band
+      efieldVectors,
+      // Sun
+      h('circle', { cx: sunX, cy: sunY, r: 16, fill: '#fef9c3' }),
+      h('circle', { cx: sunX, cy: sunY, r: 22, fill: 'none', stroke: '#fef9c3', strokeWidth: 1, opacity: 0.5 }),
+      // Polarizer disk (small visualization at bottom-right)
+      h('g', { transform: 'translate(' + (W - 60) + ',' + (H - 40) + ')' },
+        h('circle', { cx: 0, cy: 0, r: 22, fill: 'rgba(15,23,42,0.7)', stroke: '#7dd3fc' }),
+        h('line', {
+          x1: -22 * Math.cos(degToRad(polDeg + 90)),
+          y1: -22 * Math.sin(degToRad(polDeg + 90)),
+          x2: 22 * Math.cos(degToRad(polDeg + 90)),
+          y2: 22 * Math.sin(degToRad(polDeg + 90)),
+          stroke: '#fbbf24', strokeWidth: 3
+        }),
+        h('text', { x: 0, y: 38, fill: '#fbbf24', fontSize: 10, textAnchor: 'middle', fontFamily: 'monospace' }, 'pol ' + polDeg.toFixed(0) + '°')
+      )
+    );
+    var controls = h('div', { style: { marginTop: 10, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+      h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#cbd5e1' } },
+        'Sun azimuth:',
+        h('input', { type: 'range', min: -90, max: 90, step: 5, value: sunAz,
+          onChange: function(e) { upd('phenoSkySunAz', parseFloat(e.target.value)); },
+          'data-op-focusable': 'true', 'aria-label': 'Sun azimuth',
+          style: { flex: 1 } }),
+        h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', minWidth: 32 } }, sunAz + '°')
+      ),
+      h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#cbd5e1' } },
+        'Polarizer:',
+        h('input', { type: 'range', min: 0, max: 180, step: 5, value: polDeg,
+          onChange: function(e) { upd('phenoSkyPolDeg', parseFloat(e.target.value)); },
+          'data-op-focusable': 'true', 'aria-label': 'Polarizer rotation',
+          style: { flex: 1 } }),
+        h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', minWidth: 32 } }, polDeg + '°')
+      )
+    );
+    var explanation = h('div', null,
+      h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 6 } }, 'Why polarized sunglasses cut sky glare'),
+      h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } },
+        'Sunlight is unpolarized when it leaves the sun. As it scatters off air molecules (Rayleigh scattering), the scattered light becomes partially polarized — strongest 90° from the sun direction.'),
+      h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } },
+        'Rotate a polarizer (or your head while wearing polarized sunglasses) and that band of sky brightens or dims by Malus\'s law: I = I₀ cos²θ between the polarizer axis and the sky\'s local polarization axis.'),
+      h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } },
+        'Polarized sunglasses are usually oriented to block HORIZONTAL polarization — because reflections off horizontal surfaces (water, road, snow) produce horizontally-polarized glare. Same physics, different application.'),
+      h('p', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic', margin: 0 } },
+        'Bees and many other insects use sky polarization for navigation. Their compound eyes detect the polarization pattern even when the sun is hidden.')
+    );
+    return _phLayout(h, svg, controls, explanation);
+  }
+
+  // ── Eye & accommodation ─────────────────────────────────────────
+  function _renderPhEye(d, upd, h) {
+    // Object distance from eye (cm). The eye's lens accommodates by changing
+    // shape: thicker for near objects (shorter f), thinner for far objects.
+    // v2: adds eye conditions (normal/myopia/hyperopia) and corrective lenses.
+    var dObjCm = d.phenoEyeDist != null ? d.phenoEyeDist : 25;
+    var ageYears = d.phenoEyeAge != null ? d.phenoEyeAge : 20;
+    var condition = d.phenoEyeCondition || 'normal'; // normal | myopia | hyperopia
+    var glassesOn = !!d.phenoEyeGlasses;
+    var dObjMm = dObjCm * 10;
+
+    // Axial length (lens-to-retina distance) depends on condition.
+    // Normal: 22.7 mm. Myopia: eyeball ~2 mm longer. Hyperopia: ~2 mm shorter.
+    var dImg = condition === 'myopia' ? 24.7 : condition === 'hyperopia' ? 20.7 : 22.7;
+
+    // For a "relaxed" eye looking at infinity, the lens uses its minimum power.
+    // For the standard 22.7 mm axial length, that's f = 22.7 mm = 44.05 D.
+    // For myopic eye (24.7 mm), the relaxed lens still focuses parallel rays at
+    // ~22.7 mm — but the retina is at 24.7 mm, so parallel rays focus in FRONT
+    // of the retina → distant objects look blurry. (Near objects can still
+    // focus on the retina because the lens does have some accommodation range.)
+    // Similarly, hyperopic eye focuses parallel rays BEHIND the retina.
+    //
+    // Effective lens f the eye must produce to image dObj on the retina (dImg):
+    //   1/f = 1/d_o + 1/d_i   →   f = (d_o · d_i) / (d_o + d_i)
+    // For the eye to focus this object on the retina without glasses, the
+    // required f must fall within the eye's accommodation range.
+
+    // Lens accommodation range (in diopters of power, 1/f in metres):
+    //   Young eye: ~ 44 D (relaxed, infinity) to 55+ D (near point)
+    //   Age dampens the upper end (presbyopia).
+    var ageAccomLoss = Math.max(0, ageYears - 10) * 0.18; // diopters lost per year past 10
+    var pMin = 44; // relaxed minimum power
+    var pMax = Math.max(45, 55 - ageAccomLoss); // accommodated maximum power
+
+    // Glasses correction in diopters (user-adjustable). Negative for myopia
+    // (diverging), positive for hyperopia (converging).
+    var glassesDiopters = d.phenoEyeGlassesD != null ? d.phenoEyeGlassesD :
+      (condition === 'myopia' ? -3 : condition === 'hyperopia' ? +3 : 0);
+
+    // Effective object distance AFTER glasses (if worn). Glasses lens with
+    // power P_g acts on light from object at d_o; the virtual image becomes
+    // the effective object the eye must focus. For thin-lens approximation,
+    // glasses just add their power to the eye system → eye sees an object at
+    // d_o' where 1/d_o' = 1/d_o + P_g (in 1/m). For diverging glasses (P_g < 0)
+    // this makes d_o' larger (object appears farther) — perfect for myopia.
+    var effDoMm = dObjMm;
+    if (glassesOn && glassesDiopters !== 0) {
+      // Convert dObjMm → m, apply, convert back. Glasses sit just in front of
+      // the eye (we ignore the small gap to the cornea for clarity).
+      var d_o_m = dObjMm / 1000;
+      var newRecip = 1 / d_o_m + glassesDiopters; // 1/m
+      if (newRecip > 0.01) effDoMm = (1 / newRecip) * 1000;
+      else if (newRecip < -0.01) effDoMm = (1 / newRecip) * 1000; // virtual far behind
+      else effDoMm = 1e6; // effectively at infinity
+    }
+
+    // Required eye-lens power for this effective object
+    var fNeed = (effDoMm * dImg) / (effDoMm + dImg); // mm
+    var diopters = fNeed > 0 ? 1000 / fNeed : 0;
+
+    var canFocus = diopters >= pMin - 0.5 && diopters <= pMax + 0.5;
+    // Near point (closest object the eye can resolve, with or without glasses)
+    // At max accommodation (pMax) we have 1/f = pMax (per m), and we need
+    // f_image = dImg. Required d_o at max accommodation:
+    //   1/d_o = pMax (per m) - 1/(dImg/1000)
+    // If glasses are on, the eye's effective near point is pulled in (for
+    // hyperopia/presbyopia) or pushed out (for myopia, where glasses make
+    // near objects "appear" farther — they trade off).
+    var pMaxRecipMmM = pMax - 1000 / dImg;
+    var rawNearPointMm = pMaxRecipMmM > 0 ? 1000 / pMaxRecipMmM : 1e9;
+    var nearPointMm = rawNearPointMm;
+    if (glassesOn) {
+      // Reverse the glasses transform on the near point too
+      var npRecipM = 1 / (rawNearPointMm / 1000) - glassesDiopters;
+      if (npRecipM > 0.05) nearPointMm = (1 / npRecipM) * 1000;
+      else nearPointMm = 1e9;
+    }
+    var nearPointCm = nearPointMm / 10;
+    // Far point — for myopic eye, far point is finite; we expose it as a
+    // visible diagnostic. f_min = 1/pMin (in m). With relaxed lens looking
+    // at the far point, 1/d_far = pMin - 1/(dImg/1000).
+    var pMinRecipMm = pMin - 1000 / dImg;
+    var farPointMm = pMinRecipMm > 0.005 ? 1000 / pMinRecipMm : 1e9;
+    if (glassesOn) {
+      var fpRecipM = 1 / (farPointMm / 1000) - glassesDiopters;
+      if (fpRecipM > 0.005) farPointMm = (1 / fpRecipM) * 1000;
+      else farPointMm = 1e9;
+    }
+    var farPointCm = farPointMm / 10;
+
+    // ─── SVG render ───
+    var W = 400, H = 240;
+    // Eye position depends on condition (visualize the elongated/shortened eye)
+    var eyeR = 70;
+    var eyeRx = eyeR;
+    var eyeRy = eyeR * 0.86;
+    if (condition === 'myopia')    eyeRx = eyeR * 1.12;   // elongated front-to-back
+    if (condition === 'hyperopia') eyeRx = eyeR * 0.88;   // shortened
+    var eyeCx = 240;
+    var eyeCy = 110;
+    var lensX = eyeCx - eyeRx + 8;
+    var retinaX = eyeCx + eyeRx - 4;
+    // Lens thickness reflects required accommodation
+    var lensThicknessNorm = Math.min(1.8, Math.max(0.55, (diopters - 40) / 12));
+    var lensRy = 38;
+    var lensRx = 12 * lensThicknessNorm;
+    var objX = 30, objY = eyeCy;
+    var objSize = Math.max(4, 26 - dObjCm * 0.4);
+    // Glasses lens — sits 10 px in front of the eye
+    var glassesX = eyeCx - eyeRx - 18;
+    var glassesRx = Math.max(3, Math.min(10, Math.abs(glassesDiopters) * 1.4));
+    var glassesIsDiverging = glassesDiopters < 0;
+    // Predicted focal position WITHOUT glasses — to show whether rays land
+    // in front of, on, or behind the retina.
+    var unaidedF = (dObjMm * dImg) / (dObjMm + dImg);
+    var unaidedDi;
+    var unaidedPower = condition === 'myopia' ? pMin * (24.7 / dImg) : condition === 'hyperopia' ? pMin * (20.7 / dImg) : pMin;
+    // Simpler: the relaxed eye's lens has f = 1/pMin (m), so what d_i would it produce?
+    // 1/d_i = pMin - 1/(d_o/1000)   → d_i = 1000 / (pMin - 1000/d_o)
+    var pMinDoTerm = pMin - 1000 / dObjMm;
+    unaidedDi = pMinDoTerm > 0.005 ? 1000 / pMinDoTerm : 1e6;
+    // Map dImg vs unaidedDi → focus position relative to retina
+    // If unaidedDi > dImg, focus point is past the retina (hyperopia for distant objects).
+    // If unaidedDi < dImg, focus point is short (myopia).
+    var focusOffset = unaidedDi - dImg; // mm; >0 = past retina, <0 = short
+    // Scale to pixels for visualization (clamp)
+    var focusOffsetPx = Math.max(-20, Math.min(20, focusOffset * 0.6));
+    var focusPx = retinaX + focusOffsetPx;
+    // Show the unaided focus point if rays don't reach the retina cleanly
+    var showFocusMarker = !canFocus || Math.abs(focusOffset) > 0.4;
+
+    var svg = h('svg', { viewBox: '0 0 ' + W + ' ' + H,
+      style: { width: '100%', height: 'auto', background: '#0b1220', borderRadius: 8 },
+      role: 'img',
+      'aria-label': 'Eye anatomy simulator showing axial length, lens accommodation, and corrective lens effects for normal, myopic, and hyperopic eyes.' },
+      // Sclera
+      h('ellipse', { cx: eyeCx, cy: eyeCy, rx: eyeRx, ry: eyeRy, fill: '#fef9c3', stroke: '#cbd5e1', strokeWidth: 1.5 }),
+      // Iris/pupil
+      h('circle', { cx: eyeCx - eyeRx + 18, cy: eyeCy, r: 14, fill: '#7e22ce' }),
+      h('circle', { cx: eyeCx - eyeRx + 18, cy: eyeCy, r: 6, fill: '#0f172a' }),
+      // Eye lens (deformable)
+      h('ellipse', { cx: lensX, cy: eyeCy, rx: lensRx, ry: lensRy, fill: 'rgba(125,211,252,0.4)', stroke: '#0ea5e9', strokeWidth: 1.5 }),
+      // Retina (rear curve)
+      h('path', { d: 'M ' + retinaX + ' ' + (eyeCy - 50) + ' Q ' + (retinaX + 14) + ' ' + eyeCy + ' ' + retinaX + ' ' + (eyeCy + 50),
+        fill: 'none', stroke: '#fb7185', strokeWidth: 2.5 }),
+      // Optional corrective glasses lens
+      glassesOn && h('g', null,
+        // Lens shape: biconvex for positive (hyperopia/presbyopia), biconcave for negative (myopia)
+        glassesIsDiverging
+          ? h('path', {
+              d: 'M ' + glassesX + ' ' + (eyeCy - 32) +
+                 ' Q ' + (glassesX + glassesRx * 0.5) + ' ' + eyeCy +
+                 ' ' + glassesX + ' ' + (eyeCy + 32) +
+                 ' L ' + (glassesX - 1) + ' ' + (eyeCy + 32) +
+                 ' Q ' + (glassesX - glassesRx * 0.5) + ' ' + eyeCy +
+                 ' ' + (glassesX - 1) + ' ' + (eyeCy - 32) + ' Z',
+              fill: 'rgba(96,165,250,0.25)', stroke: '#3b82f6', strokeWidth: 1.4
+            })
+          : h('ellipse', { cx: glassesX, cy: eyeCy, rx: glassesRx, ry: 32,
+              fill: 'rgba(96,165,250,0.25)', stroke: '#3b82f6', strokeWidth: 1.4 }),
+        // Frame stem
+        h('rect', { x: glassesX - 1.5, y: eyeCy - 35, width: 3, height: 70, fill: 'none' }),
+        h('text', { x: glassesX, y: eyeCy + 48, fill: '#93c5fd', fontSize: 10,
+          fontWeight: 700, textAnchor: 'middle' },
+          (glassesDiopters > 0 ? '+' : '') + glassesDiopters.toFixed(1) + ' D')
+      ),
+      // Object dot
+      h('circle', { cx: objX, cy: objY, r: objSize / 2, fill: '#22c55e', opacity: 0.9 }),
+      h('text', { x: objX, y: objY + 18, fill: '#86efac', fontSize: 10, textAnchor: 'middle' }, dObjCm + ' cm'),
+      // Ray traces
+      canFocus
+        ? h('g', { stroke: '#fbbf24', strokeWidth: 1.4, fill: 'none' },
+            h('line', { x1: objX, y1: objY - objSize / 2, x2: lensX, y2: eyeCy - lensRy * 0.7 }),
+            h('line', { x1: objX, y1: objY + objSize / 2, x2: lensX, y2: eyeCy + lensRy * 0.7 }),
+            h('line', { x1: lensX, y1: eyeCy - lensRy * 0.7, x2: retinaX + 4, y2: eyeCy }),
+            h('line', { x1: lensX, y1: eyeCy + lensRy * 0.7, x2: retinaX + 4, y2: eyeCy })
+          )
+        : h('g', { stroke: '#ef4444', strokeWidth: 1.4, fill: 'none', opacity: 0.75 },
+            h('line', { x1: objX, y1: objY - objSize / 2, x2: lensX, y2: eyeCy - lensRy * 0.7 }),
+            h('line', { x1: objX, y1: objY + objSize / 2, x2: lensX, y2: eyeCy + lensRy * 0.7 }),
+            // Rays continue but don't converge at the retina
+            h('line', { x1: lensX, y1: eyeCy - lensRy * 0.7, x2: focusPx, y2: eyeCy - 2 }),
+            h('line', { x1: lensX, y1: eyeCy + lensRy * 0.7, x2: focusPx, y2: eyeCy + 2 }),
+            // Diverging rays continue past focal point
+            h('line', { x1: focusPx, y1: eyeCy - 2, x2: focusPx + 24, y2: eyeCy - 9, opacity: 0.5 }),
+            h('line', { x1: focusPx, y1: eyeCy + 2, x2: focusPx + 24, y2: eyeCy + 9, opacity: 0.5 }),
+            h('text', { x: retinaX + 8, y: eyeCy - 20, fill: '#ef4444', fontSize: 10, fontWeight: 800, stroke: 'none' }, 'BLURRY')
+          ),
+      // Focus marker (where rays actually converge without glasses, when not on retina)
+      showFocusMarker && condition !== 'normal' && !glassesOn && h('g', null,
+        h('circle', { cx: focusPx, cy: eyeCy, r: 3, fill: '#fbbf24', stroke: '#0b1220', strokeWidth: 1 }),
+        h('text', { x: focusPx, y: eyeCy - 8, fill: '#fcd34d', fontSize: 9, textAnchor: 'middle' },
+          focusOffset < 0 ? 'short' : 'past retina')
+      ),
+      // Animated photons traveling object → lens → retina (or focus point if blurry).
+      // Two paths: upper edge and lower edge of the object, converging at retina/focus.
+      // When glasses are on, the photons pass THROUGH the glasses lens midway so the
+      // optical path visually includes the corrective element.
+      (function() {
+        var photons = [];
+        var photonColor = canFocus ? '#fde047' : '#fca5a5';
+        var endX, endY;
+        if (canFocus) {
+          endX = retinaX + 4; endY = eyeCy;
+        } else {
+          endX = focusPx; endY = eyeCy;
+        }
+        // Build the upper-ray and lower-ray paths.
+        // With glasses, insert a waypoint at the glasses lens midline so the photon
+        // is visibly "redirected" by the corrective lens.
+        function buildPath(startY, midY) {
+          var pts = [];
+          pts.push('M ' + objX + ' ' + startY);
+          if (glassesOn) {
+            pts.push('L ' + glassesX + ' ' + (eyeCy + (startY - objY) * 0.3));
+          }
+          pts.push('L ' + lensX + ' ' + midY);
+          pts.push('L ' + endX + ' ' + endY);
+          return pts.join(' ');
+        }
+        var upperPath = buildPath(objY - objSize / 2, eyeCy - lensRy * 0.7);
+        var lowerPath = buildPath(objY + objSize / 2, eyeCy + lensRy * 0.7);
+        // Stagger 2 photons per path for a continuous "beam" feel
+        [upperPath, lowerPath].forEach(function(p, pi) {
+          [0, -1.1].forEach(function(delay, di) {
+            photons.push(h('circle', {
+              key: 'eyep' + pi + '_' + di, r: 2.8, fill: photonColor,
+              stroke: '#fff', strokeWidth: 0.35,
+              style: {
+                offsetPath: 'path("' + p + '")',
+                WebkitOffsetPath: 'path("' + p + '")',
+                filter: 'drop-shadow(0 0 3px ' + photonColor + ')',
+                animationDuration: '2.2s',
+                animationDelay: delay + 's'
+              },
+              className: 'opticslab-photon',
+              cx: 0, cy: 0
+            }));
+          });
+        });
+        return photons;
+      })(),
+      // Readouts (top-left)
+      h('text', { x: 12, y: 16, fill: '#cbd5e1', fontSize: 11, fontWeight: 700 },
+        'Eye power: ' + diopters.toFixed(1) + ' D · range ' + pMin.toFixed(0) + '–' + pMax.toFixed(0) + ' D'),
+      h('text', { x: 12, y: 30, fill: '#94a3b8', fontSize: 10 },
+        'Axial length: ' + dImg.toFixed(1) + ' mm' + (condition === 'normal' ? '' : ' (' + condition + ')')),
+      h('text', { x: 12, y: H - 24, fill: '#86efac', fontSize: 10 },
+        'Near point: ~' + (nearPointCm > 999 ? '∞' : nearPointCm.toFixed(0) + ' cm')),
+      h('text', { x: 12, y: H - 10, fill: '#86efac', fontSize: 10 },
+        'Far point: ~' + (farPointCm > 999 ? '∞' : farPointCm.toFixed(0) + ' cm'))
+    );
+
+    // ─── Controls ───
+    var conditionLabels = {
+      normal:    { label: '😀 Normal',      desc: 'Emmetropia — both near and far in focus' },
+      myopia:    { label: '🔍 Nearsighted', desc: 'Eyeball too long — distant objects blur' },
+      hyperopia: { label: '📏 Farsighted',  desc: 'Eyeball too short — near objects blur' }
+    };
+    var controls = h('div', { style: { marginTop: 10, display: 'grid', gap: 8 } },
+      // Condition picker
+      h('div', null,
+        h('div', { style: { fontSize: 11, color: '#cbd5e1', fontWeight: 700, marginBottom: 4 } }, 'Eye condition'),
+        h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+          Object.keys(conditionLabels).map(function(k) {
+            var sel = condition === k;
+            return h('button', { key: k,
+              onClick: function() { upd('phenoEyeCondition', k); },
+              'data-op-focusable': 'true',
+              title: conditionLabels[k].desc,
+              style: {
+                padding: '5px 10px', fontSize: 11, fontWeight: 700,
+                background: sel ? '#7c3aed' : 'rgba(124,58,237,0.10)',
+                color: sel ? '#fff' : '#c4b5fd',
+                border: '1px solid ' + (sel ? '#7c3aed' : 'rgba(124,58,237,0.40)'),
+                borderRadius: 6, cursor: 'pointer'
+              }
+            }, conditionLabels[k].label);
+          })
+        )
+      ),
+      // Sliders
+      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+        h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#cbd5e1' } },
+          'Object dist:',
+          h('input', { type: 'range', min: 5, max: 600, step: 5, value: dObjCm,
+            onChange: function(e) { upd('phenoEyeDist', parseFloat(e.target.value)); },
+            'data-op-focusable': 'true', 'aria-label': 'Object distance from eye',
+            style: { flex: 1 } }),
+          h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', minWidth: 44 } }, dObjCm + ' cm')
+        ),
+        h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#cbd5e1' } },
+          'Age:',
+          h('input', { type: 'range', min: 8, max: 80, step: 1, value: ageYears,
+            onChange: function(e) { upd('phenoEyeAge', parseFloat(e.target.value)); },
+            'data-op-focusable': 'true', 'aria-label': 'Age in years',
+            style: { flex: 1 } }),
+          h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', minWidth: 32 } }, ageYears + ' y')
+        )
+      ),
+      // Glasses toggle + diopter slider
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 10, alignItems: 'center' } },
+        h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#cbd5e1', cursor: 'pointer' } },
+          h('input', { type: 'checkbox', checked: glassesOn,
+            onChange: function(e) { upd('phenoEyeGlasses', e.target.checked); },
+            'data-op-focusable': 'true' }),
+          h('span', { style: { fontWeight: 700 } }, '👓 Glasses')
+        ),
+        h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: glassesOn ? '#cbd5e1' : '#475569' } },
+          'Power:',
+          h('input', { type: 'range', min: -6, max: 6, step: 0.25, value: glassesDiopters,
+            onChange: function(e) { upd('phenoEyeGlassesD', parseFloat(e.target.value)); },
+            disabled: !glassesOn,
+            'data-op-focusable': 'true', 'aria-label': 'Corrective lens power in diopters',
+            style: { flex: 1, opacity: glassesOn ? 1 : 0.4 } }),
+          h('span', { style: { fontFamily: 'monospace', color: glassesOn ? '#fbbf24' : '#475569', minWidth: 56 } },
+            (glassesDiopters > 0 ? '+' : '') + glassesDiopters.toFixed(2) + ' D')
+        )
+      ),
+      // Quick-fix button
+      condition !== 'normal' && h('button', {
+        onClick: function() {
+          // Auto-prescribe: choose diopters so far point goes to infinity OR near point reaches 25 cm
+          var rx;
+          if (condition === 'myopia') {
+            // Want far point at infinity: glasses move object from infinity to user's far point
+            // 1/∞ + P_g = 1/d_far(no_glasses) (in m). For myopia, d_far(no_glasses) is finite.
+            // So P_g = 1 / (d_far_no_glasses in m).
+            // d_far_no_glasses in mm: 1000 / (pMin - 1000/dImg).
+            var rawFar = pMin - 1000 / dImg > 0.005 ? 1000 / (pMin - 1000 / dImg) : 0;
+            // P_g (negative) such that virtual image at infinity → object at d_far_no_glasses
+            // 1/d_o + P_g = 1/d_far_no_glasses. As d_o → ∞, we want d_o' = d_far → P_g = 1/d_far
+            // But d_far_no_glasses is the closest object the relaxed eye can resolve... wait.
+            // Actually d_far is the FARTHEST. For myopia, far point < ∞ in mm.
+            rx = rawFar > 100 ? -(1000 / rawFar) : -3;
+          } else {
+            // Hyperopia: prescribe so near point reaches 25 cm
+            rx = +(1000 / 250 - (pMax - 1000 / dImg));
+            rx = Math.max(0.5, Math.min(6, rx));
+          }
+          rx = Math.round(rx * 4) / 4; // snap to nearest 0.25 D
+          upd('phenoEyeGlassesD', rx);
+          upd('phenoEyeGlasses', true);
+        },
+        style: {
+          padding: '5px 10px', fontSize: 10, fontWeight: 700,
+          background: 'rgba(34,197,94,0.18)', color: '#86efac',
+          border: '1px solid rgba(34,197,94,0.50)', borderRadius: 6, cursor: 'pointer',
+          justifySelf: 'start'
+        }
+      }, '⚡ Auto-prescribe corrective lens')
+    );
+
+    // ─── Explanation panel ───
+    var explanation = h('div', null,
+      h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 6 } },
+        condition === 'myopia' ? 'Myopia (nearsightedness)'
+          : condition === 'hyperopia' ? 'Hyperopia (farsightedness)'
+          : 'The normal accommodating eye'),
+      // Condition-specific explanations
+      condition === 'normal' && h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, margin: '0 0 8px' } },
+        'The retina sits ~22.7 mm behind the lens. The ciliary muscle squeezes the lens fatter (shorter f) for nearby objects and lets it relax for distant ones — that\'s accommodation. The lens\'s diopter range covers near (~10 cm) to far (∞).'),
+      condition === 'myopia' && h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, margin: '0 0 8px' } },
+        'The eyeball is ~2 mm too long (24.7 mm here). Parallel rays from a distant object focus IN FRONT of the retina, so distant objects blur. Near objects can still focus on the retina because the lens has room to accommodate down. The far point is finite — try the slider.'),
+      condition === 'hyperopia' && h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, margin: '0 0 8px' } },
+        'The eyeball is ~2 mm too short (20.7 mm here). Even at full accommodation, the lens can\'t bend light enough — near objects focus BEHIND the retina. Reading is the first thing to go.'),
+
+      // Glasses prescription explanation
+      glassesOn && h('div', { style: { background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.40)', borderRadius: 6, padding: 8, margin: '6px 0' } },
+        h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', marginBottom: 4 } },
+          '👓 ' + (glassesIsDiverging ? 'Diverging' : 'Converging') + ' lens · ' + (glassesDiopters > 0 ? '+' : '') + glassesDiopters.toFixed(2) + ' D'),
+        h('p', { style: { fontSize: 11, color: '#bfdbfe', margin: 0, lineHeight: 1.5 } },
+          glassesIsDiverging
+            ? 'The diverging lens makes distant objects appear nearer to the eye — within the myopic eye\'s focusing range. Power = 1/f (in metres).'
+            : 'The converging lens pre-bends light so near objects appear farther than they are, easing the work the lens has to do. Reading glasses use the same principle.')
+      ),
+
+      // Universal physics summary
+      h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, margin: '0 0 8px' } },
+        h('strong', { style: { color: '#fbbf24' } }, 'Lens equation: '),
+        '1/f = 1/d_o + 1/d_i. With the retina at a fixed d_i, the eye\'s f must change for every object distance. Glasses change the effective d_o the eye sees, letting a stiff or mis-sized eye work in a range it couldn\'t alone.'),
+
+      h('p', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic', margin: 0 } },
+        'Try: pick Nearsighted, then drag the object slider — watch the focus marker land in front of the retina. Then enable glasses and click Auto-prescribe.')
+    );
+    return _phLayout(h, svg, controls, explanation);
+  }
+
+  // ── Sunset / Rayleigh scattering ─────────────────────────────────
+  function _renderPhSunset(d, upd, h) {
+    // As the sun nears the horizon, sunlight travels through MORE atmosphere.
+    // Rayleigh scattering ∝ 1/λ⁴ — strongly scatters short (blue) wavelengths.
+    // At zenith (sun overhead), short path → only some blue scattered → sky looks blue.
+    // At horizon, long path → most blue scattered out → only red wavelengths reach you → red sun.
+    var sunAlt = d.phenoSunsetAlt != null ? d.phenoSunsetAlt : 30; // sun altitude angle (degrees above horizon)
+    // Air mass (atmospheric path length factor) — secant approximation, capped for low angles
+    var altRad = degToRad(Math.max(2, sunAlt));
+    var airmass = Math.min(40, 1 / Math.sin(altRad));
+    // Wavelengths to track
+    var wavelengths = [
+      { nm: 410, label: 'violet', color: '#7c3aed' },
+      { nm: 470, label: 'blue',   color: '#3b82f6' },
+      { nm: 530, label: 'green',  color: '#22c55e' },
+      { nm: 580, label: 'yellow', color: '#facc15' },
+      { nm: 620, label: 'orange', color: '#fb923c' },
+      { nm: 680, label: 'red',    color: '#ef4444' }
+    ];
+    // Survival fraction = exp(-k · airmass · (550/λ)⁴) — Rayleigh scaling
+    function survival(nm) {
+      var ratio4 = Math.pow(550 / nm, 4);
+      return Math.exp(-0.10 * airmass * ratio4);
+    }
+    var W = 380, H = 220;
+    // Sky color = sum of all wavelengths the user does NOT see directly (i.e., what got scattered TO them)
+    // Sun color = sum of what survives the path TO the sun
+    var sumR = 0, sumG = 0, sumB = 0; // sun direct color
+    var sctR = 0, sctG = 0, sctB = 0; // scattered (sky) color
+    wavelengths.forEach(function(w) {
+      var s = survival(w.nm);
+      var rgb = w.color;
+      var r = parseInt(rgb.slice(1,3),16), g = parseInt(rgb.slice(3,5),16), b = parseInt(rgb.slice(5,7),16);
+      sumR += r * s; sumG += g * s; sumB += b * s;
+      sctR += r * (1 - s); sctG += g * (1 - s); sctB += b * (1 - s);
+    });
+    function clamp255(v) { return Math.min(255, Math.max(0, Math.round(v / wavelengths.length * 1.6))); }
+    var sunCol = 'rgb(' + clamp255(sumR) + ',' + clamp255(sumG) + ',' + clamp255(sumB) + ')';
+    var skyCol = 'rgb(' + clamp255(sctR) + ',' + clamp255(sctG) + ',' + clamp255(sctB) + ')';
+    // Sun position
+    var sunX = 50 + 280 * Math.cos(degToRad(sunAlt));
+    var sunY = H - 60 - 130 * Math.sin(degToRad(sunAlt));
+    // Observer position (just above the horizon, looking up at the sun)
+    var obsX = W / 2;
+    var obsY = H - 36;
+    // Build animated photon paths: each wavelength sends a photon from the
+    // sun toward the observer. Short wavelengths (high scatter %) end early
+    // at a random sky location → represents being scattered out.
+    // Long wavelengths (low scatter %) make it all the way to the observer
+    // → represents surviving the atmospheric path. The visual story is the
+    // entire Rayleigh effect made watchable.
+    var photonNodes = wavelengths.map(function(w, wi) {
+      var s = survival(w.nm);
+      // Photon "reaches the observer" probability tracks survival fraction.
+      // For each wavelength, we draw TWO behaviors over time:
+      //   (a) a survival photon that travels sun → observer
+      //   (b) a scattered photon that hits a sky deflection point
+      // Their visibilities depend on s: high s → mostly survival path;
+      // low s → mostly scatter to random sky points.
+      // Stagger emissions by wavelength index for a continuous "stream" feel.
+      var dxObs = obsX - sunX, dyObs = obsY - sunY;
+      var distObs = Math.sqrt(dxObs * dxObs + dyObs * dyObs);
+      // Deflection point — somewhere along the path, pushed sideways.
+      // Short wavelengths get deflected closer to the sun (early scatter);
+      // long wavelengths would too if they scattered, but most survive.
+      var deflectFrac = 0.25 + (1 - s) * 0.35; // closer to sun for high scatter
+      var sideways = (wi % 2 === 0 ? 1 : -1) * (40 + wi * 12);
+      var deflectX = sunX + dxObs * deflectFrac + sideways;
+      var deflectY = sunY + dyObs * deflectFrac + 8;
+      // Build paths
+      var survivalPath = 'M ' + sunX + ' ' + sunY + ' L ' + obsX + ' ' + obsY;
+      var scatterPath = 'M ' + sunX + ' ' + sunY + ' L ' + deflectX.toFixed(1) + ' ' + deflectY.toFixed(1);
+      // Time-tuned durations: light still travels at c — we use the survival
+      // path duration as the baseline so survivors all reach the observer
+      // at the same visual cadence (~2.4s).
+      var arr = [];
+      // Survival photon (only visible if survival > 0.1 — otherwise it
+      // never reaches the eye and would look weird)
+      if (s > 0.1) {
+        arr.push(h('circle', {
+          key: 'sup' + wi, r: 2.4 + s * 1.2, fill: w.color,
+          stroke: '#fff', strokeWidth: 0.3,
+          style: {
+            offsetPath: 'path("' + survivalPath + '")',
+            WebkitOffsetPath: 'path("' + survivalPath + '")',
+            filter: 'drop-shadow(0 0 4px ' + w.color + ')',
+            animationDuration: '2.4s',
+            animationDelay: (-wi * 0.35) + 's',
+            opacity: 0.6 + s * 0.4  // brighter for high-survival
+          },
+          className: 'opticslab-photon',
+          cx: 0, cy: 0
+        }));
+      }
+      // Scatter photon (only if scattering is significant)
+      var scatterRate = 1 - s;
+      if (scatterRate > 0.2) {
+        arr.push(h('circle', {
+          key: 'scp' + wi, r: 2.2,
+          fill: w.color, stroke: '#fff', strokeWidth: 0.2,
+          style: {
+            offsetPath: 'path("' + scatterPath + '")',
+            WebkitOffsetPath: 'path("' + scatterPath + '")',
+            filter: 'drop-shadow(0 0 3px ' + w.color + ')',
+            animationDuration: '1.8s',
+            animationDelay: (-wi * 0.28 + 0.4) + 's',
+            opacity: 0.55 * scatterRate
+          },
+          className: 'opticslab-photon',
+          cx: 0, cy: 0
+        }));
+        // Tiny pulse at the deflection point — "scattered HERE"
+        arr.push(h('circle', {
+          key: 'scd' + wi,
+          cx: deflectX, cy: deflectY, r: 1.2,
+          fill: 'none', stroke: w.color, strokeWidth: 0.8,
+          opacity: 0.7,
+          className: 'opticslab-wavefront',
+          style: {
+            animationDuration: '1.8s',
+            animationDelay: (-wi * 0.28 + 1.2) + 's',
+            transformOrigin: deflectX.toFixed(1) + 'px ' + deflectY.toFixed(1) + 'px'
+          }
+        }));
+      }
+      return arr;
+    }).reduce(function(a, b) { return a.concat(b); }, []);
+
+    var svg = h('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { width: '100%', height: 'auto', borderRadius: 8 },
+      role: 'img', 'aria-label': 'Sunset Rayleigh scattering simulator. Sun altitude controls atmospheric path length and scattering of short wavelengths. Animated photons show short wavelengths scattering out (creating the blue sky) while long wavelengths survive to the observer (red sun).' },
+      h('rect', { x: 0, y: 0, width: W, height: H - 30, fill: skyCol }),
+      h('rect', { x: 0, y: H - 30, width: W, height: 30, fill: '#1e293b' }),
+      // Sun (color reflects what survived the path)
+      h('circle', { cx: sunX, cy: sunY, r: 20, fill: sunCol }),
+      h('circle', { cx: sunX, cy: sunY, r: 26, fill: 'none', stroke: sunCol, strokeWidth: 1, opacity: 0.5 }),
+      // Animated photons (drawn between sun and observer)
+      photonNodes,
+      // Observer marker — small silhouette at horizon center
+      h('g', { 'aria-hidden': 'true' },
+        h('circle', { cx: obsX, cy: obsY - 6, r: 3.5, fill: '#1f2937' }),
+        h('rect', { x: obsX - 3, y: obsY - 4, width: 6, height: 9, fill: '#1f2937' }),
+        h('text', { x: obsX, y: H - 5, fill: '#cbd5e1', fontSize: 9, textAnchor: 'middle' }, 'observer')
+      ),
+      // Path indicator
+      h('text', { x: 12, y: 18, fill: '#0f172a', fontSize: 11, fontWeight: 700 }, 'Atmospheric path: ' + airmass.toFixed(1) + '× normal'),
+      h('text', { x: 12, y: 32, fill: '#0f172a', fontSize: 10 }, 'Sun altitude: ' + sunAlt.toFixed(0) + '° above horizon')
+    );
+    // Per-wavelength survival bars
+    var bars = wavelengths.map(function(w, i) {
+      var s = survival(w.nm);
+      return h('div', { key: w.nm, style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, marginBottom: 2 } },
+        h('span', { style: { fontFamily: 'monospace', color: w.color, minWidth: 50, fontWeight: 700 } }, w.nm + ' nm'),
+        h('div', { style: { flex: 1, background: '#0f172a', height: 8, borderRadius: 4, overflow: 'hidden' } },
+          h('div', { style: { width: (s * 100).toFixed(0) + '%', height: '100%', background: w.color, transition: 'width 0.2s' } })
+        ),
+        h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', minWidth: 36, textAlign: 'right' } }, (s * 100).toFixed(0) + '%')
+      );
+    });
+    var controls = h('div', { style: { marginTop: 10 } },
+      h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#cbd5e1' } },
+        'Sun altitude:',
+        h('input', { type: 'range', min: 1, max: 90, step: 1, value: sunAlt,
+          onChange: function(e) { upd('phenoSunsetAlt', parseFloat(e.target.value)); },
+          'data-op-focusable': 'true', 'aria-label': 'Sun altitude above horizon',
+          style: { flex: 1 } }),
+        h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', minWidth: 38 } }, sunAlt + '°')
+      ),
+      h('div', { style: { marginTop: 8, padding: 8, background: '#0f172a', borderRadius: 6 } },
+        h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', fontWeight: 800, marginBottom: 4 } }, 'Wavelength survival through path'),
+        bars
+      )
+    );
+    var explanation = h('div', null,
+      h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 6 } }, 'Why sunsets are red and skies are blue'),
+      h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } },
+        'Air molecules scatter light proportional to 1/λ⁴ (Rayleigh\'s formula). Blue light (470 nm) scatters about 9× more strongly than red (680 nm) — a ratio of (680/470)⁴.'),
+      h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } },
+        'When the sun is high, light traverses a short atmospheric path. Some blue is scattered (the sky), most other colors get through (white sun). At sunset, the path becomes 10-40× longer. Almost all the blue is scattered out before reaching you — only the long wavelengths (orange, red) survive the journey to your eye.'),
+      h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } },
+        'The sky overhead during sunset stays blue because you\'re seeing scattered light from a different (still short) atmospheric path. The sun itself reddens because its DIRECT path is now long.'),
+      h('p', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic', margin: 0 } },
+        'On Mars, dust scatters the OPPOSITE way (forward) — Martian sunsets are blue near the sun and reddish elsewhere. Same physics, different particle size.')
+    );
+    return _phLayout(h, svg, controls, explanation);
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // PRISM SPECTROMETER — Newton's classic experiment.
+  // White light enters one face of a triangular prism, refracts twice
+  // (entry + exit), and exits dispersed into a spectrum. Different
+  // materials disperse different amounts because their index of
+  // refraction varies with wavelength (Cauchy's empirical dispersion).
+  // Unlike the rainbow (a single drop with internal reflection),
+  // this is the pure two-refraction case — the textbook ray-trace.
+  // ──────────────────────────────────────────────────────────────────
+  function _renderPhPrism(d, upd, h) {
+    // Wavelengths to trace (nm). The visible spectrum sample.
+    var wavelengths = [
+      { nm: 400, color: '#7c3aed', label: 'violet' },
+      { nm: 440, color: '#4f46e5', label: 'indigo' },
+      { nm: 480, color: '#2563eb', label: 'blue' },
+      { nm: 520, color: '#06b6d4', label: 'cyan' },
+      { nm: 555, color: '#22c55e', label: 'green' },
+      { nm: 590, color: '#facc15', label: 'yellow' },
+      { nm: 620, color: '#f97316', label: 'orange' },
+      { nm: 680, color: '#ef4444', label: 'red' }
+    ];
+    // Cauchy's dispersion formula: n(λ) = A + B/λ² (λ in µm).
+    // Coefficients per material — A,B chosen to reproduce textbook indices.
+    var materials = {
+      crown:   { label: 'Crown glass',  A: 1.500, B: 0.0042, color: '#bae6fd' },
+      flint:   { label: 'Flint glass',  A: 1.600, B: 0.0080, color: '#a78bfa' },
+      water:   { label: 'Water',        A: 1.324, B: 0.0032, color: '#67e8f9' },
+      diamond: { label: 'Diamond',      A: 2.380, B: 0.0125, color: '#f0abfc' },
+      acrylic: { label: 'Acrylic',      A: 1.486, B: 0.0034, color: '#c7d2fe' }
+    };
+    var matKey = d.phenoPrismMat || 'flint';
+    var mat = materials[matKey] || materials.flint;
+    var prismApex = d.phenoPrismApex != null ? d.phenoPrismApex : 60; // apex angle (°)
+    var incidence = d.phenoPrismInc != null ? d.phenoPrismInc : 45;   // incidence angle on face 1 (°)
+
+    // n(λ) for each wavelength
+    function nAt(nm) {
+      var um = nm / 1000;
+      return mat.A + mat.B / (um * um);
+    }
+
+    // Build prism geometry. Equilateral-ish triangle pointing upward,
+    // first face on the left (light hits this), second face on the right.
+    var W = 460, H = 320;
+    var apexRad = degToRad(prismApex);
+    var halfBase = 80; // half of base width in px
+    var apexX = W / 2, apexY = 60;
+    // Base height = halfBase / tan(apex/2)
+    var baseY = apexY + halfBase / Math.tan(apexRad / 2);
+    var leftBaseX = apexX - halfBase;
+    var rightBaseX = apexX + halfBase;
+    // Face-1 (left) normal points up-left (perpendicular to face). Face-2 (right) normal points up-right.
+    // Face-1 angle (relative to horizontal, going up to apex): atan2(apexY - baseY, apexX - leftBaseX)
+    var face1AngleRad = Math.atan2(apexY - baseY, apexX - leftBaseX); // negative (going up-right)
+    // Normal to face-1 points outward (away from prism interior). Rotate face-1 direction by -90°.
+    var face1NormalRad = face1AngleRad - Math.PI / 2;
+
+    // Incoming ray: hits left face at midpoint, angle of incidence relative to normal = `incidence`
+    var entryX = (apexX + leftBaseX) / 2;
+    var entryY = (apexY + baseY) / 2;
+    // Inbound ray direction (toward entry point), at `incidence` degrees from face normal.
+    // The inbound ray approaches FROM the side the normal points to (outside the prism).
+    var incRad = degToRad(incidence);
+    var inboundDirRad = face1NormalRad + Math.PI + incRad; // pointing INTO prism, angle from outside
+    // Trace one ray for each wavelength
+    var rayElements = [];
+    var deviations = []; // store final exit angle for explanation panel
+    wavelengths.forEach(function(wl, idx) {
+      var n = nAt(wl.nm);
+      // Snell at face 1: sin(i) = n · sin(r)  →  r = asin(sin(i)/n)
+      var refr1Rad = Math.asin(Math.min(0.99, Math.sin(incRad) / n));
+      // Direction INSIDE the prism: turn the refracted ray relative to the face-1 normal (pointing into prism)
+      // face1NormalInward = face1NormalRad + π
+      var face1NormInwardRad = face1NormalRad + Math.PI;
+      // The refracted ray sits at refr1Rad from the inward normal, on the same side as the original incidence.
+      var insideDirRad = face1NormInwardRad - refr1Rad; // small tweak: angle direction
+      // March the ray through the prism until it hits face 2.
+      // Face 2 endpoints: apex (apexX, apexY) to right base (rightBaseX, baseY).
+      // Line-segment intersection
+      var rayStartX = entryX, rayStartY = entryY;
+      var rayDX = Math.cos(insideDirRad), rayDY = Math.sin(insideDirRad);
+      // Face-2 segment
+      var f2x1 = apexX, f2y1 = apexY, f2x2 = rightBaseX, f2y2 = baseY;
+      // Solve rayStart + t·rayDir = f2x1 + s·(f2x2-f2x1, f2y2-f2y1)
+      var denom = rayDX * (f2y2 - f2y1) - rayDY * (f2x2 - f2x1);
+      if (Math.abs(denom) < 1e-6) return; // parallel — skip
+      var tHit = ((f2x1 - rayStartX) * (f2y2 - f2y1) - (f2y1 - rayStartY) * (f2x2 - f2x1)) / denom;
+      var sHit = ((f2x1 - rayStartX) * rayDY - (f2y1 - rayStartY) * rayDX) / denom;
+      if (tHit <= 0 || sHit < 0 || sHit > 1) return;
+      var hitX = rayStartX + tHit * rayDX;
+      var hitY = rayStartY + tHit * rayDY;
+      // Face-2 normal: outward, away from prism interior
+      var face2AngleRad = Math.atan2(f2y2 - f2y1, f2x2 - f2x1);
+      var face2NormalRad = face2AngleRad - Math.PI / 2;
+      // Angle of incidence on face-2 (inside the prism) = angle between ray and inward normal
+      var face2NormInwardRad = face2NormalRad + Math.PI;
+      // Angle between ray direction and inward normal:
+      var rDirNormX = Math.cos(face2NormInwardRad), rDirNormY = Math.sin(face2NormInwardRad);
+      var dot = rayDX * rDirNormX + rayDY * rDirNormY;
+      var incInsideRad = Math.acos(Math.max(-1, Math.min(1, -dot))); // angle between -ray and outward normal
+      // Snell at face 2 (n → 1): n · sin(i_inside) = sin(t)  →  t = asin(n · sin(i_inside))
+      var sinExit = n * Math.sin(incInsideRad);
+      if (sinExit >= 0.999) {
+        // Total internal reflection — for our prism angles this only happens in diamond
+        // at extreme inc. Draw a reflected ray inside instead.
+        rayElements.push(h('line', { key: 'tir' + idx,
+          x1: rayStartX, y1: rayStartY, x2: hitX, y2: hitY,
+          stroke: wl.color, strokeWidth: 1.5, opacity: 0.65 }));
+        rayElements.push(h('text', { key: 'tirL' + idx, x: hitX + 6, y: hitY,
+          fill: '#ef4444', fontSize: 9, fontWeight: 'bold' }, 'TIR'));
+        return;
+      }
+      var exitAngleRad = Math.asin(sinExit);
+      // Outbound direction is `exitAngleRad` from the outward normal, on the opposite side
+      // from the incoming inside ray relative to the normal.
+      // Cross product of inside-ray with outward-normal tells us which side.
+      var cross = rayDX * Math.cos(face2NormalRad + Math.PI / 2) + rayDY * Math.sin(face2NormalRad + Math.PI / 2);
+      var sideSign = cross >= 0 ? 1 : -1;
+      var outDirRad = face2NormalRad + sideSign * exitAngleRad;
+      var outEndX = hitX + Math.cos(outDirRad) * 200;
+      var outEndY = hitY + Math.sin(outDirRad) * 200;
+      // Total deviation angle (textbook D): angle between original inbound and outbound
+      var inboundOppositeRad = inboundDirRad + Math.PI;
+      var deviationRad = Math.atan2(
+        Math.sin(outDirRad - inboundOppositeRad),
+        Math.cos(outDirRad - inboundOppositeRad)
+      );
+      deviations.push({ nm: wl.nm, label: wl.label, n: n, devDeg: Math.abs(deviationRad * 180 / Math.PI) });
+      // Draw refracted ray inside the prism + exit ray + tiny dot at exit
+      rayElements.push(h('line', { key: 'in' + idx,
+        x1: rayStartX, y1: rayStartY, x2: hitX, y2: hitY,
+        stroke: wl.color, strokeWidth: 1.2, opacity: 0.85 }));
+      rayElements.push(h('line', { key: 'out' + idx,
+        x1: hitX, y1: hitY, x2: outEndX, y2: outEndY,
+        stroke: wl.color, strokeWidth: 1.6, opacity: 0.95 }));
+      // Animated colored photon flowing entry → exit point → into the spectrum.
+      // Each wavelength gets its own dot at its native color — the rainbow
+      // literally forms in real-time as students watch.
+      var prismPath = 'M ' + entryX.toFixed(1) + ' ' + entryY.toFixed(1) +
+                      ' L ' + hitX.toFixed(1) + ' ' + hitY.toFixed(1) +
+                      ' L ' + outEndX.toFixed(1) + ' ' + outEndY.toFixed(1);
+      // Stagger by wavelength so red leads, violet follows — light-show feel
+      var photonDelay = (-idx * 0.18).toFixed(2);
+      rayElements.push(h('circle', {
+        key: 'photon' + idx, r: 3, fill: wl.color,
+        stroke: '#fff', strokeWidth: 0.4,
+        style: {
+          offsetPath: 'path("' + prismPath + '")',
+          WebkitOffsetPath: 'path("' + prismPath + '")',
+          filter: 'drop-shadow(0 0 4px ' + wl.color + ')',
+          animationDuration: '3.2s',
+          animationDelay: photonDelay + 's'
+        },
+        className: 'opticslab-photon',
+        cx: 0, cy: 0
+      }));
+    });
+    // Incoming white-light ray (one bright white line going to the entry point)
+    var inLen = 120;
+    var inStartX = entryX - Math.cos(inboundDirRad) * inLen;
+    var inStartY = entryY - Math.sin(inboundDirRad) * inLen;
+
+    var svg = h('svg', { viewBox: '0 0 ' + W + ' ' + H,
+      style: { width: '100%', height: 'auto', background: '#0b1220', borderRadius: 8 },
+      role: 'img', 'aria-label': 'Prism spectrometer. White light entering the prism is dispersed into a spectrum because the index of refraction varies with wavelength.' },
+      // Subtle grid
+      h('rect', { x: 0, y: 0, width: W, height: H, fill: '#0b1220' }),
+      // Prism body (translucent)
+      h('polygon', {
+        points: apexX + ',' + apexY + ' ' + rightBaseX + ',' + baseY + ' ' + leftBaseX + ',' + baseY,
+        fill: mat.color, opacity: 0.18, stroke: mat.color, strokeWidth: 1.4
+      }),
+      // Incoming white light beam
+      h('line', { x1: inStartX, y1: inStartY, x2: entryX, y2: entryY,
+        stroke: '#fff', strokeWidth: 3, opacity: 0.92 }),
+      h('text', { x: inStartX - 60, y: inStartY - 4, fill: '#cbd5e1', fontSize: 11, fontWeight: 700 }, 'white light →'),
+      // Wavelength rays (inside + exit)
+      rayElements,
+      // Material label inside the prism
+      h('text', { x: apexX, y: baseY + 16, fill: '#cbd5e1', fontSize: 10,
+        fontWeight: 700, textAnchor: 'middle' }, mat.label),
+      // Angle readouts
+      h('text', { x: 10, y: 16, fill: '#cbd5e1', fontSize: 11, fontWeight: 700 },
+        'Apex: ' + prismApex + '° · Incidence: ' + incidence + '°')
+    );
+
+    var controls = h('div', { style: { marginTop: 10, display: 'grid', gap: 10 } },
+      // Material picker
+      h('div', null,
+        h('div', { style: { fontSize: 11, color: '#cbd5e1', fontWeight: 700, marginBottom: 4 } }, 'Prism material'),
+        h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
+          Object.keys(materials).map(function(k) {
+            var sel = k === matKey;
+            return h('button', { key: k,
+              onClick: function() { upd('phenoPrismMat', k); },
+              'data-op-focusable': 'true',
+              style: {
+                padding: '5px 10px', fontSize: 11, fontWeight: 700,
+                background: sel ? '#1e40af' : 'rgba(99,102,241,0.10)',
+                color: sel ? '#dbeafe' : '#a5b4fc',
+                border: '1px solid ' + (sel ? '#3b82f6' : 'rgba(99,102,241,0.40)'),
+                borderRadius: 6, cursor: 'pointer'
+              }
+            }, materials[k].label);
+          })
+        )
+      ),
+      h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#cbd5e1' } },
+        'Apex angle:',
+        h('input', { type: 'range', min: 30, max: 80, step: 1, value: prismApex,
+          onChange: function(e) { upd('phenoPrismApex', parseFloat(e.target.value)); },
+          'data-op-focusable': 'true', 'aria-label': 'Prism apex angle in degrees',
+          style: { flex: 1 } }),
+        h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', minWidth: 36 } }, prismApex + '°')
+      ),
+      h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#cbd5e1' } },
+        'Incidence:',
+        h('input', { type: 'range', min: 10, max: 70, step: 1, value: incidence,
+          onChange: function(e) { upd('phenoPrismInc', parseFloat(e.target.value)); },
+          'data-op-focusable': 'true', 'aria-label': 'Angle of incidence on the first face',
+          style: { flex: 1 } }),
+        h('span', { style: { fontFamily: 'monospace', color: '#fbbf24', minWidth: 36 } }, incidence + '°')
+      )
+    );
+
+    // Deviation table — visual evidence that n(λ) varies
+    var devRows = deviations.length > 0
+      ? deviations.map(function(dev) {
+          return h('tr', { key: 'd' + dev.nm },
+            h('td', { style: { padding: '2px 6px', color: '#cbd5e1', fontSize: 10 } }, dev.label + ' (' + dev.nm + ' nm)'),
+            h('td', { style: { padding: '2px 6px', color: '#fbbf24', fontSize: 10, fontFamily: 'monospace' } }, 'n = ' + dev.n.toFixed(4)),
+            h('td', { style: { padding: '2px 6px', color: '#86efac', fontSize: 10, fontFamily: 'monospace' } }, 'D = ' + dev.devDeg.toFixed(2) + '°')
+          );
+        })
+      : [h('tr', { key: 'none' }, h('td', { style: { fontSize: 10, color: '#94a3b8' }, colSpan: 3 }, 'Adjust apex/incidence so rays exit the prism.'))];
+
+    var explanation = h('div', null,
+      h('h4', { style: { color: '#c4b5fd', margin: '0 0 6px', fontSize: 13, fontWeight: 800 } }, 'Newton\'s prism — pure dispersion'),
+      h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, margin: '0 0 8px' } },
+        'White light is a mix of wavelengths. Each wavelength sees a slightly different index of refraction in the glass, so each bends a slightly different amount. Two refractions later (entry + exit face), the colors fan out into a visible spectrum.'),
+      h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, margin: '0 0 8px' } },
+        h('strong', { style: { color: '#fbbf24' } }, 'Cauchy\'s formula: '), 'n(λ) = A + B/λ². The constants A, B come from fitting laboratory measurements — every material has its own pair. Flint glass has a bigger B than crown glass, so flint disperses more strongly. Diamond\'s very large A makes it sparkle ("fire") even more than its high refractive index alone would suggest.'),
+      h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, margin: '0 0 8px' } },
+        h('strong', { style: { color: '#fbbf24' } }, 'Why this matters: '), 'every refracting telescope, microscope, and pair of glasses you have ever looked through fights chromatic aberration — that\'s the dispersion you see here. Achromatic doublets use a flint + crown lens together so the dispersions partly cancel.'),
+      h('div', { style: { background: 'rgba(15,23,42,0.6)', borderRadius: 6, padding: 8, marginTop: 6 } },
+        h('div', { style: { fontSize: 11, fontWeight: 700, color: '#a5b4fc', marginBottom: 4 } }, 'Per-wavelength index + deviation'),
+        h('table', { style: { width: '100%', borderCollapse: 'collapse' } },
+          h('tbody', null, devRows)
+        )
+      )
+    );
+    return _phLayout(h, svg, controls, explanation);
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // QUANTUM TWIST — single-photon accumulator on the classical fringe.
+  // Lives inside the Interference tab. Pedagogically, this is the move
+  // that makes wave-particle duality visceral: each photon is a discrete
+  // event, but the SHAPE the events build up to is the wave-interference
+  // intensity profile. AP Physics 2 doesn't formally cover this, but it's
+  // the single most striking optics demo and it earns its keep.
+  // ──────────────────────────────────────────────────────────────────
+  function _renderPhQuantumTwist(d, upd, h) {
+    var W = 460, H = 200;
+    var dots = d.phenoQuantumDots || [];
+    var count = d.phenoQuantumCount || 0;
+    var playing = !!d.phenoQuantumPlaying;
+    var rate = d.phenoQuantumRate || 'slow'; // slow | fast
+    // Intensity profile (cos² fringes across the screen) — 5 visible bright fringes
+    function intensityAt(x) {
+      var phase = (x / W - 0.5) * 8 * Math.PI; // 4 full cycles → 5 bright + 4 dark
+      var c = Math.cos(phase);
+      return c * c;
+    }
+    function fireOne() {
+      // Rejection sampling: pick uniform x, accept with probability proportional
+      // to intensity. Each accepted x gets a random y so dots scatter vertically.
+      for (var t = 0; t < 30; t++) {
+        var x = Math.random() * W;
+        if (Math.random() < intensityAt(x)) {
+          return { x: x, y: 14 + Math.random() * (H - 28) };
+        }
+      }
+      // Fallback (very unlikely): center
+      return { x: W / 2, y: H / 2 };
+    }
+    // Auto-fire scheduling (mirrors after-image timer pattern)
+    if (playing && typeof setTimeout === 'function') {
+      var perTick = rate === 'fast' ? 12 : 1;
+      setTimeout(function() {
+        var fresh = [];
+        for (var i = 0; i < perTick; i++) fresh.push(fireOne());
+        var combined = dots.concat(fresh);
+        // Cap at 1500 dots for SVG-render perf — beyond this the pattern is
+        // already saturated visually and the marginal photon adds no info.
+        if (combined.length > 1500) combined = combined.slice(-1500);
+        upd({ phenoQuantumDots: combined, phenoQuantumCount: count + perTick });
+      }, rate === 'fast' ? 50 : 120);
+    }
+    // Render dots as small SVG circles. 1500 circles is borderline but works.
+    // The newest dot gets a brief landing flash (scale + glow → settle) so
+    // each fired photon visibly "arrives" on the screen.
+    var lastIdx = dots.length - 1;
+    var dotEls = dots.map(function(p, i) {
+      var isLatest = i === lastIdx;
+      var attrs = {
+        key: i, cx: p.x.toFixed(1), cy: p.y.toFixed(1),
+        r: 1.5, fill: '#fbbf24'
+      };
+      if (isLatest) {
+        attrs.className = 'opticslab-photon-land';
+        // Force a unique key for React so the latest dot remounts and
+        // replays the animation on every new photon.
+        attrs.key = 'latest-' + count;
+      }
+      return h('circle', attrs);
+    });
+    // Faint reference: the underlying intensity envelope (so students see what
+    // shape the dots are converging toward). Drawn as a low-opacity polyline.
+    var envPoints = [];
+    for (var ex = 0; ex <= W; ex += 4) {
+      var I = intensityAt(ex);
+      envPoints.push(ex + ',' + (H - 6 - I * (H - 30)));
+    }
+    var envelope = h('polyline', { points: envPoints.join(' '), fill: 'none', stroke: '#06b6d4', strokeWidth: 1, opacity: 0.25, strokeDasharray: '2 3' });
+    // Two slit positions for the visual barrier (left edge of the SVG).
+    // The actual physics uses the cos² intensity envelope above — the barrier
+    // graphic just makes the experimental setup legible to the viewer.
+    var slitY1 = H / 2 - 22;
+    var slitY2 = H / 2 + 22;
+    var barrierX = 18;
+    var svg = h('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { width: '100%', height: 'auto', background: '#020617', borderRadius: 8, display: 'block' },
+      role: 'img', 'aria-label': 'Quantum interference demo. Photons fired one at a time appear as random-looking dots, but accumulate into the same fringe pattern as the classical wave model. Total photons: ' + count + '.' },
+      // Backdrop tinted bands showing the bright-fringe regions
+      [0,1,2,3,4].map(function(i) {
+        var cxF = W / 2 + (i - 2) * (W / 5);
+        return h('rect', { key: 'band' + i, x: cxF - 18, y: 0, width: 36, height: H, fill: 'rgba(56,189,248,0.06)' });
+      }),
+      envelope,
+      // ── Slit barrier (visual setup, not physics) ──
+      // Three rectangles form a vertical barrier with two horizontal openings.
+      // The two openings are where photons emerge as coherent sources.
+      h('rect', { x: barrierX - 3, y: 0, width: 6, height: slitY1 - 4, fill: '#1f2937', stroke: '#475569', strokeWidth: 0.5 }),
+      h('rect', { x: barrierX - 3, y: slitY1 + 4, width: 6, height: slitY2 - slitY1 - 8, fill: '#1f2937', stroke: '#475569', strokeWidth: 0.5 }),
+      h('rect', { x: barrierX - 3, y: slitY2 + 4, width: 6, height: H - slitY2 - 4, fill: '#1f2937', stroke: '#475569', strokeWidth: 0.5 }),
+      // Slit-opening glow markers
+      h('circle', { cx: barrierX, cy: slitY1, r: 2.5, fill: '#fbbf24', opacity: 0.9 }),
+      h('circle', { cx: barrierX, cy: slitY2, r: 2.5, fill: '#fbbf24', opacity: 0.9 }),
+      // ── Wavefronts emerging from each slit (always animating) ──
+      // Even with the source dimmed to one photon at a time, the "wave" that
+      // determines probability is always there. Four phase-staggered ripples
+      // per slit suggest the continuous interference background.
+      [1,2,3,4].map(function(i) {
+        return h('circle', {
+          key: 'w1' + i, cx: barrierX, cy: slitY1, r: 4, fill: 'none',
+          stroke: 'rgba(251,191,36,0.55)', strokeWidth: 0.8,
+          className: 'opticslab-slit-wave' + (i === 1 ? '' : ' opticslab-slit-wave-' + i)
+        });
+      }),
+      [1,2,3,4].map(function(i) {
+        return h('circle', {
+          key: 'w2' + i, cx: barrierX, cy: slitY2, r: 4, fill: 'none',
+          stroke: 'rgba(251,191,36,0.55)', strokeWidth: 0.8,
+          className: 'opticslab-slit-wave' + (i === 1 ? '' : ' opticslab-slit-wave-' + i)
+        });
+      }),
+      // Source laser indicator on the far left
+      h('rect', { x: 2, y: H / 2 - 4, width: 10, height: 8, fill: '#7e22ce', rx: 2 }),
+      h('line', { x1: 12, y1: H / 2, x2: barrierX - 4, y2: H / 2, stroke: 'rgba(251,191,36,0.4)', strokeWidth: 0.6, strokeDasharray: '2 2' }),
+      // Slit labels
+      h('text', { x: barrierX + 8, y: slitY1 + 3, fill: '#fbbf24', fontSize: 9, fontFamily: 'monospace', opacity: 0.7 }, 'A'),
+      h('text', { x: barrierX + 8, y: slitY2 + 3, fill: '#fbbf24', fontSize: 9, fontFamily: 'monospace', opacity: 0.7 }, 'B'),
+      dotEls,
+      // Photon counter (top-right)
+      h('rect', { x: W - 110, y: 6, width: 100, height: 22, fill: 'rgba(15,23,42,0.85)', rx: 4 }),
+      h('text', { x: W - 60, y: 21, fill: '#fbbf24', fontSize: 12, fontFamily: 'monospace', fontWeight: 800, textAnchor: 'middle' }, count + ' photons'),
+      // Screen label (right edge, bottom corner)
+      h('text', { x: W - 12, y: H - 6, fill: '#475569', fontSize: 9, fontFamily: 'monospace', textAnchor: 'end', opacity: 0.65 }, 'detection screen →'),
+      // Empty-state hint
+      count === 0 && h('text', { x: W / 2 + 30, y: H / 2, fill: '#94a3b8', fontSize: 12, textAnchor: 'middle', fontStyle: 'italic' }, 'Press Fire to send a single photon →')
+    );
+    var controls = h('div', { style: { marginTop: 10, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+      h('button', {
+        onClick: function() {
+          var d1 = fireOne();
+          var combined = dots.concat([d1]);
+          if (combined.length > 1500) combined = combined.slice(-1500);
+          upd({ phenoQuantumDots: combined, phenoQuantumCount: count + 1 });
+        },
+        disabled: playing,
+        'data-op-focusable': 'true',
+        style: { padding: '6px 14px', background: playing ? '#475569' : '#7e22ce', color: '#fff', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: playing ? 'default' : 'pointer' }
+      }, '⚛ Fire one photon'),
+      h('button', {
+        onClick: function() { upd({ phenoQuantumPlaying: !playing }); },
+        'data-op-focusable': 'true',
+        style: { padding: '6px 14px', background: playing ? '#dc2626' : '#0ea5e9', color: '#fff', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+      }, playing ? '⏸ Pause' : '▶ Auto-fire'),
+      playing && h('div', { style: { display: 'flex', gap: 4 } },
+        h('button', {
+          onClick: function() { upd('phenoQuantumRate', 'slow'); },
+          'data-op-focusable': 'true',
+          style: { padding: '4px 8px', background: rate === 'slow' ? '#7e22ce' : 'rgba(168,85,247,0.20)', color: '#fff', border: 'none', borderRadius: 4, fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+        }, 'slow'),
+        h('button', {
+          onClick: function() { upd('phenoQuantumRate', 'fast'); },
+          'data-op-focusable': 'true',
+          style: { padding: '4px 8px', background: rate === 'fast' ? '#7e22ce' : 'rgba(168,85,247,0.20)', color: '#fff', border: 'none', borderRadius: 4, fontSize: 10, fontWeight: 700, cursor: 'pointer' }
+        }, 'fast')
+      ),
+      h('button', {
+        onClick: function() { upd({ phenoQuantumDots: [], phenoQuantumCount: 0, phenoQuantumPlaying: false }); },
+        'data-op-focusable': 'true',
+        style: { padding: '6px 14px', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', borderRadius: 6, fontSize: 12, cursor: 'pointer', marginLeft: 'auto' }
+      }, '↺ Reset')
+    );
+    return h('div', {
+      style: {
+        marginTop: 16,
+        background: 'linear-gradient(135deg, rgba(126,34,206,0.10) 0%, rgba(15,23,42,0.6) 100%)',
+        border: '1px solid rgba(168,85,247,0.45)',
+        borderLeft: '4px solid #a855f7',
+        borderRadius: 10, padding: '12px 14px'
+      }
+    },
+      h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
+        h('h3', { style: { color: '#c4b5fd', fontSize: 16, fontWeight: 900, margin: 0 } }, '🌌 Quantum twist — fire one photon at a time'),
+        h('span', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } }, 'beyond AP — but it earns its keep')
+      ),
+      h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 10px' } },
+        'The classical sim above shows what happens with a continuous beam. But what if you dim the source until photons leave the laser ONE AT A TIME, with seconds between them? Each photon should "obviously" go through one slit and land somewhere predictable. Press Fire one at a time, then auto-fire — and watch what your eye is convinced couldn\'t happen.'),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(340px,1fr) minmax(240px,1fr)', gap: 12 } },
+        h('div', { style: { background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(99,102,241,0.30)', borderRadius: 10, padding: 12 } }, svg, controls),
+        h('div', { style: { background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.30)', borderRadius: 10, padding: 14 } },
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 6 } }, 'Why this is weird'),
+          h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } },
+            'A single photon is indivisible — it can\'t literally split and go through both slits at once. Yet the pattern that builds up over thousands of single-photon events is the SAME interference pattern you get from a continuous wave. Each photon "knows" the geometry of both slits.'),
+          h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } },
+            'The standard interpretation: a photon\'s position before detection is described by a probability amplitude (a wave). The wave passes through both slits, interferes with itself, and the probability of detection at any point is |amplitude|². Random individually; deterministic in the long run.'),
+          h('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, margin: '0 0 8px' } },
+            'Add a "which-path" detector at the slits — and the interference pattern vanishes. Measurement collapses the amplitude to a single path. This is the famous quantum measurement problem: observation changes the outcome.'),
+          h('p', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic', margin: 0 } },
+            'Real experiments: Tonomura 1989 (single electrons, same result). Modern reproductions with single photons, neutrons, even C₆₀ buckyballs. The biggest object yet to show single-particle interference: a 25,000-atom organic molecule (Vienna, 2019).')
+        )
+      )
     );
   }
 
