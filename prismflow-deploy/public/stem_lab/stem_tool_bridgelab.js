@@ -3050,8 +3050,71 @@
               h('li', null, h('strong', null, 'Improve: '), 'Use what you saw to redesign. Add material where stress is highest; reduce where stress is low. Iterate.')
             )
           ),
-          feaBasics()
+          feaBasics(),
+          abcAndPrefabSection()
         );
+
+        function abcAndPrefabSection() {
+          var ABC = [
+            { id: 'why', name: 'Why ABC exists', emoji: '⏱️',
+              body: 'Conventional cast-in-place bridge construction takes months to years and closes a road or rail line for the entire duration. Long closures wreck communities (longer commutes, lost business, blocked emergency response, increased emissions from detours). The Federal Highway Administration (FHWA) coined the term "Accelerated Bridge Construction" (ABC) in the mid-2000s to capture techniques that compress the on-site closure to days or sometimes hours. The motivating insight: most of the bridge can be built OFF-site, in parallel with traffic continuing on-site, and then installed in a single short closure window.',
+              caveat: 'ABC is more expensive PER BRIDGE than conventional construction (typically 10-30% higher direct cost, sometimes more). But the savings in user costs (driver time, business disruption, detour fuel) often exceed the extra construction cost by 5-10×. For a high-traffic interstate bridge, ABC pays for itself many times over. For a remote low-traffic rural bridge, conventional construction is usually the right answer. The choice should be driven by the WHOLE cost, including users.'
+            },
+            { id: 'prefab', name: 'Prefabricated bridge elements (PBES)', emoji: '🏭',
+              body: 'Prefabricated Bridge Elements + Systems (PBES) are the building blocks of ABC. Common elements: prestressed precast deck panels, full-depth precast deck slabs, precast concrete pier caps, precast piers + columns, prefabricated steel girders with deck panels already attached, modular abutment systems, even entire prefabricated short-span bridges. They are manufactured in factory conditions (controlled temperature + humidity, full quality control, tight tolerances), then shipped to site on flatbed trucks or rail cars. Field work becomes assembly + connection rather than form-pouring-curing.',
+              caveat: 'Factory-quality construction beats field-quality almost every time. Concrete cured at 70°F in 50% humidity, with controlled curing time + zero rain, is far more consistent than concrete poured on a windy 95°F day with rain incoming. Steel welded inside a fabricator\'s shop has fewer defects than steel welded on a scaffold over a river. The cost premium of factory construction is partly paid back by better long-term durability.'
+            },
+            { id: 'sps', name: 'Self-propelled modular transporters (SPMTs)', emoji: '🚛',
+              body: 'SPMTs are massive multi-axle hydraulically-leveled platforms that can carry entire bridge spans — sometimes thousands of tons — and roll them into place along a highway closure. Each axle has its own steering + hydraulic suspension, so the SPMT can crab sideways, rotate in place, and self-level over uneven ground. Multiple SPMT trailers can be linked together. The Massena Bridge replacement (Massachusetts, 2014) used SPMTs to roll a 416-ton bridge span ~5 miles from a staging area + lower it onto its piers in a single 55-hour weekend closure. Total bridge replacement: 4 days. Conventional construction would have taken 6+ months of partial closure.',
+              caveat: 'SPMT moves are spectacular + heavily filmed. They are also high-risk events — once the move starts, you cannot stop midway. Every conceivable failure mode (axle failure, hydraulic leak, weather, traffic incident on the route) must be pre-planned. Failed SPMT moves are rare but extremely expensive when they happen.'
+            },
+            { id: 'slide', name: 'Lateral slide-in construction', emoji: '↔️',
+              body: 'Instead of using SPMTs, the new bridge is built alongside the existing bridge on temporary supports. During a short closure, the old bridge is demolished + the new bridge is slid sideways into its final position on hydraulic jacks or rollers, typically 20-40 feet. The Wells Avenue Bridge replacement (Newton, MA, 2009) was one of the first US slide-ins; the Pulaski Skyway in NJ used a slide-in for one span in 2014. The Massachusetts I-93 fast-14 project (2011) replaced 14 bridges in 14 weekends using slide-in + other ABC techniques, saving an estimated 4+ years of conventional construction time.',
+              caveat: 'Lateral slide requires temporary support structures that are themselves substantial engineering projects. The geometry needs to allow space alongside the existing bridge. Slide-ins work best in interstate-highway corridors with wide right-of-ways; they are difficult in urban canyons or constrained sites.'
+            },
+            { id: 'gpr', name: 'Geosynthetic Reinforced Soil (GRS-IBS)', emoji: '🪨',
+              body: 'GRS-IBS (Geosynthetic Reinforced Soil — Integrated Bridge System) replaces conventional reinforced-concrete abutments + piles with alternating layers of compacted granular fill + geosynthetic reinforcement (essentially industrial-strength plastic mesh). The result is a stable abutment that supports the bridge directly, with no pile foundations needed. GRS abutments can be built in days using standard earthwork crews. They cost 25-60% less than conventional abutments, eliminate the joint between superstructure + approach (a major maintenance headache), and are particularly well-suited to short-span single-lane bridges. FHWA reports 200+ GRS-IBS bridges built in the US since 2005, with very low maintenance costs.',
+              caveat: 'GRS-IBS works best for shorter spans (typically under 130 feet) with light-to-moderate truck traffic. It is not appropriate for long spans, heavy-haul freight routes, or sites with unstable soils. The design is conservative + heavily standardized (FHWA published design guides + standard details) — a practical bridge solution rather than a fancy one.'
+            },
+            { id: 'designs', name: 'Standard ABC bridge designs', emoji: '📋',
+              body: 'Several states have developed pre-engineered standard bridges for the most common short-span applications. The Vermont Agency of Transportation\'s ABC standard plans cover spans from 25-80 feet, with detailed precast deck + abutment specs that any local contractor can build. The Federal Lands Highway Program has similar plans for remote sites. The advantage: instead of paying for a custom design ($100K+ engineering), a small-town bridge replacement can use a standard plan ($5-10K design fee) + standard precast pieces. Lead time drops from 18 months to 6 months for a typical rural bridge.',
+              caveat: 'Standard designs work because they cover the most common cases conservatively. They do NOT work for unusual sites (skewed crossings, complex traffic, environmentally-sensitive locations). Engineering judgment is still needed to decide whether the standard applies. Some communities have had bad experiences using standard plans inappropriately, then blaming the standard rather than the design choice.'
+            },
+            { id: 'success', name: 'Success cases', emoji: '🎯',
+              body: '(a) Massachusetts Fast-14 (I-93, 2011): replaced 14 bridges over 14 consecutive weekend closures. Each weekend: Friday 11 PM close, Monday 5 AM open. Total project: 10 weeks vs estimated 4 years conventional. Massive media coverage; widely cited as the proof-of-concept event for US ABC. (b) Utah Riverdale Road bridge over I-84 (2007): first US use of SPMTs to slide an entire bridge into place. (c) Iowa Lower Mud River bridge (2010): demonstrator GRS-IBS bridge built in 23 working days at 30% lower cost. (d) Florida 17th Street Causeway Bridge approaches (2009-2011): SPMT-installed bridge segments with overnight closures. ABC has shipped at scale in the US for nearly 20 years now.',
+              caveat: 'ABC works best where someone in the owner agency genuinely champions it + accepts the upfront design + coordination effort. It is not magic: it shifts construction risk + complexity from on-site to off-site + adds the move-day risk. Projects with poor early planning can fail just like any other.'
+            },
+            { id: 'limits', name: 'What ABC cannot do well', emoji: '🚫',
+              body: 'ABC is NOT a universal answer. Limitations: (a) Cost. The direct construction cost is higher. For rural bridges with low traffic, the user-cost savings may not justify the premium. (b) Lead time. Precast elements need to be ordered + manufactured. ABC saves on-site time but adds front-end time. Emergency bridge replacement (after a hurricane or earthquake) may not have time for prefab. (c) Geometry. Many old bridges have unusual skews, super-elevations, or non-standard cross-sections that don\'t match factory-standard products. Heavy customization erodes the ABC cost advantage. (d) Maintenance access. Some ABC connections (UHPC closure pours, grouted shear keys) are difficult to inspect + maintain in service. The connection details matter as much as the elements.',
+              caveat: 'ABC is one tool in a kit, not a replacement for thinking. The honest engineering answer is: every bridge is unique. ABC works beautifully for certain bridge types + sites + traffic profiles. For others, conventional construction remains the right choice. Designers who treat ABC as the default for everything will sometimes ship inferior + more expensive bridges than the boring conventional answer would have produced.'
+            }
+          ];
+          var sel = d.selectedABC || 'why';
+          var topic = ABC.find(function(t) { return t.id === sel; }) || ABC[0];
+          return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🏭 Accelerated Bridge Construction (ABC) + prefab'),
+            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+              'Modern bridges do not have to take years to build. Accelerated Bridge Construction — using prefabricated factory-made elements installed during short on-site closures — has matured into a mainstream practice in the past 20 years. A bridge that would have closed a road for 6 months can now be replaced in a single weekend. The cost premium is real; the user-cost savings are typically larger.'
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              ABC.map(function(t) {
+                var on = t.id === sel;
+                return h('button', {
+                  key: t.id,
+                  onClick: function() { upd({ selectedABC: t.id }); },
+                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
+                }, t.emoji + ' ' + t.name);
+              })
+            ),
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
+              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+              h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                h('strong', null, 'Honest limit: '), topic.caveat
+              )
+            )
+          );
+        }
 
         function feaBasics() {
           var FEA_TOPICS = [

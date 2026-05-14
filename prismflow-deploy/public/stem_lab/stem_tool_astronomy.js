@@ -2726,6 +2726,71 @@
               );
             })(),
             '#14b8a6'
+          ),
+
+          // ─── Pulsars + magnetars + FRBs ──────────────────────────
+          sectionCard('📡 Pulsars, magnetars, and fast radio bursts',
+            (function() {
+              var PSR_TOPICS = [
+                { id: 'discovery', name: 'Jocelyn Bell + LGM-1', emoji: '🔭',
+                  body: 'In 1967 Jocelyn Bell Burnell, a 24-year-old PhD student at Cambridge, was reviewing radio-telescope chart-recorder traces (over 30 meters of paper per day) when she noticed a peculiar regular pulse repeating every 1.337 seconds. The signal was so clean + so periodic that the team half-jokingly labeled it "LGM-1" — Little Green Men. Within months they found three more sources at different sky positions, ruling out intelligent broadcasts. What Bell had discovered was the first PULSAR: a rapidly rotating neutron star sweeping a beam of radiation across Earth like a cosmic lighthouse. Antony Hewish (her supervisor) won the 1974 Nobel Prize; Bell was famously not included.',
+                  caveat: 'Bell\'s exclusion from the Nobel sparked a longstanding debate about who gets credit in big-science collaborations. Bell has been gracious in public, saying graduate students don\'t typically win Nobels. In 2018 she donated her £2.3 million Breakthrough Prize entirely to fund physics PhDs for under-represented groups — one of the more remarkable acts of scientific philanthropy in recent decades. She is now Dame Jocelyn Bell Burnell, a former president of the Royal Astronomical Society + Royal Society of Edinburgh.'
+                },
+                { id: 'whatisa', name: 'What a pulsar IS', emoji: '⚡',
+                  body: 'A pulsar is a rapidly rotating neutron star whose magnetic axis is tilted relative to its rotation axis. Charged particles accelerate along the magnetic field lines, producing focused beams of radio (and sometimes optical, X-ray, gamma-ray) radiation along the magnetic poles. As the star rotates, the beams sweep through space — and IF one happens to point at Earth during each rotation, we see a regular pulse. The pulsar mass is typically ~1.4 solar masses compressed into a sphere ~20 km across (about the size of Manhattan). Density: a sugar-cube-sized chunk would weigh about a billion tons. Surface gravity ~10¹¹ times Earth\'s. Magnetic field ~10⁸ to 10¹⁵ Gauss (Earth\'s field is ~0.5 Gauss). Most pulsars rotate once per second or so; the fastest known (PSR J1748-2446ad) spins at 716 Hz — 716 rotations per second.',
+                  caveat: 'The "lighthouse" framing is helpful but slightly misleading. The radio beam isn\'t a literal headlight; it\'s a more complex emission geometry that we still don\'t fully understand at the plasma-physics level. The basics of how pulsars emit are reasonably well-modeled; the details (why some pulsars suddenly "glitch," why some "nulling" pulsars turn off + back on, why pulse profiles vary) remain active research.'
+                },
+                { id: 'msp', name: 'Millisecond pulsars + cosmic clocks', emoji: '⏱️',
+                  body: 'Millisecond pulsars (MSPs) rotate hundreds of times per second. They are old pulsars that were "spun up" by accreting matter from a binary companion. Their rotation periods are stable to about 1 part in 10¹⁵ — better than the best atomic clocks. This makes them extraordinary tools. Pulsar timing arrays (NANOGrav, EPTA, PPTA) monitor dozens of MSPs over decades, watching for tiny correlated timing variations caused by gravitational waves passing through the galaxy. In 2023, four PTA collaborations independently announced strong evidence for a stochastic gravitational-wave background at nanohertz frequencies — almost certainly from a galaxy-wide population of supermassive black hole binaries.',
+                  caveat: 'PTAs have been measuring for almost 20 years to get this evidence. The signal is real but the precise interpretation (single SMBH-binary population? cosmic strings? primordial GWs from inflation?) is still being worked out. The 2023 results were ~3-4σ; reaching 5σ + characterizing the source will take another decade.'
+                },
+                { id: 'magnetars', name: 'Magnetars — the extremes', emoji: '🧲',
+                  body: 'Magnetars are a rare subclass of neutron star with magnetic fields ~1000× stronger than ordinary pulsars — up to 10¹⁵ Gauss. To put that in perspective: at half the distance of the Moon, a magnetar would wipe every credit card on Earth + reset every pacemaker; at ~1000 km the magnetic field would tear molecules apart, killing you not by force or radiation but by destroying the chemistry of your body. Magnetars occasionally produce "giant flares" — bursts of soft gamma rays releasing more energy in a tenth of a second than the Sun emits in 100,000 years. The 2004 flare from SGR 1806-20 (~50,000 light-years away) briefly compressed Earth\'s magnetosphere + ionized the upper atmosphere on Earth\'s nightside. Only about 30 magnetars are known.',
+                  caveat: 'Magnetars are believed to be the leftover cores of stars that died with unusually strong magnetic fields, which were further amplified by rapid rotation + dynamo action in the supernova\'s last seconds. Why some neutron stars become magnetars + others don\'t is still partly a guess. Magnetar magnetic fields decay on timescales of ~10,000-100,000 years, after which they become ordinary radio pulsars.'
+                },
+                { id: 'frbs', name: 'Fast radio bursts (FRBs)', emoji: '⚡',
+                  body: 'Fast radio bursts are millisecond-long pulses of radio energy, immensely bright (releasing ~10³⁸ erg in ~1 ms — comparable to the Sun\'s entire daily energy output, in a millisecond, in radio alone). The first FRB (the "Lorimer burst") was found in 2007 archival data from the Parkes telescope. They were originally thought to be one-off events of unknown origin; then in 2016 the first "repeater" was found (FRB 121102), and we realized at least some FRB sources emit multiple bursts. Most FRBs are extragalactic — their high dispersion measure (radio signal smeared by passage through intergalactic plasma) indicates distances of hundreds of millions to billions of light-years.',
+                  caveat: 'For ~14 years, FRBs were a complete mystery. Hundreds of theories were proposed (neutron star mergers, exotic dark matter, alien beacons, primordial black holes). In April 2020, FRB 200428 was detected from inside our own galaxy, coming from a known magnetar (SGR 1935+2154). This essentially settled it: AT LEAST some FRBs are magnetar-powered. But there may be multiple FRB-source classes — some repeating, some one-off, possibly with different mechanisms.'
+                },
+                { id: 'mechanism', name: 'How magnetars make FRBs', emoji: '⚙️',
+                  body: 'The leading model: a magnetar\'s crust occasionally fractures under magnetic stress (a "starquake"), releasing a burst of energy that propagates outward as a relativistic shock through the magnetosphere. Charged particles accelerated to enormous energies emit coherent radio emission via the synchrotron-maser mechanism. The pulse is brief because the emitting region is tiny; bright because the emission is coherent (the particles radiate in phase). Repeating FRB sources may correspond to magnetars in dense environments where many starquakes happen per year; one-off FRBs may come from rarer, more extreme events (catastrophic magnetar collapse, neutron star mergers, or something we haven\'t identified yet).',
+                  caveat: 'The synchrotron-maser model fits the data reasonably well, but several aspects (the precise emission geometry, why bursts cluster in time, the source-localized polarization variations) are not fully explained. FRB plasma physics is genuinely one of the harder problems in current astrophysics. New telescopes (CHIME, ASKAP, MeerKAT, the future SKA) are detecting hundreds to thousands of FRBs per year, which should pin down the mechanism within a decade.'
+                },
+                { id: 'use', name: 'FRBs as cosmological probes', emoji: '🌌',
+                  body: 'Because FRBs travel through the intergalactic medium for billions of light-years, their radio pulses are dispersed (low frequencies arrive later than high frequencies) by an amount proportional to the total free-electron column along the path. This makes FRBs unique "cosmic dispersion meters." The Macquart relation (2020, named for the late Australian astronomer J.-P. Macquart) confirms that FRB dispersion measure does scale with redshift as expected if most of the baryons are diffuse intergalactic plasma — settling the long-running "missing baryon problem" (decades of trying to find the ~50% of normal matter that wasn\'t in galaxies). FRBs may also probe magnetic fields along their paths (via Faraday rotation), the structure of the cosmic web, and potentially fundamental physics tests of photon mass + Einstein equivalence.',
+                  caveat: 'FRB cosmology is in its infancy. Sample sizes are small + selection biases poorly understood. A few dozen FRBs with redshifts measured can already deliver useful results; thousands will eventually deliver precise cosmography. The field is moving very fast.'
+                },
+                { id: 'aliens', name: 'Could it be aliens?', emoji: '👽',
+                  body: 'Whenever a new astrophysical phenomenon appears mysterious, the alien-broadcast hypothesis comes up. For pulsars (1967): briefly considered, rapidly dismissed once multiple sources were found at random sky positions. For FRBs (2007-2020): briefly considered, rapidly dismissed once they were shown to be extragalactic + coming from many different sources at random sky positions. The "aliens" hypothesis fails the same test every time: technological signals would be expected from rare specific sources (planets we could identify), not from random sky positions billions of light-years away. Genuine SETI work continues (Breakthrough Listen, the Allen Telescope Array, FAST), and they are looking — but they would look like deliberate, narrow-band, repeating signals from specific stars, not like FRBs.',
+                  caveat: 'The history of astronomy is FULL of strange signals that turned out to be natural (pulsars, FRBs, the "WOW! signal," Tabby\'s Star). None have ever turned out to be alien. This is not evidence aliens don\'t exist — it is evidence that we should default to natural explanations + only invoke aliens when the natural hypotheses really fail. They never have, in 100+ years of trying.'
+                }
+              ];
+              var sel = d.selectedPSR || 'discovery';
+              var topic = PSR_TOPICS.find(function(t) { return t.id === sel; }) || PSR_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'Neutron stars are the densest objects in the universe short of black holes. Some of them are pulsars, some are magnetars, and some appear to be the sources of fast radio bursts — millisecond flashes of radio energy bright enough to be seen across the universe. Each tells us something different about extreme physics.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  PSR_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedPSR: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#f59e0b' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #f59e0b' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#fbbf24', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'What we should not overstate: '), topic.caveat
+                  )
+                )
+              );
+            })(),
+            '#f59e0b'
           )
         );
       }

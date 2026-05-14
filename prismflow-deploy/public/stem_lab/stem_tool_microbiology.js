@@ -1054,8 +1054,75 @@
               h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Science note'),
               h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.65 } }, selected.sciFact)
             )
-          )
+          ),
+          emergingFungalSection()
         );
+
+        function emergingFungalSection() {
+          var FUNGI_TOPICS = [
+            { id: 'whyrising', name: 'Why fungal infections are rising', emoji: '📈',
+              body: 'Invasive fungal infections have grown into one of the most concerning emerging health threats of the past 20 years. The WHO published its first-ever "fungal priority pathogens list" in 2022, naming 19 species (most people had never heard of any of them). Reasons for the rise: (1) Growing populations of immunocompromised patients — chemotherapy, organ transplants, HIV, biologic immunosuppressants, autoimmune medications, ICU stays — all create hosts where opportunistic fungi can thrive. (2) Climate change — some fungi adapted to mammalian body temperature only because warming environments selected for heat-tolerant strains (the Candida auris hypothesis). (3) Antifungal resistance — agricultural azole use selects for resistant Aspergillus + others. (4) COVID-19 collateral damage — mucormycosis, "black fungus," exploded in India during the 2021 COVID wave among diabetic patients on steroids.',
+              caveat: 'Most fungal exposure is harmless. Healthy immune systems clear nearly all opportunistic fungal exposures. The rise is real but the absolute numbers (a few hundred thousand serious infections per year globally) are dwarfed by bacterial + viral disease. The concern is the trajectory + the high mortality (often 30-60%) when serious fungal infections DO occur.'
+            },
+            { id: 'cauris', name: 'Candida auris — the new superbug', emoji: '🚨',
+              body: 'Candida auris was first identified in 2009 (Japan, ear canal of an elderly patient). It then appeared independently on four continents within a few years — suggesting parallel emergence rather than a single source spreading. C. auris is unusually resistant (often multidrug-resistant to all three major antifungal classes), persists on surfaces for weeks (unlike most Candida), causes outbreaks in healthcare facilities, and has 30-60% mortality in invasive cases. CDC declared it an "urgent threat" in 2019 + reported that US cases tripled from 2019 to 2021 (~3,000+ cases) + continued rising through 2024. Standard cleaning chemicals do not kill it reliably; hospitals need bleach-based or hydrogen-peroxide-based disinfectants applied specifically.',
+              caveat: 'The leading hypothesis for C. auris\'s simultaneous global emergence: climate warming. Most fungal species cannot grow at human body temperature (one of our innate defenses — mammals are too hot for most fungi). C. auris may have evolved heat tolerance recently in response to environmental warming, then jumped to colonizing humans. Arturo Casadevall + colleagues (Johns Hopkins) have made this argument most strongly; it is not yet proven but is gaining acceptance.'
+            },
+            { id: 'aspergillus', name: 'Aspergillus + agricultural resistance', emoji: '🌾',
+              body: 'Aspergillus fumigatus is a common soil mold whose spores you inhale thousands of times per day. Healthy lungs clear them easily; immunocompromised lungs sometimes cannot, leading to invasive aspergillosis (mortality 30-50%). The first-line treatment is azole antifungals (voriconazole). Problem: agricultural azole fungicides (used on wheat, grapes, tulips, and many other crops) drive the SAME resistance mechanism. Patients in countries with heavy agricultural azole use now present with azole-resistant invasive aspergillosis before they have ever taken an azole medication. In the Netherlands, ~20% of clinical Aspergillus isolates are now azole-resistant. The original resistance evolved in tulip-bulb fields + spread globally.',
+              caveat: 'This is an under-appreciated public health crisis. The WHO\'s One Health framework explicitly names agricultural antimicrobial use as a driver of human clinical resistance — true for bacteria (livestock antibiotics → human-pathogen resistance) AND for fungi (crop azoles → human-pathogen resistance). Restrictions on agricultural azoles are politically difficult; tulip cultivation in particular is a major Dutch industry. There are no current alternatives that won\'t collapse those industries.'
+            },
+            { id: 'mucor', name: 'Mucormycosis (black fungus)', emoji: '⚫',
+              body: 'Mucormycosis is caused by fungi in the order Mucorales (Rhizopus, Mucor, Lichtheimia, others). Spores are ubiquitous in soil + decaying plant matter. Infection in immunocompetent people is rare; mucormycosis is almost entirely a disease of severely immunocompromised + uncontrolled-diabetic patients. The fungi invade blood vessels, causing tissue death + the characteristic black necrotic appearance. Treatment requires emergency surgical debridement + amphotericin B; mortality is 40-80% even with treatment. India saw a massive mucormycosis outbreak in 2021 during the second COVID wave: ~50,000 cases reported (vs ~50 in a typical pre-pandemic year), driven by the combination of widespread corticosteroid use for COVID + the very high rate of uncontrolled diabetes in India + heavy environmental fungal spore loads.',
+              caveat: 'Mucormycosis is sometimes sensationalized as "flesh-eating fungus" in news coverage. The reality is grim but specific: it is essentially never a threat to immunocompetent people. The COVID-mucormycosis wave was a tragic intersection of multiple comorbidities. Sustained public health investment in diabetes control + judicious corticosteroid use would prevent most cases.'
+            },
+            { id: 'crypto', name: 'Cryptococcus + HIV', emoji: '🦠',
+              body: 'Cryptococcus neoformans is a yeast found in pigeon droppings + decaying tree material worldwide. Inhalation is common; clinical disease is rare in healthy immune systems. In HIV/AIDS patients with low CD4 counts, however, Cryptococcus crosses the blood-brain barrier + causes cryptococcal meningitis. Untreated mortality is 100%; even with optimal treatment, mortality remains 20-40%. Cryptococcal meningitis kills an estimated 150,000-200,000 people per year globally, predominantly in sub-Saharan Africa where HIV treatment access is incomplete. WHO recommends screening all newly-diagnosed advanced HIV patients for cryptococcal antigen + treating asymptomatic carriers preemptively.',
+              caveat: 'Cryptococcal meningitis is one of the biggest AIDS-related deaths in low- + middle-income countries — far more than tuberculosis or pneumonia in some settings. Antiretroviral access is the long-term answer; cryptococcal antigen screening + preemptive fluconazole treatment is the immediate one. This is a curable, preventable disease that kills people because the systems to deliver care aren\'t reaching them.'
+            },
+            { id: 'valley', name: 'Valley fever — coccidioidomycosis', emoji: '🌵',
+              body: 'Coccidioides immitis + C. posadasii are soil fungi endemic to the arid southwestern US (California Central Valley, Arizona) + parts of Mexico + Latin America. Inhalation of spores from disturbed dust causes "Valley fever" — a flu-like illness that resolves on its own in most cases. About 5-10% of infected people develop chronic pulmonary disease; <1% develop life-threatening disseminated infection (meningitis, bone, skin). The fungus is expanding northward + eastward with climate change; cases now reported in Washington State + parts of the Midwest that were never endemic before. California reported ~9,000 cases in 2022, a 50% increase from a decade earlier.',
+              caveat: 'Valley fever is genuinely under-diagnosed nationally. People who develop it after a trip to the Southwest are often misdiagnosed (it looks like influenza, then like pneumonia, then like cancer). The fungus is reportable in 26 states, but awareness varies hugely. Climate-driven range expansion is making this a national rather than regional concern. Several Valley fever vaccines are in clinical trials.'
+            },
+            { id: 'chytrid', name: 'Chytrid + amphibian extinction', emoji: '🐸',
+              body: 'Batrachochytrium dendrobatidis (Bd) is a chytrid fungus that infects amphibian skin, disrupting electrolyte balance + causing death by cardiac arrest. First identified in 1998, it has driven population declines in over 500 amphibian species worldwide + has been definitively linked to the extinction of at least 90 species since 1980 — the worst single pathogen-driven extinction event in recorded history. Its origin is believed to be Korea, spread globally by the international amphibian trade. Bsal (B. salamandrivorans), a related species discovered in 2013, threatens salamanders + has so far been kept out of the Americas by trade restrictions, though it has devastated European fire salamander populations.',
+              caveat: 'Chytrid is the strongest case study for "fungi as a major extinction driver" — historically that role was attributed mostly to habitat loss + climate change. The pathogen lens doesn\'t replace those drivers, but adds a critical third factor. The case also illustrates that international wildlife trade has been a major emerging-disease vector, and continues to be despite repeated warnings from disease ecologists.'
+            },
+            { id: 'treat', name: 'The narrow antifungal arsenal', emoji: '💊',
+              body: 'Compared to antibiotics (dozens of classes), antifungals are a small + slow field. There are essentially three major classes in clinical use: (1) Polyenes (amphotericin B, nystatin) — broad-spectrum, but amphotericin causes serious kidney toxicity. (2) Azoles (fluconazole, voriconazole, itraconazole, isavuconazole, posaconazole) — work by blocking ergosterol synthesis; widely resistant in some species now. (3) Echinocandins (caspofungin, micafungin, anidulafungin) — block cell-wall synthesis; the newest class (first approved 2001), with C. auris already showing resistance in some isolates. A new class, fosmanogepix (in trials 2024), targets fungal mannoprotein anchors — first novel antifungal mechanism in 20+ years.',
+              caveat: 'The pharma economics for new antifungals are bad. Each new antifungal needs years of trials + capital investment, but invasive fungal infections affect relatively small patient populations (compared to bacterial infections), making return on investment difficult. The result: a dangerously thin pipeline. Several companies have abandoned antifungal development entirely. The WHO + governments are exploring push-pull incentives (advance market commitments, subscription pricing) to fix this; results so far are limited.'
+            }
+          ];
+          var sel = d.selectedFungalE || 'whyrising';
+          var topic = FUNGI_TOPICS.find(function(t) { return t.id === sel; }) || FUNGI_TOPICS[0];
+          return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.25)' } },
+            h('h3', { style: { margin: '0 0 6px', color: '#d8b4fe', fontSize: 16 } }, '🍄 Emerging fungal infections — the underrecognized threat'),
+            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+              'When people picture an emerging infectious disease, they picture a virus. But the past 20 years have seen fungi rise into a serious + underappreciated category of human + ecological pathogen. Climate change, agricultural fungicide overuse, expanding immunocompromised populations, and very thin antifungal pipelines have combined to create a problem we are only beginning to take seriously.'
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              FUNGI_TOPICS.map(function(t) {
+                var on = t.id === sel;
+                return h('button', {
+                  key: t.id,
+                  onClick: function() { upd({ selectedFungalE: t.id }); },
+                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#a855f7' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #a855f7' : '1px solid #334155' }
+                }, t.emoji + ' ' + t.name);
+              })
+            ),
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#d8b4fe', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
+              h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+              h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                h('strong', null, 'Honest framing: '), topic.caveat
+              )
+            ),
+            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
+              h('strong', null, 'A note on proportionality: '),
+              'Fungi cause an estimated 1.5-2 million deaths globally per year — comparable to tuberculosis. They get a fraction of the research funding, awareness, or media coverage that bacterial + viral pathogens receive. This is changing slowly. School psychologists + educators may encounter fungal infections in immunocompromised students (cancer survivors, transplant recipients, severe asthma on inhaled steroids); awareness of the basics serves those students well.'
+            )
+          );
+        }
       }
 
       // PROTISTS
