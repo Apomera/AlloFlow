@@ -130,6 +130,78 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
     { author: 'Temple Grandin', year: 1995, title: 'Thinking in Pictures', format: 'Memoir', why: 'Grandin\'s account of how visual-thinking autism shaped her work in animal-handling design.' }
   ];
 
+  // Organizations and movements students can follow, support, or read
+  // for ongoing work. Mix of national + Maine-local. Each entry has
+  // name, scope, what they do, and a publicly-listed website hint
+  // (no live links — students search the name to find current URL).
+  // Maine entries flagged so Aaron's King Middle students see local
+  // touchpoints alongside the national orgs.
+  var ORGANIZATIONS = [
+    {
+      name: 'Autism Self Advocacy Network (ASAN)',
+      scope: 'National', icon: '🏛️', color: '#3b82f6',
+      what: 'The largest autistic-led national advocacy organization in the US. Co-founded by Ari Ne\'eman in 2006. Publishes plain-language policy briefs, position statements on ABA / restraint / supported decision-making, and the foundational "Welcome to the Autistic Community" booklet for newly diagnosed adolescents and adults.',
+      web: 'autisticadvocacy.org',
+      maine: false
+    },
+    {
+      name: 'Sins Invalid',
+      scope: 'National', icon: '⚡', color: '#ec4899',
+      what: 'Disability-justice performance project and educational organization centering Black, Brown, queer, and trans disabled artists. Co-founded by Patty Berne. Authored the foundational disability-justice primer "Skin, Tooth, and Bone" articulating the ten principles of disability justice.',
+      web: 'sinsinvalid.org',
+      maine: false
+    },
+    {
+      name: 'American Association of People with Disabilities (AAPD)',
+      scope: 'National', icon: '🤝', color: '#22c55e',
+      what: 'Cross-disability civil rights coalition. Strong policy advocacy on employment, voting access, healthcare, and education. Runs paid summer internship programs placing disabled college students in DC offices, federal agencies, and corporate roles.',
+      web: 'aapd.com',
+      maine: false
+    },
+    {
+      name: 'Council of Parent Attorneys and Advocates (COPAA)',
+      scope: 'National', icon: '⚖️', color: '#a78bfa',
+      what: 'Network of attorneys, advocates, and parents who represent students with disabilities in special-education matters. Strong technical resources on IEP/504 process, manifestation determinations, and restraint/seclusion. School psychs use COPAA materials for IEP-team training and to understand legal terrain.',
+      web: 'copaa.org',
+      maine: false
+    },
+    {
+      name: 'National Center for Learning Disabilities (NCLD)',
+      scope: 'National', icon: '📊', color: '#fbbf24',
+      what: 'Research, policy, and advocacy on specific learning disabilities (SLD) and ADHD. Publishes the "State of LD" report annually with state-by-state data. Strong free resources for parents navigating IEP-team meetings — useful background reading for school-psych work.',
+      web: 'ncld.org',
+      maine: false
+    },
+    {
+      name: 'Disability Rights Maine',
+      scope: 'Maine', icon: '🦞', color: '#0ea5e9',
+      what: 'Maine\'s federally-designated Protection & Advocacy (P&A) system for people with disabilities. Free legal services, IEP-team support for families, restraint/seclusion incident review, voting access, and disability-rights education. Every state has a P&A; this is Maine\'s. School psychs in Maine should know they exist for the families they serve.',
+      web: 'drme.org',
+      maine: true
+    },
+    {
+      name: 'Maine Developmental Disabilities Council',
+      scope: 'Maine', icon: '🌲', color: '#22d3ee',
+      what: 'State-level council funded by federal Developmental Disabilities Act. Funds local advocacy projects, publishes Maine-specific employment / housing / community-living resources, and supports self-advocacy work by Mainers with disabilities. Companion to DRM on the policy / community-development side.',
+      web: 'maineddc.org',
+      maine: true
+    },
+    {
+      name: 'CommunicationFIRST',
+      scope: 'National', icon: '🗣️', color: '#f472b6',
+      what: 'The only nonprofit dedicated to protecting and advancing the civil rights of the 5+ million Americans who, due to disability or other condition, cannot rely on speech alone to be heard and understood. Strong work on AAC access, supported decision-making, and the rights of nonspeaking autistic people. Founded by lawyer Bob Williams.',
+      web: 'communicationfirst.org',
+      maine: false
+    },
+    {
+      name: 'Autistic Women & Nonbinary Network (AWN)',
+      scope: 'National', icon: '🌸', color: '#a78bfa',
+      what: 'National advocacy for autistic women, girls, nonbinary people, and other gender-marginalized autistic people. Centers intersections of race, gender, sexuality, and disability. Publishes "All the Weight of Our Dreams," the first anthology of writing by autistic people of color.',
+      web: 'awnnetwork.org',
+      maine: false
+    }
+  ];
+
   function defaultState() {
     return {
       view: 'home',
@@ -209,7 +281,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                 border: '1px solid rgba(244,114,182,0.40)',
                 color: '#f9a8d4', fontSize: 10, fontWeight: 700,
                 fontFamily: 'ui-monospace, Menlo, monospace'
-              } }, VOICES.length + ' voices · ' + READING_LIST.length + ' readings')
+              } }, VOICES.length + ' voices · ' + READING_LIST.length + ' readings · ' + ORGANIZATIONS.length + ' orgs')
             ),
             h('div', { style: { fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } },
               'Real autistic and disabled advocates whose work shaped, and critiqued, disability practice. The people the field has been done to.')
@@ -221,6 +293,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
         var tabs = [
           { id: 'home', label: 'Voices', icon: '🎙️' },
           { id: 'reading', label: 'Reading list', icon: '📚' },
+          { id: 'orgs', label: 'Organizations', icon: '🏛️' },
           { id: 'about', label: 'About this tool', icon: 'ℹ️' }
         ];
         return h('div', { role: 'tablist', 'aria-label': 'Disability Voices sections',
@@ -404,6 +477,72 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
         );
       }
 
+      function renderOrganizations() {
+        return h('div', null,
+          h('div', { style: {
+            padding: '12px 14px', borderRadius: 10,
+            background: 'rgba(34,211,238,0.06)',
+            border: '1px solid rgba(34,211,238,0.20)',
+            marginBottom: 14
+          } },
+            h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6 } },
+              'Organizations and movements students can follow, support, or read for ongoing work. Mix of national + Maine-local. Each entry has scope, what they do, and the publicly-listed website (search the name to find current URL).')
+          ),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+            ORGANIZATIONS.map(function(o, oi) {
+              return h('div', { key: 'org-' + oi,
+                style: {
+                  background: 'rgba(15,23,42,0.6)',
+                  borderRadius: 12,
+                  padding: '14px 16px',
+                  border: '1px solid rgba(100,116,139,0.25)',
+                  borderLeft: '4px solid ' + o.color
+                } },
+                h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 } },
+                  h('div', { 'aria-hidden': 'true',
+                    style: {
+                      width: 40, height: 40, borderRadius: '50%',
+                      background: o.color + '22',
+                      border: '1.5px solid ' + o.color,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 20, lineHeight: 1, flexShrink: 0
+                    }
+                  }, o.icon),
+                  h('div', { style: { flex: 1, minWidth: 0 } },
+                    h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 4 } },
+                      h('div', { style: { fontSize: 14, fontWeight: 800, color: o.color, lineHeight: 1.2 } }, o.name),
+                      h('span', { style: {
+                        padding: '1px 7px', borderRadius: 999,
+                        background: o.maine ? 'rgba(14,165,233,0.18)' : 'rgba(148,163,184,0.10)',
+                        border: '1px solid ' + (o.maine ? 'rgba(14,165,233,0.40)' : 'rgba(148,163,184,0.25)'),
+                        color: o.maine ? '#7dd3fc' : '#94a3b8',
+                        fontSize: 9, fontWeight: 700,
+                        fontFamily: 'ui-monospace, Menlo, monospace',
+                        textTransform: 'uppercase', letterSpacing: '0.04em'
+                      } }, o.maine ? '🦞 Maine' : o.scope)
+                    ),
+                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 6 } }, o.what),
+                    h('div', { style: {
+                      fontSize: 10, color: '#64748b', fontStyle: 'italic',
+                      paddingTop: 6, borderTop: '1px dashed rgba(100,116,139,0.25)',
+                      fontFamily: 'ui-monospace, Menlo, monospace'
+                    } },
+                      '🔗 ', o.web)
+                  )
+                )
+              );
+            })
+          ),
+          h('div', { style: {
+            marginTop: 14, padding: '12px 14px', borderRadius: 10,
+            background: 'rgba(167,139,250,0.06)',
+            border: '1px solid rgba(167,139,250,0.20)',
+            color: '#cbd5e1', fontSize: 11, lineHeight: 1.65, fontStyle: 'italic'
+          } },
+            '💡 Following a few of these on social media is one of the easier continuing-education paths. National orgs (ASAN, Sins Invalid, AWN, CommunicationFIRST) are active on Bluesky and Mastodon. Disability Rights Maine and the Maine DD Council post events relevant to families and staff serving Mainers with disabilities. Show up to one virtual event per month and the field changes for you fast.')
+        );
+      }
+
       function renderAbout() {
         return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
           h('div', {
@@ -444,6 +583,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
 
       var content;
       if (view === 'reading') content = renderReading();
+      else if (view === 'orgs') content = renderOrganizations();
       else if (view === 'about') content = renderAbout();
       else content = renderHome();
 
