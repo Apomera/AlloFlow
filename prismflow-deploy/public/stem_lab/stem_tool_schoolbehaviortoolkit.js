@@ -229,6 +229,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
   ];
 
   // ─────────────────────────────────────────────────────────
+  // Maine Resources — local-specific content most national ABA
+  // tools skip. Maine Chapter 33 detail beyond the summary, the
+  // state-level compliance map, Wabanaki considerations for IEP
+  // teams, and the crisis-resource list Maine school psychs
+  // actually use. Sources: Maine Department of Education special
+  // services unit; 20-A MRSA Chapter 305 (the state ed code);
+  // Maine OCFS crisis services; Wabanaki Health & Wellness
+  // documented practitioner guidance.
+  // ─────────────────────────────────────────────────────────
+  var MAINE_RESOURCES = [
+    {
+      group: 'Maine Chapter 33 — restraint & seclusion compliance',
+      icon: '🏛️', color: '#a78bfa',
+      bullets: [
+        'Authorizing standard: "imminent danger of serious physical injury" — property destruction alone is NOT sufficient.',
+        'Required staff training: CPI / NCI / Mandt or equivalent state-approved curriculum. Documentation of who is currently certified for the specific student must be on file.',
+        'Parent notification: same-day verbal + written within one business day. Document the time of notification and method (call / email / in-person) on the incident form.',
+        'Required debrief: staff debrief within 5 school days; team meeting to consider BIP revision if the incident reveals a pattern.',
+        'Annual reporting: Maine DOE collects building-level restraint/seclusion totals. Disaggregated reporting at building level is best practice and Aaron-can-do work even if district aggregates only at the system level.'
+      ]
+    },
+    {
+      group: 'Wabanaki considerations for IEP teams',
+      icon: '🌅', color: '#fbbf24',
+      bullets: [
+        'Maine has four Wabanaki Nations — Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq. Some students at PPS schools may be enrolled tribal members; many more identify with Wabanaki heritage without enrollment. Don\'t assume from name or appearance.',
+        'For enrolled students: tribal liaisons on each reservation can attend IEP meetings as related-services consultants when invited and when the family wants. This is a family choice, not a default.',
+        'Cultural-responsiveness in BIPs: behaviors that look like "noncompliance" in a Western classroom frame may be culturally-appropriate (looking down rather than maintaining eye contact when an adult is speaking, longer pauses before answering questions, deferring to family before personal preferences). Pre-FBA conversation with family about these dynamics is the work.',
+        'Penobscot River restoration (2012-2013 dam removals) and ongoing land-back work are within most current Maine students\' lifetimes. Wabanaki students growing up in this period have a different sense of indigenous presence than older generations did. Acknowledge it.',
+        'Resources: Wabanaki Health & Wellness (Indian Township + Pleasant Point + Indian Island), Wabanaki REACH (organizing + policy), Penobscot Nation Department of Education for Penobscot-enrolled families.'
+      ]
+    },
+    {
+      group: 'Maine crisis resources (post-Phase-5 referral)',
+      icon: '🚨', color: '#ef4444',
+      bullets: [
+        'Maine Crisis Line: dial 988 (national) — connects to Maine\'s in-state crisis system 24/7. Also reachable at 1-888-568-1112 (statewide Maine line).',
+        'Maine Mobile Crisis (children): dispatched to the home or school on request, statewide. Available 24/7. Free regardless of insurance. School psychs can request directly during business hours; families can request anytime.',
+        'NAMI Maine HelpLine: 1-800-464-5767 — for families navigating mental-health systems, not crisis-line-level urgency. Strong family education resources.',
+        'Sweetser (statewide outpatient + in-school services), Spurwink (residential + outpatient youth services), Maine Behavioral Healthcare (MaineHealth network) — three of the larger contracted-provider networks for school-based mental-health services. Aaron should know which contract his district uses.',
+        'For acute psychiatric emergencies: Maine Medical Center BIDDLE (Pediatric Behavioral Health Unit, Portland), or the youth-specific intake at Acadia Hospital (Bangor). Both accept emergency-room referrals and direct admissions.'
+      ]
+    },
+    {
+      group: 'State-level disability compliance + advocacy',
+      icon: '⚖️', color: '#22c55e',
+      bullets: [
+        'Disability Rights Maine: the federally-designated Protection & Advocacy (P&A) system for Maine. Free legal services for students with disabilities. School psychs should know they exist for the families they serve. drme.org.',
+        'Maine Developmental Disabilities Council: state council funded by federal DD Act. Local advocacy projects, Maine-specific employment/housing/community-living resources, supports self-advocacy work by Mainers with disabilities. maineddc.org.',
+        'Maine Parent Federation: Maine\'s federally-designated Parent Training & Information Center. Free IEP support for families across the state. mpf.org.',
+        'Maine Department of Education special services unit: state-level technical assistance for IEP compliance, due process, and dispute resolution. Maine DOE also publishes the official Maine Unified Special Education Regulation (MUSER), which is the state-level supplement to IDEA.',
+        'Maine PBIS Network: technical assistance for Maine schools implementing PBIS. Supports Tier 1-2-3 work statewide.'
+      ]
+    },
+    {
+      group: 'Portland Public Schools / King Middle context',
+      icon: '🦞', color: '#0ea5e9',
+      bullets: [
+        'PPS uses the EL Education framework at King Middle and several other PPS schools. Crew (the daily 30-min advisory) is the natural Tier 1 / Tier 2 surface for behavior-support work in this model — small, relational, predictable. Most PBIS Tier 2 interventions can fold into Crew without adding pull-out time.',
+        'PPS special services central office is at 353 Cumberland Ave. School-level special-ed coordinators handle most IEP-team logistics; central office handles compliance, due process, and dispute resolution.',
+        'PPS multilingual learner population is substantial (English not the first language at home for ~30% of PPS students by recent counts). Coordinate with PPS Multilingual & Multicultural Center for interpreter services for IEP meetings — required by IDEA when needed and a non-default that gets missed.',
+        'King Middle\'s flagship status as an EL Education school means visiting practitioners + researchers come through. Useful when the school psych can name the framework explicitly in IEP documentation; it also raises the bar for fidelity of EL practices.',
+        'Portland Adult Education has resources for parents pursuing GED or English-language learning who want to support their student\'s IEP process. Worth knowing about for IEP-team conversations with families navigating multiple systems at once.'
+      ]
+    }
+  ];
+
+  // ─────────────────────────────────────────────────────────
   // BIP template — the Tier 3 artifact school psychs write most
   // often. Companion to FBA: the FBA names the function; the BIP
   // is the plan. Eight components in the order most commonly
@@ -535,7 +603,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 border: '1px solid rgba(20,184,166,0.40)',
                 color: '#5eead4', fontSize: 10, fontWeight: 700,
                 fontFamily: 'ui-monospace, Menlo, monospace'
-              } }, '10 sections')
+              } }, '11 sections')
             ),
             h('p', { style: { margin: 0, fontSize: 12, color: '#94a3b8', fontWeight: 600, lineHeight: 1.5 } }, 'Applied K-12 practice. PBIS · Replacement Behaviors · Setting Events · Acting-Out Cycle · Restraint Ethics · Equity & Disparities.')
           )
@@ -553,6 +621,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           { id: 'restraint', label: 'Restraint & Seclusion', icon: '🛑' },
           { id: 'cico', label: 'CICO Template', icon: '📋' },
           { id: 'equity', label: 'Equity & Disparities', icon: '⚖️' },
+          { id: 'maine', label: 'Maine Resources', icon: '🦞' },
           { id: 'connect', label: 'Connect', icon: '🔗' }
         ];
         return h('div', { role: 'tablist', 'aria-label': 'School Behavior Toolkit sections',
@@ -991,6 +1060,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         );
       }
 
+      // ── Section: Maine Resources ──
+      function renderMaine() {
+        return h('div', null,
+          panelHeader('🦞 Maine Resources — local-specific compliance + contacts',
+            'Maine-specific Chapter 33 detail beyond the summary, the state-level compliance map, Wabanaki considerations for IEP teams, the crisis-resource list Maine school psychs actually use, and Portland Public Schools / King Middle context. National content lives elsewhere; this is the local layer.'),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+            MAINE_RESOURCES.map(function(group, gi) {
+              return h('div', { key: 'maine-' + gi,
+                style: {
+                  background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
+                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + group.color
+                } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
+                  circularBadge(group.icon, group.color, 36),
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: group.color, lineHeight: 1.2 } }, group.group)
+                ),
+                h('ul', { style: { margin: 0, paddingLeft: 18, color: '#cbd5e1', fontSize: 11, lineHeight: 1.65 } },
+                  group.bullets.map(function(b, bi) {
+                    return h('li', { key: gi + '-' + bi, style: { marginBottom: 6 } }, b);
+                  })
+                )
+              );
+            })
+          ),
+          sourceFooter('🎯 The local-content rule of thumb: federal IDEA + national PBIS + ABA practice standards apply everywhere, but the actual operational reality for a Maine student in a Portland classroom is shaped by Maine state ed code (MUSER), Maine Chapter 33, the four Wabanaki Nations\' presence in Maine, the Maine crisis system, and Aaron\'s specific PPS / King Middle context. Generic national resources are insufficient; this layer is required.')
+        );
+      }
+
       // ── Section: Connect (cross-tool navigation) ──
       function renderConnect() {
         return h('div', null,
@@ -1040,6 +1137,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       else if (section === 'bip') content = renderBip();
       else if (section === 'cico') content = renderCico();
       else if (section === 'equity') content = renderEquity();
+      else if (section === 'maine') content = renderMaine();
       else if (section === 'connect') content = renderConnect();
       else content = renderPbis();
 
