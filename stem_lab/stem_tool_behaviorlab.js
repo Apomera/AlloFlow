@@ -384,6 +384,59 @@ var d = labToolData || {};
             { term: 'Token Economy', def: 'A system where tokens (conditioned reinforcers) are earned for target behaviors and exchanged for backup reinforcers.' }
           ];
 
+          // === Acting-Out Cycle — the seven-phase escalation model ===
+          // Geoff Colvin's framework (late 1990s) is the spine of every
+          // major crisis-intervention curriculum (CPI, Boys Town, NCI,
+          // Mandt). Each phase has its own intervention. Knowing which
+          // phase a student is in tells staff what will help and what
+          // will make it worse. The cycle is the most useful single thing
+          // a school psych teaches teachers, and it's almost never in
+          // operant-conditioning materials.
+          var ACTING_OUT_CYCLE = [
+            {
+              phase: 1, name: 'Calm', icon: '🌊', color: '#22c55e',
+              signs: 'Baseline functioning. Engaged, cooperative, on-task. Predictable, regulated.',
+              doThis: 'Build rapport, teach skills, pre-teach upcoming demands, set up environmental supports. This is the phase where preventive work actually happens — every other phase is too late for prevention.',
+              dontDo: 'Don\'t treat calm as nothing-to-do. The work you do at Phase 1 is what determines how short Phase 5 is.'
+            },
+            {
+              phase: 2, name: 'Triggers', icon: '⚡', color: '#fbbf24',
+              signs: 'Setting events stack with an immediate antecedent. Often invisible from the outside — the student notices before staff do.',
+              doThis: 'Reduce demands, offer a choice, allow a regulation break, switch to a known-easy task. Catching it here is the highest-leverage moment in the cycle.',
+              dontDo: 'Don\'t add demands. Don\'t escalate consequences. Don\'t insist on the original task. The trigger is information about threshold, not defiance.'
+            },
+            {
+              phase: 3, name: 'Agitation', icon: '😟', color: '#f97316',
+              signs: 'Early warning signs: off-task, verbal complaints, withdrawal, increased motor activity, darting eye contact, head down. Some students go quiet; some get loud. Both are agitation.',
+              doThis: 'Reduce sensory load, offer the regulation break with no strings attached, validate the feeling without arguing the cause ("This is hard right now"), modify the demand.',
+              dontDo: 'Don\'t lecture. Don\'t reason with logic. Don\'t insist on eye contact. Don\'t escalate your own voice. The thinking brain is already losing access.'
+            },
+            {
+              phase: 4, name: 'Acceleration', icon: '🌪️', color: '#ef4444',
+              signs: 'Provocative behavior aimed at getting a reaction: blame, intimidation, escalating language, threats, refusal to engage with anyone, scripted "I don\'t care" responses.',
+              doThis: 'Stay quiet. Stay close enough to be safe, far enough to give space. Clear the audience if possible — peers in the room raise the stakes. State only what is absolutely necessary, in short sentences.',
+              dontDo: 'Don\'t take the bait. Don\'t match the volume. Don\'t threaten consequences mid-cycle. Don\'t deliver speeches. Most adult mistakes happen here — Phase 4 is the moment teachers get pulled into being part of the escalation.'
+            },
+            {
+              phase: 5, name: 'Peak', icon: '🔥', color: '#dc2626',
+              signs: 'Physical aggression, property destruction, elopement, full meltdown. The student is no longer in cognitive control. The thinking brain has gone offline.',
+              doThis: 'Safety first. Move other students if needed. Use minimal language. Restraint only as a last resort with proper training and policy backing. Most of the work at Peak is just keeping the room safe and waiting.',
+              dontDo: 'Don\'t teach. Don\'t reason. Don\'t process. Don\'t threaten. Don\'t give consequences mid-Peak. Recording the incident for documentation is appropriate; processing is not — yet.'
+            },
+            {
+              phase: 6, name: 'De-escalation', icon: '🌧️', color: '#3b82f6',
+              signs: 'Exhausted, emotional, often quiet or tearful. Student may be embarrassed, dissociated, or sleepy. Sometimes apologizes; sometimes goes silent.',
+              doThis: 'Stay present without demanding interaction. Offer water, a quiet space, a familiar object. Let the body finish processing. This phase is real and takes time — minutes to over an hour for some students.',
+              dontDo: 'Don\'t debrief yet. Don\'t lecture about what happened. Don\'t require apology in this phase — it produces hollow performance, not actual repair.'
+            },
+            {
+              phase: 7, name: 'Recovery', icon: '🌅', color: '#a78bfa',
+              signs: 'Back near baseline. Cognitive functioning returns. Student may have limited memory of the peak.',
+              doThis: 'Now you debrief. Together, with empathy: "What happened? What were the signs you noticed? What would help next time?" Rebuild the relationship explicitly. Repair any damage with the student\'s input. Update the BIP based on what the cycle revealed.',
+              dontDo: 'Don\'t treat recovery as the end of the cycle — it\'s the start of the next Phase 1. The relationship work you do here determines whether the next cycle will be shorter or longer.'
+            }
+          ];
+
           // === Setting events — the slow triggers K-12 behavior plans miss ===
           // Most BIPs focus on the immediate antecedent (the worksheet, the
           // transition, the demand). Setting events are the conditions
@@ -4694,6 +4747,92 @@ var d = labToolData || {};
                 "🎯 Practical tool: when you write a BIP, add a ",
                 React.createElement("b", null, "'morning check'"),
                 " row to the ABC data sheet. One quick rating each morning of the six categories above. Three weeks of data and the pattern emerges. School psychs who do this regularly report cutting BIP-revision cycles in half.")
+            ),
+
+            // === ACTING-OUT CYCLE — seven-phase escalation model ===
+            // Geoff Colvin's framework. Each phase = card with phase
+            // number badge, signs, do-this, don't-do — color-coded so the
+            // arc reads as a heat-map (green → yellow → orange → red →
+            // dark red → blue → lavender). The heat-map itself teaches:
+            // intensity rises through Phase 5 then resolves through 6-7.
+            React.createElement("div", {
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(239,68,68,0.25)' }, glass)
+            },
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🌀 The Acting-Out Cycle — seven phases of escalation"),
+                React.createElement("button", { onClick: function() { upd('blShowCycle', !d.blShowCycle); },
+                  className: "text-[11px] text-red-400 hover:text-red-300"
+                }, d.blShowCycle ? 'Hide' : 'View →')
+              ),
+              d.blShowCycle && React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-3", style: { lineHeight: 1.55 } },
+                "Geoff Colvin's seven-phase framework is the spine of every major crisis-intervention curriculum (CPI, Boys Town, NCI, Mandt). Each phase has its own intervention. Knowing which phase a student is in tells staff what will help and what will make it worse. Almost never in operant-conditioning materials, but probably the single most useful frame a school psych teaches teachers."),
+              d.blShowCycle && React.createElement("div", { className: "space-y-2" },
+                ACTING_OUT_CYCLE.map(function(ph, phi) {
+                  return React.createElement("div", {
+                    key: 'cycle-' + ph.phase,
+                    style: {
+                      background: 'rgba(15,23,42,0.6)',
+                      borderRadius: 10,
+                      padding: '10px 12px',
+                      border: '1px solid rgba(100,116,139,0.25)',
+                      borderLeft: '4px solid ' + ph.color
+                    }
+                  },
+                    React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                      // Phase number badge — large, color-keyed
+                      React.createElement("div", {
+                        'aria-hidden': 'true',
+                        style: {
+                          width: 36, height: 36, borderRadius: '50%',
+                          background: ph.color + '22',
+                          border: '1.5px solid ' + ph.color,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 13, fontWeight: 800, color: ph.color,
+                          fontFamily: 'ui-monospace, Menlo, monospace',
+                          flexShrink: 0
+                        }
+                      }, ph.phase),
+                      React.createElement("div", { style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, ph.icon),
+                      React.createElement("div", { style: { fontSize: 13, fontWeight: 800, color: ph.color, letterSpacing: '0.01em' } }, ph.name)
+                    ),
+                    React.createElement("div", { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, "Signs"),
+                    React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 8 } }, ph.signs),
+                    React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
+                      React.createElement("div", {
+                        style: {
+                          padding: 8, borderRadius: 6,
+                          background: 'rgba(34,197,94,0.06)',
+                          border: '1px solid rgba(34,197,94,0.20)'
+                        }
+                      },
+                        React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, "✓ Do this"),
+                        React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, ph.doThis)
+                      ),
+                      React.createElement("div", {
+                        style: {
+                          padding: 8, borderRadius: 6,
+                          background: 'rgba(239,68,68,0.06)',
+                          border: '1px solid rgba(239,68,68,0.20)'
+                        }
+                      },
+                        React.createElement("div", { style: { fontSize: 9, fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, "✗ Don't do"),
+                        React.createElement("div", { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, ph.dontDo)
+                      )
+                    )
+                  );
+                })
+              ),
+              d.blShowCycle && React.createElement("div", {
+                style: {
+                  marginTop: 10, padding: 10, borderRadius: 8,
+                  background: 'rgba(168,139,250,0.06)',
+                  border: '1px solid rgba(168,139,250,0.20)',
+                  color: '#cbd5e1', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic'
+                }
+              },
+                "🎯 Practical translation: a 5-second rule for staff during Phases 3-5 is ",
+                React.createElement("b", null, "less talking, more space, simpler language, fewer demands"),
+                ". Most adult escalation mistakes happen in Phase 4 (Acceleration) when we feel pulled to lecture, threaten, or argue. The cycle teaches that almost nothing said at Phase 4 lands — and most of what is said makes Phase 5 worse. Save the words for Phase 7.")
             ),
 
             // === BEYOND PURE ABA — neurodiversity-affirming + trauma-informed ===
