@@ -8622,6 +8622,176 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
               })();
 
+              // ── Small pumpkin patch beside the vegetable garden (fall only) ──
+              // 4 pumpkins clustered together in varying sizes — homestead
+              // staple right before Halloween. Real bee biology: pumpkin
+              // blossoms are heavily pollinated by squash bees and bumblebees
+              // earlier in the season; what we see now is the ripened fruit.
+              if (season === 2) {
+                var _ppX = W * 0.13, _ppY = H * 0.88;
+                var _pumpkins = [
+                  { dx:  0, dy:  0, r: 4.5 },
+                  { dx:  7, dy:  1, r: 3.5 },
+                  { dx: -5, dy:  2, r: 3.0 },
+                  { dx:  3, dy: -2, r: 2.4 }
+                ];
+                _pumpkins.forEach(function(pk, pki) {
+                  var _pkx = _ppX + pk.dx;
+                  var _pky = _ppY + pk.dy;
+                  // Shadow
+                  c.fillStyle = 'rgba(0,0,0,0.25)';
+                  c.beginPath(); c.ellipse(_pkx, _pky + pk.r * 0.7, pk.r * 1.1, pk.r * 0.25, 0, 0, 6.28); c.fill();
+                  // Body — round with vertical rib gradient
+                  var _pkG = c.createRadialGradient(_pkx - pk.r * 0.3, _pky - pk.r * 0.3, 0.5, _pkx, _pky, pk.r);
+                  _pkG.addColorStop(0, '#fb923c');
+                  _pkG.addColorStop(0.7, '#ea580c');
+                  _pkG.addColorStop(1, '#c2410c');
+                  c.fillStyle = _pkG;
+                  c.beginPath(); c.ellipse(_pkx, _pky, pk.r, pk.r * 0.85, 0, 0, 6.28); c.fill();
+                  // Vertical rib lines (3 darker arcs)
+                  c.strokeStyle = 'rgba(120,40,15,0.40)';
+                  c.lineWidth = 0.4;
+                  for (var pkr = -1; pkr <= 1; pkr++) {
+                    var _pkrX = _pkx + pkr * pk.r * 0.4;
+                    c.beginPath();
+                    c.moveTo(_pkrX, _pky - pk.r * 0.7);
+                    c.quadraticCurveTo(_pkrX + pkr * pk.r * 0.15, _pky, _pkrX, _pky + pk.r * 0.7);
+                    c.stroke();
+                  }
+                  // Brown stem
+                  c.fillStyle = '#4a3014';
+                  c.fillRect(_pkx - 0.4, _pky - pk.r - 1.2, 0.8, 1.5);
+                  // Small green leaf curl (one per pumpkin, alternate sides)
+                  c.fillStyle = '#65a30d';
+                  var _pkLfSide = pki % 2 === 0 ? 1 : -1;
+                  c.beginPath();
+                  c.ellipse(_pkx + _pkLfSide * 1, _pky - pk.r - 0.5, 0.8, 0.4, _pkLfSide * 0.5, 0, 6.28);
+                  c.fill();
+                  // Highlight on upper-left of body
+                  c.fillStyle = 'rgba(254,215,170,0.4)';
+                  c.beginPath(); c.ellipse(_pkx - pk.r * 0.45, _pky - pk.r * 0.35, pk.r * 0.4, pk.r * 0.2, -0.3, 0, 6.28); c.fill();
+                });
+              }
+
+              // ── Mason jar lantern hanging from the apple-tree branch (lit at night) ──
+              // A glass mason jar with a candle inside, suspended from a wire
+              // hook. Glows warm amber at night, transparent during day.
+              if (hiveX > 40) {
+                var _mjAtX = hiveX * 0.55;
+                var _mjX = _mjAtX + 22;
+                var _mjBranchY = H * 0.76 - 36;
+                var _mjY = _mjBranchY + 8;
+                // Wire hook from branch
+                c.strokeStyle = '#1c1917';
+                c.lineWidth = 0.3;
+                c.beginPath();
+                c.moveTo(_mjX, _mjBranchY);
+                c.lineTo(_mjX, _mjY - 3);
+                c.stroke();
+                // Jar lid + threaded ring
+                c.fillStyle = '#78716c';
+                c.fillRect(_mjX - 1.5, _mjY - 3, 3, 0.8);
+                c.fillStyle = '#a8a29e';
+                c.fillRect(_mjX - 1.5, _mjY - 2.2, 3, 0.5);
+                // Jar body — glass with subtle gradient
+                var _mjBodyG = c.createLinearGradient(_mjX - 1.5, _mjY, _mjX + 1.5, _mjY);
+                _mjBodyG.addColorStop(0, 'rgba(180,210,230,0.4)');
+                _mjBodyG.addColorStop(0.5, 'rgba(220,240,255,0.55)');
+                _mjBodyG.addColorStop(1, 'rgba(120,150,180,0.35)');
+                c.fillStyle = _mjBodyG;
+                c.fillRect(_mjX - 1.6, _mjY - 1.7, 3.2, 4);
+                // Glass outline
+                c.strokeStyle = 'rgba(100,130,160,0.5)';
+                c.lineWidth = 0.25;
+                c.strokeRect(_mjX - 1.6, _mjY - 1.7, 3.2, 4);
+                // Glass highlight strip
+                c.fillStyle = 'rgba(255,255,255,0.45)';
+                c.fillRect(_mjX - 1.3, _mjY - 1.4, 0.4, 3.4);
+                // Bottom rim (slightly darker)
+                c.fillStyle = 'rgba(80,100,130,0.4)';
+                c.fillRect(_mjX - 1.6, _mjY + 2, 3.2, 0.3);
+                // Candle inside — visible dark stub
+                c.fillStyle = '#3a2510';
+                c.fillRect(_mjX - 0.4, _mjY + 0.5, 0.8, 1.5);
+                // Wick + flame at night
+                var _mjNight = Math.max(0, Math.min(1,
+                  _sunCycle > 1.05 && _sunCycle < 1.95 ?
+                    Math.sin((_sunCycle - 1.05) / 0.90 * Math.PI) : 0
+                ));
+                if (_mjNight > 0.1) {
+                  // Warm glow halo around the whole jar
+                  var _mjGlow = c.createRadialGradient(_mjX, _mjY + 0.5, 1, _mjX, _mjY + 0.5, 14);
+                  _mjGlow.addColorStop(0, 'rgba(254,215,80,' + (0.45 * _mjNight).toFixed(3) + ')');
+                  _mjGlow.addColorStop(0.5, 'rgba(251,146,60,' + (0.18 * _mjNight).toFixed(3) + ')');
+                  _mjGlow.addColorStop(1, 'rgba(251,146,60,0)');
+                  c.fillStyle = _mjGlow;
+                  c.beginPath(); c.arc(_mjX, _mjY + 0.5, 14, 0, 6.28); c.fill();
+                  // Bright filling inside the jar (candle illuminates glass)
+                  c.fillStyle = 'rgba(254,215,80,' + (0.55 * _mjNight).toFixed(3) + ')';
+                  c.fillRect(_mjX - 1.5, _mjY - 1.5, 3, 3.5);
+                  // Flame with flicker
+                  var _mjFlick = 1 + Math.sin(t2 * 0.5) * 0.2 + Math.sin(t2 * 0.8 + 1) * 0.1;
+                  c.fillStyle = 'rgba(254,243,150,' + (0.95 * _mjNight).toFixed(3) + ')';
+                  c.beginPath();
+                  c.ellipse(_mjX, _mjY + 0 + Math.sin(t2 * 0.3) * 0.1, 0.4, 0.7 * _mjFlick, 0, 0, 6.28);
+                  c.fill();
+                  c.fillStyle = 'rgba(255,255,255,' + (0.65 * _mjNight).toFixed(3) + ')';
+                  c.beginPath(); c.arc(_mjX, _mjY + 0.2, 0.2 * _mjFlick, 0, 6.28); c.fill();
+                }
+              }
+
+              // ── Old wagon wheel propped against the fence (rustic decor) ──
+              // Classic New England farmhouse decoration — a retired wooden
+              // wheel leaning against a fence post. Real homestead detail.
+              (function() {
+                var _wwX = W * 0.34, _wwY = fenceBaseY - 6;
+                var _wwR = 5.5;
+                // Outer rim (weathered wood)
+                c.strokeStyle = season === 3 ? '#5a3f25' : '#7a5230';
+                c.lineWidth = 0.8;
+                c.beginPath(); c.arc(_wwX, _wwY, _wwR, 0, 6.28); c.stroke();
+                // Inner rim (darker)
+                c.strokeStyle = '#3a2510';
+                c.lineWidth = 0.4;
+                c.beginPath(); c.arc(_wwX, _wwY, _wwR - 0.5, 0, 6.28); c.stroke();
+                // 8 wooden spokes
+                c.strokeStyle = season === 3 ? '#5a3f25' : '#8a6238';
+                c.lineWidth = 0.5;
+                for (var ws = 0; ws < 8; ws++) {
+                  var _wsA = (ws / 8) * 6.28;
+                  c.beginPath();
+                  c.moveTo(_wwX + Math.cos(_wsA) * 1, _wwY + Math.sin(_wsA) * 1);
+                  c.lineTo(_wwX + Math.cos(_wsA) * (_wwR - 0.5), _wwY + Math.sin(_wsA) * (_wwR - 0.5));
+                  c.stroke();
+                }
+                // Central hub
+                c.fillStyle = '#3a2510';
+                c.beginPath(); c.arc(_wwX, _wwY, 1.1, 0, 6.28); c.fill();
+                c.fillStyle = '#5a3a18';
+                c.beginPath(); c.arc(_wwX, _wwY, 0.6, 0, 6.28); c.fill();
+                // Faint highlight on the upper-left rim
+                c.strokeStyle = 'rgba(255,255,255,0.25)';
+                c.lineWidth = 0.4;
+                c.beginPath(); c.arc(_wwX, _wwY, _wwR, Math.PI * 1.0, Math.PI * 1.6); c.stroke();
+                // Tiny vine creeping over the wheel in spring/summer
+                if (season === 0 || season === 1) {
+                  c.strokeStyle = '#22c55e';
+                  c.lineWidth = 0.35;
+                  c.beginPath();
+                  c.moveTo(_wwX + _wwR - 1, _wwY + _wwR - 1);
+                  c.quadraticCurveTo(_wwX, _wwY + _wwR, _wwX - _wwR + 1, _wwY + _wwR - 0.5);
+                  c.stroke();
+                  // Leaves on the vine
+                  c.fillStyle = '#16a34a';
+                  c.beginPath(); c.ellipse(_wwX + _wwR - 1.5, _wwY + _wwR - 0.5, 0.6, 0.4, 0.3, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_wwX - 0.5, _wwY + _wwR - 0.2, 0.6, 0.4, -0.2, 0, 6.28); c.fill();
+                  c.beginPath(); c.ellipse(_wwX - _wwR + 1, _wwY + _wwR - 1, 0.6, 0.4, 0.3, 0, 6.28); c.fill();
+                }
+                // Wheel cast shadow against the fence
+                c.fillStyle = 'rgba(0,0,0,0.18)';
+                c.beginPath(); c.ellipse(_wwX, _wwY + _wwR + 1, _wwR, 0.6, 0, 0, 6.28); c.fill();
+              })();
+
               // ── Wheelbarrow with tools (homestead realism, year-round) ──
               // Tipped slightly to one side as if just set down. A coiled
               // garden hose loops over the rim. Reads as "lived-in apiary."
