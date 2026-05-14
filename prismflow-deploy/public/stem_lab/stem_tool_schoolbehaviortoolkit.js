@@ -323,11 +323,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         setSBT({ activeSection: s, ['sbtViewed' + s.charAt(0).toUpperCase() + s.slice(1)]: true });
       }
 
-      // Background — soft teal/slate panel without animal-conditioning
-      // imagery. Quietly different from BehaviorLab's amber Skinner-box
-      // palette so the visual frame says "this is school practice."
+      // Layered atmospheric background — same pattern shipped on
+      // PrintingPress / ClimateExplorer / TypingPractice. Three layers:
+      // (1) soft teal glow at top center (the 'reading lamp' for the
+      //     tool's accent — picks up the school-psych palette)
+      // (2) faint SVG paper-grain texture (220px tile @ ~6% opacity)
+      //     so flat surfaces feel touched rather than rendered
+      // (3) the original teal-to-navy diagonal as base
+      // Background is calibrated to clinical-tool calm — both
+      // overlay layers ~6% opacity. backgroundAttachment: fixed on
+      // the radial keeps the lighting stable while content scrolls.
+      var sbtGrainSvg = (function() {
+        var svg =
+          '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220">' +
+            '<filter id="g">' +
+              '<feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="19"/>' +
+              '<feColorMatrix values="0 0 0 0 0.4   0 0 0 0 0.7   0 0 0 0 0.7   0 0 0 0.06 0"/>' +
+            '</filter>' +
+            '<rect width="100%" height="100%" filter="url(#g)"/>' +
+          '</svg>';
+        return 'url("data:image/svg+xml;utf8,' + encodeURIComponent(svg) + '")';
+      })();
       var rootStyle = {
-        background: 'linear-gradient(135deg, #0f172a 0%, #134e4a 50%, #0f172a 100%)',
+        background:
+          'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(20,184,166,0.16), transparent 70%), ' +
+          sbtGrainSvg + ', ' +
+          'linear-gradient(135deg, #0f172a 0%, #134e4a 50%, #0f172a 100%)',
+        backgroundRepeat: 'no-repeat, repeat, no-repeat',
+        backgroundAttachment: 'fixed, scroll, scroll',
         borderRadius: 16,
         minHeight: '70vh',
         padding: 0,
@@ -336,13 +359,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       };
 
       function renderHeader() {
-        return h('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(20,184,166,0.20)', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } },
+        return h('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(20,184,166,0.20)', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } },
           h('button', { onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': 'Back to STEM Lab',
             style: { background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#94a3b8', fontSize: 16 } }, '←'),
-          h('div', { style: { fontSize: 30 } }, '🏫'),
+          // Circular accent badge — same vocabulary as the rest of the
+          // design system. 56px (large hero size).
+          h('div', { 'aria-hidden': 'true',
+            style: {
+              width: 56, height: 56, borderRadius: '50%',
+              background: 'rgba(20,184,166,0.18)',
+              border: '2px solid #14b8a6',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 28, lineHeight: 1, flexShrink: 0,
+              boxShadow: '0 4px 16px rgba(20,184,166,0.25)'
+            }
+          }, '🏫'),
           h('div', { style: { flex: 1, minWidth: 240 } },
-            h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#5eead4' } }, 'School Behavior Toolkit'),
-            h('p', { style: { margin: 0, fontSize: 12, color: '#94a3b8', fontWeight: 600 } }, 'Applied K-12 practice. PBIS · BIPs · Cycle · Crisis · Restraint ethics.')
+            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 } },
+              h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: '#5eead4', letterSpacing: '-0.01em' } }, 'School Behavior Toolkit'),
+              // Meta-count chip — shows section count
+              h('span', { style: {
+                padding: '2px 8px', borderRadius: 999,
+                background: 'rgba(20,184,166,0.12)',
+                border: '1px solid rgba(20,184,166,0.40)',
+                color: '#5eead4', fontSize: 10, fontWeight: 700,
+                fontFamily: 'ui-monospace, Menlo, monospace'
+              } }, '7 sections')
+            ),
+            h('p', { style: { margin: 0, fontSize: 12, color: '#94a3b8', fontWeight: 600, lineHeight: 1.5 } }, 'Applied K-12 practice. PBIS · Replacement Behaviors · Setting Events · Acting-Out Cycle · Restraint Ethics · Equity & Disparities.')
           )
         );
       }
@@ -358,21 +402,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           { id: 'connect', label: 'Connect', icon: '🔗' }
         ];
         return h('div', { role: 'tablist', 'aria-label': 'School Behavior Toolkit sections',
-          style: { display: 'flex', gap: 6, padding: '12px 16px', overflowX: 'auto', borderBottom: '1px solid rgba(20,184,166,0.15)' } },
+          style: { display: 'flex', gap: 4, padding: '14px 18px 0', overflowX: 'auto', borderBottom: '1px solid rgba(20,184,166,0.15)', alignItems: 'flex-end' } },
           tabs.map(function(t) {
             var active = section === t.id;
             return h('button', {
               key: t.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
               onClick: function() { setSection(t.id); },
               style: {
-                padding: '8px 14px', borderRadius: 999,
-                border: '1px solid ' + (active ? '#14b8a6' : 'rgba(20,184,166,0.30)'),
-                background: active ? 'rgba(20,184,166,0.16)' : 'rgba(255,255,255,0.02)',
+                position: 'relative',
+                padding: '10px 14px 12px',
+                border: 'none',
+                background: active ? 'rgba(20,184,166,0.10)' : 'transparent',
                 color: active ? '#5eead4' : '#94a3b8',
                 fontSize: 12, fontWeight: active ? 800 : 600,
-                cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0
+                cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+                borderRadius: '8px 8px 0 0',
+                borderTop: '1px solid ' + (active ? 'rgba(20,184,166,0.30)' : 'transparent'),
+                borderLeft: '1px solid ' + (active ? 'rgba(20,184,166,0.30)' : 'transparent'),
+                borderRight: '1px solid ' + (active ? 'rgba(20,184,166,0.30)' : 'transparent'),
+                marginBottom: -1,
+                transition: 'color 140ms ease, background 140ms ease'
               }
-            }, t.icon + ' ' + t.label);
+            },
+              h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, t.icon),
+              h('span', null, t.label),
+              // Active-tab bottom indicator — small accent line that
+              // visually 'connects' the tab to the panel below it.
+              active ? h('span', { 'aria-hidden': 'true',
+                style: {
+                  position: 'absolute', left: 6, right: 6, bottom: 0,
+                  height: 2, background: '#14b8a6', borderRadius: '2px 2px 0 0'
+                }
+              }) : null
+            );
           })
         );
       }
