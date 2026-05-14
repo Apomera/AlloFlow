@@ -2194,6 +2194,79 @@
               );
             })(),
             '#f43f5e'
+          ),
+
+          // ─── Synthetic biology + engineered organisms ───────────
+          sectionCard('🧬 Synthetic biology — engineering microbes as factories + platforms',
+            (function() {
+              var SB_TOPICS = [
+                { id: 'whatis', name: 'What synthetic biology is', emoji: '⚙️',
+                  body: 'Synthetic biology applies ENGINEERING principles to biology — designing + building new biological parts, devices, and systems, or redesigning existing ones for useful purposes. The core insight: DNA can be treated as code, biological functions as modules, and microbes as programmable factories. The field emerged around 2000 from convergence of genetic engineering, computer science, + nanotechnology. Key institutions: the iGEM competition (International Genetically Engineered Machine, MIT-founded 2003, now thousands of student teams annually), the BioBricks Foundation (standard parts registry), Ginkgo Bioworks + Twist Bioscience + Zymergen (commercial platforms), the J. Craig Venter Institute.',
+                  caveat: 'Synthetic biology is often hyped beyond what it currently delivers. The metaphor of "biology as software" is useful but partial — biological systems have evolved billions of years of context-dependency that no engineering abstraction fully captures. "Build it like LEGO" works for some genetic parts + fails spectacularly for others. The most productive applications combine engineering ambition with biological humility.'
+                },
+                { id: 'insulin', name: 'Recombinant insulin (the first big win)', emoji: '💉',
+                  body: 'In 1978, Genentech engineered E. coli bacteria to produce human insulin by inserting the human insulin gene into a bacterial plasmid. Approved by FDA in 1982 as Humulin (Eli Lilly), this was the first commercial product of recombinant DNA technology. Before recombinant insulin, diabetics used animal-derived insulin (pig or cow), with significant allergic reactions + supply limitations. Recombinant insulin is identical to human insulin + can be produced in unlimited quantities. This single product proved that engineered microbes could safely make human medicines + opened the door to the entire biopharmaceutical industry.',
+                  caveat: 'Recombinant insulin remains the most-prescribed engineered-organism product in history. But ongoing problems: 1.4 million US adults with diabetes have rationed insulin due to cost ($600-1000+/month at list price); the technology is decades old but the market is concentrated (3 companies = ~95% of US insulin); biosimilar insulins are entering slowly. Synthetic biology can make insulin cheaply; the social systems around it have failed many patients.'
+                },
+                { id: 'artemisinin', name: 'Artemisinin — saving malaria patients', emoji: '🌿',
+                  body: 'Artemisinin (from the sweet wormwood plant Artemisia annua) is the most effective antimalarial drug + the basis of modern combination treatments that have saved millions of lives. Traditional extraction from plants is slow + expensive + supply varies wildly with weather. Jay Keasling\'s lab (UC Berkeley + the Joint BioEnergy Institute) engineered yeast (Saccharomyces cerevisiae) to produce artemisinic acid (a precursor that can be chemically converted to artemisinin) using genes pulled from the plant. Sanofi licensed the technology + produced ~50-100 tons of semisynthetic artemisinic acid annually starting 2013 — supplementing the natural-supply chain + stabilizing prices for the World Health Organization malaria program.',
+                  caveat: 'The artemisinin project is a major + understated success of synthetic biology. It is also instructive about LIMITS: the engineered yeast required multiple optimization passes to reach economic yields; the technology had to compete with natural extraction; market dynamics ultimately determined how much synthetic artemisinin gets produced. Engineering biology to make a known drug is hard; engineering biology to discover a NEW drug is harder still.'
+                },
+                { id: 'biobricks', name: 'Parts, devices, systems', emoji: '🧩',
+                  body: 'The BioBrick standard (Tom Knight, MIT, 2003) tried to standardize DNA parts so that biological engineers could combine them like electronic components. A promoter + a ribosome binding site + a coding sequence + a terminator forms a basic "device" — a single transcribed gene. Multiple devices combine into "systems." The Registry of Standard Biological Parts (parts.igem.org) catalogs ~ 20,000 parts contributed by iGEM teams + research labs. In practice, COMBINATORIAL ASSEMBLY is hard: parts that work in isolation often misbehave when combined; standards have evolved (BioBrick → MoClo → Gibson Assembly → Golden Gate); commercial platforms (Twist Bioscience) now synthesize entire gene constructs from scratch rather than assembling from parts.',
+                  caveat: 'The BioBrick vision of "biology as LEGO" has not been fully realized. Reality is more like writing software with parts that have hidden dependencies + sometimes don\'t play nice together. Modern synthetic biology often skips the parts catalog + designs DNA from scratch using computational tools, then has it synthesized commercially. The conceptual contribution of BioBricks (modularity, standardization, sharing) endures even where the specific standard does not.'
+                },
+                { id: 'cellag', name: 'Cellular agriculture + lab-grown meat', emoji: '🥩',
+                  body: 'Cellular agriculture grows animal-cell products (meat, leather, dairy) without raising whole animals. The technology starts with a small biopsy of muscle cells from a living donor animal, cultures them in stainless-steel bioreactors with growth media + scaffolds, + harvests the cultured meat. Singapore (the first country to approve cell-cultured meat for sale, 2020) + the US (FDA approval 2022 for cultured chicken from Upside Foods + GOOD Meat) are leading markets. Companies: Mosa Meat (the first cultured beef, 2013), Memphis Meats / UPSIDE Foods, Eat Just / GOOD Meat, Aleph Farms. Major investments: Bill Gates, Tyson Foods, Cargill, JBS.',
+                  caveat: 'Cell-cultured meat at scale is technically demanding + economically uncertain. Current production costs are 100-1000× conventional meat (down from 1,000,000× in 2013 — real progress but still far from price-parity). Energy-use estimates suggest scaled cellular agriculture may not be more environmentally favorable than well-managed conventional livestock in all metrics. The story is genuinely promising AND deserves skepticism about timelines + economics.'
+                },
+                { id: 'biofuels', name: 'Biofuels + bioplastics', emoji: '🛢️',
+                  body: 'Engineered microbes can produce biofuels + bioplastics from renewable carbon sources (sugar, cellulose, even CO2). Companies: LS9 (now part of REG, engineered fatty-acid biofuels), Amyris (farnesene for jet fuel), Genomatica (1,4-butanediol for nylon), Mango Materials (PHA bioplastic from methane), Newlight (AirCarbon from greenhouse gases). The first generation of biofuel companies (2006-2015) mostly struggled commercially due to low petroleum prices; the second wave is focused on higher-value specialty chemicals + materials where the price competition is less brutal.',
+                  caveat: 'Biofuels-as-climate-solution remains contested. First-generation corn-ethanol biofuels have unclear net climate benefits + compete with food crops. Cellulosic biofuels (from plant waste) have struggled to reach economic scale. The most credible bioenergy applications are in aviation + maritime where electrification is hardest + biofuels with verified low-carbon supply chains can substitute. Bioplastics are growing slowly + face their own end-of-life problems (most "biodegradable" plastics only degrade under industrial composting conditions).'
+                },
+                { id: 'genome', name: 'Minimum genomes + designer organisms', emoji: '🧬',
+                  body: 'The J. Craig Venter Institute synthesized the first fully synthetic bacterial genome (Mycoplasma mycoides, 2010) + transplanted it into a recipient cell, creating the first organism with an entirely synthetic genome ("Synthia"). They then created Syn3.0 (2016) — a minimal organism with only 473 genes (the smallest known free-living organism), of which ~ 149 have UNKNOWN function despite being essential. The minimal-genome work is foundational research toward designed organisms tailored for specific industrial purposes. Yeast 2.0 (synthetic Saccharomyces cerevisiae project, international collaboration) is the parallel eukaryotic effort, ongoing 2008-present.',
+                  caveat: 'Synthetic genomes have not yet led to commercially transformative organisms. Syn3.0 is a research tool, not a production strain. The 149 unknown-function essential genes are a humbling reminder of how much we DON\'T know about even the simplest cells. The dream of designed-from-scratch organisms with desired traits remains a research goal more than a product.'
+                },
+                { id: 'safety', name: 'Biosafety + biosecurity', emoji: '🛡️',
+                  body: 'Synthetic biology raises genuine biosafety + biosecurity concerns. BIOSAFETY: an engineered organism escapes the lab + colonizes natural ecosystems (extensive containment requirements + auxotrophy-based "kill switches" mitigate this). BIOSECURITY: deliberate misuse to create a pathogen ("dual use research of concern" — the 2011 H5N1 transmissibility studies were the most publicized case, now requiring NIH special review). DESIGN-build-test-LEARN cycles at increasingly fast speed could outpace regulatory oversight. The 2010 Presidential Commission on Bioethical Issues reviewed synthetic biology + recommended a "prudent vigilance" framework that is largely in place today.',
+                  caveat: 'The actual track record of synthetic-biology disasters is currently empty — no environmental escape, no engineered-pathogen attack of consequence. This may reflect good controls, may reflect luck, may reflect that the worst scenarios are harder than feared. Reasonable scientists disagree about how much restriction is appropriate. Reasonable citizens deserve to be part of the conversation about what limits to impose, especially as the technology becomes more accessible (a bench-top DNA synthesizer + a $50K equipment setup can now do work that required $10M of infrastructure in 2010).'
+                },
+                { id: 'future', name: 'Near-term + long-term outlook', emoji: '🚀',
+                  body: 'Near-term (5-10 years): more pharmaceuticals + specialty chemicals from engineered microbes (replacing chemical synthesis + plant extraction), continued growth in lab-grown meat, more synthetic biology in agriculture (microbial inoculants, biopesticides), better biosensors. Medium-term: programmable cell therapies (CAR-T already exists; T cells engineered to do more sophisticated immune tasks). Long-term (20+ years): xenobiology (organisms with non-standard genetic codes), genome-scale design, custom organisms for terraforming-scale applications (CO2-fixing organisms, methane-consuming organisms). The field has been promising "ten years" for forty years; pace + direction matter more than timing.',
+                  caveat: 'Synthetic biology in 2026 is roughly where electronics was in 1965 — the basic tools exist, early applications are real + transformative for specific cases, the broad transformation is still ahead. Predictions about timelines have a poor track record. What is reliable: continued exponential cost reduction in DNA synthesis + sequencing means EVERY year, what was prohibitively expensive last year becomes possible this year.'
+                }
+              ];
+              var sel = d.selectedSynBio || 'whatis';
+              var topic = SB_TOPICS.find(function(t) { return t.id === sel; }) || SB_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'Synthetic biology asks: can we engineer living things the way we engineer software? The answer so far is "partially, sometimes spectacularly, with surprising failures." Engineered microbes make insulin, malaria drugs, jet fuel, leather, cheese, fragrance compounds. Cell-cultured meat is now legal to sell in three countries. The field is real, commercially significant, and intellectually + ethically demanding in ways students entering biology in 2026 will need to engage with.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  SB_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedSynBio: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#a7f3d0' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #a7f3d0' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(167,243,208,0.08)', border: '1px solid rgba(167,243,208,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#a7f3d0', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 11.5, color: '#c7d2fe', lineHeight: 1.65 } },
+                  h('strong', null, 'For aspiring students: '),
+                  'iGEM (igem.org) is the entry point for high-school + college students into synthetic biology. Teams design + execute a research project each summer, present at a Giant Jamboree, + win medals based on documentation quality + lab achievement. King Middle students could start with a Maine-based summer program (the Bigelow Laboratory, MDI Biological Lab Junior Investigators, Jackson Lab Maine Summer Student Program) + work toward iGEM in high school + college. The field is unusually welcoming to undergraduates + has clear paths from teen interest to research career.'
+                )
+              );
+            })(),
+            '#a7f3d0'
           )
         );
       }

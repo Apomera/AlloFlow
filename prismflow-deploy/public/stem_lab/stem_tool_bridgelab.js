@@ -2934,8 +2934,83 @@
             AMBER
           ),
           cableSpinningSection(),
-          windTunnelTestingSection()
+          windTunnelTestingSection(),
+          seismicEngineeringSection()
         );
+
+        function seismicEngineeringSection() {
+          var SEIS = [
+            { id: 'why', name: 'Why bridges are seismic-hard', emoji: '⚠️',
+              what: 'A bridge is supported on PIERS (separate foundations) connected by a DECK (continuous span). During an earthquake, each pier moves with its own piece of ground; the deck has to follow them all. Differential ground motion can shear the deck off its supports. Pier-deck connections experience huge cyclic loads. The 1989 Loma Prieta + the 1995 Kobe + the 2010 Maule earthquakes all caused bridge failures of types that pre-1980s codes did not anticipate. Seismic engineering for bridges is a relatively young discipline (~ 40 years of intensive development).',
+              limit: 'Many existing bridges worldwide were designed before modern seismic codes existed. Retrofit is expensive but often required. Cost-benefit decisions are political: spend $50M retrofitting a rural bridge that might experience a 500-year earthquake, or accept the risk + spend the money elsewhere? Every state DOT in earthquake-prone areas faces this tradeoff continuously.'
+            },
+            { id: 'ground', name: 'How ground motion works', emoji: '〰️',
+              what: 'An earthquake sends seismic waves through the ground. P-waves (primary, compressional) arrive first + cause less damage. S-waves (secondary, shear) arrive seconds later + do most damage to structures. SURFACE WAVES (Rayleigh + Love) cause rolling + side-to-side motion in shallow soils. Peak Ground Acceleration (PGA) is the headline number, but Peak Ground Velocity (PGV) + duration + frequency content matter more for tall structures. Soft soils AMPLIFY low-frequency motion (the basin effect, seen catastrophically in 1985 Mexico City + 1989 Marina District San Francisco). Liquefaction in saturated sandy soils turns the ground temporarily liquid + bridges sink or topple.',
+              limit: 'Site-specific ground motion prediction is hard. Two bridges 1 km apart can experience very different motions in the same earthquake due to soil + topography. Engineers use response-spectrum analyses + occasionally site-specific seismic hazard analysis (PSHA) but predictive accuracy is limited. Engineering judgment remains central.'
+            },
+            { id: 'caltrans', name: 'Loma Prieta + Caltrans response', emoji: '🌉',
+              what: 'The 1989 Loma Prieta earthquake (M 6.9) collapsed a 50-foot section of the upper deck of the Bay Bridge (eastern span) + the entire 1.4-mile Cypress Viaduct double-deck in Oakland (42 dead). Both structures had been built before modern seismic codes. The response: Caltrans (California Department of Transportation) launched the largest bridge-retrofit program in history, eventually spending $20+ billion to retrofit thousands of bridges + replace the Bay Bridge eastern span entirely (new bridge opened 2013, total cost $6.5B). The 1995 Kobe earthquake (M 6.9) collapsed the Hanshin Expressway in Japan (200+ dead) + drove parallel Japanese retrofit programs.',
+              limit: 'Even after $20B+ + 30 years of work, not all California bridges meet current standards. The "lifeline" bridges (Bay, Golden Gate, San Diego-Coronado, etc.) have been fully retrofit; smaller bridges are still being prioritized. The Loma Prieta + Kobe lessons drove EVERY major seismic-zone state\'s retrofit programs (Washington, Oregon, Alaska, Hawaii, plus Japan + Turkey + Greece + Italy + New Zealand + Chile).'
+            },
+            { id: 'isolation', name: 'Base isolation', emoji: '🛏️',
+              what: 'Base isolation puts SPECIAL BEARINGS between the deck + the piers that decouple horizontal ground motion from the structure above. A rubber + steel laminated bearing (lead-rubber bearing, LRB) flexes laterally up to ~ 30 cm during an earthquake while the structure essentially floats. Friction-pendulum bearings work by gravity: a curved sliding surface returns the structure to center after motion. The Benicia-Martinez Bridge (California, 2007) + many Japanese highway bridges use base isolation. The technology dramatically reduces forces transmitted to the superstructure — typically by 50-80%.',
+              limit: 'Base isolation requires lateral movement room (bridges need expansion joints + flexible utility connections at every isolated joint). It performs best for STIFF structures over MEDIUM ground motions — for very long-period structures or near-fault impulsive motions, isolation may not help or could amplify response. Maintenance is non-trivial: bearings need regular inspection + occasional replacement.'
+            },
+            { id: 'damping', name: 'Energy dissipation + dampers', emoji: '🔥',
+              what: 'Even with isolation, seismic energy must go somewhere. Modern bridges use VISCOUS DAMPERS (oil-filled cylinders, similar to car shock absorbers but at huge scale — multi-ton capacity) connected between deck + piers. They convert kinetic energy to heat. The 1.8-mile San Francisco-Oakland Bay Bridge eastern span uses 200+ viscous dampers each rated at 280 tons. Friction dampers + steel hysteretic dampers ("fuses" engineered to yield ductilely + absorb energy) are alternatives. Combined with base isolation, dampers can reduce design forces by 75-90% on the critical structural elements.',
+              limit: 'Dampers ARE active structural elements that need to function during the earthquake or the design fails. Their condition + responsiveness must be verified periodically. Many bridges have hundreds of dampers — making the inspection + maintenance regime its own significant ongoing cost.'
+            },
+            { id: 'capacity', name: 'Capacity design (fuses)', emoji: '🔌',
+              what: 'Capacity design (developed by Tom Paulay + Bob Park at Canterbury, NZ, 1970s-80s) is the philosophy that BIG earthquakes are unavoidable + the goal is to make sure the bridge FAILS GRACEFULLY when overloaded. Engineers designate specific elements as "fuses" — they are designed to yield DUCTILELY in a known mode, absorbing energy + protecting OTHER elements that must remain elastic. Pier-base plastic hinging is the typical fuse for highway bridges: the pier is allowed to yield + form a plastic hinge at its base under a major earthquake, but it must not COLLAPSE. Steel jacketing of older concrete piers makes them ductile enough to do this.',
+              limit: 'After a major earthquake, fuse elements may need repair. The bridge survives but is damaged. The acceptable damage level + repairability defines the "limit state" — different bridges have different requirements (essential lifelines must remain operational; ordinary bridges may close for repair).'
+            },
+            { id: 'restrainers', name: 'Restrainer cables + seat extensions', emoji: '🔗',
+              what: 'Many older bridge collapses involve UNSEATING: the deck slides off the top of its supporting pier. To prevent this, modern designs include RESTRAINER CABLES (steel cables tying adjacent deck sections together) + LONGER SEAT WIDTHS at piers + ABUTMENTS. The 1971 San Fernando earthquake collapsed sections of I-5 + I-405 due to short seats; California immediately mandated wider seats + restrainer retrofit. Modern Caltrans details require 24-inch minimum seat width + multiple restrainer cables across every expansion joint.',
+              limit: 'Restrainer cables provide a backup but are not designed to be the primary lateral-resisting system. They are heavily redundant + relatively cheap; they are also one of the most impactful retrofit upgrades for older bridges in seismic zones.'
+            },
+            { id: 'liquefaction', name: 'Liquefaction + foundation engineering', emoji: '🪨',
+              what: 'LIQUEFACTION happens when saturated, loose, sandy soils briefly behave as a liquid during strong shaking. Bridges founded on liquefiable soils can sink, tilt, or topple. The 1964 Niigata earthquake (Japan) + the 1995 Kobe earthquake both caused massive liquefaction. Engineers mitigate by: STONE COLUMNS (compacted gravel piers in the soil), VIBRO-COMPACTION (densifying loose sand by vibration), DEEP SOIL MIXING (injecting cement-soil mixtures), or piles extending below liquefiable layers. The Bay Bridge replacement pier foundations + the Tappan Zee replacement (Mario M. Cuomo Bridge, 2017) both required extensive liquefaction mitigation.',
+              limit: 'Site investigation is expensive + sometimes incomplete. Liquefaction risk is best characterized by Cone Penetration Test (CPT) soundings + Shear Wave Velocity measurements. Some bridges built in earlier eras have liquefiable foundations that were not recognized at design time + present serious retrofit challenges.'
+            },
+            { id: 'codes', name: 'Codes + their limits', emoji: '📋',
+              what: 'AASHTO LRFD Bridge Design Specifications (the US standard) + the AASHTO Guide Specifications for Seismic Bridge Design provide comprehensive seismic-design rules. Bridges are designed for two earthquake scenarios: the 7% in 75 years event (1000-year return period, ESSENTIAL for lifeline bridges) + the 50% in 75 years event (no collapse). California, Washington, Oregon have ADDITIONAL state-specific seismic requirements that exceed AASHTO. Japan + New Zealand + Chile have parallel + sometimes more stringent national codes.',
+              limit: 'Codes embody our current best understanding. They will be revised after the NEXT major earthquake reveals what they missed. The 2011 Tohoku tsunami exposed serious gaps in tsunami-bridge interaction; codes are now incorporating tsunami-load provisions. Code compliance is necessary but not sufficient — engineering judgment beyond code minimums has prevented several near-failures.'
+            }
+          ];
+          var sel = d.selectedSeis || 'why';
+          var topic = SEIS.find(function(t) { return t.id === sel; }) || SEIS[0];
+          return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '🌎 Seismic engineering for bridges'),
+            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+              'Bridges in seismic zones are designed to survive earthquakes that would destroy ordinary buildings. The discipline developed mostly after the 1971 San Fernando earthquake + matured after Loma Prieta 1989 + Kobe 1995 made the problem unmissable. Modern seismic bridge engineering combines base isolation, energy dissipation, capacity design, and foundation engineering — all calibrated to specific seismic-hazard predictions for the site.'
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              SEIS.map(function(t) {
+                var on = t.id === sel;
+                return h('button', {
+                  key: t.id,
+                  onClick: function() { upd({ selectedSeis: t.id }); },
+                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
+                }, t.emoji + ' ' + t.name);
+              })
+            ),
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.what)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limit'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.limit)
+              )
+            ),
+            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
+              h('strong', null, 'A Maine note: '),
+              'Maine is in a LOW seismic-hazard zone but not zero. The 1755 Cape Ann earthquake (estimated M 6.0-6.3) shook Boston + Maine; magnetic-anomaly + paleoseismic studies suggest similar events recur every few centuries. Maine + New England bridges use the AASHTO Seismic Zone 1 provisions (minimal seismic design). The Bridge to Treasure Island in Portland + the Casco Bay Bridge are designed for the local Zone 1 hazard. If you want to see major seismic engineering up close, the Penobscot Narrows Bridge (1996) + the recent I-295 over the Kennebec used some seismic-resistant detailing but at much lower intensity than California or Cascadia subduction zone designs would require.'
+            )
+          );
+        }
 
         function windTunnelTestingSection() {
           var WT = [
