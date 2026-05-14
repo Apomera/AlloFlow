@@ -3982,6 +3982,88 @@
               );
             })(),
             '#0ea5e9'
+          ),
+
+          // ─── Astrophotography basics ────────────────────────────
+          sectionCard('📷 Astrophotography — how to capture what you see',
+            (function() {
+              var AP_TOPICS = [
+                { id: 'phone', name: 'Phone astrophotography', emoji: '📱',
+                  gear: 'Just your phone',
+                  what: 'Modern phones (iPhone since iPhone 11, Pixel since Pixel 3, recent Samsung) have NIGHT MODE that can capture stunning sky photos. Hold the phone steady (against a wall, fence, tripod adapter), use the maximum night-mode exposure (15-30 seconds on Pixel; tap to focus on a bright star first), and let the AI processing combine many short exposures into one. You can capture: the Milky Way from a dark site, the Moon at full + crescent, conjunctions of planets, the brightest star clusters (Pleiades, Orion sword region), bright comets, lunar eclipses, aurora.',
+                  limit: 'Phones cannot capture faint deep-sky objects (galaxies, most nebulae) — the small sensor + short max exposure are limiting. Phone cameras compress + sharpen aggressively; the JPEG output may look worse than dedicated cameras. Pro tip: use RAW capture mode where available + edit in Snapseed / Lightroom Mobile. The Photopills app helps plan exact phone-friendly shoots (Milky Way visibility, ISS pass times, moon phase).'
+                },
+                { id: 'dslr', name: 'DSLR / mirrorless basics', emoji: '📸',
+                  gear: 'Camera + tripod + intervalometer',
+                  what: 'The classic astrophotography setup: a DSLR or mirrorless camera with manual mode, a fast wide-angle lens (24mm f/1.8 or wider, f/2.8 or faster), a tripod, and a remote shutter or intervalometer. For Milky Way: ISO 1600-3200, f/1.8-2.8, 20-25 seconds exposure (use the 500-rule: max exposure = 500/focal length in mm before star trails). For startrails: many shorter exposures stacked. For lunar + planetary: telephoto lens, faster shutter, low ISO. RAW format always.',
+                  limit: 'Wide-field shots from a DSLR on a fixed tripod max out at ~25 seconds before earth\'s rotation creates star trails. To go longer, you need a star tracker (~ $400-800 entry, motorized to follow earth\'s rotation). Even then, the focal length matters: ~ 50mm + tracker = 2-minute exposures; ~ 300mm + tracker = 30-60 second exposures only. The longer the focal length, the more critical tracking becomes.'
+                },
+                { id: 'tracker', name: 'Star trackers + mounts', emoji: '⚙️',
+                  gear: 'iOptron SkyGuider Pro, Sky-Watcher Star Adventurer, or larger EQ mount',
+                  what: 'A star tracker rotates a camera or small telescope westward at sidereal rate (one rotation per ~ 24 hours, matching earth\'s rotation), keeping stars fixed in the frame for long exposures. A polar-aligned tracker enables MINUTES-long exposures revealing faint nebulae + galaxies. Larger equatorial mounts (EQ6-R, AVX, HEQ5, ZWO AM5) handle full telescopes + auto-guide via a small secondary scope + camera to correct drift. Mount precision separates good from professional results: $1500 mount = ~ 0.5 arcsecond accuracy = professional galaxy + nebula images.',
+                  limit: 'Polar alignment is the make-or-break skill. Pointing the mount\'s rotation axis at the celestial pole (Polaris in the north hemisphere) within ~ 5 arcminutes lets you do unguided 1-2 minute exposures. Poor alignment + you see star trails immediately. Modern tools (electronic polar scopes, Sharpcap polar alignment via plate-solving) have made the task much easier than in pre-computer days.'
+                },
+                { id: 'planetary', name: 'Lunar + planetary imaging', emoji: '🌙',
+                  gear: 'Telescope + ASI224 / ZWO planetary cam',
+                  what: 'Lunar + planetary imaging uses a completely different approach: high frame rate VIDEO. The atmosphere distorts images on millisecond timescales (the "seeing"); capturing 5000 frames + STACKING the sharpest few hundred reveals detail unavailable in single exposures. Software: AutoStakkert (free), Registax (free), PixInsight ($$). Telescope: 8-inch or larger (Celestron C8, Skywatcher Maksutov), planetary camera with small pixels + high frame rate. Best targets: Moon (always great), Jupiter (with moons + Great Red Spot), Saturn (rings), Mars at opposition (~ every 2 years).',
+                  limit: 'Atmospheric SEEING is a hard limit. Even 14-inch telescopes from a city backyard rarely beat a 5-inch from a high mountain site. Plan your imaging sessions for the best-seeing nights (jet stream forecasts, transparency forecasts from Clear Outside or Astrospheric apps). Cooled cameras + filter wheels add complexity but unlock color planetary imaging.'
+                },
+                { id: 'deep', name: 'Deep-sky imaging (DSOs)', emoji: '🌌',
+                  gear: 'Telescope + cooled astro camera + filters',
+                  what: 'Deep-Sky Objects (DSOs) are galaxies, nebulae, star clusters — faint extended objects requiring HOURS of total exposure. Modern workflow: tracking mount + telescope + cooled CMOS camera (ZWO ASI2600, QHY268, etc.) + filter wheel (luminance, red, green, blue + Halpha, OIII, SII for emission nebulae). Auto-guiding keeps tracking precise. Image 50-200 sub-exposures of 60-300 seconds each, total integration 4-15+ hours per target. Process in PixInsight, Siril (free), or Photoshop. Same target imaged from a Bortle 4 dark site vs Bortle 7 urban shows night-and-day quality difference.',
+                  limit: 'Deep-sky imaging is the most equipment-intensive + skill-intensive area of astrophotography. Entry kit is $3-5K minimum; serious setups reach $15-30K. Image processing is half the skill — bad processing of good data looks worse than good processing of mediocre data. PixInsight has a steep learning curve. The good news: every step from data acquisition through processing is well-documented in YouTube tutorials + community forums (CloudyNights, AstroBin).'
+                },
+                { id: 'narrowband', name: 'Narrowband + dual-band filters', emoji: '🎨',
+                  gear: 'Halpha / OIII / SII narrowband filters',
+                  what: 'Most nebulae emit at SPECIFIC WAVELENGTHS: Halpha (hydrogen, 656nm, red), OIII (doubly-ionized oxygen, 501nm, teal), SII (singly-ionized sulfur, 672nm, deep red). A narrowband filter passes only the wavelength of interest, blocking everything else INCLUDING light pollution. This means you can image emission nebulae from a city backyard. The classic "Hubble palette" combines SII (red), Halpha (green), OIII (blue) for striking false-color images. Dual-band filters (Halpha + OIII in one filter, like the L-eXtreme + Optolong L-eNhance) work in a single shot — great for color cameras.',
+                  limit: 'Narrowband only works for EMISSION nebulae (HII regions, supernova remnants, planetary nebulae). Galaxies + reflection nebulae need broadband imaging from dark skies. Narrowband requires longer exposures (less light passes through). The aesthetic of the Hubble palette is acquired taste — real natural color is sometimes more interesting than the dramatic false color.'
+                },
+                { id: 'process', name: 'Image processing essentials', emoji: '🎚️',
+                  gear: 'Software: PixInsight, Siril (free), Photoshop',
+                  what: 'Astrophotography processing has standard steps: CALIBRATION (subtract bias frames + dark frames + flat field corrections to remove sensor pattern noise + vignetting), REGISTRATION (align all sub-exposures), STACKING (average to reduce noise), STRETCHING (asinh or histogram transformation to reveal faint signal without blowing out highlights), NOISE REDUCTION + SHARPENING, COLOR CALIBRATION + saturation. Modern tools (NoiseXTerminator, BlurXTerminator, StarXTerminator from Russell Croman) use AI to do specific tasks dramatically well + have become near-standard in 2024-2025 workflows.',
+                  limit: 'Processing is the half-the-fun, half-the-frustration of astrophotography. The biggest skill is RESTRAINT — knowing when to stop stretching, when to leave color subtle, when to NOT smooth out detail. Over-processed images look like cartoons. PixInsight has a steep learning curve; Siril is more approachable; YouTube tutorials (Adam Block, Cuiv The Lazy Geek, Astrobackyard, Trevor Jones) are world-class free resources.'
+                },
+                { id: 'maine', name: 'Maine astrophotography', emoji: '🌲',
+                  gear: 'Your existing kit + a 2-hour drive',
+                  what: 'Maine has some of the best astrophotography skies east of the Mississippi. PRIMARY DARK SITES: Acadia National Park (Bortle 2, official IDA Dark Sky Park since 2009), Katahdin Woods + Waters National Monument (Bortle 1-2 in core areas), Cobscook Bay State Park, Aroostook State Park, Greenville / Moosehead Lake region. The Maine Bigelow Lab in Boothbay + the College of the Atlantic in Bar Harbor both run public observing programs. Annual events: the Stellafane convention (Vermont, every August) is a 4-hour drive from Portland + has been the premier amateur astronomy gathering since 1926.',
+                  limit: 'Maine winters limit observation time + battery life. Imaging gear works fine at -20°C but cold-soaked tracking mounts sometimes seize; protect bearings + lubricants. Black flies + mosquitoes in late spring are real obstacles. The Bortle 1-2 of Aroostook county is exceptional but the drive (5-6 hours from Portland) + accommodations make it a planned trip rather than an evening drive. For King Middle student field trips, Acadia or the closer Wells Reserve are practical.'
+                }
+              ];
+              var sel = d.selectedAP || 'phone';
+              var topic = AP_TOPICS.find(function(t) { return t.id === sel; }) || AP_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'Astrophotography has changed completely in the past decade. Phones with night mode capture the Milky Way; $500 star trackers + DSLRs make professional-looking deep-sky images possible from suburban backyards; AI processing tools (StarXTerminator, BlurXTerminator) automate steps that took experts hours. For students at any level, there is a clear progression from phone shots tonight to professional-quality images within a year of focused practice.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  AP_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedAP: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#06b6d4' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #06b6d4' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#67e8f9', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 10, fontStyle: 'italic' } }, 'Gear: ' + topic.gear),
+                  h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
+                    h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What + how'),
+                    h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.what)
+                  ),
+                  h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
+                    h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limit'),
+                    h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.limit)
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
+                  h('strong', null, 'Tonight, with your phone: '),
+                  'Find a place ~ 1 mile from major lights. Wait 20 minutes for your eyes to adapt. Hold your phone steady against a flat surface (a wall, fence, picnic table) + open the camera in night mode. Aim at the Milky Way (best in June-Sept evening sky from Maine), or just the brightest stars. Take 30-second exposures. Most modern phones produce surprisingly good images that you can share. This is the entire entry barrier — no purchase needed.'
+                )
+              );
+            })(),
+            '#06b6d4'
           )
         );
       }

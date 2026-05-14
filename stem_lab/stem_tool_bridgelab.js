@@ -3656,8 +3656,79 @@
             )
           ),
           feaBasics(),
-          abcAndPrefabSection()
+          abcAndPrefabSection(),
+          bridgeFinancingSection()
         );
+
+        function bridgeFinancingSection() {
+          var FIN = [
+            { id: 'fundlines', name: 'Where the money comes from', emoji: '💵',
+              what: 'US bridges are funded from multiple sources, in roughly this proportion: FEDERAL HIGHWAY TRUST FUND (gas tax revenue, ~ 50-60% of major-bridge funding) which has been chronically underfunded since federal gas tax has not increased since 1993; STATE motor-fuel taxes + DMV fees + tolls (~ 25-35%); LOCAL property + sales taxes for municipal bridges; FEDERAL ONE-TIME programs (TIGER, BUILD, RAISE, INFRA grants, $1.2T Bipartisan Infrastructure Law of 2021); STATE BOND ISSUES requiring voter approval; TOLL AUTHORITIES (NY MTA, PA Turnpike, etc.) which fund their own capital programs.',
+              limit: 'Federal gas tax = $0.184/gallon, unchanged since 1993. Adjusted for inflation + better fuel efficiency, the trust fund has lost ~ 60% of its real purchasing power. EVs pay zero gas tax. The honest accounting: we underfund our infrastructure system + then we patch with periodic large bills like IIJA. This is not sustainable + has been the bipartisan diagnosis for 20+ years.'
+            },
+            { id: 'fed', name: 'Federal funding mechanics', emoji: '🏛️',
+              what: 'Most federal bridge money flows through STATE DOTs via the Federal Highway Administration. Each state gets an annual allocation based on a formula (lane miles, population, fuel use). The state DOT chooses projects, designs them, hires contractors, manages construction. The Federal Highway Bridge Program (HBP) funds bridge replacement + rehabilitation; the Highway Safety Improvement Program (HSIP) funds safety improvements; the Surface Transportation Block Grant (STBG) funds general work. The IIJA created the dedicated Bridge Investment Program + Bridge Formula Program ($40+ billion for bridges over 5 years), the largest bridge funding push in US history.',
+              limit: 'States have wide discretion in how to spend this money. Some states (Pennsylvania, Texas, California) focus heavily on rural bridges + maintenance; others prioritize urban capacity expansion. Federal money is NEVER enough to fix the backlog — the FHWA estimates ~ $125 billion of US bridges are structurally deficient or functionally obsolete. The annual fix-rate is slower than the deterioration rate.'
+            },
+            { id: 'tolls', name: 'Toll bridges + revenue', emoji: '🪙',
+              what: 'Tolling lets bridges pay for themselves over time. NYC\'s MTA bridges + tunnels generate ~ $2 billion annually in tolls + subsidize transit. The Verrazzano-Narrows Bridge collects ~ $500M/year. The Golden Gate Bridge ($9.55 base toll 2024) generates ~ $200M+/year, fully funding its operation + maintenance. New construction increasingly uses PUBLIC-PRIVATE PARTNERSHIPS (P3): a private consortium designs + builds + finances + operates a tolled bridge under long-term concession contracts. The Goethals Bridge replacement (NJ, 2017) was the first US P3 toll-bridge replacement.',
+              limit: 'Tolls are regressive (flat fees burden lower-income drivers more). They are also politically toxic in many regions — even when economically obvious. Maine has resisted highway tolling outside the Maine Turnpike, with the result that bridges + non-Turnpike highways depend heavily on state + federal funds. Toll-supported bridges work where there is a captive market with no equivalent free route; otherwise, traffic diverts + toll revenue collapses.'
+            },
+            { id: 'procurement', name: 'Procurement models', emoji: '📋',
+              what: 'The traditional model is DESIGN-BID-BUILD: the owner hires an engineer to design, then puts the design out to bid, then a contractor builds it. Slow + adversarial. DESIGN-BUILD packages design + construction with one entity, faster + better-coordinated but with less owner control. CMGC (Construction Manager / General Contractor) hires the contractor during design, getting their input on constructibility. P3 + DBOM (Design-Build-Operate-Maintain) push further by including long-term operation. Each model has tradeoffs in cost, schedule, quality, risk allocation.',
+              limit: 'Procurement reform is a major theme in modern infrastructure delivery. Design-build is now the dominant model for major US bridges (~ 50%+ of large-bridge spending). P3s remain controversial — they shift risk to private operators but often at higher cost-of-capital + sometimes with reduced transparency. The Indiana Toll Road P3 (2006, $3.8B 75-year lease to Cintra-Macquarie) is a cautionary tale: the consortium went bankrupt in 2014, the state had to renegotiate, the toll rates rose substantially. Procurement model matters a lot for outcomes.'
+            },
+            { id: 'envjustice', name: 'Environmental justice + community impact', emoji: '⚖️',
+              what: 'Where bridges + highways get built has massive equity implications. Mid-20th-century interstate construction routinely demolished thriving Black + Latino + immigrant + working-class neighborhoods (the I-95 Cross-Bronx Expressway, I-10 in New Orleans through the historic Tremé, I-75 through Black Bottom in Detroit). Modern projects must undergo NEPA + Section 106 reviews to consider impacts on minority + low-income communities, historic sites, environmental resources. The Federal "Justice40" initiative (2021) requires 40% of climate + infrastructure investment to benefit disadvantaged communities. The Reconnecting Communities Pilot Program funds removal of urban highways that divided neighborhoods.',
+              limit: 'Implementation is uneven. NEPA + Section 106 reviews can be performative — boxes checked rather than substantive consultation. Community input often happens AFTER major design decisions, not before. Indigenous communities + minority neighborhoods have been the most frequent losers. Modern best practice (genuine tribal consultation, community-led design, alternatives analysis with community participation) is gradually replacing older "decide then announce" patterns; progress is genuine + uneven.'
+            },
+            { id: 'lifecycle', name: 'Life-cycle cost analysis', emoji: '📊',
+              what: 'A bridge is a 75-150 year asset. Modern accounting considers TOTAL LIFE-CYCLE COST: initial construction + 75 years of maintenance + ultimate decommissioning. A bridge that costs 10% more initially but lasts 50% longer with half the maintenance is the obvious better investment — except that political cycles are 2-4 years + budget pressure is annual. Engineers + budget officers often see different right answers. Modern practice uses 75-year present-value calculations, but the discount rate (how much to weight future costs) drives the conclusion + is genuinely uncertain.',
+              limit: 'Life-cycle cost analysis is intellectually compelling + politically difficult. Building a more expensive but longer-lasting bridge requires explaining decade-out savings to voters + legislators who change every few years. Stainless-steel rebar, prestressed concrete, or extra corrosion protection that adds $10M today + saves $50M over 50 years may not pencil in a tight budget cycle. The best-managed agencies (NY DOT, Wisconsin DOT, Florida DOT for certain bridge classes) have institutional memory + the political support to make these tradeoffs; many do not.'
+            },
+            { id: 'collapse', name: 'Why bridges collapse from neglect', emoji: '⚠️',
+              what: 'Recent prominent US collapses: I-35W Mississippi River Bridge, Minneapolis (2007, 13 dead, gusset plate fatigue + deck-load growth); Fern Hollow Bridge, Pittsburgh (2022, no deaths, corrosion + deferred inspection); Francis Scott Key Bridge, Baltimore (2024, 6 dead, ship strike — not a maintenance issue, but exposes how few bridges have pier-protection systems). The common pattern: deferred maintenance + chronic underfunding + warning signs ignored. Most bridges that ultimately collapse have been "structurally deficient" or "poor condition" rated for years.',
+              limit: 'Bridge maintenance is unsexy + politically invisible until something fails. The US has ~ 47,000 structurally deficient bridges (FHWA 2023, down from ~ 56,000 in 2018 thanks to IIJA + state programs). Deficient does not mean "about to collapse" — but it does mean the safety margin has eroded + ongoing monitoring is essential. The honest message for civic education: vote for + advocate for infrastructure funding even when individual projects are not exciting; quiet maintenance saves lives that loud ribbon-cuttings cannot.'
+            },
+            { id: 'politics', name: 'Who decides + who benefits', emoji: '🗳️',
+              what: 'Bridge decisions involve: ENGINEERS who recommend technical solutions, MPOs (Metropolitan Planning Organizations) who prioritize regional projects, STATE DOTs who manage delivery, ELECTED OFFICIALS (governors, legislatures, mayors) who set policy + appoint commissioners, FEDERAL AGENCIES (FHWA, FTA) who set standards + provide funding, PRIVATE FIRMS who design + build, COMMUNITY GROUPS who advocate + sometimes litigate, MEDIA who cover (selectively), VOTERS who approve bonds + elect the people making decisions. The system has many veto points + uneven information access. Wealthier communities navigate it better + tend to get more + better bridges.',
+              limit: 'Civic engagement in bridge decisions is genuinely possible + genuinely difficult. Attend MPO + state DOT public hearings (legally required, attended mostly by professional advocates). Read TIPs (Transportation Improvement Programs, published annually). Engage state legislators + governors on transportation policy. Vote in primary elections where bridge-relevant policy is sometimes decided. School psychologists + counselors are sometimes the most-trusted civic figures in a community + may be asked to lend professional voice to local infrastructure debates; doing so thoughtfully is part of civic professional responsibility.'
+            }
+          ];
+          var sel = d.selectedFin || 'fundlines';
+          var topic = FIN.find(function(t) { return t.id === sel; }) || FIN[0];
+          return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '💰 Bridge financing, politics, + procurement'),
+            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+              'Every bridge has an engineering story + a money story. Where the dollars come from, who decides what gets built, how contracts are awarded, who benefits from the project, who pays the maintenance — these questions shape what bridges actually exist + which communities get to use them. Engineering does not happen in a political vacuum + students who understand only the technical side will struggle to advocate for the bridges their communities need.'
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              FIN.map(function(t) {
+                var on = t.id === sel;
+                return h('button', {
+                  key: t.id,
+                  onClick: function() { upd({ selectedFin: t.id }); },
+                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
+                }, t.emoji + ' ' + t.name);
+              })
+            ),
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.what)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limit'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.limit)
+              )
+            ),
+            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
+              h('strong', null, 'For Maine students + families: '),
+              'Maine spends about $700M/year on transportation infrastructure across all modes; bridges are a major slice of that. The Maine DOT publishes its annual Work Plan + 3-Year Transportation Improvement Program online (maine.gov/mdot). Major recent projects: the Penobscot Narrows Bridge replacement (2006, $85M), the Memorial Bridge / Sarah Mildred Long Bridge replacements in Portsmouth-Kittery (~$170M each), ongoing Maine Turnpike widenings + bridge replacements. Maine resisted highway tolling outside the Turnpike + has relied on federal + state gas-tax funding plus IIJA money. Students who care about Maine infrastructure can engage at MPO public meetings (Portland Area Comprehensive Transportation System, Greater Portland Council of Governments) + by writing to the Maine DOT Commissioner.'
+            )
+          );
+        }
 
         function abcAndPrefabSection() {
           var ABC = [

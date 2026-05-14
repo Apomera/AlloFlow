@@ -2267,6 +2267,75 @@
               );
             })(),
             '#a7f3d0'
+          ),
+
+          // ─── AI in biology + AlphaFold ───────────────────────────
+          sectionCard('🤖 AI in biology + AlphaFold — protein structure + beyond',
+            (function() {
+              var AI_TOPICS = [
+                { id: 'problem', name: 'The protein folding problem', emoji: '🧩',
+                  body: 'A protein\'s amino acid sequence determines its 3D structure, and the 3D structure determines its function. Predicting the structure from the sequence was one of biology\'s grand challenges for ~ 50 years (Anfinsen formulated it in 1972, won Nobel for the basic principle). Until 2020, the only reliable way to determine a protein\'s structure was painstaking experimental methods: X-ray crystallography (~ months to years per protein), cryo-electron microscopy (cryo-EM, faster but still slow), or NMR. The Protein Data Bank had ~ 170,000 experimental structures as of 2020 — but humans + microbes have HUNDREDS OF MILLIONS of proteins. Most proteins had unknown structure + therefore poorly-understood function.',
+                  caveat: 'The problem was not just technical — it was foundational. Without knowing protein structures, drug design depended on trial-and-error + lucky discoveries. Antibiotic resistance research, enzyme engineering, vaccine design, understanding of disease mechanism — all bottlenecked by the structure problem. CASP (Critical Assessment of protein Structure Prediction, biennial competitions since 1994) tracked the slow progress: until 2020, no computational method came close to experimental accuracy.'
+                },
+                { id: 'alphafold', name: 'AlphaFold 2 — November 2020', emoji: '🚀',
+                  body: 'Google DeepMind\'s AlphaFold 2 won CASP14 (November 2020) with a median accuracy approaching EXPERIMENTAL precision. The architecture: a deep neural network combining evolutionary information from multiple sequence alignments (homologous proteins across species reveal which amino acids "talk" to each other when the protein folds), pair representation of inter-residue distances, and an iterative attention mechanism. The result: structures predicted in HOURS rather than YEARS, at accuracy roughly equivalent to mid-resolution X-ray crystallography. John Jumper, Demis Hassabis, + the AlphaFold team won the 2024 Nobel Prize in Chemistry (shared with David Baker for RoseTTAFold + protein design work).',
+                  caveat: 'AlphaFold is the biggest single advance in computational biology since DNA sequencing. It is also not a complete solution: it predicts STRUCTURE, not necessarily FUNCTION; it does best on globular proteins + struggles with intrinsically-disordered regions + large protein complexes + protein-DNA interactions. Verification by experimental methods remains important; AlphaFold has known systematic errors that experienced users learn to recognize. Still, the field changed fundamentally in November 2020.'
+                },
+                { id: 'database', name: 'The AlphaFold Protein Structure Database', emoji: '💾',
+                  body: 'In 2021, DeepMind + EMBL-EBI released the AlphaFold Protein Structure Database (alphafold.ebi.ac.uk), with predicted structures for ESSENTIALLY EVERY protein from ESSENTIALLY EVERY sequenced organism. The database started with the human proteome + 20 model organisms (~ 365,000 structures). By July 2022 it had expanded to ~ 200 million structures — covering essentially every cataloged protein on Earth. Free to use, no registration required, downloadable in bulk. Within months, hundreds of research labs were applying these structures to long-standing biology problems.',
+                  caveat: 'The 200M-structure release is one of the largest open data acts in scientific history. It came with confidence scores (pLDDT) that flag low-confidence regions, helping researchers know when to trust the prediction. Some scientists wished DeepMind had released the code more openly (the original AlphaFold 2 code IS open, but newer models like AlphaFold 3 have more restricted access). The accessibility debate is ongoing.'
+                },
+                { id: 'af3', name: 'AlphaFold 3 + the broader frontier', emoji: '🌐',
+                  body: 'AlphaFold 3 (May 2024) extended capability to protein-PROTEIN complexes, protein-DNA, protein-RNA, protein-ligand, protein-ion interactions. The output models predict how molecules INTERACT, not just single-protein structures. This dramatically broadens what AI can contribute to drug discovery + biology. Parallel work: ESM (Meta\'s evolutionary scale model, language-model approach to protein understanding), RoseTTAFold (David Baker\'s lab at UW, alternative to AlphaFold with strong protein-design capabilities), AlphaProteo (DeepMind 2024, designs new proteins binding specified targets).',
+                  caveat: 'AlphaFold 3 was released with a web-only interface + limited access initially — a controversial step backward in openness compared to AF2. The pharmaceutical industry has eagerly adopted these tools, but small academic groups have less access. The community pushback was significant + DeepMind has loosened access policies somewhat. The pattern (rapid capability advance + uneven access) is repeating with other AI-in-biology tools.'
+                },
+                { id: 'drug', name: 'AI-driven drug discovery', emoji: '💊',
+                  body: 'AI tools have transformed early-stage drug discovery. EXAMPLES: Insilico Medicine designed an idiopathic pulmonary fibrosis drug ENTIRELY in silico (target identification + chemistry); it entered Phase 2 trials in 2024 — first AI-discovered drug to reach late-stage human trials. Recursion Pharmaceuticals uses high-throughput cell imaging + AI to find drug candidates for rare diseases. The Schrödinger + Atomwise + Exscientia + Isomorphic Labs (DeepMind spinoff, 2021) all use AI for drug design. None have yet shipped an approved drug, but they have collectively accelerated drug discovery timelines from ~ 5 years for hit-to-clinical-candidate to ~ 1-2 years for some programs.',
+                  caveat: 'AI-driven drug discovery is REAL + EARLY. The biggest claim — "AI will replace traditional drug discovery" — has not yet been delivered. AI is being integrated alongside conventional methods, not replacing them. The clinical-trial success rate for AI-designed drugs is not yet known; we will not have enough data to compare AI-driven vs traditional discovery until the early 2030s. The current state is "promising tools, real efficiency gains in early stages, still proving themselves in the hard later stages."'
+                },
+                { id: 'genome', name: 'AI + genome interpretation', emoji: '🧬',
+                  body: 'A human genome has ~ 3 billion base pairs but only ~ 1-2% codes for proteins. The REGULATORY GENOME (which genes are turned on when, how variants affect disease risk, what the non-coding regions do) is largely unexplored. AI methods are now interpreting this: DeepMind\'s ENFORMER predicts gene expression from DNA sequence; Google\'s AlphaMissense (2023) predicts pathogenicity of every possible missense variant across the human proteome; Illumina + Stanford developed PrimateAI for variant interpretation. These tools support genetic-disease diagnosis + rare-disease research. For families navigating rare-genetic diagnoses, AI-based variant interpretation is now part of clinical workflow.',
+                  caveat: 'Variant interpretation AI has the same limits as any AI on out-of-distribution data: it works best on variants similar to ones it has seen, struggles on truly novel patterns. False positives ("AI says this variant causes disease") in clinical contexts can lead to unnecessary anxiety + sometimes inappropriate treatment. Best practice: AI variant interpretation supplements but does not replace expert clinical genetics review.'
+                },
+                { id: 'sequencing', name: 'AI + sequencing analysis', emoji: '🔬',
+                  body: 'Modern DNA + RNA sequencing produces massive datasets that no human can fully analyze manually. AI is now central in: basecalling (converting raw sequencer signal to nucleotide identity — Nanopore platforms increasingly use neural networks for this), variant calling (identifying mutations against reference genome), de novo assembly (reconstructing genomes from short reads), metagenomics (classifying mixed-species DNA samples). DeepVariant (Google, 2017) was an early AI variant caller with significantly improved accuracy over traditional methods. The combination of cheaper sequencing + better AI analysis is rapidly making genome-scale studies feasible for routine clinical + research use.',
+                  caveat: 'Sequencing AI has steadily improved + is now part of essentially every modern sequencing pipeline. The main risk is OPAQUE-BOX adoption — using AI tools without understanding their failure modes. Different AI tools have different biases (training data, model architecture); using multiple tools in parallel + cross-checking is standard best practice for important variant calls.'
+                },
+                { id: 'limits', name: 'What AI cannot do (yet)', emoji: '🚧',
+                  body: 'AI in biology has genuine limits + open challenges. (1) MECHANISTIC INTERPRETATION: AI tells you WHAT but rarely WHY at the level of underlying physics + chemistry. A predicted structure does not explain its evolutionary path or its catalytic mechanism. (2) NOVEL ARCHITECTURES: AI struggles with proteins very different from training data (intrinsically-disordered proteins, designer proteins, completely novel folds). (3) DYNAMICS: most AI predicts STATIC structures; proteins are dynamic + their motion is essential to function. (4) CONTEXT: a protein in isolation behaves differently than one in a cellular environment with other molecules. (5) VALIDATION: AI predictions still need experimental verification for important conclusions. (6) EQUITABLE ACCESS: best tools require expensive compute + dataset access that smaller labs + low-income-country researchers cannot always afford.',
+                  caveat: 'AI is not magic + has not "solved biology." The honest framing: AI has dramatically accelerated SOME parts of biological research (structure prediction, sequence analysis, image classification) while leaving OTHER parts (causal mechanism, dynamic behavior, organism-level emergent behavior) where they were. Biology remains a hard, deeply experimental science. AI is a powerful new tool, not a replacement for the underlying biological inquiry.'
+                }
+              ];
+              var sel = d.selectedAI || 'problem';
+              var topic = AI_TOPICS.find(function(t) { return t.id === sel; }) || AI_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'In November 2020, AlphaFold 2 solved a 50-year-old grand challenge in biology. The 2024 Nobel Prize in Chemistry recognized this + the parallel protein-design work at the Baker Lab. AI is now central to most areas of biological research — protein structure, drug discovery, genome interpretation, variant calling, metagenomic classification, microscopy image analysis. The field is moving so fast that the relationship between biology + computation is being reshaped year by year.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  AI_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedAI: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#8b5cf6' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #8b5cf6' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#c4b5fd', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
+                  h('strong', null, 'Try it yourself today: '),
+                  'AlphaFold Protein Structure Database (alphafold.ebi.ac.uk) is free + searchable. Type any gene name + see the predicted protein structure rotating in 3D in your browser. ColabFold (free, runs in Google Colab) lets you input a protein sequence + get a structure in ~ 30 minutes. Foldit (fold.it) is a citizen-science game where players solve protein folds + sometimes outperform algorithms. For middle + high school students, these are the entry points into modern computational biology — no expensive equipment, just curiosity + a browser.'
+                )
+              );
+            })(),
+            '#8b5cf6'
           )
         );
       }
