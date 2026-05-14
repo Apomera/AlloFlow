@@ -5614,6 +5614,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [bridgeF2FCustomLangB, setBridgeF2FCustomLangB] = useState('');
   const [activeSessionCode, setActiveSessionCode] = useState(null);
   const [activeSessionAppId, setActiveSessionAppId] = useState(appId);
+  const [showLivePollingPanel, setShowLivePollingPanel] = useState(false);
     React.useEffect(() => {
         if (!activeSessionCode || !isTeacherMode || !db || !appId) return;
         const sessionCleanupOnUnload = () => {
