@@ -1404,6 +1404,54 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     const question = generatedContent?.data.questions[currentQuestionIndex];
     const [showLocalStats, setShowLocalStats] = useState(false);
     const [bossDifficulty, setBossDifficulty] = useState('normal');
+    // Phase-2 quiz auto-routing: per-question rules. Mirrored to window
+    // so the App-level useEffect (AlloFlowANTI.txt, near rosterKey
+    // auto-grouping) can read them. Rule schema reused from LivePolling:
+    // { id, when: { predicate, value }, then: { groupId } }.
+    const [quizRoutingRulesByQ, setQuizRoutingRulesByQ] = useState({});
+    const [showQuizRoutingPanel, setShowQuizRoutingPanel] = useState(false);
+    useEffect(() => {
+      if (typeof window !== 'undefined') window.__alloQuizRoutingRules = quizRoutingRulesByQ;
+    }, [quizRoutingRulesByQ]);
+    const groupsForRouting = sessionData?.groups || {};
+    const groupEntriesForRouting = Object.entries(groupsForRouting).filter(([_, g]) => g !== null);
+    const currentRules = quizRoutingRulesByQ[currentQuestionIndex] || [];
+    const addQuizRoutingRule = () => {
+      setQuizRoutingRulesByQ(prev => {
+        const next = { ...prev };
+        const existing = Array.isArray(next[currentQuestionIndex]) ? next[currentQuestionIndex].slice() : [];
+        const firstOption = (question?.options && question.options[0]) || '';
+        const firstGroup = (groupEntriesForRouting[0] && groupEntriesForRouting[0][0]) || '';
+        existing.push({
+          id: 'qr-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 5),
+          when: { predicate: 'eq', value: firstOption },
+          then: { groupId: firstGroup }
+        });
+        next[currentQuestionIndex] = existing;
+        return next;
+      });
+    };
+    const removeQuizRoutingRule = (rid) => {
+      setQuizRoutingRulesByQ(prev => {
+        const next = { ...prev };
+        next[currentQuestionIndex] = (next[currentQuestionIndex] || []).filter(r => r.id !== rid);
+        return next;
+      });
+    };
+    const updateQuizRoutingRule = (rid, patch) => {
+      setQuizRoutingRulesByQ(prev => {
+        const next = { ...prev };
+        next[currentQuestionIndex] = (next[currentQuestionIndex] || []).map(r => {
+          if (r.id !== rid) return r;
+          return {
+            ...r,
+            when: patch.when ? { ...r.when, ...patch.when } : r.when,
+            then: patch.then ? { ...r.then, ...patch.then } : r.then,
+          };
+        });
+        return next;
+      });
+    };
     const totalStudents = roster ? Object.keys(roster).length : 0;
     const answeredCount = responses ? Object.keys(responses).length : 0;
     const percentage = totalStudents > 0 ? Math.round((answeredCount / totalStudents) * 100) : 0;
@@ -1924,6 +1972,74 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                              })}
                          </span>
                          <h2 className="text-2xl font-bold text-slate-800 leading-tight">{question.question}</h2>
+                     </div>
+                     <div className="mb-4 bg-amber-50 border border-amber-200 rounded-lg p-2">
+                         <button
+                             onClick={() => setShowQuizRoutingPanel(v => !v)}
+                             className="flex items-center gap-2 text-xs font-bold text-amber-800 hover:text-amber-900"
+                             aria-expanded={showQuizRoutingPanel}
+                         >
+                             <span>{showQuizRoutingPanel ? '▾' : '▸'}</span>
+                             <span>📊 Auto-routing rules for this question</span>
+                             <span className="font-normal text-amber-700">({currentRules.length} rule{currentRules.length === 1 ? '' : 's'})</span>
+                         </button>
+                         {showQuizRoutingPanel && (
+                             <div className="mt-2 space-y-2">
+                                 <p className="text-[11px] text-amber-700 leading-snug">
+                                     When a student answers, auto-assign them to a group. Use this for <strong>choice</strong> (e.g., "Pirate Crew vs Space Crew") or <strong>formative-assessment</strong> routing. Group resources can then be staged per group via the Groups panel above.
+                                 </p>
+                                 {groupEntriesForRouting.length === 0 && (
+                                     <p className="text-[11px] text-red-700 italic">Create at least one group in the Groups panel above before adding routing rules.</p>
+                                 )}
+                                 {currentRules.map(rule => (
+                                     <div key={rule.id} className="flex flex-wrap items-center gap-1 bg-white border border-amber-200 rounded p-1.5 text-xs">
+                                         <span className="text-slate-600">When answer</span>
+                                         <select
+                                             aria-label="Predicate"
+                                             value={rule.when.predicate}
+                                             onChange={(e) => updateQuizRoutingRule(rule.id, { when: { predicate: e.target.value } })}
+                                             className="px-1 py-0.5 border border-slate-300 rounded text-xs"
+                                         >
+                                             <option value="eq">is</option>
+                                             <option value="in">is one of</option>
+                                         </select>
+                                         <select
+                                             aria-label="Answer option"
+                                             value={rule.when.predicate === 'in' ? '' : rule.when.value}
+                                             onChange={(e) => updateQuizRoutingRule(rule.id, { when: { value: e.target.value } })}
+                                             className="px-1 py-0.5 border border-slate-300 rounded text-xs"
+                                         >
+                                             <option value="">— pick option —</option>
+                                             {(question?.options || []).map((opt, oi) => (
+                                                 <option key={oi} value={opt}>{String.fromCharCode(65 + oi)}: {opt}</option>
+                                             ))}
+                                         </select>
+                                         <span className="text-slate-600">→ assign to</span>
+                                         <select
+                                             aria-label="Target group"
+                                             value={rule.then.groupId}
+                                             onChange={(e) => updateQuizRoutingRule(rule.id, { then: { groupId: e.target.value } })}
+                                             className="px-1 py-0.5 border border-slate-300 rounded text-xs"
+                                         >
+                                             <option value="">— pick group —</option>
+                                             {groupEntriesForRouting.map(([gid, g]) => (
+                                                 <option key={gid} value={gid}>{g.name || gid}</option>
+                                             ))}
+                                         </select>
+                                         <button
+                                             onClick={() => removeQuizRoutingRule(rule.id)}
+                                             aria-label="Remove rule"
+                                             className="ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
+                                         >✕</button>
+                                     </div>
+                                 ))}
+                                 <button
+                                     onClick={addQuizRoutingRule}
+                                     disabled={groupEntriesForRouting.length === 0}
+                                     className={`text-xs font-bold px-2 py-1 rounded border border-dashed ${groupEntriesForRouting.length === 0 ? 'border-slate-300 text-slate-400 cursor-not-allowed' : 'border-amber-500 text-amber-800 hover:bg-amber-100'}`}
+                                 >+ Add rule</button>
+                             </div>
+                         )}
                      </div>
                      <div className="space-y-3 mt-auto">
                          {phase === 'answering' ? (

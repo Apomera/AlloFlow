@@ -10117,6 +10117,67 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           }).catch(e => warnLog("Auto-assign error:", e));
       }
   }, [isTeacherMode, rosterKey, activeSessionCode, sessionData?.roster]);
+  // Quiz auto-routing (Phase 2): evaluates teacher-authored routing rules
+  // attached to the current quiz question. Watches incoming responses
+  // (both the one-question-at-a-time `quizState.responses` path used by
+  // StudentQuizOverlay and the `quizState.allResponses[uid][idx]` path
+  // used by handleSubmitLiveAnswer) and writes `roster.{uid}.groupId`
+  // via writeToSession when a rule matches.
+  // Rule schema reused from LivePolling (window.AlloModules.LivePolling.evaluateRoutingRules).
+  // For MCQ items, responses[uid] is an option INDEX — we convert to the
+  // option TEXT before evaluating so rules can use the option's actual
+  // string (matching the polling-tool semantics).
+  const routedQuizRef = useRef({}); // { questionIdx: { uid: groupId } } suppresses dupes
+  useEffect(() => {
+      if (!isTeacherMode || !activeSessionCode || !sessionData?.quizState) return;
+      const qIdx = sessionData.quizState.currentQuestionIndex;
+      if (typeof qIdx !== 'number') return;
+      const question = generatedContent?.data?.questions?.[qIdx];
+      // Rules can live on the question itself (when quiz is authored with
+      // rules attached) OR in a window-mirrored store written by
+      // TeacherLiveQuizControls' inline editor.
+      const winRules = (typeof window !== 'undefined' && window.__alloQuizRoutingRules) || {};
+      const questionRules = (question && Array.isArray(question.routingRules) && question.routingRules.length > 0) ? question.routingRules : null;
+      const rules = questionRules || (Array.isArray(winRules[qIdx]) ? winRules[qIdx] : []);
+      if (!rules || rules.length === 0) return;
+      const evaluator = window.AlloModules?.LivePolling?.evaluateRoutingRules;
+      const writer = window.__alloWriteToSession;
+      if (typeof evaluator !== 'function' || typeof writer !== 'function') return;
+      const options = (question && Array.isArray(question.options)) ? question.options : [];
+      const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+      const already = routedQuizRef.current[qIdx] || {};
+      const responsesMap = sessionData.quizState.responses || {};
+      Object.keys(responsesMap).forEach(uid => {
+          if (already[uid]) return;
+          const raw = responsesMap[uid];
+          // raw is option index for StudentQuizOverlay; convert to text for rule eval
+          const responseValue = (typeof raw === 'number' && options[raw] !== undefined) ? options[raw] : raw;
+          const groupId = evaluator(rules, responseValue);
+          if (groupId) {
+              writer(sessionRef, { [`roster.${uid}.groupId`]: groupId }).catch(e => warnLog('Quiz auto-route failed:', e && e.message));
+              already[uid] = groupId;
+          }
+      });
+      const allMap = (sessionData.quizState.allResponses && sessionData.quizState.allResponses[qIdx]) || null;
+      // allResponses is keyed { uid: { answer, itemType, ... } }, not { questionIdx: { uid: ... } }.
+      // Iterate the outer (uid) keys and only act on responses for the current questionIdx.
+      const allByUid = sessionData.quizState.allResponses || {};
+      Object.keys(allByUid).forEach(uid => {
+          if (already[uid]) return;
+          const entry = allByUid[uid] && allByUid[uid][qIdx];
+          if (!entry || typeof entry.answer === 'undefined') return;
+          let responseValue = entry.answer;
+          if (typeof responseValue === 'number' && options[responseValue] !== undefined) {
+              responseValue = options[responseValue];
+          }
+          const groupId = evaluator(rules, responseValue);
+          if (groupId) {
+              writer(sessionRef, { [`roster.${uid}.groupId`]: groupId }).catch(e => warnLog('Quiz auto-route failed:', e && e.message));
+              already[uid] = groupId;
+          }
+      });
+      routedQuizRef.current[qIdx] = already;
+  }, [isTeacherMode, activeSessionCode, sessionData?.quizState?.responses, sessionData?.quizState?.allResponses, sessionData?.quizState?.currentQuestionIndex, generatedContent]);
   useEffect(() => {
       setUdlStandardGrade(gradeLevel);
   }, [gradeLevel]);

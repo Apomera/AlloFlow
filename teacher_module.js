@@ -1112,6 +1112,50 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   const question = generatedContent?.data.questions[currentQuestionIndex];
   const [showLocalStats, setShowLocalStats] = useState(false);
   const [bossDifficulty, setBossDifficulty] = useState("normal");
+  const [quizRoutingRulesByQ, setQuizRoutingRulesByQ] = useState({});
+  const [showQuizRoutingPanel, setShowQuizRoutingPanel] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined") window.__alloQuizRoutingRules = quizRoutingRulesByQ;
+  }, [quizRoutingRulesByQ]);
+  const groupsForRouting = sessionData?.groups || {};
+  const groupEntriesForRouting = Object.entries(groupsForRouting).filter(([_, g2]) => g2 !== null);
+  const currentRules = quizRoutingRulesByQ[currentQuestionIndex] || [];
+  const addQuizRoutingRule = () => {
+    setQuizRoutingRulesByQ((prev) => {
+      const next = { ...prev };
+      const existing = Array.isArray(next[currentQuestionIndex]) ? next[currentQuestionIndex].slice() : [];
+      const firstOption = question?.options && question.options[0] || "";
+      const firstGroup = groupEntriesForRouting[0] && groupEntriesForRouting[0][0] || "";
+      existing.push({
+        id: "qr-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 5),
+        when: { predicate: "eq", value: firstOption },
+        then: { groupId: firstGroup }
+      });
+      next[currentQuestionIndex] = existing;
+      return next;
+    });
+  };
+  const removeQuizRoutingRule = (rid) => {
+    setQuizRoutingRulesByQ((prev) => {
+      const next = { ...prev };
+      next[currentQuestionIndex] = (next[currentQuestionIndex] || []).filter((r) => r.id !== rid);
+      return next;
+    });
+  };
+  const updateQuizRoutingRule = (rid, patch) => {
+    setQuizRoutingRulesByQ((prev) => {
+      const next = { ...prev };
+      next[currentQuestionIndex] = (next[currentQuestionIndex] || []).map((r) => {
+        if (r.id !== rid) return r;
+        return {
+          ...r,
+          when: patch.when ? { ...r.when, ...patch.when } : r.when,
+          then: patch.then ? { ...r.then, ...patch.then } : r.then
+        };
+      });
+      return next;
+    });
+  };
   const totalStudents = roster ? Object.keys(roster).length : 0;
   const answeredCount = responses ? Object.keys(responses).length : 0;
   const percentage = totalStudents > 0 ? Math.round(answeredCount / totalStudents * 100) : 0;
@@ -1531,7 +1575,63 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   })), (!roster || Object.keys(roster).length === 0) && /* @__PURE__ */ React.createElement("div", { className: "text-center text-slate-600 italic py-4" }, t("groups.waiting_students")))))), /* @__PURE__ */ React.createElement("div", { className: "p-6 grid grid-cols-1 lg:grid-cols-2 gap-8" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col justify-between h-full" }, /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest block mb-2" }, t("quiz.question_progress", {
     current: currentQuestionIndex + 1,
     total: generatedContent?.data.questions.length
-  })), /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-bold text-slate-800 leading-tight" }, question.question)), /* @__PURE__ */ React.createElement("div", { className: "space-y-3 mt-auto" }, phase === "answering" ? /* @__PURE__ */ React.createElement(
+  })), /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-bold text-slate-800 leading-tight" }, question.question)), /* @__PURE__ */ React.createElement("div", { className: "mb-4 bg-amber-50 border border-amber-200 rounded-lg p-2" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => setShowQuizRoutingPanel((v) => !v),
+      className: "flex items-center gap-2 text-xs font-bold text-amber-800 hover:text-amber-900",
+      "aria-expanded": showQuizRoutingPanel
+    },
+    /* @__PURE__ */ React.createElement("span", null, showQuizRoutingPanel ? "\u25BE" : "\u25B8"),
+    /* @__PURE__ */ React.createElement("span", null, "\u{1F4CA} Auto-routing rules for this question"),
+    /* @__PURE__ */ React.createElement("span", { className: "font-normal text-amber-700" }, "(", currentRules.length, " rule", currentRules.length === 1 ? "" : "s", ")")
+  ), showQuizRoutingPanel && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 leading-snug" }, "When a student answers, auto-assign them to a group. Use this for ", /* @__PURE__ */ React.createElement("strong", null, "choice"), ' (e.g., "Pirate Crew vs Space Crew") or ', /* @__PURE__ */ React.createElement("strong", null, "formative-assessment"), " routing. Group resources can then be staged per group via the Groups panel above."), groupEntriesForRouting.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-red-700 italic" }, "Create at least one group in the Groups panel above before adding routing rules."), currentRules.map((rule) => /* @__PURE__ */ React.createElement("div", { key: rule.id, className: "flex flex-wrap items-center gap-1 bg-white border border-amber-200 rounded p-1.5 text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "When answer"), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": "Predicate",
+      value: rule.when.predicate,
+      onChange: (e) => updateQuizRoutingRule(rule.id, { when: { predicate: e.target.value } }),
+      className: "px-1 py-0.5 border border-slate-300 rounded text-xs"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "eq" }, "is"),
+    /* @__PURE__ */ React.createElement("option", { value: "in" }, "is one of")
+  ), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": "Answer option",
+      value: rule.when.predicate === "in" ? "" : rule.when.value,
+      onChange: (e) => updateQuizRoutingRule(rule.id, { when: { value: e.target.value } }),
+      className: "px-1 py-0.5 border border-slate-300 rounded text-xs"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 pick option \u2014"),
+    (question?.options || []).map((opt, oi) => /* @__PURE__ */ React.createElement("option", { key: oi, value: opt }, String.fromCharCode(65 + oi), ": ", opt))
+  ), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u2192 assign to"), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": "Target group",
+      value: rule.then.groupId,
+      onChange: (e) => updateQuizRoutingRule(rule.id, { then: { groupId: e.target.value } }),
+      className: "px-1 py-0.5 border border-slate-300 rounded text-xs"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 pick group \u2014"),
+    groupEntriesForRouting.map(([gid, g2]) => /* @__PURE__ */ React.createElement("option", { key: gid, value: gid }, g2.name || gid))
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => removeQuizRoutingRule(rule.id),
+      "aria-label": "Remove rule",
+      className: "ml-auto px-1.5 py-0.5 text-red-700 hover:bg-red-50 rounded border border-red-200"
+    },
+    "\u2715"
+  ))), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: addQuizRoutingRule,
+      disabled: groupEntriesForRouting.length === 0,
+      className: `text-xs font-bold px-2 py-1 rounded border border-dashed ${groupEntriesForRouting.length === 0 ? "border-slate-300 text-slate-400 cursor-not-allowed" : "border-amber-500 text-amber-800 hover:bg-amber-100"}`
+    },
+    "+ Add rule"
+  ))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3 mt-auto" }, phase === "answering" ? /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.toggle_visibility"),
