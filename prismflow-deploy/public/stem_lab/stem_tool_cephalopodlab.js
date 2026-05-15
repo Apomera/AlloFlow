@@ -433,6 +433,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       compView: 'matrix',                  // 'matrix' | 'animal' | 'dimension' | 'interpretation'
       compAnimal: 'cephalopod',
       compDimension: 'tooluse',
+      // Cephalopods in Culture state
+      cultureView: 'myth',                 // 'myth' | 'art' | 'food' | 'modern'
       // Field Day Guide state
       fieldDayView: 'where',               // 'where' | 'signs' | 'ethics' | 'document'
       fieldDayRegion: 'pnw',
@@ -567,6 +569,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           { id: 'methods', label: 'Research Methods', icon: '🔬' },
           { id: 'compcog', label: 'Comparative Cognition', icon: '🧩' },
           { id: 'conservation', label: 'Conservation & Welfare', icon: '🌍' },
+          { id: 'culture', label: 'Cephalopods in Culture', icon: '🎭' },
           { id: 'fieldday', label: 'Field Day Guide', icon: '🤿' },
           { id: 'resources', label: 'Resources', icon: '📚' }
         ];
@@ -582,7 +585,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: '#c7d2fe', letterSpacing: '-0.01em' } }, 'Cephalopod Lab'),
                 h('div', { style: { fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.12)',
                     border: '1px solid rgba(167,139,250,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                  '16 sections')),
+                  '17 sections')),
               h('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 4, lineHeight: 1.5 } },
                 'The biology of intelligent invertebrates. Octopuses + squid + cuttlefish + nautilus — chromatophore camouflage, distributed neural intelligence, hunting strategy, 500M-year evolution.'))));
       }
@@ -4011,7 +4014,239 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       }
 
       // ═══════════════════════════════════════════════════════
-      // SECTION 15 — FIELD DAY GUIDE (practical observation handbook)
+      // SECTION 15 — CEPHALOPODS IN CULTURE (humanities perspective)
+      // ═══════════════════════════════════════════════════════
+      function renderCulture() {
+        var view = d.cultureView || 'myth';
+        var SUBS = [
+          { id: 'myth', label: 'Myth + Legend', icon: '🐉' },
+          { id: 'art', label: 'Art + Imagery', icon: '🎨' },
+          { id: 'food', label: 'Food Traditions', icon: '🍱' },
+          { id: 'modern', label: 'Modern Cultural Impact', icon: '🎬' }
+        ];
+        var MYTHS = [
+          { name: 'The Kraken', culture: 'Norse + Scandinavian (12th-18th century)', emoji: '🐙', color: '#0ea5e9',
+            story: 'Sea monster of Norwegian + Icelandic seafaring lore. Described as a massive cephalopod-like creature large enough to wrap its arms around full-sized ships and drag them under. Sailors\' tales of the Kraken predate scientific knowledge of giant squid by centuries.',
+            realBasis: 'Giant squid (Architeuthis dux) + colossal squid (Mesonychoteuthis). The 12-13m giant squid was once thought to be myth; first photographed alive in 2004 by Tsunemi Kubodera in Japan. The Kraken was real all along — just smaller than imagined.' },
+          { name: 'Akkorokamui', culture: 'Ainu (northern Japan + Hokkaido)', emoji: '🦑', color: '#dc2626',
+            story: 'A massive red octopus deity from the Ainu people\'s mythology, said to inhabit Uchiura Bay. Akkorokamui can grow up to 110 meters long. The deity has both protective and threatening aspects — fishermen pray to it for safety, but it can also drag boats under.',
+            realBasis: 'Northern Pacific squid + Pacific giant octopus (Enteroctopus dofleini, which lives in Hokkaido waters). The red coloration matches Humboldt squid bioluminescent flashes during pack hunts. Still venerated at Hokkaido shrines today.' },
+          { name: 'He\'e (Hawaiian octopus)', culture: 'Native Hawaiian', emoji: '🌺', color: '#fb923c',
+            story: 'In Hawaiian creation mythology (Kumulipo chant), the octopus is the sole survivor of a previous universe. Each universe before ours was wiped out — except the octopus, who emerged from the wreckage to seed the current world. The octopus is treated as ancient, otherworldly, almost an alien intelligence preserved through cosmic resets.',
+            realBasis: 'Day octopus (Octopus cyanea) was a major food + cultural species. The creation-mythology framing may be the most sophisticated traditional view of octopus cognition — recognizing their fundamental "otherness" 500 years before modern neuroscience.' },
+          { name: 'Yacumama', culture: 'Amazonian (Peru, Brazil)', emoji: '🌊', color: '#86efac',
+            story: '"Mother of Water" — sometimes depicted as a serpent, sometimes as a giant cephalopod-like creature dwelling in the Amazon basin\'s deep waters. Said to swallow anything that crosses its path. The name and form vary by tribe and region.',
+            realBasis: 'Likely amalgamation of large freshwater fish (arapaima, electric eels, dolphins). No cephalopods live in the Amazon basin — but the imagery cross-pollinated with coastal squid + octopus mythology brought inland.' },
+          { name: 'Lusca', culture: 'Caribbean (Bahamas)', emoji: '🦈', color: '#0c4a6e',
+            story: 'Half-octopus, half-shark sea monster living in the blue-hole sinkholes of the Bahamas. Said to drag swimmers down into the underwater caves. Local divers + fishermen still tell stories.',
+            realBasis: 'Real Caribbean reef octopus + nurse sharks coexist in the same blue holes. Possible composite myth from witnessing octopus + shark in the same dive site. The blue holes themselves are spectacular karst geological features.' },
+          { name: 'Octopus in Greek antiquity', culture: 'Ancient Greek (8th century BCE onward)', emoji: '🏺', color: '#a78bfa',
+            story: 'Aristotle (350 BCE) wrote in "History of Animals" detailed descriptions of octopus mating, color change, and intelligence — recognizing them as exceptional invertebrates. Greek pottery from Minoan Crete (Phaistos, 1500 BCE) features intricate octopus designs as protective + decorative motifs.',
+            realBasis: 'Common octopus (Octopus vulgaris) was abundant in Aegean waters. Aristotle\'s observations were so accurate that some weren\'t verified by modern science until 20th century. The Minoan octopus imagery may have honored their economic importance + cognitive sophistication.' },
+          { name: 'Te Wheke-a-Muturangi', culture: 'Māori (New Zealand)', emoji: '🌀', color: '#10b981',
+            story: 'A great octopus in Polynesian voyage mythology. Kupe, the legendary navigator credited with discovering New Zealand, pursued Te Wheke-a-Muturangi across the Pacific. The chase ended with Kupe killing the octopus in Cook Strait — and thereby establishing Māori claim to the islands.',
+            realBasis: 'Pacific octopus species were navigational landmarks + food sources for Polynesian voyagers. The story is partly a charter myth (justifying Māori settlement) + partly a recognition of octopus presence as a sign of approaching land.' },
+          { name: 'Ammonite reverence', culture: 'Multiple (medieval Europe, ancient Greece, Hindu)', emoji: '🌀', color: '#fbbf24',
+            story: 'Ammonite fossils were considered "snake stones" in medieval England — coiled stones thought to be petrified snakes. In Hindu tradition, they\'re "shaligrams" — sacred stones representing Vishnu. Greek + Egyptian cultures used them as protective amulets.',
+            realBasis: 'These are real ammonite fossils — extinct cephalopod shells from the Mesozoic era (200-66 million years ago). The pre-scientific cultures correctly recognized them as animal remains, just got the animal wrong (snake vs cephalopod).' }
+        ];
+        var ART = [
+          { name: '"The Dream of the Fisherman\'s Wife"', creator: 'Katsushika Hokusai', period: '1814 (Edo period Japan)', emoji: '🎨', color: '#dc2626',
+            description: 'Woodblock print depicting a woman in erotic encounter with two octopuses. Notorious for its explicit content + remarkable for its sympathetic, almost reverent portrayal of the octopuses as participatory partners rather than monsters. Influenced 20th-century Japanese tentacle imagery + modern erotica.',
+            significance: 'One of the earliest works to depict cephalopods as conscious, intentional actors rather than mindless monsters. The accompanying calligraphy gives voice to both the woman + the octopus, suggesting mutual desire.' },
+          { name: 'Minoan Octopus Vase (Phaistos)', creator: 'Anonymous Minoan craftspeople', period: '~1500 BCE (Bronze Age Crete)', emoji: '🏺', color: '#fbbf24',
+            description: 'A series of pottery vessels featuring detailed, anatomically-aware octopus paintings. The octopus is rendered with all 8 arms, suckers visible, with movement and presence. Considered some of the most sophisticated marine art of the ancient world.',
+            significance: 'Demonstrates pre-Aristotelian biological observation — the Minoans were close + careful watchers of octopus anatomy long before written natural history. The motif spread across the Aegean as part of "marine style" pottery.' },
+          { name: 'Octopus paintings, Aristotle\'s "Historia Animalium"', creator: 'Aristotle (text); illuminators of medieval copies', period: 'Written ~350 BCE; illuminated copies 12th-15th century', emoji: '📜', color: '#a78bfa',
+            description: 'Aristotle\'s observations are textual, but the imagery in surviving manuscript copies includes hand-painted octopus figures. The text describes mating (correctly identifying the hectocotylus arm), color change, and intelligence — accurate descriptions that wouldn\'t be confirmed scientifically until the 19th century.',
+            significance: 'The first written zoology that takes cephalopods seriously. Aristotle\'s observations stayed influential for 2000+ years.' },
+          { name: '"Twenty Thousand Leagues Under the Sea"', creator: 'Jules Verne', period: '1869 novel', emoji: '📚', color: '#0ea5e9',
+            description: 'Iconic scene where Captain Nemo\'s submarine Nautilus is attacked by a giant squid. Verne\'s description was based on then-recent giant squid specimens washed up on Newfoundland beaches. The novel both reflected + amplified Victorian fascination with the deep ocean as a mysterious frontier.',
+            significance: 'The Verne giant squid attack became the cultural archetype that all subsequent sea-monster-attacks-submarine scenes reference. Without Verne, no Pirates of the Caribbean Kraken, no Finding Nemo cameo squids, no SpongeBob "Sea Bear" parodies.' },
+          { name: '"My Octopus Teacher"', creator: 'Pippa Ehrlich, James Reed; subject: Craig Foster', period: '2020 Netflix documentary', emoji: '🎬', color: '#86efac',
+            description: 'A South African filmmaker forms a year-long bond with a common octopus (Octopus vulgaris) in a kelp forest near Cape Town. The film documents the octopus\'s daily hunting, escape from a pajama shark attack (with arm loss + regrowth), eventual death after egg-brooding. Won 2021 Academy Award for Best Documentary Feature.',
+            significance: 'Brought cephalopod cognition + sentience into mainstream conversation in a way no scientific paper could. Triggered the wave of public + policy interest that contributed to the UK Sentience Act passage in 2021.' },
+          { name: 'Hokusai\'s "Great Wave" octopus echo', creator: 'Various contemporary artists', period: '2010s-2020s', emoji: '🌊', color: '#0c4a6e',
+            description: 'A recurring motif in contemporary marine + environmental art: replacing the iconic foam of Hokusai\'s Great Wave with octopus arms or tentacles. Used in climate-change activism + ocean-conservation messaging to evoke both Hokusai\'s grandeur + cephalopod sentience.',
+            significance: 'Modern art often visualizes cephalopods as climate-change witnesses — the species best positioned to inherit the warming, fishery-depleted ocean. The imagery is both elegiac + hopeful.' }
+        ];
+        var FOODS = [
+          { dish: 'Pulpo a la Gallega', region: 'Galicia, Spain', emoji: '🐙', color: '#dc2626',
+            description: 'Boiled octopus sliced into thin rounds, served on wooden plates with smoked paprika, olive oil, sea salt, and boiled potatoes. The "pulpeiras" (octopus cooks) of Galicia are traditionally women who have inherited the technique across generations.',
+            ethics: 'Octopus is killed by being thrown into boiling water alive — a practice increasingly questioned under sentience frameworks. Some Galician restaurants now use ice-bath stunning before cooking.' },
+          { dish: 'Tako (sushi + sashimi)', region: 'Japan', emoji: '🍣', color: '#fbbf24',
+            description: 'Octopus is one of the foundational sushi proteins. Typically common octopus (madako) is boiled, sliced thin, and served either as nigiri (over rice) or sashimi. Texture is firm and slightly chewy. Toyama Bay\'s spring firefly squid (hotaruika) is a related seasonal delicacy.',
+            ethics: 'Standard practice involves killing the octopus by spike to the brain (ikejime) — considered more humane than boiling alive. Increasingly adopted across global sushi practice.' },
+          { dish: 'Sannakji', region: 'South Korea', emoji: '🐙', color: '#fca5a5',
+            description: 'Live octopus eaten while still moving on the plate. The octopus is chopped immediately before serving — the arms continue to react to stimuli via arm-ganglion autonomy for up to an hour. Sannakji is considered a delicacy and a test of culinary nerve.',
+            ethics: 'The most welfare-controversial cephalopod dish. Multiple deaths have occurred from suckers attaching to the eater\'s throat. Many cephalopod biologists + welfare advocates argue strongly against this practice given evidence of cephalopod pain perception.' },
+          { dish: 'Calamari (fried squid rings)', region: 'Mediterranean + global', emoji: '🦑', color: '#86efac',
+            description: 'Squid mantle sliced into rings, battered, deep-fried. Italian, Greek, and Spanish coastal cuisines all have versions. Global staple of seafood restaurants.',
+            ethics: 'Squid have shorter lifespans (~1 year) and are typically caught + killed quickly, reducing welfare concerns relative to octopus. Sustainability varies by fishery; Argentine + Humboldt squid are generally considered well-managed.' },
+          { dish: 'Tako-yaki', region: 'Osaka, Japan', emoji: '🥢', color: '#a78bfa',
+            description: 'Battered octopus balls cooked on a special griddle, topped with takoyaki sauce + bonito flakes + green onion + mayonnaise. A street food staple of Osaka + most Japanese festivals. Created in 1935 by Tomekichi Endo.',
+            ethics: 'Octopus pieces are small + pre-prepared. Welfare considerations focus on the upstream catch + processing.' },
+          { dish: 'Cooking shows + the octopus farming debate', region: 'Global, ongoing', emoji: '🏭', color: '#fb923c',
+            description: 'As octopus appears more in haute cuisine + reality cooking shows (Top Chef, MasterChef regularly feature octopus dishes), public awareness of cephalopod intelligence has created new tension. Some celebrity chefs (Dan Barber, Alice Waters) have publicly committed to not serving octopus.',
+            ethics: 'The Nueva Pescanova proposed industrial octopus farm in the Canary Islands (announced 2021) became a global ethics flashpoint. Many argue: if we accept cephalopods are sentient, can we farm them? Washington State + California legislation pending preemptive bans.' }
+        ];
+        var MODERN = [
+          { name: '"Other Minds: The Octopus, the Sea, and the Deep Origins of Consciousness"', creator: 'Peter Godfrey-Smith', year: '2016', emoji: '📚', color: '#a78bfa',
+            description: 'Philosopher + scuba diver Peter Godfrey-Smith\'s accessible exploration of cephalopod consciousness + the philosophy of mind. Centered on the underwater "Octopolis" site in Australia where multiple octopuses coexist + interact — challenging the "solitary" framing.',
+            impact: 'The single most influential book on cephalopod consciousness for general readers. Bridged academic philosophy of mind with field observation. Cited in the UK 2021 LSE sentience review that led to the Sentience Act.' },
+          { name: '"My Octopus Teacher"', creator: 'Netflix; dir. Pippa Ehrlich + James Reed', year: '2020', emoji: '🎬', color: '#86efac',
+            description: 'Won the 2021 Academy Award for Best Documentary Feature. The relationship between Craig Foster + a wild common octopus in a Cape Town kelp forest became a global emotional touchstone for cephalopod awareness.',
+            impact: 'Drove a measurable spike in: public interest in octopus cognition, cephalopod search trends, citizen science enrollment (iNaturalist), and political pressure for sentience protections. Considered a contributing factor to the 2021 UK Sentience Act amendment.' },
+          { name: 'Otto, Inky, Heidi, and the Octopus Celebrities', creator: 'Various aquaria + research labs', year: '2008-present', emoji: '🐙', color: '#fbbf24',
+            description: 'Individual octopuses have become cultural figures with names + biographies. Otto (Sea Star Aquarium, Germany) short-circuited lights with water jets. Inky (NZ National Aquarium) escaped through a drain to the ocean. Heidi (Alaska Pacific University) was filmed apparently dreaming. Each made international news.',
+            impact: 'Public connects with named individuals more than abstract species. The celebrity-octopus framing was instrumental in shifting cephalopod policy from "interesting invertebrate" to "sentient being deserving protection."' },
+          { name: 'The Cambridge Declaration on Consciousness', creator: 'International scientists at Francis Crick Memorial Conference', year: '2012', emoji: '📜', color: '#dc2626',
+            description: 'A formal scientific declaration signed at Cambridge, naming cephalopods alongside mammals + birds as showing evidence of consciousness-correlated brain substrates. Foundational moment in invertebrate cognition advocacy.',
+            impact: 'Cited in every subsequent legal + policy document on cephalopod sentience. Direct line from the Declaration to the UK Animal Welfare (Sentience) Act 2021. Changed the default scientific position from "probably not sentient" to "probably sentient."' },
+          { name: 'Pop culture cephalopod-aliens', creator: 'Hollywood + video games', year: '2010s-2020s', emoji: '🛸', color: '#0ea5e9',
+            description: 'Cephalopod-inspired aliens are now a recurring science-fiction trope. The Heptapods of "Arrival" (2016) use radial language reminiscent of octopus distributed intelligence. "Soma" video game features deep-sea AI in cephalopod-like bodies. The aliens in "Annihilation" reference cephalopod chromatophore biology.',
+            impact: 'Reflects the cultural recognition that cephalopods are the closest thing to genuine "alien intelligence" we have. Pop culture is doing what cephalopod science only recently named: treating these animals as a foreign mode of mind rather than a primitive mode.' },
+          { name: 'The welfare movement + ongoing policy', creator: 'Activists, scientists, legislators (2010-2025)', year: 'Ongoing', emoji: '⚖️', color: '#86efac',
+            description: 'EU Directive 2010/63 first gave cephalopods invertebrate-equivalent research protections. UK Sentience Act 2021 formalized sentience recognition. Washington State 2024 preemptive octopus aquaculture ban. California + Hawaii proposed similar bans. The Nueva Pescanova farm proposal remains a focal point.',
+            impact: 'Cephalopods are now central to the broader animal-welfare conversation. As industrial aquaculture + climate change reshape the ocean, decisions about cephalopod treatment will set precedent for marine invertebrate welfare more broadly. The conversation is genuinely open.' }
+        ];
+        return h('div', null,
+          panelHeader('🎭 Cephalopods in Culture',
+            'For thousands of years, humans have related to cephalopods through myth, art, food, and (recently) ethics. The biological perspective is only one of many. From Norse sailors\' Kraken to Ainu deities to Aristotle\'s observations to "My Octopus Teacher," the cultural history is rich + ongoing.'),
+
+          h('div', { role: 'tablist', 'aria-label': 'Culture sub-sections',
+            style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
+            SUBS.map(function(s) {
+              var active = view === s.id;
+              return h('button', { key: s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                onClick: function() { setCL({ cultureView: s.id }); awardXP(1); },
+                style: { padding: '8px 12px',
+                  background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
+                  color: active ? '#c7d2fe' : '#cbd5e1',
+                  border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                  borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 6 } },
+                h('span', { 'aria-hidden': 'true' }, s.icon), s.label);
+            })),
+
+          view === 'myth' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🐉 Pre-scientific cephalopod mythology'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
+                'Before science gave us "Octopus vulgaris" + "Architeuthis dux," cultures around the world built mythologies to explain the alien intelligences in their waters. Many of these myths got the biology surprisingly right + the size dramatically wrong.'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+                MYTHS.map(function(m) {
+                  return h('div', { key: m.name,
+                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                      borderLeft: '4px solid ' + m.color, padding: '14px 16px', borderRadius: 10 } },
+                    h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 24, lineHeight: 1 } }, m.emoji),
+                      h('div', { style: { flex: 1, minWidth: 200 } },
+                        h('div', { style: { fontSize: 16, fontWeight: 800, color: m.color } }, m.name),
+                        h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginTop: 2 } }, m.culture))),
+                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 8 } }, m.story),
+                    h('div', { style: { padding: '8px 12px', background: 'rgba(167,139,250,0.1)', borderLeft: '3px solid #a78bfa', borderRadius: 6 } },
+                      h('div', { style: { fontSize: 10, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, '🔬 The real biology behind it'),
+                      h('div', { style: { fontSize: 11, color: '#e9d5ff', lineHeight: 1.6 } }, m.realBasis)));
+                })))
+          ) : null,
+
+          view === 'art' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🎨 Cephalopods in art + literature'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
+                'Visual + literary representations of cephalopods span 3500 years — from Bronze Age Minoan pottery to 2020 Netflix documentary. The way each era depicts these animals reflects what that era believed about minds + monsters + the ocean.'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+                ART.map(function(a) {
+                  return h('div', { key: a.name,
+                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                      borderLeft: '4px solid ' + a.color, padding: '14px 16px', borderRadius: 10 } },
+                    h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 26, lineHeight: 1 } }, a.emoji),
+                      h('div', { style: { flex: 1, minWidth: 220 } },
+                        h('div', { style: { fontSize: 15, fontWeight: 800, color: a.color } }, a.name),
+                        h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } },
+                          h('span', { style: { color: '#fde68a' } }, a.creator),
+                          ' · ',
+                          h('span', { style: { fontStyle: 'italic' } }, a.period)))),
+                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 8 } }, a.description),
+                    h('div', { style: { padding: '8px 12px', background: 'rgba(251,191,36,0.1)', borderLeft: '3px solid #fbbf24', borderRadius: 6 } },
+                      h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, '✨ Why this matters'),
+                      h('div', { style: { fontSize: 11, color: '#fde68a', lineHeight: 1.6, fontStyle: 'italic' } }, a.significance)));
+                })))
+          ) : null,
+
+          view === 'food' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🍱 Cephalopods as food'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
+                'Cephalopods are food in most coastal cultures. The dishes are old + varied; the ethics are recent + evolving. As public awareness of cephalopod sentience has grown, traditional preparation practices are being re-examined.'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+                FOODS.map(function(f) {
+                  return h('div', { key: f.dish,
+                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                      borderLeft: '4px solid ' + f.color, padding: '14px 16px', borderRadius: 10 } },
+                    h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 24, lineHeight: 1 } }, f.emoji),
+                      h('div', { style: { flex: 1, minWidth: 200 } },
+                        h('div', { style: { fontSize: 16, fontWeight: 800, color: f.color } }, f.dish),
+                        h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginTop: 2 } }, f.region))),
+                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 8 } }, f.description),
+                    h('div', { style: { padding: '8px 12px', background: 'rgba(252,165,165,0.08)', borderLeft: '3px solid #fca5a5', borderRadius: 6 } },
+                      h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, '⚖️ Welfare consideration'),
+                      h('div', { style: { fontSize: 11, color: '#fecaca', lineHeight: 1.6 } }, f.ethics)));
+                }))),
+
+            h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #a78bfa' }) },
+              h('div', { style: subheaderStyle() }, '🧭 The eating question'),
+              h('div', { style: { color: '#e9d5ff', fontSize: 13, lineHeight: 1.75 } },
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  'Most cultures don\'t question eating cephalopods — they\'re part of generations of cuisine. But the recent recognition of cephalopod sentience (UK 2021, EU 2010, multiple scientific declarations) has surfaced a question many find newly difficult:'),
+                h('p', { style: { margin: '0 0 12px 0', padding: '12px 14px', background: 'rgba(167,139,250,0.1)', borderRadius: 8, fontStyle: 'italic', textAlign: 'center', fontSize: 14 } },
+                  'If we accept that cephalopods are sentient — meaning capable of suffering — does that change our eating practices?'),
+                h('p', { style: { margin: 0 } },
+                  'There aren\'t clean answers. Some people who eat fish + chicken decline octopus specifically. Some celebrity chefs (Dan Barber, Alice Waters) have stopped serving octopus. Some traditional cuisines argue this is colonial moralizing against ancient food practices. The ethics are genuinely contested + the conversation is genuinely open. This module doesn\'t take a position. The question is worth holding rather than resolving.')))
+          ) : null,
+
+          view === 'modern' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🎬 Modern cephalopod consciousness'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
+                'In the last 15 years, cephalopods have moved from "obscure invertebrates" to "central figures in the philosophy of mind + the animal-welfare movement." A few books, a few films, a few legal documents, and a handful of celebrity individual octopuses changed how mainstream culture thinks about non-human minds.'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+                MODERN.map(function(m) {
+                  return h('div', { key: m.name,
+                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                      borderLeft: '4px solid ' + m.color, padding: '14px 16px', borderRadius: 10 } },
+                    h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 26, lineHeight: 1 } }, m.emoji),
+                      h('div', { style: { flex: 1, minWidth: 220 } },
+                        h('div', { style: { fontSize: 15, fontWeight: 800, color: m.color } }, m.name),
+                        h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } },
+                          h('span', { style: { color: '#fde68a' } }, m.creator),
+                          ' · ',
+                          h('span', { style: { fontStyle: 'italic' } }, m.year)))),
+                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 8 } }, m.description),
+                    h('div', { style: { padding: '8px 12px', background: 'rgba(134,239,172,0.08)', borderLeft: '3px solid #86efac', borderRadius: 6 } },
+                      h('div', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, '🌊 Cultural impact'),
+                      h('div', { style: { fontSize: 11, color: '#dcfce7', lineHeight: 1.6 } }, m.impact)));
+                }))),
+
+            h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #a78bfa' }) },
+              h('div', { style: subheaderStyle() }, '💡 The arc from "tentacle monster" to "second consciousness"'),
+              h('div', { style: { color: '#e9d5ff', fontSize: 13, lineHeight: 1.75 } },
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  'A century ago, popular culture treated cephalopods primarily as monsters — the Kraken, the deep-sea horror, Verne\'s giant squid attacking the Nautilus. Tentacles were a sign of alien menace.'),
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  'Today, popular culture treats them as candidates for a SECOND INDEPENDENT INSTANCE of consciousness on Earth. Books, films, and laws all converge on the idea that octopuses + their relatives might have inner experiences as rich as our own — built from a completely different evolutionary architecture.'),
+                h('p', { style: { margin: 0, padding: '12px 14px', background: 'rgba(167,139,250,0.1)', borderLeft: '3px solid #a78bfa', borderRadius: 6, fontStyle: 'italic' } },
+                  'The shift from monster to mind is one of the largest cultural reframings in recent biology. It happened fast — in roughly 50 years — driven by a small number of researchers + filmmakers + writers + activists. The cephalopods themselves didn\'t change. Our way of seeing them did.')))
+          ) : null
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════
+      // SECTION 16 — FIELD DAY GUIDE (practical observation handbook)
       // ═══════════════════════════════════════════════════════
       function renderFieldDay() {
         var view = d.fieldDayView || 'where';
@@ -4474,6 +4709,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       else if (section === 'methods') content = renderResearchMethods();
       else if (section === 'compcog') content = renderComparativeCognition();
       else if (section === 'conservation') content = renderConservation();
+      else if (section === 'culture') content = renderCulture();
       else if (section === 'fieldday') content = renderFieldDay();
       else if (section === 'resources') content = renderResources();
       else content = renderHub();
