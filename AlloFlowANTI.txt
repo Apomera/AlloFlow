@@ -4988,6 +4988,51 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // sidebar header — lets a teacher load a student's downloaded
   // annotations JSON and merge it into the current view.
   const annotationImportInputRef = useRef(null);
+  // Phase 7b: annotation undo. Session-only stack of recent stickers
+  // snapshots so Ctrl/Cmd+Z reverts the last annotation mutation. Capped
+  // at 20 to avoid memory bloat. isUndoingRef prevents the undo itself
+  // from being pushed onto the stack (which would undo the undo).
+  const annotationUndoStackRef = useRef([]);
+  const annotationPrevStickersRef = useRef(stickers);
+  const isUndoingAnnotationRef = useRef(false);
+  const [annotationUndoCount, setAnnotationUndoCount] = useState(0);
+  React.useEffect(() => {
+    if (annotationPrevStickersRef.current === stickers) return;
+    if (isUndoingAnnotationRef.current) {
+      isUndoingAnnotationRef.current = false;
+    } else {
+      annotationUndoStackRef.current.push(annotationPrevStickersRef.current);
+      if (annotationUndoStackRef.current.length > 20) annotationUndoStackRef.current.shift();
+      setAnnotationUndoCount(annotationUndoStackRef.current.length);
+    }
+    annotationPrevStickersRef.current = stickers;
+  }, [stickers]);
+  const handleAnnotationUndo = React.useCallback(() => {
+    const stack = annotationUndoStackRef.current;
+    if (stack.length === 0) return;
+    const prev = stack.pop();
+    setAnnotationUndoCount(stack.length);
+    isUndoingAnnotationRef.current = true;
+    setStickers(prev);
+  }, []);
+  // Ctrl/Cmd+Z keyboard shortcut. Scoped to the document so it works from
+  // anywhere on the page; ignored if a textarea/input is focused so the
+  // user can still use system undo inside text fields.
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if (!(e.key === 'z' || e.key === 'Z')) return;
+      if (!(e.ctrlKey || e.metaKey)) return;
+      if (e.shiftKey) return; // redo is reserved
+      const tag = (e.target && e.target.tagName) || '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.target && e.target.isContentEditable) return;
+      if (annotationUndoStackRef.current.length === 0) return;
+      e.preventDefault();
+      handleAnnotationUndo();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [handleAnnotationUndo]);
   React.useEffect(function () {
     // Keep legacy isStickerMode boolean in sync so cursor/CSS branches in
     // the existing JSX continue to work without per-site migration.
@@ -16458,6 +16503,59 @@ Return ONLY valid JSON in this format:
         setIsProcessing(false);
     }
   };
+  // Generate or refine the optional Examples-quadrant image for a Frayer Model
+  // outline. Called from the rendered Frayer view (view_renderers). First call
+  // produces a fresh educational illustration of the vocabulary term + its
+  // examples; subsequent calls with a refinement instruction use image-to-image
+  // edit. Persists onto generatedContent.data.frayerExampleImage.
+  const handleGenerateFrayerImage = async (refinementInstruction = '') => {
+    if (!generatedContent || generatedContent.type !== 'outline') return;
+    const data = generatedContent?.data || {};
+    if (data.structureType !== 'Frayer Model') return;
+    const term = data.main || 'vocabulary term';
+    const examplesBranch = (data.branches || [])[2] || { items: [] };
+    const exampleItems = (examplesBranch.items || [])
+      .map(it => typeof it === 'object' ? (it?.text || '') : String(it))
+      .filter(Boolean)
+      .slice(0, 4)
+      .join(', ');
+    const existingImage = data.frayerExampleImage;
+    setIsProcessing(true);
+    try {
+      let newImage = null;
+      if (existingImage && refinementInstruction.trim()) {
+        const rawBase64 = (existingImage.split(',')[1] || existingImage);
+        const refinePrompt = `Edit this educational illustration. Instruction: ${refinementInstruction.trim()}. Maintain a simple, friendly, flat vector-art style on a white background.`;
+        newImage = await callGeminiImageEdit(refinePrompt, rawBase64);
+      } else {
+        const prompt = `Simple, friendly, flat vector-art educational illustration of the vocabulary term "${term}"${exampleItems ? `, showing examples such as ${exampleItems}` : ''}. Clean iconography on a white background, no text labels, suitable for ${gradeLevel || 'middle school'} students.`;
+        newImage = await callGeminiImageEdit(prompt);
+      }
+      if (newImage) {
+        const updatedContent = { ...generatedContent, data: { ...data, frayerExampleImage: newImage } };
+        setGeneratedContent(updatedContent);
+        setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+        addToast(existingImage ? (t('visuals.actions.icon_refined') || 'Image refined') : 'Frayer image generated', 'success');
+      } else {
+        addToast(t('visuals.actions.refinement_failed') || 'Image generation failed', 'error');
+      }
+    } catch (e) {
+      warnLog('Frayer image generation failed', e);
+      addToast(t('visuals.actions.refinement_failed') || 'Image generation failed', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  const handleRemoveFrayerImage = () => {
+    if (!generatedContent || generatedContent.type !== 'outline') return;
+    const data = generatedContent?.data || {};
+    if (data.structureType !== 'Frayer Model' || !data.frayerExampleImage) return;
+    const { frayerExampleImage, ...rest } = data;
+    const updatedContent = { ...generatedContent, data: rest };
+    setGeneratedContent(updatedContent);
+    setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
+    addToast('Frayer image removed', 'info');
+  };
   const handleRefineGlossaryImage = async (index, instructionOverride = null) => {
     if (!generatedContent || generatedContent.type !== 'glossary') return;
     const instruction = instructionOverride || glossaryRefinementInputs[index];
@@ -18736,6 +18834,8 @@ Return ONLY valid JSON in this format:
         isStoryMapSortPlaying,
         setIsStoryMapSortPlaying,
         closeStoryMapSort,
+        handleGenerateFrayerImage,
+        handleRemoveFrayerImage,
       });
     throw new Error("[renderOutlineContent] ViewRenderers module not loaded - reload the page");
   };
@@ -21962,6 +22062,24 @@ Return ONLY valid JSON in this format:
                                 t: t,
                             });
                         })()}
+                        {/* Annotation undo (Phase 7b). Disabled when the
+                            undo stack is empty. Keyboard shortcut Ctrl/Cmd+Z
+                            works document-wide except inside text fields. */}
+                        {(() => {
+                            const canUndo = annotationUndoCount > 0;
+                            return (
+                                <button
+                                    type="button"
+                                    onClick={canUndo ? handleAnnotationUndo : undefined}
+                                    disabled={!canUndo}
+                                    className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ' + (canUndo ? 'text-slate-600 hover:bg-slate-100' : 'text-slate-300 cursor-not-allowed')}
+                                    title={canUndo ? ('Undo last annotation (' + annotationUndoCount + ' available) — Ctrl/Cmd+Z') : 'Nothing to undo'}
+                                    aria-label="Undo last annotation"
+                                >
+                                    ↩ Undo
+                                </button>
+                            );
+                        })()}
                         {/* Annotation sidebar toggle (Phase 5). Count
                             badge surfaces the total so users see at a
                             glance whether the doc has feedback waiting. */}
@@ -22023,6 +22141,7 @@ Return ONLY valid JSON in this format:
             onClick={handleContentClick}
             onMouseUp={handleContentMouseUp}
             data-reading-theme={readingTheme}
+            data-allo-anno-host="true"
             className={`flex-grow ${isOutputHeaderCollapsed ? 'p-2 md:p-4' : 'p-4 md:p-8'} overflow-y-auto relative custom-scrollbar transition-all ${readingTheme === 'default' ? 'bg-white' : ''} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''} ${annotationMode === 'sticker' ? 'cursor-[url(https://cdn-icons-png.flaticon.com/32/166/166538.png),_pointer]' : ''} ${annotationMode === 'note' ? 'cursor-crosshair' : ''} ${annotationMode === 'highlight' ? 'cursor-text' : ''} ${annotationMode === 'voice' ? 'cursor-crosshair' : ''}`}
             style={readingTheme !== 'default' ? {
               backgroundColor: readingTheme === 'warm' ? '#fef3c7' : readingTheme === 'sepia' ? '#f4ecd8' : readingTheme === 'dark' ? '#1a1a2e' : readingTheme === 'highContrast' ? '#000000' : readingTheme === 'blue' ? '#d6eaf8' : readingTheme === 'green' ? '#e8f5e9' : readingTheme === 'rose' ? '#fce4ec' : readingTheme === 'dyslexia' ? '#faf8ef' : undefined,
@@ -22042,6 +22161,16 @@ Return ONLY valid JSON in this format:
                 if (!_m || !_m.Overlay) return null;
                 return React.createElement(_m.Overlay, {
                     annotations: stickers,
+                    mode: annotationMode,
+                    isTeacher: isTeacherMode,
+                    onMove: (id, x, y, isFinal) => {
+                        // Live updates during drag, committed on pointerup.
+                        // Permission: students can drag their own; teachers
+                        // can drag anything (checked also in Overlay).
+                        if (_m.updateAnnotation) {
+                            setStickers(prev => _m.updateAnnotation(prev, id, { x: Math.max(0, x), y: Math.max(0, y) }));
+                        }
+                    },
                     onNoteChange: (id, patch) => {
                         if (_m.updateAnnotation) {
                             setStickers(prev => _m.updateAnnotation(prev, id, patch));

@@ -200,6 +200,8 @@ const renderOutlineContent = (deps) => {
   const FrayerSortGame = window.AlloModules && window.AlloModules.FrayerSortGame ? (function() { const _C = window.AlloModules.FrayerSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
   const SeeThinkWonderSortGame = window.AlloModules && window.AlloModules.SeeThinkWonderSortGame ? (function() { const _C = window.AlloModules.SeeThinkWonderSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
   const StoryMapSortGame = window.AlloModules && window.AlloModules.StoryMapSortGame ? (function() { const _C = window.AlloModules.StoryMapSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
+  const handleGenerateFrayerImage = deps.handleGenerateFrayerImage;
+  const handleRemoveFrayerImage = deps.handleRemoveFrayerImage;
   try { if (window._DEBUG_VIEW_RENDERERS) console.log("[ViewRenderers] renderOutlineContent fired"); } catch(_) {}
         if (!generatedContent || generatedContent.type !== 'outline' || !generatedContent?.data) return null;
         const { main, main_en, branches: rawBranches, structureType } = generatedContent?.data;
@@ -1262,6 +1264,21 @@ const renderOutlineContent = (deps) => {
         }
         // ── Frayer Model: 4-quadrant vocabulary grid ──
         if (type === 'Frayer Model' && !isEditingOutline) {
+            const frayerImage = generatedContent?.data?.frayerExampleImage;
+            const onGenerateFrayerVisual = async () => {
+                if (typeof handleGenerateFrayerImage === 'function') await handleGenerateFrayerImage('');
+            };
+            const onRefineFrayerVisual = async () => {
+                const instruction = (typeof window !== 'undefined' && typeof window.prompt === 'function')
+                    ? window.prompt('How should the image change? (e.g., "make it more colorful", "show a microscope view")')
+                    : '';
+                if (instruction && typeof handleGenerateFrayerImage === 'function') {
+                    await handleGenerateFrayerImage(instruction);
+                }
+            };
+            const onRemoveFrayerVisual = () => {
+                if (typeof handleRemoveFrayerImage === 'function') handleRemoveFrayerImage();
+            };
             if (isFrayerSortPlaying) {
                 return (
                     <ErrorBoundary fallbackMessage="Frayer Sort encountered an error.">
@@ -1287,7 +1304,7 @@ const renderOutlineContent = (deps) => {
                 amber:   { bg: 'bg-amber-50/70',   header: 'text-amber-800',   dot: 'text-amber-500' },
                 rose:    { bg: 'bg-rose-50/70',    header: 'text-rose-800',    dot: 'text-rose-500' },
             };
-            const renderQuadrant = (branch, colorKey, borders, quadrantLabel) => {
+            const renderQuadrant = (branch, colorKey, borders, quadrantLabel, includeImage) => {
                 const items = (branch.items || []).map(itemText).filter(Boolean);
                 const c = QUADRANT_COLORS[colorKey];
                 return (
@@ -1295,6 +1312,11 @@ const renderOutlineContent = (deps) => {
                         <h4 className={`font-black text-sm uppercase tracking-wider mb-3 ${c.header}`}>
                             {branch.title}
                         </h4>
+                        {includeImage && frayerImage ? (
+                            <div className="mb-3 bg-white rounded-md border border-slate-200 p-2 flex items-center justify-center">
+                                <img src={frayerImage} alt={`Visual representation of ${main || 'the vocabulary term'}`} style={{ maxHeight: '120px', objectFit: 'contain' }} />
+                            </div>
+                        ) : null}
                         <ul className="space-y-1.5">
                             {items.length > 0 ? items.map((text, i) => (
                                 <li key={i} className="flex items-start gap-2 text-sm text-slate-700 leading-snug">
@@ -1324,16 +1346,49 @@ const renderOutlineContent = (deps) => {
                         </div>
                     )}
                     <div className="grid grid-cols-2 gap-0 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white relative" style={{ minHeight: '460px' }}>
-                        {renderQuadrant(defBranch,    'indigo',  'border-r border-b border-slate-300', 'Definition')}
-                        {renderQuadrant(charBranch,   'emerald', 'border-b border-slate-300',          'Characteristics')}
-                        {renderQuadrant(exBranch,     'amber',   'border-r border-slate-300',          'Examples')}
-                        {renderQuadrant(nonExBranch,  'rose',    '',                                   'Non-Examples')}
+                        {renderQuadrant(defBranch,    'indigo',  'border-r border-b border-slate-300', 'Definition',     false)}
+                        {renderQuadrant(charBranch,   'emerald', 'border-b border-slate-300',          'Characteristics', false)}
+                        {renderQuadrant(exBranch,     'amber',   'border-r border-slate-300',          'Examples',        true)}
+                        {renderQuadrant(nonExBranch,  'rose',    '',                                   'Non-Examples',    false)}
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border-4 border-slate-700 rounded-full px-6 py-3 shadow-2xl z-10 max-w-[220px]">
                             <div className="text-center font-black text-lg text-slate-800 leading-tight">
                                 {main || 'Vocabulary Term'}
                             </div>
                         </div>
                     </div>
+                    {isTeacherMode ? (
+                        <div className="flex gap-2 justify-center mt-3">
+                            {frayerImage ? (
+                                <>
+                                    <button
+                                        onClick={onRefineFrayerVisual}
+                                        disabled={isProcessing}
+                                        className="px-3 py-1.5 text-xs font-bold bg-violet-50 text-violet-800 border border-violet-300 rounded-md hover:bg-violet-100 disabled:opacity-50"
+                                        aria-label="Refine the Examples-quadrant visual via image-to-image edit"
+                                    >
+                                        ✨ Refine visual
+                                    </button>
+                                    <button
+                                        onClick={onRemoveFrayerVisual}
+                                        disabled={isProcessing}
+                                        className="px-3 py-1.5 text-xs font-bold bg-white text-slate-700 border border-slate-300 rounded-md hover:bg-slate-100 disabled:opacity-50"
+                                        aria-label="Remove the Examples-quadrant visual"
+                                    >
+                                        Remove visual
+                                    </button>
+                                </>
+                            ) : (
+                                <button
+                                    onClick={onGenerateFrayerVisual}
+                                    disabled={isProcessing}
+                                    className="px-3 py-1.5 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded-md hover:bg-amber-100 disabled:opacity-50"
+                                    aria-label="Generate an AI visual for the Examples quadrant"
+                                >
+                                    🖼️ Add visual to Examples
+                                </button>
+                            )}
+                        </div>
+                    ) : null}
                     <p className="text-xs text-slate-500 italic text-center mt-3">{t('outline.frayer_caption') || 'Frayer Model: vocabulary term in the center, definition + characteristics + examples + non-examples in the four quadrants.'}</p>
                 </div>
             );

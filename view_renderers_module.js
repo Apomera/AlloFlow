@@ -225,6 +225,8 @@ const renderOutlineContent = (deps) => {
     const _C = window.AlloModules.StoryMapSortGame;
     return React.memo((props) => React.createElement(_C, props));
   })() : (props) => React.createElement("div", { className: "p-8 text-center text-slate-600" }, "Loading game...");
+  const handleGenerateFrayerImage = deps.handleGenerateFrayerImage;
+  const handleRemoveFrayerImage = deps.handleRemoveFrayerImage;
   try {
     if (window._DEBUG_VIEW_RENDERERS) console.log("[ViewRenderers] renderOutlineContent fired");
   } catch (_) {
@@ -815,6 +817,19 @@ const renderOutlineContent = (deps) => {
     )), /* @__PURE__ */ React.createElement(KeyConceptMapView, { branches, main, main_en, BranchItem }));
   }
   if (type === "Frayer Model" && !isEditingOutline) {
+    const frayerImage = generatedContent?.data?.frayerExampleImage;
+    const onGenerateFrayerVisual = async () => {
+      if (typeof handleGenerateFrayerImage === "function") await handleGenerateFrayerImage("");
+    };
+    const onRefineFrayerVisual = async () => {
+      const instruction = typeof window !== "undefined" && typeof window.prompt === "function" ? window.prompt('How should the image change? (e.g., "make it more colorful", "show a microscope view")') : "";
+      if (instruction && typeof handleGenerateFrayerImage === "function") {
+        await handleGenerateFrayerImage(instruction);
+      }
+    };
+    const onRemoveFrayerVisual = () => {
+      if (typeof handleRemoveFrayerImage === "function") handleRemoveFrayerImage();
+    };
     if (isFrayerSortPlaying) {
       return /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "Frayer Sort encountered an error." }, /* @__PURE__ */ React.createElement(
         FrayerSortGame,
@@ -839,10 +854,10 @@ const renderOutlineContent = (deps) => {
       amber: { bg: "bg-amber-50/70", header: "text-amber-800", dot: "text-amber-500" },
       rose: { bg: "bg-rose-50/70", header: "text-rose-800", dot: "text-rose-500" }
     };
-    const renderQuadrant = (branch, colorKey, borders, quadrantLabel) => {
+    const renderQuadrant = (branch, colorKey, borders, quadrantLabel, includeImage) => {
       const items = (branch.items || []).map(itemText).filter(Boolean);
       const c = QUADRANT_COLORS[colorKey];
-      return /* @__PURE__ */ React.createElement("div", { className: `${c.bg} p-5 ${borders}`, "aria-label": quadrantLabel }, /* @__PURE__ */ React.createElement("h4", { className: `font-black text-sm uppercase tracking-wider mb-3 ${c.header}` }, branch.title), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5" }, items.length > 0 ? items.map((text, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "flex items-start gap-2 text-sm text-slate-700 leading-snug" }, /* @__PURE__ */ React.createElement("span", { className: `${c.dot} mt-0.5 flex-shrink-0` }, "\u25CF"), /* @__PURE__ */ React.createElement("span", null, text))) : /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-400 italic" }, "\u2014")));
+      return /* @__PURE__ */ React.createElement("div", { className: `${c.bg} p-5 ${borders}`, "aria-label": quadrantLabel }, /* @__PURE__ */ React.createElement("h4", { className: `font-black text-sm uppercase tracking-wider mb-3 ${c.header}` }, branch.title), includeImage && frayerImage ? /* @__PURE__ */ React.createElement("div", { className: "mb-3 bg-white rounded-md border border-slate-200 p-2 flex items-center justify-center" }, /* @__PURE__ */ React.createElement("img", { src: frayerImage, alt: `Visual representation of ${main || "the vocabulary term"}`, style: { maxHeight: "120px", objectFit: "contain" } })) : null, /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5" }, items.length > 0 ? items.map((text, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "flex items-start gap-2 text-sm text-slate-700 leading-snug" }, /* @__PURE__ */ React.createElement("span", { className: `${c.dot} mt-0.5 flex-shrink-0` }, "\u25CF"), /* @__PURE__ */ React.createElement("span", null, text))) : /* @__PURE__ */ React.createElement("li", { className: "text-xs text-slate-400 italic" }, "\u2014")));
     };
     return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto px-4 py-6 relative" }, showGameButton && /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(GameButtonHint, null), /* @__PURE__ */ React.createElement(
       "button",
@@ -855,7 +870,34 @@ const renderOutlineContent = (deps) => {
       /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
       " ",
       t("games.frayer_sort.play_btn") || "Sort into Quadrants"
-    )), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-0 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white relative", style: { minHeight: "460px" } }, renderQuadrant(defBranch, "indigo", "border-r border-b border-slate-300", "Definition"), renderQuadrant(charBranch, "emerald", "border-b border-slate-300", "Characteristics"), renderQuadrant(exBranch, "amber", "border-r border-slate-300", "Examples"), renderQuadrant(nonExBranch, "rose", "", "Non-Examples"), /* @__PURE__ */ React.createElement("div", { className: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border-4 border-slate-700 rounded-full px-6 py-3 shadow-2xl z-10 max-w-[220px]" }, /* @__PURE__ */ React.createElement("div", { className: "text-center font-black text-lg text-slate-800 leading-tight" }, main || "Vocabulary Term"))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("outline.frayer_caption") || "Frayer Model: vocabulary term in the center, definition + characteristics + examples + non-examples in the four quadrants."));
+    )), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-0 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white relative", style: { minHeight: "460px" } }, renderQuadrant(defBranch, "indigo", "border-r border-b border-slate-300", "Definition", false), renderQuadrant(charBranch, "emerald", "border-b border-slate-300", "Characteristics", false), renderQuadrant(exBranch, "amber", "border-r border-slate-300", "Examples", true), renderQuadrant(nonExBranch, "rose", "", "Non-Examples", false), /* @__PURE__ */ React.createElement("div", { className: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border-4 border-slate-700 rounded-full px-6 py-3 shadow-2xl z-10 max-w-[220px]" }, /* @__PURE__ */ React.createElement("div", { className: "text-center font-black text-lg text-slate-800 leading-tight" }, main || "Vocabulary Term"))), isTeacherMode ? /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-center mt-3" }, frayerImage ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: onRefineFrayerVisual,
+        disabled: isProcessing,
+        className: "px-3 py-1.5 text-xs font-bold bg-violet-50 text-violet-800 border border-violet-300 rounded-md hover:bg-violet-100 disabled:opacity-50",
+        "aria-label": "Refine the Examples-quadrant visual via image-to-image edit"
+      },
+      "\u2728 Refine visual"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: onRemoveFrayerVisual,
+        disabled: isProcessing,
+        className: "px-3 py-1.5 text-xs font-bold bg-white text-slate-700 border border-slate-300 rounded-md hover:bg-slate-100 disabled:opacity-50",
+        "aria-label": "Remove the Examples-quadrant visual"
+      },
+      "Remove visual"
+    )) : /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: onGenerateFrayerVisual,
+        disabled: isProcessing,
+        className: "px-3 py-1.5 text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 rounded-md hover:bg-amber-100 disabled:opacity-50",
+        "aria-label": "Generate an AI visual for the Examples quadrant"
+      },
+      "\u{1F5BC}\uFE0F Add visual to Examples"
+    )) : null, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-500 italic text-center mt-3" }, t("outline.frayer_caption") || "Frayer Model: vocabulary term in the center, definition + characteristics + examples + non-examples in the four quadrants."));
   }
   if (type === "See-Think-Wonder" && !isEditingOutline) {
     if (isSeeThinkWonderSortPlaying) {
