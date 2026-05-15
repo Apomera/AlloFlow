@@ -746,6 +746,143 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       explanation: 'Tucker 1998 computer model showed peregrines fly a logarithmic spiral that keeps the prey image at a fixed retinal angle. This way the falcon doesn\'t need to turn its head at terminal velocity (which would create drag + impair aerodynamic streamlining). Identical to the proportional-navigation algorithm used by air-to-air missiles.' }
   ];
 
+  // ───────────────────────────────────────────────────────────
+  // PELLET LAB DATA — what's inside an owl pellet + ID key
+  // ───────────────────────────────────────────────────────────
+  // Owl pellets are the regurgitated indigestible fur+bones+teeth of prey.
+  // They're a free ecology dataset — a single barn-owl roost can yield
+  // hundreds per year, each = one complete meal's worth of skeletal remains.
+  var PELLET_DATA = {
+    overview: 'An owl pellet is a compressed cylinder of indigestible prey parts (fur, bone, teeth, claws, feathers, insect exoskeletons) regurgitated 6-10 hours after a meal. Owls swallow prey whole. Stomach acid digests soft tissue; the rest packs into the gizzard and is coughed back up at the next roost. Each pellet = one meal = one (or more) prey animals. They are a free, non-destructive, repeatable dataset. A single roost site with 50 pellets gives you a complete inventory of the local small-mammal population — without ever trapping a mouse.',
+    composition: [
+      { component: 'Fur (mammal)', pct: '40-60%', detail: 'Forms the matrix that binds the pellet. Color + texture indicates rodent species.' },
+      { component: 'Bone fragments', pct: '20-30%', detail: 'Long bones (femur, tibia), scapula, ribs, vertebrae. Cranium often intact + the gold-standard ID feature.' },
+      { component: 'Skull (cranium)', pct: '~5%', detail: 'Usually one per prey animal. Teeth pattern (incisor + molar shape) = species ID.' },
+      { component: 'Teeth (loose)', pct: '~5%', detail: 'Often fall out of the skull during pellet formation. Rodent incisors are distinctively orange.' },
+      { component: 'Feathers + bird bones', pct: '5-15%', detail: 'When the owl ate a bird. Bones are hollow + lighter than mammal bones.' },
+      { component: 'Insect exoskeletons', pct: '0-10%', detail: 'Beetles especially. Some screech owls eat 50%+ insects.' }
+    ],
+    commonPrey: [
+      { name: 'Meadow Vole', cranium: 'Small (~18 mm), narrow snout, distinctive cusped molars', signature: 'M-shaped molar cusps; orange incisors; #1 most common prey of barn + great-horned owls', conservation: 'Abundant, key prey species' },
+      { name: 'Deer Mouse / White-footed Mouse', cranium: 'Tiny (~15 mm), pointed snout', signature: 'Long incisors; larger eyes than voles; thinner skull', conservation: 'Abundant' },
+      { name: 'Shrew (Short-tailed)', cranium: 'Very small (~14 mm), long pointed snout, RED-TIPPED teeth', signature: 'Red-tipped teeth are diagnostic — pigmented by iron-rich enamel. The only mammal in NE with red teeth.', conservation: 'Common but rarely seen; venomous saliva!' },
+      { name: 'Bog Lemming', cranium: 'Vole-like but molars are flat-topped', signature: 'Distinct flat-grinding-surface molars; chunky body', conservation: 'Restricted to wet meadows' },
+      { name: 'House Sparrow', cranium: 'Bird skull with conical seed-eating beak', signature: 'Hollow bones; beak shape; smaller than passerine kestrel prey', conservation: 'Invasive in North America' },
+      { name: 'European Starling', cranium: 'Long pointed bird skull', signature: 'Common urban barn-owl prey; black feather barbs visible in pellet', conservation: 'Invasive in North America' },
+      { name: 'Bat', cranium: 'Tiny bird-like wing bones + large eye orbits', signature: 'Wing finger bones distinctive; usually one per pellet', conservation: 'Some species declining (white-nose syndrome)' },
+      { name: 'Beetle (large)', cranium: 'Just exoskeleton fragments', signature: 'Elytra (wing covers) sometimes intact; carabid + scarab fragments most common', conservation: 'Common; signal that owl is supplementing with insects' }
+    ],
+    method: {
+      title: 'How to dissect a pellet (classroom-safe)',
+      safetyNote: 'Buy STERILIZED pellets from a biological supply company (Pellet.com, Carolina Biological). Field-collected pellets can carry Salmonella; sterilized are heat-treated to safety.',
+      steps: [
+        '1. Set up: tweezers, dissecting probe (or toothpick), magnifier, white paper, identification key, paper towels.',
+        '2. Weigh + measure the pellet (length × width) — record before disassembly.',
+        '3. Soak in warm water 10-15 min if pellet is dry + compacted (optional but easier).',
+        '4. Gently tease apart with tweezers, working from one end. Separate fur from bone.',
+        '5. Lay bones on white paper. Sort by type: skull, jaw, vertebrae, limb bones, ribs.',
+        '6. Identify the skull(s) first — count tells you how many prey animals were in this meal.',
+        '7. Use a dichotomous key (online: KidWings.com has free interactive keys) to ID species.',
+        '8. Record: species + count + estimated total prey biomass.',
+        '9. Compare across pellets in your class to see prey-selection patterns.'
+      ]
+    },
+    pedagogy: 'Owl pellet dissection is one of the most-used "real science" classroom activities in K-12. It hits every NGSS-aligned ecology standard: predator-prey relationships, food webs, biodiversity inventories, evolutionary morphology (why are owl skulls flat? why do rodent incisors stay orange?). Cost: ~$3 per pellet from a supplier. One pellet per student or pair. Lasts the period.'
+  };
+
+  // ───────────────────────────────────────────────────────────
+  // FALCONRY + HUMAN STORIES DATA — 4000 years of cross-cultural relationship
+  // ───────────────────────────────────────────────────────────
+  var FALCONRY_DATA = {
+    overview: 'For at least 4,000 years humans have hunted alongside trained raptors. The practice — falconry — was independently invented at least 3 times (Mongolian steppe ~2000 BCE, Persia / Arabia ~700 BCE, medieval Europe via Frederick II ~1240 CE) and is now recognized by UNESCO as Intangible Cultural Heritage (2010, expanded to 24 nations). It is also the most heavily regulated wildlife use in the United States: falconers train for 7+ years, pass an 80-question exam, build USDA-inspected facilities, and submit annual reports. The arc of falconry tracks the broader human relationship with wild predators — once routine, then near-extinct, now slowly recovering as conservation + ethics + science have transformed how we think about training a wild bird.',
+
+    eras: [
+      {
+        era: 'Bronze Age Origins (~2000 BCE)',
+        region: 'Mongolian + Central Asian steppe',
+        practice: 'Berkutchi — golden-eagle hunters on horseback. Eagles trained to take wolves, foxes, hares. Boys begin training at age 13 with a chick imprinted to the family; the eagle hunts with that family for ~7 years then is released back to wild to breed.',
+        sources: 'Surviving in Kazakhstan + western Mongolia; ~250 active practitioners remain in 2024'
+      },
+      {
+        era: 'Persian + Arabian Empires (700 BCE - 600 CE)',
+        region: 'Persia, Arabian peninsula, Mesopotamia',
+        practice: 'Royal sport. Sheikhs trained peregrines + sakers + houbara bustards. Falconry became a marker of nobility — wearing a hood in royal portraiture indicated rank. Specialized vocabulary (jess, hood, lure, bate) entered Arabic + later spread to European falconry through Crusader contact.',
+        sources: 'Documented in surviving manuscripts from Sassanid Persia + early Islamic caliphates'
+      },
+      {
+        era: 'Medieval Europe (1200-1500 CE)',
+        region: 'Holy Roman Empire, England, France, Italy',
+        practice: 'Treated as the noble sport. Frederick II of Sicily wrote De Arte Venandi cum Avibus (~1240) — 6-book treatise that combined falconry technique with the first rigorous scientific descriptions of bird anatomy + behavior. Strict feudal hierarchy assigned species: eagles → emperors; gyrfalcons → kings; peregrines → earls; lanners → ladies; sparrowhawks → priests; kestrels → knaves.',
+        sources: 'De Arte Venandi cum Avibus (Frederick II); Boke of Saint Albans (1486)'
+      },
+      {
+        era: 'Decline + Industrial Era (1700-1900)',
+        region: 'Europe, North America',
+        practice: 'Firearms made falconry obsolete for food procurement. Practice dwindled to enthusiast clubs. Simultaneously, raptors were heavily persecuted as "vermin" — Hawk Mountain, PA was a shooting site until Rosalie Edge bought it in 1934.',
+        sources: 'Robert Burns 1880s ornithology surveys; Hawk Mountain Sanctuary history'
+      },
+      {
+        era: 'Conservation Era (1970-present)',
+        region: 'Worldwide',
+        practice: 'Falconry techniques became central to peregrine + California condor recovery. Captive-bred chicks were "hacked" (soft-released using falconer methods) into wild sites. Without 4,000 years of accumulated knowledge of raising + releasing raptors, the peregrine + condor + Mauritius kestrel recoveries would not have succeeded. Modern falconry is heavily regulated + serves as a feeder community for wildlife biology + rehab.',
+        sources: 'The Peregrine Fund founded by falconers; California Condor Recovery Program; UNESCO 2010 listing'
+      }
+    ],
+
+    ambassadorBirds: {
+      title: 'Ambassador birds — non-releasable raptors as educators',
+      explanation: 'Raptors that are permanently injured (wing damage, vision loss, imprinted as chicks before release) cannot survive in the wild but live healthy lives in human care. Licensed wildlife educators use these "ambassador birds" for school programs, public lectures, and field-station outreach. A great horned owl named Alice at the Owl Research Institute has visited 50,000+ students in 30 years. Most rehab facilities maintain 5-15 ambassador birds across 8-12 species; their care is funded by public programs.',
+      examples: [
+        { name: 'Alice', species: 'Great Horned Owl', org: 'Owl Research Institute (Montana)', backstory: '30+ years old; came as a chick imprinted to humans; cannot be released; taught 50,000+ students about owl biology' },
+        { name: 'Tara', species: 'Bald Eagle', org: 'World Bird Sanctuary (Missouri)', backstory: 'Wing injury from power line; flies tethered for shows; one of dozens of ambassador eagles in US licensed centers' },
+        { name: 'Lucia', species: 'Andean Condor', org: 'Buin Zoo (Chile)', backstory: 'Hand-raised; ambassador for South American raptor conservation' },
+        { name: 'Magic', species: 'Peregrine Falcon', org: 'Cornell Lab (NY)', backstory: 'Captive-bred for falconry, retired to education; demonstrates stoop dives for student groups' }
+      ]
+    },
+
+    ethics: {
+      title: 'Modern falconry ethics + regulation',
+      points: [
+        { topic: 'Welfare standards', detail: 'Licensed US falconers must build a federally-inspected mews (housing) with specific dimensions, perch types, lighting, weighing setup, weather-tight construction. Annual welfare inspection required.' },
+        { topic: 'Wild-take limits', detail: 'In US, an apprentice can take ONE wild raptor (kestrel or red-tail) per year, typically a juvenile. After 2-year apprenticeship, the bird is released back to wild OR retained. Many falconers release every bird every 2-3 years to avoid permanent captivity.' },
+        { topic: 'Hunt impact', detail: 'A trained falcon takes ~1-2% of the prey base of a wild peregrine. No documented falconry-caused species decline. Falconers were instrumental in DDT recovery — they noticed declining wild numbers years before scientists.' },
+        { topic: 'Imprinting concerns', detail: 'Chicks taken before "hard penning" (fledging) imprint on humans and become non-releasable. Modern best practice: take post-fledged "passage" birds that already have hunting skills + survival prep; release them after a hunting season or two.' },
+        { topic: 'Equity + access', detail: 'Falconry historically required land + wealth. Modern community programs (e.g., Wingmasters in Massachusetts) bring ambassador birds + falconry demos to underserved schools, addressing the "wealthy white men\'s sport" stereotype.' }
+      ]
+    },
+
+    equipment: [
+      { item: 'Jesses', desc: 'Soft leather straps anchored at the bird\'s ankles; let the falconer hold the bird without restricting natural movement.' },
+      { item: 'Hood', desc: 'Soft leather cap covering eyes; calms the bird during transport. Removed at the moment of release.' },
+      { item: 'Lure', desc: 'Decoy on a long string (duck-feather or rabbit-fur). Bird is trained to dive at it for reward. Used for daily exercise + recall practice.' },
+      { item: 'Glove (gauntlet)', desc: 'Heavy leather extending to elbow; protects the falconer\'s arm from talons during perching.' },
+      { item: 'Bell', desc: 'Small bell attached to leg; helps locate bird when out of sight in vegetation.' },
+      { item: 'GPS / VHF telemetry', desc: 'Modern: GPS transmitter clipped to bird\'s back. Older: VHF beacon on leg. Essential for free-flight hunting in forest or fog.' },
+      { item: 'Perch (block / bow)', desc: 'Padded perch where the bird rests in the mews; design varies by species (raptors with delicate feet get wider, softer perches).' },
+      { item: 'Scales', desc: 'Falconer weighs bird daily; controlled hunger drives hunting motivation. Healthy weight ± 5%.' }
+    ],
+
+    rehab: {
+      title: 'Wildlife rehabilitation — the modern raptor-human relationship',
+      stats: '~150,000 raptors enter US wildlife rehab facilities per year; ~50% release rate after treatment; primary causes: vehicle strikes (35%), window strikes (15%), rodenticide poisoning (10%), gunshot (8%), power-line electrocution (7%), other.',
+      whatToDo: [
+        'Found an injured raptor? Do NOT pick it up directly. Call your state wildlife agency or licensed rehab facility.',
+        'Cover with a towel/box if it must be confined briefly; do not feed; minimize stress.',
+        'Hawk Mountain Sanctuary maintains a US-wide rehab facility directory.',
+        'Many rehab facilities accept volunteers for cleaning, feeding, and ambassador-bird care.'
+      ],
+      famousFacilities: [
+        'Cornell Wildlife Health Center (NY)',
+        'Lindsay Wildlife Experience (CA)',
+        'Wild Bird Fund (NYC)',
+        'World Bird Sanctuary (MO)',
+        'Avian Reconditioning Center (FL)',
+        'The Wildlife Center of Virginia',
+        'Owl Research Institute (MT)'
+      ]
+    }
+  };
+
   // ═══════════════════════════════════════════════════════════
   // TOOL REGISTRATION
   // ═══════════════════════════════════════════════════════════
@@ -795,6 +932,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { id: 'conservation', label: 'Conservation', icon: '🌍' },
         { id: 'fieldid', label: 'Field ID', icon: '🔍' },
         { id: 'migration', label: 'Migration', icon: '🧭' },
+        { id: 'hearing', label: 'Owl Hearing Lab', icon: '🦻' },
+        { id: 'pellet', label: 'Pellet Lab', icon: '🥚' },
+        { id: 'falconry', label: 'Falconry & Humans', icon: '🤝' },
         { id: 'quiz', label: 'Field ID Quiz', icon: '🎓' },
         { id: 'resources', label: 'Resources', icon: '📚' }
       ];
@@ -810,7 +950,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'flex-1' },
                 h('div', { className: 'text-xl font-bold text-amber-200' }, 'Raptor Hunt: Predator Physics + Biology'),
                 h('div', { className: 'text-sm text-amber-100/80 mt-1' }, 'Hunt as a peregrine at 240 mph. Crush bones at 530 psi as a harpy. See vole urine trails in UV like a kestrel. Glide silently on owl feathers. Then study the biology that makes it all possible.'),
-                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '14 sections · 8 species · 3D Three.js simulator · 18-question quiz · evidence-based science')
+                h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, '17 sections · 8 species · 3D Three.js simulator · interactive owl-hearing lab · pellet dissection · 18-question quiz')
               )
             )
           ),
@@ -2416,6 +2556,394 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
 
       // ────────────────────────────────────────────────────────
+      // RENDER: OWL HEARING LAB (interactive Canvas-2D)
+      // ────────────────────────────────────────────────────────
+      // Replicates Payne 1962 — student "owl" must locate a hidden mouse
+      // by sound only. Slider controls ear-asymmetry magnitude; lower
+      // asymmetry = larger error radius. Click where you think the mouse is.
+      function renderHearing() {
+        var hl = rh.hearing || { asymmetry: 1.0, attempts: 0, hits: 0, totalErr: 0, bestErr: null, mouseX: 0.5, mouseY: 0.5, lastErr: null, started: false };
+        function setHL(patch) {
+          setRH(function(prev) {
+            var cur = prev.hearing || { asymmetry: 1.0, attempts: 0, hits: 0, totalErr: 0, bestErr: null, mouseX: 0.5, mouseY: 0.5, lastErr: null, started: false };
+            return Object.assign({}, prev, { hearing: Object.assign({}, cur, typeof patch === 'function' ? patch(cur) : patch) });
+          });
+        }
+        function newMouse() {
+          var nx = 0.1 + Math.random() * 0.8;
+          var ny = 0.15 + Math.random() * 0.7;
+          setHL({ mouseX: nx, mouseY: ny, lastErr: null, started: true });
+        }
+        // Compute "error radius" as fraction of canvas — inverse of asymmetry (1.0 = 5%, 0 = 40%)
+        var errRadius = 0.05 + (1 - hl.asymmetry) * 0.35; // fraction of canvas
+        var avgErr = hl.attempts > 0 ? (hl.totalErr / hl.attempts) : null;
+
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-indigo-900/40 to-violet-900/40 border border-indigo-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-lg font-bold text-indigo-200 mb-2' }, '🦻 Owl Hearing Lab: Find the Mouse'),
+            h('div', { className: 'text-sm text-indigo-100/90 leading-relaxed' },
+              'In 1962, Roger Payne placed a barn owl in a totally dark room with a mouse on a leaf-litter floor. The owl could hear the leaves rustle but see nothing. He recorded ~17 silent strikes — every one a kill, accurate to ~1° elevation + azimuth. This works because barn owls have ',
+              h('span', { className: 'font-bold text-violet-300' }, 'asymmetric ear openings'),
+              ' (left higher, right lower) plus a flat facial disc that acts like a parabolic dish. Below, you are the owl. The mouse is hidden — your ears can detect it within a noisy radius that scales with your ear-asymmetry magnitude.'
+            )
+          ),
+
+          // Controls
+          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 space-y-3' },
+            h('div', null,
+              h('label', { className: 'text-xs text-indigo-300 flex items-center justify-between mb-1' },
+                h('span', { className: 'font-bold' }, 'Ear asymmetry magnitude'),
+                h('span', { className: 'font-mono text-amber-300' }, (hl.asymmetry * 100).toFixed(0) + '%')
+              ),
+              h('input', {
+                type: 'range', min: 0, max: 1, step: 0.05, value: hl.asymmetry,
+                onInput: function(e) { setHL({ asymmetry: parseFloat(e.target.value) }); },
+                className: 'w-full',
+                'aria-label': 'Ear asymmetry magnitude'
+              }),
+              h('div', { className: 'flex justify-between text-[10px] text-slate-500' },
+                h('span', null, '0% (symmetric — like a hawk)'),
+                h('span', null, '100% (barn-owl-grade)')
+              ),
+              h('div', { className: 'text-[10px] text-indigo-200/70 mt-1 italic' },
+                'Detection radius: ',
+                h('span', { className: 'font-mono text-amber-300' }, (errRadius * 100).toFixed(0) + '%'),
+                ' of canvas. Real barn owls operate at ~1° error in pitch black — equivalent to the leftmost slider position here.'
+              )
+            )
+          ),
+
+          // Canvas
+          h('div', { className: 'bg-slate-900 border border-indigo-700/40 rounded-xl overflow-hidden', style: { aspectRatio: '4 / 3', maxWidth: '720px', margin: '0 auto', position: 'relative' } },
+            h('canvas', {
+              'data-hearing-canvas': 'true',
+              role: 'application',
+              'aria-label': 'Owl hearing lab. Click anywhere on the dark canvas where you think the mouse is. Detection radius shows as a ring; click to strike.',
+              tabIndex: 0,
+              width: 600, height: 450,
+              style: { width: '100%', height: '100%', cursor: 'crosshair', display: 'block' },
+              ref: function(canvasEl) {
+                if (!canvasEl) return;
+                var ctx2 = canvasEl.getContext('2d');
+                var W = canvasEl.width, H = canvasEl.height;
+                // Draw scene
+                function draw() {
+                  // Dark forest floor background
+                  var grad = ctx2.createRadialGradient(W/2, H/2, 0, W/2, H/2, W*0.7);
+                  grad.addColorStop(0, '#1e1b4b');
+                  grad.addColorStop(1, '#020617');
+                  ctx2.fillStyle = grad;
+                  ctx2.fillRect(0, 0, W, H);
+                  // Leaf litter speckle
+                  for (var i = 0; i < 80; i++) {
+                    ctx2.fillStyle = 'rgba(120, 100, 60, 0.18)';
+                    ctx2.beginPath();
+                    var lx = Math.sin(i * 11.13) * W * 0.45 + W/2;
+                    var ly = Math.cos(i * 7.91) * H * 0.45 + H/2;
+                    ctx2.arc(lx, ly, 2 + Math.abs(Math.sin(i)) * 3, 0, Math.PI * 2);
+                    ctx2.fill();
+                  }
+                  // If started, draw mouse "sound" zone (faint amber ring proportional to errRadius)
+                  if (hl.started) {
+                    var mx = hl.mouseX * W, my = hl.mouseY * H;
+                    var r = errRadius * Math.min(W, H);
+                    // Sound zone (faint)
+                    var soundGrad = ctx2.createRadialGradient(mx, my, 0, mx, my, r);
+                    soundGrad.addColorStop(0, 'rgba(251, 191, 36, 0.18)');
+                    soundGrad.addColorStop(0.6, 'rgba(251, 191, 36, 0.08)');
+                    soundGrad.addColorStop(1, 'rgba(251, 191, 36, 0.0)');
+                    ctx2.fillStyle = soundGrad;
+                    ctx2.beginPath();
+                    ctx2.arc(mx, my, r, 0, Math.PI * 2);
+                    ctx2.fill();
+                  }
+                  // Last error visualization
+                  if (hl.lastErr) {
+                    var le = hl.lastErr;
+                    var actualX = le.actualX * W;
+                    var actualY = le.actualY * H;
+                    var clickX = le.clickX * W;
+                    var clickY = le.clickY * H;
+                    // Line from click to actual
+                    ctx2.strokeStyle = le.hit ? 'rgba(16, 185, 129, 0.85)' : 'rgba(239, 68, 68, 0.85)';
+                    ctx2.lineWidth = 2;
+                    ctx2.setLineDash([6, 4]);
+                    ctx2.beginPath();
+                    ctx2.moveTo(clickX, clickY);
+                    ctx2.lineTo(actualX, actualY);
+                    ctx2.stroke();
+                    ctx2.setLineDash([]);
+                    // Actual mouse position (revealed)
+                    ctx2.fillStyle = '#fbbf24';
+                    ctx2.beginPath();
+                    ctx2.arc(actualX, actualY, 8, 0, Math.PI * 2);
+                    ctx2.fill();
+                    // Tiny mouse glyph (ears)
+                    ctx2.beginPath();
+                    ctx2.arc(actualX - 4, actualY - 5, 2.5, 0, Math.PI * 2);
+                    ctx2.arc(actualX + 4, actualY - 5, 2.5, 0, Math.PI * 2);
+                    ctx2.fill();
+                    // Click marker
+                    ctx2.strokeStyle = le.hit ? '#10b981' : '#ef4444';
+                    ctx2.lineWidth = 3;
+                    ctx2.beginPath();
+                    ctx2.arc(clickX, clickY, 14, 0, Math.PI * 2);
+                    ctx2.stroke();
+                    // Result text
+                    ctx2.fillStyle = le.hit ? '#10b981' : '#ef4444';
+                    ctx2.font = 'bold 16px ui-monospace';
+                    ctx2.textAlign = 'center';
+                    ctx2.fillText(le.hit ? '✓ STRIKE' : '✗ MISS', clickX, clickY - 22);
+                  }
+                  // Title overlay
+                  if (!hl.started) {
+                    ctx2.fillStyle = 'rgba(200, 200, 220, 0.85)';
+                    ctx2.font = 'bold 18px ui-sans-serif, system-ui';
+                    ctx2.textAlign = 'center';
+                    ctx2.fillText('Press "🦉 Release Mouse" to begin', W/2, H/2 - 10);
+                    ctx2.font = '12px ui-sans-serif';
+                    ctx2.fillText('Then click anywhere you think the mouse is', W/2, H/2 + 18);
+                  }
+                }
+                draw();
+                // Bind click only once
+                if (!canvasEl._hlBound) {
+                  canvasEl._hlBound = true;
+                  canvasEl.addEventListener('click', function(e) {
+                    if (!hl.started) return;
+                    var rect = canvasEl.getBoundingClientRect();
+                    var cx = (e.clientX - rect.left) / rect.width;
+                    var cy = (e.clientY - rect.top) / rect.height;
+                    var dx = cx - hl.mouseX, dy = cy - hl.mouseY;
+                    var dist = Math.sqrt(dx * dx + dy * dy);
+                    var hit = dist <= errRadius;
+                    var newBest = hl.bestErr === null ? dist : Math.min(hl.bestErr, dist);
+                    setHL(function(cur) {
+                      return {
+                        attempts: cur.attempts + 1,
+                        hits: cur.hits + (hit ? 1 : 0),
+                        totalErr: cur.totalErr + dist,
+                        bestErr: newBest,
+                        lastErr: { clickX: cx, clickY: cy, actualX: cur.mouseX, actualY: cur.mouseY, hit: hit, dist: dist }
+                      };
+                    });
+                    if (hit) {
+                      rhAnnounce('Strike! Within detection radius.');
+                      if (ctx.awardXP) ctx.awardXP(3, 'Owl Hearing Lab: strike');
+                    } else {
+                      rhAnnounce('Miss. Distance from mouse: ' + (dist * 100).toFixed(0) + ' percent of canvas.');
+                    }
+                  });
+                }
+              }
+            })
+          ),
+
+          // Action row
+          h('div', { className: 'flex gap-2 flex-wrap justify-center' },
+            h('button', {
+              onClick: newMouse,
+              className: 'px-4 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700 transition-all',
+              'aria-label': 'Release new mouse'
+            }, '🦉 Release Mouse'),
+            h('button', {
+              onClick: function() {
+                setHL({ attempts: 0, hits: 0, totalErr: 0, bestErr: null, lastErr: null, started: false });
+                rhAnnounce('Stats reset');
+              },
+              className: 'px-4 py-2 rounded-lg text-sm font-bold bg-slate-700 text-amber-300 hover:bg-slate-600 transition-all',
+              'aria-label': 'Reset stats'
+            }, '↺ Reset Stats')
+          ),
+
+          // Stats panel
+          h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
+            h('div', { className: 'bg-emerald-900/30 border border-emerald-700/40 rounded p-3' },
+              h('div', { className: 'text-2xl font-bold text-emerald-300' }, hl.attempts > 0 ? Math.round(hl.hits / hl.attempts * 100) + '%' : '—'),
+              h('div', { className: 'text-[10px] text-emerald-200 uppercase tracking-wider' }, 'Strike Rate')
+            ),
+            h('div', { className: 'bg-indigo-900/30 border border-indigo-700/40 rounded p-3' },
+              h('div', { className: 'text-2xl font-bold text-indigo-300' }, hl.attempts),
+              h('div', { className: 'text-[10px] text-indigo-200 uppercase tracking-wider' }, 'Attempts')
+            ),
+            h('div', { className: 'bg-amber-900/30 border border-amber-700/40 rounded p-3' },
+              h('div', { className: 'text-2xl font-bold text-amber-300' }, hl.bestErr !== null ? (hl.bestErr * 100).toFixed(0) + '%' : '—'),
+              h('div', { className: 'text-[10px] text-amber-200 uppercase tracking-wider' }, 'Best Error')
+            )
+          ),
+
+          // Pedagogy
+          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4 text-sm space-y-3' },
+            h('div', { className: 'font-bold text-indigo-300' }, '💡 What you just modeled'),
+            h('div', { className: 'text-slate-300 leading-relaxed text-xs' }, 'Slide the asymmetry slider to 100% — your detection radius is tiny + barely larger than a single pixel. Real barn owls can localize sound to ~1° error in pitch dark. Slide to 0% (a hawk\'s ear placement) — the radius balloons to 40% of the canvas. This is why hawks hunt by sight + owls hunt by sound.'),
+            h('div', { className: 'text-slate-300 leading-relaxed text-xs' }, 'The mechanism is exactly the diagram in the Day Eye vs Night Eye section: ',
+              h('span', { className: 'text-indigo-300 font-bold' }, 'time-of-arrival difference'),
+              ' between the two ear openings encodes ',
+              h('span', { className: 'text-indigo-300 font-bold' }, 'azimuth + elevation in 3D'),
+              '. The asymmetric placement encodes elevation; without asymmetry, an owl could not tell if a sound came from above or below the head — only left or right.'
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: PELLET LAB
+      // ────────────────────────────────────────────────────────
+      function renderPellet() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-lg font-bold text-amber-200 mb-2' }, '🥚 Pellet Lab: The Owl\'s Trash, the Scientist\'s Treasure'),
+            h('div', { className: 'text-sm text-amber-100/90 leading-relaxed' }, PELLET_DATA.overview)
+          ),
+
+          // Anatomy of a pellet
+          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, '🔬 What\'s Inside a Typical Pellet'),
+            h('div', { className: 'space-y-2' },
+              PELLET_DATA.composition.map(function(c, i) {
+                return h('div', { key: i, className: 'flex items-center gap-3 bg-slate-800/40 rounded p-2.5' },
+                  h('div', { className: 'flex-shrink-0 w-32 text-xs font-bold text-amber-300' }, c.component),
+                  h('div', { className: 'flex-shrink-0 w-20 text-xs font-mono text-yellow-200' }, c.pct),
+                  h('div', { className: 'text-xs text-slate-200 flex-1' }, c.detail)
+                );
+              })
+            )
+          ),
+
+          // Common prey identification key
+          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, '🦷 Common Prey ID Key — From Skull + Teeth'),
+            h('div', { className: 'space-y-2' },
+              PELLET_DATA.commonPrey.map(function(p, i) {
+                return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/40 rounded-lg p-3' },
+                  h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                    h('div', { className: 'text-sm font-bold text-amber-200' }, p.name),
+                    h('div', { className: 'text-[10px] text-slate-500 font-mono' }, p.conservation)
+                  ),
+                  h('div', { className: 'text-xs text-slate-300 mb-1' }, h('span', { className: 'text-slate-500' }, 'Cranium: '), p.cranium),
+                  h('div', { className: 'text-xs text-yellow-200/90' }, h('span', { className: 'text-slate-500' }, 'Signature: '), p.signature)
+                );
+              })
+            )
+          ),
+
+          // Dissection method
+          h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded-xl p-5' },
+            h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, '🔧 ' + PELLET_DATA.method.title),
+            h('div', { className: 'bg-red-900/30 border border-red-700/40 rounded p-2 mb-3 text-xs text-red-200' },
+              h('span', { className: 'font-bold' }, '⚠ Safety: '), PELLET_DATA.method.safetyNote
+            ),
+            h('ol', { className: 'space-y-1 text-xs text-amber-100/90 list-decimal list-inside' },
+              PELLET_DATA.method.steps.map(function(s, i) { return h('li', { key: i }, s.replace(/^\d+\.\s*/, '')); })
+            )
+          ),
+
+          // Pedagogy note
+          h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-sm font-bold text-emerald-300 mb-2' }, '📚 Why pellet labs work in classrooms'),
+            h('div', { className: 'text-xs text-emerald-100/90 leading-relaxed' }, PELLET_DATA.pedagogy)
+          ),
+
+          // External resource
+          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-3 text-xs' },
+            h('div', { className: 'font-bold text-amber-300 mb-1' }, '🔗 Free interactive dichotomous keys'),
+            h('a', { href: 'https://www.kidwings.com/owl-pellets/virtual-pellet/', target: '_blank', rel: 'noopener noreferrer', className: 'text-cyan-300 hover:text-cyan-200 underline' }, 'KidWings Virtual Pellet (free online dissection)'),
+            ' · ',
+            h('a', { href: 'https://www.pellet.com/', target: '_blank', rel: 'noopener noreferrer', className: 'text-cyan-300 hover:text-cyan-200 underline' }, 'Pellet.com (sterilized supplies)'),
+            ' · ',
+            h('a', { href: 'https://www.carolina.com/owl-pellets/10288.pr', target: '_blank', rel: 'noopener noreferrer', className: 'text-cyan-300 hover:text-cyan-200 underline' }, 'Carolina Biological')
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
+      // RENDER: FALCONRY & HUMAN STORIES
+      // ────────────────────────────────────────────────────────
+      function renderFalconry() {
+        return h('div', { className: 'space-y-4' },
+          h('div', { className: 'bg-gradient-to-br from-orange-900/40 to-red-900/40 border border-orange-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-lg font-bold text-orange-200 mb-2' }, '🤝 Falconry & Humans: 4,000 Years of Hunting Together'),
+            h('div', { className: 'text-sm text-orange-100/90 leading-relaxed' }, FALCONRY_DATA.overview)
+          ),
+
+          // Timeline of eras
+          h('div', { className: 'space-y-3' },
+            h('div', { className: 'text-sm font-bold text-amber-300' }, '🕰 The 5 eras of falconry'),
+            FALCONRY_DATA.eras.map(function(e, i) {
+              return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/50 rounded-lg p-4' },
+                h('div', { className: 'flex items-baseline justify-between gap-2 mb-2' },
+                  h('div', { className: 'text-sm font-bold text-orange-300' }, e.era),
+                  h('div', { className: 'text-[10px] text-slate-500 font-mono' }, e.region)
+                ),
+                h('div', { className: 'text-xs text-slate-200 leading-relaxed mb-2' }, e.practice),
+                h('div', { className: 'text-[10px] italic text-slate-400' }, 'Sources: ' + e.sources)
+              );
+            })
+          ),
+
+          // Ambassador birds
+          h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-base font-bold text-emerald-300 mb-2' }, '🦉 ' + FALCONRY_DATA.ambassadorBirds.title),
+            h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed mb-3' }, FALCONRY_DATA.ambassadorBirds.explanation),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+              FALCONRY_DATA.ambassadorBirds.examples.map(function(a, i) {
+                return h('div', { key: i, className: 'bg-slate-800/40 rounded p-3 border border-slate-700/40' },
+                  h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
+                    h('div', { className: 'font-bold text-emerald-300 text-sm' }, a.name),
+                    h('div', { className: 'text-[10px] text-amber-300 italic' }, a.species)
+                  ),
+                  h('div', { className: 'text-[10px] text-slate-400 mb-1' }, a.org),
+                  h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, a.backstory)
+                );
+              })
+            )
+          ),
+
+          // Ethics
+          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, '⚖ ' + FALCONRY_DATA.ethics.title),
+            h('div', { className: 'space-y-2' },
+              FALCONRY_DATA.ethics.points.map(function(p, i) {
+                return h('div', { key: i, className: 'bg-slate-800/40 rounded p-2.5 border border-slate-700/40' },
+                  h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, p.topic),
+                  h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, p.detail)
+                );
+              })
+            )
+          ),
+
+          // Equipment glossary
+          h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, '🛠 Equipment glossary'),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+              FALCONRY_DATA.equipment.map(function(e, i) {
+                return h('div', { key: i, className: 'bg-slate-800/40 rounded p-2.5' },
+                  h('div', { className: 'text-xs font-bold text-orange-300 mb-0.5' }, e.item),
+                  h('div', { className: 'text-xs text-slate-300' }, e.desc)
+                );
+              })
+            )
+          ),
+
+          // Rehab
+          h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded-xl p-4' },
+            h('div', { className: 'text-base font-bold text-cyan-300 mb-2' }, '🩺 ' + FALCONRY_DATA.rehab.title),
+            h('div', { className: 'text-xs text-cyan-100/90 mb-3 leading-relaxed' }, FALCONRY_DATA.rehab.stats),
+            h('div', { className: 'mb-3' },
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, 'If you find an injured raptor:'),
+              h('ul', { className: 'space-y-1 text-xs text-slate-200 list-disc list-inside' },
+                FALCONRY_DATA.rehab.whatToDo.map(function(s, i) { return h('li', { key: i }, s); })
+              )
+            ),
+            h('div', null,
+              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, 'Notable US rehab facilities:'),
+              h('div', { className: 'text-xs text-slate-300' }, FALCONRY_DATA.rehab.famousFacilities.join(' · '))
+            )
+          )
+        );
+      }
+
+      // ────────────────────────────────────────────────────────
       // RENDER: RESOURCES
       // ────────────────────────────────────────────────────────
       function renderResources() {
@@ -2447,7 +2975,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       return h('div', { className: 'space-y-4', role: 'region', 'aria-label': 'Raptor Hunt tool' },
         // Section count chip
-        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '14 sections · 8 species · 3D simulator · 18-question quiz'),
+        h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, '17 sections · 8 species · 3D simulator · interactive labs · 18-question quiz'),
         // Tab nav (scrollable horizontal)
         h('div', { className: 'flex gap-1.5 overflow-x-auto pb-1', role: 'tablist', 'aria-label': 'Raptor Hunt sections' },
           SECTIONS.map(function(s) {
@@ -2479,6 +3007,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           activeSection === 'conservation' && renderConservation(),
           activeSection === 'fieldid' && renderFieldId(),
           activeSection === 'migration' && renderMigration(),
+          activeSection === 'hearing' && renderHearing(),
+          activeSection === 'pellet' && renderPellet(),
+          activeSection === 'falconry' && renderFalconry(),
           activeSection === 'quiz' && renderQuiz(),
           activeSection === 'resources' && renderResources()
         )
