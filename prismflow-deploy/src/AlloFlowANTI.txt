@@ -3873,6 +3873,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js');
     loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js');
     loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js');
+    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -5805,6 +5806,21 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [activeSessionCode, setActiveSessionCode] = useState(null);
   const [activeSessionAppId, setActiveSessionAppId] = useState(appId);
   const [showLivePollingPanel, setShowLivePollingPanel] = useState(false);
+  const [showPictionaryHost, setShowPictionaryHost] = useState(false);
+  const [showPictionaryGuest, setShowPictionaryGuest] = useState(false);
+  // Auto-open the Pictionary guest overlay on students once the teacher has
+  // assigned them a role (drawer or guesser) in the live session. We watch the
+  // Tier-1 roster.{uid}.role field via the existing sessionData snapshot.
+  const _picMyRole = (!isTeacherMode && user && user.uid && sessionData && sessionData.roster && sessionData.roster[user.uid] && sessionData.roster[user.uid].role) || null;
+  React.useEffect(() => {
+    if (isTeacherMode) return;
+    if (!activeSessionCode || !user || !user.uid) return;
+    if (_picMyRole === 'drawer' || _picMyRole === 'guesser') {
+      setShowPictionaryGuest(true);
+    }
+    // Role cleared (round resolved) — overlay stays open in v1 to show the
+    // "round resolved" state until the student dismisses it manually.
+  }, [isTeacherMode, activeSessionCode, _picMyRole, user && user.uid]);
   React.useEffect(() => {
     const handler = () => {
       if (!isTeacherMode) {
@@ -23573,6 +23589,39 @@ Return ONLY valid JSON in this format:
           userUid: user.uid,
           codename: studentNickname || 'Guest',
           enabled: true,
+        })
+      }
+      {/* Concept Pictionary (WebRTC peer-to-peer). Sibling of Live Polling. Strokes + guesses */}
+      {/* flow browser-to-browser; only Tier-1 roster.{uid}.role markers touch Firestore. See  */}
+      {/* concept_pictionary_module.js + feedback_session_tier1_tier2. */}
+      {isTeacherMode && activeSessionCode && (
+        <button
+          onClick={() => setShowPictionaryHost(true)}
+          aria-label="Open Concept Pictionary"
+          style={{position:'fixed',bottom:'4rem',right:'1rem',zIndex:9999,background:'#9f1239',color:'white',border:'none',borderRadius:24,padding:'0.6rem 1rem',fontWeight:700,fontSize:'0.85rem',cursor:'pointer',boxShadow:'0 8px 20px rgba(159,18,57,0.35)'}}
+        >
+          🎨 Pictionary
+        </button>
+      )}
+      {isTeacherMode && activeSessionCode && showPictionaryHost && window.AlloModules && window.AlloModules.ConceptPictionary && window.AlloModules.ConceptPictionary.HostView &&
+        React.createElement(window.AlloModules.ConceptPictionary.HostView, {
+          isOpen: showPictionaryHost,
+          onClose: () => setShowPictionaryHost(false),
+          sessionCode: activeSessionCode,
+          sessionData,
+          sessionRef: (typeof sessionUnsubscribeRef !== 'undefined' && sessionUnsubscribeRef && sessionUnsubscribeRef.current && sessionUnsubscribeRef.current.docRef) || (activeSessionCode ? doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode) : null),
+          writeToSession,
+          callGemini,
+          sourceText: (generatedContent && (generatedContent.source || (generatedContent.data && generatedContent.data.sourceText))) || (typeof inputText !== 'undefined' ? inputText : ''),
+        })
+      }
+      {!isTeacherMode && activeSessionCode && user && user.uid && showPictionaryGuest && window.AlloModules && window.AlloModules.ConceptPictionary && window.AlloModules.ConceptPictionary.GuestOverlay &&
+        React.createElement(window.AlloModules.ConceptPictionary.GuestOverlay, {
+          sessionCode: activeSessionCode,
+          userUid: user.uid,
+          codename: studentNickname || 'Guest',
+          myRole: _picMyRole,
+          onClose: () => setShowPictionaryGuest(false),
         })
       }
       {/* ── BridgeSendModal extracted to view_gemini_bridge_module.js (CDN) ── */}
