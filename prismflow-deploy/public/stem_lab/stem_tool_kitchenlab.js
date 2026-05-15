@@ -1519,6 +1519,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       competitionBurnerLevelTicks: 0,      // tick count for averaging
       competitionBests: {},                // { recipeId: highScore }
       competitionLastResult: null,         // { recipeId, score, baseScore, bonusTotal, isNewBest }
+      // Tournament mode (3-round bracket)
+      tournamentActive: false,
+      tournamentRound: 0,                  // 0-indexed (0/1/2)
+      tournamentRecipes: [],               // [recipeId, recipeId, recipeId]
+      tournamentConstraintIds: [],         // [[id1], [id1,id2], [id1,id2,id3]]
+      tournamentScores: [],                // [r1Score, r2Score, r3Score]
+      tournamentBestTotal: 0,              // best-ever tournament total
+      tournamentLastTotal: null,           // last completed tournament total
+      // AI judge (Gemini-powered personalized critique)
+      aiCritique: null,
+      aiCritiqueLoading: false,
+      aiCritiqueRequestedFor: null,        // recipeRunStartedAt — so we don't re-request
       // Progression
       klXp: 0,
       klAchievements: [],
@@ -2374,6 +2386,166 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         klAnnounce('Recipe abandoned.');
       }
 
+      // ─── Tournament Mode (3-round bracket) ───
+      // Round 1: 1 random constraint, full time
+      // Round 2: 2 random constraints, 80% time
+      // Round 3: 3 constraints (Restaurant Standard FORCED + 2 random), 60% time
+      function startTournament() {
+        var unlocked = RECIPE_CATALOG.filter(function(r) { return r.unlocked; });
+        // Shuffle + pick 3 (allow dupes if fewer than 3 unlocked)
+        var pool = unlocked.slice();
+        for (var i = pool.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+        }
+        var recipes = [];
+        for (var r = 0; r < 3; r++) recipes.push((pool[r] || pool[0]).id);
+        // Roll constraints per round
+        var roundConstraints = [];
+        for (var rr = 0; rr < 3; rr++) {
+          var nNeeded = rr + 1;  // 1, 2, 3 constraints per round
+          var cPool = COMPETITION_CONSTRAINTS.slice();
+          // Round 3 forces gradeA + speedDemon, plus 1 random
+          if (rr === 2) {
+            var forced = ['gradeA', 'speedDemon'];
+            cPool = cPool.filter(function(c) { return forced.indexOf(c.id) === -1; });
+            for (var s = cPool.length - 1; s > 0; s--) {
+              var j2 = Math.floor(Math.random() * (s + 1));
+              var t2 = cPool[s]; cPool[s] = cPool[j2]; cPool[j2] = t2;
+            }
+            roundConstraints.push(forced.concat([cPool[0].id]));
+          } else {
+            for (var s2 = cPool.length - 1; s2 > 0; s2--) {
+              var j3 = Math.floor(Math.random() * (s2 + 1));
+              var t3 = cPool[s2]; cPool[s2] = cPool[j3]; cPool[j3] = t3;
+            }
+            var picked = [];
+            for (var p = 0; p < nNeeded; p++) picked.push(cPool[p].id);
+            roundConstraints.push(picked);
+          }
+        }
+        setKL({
+          tournamentActive: true,
+          tournamentRound: 0,
+          tournamentRecipes: recipes,
+          tournamentConstraintIds: roundConstraints,
+          tournamentScores: [],
+          competitionLastResult: null
+        });
+        klAnnounce('Tournament started. 3 rounds, escalating difficulty.');
+        awardXP(15);
+        // Start Round 1
+        setTimeout(function() { startTournamentRound(0); }, 50);
+      }
+
+      function startTournamentRound(roundIdx) {
+        setKL(function(prior) {
+          var rid = (prior.tournamentRecipes || [])[roundIdx];
+          var rec = RECIPES[rid];
+          if (!rec) return {};
+          var constraints = (prior.tournamentConstraintIds || [])[roundIdx] || [];
+          // Time fraction per round: 1.0, 0.8, 0.6
+          var timeFrac = roundIdx === 0 ? 1.0 : roundIdx === 1 ? 0.8 : 0.6;
+          var simSpeed = rec.simSpeedMultiplier || 1;
+          var deadline = Date.now() + (rec.targetTimeMin * 60 * 1000 * timeFrac / simSpeed);
+          return {
+            recipeActiveId: rid,
+            recipePhase: 'cooking',
+            recipeStartedAt: Date.now(),
+            recipeLastTickAt: Date.now(),
+            recipeStepStartedAt: Date.now(),
+            recipeCurrentStep: 0,
+            recipePanTempF: 70,
+            recipeBurnerLevel: 0,
+            recipeMaxPanTempF: 70,
+            recipeFoodInternalF: 40,
+            recipeItemsInPan: [],
+            recipeIngredientOrder: [],
+            recipeItemAddTimes: {},
+            recipeActiveTimeSec: 0,
+            recipeHeatRemovedAt: null,
+            recipeJudgement: null,
+            potState: 'cold', potStartedAt: null, potPastaInAt: null,
+            potPastaDoneAt: null, potDrainedAt: null, potWaterReserved: false,
+            competitionActive: true,
+            competitionConstraints: constraints,
+            competitionDeadline: deadline,
+            competitionStartedAt: Date.now(),
+            competitionBurnerChanges: 0,
+            competitionBurnerLevelSum: 0,
+            competitionBurnerLevelTicks: 0,
+            tournamentRound: roundIdx,
+            aiCritique: null, aiCritiqueLoading: false, aiCritiqueRequestedFor: null
+          };
+        });
+        klAnnounce('Round ' + (roundIdx + 1) + ' of 3 begins.');
+      }
+
+      function advanceTournament() {
+        var next = (d.tournamentRound || 0) + 1;
+        if (next >= 3) {
+          // Tournament complete — finalize
+          var total = (d.tournamentScores || []).reduce(function(a, b) { return a + b; }, 0);
+          setKL(function(prior) {
+            var newBest = Math.max(prior.tournamentBestTotal || 0, total);
+            return {
+              recipePhase: 'tournament-done',
+              tournamentLastTotal: total,
+              tournamentBestTotal: newBest,
+              tournamentActive: false,
+              competitionActive: false
+            };
+          });
+          awardXP(20);
+          klAnnounce('Tournament complete. Total score: ' + total);
+        } else {
+          startTournamentRound(next);
+          awardXP(5);
+        }
+      }
+
+      function exitTournament() {
+        setKL({ recipePhase: 'idle', recipeActiveId: null,
+          tournamentActive: false, tournamentRound: 0, tournamentRecipes: [],
+          tournamentConstraintIds: [], tournamentScores: [],
+          competitionActive: false, competitionConstraints: [], competitionDeadline: null,
+          aiCritique: null, aiCritiqueLoading: false });
+      }
+
+      // ─── AI Judge (Gemini-powered personalized critique) ───
+      function requestAiCritique(rec, judgement) {
+        var callGemini = ctx.callGemini;
+        if (!callGemini) return;  // gracefully skip if AI not wired
+        var runId = d.recipeStartedAt;
+        if (d.aiCritiqueRequestedFor === runId) return;  // already requested for this run
+        // Build the prompt
+        var compResult = judgement.compResult;
+        var displayScore = compResult ? compResult.finalScore : judgement.score;
+        var notesSummary = (judgement.notes || []).map(function(n) {
+          return (n.neg ? '✗ ' : '✓ ') + n.label + ' — ' + n.detail;
+        }).join('\n');
+        var prompt = [
+          'You are a friendly but honest cooking coach. A student just simulated cooking "' + rec.name + '" and scored ' + displayScore + '/100 (Grade ' + judgement.grade + ').',
+          '',
+          'Their pass/fail notes:',
+          notesSummary,
+          '',
+          compResult ? 'They were in competition mode with constraints: ' + compResult.constraints.map(function(c) { return c.label + ' (' + (c.passed ? 'passed' : 'failed') + ')'; }).join(', ') : '',
+          '',
+          'Write a 2-3 sentence personalized critique (max 80 words). Tone: encouraging but specific. Highlight ONE thing they did well, then ONE specific thing to work on next time. No hedging, no padding, no greeting. Plain text — no markdown, no quotes.'
+        ].filter(Boolean).join('\n');
+        // Mark as requested + loading
+        setKL({ aiCritiqueRequestedFor: runId, aiCritiqueLoading: true });
+        callGemini(prompt, false).then(function(result) {
+          var text = typeof result === 'string' ? result : (result && result.text ? result.text : '');
+          text = String(text || '').trim().replace(/^["']|["']$/g, '');
+          if (!text) text = 'Couldn\'t generate notes this time. Score breakdown above tells the story.';
+          setKL({ aiCritique: text, aiCritiqueLoading: false });
+        }).catch(function() {
+          setKL({ aiCritique: null, aiCritiqueLoading: false });
+        });
+      }
+
       function startCompetition() {
         // Pick a random unlocked recipe from the catalog
         var unlocked = RECIPE_CATALOG.filter(function(r) { return r.unlocked; });
@@ -2502,6 +2674,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               };
               // Merge competition flavor into judgement.verdict
               judgement = Object.assign({}, judgement, { compResult: compResult });
+              // Record tournament round score (if in tournament)
+              var tournamentScores = prior.tournamentScores || [];
+              if (prior.tournamentActive) {
+                tournamentScores = tournamentScores.slice();
+                tournamentScores[prior.tournamentRound || 0] = compScore;
+              }
               // Persist new best
               return {
                 recipePhase: 'done',
@@ -2509,6 +2687,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 recipeCurrentStep: rec.steps.length - 1,
                 competitionBests: newBests,
                 competitionLastResult: compResult,
+                tournamentScores: tournamentScores,
                 recipeCompletedIds: (prior.recipeCompletedIds || []).indexOf(rec.id) === -1
                   ? (prior.recipeCompletedIds || []).slice().concat([rec.id])
                   : (prior.recipeCompletedIds || [])
@@ -2574,8 +2753,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         if (d.recipePhase === 'cooking') setTimeout(maybeAutoAdvance, 0);
 
         if (d.recipePhase === 'idle' || !d.recipeActiveId) return renderRecipePicker();
+        if (d.recipePhase === 'tournament-done') return renderTournamentFinal();
         if (d.recipePhase === 'done') return renderRecipeResults();
         return renderRecipeCockpit();
+      }
+
+      function renderTournamentFinal() {
+        var scores = d.tournamentScores || [];
+        var total = scores.reduce(function(a, b) { return a + (b || 0); }, 0);
+        var maxPossible = 450;
+        var pct = total / maxPossible;
+        var medal = pct >= 0.89 ? { icon: '🥇', label: 'Gold', color: '#fbbf24', subtitle: 'Master chef tier — extraordinary command of heat, timing, and constraint.' } :
+                    pct >= 0.71 ? { icon: '🥈', label: 'Silver', color: '#cbd5e1', subtitle: 'Real cook. Confident across heat ranges + constraints.' } :
+                    pct >= 0.53 ? { icon: '🥉', label: 'Bronze', color: '#d97706', subtitle: 'Solid home cook. Some constraints still tripping you up.' } :
+                                  { icon: '🍳', label: 'Honorable Mention', color: '#94a3b8', subtitle: 'You made it through. Tournament punishes mistakes — that\'s the point.' };
+        var isNewBest = total === (d.tournamentBestTotal || 0) && total > 0;
+        return h('div', null,
+          panelHeader('🏆 Tournament Complete',
+            'Three rounds. Escalating difficulty. Final standing:'),
+          // Medal hero
+          h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', padding: 40 }) },
+            h('div', { 'aria-hidden': 'true', style: { fontSize: 80, lineHeight: 1, marginBottom: 8 } }, medal.icon),
+            h('div', { style: { fontSize: 28, fontWeight: 900, color: medal.color, letterSpacing: '-0.01em' } }, medal.label),
+            h('div', { style: { fontSize: 14, color: '#cbd5e1', marginTop: 8, fontStyle: 'italic', maxWidth: 480, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.6 } }, medal.subtitle),
+            h('div', { style: { fontSize: 56, fontWeight: 900, color: medal.color, fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 18, lineHeight: 1 } }, total),
+            h('div', { style: { fontSize: 14, color: '#94a3b8', marginTop: 4 } }, 'out of ' + maxPossible + ' (' + Math.round(pct * 100) + '%)'),
+            isNewBest ? h('div', { style: { marginTop: 16, padding: '10px 18px', background: 'rgba(251,191,36,0.18)',
+                border: '1px solid rgba(251,191,36,0.5)', borderRadius: 9999, display: 'inline-block',
+                fontSize: 13, fontWeight: 800, color: '#fbbf24' } },
+              '🌟 New personal best!') : null),
+          // Per-round breakdown
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '📋 Round-by-round'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              scores.map(function(score, i) {
+                var rid = (d.tournamentRecipes || [])[i];
+                var rname = (RECIPE_CATALOG.find(function(x) { return x.id === rid; }) || {}).name || '—';
+                var constraintIds = (d.tournamentConstraintIds || [])[i] || [];
+                var constraints = constraintIds.map(function(cid) {
+                  var c = COMPETITION_CONSTRAINTS.find(function(x) { return x.id === cid; });
+                  return c ? c.label : '';
+                }).filter(Boolean);
+                var scoreColor = score >= 130 ? '#86efac' : score >= 100 ? '#fbbf24' : score >= 70 ? '#fb923c' : '#fca5a5';
+                return h('div', { key: i,
+                  style: { display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px',
+                    background: 'rgba(15,23,42,0.6)', borderRadius: 10,
+                    border: '1px solid rgba(100,116,139,0.3)', borderLeft: '4px solid ' + scoreColor } },
+                  h('div', { style: { fontSize: 11, fontWeight: 800, color: '#94a3b8', minWidth: 80 } }, 'Round ' + (i + 1)),
+                  h('div', { style: { flex: 1, minWidth: 0 } },
+                    h('div', { style: { fontSize: 13, fontWeight: 700, color: '#fde68a' } }, rname),
+                    h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 3, lineHeight: 1.4 } },
+                      'Constraints: ' + constraints.join(' • '))),
+                  h('div', { style: { fontSize: 24, fontWeight: 900, color: scoreColor, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                    score || 0));
+              }))),
+          // Action buttons
+          h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 8, flexWrap: 'wrap' } },
+            h('button', { onClick: function() { startTournament(); awardXP(3); },
+              style: { padding: '12px 26px', background: '#fbbf24', color: '#1c1410',
+                border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
+              '🏅 New tournament'),
+            h('button', { onClick: function() { exitTournament(); },
+              style: { padding: '12px 24px', background: 'transparent', color: '#fde68a',
+                border: '1px solid rgba(251,146,60,0.4)', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' } },
+              '🍽️ Back to recipe list'))
+        );
       }
 
       // ─── Recipe picker (idle screen) ───
@@ -2602,6 +2844,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: 'pointer',
                     boxShadow: '0 2px 6px rgba(251,146,60,0.4)' } },
                   '🎲 Start a random challenge'))),
+            // Tournament mode entry inside same card
+            h('div', { style: { marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(251,146,60,0.25)',
+              display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } },
+              h('div', { 'aria-hidden': 'true', style: { fontSize: 32, lineHeight: 1, flexShrink: 0 } }, '🏅'),
+              h('div', { style: { flex: 1, minWidth: 200 } },
+                h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fde68a', marginBottom: 2 } }, 'Tournament Mode (3 rounds)'),
+                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                  'Round 1: 1 constraint, full time. Round 2: 2 constraints, 80% time. Round 3: 3 constraints (Restaurant Standard + Speed Demon forced), 60% time. Compete for cumulative score across 450 points.')),
+              h('button', { onClick: function() { startTournament(); awardXP(3); },
+                style: { padding: '10px 18px', background: 'transparent', color: '#fde68a',
+                  border: '2px solid rgba(251,146,60,0.6)', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer' } },
+                '🏅 Start tournament'),
+              (d.tournamentBestTotal || 0) > 0 ? h('div', { style: { fontSize: 11, color: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                'Best ever: ' + (d.tournamentBestTotal || 0) + ' / 450') : null),
             bestEntries.length > 0 ? h('div', { style: { marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(251,146,60,0.25)' } },
               h('div', { style: { fontSize: 10, fontWeight: 700, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, '🥇 Your personal bests'),
               h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
@@ -3011,6 +3267,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var compResult = j.compResult;
         var displayScore = compResult ? compResult.finalScore : j.score;
         var gradeColor = displayScore >= 90 ? '#86efac' : displayScore >= 80 ? '#fbbf24' : displayScore >= 70 ? '#fb923c' : '#fca5a5';
+        var inTournament = !!d.tournamentActive;
+        var tRound = d.tournamentRound || 0;
+        // Fire AI critique request (idempotent — gated by aiCritiqueRequestedFor)
+        if (ctx.callGemini && !d.aiCritique && !d.aiCritiqueLoading && d.aiCritiqueRequestedFor !== d.recipeStartedAt) {
+          setTimeout(function() { requestAiCritique(rec, j); }, 100);
+        }
         return h('div', null,
           panelHeader(rec.icon + ' ' + rec.name + (compResult ? ' 🏆 — Competition Results' : ' — Results'),
             'Your dish has been judged. Score breakdown below — read the notes to see what to do differently next time.'),
@@ -3078,8 +3340,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                   border: '1px solid rgba(251,146,60,0.3)', borderRadius: 8, fontSize: 12, color: '#fde68a', fontWeight: 600 } }, t);
               }))),
 
+          // ─── AI Chef's Notes (Gemini-powered critique) ───
+          (ctx.callGemini) ? h('div', { style: Object.assign({}, cardStyle(), {
+            borderLeft: '4px solid #a78bfa',
+            background: 'linear-gradient(135deg, rgba(167,139,250,0.08), rgba(15,23,42,0.6))'
+          }) },
+            h('div', { style: subheaderStyle() }, '👨‍🍳 Chef\'s Notes (AI-generated critique)'),
+            d.aiCritique ? h('div', { style: { fontSize: 13, color: '#e9d5ff', lineHeight: 1.7, fontStyle: 'italic' } },
+              '"', d.aiCritique, '"') :
+            d.aiCritiqueLoading ? h('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic', padding: '8px 0' } },
+              '🤔 Chef is reviewing your work...') :
+            h('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } },
+              'Critique will appear here.')) : null,
+
+          // ─── Tournament standing (if in tournament) ───
+          inTournament ? h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fbbf24' }) },
+            h('div', { style: subheaderStyle() }, '🏅 Tournament Round ' + (tRound + 1) + ' of 3'),
+            h('div', { style: { display: 'flex', gap: 14, marginBottom: 10, flexWrap: 'wrap' } },
+              [0, 1, 2].map(function(i) {
+                var isPast = i < tRound;
+                var isCurrent = i === tRound;
+                var roundScore = (d.tournamentScores || [])[i];
+                var rid = (d.tournamentRecipes || [])[i];
+                var rname = (RECIPE_CATALOG.find(function(x) { return x.id === rid; }) || {}).name || '—';
+                return h('div', { key: i,
+                  style: { flex: 1, minWidth: 120, padding: '10px 12px',
+                    background: 'rgba(15,23,42,0.6)', borderRadius: 8,
+                    border: '1px solid ' + (isCurrent ? 'rgba(251,191,36,0.6)' : 'rgba(100,116,139,0.3)'),
+                    borderLeft: '3px solid ' + (isPast ? '#22c55e' : isCurrent ? '#fbbf24' : '#52525b'),
+                    opacity: isPast || isCurrent ? 1 : 0.6 } },
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: isPast ? '#86efac' : isCurrent ? '#fbbf24' : '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' } },
+                    'Round ' + (i + 1) + (isCurrent ? ' (just finished)' : '')),
+                  h('div', { style: { fontSize: 12, color: '#fde68a', marginTop: 4, lineHeight: 1.3 } }, rname),
+                  roundScore != null ? h('div', { style: { fontSize: 18, fontWeight: 900, color: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 4 } },
+                    roundScore) : null);
+              })),
+            h('div', { style: { fontSize: 11, color: '#cbd5e1', textAlign: 'center' } },
+              'Running total: ', h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800, color: '#fbbf24', fontSize: 14 } },
+                (d.tournamentScores || []).reduce(function(a, b) { return a + (b || 0); }, 0) + ' / ' + ((tRound + 1) * 150)))) : null,
+
           // Action buttons
           h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginTop: 8 } },
+            inTournament && tRound < 2 ? h('button', { onClick: function() { advanceTournament(); },
+              style: { padding: '12px 28px', background: '#fbbf24', color: '#1c1410',
+                border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
+              '▶ Continue to Round ' + (tRound + 2)) :
+            inTournament && tRound === 2 ? h('button', { onClick: function() { advanceTournament(); },
+              style: { padding: '12px 28px', background: '#22c55e', color: '#052e16',
+                border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
+              '🏆 See final standings') :
             compResult ? h('button', { onClick: function() { startCompetition(); awardXP(2); },
               style: { padding: '12px 24px', background: '#fb923c', color: '#1c1410',
                 border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
@@ -3088,11 +3397,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 style: { padding: '12px 24px', background: '#fb923c', color: '#1c1410',
                   border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
                 '🔁 Cook again'),
-            h('button', { onClick: function() { setKL({ recipePhase: 'idle', recipeActiveId: null,
+            !inTournament ? h('button', { onClick: function() { setKL({ recipePhase: 'idle', recipeActiveId: null,
                 competitionActive: false, competitionConstraints: [], competitionDeadline: null }); },
               style: { padding: '12px 24px', background: 'transparent', color: '#fde68a',
                 border: '1px solid rgba(251,146,60,0.4)', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' } },
-              '🍽️ Back to recipe list'))
+              '🍽️ Back to recipe list') :
+              h('button', { onClick: function() { if (confirm('Abandon tournament?')) exitTournament(); },
+                style: { padding: '12px 24px', background: 'transparent', color: '#fca5a5',
+                  border: '1px solid rgba(220,38,38,0.4)', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' } },
+                '✕ Abandon tournament'))
         );
       }
 
