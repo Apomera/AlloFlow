@@ -4964,6 +4964,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [annotationMode, setAnnotationMode] = useState('');
   const [noteColor, setNoteColor] = useState('yellow');
   const [highlightColor, setHighlightColor] = useState('yellow');
+  // Phase 7: note templates. Empty string = freeform (inline editor opens).
+  // Non-empty = pre-filled content; stays "sticky" across multiple clicks
+  // so a teacher can rapid-fire the same feedback when grading a class set.
+  const [noteTemplate, setNoteTemplate] = useState('');
   // Phase 5: annotation sidebar visibility. Toggled from the toolbar so
   // users can review/jump-to/delete annotations from one panel.
   const [showAnnotationSidebar, setShowAnnotationSidebar] = useState(false);
@@ -4977,6 +4981,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const voiceStartTimeRef = useRef(0);
   const voiceTickRef = useRef(null);
   const voiceCapTimeoutRef = useRef(null);
+  // Phase 6c: annotations import. Hidden file input invoked from the
+  // sidebar header — lets a teacher load a student's downloaded
+  // annotations JSON and merge it into the current view.
+  const annotationImportInputRef = useRef(null);
   React.useEffect(function () {
     // Keep legacy isStickerMode boolean in sync so cursor/CSS branches in
     // the existing JSX continue to work without per-site migration.
@@ -19511,6 +19519,8 @@ Return ONLY valid JSON in this format:
               color: noteColor,
               isTeacher: isTeacherMode,
               authorName: authorName,
+              // Pre-fill content from the active template (empty = freeform).
+              templateContent: noteTemplate || undefined,
           });
       } else if (annotationMode === 'voice' && _m.createVoicePlaceholder) {
           // Voice flow: drop a pending placeholder, then start recording.
@@ -19580,6 +19590,47 @@ Return ONLY valid JSON in this format:
           warnLog && warnLog('[Voice] stop failed:', err);
           setStickers(prev => prev.filter(a => a && a.id !== placeholderId));
       }
+  };
+  // Import annotations from a JSON file (the shape that the export's
+  // "Save mine" button produces). Teachers use this to load a student's
+  // downloaded annotations into their own in-app view to review marks
+  // the student left on a take-home copy. Imported annotations get
+  // author='student' forced so they're visually distinct from the
+  // teacher's own in the overlay + sidebar.
+  const handleImportAnnotations = () => {
+    if (!annotationImportInputRef.current) return;
+    annotationImportInputRef.current.value = '';
+    annotationImportInputRef.current.click();
+  };
+  const handleAnnotationImportFile = (e) => {
+    const file = e && e.target && e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const payload = JSON.parse(ev.target.result);
+        const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+        if (!_m || !_m.importAnnotations) {
+          addToast && addToast('Annotation suite not ready — try again in a moment.', 'error');
+          return;
+        }
+        // Teacher importing student work → force author='student' on
+        // everything so the teacher's own annotations stay distinguishable.
+        // Student importing peer work → keep authors as-is (no rebrand).
+        const opts = isTeacherMode ? { forceAuthor: 'student' } : {};
+        const result = _m.importAnnotations(stickers, payload, opts);
+        if (result.error) {
+          addToast && addToast('Could not import: ' + result.error + '. File must be an annotations JSON.', 'error');
+          return;
+        }
+        setStickers(result.list);
+        addToast && addToast('Imported ' + result.added + ' annotation' + (result.added === 1 ? '' : 's') + (result.skipped ? ' (' + result.skipped + ' skipped — invalid shape)' : '') + '.', 'success');
+      } catch (err) {
+        warnLog && warnLog('[Annotations] import failed:', err);
+        addToast && addToast('Could not parse the file. Must be a valid annotations JSON.', 'error');
+      }
+    };
+    reader.readAsText(file);
   };
   const handleVoiceRecordingCancel = async () => {
       if (!voiceRecording) return;
@@ -21885,10 +21936,13 @@ Return ONLY valid JSON in this format:
                                 stickerType: stickerType,
                                 noteColor: noteColor,
                                 highlightColor: highlightColor,
+                                noteTemplate: noteTemplate,
+                                isTeacher: isTeacherMode,
                                 onSetMode: setAnnotationMode,
                                 onPickType: setStickerType,
                                 onPickNoteColor: setNoteColor,
                                 onPickHighlightColor: setHighlightColor,
+                                onPickTemplate: setNoteTemplate,
                                 onClear: clearStickers,
                                 t: t,
                             });
@@ -22020,6 +22074,7 @@ Return ONLY valid JSON in this format:
                     annotations: stickers,
                     isTeacher: isTeacherMode,
                     onClose: () => setShowAnnotationSidebar(false),
+                    onImport: handleImportAnnotations,
                     onFocus: (id) => {
                         const target = (stickers || []).find(a => a && a.id === id);
                         if (!target || !contentAreaRef.current) return;
@@ -22037,6 +22092,14 @@ Return ONLY valid JSON in this format:
                     },
                 });
             })()}
+            <input
+              ref={annotationImportInputRef}
+              type="file"
+              accept=".json,application/json"
+              style={{ display: 'none' }}
+              onChange={handleAnnotationImportFile}
+              aria-hidden="true"
+            />
             {isProcessing && (!generatedContent || !generatedContent?.data) ? (
                 <div data-help-key="gen_loading_screen" className="absolute inset-0 bg-white/95 z-10 flex flex-col items-center justify-center">
                     <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden p-8">
