@@ -291,6 +291,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
   ];
 
   // ───────────────────────────────────────────────────────────
+  // GLOSSARY — 42 technical terms across cephalopod biology
+  // ───────────────────────────────────────────────────────────
+  var GLOSSARY = [
+    { term: 'Ammoniacal flotation', defn: 'Nautilus uses ammonium chloride solution + gas in its shell chambers for neutral buoyancy. Adjusting the gas/liquid ratio lets it rise + sink without active swimming.', tag: 'anatomy' },
+    { term: 'Aposematic', defn: 'Warning coloration. The blue-ringed octopus\'s blue iridophore rings only flash when threatened — they\'re aposematic signals advertising the tetrodotoxin venom.', tag: 'behavior' },
+    { term: 'Beak', defn: 'The only hard structure in an octopus body — a parrot-style chitin beak. Octopuses can squeeze through any hole bigger than their beak.', tag: 'anatomy' },
+    { term: 'Bivalve', defn: 'Two-shelled mollusks (clams, oysters, mussels). Common cephalopod prey — octopuses use the radula to drill through the shell.', tag: 'biology' },
+    { term: 'Branchial heart', defn: 'One of two "gill hearts" in cephalopods, pumping deoxygenated blood through the gills. Cephalopods have 2 branchial + 1 systemic = 3 hearts total.', tag: 'anatomy' },
+    { term: 'Cephalopod', defn: 'Class of marine mollusks. Includes octopus, squid, cuttlefish, nautilus. Greek for "head-foot" — the foot evolved into the arms attached directly to the head.', tag: 'biology' },
+    { term: 'Chitin', defn: 'Structural carbohydrate. Cephalopod beaks are pure chitin (same material as insect exoskeletons + crustacean shells).', tag: 'anatomy' },
+    { term: 'Chromatophore', defn: 'Pigment sac (red/yellow/black) surrounded by radial muscles. Muscles contract → sac expands → color shows. ~200 per square mm. Fastest color-change layer (~70ms).', tag: 'camouflage' },
+    { term: 'CITES Appendix II', defn: 'International trade regulation level. Nautilus has been listed since 2017 to control the shell trade. Trade is allowed with permits + quotas.', tag: 'conservation' },
+    { term: 'Coleoid', defn: 'Subclass of soft-bodied cephalopods (octopus, squid, cuttlefish). Contrast with nautiloids (shelled). All modern cephalopods except nautilus are coleoids.', tag: 'biology' },
+    { term: 'Cuttlebone', defn: 'Internal calcareous "shell" of cuttlefish. Gas-filled chambers can be adjusted for buoyancy. Sold in pet stores as a parakeet calcium supplement.', tag: 'anatomy' },
+    { term: 'Deimatic display', defn: 'Sudden high-contrast pattern (often with eyespots) to startle predators. NOT camouflage — the opposite. Buys ~0.5s for escape.', tag: 'camouflage' },
+    { term: 'Disruptive coloration', defn: 'Bold patterns (stripes, geometric shapes) that BREAK the body outline. Predator brain sees stripes, not octopus.', tag: 'camouflage' },
+    { term: 'Ganglion', defn: 'Cluster of neurons. Each octopus arm has its own ganglion holding ~40 million neurons. Total arm-ganglion neurons = ~2/3 of all octopus neurons.', tag: 'anatomy' },
+    { term: 'Hectocotylus', defn: 'Modified mating arm in male cephalopods. Some species detach it entirely during mating — early naturalists thought detached hectocotyli were parasitic worms.', tag: 'reproduction' },
+    { term: 'Hemocyanin', defn: 'Copper-based oxygen carrier in cephalopod blood (analog of iron-based hemoglobin in vertebrates). Gives the blood its BLUE color. More efficient in cold/low-oxygen water.', tag: 'anatomy' },
+    { term: 'Iridophore', defn: 'Cell with stacked reflectin protein plates. Produces structural color via thin-film interference. Slower than chromatophores (seconds-minutes) but produces polarized light cephalopods CAN see.', tag: 'camouflage' },
+    { term: 'Leucophore', defn: 'Passive white reflector cell. Bounces ambient light back at whatever color the environment provides. No nerve control needed — adapts automatically.', tag: 'camouflage' },
+    { term: 'Mantle', defn: 'Muscular body cavity. Houses gills + hearts + organs AND drives jet propulsion. Contracts to expel water through the siphon.', tag: 'anatomy' },
+    { term: 'Marine snow', defn: 'Falling organic particles in the deep ocean — bits of dead plankton, fecal pellets, mucus. Vampire squid filter-feeds on it.', tag: 'biology' },
+    { term: 'Melanin', defn: 'Black pigment in cephalopod ink. Same compound as in human hair + skin. Combined with mucus in ink to form a sticky decoy.', tag: 'biology' },
+    { term: 'Mesopelagic', defn: 'Ocean twilight zone, ~200-1000m depth. Some light penetrates but not enough for photosynthesis. Vampire squid + many squid species live here.', tag: 'biology' },
+    { term: 'Mimicry', defn: 'Imitating another species. Mimic octopus (Thaumoctopus mimicus) impersonates 15+ species including lionfish, sea snake, flounder.', tag: 'behavior' },
+    { term: 'Mollusk', defn: 'Phylum including cephalopods + gastropods (snails) + bivalves (clams). Cephalopods diverged from snail/clam relatives ~500 million years ago.', tag: 'biology' },
+    { term: 'Nautiloid', defn: 'Cephalopods with external shells. Only one genus survives today (Nautilus). Hundreds of nautiloid species lived during the Paleozoic + Mesozoic.', tag: 'biology' },
+    { term: 'Optic gland', defn: 'Endocrine gland behind the eyes. Produces steroid hormones that trigger post-reproductive senescence — programmed death after egg-brooding.', tag: 'reproduction' },
+    { term: 'Oxygen minimum zone', defn: 'Mid-ocean layer with very low dissolved oxygen. Vampire squid is one of few animals that lives full-time in oxygen minimum zones.', tag: 'biology' },
+    { term: 'Papillae', defn: 'Skin projections that cephalopods can raise or flatten for texture mimicry. Combined with chromatophore color changes, allows true 3D camouflage matching to substrate.', tag: 'camouflage' },
+    { term: 'Photophore', defn: 'Light-producing organ. Many deep-sea cephalopods are bioluminescent. Vampire squid has photophores on its arm tips.', tag: 'anatomy' },
+    { term: 'Polychaete', defn: 'Class of segmented marine worms. Common prey for mimic octopus + coconut octopus (they\'re burrowing prey on sandy substrates).', tag: 'biology' },
+    { term: 'Pseudomorph', defn: '"False shape" — the ink + mucus decoy a fleeing octopus leaves behind. Holds octopus-like shape briefly so the predator attacks the decoy.', tag: 'behavior' },
+    { term: 'Radula', defn: 'Rasping tongue-like organ with rows of chitin teeth. Used to drill through bivalve shells. Inherited from snail ancestors.', tag: 'anatomy' },
+    { term: 'Reflectin', defn: 'Protein in iridophore cells. Stacked layers create thin-film interference for structural color. The same protein family is being researched for adaptive camouflage materials.', tag: 'camouflage' },
+    { term: 'Semelparous', defn: 'Reproducing once, then dying. Most cephalopods are semelparous — they mate, brood eggs, and die in a programmed sequence triggered by the optic gland.', tag: 'reproduction' },
+    { term: 'Senescence', defn: 'Biological aging. In octopuses, senescence is triggered (not gradual) — the optic gland releases hormones that cause the death cascade after reproduction.', tag: 'reproduction' },
+    { term: 'Siphon', defn: 'Muscular funnel attached to the mantle. Steerable jet nozzle for propulsion. Also used to expel ink + waste + (in Otto\'s case) to short out aquarium lights.', tag: 'anatomy' },
+    { term: 'Spermatophore', defn: 'Sperm package transferred during mating. In some species, the hectocotylus deposits spermatophores directly into the female\'s mantle cavity.', tag: 'reproduction' },
+    { term: 'Systemic heart', defn: 'Main heart pumping oxygenated blood to the body. STOPS BEATING during sustained jet swimming — one reason octopuses prefer crawling for distance.', tag: 'anatomy' },
+    { term: 'Tetrodotoxin', defn: 'Sodium channel-blocking neurotoxin. Found in blue-ringed octopus + pufferfish + a few other animals. Produced by symbiotic bacteria. No antivenom.', tag: 'behavior' },
+    { term: 'Thaumoctopus', defn: 'Genus containing only the mimic octopus (Thaumoctopus mimicus). Named for the discoverer\'s amazement — "thaumastos" is Greek for "wonderful, marvelous".', tag: 'biology' },
+    { term: 'Vampyromorpha', defn: 'Order containing only the vampire squid (Vampyroteuthis infernalis). Lineage diverged ~165 million years ago — a true living-fossil order.', tag: 'biology' },
+    { term: 'Wok hei', defn: 'Wait, that\'s Kitchen Lab. Skip this entry.', tag: 'biology' }
+  ].filter(function(g) { return g.term !== 'Wok hei'; });
+
+  // ───────────────────────────────────────────────────────────
   // STATE
   // ───────────────────────────────────────────────────────────
   function defaultState() {
@@ -327,6 +375,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       jetSiphonDiameter: 18,               // mm
       // Intelligence Lab state
       intelSelectedCase: 'otto',
+      // Conservation & Welfare state
+      conservationSection: 'overview',     // 'overview' | 'fisheries' | 'farming' | 'shell-trade' | 'welfare'
+      // Resources state
+      glossaryFilter: '',
+      resourcesSub: 'glossary',            // 'glossary' | 'sources' | 'citizen' | 'fieldnotes'
       lastUpdated: null
     };
   }
@@ -419,6 +472,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           { id: 'anatomy', label: 'Body Plan', icon: '🧠' },
           { id: 'jet', label: 'Jet Propulsion', icon: '🚀' },
           { id: 'intel', label: 'Intelligence', icon: '💡' },
+          { id: 'conservation', label: 'Conservation & Welfare', icon: '🌍' },
           { id: 'resources', label: 'Resources', icon: '📚' }
         ];
         return h('div', { style: { padding: '24px 20px 12px', borderBottom: '1px solid rgba(99,102,241,0.18)' } },
@@ -433,7 +487,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: '#c7d2fe', letterSpacing: '-0.01em' } }, 'Cephalopod Lab'),
                 h('div', { style: { fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.12)',
                     border: '1px solid rgba(167,139,250,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                  '8 sections')),
+                  '9 sections')),
               h('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 4, lineHeight: 1.5 } },
                 'The biology of intelligent invertebrates. Octopuses + squid + cuttlefish + nautilus — chromatophore camouflage, distributed neural intelligence, hunting strategy, 500M-year evolution.'))));
       }
@@ -1681,55 +1735,347 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       }
 
       // ═══════════════════════════════════════════════════════
-      // SECTION 8 — RESOURCES (stub for v0.4)
+      // SECTION 8 — CONSERVATION & WELFARE
       // ═══════════════════════════════════════════════════════
-      function renderResources() {
+      function renderConservation() {
+        var sub = d.conservationSection || 'overview';
+        var SUBS = [
+          { id: 'overview', label: 'Overview', icon: '🌍' },
+          { id: 'fisheries', label: 'Fisheries', icon: '🎣' },
+          { id: 'farming', label: 'Aquaculture Debate', icon: '🏭' },
+          { id: 'shell-trade', label: 'Nautilus Shell Trade', icon: '🐚' },
+          { id: 'welfare', label: 'Sentience + Welfare', icon: '⚖️' }
+        ];
         return h('div', null,
-          panelHeader('📚 Resources & Glossary',
-            'Sources, glossary, conservation context, and deeper science for everything in Cephalopod Lab. v0.3 shipped Jet Propulsion physics + Intelligence Lab. v0.4 will add Conservation deep-dive + a fuller glossary + cephalopod welfare ethics module.'),
+          panelHeader('🌍 Conservation & Welfare',
+            'The fast-changing political + ethical landscape around cephalopods. Populations are RISING globally even as fish populations decline (climate-change winners). UK recognized cephalopods as sentient in 2021. Octopus farming is being debated. This is the section about the future.'),
 
-          h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '🚧 v0.4 will add'),
-            h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#e2e8f0', fontSize: 12, lineHeight: 1.8 } },
-              h('li', null, 'Conservation deep-dive — cephalopod fisheries + climate-change winners + the nautilus shell trade'),
-              h('li', null, 'Full glossary — 40+ technical terms (radula, hectocotylus, ammoniacal flotation, reflectin, mesopelagic, etc.)'),
-              h('li', null, 'Welfare + ethics module — UK 2021 sentience recognition, octopus farming debate, lab + aquaculture standards'),
-              h('li', null, 'Citizen science integration — links to iNaturalist + CephResearch reporting'))),
+          // Sub-tab strip
+          h('div', { role: 'tablist', 'aria-label': 'Conservation sub-sections',
+            style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
+            SUBS.map(function(s) {
+              var active = sub === s.id;
+              return h('button', { key: s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                onClick: function() { setCL({ conservationSection: s.id }); awardXP(1); },
+                style: { padding: '8px 12px',
+                  background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
+                  color: active ? '#c7d2fe' : '#cbd5e1',
+                  border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                  borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 6 } },
+                h('span', { 'aria-hidden': 'true' }, s.icon), s.label);
+            })),
 
-          h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '📜 Sources'),
-            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.7 } },
-              h('p', { style: { margin: '0 0 12px 0' } }, 'Cephalopod Lab content is anchored in peer-reviewed marine biology + behavioral science. Key sources:'),
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 } },
+          // ─── OVERVIEW ───
+          sub === 'overview' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '📈 The big picture'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.75 } },
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  'Most marine populations are declining. ',
+                  h('b', { style: { color: '#86efac' } }, 'Cephalopods are not'),
+                  ' — global cephalopod biomass has been climbing for decades. A 2016 paper (Doubleday et al., ',
+                  h('em', null, 'Current Biology'),
+                  ') analyzed 50+ years of fishery + ecosystem data across 35 species and found a consistent upward trend.'),
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  'Why? Several theories: (1) ',
+                  h('b', { style: { color: '#fde68a' } }, 'short lifespan + rapid reproduction'),
+                  ' lets cephalopods respond quickly to changing conditions; (2) ',
+                  h('b', { style: { color: '#fde68a' } }, 'release from fish competition + predation'),
+                  ' (their main competitors are being fished out); (3) ',
+                  h('b', { style: { color: '#fde68a' } }, 'warming oceans favor cephalopod metabolism'),
+                  ' — they grow faster in warmer water; (4) ',
+                  h('b', { style: { color: '#fde68a' } }, 'dietary flexibility'),
+                  ' — most cephalopods are opportunistic carnivores that can switch prey easily.'),
+                h('p', { style: { margin: 0 } },
+                  'The flip side: targeted fisheries are expanding to match the population increase. Global cephalopod catch is now ',
+                  h('b', null, '~4 million tons/year'),
+                  ' — nearly all of it consumed by humans. Within that, squid dominate (~3M tons), then octopus + cuttlefish. China, Japan, South Korea, Peru, and several Mediterranean fisheries are the largest players.'))),
+
+            // Conservation status by species
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '📋 IUCN status by species'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
+                SPECIES.map(function(sp) {
+                  var status = sp.conservation || 'Not assessed';
+                  var statusColor = /Threatened|Endangered|CITES/.test(status) ? '#fca5a5' :
+                                    /Concern/.test(status) ? '#86efac' :
+                                    /Data Deficient|Not assessed/.test(status) ? '#94a3b8' : '#fbbf24';
+                  return h('div', { key: sp.id,
+                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                      borderLeft: '3px solid ' + statusColor, padding: '10px 12px', borderRadius: 8 } },
+                    h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
+                      h('span', { 'aria-hidden': 'true' }, sp.emoji),
+                      h('div', { style: { fontSize: 13, fontWeight: 700, color: '#fde68a', flex: 1 } }, sp.name)),
+                    h('div', { style: { fontSize: 11, color: statusColor, fontWeight: 600 } }, status));
+                })))) : null,
+
+          // ─── FISHERIES ───
+          sub === 'fisheries' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🎣 The global cephalopod fishery'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.75, marginBottom: 14 } },
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  '~4 million tons of cephalopods are caught globally each year. Squid dominate the catch (~3M tons), followed by octopus (~400k tons) and cuttlefish (~300k tons). The fishery has tripled in the last 60 years.'),
+                h('p', { style: { margin: 0 } },
+                  'Major fisheries include:')),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
                 [
-                  { name: 'Hanlon & Messenger, "Cephalopod Behaviour" (Cambridge, 2018)', topic: 'The standard reference for cephalopod behavior, camouflage, signaling, learning, mating' },
-                  { name: 'Godfrey-Smith, "Other Minds" (FSG, 2016)', topic: 'Accessible introduction to cephalopod cognition + the philosophy of mind in distributed-neural animals' },
-                  { name: 'Roper, Sweeney & Nauen, FAO Cephalopod Catalog', topic: 'Taxonomy, distribution, size data across cephalopod species' },
-                  { name: 'Finn, Tregenza & Norman (2009) "Defensive tool use" Current Biology', topic: 'The coconut octopus tool-use paper that changed invertebrate cognition science' },
-                  { name: 'Norman & Finn (2001) on Thaumoctopus mimicus', topic: 'Discovery + description of the mimic octopus' },
-                  { name: 'Hanlon (2007) on cephalopod camouflage', topic: 'The 3-pattern model of cephalopod skin display (uniform / mottled / disruptive)' },
-                  { name: 'CephResearch.org + TONMO.com', topic: 'Active research community resources, current papers, public engagement' }
-                ].map(function(s, i) {
+                  { name: 'Humboldt squid', region: 'Eastern Pacific (Peru, Mexico, Chile)', tons: '~700k/year', notes: 'Range expanding northward with warming Pacific. Currently the most sustainable major cephalopod fishery.' },
+                  { name: 'Japanese flying squid', region: 'Northwest Pacific (Japan, S. Korea)', tons: '~500k/year', notes: 'Population fluctuates with Pacific Decadal Oscillation; under increasing pressure from East Asian demand.' },
+                  { name: 'Argentine shortfin squid', region: 'Southwest Atlantic (Argentina, Falklands)', tons: '~300k/year', notes: 'Highly variable year-to-year; collapse in 2015 followed by recovery.' },
+                  { name: 'Common octopus', region: 'Mediterranean + NW Africa', tons: '~80k/year', notes: 'Traditional artisanal fishery in Spain, Portugal, Morocco. Some pots-and-jars methods unchanged for centuries.' },
+                  { name: 'Giant Pacific octopus', region: 'Pacific Northwest (Alaska, BC, WA)', tons: '~3k/year', notes: 'Small fishery; mostly bycatch in crab traps. Recreational diving + spearfishing also pressure.' },
+                  { name: 'Cuttlefish (various)', region: 'Mediterranean, Atlantic, English Channel', tons: '~300k/year', notes: 'European demand growing as cod fisheries decline. UK + French Channel fisheries are seasonal.' }
+                ].map(function(f, i) {
                   return h('div', { key: i,
                     style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
-                      borderLeft: '3px solid #a78bfa', padding: '10px 12px', borderRadius: 8 } },
-                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#c7d2fe', marginBottom: 4 } }, s.name),
-                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, s.topic));
-                })))),
+                      borderLeft: '3px solid #fb923c', padding: '10px 12px', borderRadius: 8 } },
+                    h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fde68a', marginBottom: 4 } }, f.name),
+                    h('div', { style: { fontSize: 10, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 4 } },
+                      f.region + ' · ' + f.tons),
+                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, f.notes));
+                })))) : null,
 
-          // Field notes unlocked
-          (d.huntFieldNotesUnlocked || []).length > 0 ? h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '📔 Field notes you\'ve unlocked'),
-            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-              (d.huntFieldNotesUnlocked || []).map(function(noteId, i) {
-                var note = FIELD_NOTES.find(function(n) { return n.id === noteId; });
-                if (!note) return null;
-                return h('div', { key: i,
-                  style: { background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.25)',
-                    borderLeft: '3px solid #a78bfa', padding: '10px 14px', borderRadius: 8 } },
-                  h('div', { style: { fontSize: 12, color: '#e9d5ff', lineHeight: 1.65, fontStyle: 'italic' } },
-                    '"' + note.text + '"'));
-              }))) : null
+          // ─── FARMING ───
+          sub === 'farming' ? h('div', null,
+            h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fbbf24' }) },
+              h('div', { style: subheaderStyle() }, '🏭 The octopus farming debate'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.75 } },
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  'In 2021, Spanish multinational ',
+                  h('b', { style: { color: '#fde68a' } }, 'Nueva Pescanova'),
+                  ' announced plans to open the world\'s first commercial octopus farm in the Canary Islands. The proposed facility would raise ~1 million common octopuses (',
+                  h('em', null, 'Octopus vulgaris'),
+                  ') per year for the European seafood market.'),
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  'The announcement triggered international scientific + ethical pushback. ',
+                  h('b', null, 'The 2021 London School of Economics review'),
+                  ' (Birch, Burn, Schnell et al., commissioned by the UK government) concluded that "high-welfare octopus farming is impossible" because octopuses are:'),
+                h('ul', { style: { margin: '0 0 12px 0', paddingLeft: 20, color: '#e2e8f0', lineHeight: 1.7 } },
+                  h('li', null, '*Solitary by nature* — high-density confinement causes chronic stress, fighting, cannibalism'),
+                  h('li', null, '*Carnivorous + protein-demanding* — requires ~3kg of wild-caught fish per 1kg of octopus produced (net food deficit)'),
+                  h('li', null, '*Sentient* (per UK 2021 recognition) — capable of suffering, with no humane large-scale slaughter method established'),
+                  h('li', null, '*Behaviorally complex* — denial of cognitive enrichment causes documented self-mutilation in lab + captive settings')),
+                h('p', { style: { margin: 0 } },
+                  'As of 2024, the Canary Islands proposal is on hold pending regulatory review. Washington state (2024) and California (pending) have introduced legislation to ban octopus aquaculture preemptively. The EU Animal Welfare Platform has labeled it "high-risk" pending further assessment.')))) : null,
+
+          // ─── SHELL TRADE ───
+          sub === 'shell-trade' ? h('div', null,
+            h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fca5a5' }) },
+              h('div', { style: subheaderStyle() }, '🐚 The nautilus shell trade'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.75 } },
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  'The chambered nautilus is the only living cephalopod with an external shell. The shell\'s logarithmic spiral has been featured on jewelry, decor, and curio collections for over a century. The pressure is real:'),
+                h('ul', { style: { margin: '0 0 12px 0', paddingLeft: 20, color: '#e2e8f0', lineHeight: 1.75 } },
+                  h('li', null, 'Filipino + Indonesian fisheries harvest ~100,000+ nautilus per year for the shell trade'),
+                  h('li', null, 'Nautilus is ',
+                    h('b', { style: { color: '#fca5a5' } }, 'CITES Appendix II'),
+                    ' (regulated international trade) as of 2017 — but enforcement is uneven'),
+                  h('li', null, 'They reproduce extremely slowly — ~10-12 eggs per year per female, after a 15+ year maturation'),
+                  h('li', null, 'Populations in heavily-fished areas have dropped 80%+ in 20 years (IUCN data)'),
+                  h('li', null, 'Adding to the problem: nautilus is a deep-water (200-600m) animal — fishing pressure also disturbs deep-reef ecosystems')),
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  'The species has survived 500 million years of evolution essentially unchanged. It may not survive the past 30 years of shell collecting.'),
+                h('p', { style: { margin: 0, padding: '12px 14px', background: 'rgba(252,165,165,0.1)', borderLeft: '3px solid #fca5a5', borderRadius: 6, fontStyle: 'italic' } },
+                  'For students: if you see a polished nautilus shell at a tourist market or jewelry store, ask whether it came from a wild-caught animal or is a replica. Many nautilus shells in trade are illegal under CITES.')))) : null,
+
+          // ─── WELFARE ───
+          sub === 'welfare' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '⚖️ Sentience + Welfare timeline'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+                [
+                  { year: '2012', title: 'Cambridge Declaration on Consciousness', detail: 'Signed at the Francis Crick Memorial Conference. Names octopuses + other cephalopods alongside mammals + birds as showing evidence of consciousness-correlated brain substrates.', color: '#a78bfa' },
+                  { year: '2010', title: 'EU Directive 2010/63', detail: 'EU law on lab animals adds CEPHALOPODS as the first invertebrates given protections equivalent to vertebrates — they require the same review + welfare standards for research use.', color: '#fbbf24' },
+                  { year: '2021 May', title: 'UK LSE review (Birch et al.)', detail: 'Commissioned by UK government. 300-page review concludes "very strong evidence" that octopuses, squid, cuttlefish, and decapod crustaceans are sentient. Recommends animal-welfare protections.', color: '#86efac' },
+                  { year: '2021 Nov', title: 'UK Animal Welfare (Sentience) Act', detail: 'Formally amended to include cephalopods + decapods as sentient beings. Their welfare must be considered in government policy. First national law of its kind.', color: '#22c55e' },
+                  { year: '2022', title: 'Wang Lab "programmed death" paper', detail: 'U Chicago + Stanford collaboration identifies cholesterol-producing optic gland as trigger of post-reproductive senescence. Adds biological depth to the ethics of farming (they\'re going to die soon anyway — does that matter?).', color: '#fb923c' },
+                  { year: '2024', title: 'Washington State preemptive ban', detail: 'WA becomes first US state to ban octopus aquaculture preemptively. California legislation pending. Hawaii + Oregon considering similar measures.', color: '#0ea5e9' }
+                ].map(function(ev, i) {
+                  return h('div', { key: i,
+                    style: { display: 'flex', gap: 12, alignItems: 'flex-start', padding: '10px 14px',
+                      background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                      borderLeft: '3px solid ' + ev.color, borderRadius: 8 } },
+                    h('div', { style: { minWidth: 60, fontSize: 16, fontWeight: 900, color: ev.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, ev.year),
+                    h('div', { style: { flex: 1 } },
+                      h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', marginBottom: 4 } }, ev.title),
+                      h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } }, ev.detail)));
+                }))),
+            h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #a78bfa' }) },
+              h('div', { style: subheaderStyle() }, '🧭 The practical question'),
+              h('div', { style: { color: '#e9d5ff', fontSize: 13, lineHeight: 1.75 } },
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  'If cephalopods are sentient and have a "second evolutionary instance of consciousness" — what does that mean for:'),
+                h('ul', { style: { margin: '0 0 12px 0', paddingLeft: 20, color: '#cbd5e1', lineHeight: 1.8 } },
+                  h('li', null, 'Wild capture for food + research? Currently unregulated for invertebrates in most countries.'),
+                  h('li', null, 'Aquaculture? Welfare standards for animals with distributed nervous systems aren\'t established.'),
+                  h('li', null, 'Public aquariums? Many octopuses self-mutilate in confinement. Most aquariums now rotate cephalopod displays every 6-12 months.'),
+                  h('li', null, 'Scientific research? EU + UK already require ethics review for cephalopod experiments. US doesn\'t (NIH still treats them as invertebrates).'),
+                  h('li', null, 'Eating them? You might reach different conclusions about a cephalopod meal vs a fish meal vs a chicken meal. The ethics aren\'t obvious.')),
+                h('p', { style: { margin: 0, fontStyle: 'italic' } },
+                  'There aren\'t clean answers. The questions are genuinely open. That\'s what makes them worth thinking about.')))) : null
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════
+      // SECTION 9 — RESOURCES (expanded with full glossary)
+      // ═══════════════════════════════════════════════════════
+      function renderResources() {
+        var sub = d.resourcesSub || 'glossary';
+        var filter = (d.glossaryFilter || '').toLowerCase().trim();
+        var SUBS = [
+          { id: 'glossary', label: 'Glossary', icon: '📖', count: GLOSSARY.length },
+          { id: 'sources', label: 'Sources', icon: '📜' },
+          { id: 'citizen', label: 'Citizen Science', icon: '🔬' },
+          { id: 'fieldnotes', label: 'Field Notes', icon: '📔', count: (d.huntFieldNotesUnlocked || []).length }
+        ];
+        return h('div', null,
+          panelHeader('📚 Resources',
+            'Glossary, source bibliography, citizen science participation, and your unlocked field notes from the Hunter Sim.'),
+
+          // Sub-tab strip
+          h('div', { role: 'tablist', 'aria-label': 'Resources sub-sections',
+            style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
+            SUBS.map(function(s) {
+              var active = sub === s.id;
+              return h('button', { key: s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                onClick: function() { setCL({ resourcesSub: s.id }); awardXP(1); },
+                style: { padding: '8px 12px',
+                  background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
+                  color: active ? '#c7d2fe' : '#cbd5e1',
+                  border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                  borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 6 } },
+                h('span', { 'aria-hidden': 'true' }, s.icon),
+                s.label,
+                s.count != null ? h('span', { style: { fontSize: 10, color: active ? '#a78bfa' : '#64748b', fontFamily: 'ui-monospace, Menlo, monospace' } }, ' (' + s.count + ')') : null);
+            })),
+
+          // ─── GLOSSARY ───
+          sub === 'glossary' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '📖 Cephalopod glossary'),
+              h('div', { style: { marginBottom: 14 } },
+                h('input', { type: 'search', value: d.glossaryFilter || '',
+                  onChange: function(e) { setCL({ glossaryFilter: e.target.value }); },
+                  placeholder: 'Search terms... (e.g., "hectocotylus", "iridophore", "semelparous")',
+                  'aria-label': 'Filter glossary terms',
+                  style: { width: '100%', padding: '10px 14px',
+                    background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(100,116,139,0.4)',
+                    borderRadius: 8, color: '#f1f5f9', fontSize: 13, fontFamily: 'inherit', boxSizing: 'border-box' } })),
+              (function() {
+                var matches = GLOSSARY.filter(function(g) {
+                  if (!filter) return true;
+                  return g.term.toLowerCase().includes(filter) || g.defn.toLowerCase().includes(filter);
+                }).sort(function(a, b) { return a.term.localeCompare(b.term); });
+                if (matches.length === 0) {
+                  return h('div', { style: { color: '#94a3b8', fontSize: 12, padding: '16px 0', textAlign: 'center', fontStyle: 'italic' } },
+                    'No matches for "' + filter + '". Try a partial word.');
+                }
+                return h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
+                  matches.map(function(g, i) {
+                    var tagColor = g.tag === 'anatomy' ? '#fb923c' :
+                                   g.tag === 'camouflage' ? '#a78bfa' :
+                                   g.tag === 'behavior' ? '#86efac' :
+                                   g.tag === 'reproduction' ? '#f472b6' :
+                                   g.tag === 'conservation' ? '#fca5a5' : '#38bdf8';
+                    return h('div', { key: i,
+                      style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                        borderLeft: '3px solid ' + tagColor, padding: '10px 12px', borderRadius: 8 } },
+                      h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
+                        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a' } }, g.term),
+                        h('span', { style: { fontSize: 9, fontWeight: 700, color: tagColor, background: tagColor + '15', padding: '1px 6px', borderRadius: 4, textTransform: 'uppercase', letterSpacing: '0.05em' } }, g.tag)),
+                      h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, g.defn));
+                  }));
+              })())) : null,
+
+          // ─── SOURCES ───
+          sub === 'sources' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '📜 Sources + bibliography'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.7, marginBottom: 14 } },
+                h('p', { style: { margin: '0 0 12px 0' } }, 'Cephalopod Lab content is anchored in peer-reviewed marine biology + behavioral science. Primary sources:')),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 } },
+                [
+                  { name: 'Hanlon & Messenger, "Cephalopod Behaviour" (Cambridge, 2018)', topic: 'Standard reference for cephalopod behavior, camouflage, signaling, learning, mating', tag: 'book' },
+                  { name: 'Godfrey-Smith, "Other Minds" (FSG, 2016)', topic: 'Accessible introduction to cephalopod cognition + philosophy of mind in distributed-neural animals', tag: 'book' },
+                  { name: 'Roper, Sweeney & Nauen, FAO Cephalopod Catalog (1984)', topic: 'Taxonomy, distribution, size data across cephalopod species', tag: 'reference' },
+                  { name: 'Finn, Tregenza & Norman (2009) Current Biology', topic: '"Defensive tool use in a coconut-carrying octopus" — the paper that changed invertebrate cognition science', tag: 'paper' },
+                  { name: 'Norman & Finn (2001) Bull. Mar. Sci.', topic: 'Discovery + description of the mimic octopus (Thaumoctopus mimicus)', tag: 'paper' },
+                  { name: 'Hanlon (2007) Current Biology', topic: '"Cephalopod dynamic camouflage" — the 3-pattern model (uniform / mottled / disruptive)', tag: 'paper' },
+                  { name: 'Wang & Ragsdale (2018, 2022)', topic: 'Optic gland + cholesterol pathway papers on programmed cephalopod senescence', tag: 'paper' },
+                  { name: 'Doubleday et al. (2016) Current Biology', topic: 'Cephalopod populations rising globally — the climate-change-winner paper', tag: 'paper' },
+                  { name: 'Birch, Burn, Schnell et al. (2021) LSE review', topic: '"Review of the evidence of sentience in cephalopod molluscs and decapod crustaceans" — basis for UK 2021 Sentience Act amendment', tag: 'report' },
+                  { name: 'Cambridge Declaration on Consciousness (2012)', topic: 'Signed at the Francis Crick Memorial Conference. First broad scientific consensus naming cephalopods alongside mammals + birds', tag: 'declaration' },
+                  { name: 'Roger Hanlon\'s Marine Biological Laboratory website', topic: 'Open-access cephalopod camouflage research, photos, video', tag: 'web' },
+                  { name: 'CephResearch.org', topic: 'Active research community resources, papers, public engagement', tag: 'web' }
+                ].map(function(s, i) {
+                  var tagColor = s.tag === 'paper' ? '#a78bfa' : s.tag === 'book' ? '#fbbf24' : s.tag === 'report' ? '#fca5a5' : '#38bdf8';
+                  return h('div', { key: i,
+                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                      borderLeft: '3px solid ' + tagColor, padding: '10px 12px', borderRadius: 8 } },
+                    h('div', { style: { fontSize: 12, fontWeight: 700, color: '#c7d2fe', marginBottom: 4 } }, s.name),
+                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, s.topic),
+                    h('div', { style: { fontSize: 9, fontWeight: 700, color: tagColor, textTransform: 'uppercase', letterSpacing: '0.06em' } }, s.tag));
+                })))) : null,
+
+          // ─── CITIZEN SCIENCE ───
+          sub === 'citizen' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🔬 Be a cephalopod scientist'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.75, marginBottom: 16 } },
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  'Cephalopod biology is one of the few scientific fields where amateur observations regularly contribute to peer-reviewed papers. New species are still being discovered. Behavior is poorly documented for most species. ',
+                  h('b', { style: { color: '#fde68a' } }, 'If you see a cephalopod doing something interesting, report it.'))),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 } },
+                [
+                  { name: 'iNaturalist Cephalopod Project', what: 'Photo + location reports of cephalopod sightings worldwide. Used by researchers to track range expansion, behavior, and discover undocumented species.', how: 'Free app, free account. Photo + GPS = data.' },
+                  { name: 'NOAA Marine Wildlife Reports', what: 'For US waters. Report unusual cephalopod sightings, especially Humboldt squid in northern Pacific (range expansion data is sparse).', how: 'noaa.gov/marine-life' },
+                  { name: 'CephResearch.org sightings log', what: 'Researcher-curated database of cephalopod observations. Strong on behavioral oddities.', how: 'Email submissions with photo + location' },
+                  { name: 'TONMO.com community', what: 'The Octopus News Magazine Online. Long-running cephalopod enthusiast + amateur scientist community. Many published researchers participate.', how: 'Forum + sightings + Q&A' },
+                  { name: 'Australian Museum CephRecord', what: 'Particularly for Indo-Pacific species. Mimic octopus, blue-ringed, cuttlefish observations.', how: 'australian.museum (specific submission page)' },
+                  { name: 'iSeahorse.org (broader marine focus)', what: 'Not cephalopod-specific but includes octopus + cuttlefish observations from snorkelers + divers.', how: 'Mobile app, photo-based' }
+                ].map(function(c, i) {
+                  return h('div', { key: i,
+                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                      borderLeft: '3px solid #86efac', padding: '12px 14px', borderRadius: 8 } },
+                    h('div', { style: { fontSize: 13, fontWeight: 800, color: '#86efac', marginBottom: 6 } }, c.name),
+                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 6 } }, c.what),
+                    h('div', { style: { fontSize: 11, color: '#fde68a', fontStyle: 'italic' } },
+                      h('b', null, '🔗 How: '), c.how));
+                })),
+              h('div', { style: { marginTop: 14, padding: '12px 14px', background: 'rgba(134,239,172,0.08)', borderLeft: '3px solid #86efac', borderRadius: 8 } },
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },
+                  '💡 Pro tip for students'),
+                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.65 } },
+                  'If you live near tidepools, a snorkel + a phone in a waterproof case is enough to start. Cephalopods are notoriously hard to find — most sightings come from patient observation, not lucky encounters. The Pacific Northwest has Giant Pacific octopuses; the Mediterranean has common octopuses; the Indo-Pacific has the highest cephalopod diversity on Earth.')))) : null,
+
+          // ─── FIELD NOTES ───
+          sub === 'fieldnotes' ? h('div', null,
+            (d.huntFieldNotesUnlocked || []).length > 0 ?
+              h('div', { style: cardStyle() },
+                h('div', { style: subheaderStyle() }, '📔 Field notes you\'ve unlocked'),
+                h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
+                  'Real biology trivia unlocked through Hunter Sim attempts. Each note maps to documented research.'),
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                  (d.huntFieldNotesUnlocked || []).map(function(noteId, i) {
+                    var note = FIELD_NOTES.find(function(n) { return n.id === noteId; });
+                    if (!note) return null;
+                    return h('div', { key: i,
+                      style: { background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.25)',
+                        borderLeft: '3px solid #a78bfa', padding: '12px 14px', borderRadius: 8 } },
+                      h('div', { style: { fontSize: 12, color: '#e9d5ff', lineHeight: 1.7, fontStyle: 'italic' } },
+                        '"' + note.text + '"'));
+                  })),
+                h('div', { style: { fontSize: 11, color: '#94a3b8', textAlign: 'center', marginTop: 14, fontStyle: 'italic' } },
+                  (d.huntFieldNotesUnlocked || []).length + ' of ' + FIELD_NOTES.length + ' unlocked. Keep hunting to discover more.')) :
+              h('div', { style: cardStyle() },
+                h('div', { style: { color: '#94a3b8', fontSize: 13, padding: '24px', textAlign: 'center', fontStyle: 'italic', lineHeight: 1.7 } },
+                  'You haven\'t unlocked any field notes yet. Head to the ',
+                  h('b', { style: { color: '#c7d2fe' } }, 'Hunter Sim'),
+                  ' tab and attempt a hunt — every attempt unlocks a real biology fact.'))
+          ) : null
         );
       }
 
@@ -1741,6 +2087,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       else if (section === 'anatomy') content = renderBodyPlan();
       else if (section === 'jet') content = renderJetLab();
       else if (section === 'intel') content = renderIntelLab();
+      else if (section === 'conservation') content = renderConservation();
       else if (section === 'resources') content = renderResources();
       else content = renderHub();
 
