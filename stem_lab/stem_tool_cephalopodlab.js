@@ -433,6 +433,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       compView: 'matrix',                  // 'matrix' | 'animal' | 'dimension' | 'interpretation'
       compAnimal: 'cephalopod',
       compDimension: 'tooluse',
+      // Bioluminescence Lab state
+      bioluxView: 'overview',              // 'overview' | 'photophores' | 'symbiosis' | 'counter'
+      bioluxDepthFactor: 50,               // surface light reaching this depth (0-100)
+      bioluxBellyIntensity: 50,            // ventral photophore output (0-100)
+      bioluxPhotophoreId: 'simple',
+      bioluxSymbiosisHour: 0,              // 0-24 hour cycle for Vibrio fischeri demo
       // Day in the Life (Hard Mode) state — integrated hunter/hunted day
       dayActive: false,
       daySpeciesId: null,
@@ -550,6 +556,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           { id: 'evasion', label: 'Evasion Sim', icon: '🛡️' },
           { id: 'day', label: 'Day in the Life', icon: '🌅' },
           { id: 'camo', label: 'Camouflage', icon: '🎨' },
+          { id: 'biolux', label: 'Bioluminescence', icon: '✨' },
           { id: 'anatomy', label: 'Body Plan', icon: '🧠' },
           { id: 'time', label: 'Through Time', icon: '🕰️' },
           { id: 'jet', label: 'Jet Propulsion', icon: '🚀' },
@@ -571,7 +578,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: '#c7d2fe', letterSpacing: '-0.01em' } }, 'Cephalopod Lab'),
                 h('div', { style: { fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.12)',
                     border: '1px solid rgba(167,139,250,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                  '14 sections')),
+                  '15 sections')),
               h('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 4, lineHeight: 1.5 } },
                 'The biology of intelligent invertebrates. Octopuses + squid + cuttlefish + nautilus — chromatophore camouflage, distributed neural intelligence, hunting strategy, 500M-year evolution.'))));
       }
@@ -2292,7 +2299,319 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       }
 
       // ═══════════════════════════════════════════════════════
-      // SECTION 5 — BODY PLAN & 9 BRAINS
+      // SECTION 7 — BIOLUMINESCENCE LAB
+      // ═══════════════════════════════════════════════════════
+      function renderBioluminescence() {
+        var view = d.bioluxView || 'overview';
+        var SUBS = [
+          { id: 'overview', label: 'Chemistry', icon: '⚗️' },
+          { id: 'photophores', label: 'Photophore Types', icon: '💡' },
+          { id: 'symbiosis', label: 'Bacterial Symbiosis', icon: '🦠' },
+          { id: 'counter', label: 'Counter-Illumination Sim', icon: '🌗' }
+        ];
+        var PHOTOPHORES = [
+          { id: 'simple', name: 'Simple Diffuse', emoji: '⚪', color: '#cbd5e1',
+            description: 'A sac of bioluminescent tissue (or bacteria) with no optical structures. Glows in all directions equally. Cheapest photophore design.',
+            location: 'Often on body or arms in deep-sea species',
+            example: 'Common in vampire squid + many deep-sea octopuses' },
+          { id: 'lensed', name: 'Lensed', emoji: '🔦', color: '#fbbf24',
+            description: 'Includes a transparent lens that focuses the light into a directed beam. Like a tiny flashlight built into the body. More expensive to grow but allows directional signaling.',
+            location: 'Lateral body surface, arm tips',
+            example: 'Firefly squid lateral organs for communication' },
+          { id: 'mirrored', name: 'Mirrored Reflector', emoji: '🪞', color: '#a78bfa',
+            description: 'Internal layer of guanine crystals (the same structural-color material as iridophores) acts as a mirror, concentrating light output in a specific direction.',
+            location: 'Ventral surface (down-facing)',
+            example: 'Many mesopelagic squid for counter-illumination' },
+          { id: 'filtered', name: 'Color-Filtered', emoji: '🎨', color: '#0ea5e9',
+            description: 'A pigmented filter layer over the photophore tunes the wavelength. Lets the animal produce a specific blue or green that matches downwelling sunlight wavelengths at depth.',
+            location: 'Ventral (counter-illumination duty)',
+            example: 'Firefly squid produce blue (peak ~470 nm) matching ocean light' },
+          { id: 'symbiotic', name: 'Bacterial (Symbiotic)', emoji: '🦠', color: '#86efac',
+            description: 'A chamber full of bioluminescent bacteria (typically Vibrio fischeri or Vibrio harveyi). The host provides nutrients + safe shelter; the bacteria provide light. The animal can control output via oxygen flow.',
+            location: 'Specialized light organ near gills',
+            example: 'Hawaiian bobtail squid (Euprymna scolopes) — the classic symbiosis model' },
+          { id: 'ink', name: 'Bioluminescent Ink', emoji: '🌫️', color: '#1c1410',
+            description: 'Some deep-sea cephalopods discharge bioluminescent material as a decoy — instead of (or in addition to) the dark ink of shallow species. The glow distracts the predator while the animal escapes.',
+            location: 'Ink sac, ejected via siphon',
+            example: 'Several deep-sea octopuses (Octopoteuthis) + some squid' }
+        ];
+        var depth = d.bioluxDepthFactor != null ? d.bioluxDepthFactor : 50;
+        var belly = d.bioluxBellyIntensity != null ? d.bioluxBellyIntensity : 50;
+        var matchScore = 100 - Math.abs(depth - belly);
+        var matchVerdict = matchScore >= 90 ? { color: '#86efac', label: 'Silhouette erased — predator sees nothing.' } :
+                           matchScore >= 70 ? { color: '#fbbf24', label: 'Close, faint silhouette visible.' } :
+                           matchScore >= 40 ? { color: '#fb923c', label: 'Mismatch — predator sees you clearly.' } :
+                                              { color: '#fca5a5', label: 'You\'re a beacon. Easy target.' };
+        var hour = d.bioluxSymbiosisHour || 0;
+        var phase = hour < 6 ? { name: 'Dawn — Expulsion + Reset', color: '#fbbf24', detail: 'Just before sunrise, the squid expels ~95% of its Vibrio fischeri bacterial population through the siphon, leaving only ~5% to repopulate. This daily flush is hypothesized to prevent bacterial overgrowth.' } :
+                    hour < 12 ? { name: 'Day — Hidden + Repopulating', color: '#38bdf8', detail: 'During daylight hours, the squid hides buried in the sand. The remaining 5% of bacteria multiply rapidly back to full density in the warm, nutrient-rich light organ.' } :
+                    hour < 18 ? { name: 'Late Day — Population Maxing', color: '#a78bfa', detail: 'By late afternoon, the bacterial population has fully recovered to ~10^9 cells in the light organ. The squid is ready to emerge for nighttime feeding.' } :
+                    hour < 22 ? { name: 'Night — Counter-Illumination Active', color: '#86efac', detail: 'The squid emerges to hunt. Bacterial bioluminescence pours from the ventral light organ at ~moonlight brightness — matching downwelling moonlight to erase its silhouette from predators below.' } :
+                                { name: 'Pre-Dawn — Returning to Substrate', color: '#fb923c', detail: 'The squid returns to its sandy hideout as light begins to creep across the eastern sky. The cycle prepares to reset at dawn.' };
+        return h('div', null,
+          panelHeader('✨ Bioluminescence Lab',
+            'Cephalopods produce their own light. About 90% of deep-sea cephalopods are bioluminescent — vampire squid + firefly squid + glowing octopuses + the Hawaiian bobtail with its symbiotic bacterial partner. This module covers the chemistry, the photophore types, the bacterial symbiosis model, and an interactive counter-illumination simulator.'),
+
+          h('div', { role: 'tablist', 'aria-label': 'Bioluminescence sub-sections',
+            style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
+            SUBS.map(function(s) {
+              var active = view === s.id;
+              return h('button', { key: s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                onClick: function() { setCL({ bioluxView: s.id }); awardXP(1); },
+                style: { padding: '8px 12px',
+                  background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
+                  color: active ? '#c7d2fe' : '#cbd5e1',
+                  border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                  borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 6 } },
+                h('span', { 'aria-hidden': 'true' }, s.icon), s.label);
+            })),
+
+          view === 'overview' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '⚗️ The reaction'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  'Bioluminescence is enzyme catalysis. A small molecule called ',
+                  h('b', { style: { color: '#fbbf24' } }, 'luciferin'),
+                  ' is oxidized by an enzyme called ',
+                  h('b', { style: { color: '#fbbf24' } }, 'luciferase'),
+                  ', and the energy released comes out as visible light:'),
+                h('div', { style: { padding: '14px 16px', background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.3)',
+                  borderRadius: 8, fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 13, textAlign: 'center', color: '#e9d5ff', marginBottom: 12 } },
+                  'luciferin  +  O₂  →  oxyluciferin  +  CO₂  +  ',
+                  h('span', { style: { color: '#fbbf24', fontWeight: 800 } }, '✨ photon ✨')),
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  'The key marine luciferin is ',
+                  h('b', { style: { color: '#86efac' } }, 'coelenterazine'),
+                  ' — used by jellyfish + comb jellies + most bioluminescent cephalopods. Coelenterazine is small enough to diffuse across cell membranes, which is why it shows up in such different lineages independently.'))),
+
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🔬 Why it\'s "cold light"'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+                h('p', { style: { margin: '0 0 10px 0' } },
+                  'Quantum yield is the fraction of reaction energy that becomes light. For an incandescent bulb, ~5% of the energy is light and ~95% is heat. For bioluminescence, ',
+                  h('b', { style: { color: '#fbbf24' } }, 'quantum yield can reach ~90%'),
+                  ' — almost all the energy becomes photons. This is why fireflies + bioluminescent organisms don\'t feel warm to the touch.'),
+                h('p', { style: { margin: 0 } },
+                  'It\'s also why bioluminescence works in cold deep water (which would freeze a tropical glowworm). The reaction temperature is the surrounding water temperature; no thermoregulation required.'))),
+
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '⚖️ Bioluminescence vs other "glowing" phenomena'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
+                [
+                  { name: 'Bioluminescence', color: '#fbbf24',
+                    detail: 'Animal generates light via chemical reaction (luciferin + O₂ → light). Doesn\'t need outside light source.' },
+                  { name: 'Fluorescence', color: '#a78bfa',
+                    detail: 'Animal absorbs short-wavelength light + re-emits longer-wavelength light. Needs an external light source. Many corals + some fish do this — different from bioluminescence.' },
+                  { name: 'Phosphorescence', color: '#86efac',
+                    detail: 'Animal absorbs light + slowly releases it over seconds-to-minutes (glow-in-the-dark toys). Almost no animals do this naturally — it\'s mostly a synthetic effect.' },
+                  { name: 'Structural color', color: '#0ea5e9',
+                    detail: 'Light interference in nanostructures produces color without pigment. Iridophores in cephalopods + butterfly wings. Doesn\'t generate light, just reorganizes it.' }
+                ].map(function(b, i) {
+                  return h('div', { key: i,
+                    style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + b.color, padding: '10px 12px', borderRadius: 8 } },
+                    h('div', { style: { fontSize: 12, fontWeight: 800, color: b.color, marginBottom: 4 } }, b.name),
+                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, b.detail));
+                })))
+          ) : null,
+
+          view === 'photophores' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '💡 Photophore architectures'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
+                'A photophore is the structural unit that produces or houses bioluminescence. Different designs serve different functions — direction, color, intensity control.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 } },
+                PHOTOPHORES.map(function(p) {
+                  var active = p.id === (d.bioluxPhotophoreId || 'simple');
+                  return h('button', { key: p.id,
+                    onClick: function() { setCL({ bioluxPhotophoreId: p.id }); awardXP(1); },
+                    'aria-pressed': active ? 'true' : 'false',
+                    style: { padding: '10px 12px', textAlign: 'left',
+                      background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
+                      color: active ? '#c7d2fe' : '#cbd5e1',
+                      border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                      borderLeft: '3px solid ' + p.color,
+                      borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer' } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, p.emoji),
+                      h('div', { style: { fontWeight: 800, fontSize: 12, color: active ? '#fde68a' : '#e2e8f0' } }, p.name)));
+                }))),
+            (function() {
+              var sel = PHOTOPHORES.find(function(p) { return p.id === (d.bioluxPhotophoreId || 'simple'); }) || PHOTOPHORES[0];
+              return h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid ' + sel.color }) },
+                h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 12 } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 32 } }, sel.emoji),
+                  h('div', { style: { flex: 1 } },
+                    h('div', { style: { fontSize: 18, fontWeight: 900, color: sel.color, letterSpacing: '-0.01em' } }, sel.name))),
+                h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 12 } }, sel.description),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+                  [
+                    { lbl: '📍 Typical location', val: sel.location, color: '#fbbf24' },
+                    { lbl: '🔬 Example species', val: sel.example, color: '#86efac' }
+                  ].map(function(b, i) {
+                    return h('div', { key: i,
+                      style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + b.color, padding: '10px 12px', borderRadius: 8 } },
+                      h('div', { style: { fontSize: 10, fontWeight: 800, color: b.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, b.lbl),
+                      h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.55 } }, b.val));
+                  })));
+            })(),
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🎯 What bioluminescence is FOR'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+                [
+                  { fn: 'Counter-illumination', emoji: '🌗', detail: 'Match downwelling sunlight/moonlight with ventral photophores. Erases silhouette from predators below.' },
+                  { fn: 'Communication / mating', emoji: '💕', detail: 'Synchronized displays attract mates. Firefly squid spring spawn turns Toyama Bay blue.' },
+                  { fn: 'Prey luring', emoji: '🎣', detail: 'Bright spots on arm tips attract small prey close enough to grab. Vampire squid uses this.' },
+                  { fn: 'Predator decoy', emoji: '🌫️', detail: 'Bioluminescent ink ejected as a glowing decoy while the animal flees in the dark.' },
+                  { fn: 'Schooling coordination', emoji: '👥', detail: 'Humboldt squid + firefly squid coordinate pack movements via skin-flash signals.' },
+                  { fn: 'Startle response', emoji: '⚡', detail: 'Sudden bright burst when threatened — overwhelms predator visual system briefly.' }
+                ].map(function(fn, i) {
+                  return h('div', { key: i,
+                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                      borderLeft: '3px solid #fbbf24', padding: '10px 12px', borderRadius: 8 } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, fn.emoji),
+                      h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24' } }, fn.fn)),
+                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, fn.detail));
+                })))
+          ) : null,
+
+          view === 'symbiosis' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🦠 Vibrio fischeri + Hawaiian Bobtail Squid'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
+                h('p', { style: { margin: '0 0 10px 0' } },
+                  'The Hawaiian bobtail squid (',
+                  h('em', { style: { color: '#fde68a' } }, 'Euprymna scolopes'),
+                  ') is the model organism for studying beneficial host-microbe symbiosis. Every hatchling is born sterile. Within 12-24 hours of hatching, it has recruited a precisely controlled population of ',
+                  h('em', { style: { color: '#86efac' } }, 'Vibrio fischeri'),
+                  ' bacteria from seawater into a specialized light organ.'),
+                h('p', { style: { margin: '0 0 10px 0' } },
+                  'The bacteria are everywhere in seawater, but the squid only recruits Vibrio fischeri specifically — via a series of mucus + chemical signals that filter out everything else. Once the bacteria establish in the light organ\'s crypts, they multiply to ~10⁹ cells.'),
+                h('p', { style: { margin: 0 } },
+                  'In return: the squid provides nutrients (amino acids) + safe shelter. The bacteria provide light at moonlight brightness — used by the squid for counter-illumination during night feeding.'))),
+
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🕐 The 24-hour cycle'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginBottom: 12 } },
+                'Drag the slider to advance through one full day. The bacterial population cycles dramatically — expelled at dawn, repopulated by dusk.'),
+              h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 6, fontWeight: 700 } },
+                h('span', null, 'Time of day'),
+                h('span', { style: { color: phase.color, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                  String(Math.floor(hour)).padStart(2, '0') + ':00')),
+              h('input', { type: 'range', min: 0, max: 23, step: 1, value: hour,
+                onChange: function(e) { setCL({ bioluxSymbiosisHour: parseInt(e.target.value, 10) }); },
+                'aria-label': 'Time of day in hours',
+                style: { width: '100%', accentColor: phase.color, marginBottom: 12 } }),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#64748b', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 14 } },
+                h('span', null, '🌅 dawn'),
+                h('span', null, 'midday'),
+                h('span', null, '🌇 dusk'),
+                h('span', null, 'midnight')),
+              h('div', { style: { background: phase.color + '15', border: '1px solid ' + phase.color + '55',
+                borderLeft: '4px solid ' + phase.color, padding: '12px 14px', borderRadius: 10 } },
+                h('div', { style: { fontSize: 13, fontWeight: 800, color: phase.color, marginBottom: 6 } }, phase.name),
+                h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7 } }, phase.detail))),
+
+            h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #a78bfa' }) },
+              h('div', { style: subheaderStyle() }, '🔬 Why this symbiosis is foundational research'),
+              h('div', { style: { color: '#e9d5ff', fontSize: 13, lineHeight: 1.75 } },
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  'Margaret McFall-Ngai\'s lab at University of Hawaiʻi has built decades of foundational microbiome science around this one symbiosis. The questions it answered:'),
+                h('ul', { style: { margin: 0, paddingLeft: 20, color: '#cbd5e1', fontSize: 12, lineHeight: 1.75 } },
+                  h('li', null, 'How does an animal recruit ONE specific microbial species from millions in its environment?'),
+                  h('li', null, 'How does the immune system learn to TOLERATE beneficial microbes while rejecting harmful ones?'),
+                  h('li', null, 'How do host genes co-evolve with microbial partners?'),
+                  h('li', null, 'What molecular signals do bacteria use to establish residency in tissues?')),
+                h('p', { style: { margin: '12px 0 0 0', fontStyle: 'italic' } },
+                  'These same questions apply to the human gut microbiome, plant-rhizobia nitrogen-fixing symbiosis, coral-algae bleaching dynamics, and probiotics research. The bobtail squid + Vibrio fischeri system is small enough to fully control + complex enough to be informative.')))
+          ) : null,
+
+          view === 'counter' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🌗 Counter-Illumination Simulator'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
+                h('p', { style: { margin: '0 0 10px 0' } },
+                  'A predator looking up sees a dark silhouette against the lit water above. Counter-illumination defeats this by glowing on the underside to match the brightness of the downwelling light. Mismatch = silhouette visible.'),
+                h('p', { style: { margin: 0 } },
+                  'Adjust the surface brightness (depends on time + depth) and your ventral photophore intensity. The match score reflects what a predator below would see.'))),
+
+            h('div', { style: cardStyle() },
+              h('div', { style: { background: '#0a0f1e', borderRadius: 12, padding: 16, position: 'relative', overflow: 'hidden' } },
+                h('svg', { width: '100%', height: 280, viewBox: '0 0 400 280', 'aria-label': 'Counter-illumination simulation', style: { display: 'block' } },
+                  h('defs', null,
+                    h('linearGradient', { id: 'surfaceLight', x1: 0, y1: 0, x2: 0, y2: 1 },
+                      h('stop', { offset: '0%', stopColor: 'rgba(135,206,235,' + (depth / 100 * 0.7) + ')' }),
+                      h('stop', { offset: '100%', stopColor: 'rgba(15,23,42,0.95)' }))),
+                  h('rect', { x: 0, y: 0, width: 400, height: 280, fill: 'url(#surfaceLight)' }),
+                  depth > 20 ? h('g', { opacity: depth / 100 },
+                    h('line', { x1: 100, y1: 0, x2: 80, y2: 90, stroke: 'rgba(200,220,255,0.25)', strokeWidth: 1 }),
+                    h('line', { x1: 200, y1: 0, x2: 200, y2: 90, stroke: 'rgba(200,220,255,0.3)', strokeWidth: 1 }),
+                    h('line', { x1: 300, y1: 0, x2: 320, y2: 90, stroke: 'rgba(200,220,255,0.25)', strokeWidth: 1 })) : null,
+                  h('ellipse', { cx: 200, cy: 130, rx: 40, ry: 22, fill: '#1c1410', stroke: 'rgba(100,116,139,0.4)', strokeWidth: 1 }),
+                  h('circle', { cx: 200, cy: 113, r: 14, fill: '#1c1410' }),
+                  h('path', { d: 'M 175 145 Q 170 165 180 185 M 190 150 Q 188 175 195 195 M 200 150 Q 200 180 200 200 M 210 150 Q 212 175 205 195 M 225 145 Q 230 165 220 185', stroke: '#1c1410', strokeWidth: 3, fill: 'none', strokeLinecap: 'round' }),
+                  belly > 0 ? h('ellipse', { cx: 200, cy: 148, rx: 38, ry: 8,
+                    fill: 'rgba(180,210,255,' + (belly / 100 * 0.8) + ')', opacity: 0.85 }) : null,
+                  belly > 0 ? h('ellipse', { cx: 200, cy: 152, rx: 30, ry: 5,
+                    fill: 'rgba(220,235,255,' + (belly / 100 * 0.6) + ')' }) : null,
+                  h('g', { transform: 'translate(200, 240)' },
+                    h('path', { d: 'M -30 -10 Q 0 -25 30 -10 L 35 0 L 0 8 L -35 0 Z', fill: 'rgba(80,80,90,0.85)', stroke: 'rgba(140,140,160,0.4)', strokeWidth: 1 }),
+                    h('circle', { cx: -10, cy: -8, r: 3, fill: '#fbbf24' }),
+                    h('circle', { cx: 10, cy: -8, r: 3, fill: '#fbbf24' }),
+                    h('text', { x: 0, y: 24, textAnchor: 'middle', fontSize: 9, fill: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' },
+                      'predator looking up')),
+                  h('rect', { x: 12, y: 12, width: 130, height: 50, rx: 6, fill: 'rgba(0,0,0,0.7)' }),
+                  h('text', { x: 18, y: 28, fontSize: 10, fontWeight: 800, fill: matchVerdict.color, fontFamily: 'ui-monospace, Menlo, monospace' },
+                    'Match: ' + matchScore + '%'),
+                  h('text', { x: 18, y: 46, fontSize: 9, fill: '#cbd5e1', fontFamily: 'system-ui' }, matchVerdict.label.length > 28 ? matchVerdict.label.substring(0, 28) + '…' : matchVerdict.label))),
+
+              h('div', { style: { marginTop: 14 } },
+                h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 4, fontWeight: 700 } },
+                  h('span', null, '☀️ Downwelling light (depends on time + depth)'),
+                  h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: '#fbbf24' } }, depth + ' / 100')),
+                h('input', { type: 'range', min: 0, max: 100, step: 1, value: depth,
+                  onChange: function(e) { setCL({ bioluxDepthFactor: parseInt(e.target.value, 10) }); },
+                  'aria-label': 'Downwelling light intensity',
+                  style: { width: '100%', accentColor: '#fbbf24' } })),
+              h('div', { style: { marginTop: 10 } },
+                h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 4, fontWeight: 700 } },
+                  h('span', null, '💡 Ventral photophore intensity'),
+                  h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: '#86efac' } }, belly + ' / 100')),
+                h('input', { type: 'range', min: 0, max: 100, step: 1, value: belly,
+                  onChange: function(e) { setCL({ bioluxBellyIntensity: parseInt(e.target.value, 10) }); },
+                  'aria-label': 'Ventral photophore intensity',
+                  style: { width: '100%', accentColor: '#86efac' } })),
+              h('div', { style: { marginTop: 14, padding: '10px 14px',
+                background: matchVerdict.color + '15', border: '1px solid ' + matchVerdict.color + '55',
+                borderLeft: '4px solid ' + matchVerdict.color, borderRadius: 8 } },
+                h('div', { style: { fontSize: 13, fontWeight: 800, color: matchVerdict.color, marginBottom: 4 } },
+                  matchScore + '% — ' + matchVerdict.label),
+                h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55 } },
+                  matchScore >= 85 ?
+                    'In nature, real cephalopods (firefly squid, Hawaiian bobtail) actively tune their photophores in real time to track changing surface conditions.' :
+                  matchScore >= 60 ?
+                    'Adequate but not perfect. Real photophore systems are far more precise than this slider lets you be.' :
+                    'Mismatch this large means the predator definitely sees you. In the wild, bioluminescent species would have already adjusted.'))),
+
+            h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #a78bfa' }) },
+              h('div', { style: subheaderStyle() }, '🧠 How real cephalopods control this'),
+              h('div', { style: { color: '#e9d5ff', fontSize: 13, lineHeight: 1.7 } },
+                h('p', { style: { margin: '0 0 10px 0' } },
+                  'Real photophores aren\'t a single slider — they\'re hundreds of independently-controllable units. A firefly squid has ~1000 photophores. Each can be modulated separately.'),
+                h('p', { style: { margin: '0 0 10px 0' } },
+                  'In the Hawaiian bobtail squid, output is controlled by varying ',
+                  h('b', null, 'oxygen flow'),
+                  ' to the bacterial population — more O₂ = more bioluminescence (Vibrio fischeri uses oxygen as the oxidizer in the luciferin reaction). The squid sends regulated O₂ pulses to dial brightness up + down throughout the night.'),
+                h('p', { style: { margin: 0 } },
+                  'Some species also have photoreceptors NEXT TO their photophores. They detect their own output + adjust it. This closed-loop control is what makes real counter-illumination so precise.')))
+          ) : null
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════
+      // SECTION 8 — BODY PLAN & 9 BRAINS
       // ═══════════════════════════════════════════════════════
       function renderBodyPlan() {
         var ANATOMY = [
@@ -3855,6 +4174,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       else if (section === 'evasion') content = renderEvasionSim();
       else if (section === 'day') content = renderDayInLife();
       else if (section === 'camo') content = renderCamouflageLab();
+      else if (section === 'biolux') content = renderBioluminescence();
       else if (section === 'anatomy') content = renderBodyPlan();
       else if (section === 'time') content = renderThroughTime();
       else if (section === 'jet') content = renderJetLab();
