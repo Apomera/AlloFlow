@@ -14294,9 +14294,14 @@ Return ONLY valid JSON in this format:
     // exportConfig so doc_pipeline embeds it + the Save button in the
     // student HTML. Only the interactive 'print'/'html' modes get this;
     // worksheet (paper) mode skips since kids hand in paper.
-    const cfgWithSubmissionKey = (!isWorksheet && rosterKey?.submissionKey?.publicJwk)
+    const cfgBase = (!isWorksheet && rosterKey?.submissionKey?.publicJwk)
       ? { ...exportConfig, classPublicJwk: rosterKey.submissionKey.publicJwk }
-      : exportConfig;
+      : { ...exportConfig };
+    // Inject teacher's current annotations (stickers + notes + highlights)
+    // so they ride the exported HTML. Phase 4 of the annotation suite —
+    // the export becomes a self-contained surface that renders these
+    // annotations + lets the student add their own locally.
+    const cfgWithSubmissionKey = { ...cfgBase, annotations: Array.isArray(stickers) ? stickers : [] };
     return generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, cfgWithSubmissionKey);
   };
   const getSlidesPreviewHTML = () => {
