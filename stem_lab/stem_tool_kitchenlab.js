@@ -1653,6 +1653,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       aiCritique: null,
       aiCritiqueLoading: false,
       aiCritiqueRequestedFor: null,        // recipeRunStartedAt — so we don't re-request
+      // AI Recipe Suggester
+      suggesterOpen: false,
+      suggesterInput: '',                  // free-text constraints (e.g., "no eggs, 30 min")
+      suggesterLoading: false,
+      suggesterResult: null,               // { recipeId, reasoning } | null
+      suggesterError: null,
       // Progression
       klXp: 0,
       klAchievements: [],
@@ -2690,6 +2696,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         });
       }
 
+      // ─── AI Recipe Suggester (Gemini-powered) ───
+      // Asks Gemini to pick ONE of the 7 unlocked recipes based on the
+      // student's free-text constraints (pantry, time, mood, audience).
+      // Returns recipeId + a paragraph of reasoning.
+      function openSuggester() {
+        setKL({ suggesterOpen: true, suggesterInput: '', suggesterResult: null, suggesterError: null });
+      }
+      function closeSuggester() {
+        setKL({ suggesterOpen: false, suggesterLoading: false, suggesterError: null });
+      }
+      function runSuggester(input) {
+        var callGemini = ctx.callGemini;
+        if (!callGemini) {
+          setKL({ suggesterError: 'AI suggester is offline. Try a recipe directly from the list below.' });
+          return;
+        }
+        var unlocked = RECIPE_CATALOG.filter(function(r) { return r.unlocked; });
+        var catalogJson = unlocked.map(function(r) {
+          var fullRec = RECIPES[r.id];
+          return {
+            id: r.id, name: r.name, difficulty: r.difficulty,
+            description: fullRec ? fullRec.description : r.blurb,
+            cookingMode: fullRec ? fullRec.cookingMode || 'pan' : 'pan',
+            targetTimeMin: fullRec ? fullRec.targetTimeMin : 5,
+            teaches: fullRec ? fullRec.teaches : []
+          };
+        });
+        var userPrompt = (input || '').trim() || 'Just suggest something good for tonight.';
+        var prompt = [
+          'You are a friendly cooking coach helping a student pick a recipe to cook in the simulator. Here are the 7 recipes available:',
+          '',
+          JSON.stringify(catalogJson, null, 2),
+          '',
+          'The student says: "' + userPrompt + '"',
+          '',
+          'Pick ONE recipe ID from the list above and return JSON in this exact shape:',
+          '{ "recipeId": "<one of the IDs>", "reasoning": "2-3 sentences (max 80 words) explaining why this matches their situation. Encouraging but specific. Plain text, no markdown." }',
+          '',
+          'Only the JSON object, no commentary, no code fences.'
+        ].join('\n');
+        setKL({ suggesterLoading: true, suggesterResult: null, suggesterError: null });
+        callGemini(prompt, true).then(function(result) {
+          var raw = typeof result === 'string' ? result : (result && result.text ? result.text : '');
+          raw = String(raw || '').replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+          var startIdx = raw.indexOf('{'); var endIdx = raw.lastIndexOf('}');
+          if (startIdx < 0 || endIdx <= startIdx) {
+            setKL({ suggesterLoading: false, suggesterError: 'Suggester returned an unexpected response. Try rephrasing.' });
+            return;
+          }
+          var parsed;
+          try { parsed = JSON.parse(raw.substring(startIdx, endIdx + 1)); }
+          catch (e) { setKL({ suggesterLoading: false, suggesterError: 'Suggester response was malformed.' }); return; }
+          var rid = String(parsed.recipeId || '');
+          var reasoning = String(parsed.reasoning || '').trim();
+          var validIds = unlocked.map(function(r) { return r.id; });
+          if (validIds.indexOf(rid) === -1) {
+            setKL({ suggesterLoading: false, suggesterError: 'Suggester picked an invalid recipe. Try again.' });
+            return;
+          }
+          setKL({ suggesterLoading: false, suggesterResult: { recipeId: rid, reasoning: reasoning } });
+        }).catch(function() {
+          setKL({ suggesterLoading: false, suggesterError: 'Couldn\'t reach the suggester. Try again later.' });
+        });
+      }
       function startCompetition() {
         // Pick a random unlocked recipe from the catalog
         var unlocked = RECIPE_CATALOG.filter(function(r) { return r.unlocked; });
@@ -3018,8 +3088,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var bests = d.competitionBests || {};
         var bestEntries = Object.entries(bests).sort(function(a, b) { return b[1] - a[1]; });
         return h('div', null,
+          // AI Suggester modal (only when open)
+          d.suggesterOpen ? renderSuggesterModal() : null,
           panelHeader('🍽️ Real-Time Recipe Simulator',
             'Run an actual recipe in real time. Manage heat, time your additions, fix mistakes mid-cook. Mistakes have visible consequences. Success unlocks the next recipe.'),
+
+          // ─── AI SUGGESTER CARD ───
+          ctx.callGemini ? h('div', { style: { background: 'linear-gradient(135deg, rgba(167,139,250,0.18), rgba(56,189,248,0.12))',
+              border: '2px solid rgba(167,139,250,0.55)', borderRadius: 14, padding: '18px 22px', marginBottom: 16 } },
+            h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 14, flexWrap: 'wrap' } },
+              h('div', { 'aria-hidden': 'true', style: { fontSize: 38, lineHeight: 1, flexShrink: 0 } }, '🤔'),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('div', { style: { fontSize: 16, fontWeight: 800, color: '#e9d5ff', letterSpacing: '-0.01em', marginBottom: 4 } }, 'What should I cook tonight?'),
+                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 10 } },
+                  'Tell the AI what you have, how much time, or who you\'re feeding — it picks the right recipe from your unlocked list + explains why.'),
+                h('button', { onClick: function() { openSuggester(); awardXP(2); },
+                  style: { padding: '10px 18px', background: '#a78bfa', color: '#1c1410',
+                    border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
+                  '💡 Ask the AI chef')))) : null,
           // ─── COMPETITION MODE CARD (above the tutorial recipes) ───
           h('div', { style: { background: 'linear-gradient(135deg, rgba(220,38,38,0.18), rgba(251,146,60,0.18))',
               border: '2px solid rgba(251,146,60,0.6)', borderRadius: 14, padding: '20px 22px', marginBottom: 16,
@@ -3296,6 +3382,102 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 style: { padding: '12px 18px', background: 'transparent', color: '#fca5a5',
                   border: '1px solid rgba(220,38,38,0.4)', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' } },
                 '✕ Abandon')))
+        );
+      }
+
+      // ─── AI Suggester modal ───
+      // Overlay dialog with text input + suggestion result. Three states:
+      // 1. Empty (input + Submit button)
+      // 2. Loading (spinner + "Chef is thinking...")
+      // 3. Result (recommended recipe card + reasoning + "Cook this" / "Ask again")
+      function renderSuggesterModal() {
+        var inputVal = d.suggesterInput || '';
+        var result = d.suggesterResult;
+        var loading = d.suggesterLoading;
+        var err = d.suggesterError;
+        var recommendedRec = result ? RECIPES[result.recipeId] : null;
+        var recommendedCat = result ? RECIPE_CATALOG.find(function(r) { return r.id === result.recipeId; }) : null;
+        return h('div', {
+            role: 'dialog', 'aria-modal': 'true', 'aria-label': 'AI recipe suggester',
+            onClick: function(e) { if (e.target === e.currentTarget) closeSuggester(); },
+            style: {
+              position: 'fixed', inset: 0, zIndex: 9999,
+              background: 'rgba(10,7,4,0.85)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
+            }
+          },
+          h('div', { style: {
+              maxWidth: 560, width: '100%',
+              background: 'linear-gradient(135deg, #1c1410, #2a1d14)',
+              border: '2px solid rgba(167,139,250,0.5)', borderRadius: 16,
+              padding: 28, color: '#f1f5f9', boxShadow: '0 12px 48px rgba(0,0,0,0.5)',
+              maxHeight: '90vh', overflowY: 'auto'
+            } },
+            // Header
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
+              h('div', { 'aria-hidden': 'true', style: { fontSize: 36, lineHeight: 1 } }, '🤔'),
+              h('div', { style: { flex: 1 } },
+                h('div', { style: { fontSize: 18, fontWeight: 900, color: '#e9d5ff', letterSpacing: '-0.01em' } }, 'What should I cook?'),
+                h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, 'Powered by AI · picks from your unlocked recipes')),
+              h('button', { onClick: closeSuggester, 'aria-label': 'Close suggester',
+                style: { background: 'transparent', color: '#94a3b8', border: 'none', fontSize: 22, fontWeight: 700, cursor: 'pointer', padding: 4 } },
+                '✕')),
+            // Body — varies by state
+            result && recommendedRec && recommendedCat ? h('div', null,
+              // Result view
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 } },
+                '💡 Chef\'s pick'),
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, padding: 16,
+                  background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(167,139,250,0.4)',
+                  borderRadius: 12, marginBottom: 14 } },
+                h('div', { 'aria-hidden': 'true', style: { fontSize: 46, lineHeight: 1, flexShrink: 0 } }, recommendedCat.icon),
+                h('div', { style: { flex: 1, minWidth: 0 } },
+                  h('div', { style: { fontSize: 18, fontWeight: 800, color: '#fde68a', marginBottom: 4 } }, recommendedCat.name),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: recommendedCat.difficulty === 'easy' ? '#86efac' : recommendedCat.difficulty === 'hard' ? '#fca5a5' : '#fbbf24',
+                    textTransform: 'uppercase', letterSpacing: '0.05em' } }, recommendedCat.difficulty + ' · ' + (recommendedRec.targetTimeMin || 5) + ' min'))),
+              h('div', { style: { fontSize: 13, color: '#e9d5ff', lineHeight: 1.7, fontStyle: 'italic', marginBottom: 18,
+                  padding: '12px 14px', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.25)',
+                  borderRadius: 8 } },
+                '"', result.reasoning, '"'),
+              h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
+                h('button', { onClick: function() { closeSuggester(); startRecipe(result.recipeId); },
+                  style: { padding: '12px 22px', background: '#a78bfa', color: '#1c1410',
+                    border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
+                  '🍳 Cook this'),
+                h('button', { onClick: function() { setKL({ suggesterResult: null, suggesterInput: inputVal }); },
+                  style: { padding: '12px 18px', background: 'transparent', color: '#cbd5e1',
+                    border: '1px solid rgba(100,116,139,0.5)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' } },
+                  '🔄 Ask again'))
+            ) : loading ? h('div', { style: { textAlign: 'center', padding: '36px 16px' } },
+              h('div', { style: { fontSize: 48, marginBottom: 16 } }, '🤔'),
+              h('div', { style: { fontSize: 14, color: '#cbd5e1', fontStyle: 'italic' } },
+                'Chef is thinking about what suits your night...')
+            ) : h('div', null,
+              // Input view
+              h('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 12 } },
+                'Tell the chef about your situation — what you have in the kitchen, how much time, whether you\'re feeding kids, mood, etc. Or leave blank for a free pick.'),
+              h('textarea', {
+                value: inputVal,
+                onChange: function(e) { setKL({ suggesterInput: e.target.value, suggesterError: null }); },
+                placeholder: 'e.g., "I\'ve got eggs and butter, 10 minutes, kids are hungry"\nor\n"want something impressive for date night"\nor leave blank',
+                rows: 4,
+                style: { width: '100%', padding: '12px 14px', fontSize: 13, fontFamily: 'inherit',
+                  background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(100,116,139,0.5)',
+                  borderRadius: 8, color: '#f1f5f9', resize: 'vertical', marginBottom: 12, boxSizing: 'border-box' }
+              }),
+              err ? h('div', { style: { fontSize: 12, color: '#fca5a5', marginBottom: 12,
+                padding: '8px 12px', background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)',
+                borderRadius: 6 } }, '⚠️ ' + err) : null,
+              h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
+                h('button', { onClick: function() { runSuggester(inputVal); },
+                  style: { padding: '12px 22px', background: '#a78bfa', color: '#1c1410',
+                    border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
+                  '🤔 Suggest a recipe'),
+                h('button', { onClick: closeSuggester,
+                  style: { padding: '12px 18px', background: 'transparent', color: '#cbd5e1',
+                    border: '1px solid rgba(100,116,139,0.5)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' } },
+                  'Cancel')))
+          )
         );
       }
 

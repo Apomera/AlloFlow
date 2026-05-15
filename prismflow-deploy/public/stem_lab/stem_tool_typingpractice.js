@@ -505,6 +505,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     );
   }
 
+  // Mascot bios — grow the SVG icons into a character family. Each
+  // entry has the canonical name, theme it belongs to, one-sentence
+  // personality, and a couple lines of lore that show up on the
+  // "Meet the cast" roster on the Battle Menu. Same role AlloBot's
+  // canonical bio plays for that character — once students know the
+  // name and the personality, the mascot becomes someone they relate
+  // to rather than just an icon.
+  var MASCOT_BIOS = [
+    {
+      theme: 'default', themeLabel: 'Default',
+      name: 'Pip', tagline: 'The chick who never gives up.',
+      bio: 'Hatched from a typewriter ribbon. Round, fluffy, and surprisingly fast on tiny legs. Pecks letters with rhythmic precision; cheers loudest for personal bests, not perfect scores.',
+      accent: '#fde047'
+    },
+    {
+      theme: 'steampunk', themeLabel: 'Steampunk',
+      name: 'Cogsworth', tagline: 'Wound at dawn. Runs all day.',
+      bio: 'A brass clockwork owl built in a Victorian printer\'s shop. Eyes are lamp-glow lenses behind goggles. Two counter-rotating gears keep the mechanism balanced. Ticks calmly while everything around them burns.',
+      accent: '#a16207'
+    },
+    {
+      theme: 'cyberpunk', themeLabel: 'Cyberpunk',
+      name: 'Vex', tagline: 'A face made of light.',
+      bio: 'A neon hex-panel rendered by a forgotten arcade cabinet. Speaks in scanlines. Glitches when excited, alerts red when threatened. Surprisingly thoughtful for a face made of grids.',
+      accent: '#06b6d4'
+    },
+    {
+      theme: 'kawaii', themeLabel: 'Kawaii',
+      name: 'Mochi', tagline: 'Soft outside. Steel inside.',
+      bio: 'A pastel-pink kitten who looks delicate and is anything but. Sparkles on combos, frowns at danger, sheds exactly one tear when defeated, and gets back up immediately. Wears a tiny bow on the left ear.',
+      accent: '#f9a8d4'
+    }
+  ];
+
   // Mascot dispatcher — picks the right render fn for the active theme.
   // Theme 'neutral' returns null per the design rule (neutral = quiet,
   // no decorative characters). Returns a React element ready to mount.
@@ -10244,7 +10278,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               })
             }, '▶ Start Cascade'),
             h('div', { style: { marginTop: 14, padding: '10px 12px', borderRadius: 8, background: palette.surface, border: '1px solid ' + palette.border, fontSize: 11, color: palette.textMute, lineHeight: 1.55, fontStyle: 'italic' } },
-              '🎯 This mode adds time pressure on purpose. Most students grow more from the regular drills, where there\'s no clock. Cascade is here for when you want a different shape of practice — fast, snappy, with stakes that reset every match.')
+              '🎯 This mode adds time pressure on purpose. Most students grow more from the regular drills, where there\'s no clock. Cascade is here for when you want a different shape of practice — fast, snappy, with stakes that reset every match.'),
+            // Meet the cast — roster of all four mascots. The character
+            // family is part of what makes Battle Mode feel like a place,
+            // not just a drill. Each card shows the live SVG (idle), name,
+            // theme, tagline, and short bio. Tapping a card switches the
+            // active theme so students can preview each mascot.
+            h('div', {
+              style: {
+                marginTop: 22, padding: '14px 16px',
+                background: 'linear-gradient(135deg, rgba(244,114,182,0.06), rgba(167,139,250,0.04))',
+                border: '1px solid rgba(244,114,182,0.18)', borderRadius: 12
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4, flexWrap: 'wrap', gap: 6 } },
+                h('div', { style: { fontSize: 12, fontWeight: 800, color: '#f9a8d4', letterSpacing: '0.04em', textTransform: 'uppercase' } }, '🎭 Meet the cast'),
+                h('div', { style: { fontSize: 10, color: palette.textMute, fontFamily: 'ui-monospace, Menlo, monospace' } }, MASCOT_BIOS.length + ' characters · tap to switch theme')
+              ),
+              h('p', { style: { fontSize: 11, color: palette.textMute, margin: '0 0 12px', lineHeight: 1.55, fontStyle: 'italic' } },
+                'Each theme has a mascot who shows up in the playfield, on the menu, and in the summary screen. They react to what you\'re doing — combo, danger, attack, sleep, win, loss.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+                MASCOT_BIOS.map(function(m) {
+                  var isActive = (state.theme || 'default') === m.theme;
+                  return h('button', {
+                    key: 'cast-' + m.theme,
+                    onClick: function() { upd('theme', m.theme); },
+                    'aria-pressed': isActive ? 'true' : 'false',
+                    style: {
+                      padding: '12px',
+                      background: isActive ? 'rgba(244,114,182,0.08)' : palette.surface,
+                      border: '1.5px solid ' + (isActive ? m.accent : palette.border),
+                      borderRadius: 10,
+                      display: 'flex', alignItems: 'flex-start', gap: 10,
+                      cursor: 'pointer', textAlign: 'left',
+                      fontFamily: 'inherit', color: palette.text,
+                      transition: 'border-color 140ms ease, background 140ms ease'
+                    }
+                  },
+                    // Live mascot preview (idle, 64px)
+                    h('div', { style: { flexShrink: 0, width: 64, height: 64 } },
+                      renderBattleMascot(m.theme, 'idle', { size: 64, label: m.name + ' mascot' })
+                    ),
+                    h('div', { style: { flex: 1, minWidth: 0 } },
+                      h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap', marginBottom: 2 } },
+                        h('span', { style: { fontSize: 14, fontWeight: 800, color: m.accent, lineHeight: 1.2 } }, m.name),
+                        h('span', { style: {
+                          padding: '1px 6px', borderRadius: 999,
+                          background: m.accent + '22', color: m.accent,
+                          fontSize: 9, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase'
+                        } }, m.themeLabel)
+                      ),
+                      h('div', { style: { fontSize: 11, color: palette.textDim, fontStyle: 'italic', marginBottom: 4, lineHeight: 1.4 } }, m.tagline),
+                      h('div', { style: { fontSize: 10, color: palette.textMute, lineHeight: 1.55 } }, m.bio),
+                      isActive ? h('div', { style: { fontSize: 9, color: m.accent, fontWeight: 800, marginTop: 6, letterSpacing: '0.06em', textTransform: 'uppercase' } }, '★ Active') : null
+                    )
+                  );
+                })
+              )
+            )
           );
         }
 
