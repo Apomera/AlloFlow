@@ -3361,6 +3361,75 @@
               );
             })(),
             '#22c55e'
+          ),
+
+          // ─── Microbial forensics ────────────────────────────────
+          sectionCard('🔎 Microbial forensics — pathogen DNA as evidence',
+            (function() {
+              var FOR_TOPICS = [
+                { id: 'what', name: 'What microbial forensics is', emoji: '🧬',
+                  body: 'Microbial forensics applies genomic + epidemiological analysis to investigate microbial-disease incidents — whether natural outbreaks, accidental release, or deliberate attacks. The discipline emerged distinctly in response to the 2001 anthrax letters: the same DNA-sequencing tools used in microbiology research were turned to ATTRIBUTION questions (where did this pathogen come from?). It now spans foodborne-outbreak source tracing, hospital-outbreak investigation, environmental contamination tracking, biosecurity incident response, even biological-warfare attribution.',
+                  caveat: 'Microbial forensics is technically demanding + legally hazardous. Sequencing tells you ONE thing (the pathogen\'s genetic identity). Inferring the source requires comparing against reference databases + reasoning about evolutionary distance + sampling completeness. Wrongful attribution has serious consequences. The Amerithrax investigation (FBI, 2001-2010, $100M+) eventually concluded a single suspect but the conclusion remains debated; the FBI\'s case was technically robust but always indirect.'
+                },
+                { id: 'anthrax', name: 'The 2001 anthrax letters', emoji: '✉️',
+                  body: 'In September-October 2001, immediately after 9/11, letters containing weaponized Bacillus anthracis spores were mailed to news organizations + two US Senators. Five people died, 17 sickened. The FBI investigation became the largest single criminal probe in US history. Initial suspect (Steven Hatfill) was wrongfully accused + later cleared with a $5.8M settlement. Eventually, microbial forensics traced the anthrax strain to a specific flask (RMR-1029) at the US Army Medical Research Institute of Infectious Diseases (USAMRIID, Fort Detrick MD). The FBI named Bruce Ivins, a USAMRIID researcher, as the lone suspect; he died by suicide in 2008 before charges were filed. The National Academy of Sciences 2011 review concluded the genetic + circumstantial evidence was "consistent with" Ivins\'s guilt but not definitive.',
+                  caveat: 'Amerithrax demonstrated both the POWER + the LIMITS of microbial forensics. The genetic analysis was groundbreaking — using whole-genome sequencing + 4-marker characterization to trace the anthrax to a specific stock. But genetic identity does not prove who SPRAYED the letters. Many scientists remain unconvinced of Ivins\'s sole guilt. The case is required reading in forensic + biosecurity ethics courses.'
+                },
+                { id: 'foodborne', name: 'Foodborne outbreak tracing (PulseNet)', emoji: '🍔',
+                  body: 'Most modern microbial forensics is NOT about bioterrorism — it is about FOOD SAFETY. PulseNet (covered briefly in the surveillance section) uses whole-genome sequencing of foodborne-pathogen isolates from sick people to identify CLUSTERS of genetically-identical isolates across multiple states. When 30 Salmonella cases in 12 states share an indistinguishable genome, they likely came from a single contamination source. PulseNet has cracked hundreds of outbreaks: E. coli in spinach (2006), Listeria in cantaloupe (2011), Salmonella in cucumbers (2015), the ongoing investigations of organic carrots + flour + cilantro. Tracing the genome to a specific FACTORY or FARM uses additional environmental sequencing + interviews + records.',
+                  caveat: 'PulseNet works because the US has cooperative federal-state-local public health infrastructure + standardized procedures + funded surveillance. Most of the world does not. Where PulseNet exists, outbreaks are detected in days + interventions happen in weeks. Where it does not, outbreaks may spread for months before any pattern is recognized. Maine is a participating state; the Maine CDC contributes to the national network.'
+                },
+                { id: 'covid', name: 'COVID origins + genomic forensics', emoji: '🦠',
+                  body: 'The origin of SARS-CoV-2 remains one of the most consequential + contested questions in microbial forensics. The two main hypotheses: ZOONOTIC SPILLOVER from the Huanan Seafood Market in Wuhan (via intermediate animal hosts, similar to SARS-CoV-1 from civets in 2002-2003) vs RESEARCH-RELATED INCIDENT involving the Wuhan Institute of Virology (which conducted coronavirus research nearby). Multiple peer-reviewed analyses + intelligence-community assessments + WHO investigations have weighed in. Genomic forensics has compared SARS-CoV-2 to viral genomes from market animals + bat coronaviruses + WIV samples. As of 2024-2025: most published peer-reviewed evidence favors zoonotic origin centered on the Huanan market; minority opinion + some intelligence assessments favor lab-related origin. The question may never be definitively resolved.',
+                  caveat: 'The COVID origins debate is a microcosm of the political stakes around microbial forensics. Scientific evidence is uncertain enough to allow good-faith disagreement; political stakes are high enough to push some commenters past what evidence supports. School psychologists encountering family questions on this: the honest answer is "we don\'t know with certainty, the most-supported scientific hypothesis is zoonotic, lab-origin remains plausible but unproven, both hypotheses motivate the same biosafety + surveillance reforms." Dismissing either side without evidence is not scientific honesty.'
+                },
+                { id: 'hospital', name: 'Hospital outbreak investigation', emoji: '🏥',
+                  body: 'When a hospital sees unexpected clusters of MRSA, C. difficile, Candida auris, or other healthcare-associated infections, the infection-prevention team uses microbial forensics to trace transmission. Whole-genome sequencing distinguishes between (a) coincidental cases (different strains), (b) common-source transmission (all from one contaminated piece of equipment, water source, or asymptomatic carrier), (c) person-to-person spread via healthcare workers. The Mid-Atlantic Region NHSN Healthcare Reporting database connects to genomic surveillance via the CDC. The investigation guides specific interventions: equipment replacement, deep cleaning, staff testing, patient cohorting.',
+                  caveat: 'Hospital outbreak investigation is expensive + time-consuming + reveals problems no one wants found. Some institutions have been criticized for underreporting outbreaks. Modern best practice (UK NHS, many US academic medical centers, CMS conditions of participation) increasingly requires transparent outbreak reporting + public disclosure. The trade-off: better data improves quality but may discourage timely reporting if penalties are punitive.'
+                },
+                { id: 'environment', name: 'Environmental forensics', emoji: '🌊',
+                  body: 'Microbial forensics applies to ENVIRONMENTAL incidents too. AFTER A SPILL: did this petroleum contamination come from local refineries or imported oil? (microbial communities differ by source). HARMFUL ALGAL BLOOMS: which algal species + which environmental conditions triggered this bloom (genomic + nutrient analysis). CONTAMINATED WATER SUPPLIES: where did the pathogens enter the system (sampling along the distribution + sewer system + environmental waters). WILDLIFE PATHOGEN MOVEMENT: chytrid fungus, white-nose syndrome in bats, sudden oak death — all use microbial forensics to track pathogen spread + identify hotspots.',
+                  caveat: 'Environmental forensics requires extensive baseline sampling — knowing what microbial communities are NORMAL for a given site before contamination. Many sites lack this baseline; first-time investigations have to work from regional analogs. Climate change is also rapidly changing baseline microbial communities, complicating "before vs after" comparisons in long-term studies.'
+                },
+                { id: 'tools', name: 'The forensic toolkit', emoji: '🧰',
+                  body: 'Modern microbial forensics uses: (1) WHOLE-GENOME SEQUENCING — to characterize the pathogen down to single-nucleotide differences. (2) METAGENOMIC SEQUENCING — to identify all microbes in a sample without prior knowledge. (3) PHYLOGENETIC ANALYSIS — to reconstruct evolutionary relationships + transmission chains. (4) MOLECULAR-CLOCK estimation — to date the most recent common ancestor of a cluster. (5) ENVIRONMENTAL DNA (eDNA) sampling — to detect microbes from water, soil, surfaces. (6) ISOTOPIC ANALYSIS — to trace geographic origin of microbial material from elemental signatures. (7) STATISTICAL BAYESIAN INFERENCE — to quantify the probability of competing source hypotheses.',
+                  caveat: 'Each tool has standards + limits. The forensic standard requires: chain of custody for samples, validated laboratory procedures, blind technical replicates, peer-reviewed reference databases, statistical confidence statements. Casework-quality work is often slower + more expensive than research-quality work. The 2009 NAS report "Strengthening Forensic Science in the United States" called out gaps in microbial-forensics standards that the field is still working to address.'
+                },
+                { id: 'ethics', name: 'Biosecurity + dual-use', emoji: '🛡️',
+                  body: 'Microbial forensics enables both ATTRIBUTION (catching bad actors after attacks) + DETERRENCE (knowing attribution will follow may deter attacks). It is also a DUAL-USE technology: the same sequencing skills + reference databases that enable forensics could in principle help bad actors evade attribution. The biosecurity community has navigated this: (a) reference databases of high-consequence pathogen genomes are LIMITED to vetted institutions; (b) the Federal Select Agent Program tracks lab possessions of dangerous pathogens; (c) "gain-of-function" research is reviewed by the Cares Act P3CO panel; (d) the Biological Weapons Convention prohibits states from weaponizing pathogens (though enforcement is weak). Microbial-forensics ethics is taught in biosecurity programs at Harvard, Hopkins, Georgetown, + others.',
+                  caveat: 'Biosecurity is genuinely hard. Most pathogens with bioterrorism potential are common in nature + freely studied for medical purposes. Restricting research too much hurts our ability to develop vaccines + treatments. Not restricting it enough increases proliferation risk. Reasonable scientists + policymakers disagree on the right balance, + the conversation is ongoing. Students interested should engage with the actual debates rather than the simplified versions in popular media.'
+                }
+              ];
+              var sel = d.selectedForensics || 'what';
+              var topic = FOR_TOPICS.find(function(t) { return t.id === sel; }) || FOR_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'When a pathogen kills people, microbial forensics asks: where did it come from? The discipline traces foodborne-outbreak sources, hospital-acquired infections, environmental contamination, and (rarely + consequentially) deliberate attacks. The 2001 anthrax letters launched the field; foodborne-outbreak investigations + COVID origins debates have shaped its modern practice. The science is real, the political stakes are sometimes enormous, and the limits of attribution from genome data are real + worth understanding.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  FOR_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedForensics: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#dc2626' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #dc2626' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#fca5a5', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 11.5, color: '#c7d2fe', lineHeight: 1.65 } },
+                  h('strong', null, 'For students considering this field: '),
+                  'Microbial forensics careers combine molecular biology + bioinformatics + public health + sometimes criminal-justice work. Training paths: bachelor\'s in microbiology / biochemistry / public health → graduate work in epidemiology or computational biology → PhD or MPH for research roles, or join state public health labs / CDC / FBI labs / Department of Defense USAMRIID / Lawrence Livermore National Laboratory. The work matters + the field needs more practitioners. For Maine students: UMaine\'s School of Biology + Ecology + the Jackson Laboratory + Bigelow Lab all have research connections.'
+                )
+              );
+            })(),
+            '#dc2626'
           )
         );
         function infoBlock(title, body, color) {

@@ -2519,8 +2519,87 @@
             AMBER
           ),
           extremeEnvironmentsSection(),
-          shmAndInspectionSection()
+          shmAndInspectionSection(),
+          demolitionAndDecommissioningSection()
         );
+
+        function demolitionAndDecommissioningSection() {
+          var DEMO = [
+            { id: 'why', name: 'When + why bridges end', emoji: '⌛',
+              what: 'Bridges have finite service lives. Most modern bridges are designed for 75-100 years; in practice, deterioration + obsolescence often shorten this. A bridge is retired when: (a) STRUCTURAL CONDITION drops below repair economics (extensive corrosion, fatigue, foundation failure); (b) FUNCTIONAL OBSOLESCENCE — too narrow for current traffic, insufficient overhead clearance, inadequate seismic capacity, no pedestrian + bicycle access; (c) STRATEGIC redirection — community needs change, traffic patterns shift, the bridge no longer serves its purpose; (d) CATASTROPHIC damage from collision, fire, flood, or earthquake forces retirement.',
+              how: 'The retirement decision usually unfolds over decades. State DOTs maintain rolling 20-year asset plans. Inspections (covered in the SHM section) feed into the decision. A bridge typically goes from "good condition" through "fair" + "poor" + "structurally deficient" before being replaced. The Fern Hollow Bridge in Pittsburgh (collapsed January 2022, fortunately without fatalities) had been rated "poor" for years; it collapsed before its scheduled replacement.',
+              limit: 'The hardest political decisions involve old-but-beloved bridges. The Memorial Bridge in Portsmouth NH (1923 lift bridge over the Piscataqua) was a historic icon; replacement (2013) was opposed by preservationists + needed substantive consultation. Same with the original Tappan Zee, the original Goethals, the Bay Bridge eastern span. The new structure must serve modern needs; the old often had cultural meaning that cannot be replicated.'
+            },
+            { id: 'explosive', name: 'Explosive (controlled) demolition', emoji: '💥',
+              what: 'For steel + concrete bridges in unconstrained sites, EXPLOSIVE DEMOLITION is sometimes the fastest + cheapest approach. Engineers attach shaped charges to specific load-bearing points (truss panel-point connections, pier bases, cable saddles); the sequence of detonation collapses the structure in a controlled direction. The original Bay Bridge eastern span (2013-2018 piece-by-piece removal but anchor pier blown in 2015), the I-35W bridge replacement (the surviving sections demolished mostly by saw-cutting + selective blasting), the original Tappan Zee main span (2018 controlled explosive demolition watched by ~ 250,000 spectators live + streamed). Explosive demolition typically takes seconds; site preparation + cleanup take months.',
+              how: 'Specialized demolition contractors (Controlled Demolition Inc. + Demtech + others) plan + execute. A typical bridge explosive demo: 200-1500 pounds of explosives placed at 50-200 points, fired in a programmed sequence (millisecond precision) over 5-30 seconds. The collapse direction is controlled by which charges fire first + how connections are pre-weakened. Marine bridges + river-spanning bridges drop INTO the waterway, then are recovered by barge cranes + cut into pieces for recycling.',
+              limit: 'Explosive demolition is highly visible + politically sensitive. Environmental concerns: noise, dust, river-impact, debris recovery, archaeological + biological habitat. The Maslon Tappan Zee demolition had multi-year environmental review + dispersed-debris-recovery plans. Some communities prefer slower mechanical demolition even at higher cost to avoid the spectacle + risk.'
+            },
+            { id: 'sawcut', name: 'Mechanical + saw-cut demolition', emoji: '🪚',
+              what: 'For bridges in URBAN settings — over occupied buildings, active roads, water utilities, or sensitive environments — explosive demolition is unacceptable. Engineers cut the bridge into pieces using DIAMOND-WIRE SAWS (for cable-stayed bridges + suspension cables), HYDRAULIC SHEARS (for steel girders + plates), EXCAVATOR-MOUNTED concrete-crushing JAWS, JACKHAMMERS + IMPACT BREAKERS (for piers + abutments). Each piece is lowered to the ground via crane or truck-mounted lifts. Crews work segment by segment, sometimes for years on a long bridge. The Bay Bridge eastern span demolition (2014-2018) was largely a mechanical operation; the new bridge was already in service alongside.',
+              how: 'Sequence matters. Demolition typically begins at one end + progresses across, with the still-standing portion supporting itself in a stable configuration at each step. Cable suspension bridges are particularly tricky: removing the deck transfers load to the cables in ways that must remain stable. The Verrazzano-Narrows suspender-rope replacement (2017-2019) was a partial-demolition example — one suspender at a time, with adjacent suspenders carrying the redistributed load.',
+              limit: 'Mechanical demolition is slower + costs more per ton than explosive. For complex urban projects, it can take 2-4× longer than the original bridge construction. Worker safety is a constant concern; demolition is statistically more dangerous than construction. The OSHA fatality rate for demolition is ~ 3× the construction average.'
+            },
+            { id: 'piecemeal', name: 'Piece-by-piece + decking removal', emoji: '🧱',
+              what: 'For BRIDGES IN ACTIVE SERVICE during partial demolition, work happens in carefully sequenced stages. Common pattern: close one half of the bridge to traffic, demolish that half\'s deck while load goes through the other half, replace it with new construction (slide it in laterally if using ABC), switch traffic to the new half, demolish + replace the other side. This was the I-90 floating-bridge replacement (Seattle Lake Washington, 1990-2018, multiple bridges), the I-95 Bridge replacements in NJ + DC, the Tappan Zee transition. The bridge is essentially RE-BUILT in place over years.',
+              how: 'Piece-by-piece demolition requires precise load-flow analysis (which connections are still load-bearing when one section is gone). A field engineer with up-to-date FEA models is on site for major movements. Mistakes have caused collapses: the Florida International University pedestrian-bridge collapse (March 2018, 6 dead) happened during a re-tensioning operation when the contractor proceeded under load conditions that the design did not support. Demolition is engineering, not just destruction.',
+              limit: 'In-service demolition multiplies cost + duration vs full closure but maintains traffic capacity throughout. The economic calculation: USER COSTS of full closure (driver time, business loss, detour fuel) vs CONTRACTOR COSTS of phased demolition. For high-traffic interstate bridges, phased demolition usually wins despite ~ 2-5× higher direct construction cost.'
+            },
+            { id: 'recycle', name: 'Recycling + material recovery', emoji: '♻️',
+              what: 'Modern bridge demolition is largely a RECYCLING operation. STRUCTURAL STEEL (a high-quality alloy + relatively easy to identify) typically recovers ~ 90-95% by weight, melted down + re-rolled into new structural shapes or rebar. CONCRETE is crushed + reused as aggregate (low-grade use, but ~70-90% recovery for road base + non-structural fill). REBAR is separated magnetically from crushed concrete + smelted. CABLES + WIRE are recovered separately + recycled as steel. The Bay Bridge eastern span demolition recovered ~ 58,000 tons of steel + 245,000 tons of concrete; ~ 95% by weight was recycled.',
+              how: 'Demolition contractors specify recycling targets in bids; environmental review documents typically require ~ 75-90% recycling minimums. Steel goes to local mills (Nucor in Plymouth, Utah; Gerdau in many locations). Concrete goes to nearby road construction or development sites. Embedded materials (lead paint, asbestos in older bridges) require hazardous-waste handling separately. Wood from older trestle + timber bridges goes through processing for re-use or biomass energy.',
+              limit: 'Truly closed-loop recycling is impossible — there is always some loss (sludge, fines, contamination). LEAD-PAINTED steel (common pre-1980) must be sandblasted with full containment + the lead-bearing waste handled as hazardous; this adds significant cost ($5-10/sq ft of painted surface). PCB-contaminated bearings (also common pre-1980) require special handling. Modern bridges with proper coating systems + low-toxicity materials are easier to recycle when their time comes.'
+            },
+            { id: 'environment', name: 'Environmental + community impact', emoji: '🌊',
+              what: 'Demolition affects MORE than just the bridge site. WATERWAY impacts: debris falling into rivers + estuaries disturbs sediment, releases contaminants, affects fish + wildlife. The Tappan Zee debris recovery was a major operation with specialized barge-based netting + diving. AIR QUALITY: dust + (for explosive demolition) overpressure + smoke. NEIGHBORHOOD impacts: vibration damage to nearby buildings, traffic detours, noise. CULTURAL + HISTORIC sites near demolition need protection. Indigenous consultation: many waterways + bridges sit on tribal traditional territories.',
+              how: 'Environmental review under NEPA + ESA happens for major demolition. Coast Guard permits required for navigable waterways. Air-quality permits from state EPA. Site-specific mitigation: debris-catch systems, dust suppression, monitoring stations. Tribal consultation may take years for sites with cultural significance. Even with full review + mitigation, demolitions have surprises — the Tappan Zee unexpectedly released sub-bottom contamination that required dredging cleanup.',
+              limit: 'Environmental reviews are stronger than they were 50 years ago but still uneven. Major federal-funded demolitions get full NEPA process; smaller state + local jobs may get streamlined review that can miss issues. Community advisory boards + ongoing monitoring are best practice but resource-constrained. Some demolition impacts are not fully knowable until they happen.'
+            },
+            { id: 'famous', name: 'Famous demolitions', emoji: '🎬',
+              what: '(a) ORIGINAL TAPPAN ZEE (NY, 2018) — 3.1-mile bridge demolished over 5 years; main span dropped via explosive demolition January 2019, watched by ~250,000 in person + millions online. (b) OLD CHESAPEAKE BAY BRIDGE (Maryland, planned 2030-2040) — the original 1952 + 1973 spans are reaching end of service; replacement is in active planning. (c) BAY BRIDGE EASTERN SPAN (CA, 2013-2018) — demolished alongside the new bridge already in service; ~ $200M cleanup contract. (d) ORIGINAL I-94 BRIDGE (St. Cloud MN, 2019) — explosive demolition of a 1962 truss bridge after replacement built parallel. (e) HAMMERSMITH FLYOVER (London, in service 1961, demolition discussed since 2015, fragmentary work begun 2023) — an iconic urban motorway-bridge whose retirement is technically + politically complex.',
+              how: 'Public engagement around demolitions has changed. Major demolitions now include public viewing areas, livestreams, documentary partnerships, educational materials. Demolition has become a form of public art — Christo + Jeanne-Claude\'s tradition of treating infrastructure events as cultural moments. Most demolitions are filmed + studied by engineering students. The IS-35 bridge in Minneapolis remains studied by engineering ethics + structural-failure-investigation courses.',
+              limit: 'Spectacle can overshadow story. The community displaced by a 50-year-old bridge\'s original construction is often invisible by the time of demolition. Equity-aware demolition planning asks: who benefited from the original bridge? Who paid the costs? Who should benefit from + design the replacement? These questions are not always asked, but they should be.'
+            },
+            { id: 'cycle', name: 'Demolition as engineering education', emoji: '🎓',
+              what: 'Bridge demolition is a teaching laboratory. Engineers + students learn about: structural redundancy (what happens when load paths are removed), connection mechanics (how joints actually fail), material durability (which corrosion patterns predicted future failure), construction-era practices (revealed by what is found inside the bridge). Demolition projects often produce engineering papers + dissertations. The post-mortem on the I-35W collapse (NTSB 2008 report) is required reading in structural engineering programs; the analyzable carcass of a demolished bridge offers similar lessons without the human cost.',
+              how: 'Education partnerships: state DOTs often invite universities to study bridges during demolition. Pieces are saved for forensic analysis; testing of fatigue cracks + corrosion progression informs future inspection. The Bay Bridge eastern-span pieces are still being studied by Berkeley + Stanford labs for fatigue + corrosion data. Modern demolition is more than destruction; it is a research opportunity if scheduled + funded right.',
+              limit: 'Most demolitions are NOT research opportunities — they are time-pressured contractor jobs with the bridge gone in weeks. The few that become study sites (Tappan Zee, Bay Bridge, I-35W) require advance planning + funding partnerships that smaller projects cannot afford. The research-opportunity case for selective preservation of demolition specimens is being made + slowly accepted.'
+            }
+          ];
+          var sel = d.selectedDemo || 'why';
+          var topic = DEMO.find(function(t) { return t.id === sel; }) || DEMO[0];
+          return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)' } },
+            h('h3', { style: { margin: '0 0 6px', color: '#fbbf24', fontSize: 16 } }, '💣 Bridge demolition + decommissioning'),
+            h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 12px' } },
+              'Every bridge eventually retires. The how + why is its own engineering discipline — explosive demolition for unconstrained sites, mechanical saw-cut work in dense urban settings, piece-by-piece retirement of bridges that must stay in service during their own replacement. Environmental recycling, community impact, historical significance, + research opportunities all factor in. A bridge\'s last project is rarely simpler than its first.'
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              DEMO.map(function(t) {
+                var on = t.id === sel;
+                return h('button', {
+                  key: t.id,
+                  onClick: function() { upd({ selectedDemo: t.id }); },
+                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
+                }, t.emoji + ' ' + t.name);
+              })
+            ),
+            h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155' } },
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fbbf24', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'What happens'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.what)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'How it works'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.how)
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'Honest limit'),
+                h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7 } }, topic.limit)
+              )
+            )
+          );
+        }
 
         function shmAndInspectionSection() {
           var SHM = [

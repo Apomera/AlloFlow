@@ -4064,6 +4064,75 @@
               );
             })(),
             '#06b6d4'
+          ),
+
+          // ─── Astronomical timekeeping ───────────────────────────
+          sectionCard('⏱️ How we tell time — UTC, leap seconds, and GPS relativity',
+            (function() {
+              var TIME_TOPICS = [
+                { id: 'origins', name: 'Time from the sky', emoji: '🌅',
+                  body: 'For most of human history, time meant the SUN. Local apparent solar time (sundial time) was the only practical reference; each town set its own clocks by when the sun crossed the local meridian. The Earth\'s rotation was the assumed-perfect clock. Mean solar time (averaged to remove Earth\'s orbital eccentricity + axial-tilt wobbles) became standard with mechanical clocks in the 1500s. The MEAN SOLAR SECOND was defined as 1/86,400 of a mean solar day. This worked fine until ~1955.',
+                  caveat: 'Each town keeping its own time worked when travel was slow. The railroads broke that — a train leaving Boston could not list its departure time if every town had a different "noon." Standard time zones (proposed by Sandford Fleming 1879, adopted in the US 1883 by the railroads, internationalized 1884 at the Washington Meridian Conference) imposed a single time across regions for the first time in history.'
+                },
+                { id: 'atomic', name: 'The atomic second (1967)', emoji: '⚛️',
+                  body: 'In 1955 Louis Essen + Jack Parry at the UK National Physical Laboratory built the first cesium atomic clock. They demonstrated that an atomic transition (a specific electronic state change in cesium-133) provided a vastly more stable time reference than Earth\'s rotation. The 1967 General Conference on Weights + Measures redefined the SI SECOND as "the duration of 9,192,631,770 periods of the radiation corresponding to the transition between the two hyperfine levels of the ground state of the cesium-133 atom." Earth\'s rotation no longer defines the second. Atomic clocks are now accurate to ~10⁻¹⁵-10⁻¹⁸ (off by less than 1 second over the age of the universe for the best optical clocks).',
+                  caveat: 'The cesium standard runs faster + slower over the years than Earth\'s rotation. Earth\'s rotation is gradually slowing (tidal friction with the Moon, plus seasonal + decadal wobbles). The mismatch between atomic-defined seconds + rotation-defined days creates the LEAP SECOND problem.'
+                },
+                { id: 'utc', name: 'UTC + leap seconds', emoji: '⏲️',
+                  body: 'Coordinated Universal Time (UTC, since 1972) is based on the atomic second but kept SYNCHRONIZED with Earth\'s rotation by inserting LEAP SECONDS when the accumulated difference reaches ~ 0.9 seconds. Leap seconds are decided by the International Earth Rotation + Reference Systems Service (IERS), typically inserted on June 30 or December 31. Since 1972, 27 leap seconds have been added (the last was December 31, 2016; the next is uncertain). One leap second was even predicted to be SUBTRACTED (negative leap second) around 2026-2029 because Earth has temporarily SPED UP, but melting polar ice has redistributed mass + slowed rotation again, postponing the negative leap second indefinitely.',
+                  caveat: 'Leap seconds wreak havoc on computer systems. The 2012 leap second crashed Reddit, LinkedIn, FourSquare, Yelp; the 2017 leap second crashed Cloudflare\'s DNS for 90 minutes. The IT industry has lobbied to abolish leap seconds; the General Conference on Weights + Measures voted in November 2022 to PHASE OUT leap seconds by 2035 (allowing UTC to drift indefinitely from solar time, with corrections expected only after the drift reaches a full minute or more — perhaps decades from now).'
+                },
+                { id: 'gps', name: 'GPS time + relativity', emoji: '🛰️',
+                  body: 'GPS satellites carry atomic clocks. The position of a GPS receiver is determined by the time delay of signals from 4+ satellites. To get position accuracy of meters, time accuracy of ~ 30 nanoseconds is required. AT this precision, EINSTEIN\'S RELATIVITY IS NOT OPTIONAL. Two effects: SPECIAL RELATIVITY (satellites orbit at ~14,000 km/h relative to Earth\'s surface — their clocks run ~ 7 microseconds/day SLOWER) + GENERAL RELATIVITY (satellites are in weaker gravity at 20,200 km altitude — their clocks run ~ 45 microseconds/day FASTER). Net effect: GPS satellite clocks gain ~ 38 microseconds per day relative to ground clocks. Without correction, this would compound to ~ 11 km of position error per day. GPS satellites are launched with their clocks INTENTIONALLY tuned slow by exactly this amount.',
+                  caveat: 'Every iPhone with GPS is literally testing Einstein\'s relativity every second. The Pound-Rebka experiment (1959) first measured general-relativistic time dilation in a 22-meter Harvard tower; GPS is the same physics at industrial scale. This is the most-used + most-tested confirmation of general relativity in everyday technology.'
+                },
+                { id: 'tai', name: 'TAI, TT, TCG, TCB — astronomers\' time scales', emoji: '🌐',
+                  body: 'Different domains use different time scales. INTERNATIONAL ATOMIC TIME (TAI) is the pure atomic standard — no leap seconds, no corrections. It is currently ~ 37 seconds ahead of UTC. TERRESTRIAL TIME (TT) is TAI + 32.184 seconds (an offset chosen to match older Ephemeris Time); TT is the standard for SOLAR-SYSTEM EPHEMERIDES (where to point a telescope to find a planet at a given moment). GEOCENTRIC COORDINATE TIME (TCG) + BARYCENTRIC COORDINATE TIME (TCB) are relativistic timescales accounting for the gravitational potential difference between Earth + the solar-system center of mass — required for high-precision positions of spacecraft, planets, + pulsars. JULIAN DATE (JD) counts days since noon Universal Time on January 1, 4713 BCE — convenient for astronomy because there are no leap years or month boundaries. Modified Julian Date (MJD) = JD - 2400000.5.',
+                  caveat: 'Astronomical time scales LOOK complicated because they ARE complicated. The right scale depends on the precision required + the reference frame. For everyday observations, UTC is fine. For VLBI, pulsar timing, spacecraft navigation, gravitational-wave astronomy, the choice matters at the microsecond level.'
+                },
+                { id: 'pulsars', name: 'Pulsars as cosmic clocks', emoji: '⚡',
+                  body: 'Millisecond pulsars are the most stable natural timekeepers in the universe. Pulsar B1855+09 has timed for 40+ years with a fractional stability of ~ 10⁻¹⁵ — rivaling the best atomic clocks. Pulsar timing arrays (NANOGrav, EPTA, PPTA — see Galaxies tab Pulsar section) detect gravitational waves by watching for correlated timing variations across many pulsars. A future "Pulsar Time" standard could be used as a cross-check on atomic clocks. The redundancy matters: if some catastrophe disrupted Earth\'s atomic-clock network, pulsar timing could in principle re-derive UTC.',
+                  caveat: 'Pulsar timing is observationally demanding + the long-term stability is limited by interstellar-medium variations + pulsar glitches. Pulsars cannot replace atomic clocks for routine timekeeping (the precision per single pulse is much worse than a lab atomic clock) but they offer an independent astronomical reference for the longest timescales.'
+                },
+                { id: 'optical', name: 'Optical clocks + the next SI second', emoji: '💎',
+                  body: 'Microwave cesium clocks (the current SI standard) have stabilities of ~ 10⁻¹⁵. OPTICAL CLOCKS use higher-frequency atomic transitions (visible light at ~ 10¹⁵ Hz) — orders of magnitude more clock ticks per second, with corresponding precision gains. Aluminum-ion optical clocks (NIST Boulder) + strontium lattice clocks (JILA, RIKEN, PTB) now achieve fractional stability of 10⁻¹⁸ — better than 1 second in the age of the universe. The Bureau International des Poids et Mesures (BIPM) is preparing for a redefinition of the SI second based on an optical transition, expected around 2030. The currently-most-stable optical clock is so sensitive that it can measure gravitational time dilation between two laboratory tables at different heights.',
+                  caveat: 'Optical clocks are research instruments, not consumer devices. They occupy entire rooms + require teams of physicists. They are slowly being miniaturized; in a few decades, optical-clock-grade timekeeping may be available in lab benchtop instruments + ultimately portable systems (key for next-generation GPS + autonomous vehicles + financial systems).'
+                },
+                { id: 'why', name: 'Why timekeeping is civilization', emoji: '🏛️',
+                  body: 'Reliable time + reliable position are core requirements for almost every modern technology. STOCK markets settle trades to microsecond precision; financial law assigns liability to whoever timestamped first. POWER GRIDS synchronize generators across continents to atomic-clock accuracy or risk blackouts. CELL TOWERS handoff calls using time-synchronized signals. SCIENTIFIC instruments correlate events at nanosecond precision (LIGO, particle colliders). MILITARY navigation depends on GPS encrypted timestamps. The "knowing what time it is" infrastructure is invisible + critical. A society that loses precise time loses much of its modern function within hours.',
+                  caveat: 'The risks of time-infrastructure failure are real + understudied. GPS spoofing (broadcasting fake signals to confuse receivers) has been documented in maritime + airline incidents. The 2012 + 2017 leap-second crashes showed how brittle global computer time systems can be. Backup time sources (radio time signals like WWV in Colorado + WWVH in Hawaii, fiber-optic timing networks, future lunar PNT systems) are part of infrastructure resilience that gets attention only after failures.'
+                }
+              ];
+              var sel = d.selectedTime || 'origins';
+              var topic = TIME_TOPICS.find(function(t) { return t.id === sel; }) || TIME_TOPICS[0];
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
+                  'For most of history, the sky was the clock. Today, the most precise time references on Earth are atomic transitions — except for civil time (UTC), which is kept synchronized to Earth\'s slowing rotation via leap seconds. GPS satellites need Einstein\'s relativity to work. The "what time is it" question turns out to be one of the deepest + most-tested questions in physics + engineering.'
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+                  TIME_TOPICS.map(function(t) {
+                    var on = t.id === sel;
+                    return h('button', {
+                      key: t.id,
+                      onClick: function() { upd({ selectedTime: t.id }); },
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#facc15' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #facc15' : '1px solid #334155' }
+                    }, t.emoji + ' ' + t.name);
+                  })
+                ),
+                h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(250,204,21,0.08)', border: '1px solid rgba(250,204,21,0.35)' } },
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#fde68a', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
+                    h('strong', null, 'Honest framing: '), topic.caveat
+                  )
+                ),
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 11.5, color: '#c7d2fe', lineHeight: 1.65 } },
+                  h('strong', null, 'A demonstration anyone can do: '),
+                  'On any day, open the iOS Clock app + look at the local time + a city like London. The London time minus your offset should give a number very close to UTC. Now compare to a satellite-based source (GPS in your maps app) or a precision time service (time.gov, time.is). They will all agree to within seconds. The fact that everyone\'s phone — in 200 countries with completely different governments, geography, + politics — agrees on what time it is, all derived from a single global system, is one of humanity\'s most impressive collective achievements.'
+                )
+              );
+            })(),
+            '#facc15'
           )
         );
       }
