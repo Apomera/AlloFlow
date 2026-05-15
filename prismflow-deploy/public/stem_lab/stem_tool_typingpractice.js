@@ -250,6 +250,270 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // sending an attack to the player. Faster bots send more often.
   var BOT_SEND_EVERY = { slow: 7, medium: 5, fast: 4 };
 
+  // ──────────────────────────────────────────────────────────
+  // BATTLE MASCOTS — bespoke SVG characters per theme
+  // ──────────────────────────────────────────────────────────
+  // Four mascots: Pip (default chick), Cogsworth (steampunk owl),
+  // Vex (cyberpunk grid-face), Mochi (kawaii kitten). Each is a pure
+  // SVG render function that takes state + opts and returns a single
+  // <svg>. State-driven CSS classes attach the animations injected
+  // in the global style block. Colors parameterized so the bot's
+  // mascot uses violet while player's uses the theme accent — same
+  // character, different tint, distinct identity at a glance.
+  //
+  // Designed icon-quality, not illustration-quality: clear shapes,
+  // recognizable silhouettes, animatable from primitives. Aaron's
+  // strategic rationale is that these assets can be reused beyond
+  // Battle Mode (avatars, achievement art, hub-wide character
+  // appearances), so they're built as reusable atoms.
+  //
+  // Author hint: the mascot system is the foundation. Each mascot
+  // currently supports 4 active states (idle, combo, attack-out,
+  // incoming) + 2 outcome states (win, loss). More can be added by
+  // extending the state-driven className map and the CSS keyframes
+  // block above without touching the SVG body.
+  // ──────────────────────────────────────────────────────────
+
+  function _renderPip(opts) {
+    var React = window.React;
+    var h = React.createElement;
+    var st = opts.state || 'idle';
+    var sz = opts.size || 64;
+    var bodyColor = opts.bodyColor || '#fde047';     // soft yellow
+    var beakColor = opts.beakColor || '#fb923c';     // warm orange
+    var legColor = opts.legColor || '#f97316';
+    var eyeColor = '#0f172a';
+    var cls = 'tp-mascot tp-mascot-pip tp-mascot-' + st;
+    return h('svg', {
+      width: sz, height: sz, viewBox: '0 0 100 100', className: cls,
+      role: 'img', 'aria-label': opts.label || 'Pip the typing chick',
+      style: { display: 'block', overflow: 'visible' }
+    },
+      // Legs
+      h('g', { className: 'tp-pip-legs' },
+        h('line', { x1: 42, y1: 80, x2: 42, y2: 92, stroke: legColor, strokeWidth: 3, strokeLinecap: 'round' }),
+        h('line', { x1: 58, y1: 80, x2: 58, y2: 92, stroke: legColor, strokeWidth: 3, strokeLinecap: 'round' }),
+        h('path', { d: 'M 38 92 L 42 92 L 46 92 M 54 92 L 58 92 L 62 92', stroke: legColor, strokeWidth: 2.5, strokeLinecap: 'round', fill: 'none' })
+      ),
+      // Body — round yellow blob
+      h('ellipse', { cx: 50, cy: 56, rx: 30, ry: 28, fill: bodyColor, stroke: '#eab308', strokeWidth: 1.5, className: 'tp-pip-body' }),
+      // Wing accent (left)
+      h('path', { d: 'M 26 56 Q 22 64 30 70 L 36 64 Z', fill: '#facc15', opacity: 0.7 }),
+      // Eye whites + pupils
+      h('g', { className: 'tp-pip-eyes' },
+        h('circle', { cx: 42, cy: 50, r: 5.5, fill: '#fff' }),
+        h('circle', { cx: 58, cy: 50, r: 5.5, fill: '#fff' }),
+        h('circle', { cx: 43, cy: 51, r: 2.4, fill: eyeColor, className: 'tp-pip-pupil-l' }),
+        h('circle', { cx: 59, cy: 51, r: 2.4, fill: eyeColor, className: 'tp-pip-pupil-r' })
+      ),
+      // Beak — diamond pointing down
+      h('polygon', { points: '50,58 45,62 55,62', fill: beakColor, stroke: '#c2410c', strokeWidth: 1, className: 'tp-pip-beak' }),
+      // Cheek-tuft feathers
+      h('circle', { cx: 30, cy: 62, r: 2, fill: '#facc15', opacity: 0.6 }),
+      h('circle', { cx: 70, cy: 62, r: 2, fill: '#facc15', opacity: 0.6 })
+    );
+  }
+
+  function _renderCogsworth(opts) {
+    var React = window.React;
+    var h = React.createElement;
+    var st = opts.state || 'idle';
+    var sz = opts.size || 64;
+    var bodyColor = opts.bodyColor || '#a16207';     // warm brass
+    var brassLight = '#ca8a04';
+    var brassDark = '#713f12';
+    var goggleRim = '#854d0e';
+    var lensColor = opts.eyeColor || '#fef3c7';      // pale lamp glow
+    var cls = 'tp-mascot tp-mascot-cogsworth tp-mascot-' + st;
+    return h('svg', {
+      width: sz, height: sz, viewBox: '0 0 100 100', className: cls,
+      role: 'img', 'aria-label': opts.label || 'Cogsworth the clockwork owl',
+      style: { display: 'block', overflow: 'visible' }
+    },
+      // Steam puff (decorative — animated when in combo state)
+      h('g', { className: 'tp-cog-steam', style: { transformOrigin: '50px 12px' } },
+        h('circle', { cx: 44, cy: 14, r: 3.5, fill: '#fef3c7', opacity: 0 }),
+        h('circle', { cx: 50, cy: 8, r: 4, fill: '#fef3c7', opacity: 0 }),
+        h('circle', { cx: 58, cy: 14, r: 3, fill: '#fef3c7', opacity: 0 })
+      ),
+      // Left rotating gear (ear)
+      h('g', { className: 'tp-cog-gear-l', style: { transformOrigin: '24px 30px' } },
+        h('circle', { cx: 24, cy: 30, r: 8, fill: brassLight, stroke: brassDark, strokeWidth: 1.5 }),
+        h('circle', { cx: 24, cy: 30, r: 3, fill: brassDark }),
+        // Six teeth
+        [0, 60, 120, 180, 240, 300].map(function(deg, i) {
+          var rad = deg * Math.PI / 180;
+          var x = 24 + Math.cos(rad) * 10;
+          var y = 30 + Math.sin(rad) * 10;
+          return h('rect', { key: 'tl' + i, x: x - 1.8, y: y - 1.8, width: 3.6, height: 3.6, fill: brassLight, stroke: brassDark, strokeWidth: 0.8, transform: 'rotate(' + deg + ' ' + x + ' ' + y + ')' });
+        })
+      ),
+      // Right rotating gear (ear)
+      h('g', { className: 'tp-cog-gear-r', style: { transformOrigin: '76px 30px' } },
+        h('circle', { cx: 76, cy: 30, r: 8, fill: brassLight, stroke: brassDark, strokeWidth: 1.5 }),
+        h('circle', { cx: 76, cy: 30, r: 3, fill: brassDark }),
+        [30, 90, 150, 210, 270, 330].map(function(deg, i) {
+          var rad = deg * Math.PI / 180;
+          var x = 76 + Math.cos(rad) * 10;
+          var y = 30 + Math.sin(rad) * 10;
+          return h('rect', { key: 'tr' + i, x: x - 1.8, y: y - 1.8, width: 3.6, height: 3.6, fill: brassLight, stroke: brassDark, strokeWidth: 0.8, transform: 'rotate(' + deg + ' ' + x + ' ' + y + ')' });
+        })
+      ),
+      // Owl body
+      h('ellipse', { cx: 50, cy: 60, rx: 26, ry: 28, fill: bodyColor, stroke: brassDark, strokeWidth: 2, className: 'tp-cog-body' }),
+      // Brass plate chest seam
+      h('line', { x1: 50, y1: 38, x2: 50, y2: 84, stroke: brassDark, strokeWidth: 1, opacity: 0.5 }),
+      h('circle', { cx: 50, cy: 50, r: 1.2, fill: brassDark }),
+      h('circle', { cx: 50, cy: 60, r: 1.2, fill: brassDark }),
+      h('circle', { cx: 50, cy: 70, r: 1.2, fill: brassDark }),
+      // Goggles — round brass-rim circles with lamp-glow lenses
+      h('g', { className: 'tp-cog-eyes' },
+        h('circle', { cx: 40, cy: 52, r: 9, fill: lensColor, stroke: goggleRim, strokeWidth: 2.5 }),
+        h('circle', { cx: 60, cy: 52, r: 9, fill: lensColor, stroke: goggleRim, strokeWidth: 2.5 }),
+        h('circle', { cx: 40, cy: 52, r: 3, fill: '#0c0a09' }),
+        h('circle', { cx: 60, cy: 52, r: 3, fill: '#0c0a09' }),
+        // Goggle highlight
+        h('circle', { cx: 38, cy: 50, r: 1.5, fill: '#fff', opacity: 0.8 }),
+        h('circle', { cx: 58, cy: 50, r: 1.5, fill: '#fff', opacity: 0.8 })
+      ),
+      // Beak
+      h('polygon', { points: '50,62 46,68 54,68', fill: brassDark, stroke: '#451a03', strokeWidth: 1 })
+    );
+  }
+
+  function _renderVex(opts) {
+    var React = window.React;
+    var h = React.createElement;
+    var st = opts.state || 'idle';
+    var sz = opts.size || 64;
+    var bodyColor = opts.bodyColor || '#06b6d4';     // neon cyan
+    var glowColor = '#67e8f9';
+    var bgColor = opts.bgColor || '#020617';         // near-black panel
+    var alertColor = '#ef4444';
+    var cls = 'tp-mascot tp-mascot-vex tp-mascot-' + st;
+    return h('svg', {
+      width: sz, height: sz, viewBox: '0 0 100 100', className: cls,
+      role: 'img', 'aria-label': opts.label || 'Vex the cyberpunk grid-face',
+      style: { display: 'block', overflow: 'visible' }
+    },
+      // Hex/diamond face panel
+      h('polygon', {
+        points: '50,8 86,30 86,70 50,92 14,70 14,30',
+        fill: bgColor, stroke: bodyColor, strokeWidth: 2,
+        className: 'tp-vex-panel'
+      }),
+      // Inner face panel (slightly smaller, neon outlined)
+      h('polygon', {
+        points: '50,16 78,34 78,66 50,84 22,66 22,34',
+        fill: 'none', stroke: bodyColor, strokeWidth: 0.8, opacity: 0.4
+      }),
+      // Scanline (animated — single horizontal bar that drifts vertically)
+      h('rect', {
+        x: 22, y: 32, width: 56, height: 1.5, fill: glowColor, opacity: 0.5,
+        className: 'tp-vex-scanline'
+      }),
+      // Eye — single horizontal LED bar (visor style)
+      h('g', { className: 'tp-vex-eyes' },
+        h('rect', { x: 28, y: 46, width: 44, height: 6, rx: 3, fill: bgColor, stroke: bodyColor, strokeWidth: 1.5 }),
+        h('rect', { x: 30, y: 47.5, width: 16, height: 3, fill: bodyColor, opacity: 0.95, className: 'tp-vex-eye-l' }),
+        h('rect', { x: 54, y: 47.5, width: 16, height: 3, fill: bodyColor, opacity: 0.95, className: 'tp-vex-eye-r' })
+      ),
+      // Mouth grid (3x3 dot pattern)
+      h('g', { className: 'tp-vex-mouth' },
+        [0, 1, 2].map(function(row) {
+          return [0, 1, 2].map(function(col) {
+            return h('circle', {
+              key: 'd-' + row + '-' + col,
+              cx: 42 + col * 8, cy: 64 + row * 5, r: 1.5,
+              fill: bodyColor, opacity: 0.6 + (row * 0.15)
+            });
+          });
+        })
+      ),
+      // Corner glow chevrons
+      h('polyline', { points: '20,28 14,30 14,36', fill: 'none', stroke: bodyColor, strokeWidth: 1.5, opacity: 0.6 }),
+      h('polyline', { points: '80,28 86,30 86,36', fill: 'none', stroke: bodyColor, strokeWidth: 1.5, opacity: 0.6 }),
+      h('polyline', { points: '14,64 14,70 20,72', fill: 'none', stroke: bodyColor, strokeWidth: 1.5, opacity: 0.6 }),
+      h('polyline', { points: '86,64 86,70 80,72', fill: 'none', stroke: bodyColor, strokeWidth: 1.5, opacity: 0.6 }),
+      // Alert overlay (red — only shows in incoming state via CSS opacity)
+      h('rect', {
+        x: 14, y: 8, width: 72, height: 84, fill: alertColor, opacity: 0,
+        className: 'tp-vex-alert'
+      })
+    );
+  }
+
+  function _renderMochi(opts) {
+    var React = window.React;
+    var h = React.createElement;
+    var st = opts.state || 'idle';
+    var sz = opts.size || 64;
+    var bodyColor = opts.bodyColor || '#fce7f3';     // pastel pink-cream
+    var trimColor = '#f9a8d4';
+    var bowColor = '#ec4899';
+    var eyeColor = '#0f172a';
+    var cheekColor = '#fbcfe8';
+    var cls = 'tp-mascot tp-mascot-mochi tp-mascot-' + st;
+    return h('svg', {
+      width: sz, height: sz, viewBox: '0 0 100 100', className: cls,
+      role: 'img', 'aria-label': opts.label || 'Mochi the kawaii kitten',
+      style: { display: 'block', overflow: 'visible' }
+    },
+      // Floating sparkles (animated only on combo)
+      h('g', { className: 'tp-mochi-sparkles' },
+        h('text', { x: 18, y: 22, fill: bowColor, fontSize: 8, opacity: 0 }, '✦'),
+        h('text', { x: 78, y: 28, fill: bowColor, fontSize: 6, opacity: 0 }, '✦'),
+        h('text', { x: 14, y: 70, fill: bowColor, fontSize: 7, opacity: 0 }, '✧'),
+        h('text', { x: 82, y: 76, fill: bowColor, fontSize: 8, opacity: 0 }, '♡')
+      ),
+      // Left ear (triangle with pink inner)
+      h('polygon', { points: '24,40 28,16 42,32', fill: bodyColor, stroke: trimColor, strokeWidth: 1.5 }),
+      h('polygon', { points: '28,32 30,22 38,30', fill: '#fbcfe8' }),
+      // Right ear
+      h('polygon', { points: '76,40 72,16 58,32', fill: bodyColor, stroke: trimColor, strokeWidth: 1.5 }),
+      h('polygon', { points: '72,32 70,22 62,30', fill: '#fbcfe8' }),
+      // Head — round
+      h('circle', { cx: 50, cy: 56, r: 30, fill: bodyColor, stroke: trimColor, strokeWidth: 1.8, className: 'tp-mochi-head' }),
+      // Cheeks
+      h('circle', { cx: 32, cy: 64, r: 5, fill: cheekColor, opacity: 0.7 }),
+      h('circle', { cx: 68, cy: 64, r: 5, fill: cheekColor, opacity: 0.7 }),
+      // Eyes — big sparkly
+      h('g', { className: 'tp-mochi-eyes' },
+        h('ellipse', { cx: 40, cy: 54, rx: 4.5, ry: 6, fill: eyeColor }),
+        h('ellipse', { cx: 60, cy: 54, rx: 4.5, ry: 6, fill: eyeColor }),
+        // Eye highlights
+        h('circle', { cx: 41.5, cy: 51, r: 1.5, fill: '#fff' }),
+        h('circle', { cx: 61.5, cy: 51, r: 1.5, fill: '#fff' }),
+        h('circle', { cx: 39, cy: 56, r: 0.8, fill: '#fff' }),
+        h('circle', { cx: 59, cy: 56, r: 0.8, fill: '#fff' })
+      ),
+      // Tiny mouth — happy curve
+      h('path', { d: 'M 47 66 Q 50 70 53 66', stroke: eyeColor, strokeWidth: 1.5, fill: 'none', strokeLinecap: 'round', className: 'tp-mochi-mouth' }),
+      // Tiny nose
+      h('path', { d: 'M 49 62 L 51 62 L 50 64 Z', fill: bowColor }),
+      // Bow on left ear
+      h('g', { transform: 'translate(28 14) scale(0.6)' },
+        h('circle', { cx: 0, cy: 0, r: 4, fill: bowColor }),
+        h('polygon', { points: '-7,-4 -2,0 -7,4', fill: bowColor }),
+        h('polygon', { points: '7,-4 2,0 7,4', fill: bowColor })
+      ),
+      // Tear (only visible in loss state via CSS)
+      h('ellipse', { cx: 60, cy: 64, rx: 1.5, ry: 3, fill: '#7dd3fc', opacity: 0, className: 'tp-mochi-tear' })
+    );
+  }
+
+  // Mascot dispatcher — picks the right render fn for the active theme.
+  // Theme 'neutral' returns null per the design rule (neutral = quiet,
+  // no decorative characters). Returns a React element ready to mount.
+  function renderBattleMascot(themeName, state, opts) {
+    opts = Object.assign({ state: state }, opts || {});
+    if (themeName === 'steampunk') return _renderCogsworth(opts);
+    if (themeName === 'cyberpunk') return _renderVex(opts);
+    if (themeName === 'kawaii')    return _renderMochi(opts);
+    if (themeName === 'neutral')   return null;
+    return _renderPip(opts);
+  }
+
   // Bot opponents — three speeds. WPM converted to ms-per-character
   // assuming 5 chars/word standard. errorRate is small to feel human;
   // bot stalls briefly on errors mirroring student behavior.
@@ -1538,6 +1802,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '@keyframes tp-view-in-kawaii  { 0% { opacity: 0; transform: scale(0.96) translateY(10px); } 60% { opacity: 1; transform: scale(1.01) translateY(-1px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }',
       '@keyframes tp-view-in-neutral { 0% { opacity: 0; } 100% { opacity: 1; } }',
       '@keyframes tp-pack-card-in { 0% { opacity: 0; transform: translateY(6px) scale(0.985); } 100% { opacity: 1; transform: translateY(0) scale(1); } }',
+      // ── Battle Mode mascot animations ──
+      // Idle = gentle bob breathe (all mascots). Combo = excitement.
+      // Attack-out = lean-forward+spring. Incoming = flinch-cower.
+      // Win = bounce+rotate. Loss = droop+desaturate.
+      '@keyframes tp-mascot-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }',
+      '@keyframes tp-mascot-shake-h { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-1.5px); } 75% { transform: translateX(1.5px); } }',
+      '@keyframes tp-mascot-pop { 0% { transform: scale(1); } 40% { transform: scale(1.12); } 100% { transform: scale(1); } }',
+      '@keyframes tp-mascot-throw { 0% { transform: translateX(0) rotate(0); } 30% { transform: translateX(-3px) rotate(-8deg); } 60% { transform: translateX(8px) rotate(10deg); } 100% { transform: translateX(0) rotate(0); } }',
+      '@keyframes tp-mascot-flinch { 0% { transform: translateX(0) scale(1); } 25% { transform: translateX(2px) scale(0.94); } 60% { transform: translateX(-2px) scale(0.94); } 100% { transform: translateX(0) scale(1); } }',
+      '@keyframes tp-mascot-celebrate { 0% { transform: translateY(0) rotate(0); } 30% { transform: translateY(-6px) rotate(-6deg); } 60% { transform: translateY(-6px) rotate(6deg); } 100% { transform: translateY(0) rotate(0); } }',
+      '@keyframes tp-mascot-droop { 0%,100% { transform: rotate(-3deg) translateY(2px); filter: saturate(0.5) brightness(0.85); } }',
+      // Per-mascot internal animations
+      '@keyframes tp-pip-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }',
+      '@keyframes tp-cog-rotate { from { transform: rotate(0); } to { transform: rotate(360deg); } }',
+      '@keyframes tp-cog-rotate-rev { from { transform: rotate(0); } to { transform: rotate(-360deg); } }',
+      '@keyframes tp-cog-steam { 0%, 100% { opacity: 0; transform: translateY(0); } 50% { opacity: 0.85; transform: translateY(-6px); } }',
+      '@keyframes tp-vex-scan { 0% { transform: translateY(0); opacity: 0.5; } 50% { opacity: 0.7; } 100% { transform: translateY(48px); opacity: 0.4; } }',
+      '@keyframes tp-vex-eye-blink { 0%, 90%, 100% { transform: scaleY(1); opacity: 0.95; } 95% { transform: scaleY(0.15); opacity: 1; } }',
+      '@keyframes tp-vex-alert { 0%, 100% { opacity: 0; } 50% { opacity: 0.55; } }',
+      '@keyframes tp-vex-glitch { 0%, 100% { transform: translateX(0); filter: hue-rotate(0deg); } 25% { transform: translateX(-2px); filter: hue-rotate(30deg); } 50% { transform: translateX(2px); filter: hue-rotate(-30deg); } 75% { transform: translateX(-1px); filter: hue-rotate(15deg); } }',
+      '@keyframes tp-mochi-sparkle { 0%, 100% { opacity: 0; transform: scale(0.6); } 50% { opacity: 1; transform: scale(1.1); } }',
+      // Idle (default for any state without overrides)
+      '.tp-mascot { animation: tp-mascot-bob 3.2s ease-in-out infinite; transform-origin: center; }',
+      '.tp-mascot-pip .tp-pip-pupil-l, .tp-mascot-pip .tp-pip-pupil-r { transform-origin: center; transform-box: fill-box; animation: tp-pip-blink 5s ease-in-out infinite; }',
+      '.tp-mascot-cogsworth .tp-cog-gear-l { animation: tp-cog-rotate 6s linear infinite; }',
+      '.tp-mascot-cogsworth .tp-cog-gear-r { animation: tp-cog-rotate-rev 7s linear infinite; }',
+      '.tp-mascot-vex .tp-vex-scanline { animation: tp-vex-scan 2.4s linear infinite; }',
+      '.tp-mascot-vex .tp-vex-eye-l, .tp-mascot-vex .tp-vex-eye-r { transform-origin: center; transform-box: fill-box; animation: tp-vex-eye-blink 4.5s ease-in-out infinite; }',
+      // Combo state — excitement burst
+      '.tp-mascot-combo { animation: tp-mascot-pop 0.6s ease-out 1, tp-mascot-bob 3.2s ease-in-out infinite 0.6s; }',
+      '.tp-mascot-mochi.tp-mascot-combo .tp-mochi-sparkles text { animation: tp-mochi-sparkle 0.8s ease-out forwards; }',
+      '.tp-mascot-cogsworth.tp-mascot-combo .tp-cog-steam circle { animation: tp-cog-steam 0.9s ease-out forwards; }',
+      // Attack-out state — throw motion
+      '.tp-mascot-attack-out { animation: tp-mascot-throw 0.7s ease-out 1; }',
+      '.tp-mascot-vex.tp-mascot-attack-out { animation: tp-mascot-throw 0.7s ease-out 1, tp-vex-glitch 0.7s ease-out 1; }',
+      // Incoming state — flinch
+      '.tp-mascot-incoming { animation: tp-mascot-flinch 0.6s ease-out 1; }',
+      '.tp-mascot-vex.tp-mascot-incoming .tp-vex-alert { animation: tp-vex-alert 0.6s ease-out 1; }',
+      // Win/loss
+      '.tp-mascot-win { animation: tp-mascot-celebrate 0.9s ease-in-out 1; }',
+      '.tp-mascot-loss { animation: tp-mascot-droop 1s ease-out forwards; }',
+      '.tp-mascot-mochi.tp-mascot-loss .tp-mochi-tear { opacity: 0.85; transition: opacity 600ms ease-in; }',
+      // Reduced motion — stop all mascot animations
+      '@media (prefers-reduced-motion: reduce) { .tp-mascot, .tp-mascot *, .tp-mascot.tp-mascot-combo, .tp-mascot.tp-mascot-attack-out, .tp-mascot.tp-mascot-incoming, .tp-mascot.tp-mascot-win, .tp-mascot.tp-mascot-loss { animation: none !important; } }',
       '.tp-pack-card { transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease; }',
       '.tp-pack-card:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.18); }',
       '@media (prefers-reduced-motion: reduce) { .tp-pack-card { animation: none !important; transition: none !important; } .tp-pack-card:hover { transform: none !important; } }',
@@ -9920,6 +10228,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             if (w.length <= 7) return '#fbbf24';
             return '#f472b6';
           }
+          // Compute live mascot state for the player column from current
+          // game state. Priority order: incoming flash > attack-out flash
+          // > combo (>=3) > idle. Bot column uses the inverse triggers.
+          var nowMs = Date.now();
+          var playerMascotState = battleSt.incomingFlashTo > nowMs ? 'incoming'
+            : battleSt.outgoingFlashTo > nowMs ? 'attack-out'
+            : battleSt.combo >= 3 ? 'combo'
+            : 'idle';
+          var botMascotState = battleSt.incomingFlashTo > nowMs ? 'attack-out'
+            : battleSt.outgoingFlashTo > nowMs ? 'incoming'
+            : 'idle';
+          var themeName = state.theme || 'default';
           // Reusable stack-column renderer — used for both player and bot
           function renderStackColumn(opts) {
             var s = opts.stack;
@@ -9935,9 +10255,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 display: 'flex', flexDirection: 'column', gap: 6
               }
             },
-              // Header for this column (player/bot)
-              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, padding: '4px 6px' } },
-                h('span', { style: { fontSize: 12, fontWeight: 800, color: headerColor, textTransform: 'uppercase', letterSpacing: '0.05em' } }, opts.label),
+              // Header for this column (player/bot) — now hosts a 48px mascot
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, padding: '4px 6px', gap: 8 } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 } },
+                  // Mascot — bot uses violet tint to distinguish identity
+                  opts.showMascot ? h('div', { style: { flexShrink: 0, width: 48, height: 48 } },
+                    renderBattleMascot(themeName, opts.mascotState, {
+                      size: 48,
+                      bodyColor: opts.isBot ? '#a78bfa' : undefined,
+                      label: (opts.isBot ? 'Opponent' : 'Your') + ' mascot — ' + opts.mascotState
+                    })
+                  ) : null,
+                  h('span', { style: { fontSize: 12, fontWeight: 800, color: headerColor, textTransform: 'uppercase', letterSpacing: '0.05em' } }, opts.label)
+                ),
                 h('span', { style: { fontSize: 11, color: palette.textMute, fontVariantNumeric: 'tabular-nums' } }, opts.cleared + ' cleared')
               ),
               // Per-column pressure gauge
@@ -10038,19 +10368,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 label: 'You', cleared: battleSt.cleared,
                 stack: battleSt.stack, typed: battleSt.typed,
                 bg: 'linear-gradient(180deg, rgba(244,114,182,0.08), rgba(15,23,42,0.4))',
-                border: 'rgba(244,114,182,0.30)', headerColor: '#f9a8d4', large: true
+                border: 'rgba(244,114,182,0.30)', headerColor: '#f9a8d4', large: true,
+                showMascot: true, isBot: false, mascotState: playerMascotState
               }),
               renderStackColumn({
                 label: 'Bot', cleared: battleSt.botCleared,
                 stack: battleSt.botStack, typed: battleSt.botTyped,
                 bg: 'linear-gradient(180deg, rgba(167,139,250,0.08), rgba(15,23,42,0.4))',
-                border: 'rgba(167,139,250,0.30)', headerColor: '#c4b5fd', large: false
+                border: 'rgba(167,139,250,0.30)', headerColor: '#c4b5fd', large: false,
+                showMascot: true, isBot: true, mascotState: botMascotState
               })
             ) : renderStackColumn({
               label: 'You', cleared: battleSt.cleared,
               stack: battleSt.stack, typed: battleSt.typed,
               bg: 'linear-gradient(180deg, rgba(244,114,182,0.06), rgba(15,23,42,0.4))',
-              border: 'rgba(244,114,182,0.20)', headerColor: '#f9a8d4', large: true
+              border: 'rgba(244,114,182,0.20)', headerColor: '#f9a8d4', large: true,
+              showMascot: true, isBot: false, mascotState: playerMascotState
             }),
             // ATTACK PICKER OVERLAY — opens when combo hits threshold.
             // 3 random attack words; pick one (1/2/3 keys or click) within
@@ -10122,15 +10455,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var diff = BATTLE_DIFFICULTY[r.difficulty || 'mercy'];
           var isVsBot = r.mode === 'vs-bot';
           var bot = isVsBot ? BATTLE_BOTS[r.botSpeed || 'medium'] : null;
-          // Outcome theming for vs-bot
-          var outcomeIcon, outcomeTitle, outcomeAccent;
+          // Outcome theming for vs-bot. Mascot state mapped to outcome
+          // (win → celebrate; loss → droop; tie/solo → idle).
+          var outcomeIcon, outcomeTitle, outcomeAccent, outcomeMascotState;
           if (isVsBot) {
-            if (r.outcome === 'win') { outcomeIcon = '🏆'; outcomeTitle = 'You won!'; outcomeAccent = '#22c55e'; }
-            else if (r.outcome === 'loss') { outcomeIcon = '🌊'; outcomeTitle = 'Bot won this round'; outcomeAccent = '#a78bfa'; }
-            else { outcomeIcon = '🤝'; outcomeTitle = 'Tie — both stacks capped'; outcomeAccent = '#fbbf24'; }
+            if (r.outcome === 'win') { outcomeIcon = '🏆'; outcomeTitle = 'You won!'; outcomeAccent = '#22c55e'; outcomeMascotState = 'win'; }
+            else if (r.outcome === 'loss') { outcomeIcon = '🌊'; outcomeTitle = 'Bot won this round'; outcomeAccent = '#a78bfa'; outcomeMascotState = 'loss'; }
+            else { outcomeIcon = '🤝'; outcomeTitle = 'Tie — both stacks capped'; outcomeAccent = '#fbbf24'; outcomeMascotState = 'idle'; }
           } else {
-            outcomeIcon = '🌊'; outcomeTitle = 'Match complete'; outcomeAccent = '#f9a8d4';
+            outcomeIcon = '🌊'; outcomeTitle = 'Match complete'; outcomeAccent = '#f9a8d4'; outcomeMascotState = r.cleared > 0 ? 'win' : 'idle';
           }
+          var summaryThemeName = state.theme || 'default';
+          var summaryMascot = renderBattleMascot(summaryThemeName, outcomeMascotState, {
+            size: 96,
+            label: 'Match-result mascot — ' + outcomeMascotState
+          });
           return h('div', {
             style: { padding: 24, maxWidth: 720, margin: '0 auto', color: palette.text, fontFamily: fontFamily, background: palette.bg, minHeight: '60vh' }
           },
@@ -10142,7 +10481,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 border: '1px solid ' + outcomeAccent + '55'
               }
             },
-              h('div', { style: { fontSize: 48, lineHeight: 1, marginBottom: 8 } }, outcomeIcon),
+              // Mascot if theme has one, else fall back to the outcome emoji
+              summaryMascot ? h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 8 } }, summaryMascot)
+                            : h('div', { style: { fontSize: 48, lineHeight: 1, marginBottom: 8 } }, outcomeIcon),
               h('h2', { style: { margin: '0 0 4px', color: outcomeAccent, fontSize: 22, fontWeight: 900 } }, outcomeTitle),
               h('p', { style: { margin: '0 0 16px', fontSize: 12, color: palette.textMute, fontStyle: 'italic' } },
                 isVsBot
