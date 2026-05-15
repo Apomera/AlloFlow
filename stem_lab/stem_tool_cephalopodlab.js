@@ -433,6 +433,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       compView: 'matrix',                  // 'matrix' | 'animal' | 'dimension' | 'interpretation'
       compAnimal: 'cephalopod',
       compDimension: 'tooluse',
+      // Field Day Guide state
+      fieldDayView: 'where',               // 'where' | 'signs' | 'ethics' | 'document'
+      fieldDayRegion: 'pnw',
       // Bioluminescence Lab state
       bioluxView: 'overview',              // 'overview' | 'photophores' | 'symbiosis' | 'counter'
       bioluxDepthFactor: 50,               // surface light reaching this depth (0-100)
@@ -564,6 +567,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           { id: 'methods', label: 'Research Methods', icon: '🔬' },
           { id: 'compcog', label: 'Comparative Cognition', icon: '🧩' },
           { id: 'conservation', label: 'Conservation & Welfare', icon: '🌍' },
+          { id: 'fieldday', label: 'Field Day Guide', icon: '🤿' },
           { id: 'resources', label: 'Resources', icon: '📚' }
         ];
         return h('div', { style: { padding: '24px 20px 12px', borderBottom: '1px solid rgba(99,102,241,0.18)' } },
@@ -578,7 +582,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: '#c7d2fe', letterSpacing: '-0.01em' } }, 'Cephalopod Lab'),
                 h('div', { style: { fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.12)',
                     border: '1px solid rgba(167,139,250,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                  '15 sections')),
+                  '16 sections')),
               h('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 4, lineHeight: 1.5 } },
                 'The biology of intelligent invertebrates. Octopuses + squid + cuttlefish + nautilus — chromatophore camouflage, distributed neural intelligence, hunting strategy, 500M-year evolution.'))));
       }
@@ -4007,7 +4011,295 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       }
 
       // ═══════════════════════════════════════════════════════
-      // SECTION 9 — RESOURCES (expanded with full glossary)
+      // SECTION 15 — FIELD DAY GUIDE (practical observation handbook)
+      // ═══════════════════════════════════════════════════════
+      function renderFieldDay() {
+        var view = d.fieldDayView || 'where';
+        var SUBS = [
+          { id: 'where', label: 'Where + When', icon: '📍' },
+          { id: 'signs', label: 'Signs + ID', icon: '🔎' },
+          { id: 'ethics', label: 'Ethics + Safety', icon: '🛡️' },
+          { id: 'document', label: 'Document + Share', icon: '📷' }
+        ];
+        // Regional field guides
+        var REGIONS = [
+          { id: 'pnw', name: 'Pacific Northwest', emoji: '🌲', color: '#86efac',
+            range: 'Alaska to N. California',
+            commonSpecies: 'Giant Pacific octopus (Enteroctopus dofleini), market squid (Doryteuthis opalescens), Pacific red octopus (Octopus rubescens)',
+            bestHabitats: 'Tidepools at low tide, rocky reefs 30-100ft, kelp forests, marina pilings + docks',
+            bestTimes: 'LOW spring tides (best -1ft+ tides); dawn or dusk; March-October for diving (water 50-55°F)',
+            specialNote: 'Giant Pacific octopus dens often visible from boats at low tide — look for piles of crab + clam shells outside crevices (middens). Cold water requires drysuit for sustained diving.',
+            access: 'Many state parks have tidepool zones (Salt Creek WA, Cape Perpetua OR). REEF surveys + Seattle Aquarium runs citizen science programs.' },
+          { id: 'med', name: 'Mediterranean', emoji: '🏖️', color: '#0ea5e9',
+            range: 'Spain + Italy + Greece + Tunisia + Morocco',
+            commonSpecies: 'Common octopus (Octopus vulgaris), common cuttlefish (Sepia officinalis), bobtail squid, occasionally paper nautilus (Argonauta argo)',
+            bestHabitats: 'Rocky shores + seagrass meadows + sandy bottoms 5-50ft, ports + harbors',
+            bestTimes: 'Year-round but best May-October (water 64-78°F); golden hour dives',
+            specialNote: 'Common octopus is THE classic Mediterranean cephalopod — fishermen + tourists encounter them often. Best for early-career snorkel/dive students because they\'re relatively forgiving of human presence + abundant.',
+            access: 'Heavy diving infrastructure. Costa Brava + Cinque Terre + Greek islands all have accessible cephalopod habitats.' },
+          { id: 'caribbean', name: 'Caribbean + Tropical Atlantic', emoji: '🌴', color: '#fb923c',
+            range: 'Florida Keys + Bahamas + Belize + Caribbean islands',
+            commonSpecies: 'Caribbean reef octopus (Octopus briareus), Atlantic pygmy octopus, Caribbean reef squid (Sepioteuthis sepioidea), occasionally common octopus',
+            bestHabitats: 'Coral reefs 15-60ft, seagrass beds, mangrove edges, sand patches between coral heads',
+            bestTimes: 'Night dives (Caribbean reef octopus is nocturnal); year-round (water 75-85°F)',
+            specialNote: 'Caribbean reef octopus is small + intensely night-active — daytime dives won\'t find them but a night dive with a red-filtered light shows them in their hunting prime. Caribbean reef squid hover in formation + are wonderful to photograph.',
+            access: 'Mature dive tourism infrastructure. Night dives are standard offering.' },
+          { id: 'indopacific', name: 'Indo-Pacific', emoji: '🌺', color: '#a78bfa',
+            range: 'Indonesia + Philippines + Australia + Japan + Pacific islands',
+            commonSpecies: 'HIGHEST cephalopod diversity on Earth. Mimic octopus, coconut octopus, day octopus, blue-ringed (DANGEROUS), Hawaiian bobtail, flamboyant cuttlefish, big-fin reef squid, many others',
+            bestHabitats: 'Coral reefs, sandy slopes ("muck diving" — black-sand sites with rich critter life), tidepools, lagoons',
+            bestTimes: 'Indonesia: April-November; Philippines: November-May; year-round in most of the region (water 78-86°F)',
+            specialNote: 'Critical safety note: small octopuses in Indo-Pacific tidepools may be blue-ringed (Hapalochlaena spp.) — DO NOT TOUCH ANY OCTOPUS. Tetrodotoxin venom is potentially lethal + has no antivenom. Identify visually only.',
+            access: 'Major dive destinations (Bali, Anilao Philippines, Lembeh Strait). Many resorts offer "critter dives" specifically for cephalopod-rich muck sites.' },
+          { id: 'antarctic', name: 'Antarctic + Sub-Antarctic', emoji: '❄️', color: '#cbd5e1',
+            range: 'Southern Ocean below ~50°S',
+            commonSpecies: 'Colossal squid (Mesonychoteuthis hamiltoni — known from sperm whale stomachs + fishery bycatch), Antarctic neosquid, Pareledone octopus',
+            bestHabitats: 'Deep water (200m+) — not directly accessible to most students. Beachings + fishery bycatch are the only realistic encounter routes.',
+            bestTimes: 'Antarctic summer (December-February) for research vessel access',
+            specialNote: 'Direct observation requires research vessel access. Most students engage via aquarium specimens (Te Papa, NZ has the only intact adult colossal squid) + sperm whale stomach content studies.',
+            access: 'Realistic only for research-track students with institutional partnerships. Inclusion here for completeness.' }
+        ];
+        var sel = REGIONS.find(function(r) { return r.id === (d.fieldDayRegion || 'pnw'); }) || REGIONS[0];
+        return h('div', null,
+          panelHeader('🤿 Field Day Guide',
+            'Now go look. Cephalopods are remarkably observable in the wild — once you know where to look, when to look, and what to look for. This guide covers regional habitats, identification signs, ethical observation, and how to contribute your observations to real research.'),
+
+          h('div', { role: 'tablist', 'aria-label': 'Field guide sub-sections',
+            style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
+            SUBS.map(function(s) {
+              var active = view === s.id;
+              return h('button', { key: s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                onClick: function() { setCL({ fieldDayView: s.id }); awardXP(1); },
+                style: { padding: '8px 12px',
+                  background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
+                  color: active ? '#c7d2fe' : '#cbd5e1',
+                  border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                  borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 6 } },
+                h('span', { 'aria-hidden': 'true' }, s.icon), s.label);
+            })),
+
+          // ─── WHERE + WHEN ───
+          view === 'where' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🌎 Pick your region'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 } },
+                REGIONS.map(function(r) {
+                  var active = r.id === (d.fieldDayRegion || 'pnw');
+                  return h('button', { key: r.id,
+                    onClick: function() { setCL({ fieldDayRegion: r.id }); awardXP(1); },
+                    'aria-pressed': active ? 'true' : 'false',
+                    style: { padding: '10px 12px', textAlign: 'left',
+                      background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
+                      color: active ? '#c7d2fe' : '#cbd5e1',
+                      border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                      borderLeft: '3px solid ' + r.color,
+                      borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, r.emoji),
+                      h('div', { style: { fontWeight: 800, fontSize: 12, color: active ? '#fde68a' : '#e2e8f0' } }, r.name)),
+                    h('div', { style: { fontSize: 9, color: '#94a3b8' } }, r.range));
+                }))),
+
+            h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid ' + sel.color }) },
+              h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 14 } },
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 36 } }, sel.emoji),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontSize: 20, fontWeight: 900, color: sel.color, letterSpacing: '-0.01em' } }, sel.name),
+                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, sel.range))),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10, marginBottom: 12 } },
+                [
+                  { lbl: '🐙 Common species you might see', val: sel.commonSpecies, color: '#fbbf24' },
+                  { lbl: '🏠 Best habitats', val: sel.bestHabitats, color: '#86efac' },
+                  { lbl: '⏰ Best times + conditions', val: sel.bestTimes, color: '#38bdf8' },
+                  { lbl: '🚪 Access + infrastructure', val: sel.access, color: '#a78bfa' }
+                ].map(function(b, i) {
+                  return h('div', { key: i,
+                    style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + b.color, padding: '10px 12px', borderRadius: 8 } },
+                    h('div', { style: { fontSize: 10, fontWeight: 800, color: b.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, b.lbl),
+                    h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, b.val));
+                })),
+              h('div', { style: { padding: '12px 14px', background: 'rgba(167,139,250,0.1)', borderLeft: '3px solid #a78bfa', borderRadius: 8 } },
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, '💡 Special note'),
+                h('div', { style: { fontSize: 12, color: '#e9d5ff', lineHeight: 1.7 } }, sel.specialNote))),
+
+            // General timing tips
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '⏳ Timing for any region'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
+                [
+                  { lbl: '🌊 Tides', detail: 'Spring tides (around new + full moon) give the lowest low tides — best for tidepool exploration. Check NOAA Tides + Currents or your regional equivalent. Aim for 1-2 hours before extreme low.' },
+                  { lbl: '🌅 Time of day', detail: 'Dawn + dusk (crepuscular hours) are when many cephalopods become active. Octopus species vary: common octopus is nocturnal in much of its range; Caribbean reef octopus is strictly nocturnal; day octopus (Octopus cyanea) hunts at midday.' },
+                  { lbl: '🌙 Moon phase', detail: 'Full moon nights = brighter night dives = different behavior. New moon = darker = more nocturnal activity. Bioluminescent species (firefly squid) are most visible on dark moonless nights.' },
+                  { lbl: '🌡️ Water temperature', detail: 'Cephalopods are cold-blooded — temperature drives metabolism + activity. Stable warm season = peak activity. Sudden cold snaps = animals retreat to dens for days.' }
+                ].map(function(b, i) {
+                  return h('div', { key: i,
+                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                      borderLeft: '3px solid #fbbf24', padding: '10px 12px', borderRadius: 8 } },
+                    h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 4 } }, b.lbl),
+                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, b.detail));
+                })))
+          ) : null,
+
+          // ─── SIGNS + ID ───
+          view === 'signs' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🔎 Signs a cephalopod is nearby'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.65, marginBottom: 14 } },
+                'Cephalopods are masters at not being seen. But they leave clues. Learn to read these and your sighting rate will go up dramatically.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
+                [
+                  { sign: 'Octopus midden', emoji: '🦀', detail: 'Pile of empty shells (crab, clam, snail) outside a crevice. The most reliable octopus-den indicator. Octopuses are tidy eaters — they discard shells in a "trash heap" near their entry. Look at the bottom of rocky walls.' },
+                  { sign: 'Eye glint', emoji: '👁️', detail: 'A flat, horizontal pupil peeking from a crack. Octopus eyes are unmistakable once you\'ve seen one — slit pupil, lens visible. Often the ONLY visible part.' },
+                  { sign: 'Color shift', emoji: '🎨', detail: 'A patch of "substrate" that\'s slightly the wrong color or moves slightly. If you stare at one spot for 30 seconds and the patterns rearrange themselves — you\'re looking at an octopus.' },
+                  { sign: 'Sucker marks', emoji: '⭕', detail: 'Circular discoloration patches on rocks or piers — left by recent contact. Sucker scars on prey shells or fish skin also indicate recent cephalopod activity.' },
+                  { sign: 'Ink cloud (post-encounter)', emoji: '🌫️', detail: 'A drifting dark cloud in the water column means an octopus or squid just escaped from something. Look in the direction OPPOSITE the cloud\'s drift.' },
+                  { sign: 'Tracks in sand', emoji: '〰️', detail: 'Multiple parallel lines + drag marks in sand = octopus walked here (using stilt-walking or arm-crawling). Coconut octopuses leave shell-drag furrows too.' },
+                  { sign: 'Cuttlefish at rest', emoji: '🦑', detail: 'Cuttlefish often hover stationary just above the substrate, matching color. Watch for the distinctive flat oval body shape + visible W-shaped pupils — different from octopus.' },
+                  { sign: 'Squid schools', emoji: '👥', detail: 'Mid-water above reefs or sand flats. Caribbean reef squid hold formation 1-3m above the substrate. Big-fin reef squid form synchronized formations. Look up, not just down.' }
+                ].map(function(s, i) {
+                  return h('div', { key: i,
+                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                      borderLeft: '3px solid #86efac', padding: '12px 14px', borderRadius: 8 } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, s.emoji),
+                      h('div', { style: { fontSize: 13, fontWeight: 800, color: '#86efac' } }, s.sign)),
+                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.65 } }, s.detail));
+                }))),
+
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🪲 Common mistakes (these AREN\'T cephalopods)'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 } },
+                [
+                  { mistake: 'Sea slug / nudibranch', why: 'Often colorful + crawls on substrate. Has feather-like external gills + no tentacles. Mollusk relative but no chambered body.' },
+                  { mistake: 'Anemone', why: 'Stays in one spot, tentacles wave gently. Can\'t move quickly or change shape dramatically.' },
+                  { mistake: 'Brittle star', why: 'Five thin arms radiating from a central disk. Arms are RIGID + segmented. Octopus arms are completely flexible.' },
+                  { mistake: 'Eel', why: 'Long body, fins, scales (if visible). Watch from a distance — moray eels emerge from crevices to investigate divers.' },
+                  { mistake: 'Cuttlefish bone on beach', why: 'White, oval, calcified internal cuttlefish shell. NOT the live animal — these wash up after the cuttlefish dies. Take a photo + report a beached cuttlefish event.' },
+                  { mistake: 'Spider crab leg', why: 'A single leg jutting from a crack with horizontal joints. Octopus arm has no joints.' }
+                ].map(function(m, i) {
+                  return h('div', { key: i,
+                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                      borderLeft: '3px solid #fca5a5', padding: '10px 12px', borderRadius: 8 } },
+                    h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fca5a5', marginBottom: 4 } }, m.mistake),
+                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, m.why));
+                })))
+          ) : null,
+
+          // ─── ETHICS + SAFETY ───
+          view === 'ethics' ? h('div', null,
+            h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fbbf24' }) },
+              h('div', { style: subheaderStyle() }, '🛡️ Observation ethics — the Hippocratic version'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.75 } },
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  'Cephalopods are sentient (UK + EU formally recognize this in law). Your presence stresses them. Stress raises metabolic load, raises predation risk, can disrupt feeding cycles. The goal: be a non-event from the animal\'s perspective.'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10, marginBottom: 12 } },
+                  [
+                    { rule: '🚫 Don\'t touch', detail: 'Human skin oils + bacteria can disrupt cephalopod chemosense + chromatophore function. Touching is also stressful even when you\'re gentle. Photograph. Don\'t handle.' },
+                    { rule: '🚫 Don\'t move objects', detail: 'Don\'t lift rocks, move shells, or extract animals from dens. You\'re destroying camouflage architecture they\'ve carefully constructed. Look without disturbing.' },
+                    { rule: '📏 Keep distance', detail: 'Maintain ~2-3 meters where possible. Octopuses + cuttlefish read body language; close approach reads as predatory. If they signal stress (rapid color shifts, white arms raised) — back off.' },
+                    { rule: '⏱️ Limit observation time', detail: '5-10 minutes maximum per encounter. Even non-touching observation has stress cost. Leave + return if you want more time, ideally from a different angle.' },
+                    { rule: '🚫 Don\'t feed', detail: 'Habituates animals to humans, distorts their hunting behavior, attracts them to dangerous areas. The cuteness is real but the cost is real.' },
+                    { rule: '🚫 Don\'t chase', detail: 'Pursuing a fleeing animal causes physiological stress that lasts hours. If they\'re leaving, let them go.' }
+                  ].map(function(r, i) {
+                    return h('div', { key: i,
+                      style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                        borderLeft: '3px solid #fbbf24', padding: '10px 12px', borderRadius: 8 } },
+                      h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 4 } }, r.rule),
+                      h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, r.detail));
+                  })),
+                h('p', { style: { margin: 0, padding: '12px 14px', background: 'rgba(251,191,36,0.1)', borderLeft: '3px solid #fbbf24', borderRadius: 6, fontStyle: 'italic' } },
+                  'The right principle: leave the animal in a state where it doesn\'t know you were there. You can take photos + memories. Take nothing physical.'))),
+
+            h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #dc2626' }) },
+              h('div', { style: subheaderStyle() }, '⚠️ Safety — protect yourself'),
+              h('div', { style: { color: '#fecaca', fontSize: 13, lineHeight: 1.75 } },
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  'Tidepools + reefs are not zero-risk environments. Most cephalopods are harmless, but a few are dangerous + share habitat with other hazards.'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 } },
+                  [
+                    { risk: '☠️ Blue-ringed octopus (Indo-Pacific)', detail: 'Small (~12 cm), drab + brown until threatened. Then iridescent blue rings flash. Carries enough tetrodotoxin to kill 26 adult humans. NO ANTIVENOM. Symptomatic treatment + ventilator only. If you\'re in Indo-Pacific tidepools, do not touch ANY small octopus.' },
+                    { risk: '🐠 Other tidepool dangers', detail: 'Sea urchins (sharp spines), stonefish + scorpionfish (venomous + camouflaged), cone snails (lethal harpoon), fire coral (severe burn). Always wear water shoes. Don\'t put hands in holes you can\'t see into.' },
+                    { risk: '🌊 Tide cycles', detail: 'Returning tide rises faster than you might think. Always know the cycle. Don\'t get stuck on a rock + isolated by incoming water.' },
+                    { risk: '🤿 Solo diving', detail: 'Don\'t. Even shallow snorkeling, dive with a buddy. Cephalopod focus is exactly the kind of distracted attention that gets you in trouble.' },
+                    { risk: '❄️ Hypothermia (cold-water regions)', detail: 'Pacific Northwest + North Atlantic water is 50-55°F year-round. Without a drysuit you can\'t safely dive long. Tidepooling in shorts is fine, but going in is not.' },
+                    { risk: '☀️ Sun + dehydration (tropical regions)', detail: 'Tidepooling under tropical sun is intense. UV-protective clothing, electrolytes, frequent shade breaks. Coral cuts in saltwater heat = infection risk.' }
+                  ].map(function(r, i) {
+                    return h('div', { key: i,
+                      style: { background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.3)',
+                        borderLeft: '3px solid #dc2626', padding: '10px 12px', borderRadius: 8 } },
+                      h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fca5a5', marginBottom: 4 } }, r.risk),
+                      h('div', { style: { fontSize: 11, color: '#fecaca', lineHeight: 1.6 } }, r.detail));
+                  }))))
+          ) : null,
+
+          // ─── DOCUMENT + SHARE ───
+          view === 'document' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '📷 What to record + how'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7, marginBottom: 14 } },
+                h('p', { style: { margin: '0 0 10px 0' } },
+                  'Every cephalopod observation is potentially data. Researchers track range shifts, behavioral changes, new species. A clear photo + accurate metadata = a citizen-science contribution.')),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
+                [
+                  { what: '📅 Date + time', why: 'Including time of day (precise to within ~30 min). Helps establish behavioral patterns + correlate with tide + moon cycles.' },
+                  { what: '📍 Location', why: 'GPS coordinates if possible. At minimum: named site + nearest landmark. iNaturalist autotags location if you allow it.' },
+                  { what: '🌊 Depth + water temp', why: 'Depth from depth gauge or estimation (intertidal, 5m, 10m, etc.). Water temp from dive computer. Both correlate with species ID.' },
+                  { what: '🐙 Species (best guess)', why: 'Use this tool\'s Field Guide for comparison. Note ID confidence ("definitely Octopus vulgaris" vs "Octopus sp. — small, brownish"). iNaturalist community will help refine.' },
+                  { what: '🎬 Behavior', why: 'What was the animal doing? Hunting / resting in den / fleeing / mating / signaling / dead. Behavior data is rarely captured + most valuable to researchers.' },
+                  { what: '📸 Photos', why: 'Multiple angles. Macro for ID. Wide shot for habitat context. Include something for scale (gloved finger, ruler, dive slate).' }
+                ].map(function(d, i) {
+                  return h('div', { key: i,
+                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                      borderLeft: '3px solid #38bdf8', padding: '10px 12px', borderRadius: 8 } },
+                    h('div', { style: { fontSize: 12, fontWeight: 800, color: '#38bdf8', marginBottom: 4 } }, d.what),
+                    h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, d.why));
+                }))),
+
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '📸 Photo + video tips'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.75 } },
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
+                  [
+                    { tip: '🚫 No flash at close range', detail: 'Direct flash on cephalopod eyes is stressful + may temporarily blind them. Use ambient light at distance; flash only at distance + diffused if needed.' },
+                    { tip: '📱 Macro mode for ID details', detail: 'Suckers, arm tip texture, body pattern, eye shape — these are diagnostic features. Get close (without touching!) + use macro.' },
+                    { tip: '🌅 Continuous shooting', detail: 'Color changes happen in milliseconds. Burst-mode capture lets you record skin display sequences that single shots miss.' },
+                    { tip: '🎬 Short video clips', detail: '5-15 second clips show behavior + motion. Most identification + behavioral analysis is impossible from a single still.' },
+                    { tip: '🎯 Include the eye', detail: 'A clear shot of the eye is the single most useful ID frame. Pupil shape + eye position differ between octopus / cuttlefish / squid.' },
+                    { tip: '📐 Scale reference', detail: 'Glove, hand, or dive slate visible somewhere = scale. Hard to ID size from photos otherwise. NEVER use your hand right next to the animal.' }
+                  ].map(function(t, i) {
+                    return h('div', { key: i,
+                      style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                        borderLeft: '3px solid #a78bfa', padding: '10px 12px', borderRadius: 8 } },
+                      h('div', { style: { fontSize: 12, fontWeight: 800, color: '#a78bfa', marginBottom: 4 } }, t.tip),
+                      h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, t.detail));
+                  })))),
+
+            h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #86efac' }) },
+              h('div', { style: subheaderStyle() }, '🌐 Where to share your observations'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  'Three tiers of citizen-science contribution, depending on your level of involvement:'),
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+                  [
+                    { level: 'Tier 1 — General public', platform: 'iNaturalist', detail: 'Free app, photo + location uploads, community-verified IDs. Goes into the Global Biodiversity Information Facility (GBIF). Most accessible for first-time contributors.' },
+                    { level: 'Tier 2 — Engaged amateur', platform: 'CephResearch.org + TONMO', detail: 'Researcher-curated communities. Direct contact with cephalopod biologists. Good for unusual sightings or behavior you want a specialist to evaluate.' },
+                    { level: 'Tier 3 — Research-affiliated', platform: 'Local university / aquarium partnerships', detail: 'If your sightings are in a research zone (Monterey Bay, Lembeh Strait, Maine coast), local institutions may want direct collaboration. Aquariums often partner on observation programs.' }
+                  ].map(function(t, i) {
+                    return h('div', { key: i,
+                      style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #86efac', padding: '10px 12px', borderRadius: 8 } },
+                      h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3 } }, t.level),
+                      h('div', { style: { fontSize: 13, fontWeight: 700, color: '#fde68a', marginBottom: 4 } }, t.platform),
+                      h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } }, t.detail));
+                  })),
+                h('p', { style: { margin: '12px 0 0 0', padding: '12px 14px', background: 'rgba(134,239,172,0.08)', borderLeft: '3px solid #86efac', borderRadius: 6, fontStyle: 'italic' } },
+                  'Your observation matters. New cephalopod species are still being discovered. Range shifts due to climate change are documented largely by amateur observation. Behavior records for most species are sparse. You can contribute to real science with a phone + a snorkel.')))
+          ) : null
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════
+      // SECTION 16 — RESOURCES (expanded with full glossary)
       // ═══════════════════════════════════════════════════════
       function renderResources() {
         var sub = d.resourcesSub || 'glossary';
@@ -4182,6 +4474,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       else if (section === 'methods') content = renderResearchMethods();
       else if (section === 'compcog') content = renderComparativeCognition();
       else if (section === 'conservation') content = renderConservation();
+      else if (section === 'fieldday') content = renderFieldDay();
       else if (section === 'resources') content = renderResources();
       else content = renderHub();
 
