@@ -4963,6 +4963,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // sticky notes via the toolbar's color picker.
   const [annotationMode, setAnnotationMode] = useState('');
   const [noteColor, setNoteColor] = useState('yellow');
+  const [highlightColor, setHighlightColor] = useState('yellow');
   React.useEffect(function () {
     // Keep legacy isStickerMode boolean in sync so cursor/CSS branches in
     // the existing JSX continue to work without per-site migration.
@@ -6479,7 +6480,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const handleToggleIsUDLGuideExpanded = React.useCallback(() => setIsUDLGuideExpanded(prev => !prev), []);
   const handleToggleShowUDLGuide = React.useCallback(() => setShowUDLGuide(prev => !prev), []);
   const handleToggleIsHistoryMaximized = React.useCallback(() => setIsHistoryMaximized(prev => !prev), []);
-  const handleToggleIsStickerMode = React.useCallback(() => setIsStickerMode(prev => !prev), []);
+  const handleToggleIsStickerMode = React.useCallback(() => {
+    // New: drives the unified annotationMode. Toggling sticker mode now
+    // routes through the same single-mode contract that the note tool uses.
+    setAnnotationMode(prev => prev === 'sticker' ? '' : 'sticker');
+  }, []);
   const handleToggleIsEditingAnalysis = React.useCallback(() => setIsEditingAnalysis(prev => !prev), []);
   const handleToggleIsEditingGlossary = React.useCallback(() => setIsEditingGlossary(prev => !prev), []);
   const handleToggleShowFlashcardImages = React.useCallback(() => setShowFlashcardImages(prev => !prev), []);
@@ -19465,20 +19470,52 @@ Return ONLY valid JSON in this format:
       }
   };
   const handleContentClick = (e) => {
-      if (!isStickerMode || !contentAreaRef.current) return;
-      // Delegate sticker construction to the annotation_suite module so all
-      // {id, type, x, y, author, authorName, createdAt} envelope logic lives
-      // in one place. Future annotation types (highlight, sticky note) will
-      // be created by parallel module helpers off the same handler.
+      if (!annotationMode || !contentAreaRef.current) return;
+      // Dispatch by annotationMode to the appropriate factory in the
+      // annotation_suite module. Both factories handle the same
+      // {id, kind, x, y, author, authorName, createdAt} envelope and skip
+      // placement on interactive elements (buttons, inputs, textareas).
       const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
-      if (!_m || !_m.createStickerFromClick) return;
-      const newSticker = _m.createStickerFromClick(contentAreaRef.current, e, {
-          stickerType: stickerType,
+      if (!_m) return;
+      const authorName = studentNickname || studentProjectSettings?.nickname || '';
+      let next = null;
+      if (annotationMode === 'sticker' && _m.createStickerFromClick) {
+          next = _m.createStickerFromClick(contentAreaRef.current, e, {
+              stickerType: stickerType,
+              isTeacher: isTeacherMode,
+              authorName: authorName,
+          });
+      } else if (annotationMode === 'note' && _m.createNoteFromClick) {
+          next = _m.createNoteFromClick(contentAreaRef.current, e, {
+              color: noteColor,
+              isTeacher: isTeacherMode,
+              authorName: authorName,
+          });
+      }
+      if (!next) return;
+      setStickers(prev => [...prev, next]);
+      playSound('click');
+  };
+  // Highlight capture: in highlight mode, mouseup on the content area
+  // checks for a non-collapsed text selection and converts it to a
+  // highlight annotation via the module helper. Clears the selection
+  // after capture so the visible blue selection goes away in favor of
+  // the rendered colored overlay.
+  const handleContentMouseUp = () => {
+      if (annotationMode !== 'highlight' || !contentAreaRef.current) return;
+      const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+      if (!_m || !_m.createHighlightFromSelection) return;
+      const sel = typeof window !== 'undefined' ? window.getSelection && window.getSelection() : null;
+      if (!sel || sel.isCollapsed) return;
+      const authorName = studentNickname || studentProjectSettings?.nickname || '';
+      const newHighlight = _m.createHighlightFromSelection(contentAreaRef.current, sel, {
+          color: highlightColor,
           isTeacher: isTeacherMode,
-          authorName: studentNickname || studentProjectSettings?.nickname || '',
+          authorName: authorName,
       });
-      if (!newSticker) return;
-      setStickers(prev => [...prev, newSticker]);
+      if (!newHighlight) return;
+      setStickers(prev => [...prev, newHighlight]);
+      try { sel.removeAllRanges(); } catch (_) {}
       playSound('click');
   };
   const clearStickers = () => setStickers([]);
@@ -21741,18 +21778,22 @@ Return ONLY valid JSON in this format:
                 {isTeacherMode && generatedContent && !isOutputHeaderCollapsed && (
                     <div className="hidden md:flex items-center bg-white rounded-full border border-slate-400 shadow-sm px-1 py-0.5 ml-2">
                         {(() => {
-                            // Annotation suite toolbar (sticker mode toggle +
-                            // type picker + clear) — delegates to the CDN
-                            // module so future tools (highlight, sticky note)
-                            // land in one place. Falls back to nothing if the
+                            // Annotation suite toolbar — sticker + note mode
+                            // toggles + per-tool sub-controls. Delegates to
+                            // the CDN module so future tools (highlight) land
+                            // in one place. Falls back to nothing if the
                             // module hasn't loaded yet.
                             const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
                             if (!_m || !_m.Toolbar) return null;
                             return React.createElement(_m.Toolbar, {
-                                isStickerMode: isStickerMode,
+                                mode: annotationMode,
                                 stickerType: stickerType,
-                                onToggleMode: handleToggleIsStickerMode,
+                                noteColor: noteColor,
+                                highlightColor: highlightColor,
+                                onSetMode: setAnnotationMode,
                                 onPickType: setStickerType,
+                                onPickNoteColor: setNoteColor,
+                                onPickHighlightColor: setHighlightColor,
                                 onClear: clearStickers,
                                 t: t,
                             });
@@ -21793,8 +21834,9 @@ Return ONLY valid JSON in this format:
           <div
             ref={contentAreaRef}
             onClick={handleContentClick}
+            onMouseUp={handleContentMouseUp}
             data-reading-theme={readingTheme}
-            className={`flex-grow ${isOutputHeaderCollapsed ? 'p-2 md:p-4' : 'p-4 md:p-8'} overflow-y-auto relative custom-scrollbar transition-all ${readingTheme === 'default' ? 'bg-white' : ''} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''} ${isStickerMode ? 'cursor-[url(https://cdn-icons-png.flaticon.com/32/166/166538.png),_pointer]' : ''}`}
+            className={`flex-grow ${isOutputHeaderCollapsed ? 'p-2 md:p-4' : 'p-4 md:p-8'} overflow-y-auto relative custom-scrollbar transition-all ${readingTheme === 'default' ? 'bg-white' : ''} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''} ${annotationMode === 'sticker' ? 'cursor-[url(https://cdn-icons-png.flaticon.com/32/166/166538.png),_pointer]' : ''} ${annotationMode === 'note' ? 'cursor-crosshair' : ''} ${annotationMode === 'highlight' ? 'cursor-text' : ''}`}
             style={readingTheme !== 'default' ? {
               backgroundColor: readingTheme === 'warm' ? '#fef3c7' : readingTheme === 'sepia' ? '#f4ecd8' : readingTheme === 'dark' ? '#1a1a2e' : readingTheme === 'highContrast' ? '#000000' : readingTheme === 'blue' ? '#d6eaf8' : readingTheme === 'green' ? '#e8f5e9' : readingTheme === 'rose' ? '#fce4ec' : readingTheme === 'dyslexia' ? '#faf8ef' : undefined,
               color: readingTheme === 'dark' ? '#e2e8f0' : readingTheme === 'highContrast' ? '#ffff00' : readingTheme === 'sepia' ? '#5c4033' : readingTheme === 'blue' ? '#1b2631' : readingTheme === 'green' ? '#1b5e20' : readingTheme === 'rose' ? '#880e4f' : readingTheme === 'warm' ? '#5c4033' : readingTheme === 'dyslexia' ? '#1e293b' : undefined,
@@ -21805,14 +21847,30 @@ Return ONLY valid JSON in this format:
             } : undefined}
           >
             {(() => {
-                // Annotation overlay — module-driven so the same overlay
-                // layer hosts future highlight/note types alongside the
-                // existing stickers. Same Sticker shim still works (kept
-                // above for any straggling direct usages), but new code
-                // should go through the module.
+                // Annotation overlay — module dispatches by `kind`. Notes
+                // get edit/delete callbacks so they're truly interactive;
+                // stickers stay pointer-events:none decorations. Future
+                // highlights will plug into the same dispatcher.
                 const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
-                if (_m && _m.Overlay) return React.createElement(_m.Overlay, { annotations: stickers });
-                return null;
+                if (!_m || !_m.Overlay) return null;
+                return React.createElement(_m.Overlay, {
+                    annotations: stickers,
+                    onNoteChange: (id, patch) => {
+                        if (_m.updateAnnotation) {
+                            setStickers(prev => _m.updateAnnotation(prev, id, patch));
+                        }
+                    },
+                    onNoteDelete: (id) => {
+                        if (_m.removeAnnotation) {
+                            setStickers(prev => _m.removeAnnotation(prev, id));
+                        }
+                    },
+                    onHighlightDelete: (id) => {
+                        if (_m.removeAnnotation) {
+                            setStickers(prev => _m.removeAnnotation(prev, id));
+                        }
+                    },
+                });
             })()}
             {isProcessing && (!generatedContent || !generatedContent?.data) ? (
                 <div data-help-key="gen_loading_screen" className="absolute inset-0 bg-white/95 z-10 flex flex-col items-center justify-center">

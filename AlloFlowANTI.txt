@@ -4963,6 +4963,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // sticky notes via the toolbar's color picker.
   const [annotationMode, setAnnotationMode] = useState('');
   const [noteColor, setNoteColor] = useState('yellow');
+  const [highlightColor, setHighlightColor] = useState('yellow');
   React.useEffect(function () {
     // Keep legacy isStickerMode boolean in sync so cursor/CSS branches in
     // the existing JSX continue to work without per-site migration.
@@ -19495,6 +19496,28 @@ Return ONLY valid JSON in this format:
       setStickers(prev => [...prev, next]);
       playSound('click');
   };
+  // Highlight capture: in highlight mode, mouseup on the content area
+  // checks for a non-collapsed text selection and converts it to a
+  // highlight annotation via the module helper. Clears the selection
+  // after capture so the visible blue selection goes away in favor of
+  // the rendered colored overlay.
+  const handleContentMouseUp = () => {
+      if (annotationMode !== 'highlight' || !contentAreaRef.current) return;
+      const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+      if (!_m || !_m.createHighlightFromSelection) return;
+      const sel = typeof window !== 'undefined' ? window.getSelection && window.getSelection() : null;
+      if (!sel || sel.isCollapsed) return;
+      const authorName = studentNickname || studentProjectSettings?.nickname || '';
+      const newHighlight = _m.createHighlightFromSelection(contentAreaRef.current, sel, {
+          color: highlightColor,
+          isTeacher: isTeacherMode,
+          authorName: authorName,
+      });
+      if (!newHighlight) return;
+      setStickers(prev => [...prev, newHighlight]);
+      try { sel.removeAllRanges(); } catch (_) {}
+      playSound('click');
+  };
   const clearStickers = () => setStickers([]);
   const handleFormatText = (formatType, overrideRef, overrideText, overrideCallback) => {
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
@@ -21766,9 +21789,11 @@ Return ONLY valid JSON in this format:
                                 mode: annotationMode,
                                 stickerType: stickerType,
                                 noteColor: noteColor,
+                                highlightColor: highlightColor,
                                 onSetMode: setAnnotationMode,
                                 onPickType: setStickerType,
                                 onPickNoteColor: setNoteColor,
+                                onPickHighlightColor: setHighlightColor,
                                 onClear: clearStickers,
                                 t: t,
                             });
@@ -21809,8 +21834,9 @@ Return ONLY valid JSON in this format:
           <div
             ref={contentAreaRef}
             onClick={handleContentClick}
+            onMouseUp={handleContentMouseUp}
             data-reading-theme={readingTheme}
-            className={`flex-grow ${isOutputHeaderCollapsed ? 'p-2 md:p-4' : 'p-4 md:p-8'} overflow-y-auto relative custom-scrollbar transition-all ${readingTheme === 'default' ? 'bg-white' : ''} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''} ${isStickerMode ? 'cursor-[url(https://cdn-icons-png.flaticon.com/32/166/166538.png),_pointer]' : ''}`}
+            className={`flex-grow ${isOutputHeaderCollapsed ? 'p-2 md:p-4' : 'p-4 md:p-8'} overflow-y-auto relative custom-scrollbar transition-all ${readingTheme === 'default' ? 'bg-white' : ''} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''} ${annotationMode === 'sticker' ? 'cursor-[url(https://cdn-icons-png.flaticon.com/32/166/166538.png),_pointer]' : ''} ${annotationMode === 'note' ? 'cursor-crosshair' : ''} ${annotationMode === 'highlight' ? 'cursor-text' : ''}`}
             style={readingTheme !== 'default' ? {
               backgroundColor: readingTheme === 'warm' ? '#fef3c7' : readingTheme === 'sepia' ? '#f4ecd8' : readingTheme === 'dark' ? '#1a1a2e' : readingTheme === 'highContrast' ? '#000000' : readingTheme === 'blue' ? '#d6eaf8' : readingTheme === 'green' ? '#e8f5e9' : readingTheme === 'rose' ? '#fce4ec' : readingTheme === 'dyslexia' ? '#faf8ef' : undefined,
               color: readingTheme === 'dark' ? '#e2e8f0' : readingTheme === 'highContrast' ? '#ffff00' : readingTheme === 'sepia' ? '#5c4033' : readingTheme === 'blue' ? '#1b2631' : readingTheme === 'green' ? '#1b5e20' : readingTheme === 'rose' ? '#880e4f' : readingTheme === 'warm' ? '#5c4033' : readingTheme === 'dyslexia' ? '#1e293b' : undefined,
@@ -21821,14 +21847,30 @@ Return ONLY valid JSON in this format:
             } : undefined}
           >
             {(() => {
-                // Annotation overlay — module-driven so the same overlay
-                // layer hosts future highlight/note types alongside the
-                // existing stickers. Same Sticker shim still works (kept
-                // above for any straggling direct usages), but new code
-                // should go through the module.
+                // Annotation overlay — module dispatches by `kind`. Notes
+                // get edit/delete callbacks so they're truly interactive;
+                // stickers stay pointer-events:none decorations. Future
+                // highlights will plug into the same dispatcher.
                 const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
-                if (_m && _m.Overlay) return React.createElement(_m.Overlay, { annotations: stickers });
-                return null;
+                if (!_m || !_m.Overlay) return null;
+                return React.createElement(_m.Overlay, {
+                    annotations: stickers,
+                    onNoteChange: (id, patch) => {
+                        if (_m.updateAnnotation) {
+                            setStickers(prev => _m.updateAnnotation(prev, id, patch));
+                        }
+                    },
+                    onNoteDelete: (id) => {
+                        if (_m.removeAnnotation) {
+                            setStickers(prev => _m.removeAnnotation(prev, id));
+                        }
+                    },
+                    onHighlightDelete: (id) => {
+                        if (_m.removeAnnotation) {
+                            setStickers(prev => _m.removeAnnotation(prev, id));
+                        }
+                    },
+                });
             })()}
             {isProcessing && (!generatedContent || !generatedContent?.data) ? (
                 <div data-help-key="gen_loading_screen" className="absolute inset-0 bg-white/95 z-10 flex flex-col items-center justify-center">
