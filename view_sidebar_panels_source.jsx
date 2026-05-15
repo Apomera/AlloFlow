@@ -2409,6 +2409,11 @@ function OutlinePanel(props) {
                             <option value="Flow Chart">{t('outline.flow_chart')}</option>
                             <option value="Cause and Effect">{t('outline.cause_effect')}</option>
                             <option value="Problem Solution">{t('outline.problem_solution')}</option>
+                            <option value="Frayer Model">{t('outline.frayer') || 'Frayer Model (Vocabulary)'}</option>
+                            <option value="KWL Chart">{t('outline.kwl') || 'KWL Chart (Know / Want / Learned)'}</option>
+                            <option value="Claim-Evidence-Reasoning">{t('outline.cer') || 'Claim, Evidence, Reasoning (CER)'}</option>
+                            <option value="Story Map">{t('outline.story_map') || 'Story Map (Plot Diagram)'}</option>
+                            <option value="See-Think-Wonder">{t('outline.see_think_wonder') || 'See, Think, Wonder'}</option>
                         </select>
                     </div>
                     <div>

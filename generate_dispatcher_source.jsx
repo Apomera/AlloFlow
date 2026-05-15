@@ -1522,6 +1522,26 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             case 'Problem Solution':
                 promptInstructions = "Identify the core problem discussed and list the solutions or steps taken to resolve it.";
                 break;
+            case 'Frayer Model':
+                promptInstructions = "Create a Frayer Model for a single key vocabulary term from the source text. The 'main' field is the vocabulary term itself. Return exactly 4 branches in this order: 1. 'Definition' (a single student-friendly definition as the only item, 1 short sentence), 2. 'Characteristics' (3-5 key features or attributes of the term), 3. 'Examples' (3-5 concrete examples drawn from the text or its domain), 4. 'Non-Examples' (3-5 things that are NOT examples, ideally with a brief reason why each is excluded).";
+                structureHint = "CRITICAL FOR FRAYER MODEL: Return exactly 4 branches with titles Definition / Characteristics / Examples / Non-Examples in that order. 'Definition' branch should have exactly one item.";
+                break;
+            case 'KWL Chart':
+                promptInstructions = "Create a KWL Chart anchored to the topic of the source text. The 'main' field is the topic. Return exactly 3 branches: 1. 'Know' (4-6 prior knowledge items students at the target grade are likely to bring), 2. 'Want to Know' (4-6 anticipated student questions about the topic), 3. 'Learned' (return an empty items array OR 1-2 placeholder items like '___' since students fill this in after the lesson).";
+                structureHint = "CRITICAL FOR KWL CHART: Return exactly 3 branches with titles Know / Want to Know / Learned in that order. The Learned column should be sparse (empty array or placeholder) because students complete it after the lesson.";
+                break;
+            case 'Claim-Evidence-Reasoning':
+                promptInstructions = "Create a Claim-Evidence-Reasoning template anchored to a key scientific question or phenomenon from the source text. The 'main' field is the central question or phenomenon. Return exactly 3 branches: 1. 'Claim' (a single declarative answer to the question, as the only item), 2. 'Evidence' (3-5 specific pieces of data, observations, or quotations from the source that support the claim), 3. 'Reasoning' (2-4 statements connecting the evidence to the claim via scientific principles or logical inference).";
+                structureHint = "CRITICAL FOR CER: Return exactly 3 branches with titles Claim / Evidence / Reasoning in that order. 'Claim' should be a single declarative item. Evidence items should be specific (quotation marks for direct quotes, or specific data points), not generic.";
+                break;
+            case 'Story Map':
+                promptInstructions = "Create a Story Map (plot diagram) for the source narrative text. The 'main' field is the story title or central narrative summary. Return exactly 5 branches in narrative order: 1. 'Exposition' (setting, main characters, initial situation), 2. 'Rising Action' (3-4 key events that build tension), 3. 'Climax' (the turning point or moment of highest tension, typically a single item), 4. 'Falling Action' (events that follow the climax and lead toward resolution), 5. 'Resolution' (how the story concludes and any final state).";
+                structureHint = "CRITICAL FOR STORY MAP: Return exactly 5 branches with titles Exposition / Rising Action / Climax / Falling Action / Resolution in that order. If the source text is non-narrative, return a single branch noting this is not applicable.";
+                break;
+            case 'See-Think-Wonder':
+                promptInstructions = "Create a See-Think-Wonder routine (Harvard Project Zero Visible Thinking) for the source artifact (text, image, phenomenon, or concept). The 'main' field describes what the student is observing. Return exactly 3 branches: 1. 'See' (3-5 concrete, observable details students might notice, no inferences), 2. 'Think' (3-5 inferences or interpretations grounded explicitly in the observations from See), 3. 'Wonder' (3-5 open-ended questions the observation provokes). Maintain strict separation between observation (See), interpretation (Think), and questioning (Wonder).";
+                structureHint = "CRITICAL FOR SEE-THINK-WONDER: Return exactly 3 branches with titles See / Think / Wonder in that order. See items must be observations only (what is visible/readable); Think items must be inferences; Wonder items must be open questions phrased as questions.";
+                break;
             default:
                 promptInstructions = "Create a structured summary.";
         }
