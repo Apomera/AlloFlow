@@ -4964,6 +4964,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [annotationMode, setAnnotationMode] = useState('');
   const [noteColor, setNoteColor] = useState('yellow');
   const [highlightColor, setHighlightColor] = useState('yellow');
+  // Phase 5: annotation sidebar visibility. Toggled from the toolbar so
+  // users can review/jump-to/delete annotations from one panel.
+  const [showAnnotationSidebar, setShowAnnotationSidebar] = useState(false);
   React.useEffect(function () {
     // Keep legacy isStickerMode boolean in sync so cursor/CSS branches in
     // the existing JSX continue to work without per-site migration.
@@ -21803,6 +21806,29 @@ Return ONLY valid JSON in this format:
                                 t: t,
                             });
                         })()}
+                        {/* Annotation sidebar toggle (Phase 5). Count
+                            badge surfaces the total so users see at a
+                            glance whether the doc has feedback waiting. */}
+                        {(() => {
+                            const total = Array.isArray(stickers) ? stickers.length : 0;
+                            return (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAnnotationSidebar(prev => !prev)}
+                                    className={'p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ' + (showAnnotationSidebar ? 'bg-slate-200 text-slate-700 ring-2 ring-slate-300' : 'text-slate-600 hover:bg-slate-100')}
+                                    title="Show all annotations"
+                                    aria-label="Toggle annotation list"
+                                    aria-pressed={showAnnotationSidebar}
+                                >
+                                    📋 List
+                                    {total > 0 && (
+                                        <span className="ml-0.5 bg-indigo-600 text-white text-[9px] font-bold rounded-full px-1.5 py-0.5 leading-none">
+                                            {total}
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })()}
                     {generatedContent && (activeView === 'math') && (
                         <span role="button" tabIndex={0}
                             onClick={() => { setShowStemLab(true); setStemLabTab('explore'); }}
@@ -21871,6 +21897,33 @@ Return ONLY valid JSON in this format:
                         }
                     },
                     onHighlightDelete: (id) => {
+                        if (_m.removeAnnotation) {
+                            setStickers(prev => _m.removeAnnotation(prev, id));
+                        }
+                    },
+                });
+            })()}
+            {showAnnotationSidebar && (() => {
+                // Annotation sidebar (Phase 5) — list + filter + jump-to.
+                // Permission: in-app users can delete annotations they
+                // authored; teachers can also delete student annotations.
+                const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+                if (!_m || !_m.Sidebar) return null;
+                return React.createElement(_m.Sidebar, {
+                    annotations: stickers,
+                    isTeacher: isTeacherMode,
+                    onClose: () => setShowAnnotationSidebar(false),
+                    onFocus: (id) => {
+                        const target = (stickers || []).find(a => a && a.id === id);
+                        if (!target || !contentAreaRef.current) return;
+                        if (_m.focusAnnotation) _m.focusAnnotation(contentAreaRef.current, target);
+                    },
+                    onDelete: (id) => {
+                        const target = (stickers || []).find(a => a && a.id === id);
+                        if (!target) return;
+                        // Permission check: students can only delete their
+                        // own; teachers can delete anything in their view.
+                        if (!isTeacherMode && target.author !== 'student') return;
                         if (_m.removeAnnotation) {
                             setStickers(prev => _m.removeAnnotation(prev, id));
                         }
