@@ -433,6 +433,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       compView: 'matrix',                  // 'matrix' | 'animal' | 'dimension' | 'interpretation'
       compAnimal: 'cephalopod',
       compDimension: 'tooluse',
+      // Evasion Sim state
+      evasionPhase: 'lobby',               // 'lobby' | 'plan' | 'execute' | 'result'
+      evasionSpeciesId: null,
+      evasionPredatorId: null,
+      evasionTacticId: null,
+      evasionReactionMs: 0,                // reaction-time minigame result
+      evasionResult: null,
+      evasionEncountersAttempted: 0,
+      evasionEscapes: 0,
       // Conservation & Welfare state
       conservationSection: 'overview',     // 'overview' | 'fisheries' | 'farming' | 'shell-trade' | 'welfare'
       // Resources state
@@ -526,6 +535,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           { id: 'hub', label: 'Hub', icon: '🐙' },
           { id: 'field', label: 'Field Guide', icon: '📖' },
           { id: 'hunt', label: 'Hunter Sim', icon: '🎯' },
+          { id: 'evasion', label: 'Evasion Sim', icon: '🛡️' },
           { id: 'camo', label: 'Camouflage', icon: '🎨' },
           { id: 'anatomy', label: 'Body Plan', icon: '🧠' },
           { id: 'time', label: 'Through Time', icon: '🕰️' },
@@ -548,7 +558,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: '#c7d2fe', letterSpacing: '-0.01em' } }, 'Cephalopod Lab'),
                 h('div', { style: { fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.12)',
                     border: '1px solid rgba(167,139,250,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                  '12 sections')),
+                  '13 sections')),
               h('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 4, lineHeight: 1.5 } },
                 'The biology of intelligent invertebrates. Octopuses + squid + cuttlefish + nautilus — chromatophore camouflage, distributed neural intelligence, hunting strategy, 500M-year evolution.'))));
       }
@@ -1186,7 +1196,425 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       }
 
       // ═══════════════════════════════════════════════════════
-      // SECTION 4 — CAMOUFLAGE LAB (chromatophore biology deep dive)
+      // SECTION 4 — EVASION SIM (the prey perspective)
+      // ═══════════════════════════════════════════════════════
+      // Predators of cephalopods, with the sensory modality they
+      // use to detect prey — different tactics work against
+      // different sensory profiles.
+      var PREDATORS = [
+        { id: 'reef-shark', name: 'Reef Shark', emoji: '🦈',
+          sensory: ['visual', 'electroreception', 'chemosense'],
+          size: 'medium-large', habitat: ['reef', 'open-ocean'],
+          threatens: ['commonOcto', 'dayOcto', 'cuttlefish', 'humboldt', 'firefly', 'bobtail', 'mimicOcto'],
+          beats: ['camouflage-fail'],
+          weakAgainst: ['ink-flee', 'jet-escape', 'mimicry'],
+          description: 'Visual hunters with electroreceptors (Lorenzini ampullae) that detect bioelectric fields of prey. Ink masks visual + chemical trail; sudden jet breaks tracking.' },
+        { id: 'large-shark', name: 'Large Shark', emoji: '🦈',
+          sensory: ['visual', 'electroreception', 'chemosense'],
+          size: 'large', habitat: ['open-ocean', 'deep'],
+          threatens: ['humboldt', 'giantPac', 'giantSquid', 'colossal'],
+          beats: ['camouflage-fail', 'slow-escape'],
+          weakAgainst: ['depth-change', 'jet-escape', 'deimatic'],
+          description: 'Apex pelagic predators. Giant Pacific octopuses, Humboldt squid, even giant + colossal squid are documented prey. Hard to ink-evade in open water.' },
+        { id: 'moray-eel', name: 'Moray Eel', emoji: '🐍',
+          sensory: ['chemosense', 'tactile', 'ambush'],
+          size: 'medium', habitat: ['reef', 'rocky'],
+          threatens: ['commonOcto', 'blueRing', 'coconut', 'dayOcto', 'mimicOcto', 'bobtail'],
+          beats: ['hideout', 'slow-escape'],
+          weakAgainst: ['ink-flee', 'autotomy', 'jet-escape'],
+          description: 'Ambush hunters lurking in crevices. They smell prey + strike from cover. Hiding in coral doesn\'t help — that\'s WHERE the eel is. Octopus must abandon shelter + flee.' },
+        { id: 'dolphin', name: 'Bottlenose Dolphin', emoji: '🐬',
+          sensory: ['echolocation', 'visual', 'cooperation'],
+          size: 'large', habitat: ['open-ocean', 'reef'],
+          threatens: ['cuttlefish', 'commonOcto', 'humboldt', 'firefly'],
+          beats: ['camouflage-fail', 'ink-flee'],
+          weakAgainst: ['jet-escape', 'depth-change', 'autotomy'],
+          description: 'Active echolocators — sound-based hunters. Ink doesn\'t hide you from sonar. Pod-hunting + intelligence makes evasion hard. Best response: depth change or rapid jet.' },
+        { id: 'sperm-whale', name: 'Sperm Whale', emoji: '🐋',
+          sensory: ['echolocation', 'depth-dive'],
+          size: 'massive', habitat: ['deep', 'open-ocean'],
+          threatens: ['giantSquid', 'colossal', 'humboldt'],
+          beats: ['camouflage-fail', 'slow-escape', 'ink-flee'],
+          weakAgainst: ['depth-change', 'jet-escape'],
+          description: 'The apex predator of giant + colossal squid. Sonar penetrates ink + dark water. Sucker scars on sperm whale skin are battle marks. Most cephalopod-vs-whale fights end with the whale.' },
+        { id: 'sea-otter', name: 'Sea Otter', emoji: '🦦',
+          sensory: ['visual', 'tactile', 'tool-use'],
+          size: 'medium', habitat: ['kelp', 'rocky'],
+          threatens: ['giantPac', 'commonOcto'],
+          beats: ['hideout', 'slow-escape'],
+          weakAgainst: ['ink-flee', 'jet-escape', 'autotomy'],
+          description: 'Pacific Northwest specialist. Will pry octopuses out of dens with their hands + dive repeatedly. Persistent + intelligent — hideouts don\'t save you for long.' },
+        { id: 'lingcod', name: 'Lingcod', emoji: '🐟',
+          sensory: ['visual', 'ambush'],
+          size: 'medium', habitat: ['rocky', 'kelp', 'cold-deep'],
+          threatens: ['giantPac', 'commonOcto'],
+          beats: ['camouflage-fail', 'slow-escape'],
+          weakAgainst: ['ink-flee', 'jet-escape', 'hideout'],
+          description: 'Pacific Northwest ambush predator with huge mouth. Octopuses are routine prey. Lingcod with octopus arms hanging out of their mouths are a common dive photo.' },
+        { id: 'larger-cephalopod', name: 'Larger Cephalopod', emoji: '🐙',
+          sensory: ['visual', 'tactile', 'intelligent'],
+          size: 'varies', habitat: ['reef', 'kelp', 'sandy', 'open-ocean'],
+          threatens: ['commonOcto', 'mimicOcto', 'blueRing', 'coconut', 'bobtail', 'firefly', 'dayOcto'],
+          beats: ['camouflage-fail', 'autotomy', 'hideout'],
+          weakAgainst: ['venom-strike', 'mimicry'],
+          description: 'Cephalopod cannibalism is the norm. Larger common octopus eats smaller common octopus. Humboldt squid pack-hunt smaller squid. Same camouflage tricks don\'t work — your predator is using them too.' },
+        { id: 'pinniped', name: 'Seal / Sea Lion', emoji: '🦭',
+          sensory: ['visual', 'whisker-tactile', 'fast'],
+          size: 'large', habitat: ['kelp', 'rocky', 'open-ocean'],
+          threatens: ['giantPac', 'commonOcto', 'humboldt', 'cuttlefish'],
+          beats: ['slow-escape'],
+          weakAgainst: ['ink-flee', 'depth-change', 'autotomy', 'jet-escape'],
+          description: 'Vibrissae (whiskers) detect water disturbance from prey movement — sensing modality octopuses don\'t typically defend against. Fast + agile in 3D water column.' }
+      ];
+
+      // Evasion tactics, each with a sensory-vulnerability profile
+      var EVASION_TACTICS = [
+        { id: 'ink-flee', name: 'Ink + Flee', emoji: '🌫️',
+          worksAgainst: ['visual', 'chemosense', 'electroreception'],
+          failsAgainst: ['echolocation', 'tactile'],
+          species: ['commonOcto', 'mimicOcto', 'giantPac', 'coconut', 'cuttlefish', 'humboldt', 'dayOcto', 'firefly'],
+          description: 'Eject a melanin + mucus pseudomorph (decoy) + jet sideways. Disrupts visual tracking; the mucus also temporarily disables predator smell. Classic + iconic.',
+          cost: 'High energy + ink-sac depletion (slow refill, ~30+ min).' },
+        { id: 'jet-escape', name: 'Jet Escape', emoji: '🚀',
+          worksAgainst: ['visual', 'tactile', 'slow-pursuit'],
+          failsAgainst: ['echolocation', 'high-speed-pursuit'],
+          species: ['commonOcto', 'humboldt', 'cuttlefish', 'giantSquid', 'colossal', 'firefly'],
+          description: 'Explosive mantle contraction + siphon-jet for instant linear acceleration. Best at evading pursuit predators or sudden attacks.',
+          cost: 'Systemic heart stops during sustained jet; can\'t maintain for long. Inefficient compared to crawling.' },
+        { id: 'camouflage-freeze', name: 'Camouflage + Freeze', emoji: '🎭',
+          worksAgainst: ['visual', 'distant-search'],
+          failsAgainst: ['echolocation', 'chemosense', 'electroreception', 'tactile'],
+          species: ['commonOcto', 'mimicOcto', 'cuttlefish', 'coconut', 'dayOcto', 'bobtail', 'giantPac'],
+          description: 'Best response to a predator that hasn\'t spotted you yet — match the substrate + stop moving. If you\'re already detected, this fails.',
+          cost: 'Low energy but slow start time. Useless if the predator\'s sensory system isn\'t visual.' },
+        { id: 'deimatic', name: 'Deimatic Display', emoji: '👀',
+          worksAgainst: ['visual', 'startle-reflex'],
+          failsAgainst: ['echolocation', 'persistent-predator'],
+          species: ['commonOcto', 'cuttlefish', 'humboldt', 'mimicOcto', 'blueRing'],
+          description: 'Sudden high-contrast display + eyespots + posture extension. Triggers predator startle reflex — buys ~0.5 seconds for the next escape move. Used by cuttlefish + Humboldt squid + others.',
+          cost: 'Energy to power the rapid skin display. Effective for ~1 attempt before predator habituates.' },
+        { id: 'autotomy', name: 'Arm Autotomy', emoji: '✂️',
+          worksAgainst: ['visual', 'tactile', 'grappling'],
+          failsAgainst: ['echolocation', 'pursuit'],
+          species: ['commonOcto', 'mimicOcto', 'giantPac', 'coconut', 'dayOcto'],
+          description: 'Sacrifice an arm — it detaches + reacts independently for ~1 hour, distracting the predator. Octopus regrows it in weeks. The cost is real (~12% of total mass + significant neuron loss) but better than dying.',
+          cost: 'Loss of one arm + temporary cognitive reduction during regrowth (~2-3 months to fully restore).' },
+        { id: 'depth-change', name: 'Depth Change', emoji: '⬇️',
+          worksAgainst: ['echolocation', 'visual', 'surface-predator'],
+          failsAgainst: ['deep-diver'],
+          species: ['humboldt', 'giantSquid', 'colossal', 'firefly'],
+          description: 'Rapidly descend (or ascend in some cases) to break predator pursuit. Especially squid — they can dive 100+ meters quickly. Effective against surface-bound dolphins + birds.',
+          cost: 'Pressure adjustment + energy. Effective against most predators except sperm whales (which dive deeper).' },
+        { id: 'mimicry', name: 'Mimicry Defense', emoji: '🎭',
+          worksAgainst: ['visual', 'fish-predator'],
+          failsAgainst: ['echolocation', 'unfooled-predator'],
+          species: ['mimicOcto'],
+          description: 'Impersonate a venomous/unpalatable species (sea snake, lionfish, flatfish). The predator backs off thinking you\'re dangerous. Mimic octopus specialty.',
+          cost: 'Slow to adopt + commits you to the impersonation. Doesn\'t work if the predator has never seen the impersonated species.' },
+        { id: 'hideout', name: 'Hideout / Den', emoji: '🕳️',
+          worksAgainst: ['visual'],
+          failsAgainst: ['echolocation', 'chemosense', 'tactile', 'tool-user'],
+          species: ['commonOcto', 'giantPac', 'coconut', 'dayOcto', 'mimicOcto', 'bobtail'],
+          description: 'Retreat into a crevice, shell, or constructed shelter (coconut octopus). Best against visual predators that can\'t reach into small spaces.',
+          cost: 'Useless if predator can smell, sonar, or physically extract you. Sea otters + morays defeat hideouts.' },
+        { id: 'venom-strike', name: 'Counter-Strike (Venom)', emoji: '☠️',
+          worksAgainst: ['visual', 'tactile', 'contact-required'],
+          failsAgainst: ['echolocation', 'eat-from-distance'],
+          species: ['blueRing'],
+          description: 'Blue-ringed octopus specialty: signal aposematic warning rings + deliver tetrodotoxin if attacked. Most predators learn to avoid blue-ringed individuals after one encounter — or don\'t survive to learn.',
+          cost: 'Only works for venomous species. Blue rings only flash when threatened — aposematic signal.' },
+        { id: 'counter-illum-evasion', name: 'Counter-Illumination', emoji: '💡',
+          worksAgainst: ['visual', 'silhouette-detection'],
+          failsAgainst: ['echolocation', 'side-view-predator'],
+          species: ['firefly', 'bobtail'],
+          description: 'Match downwelling light from above with ventral photophores or symbiotic bacterial light organ. Erases your silhouette to predators looking up from below.',
+          cost: 'Requires photophore array or symbiotic bacterial culture. Specific to bioluminescent species.' }
+      ];
+
+      function renderEvasionSim() {
+        var phase = d.evasionPhase || 'lobby';
+        if (phase === 'plan') return renderEvasionPlan();
+        if (phase === 'execute') return renderEvasionExecute();
+        if (phase === 'result') return renderEvasionResult();
+        return renderEvasionLobby();
+      }
+
+      function renderEvasionLobby() {
+        return h('div', null,
+          panelHeader('🛡️ Evasion Sim',
+            'The other side of the food web. Even apex cephalopods get hunted — giant Pacific octopuses by sea otters + sharks, giant squid by sperm whales, blue-ringed octopuses by morays. Pick a species, see who threatens it, choose your evasion tactic, and survive (or don\'t).'),
+
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '📊 Your survival record'),
+            h('div', { style: { display: 'flex', gap: 24, flexWrap: 'wrap' } },
+              h('div', null,
+                h('div', { style: { fontSize: 28, fontWeight: 900, color: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace' } }, (d.evasionEscapes || 0)),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Escapes')),
+              h('div', null,
+                h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fca5a5', fontFamily: 'ui-monospace, Menlo, monospace' } }, (d.evasionEncountersAttempted || 0)),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Predator encounters')))),
+
+          // Food web context callout
+          h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fb923c' }) },
+            h('div', { style: subheaderStyle() }, '🌐 Every cephalopod is somewhere in a food web'),
+            h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+              h('p', { style: { margin: '0 0 10px 0' } },
+                'There\'s no "apex cephalopod" — even the largest face predators. Giant Pacific octopuses are eaten by harbor seals, sea otters, lingcod, and sometimes by other (larger) giant Pacific octopuses. Giant squid + colossal squid are sperm whale prey — and the whale carries the scars to prove it.'),
+              h('p', { style: { margin: 0 } },
+                'Some species turn the tables. A 50kg giant Pacific octopus is documented eating small reef sharks (search "Octopus eats shark" — Bob Anderson 1992 footage). But the next year, a larger shark might eat THAT octopus. Predator/prey labels are size-relative + life-stage-relative.'))),
+
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '🐙 Pick a species to play (you\'re the cephalopod escaping)'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 } },
+              SPECIES.map(function(s) {
+                var groupColor = s.group === 'octopus' ? '#a78bfa' : s.group === 'squid' ? '#38bdf8' : s.group === 'cuttlefish' ? '#fbbf24' : '#86efac';
+                var predatorList = PREDATORS.filter(function(p) { return p.threatens.indexOf(s.id) !== -1; });
+                if (predatorList.length === 0) return null; // skip species with no listed predators
+                return h('button', { key: s.id,
+                  onClick: function() { setCL({ evasionSpeciesId: s.id, evasionPhase: 'plan', evasionPredatorId: null, evasionTacticId: null, evasionReactionMs: 0 }); awardXP(2); clAnnounce('Selected ' + s.name); },
+                  style: { padding: '12px 14px', textAlign: 'left',
+                    background: 'rgba(15,23,42,0.6)', color: '#fde68a',
+                    border: '1px solid rgba(100,116,139,0.3)', borderLeft: '4px solid ' + groupColor,
+                    borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer' } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 24, lineHeight: 1 } }, s.emoji),
+                    h('div', null,
+                      h('div', { style: { fontSize: 14, fontWeight: 800, color: '#c7d2fe' } }, s.name),
+                      h('div', { style: { fontSize: 10, fontStyle: 'italic', color: '#94a3b8', marginTop: 2 } }, s.scientific))),
+                  h('div', { style: { fontSize: 10, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginBottom: 4 } },
+                    'Threatened by ' + predatorList.length + ' predator' + (predatorList.length === 1 ? '' : 's')),
+                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
+                    predatorList.slice(0, 3).map(function(p) { return p.name; }).join(', ') + (predatorList.length > 3 ? ', + others' : '')));
+              })))
+        );
+      }
+
+      function renderEvasionPlan() {
+        var sp = SPECIES.find(function(x) { return x.id === d.evasionSpeciesId; });
+        if (!sp) { setCL({ evasionPhase: 'lobby' }); return null; }
+        var threats = PREDATORS.filter(function(p) { return p.threatens.indexOf(sp.id) !== -1; });
+        var availableTactics = EVASION_TACTICS.filter(function(t) { return t.species.indexOf(sp.id) !== -1; });
+        var canProceed = !!(d.evasionPredatorId && d.evasionTacticId);
+        return h('div', null,
+          panelHeader('🛡️ Plan your escape — ' + sp.emoji + ' ' + sp.name,
+            'Pick which predator you\'re escaping + which tactic you\'ll use. The judge will check whether your tactic\'s sensory profile matches the predator\'s sensory modality.'),
+
+          // Predator picker (filtered to species' actual threats)
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '🦈 Which predator?'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 } },
+              threats.map(function(p) {
+                var active = d.evasionPredatorId === p.id;
+                return h('button', { key: p.id,
+                  onClick: function() { setCL({ evasionPredatorId: p.id }); awardXP(1); },
+                  'aria-pressed': active ? 'true' : 'false',
+                  style: { padding: '10px 12px', textAlign: 'left',
+                    background: active ? 'rgba(220,38,38,0.18)' : 'rgba(15,23,42,0.5)',
+                    color: active ? '#fde68a' : '#cbd5e1',
+                    border: '1px solid ' + (active ? 'rgba(252,165,165,0.5)' : 'rgba(100,116,139,0.3)'),
+                    borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer' } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, p.emoji),
+                    h('div', { style: { fontWeight: 800, fontSize: 12, color: active ? '#fde68a' : '#e2e8f0' } }, p.name)),
+                  h('div', { style: { fontSize: 10, color: '#fb923c', marginBottom: 4 } },
+                    'Senses: ' + p.sensory.join(' · ')),
+                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, p.description));
+              }))),
+
+          // Tactic picker (filtered to what species can do)
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '⚔️ Which evasion tactic?'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 } },
+              availableTactics.map(function(t) {
+                var active = d.evasionTacticId === t.id;
+                return h('button', { key: t.id,
+                  onClick: function() { setCL({ evasionTacticId: t.id }); awardXP(1); },
+                  'aria-pressed': active ? 'true' : 'false',
+                  style: { padding: '10px 12px', textAlign: 'left',
+                    background: active ? 'rgba(34,197,94,0.18)' : 'rgba(15,23,42,0.5)',
+                    color: active ? '#fde68a' : '#cbd5e1',
+                    border: '1px solid ' + (active ? 'rgba(134,239,172,0.5)' : 'rgba(100,116,139,0.3)'),
+                    borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer' } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, t.emoji),
+                    h('div', { style: { fontWeight: 800, fontSize: 12, color: active ? '#fde68a' : '#e2e8f0' } }, t.name)),
+                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 4 } }, t.description),
+                  h('div', { style: { fontSize: 10, color: '#fca5a5', fontStyle: 'italic' } },
+                    '⚠️ Cost: ' + t.cost));
+              }))),
+
+          h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
+            h('button', { onClick: function() { if (canProceed) setCL({ evasionPhase: 'execute', evasionReactionMs: 0 }); },
+              disabled: !canProceed,
+              style: { padding: '12px 26px',
+                background: canProceed ? '#a78bfa' : 'rgba(100,116,139,0.3)',
+                color: canProceed ? '#1c1410' : '#94a3b8',
+                border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800,
+                cursor: canProceed ? 'pointer' : 'not-allowed' } },
+              '→ Execute escape'),
+            h('button', { onClick: function() { setCL({ evasionPhase: 'lobby' }); },
+              style: { padding: '12px 18px', background: 'transparent', color: '#cbd5e1',
+                border: '1px solid rgba(100,116,139,0.5)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' } },
+              '← Pick different species'))
+        );
+      }
+
+      function renderEvasionExecute() {
+        // Reaction-time minigame: press the button as fast as possible after the "GO" prompt.
+        // Faster reaction = better escape outcome.
+        var hasReacted = (d.evasionReactionMs || 0) > 0;
+        return h('div', null,
+          panelHeader('🛡️ Execute — reaction time matters',
+            'The predator is striking. Click the GO button below as fast as you can. Faster reaction = better escape. Real cephalopods react in 25-150 milliseconds depending on species.'),
+
+          h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', padding: 40 }) },
+            hasReacted ?
+              h('div', null,
+                h('div', { style: { fontSize: 12, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, 'Your reaction time'),
+                h('div', { style: { fontSize: 48, fontWeight: 900, color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1, marginBottom: 8 } },
+                  d.evasionReactionMs + ' ms'),
+                h('div', { style: { fontSize: 13, color: '#cbd5e1', marginBottom: 20 } },
+                  d.evasionReactionMs < 200 ? 'Lightning fast — cephalopod-grade reflexes.' :
+                  d.evasionReactionMs < 400 ? 'Quick. Above-average human reaction.' :
+                  d.evasionReactionMs < 700 ? 'Average reaction time.' :
+                  'Slow. Predator probably already had you.'),
+                h('button', { onClick: function() { runEvasionJudge(d.evasionReactionMs); },
+                  style: { padding: '12px 26px', background: '#a78bfa', color: '#1c1410',
+                    border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
+                  '→ See result'))
+              :
+              h('div', null,
+                h('div', { style: { fontSize: 64, marginBottom: 16 } }, '🚨'),
+                h('div', { style: { fontSize: 14, color: '#fca5a5', marginBottom: 18, lineHeight: 1.6 } },
+                  'The predator strikes. Click as fast as you can when ready.'),
+                h('button', {
+                  onClick: function() {
+                    // Start reaction-time clock. We'll show a "GO!" after random delay.
+                    var delayMs = 800 + Math.random() * 1500;
+                    var startedAt = Date.now() + delayMs;
+                    setCL({ _evasionGoAt: startedAt });
+                    setTimeout(function() {
+                      var rxStart = Date.now();
+                      function captureClick() {
+                        var rt = Date.now() - rxStart;
+                        setCL({ evasionReactionMs: rt });
+                        document.removeEventListener('click', captureClick);
+                      }
+                      document.addEventListener('click', captureClick);
+                      // Show GO via state
+                      setCL({ _evasionShowGo: true });
+                    }, delayMs);
+                  },
+                  style: { width: 200, padding: '24px', background: d._evasionShowGo ? '#22c55e' : '#dc2626',
+                    color: 'white', border: 'none', borderRadius: 12, fontSize: 24, fontWeight: 900, cursor: 'pointer',
+                    boxShadow: '0 6px 18px rgba(220,38,38,0.4)' } },
+                  d._evasionShowGo ? '✓ CLICK NOW!' : '⏳ Wait for GO...')))
+        );
+      }
+
+      function runEvasionJudge(reactionMs) {
+        var sp = SPECIES.find(function(x) { return x.id === d.evasionSpeciesId; });
+        var pred = PREDATORS.find(function(p) { return p.id === d.evasionPredatorId; });
+        var tac = EVASION_TACTICS.find(function(t) { return t.id === d.evasionTacticId; });
+        if (!sp || !pred || !tac) { setCL({ evasionPhase: 'lobby' }); return; }
+        // Sensory match check: tactic works against predator's sensory modalities?
+        var matched = pred.sensory.filter(function(s) { return tac.worksAgainst.indexOf(s) !== -1; }).length;
+        var conflict = pred.sensory.filter(function(s) { return tac.failsAgainst.indexOf(s) !== -1; }).length;
+        var tacticEffectiveness = matched - conflict;
+        // Reaction-time score
+        var reactionScore = reactionMs < 200 ? 30 : reactionMs < 400 ? 20 : reactionMs < 700 ? 10 : 0;
+        // Final outcome
+        var totalScore = tacticEffectiveness * 25 + reactionScore + (sp.intelligence * 1.2);
+        var escaped = totalScore > 30;
+        // Possible "escaped but lost an arm" intermediate outcome
+        var costlyEscape = escaped && tac.id === 'autotomy';
+        var notes = [];
+        // Sensory analysis
+        if (matched > 0 && conflict === 0) {
+          notes.push({ neg: false, label: '✓ Sensory match', detail: tac.name + ' targets ' + pred.name + '\'s primary senses (' + pred.sensory.join(' + ') + '). The defense was well-matched.' });
+        } else if (conflict > 0 && matched === 0) {
+          notes.push({ neg: true, label: '⚠️ Wrong tactic for this predator', detail: tac.name + ' doesn\'t fool ' + pred.name + '\'s senses (' + pred.sensory.join(' + ') + '). Real cephalopods would have died here.' });
+        } else {
+          notes.push({ neg: matched <= conflict, label: matched > conflict ? '✓ Tactic partly effective' : '~ Tactic mixed', detail: 'Some sensory match, some failure mode. Outcome was uncertain.' });
+        }
+        // Reaction-time analysis
+        notes.push({ neg: reactionScore < 10,
+          label: reactionScore >= 20 ? '✓ Fast reaction' : reactionScore >= 10 ? '~ Adequate reaction' : '⚠️ Slow reaction',
+          detail: 'Reaction ' + reactionMs + 'ms — ' + (reactionMs < 200 ? 'cephalopod-grade reflexes (real octopus is ~70-150ms).' : 'a real cephalopod would have moved faster.') });
+        // Species-tactic appropriateness
+        if (tac.species.indexOf(sp.id) === -1) {
+          notes.push({ neg: true, label: '⚠️ Tactic not available for this species', detail: 'Real ' + sp.name + ' doesn\'t use ' + tac.name + '. Picked anyway?' });
+        }
+        // Cost callout for autotomy
+        if (costlyEscape) {
+          notes.push({ neg: false, label: '⚠️ Autotomy cost', detail: 'You sacrificed an arm to escape. The arm reacts independently for ~1 hour. Regrowth takes 2-3 months. Costly but you\'re alive.' });
+        }
+        setCL(function(prior) {
+          return {
+            evasionPhase: 'result',
+            evasionResult: { escaped: escaped, costlyEscape: costlyEscape, notes: notes,
+              speciesName: sp.name, predatorName: pred.name, tacticName: tac.name,
+              reactionMs: reactionMs },
+            evasionEncountersAttempted: (prior.evasionEncountersAttempted || 0) + 1,
+            evasionEscapes: (prior.evasionEscapes || 0) + (escaped ? 1 : 0),
+            _evasionShowGo: false
+          };
+        });
+        if (escaped) awardXP(8);
+      }
+
+      function renderEvasionResult() {
+        var r = d.evasionResult;
+        if (!r) { setCL({ evasionPhase: 'lobby' }); return null; }
+        var escaped = r.escaped;
+        var costly = r.costlyEscape;
+        return h('div', null,
+          panelHeader('🛡️ Encounter result',
+            r.speciesName + ' vs ' + r.predatorName + ' — ' + r.tacticName +
+            (escaped ? (costly ? ' — escaped at a cost.' : ' — escaped.') : ' — caught.')),
+
+          h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', padding: 36,
+            background: escaped ? 'linear-gradient(135deg, rgba(34,197,94,0.18), rgba(15,23,42,0.6))'
+                                : 'linear-gradient(135deg, rgba(220,38,38,0.18), rgba(15,23,42,0.6))',
+            borderLeft: '4px solid ' + (escaped ? '#22c55e' : '#dc2626')
+          }) },
+            h('div', { 'aria-hidden': 'true', style: { fontSize: 72, lineHeight: 1, marginBottom: 8 } },
+              escaped ? (costly ? '🦑' : '🌫️') : '💀'),
+            h('div', { style: { fontSize: 24, fontWeight: 900, color: escaped ? '#86efac' : '#fca5a5', letterSpacing: '-0.01em', marginBottom: 8 } },
+              escaped ? (costly ? 'Survived (but lost an arm)' : 'Survived') : 'Predation event'),
+            h('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.6, maxWidth: 480, marginLeft: 'auto', marginRight: 'auto' } },
+              escaped ?
+                (costly ? 'You escaped, but autotomy is a real cost — 2-3 months of regrowth + temporary cognitive reduction.'
+                       : 'You escaped cleanly. In the real ocean, ~80% of cephalopod predator encounters end with the cephalopod escaping (most predators miss).') :
+                'You were caught. In the wild, this is the most common cause of cephalopod death — far more than the programmed-senescence cycle. Most cephalopods don\'t live to die of old age.')),
+
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '📋 Judge\'s notes'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              r.notes.map(function(n, i) {
+                return h('div', { key: i,
+                  style: { background: n.neg ? 'rgba(220,38,38,0.08)' : 'rgba(34,197,94,0.08)',
+                    border: '1px solid ' + (n.neg ? 'rgba(220,38,38,0.3)' : 'rgba(34,197,94,0.3)'),
+                    borderLeft: '4px solid ' + (n.neg ? '#dc2626' : '#22c55e'),
+                    padding: '10px 14px', borderRadius: 8 } },
+                  h('div', { style: { fontSize: 12, fontWeight: 700, color: n.neg ? '#fca5a5' : '#86efac', marginBottom: 4 } }, n.label),
+                  h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55 } }, n.detail));
+              }))),
+
+          h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
+            h('button', { onClick: function() { setCL({ evasionPhase: 'lobby', evasionResult: null, evasionReactionMs: 0 }); awardXP(2); },
+              style: { padding: '12px 24px', background: '#a78bfa', color: '#1c1410',
+                border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
+              '🔁 Try another encounter'),
+            h('button', { onClick: function() { setSection('hunt'); awardXP(1); },
+              style: { padding: '12px 24px', background: 'transparent', color: '#c7d2fe',
+                border: '1px solid rgba(167,139,250,0.4)', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' } },
+              '🎯 Switch to Hunter Sim'))
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════
+      // SECTION 5 — CAMOUFLAGE LAB (chromatophore biology deep dive)
       // ═══════════════════════════════════════════════════════
       function renderCamouflageLab() {
         var scene = d.camoScene || 'sand';
@@ -2957,6 +3385,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       var content;
       if (section === 'field') content = renderFieldGuide();
       else if (section === 'hunt') content = renderHuntSim();
+      else if (section === 'evasion') content = renderEvasionSim();
       else if (section === 'camo') content = renderCamouflageLab();
       else if (section === 'anatomy') content = renderBodyPlan();
       else if (section === 'time') content = renderThroughTime();
