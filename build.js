@@ -694,8 +694,13 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
-        name: 'NoteTakingTemplates',
+        name: 'NoteTakingTemplatesModule',
         filename: 'note_taking_templates_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AnchorChartsModule',
+        filename: 'anchor_charts_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];

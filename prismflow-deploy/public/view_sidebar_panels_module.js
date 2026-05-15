@@ -2268,6 +2268,44 @@ function NoteTakingPanel(props) {
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-violet-600" })
   ));
 }
+function AnchorChartPanel(props) {
+  const {
+    expandedTools,
+    handleGenerate,
+    hasSourceOrAnalysis,
+    isProcessing,
+    anchorChartType,
+    setAnchorChartType,
+    t
+  } = props;
+  if (!expandedTools || !expandedTools.includes("anchor-chart")) return null;
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-amber-50/50 flex flex-col gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("anchor_chart.type_label") || "Chart type"), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": t("common.selection") || "Selection",
+      "data-help-key": "anchor_chart_type",
+      value: anchorChartType || "reference",
+      onChange: (e) => setAnchorChartType(e.target.value),
+      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-amber-400 focus:ring focus:ring-amber-200 p-1"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "reference" }, t("anchor_chart.reference") || "Reference (features / norms / conventions)"),
+    /* @__PURE__ */ React.createElement("option", { value: "process" }, t("anchor_chart.process") || "Process (sequential steps)"),
+    /* @__PURE__ */ React.createElement("option", { value: "concept-map" }, t("anchor_chart.concept_map") || "Concept Map (parts of a whole)"),
+    /* @__PURE__ */ React.createElement("option", { value: "comparison" }, t("anchor_chart.comparison") || "Comparison (across categories)")
+  )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic leading-snug" }, t("anchor_chart.help") || "EL-style class anchor chart. AI drafts the structure + hand-drawn icons; edit anytime; open critique mode for peers to leave I notice / I wonder notes.")), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      "aria-label": t("common.generate") || "Generate",
+      "data-help-key": "anchor_chart_generate_button",
+      onClick: () => handleGenerate("anchor-chart"),
+      disabled: !hasSourceOrAnalysis || isProcessing,
+      "aria-busy": isProcessing,
+      className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+    },
+    /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-amber-700 transition-colors flex items-center gap-2" }, t("anchor_chart.generate") || "Generate anchor chart", " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
+    /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-amber-600" })
+  ));
+}
 function FaqPanel(props) {
   const {
     expandedTools,
@@ -2468,6 +2506,7 @@ window.AlloModules.ImagePanel = (typeof ImagePanel !== 'undefined') ? ImagePanel
 window.AlloModules.PersonaPanel = (typeof PersonaPanel !== 'undefined') ? PersonaPanel : null;
 window.AlloModules.OutlinePanel = (typeof OutlinePanel !== 'undefined') ? OutlinePanel : null;
 window.AlloModules.NoteTakingPanel = (typeof NoteTakingPanel !== 'undefined') ? NoteTakingPanel : null;
+window.AlloModules.AnchorChartPanel = (typeof AnchorChartPanel !== 'undefined') ? AnchorChartPanel : null;
 window.AlloModules.FaqPanel = (typeof FaqPanel !== 'undefined') ? FaqPanel : null;
 window.AlloModules.SentenceFramesPanel = (typeof SentenceFramesPanel !== 'undefined') ? SentenceFramesPanel : null;
 window.AlloModules.LessonPlanPanel = (typeof LessonPlanPanel !== 'undefined') ? LessonPlanPanel : null;
@@ -2475,5 +2514,5 @@ window.AlloModules.AnalysisPanel = (typeof AnalysisPanel !== 'undefined') ? Anal
 window.AlloModules.UiToolWordsoundsPanel = (typeof UiToolWordsoundsPanel !== 'undefined') ? UiToolWordsoundsPanel : null;
 window.AlloModules.ViewSidebarPanelsModule = true;
 window.AlloModules.SidebarPanels = true;  // satisfies loadModule('SidebarPanels', ...)
-console.log('[CDN] ViewSidebarPanelsModule loaded — 18 panels registered');
+console.log('[CDN] ViewSidebarPanelsModule loaded — 19 panels registered');
 })();

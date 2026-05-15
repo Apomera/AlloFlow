@@ -3863,6 +3863,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js');
     loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js');
     loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js');
+    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js');
+    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js');
+    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -3955,6 +3958,20 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_assessmentliteracy.js',
         'stem_lab/stem_tool_autorepair.js',
         'stem_lab/stem_tool_learning_lab.js',
+        // Catch-up batch (May 15 2026): tools that have files + tile catalog
+        // entries + _pluginOnlyTools flags but were never added to this
+        // loader. Without this list entry the plugin never registers and
+        // the fallback shows an infinite skeleton (registered: false) OR
+        // returns null (registered: true but not in _pluginOnlyTools).
+        // Aaron reported cephalopodLab + stewardshipHub; comm-based audit
+        // caught 5 more siblings: astronomy, bridgelab, kitchenlab,
+        // microbiology, raptorhunt.
+        'stem_lab/stem_tool_cephalopodlab.js',
+        'stem_lab/stem_tool_astronomy.js',
+        'stem_lab/stem_tool_bridgelab.js',
+        'stem_lab/stem_tool_kitchenlab.js',
+        'stem_lab/stem_tool_microbiology.js',
+        'stem_lab/stem_tool_raptorhunt.js',
       ];
       var selToolModules = [
         'sel_hub/sel_safety_layer.js', // load first so other SEL tools can hook the safety layer
@@ -5864,7 +5881,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     setPendingRole(null);
   };
   const handleToggleAllTools = () => {
-      const allToolIds = ['source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'note-taking', 'image', 'faq', 'sentence-frames', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'lesson-plan'];
+      const allToolIds = ['source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'note-taking', 'anchor-chart', 'image', 'faq', 'sentence-frames', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'lesson-plan'];
       const areAllExpanded = allToolIds.every(id => expandedTools.includes(id));
       if (areAllExpanded) {
           setExpandedTools([]);
@@ -9276,6 +9293,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // minimal monolith state needed to drive template-type selection and
   // editable updates on generatedContent.data.
   const [noteTakingTemplateType, setNoteTakingTemplateType] = useState('cornell-notes');
+  const [anchorChartType, setAnchorChartType] = useState('reference');
   const [showNotebook, setShowNotebook] = useState(false);
   const handleNoteUpdate = useCallback((key, value) => {
     setGeneratedContent(prev => {
@@ -18431,6 +18449,7 @@ Return ONLY valid JSON in this format:
         faqCustomInstructions,
         outlineCustomInstructions,
         noteTakingTemplateType,
+        anchorChartType,
         visualCustomInstructions,
         lessonCustomAdditions,
         timelineTopic,
@@ -21682,6 +21701,23 @@ Return ONLY valid JSON in this format:
           expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, noteTakingTemplateType, setNoteTakingTemplateType, t
                 })}
             </div>
+            <div style={{display: isGuidedToolVisible('anchor-chart') ? undefined : 'none'}} id="tour-tool-anchor-chart" data-help-key="tool_anchor_chart" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
+                ${activeView === 'anchor-chart' ? 'border-amber-600 shadow-xl shadow-amber-500/20' : 'border-slate-200 hover:border-amber-200 shadow-lg shadow-amber-500/10'}
+              `}>
+                <button
+                    aria-label={t('common.toggle_anchor_chart') || 'Toggle anchor chart'}
+                    data-help-key="tool_anchor_chart"
+                    aria-expanded={expandedTools.includes('anchor-chart')} onClick={() => toggleTool('anchor-chart')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-amber-50 transition-colors"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><FileText size={16}/> {t('sidebar.tool_anchor_chart') || 'Anchor Chart'}</div>
+                  {expandedTools.includes('anchor-chart') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+                {/* ── AnchorChartPanel lives in view_sidebar_panels_module.js (CDN) ── */}
+                {expandedTools.includes('anchor-chart') && window.AlloModules && window.AlloModules.AnchorChartPanel && React.createElement(window.AlloModules.AnchorChartPanel, {
+          expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, anchorChartType, setAnchorChartType, t
+                })}
+            </div>
             <div style={{display: isGuidedToolVisible('image') ? undefined : 'none'}} id="tour-tool-visual" data-help-key="tool_visual" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
                 ${activeView === 'image' ? 'border-purple-600 shadow-xl shadow-purple-500/20' : 'border-slate-200 hover:border-purple-200 shadow-lg shadow-purple-500/10'}
               `}>
@@ -22904,6 +22940,10 @@ Return ONLY valid JSON in this format:
                 {activeView === 'note-taking' && window.AlloModules && window.AlloModules.NoteTakingView && React.createElement(window.AlloModules.NoteTakingView, {
                     t, generatedContent, isTeacherMode, isProcessing,
                     handleNoteUpdate, handleGenerate
+                })}
+                {activeView === 'anchor-chart' && window.AlloModules && window.AlloModules.AnchorChartView && React.createElement(window.AlloModules.AnchorChartView, {
+                    t, generatedContent, isTeacherMode, isProcessing,
+                    handleNoteUpdate, callImagen
                 })}
                 {activeView === 'image' && window.AlloModules && window.AlloModules.ImageView && React.createElement(window.AlloModules.ImageView, {
                     t, leveledTextLanguage, fillInTheBlank, generatedContent,

@@ -3857,6 +3857,69 @@ Return ONLY JSON:
               content = { templateType: 'cornell-notes', title: sourceTopic || 'Notes', cues: [], notes: [], summary: '', lessonRef };
           }
           metaInfo = `${effectiveGrade} - ${templateType}`;
+      } else if (type === 'anchor-chart') {
+          // Anchor Charts — EL Education classroom-staple visual reference.
+          // Hand-drawn aesthetic. Rendering lives in anchor_charts_module.js.
+          setIsProcessing(true);
+          if (switchView || !generatedContent) setActiveView('anchor-chart');
+          const chartType = (configOverride && configOverride.chartType) || (deps.anchorChartType) || 'reference';
+          const lessonRef = {
+              sourceTextSnippet: (textToProcess || '').substring(0, 200),
+              generatedAt: new Date().toISOString(),
+              gradeLevel: effectiveGrade,
+              language: effectiveLanguage,
+          };
+          const chartTypeGuide = {
+              process: 'a multi-step process (e.g., the writing process, the scientific method). Sections should be sequential steps. Use 4-6 sections.',
+              'concept-map': 'a concept and its components (e.g., parts of a cell, branches of government). Sections should be parallel sub-parts. Use 3-6 sections.',
+              reference: 'a reference list of features, conventions, or norms (e.g., features of a good argument, classroom norms). Sections should be parallel categories. Use 3-6 sections.',
+              comparison: 'a comparison across two or more categories (e.g., similes vs metaphors, mitosis vs meiosis). Sections should be the categories being compared. Use 2-4 sections.',
+          };
+          const chartTypeHint = chartTypeGuide[chartType] || chartTypeGuide.reference;
+          const prompt = `
+              Design a classroom ANCHOR CHART for a ${effectiveGrade} student. Topic: "${sourceTopic || textToProcess.substring(0, 200) || 'reference'}". Chart type: ${chartType} — ${chartTypeHint}.
+
+              An anchor chart is a poster-sized visual reference co-created in class. It should be CONCISE (each bullet 3-10 words), MEMORABLE (use language a student would actually use), and ORGANIZED (clear sections).
+
+              For each section, also propose a simple iconPrompt describing a SIMPLE icon (a single concrete object, no text/letters) that represents the section visually — this will be drawn in a hand-drawn marker style.
+
+              Source text for context (may be empty): "${(textToProcess || '').substring(0, 2500)}"
+
+              Return ONLY a JSON object with this exact shape:
+              {
+                "title": "Short, memorable title (3-6 words, can be all-caps if punchy)",
+                "sections": [
+                  {
+                    "label": "SECTION LABEL (1-3 words, often a verb or category)",
+                    "bullets": ["Short bullet 1", "Short bullet 2", "Short bullet 3"],
+                    "iconPrompt": "simple object that represents this section"
+                  }
+                ]
+              }
+          `;
+          let scaffolded = { title: sourceTopic || 'Anchor Chart', sections: [] };
+          try {
+              const result = await callGemini(prompt, true);
+              scaffolded = JSON.parse(cleanJson(result));
+          } catch (parseErr) {
+              warnLog('Anchor chart scaffold parse failed:', parseErr);
+          }
+          const rawSections = Array.isArray(scaffolded.sections) ? scaffolded.sections : [];
+          const sections = rawSections.slice(0, 6).map((s, i) => ({
+              id: `sec-${Date.now()}-${i}`,
+              label: String((s && s.label) || `Section ${i + 1}`),
+              bullets: Array.isArray(s && s.bullets) ? s.bullets.map(b => String(b || '')) : [],
+              iconPrompt: String((s && s.iconPrompt) || ''),
+              iconUrl: '',
+          }));
+          content = {
+              title: scaffolded.title || sourceTopic || 'Anchor Chart',
+              chartType,
+              sections,
+              annotations: [],
+              lessonRef,
+          };
+          metaInfo = `${effectiveGrade} - ${chartType}`;
       }
       let itemTitle = getDefaultTitle(type);
       if (type === 'analysis') {

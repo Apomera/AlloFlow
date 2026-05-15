@@ -2488,6 +2488,54 @@ function NoteTakingPanel(props) {
   );
 }
 
+// ── AnchorChartPanel: EL-style class anchor chart generator ──
+// Renders inside expandedTools.includes('anchor-chart'). Teacher picks a chart
+// type (Process / Concept Map / Reference / Comparison); AI scaffolds the
+// initial structure; renderer (anchor_charts_module.js) handles edits + icons
+// + critique overlay.
+function AnchorChartPanel(props) {
+  const {
+    expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing,
+    anchorChartType, setAnchorChartType, t
+  } = props;
+  if (!expandedTools || !expandedTools.includes('anchor-chart')) return null;
+  return (
+    <div className="animate-in slide-in-from-top-2 duration-200">
+      <div className="p-3 border-b border-slate-100 bg-amber-50/50 flex flex-col gap-3">
+        <div>
+          <label className="block text-xs text-slate-600 mb-1 font-medium">{t('anchor_chart.type_label') || 'Chart type'}</label>
+          <select
+            aria-label={t('common.selection') || 'Selection'}
+            data-help-key="anchor_chart_type"
+            value={anchorChartType || 'reference'}
+            onChange={(e) => setAnchorChartType(e.target.value)}
+            className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-amber-400 focus:ring focus:ring-amber-200 p-1"
+          >
+            <option value="reference">{t('anchor_chart.reference') || 'Reference (features / norms / conventions)'}</option>
+            <option value="process">{t('anchor_chart.process') || 'Process (sequential steps)'}</option>
+            <option value="concept-map">{t('anchor_chart.concept_map') || 'Concept Map (parts of a whole)'}</option>
+            <option value="comparison">{t('anchor_chart.comparison') || 'Comparison (across categories)'}</option>
+          </select>
+        </div>
+        <p className="text-[11px] text-slate-500 italic leading-snug">
+          {t('anchor_chart.help') || "EL-style class anchor chart. AI drafts the structure + hand-drawn icons; edit anytime; open critique mode for peers to leave I notice / I wonder notes."}
+        </p>
+      </div>
+      <button
+        aria-label={t('common.generate') || 'Generate'}
+        data-help-key="anchor_chart_generate_button"
+        onClick={() => handleGenerate('anchor-chart')}
+        disabled={!hasSourceOrAnalysis || isProcessing}
+        aria-busy={isProcessing}
+        className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <span className="text-sm text-slate-600 group-hover:text-amber-700 transition-colors flex items-center gap-2">{t('anchor_chart.generate') || 'Generate anchor chart'} <Sparkles size={14} className="text-yellow-600"/></span>
+        <ArrowRight size={16} className="text-slate-600 group-hover:text-amber-600"/>
+      </button>
+    </div>
+  );
+}
+
 // ── FaqPanel: expandedTools.includes('faq') panel from L23062-L23101 ──
 function FaqPanel(props) {
   const {

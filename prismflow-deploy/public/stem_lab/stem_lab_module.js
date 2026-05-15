@@ -4467,6 +4467,10 @@
             cephalopodLab: true,
             statsLab: true,
             learningLab: true,
+            // Added May 15 2026 — was registering successfully but missing
+            // from this map caused the fallback at line ~4489 to return
+            // null, so the user saw a blank tile content area.
+            stewardshipHub: true,
             llmLiteracy: true,
             assessmentLiteracy: true,
             musicSynth: true,

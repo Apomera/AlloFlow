@@ -93,6 +93,7 @@ window.AlloModules.ImagePanel = (typeof ImagePanel !== 'undefined') ? ImagePanel
 window.AlloModules.PersonaPanel = (typeof PersonaPanel !== 'undefined') ? PersonaPanel : null;
 window.AlloModules.OutlinePanel = (typeof OutlinePanel !== 'undefined') ? OutlinePanel : null;
 window.AlloModules.NoteTakingPanel = (typeof NoteTakingPanel !== 'undefined') ? NoteTakingPanel : null;
+window.AlloModules.AnchorChartPanel = (typeof AnchorChartPanel !== 'undefined') ? AnchorChartPanel : null;
 window.AlloModules.FaqPanel = (typeof FaqPanel !== 'undefined') ? FaqPanel : null;
 window.AlloModules.SentenceFramesPanel = (typeof SentenceFramesPanel !== 'undefined') ? SentenceFramesPanel : null;
 window.AlloModules.LessonPlanPanel = (typeof LessonPlanPanel !== 'undefined') ? LessonPlanPanel : null;
@@ -100,7 +101,7 @@ window.AlloModules.AnalysisPanel = (typeof AnalysisPanel !== 'undefined') ? Anal
 window.AlloModules.UiToolWordsoundsPanel = (typeof UiToolWordsoundsPanel !== 'undefined') ? UiToolWordsoundsPanel : null;
 window.AlloModules.ViewSidebarPanelsModule = true;
 window.AlloModules.SidebarPanels = true;  // satisfies loadModule('SidebarPanels', ...)
-console.log('[CDN] ViewSidebarPanelsModule loaded — 18 panels registered');
+console.log('[CDN] ViewSidebarPanelsModule loaded — 19 panels registered');
 })();
 `;
 
