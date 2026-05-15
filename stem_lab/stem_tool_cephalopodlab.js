@@ -433,6 +433,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       compView: 'matrix',                  // 'matrix' | 'animal' | 'dimension' | 'interpretation'
       compAnimal: 'cephalopod',
       compDimension: 'tooluse',
+      // Day in the Life (Hard Mode) state — integrated hunter/hunted day
+      dayActive: false,
+      daySpeciesId: null,
+      dayEncountersDone: 0,
+      dayCalories: 100,
+      dayHealth: 100,
+      dayArmsLost: 0,
+      dayCurrentEncounter: null,
+      dayLog: [],
+      dayEnded: null,                      // null | 'survived' | 'caught' | 'starved' | 'killed'
+      dayBests: {},                        // { speciesId: { bestEncountersSurvived, daysSurvived } }
+      dayTotalDaysPlayed: 0,
       // Evasion Sim state
       evasionPhase: 'lobby',               // 'lobby' | 'plan' | 'execute' | 'result'
       evasionSpeciesId: null,
@@ -536,6 +548,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           { id: 'field', label: 'Field Guide', icon: '📖' },
           { id: 'hunt', label: 'Hunter Sim', icon: '🎯' },
           { id: 'evasion', label: 'Evasion Sim', icon: '🛡️' },
+          { id: 'day', label: 'Day in the Life', icon: '🌅' },
           { id: 'camo', label: 'Camouflage', icon: '🎨' },
           { id: 'anatomy', label: 'Body Plan', icon: '🧠' },
           { id: 'time', label: 'Through Time', icon: '🕰️' },
@@ -558,7 +571,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: '#c7d2fe', letterSpacing: '-0.01em' } }, 'Cephalopod Lab'),
                 h('div', { style: { fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.12)',
                     border: '1px solid rgba(167,139,250,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                  '13 sections')),
+                  '14 sections')),
               h('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 4, lineHeight: 1.5 } },
                 'The biology of intelligent invertebrates. Octopuses + squid + cuttlefish + nautilus — chromatophore camouflage, distributed neural intelligence, hunting strategy, 500M-year evolution.'))));
       }
@@ -1614,7 +1627,461 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       }
 
       // ═══════════════════════════════════════════════════════
-      // SECTION 5 — CAMOUFLAGE LAB (chromatophore biology deep dive)
+      // SECTION 5 — DAY IN THE LIFE (Hard Mode — hunter AND hunted)
+      // ═══════════════════════════════════════════════════════
+      // Procedurally-generated 10-encounter day. Mixes hunting +
+      // predator threats + environmental events + social moments —
+      // recovers the integrated lived reality the Hunter/Evasion
+      // bifurcation loses.
+      var ENCOUNTER_TEMPLATES = [
+        // ─── HUNTING OPPORTUNITIES ───
+        { type: 'hunt', title: 'A small crab forages in a crevice', emoji: '🦀',
+          species: ['commonOcto', 'mimicOcto', 'giantPac', 'coconut', 'cuttlefish', 'dayOcto', 'blueRing'],
+          detail: 'You spot a juvenile rock crab probing among the stones. Hunger is real — your stomach is already 60% empty.',
+          options: [
+            { id: 'ambush', label: '🎭 Ambush — slow stalk + strike', calorieDelta: 60, healthDelta: 0, armDelta: 0, msg: 'Caught the crab. Beak through the shell joint. +60 calories.', failChance: 0.15, failMsg: 'Misjudged the strike — crab darted into a deeper crevice. -5 calories (effort).' },
+            { id: 'jet', label: '🚀 Jet pounce', calorieDelta: 50, healthDelta: 0, armDelta: 0, msg: 'Caught it via jet propulsion. +50 calories.', failChance: 0.35, failMsg: 'Crab heard the water surge + escaped. -10 calories from the burst.' },
+            { id: 'ignore', label: '😐 Move on — not hungry enough', calorieDelta: 0, healthDelta: 0, armDelta: 0, msg: 'Saved the energy. No gain, no loss.', failChance: 0 } ] },
+        { type: 'hunt', title: 'A school of fish swims overhead', emoji: '🐟',
+          species: ['humboldt', 'cuttlefish', 'giantSquid', 'firefly'],
+          detail: 'A school of silversides passes through your zone. Fast, but tightly packed — a coordinated strike could land you a meal.',
+          options: [
+            { id: 'jet', label: '🚀 Jet-strike from below', calorieDelta: 80, healthDelta: 0, armDelta: 0, msg: 'Caught a fish on the strike. +80 calories.', failChance: 0.4, failMsg: 'School fragmented before you reached them. -15 calories from the chase.' },
+            { id: 'hypnotic', label: '🌈 Hypnotic display (cuttlefish only)', calorieDelta: 100, healthDelta: 0, armDelta: 0, msg: 'Passing-cloud display mesmerized one fish long enough to grab. +100 calories.', failChance: 0.5, failMsg: 'Display didn\'t hold the fish\'s attention — they\'re wary today. -10 calories.' },
+            { id: 'ignore', label: '😐 Let them pass', calorieDelta: 0, healthDelta: 0, armDelta: 0, msg: 'Saved the energy for a more reliable opportunity.', failChance: 0 } ] },
+        { type: 'hunt', title: 'A clam half-buried in the sand', emoji: '🦪',
+          species: ['commonOcto', 'giantPac', 'mimicOcto', 'coconut'],
+          detail: 'The clam is barely visible — just a slight ridge in the substrate. Slow + reliable food source if you commit to drilling.',
+          options: [
+            { id: 'drill', label: '🦷 Drill the shell (radula work, slow)', calorieDelta: 45, healthDelta: -3, armDelta: 0, msg: 'Spent 30 minutes drilling but got the clam. +45 cal, but tiring (-3 health).', failChance: 0.05 },
+            { id: 'ignore', label: '😐 Not worth the effort right now', calorieDelta: 0, healthDelta: 0, armDelta: 0, msg: 'Moved on. Will reconsider if hungrier later.', failChance: 0 } ] },
+        { type: 'hunt', title: 'Marine snow drifts past', emoji: '❄️',
+          species: ['vampireSquid', 'dumbo'],
+          detail: 'A steady drift of organic particles — your normal food source. Filter feeding is what you\'re built for.',
+          options: [
+            { id: 'filter', label: '🌫️ Spread arms + filter', calorieDelta: 20, healthDelta: 0, armDelta: 0, msg: 'Caught a handful of marine snow. Low-cal but reliable. +20.', failChance: 0.05 } ] },
+        { type: 'hunt', title: 'Smaller octopus hatchlings drift past', emoji: '🐙',
+          species: ['commonOcto', 'giantPac', 'humboldt'],
+          detail: 'A clutch of paralarvae from another octopus — easy protein, but they\'re your own kind. Cephalopod cannibalism is normal in the wild.',
+          options: [
+            { id: 'eat', label: '🍽️ Cannibalize — it\'s normal here', calorieDelta: 70, healthDelta: 0, armDelta: 0, msg: 'Caught + ate several paralarvae. Cephalopods don\'t form sentimental bonds. +70 cal.', failChance: 0.1 },
+            { id: 'ignore', label: '😐 Let them pass', calorieDelta: 0, healthDelta: -2, armDelta: 0, msg: 'Moved on, getting hungrier (-2 health).', failChance: 0 } ] },
+        { type: 'hunt', title: 'Cooperative hunt opportunity — a grouper signals interest', emoji: '🤝',
+          species: ['dayOcto'],
+          detail: 'A peacock grouper hovers nearby, fixing you with a meaningful stare. In your species, this is the recognized invitation to cooperative hunt — you flush prey from crevices, the fish ambushes escapees, both eat.',
+          options: [
+            { id: 'cooperate', label: '🤝 Accept the cooperation', calorieDelta: 70, healthDelta: 0, armDelta: 0, msg: 'Flushed shrimp from coral; grouper caught half + you got half. +70 cal. The fish nuzzles in thanks (or accountability).', failChance: 0.15 },
+            { id: 'solo', label: '🐙 Hunt alone instead', calorieDelta: 35, healthDelta: 0, armDelta: 0, msg: 'Solo run — less efficient but no shared prey. +35 cal.', failChance: 0.3 } ] },
+
+        // ─── PREDATOR ENCOUNTERS ───
+        { type: 'predator', title: 'A reef shark patrols nearby', emoji: '🦈',
+          species: ['commonOcto', 'mimicOcto', 'dayOcto', 'cuttlefish', 'humboldt', 'firefly', 'bobtail', 'coconut'],
+          detail: 'Visual + electroreception sensors hunting. It hasn\'t spotted you yet, but it\'s close — within 5 meters.',
+          options: [
+            { id: 'freeze', label: '🎭 Camouflage + freeze', calorieDelta: -3, healthDelta: 0, armDelta: 0, msg: 'Held still + matched substrate. Shark passed without noticing. -3 cal (the chromatophore burst).', failChance: 0.2, failMsg: 'Shark spotted you mid-color-change. Bit your mantle (-25 health).', failHealthDelta: -25 },
+            { id: 'ink', label: '🌫️ Ink + flee', calorieDelta: -10, healthDelta: 0, armDelta: 0, msg: 'Discharged ink + jet-fled. Lost the shark. -10 cal but alive.', failChance: 0.1, failMsg: 'Shark followed your trail anyway. -20 health from a grazing bite.', failHealthDelta: -20 },
+            { id: 'mimic', label: '🎭 Mimicry (mimic octopus only — pose as sea snake)', calorieDelta: -5, healthDelta: 0, armDelta: 0, msg: 'Shifted into sea-snake pose. Shark veered away (sea snakes are venomous). -5 cal.', failChance: 0.1 } ] },
+        { type: 'predator', title: 'A moray eel emerges from a crevice', emoji: '🐍',
+          species: ['commonOcto', 'mimicOcto', 'coconut', 'dayOcto', 'blueRing', 'bobtail'],
+          detail: 'It saw you. You\'re in arm-reach of its strike radius. Chemosense + tactile hunter — camouflage is useless now.',
+          options: [
+            { id: 'autotomy', label: '✂️ Autotomy — sacrifice an arm', calorieDelta: -5, healthDelta: -10, armDelta: -1, msg: 'Detached an arm — it wriggles, distracting the eel. You escaped. Arm will regrow in 2-3 months. -1 arm.', failChance: 0.1, failMsg: 'Eel ignored the arm + struck you (-30 health).', failHealthDelta: -30 },
+            { id: 'jet', label: '🚀 Jet escape', calorieDelta: -8, healthDelta: 0, armDelta: 0, msg: 'Explosive jet — eel struck where you USED to be. -8 cal.', failChance: 0.3, failMsg: 'Eel anticipated the jet direction. Bit through your mantle (-35 health).', failHealthDelta: -35 },
+            { id: 'venom', label: '☠️ Venom counter-strike (blue-ringed only)', calorieDelta: -2, healthDelta: 0, armDelta: 0, msg: 'Flashed warning rings + bit. Eel paralyzed within seconds. You\'re alive. -2 cal.', failChance: 0.05 } ] },
+        { type: 'predator', title: 'A sea otter dives down through the kelp', emoji: '🦦',
+          species: ['giantPac', 'commonOcto'],
+          detail: 'Otters are persistent + intelligent. It already knows there\'s octopus in this area. It will dive repeatedly + use its hands to pry open hiding spots.',
+          options: [
+            { id: 'ink-jet', label: '🌫️ Ink + jet away', calorieDelta: -12, healthDelta: 0, armDelta: 0, msg: 'Inked the water + jetted to a different reef section. Otter lost the trail. -12 cal.', failChance: 0.25, failMsg: 'Otter chased through the ink + caught a tentacle (-15 health, lost an arm).', failHealthDelta: -15, failArmDelta: -1 },
+            { id: 'hideout', label: '🕳️ Crawl into a deep crevice', calorieDelta: -3, healthDelta: 0, armDelta: 0, msg: 'Wedged into a narrow crevice — otter can\'t reach. Wait 20 minutes + emerge. -3 cal.', failChance: 0.45, failMsg: 'Otter pried with its hands + extracted you (-40 health).', failHealthDelta: -40 } ] },
+        { type: 'predator', title: 'Dolphin pod overhead — echolocation pinging closer', emoji: '🐬',
+          species: ['humboldt', 'cuttlefish', 'commonOcto', 'firefly'],
+          detail: 'Active sonar means ink is useless. Camouflage is useless. They know exactly where you are.',
+          options: [
+            { id: 'depth', label: '⬇️ Dive deep — break their depth limit', calorieDelta: -15, healthDelta: 0, armDelta: 0, msg: 'Sprinted down 200m. Dolphins can\'t follow — they need to surface for air. -15 cal.', failChance: 0.15, failMsg: 'A young dolphin matched the dive. Caught you (-30 health).', failHealthDelta: -30 },
+            { id: 'jet-side', label: '🚀 Jet sideways at speed', calorieDelta: -18, healthDelta: 0, armDelta: 0, msg: 'Fast lateral jet broke the pod\'s formation. Got away. -18 cal.', failChance: 0.4, failMsg: 'Pod coordinated; another dolphin intercepted (-25 health).', failHealthDelta: -25 } ] },
+        { type: 'predator', title: 'A sperm whale\'s sonar pings the deep', emoji: '🐋',
+          species: ['giantSquid', 'colossal', 'humboldt'],
+          detail: 'Sperm whales dive to 2000m to hunt giant + colossal squid. Their sonar penetrates the dark + the depth + the ink. This is the apex threat your species faces.',
+          options: [
+            { id: 'depth-deeper', label: '⬇️ Descend even deeper', calorieDelta: -20, healthDelta: 0, armDelta: 0, msg: 'Pushed below 2500m. Whale gave up + surfaced. -20 cal.', failChance: 0.25, failMsg: 'Whale stayed with you. Crushing bite (-50 health).', failHealthDelta: -50 },
+            { id: 'tentacle-fight', label: '🦑 Fight back — wrap the whale', calorieDelta: -25, healthDelta: -20, armDelta: 0, msg: 'Wrapped the whale\'s head with hooked tentacles. It surfaced + tried to scrape you off. You escaped at the cost of injury (-20 health).', failChance: 0.6, failMsg: 'Whale shook you off + bit you in half (-100 health = lethal).', failHealthDelta: -100 } ] },
+        { type: 'predator', title: 'A larger octopus claims this territory', emoji: '🐙',
+          species: ['commonOcto', 'mimicOcto', 'coconut', 'blueRing', 'bobtail', 'dayOcto'],
+          detail: 'A larger member of your species — or a larger species entirely. Cephalopod cannibalism is normal. The bigger animal usually wins.',
+          options: [
+            { id: 'retreat', label: '🏃 Back away slowly', calorieDelta: -5, healthDelta: 0, armDelta: 0, msg: 'Avoided confrontation. Found a different territory. -5 cal.', failChance: 0.1 },
+            { id: 'venom', label: '☠️ Venom strike (blue-ringed only)', calorieDelta: -3, healthDelta: 0, armDelta: 0, msg: 'Flashed rings + bit. Larger octopus is paralyzed + dying. Territory taken. -3 cal.', failChance: 0.1 },
+            { id: 'fight', label: '⚔️ Fight for territory', calorieDelta: -15, healthDelta: -25, armDelta: 0, msg: 'Won the fight but bloodied. -25 health.', failChance: 0.55, failMsg: 'Lost the fight + an arm (-40 health, -1 arm).', failHealthDelta: -40, failArmDelta: -1 } ] },
+
+        // ─── ENVIRONMENTAL ───
+        { type: 'environment', title: 'Low tide — water is receding', emoji: '🌅',
+          species: ['commonOcto', 'mimicOcto', 'coconut', 'blueRing', 'dayOcto'],
+          detail: 'Low tide leaves you exposed. Birds + crabs can reach you. Need to find shelter or move with the water.',
+          options: [
+            { id: 'shelter', label: '🕳️ Wedge into a deep crevice', calorieDelta: -4, healthDelta: 0, armDelta: 0, msg: 'Found a safe pocket. Wait it out. -4 cal.', failChance: 0.05 },
+            { id: 'migrate', label: '🌊 Move with the receding water', calorieDelta: -10, healthDelta: 0, armDelta: 0, msg: 'Followed deeper water. -10 cal (effort).', failChance: 0.1 } ] },
+        { type: 'environment', title: 'A storm churns the water', emoji: '⛈️',
+          species: ['commonOcto', 'mimicOcto', 'coconut', 'cuttlefish', 'dayOcto', 'blueRing', 'bobtail', 'firefly'],
+          detail: 'Storm surge + sediment fills the water. Visibility near zero. Predators can\'t hunt — but neither can you. Rest mode.',
+          options: [
+            { id: 'rest', label: '😴 Den up + rest', calorieDelta: -2, healthDelta: 5, armDelta: 0, msg: 'Sheltered in den. Slight recovery (+5 health). -2 cal.', failChance: 0.05 } ] },
+        { type: 'environment', title: 'A current pushes you off-course', emoji: '🌊',
+          species: ['commonOcto', 'humboldt', 'giantSquid', 'cuttlefish', 'mimicOcto'],
+          detail: 'Strong current — you can either fight it (expensive) or drift with it (uncertain destination).',
+          options: [
+            { id: 'fight', label: '🚀 Jet against the current', calorieDelta: -18, healthDelta: 0, armDelta: 0, msg: 'Held your position. -18 cal but kept your territory.', failChance: 0.1 },
+            { id: 'drift', label: '🌊 Drift with it', calorieDelta: -3, healthDelta: 0, armDelta: 0, msg: 'Landed in a new area — might be opportunity, might be danger. -3 cal.', failChance: 0.2, failMsg: 'Drifted into a more dangerous neighborhood (-10 health).', failHealthDelta: -10 } ] },
+        { type: 'environment', title: 'You find an empty den with good cover', emoji: '🕳️',
+          species: ['commonOcto', 'mimicOcto', 'coconut', 'blueRing', 'dayOcto', 'giantPac'],
+          detail: 'An abandoned crevice with the right size for your body. Could be a safe rest spot. Smells okay (no predator scent).',
+          options: [
+            { id: 'rest', label: '😴 Den up + rest', calorieDelta: -1, healthDelta: 8, armDelta: 0, msg: 'Resting in safety. +8 health, -1 cal.', failChance: 0.03 },
+            { id: 'skip', label: '🐙 Keep exploring', calorieDelta: 0, healthDelta: 0, armDelta: 0, msg: 'Moved on, looking for opportunity.', failChance: 0 } ] },
+
+        // ─── SOCIAL ───
+        { type: 'social', title: 'A potential mate signals nearby', emoji: '💕',
+          species: ['commonOcto', 'mimicOcto', 'cuttlefish', 'dayOcto', 'giantPac'],
+          detail: 'A receptive female (or male, depending on your sex) displays mating colors. In your species, mating triggers the optic gland senescence cascade — you\'ll die within weeks. But the genes get passed on.',
+          options: [
+            { id: 'mate', label: '💕 Mate — accept the death sentence', calorieDelta: -20, healthDelta: -10, armDelta: 0, msg: 'Successfully mated. Optic gland will trigger senescence in 2-4 weeks. -20 cal + injury (-10 health) from coupling.', failChance: 0.15, failMsg: 'Rejected by the partner (or eaten — sexual cannibalism happens). -25 health.', failHealthDelta: -25 },
+            { id: 'pass', label: '🐙 Pass — not ready', calorieDelta: 0, healthDelta: 0, armDelta: 0, msg: 'Moved on. Will have more chances if you live long enough.', failChance: 0 } ] },
+        { type: 'social', title: 'A juvenile of your species watches from a distance', emoji: '🐙',
+          species: ['commonOcto', 'mimicOcto', 'dayOcto'],
+          detail: 'A smaller, younger cephalopod. Could be food (cannibalism is normal) or could be your own offspring (low probability — most octopuses don\'t know their parents). Hard to tell.',
+          options: [
+            { id: 'eat', label: '🍽️ Eat — instinct says yes', calorieDelta: 50, healthDelta: 0, armDelta: 0, msg: 'Caught + consumed it. +50 cal. No sentimental attachment to conspecifics.', failChance: 0.2, failMsg: 'It escaped into a crevice. -8 cal effort.' },
+            { id: 'ignore', label: '😐 Leave it alone', calorieDelta: 0, healthDelta: 0, armDelta: 0, msg: 'Moved on. The juvenile continues its own day.', failChance: 0 } ] }
+      ];
+
+      function getApplicableEncounters(speciesId) {
+        return ENCOUNTER_TEMPLATES.filter(function(t) { return t.species.indexOf(speciesId) !== -1; });
+      }
+
+      function generateEncounter(speciesId) {
+        var pool = getApplicableEncounters(speciesId);
+        if (pool.length === 0) return null;
+        // Bias slightly toward hunting (50%) vs predator (30%) vs environment (15%) vs social (5%)
+        var huntings = pool.filter(function(t) { return t.type === 'hunt'; });
+        var predators = pool.filter(function(t) { return t.type === 'predator'; });
+        var environments = pool.filter(function(t) { return t.type === 'environment'; });
+        var socials = pool.filter(function(t) { return t.type === 'social'; });
+        var r = Math.random();
+        var chosen;
+        if (r < 0.5 && huntings.length > 0) chosen = huntings[Math.floor(Math.random() * huntings.length)];
+        else if (r < 0.8 && predators.length > 0) chosen = predators[Math.floor(Math.random() * predators.length)];
+        else if (r < 0.95 && environments.length > 0) chosen = environments[Math.floor(Math.random() * environments.length)];
+        else if (socials.length > 0) chosen = socials[Math.floor(Math.random() * socials.length)];
+        else chosen = pool[Math.floor(Math.random() * pool.length)];
+        return chosen;
+      }
+
+      function startDay(speciesId) {
+        var enc = generateEncounter(speciesId);
+        setCL({
+          dayActive: true,
+          daySpeciesId: speciesId,
+          dayEncountersDone: 0,
+          dayCalories: 100,
+          dayHealth: 100,
+          dayArmsLost: 0,
+          dayCurrentEncounter: enc,
+          dayLog: [],
+          dayEnded: null
+        });
+        clAnnounce('Day started as ' + speciesId);
+        awardXP(3);
+      }
+
+      function chooseDayOption(optionId) {
+        var current = d.dayCurrentEncounter;
+        if (!current) return;
+        var option = current.options.find(function(o) { return o.id === optionId; });
+        if (!option) return;
+        // Resolve: random check vs failChance
+        var failed = Math.random() < (option.failChance || 0);
+        var calDelta = failed && option.failMsg ? (option.calorieDelta || 0) : option.calorieDelta;
+        var healthDelta = failed && option.failHealthDelta != null ? option.failHealthDelta : option.healthDelta;
+        var armDelta = failed && option.failArmDelta != null ? option.failArmDelta : option.armDelta;
+        var msg = failed && option.failMsg ? option.failMsg : option.msg;
+        setCL(function(prior) {
+          var newCal = (prior.dayCalories || 100) + (calDelta || 0);
+          var newHealth = (prior.dayHealth || 100) + (healthDelta || 0);
+          var newArms = (prior.dayArmsLost || 0) - (armDelta || 0); // armDelta is negative when lost
+          var newDone = (prior.dayEncountersDone || 0) + 1;
+          // Slight passive calorie drain per encounter
+          newCal -= 5;
+          // Check end conditions
+          var ended = null;
+          if (newHealth <= 0) ended = 'killed';
+          else if (newCal <= 0) ended = 'starved';
+          else if (newArms >= 4) ended = 'killed'; // lost too many arms
+          else if (newDone >= 10) ended = 'survived';
+          // Generate next encounter if not ended
+          var nextEnc = ended ? null : generateEncounter(prior.daySpeciesId);
+          var newLog = (prior.dayLog || []).slice();
+          newLog.push({
+            type: current.type, title: current.title, emoji: current.emoji,
+            choice: option.label, outcome: msg, failed: failed,
+            calDelta: calDelta, healthDelta: healthDelta, armDelta: armDelta
+          });
+          if (newLog.length > 12) newLog = newLog.slice(-12);
+          // Update bests if ended successfully
+          var newBests = Object.assign({}, prior.dayBests || {});
+          if (ended) {
+            var prev = newBests[prior.daySpeciesId] || { bestEncountersSurvived: 0, daysSurvived: 0 };
+            newBests[prior.daySpeciesId] = {
+              bestEncountersSurvived: Math.max(prev.bestEncountersSurvived, newDone),
+              daysSurvived: prev.daysSurvived + (ended === 'survived' ? 1 : 0)
+            };
+          }
+          return {
+            dayCalories: Math.max(0, Math.min(200, newCal)),
+            dayHealth: Math.max(0, Math.min(100, newHealth)),
+            dayArmsLost: newArms,
+            dayEncountersDone: newDone,
+            dayCurrentEncounter: nextEnc,
+            dayLog: newLog,
+            dayEnded: ended,
+            dayBests: newBests,
+            dayTotalDaysPlayed: ended ? (prior.dayTotalDaysPlayed || 0) + 1 : (prior.dayTotalDaysPlayed || 0)
+          };
+        });
+        awardXP(failed ? 1 : 2);
+      }
+
+      function renderDayInLife() {
+        if (!d.dayActive) return renderDayLobby();
+        if (d.dayEnded) return renderDayEnded();
+        return renderDayActive();
+      }
+
+      function renderDayLobby() {
+        // Filter to species with realistic predator/prey integration (those with both hunt + predator templates)
+        var REALISTIC = SPECIES.filter(function(s) {
+          var apps = getApplicableEncounters(s.id);
+          var hasHunt = apps.some(function(t) { return t.type === 'hunt'; });
+          var hasPredator = apps.some(function(t) { return t.type === 'predator'; });
+          return hasHunt && hasPredator;
+        });
+        var bests = d.dayBests || {};
+        return h('div', null,
+          panelHeader('🌅 Day in the Life — Hard Mode',
+            'The integrated reality. Pick a species, live one day, face 10 random encounters mixing hunting opportunities, predator threats, environmental events, and social moments. Hunger, injury, and arm loss all carry through. Die if calories OR health hit zero. Survive all 10 = success.'),
+
+          h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fb923c' }) },
+            h('div', { style: subheaderStyle() }, '🎯 Why this mode exists'),
+            h('div', { style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.7 } },
+              'The Hunter Sim and Evasion Sim are pedagogically useful but artificial — in reality, a common octopus might hunt 3 crabs, evade a moray eel, lose an arm to a lingcod, and find a den before nightfall. ALL IN ONE DAY. This mode recovers the integrated lived rhythm. Some species (vampire squid, dumbo, nautilus) don\'t face significant predator pressure in reality + are excluded from this mode — but every species shown here lives the genuine double life.')),
+
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '📊 Your survival record'),
+            h('div', { style: { display: 'flex', gap: 24, flexWrap: 'wrap' } },
+              h('div', null,
+                h('div', { style: { fontSize: 28, fontWeight: 900, color: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace' } }, Object.values(bests).reduce(function(a, b) { return a + (b.daysSurvived || 0); }, 0)),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Days fully survived')),
+              h('div', null,
+                h('div', { style: { fontSize: 28, fontWeight: 900, color: '#fca5a5', fontFamily: 'ui-monospace, Menlo, monospace' } }, d.dayTotalDaysPlayed || 0),
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Total days attempted'))),
+            Object.keys(bests).length > 0 ?
+              h('div', { style: { marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(100,116,139,0.2)' } },
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } },
+                  'Personal bests by species'),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                  Object.keys(bests).map(function(sid) {
+                    var sp = SPECIES.find(function(x) { return x.id === sid; });
+                    if (!sp) return null;
+                    var b = bests[sid];
+                    return h('div', { key: sid,
+                      style: { background: 'rgba(15,23,42,0.6)', padding: '6px 12px', borderRadius: 8,
+                        border: '1px solid rgba(167,139,250,0.3)', fontSize: 11 } },
+                      h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, sp.emoji),
+                      h('span', { style: { color: '#fde68a', fontWeight: 700 } }, sp.name),
+                      h('span', { style: { color: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace', marginLeft: 8 } },
+                        b.bestEncountersSurvived + '/10 best'));
+                  }))) : null),
+
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '🐙 Pick your species'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 } },
+              REALISTIC.map(function(s) {
+                var groupColor = s.group === 'octopus' ? '#a78bfa' : s.group === 'squid' ? '#38bdf8' : s.group === 'cuttlefish' ? '#fbbf24' : '#86efac';
+                var b = bests[s.id];
+                return h('button', { key: s.id,
+                  onClick: function() { startDay(s.id); },
+                  style: { padding: '12px 14px', textAlign: 'left',
+                    background: 'rgba(15,23,42,0.6)', color: '#fde68a',
+                    border: '1px solid rgba(100,116,139,0.3)', borderLeft: '4px solid ' + groupColor,
+                    borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer' } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 24, lineHeight: 1 } }, s.emoji),
+                    h('div', null,
+                      h('div', { style: { fontSize: 14, fontWeight: 800, color: '#c7d2fe' } }, s.name),
+                      h('div', { style: { fontSize: 10, fontStyle: 'italic', color: '#94a3b8', marginTop: 2 } },
+                        'Intelligence: ' + s.intelligence + '/10 · Camo: ' + s.camouflageRank + '/10'))),
+                  b ? h('div', { style: { fontSize: 10, color: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                    'Best: ' + b.bestEncountersSurvived + '/10 · Days survived: ' + b.daysSurvived) : null);
+              })))
+        );
+      }
+
+      function renderDayActive() {
+        var sp = SPECIES.find(function(x) { return x.id === d.daySpeciesId; });
+        var enc = d.dayCurrentEncounter;
+        if (!sp || !enc) { setCL({ dayActive: false, dayEnded: null }); return null; }
+        var cal = d.dayCalories || 0;
+        var hp = d.dayHealth || 0;
+        var arms = d.dayArmsLost || 0;
+        var done = d.dayEncountersDone || 0;
+        // Filter options to species applicability (some options say "X only")
+        var availOptions = enc.options.filter(function(o) {
+          // Filter out species-specific options that don't apply
+          if (o.id === 'mimic' && sp.id !== 'mimicOcto') return false;
+          if (o.id === 'venom' && sp.id !== 'blueRing') return false;
+          if (o.id === 'hypnotic' && sp.id !== 'cuttlefish') return false;
+          if (o.id === 'filter' && !(sp.id === 'vampireSquid' || sp.id === 'dumbo')) return false;
+          if (o.id === 'cooperate' && sp.id !== 'dayOcto') return false;
+          return true;
+        });
+        return h('div', null,
+          panelHeader(sp.emoji + ' ' + sp.name + ' — encounter ' + (done + 1) + ' of 10',
+            'You\'re mid-day. Stats below show your current state. Survive all 10 encounters to complete the day.'),
+
+          // HUD
+          h('div', { style: cardStyle() },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 } },
+              [
+                { lbl: '🍽️ Calories', val: cal, max: 200, color: cal > 50 ? '#86efac' : cal > 25 ? '#fbbf24' : '#fca5a5' },
+                { lbl: '❤️ Health', val: hp, max: 100, color: hp > 60 ? '#86efac' : hp > 30 ? '#fbbf24' : '#fca5a5' },
+                { lbl: '🦑 Arms lost', val: arms, max: 4, color: arms === 0 ? '#86efac' : arms < 3 ? '#fbbf24' : '#fca5a5', isLoss: true },
+                { lbl: '⏳ Progress', val: done, max: 10, color: '#a78bfa' }
+              ].map(function(stat, i) {
+                var pct = stat.isLoss ? ((stat.max - stat.val) / stat.max * 100) : (stat.val / stat.max * 100);
+                return h('div', { key: i, style: { background: 'rgba(15,23,42,0.6)', padding: '10px 12px', borderRadius: 8 } },
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, stat.lbl),
+                  h('div', { style: { fontSize: 18, fontWeight: 900, color: stat.color, fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 4 } },
+                    stat.val + ' / ' + stat.max),
+                  h('div', { style: { height: 4, background: 'rgba(100,116,139,0.3)', borderRadius: 2 } },
+                    h('div', { style: { height: '100%', width: pct + '%', background: stat.color, borderRadius: 2 } })));
+              }))),
+
+          // Current encounter
+          h('div', { style: Object.assign({}, cardStyle(), {
+            borderLeft: '4px solid ' +
+              (enc.type === 'hunt' ? '#fbbf24' : enc.type === 'predator' ? '#fca5a5' : enc.type === 'environment' ? '#38bdf8' : '#f472b6')
+          }) },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 } },
+              h('span', { 'aria-hidden': 'true', style: { fontSize: 36, lineHeight: 1 } }, enc.emoji),
+              h('div', null,
+                h('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' } },
+                  enc.type === 'hunt' ? 'Hunting Opportunity' : enc.type === 'predator' ? '⚠️ Predator Encounter' : enc.type === 'environment' ? 'Environmental' : 'Social'),
+                h('div', { style: { fontSize: 16, fontWeight: 800, color: '#fde68a', marginTop: 2 } }, enc.title))),
+            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 14 } }, enc.detail),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              availOptions.map(function(opt) {
+                return h('button', { key: opt.id,
+                  onClick: function() { chooseDayOption(opt.id); },
+                  style: { padding: '12px 16px', textAlign: 'left',
+                    background: 'rgba(15,23,42,0.6)', color: '#fde68a',
+                    border: '1px solid rgba(167,139,250,0.3)',
+                    borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    transition: 'background 0.15s' } },
+                  opt.label);
+              }))),
+
+          // Recent log
+          (d.dayLog && d.dayLog.length > 0) ? h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '📜 Day so far'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 280, overflowY: 'auto' } },
+              d.dayLog.slice().reverse().map(function(entry, i) {
+                return h('div', { key: i,
+                  style: { background: 'rgba(15,23,42,0.5)', padding: '8px 12px', borderRadius: 6,
+                    borderLeft: '3px solid ' + (entry.failed ? '#fca5a5' : '#86efac'), fontSize: 11 } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
+                    h('span', { 'aria-hidden': 'true' }, entry.emoji),
+                    h('span', { style: { fontWeight: 700, color: '#fde68a' } }, entry.title)),
+                  h('div', { style: { color: '#cbd5e1', lineHeight: 1.5 } }, entry.outcome));
+              }))) : null,
+
+          h('div', { style: { display: 'flex', justifyContent: 'center', marginTop: 8 } },
+            h('button', { onClick: function() { if (confirm('Abandon this day? Your progress will be lost.')) setCL({ dayActive: false, dayEnded: null }); },
+              style: { padding: '8px 16px', background: 'transparent', color: '#fca5a5',
+                border: '1px solid rgba(220,38,38,0.4)', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' } },
+              '✕ Abandon day'))
+        );
+      }
+
+      function renderDayEnded() {
+        var sp = SPECIES.find(function(x) { return x.id === d.daySpeciesId; });
+        var ended = d.dayEnded;
+        var done = d.dayEncountersDone || 0;
+        var survived = ended === 'survived';
+        var heroEmoji = survived ? '🏆' : ended === 'starved' ? '💀' : ended === 'killed' ? '☠️' : '💀';
+        var heroColor = survived ? '#86efac' : '#fca5a5';
+        var heroLabel = survived ? 'Survived the day' :
+                        ended === 'starved' ? 'Starved' :
+                        ended === 'killed' ? 'Killed' : 'Died';
+        var heroDetail = survived ?
+          'You made it through 10 encounters. In the real ocean, this is roughly one day in your life — most cephalopods live ~365-700 days like this before the optic gland triggers their post-reproductive death cascade.' :
+          ended === 'starved' ? 'Calories hit zero. Most cephalopod deaths in the wild are predation, but starvation is the second most common — especially during recovery from injury or environmental stress.' :
+          'Predation event. This is how most cephalopods die. The senescence cycle is what kills survivors; predation is what kills everyone else.';
+        return h('div', null,
+          panelHeader(sp.emoji + ' ' + sp.name + ' — day ended',
+            'Encounter ' + done + ' of 10 was your last. Below: the final state + the day\'s full log.'),
+
+          h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', padding: 40,
+            background: survived ? 'linear-gradient(135deg, rgba(34,197,94,0.18), rgba(15,23,42,0.6))'
+                                 : 'linear-gradient(135deg, rgba(220,38,38,0.18), rgba(15,23,42,0.6))',
+            borderLeft: '4px solid ' + (survived ? '#22c55e' : '#dc2626') }) },
+            h('div', { 'aria-hidden': 'true', style: { fontSize: 80, lineHeight: 1, marginBottom: 8 } }, heroEmoji),
+            h('div', { style: { fontSize: 28, fontWeight: 900, color: heroColor, letterSpacing: '-0.01em', marginBottom: 8 } }, heroLabel),
+            h('div', { style: { fontSize: 13, color: '#cbd5e1', lineHeight: 1.7, maxWidth: 540, marginLeft: 'auto', marginRight: 'auto' } }, heroDetail)),
+
+          // Final stats
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '📊 Final state'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 } },
+              [
+                { lbl: 'Encounters faced', val: done + ' / 10', color: '#a78bfa' },
+                { lbl: 'Final calories', val: d.dayCalories || 0, color: '#fbbf24' },
+                { lbl: 'Final health', val: d.dayHealth || 0, color: '#fca5a5' },
+                { lbl: 'Arms lost', val: d.dayArmsLost || 0, color: '#fb923c' }
+              ].map(function(stat, i) {
+                return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', padding: '10px 12px', borderRadius: 8, borderLeft: '3px solid ' + stat.color } },
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, stat.lbl),
+                  h('div', { style: { fontSize: 22, fontWeight: 900, color: stat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.val));
+              }))),
+
+          // Full day log
+          (d.dayLog && d.dayLog.length > 0) ? h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '📜 The full day'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+              d.dayLog.map(function(entry, i) {
+                return h('div', { key: i,
+                  style: { background: 'rgba(15,23,42,0.5)', padding: '8px 12px', borderRadius: 6,
+                    borderLeft: '3px solid ' + (entry.failed ? '#fca5a5' : '#86efac'), fontSize: 11 } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
+                    h('span', { 'aria-hidden': 'true' }, entry.emoji),
+                    h('span', { style: { fontWeight: 700, color: '#fde68a' } }, '#' + (i + 1) + ' — ' + entry.title)),
+                  h('div', { style: { color: '#cbd5e1', lineHeight: 1.5, marginBottom: 2 } }, entry.outcome),
+                  h('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                    'Chose: ' + entry.choice));
+              }))) : null,
+
+          h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
+            h('button', { onClick: function() { startDay(d.daySpeciesId); },
+              style: { padding: '12px 26px', background: '#a78bfa', color: '#1c1410',
+                border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
+              '🔁 Another day as ' + sp.name),
+            h('button', { onClick: function() { setCL({ dayActive: false, dayEnded: null }); },
+              style: { padding: '12px 24px', background: 'transparent', color: '#c7d2fe',
+                border: '1px solid rgba(167,139,250,0.4)', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' } },
+              '🐙 Pick a different species'))
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════
+      // SECTION 6 — CAMOUFLAGE LAB (chromatophore biology deep dive)
       // ═══════════════════════════════════════════════════════
       function renderCamouflageLab() {
         var scene = d.camoScene || 'sand';
@@ -3386,6 +3853,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       if (section === 'field') content = renderFieldGuide();
       else if (section === 'hunt') content = renderHuntSim();
       else if (section === 'evasion') content = renderEvasionSim();
+      else if (section === 'day') content = renderDayInLife();
       else if (section === 'camo') content = renderCamouflageLab();
       else if (section === 'anatomy') content = renderBodyPlan();
       else if (section === 'time') content = renderThroughTime();
