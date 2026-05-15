@@ -368,6 +368,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       camoPattern: 'uniform',              // 'uniform' | 'mottled' | 'disruptive' | 'deimatic'
       // Body Plan state
       anatomyRegion: 'central-brain',      // currently highlighted region id
+      // Through Time state
+      timeView: 'timeline',                // 'timeline' | 'fossils' | 'extinctions' | 'body-evolution'
+      timeEraId: 'ordovician',
+      timeFossilId: 'cameroceras',
       // Jet Propulsion Lab state
       jetSpeciesId: 'humboldt',            // species for jet comparison
       jetMantleVolume: 300,                // mL
@@ -470,6 +474,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           { id: 'hunt', label: 'Hunter Sim', icon: '🎯' },
           { id: 'camo', label: 'Camouflage', icon: '🎨' },
           { id: 'anatomy', label: 'Body Plan', icon: '🧠' },
+          { id: 'time', label: 'Through Time', icon: '🕰️' },
           { id: 'jet', label: 'Jet Propulsion', icon: '🚀' },
           { id: 'intel', label: 'Intelligence', icon: '💡' },
           { id: 'conservation', label: 'Conservation & Welfare', icon: '🌍' },
@@ -487,7 +492,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: '#c7d2fe', letterSpacing: '-0.01em' } }, 'Cephalopod Lab'),
                 h('div', { style: { fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.12)',
                     border: '1px solid rgba(167,139,250,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                  '9 sections')),
+                  '10 sections')),
               h('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 4, lineHeight: 1.5 } },
                 'The biology of intelligent invertebrates. Octopuses + squid + cuttlefish + nautilus — chromatophore camouflage, distributed neural intelligence, hunting strategy, 500M-year evolution.'))));
       }
@@ -1477,7 +1482,381 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       }
 
       // ═══════════════════════════════════════════════════════
-      // SECTION 6 — JET PROPULSION LAB
+      // SECTION 6 — CEPHALOPOD THROUGH TIME (fossils + evolution)
+      // ═══════════════════════════════════════════════════════
+      function renderThroughTime() {
+        var view = d.timeView || 'timeline';
+        // Era data — 500M-year cephalopod history in 8 chunks
+        var ERAS = [
+          { id: 'cambrian', name: 'Cambrian', startMya: 538, endMya: 485, color: '#92400e',
+            headline: 'First cephalopods appear',
+            event: 'Around 530 MYA, the first cephalopod emerges: ',
+            highlight: 'Plectronoceras',
+            after: ', a small cone-shelled animal in shallow Chinese seas. Cephalopods diverge from snail/clam ancestors.',
+            keyFossils: ['plectronoceras'],
+            ecosystem: 'Trilobites, brachiopods, primitive jawless fish. Cephalopods are still small + rare.' },
+          { id: 'ordovician', name: 'Ordovician', startMya: 485, endMya: 444, color: '#b45309',
+            headline: 'Cephalopods become apex predators',
+            event: 'Endoceratoid cephalopods take over as the top marine predators. ',
+            highlight: 'Cameroceras',
+            after: ' grows to 6-9m long — a straight-shelled monster with tentacles. For ~40 million years, cephalopods were the largest predators on Earth.',
+            keyFossils: ['cameroceras', 'orthoceras'],
+            ecosystem: 'Diverse marine life. Cephalopods + sea scorpions (eurypterids) rule open water. End-Ordovician extinction (~444 MYA) is the SECOND-largest mass extinction in history — climate-driven, knocks out ~85% of species.' },
+          { id: 'silurian-devonian', name: 'Silurian-Devonian', startMya: 444, endMya: 359, color: '#a16207',
+            headline: 'Nautiloid diversification + first ammonoids',
+            event: 'Nautiloids diversify into hundreds of forms — straight, curved, tightly coiled. Around 419 MYA in the Devonian, the first ',
+            highlight: 'ammonoids',
+            after: ' appear: coiled cephalopods with more complex internal chambers. Fish develop jaws and start competing with cephalopods for the apex slot.',
+            keyFossils: ['orthoceras'],
+            ecosystem: 'Devonian = "Age of Fishes." Cephalopods lose ground to fish but ammonoids carve out a new niche. Late Devonian extinction (~372 MYA) is gradual + lasts ~25 million years.' },
+          { id: 'carb-permian', name: 'Carboniferous-Permian', startMya: 359, endMya: 252, color: '#854d0e',
+            headline: 'Goniatites + first octopus',
+            event: 'Goniatites — ammonoids with characteristically zigzag sutures — dominate. Around 300 MYA, ',
+            highlight: 'Pohlsepia',
+            after: ' (the earliest known octopus) appears in what is now Illinois — a soft-bodied cephalopod fossilized in a remarkable concretion. Most ancestors of modern coleoids are tracing back here.',
+            keyFossils: ['goniatite', 'pohlsepia'],
+            ecosystem: 'Pangaea forms. Coal swamps everywhere. End-Permian extinction (~252 MYA) is THE big one — 95% of marine species gone. Cephalopods barely scrape through.' },
+          { id: 'triassic', name: 'Triassic', startMya: 252, endMya: 201, color: '#7c2d12',
+            headline: 'Recovery + Coleoid divergence',
+            event: 'Surviving cephalopods rebuild. The coleoid lineage (soft-bodied: octopus + squid + cuttlefish) clearly diverges from nautiloids by mid-Triassic. ',
+            highlight: 'Belemnites',
+            after: ' (squid-like cephalopods with internal rocket-shaped guards) appear and rapidly diversify.',
+            keyFossils: ['belemnite'],
+            ecosystem: 'Pangaea starts to break apart. Dinosaurs appear on land. Ichthyosaurs + plesiosaurs in the sea — major cephalopod predators. End-Triassic extinction (~201 MYA) clears more competition.' },
+          { id: 'jurassic', name: 'Jurassic', startMya: 201, endMya: 145, color: '#9a3412',
+            headline: 'The Cephalopod Golden Age',
+            event: 'Ammonites explode in diversity. Hundreds of genera, thousands of species. Shell shapes range from tight spirals to heteromorphs (unrolled). Vampire squid lineage (',
+            highlight: 'Vampyromorpha',
+            after: ') diverges around 165 MYA. Belemnite diversity peaks. Ichthyosaurs hunt cephalopods at scale — fossil ichthyosaurs are sometimes found with hundreds of belemnite hooklets in their stomachs.',
+            keyFossils: ['vampyronassa', 'belemnite'],
+            ecosystem: 'Warm shallow seas everywhere. Marine reptiles dominate ocean apex roles. Cephalopod abundance is so high that ammonite + belemnite fossils form whole limestone beds.' },
+          { id: 'cretaceous', name: 'Cretaceous', startMya: 145, endMya: 66, color: '#ea580c',
+            headline: 'Peak diversity, then mass extinction',
+            event: 'Ammonites reach their peak. ',
+            highlight: 'Parapuzosia',
+            after: ' grows to 2.5m+ diameter — the largest ammonite known. Then the end-Cretaceous extinction (~66 MYA, asteroid + Deccan Traps volcanism). ALL ammonites die. ALL belemnites die. Only nautiloids + coleoids survive.',
+            keyFossils: ['parapuzosia', 'belemnite'],
+            ecosystem: 'Late Cretaceous oceans full of mosasaurs, sharks. Ammonites are still abundant until the very moment of the asteroid. Then they\'re gone — the extinction is geologically instant for them.' },
+          { id: 'cenozoic', name: 'Cenozoic (modern)', startMya: 66, endMya: 0, color: '#fb923c',
+            headline: 'Modern cephalopods diversify',
+            event: 'With ammonites + belemnites gone, surviving coleoids (octopus, squid, cuttlefish ancestors) radiate. Modern groups appear: ',
+            highlight: 'all modern octopus + squid + cuttlefish genera',
+            after: ' trace back to within this era. Nautilus (the only remaining shelled cephalopod) survives nearly unchanged from Devonian forms.',
+            keyFossils: ['nautilus-modern'],
+            ecosystem: 'Mammals take over land. In the sea, bony fish + sharks + whales dominate apex roles. Cephalopods now occupy mid-trophic positions — but populations have been RISING for the last few decades as fish stocks decline.' }
+        ];
+
+        // Fossil specimen data
+        var FOSSILS = [
+          { id: 'plectronoceras', name: 'Plectronoceras', era: 'Cambrian', age: '~530 MYA', emoji: '🐚',
+            size: '~2 cm shell', diet: 'Small invertebrates',
+            description: 'The first known cephalopod. A small cone-shaped shell from Cambrian China. The animal had tentacles + a primitive siphuncle (the tube that runs through nautilus chambers regulating buoyancy). Cephalopod blueprint already established at 2 cm.',
+            why: 'This 2cm animal is the great-great-grandparent of everything from giant squid to mimic octopus. The siphuncle + chambered shell + tentacles all appear together.' },
+          { id: 'cameroceras', name: 'Cameroceras', era: 'Ordovician', age: '470-445 MYA', emoji: '🦴',
+            size: '6-9m shell', diet: 'Fish, trilobites, other cephalopods',
+            description: 'A straight-shelled (orthoconic) cephalopod. The largest reached 6-9 meters — for context, that\'s bigger than a great white shark. Cameroceras was the apex predator of Ordovician seas for ~40 million years.',
+            why: 'Direct evidence cephalopods occupied the absolute top of marine food chains long before fish or marine reptiles. The straight shell isn\'t inefficient at scale — it just doesn\'t look like a familiar predator.' },
+          { id: 'orthoceras', name: 'Orthoceras', era: 'Ordovician-Devonian', age: '~488-372 MYA', emoji: '🪨',
+            size: '10-50 cm shell', diet: 'Smaller invertebrates + fish',
+            description: 'Smaller relative of Cameroceras. Extremely abundant — Orthoceras shells form whole layers in Ordovician + Silurian limestone deposits. Often sold as polished display fossils today.',
+            why: 'If you\'ve seen a polished black-and-cream "fossil pendant" with concentric chambers, it was probably Orthoceras. They\'re the most accessible ancient cephalopod fossil for students.' },
+          { id: 'goniatite', name: 'Goniatites', era: 'Devonian-Permian', age: '~419-252 MYA', emoji: '🐌',
+            size: '3-15 cm shell', diet: 'Plankton + small prey',
+            description: 'Early ammonoids with simple, ZIGZAG suture patterns where the shell chambers meet the outer wall. Sutures are the key to identifying + dating ammonoids — they evolve in predictable ways across millions of years.',
+            why: 'Sutures are like geological barcodes. Goniatites have simple sutures; later ammonites have wildly elaborate ones. Paleontologists use suture complexity to identify which era a shell came from.' },
+          { id: 'pohlsepia', name: 'Pohlsepia', era: 'Carboniferous', age: '~296 MYA', emoji: '🐙',
+            size: '~6 cm body', diet: 'Small invertebrates',
+            description: 'The earliest known octopus — a soft-bodied coleoid preserved in a remarkable concretion from Illinois\'s Mazon Creek fossil bed. The body, arms, and even possible chromatophores are visible. Soft-bodied animals almost never fossilize.',
+            why: 'Octopuses are essentially un-fossilizable — no shell, no bones, no hard parts except a tiny beak. Pohlsepia exists only because Mazon Creek concretions preserve soft tissue. There may be no other octopus fossil for another 100 million years.' },
+          { id: 'belemnite', name: 'Belemnites', era: 'Triassic-Cretaceous', age: '~252-66 MYA', emoji: '🚀',
+            size: '5-50 cm guard', diet: 'Fish + small cephalopods',
+            description: 'Squid-like cephalopods with an internal "guard" — a rocket-shaped piece of calcite that fossilizes well. They had 10 arms (vs squid\'s 10 = 8 + 2 tentacles) and hooklets instead of suckers. Extremely abundant in Jurassic/Cretaceous oceans.',
+            why: 'Belemnite guards are some of the most common Mesozoic fossils. They\'re also extinct — wiped out at the end-Cretaceous extinction along with ammonites. Modern squid evolved from a sister lineage that survived.' },
+          { id: 'vampyronassa', name: 'Vampyronassa', era: 'Jurassic', age: '~165 MYA', emoji: '🦑',
+            size: '~10 cm body', diet: 'Small prey + scavenge',
+            description: 'The earliest known relative of the modern vampire squid. Exceptional soft-tissue preservation in the La Voulte-sur-Rhône Lagerstätte (France) preserved 8 arms with hooked attachments + eye details.',
+            why: 'Vampire squid is essentially a "living fossil" — the Vampyromorpha order has existed continuously since the Jurassic. Vampyronassa shows the body plan was already established 165 million years ago.' },
+          { id: 'parapuzosia', name: 'Parapuzosia', era: 'Late Cretaceous', age: '~80 MYA', emoji: '🐚',
+            size: 'Up to 2.5m diameter', diet: 'Plankton-feeder (probable)',
+            description: 'The largest ammonite ever found. A 2.55-meter diameter specimen was discovered in Germany in 1895. For comparison, that\'s bigger than a car tire — and it\'s ALL animal, not shell-with-some-animal.',
+            why: 'Ammonites went out at peak size. Some of the biggest ones lived in the last few million years before the K-Pg extinction. Then the asteroid + Deccan eruptions ended them entirely.' },
+          { id: 'nautilus-modern', name: 'Nautilus pompilius', era: 'Devonian to today', age: 'Lineage ~400 MYA', emoji: '🐚',
+            size: '~20 cm shell', diet: 'Carrion + scavenge',
+            description: 'The chambered nautilus. Body plan essentially unchanged for ~400 million years. The current nautilus species (Nautilus pompilius) is morphologically nearly identical to Devonian relatives. A true living fossil.',
+            why: 'Cephalopods that look UNCHANGED for 400 million years tell us body plans can be evolutionarily stable when the niche is. Nautilus occupies deep reef + carrion-scavenging — a niche so consistent that the body solving it didn\'t need to change.' }
+        ];
+
+        // Mass extinction events
+        var EXTINCTIONS = [
+          { id: 'end-ordovician', name: 'End-Ordovician', mya: 444, color: '#0ea5e9',
+            cause: 'Glaciation + sea-level drop',
+            lost: '~85% of marine species, including most nautiloid lineages',
+            cephalopodImpact: 'Endoceratoid giants take heavy losses. Cephalopod apex era ends. Some lineages survive in deeper or warmer refugia.',
+            recovery: 'Survivors diversify in the Silurian. The cephalopod story continues but no more Cameroceras-scale giants.' },
+          { id: 'late-devonian', name: 'Late Devonian', mya: 372, color: '#a16207',
+            cause: 'Multiple pulses over ~25 million years; oxygen + temperature + sea level',
+            lost: 'Massive losses in reef ecosystems; trilobites + brachiopods collapse',
+            cephalopodImpact: 'Ammonoids that just appeared go through their first major test. Many lineages disappear. Goniatites survive + diversify later.',
+            recovery: 'Goniatite-style ammonoids become the dominant cephalopod form for the next 100 million years.' },
+          { id: 'end-permian', name: 'End-Permian (THE Big One)', mya: 252, color: '#dc2626',
+            cause: 'Siberian Traps volcanism → CO2 spike → ocean acidification + anoxia',
+            lost: '~95% of marine species. The greatest extinction in Earth history.',
+            cephalopodImpact: 'Cephalopods barely survive. Only a handful of ammonoid lineages + nautiloids + a few coleoid stem-groups make it through. Goniatites go extinct.',
+            recovery: 'Triassic ammonoids (ceratitids) explode from very few survivors. Coleoid lineage clarifies into modern stem-groups.' },
+          { id: 'end-triassic', name: 'End-Triassic', mya: 201, color: '#fb923c',
+            cause: 'CAMP (Central Atlantic Magmatic Province) volcanism, possibly methane release',
+            lost: '~50% of marine species. Most ceratitid ammonoids die.',
+            cephalopodImpact: 'Opens the door for new ammonite lineages (true ammonites with elaborate sutures) to dominate. Belemnites continue diversifying.',
+            recovery: 'Jurassic ammonite + belemnite golden age begins. Body plans get more elaborate.' },
+          { id: 'end-cretaceous', name: 'End-Cretaceous (K-Pg)', mya: 66, color: '#0c1432',
+            cause: 'Chicxulub asteroid impact + Deccan Traps volcanism',
+            lost: 'All non-avian dinosaurs, all ammonites, all belemnites, ~75% of all species',
+            cephalopodImpact: 'COMPLETE extinction of ammonites + belemnites — two groups that ruled the oceans for 200+ million years. Only nautiloids + coleoids (octopus/squid/cuttlefish ancestors) survive.',
+            recovery: 'The world goes from ammonite-dominated to octopus + squid + cuttlefish dominated. Modern cephalopod diversification begins.' }
+        ];
+
+        var era = ERAS.find(function(e) { return e.id === (d.timeEraId || 'ordovician'); }) || ERAS[1];
+        var fossil = FOSSILS.find(function(f) { return f.id === (d.timeFossilId || 'cameroceras'); }) || FOSSILS[1];
+
+        // Sub-view picker
+        var SUBS = [
+          { id: 'timeline', label: 'Timeline', icon: '⏳' },
+          { id: 'fossils', label: 'Key Fossils', icon: '🦴' },
+          { id: 'extinctions', label: 'Mass Extinctions', icon: '☄️' },
+          { id: 'body-evolution', label: 'Body Plan Evolution', icon: '🐚' }
+        ];
+
+        return h('div', null,
+          panelHeader('🕰️ Cephalopod Through Time',
+            'Half a billion years of cephalopod evolution. From the first 2cm Cambrian shell, through giant Ordovician predators, ammonite explosions, mass extinctions, and the surviving lineages that became modern octopus + squid + cuttlefish + nautilus. The oldest continuous animal lineage with intelligence-grade nervous systems on Earth.'),
+
+          // Sub-tab strip
+          h('div', { role: 'tablist', 'aria-label': 'Through Time sub-sections',
+            style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
+            SUBS.map(function(s) {
+              var active = view === s.id;
+              return h('button', { key: s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                onClick: function() { setCL({ timeView: s.id }); awardXP(1); },
+                style: { padding: '8px 12px',
+                  background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
+                  color: active ? '#c7d2fe' : '#cbd5e1',
+                  border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                  borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 6 } },
+                h('span', { 'aria-hidden': 'true' }, s.icon), s.label);
+            })),
+
+          // ─── TIMELINE ───
+          view === 'timeline' ? h('div', null,
+            // Visual timeline bar
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '⏳ 500 million years of cephalopod history'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.65, marginBottom: 12 } },
+                'Click an era to explore. Width of each band is proportional to its duration in millions of years.'),
+              h('svg', { width: '100%', height: 110, viewBox: '0 0 1000 110',
+                preserveAspectRatio: 'none',
+                style: { borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
+                // Era bands — width proportional to (start - end) / 538 total
+                (function() {
+                  var totalSpan = 538;
+                  var x = 0;
+                  return ERAS.map(function(eraB, i) {
+                    var w = ((eraB.startMya - eraB.endMya) / totalSpan) * 1000;
+                    var rect = h('g', { key: eraB.id, style: { cursor: 'pointer' },
+                      onClick: function() { setCL({ timeEraId: eraB.id }); awardXP(1); } },
+                      h('rect', { x: x, y: 12, width: w, height: 60,
+                        fill: eraB.color, opacity: eraB.id === d.timeEraId ? 0.95 : 0.6,
+                        stroke: eraB.id === d.timeEraId ? '#fde68a' : 'rgba(255,255,255,0.1)',
+                        strokeWidth: eraB.id === d.timeEraId ? 2 : 0.5 }),
+                      h('text', { x: x + w / 2, y: 47, textAnchor: 'middle',
+                        fontSize: w > 80 ? 11 : 9, fontWeight: 800,
+                        fill: 'rgba(255,255,255,0.95)', pointerEvents: 'none' },
+                        eraB.name.length > 14 && w < 90 ? eraB.name.substring(0, 8) + '...' : eraB.name),
+                      h('text', { x: x + w / 2, y: 85, textAnchor: 'middle', fontSize: 9, fill: '#cbd5e1', pointerEvents: 'none' },
+                        eraB.startMya + '–' + eraB.endMya + ' MYA'));
+                    x += w;
+                    return rect;
+                  });
+                })()
+              )),
+
+            // Selected era detail
+            h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid ' + era.color }) },
+              h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
+                h('div', { style: { fontSize: 20, fontWeight: 900, color: era.color, letterSpacing: '-0.01em' } }, era.name),
+                h('div', { style: { fontSize: 12, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace', background: 'rgba(251,146,60,0.1)', padding: '3px 8px', borderRadius: 6 } },
+                  era.startMya + '–' + era.endMya + ' million years ago')),
+              h('div', { style: { fontSize: 16, fontWeight: 700, color: '#fde68a', marginBottom: 12 } },
+                era.headline),
+              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 14 } },
+                era.event,
+                h('em', { style: { color: '#a78bfa', fontWeight: 700 } }, era.highlight),
+                era.after),
+              h('div', { style: { padding: '12px 14px', background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #86efac', borderRadius: 6 } },
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },
+                  '🌍 Ecosystem context'),
+                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.65 } }, era.ecosystem))),
+
+            // Quick era jump
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '📋 All eras'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 6 } },
+                ERAS.map(function(eraE) {
+                  var active = eraE.id === d.timeEraId;
+                  return h('button', { key: eraE.id,
+                    onClick: function() { setCL({ timeEraId: eraE.id }); awardXP(1); },
+                    'aria-pressed': active ? 'true' : 'false',
+                    style: { padding: '8px 10px', textAlign: 'left',
+                      background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
+                      color: active ? '#c7d2fe' : '#cbd5e1',
+                      border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                      borderLeft: '3px solid ' + eraE.color,
+                      borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' } },
+                    h('div', { style: { fontWeight: 800, color: active ? '#fde68a' : '#e2e8f0' } }, eraE.name),
+                    h('div', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginTop: 2 } },
+                      eraE.startMya + '–' + eraE.endMya + ' MYA'));
+                })))
+          ) : null,
+
+          // ─── FOSSILS ───
+          view === 'fossils' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🦴 Key fossil specimens'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
+                'Nine fossils that anchor the cephalopod story. Click each for details.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 8 } },
+                FOSSILS.map(function(f) {
+                  var active = f.id === d.timeFossilId;
+                  return h('button', { key: f.id,
+                    onClick: function() { setCL({ timeFossilId: f.id }); awardXP(1); },
+                    'aria-pressed': active ? 'true' : 'false',
+                    style: { padding: '10px 12px', textAlign: 'left',
+                      background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
+                      color: active ? '#c7d2fe' : '#cbd5e1',
+                      border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                      borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer' } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, f.emoji),
+                      h('div', { style: { fontWeight: 800, fontSize: 12, color: active ? '#fde68a' : '#e2e8f0' } }, f.name)),
+                    h('div', { style: { fontSize: 9, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                      f.age));
+                }))),
+
+            h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #a78bfa' }) },
+              h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 36, lineHeight: 1 } }, fossil.emoji),
+                h('div', { style: { flex: 1, minWidth: 240 } },
+                  h('div', { style: { fontSize: 20, fontWeight: 900, color: '#c7d2fe' } }, fossil.name),
+                  h('div', { style: { fontSize: 11, color: '#a78bfa', marginTop: 2 } }, fossil.era + ' · ' + fossil.age),
+                  h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 4 } },
+                    h('b', null, 'Size: '), fossil.size, ' · ',
+                    h('b', null, 'Diet: '), fossil.diet))),
+              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 14 } }, fossil.description),
+              h('div', { style: { padding: '12px 14px', background: 'rgba(167,139,250,0.1)', borderLeft: '3px solid #a78bfa', borderRadius: 6 } },
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },
+                  '🎯 Why this fossil matters'),
+                h('div', { style: { fontSize: 12, color: '#e9d5ff', lineHeight: 1.7, fontStyle: 'italic' } }, fossil.why)))
+          ) : null,
+
+          // ─── EXTINCTIONS ───
+          view === 'extinctions' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '☄️ The 5 mass extinctions cephalopods lived through'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.65, marginBottom: 14 } },
+                'Cephalopods are one of the only animal groups to survive ALL FIVE major mass extinctions in Earth history. Each one reshaped which lineages dominated next. The end-Cretaceous (K-Pg) is the one that killed ammonites + belemnites and left us with the modern cephalopod world.'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+                EXTINCTIONS.map(function(ext) {
+                  return h('div', { key: ext.id,
+                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                      borderLeft: '4px solid ' + ext.color, padding: '14px 16px', borderRadius: 10 } },
+                    h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
+                      h('div', { style: { fontSize: 16, fontWeight: 900, color: ext.color } }, ext.name),
+                      h('div', { style: { fontSize: 11, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                        '~' + ext.mya + ' MYA')),
+                    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+                      h('div', null,
+                        h('div', { style: { fontSize: 9, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '🔥 Cause'),
+                        ext.cause),
+                      h('div', null,
+                        h('div', { style: { fontSize: 9, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '💀 What was lost'),
+                        ext.lost),
+                      h('div', null,
+                        h('div', { style: { fontSize: 9, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '🐙 Cephalopod impact'),
+                        ext.cephalopodImpact),
+                      h('div', null,
+                        h('div', { style: { fontSize: 9, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, '🌱 Recovery'),
+                        ext.recovery)));
+                })))
+          ) : null,
+
+          // ─── BODY-PLAN EVOLUTION ───
+          view === 'body-evolution' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🐚 How the cephalopod body plan evolved'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.65, marginBottom: 14 } },
+                'The cephalopod body plan went through several radical reorganizations. Each represents a different solution to the same problem: how to be a fast, sensing, predatory mollusk in different ocean conditions.'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+                [
+                  { stage: '1', name: 'Straight external shell (orthoconic)',
+                    era: 'Cambrian-Ordovician', icon: '📏', color: '#92400e',
+                    description: 'The original cephalopod form. Shell is a long cone — animal lives at the open end, gas + ammonia in the chambers behind for buoyancy.',
+                    why: 'Simple geometry. Works at small + medium scale. Cameroceras pushed this body plan to 6-9m before structural limits stopped it.',
+                    examples: 'Plectronoceras, Cameroceras, Orthoceras' },
+                  { stage: '2', name: 'Coiled external shell (planispiral)',
+                    era: 'Ordovician-Devonian onward', icon: '🐌', color: '#b45309',
+                    description: 'Shell coils in a flat plane. More compact + maneuverable than a long straight shell. Internal chambers + siphuncle still control buoyancy.',
+                    why: 'A coiled shell offers more surface area for muscle attachment in less length. Predator gape (max mouth opening) limits prey size, but mobility goes up.',
+                    examples: 'Goniatites, ammonites, nautilus' },
+                  { stage: '3', name: 'Internal cone shell (belemnite guard)',
+                    era: 'Triassic-Cretaceous', icon: '🚀', color: '#854d0e',
+                    description: 'Shell pulled INSIDE the body. The hard part becomes a rocket-shaped guard near the tail. Body is now muscular + streamlined.',
+                    why: 'Internalizing the shell lets the body flex + jet-propel like a modern squid. Speed becomes a viable strategy. The guard still serves as a buoyancy + structural anchor.',
+                    examples: 'Belemnites (all extinct, but lineage led to modern squid + cuttlefish)' },
+                  { stage: '4', name: 'Internal flat shell (cuttlebone)',
+                    era: 'Cretaceous-onward', icon: '🦪', color: '#7c2d12',
+                    description: 'Cuttlefish form: internal shell becomes a flat porous calcium structure (the cuttlebone) for buoyancy control.',
+                    why: 'Active buoyancy without sacrificing body flexibility. Cuttlefish can hover, swim with fin undulation, AND jet — combining advantages of multiple prior forms.',
+                    examples: 'Modern cuttlefish (Sepia)' },
+                  { stage: '5', name: 'No shell at all',
+                    era: 'Carboniferous (Pohlsepia) onward', icon: '🐙', color: '#9a3412',
+                    description: 'Shell completely lost. Body is pure muscle + skin. The only hard part remaining is the chitin beak.',
+                    why: 'Removing the shell lets the body squeeze through any hole bigger than the beak. Trade-off: no built-in protection, must rely on camouflage + cognition + venom.',
+                    examples: 'Octopuses (Pohlsepia is the earliest known)' },
+                  { stage: '6', name: 'External shell preserved unchanged',
+                    era: 'Devonian to today', icon: '🐚', color: '#fb923c',
+                    description: 'Nautilus pathway — keeps the ancestral coiled shell + most of the ancestral body plan + the ancestral pace of life. 90 tentacles with sticky pads instead of suckers.',
+                    why: 'Sometimes the original solution stays optimal for an unchanging niche. Deep reef + carrion scavenging requires armor + slow pace — the 400-million-year-old design still works.',
+                    examples: 'Nautilus pompilius (the only living example)' }
+                ].map(function(stage, i) {
+                  return h('div', { key: i,
+                    style: { display: 'flex', gap: 14, padding: '12px 14px',
+                      background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                      borderLeft: '4px solid ' + stage.color, borderRadius: 10 } },
+                    h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, minWidth: 60, flexShrink: 0 } },
+                      h('div', { style: { fontSize: 32, lineHeight: 1 } }, stage.icon),
+                      h('div', { style: { fontSize: 14, fontWeight: 900, color: stage.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, stage.stage)),
+                    h('div', { style: { flex: 1 } },
+                      h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fde68a', marginBottom: 3 } }, stage.name),
+                      h('div', { style: { fontSize: 10, color: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 8 } }, stage.era),
+                      h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 6 } }, stage.description),
+                      h('div', { style: { fontSize: 11, color: '#e9d5ff', lineHeight: 1.55, fontStyle: 'italic', marginBottom: 6 } },
+                        h('b', { style: { color: '#a78bfa' } }, 'Why this works: '), stage.why),
+                      h('div', { style: { fontSize: 10, color: '#86efac', lineHeight: 1.5 } },
+                        h('b', null, 'Examples: '), stage.examples)));
+                }))),
+            h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #a78bfa' }) },
+              h('div', { style: subheaderStyle() }, '🌳 The big picture'),
+              h('div', { style: { color: '#e9d5ff', fontSize: 13, lineHeight: 1.75 } },
+                h('p', { style: { margin: '0 0 12px 0' } },
+                  'Six body plans, one phylogeny. All modern cephalopods trace back to the same ~530-million-year-old Cambrian ancestor. The differences between a 6-meter Ordovician sea-monster and a 12-centimeter blue-ringed octopus are differences in evolutionary pressure, not in fundamental architecture.'),
+                h('p', { style: { margin: 0, padding: '12px 14px', background: 'rgba(167,139,250,0.1)', borderLeft: '3px solid #a78bfa', borderRadius: 6, fontStyle: 'italic' } },
+                  'The cephalopod story is the longest continuous run of intelligence-grade nervous systems on Earth. Half a billion years of evolution iterating on the same problem: how to be a smart, sensing, predatory mollusk. Modern octopuses are the latest output of that process. Each new species is the current draft, not the final.')))
+          ) : null
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════
+      // SECTION 7 — JET PROPULSION LAB
       // ═══════════════════════════════════════════════════════
       function renderJetLab() {
         // Species reference data for jet propulsion
@@ -2085,6 +2464,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       else if (section === 'hunt') content = renderHuntSim();
       else if (section === 'camo') content = renderCamouflageLab();
       else if (section === 'anatomy') content = renderBodyPlan();
+      else if (section === 'time') content = renderThroughTime();
       else if (section === 'jet') content = renderJetLab();
       else if (section === 'intel') content = renderIntelLab();
       else if (section === 'conservation') content = renderConservation();
