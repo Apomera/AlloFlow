@@ -1151,6 +1151,133 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           ) : null
         );
       }
+    },
+
+    // ─────────────────────────────────────────────────────
+    // PASTA + PAN SAUCE (medium) — multi-pot orchestration
+    // ─────────────────────────────────────────────────────
+    // The pot heats/boils/cooks pasta as a sidecar state machine
+    // (potState) while the student builds sauce in the primary pan.
+    // Tests parallel timing: pot needs ~3min to boil + 9min to cook
+    // pasta; the sauce must be ready when the pasta drains.
+    pastaSauce: {
+      id: 'pastaSauce',
+      name: 'Pasta + Pan Sauce',
+      icon: '🍝',
+      difficulty: 'medium',
+      multiPot: true,
+      simSpeedMultiplier: 4,
+      targetTimeMin: 20,
+      description: 'Two vessels, one dinner. Pot heats water + cooks pasta on its own timer. You build the sauce in the pan — both must finish together.',
+      teaches: ['Parallel timing', 'Mise en place under pressure', 'Pasta water as ingredient', 'Sauce + pasta marriage'],
+      ingredients: [
+        { id: 'oil',      name: 'Olive oil',           icon: '🛢️', addAtStep: 1 },
+        { id: 'garlic',   name: 'Minced garlic',       icon: '🧄', addAtStep: 2 },
+        { id: 'tomatoes', name: 'Crushed tomatoes',    icon: '🍅', addAtStep: 3 },
+        { id: 'pasta',    name: 'Drained pasta + water', icon: '🍝', addAtStep: 5 }
+      ],
+      steps: [
+        { id: 's0', title: 'Start the pasta water FIRST',
+          instruction: 'Before anything else: fill the pot with water, salt it heavily, set it to boil. Water takes ~3 min to reach 212°F — use that time for the sauce.',
+          target: { potState: 'heating' }, completeWhen: 'potStateReached',
+          teach: 'Pasta water is the longest-lead-time ingredient. Start it first or everything ends late. Salt the water "like the sea" — pasta absorbs it during the cook.' },
+        { id: 's1', title: 'Heat sauce pan to medium-low, add olive oil',
+          instruction: 'While the pot heats, set the pan to 3-4 (~280°F). Drizzle olive oil. We\'re building a gentle sauce, not searing.',
+          target: { panTempF: { min: 240, max: 320 }, itemAdded: 'oil' }, completeWhen: 'itemAdded',
+          teach: 'Sauce wants medium-low — too hot and garlic burns instantly + the oil starts smoking. Olive oil flavor degrades above 375°F, so stay below.' },
+        { id: 's2', title: 'Add minced garlic — fragrant, NOT brown',
+          instruction: 'Drop minced garlic into warm oil. Stir constantly. 30-45 seconds — JUST fragrant. The moment it browns, it turns bitter.',
+          target: { itemAdded: 'garlic' }, completeWhen: 'itemAdded',
+          teach: 'Garlic in cold oil + slow heat = mellow + sweet. Garlic in hot oil = brown + bitter in 10 seconds. The window is narrow; that\'s why low heat matters.' },
+        { id: 's3', title: 'Pour in tomatoes, simmer',
+          instruction: 'Add crushed tomatoes. Stir. Bring to a low simmer (small bubbles, not a rolling boil). Reduce slightly while you wait for pasta.',
+          target: { itemAdded: 'tomatoes' }, completeWhen: 'itemAdded',
+          teach: 'Adding tomatoes drops the pan temp fast — that\'s fine, simmer is low anyway. As water evaporates from the sauce, flavors concentrate.' },
+        { id: 's4', title: 'Drop pasta when pot is BOILING',
+          instruction: 'Wait for the pot to fully boil before dropping pasta. Boiling = bubbles cover the entire surface, can\'t be stirred away.',
+          target: { potState: 'pasta-in' }, completeWhen: 'potStateReached',
+          teach: 'Pasta in not-quite-boiling water turns gummy + sticks. Real rolling boil = pasta separates + cooks evenly. Use the "Drop pasta" button only when pot status = boiling.' },
+        { id: 's5', title: 'Drain pasta (RESERVE the water) + add to sauce',
+          instruction: 'When pasta is done (~9 min), use "Drain (save water)" — the starchy pasta water is liquid gold for the sauce. Then add drained pasta to the pan.',
+          target: { itemAdded: 'pasta' }, completeWhen: 'itemAdded',
+          teach: 'Pasta water is full of starch dissolved from the pasta surface. A splash in the sauce thickens it + helps the sauce CLING to the pasta. Throwing the water away is a rookie move.' },
+        { id: 's6', title: 'Toss in pan 30s, off heat, plate',
+          instruction: 'Toss pasta in sauce 30 seconds, off heat, plate. The brief toss lets pasta absorb sauce + the starch in pasta water emulsifies oil into a glossy coat.',
+          target: { burnerLevel: 0 }, completeWhen: 'heatRemoved',
+          teach: 'The final toss is where pasta + sauce become ONE dish, not "pasta with sauce on top." Pasta water + olive oil + tomatoes emulsify into a silky coating.' }
+      ],
+      judge: function(state, fullState) {
+        var notes = []; var score = 100;
+        var maxT = state.maxPanTempF || 0;
+        var t = state.activeTimeSec || 0;
+        // Sauce pan temp — should stay moderate
+        if (maxT > 400) { score -= 25; notes.push({ neg: true, label: '🔥 Pan too hot', detail: 'Sauce pan peaked at ' + Math.round(maxT) + '°F. Garlic + olive oil would have burned + soured the whole sauce.' }); }
+        else if (maxT > 350) { score -= 10; notes.push({ neg: true, label: '🌡️ Bit hot for sauce', detail: 'Peak ' + Math.round(maxT) + '°F. Some bitterness possible.' }); }
+        else if (maxT >= 240) { notes.push({ neg: false, label: '✓ Sauce temp', detail: 'Peak ' + Math.round(maxT) + '°F — proper simmer zone.' }); }
+        else { score -= 10; notes.push({ neg: true, label: '🥶 Sauce barely cooked', detail: 'Peak ' + Math.round(maxT) + '°F. Flavors didn\'t meld + raw tomato taste survives.' }); }
+        // Pasta water reservation
+        if (fullState && fullState.potWaterReserved) {
+          notes.push({ neg: false, label: '✓ Pasta water saved', detail: 'You reserved the starchy pasta water. That\'s how you get the glossy emulsion.' });
+        } else {
+          score -= 20;
+          notes.push({ neg: true, label: '💧 Lost the gold', detail: 'You drained the pasta water without saving it. Sauce will be thinner + less cohesive.' });
+        }
+        // Did pasta cook in real boiling water?
+        if (fullState && fullState.potPastaInAt && fullState.potStartedAt) {
+          var heatedSec = ((fullState.potPastaInAt - fullState.potStartedAt) / 1000) * (4); // simSpeed
+          if (heatedSec < 180) {
+            score -= 15;
+            notes.push({ neg: true, label: '⚠️ Pasta in cold water', detail: 'Pasta dropped before water fully boiled. Gummy + sticky outcome.' });
+          } else {
+            notes.push({ neg: false, label: '✓ Boiling water', detail: 'Patient — waited for full boil before dropping pasta.' });
+          }
+        }
+        score = Math.max(0, Math.min(100, score));
+        var grade = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 60 ? 'D' : 'F';
+        var verdict = score >= 90 ? '🍝 Restaurant pasta. Silky sauce, perfectly clinging.' :
+                      score >= 80 ? '👨‍🍳 Solid pasta. Family-dinner approved.' :
+                      score >= 70 ? '🍝 Recognizable pasta. Some shortcomings.' :
+                      score >= 60 ? '😬 Sauce on noodles, technically.' :
+                      '🚨 Order from the Italian place.';
+        return { score: score, grade: grade, verdict: verdict, notes: notes };
+      },
+      renderVisual: function(h, state) {
+        var panTemp = state.panTemp;
+        var items = state.itemsInPan;
+        var hasOil = items.indexOf('oil') !== -1;
+        var hasGarlic = items.indexOf('garlic') !== -1;
+        var hasTomatoes = items.indexOf('tomatoes') !== -1;
+        var hasPasta = items.indexOf('pasta') !== -1;
+        var sauceColor = hasTomatoes ? '#dc2626' : hasGarlic ? '#fde68a' : hasOil ? '#fef9c3' : '#1c1410';
+        var panColor = panTemp >= 350 ? '#a3461a' : panTemp >= 240 ? '#78350f' : '#57534e';
+        return h('svg', { width: 280, height: 180, viewBox: '0 0 280 180', 'aria-hidden': 'true' },
+          panTemp >= 280 ? h('ellipse', { cx: 140, cy: 95, rx: 100, ry: 50, fill: 'rgba(251,146,60,0.4)' }) : null,
+          h('ellipse', { cx: 140, cy: 100, rx: 100, ry: 30, fill: panColor, stroke: '#1c1410', strokeWidth: 2 }),
+          h('ellipse', { cx: 140, cy: 95, rx: 92, ry: 25, fill: '#1c1410' }),
+          // Sauce contents
+          hasOil ? h('ellipse', { cx: 140, cy: 95, rx: 80, ry: 22, fill: sauceColor, opacity: 0.9 }) : null,
+          // Garlic bits
+          hasGarlic && !hasTomatoes ? h('g', null,
+            h('circle', { cx: 115, cy: 92, r: 2, fill: panTemp > 350 ? '#7c2d12' : '#fef9c3' }),
+            h('circle', { cx: 140, cy: 96, r: 2, fill: panTemp > 350 ? '#7c2d12' : '#fef9c3' }),
+            h('circle', { cx: 165, cy: 92, r: 2, fill: panTemp > 350 ? '#7c2d12' : '#fef9c3' })
+          ) : null,
+          // Pasta visible if added
+          hasPasta ? h('g', null,
+            h('path', { d: 'M 100 95 Q 140 88 180 95', stroke: '#fef3c7', strokeWidth: 3, fill: 'none' }),
+            h('path', { d: 'M 100 100 Q 140 93 180 100', stroke: '#fef3c7', strokeWidth: 3, fill: 'none' }),
+            h('path', { d: 'M 110 90 Q 140 84 170 90', stroke: '#fde68a', strokeWidth: 2, fill: 'none' })
+          ) : null,
+          // Simmer bubbles when tomatoes added
+          hasTomatoes && panTemp > 240 ? h('g', null,
+            h('circle', { cx: 110, cy: 92, r: 2.5, fill: 'rgba(252,165,165,0.6)' }),
+            h('circle', { cx: 140, cy: 95, r: 2, fill: 'rgba(252,165,165,0.6)' }),
+            h('circle', { cx: 175, cy: 91, r: 2.5, fill: 'rgba(252,165,165,0.6)' })
+          ) : null,
+          h('rect', { x: 232, y: 90, width: 40, height: 14, fill: '#1c1410', rx: 3 }),
+          h('circle', { cx: 140, cy: 130, r: 70, fill: 'none', stroke: panTemp >= 220 ? '#fb923c' : '#52525b', strokeWidth: 2, opacity: 0.4, strokeDasharray: '4 6' })
+        );
+      }
     }
   };
 
@@ -1164,7 +1291,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     { id: 'panSeared',     name: 'Pan-Seared Chicken',   icon: '🍗', difficulty: 'medium', unlocked: true,  blurb: 'Maillard mastery + internal temp + carryover. Uses a meat thermometer for the first time.' },
     { id: 'sheetPan',      name: 'Sheet-Pan Roasted Veg', icon: '🥘', difficulty: 'medium', unlocked: true,  blurb: 'Your first oven recipe. Preheat discipline, don\'t crowd the pan, the halfway flip.' },
     { id: 'roastChicken',  name: 'Whole Roast Chicken',  icon: '🍗', difficulty: 'hard',   unlocked: true,  blurb: 'The classic family dinner. Two-stage temperature, internal temp, mandatory rest.' },
-    { id: 'pastaSauce',    name: 'Pasta + Pan Sauce',    icon: '🍝', difficulty: 'medium', unlocked: false, blurb: 'Multi-pot management — needs engine extension. Coming in v0.7.' }
+    { id: 'pastaSauce',    name: 'Pasta + Pan Sauce',    icon: '🍝', difficulty: 'medium', unlocked: true,  blurb: 'Multi-pot challenge. Pot boils + cooks pasta on its own timer while you build the sauce. Pasta water is the secret weapon.' }
   ];
 
   // ───────────────────────────────────────────────────────────
@@ -1372,6 +1499,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       recipeLastTickAt: null,              // ms
       recipeJudgement: null,               // set when phase = 'done'
       recipeCompletedIds: [],              // which recipes have been beaten (for unlocks)
+      // Multi-pot sidecar (pasta pot for pasta+sauce recipe)
+      // State machine: cold → heating → boiling → pasta-in → pasta-done → drained
+      // Pot has its own thermal ramp + pasta-cook timer, independent of the
+      // primary pan. Only used by recipes that opt in (multiPot: true).
+      potState: 'cold',
+      potStartedAt: null,                  // when pot was turned on
+      potPastaInAt: null,                  // when pasta was dropped
+      potPastaDoneAt: null,                // when pasta finished cooking
+      potDrainedAt: null,                  // when pasta was drained
+      potWaterReserved: false,             // did the student save pasta water?
       // Competition mode
       competitionActive: false,            // is the current run a competition?
       competitionConstraints: [],          // array of constraint definitions for this run
@@ -2141,8 +2278,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             patch.competitionBurnerLevelSum = (prior.competitionBurnerLevelSum || 0) + (prior.recipeBurnerLevel || 0) * dtSec;
             patch.competitionBurnerLevelTicks = (prior.competitionBurnerLevelTicks || 0) + dtSec;
           }
+          // Pot phase machine for multi-pot recipes
+          var potPatch = tickPotPhase(prior, simSpeed);
+          if (Object.keys(potPatch).length) Object.assign(patch, potPatch);
           return patch;
         });
+      }
+      // Pot phase machine — sidecar to the main vessel for pasta recipes.
+      // Pot reaches boiling ~3 sim-minutes after startPot. Pasta cooks
+      // for ~9 sim-minutes after dropPasta. State transitions happen
+      // here on each tick.
+      function tickPotPhase(prior, simSpeed) {
+        var nowMs = Date.now();
+        var rec = RECIPES[prior.recipeActiveId];
+        if (!rec || !rec.multiPot) return {};
+        var phase = prior.potState || 'cold';
+        if (phase === 'heating' && prior.potStartedAt) {
+          var simSec = ((nowMs - prior.potStartedAt) / 1000) * simSpeed;
+          // 3 sim-min (180 sim-sec) for water to come to boil
+          if (simSec >= 180) return { potState: 'boiling' };
+        } else if (phase === 'pasta-in' && prior.potPastaInAt) {
+          var simSec2 = ((nowMs - prior.potPastaInAt) / 1000) * simSpeed;
+          // 9 sim-min for pasta to cook
+          if (simSec2 >= 540) return { potState: 'pasta-done', potPastaDoneAt: nowMs };
+        }
+        return {};
+      }
+      function startPot() {
+        setKL(function(prior) {
+          if (prior.potState !== 'cold') return {};
+          return { potState: 'heating', potStartedAt: Date.now() };
+        });
+        klAnnounce('Pasta pot turned on. Water will boil in about 3 minutes.');
+      }
+      function dropPasta() {
+        setKL(function(prior) {
+          if (prior.potState !== 'boiling') return {};
+          return { potState: 'pasta-in', potPastaInAt: Date.now() };
+        });
+        klAnnounce('Pasta dropped into boiling water. About 9 minutes to al dente.');
+      }
+      function drainPasta(reserveWater) {
+        setKL(function(prior) {
+          if (prior.potState !== 'pasta-done' && prior.potState !== 'pasta-in') return {};
+          return { potState: 'drained', potDrainedAt: Date.now(), potWaterReserved: !!reserveWater };
+        });
+        klAnnounce(reserveWater ? 'Pasta drained, water reserved.' : 'Pasta drained.');
       }
       function startRecipeTick() {
         if (_recipeTickHandle) return;
@@ -2179,7 +2360,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           recipeItemAddTimes: {},
           recipeActiveTimeSec: 0,
           recipeHeatRemovedAt: null,
-          recipeJudgement: null
+          recipeJudgement: null,
+          // Reset pot state for multi-pot recipes
+          potState: 'cold', potStartedAt: null, potPastaInAt: null,
+          potPastaDoneAt: null, potDrainedAt: null, potWaterReserved: false
         });
         klAnnounce('Started cooking ' + recipe.name + '. Step 1: ' + recipe.steps[0].title);
         awardXP(5);
@@ -2285,7 +2469,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               burnerChanges: prior.competitionBurnerChanges || 0,
               avgBurnerLevel: avgBurner
             };
-            var judgement = rec.judge(snapshot);
+            var judgement = rec.judge(snapshot, prior);
             var compResult = null;
             // If competition: apply constraint modifiers
             if (prior.competitionActive) {
@@ -2371,6 +2555,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           if (ft >= step.target.foodInternalF.min) {
             nextStep();
             klAnnounce('Internal temp ' + Math.round(ft) + '°F — step complete.');
+          }
+        } else if (auto === 'potStateReached' && step.target.potState) {
+          if ((d.potState || 'cold') === step.target.potState) {
+            nextStep();
+            klAnnounce('Pot reached ' + step.target.potState + '.');
           }
         }
       }
@@ -2535,6 +2724,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               }))
           ) : null,
 
+          // ─── POT SIDECAR WIDGET (only for multi-pot recipes) ───
+          rec.multiPot ? renderPotWidget(d, rec) : null,
+
           // Current step prominently displayed
           h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fb923c' }) },
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 8, flexWrap: 'wrap' } },
@@ -2620,13 +2812,128 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 step.completeWhen === 'panInRange' ? '⏳ Auto-advances when pan reaches target temperature' :
                 step.completeWhen === 'itemAdded' ? '⏳ Auto-advances when ingredient is added' :
                 step.completeWhen === 'heatRemoved' ? '⏳ Auto-advances when burner reaches 0' :
-                step.completeWhen === 'internalTempReached' ? '⏳ Auto-advances when internal food temperature reaches target — use the readout on the chicken' : '⏳ Continue when ready'),
+                step.completeWhen === 'internalTempReached' ? '⏳ Auto-advances when internal food temperature reaches target — use the readout on the chicken' :
+                step.completeWhen === 'potStateReached' ? '⏳ Auto-advances when the pasta pot reaches the target state — use the pot controls above' : '⏳ Continue when ready'),
               h('button', {
                 onClick: function() { if (confirm('Abandon this recipe?')) abortRecipe(); },
                 style: { padding: '12px 18px', background: 'transparent', color: '#fca5a5',
                   border: '1px solid rgba(220,38,38,0.4)', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' } },
                 '✕ Abandon')))
         );
+      }
+
+      // ─── Pot sidecar widget for multi-pot recipes ───
+      // Shows the pot's current state + a progress bar + action buttons.
+      // Pot has its own sim-time machine independent of the primary pan.
+      function renderPotWidget(d, rec) {
+        var simSpeed = rec.simSpeedMultiplier || 1;
+        var phase = d.potState || 'cold';
+        var nowMs = Date.now();
+        // Compute progress + temp
+        var potTempF = 70;
+        var progressPct = 0;
+        var progressLabel = '';
+        if (phase === 'heating' && d.potStartedAt) {
+          var simSec = ((nowMs - d.potStartedAt) / 1000) * simSpeed;
+          progressPct = Math.min(100, (simSec / 180) * 100);
+          potTempF = 70 + (212 - 70) * progressPct / 100;
+          progressLabel = 'Heating: ' + Math.round(potTempF) + '°F → 212°F (' + Math.round(progressPct) + '%)';
+        } else if (phase === 'boiling') {
+          potTempF = 212;
+          progressPct = 100;
+          progressLabel = 'Boiling at 212°F — drop pasta when ready';
+        } else if (phase === 'pasta-in' && d.potPastaInAt) {
+          potTempF = 212;
+          var simSec2 = ((nowMs - d.potPastaInAt) / 1000) * simSpeed;
+          progressPct = Math.min(100, (simSec2 / 540) * 100);
+          progressLabel = 'Pasta cooking: ' + Math.round(progressPct) + '% (al dente at 100%)';
+        } else if (phase === 'pasta-done') {
+          potTempF = 212;
+          progressPct = 100;
+          progressLabel = '✓ Pasta al dente — drain now!';
+        } else if (phase === 'drained') {
+          potTempF = 100;
+          progressPct = 100;
+          progressLabel = '✓ Drained' + (d.potWaterReserved ? ' + water saved' : '');
+        } else {
+          progressLabel = 'Pot is cold + empty';
+        }
+        var phaseColor = phase === 'cold' ? '#52525b' :
+                         phase === 'heating' ? '#fb923c' :
+                         phase === 'boiling' ? '#38bdf8' :
+                         phase === 'pasta-in' ? '#fbbf24' :
+                         phase === 'pasta-done' ? '#22c55e' : '#86efac';
+        return h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid ' + phaseColor }) },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } },
+            // Pot SVG
+            h('svg', { width: 110, height: 110, viewBox: '0 0 110 110', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+              // Steam (when boiling+)
+              phase === 'boiling' || phase === 'pasta-in' || phase === 'pasta-done' ? h('g', null,
+                h('path', { d: 'M 35 30 Q 32 18 42 8', stroke: 'rgba(220,220,230,0.7)', strokeWidth: 2, fill: 'none' }),
+                h('path', { d: 'M 55 28 Q 60 15 50 5', stroke: 'rgba(220,220,230,0.7)', strokeWidth: 2, fill: 'none' }),
+                h('path', { d: 'M 75 30 Q 72 18 82 8', stroke: 'rgba(220,220,230,0.7)', strokeWidth: 2, fill: 'none' })
+              ) : null,
+              // Pot body
+              h('rect', { x: 22, y: 40, width: 66, height: 50, fill: '#3f3f46', stroke: '#1c1410', strokeWidth: 2, rx: 3 }),
+              // Pot rim
+              h('ellipse', { cx: 55, cy: 42, rx: 33, ry: 5, fill: '#52525b', stroke: '#1c1410', strokeWidth: 1.5 }),
+              // Water + contents
+              phase !== 'cold' ? h('ellipse', { cx: 55, cy: 50, rx: 28, ry: 4,
+                fill: phase === 'pasta-in' || phase === 'pasta-done' ? '#fef3c7' : '#bfdbfe', opacity: 0.7 }) : null,
+              // Pasta strands when cooking
+              phase === 'pasta-in' || phase === 'pasta-done' ? h('g', null,
+                h('path', { d: 'M 32 55 Q 55 50 78 58', stroke: '#fde68a', strokeWidth: 2, fill: 'none' }),
+                h('path', { d: 'M 35 62 Q 55 56 75 62', stroke: '#fde68a', strokeWidth: 1.5, fill: 'none' })
+              ) : null,
+              // Bubbles when boiling
+              phase === 'boiling' || phase === 'pasta-in' ? h('g', null,
+                h('circle', { cx: 40, cy: 55, r: 2, fill: 'rgba(255,255,255,0.6)' }),
+                h('circle', { cx: 55, cy: 52, r: 1.5, fill: 'rgba(255,255,255,0.6)' }),
+                h('circle', { cx: 70, cy: 56, r: 2, fill: 'rgba(255,255,255,0.6)' })
+              ) : null,
+              // Handles
+              h('rect', { x: 16, y: 50, width: 10, height: 4, fill: '#1c1410', rx: 1 }),
+              h('rect', { x: 84, y: 50, width: 10, height: 4, fill: '#1c1410', rx: 1 }),
+              // Heat indicator under pot
+              phase !== 'cold' && phase !== 'drained' ? h('circle', { cx: 55, cy: 100, r: 25, fill: 'none', stroke: '#dc2626', strokeWidth: 2, opacity: 0.5, strokeDasharray: '3 4' }) : null
+            ),
+            // Info + controls
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('div', { style: { fontSize: 10, fontWeight: 800, color: phaseColor, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 } },
+                '🫕 Pasta Pot — ' + phase),
+              h('div', { style: { fontSize: 12, color: '#e2e8f0', marginBottom: 8, lineHeight: 1.45 } }, progressLabel),
+              // Progress bar
+              h('div', { style: { height: 8, background: 'rgba(15,23,42,0.6)', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.3)', marginBottom: 10 } },
+                h('div', { style: { height: '100%', width: progressPct + '%', background: phaseColor, transition: 'width 0.3s' } })),
+              // Action buttons (vary by phase)
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                phase === 'cold' ? h('button', {
+                  onClick: function() { startPot(); awardXP(1); },
+                  style: { padding: '8px 14px', background: '#fb923c', color: '#1c1410',
+                    border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
+                  '🔥 Start pasta water') : null,
+                phase === 'boiling' ? h('button', {
+                  onClick: function() { dropPasta(); awardXP(2); },
+                  style: { padding: '8px 14px', background: '#22c55e', color: '#052e16',
+                    border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
+                  '🍝 Drop pasta') : null,
+                (phase === 'pasta-in' || phase === 'pasta-done') ? h('button', {
+                  onClick: function() { drainPasta(true); awardXP(2); },
+                  disabled: phase !== 'pasta-done',
+                  style: { padding: '8px 14px',
+                    background: phase === 'pasta-done' ? '#22c55e' : 'rgba(100,116,139,0.3)',
+                    color: phase === 'pasta-done' ? '#052e16' : '#94a3b8',
+                    border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 700,
+                    cursor: phase === 'pasta-done' ? 'pointer' : 'not-allowed' } },
+                  '✓ Drain (save water)') : null,
+                (phase === 'pasta-in' || phase === 'pasta-done') ? h('button', {
+                  onClick: function() { drainPasta(false); },
+                  disabled: phase !== 'pasta-done',
+                  style: { padding: '8px 14px',
+                    background: 'transparent', color: '#fca5a5',
+                    border: '1px solid rgba(220,38,38,0.4)', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                    cursor: phase === 'pasta-done' ? 'pointer' : 'not-allowed', opacity: phase === 'pasta-done' ? 1 : 0.5 } },
+                  'Drain (waste water)') : null))));
       }
 
       // ─── Visual pan rendering ───
