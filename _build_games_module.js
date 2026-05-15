@@ -94,7 +94,8 @@ const GAMES = [
   'VennGame', 'CauseEffectSortGame', 'PipelineBuilderGame', 'CrosswordGame', 'SyntaxScramble',
   'BingoGame', 'StudentBingoGame', 'WordScrambleGame',
   'TChartSortGame', 'ConceptMapSortGame', 'OutlineSortGame',
-  'FishboneSortGame', 'ProblemSolutionSortGame'
+  'FishboneSortGame', 'ProblemSolutionSortGame',
+  'MultiZoneSortGame', 'FrayerSortGame', 'SeeThinkWonderSortGame', 'StoryMapSortGame'
 ];
 
 const entry = `

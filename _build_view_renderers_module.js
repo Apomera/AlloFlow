@@ -80,6 +80,7 @@ function detectIconsAndComponents() {
     'Tag', 'VennGame', 'CauseEffectSortGame', 'PipelineBuilderGame',
     'TChartSortGame', 'ConceptMapSortGame', 'OutlineSortGame',
     'FishboneSortGame', 'ProblemSolutionSortGame',
+    'FrayerSortGame', 'SeeThinkWonderSortGame', 'StoryMapSortGame',
     'GameButtonHint',
   ]);
 

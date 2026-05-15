@@ -189,7 +189,7 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
 };
 
 const renderOutlineContent = (deps) => {
-  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort } = deps;
+  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort } = deps;
   const CauseEffectSortGame = window.AlloModules && window.AlloModules.CauseEffectSortGame ? (function() { const _C = window.AlloModules.CauseEffectSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
   const PipelineBuilderGame = window.AlloModules && window.AlloModules.PipelineBuilderGame ? (function() { const _C = window.AlloModules.PipelineBuilderGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
   const TChartSortGame = window.AlloModules && window.AlloModules.TChartSortGame ? (function() { const _C = window.AlloModules.TChartSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
@@ -197,6 +197,9 @@ const renderOutlineContent = (deps) => {
   const OutlineSortGame = window.AlloModules && window.AlloModules.OutlineSortGame ? (function() { const _C = window.AlloModules.OutlineSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
   const FishboneSortGame = window.AlloModules && window.AlloModules.FishboneSortGame ? (function() { const _C = window.AlloModules.FishboneSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
   const ProblemSolutionSortGame = window.AlloModules && window.AlloModules.ProblemSolutionSortGame ? (function() { const _C = window.AlloModules.ProblemSolutionSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
+  const FrayerSortGame = window.AlloModules && window.AlloModules.FrayerSortGame ? (function() { const _C = window.AlloModules.FrayerSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
+  const SeeThinkWonderSortGame = window.AlloModules && window.AlloModules.SeeThinkWonderSortGame ? (function() { const _C = window.AlloModules.SeeThinkWonderSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
+  const StoryMapSortGame = window.AlloModules && window.AlloModules.StoryMapSortGame ? (function() { const _C = window.AlloModules.StoryMapSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
   try { if (window._DEBUG_VIEW_RENDERERS) console.log("[ViewRenderers] renderOutlineContent fired"); } catch(_) {}
         if (!generatedContent || generatedContent.type !== 'outline' || !generatedContent?.data) return null;
         const { main, main_en, branches: rawBranches, structureType } = generatedContent?.data;
@@ -1259,6 +1262,20 @@ const renderOutlineContent = (deps) => {
         }
         // ── Frayer Model: 4-quadrant vocabulary grid ──
         if (type === 'Frayer Model' && !isEditingOutline) {
+            if (isFrayerSortPlaying) {
+                return (
+                    <ErrorBoundary fallbackMessage="Frayer Sort encountered an error.">
+                        <FrayerSortGame
+                            data={generatedContent?.data}
+                            onClose={closeFrayerSort}
+                            playSound={playSound}
+                            topicTitle={main || ''}
+                            onScoreUpdate={handleGameScoreUpdate}
+                            onGameComplete={handleGameCompletion}
+                        />
+                    </ErrorBoundary>
+                );
+            }
             const defBranch = branches[0] || { title: 'Definition', items: [] };
             const charBranch = branches[1] || { title: 'Characteristics', items: [] };
             const exBranch = branches[2] || { title: 'Examples', items: [] };
@@ -1293,6 +1310,19 @@ const renderOutlineContent = (deps) => {
             };
             return (
                 <div className="max-w-4xl mx-auto px-4 py-6 relative">
+                    {showGameButton && (
+                        <div className="flex justify-center mb-4">
+                            <GameButtonHint />
+                            <button
+                                onClick={() => setIsFrayerSortPlaying(true)}
+                                className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-emerald-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
+                                aria-describedby="game-btn-hint"
+                                aria-label={t('games.frayer_sort.play_btn') || 'Play Frayer Sort Game'}
+                            >
+                                <Gamepad2 size={16}/> {t('games.frayer_sort.play_btn') || 'Sort into Quadrants'}
+                            </button>
+                        </div>
+                    )}
                     <div className="grid grid-cols-2 gap-0 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white relative" style={{ minHeight: '460px' }}>
                         {renderQuadrant(defBranch,    'indigo',  'border-r border-b border-slate-300', 'Definition')}
                         {renderQuadrant(charBranch,   'emerald', 'border-b border-slate-300',          'Characteristics')}
@@ -1305,6 +1335,77 @@ const renderOutlineContent = (deps) => {
                         </div>
                     </div>
                     <p className="text-xs text-slate-500 italic text-center mt-3">{t('outline.frayer_caption') || 'Frayer Model: vocabulary term in the center, definition + characteristics + examples + non-examples in the four quadrants.'}</p>
+                </div>
+            );
+        }
+
+        // ── See-Think-Wonder: 3-column observation routine ──
+        if (type === 'See-Think-Wonder' && !isEditingOutline) {
+            if (isSeeThinkWonderSortPlaying) {
+                return (
+                    <ErrorBoundary fallbackMessage="See-Think-Wonder Sort encountered an error.">
+                        <SeeThinkWonderSortGame
+                            data={generatedContent?.data}
+                            onClose={closeSeeThinkWonderSort}
+                            playSound={playSound}
+                            topicTitle={main || ''}
+                            onScoreUpdate={handleGameScoreUpdate}
+                            onGameComplete={handleGameCompletion}
+                        />
+                    </ErrorBoundary>
+                );
+            }
+            const seeBranch    = branches[0] || { title: 'See',    items: [] };
+            const thinkBranch  = branches[1] || { title: 'Think',  items: [] };
+            const wonderBranch = branches[2] || { title: 'Wonder', items: [] };
+            const itemText = (it) => typeof it === 'object' ? (it?.text || '') : String(it);
+            const STW_COLORS = {
+                sky:    { bg: 'bg-sky-50/70',    header: 'bg-sky-600 text-white',    dot: 'text-sky-500' },
+                violet: { bg: 'bg-violet-50/70', header: 'bg-violet-600 text-white', dot: 'text-violet-500' },
+                amber:  { bg: 'bg-amber-50/70',  header: 'bg-amber-600 text-white',  dot: 'text-amber-500' },
+            };
+            const renderSTWColumn = (branch, colorKey, hint) => {
+                const items = (branch.items || []).map(itemText).filter(Boolean);
+                const c = STW_COLORS[colorKey];
+                return (
+                    <div className={`${c.bg} flex-1 min-h-[280px]`}>
+                        <h4 className={`${c.header} font-black text-base uppercase tracking-wide text-center py-3 px-4`}>{branch.title}</h4>
+                        <div className="px-4 pt-2 pb-1 text-[11px] italic text-slate-500 text-center">{hint}</div>
+                        <ul className="p-4 pt-2 space-y-2">
+                            {items.length > 0 ? items.map((text, i) => (
+                                <li key={i} className="flex items-start gap-2 text-sm text-slate-700 leading-snug">
+                                    <span className={`${c.dot} mt-0.5 flex-shrink-0`}>●</span>
+                                    <span>{text}</span>
+                                </li>
+                            )) : (
+                                <li className="text-xs text-slate-400 italic">—</li>
+                            )}
+                        </ul>
+                    </div>
+                );
+            };
+            return (
+                <div className="max-w-5xl mx-auto px-4 py-6">
+                    <MainTitle />
+                    {showGameButton && (
+                        <div className="flex justify-center mb-4">
+                            <GameButtonHint />
+                            <button
+                                onClick={() => setIsSeeThinkWonderSortPlaying(true)}
+                                className="flex items-center gap-2 bg-gradient-to-r from-sky-500 to-amber-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
+                                aria-describedby="game-btn-hint"
+                                aria-label={t('games.see_think_wonder_sort.play_btn') || 'Play See-Think-Wonder Sort Game'}
+                            >
+                                <Gamepad2 size={16}/> {t('games.see_think_wonder_sort.play_btn') || 'Sort: Observation, Inference, or Question?'}
+                            </button>
+                        </div>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-3 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white divide-y md:divide-y-0 md:divide-x divide-slate-200">
+                        {renderSTWColumn(seeBranch,    'sky',    'What you can directly observe')}
+                        {renderSTWColumn(thinkBranch,  'violet', 'What the observations suggest')}
+                        {renderSTWColumn(wonderBranch, 'amber',  'Questions you want to explore')}
+                    </div>
+                    <p className="text-xs text-slate-500 italic text-center mt-3">{t('outline.see_think_wonder_caption') || 'See, Think, Wonder (Harvard Project Zero): observation, inference, and open questioning kept distinct.'}</p>
                 </div>
             );
         }
@@ -1356,6 +1457,20 @@ const renderOutlineContent = (deps) => {
 
         // ── Story Map: arc visualization of narrative tension ──
         if (type === 'Story Map' && !isEditingOutline) {
+            if (isStoryMapSortPlaying) {
+                return (
+                    <ErrorBoundary fallbackMessage="Story Map Sort encountered an error.">
+                        <StoryMapSortGame
+                            data={generatedContent?.data}
+                            onClose={closeStoryMapSort}
+                            playSound={playSound}
+                            topicTitle={main || ''}
+                            onScoreUpdate={handleGameScoreUpdate}
+                            onGameComplete={handleGameCompletion}
+                        />
+                    </ErrorBoundary>
+                );
+            }
             const stages = [
                 { branch: branches[0] || { title: 'Exposition',     items: [] }, x: 60,  y: 340, color: '#0891b2', anchor: 'start'  },
                 { branch: branches[1] || { title: 'Rising Action',  items: [] }, x: 250, y: 220, color: '#7c3aed', anchor: 'middle' },
@@ -1367,6 +1482,19 @@ const renderOutlineContent = (deps) => {
             return (
                 <div className="max-w-5xl mx-auto px-4 py-6">
                     <MainTitle />
+                    {showGameButton && (
+                        <div className="flex justify-center mb-4">
+                            <GameButtonHint />
+                            <button
+                                onClick={() => setIsStoryMapSortPlaying(true)}
+                                className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-rose-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
+                                aria-describedby="game-btn-hint"
+                                aria-label={t('games.story_map_sort.play_btn') || 'Play Story Map Sort Game'}
+                            >
+                                <Gamepad2 size={16}/> {t('games.story_map_sort.play_btn') || 'Sort Events Along the Arc'}
+                            </button>
+                        </div>
+                    )}
                     <div className="bg-gradient-to-b from-sky-50/80 via-white to-amber-50/40 border-2 border-slate-300 rounded-2xl p-6 shadow-lg">
                         <svg viewBox="0 0 900 400" className="w-full h-auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Plot diagram arc showing narrative tension rising to the climax and falling toward resolution">
                             <path d="M 60 340 Q 250 280 450 70 Q 650 280 840 340" fill="none" stroke="#94a3b8" strokeWidth="3" strokeLinecap="round" strokeDasharray="6 6" />

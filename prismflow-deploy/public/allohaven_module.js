@@ -2823,6 +2823,22 @@
   // primitives so each part is independently fillable + groupable.
   // Color palette via direct fill props so a theme switch is just a
   // re-render (no CSS-variable indirection needed).
+  // ── Phase L6 — Mascot placeholder fallback ──
+  // Tinted previews used when window.AlloMascots is a known mascot id
+  // BUT the namespace itself isn't loaded yet (typingpractice script
+  // hasn't loaded — load-order race when Allohaven opens first on cold
+  // cache). The legacy bottom-of-pipeline fallback would render a
+  // generic gray blob; this placeholder at least shows the right
+  // mascot color + emoji so the user sees something recognizable until
+  // the real SVG arrives.
+  var MASCOT_PLACEHOLDER_DATA = {
+    pip:       { emoji: '🐤', accent: '#fde047', bg: '#fef9c3' }, // 🐤
+    cogsworth: { emoji: '🦉', accent: '#a16207', bg: '#fde68a' }, // 🦉
+    vex:       { emoji: '💠', accent: '#06b6d4', bg: '#cffafe' }, // 💠
+    mochi:     { emoji: '🐱', accent: '#f9a8d4', bg: '#fce7f3' }, // 🐱
+    inko:      { emoji: '🐙', accent: '#22d3ee', bg: '#cffafe' }  // 🐙
+  };
+
   function getCompanionSvg(speciesId, palette, animState) {
     var React = window.React;
     var h = React.createElement;
@@ -2839,6 +2855,27 @@
       // Optional aria-label passthrough
       if (animState && animState.label) mascotOpts.label = animState.label;
       return window.AlloMascots.render(speciesId, mascotOpts);
+    }
+    // ── Phase L6 fallback: known mascot id but AlloMascots namespace
+    // isn't loaded yet. Render a tinted placeholder rather than dropping
+    // to the generic gray-blob bottom fallback. A polling useEffect at
+    // the top of the component watches for AlloMascots and forces a
+    // re-render once the namespace lands — at which point the real
+    // mascot SVG replaces this placeholder seamlessly.
+    if (MASCOT_PLACEHOLDER_DATA[speciesId]) {
+      var pl = MASCOT_PLACEHOLDER_DATA[speciesId];
+      return h('svg', {
+        viewBox: '0 0 100 100',
+        width: '100%', height: '100%',
+        style: { display: 'block', overflow: 'visible' },
+        'aria-hidden': 'true'
+      },
+        h('circle', { cx: 50, cy: 50, r: 38, fill: pl.bg, stroke: pl.accent, strokeWidth: 2.5 }),
+        h('text', {
+          x: 50, y: 50, textAnchor: 'middle', dominantBaseline: 'central',
+          fontSize: 38
+        }, pl.emoji)
+      );
     }
     var p = palette || { primary: '#888', secondary: '#ccc', accent: '#444' };
     var blinking = animState && animState.blinking;
@@ -13352,6 +13389,39 @@
     var peerGreetingBusyTuple = useState(false);
     var peerGreetingBusy = peerGreetingBusyTuple[0];
     var setPeerGreetingBusy = peerGreetingBusyTuple[1];
+
+    // ── Phase L6 — window.AlloMascots load-order watch ──
+    // Allohaven and typingpractice are sibling top-level CDN modules.
+    // If a student opens Allohaven on a cold cache before typingpractice
+    // has loaded, window.AlloMascots is undefined and getCompanionSvg
+    // falls back to the tinted-emoji placeholder. This effect polls for
+    // the namespace and force-rerenders the moment it lands — the
+    // placeholder swaps to the real watercolor mascot SVG seamlessly.
+    //
+    // Polling is bounded: 200ms interval, hard timeout after 15 seconds
+    // (after which the placeholder simply stays — no infinite poll).
+    var mascotsReadyTuple = useState(
+      typeof window !== 'undefined' && !!(window.AlloMascots && window.AlloMascots.getBio)
+    );
+    var mascotsReady = mascotsReadyTuple[0];
+    var setMascotsReady = mascotsReadyTuple[1];
+    useEffect(function() {
+      if (mascotsReady) return; // already loaded — nothing to do
+      if (typeof window === 'undefined') return;
+      var elapsed = 0;
+      var intervalId = setInterval(function() {
+        elapsed += 200;
+        if (window.AlloMascots && window.AlloMascots.getBio) {
+          clearInterval(intervalId);
+          setMascotsReady(true);
+        } else if (elapsed >= 15000) {
+          // Give up — placeholder stays. No harm done.
+          clearInterval(intervalId);
+        }
+      }, 200);
+      return function() { clearInterval(intervalId); };
+      // eslint-disable-next-line
+    }, []);
 
     // Breathing pacer driver (Phase 2p.28). Resets on open and ticks
     // the phase machine ('inhale' → 'hold-in' → 'exhale' → 'hold-out')
