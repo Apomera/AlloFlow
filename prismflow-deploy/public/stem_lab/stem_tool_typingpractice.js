@@ -231,6 +231,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   };
   var BATTLE_STACK_LIMIT = 9; // rows. Stack hits this height → match end.
 
+  // Attack-word bank — pulled from when a player or bot earns a "send"
+  // (combo of 4+ for player; every N cleared words for bot). Words here
+  // are deliberately harder: longer, less predictable rhythm, with one
+  // or two high-value letters. Curated for safety (no slurs, no tricky
+  // homophones that would make the game feel unfair).
+  var BATTLE_ATTACK_WORDS = [
+    'quartz', 'jazzy', 'fjord', 'zephyr', 'kayak', 'puzzle', 'mystic', 'sphinx',
+    'blizzard', 'tropical', 'magnetic', 'electric', 'sympathy', 'gigantic', 'paradox',
+    'rhythmic', 'bewitch', 'voltage', 'whimsy', 'kingdom',
+    'lightning', 'wonderful', 'extremely', 'twilight', 'majestic',
+    'chemistry', 'vehement', 'frequent', 'gizmo', 'jukebox',
+    'hexagon', 'dynamic', 'volcano', 'amazingly'
+  ];
+  var COMBO_SEND_THRESHOLD = 4; // 4-in-a-row combo earns a send
+
+  // Bot send cadence per speed — how many words bot clears before
+  // sending an attack to the player. Faster bots send more often.
+  var BOT_SEND_EVERY = { slow: 7, medium: 5, fast: 4 };
+
   // Bot opponents — three speeds. WPM converted to ms-per-character
   // assuming 5 chars/word standard. errorRate is small to feel human;
   // bot stalls briefly on errors mirroring student behavior.
@@ -9465,7 +9484,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           paused: false, ended: false,
           // Bot side (only used in vs-bot mode)
           botStack: [], botTyped: '', botCleared: 0, botLastRiseAt: 0,
-          botNextKeyAt: 0
+          botNextKeyAt: 0,
+          // Attack tracking — when the bot has cleared botClearedSinceSend
+          // = BOT_SEND_EVERY[speed], it pushes a random attack word to the
+          // player's stack. The player triggers the same when their combo
+          // hits COMBO_SEND_THRESHOLD (resets combo counter). lastAttackAt
+          // is used by the UI to flash a brief "INCOMING" notice.
+          botClearedSinceSend: 0,
+          incomingFlashTo: 0,    // ts until which to flash "incoming" indicator on player stack
+          outgoingFlashTo: 0     // ts for "sent" indicator after a player attack lands
         });
         var battleSt = battleStateRaw[0];
         var setBattleSt = battleStateRaw[1];
@@ -9494,7 +9521,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             cleared: 0, errors: 0, combo: 0, bestCombo: 0,
             paused: false, ended: false,
             botStack: botInitial, botTyped: '', botCleared: 0, botLastRiseAt: now,
-            botNextKeyAt: isVsBot ? now + 1500 : 0  // 1.5s grace period before bot starts
+            botNextKeyAt: isVsBot ? now + 1500 : 0,
+            botClearedSinceSend: 0,
+            incomingFlashTo: 0, outgoingFlashTo: 0
           });
           updMulti({ battle: Object.assign({}, state.battle, { view: 'playing' }) });
         }
@@ -9547,6 +9576,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     newBotTyped = '';
                     newBotCleared += 1;
                     newBotNextKey = now + msPerChar * 3; // brief pause between words
+                    // Bot send-attack — every BOT_SEND_EVERY[speed] cleared
+                    // words, push an attack word to the player's stack.
+                    var sinceSend = battleSt.botClearedSinceSend + 1;
+                    var sendInterval = BOT_SEND_EVERY[state.battle.botSpeed || 'medium'] || 5;
+                    if (sinceSend >= sendInterval) {
+                      var atkBot = BATTLE_ATTACK_WORDS[Math.floor(Math.random() * BATTLE_ATTACK_WORDS.length)];
+                      newPlayerStack = newPlayerStack.concat([atkBot]);
+                      patch.stack = newPlayerStack;
+                      patch.incomingFlashTo = now + 1200;
+                      patch.botClearedSinceSend = 0;
+                    } else {
+                      patch.botClearedSinceSend = sinceSend;
+                    }
                   } else {
                     newBotNextKey = now + msPerChar;
                   }
@@ -9627,13 +9669,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 // Word cleared
                 var diff = BATTLE_DIFFICULTY[state.battle.difficulty || 'mercy'];
                 var newCombo = battleSt.combo + 1;
-                setBattleSt(Object.assign({}, battleSt, {
+                var nowMs = Date.now();
+                // Combo-attack trigger — vs-bot only. Hit the threshold,
+                // pick an attack word and push to opponent's stack. Combo
+                // resets so each attack requires a fresh streak.
+                var attackPatch = {};
+                if (state.battle.mode === 'vs-bot' && newCombo >= COMBO_SEND_THRESHOLD && !battleSt.ended) {
+                  var atk = BATTLE_ATTACK_WORDS[Math.floor(Math.random() * BATTLE_ATTACK_WORDS.length)];
+                  attackPatch.botStack = battleSt.botStack.concat([atk]);
+                  attackPatch.outgoingFlashTo = nowMs + 1200;
+                  newCombo = 0; // reset after spending the slot
+                }
+                setBattleSt(Object.assign({}, battleSt, attackPatch, {
                   stack: battleSt.stack.slice(1),
                   typed: '',
                   cleared: battleSt.cleared + 1,
                   combo: newCombo,
-                  bestCombo: Math.max(battleSt.bestCombo, newCombo),
-                  pauseUntil: Date.now() + diff.postClearPauseMs
+                  bestCombo: Math.max(battleSt.bestCombo, newCombo, attackPatch.botStack ? COMBO_SEND_THRESHOLD : 0),
+                  pauseUntil: nowMs + diff.postClearPauseMs
                 }));
               } else {
                 setBattleSt(Object.assign({}, battleSt, { typed: nextTyped }));
@@ -9680,7 +9733,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
                 [
                   { key: 'solo', label: '🌊 Solo Cascade', blurb: 'Survive as long as you can. No opponent. Personal best tracked.' },
-                  { key: 'vs-bot', label: '🤖 vs Bot', blurb: 'Race against an NPC. Two stacks side-by-side. First stack to fill loses.' }
+                  { key: 'vs-bot', label: '🤖 vs Bot', blurb: 'Race an NPC. Build a 4-clear combo to send a hard word to the bot. Bot does the same to you.' }
                 ].map(function(m) {
                   var active = (state.battle.mode || 'solo') === m.key;
                   return h('button', {
@@ -9889,10 +9942,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: 11, padding: '5px 10px' })
               }, '✕ Quit'),
               isVsBot ? h('span', { style: { fontSize: 11, color: palette.textMute, fontStyle: 'italic' } }, bot.label + ' · ' + bot.wpm + ' WPM') : null,
-              h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 12, fontVariantNumeric: 'tabular-nums', fontSize: 12 } },
+              h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 12, fontVariantNumeric: 'tabular-nums', fontSize: 12, alignItems: 'center' } },
+                // SEND SLOT chip — vs-bot only, lights up when combo is one shy of threshold (preview).
+                // Amber chip = "one more clear ⚡"; pink chip = "attack ready ⚡⚡⚡".
+                isVsBot && battleSt.combo >= COMBO_SEND_THRESHOLD - 1 ? h('span', {
+                  style: {
+                    padding: '2px 8px', borderRadius: 999,
+                    background: battleSt.combo >= COMBO_SEND_THRESHOLD ? 'rgba(244,114,182,0.20)' : 'rgba(251,191,36,0.18)',
+                    border: '1px solid ' + (battleSt.combo >= COMBO_SEND_THRESHOLD ? '#f472b6' : '#fbbf24'),
+                    color: battleSt.combo >= COMBO_SEND_THRESHOLD ? '#f9a8d4' : '#fcd34d',
+                    fontSize: 10, fontWeight: 700, letterSpacing: '0.04em'
+                  }
+                }, battleSt.combo >= COMBO_SEND_THRESHOLD ? '⚡ ATTACK READY' : '⚡ next clear sends') : null,
                 h('span', { style: { color: palette.textMute } }, 'Combo: ', h('strong', { style: { color: battleSt.combo >= 3 ? '#f472b6' : palette.text } }, battleSt.combo))
               )
             ),
+            // Brief flash banners for attacks landing
+            (battleSt.incomingFlashTo > Date.now()) ? h('div', {
+              role: 'status',
+              style: {
+                marginBottom: 10, padding: '6px 12px', borderRadius: 6,
+                background: 'rgba(239,68,68,0.16)', border: '1px solid rgba(239,68,68,0.40)',
+                color: '#fca5a5', fontSize: 12, fontWeight: 700, textAlign: 'center'
+              }
+            }, '⚡ Bot sent you a word!') : null,
+            (battleSt.outgoingFlashTo > Date.now()) ? h('div', {
+              role: 'status',
+              style: {
+                marginBottom: 10, padding: '6px 12px', borderRadius: 6,
+                background: 'rgba(34,197,94,0.16)', border: '1px solid rgba(34,197,94,0.40)',
+                color: '#86efac', fontSize: 12, fontWeight: 700, textAlign: 'center'
+              }
+            }, '⚡ You sent a word to the bot!') : null,
             // Side-by-side or solo playfield
             isVsBot ? h('div', { style: { display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' } },
               renderStackColumn({
