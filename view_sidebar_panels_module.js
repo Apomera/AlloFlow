@@ -2231,6 +2231,43 @@ function OutlinePanel(props) {
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-cyan-600" })
   ));
 }
+function NoteTakingPanel(props) {
+  const {
+    expandedTools,
+    handleGenerate,
+    hasSourceOrAnalysis,
+    isProcessing,
+    noteTakingTemplateType,
+    setNoteTakingTemplateType,
+    t
+  } = props;
+  if (!expandedTools || !expandedTools.includes("note-taking")) return null;
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-violet-50/50 flex flex-col gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("note_taking.template_label") || "Template type"), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": t("common.selection") || "Selection",
+      "data-help-key": "note_taking_template",
+      value: noteTakingTemplateType || "cornell-notes",
+      onChange: (e) => setNoteTakingTemplateType(e.target.value),
+      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-violet-300 focus:ring focus:ring-violet-200 p-1"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "cornell-notes" }, t("note_taking.cornell") || "Cornell Notes (2-column + summary)"),
+    /* @__PURE__ */ React.createElement("option", { value: "lab-report" }, t("note_taking.lab_report") || "Lab Report (Q / Hypothesis / Method / Data / CER / Conclusion)"),
+    /* @__PURE__ */ React.createElement("option", { value: "reading-response" }, t("note_taking.reading_response") || "Reading Response Journal Entry")
+  )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic leading-snug" }, t("note_taking.help") || "Each template is scaffolded from today's source text but persists in your history so you can keep adding to it across lessons.")), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      "aria-label": t("common.generate") || "Generate",
+      "data-help-key": "note_taking_generate_button",
+      onClick: () => handleGenerate("note-taking"),
+      disabled: !hasSourceOrAnalysis || isProcessing,
+      "aria-busy": isProcessing,
+      className: "w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+    },
+    /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-violet-700 transition-colors flex items-center gap-2" }, t("note_taking.generate") || "Generate template", " ", /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
+    /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-violet-600" })
+  ));
+}
 function FaqPanel(props) {
   const {
     expandedTools,
@@ -2430,6 +2467,7 @@ window.AlloModules.BrainstormPanel = (typeof BrainstormPanel !== 'undefined') ? 
 window.AlloModules.ImagePanel = (typeof ImagePanel !== 'undefined') ? ImagePanel : null;
 window.AlloModules.PersonaPanel = (typeof PersonaPanel !== 'undefined') ? PersonaPanel : null;
 window.AlloModules.OutlinePanel = (typeof OutlinePanel !== 'undefined') ? OutlinePanel : null;
+window.AlloModules.NoteTakingPanel = (typeof NoteTakingPanel !== 'undefined') ? NoteTakingPanel : null;
 window.AlloModules.FaqPanel = (typeof FaqPanel !== 'undefined') ? FaqPanel : null;
 window.AlloModules.SentenceFramesPanel = (typeof SentenceFramesPanel !== 'undefined') ? SentenceFramesPanel : null;
 window.AlloModules.LessonPlanPanel = (typeof LessonPlanPanel !== 'undefined') ? LessonPlanPanel : null;

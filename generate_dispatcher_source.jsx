@@ -3762,6 +3762,101 @@ Return ONLY JSON:
           } finally {
               setIsGeneratingPersona(false);
           }
+      } else if (type === 'note-taking') {
+          // Note-Taking Templates (Cornell Notes / Lab Report / Reading Response).
+          // Generates a lesson-aware scaffolded template. Per architectural
+          // directive, the actual template rendering lives in
+          // note_taking_templates_module.js; this dispatcher just builds the
+          // initial data object with lesson-aware pre-population.
+          setIsProcessing(true);
+          if (switchView || !generatedContent) setActiveView('note-taking');
+          const templateType = (configOverride && configOverride.templateType) || (deps.noteTakingTemplateType) || 'cornell-notes';
+          const lessonRef = {
+              sourceTextSnippet: (textToProcess || '').substring(0, 200),
+              generatedAt: new Date().toISOString(),
+              gradeLevel: effectiveGrade,
+              language: effectiveLanguage,
+          };
+          if (templateType === 'cornell-notes') {
+              // Pre-fill cues column with 5-8 key terms / anticipated questions from source.
+              const prompt = `
+                  Analyze the following source text. Extract 5-8 key terms or anticipated student questions that would belong in the LEFT-COLUMN ("Cues") of a Cornell Notes template for a ${effectiveGrade} student. Each cue should be short (1-6 words) and act as a memory anchor or question prompt the student can return to.
+                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Return ONLY a JSON object:
+                  { "title": "Lesson title", "cues": ["Cue 1", "Cue 2", "Cue 3", ...] }
+              `;
+              let scaffolded = { title: sourceTopic || '', cues: [] };
+              try {
+                  const result = await callGemini(prompt, true);
+                  scaffolded = JSON.parse(cleanJson(result));
+              } catch (parseErr) {
+                  warnLog('Cornell Notes scaffold parse failed:', parseErr);
+              }
+              const cuesArr = Array.isArray(scaffolded.cues) ? scaffolded.cues : [];
+              content = {
+                  templateType: 'cornell-notes',
+                  title: scaffolded.title || sourceTopic || 'Cornell Notes',
+                  cues: cuesArr.slice(0, 8).map((text, i) => ({ id: `cue-${Date.now()}-${i}`, text: String(text || '') })),
+                  notes: cuesArr.slice(0, 8).map((_, i) => ({ id: `note-${Date.now()}-${i}`, text: '' })),
+                  summary: '',
+                  lessonRef,
+              };
+          } else if (templateType === 'lab-report') {
+              const prompt = `
+                  Analyze the following science-related source text. Extract: 1) a research question this text raises that a student could investigate, 2) a list of likely materials needed (if the source describes any experimental setup), and 3) a relevant title for the experiment. Target audience: ${effectiveGrade} student.
+                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Return ONLY a JSON object:
+                  { "title": "Experiment title", "question": "Research question?", "materials": ["material 1", "material 2", ...] }
+              `;
+              let scaffolded = { title: sourceTopic || '', question: '', materials: [] };
+              try {
+                  const result = await callGemini(prompt, true);
+                  scaffolded = JSON.parse(cleanJson(result));
+              } catch (parseErr) {
+                  warnLog('Lab Report scaffold parse failed:', parseErr);
+              }
+              const matsArr = Array.isArray(scaffolded.materials) ? scaffolded.materials : [];
+              content = {
+                  templateType: 'lab-report',
+                  title: scaffolded.title || sourceTopic || 'Lab Report',
+                  question: scaffolded.question || '',
+                  hypothesis: '',
+                  materials: matsArr.map((text, i) => ({ id: `mat-${Date.now()}-${i}`, text: String(text || '') })),
+                  procedure: [],
+                  data: '',
+                  analysis: '',
+                  conclusion: '',
+                  lessonRef,
+              };
+          } else if (templateType === 'reading-response') {
+              const prompt = `
+                  Analyze the following source text. Extract the title and author (if present in the text or its metadata). If not explicit, infer the best title from the content.
+                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Return ONLY a JSON object:
+                  { "title": "Reading title", "author": "Author name or empty string" }
+              `;
+              let scaffolded = { title: sourceTopic || '', author: '' };
+              try {
+                  const result = await callGemini(prompt, true);
+                  scaffolded = JSON.parse(cleanJson(result));
+              } catch (parseErr) {
+                  warnLog('Reading Response scaffold parse failed:', parseErr);
+              }
+              content = {
+                  templateType: 'reading-response',
+                  title: scaffolded.title || sourceTopic || 'Reading Response',
+                  author: scaffolded.author || '',
+                  pageRange: '',
+                  favoriteLine: '',
+                  thinkings: '',
+                  connection: { type: 'text-to-self', text: '' },
+                  question: '',
+                  lessonRef,
+              };
+          } else {
+              content = { templateType: 'cornell-notes', title: sourceTopic || 'Notes', cues: [], notes: [], summary: '', lessonRef };
+          }
+          metaInfo = `${effectiveGrade} - ${templateType}`;
       }
       let itemTitle = getDefaultTitle(type);
       if (type === 'analysis') {

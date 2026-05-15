@@ -692,6 +692,11 @@ const MODULES = [
         name: 'LivePolling',
         filename: 'live_polling_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'NoteTakingTemplates',
+        filename: 'note_taking_templates_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
 
@@ -802,6 +807,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_typingpractice.js',
     'stem_lab/stem_tool_weldlab.js',
     'stem_lab/stem_tool_birdlab.js',
+    'stem_lab/stem_tool_raptorhunt.js',
     'stem_lab/stem_tool_swimlab.js',
     'stem_lab/stem_tool_printingpress.js',
     'sel_hub/sel_safety_layer.js',  // MUST load before any sel_tool_*.js

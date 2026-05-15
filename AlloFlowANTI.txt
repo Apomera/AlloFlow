@@ -5782,7 +5782,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     setPendingRole(null);
   };
   const handleToggleAllTools = () => {
-      const allToolIds = ['source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'image', 'faq', 'sentence-frames', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'lesson-plan'];
+      const allToolIds = ['source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'note-taking', 'image', 'faq', 'sentence-frames', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'lesson-plan'];
       const areAllExpanded = allToolIds.every(id => expandedTools.includes(id));
       if (areAllExpanded) {
           setExpandedTools([]);
@@ -9179,6 +9179,19 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const projectFileInputRef = useRef(null);
   const [outlineType, setOutlineType] = useState('Venn Diagram');
   const [outlineCustomInstructions, setOutlineCustomInstructions] = useState('');
+  // Note-Taking Templates (Cornell Notes / Lab Report / Reading Response).
+  // Implementation lives in note_taking_templates_module.js; this is the
+  // minimal monolith state needed to drive template-type selection and
+  // editable updates on generatedContent.data.
+  const [noteTakingTemplateType, setNoteTakingTemplateType] = useState('cornell-notes');
+  const handleNoteUpdate = useCallback((key, value) => {
+    setGeneratedContent(prev => {
+      if (!prev || prev.type !== 'note-taking') return prev;
+      const updated = { ...prev, data: { ...(prev.data || {}), [key]: value } };
+      setHistory(h => h.map(item => item.id === prev.id ? updated : item));
+      return updated;
+    });
+  }, []);
   const [fillInTheBlank, setFillInTheBlank] = useState(false);
   const [creativeMode, setCreativeMode] = useState(false);
   const [noText, setNoText] = useState(true);
@@ -18324,6 +18337,7 @@ Return ONLY valid JSON in this format:
         brainstormCustomInstructions,
         faqCustomInstructions,
         outlineCustomInstructions,
+        noteTakingTemplateType,
         visualCustomInstructions,
         lessonCustomAdditions,
         timelineTopic,
@@ -21549,6 +21563,23 @@ Return ONLY valid JSON in this format:
           outlineType, setOutlineCustomInstructions, setOutlineType, t
                 })}
             </div>
+            <div style={{display: isGuidedToolVisible('note-taking') ? undefined : 'none'}} id="tour-tool-note-taking" data-help-key="tool_note_taking" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
+                ${activeView === 'note-taking' ? 'border-violet-600 shadow-xl shadow-violet-500/20' : 'border-slate-200 hover:border-violet-200 shadow-lg shadow-violet-500/10'}
+              `}>
+                <button
+                    aria-label={t('common.toggle_note_taking') || 'Toggle note-taking templates'}
+                    data-help-key="tool_note_taking"
+                    aria-expanded={expandedTools.includes('note-taking')} onClick={() => toggleTool('note-taking')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-violet-50 transition-colors"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><BookOpen size={16}/> {t('sidebar.tool_note_taking') || 'Note-Taking Templates'}</div>
+                  {expandedTools.includes('note-taking') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+                {/* ── NoteTakingPanel lives in view_sidebar_panels_module.js (CDN) ── */}
+                {expandedTools.includes('note-taking') && window.AlloModules && window.AlloModules.NoteTakingPanel && React.createElement(window.AlloModules.NoteTakingPanel, {
+          expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, noteTakingTemplateType, setNoteTakingTemplateType, t
+                })}
+            </div>
             <div style={{display: isGuidedToolVisible('image') ? undefined : 'none'}} id="tour-tool-visual" data-help-key="tool_visual" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
                 ${activeView === 'image' ? 'border-purple-600 shadow-xl shadow-purple-500/20' : 'border-slate-200 hover:border-purple-200 shadow-lg shadow-purple-500/10'}
               `}>
@@ -22766,6 +22797,10 @@ Return ONLY valid JSON in this format:
                     stopPlayback, executeStartAdventure, adventureEffects,
                     ErrorBoundary, AdventureAmbience, AdventureShop, AnimatedNumber,
                     ClimaxProgressBar, ConfettiExplosion, InventoryGrid
+                })}
+                {activeView === 'note-taking' && window.AlloModules && window.AlloModules.NoteTakingView && React.createElement(window.AlloModules.NoteTakingView, {
+                    t, generatedContent, isTeacherMode, isProcessing,
+                    handleNoteUpdate, handleGenerate
                 })}
                 {activeView === 'image' && window.AlloModules && window.AlloModules.ImageView && React.createElement(window.AlloModules.ImageView, {
                     t, leveledTextLanguage, fillInTheBlank, generatedContent,

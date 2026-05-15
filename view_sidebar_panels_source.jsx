@@ -2442,6 +2442,52 @@ function OutlinePanel(props) {
   );
 }
 
+// ── NoteTakingPanel: multi-session note-taking templates ──
+// Renders inside expandedTools.includes('note-taking'). Lets teacher (or student
+// in independent mode) pick a template type (Cornell Notes / Lab Report /
+// Reading Response) and generate a lesson-aware scaffolded template.
+function NoteTakingPanel(props) {
+  const {
+    expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing,
+    noteTakingTemplateType, setNoteTakingTemplateType, t
+  } = props;
+  if (!expandedTools || !expandedTools.includes('note-taking')) return null;
+  return (
+    <div className="animate-in slide-in-from-top-2 duration-200">
+      <div className="p-3 border-b border-slate-100 bg-violet-50/50 flex flex-col gap-3">
+        <div>
+          <label className="block text-xs text-slate-600 mb-1 font-medium">{t('note_taking.template_label') || 'Template type'}</label>
+          <select
+            aria-label={t('common.selection') || 'Selection'}
+            data-help-key="note_taking_template"
+            value={noteTakingTemplateType || 'cornell-notes'}
+            onChange={(e) => setNoteTakingTemplateType(e.target.value)}
+            className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-violet-300 focus:ring focus:ring-violet-200 p-1"
+          >
+            <option value="cornell-notes">{t('note_taking.cornell') || 'Cornell Notes (2-column + summary)'}</option>
+            <option value="lab-report">{t('note_taking.lab_report') || 'Lab Report (Q / Hypothesis / Method / Data / CER / Conclusion)'}</option>
+            <option value="reading-response">{t('note_taking.reading_response') || 'Reading Response Journal Entry'}</option>
+          </select>
+        </div>
+        <p className="text-[11px] text-slate-500 italic leading-snug">
+          {t('note_taking.help') || "Each template is scaffolded from today's source text but persists in your history so you can keep adding to it across lessons."}
+        </p>
+      </div>
+      <button
+        aria-label={t('common.generate') || 'Generate'}
+        data-help-key="note_taking_generate_button"
+        onClick={() => handleGenerate('note-taking')}
+        disabled={!hasSourceOrAnalysis || isProcessing}
+        aria-busy={isProcessing}
+        className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <span className="text-sm text-slate-600 group-hover:text-violet-700 transition-colors flex items-center gap-2">{t('note_taking.generate') || 'Generate template'} <Sparkles size={14} className="text-yellow-600"/></span>
+        <ArrowRight size={16} className="text-slate-600 group-hover:text-violet-600"/>
+      </button>
+    </div>
+  );
+}
+
 // ── FaqPanel: expandedTools.includes('faq') panel from L23062-L23101 ──
 function FaqPanel(props) {
   const {

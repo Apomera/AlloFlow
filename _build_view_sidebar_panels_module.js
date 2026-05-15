@@ -92,6 +92,7 @@ window.AlloModules.BrainstormPanel = (typeof BrainstormPanel !== 'undefined') ? 
 window.AlloModules.ImagePanel = (typeof ImagePanel !== 'undefined') ? ImagePanel : null;
 window.AlloModules.PersonaPanel = (typeof PersonaPanel !== 'undefined') ? PersonaPanel : null;
 window.AlloModules.OutlinePanel = (typeof OutlinePanel !== 'undefined') ? OutlinePanel : null;
+window.AlloModules.NoteTakingPanel = (typeof NoteTakingPanel !== 'undefined') ? NoteTakingPanel : null;
 window.AlloModules.FaqPanel = (typeof FaqPanel !== 'undefined') ? FaqPanel : null;
 window.AlloModules.SentenceFramesPanel = (typeof SentenceFramesPanel !== 'undefined') ? SentenceFramesPanel : null;
 window.AlloModules.LessonPlanPanel = (typeof LessonPlanPanel !== 'undefined') ? LessonPlanPanel : null;
