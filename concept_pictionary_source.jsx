@@ -1,0 +1,987 @@
+// concept_pictionary_source.jsx
+// Concept Pictionary — multi-drawer / multi-guesser live-session game.
+//
+// Inverts standard Pictionary: 2-4 teacher-assigned student DRAWERS
+// collaborate on a shared canvas while the remaining students GUESS the
+// concept in real time. Reframes drawing as a UDL-aligned comprehension
+// probe: "draw together what you understand about ___, others guess."
+//
+// FERPA-by-design: strokes + guesses flow peer-to-peer over WebRTC and
+// never persist. The only Firestore writes are (a) WebRTC signaling docs
+// (deleted on connect) and (b) Tier-1 fields: roster.{uid}.role and
+// sessionData.pictionaryRound metadata. Concept prompt itself is sent
+// peer-to-peer to drawers only; never written to Firestore.
+//
+// Sibling to LivePolling — same star-topology architecture, separate
+// signaling collection so the two can coexist on the same session.
+
+// ── Helpers ─────────────────────────────────────────────────────────────
+const _pic_genId = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+
+const PEN_COLORS = [
+  { name: 'black',  hex: '#1a202c' },
+  { name: 'red',    hex: '#c53030' },
+  { name: 'blue',   hex: '#2b6cb0' },
+  { name: 'green',  hex: '#2f855a' },
+  { name: 'orange', hex: '#dd6b20' },
+  { name: 'purple', hex: '#6b46c1' },
+];
+const ERASER_SENTINEL = '__eraser__';
+
+const CANVAS_WIDTH = 720;
+const CANVAS_HEIGHT = 480;
+const STROKE_THROTTLE_MS = 33;
+const STROKE_HISTORY_CAP = 800;  // beyond this, oldest strokes get merged into baseline image
+const CONNECTION_TIMEOUT_MS = 10000;
+const PICTIONARY_SIGNALING_PATH = 'pictionary-signaling';
+
+// ── Firebase helpers (mirror LivePolling's getFb pattern) ───────────────
+const _getFb = () => {
+  const fb = (typeof window !== 'undefined') && window.__alloFirebase;
+  if (!fb || !fb.db || !fb.doc || !fb.setDoc || !fb.onSnapshot) return null;
+  return fb;
+};
+const _getAppId = () => {
+  if (typeof window === 'undefined') return 'default-app-id';
+  if (window.appId) return window.appId;
+  if (typeof window.__app_id !== 'undefined') return window.__app_id;
+  return 'default-app-id';
+};
+const _signalingDocRef = (sessionCode, peerUid) => {
+  const fb = _getFb();
+  if (!fb) return null;
+  return fb.doc(fb.db, 'artifacts', _getAppId(), 'public', 'data', PICTIONARY_SIGNALING_PATH, sessionCode, 'peers', peerUid);
+};
+const _signalingCollectionRef = (sessionCode) => {
+  const fb = _getFb();
+  if (!fb || !fb.collection) return null;
+  return fb.collection(fb.db, 'artifacts', _getAppId(), 'public', 'data', PICTIONARY_SIGNALING_PATH, sessionCode, 'peers');
+};
+
+const STUN_SERVERS = [{ urls: 'stun:stun.l.google.com:19302' }];
+const RTC_CONFIG = { iceServers: STUN_SERVERS };
+
+// ── PictionaryHost (teacher) ────────────────────────────────────────────
+// Mirrors PollingHost: collection listener, accept-peer flow, per-peer
+// data channel. The differences vs polling:
+//   - Stroke broadcast: re-emits incoming strokes from drawers to all OTHER
+//     peers (so guessers see every drawer's strokes, and drawers see each
+//     other's so they can coordinate).
+//   - Stroke history buffer: every stroke is stored on the host in memory;
+//     when a new peer connects mid-round, host replays the buffer so the
+//     joiner sees the same canvas as everyone else. Memory only, never
+//     persisted. Cleared on round end.
+//   - Concept prompt: sent only to peers whose uid is in the drawerUids set.
+class PictionaryHost {
+  constructor(config) {
+    this.sessionCode = config.sessionCode;
+    this.onGuestConnected = config.onGuestConnected || (() => {});
+    this.onGuestLeft = config.onGuestLeft || (() => {});
+    this.onStroke = config.onStroke || (() => {});
+    this.onGuess = config.onGuess || (() => {});
+    this.peers = new Map();           // uid -> { pc, dc, codename, signalingRef }
+    this.collectionUnsub = null;
+    this.activeRound = null;          // { roundId, concept, drawerUids: Set, status }
+    this.strokeHistory = [];          // [{strokeId, uid, color, points}]
+    this._stopped = false;
+  }
+  async start() {
+    const fb = _getFb();
+    if (!fb) throw new Error('Pictionary: Firebase not available');
+    if (!this.sessionCode) throw new Error('Pictionary: sessionCode required');
+    const peersRef = _signalingCollectionRef(this.sessionCode);
+    if (!peersRef) throw new Error('Pictionary: cannot resolve signaling collection');
+    this.collectionUnsub = fb.onSnapshot(peersRef, (snap) => {
+      if (this._stopped) return;
+      snap.docChanges().forEach((change) => {
+        if (change.type === 'removed') return;
+        const uid = change.doc.id;
+        const data = change.doc.data() || {};
+        if (data.offer && !this.peers.has(uid)) {
+          this._acceptPeer(uid, data, change.doc.ref);
+        } else if (data.iceFromGuest && this.peers.has(uid)) {
+          const peer = this.peers.get(uid);
+          (data.iceFromGuest || []).forEach((c) => {
+            try { peer.pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {}); } catch (_) {}
+          });
+        }
+      });
+    }, (err) => {
+      console.warn('[Pictionary host] signaling subscribe error:', err && err.message);
+    });
+  }
+  async _acceptPeer(uid, offerData, signalingRef) {
+    const fb = _getFb();
+    if (!fb) return;
+    const pc = new RTCPeerConnection(RTC_CONFIG);
+    const codename = (typeof offerData.codename === 'string' && offerData.codename.slice(0, 64)) || 'Guest';
+    const peerRecord = { pc, dc: null, signalingRef, codename, sentIce: [] };
+    this.peers.set(uid, peerRecord);
+    pc.onicecandidate = (e) => {
+      if (!e.candidate) return;
+      peerRecord.sentIce.push(e.candidate.toJSON());
+      fb.setDoc(signalingRef, { iceFromHost: peerRecord.sentIce }, { merge: true }).catch(() => {});
+    };
+    pc.ondatachannel = (e) => {
+      const dc = e.channel;
+      peerRecord.dc = dc;
+      dc.onopen = () => {
+        this.onGuestConnected(uid, codename);
+        // Replay stroke history so this peer sees the same canvas as everyone else
+        if (this.strokeHistory.length > 0) {
+          try { dc.send(JSON.stringify({ type: 'strokeHistory', payload: { strokes: this.strokeHistory } })); } catch (_) {}
+        }
+        // If a round is active, also send the round-start (with concept only if drawer)
+        if (this.activeRound) {
+          const isDrawer = this.activeRound.drawerUids.has(uid);
+          const payload = {
+            roundId: this.activeRound.roundId,
+            status: this.activeRound.status,
+            isDrawer,
+            concept: isDrawer ? this.activeRound.concept : null,
+            drawerUids: Array.from(this.activeRound.drawerUids),
+          };
+          try { dc.send(JSON.stringify({ type: 'roundStart', payload })); } catch (_) {}
+        }
+      };
+      dc.onmessage = (msg) => {
+        try {
+          const parsed = JSON.parse(msg.data);
+          if (!parsed || !parsed.type) return;
+          if (parsed.type === 'stroke' && parsed.payload) {
+            this._onIncomingStroke(uid, codename, parsed.payload);
+          } else if (parsed.type === 'guess' && parsed.payload) {
+            this.onGuess(uid, codename, parsed.payload);
+          }
+        } catch (_) {}
+      };
+      dc.onclose = () => this._cleanupPeer(uid);
+    };
+    pc.onconnectionstatechange = () => {
+      if (pc.connectionState === 'connected') {
+        setTimeout(() => fb.deleteDoc(signalingRef).catch(() => {}), 750);
+      } else if (pc.connectionState === 'failed' || pc.connectionState === 'closed' || pc.connectionState === 'disconnected') {
+        this._cleanupPeer(uid);
+      }
+    };
+    try {
+      await pc.setRemoteDescription(new RTCSessionDescription(offerData.offer));
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      await fb.setDoc(signalingRef, { answer: { type: answer.type, sdp: answer.sdp } }, { merge: true });
+    } catch (err) {
+      console.warn('[Pictionary host] accept peer failed:', err && err.message);
+      this._cleanupPeer(uid);
+    }
+  }
+  _onIncomingStroke(senderUid, senderCodename, stroke) {
+    // Reject strokes from peers not currently assigned as drawers
+    if (!this.activeRound || !this.activeRound.drawerUids.has(senderUid)) return;
+    // Tag with sender uid for downstream filtering / late-joiner replay
+    const augmented = { ...stroke, uid: senderUid };
+    // Buffer (cap memory)
+    this.strokeHistory.push(augmented);
+    if (this.strokeHistory.length > STROKE_HISTORY_CAP) {
+      this.strokeHistory.splice(0, this.strokeHistory.length - STROKE_HISTORY_CAP);
+    }
+    // Re-broadcast to all OTHER peers (drawers see each other's strokes; guessers see all)
+    const msg = JSON.stringify({ type: 'stroke', payload: augmented });
+    this.peers.forEach((peer, uid) => {
+      if (uid === senderUid) return;
+      if (peer.dc && peer.dc.readyState === 'open') {
+        try { peer.dc.send(msg); } catch (_) {}
+      }
+    });
+    this.onStroke(senderUid, senderCodename, augmented);
+  }
+  startRound(roundData) {
+    // roundData: { concept, drawerUids: string[] }
+    const drawerSet = new Set((roundData && roundData.drawerUids) || []);
+    this.activeRound = {
+      roundId: _pic_genId('round'),
+      concept: String((roundData && roundData.concept) || ''),
+      drawerUids: drawerSet,
+      status: 'drawing',
+    };
+    this.strokeHistory = [];
+    // Send roundStart to each peer; only drawers receive the concept
+    this.peers.forEach((peer, uid) => {
+      if (!peer.dc || peer.dc.readyState !== 'open') return;
+      const isDrawer = drawerSet.has(uid);
+      const payload = {
+        roundId: this.activeRound.roundId,
+        status: 'drawing',
+        isDrawer,
+        concept: isDrawer ? this.activeRound.concept : null,
+        drawerUids: Array.from(drawerSet),
+      };
+      try { peer.dc.send(JSON.stringify({ type: 'roundStart', payload })); } catch (_) {}
+    });
+  }
+  resolveRound(result) {
+    // result: { winnerUid?: string, revealConcept: bool }
+    if (!this.activeRound) return;
+    const payload = {
+      roundId: this.activeRound.roundId,
+      status: 'resolved',
+      winnerUid: (result && result.winnerUid) || null,
+      concept: this.activeRound.concept,
+    };
+    const msg = JSON.stringify({ type: 'roundResolved', payload });
+    this.peers.forEach((peer) => {
+      if (peer.dc && peer.dc.readyState === 'open') {
+        try { peer.dc.send(msg); } catch (_) {}
+      }
+    });
+    this.activeRound = null;
+    this.strokeHistory = [];
+  }
+  clearCanvas() {
+    this.strokeHistory = [];
+    const msg = JSON.stringify({ type: 'canvasClear', payload: {} });
+    this.peers.forEach((peer) => {
+      if (peer.dc && peer.dc.readyState === 'open') {
+        try { peer.dc.send(msg); } catch (_) {}
+      }
+    });
+  }
+  _cleanupPeer(uid) {
+    const peer = this.peers.get(uid);
+    if (!peer) return;
+    try { if (peer.pc) peer.pc.close(); } catch (_) {}
+    if (peer.signalingRef) {
+      const fb = _getFb();
+      if (fb) fb.deleteDoc(peer.signalingRef).catch(() => {});
+    }
+    this.peers.delete(uid);
+    this.onGuestLeft(uid);
+  }
+  stop() {
+    this._stopped = true;
+    if (this.collectionUnsub) {
+      try { this.collectionUnsub(); } catch (_) {}
+      this.collectionUnsub = null;
+    }
+    Array.from(this.peers.keys()).forEach((uid) => this._cleanupPeer(uid));
+    this.activeRound = null;
+    this.strokeHistory = [];
+  }
+}
+
+// ── PictionaryGuest (student) ───────────────────────────────────────────
+class PictionaryGuest {
+  constructor(config) {
+    this.sessionCode = config.sessionCode;
+    this.userUid = config.userUid;
+    this.codename = (typeof config.codename === 'string' && config.codename.slice(0, 64)) || 'Guest';
+    this.onConnected = config.onConnected || (() => {});
+    this.onDisconnected = config.onDisconnected || (() => {});
+    this.onFailed = config.onFailed || (() => {});
+    this.onRoundStart = config.onRoundStart || (() => {});
+    this.onRoundResolved = config.onRoundResolved || (() => {});
+    this.onStroke = config.onStroke || (() => {});
+    this.onStrokeHistory = config.onStrokeHistory || (() => {});
+    this.onCanvasClear = config.onCanvasClear || (() => {});
+    this.pc = null;
+    this.dc = null;
+    this.signalingRef = null;
+    this.signalingUnsub = null;
+    this.sentIce = [];
+    this._connected = false;
+    this._timeoutHandle = null;
+  }
+  async join() {
+    const fb = _getFb();
+    if (!fb) throw new Error('Pictionary: Firebase not available');
+    if (!this.sessionCode || !this.userUid) throw new Error('Pictionary: sessionCode + userUid required');
+    this.signalingRef = _signalingDocRef(this.sessionCode, this.userUid);
+    this.pc = new RTCPeerConnection(RTC_CONFIG);
+    this.dc = this.pc.createDataChannel('pictionary', { ordered: true });
+    this.pc.onicecandidate = (e) => {
+      if (!e.candidate) return;
+      this.sentIce.push(e.candidate.toJSON());
+      fb.setDoc(this.signalingRef, { iceFromGuest: this.sentIce }, { merge: true }).catch(() => {});
+    };
+    this.dc.onopen = () => {
+      this._connected = true;
+      if (this._timeoutHandle) { clearTimeout(this._timeoutHandle); this._timeoutHandle = null; }
+      this.onConnected();
+    };
+    this.dc.onclose = () => { if (this._connected) this.onDisconnected(); };
+    this.dc.onmessage = (msg) => {
+      try {
+        const parsed = JSON.parse(msg.data);
+        if (!parsed || !parsed.type) return;
+        if (parsed.type === 'roundStart') this.onRoundStart(parsed.payload);
+        else if (parsed.type === 'roundResolved') this.onRoundResolved(parsed.payload);
+        else if (parsed.type === 'stroke') this.onStroke(parsed.payload);
+        else if (parsed.type === 'strokeHistory') this.onStrokeHistory((parsed.payload && parsed.payload.strokes) || []);
+        else if (parsed.type === 'canvasClear') this.onCanvasClear();
+      } catch (_) {}
+    };
+    this.pc.onconnectionstatechange = () => {
+      if (this.pc.connectionState === 'connected') {
+        setTimeout(() => fb.deleteDoc(this.signalingRef).catch(() => {}), 750);
+      } else if (this.pc.connectionState === 'failed') {
+        this.onFailed();
+      }
+    };
+    try {
+      const offer = await this.pc.createOffer();
+      await this.pc.setLocalDescription(offer);
+      await fb.setDoc(this.signalingRef, {
+        offer: { type: offer.type, sdp: offer.sdp },
+        codename: this.codename,
+        createdAt: Date.now(),
+      });
+    } catch (err) {
+      console.warn('[Pictionary guest] setup failed:', err && err.message);
+      this.onFailed();
+      return;
+    }
+    this.signalingUnsub = fb.onSnapshot(this.signalingRef, (snap) => {
+      const data = (snap && snap.data && snap.data()) || null;
+      if (!data) return;
+      if (data.answer && this.pc.signalingState === 'have-local-offer') {
+        this.pc.setRemoteDescription(new RTCSessionDescription(data.answer)).catch(() => {});
+      }
+      if (Array.isArray(data.iceFromHost)) {
+        data.iceFromHost.forEach((c) => {
+          this.pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {});
+        });
+      }
+    }, () => {});
+    this._timeoutHandle = setTimeout(() => {
+      if (!this._connected) {
+        console.warn('[Pictionary guest] connection timeout');
+        this.onFailed();
+      }
+    }, CONNECTION_TIMEOUT_MS);
+  }
+  sendStroke(stroke) {
+    if (!this.dc || this.dc.readyState !== 'open') return false;
+    try { this.dc.send(JSON.stringify({ type: 'stroke', payload: stroke })); return true; } catch (_) { return false; }
+  }
+  sendGuess(text) {
+    if (!this.dc || this.dc.readyState !== 'open') return false;
+    const payload = { text: String(text || '').slice(0, 200), timestamp: Date.now(), codename: this.codename };
+    try { this.dc.send(JSON.stringify({ type: 'guess', payload })); return true; } catch (_) { return false; }
+  }
+  leave() {
+    if (this._timeoutHandle) { clearTimeout(this._timeoutHandle); this._timeoutHandle = null; }
+    if (this.signalingUnsub) { try { this.signalingUnsub(); } catch (_) {} this.signalingUnsub = null; }
+    if (this.signalingRef) {
+      const fb = _getFb();
+      if (fb) fb.deleteDoc(this.signalingRef).catch(() => {});
+    }
+    try { if (this.pc) this.pc.close(); } catch (_) {}
+    this.pc = null;
+    this.dc = null;
+  }
+}
+
+// ── Canvas component ───────────────────────────────────────────────────
+// Renders strokes via 2D canvas. drawingEnabled gates user input;
+// onStrokeComplete fires when the user lifts pen/finger with the
+// accumulated point batch ready to broadcast.
+const PictionaryCanvas = React.memo((props) => {
+  const strokes = Array.isArray(props.strokes) ? props.strokes : [];
+  const drawingEnabled = !!props.drawingEnabled;
+  const color = props.color || PEN_COLORS[0].hex;
+  const mode = props.mode || 'pen';            // 'pen' | 'eraser'
+  const onStrokeBatch = props.onStrokeBatch || (() => {});  // (stroke) => void
+  const onLiveStrokeStart = props.onLiveStrokeStart;        // optional: live partial broadcast hook
+  const liveOpacity = props.liveOpacity == null ? 1 : props.liveOpacity;
+  const canvasRef = React.useRef(null);
+  const drawingRef = React.useRef({
+    isDrawing: false,
+    points: [],
+    strokeId: null,
+    lastFlush: 0,
+  });
+
+  // Draw whenever strokes prop changes
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Paper background
+    ctx.fillStyle = '#fffefb';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Replay all strokes
+    strokes.forEach((s) => _renderStroke(ctx, s, 1));
+  }, [strokes]);
+
+  const _renderStroke = (ctx, stroke, opacity) => {
+    if (!stroke || !Array.isArray(stroke.points) || stroke.points.length === 0) return;
+    const isErase = stroke.color === ERASER_SENTINEL;
+    ctx.save();
+    ctx.globalCompositeOperation = isErase ? 'destination-out' : 'source-over';
+    ctx.strokeStyle = isErase ? 'rgba(0,0,0,1)' : stroke.color;
+    ctx.lineWidth = isErase ? 28 : 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.globalAlpha = opacity;
+    ctx.beginPath();
+    const p0 = stroke.points[0];
+    ctx.moveTo(p0[0], p0[1]);
+    for (let i = 1; i < stroke.points.length; i++) {
+      ctx.lineTo(stroke.points[i][0], stroke.points[i][1]);
+    }
+    ctx.stroke();
+    ctx.restore();
+  };
+
+  const _posFromEvent = (e) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return [0, 0];
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return [(clientX - rect.left) * scaleX, (clientY - rect.top) * scaleY];
+  };
+
+  const _drawLocalSegment = (from, to) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const isErase = mode === 'eraser';
+    ctx.save();
+    ctx.globalCompositeOperation = isErase ? 'destination-out' : 'source-over';
+    ctx.strokeStyle = isErase ? 'rgba(0,0,0,1)' : color;
+    ctx.lineWidth = isErase ? 28 : 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.globalAlpha = liveOpacity;
+    ctx.beginPath();
+    ctx.moveTo(from[0], from[1]);
+    ctx.lineTo(to[0], to[1]);
+    ctx.stroke();
+    ctx.restore();
+  };
+
+  const handlePointerDown = (e) => {
+    if (!drawingEnabled) return;
+    e.preventDefault();
+    const pos = _posFromEvent(e);
+    drawingRef.current.isDrawing = true;
+    drawingRef.current.points = [pos];
+    drawingRef.current.strokeId = _pic_genId('stroke');
+    drawingRef.current.lastFlush = Date.now();
+    if (typeof onLiveStrokeStart === 'function') {
+      onLiveStrokeStart(drawingRef.current.strokeId, mode === 'eraser' ? ERASER_SENTINEL : color);
+    }
+  };
+  const handlePointerMove = (e) => {
+    if (!drawingEnabled || !drawingRef.current.isDrawing) return;
+    e.preventDefault();
+    const pos = _posFromEvent(e);
+    const prev = drawingRef.current.points[drawingRef.current.points.length - 1];
+    drawingRef.current.points.push(pos);
+    if (prev) _drawLocalSegment(prev, pos);
+    // Throttled live-broadcast hook could go here in v2; v1 sends only on pointer-up.
+  };
+  const handlePointerUp = () => {
+    if (!drawingRef.current.isDrawing) return;
+    const points = drawingRef.current.points.slice();
+    const stroke = {
+      strokeId: drawingRef.current.strokeId,
+      color: mode === 'eraser' ? ERASER_SENTINEL : color,
+      points,
+      ts: Date.now(),
+    };
+    drawingRef.current.isDrawing = false;
+    drawingRef.current.points = [];
+    drawingRef.current.strokeId = null;
+    if (points.length >= 1) onStrokeBatch(stroke);
+  };
+
+  return (
+    <div className="pic-canvas-wrap" style={{ position: 'relative', width: '100%', maxWidth: CANVAS_WIDTH, margin: '0 auto' }}>
+      <canvas
+        ref={canvasRef}
+        width={CANVAS_WIDTH}
+        height={CANVAS_HEIGHT}
+        style={{
+          width: '100%',
+          height: 'auto',
+          background: '#fffefb',
+          border: '2px solid #cbd5e0',
+          borderRadius: '12px',
+          touchAction: 'none',
+          cursor: drawingEnabled ? (mode === 'eraser' ? 'cell' : 'crosshair') : 'default',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+        }}
+        onMouseDown={handlePointerDown}
+        onMouseMove={handlePointerMove}
+        onMouseUp={handlePointerUp}
+        onMouseLeave={handlePointerUp}
+        onTouchStart={handlePointerDown}
+        onTouchMove={handlePointerMove}
+        onTouchEnd={handlePointerUp}
+        aria-label="Pictionary drawing canvas"
+      />
+      {!drawingEnabled ? (
+        <div style={{ position: 'absolute', bottom: 8, right: 12, background: 'rgba(255,255,255,0.85)', padding: '4px 10px', borderRadius: 6, fontSize: 11, color: '#4a5568', fontWeight: 600 }}>
+          👀 watching
+        </div>
+      ) : null}
+    </div>
+  );
+});
+
+// ── Toolbox (drawers only) ─────────────────────────────────────────────
+const DrawerToolbox = React.memo((props) => {
+  const color = props.color || PEN_COLORS[0].hex;
+  const setColor = props.setColor || (() => {});
+  const mode = props.mode || 'pen';
+  const setMode = props.setMode || (() => {});
+  const onClear = props.onClear || null;
+  const onUndo = props.onUndo || null;
+  return (
+    <div className="flex flex-wrap items-center gap-2 mt-3 mb-2 px-2">
+      <div className="flex gap-1">
+        {PEN_COLORS.map((c) => (
+          <button
+            key={c.name}
+            onClick={() => { setColor(c.hex); setMode('pen'); }}
+            aria-pressed={mode === 'pen' && color === c.hex}
+            aria-label={`Pen color ${c.name}`}
+            title={c.name}
+            style={{
+              width: 32, height: 32, borderRadius: '50%',
+              background: c.hex,
+              border: (mode === 'pen' && color === c.hex) ? '3px solid #1a202c' : '2px solid #fff',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+              cursor: 'pointer',
+            }}
+          />
+        ))}
+      </div>
+      <button
+        onClick={() => setMode(mode === 'eraser' ? 'pen' : 'eraser')}
+        aria-pressed={mode === 'eraser'}
+        aria-label="Eraser"
+        className={`px-3 py-1.5 text-xs font-bold rounded-full border ${mode === 'eraser' ? 'bg-slate-700 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
+      >🧽 Eraser</button>
+      {onUndo ? (
+        <button
+          onClick={onUndo}
+          className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+          aria-label="Undo last stroke"
+        >↶ Undo</button>
+      ) : null}
+      {onClear ? (
+        <button
+          onClick={onClear}
+          className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-red-700 border-red-300 hover:bg-red-50"
+          aria-label="Clear canvas"
+        >✕ Clear</button>
+      ) : null}
+    </div>
+  );
+});
+
+// ── Host view (teacher dashboard) ──────────────────────────────────────
+const PictionaryHostView = React.memo((props) => {
+  const isOpen = !!props.isOpen;
+  const onClose = props.onClose || (() => {});
+  const sessionCode = props.sessionCode;
+  const roster = (props.sessionData && props.sessionData.roster) || {};
+  const writeToSession = props.writeToSession || null;
+  const sessionRef = props.sessionRef || null;
+  const callGemini = props.callGemini || null;
+  const sourceText = props.sourceText || '';
+
+  // WebRTC host instance
+  const hostRef = React.useRef(null);
+  const [connectedGuests, setConnectedGuests] = React.useState({});  // uid -> codename
+  const [strokes, setStrokes] = React.useState([]);
+  const [guessFeed, setGuessFeed] = React.useState([]);              // [{uid, codename, text, ts, marked}]
+  // Round config
+  const [concept, setConcept] = React.useState('');
+  const [conceptIdeas, setConceptIdeas] = React.useState([]);
+  const [drawerUids, setDrawerUids] = React.useState([]);            // string[]
+  const [roundActive, setRoundActive] = React.useState(false);
+  const [roundResolved, setRoundResolved] = React.useState(null);    // { concept, winnerUid }
+  const [isLoadingIdeas, setIsLoadingIdeas] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!isOpen || !sessionCode) return;
+    if (hostRef.current) return;
+    const host = new PictionaryHost({
+      sessionCode,
+      onGuestConnected: (uid, codename) => setConnectedGuests((prev) => ({ ...prev, [uid]: codename })),
+      onGuestLeft: (uid) => setConnectedGuests((prev) => { const next = { ...prev }; delete next[uid]; return next; }),
+      onStroke: (uid, codename, stroke) => setStrokes((prev) => prev.concat([stroke])),
+      onGuess: (uid, codename, payload) => setGuessFeed((prev) => prev.concat([{
+        id: _pic_genId('guess'), uid, codename, text: payload.text, ts: payload.timestamp || Date.now(), marked: null,
+      }])),
+    });
+    host.start().catch((err) => console.warn('[Pictionary host] start failed:', err && err.message));
+    hostRef.current = host;
+    return () => {
+      try { hostRef.current && hostRef.current.stop(); } catch (_) {}
+      hostRef.current = null;
+    };
+  }, [isOpen, sessionCode]);
+
+  const handleAISuggestConcepts = async () => {
+    if (!callGemini || isLoadingIdeas) return;
+    setIsLoadingIdeas(true);
+    try {
+      const trimmed = (sourceText || '').slice(0, 3000);
+      const prompt = `Suggest 8 short concepts students could draw to demonstrate their understanding of this lesson. Each concept should be a single noun or 2-3 word phrase that's drawable (visualizable as a sketch). No abstract feelings. Source: "${trimmed}". Return ONLY a JSON object: { "concepts": ["concept 1", "concept 2", ...] }`;
+      const result = await callGemini(prompt, true);
+      const parsed = JSON.parse((typeof window !== 'undefined' && window.cleanJson) ? window.cleanJson(result) : result);
+      if (Array.isArray(parsed.concepts)) setConceptIdeas(parsed.concepts.slice(0, 8).map(String));
+    } catch (err) { console.warn('[Pictionary] concept suggest failed:', err && err.message); }
+    finally { setIsLoadingIdeas(false); }
+  };
+
+  const toggleDrawer = (uid) => {
+    setDrawerUids((prev) => {
+      if (prev.includes(uid)) return prev.filter((x) => x !== uid);
+      if (prev.length >= 4) return prev;
+      return prev.concat([uid]);
+    });
+  };
+
+  const handleStartRound = async () => {
+    if (!hostRef.current || !concept.trim() || drawerUids.length === 0) return;
+    hostRef.current.startRound({ concept: concept.trim(), drawerUids });
+    setStrokes([]);
+    setGuessFeed([]);
+    setRoundActive(true);
+    setRoundResolved(null);
+    // Write Tier-1 role markers to session doc so each peer can identify its role
+    if (writeToSession && sessionRef) {
+      const updates = {};
+      Object.keys(roster).forEach((uid) => {
+        updates[`roster.${uid}.role`] = drawerUids.includes(uid) ? 'drawer' : 'guesser';
+      });
+      try { await writeToSession(sessionRef, updates); } catch (err) {
+        console.warn('[Pictionary] role write failed:', err && err.message);
+      }
+    }
+  };
+  const handleMarkCorrect = async (guessId) => {
+    setGuessFeed((prev) => prev.map((g) => g.id === guessId ? { ...g, marked: 'correct' } : g));
+    const correctGuess = guessFeed.find((g) => g.id === guessId);
+    if (hostRef.current) hostRef.current.resolveRound({ winnerUid: correctGuess && correctGuess.uid });
+    setRoundResolved({ concept, winnerUid: correctGuess && correctGuess.uid });
+    setRoundActive(false);
+    if (writeToSession && sessionRef) {
+      const updates = {};
+      Object.keys(roster).forEach((uid) => { updates[`roster.${uid}.role`] = null; });
+      try { await writeToSession(sessionRef, updates); } catch (_) {}
+    }
+  };
+  const handleEndRound = async () => {
+    if (hostRef.current) hostRef.current.resolveRound({ winnerUid: null });
+    setRoundResolved({ concept, winnerUid: null });
+    setRoundActive(false);
+    if (writeToSession && sessionRef) {
+      const updates = {};
+      Object.keys(roster).forEach((uid) => { updates[`roster.${uid}.role`] = null; });
+      try { await writeToSession(sessionRef, updates); } catch (_) {}
+    }
+  };
+  const handleResetForNextRound = () => {
+    setConcept('');
+    setDrawerUids([]);
+    setStrokes([]);
+    setGuessFeed([]);
+    setRoundResolved(null);
+    if (hostRef.current) hostRef.current.clearCanvas();
+  };
+
+  if (!isOpen) return null;
+  const rosterEntries = Object.keys(roster).map((uid) => ({ uid, name: (roster[uid] && roster[uid].name) || 'Student', connected: !!connectedGuests[uid] }));
+  return (
+    <div className="fixed inset-0 z-[80] flex items-start justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Concept Pictionary host dashboard">
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-5xl my-8 overflow-hidden border border-slate-200">
+        <div className="flex items-start justify-between p-5 border-b border-slate-200 bg-gradient-to-r from-rose-50 via-orange-50 to-amber-50">
+          <div>
+            <div className="text-[11px] font-bold text-rose-700 uppercase tracking-wider">Live Game</div>
+            <h2 className="text-2xl font-black text-slate-800 mt-0.5">🎨 Concept Pictionary</h2>
+            <p className="text-xs text-slate-600 mt-1 leading-snug">Multi-drawer collaborative comprehension probe. Strokes + guesses peer-to-peer, never stored.</p>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-2xl leading-none p-1 -mt-1 -mr-1 rounded hover:bg-slate-100" aria-label="Close">✕</button>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-5">
+          <div>
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-3">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="text-xs font-bold uppercase tracking-wider text-slate-700">Canvas</div>
+                <div className="flex items-center gap-2">
+                  {roundActive ? (
+                    <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-800 border border-rose-300">● Round live</span>
+                  ) : roundResolved ? (
+                    <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">Resolved</span>
+                  ) : (
+                    <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-300">Idle</span>
+                  )}
+                  {roundActive ? (
+                    <button onClick={handleEndRound} className="px-2 py-1 text-xs font-bold rounded bg-slate-200 hover:bg-slate-300 text-slate-800">End round</button>
+                  ) : null}
+                </div>
+              </div>
+              <PictionaryCanvas strokes={strokes} drawingEnabled={false} />
+              {roundResolved ? (
+                <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900">
+                  <strong>Concept:</strong> {roundResolved.concept || '(none)'}{' '}
+                  {roundResolved.winnerUid && roster[roundResolved.winnerUid] ? (
+                    <span>— first correct: <strong>{roster[roundResolved.winnerUid].name}</strong></span>
+                  ) : <span className="italic">— ended without a winner</span>}
+                  <div className="mt-2">
+                    <button onClick={handleResetForNextRound} className="px-3 py-1 text-xs font-bold rounded-full bg-emerald-600 text-white hover:bg-emerald-700">Set up next round →</button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+            <div className="bg-white border border-slate-200 rounded-xl p-3">
+              <div className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Guesses ({guessFeed.length})</div>
+              {guessFeed.length === 0 ? (
+                <div className="text-xs text-slate-400 italic">No guesses yet.</div>
+              ) : (
+                <ul className="space-y-1 max-h-48 overflow-y-auto">
+                  {guessFeed.slice().reverse().map((g) => (
+                    <li key={g.id} className={`flex items-center gap-2 p-2 rounded ${g.marked === 'correct' ? 'bg-emerald-50 border border-emerald-200' : 'hover:bg-slate-50'}`}>
+                      <span className="font-bold text-slate-700 text-xs flex-shrink-0">{g.codename}:</span>
+                      <span className="flex-1 text-sm text-slate-800">{g.text}</span>
+                      {roundActive && g.marked == null ? (
+                        <button onClick={() => handleMarkCorrect(g.id)} className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-600 text-white hover:bg-emerald-700">✓ correct</button>
+                      ) : g.marked === 'correct' ? (
+                        <span className="text-[10px] font-bold text-emerald-700">✓</span>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+          <div className="space-y-3">
+            {!roundActive ? (
+              <>
+                <div className="bg-white border border-slate-200 rounded-xl p-3">
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">1. Concept to draw</div>
+                  <textarea
+                    value={concept}
+                    onChange={(e) => setConcept(e.target.value)}
+                    placeholder="e.g. photosynthesis, checks and balances..."
+                    className="w-full text-sm border border-slate-300 rounded p-2 outline-none focus:ring-2 focus:ring-rose-300 resize-y min-h-[44px]"
+                    aria-label="Concept to draw"
+                  />
+                  {callGemini ? (
+                    <button onClick={handleAISuggestConcepts} disabled={isLoadingIdeas} className="mt-2 w-full px-2 py-1 text-xs font-bold rounded bg-rose-50 border border-rose-200 text-rose-800 hover:bg-rose-100 disabled:opacity-50">
+                      {isLoadingIdeas ? 'Thinking…' : '✨ Suggest from lesson'}
+                    </button>
+                  ) : null}
+                  {conceptIdeas.length > 0 ? (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {conceptIdeas.map((idea, i) => (
+                        <button key={i} onClick={() => setConcept(idea)} className="px-2 py-0.5 text-[11px] font-medium rounded-full bg-amber-50 border border-amber-200 text-amber-900 hover:bg-amber-100">
+                          {idea}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+                <div className="bg-white border border-slate-200 rounded-xl p-3">
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">2. Pick drawers (max 4)</div>
+                  {rosterEntries.length === 0 ? (
+                    <div className="text-xs text-slate-400 italic">No students in the session yet. Drawer assignment opens once they join.</div>
+                  ) : (
+                    <ul className="space-y-1 max-h-48 overflow-y-auto">
+                      {rosterEntries.map((s) => {
+                        const isDrawer = drawerUids.includes(s.uid);
+                        return (
+                          <li key={s.uid}>
+                            <button
+                              onClick={() => toggleDrawer(s.uid)}
+                              disabled={!isDrawer && drawerUids.length >= 4}
+                              className={`w-full text-left flex items-center justify-between p-2 rounded text-sm border ${isDrawer ? 'bg-rose-50 border-rose-300 text-rose-900' : 'bg-white border-slate-200 hover:bg-slate-50 disabled:opacity-40'}`}
+                            >
+                              <span>{s.name}{s.connected ? '' : <span className="ml-2 text-[10px] text-slate-400 italic">(offline)</span>}</span>
+                              <span className="text-[10px] font-bold">{isDrawer ? '🎨 drawer' : 'guesser'}</span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+                <button
+                  onClick={handleStartRound}
+                  disabled={!concept.trim() || drawerUids.length === 0}
+                  className="w-full px-3 py-2 text-sm font-black rounded-full bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-40 shadow-lg shadow-rose-500/30"
+                >▶ Start round</button>
+              </>
+            ) : (
+              <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-xs">
+                <div className="font-bold text-rose-800 mb-1">Round in progress</div>
+                <div className="text-slate-700"><strong>Concept:</strong> {concept}</div>
+                <div className="text-slate-700 mt-1"><strong>Drawers:</strong> {drawerUids.map((uid) => (roster[uid] && roster[uid].name) || 'Student').join(', ')}</div>
+                <p className="text-slate-500 italic mt-2 leading-snug">Mark a guess correct on the left when someone gets it.</p>
+              </div>
+            )}
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-2 text-[11px] text-slate-600">
+              <div className="font-bold text-slate-700 mb-1">Connected: {Object.keys(connectedGuests).length}</div>
+              {Object.keys(connectedGuests).length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {Object.entries(connectedGuests).map(([uid, codename]) => (
+                    <span key={uid} className="px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[10px]">{codename}</span>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+// ── Guest overlay (student-side, drawer or guesser depending on role) ──
+const PictionaryGuestOverlay = React.memo((props) => {
+  const sessionCode = props.sessionCode;
+  const userUid = props.userUid;
+  const codename = props.codename || 'Guest';
+  const myRole = props.myRole || null;                  // 'drawer' | 'guesser' | null
+  const onClose = props.onClose || (() => {});
+
+  const guestRef = React.useRef(null);
+  const [connected, setConnected] = React.useState(false);
+  const [strokes, setStrokes] = React.useState([]);
+  const [activeRound, setActiveRound] = React.useState(null);  // { roundId, status, concept?, isDrawer }
+  const [resolved, setResolved] = React.useState(null);        // { concept, winnerUid }
+  const [color, setColor] = React.useState(PEN_COLORS[0].hex);
+  const [mode, setMode] = React.useState('pen');
+  const [myStrokeIds, setMyStrokeIds] = React.useState([]);    // for undo of MY own strokes
+  const [guessText, setGuessText] = React.useState('');
+
+  React.useEffect(() => {
+    if (!sessionCode || !userUid) return;
+    if (guestRef.current) return;
+    const guest = new PictionaryGuest({
+      sessionCode,
+      userUid,
+      codename,
+      onConnected: () => setConnected(true),
+      onDisconnected: () => setConnected(false),
+      onFailed: () => setConnected(false),
+      onRoundStart: (round) => { setActiveRound(round); setStrokes([]); setMyStrokeIds([]); setResolved(null); },
+      onRoundResolved: (r) => { setResolved(r); setActiveRound(null); },
+      onStroke: (stroke) => setStrokes((prev) => prev.concat([stroke])),
+      onStrokeHistory: (history) => setStrokes(history || []),
+      onCanvasClear: () => { setStrokes([]); setMyStrokeIds([]); },
+    });
+    guest.join().catch((err) => console.warn('[Pictionary guest] join failed:', err && err.message));
+    guestRef.current = guest;
+    return () => {
+      try { guestRef.current && guestRef.current.leave(); } catch (_) {}
+      guestRef.current = null;
+    };
+  }, [sessionCode, userUid, codename]);
+
+  const isDrawer = !!(activeRound && activeRound.isDrawer);
+  const handleStrokeBatch = (stroke) => {
+    setStrokes((prev) => prev.concat([{ ...stroke, uid: userUid }]));
+    setMyStrokeIds((prev) => prev.concat([stroke.strokeId]));
+    if (guestRef.current) guestRef.current.sendStroke(stroke);
+  };
+  const handleUndo = () => {
+    if (myStrokeIds.length === 0) return;
+    const lastId = myStrokeIds[myStrokeIds.length - 1];
+    setMyStrokeIds((prev) => prev.slice(0, -1));
+    setStrokes((prev) => prev.filter((s) => s.strokeId !== lastId));
+    // Note: this is a LOCAL undo — peers still see the stroke. Sending a
+    // dedicated 'eraseStroke' message would let everyone roll it back, but
+    // for v1 we keep undo local-only to avoid the conflict surface.
+  };
+  const handleSubmitGuess = () => {
+    const t = guessText.trim();
+    if (!t || !guestRef.current) return;
+    if (guestRef.current.sendGuess(t)) setGuessText('');
+  };
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-start justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Concept Pictionary">
+      <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm" aria-hidden="true" />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl my-8 overflow-hidden border border-slate-200">
+        <div className="flex items-start justify-between p-4 border-b border-slate-200 bg-gradient-to-r from-rose-50 to-amber-50">
+          <div>
+            <div className="text-[11px] font-bold text-rose-700 uppercase tracking-wider">{isDrawer ? '🎨 You are a drawer' : '👀 You are a guesser'}</div>
+            <h2 className="text-xl font-black text-slate-800 mt-0.5">Concept Pictionary</h2>
+            {!connected ? <div className="text-[11px] text-amber-700 mt-1">Connecting…</div> : null}
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100" aria-label="Close">✕</button>
+        </div>
+        <div className="p-4">
+          {activeRound && isDrawer ? (
+            <div className="bg-rose-50 border border-rose-200 rounded-lg p-3 mb-3">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-rose-700">Concept to draw together</div>
+              <div className="text-xl font-black text-rose-900 mt-1">{activeRound.concept}</div>
+              <div className="text-[11px] text-rose-700 italic mt-1">No letters or numbers — just the picture. Other drawers can add to your sketch.</div>
+            </div>
+          ) : null}
+          {activeRound && !isDrawer ? (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
+              <div className="text-xs font-bold text-amber-800">Watch the drawing and guess what concept they're representing.</div>
+            </div>
+          ) : null}
+          {!activeRound && !resolved ? (
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 mb-3 text-center text-sm text-slate-600">
+              Waiting for the teacher to start a round…
+            </div>
+          ) : null}
+          {resolved ? (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-3">
+              <div className="text-xs font-bold uppercase tracking-wider text-emerald-800">Round resolved</div>
+              <div className="text-base font-black text-emerald-900 mt-1">Concept was: {resolved.concept || '(not revealed)'}</div>
+            </div>
+          ) : null}
+          <PictionaryCanvas
+            strokes={strokes}
+            drawingEnabled={!!(activeRound && isDrawer && activeRound.status === 'drawing')}
+            color={color}
+            mode={mode}
+            onStrokeBatch={handleStrokeBatch}
+          />
+          {activeRound && isDrawer ? (
+            <DrawerToolbox
+              color={color}
+              setColor={setColor}
+              mode={mode}
+              setMode={setMode}
+              onUndo={myStrokeIds.length > 0 ? handleUndo : null}
+            />
+          ) : null}
+          {activeRound && !isDrawer ? (
+            <div className="flex gap-2 mt-3">
+              <input
+                type="text"
+                value={guessText}
+                onChange={(e) => setGuessText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSubmitGuess(); }}
+                placeholder="Type your guess and press Enter…"
+                className="flex-1 text-sm border border-slate-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-amber-300"
+                aria-label="Your guess"
+              />
+              <button
+                onClick={handleSubmitGuess}
+                disabled={!guessText.trim()}
+                className="px-4 py-2 text-sm font-bold rounded-lg bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40"
+              >Send</button>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+});

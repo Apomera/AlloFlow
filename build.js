@@ -702,6 +702,11 @@ const MODULES = [
         name: 'AnchorChartsModule',
         filename: 'anchor_charts_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ConceptPictionaryModule',
+        filename: 'concept_pictionary_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     }
 ];
 
