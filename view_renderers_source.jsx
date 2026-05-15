@@ -1257,6 +1257,153 @@ const renderOutlineContent = (deps) => {
                 </div>
             );
         }
+        // ── Frayer Model: 4-quadrant vocabulary grid ──
+        if (type === 'Frayer Model' && !isEditingOutline) {
+            const defBranch = branches[0] || { title: 'Definition', items: [] };
+            const charBranch = branches[1] || { title: 'Characteristics', items: [] };
+            const exBranch = branches[2] || { title: 'Examples', items: [] };
+            const nonExBranch = branches[3] || { title: 'Non-Examples', items: [] };
+            const itemText = (it) => typeof it === 'object' ? (it?.text || '') : String(it);
+            const QUADRANT_COLORS = {
+                indigo:  { bg: 'bg-indigo-50/70',  header: 'text-indigo-800',  dot: 'text-indigo-500' },
+                emerald: { bg: 'bg-emerald-50/70', header: 'text-emerald-800', dot: 'text-emerald-500' },
+                amber:   { bg: 'bg-amber-50/70',   header: 'text-amber-800',   dot: 'text-amber-500' },
+                rose:    { bg: 'bg-rose-50/70',    header: 'text-rose-800',    dot: 'text-rose-500' },
+            };
+            const renderQuadrant = (branch, colorKey, borders, quadrantLabel) => {
+                const items = (branch.items || []).map(itemText).filter(Boolean);
+                const c = QUADRANT_COLORS[colorKey];
+                return (
+                    <div className={`${c.bg} p-5 ${borders}`} aria-label={quadrantLabel}>
+                        <h4 className={`font-black text-sm uppercase tracking-wider mb-3 ${c.header}`}>
+                            {branch.title}
+                        </h4>
+                        <ul className="space-y-1.5">
+                            {items.length > 0 ? items.map((text, i) => (
+                                <li key={i} className="flex items-start gap-2 text-sm text-slate-700 leading-snug">
+                                    <span className={`${c.dot} mt-0.5 flex-shrink-0`}>●</span>
+                                    <span>{text}</span>
+                                </li>
+                            )) : (
+                                <li className="text-xs text-slate-400 italic">—</li>
+                            )}
+                        </ul>
+                    </div>
+                );
+            };
+            return (
+                <div className="max-w-4xl mx-auto px-4 py-6 relative">
+                    <div className="grid grid-cols-2 gap-0 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white relative" style={{ minHeight: '460px' }}>
+                        {renderQuadrant(defBranch,    'indigo',  'border-r border-b border-slate-300', 'Definition')}
+                        {renderQuadrant(charBranch,   'emerald', 'border-b border-slate-300',          'Characteristics')}
+                        {renderQuadrant(exBranch,     'amber',   'border-r border-slate-300',          'Examples')}
+                        {renderQuadrant(nonExBranch,  'rose',    '',                                   'Non-Examples')}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border-4 border-slate-700 rounded-full px-6 py-3 shadow-2xl z-10 max-w-[220px]">
+                            <div className="text-center font-black text-lg text-slate-800 leading-tight">
+                                {main || 'Vocabulary Term'}
+                            </div>
+                        </div>
+                    </div>
+                    <p className="text-xs text-slate-500 italic text-center mt-3">{t('outline.frayer_caption') || 'Frayer Model: vocabulary term in the center, definition + characteristics + examples + non-examples in the four quadrants.'}</p>
+                </div>
+            );
+        }
+
+        // ── KWL Chart: 3-column table ──
+        if (type === 'KWL Chart' && !isEditingOutline) {
+            const knowBranch = branches[0] || { title: 'Know', items: [] };
+            const wantBranch = branches[1] || { title: 'Want to Know', items: [] };
+            const learnedBranch = branches[2] || { title: 'Learned', items: [] };
+            const itemText = (it) => typeof it === 'object' ? (it?.text || '') : String(it);
+            const KWL_COLORS = {
+                sky:     { bg: 'bg-sky-50/70',     header: 'bg-sky-600 text-white',     dot: 'text-sky-500' },
+                violet:  { bg: 'bg-violet-50/70',  header: 'bg-violet-600 text-white',  dot: 'text-violet-500' },
+                emerald: { bg: 'bg-emerald-50/70', header: 'bg-emerald-600 text-white', dot: 'text-emerald-500' },
+            };
+            const renderColumn = (branch, colorKey, placeholderWhenEmpty) => {
+                const items = (branch.items || []).map(itemText).filter(Boolean);
+                const c = KWL_COLORS[colorKey];
+                return (
+                    <div className={`${c.bg} flex-1 min-h-[300px]`}>
+                        <h4 className={`${c.header} font-black text-base uppercase tracking-wide text-center py-3 px-4`}>
+                            {branch.title}
+                        </h4>
+                        <ul className="p-4 space-y-2">
+                            {items.length > 0 ? items.map((text, i) => (
+                                <li key={i} className="flex items-start gap-2 text-sm text-slate-700 leading-snug">
+                                    <span className={`${c.dot} mt-0.5 flex-shrink-0`}>●</span>
+                                    <span>{text}</span>
+                                </li>
+                            )) : (
+                                <li className="text-xs text-slate-400 italic">{placeholderWhenEmpty || '—'}</li>
+                            )}
+                        </ul>
+                    </div>
+                );
+            };
+            return (
+                <div className="max-w-5xl mx-auto px-4 py-6">
+                    <MainTitle />
+                    <div className="grid grid-cols-1 md:grid-cols-3 border-2 border-slate-400 rounded-2xl overflow-hidden shadow-lg bg-white divide-y md:divide-y-0 md:divide-x divide-slate-200">
+                        {renderColumn(knowBranch,    'sky',     null)}
+                        {renderColumn(wantBranch,    'violet',  null)}
+                        {renderColumn(learnedBranch, 'emerald', t('outline.kwl_learned_placeholder') || '(students fill this in after the lesson)')}
+                    </div>
+                    <p className="text-xs text-slate-500 italic text-center mt-3">{t('outline.kwl_caption') || 'KWL Chart: prior knowledge on the left, anticipated questions in the middle, learning captured on the right after the lesson.'}</p>
+                </div>
+            );
+        }
+
+        // ── Story Map: arc visualization of narrative tension ──
+        if (type === 'Story Map' && !isEditingOutline) {
+            const stages = [
+                { branch: branches[0] || { title: 'Exposition',     items: [] }, x: 60,  y: 340, color: '#0891b2', anchor: 'start'  },
+                { branch: branches[1] || { title: 'Rising Action',  items: [] }, x: 250, y: 220, color: '#7c3aed', anchor: 'middle' },
+                { branch: branches[2] || { title: 'Climax',         items: [] }, x: 450, y: 70,  color: '#dc2626', anchor: 'middle' },
+                { branch: branches[3] || { title: 'Falling Action', items: [] }, x: 650, y: 220, color: '#7c3aed', anchor: 'middle' },
+                { branch: branches[4] || { title: 'Resolution',     items: [] }, x: 840, y: 340, color: '#059669', anchor: 'end'    },
+            ];
+            const itemText = (it) => typeof it === 'object' ? (it?.text || '') : String(it);
+            return (
+                <div className="max-w-5xl mx-auto px-4 py-6">
+                    <MainTitle />
+                    <div className="bg-gradient-to-b from-sky-50/80 via-white to-amber-50/40 border-2 border-slate-300 rounded-2xl p-6 shadow-lg">
+                        <svg viewBox="0 0 900 400" className="w-full h-auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Plot diagram arc showing narrative tension rising to the climax and falling toward resolution">
+                            <path d="M 60 340 Q 250 280 450 70 Q 650 280 840 340" fill="none" stroke="#94a3b8" strokeWidth="3" strokeLinecap="round" strokeDasharray="6 6" />
+                            {stages.map((stage, i) => (
+                                <g key={i}>
+                                    <circle cx={stage.x} cy={stage.y} r="9" fill={stage.color} stroke="white" strokeWidth="3" />
+                                    <text x={stage.x} y={stage.y - 20} textAnchor={stage.anchor} style={{ fontSize: '13px', fontWeight: 900, fill: stage.color, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                        {stage.branch.title}
+                                    </text>
+                                </g>
+                            ))}
+                        </svg>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 mt-6">
+                            {stages.map((stage, i) => {
+                                const items = (stage.branch.items || []).map(itemText).filter(Boolean);
+                                return (
+                                    <div key={i} className="bg-white rounded-lg border border-slate-200 p-3 shadow-sm">
+                                        <h5 className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: stage.color }}>
+                                            {stage.branch.title}
+                                        </h5>
+                                        <ul className="space-y-1">
+                                            {items.length > 0 ? items.map((text, k) => (
+                                                <li key={k} className="text-xs text-slate-700 leading-snug">• {text}</li>
+                                            )) : (
+                                                <li className="text-xs text-slate-400 italic">—</li>
+                                            )}
+                                        </ul>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                    <p className="text-xs text-slate-500 italic text-center mt-3">{t('outline.story_map_caption') || 'Story Map: tension rises through Rising Action to the Climax, then falls toward Resolution. The arc visualizes the shape of narrative tension.'}</p>
+                </div>
+            );
+        }
+
         if (type === 'Structured Outline') {
             const toRoman = (num) => {
                 const lookup = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
