@@ -3475,6 +3475,21 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       _setIsAlloHavenOpenRaw(v);
     }
   }, []);
+  // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
+  const [isDynamicAssessmentOpen, _setIsDynamicAssessmentOpenRaw] = useState(false);
+  const setIsDynamicAssessmentOpen = React.useCallback((v) => {
+    if (v && typeof window.__alloLazyDynamicAssessment === 'function') {
+      try { window.__alloLazyDynamicAssessment(); } catch(_) {}
+    }
+    _setIsDynamicAssessmentOpenRaw(v);
+  }, []);
+  // Expose a global opener so the tool is reachable from devtools while
+  // the UI button is still being designed. Aaron uses this for smoke
+  // testing: `window.__alloOpenDynamicAssessment()` from the console.
+  React.useEffect(() => {
+    window.__alloOpenDynamicAssessment = () => setIsDynamicAssessmentOpen(true);
+    return () => { try { delete window.__alloOpenDynamicAssessment; } catch(_) {} };
+  }, [setIsDynamicAssessmentOpen]);
   const [showStoryForge, _setShowStoryForgeRaw] = useState(false);
   const setShowStoryForge = React.useCallback((v) => { if (v && window.__alloLazyStoryForge) { try { window.__alloLazyStoryForge(); } catch(_) {} } _setShowStoryForgeRaw(v); }, []);
   const [showLitLab, _setShowLitLabRaw] = useState(false);
@@ -3707,28 +3722,28 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', './allo_data_module.js');
-    loadModule('SubmissionCrypto', './submission_crypto_module.js');
-    loadModule('SubmissionInbox', './view_submission_inbox_module.js');
-    loadModule('FirestoreSync', './firestore_sync_module.js');
-    loadModule('SafetyChecker', './safety_checker_module.js');
-    loadModule('Fluency', './fluency_module.js');
-    loadModule('LargeFileModule', './large_file_module.js');
-    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
-    loadModule('UtilsPure', './utils_pure_module.js');
-    loadModule('GeminiAPI', './gemini_api_module.js');
-    loadModule('TTS', './tts_module.js');
-    loadModule('Personas', './personas_module.js');
-    loadModule('Export', './export_module.js');
-    loadModule('MiscComponents', './misc_components_module.js');
-    loadModule('RemediationAudio', './remediation_audio_module.js');
-    loadModule('StemLab', './stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', './word_sounds_module.js');
-    loadModule('StudentAnalytics', './student_analytics_module.js');
-    loadModule('BehaviorLens', './behavior_lens_module.js');
-    loadModule('ReportWriter', './report_writer_module.js');
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', './symbol_studio_module.js'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', './allohaven_module.js'); }; })();
+    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js');
+    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js');
+    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js');
+    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js');
+    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js');
+    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js');
+    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js');
+    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js');
+    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js');
+    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js');
+    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js');
+    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js');
+    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js');
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
@@ -3737,117 +3752,117 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', './voice_module.js');
-    loadModule('SelHub', './sel_hub/sel_hub_module.js');
-    loadModule('CommunityCatalog', './catalog_module.js');
-    loadModule('AccessibilityLab', './accessibility_lab_module.js');
-    loadModule('AuditRemediator', './audit_remediator_module.js');
-    loadModule('QuizModeStrategies', './quiz_mode_strategies.js');
-    loadModule('QuizAIHelpers', './quiz_ai_helpers.js');
-    loadModule('QuizLiveAggregators', './quiz_live_aggregators.js');
-    loadModule('GamesBundle', './games_module.js');
-    loadModule('QuickStartWizard', './quickstart_module.js');
-    loadModule('AlloBot', './allobot_module.js');
-    loadModule('TeacherModule', './teacher_module.js');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', './story_forge_module.js'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', './story_stage_module.js'); }; })();
+    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js');
+    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js');
+    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js');
+    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js');
+    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js');
+    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js');
+    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js');
+    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js');
+    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js'); }; })();
     window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js'); }; })();
-    loadModule('VisualPanelModule', './visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
-    loadModule('AdventureModule', './adventure_module.js');
-    loadModule('StudentInteractionModule', './student_interaction_module.js');
-    loadModule('MathFluency', './math_fluency_module.js');
-    loadModule('UIModalsModule', './ui_modals_module.js');
-    loadModule('UIFontLibrary', './ui_font_library_module.js');
-    loadModule('VoiceConfig', './voice_config_module.js');
-    loadModule('CanvasTips', './canvas_tips_module.js');
+    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js');
+    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js');
+    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js');
+    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js');
+    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', './view_kokoro_offer_modal_module.js'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', './view_confirm_dialog_module.js');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', './view_hints_modal_module.js'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', './view_xp_modal_module.js'); }; })();
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', './view_storybook_export_modal_module.js'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', './view_info_modal_module.js'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', './view_session_modal_module.js'); }; })();
-    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', './view_socratic_chat_module.js'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', './view_global_level_up_module.js'); }; })();
-    loadModule('HeaderBar', './view_header_module.js');
-    loadModule('GuidedModeBanner', './view_guided_mode_banner_module.js');
-    loadModule('StudentJoinPanel', './view_student_join_panel_module.js');
-    loadModule('StudentSaveAdventurePanel', './view_student_save_adventure_module.js');
-    loadModule('SidebarTabsNav', './view_sidebar_tabs_nav_module.js');
-    loadModule('UDLGuideButton', './view_udl_guide_button_module.js');
-    loadModule('TeacherHistoryTab', './view_teacher_history_tab_module.js');
-    loadModule('HistoryPanel', './view_history_panel_module.js');
-    loadModule('FabStack', './view_fab_stack_module.js');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', './view_study_timer_modal_module.js'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', './view_educator_hub_modal_module.js'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', './view_visual_supports_modal_module.js'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', './view_learning_hub_modal_module.js'); }; })();
-    loadModule('ClozeInteractionPanel', './view_cloze_interaction_panel_module.js');
-    loadModule('LabelPositions', './label_positions_module.js');
-    loadModule('UILanguageSelector', './ui_language_selector_module.js');
-    loadModule('AudioBanks', './audio_banks_module.js');
-    loadModule('PdfAuditView', './view_pdf_audit_module.js');
-    loadModule('ExportPreviewView', './view_export_preview_module.js');
-    loadModule('MiscModals', './view_misc_modals_module.js');
-    loadModule('GeminiBridge', './view_gemini_bridge_module.js');
-    loadModule('MiscPanels', './view_misc_panels_module.js');
-    loadModule('SidebarPanels', './view_sidebar_panels_module.js');
-    loadModule('ModuleScopeExtras', './module_scope_extras_module.js');
-    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
-    loadModule('PersonaUIModule', './persona_ui_module.js');
-    loadModule('DocPipelineModule', './doc_pipeline_module.js');
-    loadModule('ContentEngineModule', './content_engine_module.js');
-    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', './prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
-    loadModule('UdlChatModule', './udl_chat_module.js');
-    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', './view_renderers_module.js');
-    loadModule('AudioHelpersModule', './audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
-    loadModule('MiscHandlersModule', './misc_handlers_module.js');
-    loadModule('PureHelpersModule', './pure_helpers_module.js');
-    loadModule('MathHelpersModule', './math_helpers_module.js');
-    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', './view_dbq_module.js');
-    loadModule('ViewTimelineModule', './view_timeline_module.js');
-    loadModule('ViewGlossaryModule', './view_glossary_module.js');
-    loadModule('ViewOutlineModule', './view_outline_module.js');
-    loadModule('ViewFaqModule', './view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
-    loadModule('ViewImageModule', './view_image_module.js');
-    loadModule('ViewAnalysisModule', './view_analysis_module.js');
-    loadModule('ViewQuizModule', './view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', './view_simplified_module.js');
-    loadModule('ViewMathModule', './view_math_module.js');
-    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
-    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
-    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
-    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
-    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
-    loadModule('ViewPersonaChatModule', './view_persona_chat_module.js');
-    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
-    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
-    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
-    loadModule('ViewAdventureModule', './view_adventure_module.js');
-    loadModule('PhaseNHelpersModule', './phase_n_misc_helpers_module.js');
-    loadModule('PhaseOHandlersModule', './phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', './export_handlers_module.js');
-    loadModule('AnnotationSuiteModule', './annotation_suite_module.js');
+    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js'); }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js'); }; })();
+    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js');
+    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js');
+    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js');
+    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js');
+    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js');
+    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js');
+    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js');
+    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js');
+    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js'); }; })();
+    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js');
+    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js');
+    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js');
+    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js');
+    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js');
+    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js');
+    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js');
+    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js');
+    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js');
+    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js');
+    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js');
+    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js');
+    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js');
+    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js');
+    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js');
+    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js');
+    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js');
+    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js');
+    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js');
+    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js');
+    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js');
+    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js');
+    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js');
+    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js');
+    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js');
+    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -3866,7 +3881,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // gates the script-append loop). The hubs poll their registries to render
     // tiles progressively as plugins finish loading.
     (function() {
-      var pluginCdnBase = './';
+      var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
       var stemToolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -24376,6 +24391,35 @@ Return ONLY valid JSON in this format:
                     <p className="text-lg font-bold text-slate-700">Loading AlloHaven...</p>
                     <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
                     <button onClick={() => setIsAlloHavenOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
+                </div>
+            </div>
+            );
+        })()}
+        {isDynamicAssessmentOpen && (() => {
+            const DA = window.AlloModules && window.AlloModules.DynamicAssessment;
+            if (DA) {
+                return (
+                <div className="fixed inset-0 z-[60] bg-black/50 overflow-y-auto" onClick={() => setIsDynamicAssessmentOpen(false)}>
+                    <div className="bg-white rounded-2xl mx-auto my-8 shadow-2xl max-w-4xl" onClick={(e) => e.stopPropagation()}>
+                        {React.createElement(DA, {
+                            React: React,
+                            onClose: () => setIsDynamicAssessmentOpen(false),
+                            callGemini: callGemini,
+                            addToast,
+                            t,
+                            studentNickname: studentNickname || ''
+                        })}
+                    </div>
+                </div>
+                );
+            }
+            return (
+            <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center" onClick={() => setIsDynamicAssessmentOpen(false)}>
+                <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                    <div className="text-4xl mb-3">🔬</div>
+                    <p className="text-lg font-bold text-slate-700">Loading Dynamic Assessment Studio...</p>
+                    <p className="text-sm text-slate-600 mt-2">Module loading from CDN. If this persists, check your connection.</p>
+                    <button onClick={() => setIsDynamicAssessmentOpen(false)} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>
                 </div>
             </div>
             );
