@@ -429,6 +429,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       intelSelectedCase: 'otto',
       // Research Methods Lab state
       methodsSelected: 'ymaze',
+      // Comparative Cognition Lab state
+      compView: 'matrix',                  // 'matrix' | 'animal' | 'dimension' | 'interpretation'
+      compAnimal: 'cephalopod',
+      compDimension: 'tooluse',
       // Conservation & Welfare state
       conservationSection: 'overview',     // 'overview' | 'fisheries' | 'farming' | 'shell-trade' | 'welfare'
       // Resources state
@@ -528,6 +532,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           { id: 'jet', label: 'Jet Propulsion', icon: '🚀' },
           { id: 'intel', label: 'Intelligence', icon: '💡' },
           { id: 'methods', label: 'Research Methods', icon: '🔬' },
+          { id: 'compcog', label: 'Comparative Cognition', icon: '🧩' },
           { id: 'conservation', label: 'Conservation & Welfare', icon: '🌍' },
           { id: 'resources', label: 'Resources', icon: '📚' }
         ];
@@ -543,7 +548,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: '#c7d2fe', letterSpacing: '-0.01em' } }, 'Cephalopod Lab'),
                 h('div', { style: { fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.12)',
                     border: '1px solid rgba(167,139,250,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                  '11 sections')),
+                  '12 sections')),
               h('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 4, lineHeight: 1.5 } },
                 'The biology of intelligent invertebrates. Octopuses + squid + cuttlefish + nautilus — chromatophore camouflage, distributed neural intelligence, hunting strategy, 500M-year evolution.'))));
       }
@@ -2281,7 +2286,330 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       }
 
       // ═══════════════════════════════════════════════════════
-      // SECTION 9 — CONSERVATION & WELFARE
+      // SECTION 9 — COMPARATIVE COGNITION LAB
+      // ═══════════════════════════════════════════════════════
+      // Cephalopod intelligence in context — compared to bees,
+      // corvids, chimps, dolphins. Shows convergent evolution +
+      // distinct cognitive architectures.
+      function renderComparativeCognition() {
+        var view = d.compView || 'matrix';
+        // 5 species across 4 phyla / 2 kingdoms — convergent
+        // intelligence at different points on the tree of life.
+        var ANIMALS = [
+          { id: 'cephalopod', name: 'Common Octopus', emoji: '🐙', phylum: 'Mollusca', taxon: 'Invertebrate',
+            color: '#a78bfa',
+            divergenceMya: 600, lifespan: '1-2 years',
+            neurons: '~500 million (170M brain + ~320M in 8 arm ganglia)',
+            brainArch: 'Distributed — 2/3 of neurons in arm ganglia. Central brain donut-shaped around esophagus.',
+            social: 'Solitary (mostly). Brief mating contact + lifelong avoidance otherwise.',
+            signature: 'Distributed cognition. Each arm has working memory + sensory autonomy + can decide-act locally.',
+            crossRef: 'See: Hunter Sim, Camouflage Lab, Body Plan & 9 Brains, Intelligence Lab' },
+          { id: 'bee', name: 'Honey Bee', emoji: '🐝', phylum: 'Arthropoda', taxon: 'Invertebrate',
+            color: '#fbbf24',
+            divergenceMya: 600, lifespan: '6 weeks (worker) / 1-3 years (queen)',
+            neurons: '~960,000 (tiny brain, ~1mm³)',
+            brainArch: 'Centralized — mushroom bodies (analogous to vertebrate cortex) dominate. No arm-style distribution.',
+            social: 'Eusocial — 20-80k bees per colony, division of labor by age + caste.',
+            signature: 'Swarm intelligence. Individual bee is simple; colony emerges as a learning, deciding, memorizing super-organism.',
+            crossRef: 'See AlloFlow\'s BeeLab tool for full bee cognition + waggle dance + colony decision-making.' },
+          { id: 'corvid', name: 'Raven / Crow', emoji: '🦜', phylum: 'Chordata', taxon: 'Vertebrate (bird)',
+            color: '#86efac',
+            divergenceMya: 320, lifespan: '15-25 years (raven)',
+            neurons: '~1.5 billion (~2x more densely packed than mammalian brain)',
+            brainArch: 'Centralized vertebrate brain. Nidopallium caudolaterale serves as a cortex-equivalent for executive function.',
+            social: 'Social — pairs, family groups, larger flocks. Politically complex.',
+            signature: 'Tool use + planning + theory of mind. Caches food + plans for future hunger + remembers individual humans for years.',
+            crossRef: 'See AlloFlow\'s BirdLab tool for full bird intelligence + cache memory + observational learning.' },
+          { id: 'chimp', name: 'Chimpanzee', emoji: '🦍', phylum: 'Chordata', taxon: 'Vertebrate (mammal/primate)',
+            color: '#fb923c',
+            divergenceMya: 6, lifespan: '40-50 years (wild)',
+            neurons: '~28 billion',
+            brainArch: 'Centralized primate brain with massive prefrontal cortex.',
+            social: 'Highly social — fission-fusion communities of 20-150, complex political alliances.',
+            signature: 'Cultural learning. Different chimp groups have different tool-using traditions taught across generations.',
+            crossRef: 'Classic comparative-cognition reference. Common ancestor with humans only 6M years ago.' },
+          { id: 'dolphin', name: 'Bottlenose Dolphin', emoji: '🐬', phylum: 'Chordata', taxon: 'Vertebrate (mammal/cetacean)',
+            color: '#0ea5e9',
+            divergenceMya: 95, lifespan: '40-60 years',
+            neurons: '~37 billion',
+            brainArch: 'Centralized mammalian brain, second-largest brain-to-body ratio after humans. Unique unihemispheric sleep.',
+            social: 'Pod-living with strong individual bonds. Use signature whistles as personal names.',
+            signature: 'Vocal learning + cooperative hunting + cross-species cooperation with humans + tool use (sponge-bearing).',
+            crossRef: 'Marine mammal cognition — closest non-cephalopod parallel for marine intelligence.' }
+        ];
+        // 6 cognitive dimensions, rated 0-3 stars per animal
+        var DIMENSIONS = [
+          { id: 'problemsolve', name: 'Problem Solving', emoji: '🧩',
+            description: 'Novel-task problem solving without prior training. Jar-opening, multi-step puzzles, mechanical reasoning.',
+            ratings: { cephalopod: 3, bee: 1, corvid: 3, chimp: 3, dolphin: 2 },
+            notes: {
+              cephalopod: 'Documented jar-opening, puzzle-box solving, escape engineering (Inky, Otto, etc.).',
+              bee: 'Solves limited mechanical puzzles in lab (e.g., string-pulling for nectar) but mostly within evolved foraging context.',
+              corvid: 'Famous mechanical reasoning — water-displacement, multi-tool sequences, mirror-trickery.',
+              chimp: 'Classical problem-solving research (Köhler 1925 onward). Stacks crates for fruit, uses sticks for termites.',
+              dolphin: 'Solves cooperative + novel tasks in captivity. Less mechanical aptitude than corvids/octopuses (fewer manipulating digits).'
+            } },
+          { id: 'tooluse', name: 'Tool Use', emoji: '🥥',
+            description: 'Manipulation of objects as tools for delayed benefit. Coconut shells, stick probes, sponges.',
+            ratings: { cephalopod: 2, bee: 0, corvid: 3, chimp: 3, dolphin: 2 },
+            notes: {
+              cephalopod: 'Coconut octopus tool use (Finn 2009). Limited but established.',
+              bee: 'No real tool use documented. Builds combs as habitat but not as external tools.',
+              corvid: 'Tool-USING + tool-MAKING. Some New Caledonian crows shape sticks into specific tool forms (hook tools).',
+              chimp: 'Cultural tool use — termite fishing, nut-cracking with stones, leaf-folding for water. Taught across generations.',
+              dolphin: 'Some populations use marine sponges to protect rostrum while foraging on rough sea floor (sponger dolphins).'
+            } },
+          { id: 'memory', name: 'Memory + Learning', emoji: '📅',
+            description: 'Retention time for learned associations. Long-term recall across days/months/years.',
+            ratings: { cephalopod: 2, bee: 2, corvid: 3, chimp: 3, dolphin: 3 },
+            notes: {
+              cephalopod: '4-6 week retention demonstrated in lab. Major fraction of their 1-2 year life.',
+              bee: 'Several days for individual associations. Colony-level memory persists across worker generations via comb structure + queen pheromone.',
+              corvid: 'Years-long memory. Ravens remember individual humans for 5+ years (those who threatened them stay flagged).',
+              chimp: 'Decades. Recall human caretakers from infancy. Reportedly 30+ year retention in some lab cases.',
+              dolphin: 'Recognize tank-mates after 20+ years separation (Bruck 2013 study).'
+            } },
+          { id: 'social', name: 'Social Cognition', emoji: '👥',
+            description: 'Reading + responding to other minds. Theory of mind, deception, alliance formation.',
+            ratings: { cephalopod: 1, bee: 2, corvid: 3, chimp: 3, dolphin: 3 },
+            notes: {
+              cephalopod: 'Limited — octopuses are mostly solitary. Some discrimination of individual humans documented.',
+              bee: 'Colony-level social. Individual bees recognize colony members via pheromone + dance variation.',
+              corvid: 'Sophisticated. Deceive other corvids about food caches when watched. Some evidence of theory-of-mind.',
+              chimp: 'Classic theory-of-mind research. Tactical deception, political alliances, knowing-others-know-X.',
+              dolphin: 'Coalition politics, individual recognition (signature whistles), cross-species cooperation with humans.'
+            } },
+          { id: 'sensory', name: 'Sensory Intelligence', emoji: '👁️',
+            description: 'Processing complex sensory information into meaningful representations.',
+            ratings: { cephalopod: 3, bee: 3, corvid: 2, chimp: 2, dolphin: 3 },
+            notes: {
+              cephalopod: 'Camera eyes + chromatophore-based skin sensing + polarized-light perception + chemical sensing via suckers. Multi-modal expert.',
+              bee: 'Color (incl. UV), polarized light, magnetic fields, dance-decoding. Olfactory pheromone networks.',
+              corvid: 'Standard vertebrate vision + spatial mapping. Less multi-modal complexity than the others.',
+              chimp: 'Standard primate sensory; no unusual capabilities beyond mammalian baseline.',
+              dolphin: 'Active echolocation — builds 3D sound-maps of environment. Can detect tumors in humans via sonar.'
+            } },
+          { id: 'selfaware', name: 'Self-Awareness', emoji: '🪞',
+            description: 'Mirror self-recognition, sense of body ownership, distinguishing self from other.',
+            ratings: { cephalopod: 1, bee: 0, corvid: 2, chimp: 3, dolphin: 3 },
+            notes: {
+              cephalopod: 'Mixed mirror-test results. Maybe not via this paradigm — distributed cognition might have a different self-model architecture.',
+              bee: 'No evidence. Acts more as colony component than discrete self.',
+              corvid: 'Magpies pass mirror tests; ravens may. Mixed across species.',
+              chimp: 'Reliably passes mirror tests. Self-recognition is established.',
+              dolphin: 'Passes mirror tests reliably. Studies show self-investigation behavior in front of mirrors.'
+            } }
+        ];
+        var SUBS = [
+          { id: 'matrix', label: 'Comparison Matrix', icon: '📊' },
+          { id: 'animal', label: 'Animal Profiles', icon: '🐙' },
+          { id: 'dimension', label: 'Cognitive Dimensions', icon: '🧩' },
+          { id: 'interpretation', label: 'What This Means', icon: '💡' }
+        ];
+        var stars = function(n) {
+          var out = '';
+          for (var i = 0; i < 3; i++) out += i < n ? '★' : '☆';
+          return out;
+        };
+        return h('div', null,
+          panelHeader('🧩 Comparative Cognition Lab',
+            'Cephalopod intelligence in context. Compared across five animals from different evolutionary lineages — bees (invertebrate, 600M years apart), octopus (invertebrate, 600M years), corvids (vertebrate bird, 320M), dolphins (marine mammal, 95M), chimps (primate, 6M). All five evolved sophisticated cognition. The architectures are different. The capabilities overlap.'),
+
+          // Sub-tab strip
+          h('div', { role: 'tablist', 'aria-label': 'Comparative sub-sections',
+            style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
+            SUBS.map(function(s) {
+              var active = view === s.id;
+              return h('button', { key: s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                onClick: function() { setCL({ compView: s.id }); awardXP(1); },
+                style: { padding: '8px 12px',
+                  background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
+                  color: active ? '#c7d2fe' : '#cbd5e1',
+                  border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                  borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 6 } },
+                h('span', { 'aria-hidden': 'true' }, s.icon), s.label);
+            })),
+
+          // ─── MATRIX VIEW ───
+          view === 'matrix' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '📊 The big comparison'),
+              h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
+                'Six cognitive dimensions × five animals. Stars: ☆ minimal, ★ documented, ★★ strong, ★★★ exceptional. Click any cell for the specific evidence.'),
+              // The matrix table
+              h('div', { style: { overflowX: 'auto' } },
+                h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12, color: '#e2e8f0' } },
+                  h('thead', null,
+                    h('tr', null,
+                      h('th', { style: { padding: '10px 8px', textAlign: 'left', color: '#94a3b8', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', borderBottom: '1px solid rgba(100,116,139,0.3)' } }, 'Ability'),
+                      ANIMALS.map(function(a) {
+                        return h('th', { key: a.id, style: { padding: '10px 8px', textAlign: 'center',
+                          color: a.color, fontSize: 11, fontWeight: 800, borderBottom: '1px solid rgba(100,116,139,0.3)' } },
+                          h('div', { 'aria-hidden': 'true', style: { fontSize: 22, marginBottom: 3 } }, a.emoji),
+                          a.name);
+                      }))),
+                  h('tbody', null,
+                    DIMENSIONS.map(function(dim, i) {
+                      return h('tr', { key: dim.id, style: { borderBottom: '1px solid rgba(100,116,139,0.15)' } },
+                        h('td', { style: { padding: '12px 8px', fontWeight: 700, verticalAlign: 'top' } },
+                          h('div', { style: { fontSize: 13, color: '#fde68a', marginBottom: 2 } },
+                            h('span', { 'aria-hidden': 'true', style: { marginRight: 4 } }, dim.emoji),
+                            dim.name),
+                          h('div', { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.4 } }, dim.description)),
+                        ANIMALS.map(function(a) {
+                          var rating = dim.ratings[a.id];
+                          var starColor = rating === 3 ? '#fbbf24' : rating === 2 ? '#86efac' : rating === 1 ? '#94a3b8' : '#475569';
+                          return h('td', { key: a.id,
+                            title: dim.notes[a.id],
+                            style: { padding: '12px 8px', textAlign: 'center', verticalAlign: 'top', cursor: 'help' } },
+                            h('div', { style: { fontSize: 14, color: starColor, letterSpacing: '0.05em', fontFamily: 'ui-monospace, Menlo, monospace' } },
+                              stars(rating)),
+                            h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 4, lineHeight: 1.45, fontStyle: 'italic' } },
+                              dim.notes[a.id]));
+                        }));
+                    }))))),
+            h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', marginTop: 8, textAlign: 'center' } },
+              'Ratings reflect documented evidence in peer-reviewed research. Absence of stars = absence of evidence, not always absence of ability.')
+          ) : null,
+
+          // ─── ANIMAL PROFILES ───
+          view === 'animal' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🐙 Pick an animal'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 8 } },
+                ANIMALS.map(function(a) {
+                  var active = a.id === (d.compAnimal || 'cephalopod');
+                  return h('button', { key: a.id,
+                    onClick: function() { setCL({ compAnimal: a.id }); awardXP(1); },
+                    'aria-pressed': active ? 'true' : 'false',
+                    style: { padding: '10px 12px', textAlign: 'left',
+                      background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
+                      color: active ? '#c7d2fe' : '#cbd5e1',
+                      border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                      borderLeft: '3px solid ' + a.color,
+                      borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', gap: 6 } },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 20 } }, a.emoji),
+                    h('div', null,
+                      h('div', { style: { fontWeight: 800, fontSize: 12, color: active ? '#fde68a' : '#e2e8f0' } }, a.name),
+                      h('div', { style: { fontSize: 9, color: '#94a3b8', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } }, a.taxon)));
+                }))),
+            // Selected animal detail
+            (function() {
+              var sel = ANIMALS.find(function(a) { return a.id === (d.compAnimal || 'cephalopod'); }) || ANIMALS[0];
+              return h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid ' + sel.color }) },
+                h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 40, lineHeight: 1 } }, sel.emoji),
+                  h('div', { style: { flex: 1, minWidth: 240 } },
+                    h('div', { style: { fontSize: 20, fontWeight: 900, color: sel.color, letterSpacing: '-0.01em' } }, sel.name),
+                    h('div', { style: { fontSize: 11, color: '#a78bfa', marginTop: 2 } }, sel.phylum + ' · ' + sel.taxon))),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 } },
+                  [
+                    { lbl: '🌳 Divergence from us', val: '~' + sel.divergenceMya + ' million years ago', color: '#fbbf24' },
+                    { lbl: '⏳ Lifespan', val: sel.lifespan, color: '#86efac' },
+                    { lbl: '🧠 Neuron count', val: sel.neurons, color: '#a78bfa' },
+                    { lbl: '🏛️ Brain architecture', val: sel.brainArch, color: '#38bdf8' },
+                    { lbl: '👥 Social structure', val: sel.social, color: '#fb923c' }
+                  ].map(function(b, i) {
+                    return h('div', { key: i,
+                      style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + b.color, padding: '10px 12px', borderRadius: 8 } },
+                      h('div', { style: { fontSize: 10, fontWeight: 800, color: b.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, b.lbl),
+                      h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, b.val));
+                  })),
+                h('div', { style: { padding: '12px 14px', background: sel.color + '15', borderLeft: '3px solid ' + sel.color, borderRadius: 6, marginBottom: 10 } },
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: sel.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },
+                    '✨ Cognitive signature'),
+                  h('div', { style: { fontSize: 13, color: '#fde68a', lineHeight: 1.7, fontStyle: 'italic' } }, sel.signature)),
+                h('div', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic', textAlign: 'center' } },
+                  sel.crossRef));
+            })()
+          ) : null,
+
+          // ─── DIMENSION VIEW ───
+          view === 'dimension' ? h('div', null,
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, '🧩 Pick a cognitive dimension'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 8 } },
+                DIMENSIONS.map(function(dim) {
+                  var active = dim.id === (d.compDimension || 'tooluse');
+                  return h('button', { key: dim.id,
+                    onClick: function() { setCL({ compDimension: dim.id }); awardXP(1); },
+                    'aria-pressed': active ? 'true' : 'false',
+                    style: { padding: '10px 12px', textAlign: 'left',
+                      background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
+                      color: active ? '#c7d2fe' : '#cbd5e1',
+                      border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                      borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer' } },
+                    h('span', { 'aria-hidden': 'true', style: { marginRight: 6, fontSize: 16 } }, dim.emoji),
+                    dim.name);
+                }))),
+            // Selected dimension drill-down
+            (function() {
+              var sel = DIMENSIONS.find(function(dim) { return dim.id === (d.compDimension || 'tooluse'); }) || DIMENSIONS[0];
+              // Sort animals by rating descending
+              var sorted = ANIMALS.slice().sort(function(a, b) {
+                return (sel.ratings[b.id] || 0) - (sel.ratings[a.id] || 0);
+              });
+              return h('div', { style: cardStyle() },
+                h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 28, lineHeight: 1 } }, sel.emoji),
+                  h('div', { style: { fontSize: 18, fontWeight: 900, color: '#c7d2fe', letterSpacing: '-0.01em' } }, sel.name)),
+                h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 14, fontStyle: 'italic' } },
+                  sel.description),
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                  sorted.map(function(a) {
+                    var r = sel.ratings[a.id];
+                    var ratingColor = r === 3 ? '#fbbf24' : r === 2 ? '#86efac' : r === 1 ? '#94a3b8' : '#475569';
+                    return h('div', { key: a.id,
+                      style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                        borderLeft: '3px solid ' + a.color, padding: '10px 14px', borderRadius: 8 } },
+                      h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 4, flexWrap: 'wrap' } },
+                        h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, a.emoji),
+                        h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fde68a', flex: 1 } }, a.name),
+                        h('div', { style: { fontSize: 14, color: ratingColor, fontFamily: 'ui-monospace, Menlo, monospace', letterSpacing: '0.05em' } }, stars(r))),
+                      h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } }, sel.notes[a.id]));
+                  })));
+            })()
+          ) : null,
+
+          // ─── INTERPRETATION VIEW ───
+          view === 'interpretation' ? h('div', null,
+            h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #a78bfa' }) },
+              h('div', { style: subheaderStyle() }, '💡 What these comparisons mean'),
+              h('div', { style: { color: '#e9d5ff', fontSize: 13, lineHeight: 1.8 } },
+                h('p', { style: { margin: '0 0 14px 0' } },
+                  h('b', { style: { color: '#fbbf24' } }, '1. Intelligence isn\'t one thing.'),
+                  ' Octopuses, bees, corvids, chimps, and dolphins are all "intelligent" — but they\'re intelligent in different shapes. Bees excel at colony coordination + sensory range; octopuses at multi-modal manipulation + camouflage; corvids at planning + theory of mind; chimps at cultural transmission; dolphins at acoustic + social cognition. ',
+                  h('b', null, 'There\'s no scalar "smartness" axis.'),
+                  ' Each lineage solved cognition in its own way.'),
+                h('p', { style: { margin: '0 0 14px 0' } },
+                  h('b', { style: { color: '#fbbf24' } }, '2. Convergence runs deep.'),
+                  ' Octopuses and corvids both solve novel puzzles + use tools. Their last common ancestor was a worm-like animal ~600 million years ago. Tool use evolved independently AT LEAST TWICE on the cognitive tree of life (probably more — chimps + corvids + dolphins + octopuses each got there via different routes). ',
+                  h('b', null, 'Sophisticated cognition isn\'t a fluke of vertebrate evolution.')),
+                h('p', { style: { margin: '0 0 14px 0' } },
+                  h('b', { style: { color: '#fbbf24' } }, '3. Architecture matters more than count.'),
+                  ' A honey bee has ~960,000 neurons; a human has ~86 billion. The bee makes complex foraging decisions; the human writes symphonies. The ratio of capability to neuron count varies wildly — depending on how the neurons are ',
+                  h('em', null, 'organized'),
+                  ', what they\'re ',
+                  h('em', null, 'optimized for'),
+                  ', and how they ',
+                  h('em', null, 'connect'),
+                  '. Bigger isn\'t simply better. Distributed isn\'t simply worse.'),
+                h('p', { style: { margin: '0 0 14px 0' } },
+                  h('b', { style: { color: '#fbbf24' } }, '4. Our tests are biased.'),
+                  ' Most cognitive tests were designed for primates first, then adapted to other animals. Mirror tests, Y-mazes, tool-shaping puzzles — these all assume a centralized brain making centralized decisions. Cephalopod cognition keeps PARTIALLY passing tests it was never designed for. The honest interpretation: we don\'t yet have good tests for distributed-arm cognition or swarm intelligence. ',
+                  h('b', null, 'The animal isn\'t failing the test — the test is failing the animal.')),
+                h('p', { style: { margin: 0, padding: '14px 16px', background: 'rgba(167,139,250,0.1)', borderLeft: '3px solid #a78bfa', borderRadius: 6, fontStyle: 'italic' } },
+                  '"If we\'re ever to detect intelligence in alien life, we\'ll need cognitive tests that don\'t assume a brain at all — or, more precisely, that don\'t assume our brain. The five animals in this comparison are five different working solutions to the cognition problem. The cephalopod solution is the most alien of the five, and it\'s right here in our oceans." — paraphrased from Peter Godfrey-Smith\'s ',
+                  h('em', null, 'Other Minds'),
+                  ', 2016.')))
+          ) : null
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════
+      // SECTION 10 — CONSERVATION & WELFARE
       // ═══════════════════════════════════════════════════════
       function renderConservation() {
         var sub = d.conservationSection || 'overview';
@@ -2635,6 +2963,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       else if (section === 'jet') content = renderJetLab();
       else if (section === 'intel') content = renderIntelLab();
       else if (section === 'methods') content = renderResearchMethods();
+      else if (section === 'compcog') content = renderComparativeCognition();
       else if (section === 'conservation') content = renderConservation();
       else if (section === 'resources') content = renderResources();
       else content = renderHub();
