@@ -119,17 +119,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     // milestonesEarned — array of milestone IDs the student has crossed.
     // Additive only; we never un-earn to avoid guilt patterns.
     milestonesEarned: [],
-    // Battle Mode (Solo Cascade — Phase 1). Optional game-mode surface,
-    // explicitly opt-in. Words rise from the bottom; type the top word
-    // to clear; stack-hits-ceiling = match end (NOT "game over" — non-
-    // shaming session summary). Personal best tracked but never shown
-    // as leaderboard. Reduced-motion respected. Default cadence is
-    // generous (15s/row) for accommodation-friendly first plays.
+    // Battle Mode (Solo Cascade — Phase 1; vs Bot — Phase 2).
+    // Optional game-mode surface, explicitly opt-in. Words rise from
+    // the bottom; type the top word to clear; stack-hits-ceiling =
+    // match end (NOT "game over" — non-shaming session summary).
+    // Personal best tracked but never shown as leaderboard. Reduced-
+    // motion respected. Default cadence is generous (15s/row) for
+    // accommodation-friendly first plays.
     battle: {
       view: 'menu',              // 'menu' | 'playing' | 'summary'
+      mode: 'solo',              // 'solo' | 'vs-bot'
+      botSpeed: 'medium',        // 'slow' | 'medium' | 'fast' (WPM 15/30/50)
       difficulty: 'mercy',       // 'mercy' | 'standard' | 'challenge'
       lastResult: null,          // last match summary
-      personalBest: { cleared: 0, longestStreak: 0, durationSec: 0 }
+      personalBest: { cleared: 0, longestStreak: 0, durationSec: 0 },
+      personalBestVsBot: { wins: 0, losses: 0, ties: 0 }
     },
     // favoriteDrills — drill IDs the student has starred. Sort first on menu.
     favoriteDrills: [],
@@ -226,6 +230,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     challenge: { riseMs: 7000,  postClearPauseMs: 0,    lengthMix: { short: 0.3, medium: 0.5, long: 0.2 }, label: '🔥 Challenge', blurb: 'Real time pressure. Long words. No mercy pause.' }
   };
   var BATTLE_STACK_LIMIT = 9; // rows. Stack hits this height → match end.
+
+  // Bot opponents — three speeds. WPM converted to ms-per-character
+  // assuming 5 chars/word standard. errorRate is small to feel human;
+  // bot stalls briefly on errors mirroring student behavior.
+  var BATTLE_BOTS = {
+    slow:   { wpm: 15, errorRate: 0.04, label: '🐢 Slow',   blurb: 'Beginner pace. ~15 WPM. Most students will out-clear this one.' },
+    medium: { wpm: 30, errorRate: 0.03, label: '🦊 Steady', blurb: 'Average teen typing speed. ~30 WPM. A real race.' },
+    fast:   { wpm: 50, errorRate: 0.02, label: '🐎 Fast',   blurb: 'Advanced typist pace. ~50 WPM. Push your limits.' }
+  };
 
   // Visual-mode gallery cap. 3 images × ~80 KB base64 PNG = ~240 KB, well
   // within localStorage comfort. More than 3 and students lose track of
@@ -9449,7 +9462,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var battleStateRaw = useState({
           stack: [], typed: '', startedAt: 0, lastRiseAt: 0, pauseUntil: 0,
           cleared: 0, errors: 0, combo: 0, bestCombo: 0,
-          paused: false, ended: false
+          paused: false, ended: false,
+          // Bot side (only used in vs-bot mode)
+          botStack: [], botTyped: '', botCleared: 0, botLastRiseAt: 0,
+          botNextKeyAt: 0
         });
         var battleSt = battleStateRaw[0];
         var setBattleSt = battleStateRaw[1];
@@ -9468,50 +9484,117 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         function startBattle() {
           var diff = BATTLE_DIFFICULTY[(state.battle && state.battle.difficulty) || 'mercy'];
           var initialStack = [pickBattleWord(diff.lengthMix), pickBattleWord(diff.lengthMix), pickBattleWord(diff.lengthMix)];
+          var isVsBot = state.battle.mode === 'vs-bot';
+          var botInitial = isVsBot ? [pickBattleWord(diff.lengthMix), pickBattleWord(diff.lengthMix), pickBattleWord(diff.lengthMix)] : [];
+          var bot = isVsBot ? BATTLE_BOTS[state.battle.botSpeed || 'medium'] : null;
+          var firstKeyDelay = bot ? Math.round(60000 / bot.wpm / 5) : 0; // ms per char at WPM
+          var now = Date.now();
           setBattleSt({
-            stack: initialStack, typed: '', startedAt: Date.now(), lastRiseAt: Date.now(), pauseUntil: 0,
+            stack: initialStack, typed: '', startedAt: now, lastRiseAt: now, pauseUntil: 0,
             cleared: 0, errors: 0, combo: 0, bestCombo: 0,
-            paused: false, ended: false
+            paused: false, ended: false,
+            botStack: botInitial, botTyped: '', botCleared: 0, botLastRiseAt: now,
+            botNextKeyAt: isVsBot ? now + 1500 : 0  // 1.5s grace period before bot starts
           });
           updMulti({ battle: Object.assign({}, state.battle, { view: 'playing' }) });
         }
 
-        // Animation tick — advances rise timer + checks game-end
+        // Animation tick — advances player + bot rise timers, advances
+        // bot typing if vs-bot mode, and detects match-end on either side.
         useEffect(function() {
           if (state.battle.view !== 'playing') return;
           if (battleSt.ended || battleSt.paused) return;
           var diff = BATTLE_DIFFICULTY[state.battle.difficulty || 'mercy'];
+          var isVsBot = state.battle.mode === 'vs-bot';
+          var bot = isVsBot ? BATTLE_BOTS[state.battle.botSpeed || 'medium'] : null;
+          var msPerChar = bot ? Math.round(60000 / bot.wpm / 5) : 0;
           var iv = setInterval(function() {
             var now = Date.now();
-            // Honor post-clear pause window
-            if (battleSt.pauseUntil > now) return;
-            // Time to rise?
-            if (now - battleSt.lastRiseAt >= diff.riseMs) {
-              var next = battleSt.stack.concat([pickBattleWord(diff.lengthMix)]);
-              if (next.length >= BATTLE_STACK_LIMIT) {
-                // Match ends — stash result, switch to summary
-                var result = {
-                  cleared: battleSt.cleared, errors: battleSt.errors,
-                  bestCombo: battleSt.bestCombo,
-                  durationSec: Math.round((now - battleSt.startedAt) / 1000),
-                  difficulty: state.battle.difficulty
-                };
-                setBattleSt(Object.assign({}, battleSt, { ended: true, stack: next }));
-                // Compute new personal best (additive; never lower)
-                var pb = state.battle.personalBest || { cleared: 0, longestStreak: 0, durationSec: 0 };
-                var newPb = {
-                  cleared: Math.max(pb.cleared, result.cleared),
-                  longestStreak: Math.max(pb.longestStreak, result.bestCombo),
-                  durationSec: Math.max(pb.durationSec, result.durationSec)
-                };
-                updMulti({ battle: Object.assign({}, state.battle, { view: 'summary', lastResult: result, personalBest: newPb }) });
-              } else {
-                setBattleSt(Object.assign({}, battleSt, { stack: next, lastRiseAt: now }));
+            var patch = {};
+            var didChange = false;
+            var newPlayerStack = battleSt.stack;
+            var newBotStack = battleSt.botStack;
+            var newBotTyped = battleSt.botTyped;
+            var newBotCleared = battleSt.botCleared;
+            var newBotNextKey = battleSt.botNextKeyAt;
+            // PLAYER stack rise
+            if (battleSt.pauseUntil <= now && now - battleSt.lastRiseAt >= diff.riseMs) {
+              newPlayerStack = battleSt.stack.concat([pickBattleWord(diff.lengthMix)]);
+              patch.stack = newPlayerStack;
+              patch.lastRiseAt = now;
+              didChange = true;
+            }
+            // BOT stack rise
+            if (isVsBot && now - battleSt.botLastRiseAt >= diff.riseMs) {
+              newBotStack = newBotStack.concat([pickBattleWord(diff.lengthMix)]);
+              patch.botStack = newBotStack;
+              patch.botLastRiseAt = now;
+              didChange = true;
+            }
+            // BOT typing tick — advances 1 character per cadence
+            if (isVsBot && newBotStack.length > 0 && now >= newBotNextKey) {
+              var topBotWord = newBotStack[0];
+              if (newBotTyped.length < topBotWord.length) {
+                // Simulate occasional bot error: delay next key but don't actually typo
+                var isError = Math.random() < bot.errorRate;
+                if (isError) {
+                  newBotNextKey = now + msPerChar * 2;
+                } else {
+                  newBotTyped = newBotTyped + topBotWord[newBotTyped.length];
+                  if (newBotTyped.length >= topBotWord.length) {
+                    // Bot cleared a word
+                    newBotStack = newBotStack.slice(1);
+                    newBotTyped = '';
+                    newBotCleared += 1;
+                    newBotNextKey = now + msPerChar * 3; // brief pause between words
+                  } else {
+                    newBotNextKey = now + msPerChar;
+                  }
+                }
+                patch.botStack = newBotStack;
+                patch.botTyped = newBotTyped;
+                patch.botCleared = newBotCleared;
+                patch.botNextKeyAt = newBotNextKey;
+                didChange = true;
               }
             }
-          }, 250);
+            // MATCH-END check
+            var playerCapped = newPlayerStack.length >= BATTLE_STACK_LIMIT;
+            var botCapped = isVsBot && newBotStack.length >= BATTLE_STACK_LIMIT;
+            if (playerCapped || botCapped) {
+              var outcome = isVsBot
+                ? (playerCapped && botCapped ? 'tie' : playerCapped ? 'loss' : 'win')
+                : 'solo';
+              var result = {
+                mode: state.battle.mode,
+                outcome: outcome,
+                cleared: battleSt.cleared, errors: battleSt.errors,
+                bestCombo: battleSt.bestCombo,
+                botCleared: newBotCleared,
+                durationSec: Math.round((now - battleSt.startedAt) / 1000),
+                difficulty: state.battle.difficulty,
+                botSpeed: state.battle.botSpeed
+              };
+              setBattleSt(Object.assign({}, battleSt, patch, { ended: true }));
+              var pb = state.battle.personalBest || { cleared: 0, longestStreak: 0, durationSec: 0 };
+              var newPb = {
+                cleared: Math.max(pb.cleared, result.cleared),
+                longestStreak: Math.max(pb.longestStreak, result.bestCombo),
+                durationSec: Math.max(pb.durationSec, result.durationSec)
+              };
+              var pbBot = state.battle.personalBestVsBot || { wins: 0, losses: 0, ties: 0 };
+              var newPbBot = isVsBot ? {
+                wins: pbBot.wins + (outcome === 'win' ? 1 : 0),
+                losses: pbBot.losses + (outcome === 'loss' ? 1 : 0),
+                ties: pbBot.ties + (outcome === 'tie' ? 1 : 0)
+              } : pbBot;
+              updMulti({ battle: Object.assign({}, state.battle, { view: 'summary', lastResult: result, personalBest: newPb, personalBestVsBot: newPbBot }) });
+              return;
+            }
+            if (didChange) setBattleSt(Object.assign({}, battleSt, patch));
+          }, 100);
           return function() { clearInterval(iv); };
-        }, [state.battle.view, state.battle.difficulty, battleSt.ended, battleSt.paused, battleSt.lastRiseAt, battleSt.pauseUntil, battleSt.stack.length]);
+        }, [state.battle.view, state.battle.mode, state.battle.botSpeed, state.battle.difficulty, battleSt.ended, battleSt.paused, battleSt.lastRiseAt, battleSt.pauseUntil, battleSt.stack.length, battleSt.botLastRiseAt, battleSt.botStack.length, battleSt.botNextKeyAt, battleSt.botTyped]);
 
         // Keystroke handler for Battle mode — separate from drill mode
         useEffect(function() {
@@ -9591,6 +9674,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   'Optional game mode. Words rise from the bottom; type the top word to clear it. Stack hits the ceiling and the match ends. No leaderboard, no streak guilt — just personal best.')
               )
             ),
+            // Mode picker — Solo / vs Bot
+            h('div', { style: { marginBottom: 16 } },
+              h('div', { style: { fontSize: 11, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800, marginBottom: 8 } }, 'Pick a mode'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
+                [
+                  { key: 'solo', label: '🌊 Solo Cascade', blurb: 'Survive as long as you can. No opponent. Personal best tracked.' },
+                  { key: 'vs-bot', label: '🤖 vs Bot', blurb: 'Race against an NPC. Two stacks side-by-side. First stack to fill loses.' }
+                ].map(function(m) {
+                  var active = (state.battle.mode || 'solo') === m.key;
+                  return h('button', {
+                    key: 'mode-' + m.key,
+                    onClick: function() { updMulti({ battle: Object.assign({}, state.battle, { mode: m.key }) }); },
+                    'aria-pressed': active ? 'true' : 'false',
+                    style: {
+                      padding: '12px 14px', borderRadius: 10,
+                      border: '1.5px solid ' + (active ? '#f472b6' : palette.border),
+                      background: active ? 'rgba(244,114,182,0.10)' : palette.surface,
+                      color: active ? '#f9a8d4' : palette.text,
+                      fontSize: 13, fontWeight: active ? 800 : 600, textAlign: 'left', cursor: 'pointer',
+                      fontFamily: 'inherit'
+                    }
+                  },
+                    h('div', { style: { fontSize: 14, fontWeight: 800, marginBottom: 4 } }, m.label),
+                    h('div', { style: { fontSize: 11, color: palette.textMute, fontStyle: 'italic', lineHeight: 1.5 } }, m.blurb)
+                  );
+                })
+              )
+            ),
+            // Bot speed picker — only when vs-bot selected
+            (state.battle.mode === 'vs-bot') ? h('div', { style: { marginBottom: 16 } },
+              h('div', { style: { fontSize: 11, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800, marginBottom: 8 } }, 'Bot speed'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 } },
+                Object.keys(BATTLE_BOTS).map(function(key) {
+                  var b2 = BATTLE_BOTS[key];
+                  var active = (state.battle.botSpeed || 'medium') === key;
+                  return h('button', {
+                    key: 'botSpeed-' + key,
+                    onClick: function() { updMulti({ battle: Object.assign({}, state.battle, { botSpeed: key }) }); },
+                    'aria-pressed': active ? 'true' : 'false',
+                    style: {
+                      padding: '12px 14px', borderRadius: 10,
+                      border: '1.5px solid ' + (active ? '#a78bfa' : palette.border),
+                      background: active ? 'rgba(167,139,250,0.10)' : palette.surface,
+                      color: active ? '#c4b5fd' : palette.text,
+                      fontSize: 13, fontWeight: active ? 800 : 600, textAlign: 'left', cursor: 'pointer',
+                      fontFamily: 'inherit'
+                    }
+                  },
+                    h('div', { style: { fontSize: 13, fontWeight: 800, marginBottom: 4 } }, b2.label + ' · ' + b2.wpm + ' WPM'),
+                    h('div', { style: { fontSize: 11, color: palette.textMute, fontStyle: 'italic', lineHeight: 1.5 } }, b2.blurb)
+                  );
+                })
+              )
+            ) : null,
             // Difficulty picker
             h('div', { style: { marginBottom: 16 } },
               h('div', { style: { fontSize: 11, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800, marginBottom: 8 } }, 'Pick a difficulty'),
@@ -9620,7 +9757,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // Personal best chip — only if any prior play
             (pb.cleared > 0) ? h('div', {
               style: {
-                marginBottom: 16, padding: '10px 14px', borderRadius: 8,
+                marginBottom: 10, padding: '10px 14px', borderRadius: 8,
                 background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)',
                 display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center', fontVariantNumeric: 'tabular-nums'
               }
@@ -9629,6 +9766,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               h('span', { style: { fontSize: 12, color: palette.textDim } }, h('strong', { style: { color: palette.success, fontWeight: 800 } }, pb.cleared), ' cleared'),
               h('span', { style: { fontSize: 12, color: palette.textDim } }, 'longest streak: ', h('strong', { style: { color: palette.text, fontWeight: 800 } }, pb.longestStreak))
             ) : null,
+            // vs-Bot record chip — only when vs-bot selected and any prior play
+            (function() {
+              var pbBot = state.battle.personalBestVsBot || { wins: 0, losses: 0, ties: 0 };
+              if (state.battle.mode !== 'vs-bot') return null;
+              if (!(pbBot.wins + pbBot.losses + pbBot.ties)) return null;
+              return h('div', {
+                style: {
+                  marginBottom: 16, padding: '10px 14px', borderRadius: 8,
+                  background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.25)',
+                  display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center', fontVariantNumeric: 'tabular-nums'
+                }
+              },
+                h('span', { style: { fontSize: 11, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800 } }, '🤖 vs-Bot record'),
+                h('span', { style: { fontSize: 12, color: palette.textDim } }, h('strong', { style: { color: palette.success, fontWeight: 800 } }, pbBot.wins), ' wins'),
+                h('span', { style: { fontSize: 12, color: palette.textDim } }, h('strong', { style: { color: palette.text, fontWeight: 800 } }, pbBot.losses), ' losses'),
+                h('span', { style: { fontSize: 12, color: palette.textDim } }, h('strong', { style: { color: palette.textMute, fontWeight: 800 } }, pbBot.ties), ' ties')
+              );
+            })(),
             h('button', {
               onClick: startBattle,
               style: Object.assign({}, primaryBtnStyle(palette), {
@@ -9646,13 +9801,82 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var stack = battleSt.stack;
           var risePct = Math.min(100, (stack.length / BATTLE_STACK_LIMIT) * 100);
           var diff = BATTLE_DIFFICULTY[state.battle.difficulty || 'mercy'];
+          var isVsBot = state.battle.mode === 'vs-bot';
+          var bot = isVsBot ? BATTLE_BOTS[state.battle.botSpeed || 'medium'] : null;
+          var botRisePct = isVsBot ? Math.min(100, (battleSt.botStack.length / BATTLE_STACK_LIMIT) * 100) : 0;
           function colorForLen(w) {
             if (w.length <= 5) return '#22c55e';
             if (w.length <= 7) return '#fbbf24';
             return '#f472b6';
           }
+          // Reusable stack-column renderer — used for both player and bot
+          function renderStackColumn(opts) {
+            var s = opts.stack;
+            var typed = opts.typed;
+            var top = s[0] || '';
+            var pct = Math.min(100, (s.length / BATTLE_STACK_LIMIT) * 100);
+            var headerColor = opts.headerColor;
+            return h('div', {
+              style: {
+                flex: 1, minWidth: 220, padding: 12,
+                background: opts.bg,
+                border: '2px solid ' + opts.border, borderRadius: 12, minHeight: 360,
+                display: 'flex', flexDirection: 'column', gap: 6
+              }
+            },
+              // Header for this column (player/bot)
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, padding: '4px 6px' } },
+                h('span', { style: { fontSize: 12, fontWeight: 800, color: headerColor, textTransform: 'uppercase', letterSpacing: '0.05em' } }, opts.label),
+                h('span', { style: { fontSize: 11, color: palette.textMute, fontVariantNumeric: 'tabular-nums' } }, opts.cleared + ' cleared')
+              ),
+              // Per-column pressure gauge
+              h('div', {
+                role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': BATTLE_STACK_LIMIT, 'aria-valuenow': s.length,
+                'aria-label': opts.label + ' stack: ' + s.length + ' of ' + BATTLE_STACK_LIMIT + ' rows',
+                style: { width: '100%', height: 4, background: palette.surface, borderRadius: 2, marginBottom: 8, overflow: 'hidden' }
+              },
+                h('div', { style: {
+                  width: pct + '%', height: '100%',
+                  background: pct < 60 ? palette.success : pct < 85 ? '#fbbf24' : '#ef4444',
+                  transition: 'width 200ms ease, background 200ms ease'
+                } })
+              ),
+              // Top word with character feedback
+              s.length > 0 ? h('div', {
+                style: {
+                  padding: '12px 10px', borderRadius: 8,
+                  background: '#0f172a', border: '2px solid ' + colorForLen(top),
+                  fontSize: opts.large ? 24 : 18, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 700,
+                  textAlign: 'center', letterSpacing: '0.06em'
+                },
+                'aria-live': 'off'
+              },
+                top.split('').map(function(ch, i) {
+                  var t = typed[i];
+                  var color, bg;
+                  if (t === undefined) { color = palette.textMute; bg = 'transparent'; }
+                  else if (t.toLowerCase() === ch.toLowerCase()) { color = '#22c55e'; bg = 'rgba(34,197,94,0.10)'; }
+                  else { color = '#ef4444'; bg = 'rgba(239,68,68,0.10)'; }
+                  return h('span', { key: i, style: { color: color, background: bg, padding: '2px 1px', borderRadius: 3 } }, ch);
+                })
+              ) : null,
+              // Remaining stack
+              s.slice(1).map(function(word, i) {
+                var c = colorForLen(word);
+                return h('div', {
+                  key: opts.label + '-' + i + '-' + word,
+                  style: {
+                    padding: '6px 10px', borderRadius: 6,
+                    background: 'rgba(15,23,42,0.6)', border: '1px solid ' + c + '55',
+                    fontSize: opts.large ? 14 : 12, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 600,
+                    textAlign: 'center', color: c, letterSpacing: '0.03em'
+                  }
+                }, word);
+              })
+            );
+          }
           return h('div', {
-            style: { padding: 24, maxWidth: 720, margin: '0 auto', color: palette.text, fontFamily: fontFamily, background: palette.bg, minHeight: '60vh' }
+            style: { padding: 24, maxWidth: isVsBot ? 900 : 720, margin: '0 auto', color: palette.text, fontFamily: fontFamily, background: palette.bg, minHeight: '60vh' }
           },
             // HUD bar
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
@@ -9664,81 +9888,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 onClick: function() { updMulti({ battle: Object.assign({}, state.battle, { view: 'menu' }) }); },
                 style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: 11, padding: '5px 10px' })
               }, '✕ Quit'),
+              isVsBot ? h('span', { style: { fontSize: 11, color: palette.textMute, fontStyle: 'italic' } }, bot.label + ' · ' + bot.wpm + ' WPM') : null,
               h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 12, fontVariantNumeric: 'tabular-nums', fontSize: 12 } },
-                h('span', { style: { color: palette.textMute } }, 'Cleared: ', h('strong', { style: { color: palette.success } }, battleSt.cleared)),
                 h('span', { style: { color: palette.textMute } }, 'Combo: ', h('strong', { style: { color: battleSt.combo >= 3 ? '#f472b6' : palette.text } }, battleSt.combo))
               )
             ),
-            // Pressure gauge
-            h('div', {
-              role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': BATTLE_STACK_LIMIT, 'aria-valuenow': stack.length,
-              'aria-label': 'Stack height: ' + stack.length + ' of ' + BATTLE_STACK_LIMIT + ' rows',
-              style: { width: '100%', height: 6, background: palette.surface, borderRadius: 3, marginBottom: 14, overflow: 'hidden' }
-            },
-              h('div', { style: {
-                width: risePct + '%', height: '100%',
-                background: risePct < 60 ? palette.success : risePct < 85 ? '#fbbf24' : '#ef4444',
-                transition: 'width 250ms ease, background 250ms ease'
-              } })
-            ),
-            // Playfield — vertical stack with the TOP word at the top, growing downward
-            h('div', { style: {
-              maxWidth: 360, margin: '0 auto', padding: 12,
-              background: 'linear-gradient(180deg, rgba(244,114,182,0.06), rgba(15,23,42,0.4))',
-              border: '2px solid rgba(244,114,182,0.20)', borderRadius: 12, minHeight: 360,
-              display: 'flex', flexDirection: 'column', gap: 6
-            } },
-              // Top word (active typing target) — large, with character feedback
-              stack.length > 0 ? h('div', {
-                style: {
-                  padding: '14px 12px', borderRadius: 10,
-                  background: '#0f172a', border: '2px solid ' + colorForLen(topWord),
-                  fontSize: 26, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 700,
-                  textAlign: 'center', letterSpacing: '0.08em',
-                  boxShadow: '0 4px 12px rgba(244,114,182,0.20)'
-                },
-                'aria-live': 'off'
-              },
-                topWord.split('').map(function(ch, i) {
-                  var typed = battleSt.typed[i];
-                  var color, bg;
-                  if (typed === undefined) { color = palette.textMute; bg = 'transparent'; }
-                  else if (typed.toLowerCase() === ch.toLowerCase()) { color = '#22c55e'; bg = 'rgba(34,197,94,0.10)'; }
-                  else { color = '#ef4444'; bg = 'rgba(239,68,68,0.10)'; }
-                  return h('span', { key: i, style: { color: color, background: bg, padding: '2px 1px', borderRadius: 3 } }, ch);
-                })
-              ) : null,
-              // Remaining stack — preview of incoming words
-              stack.slice(1).map(function(word, i) {
-                var c = colorForLen(word);
-                return h('div', {
-                  key: 'stack-' + i + '-' + word,
-                  style: {
-                    padding: '8px 12px', borderRadius: 6,
-                    background: 'rgba(15,23,42,0.6)', border: '1px solid ' + c + '55',
-                    fontSize: 16, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 600,
-                    textAlign: 'center', color: c, letterSpacing: '0.04em'
-                  }
-                }, word);
+            // Side-by-side or solo playfield
+            isVsBot ? h('div', { style: { display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' } },
+              renderStackColumn({
+                label: 'You', cleared: battleSt.cleared,
+                stack: battleSt.stack, typed: battleSt.typed,
+                bg: 'linear-gradient(180deg, rgba(244,114,182,0.08), rgba(15,23,42,0.4))',
+                border: 'rgba(244,114,182,0.30)', headerColor: '#f9a8d4', large: true
               }),
-              // Pause overlay note
-              battleSt.paused ? h('div', {
-                role: 'status',
-                style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)', textAlign: 'center', color: '#fcd34d', fontSize: 13, fontWeight: 700 }
-              }, '⏸ Paused — your stack is frozen. Press Resume or Esc to continue.') : null
-            ),
-            // Difficulty + cadence reminder (small, footer)
+              renderStackColumn({
+                label: 'Bot', cleared: battleSt.botCleared,
+                stack: battleSt.botStack, typed: battleSt.botTyped,
+                bg: 'linear-gradient(180deg, rgba(167,139,250,0.08), rgba(15,23,42,0.4))',
+                border: 'rgba(167,139,250,0.30)', headerColor: '#c4b5fd', large: false
+              })
+            ) : renderStackColumn({
+              label: 'You', cleared: battleSt.cleared,
+              stack: battleSt.stack, typed: battleSt.typed,
+              bg: 'linear-gradient(180deg, rgba(244,114,182,0.06), rgba(15,23,42,0.4))',
+              border: 'rgba(244,114,182,0.20)', headerColor: '#f9a8d4', large: true
+            }),
+            // Pause overlay
+            battleSt.paused ? h('div', {
+              role: 'status',
+              style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)', textAlign: 'center', color: '#fcd34d', fontSize: 13, fontWeight: 700 }
+            }, '⏸ Paused — both stacks frozen. Press Resume or Esc to continue.') : null,
+            // Difficulty + cadence footer
             h('div', { style: { marginTop: 14, fontSize: 11, color: palette.textMute, textAlign: 'center', fontStyle: 'italic' } },
-              diff.label + ' · rise every ' + Math.round(diff.riseMs / 1000) + 's · Esc to pause')
+              diff.label + ' · rise every ' + Math.round(diff.riseMs / 1000) + 's · Esc to pause' + (isVsBot ? ' · type only YOUR stack' : ''))
           );
         }
 
         function renderBattleSummary() {
-          var r = state.battle.lastResult || { cleared: 0, errors: 0, bestCombo: 0, durationSec: 0, difficulty: 'mercy' };
+          var r = state.battle.lastResult || { cleared: 0, errors: 0, bestCombo: 0, durationSec: 0, difficulty: 'mercy', mode: 'solo', outcome: 'solo' };
           var pb = state.battle.personalBest || { cleared: 0, longestStreak: 0, durationSec: 0 };
           var newPbCleared = r.cleared > 0 && r.cleared >= pb.cleared;
           var newPbStreak = r.bestCombo > 0 && r.bestCombo >= pb.longestStreak;
           var diff = BATTLE_DIFFICULTY[r.difficulty || 'mercy'];
+          var isVsBot = r.mode === 'vs-bot';
+          var bot = isVsBot ? BATTLE_BOTS[r.botSpeed || 'medium'] : null;
+          // Outcome theming for vs-bot
+          var outcomeIcon, outcomeTitle, outcomeAccent;
+          if (isVsBot) {
+            if (r.outcome === 'win') { outcomeIcon = '🏆'; outcomeTitle = 'You won!'; outcomeAccent = '#22c55e'; }
+            else if (r.outcome === 'loss') { outcomeIcon = '🌊'; outcomeTitle = 'Bot won this round'; outcomeAccent = '#a78bfa'; }
+            else { outcomeIcon = '🤝'; outcomeTitle = 'Tie — both stacks capped'; outcomeAccent = '#fbbf24'; }
+          } else {
+            outcomeIcon = '🌊'; outcomeTitle = 'Match complete'; outcomeAccent = '#f9a8d4';
+          }
           return h('div', {
             style: { padding: 24, maxWidth: 720, margin: '0 auto', color: palette.text, fontFamily: fontFamily, background: palette.bg, minHeight: '60vh' }
           },
@@ -9746,23 +9948,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             h('div', {
               style: {
                 marginTop: 16, padding: 24, borderRadius: 14, textAlign: 'center',
-                background: 'radial-gradient(ellipse at 50% 30%, rgba(244,114,182,0.12), rgba(15,23,42,0.4))',
-                border: '1px solid rgba(244,114,182,0.30)'
+                background: 'radial-gradient(ellipse at 50% 30%, ' + outcomeAccent + '22, rgba(15,23,42,0.4))',
+                border: '1px solid ' + outcomeAccent + '55'
               }
             },
-              h('div', { style: { fontSize: 48, lineHeight: 1, marginBottom: 8 } }, '🌊'),
-              h('h2', { style: { margin: '0 0 4px', color: '#f9a8d4', fontSize: 22, fontWeight: 900 } }, 'Match complete'),
+              h('div', { style: { fontSize: 48, lineHeight: 1, marginBottom: 8 } }, outcomeIcon),
+              h('h2', { style: { margin: '0 0 4px', color: outcomeAccent, fontSize: 22, fontWeight: 900 } }, outcomeTitle),
               h('p', { style: { margin: '0 0 16px', fontSize: 12, color: palette.textMute, fontStyle: 'italic' } },
-                'You cleared ' + r.cleared + ' word' + (r.cleared === 1 ? '' : 's') + ' on ' + diff.label + '. Every run resets the stack.')
+                isVsBot
+                  ? ('You cleared ' + r.cleared + ' vs the bot\'s ' + (r.botCleared || 0) + ' on ' + diff.label + ' against ' + bot.label + '. Every match resets both stacks.')
+                  : ('You cleared ' + r.cleared + ' word' + (r.cleared === 1 ? '' : 's') + ' on ' + diff.label + '. Every run resets the stack.'))
             ),
-            // Stat grid
+            // Stat grid — adds Bot Cleared column when vs-bot
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginTop: 14, marginBottom: 14 } },
               [
-                { label: 'Cleared', value: r.cleared, color: palette.success, isPb: newPbCleared },
+                { label: isVsBot ? 'You cleared' : 'Cleared', value: r.cleared, color: palette.success, isPb: newPbCleared }
+              ].concat(isVsBot ? [
+                { label: 'Bot cleared', value: r.botCleared || 0, color: '#a78bfa', isPb: false }
+              ] : []).concat([
                 { label: 'Best streak', value: r.bestCombo, color: '#f472b6', isPb: newPbStreak },
                 { label: 'Duration', value: r.durationSec + 's', color: palette.text, isPb: false },
                 { label: 'Errors', value: r.errors, color: palette.textMute, isPb: false }
-              ].map(function(s, i) {
+              ]).map(function(s, i) {
                 return h('div', { key: i, style: {
                   padding: '12px 14px', background: palette.surface, border: '1px solid ' + (s.isPb ? palette.success : palette.border), borderRadius: 10
                 } },
