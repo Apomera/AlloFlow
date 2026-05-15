@@ -4736,6 +4736,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const closeOutlineSort = useCallback(() => setIsOutlineSortPlaying(false), []);
   const closeFishboneSort = useCallback(() => setIsFishboneSortPlaying(false), []);
   const closeProblemSolutionSort = useCallback(() => setIsProblemSolutionSortPlaying(false), []);
+  const closeFrayerSort = useCallback(() => setIsFrayerSortPlaying(false), []);
+  const closeSeeThinkWonderSort = useCallback(() => setIsSeeThinkWonderSortPlaying(false), []);
+  const closeStoryMapSort = useCallback(() => setIsStoryMapSortPlaying(false), []);
     React.useEffect(() => {
         if (!user || !db || !appId) return;
         const cleanExpiredImages = async () => {
@@ -6708,6 +6711,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [isOutlineSortPlaying, setIsOutlineSortPlaying] = useState(false);
   const [isFishboneSortPlaying, setIsFishboneSortPlaying] = useState(false);
   const [isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying] = useState(false);
+  const [isFrayerSortPlaying, setIsFrayerSortPlaying] = useState(false);
+  const [isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying] = useState(false);
+  const [isStoryMapSortPlaying, setIsStoryMapSortPlaying] = useState(false);
   useEffect(() => {
       if (generatedContent?.type === 'outline' && generatedContent?.data) {
           const { main, branches, challenge, nodes: savedNodes, edges: savedEdges } = generatedContent?.data;
@@ -18721,6 +18727,15 @@ Return ONLY valid JSON in this format:
         isProblemSolutionSortPlaying,
         setIsProblemSolutionSortPlaying,
         closeProblemSolutionSort,
+        isFrayerSortPlaying,
+        setIsFrayerSortPlaying,
+        closeFrayerSort,
+        isSeeThinkWonderSortPlaying,
+        setIsSeeThinkWonderSortPlaying,
+        closeSeeThinkWonderSort,
+        isStoryMapSortPlaying,
+        setIsStoryMapSortPlaying,
+        closeStoryMapSort,
       });
     throw new Error("[renderOutlineContent] ViewRenderers module not loaded - reload the page");
   };
