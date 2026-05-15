@@ -4967,6 +4967,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // Phase 5: annotation sidebar visibility. Toggled from the toolbar so
   // users can review/jump-to/delete annotations from one panel.
   const [showAnnotationSidebar, setShowAnnotationSidebar] = useState(false);
+  // Phase 6: voice note recording state. Stores the placeholder id +
+  // pixel position + elapsed seconds so RecordingOverlay can render in
+  // place of the still-empty bubble. Recording uses the same
+  // useAudioRecorder hook the fluency feature uses (battle-tested mic
+  // permission + stream cleanup), instantiated separately so voice + fluency
+  // can coexist without cross-talk.
+  const [voiceRecording, setVoiceRecording] = useState(null);
+  const voiceStartTimeRef = useRef(0);
+  const voiceTickRef = useRef(null);
+  const voiceCapTimeoutRef = useRef(null);
   React.useEffect(function () {
     // Keep legacy isStickerMode boolean in sync so cursor/CSS branches in
     // the existing JSX continue to work without per-site migration.
@@ -5223,6 +5233,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   });
 
   const { isRecording: isFluencyRecording, startRecording: startFluencyRecording, stopRecording: stopFluencyRecording } = useAudioRecorder();
+  // Voice-note recorder — second instance of the same hook so the fluency
+  // recorder and the annotation voice-note recorder don't share state.
+  const { isRecording: isVoiceRecording, startRecording: startVoiceRecording, stopRecording: stopVoiceRecording } = useAudioRecorder();
   const wordSoundsModalRef = useRef(null);
   const speakWord = React.useCallback((text, lang = 'en-US', speed = 1) => {
   return new Promise((resolve) => {
@@ -19499,10 +19512,84 @@ Return ONLY valid JSON in this format:
               isTeacher: isTeacherMode,
               authorName: authorName,
           });
+      } else if (annotationMode === 'voice' && _m.createVoicePlaceholder) {
+          // Voice flow: drop a pending placeholder, then start recording.
+          // The RecordingOverlay renders in its place until audio attaches.
+          if (isVoiceRecording || voiceRecording) return; // already recording
+          next = _m.createVoicePlaceholder(contentAreaRef.current, e, {
+              isTeacher: isTeacherMode,
+              authorName: authorName,
+          });
+          if (!next) return;
+          setStickers(prev => [...prev, next]);
+          // Fire async — startVoiceRecording returns a promise but we
+          // don't await; the recorder's permission prompt is non-blocking
+          // from our perspective.
+          (async function () {
+              await startVoiceRecording();
+              voiceStartTimeRef.current = Date.now();
+              setVoiceRecording({ id: next.id, x: next.x, y: next.y, elapsedSec: 0 });
+              // Tick every 250ms to update elapsed display.
+              voiceTickRef.current = setInterval(function () {
+                  const sec = (Date.now() - voiceStartTimeRef.current) / 1000;
+                  setVoiceRecording(prev => prev ? Object.assign({}, prev, { elapsedSec: sec }) : null);
+              }, 250);
+              // Auto-stop at the max cap.
+              voiceCapTimeoutRef.current = setTimeout(function () {
+                  handleVoiceRecordingStop();
+              }, ((_m.VOICE_MAX_SECONDS || 60) * 1000) + 100);
+          })();
+          playSound('click');
+          return;
       }
       if (!next) return;
       setStickers(prev => [...prev, next]);
       playSound('click');
+  };
+  // Voice recording — stop / cancel handlers. Stop attaches the recorded
+  // audio to the placeholder; cancel removes the placeholder + discards
+  // audio without writing to state.
+  const handleVoiceRecordingStop = async () => {
+      if (!voiceRecording) return;
+      const placeholderId = voiceRecording.id;
+      const elapsedSec = voiceRecording.elapsedSec || 0;
+      if (voiceTickRef.current) { clearInterval(voiceTickRef.current); voiceTickRef.current = null; }
+      if (voiceCapTimeoutRef.current) { clearTimeout(voiceCapTimeoutRef.current); voiceCapTimeoutRef.current = null; }
+      setVoiceRecording(null);
+      try {
+          const result = await stopVoiceRecording();
+          const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+          if (!_m || !_m.attachAudioToVoiceNote) return;
+          const payload = result
+              ? { audioBase64: result.base64, mimeType: result.mimeType || 'audio/webm', durationSec: elapsedSec }
+              : null;
+          if (!payload || !payload.audioBase64) {
+              // Recording failed — remove the placeholder.
+              setStickers(prev => prev.filter(a => a && a.id !== placeholderId));
+              addToast && addToast('Voice recording failed — no audio captured.', 'error');
+              return;
+          }
+          const next = _m.attachAudioToVoiceNote(stickers, placeholderId, payload);
+          if (next && next.error === 'too-large') {
+              setStickers(next.list);
+              addToast && addToast('Voice note too long to save (over 500KB). Try a shorter clip.', 'warning');
+              return;
+          }
+          setStickers(next);
+      } catch (err) {
+          warnLog && warnLog('[Voice] stop failed:', err);
+          setStickers(prev => prev.filter(a => a && a.id !== placeholderId));
+      }
+  };
+  const handleVoiceRecordingCancel = async () => {
+      if (!voiceRecording) return;
+      const placeholderId = voiceRecording.id;
+      if (voiceTickRef.current) { clearInterval(voiceTickRef.current); voiceTickRef.current = null; }
+      if (voiceCapTimeoutRef.current) { clearTimeout(voiceCapTimeoutRef.current); voiceCapTimeoutRef.current = null; }
+      setVoiceRecording(null);
+      // Stop the recorder + discard the result.
+      try { await stopVoiceRecording(); } catch (_) {}
+      setStickers(prev => prev.filter(a => a && a.id !== placeholderId));
   };
   // Highlight capture: in highlight mode, mouseup on the content area
   // checks for a non-collapsed text selection and converts it to a
@@ -21867,7 +21954,7 @@ Return ONLY valid JSON in this format:
             onClick={handleContentClick}
             onMouseUp={handleContentMouseUp}
             data-reading-theme={readingTheme}
-            className={`flex-grow ${isOutputHeaderCollapsed ? 'p-2 md:p-4' : 'p-4 md:p-8'} overflow-y-auto relative custom-scrollbar transition-all ${readingTheme === 'default' ? 'bg-white' : ''} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''} ${annotationMode === 'sticker' ? 'cursor-[url(https://cdn-icons-png.flaticon.com/32/166/166538.png),_pointer]' : ''} ${annotationMode === 'note' ? 'cursor-crosshair' : ''} ${annotationMode === 'highlight' ? 'cursor-text' : ''}`}
+            className={`flex-grow ${isOutputHeaderCollapsed ? 'p-2 md:p-4' : 'p-4 md:p-8'} overflow-y-auto relative custom-scrollbar transition-all ${readingTheme === 'default' ? 'bg-white' : ''} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''} ${annotationMode === 'sticker' ? 'cursor-[url(https://cdn-icons-png.flaticon.com/32/166/166538.png),_pointer]' : ''} ${annotationMode === 'note' ? 'cursor-crosshair' : ''} ${annotationMode === 'highlight' ? 'cursor-text' : ''} ${annotationMode === 'voice' ? 'cursor-crosshair' : ''}`}
             style={readingTheme !== 'default' ? {
               backgroundColor: readingTheme === 'warm' ? '#fef3c7' : readingTheme === 'sepia' ? '#f4ecd8' : readingTheme === 'dark' ? '#1a1a2e' : readingTheme === 'highContrast' ? '#000000' : readingTheme === 'blue' ? '#d6eaf8' : readingTheme === 'green' ? '#e8f5e9' : readingTheme === 'rose' ? '#fce4ec' : readingTheme === 'dyslexia' ? '#faf8ef' : undefined,
               color: readingTheme === 'dark' ? '#e2e8f0' : readingTheme === 'highContrast' ? '#ffff00' : readingTheme === 'sepia' ? '#5c4033' : readingTheme === 'blue' ? '#1b2631' : readingTheme === 'green' ? '#1b5e20' : readingTheme === 'rose' ? '#880e4f' : readingTheme === 'warm' ? '#5c4033' : readingTheme === 'dyslexia' ? '#1e293b' : undefined,
@@ -21901,6 +21988,26 @@ Return ONLY valid JSON in this format:
                             setStickers(prev => _m.removeAnnotation(prev, id));
                         }
                     },
+                    onVoiceDelete: (id) => {
+                        if (_m.removeAnnotation) {
+                            setStickers(prev => _m.removeAnnotation(prev, id));
+                        }
+                    },
+                });
+            })()}
+            {voiceRecording && (() => {
+                // RecordingOverlay (Phase 6) — pinned at the placeholder
+                // position. Shows elapsed time + a stop/cancel pair while
+                // the MediaRecorder is capturing audio. Replaces the
+                // (still-empty) voice bubble until audio attaches.
+                const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+                if (!_m || !_m.RecordingOverlay) return null;
+                return React.createElement(_m.RecordingOverlay, {
+                    x: voiceRecording.x,
+                    y: voiceRecording.y,
+                    elapsedSec: voiceRecording.elapsedSec,
+                    onStop: handleVoiceRecordingStop,
+                    onCancel: handleVoiceRecordingCancel,
                 });
             })()}
             {showAnnotationSidebar && (() => {
