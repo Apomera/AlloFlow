@@ -2962,8 +2962,8 @@
                 color: 'emerald', ready: true
               },
               {
-                id: 'stewardshipHub', icon: '\uD83C\uDF0D', label: 'Maine Stewardship Campaigns',
-                desc: 'Cross-campaign launcher: pick from five environmental stewardship sims (Cultural Mosaic, Conservation Manager, Outbreak Response, Watershed Steward, Climate Policy Pathways) and track mastery across all five.',
+                id: 'stewardshipHub', icon: '\uD83C\uDF0D', label: 'Environmental Stewardship Campaigns',
+                desc: 'Fifteen environmental stewardship campaigns across eleven regions. Five deep multi-period Maine campaigns plus ten cross-region scenarios across all five mechanic families: fire (Yarralin Australia, Karuk Northern California), conservation (Yellowstone, Akagera Rwanda), public health (Mumbai dengue, Liberia 2014 Ebola), watershed (Klamath River, Murray\u2013Darling Basin), climate (Marshall Islands, Bangladesh delta). Family Pairing Insights unlock when you complete Maine + cross-region in the same mechanic family.',
                 color: 'emerald', ready: true
               },
               {
@@ -3217,6 +3217,11 @@
                 id: 'kitchenLab', icon: '🍳', label: 'Kitchen Lab',
                 desc: 'Cooking life skills + culinary science: USDA safe temps + bacteria danger zone, knife cuts (dice/julienne/chiffonade/brunoise), heat techniques (sauté/sear/simmer/braise/roast/fry/steam), Maillard chemistry, top-9 allergens, real-time recipe sim (coming next ship). Sister to NutritionLab + BakingScience.',
                 color: 'orange', ready: true
+              },
+              {
+                id: 'cephalopodLab', icon: '🐙', label: 'Cephalopod Lab',
+                desc: 'Marine biology + behavioral science of octopuses, squid, cuttlefish, nautilus. Headline: Hunter Sim — pick species + habitat + prey + tactic, run the camouflage minigame, time the strike. Unlocks field-note biology trivia (chromatophore mechanics, 9 brains, blue blood, jet propulsion). 10-species field guide with intelligence + camouflage + jet-speed stats.',
+                color: 'indigo', ready: true
               },
               {
                 id: 'evoLab', icon: '🧬', label: 'EvoLab: Evolution',
@@ -4457,6 +4462,7 @@
             nutritionLab: true,
             evoLab: true,
             kitchenLab: true,
+            cephalopodLab: true,
             statsLab: true,
             learningLab: true,
             llmLiteracy: true,

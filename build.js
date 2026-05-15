@@ -94,6 +94,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'AnnotationSuiteModule',
+        filename: 'annotation_suite_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'TextPipelineHelpersModule',
         filename: 'text_pipeline_helpers_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -792,6 +797,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_llm_literacy.js',
     'stem_lab/stem_tool_nutritionlab.js',
     'stem_lab/stem_tool_kitchenlab.js',
+    'stem_lab/stem_tool_cephalopodlab.js',
     'stem_lab/stem_tool_roadready.js',
     'stem_lab/stem_tool_typingpractice.js',
     'stem_lab/stem_tool_weldlab.js',
