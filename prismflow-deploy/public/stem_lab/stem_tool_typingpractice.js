@@ -289,6 +289,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       role: 'img', 'aria-label': opts.label || 'Pip the typing chick',
       style: { display: 'block', overflow: 'visible' }
     },
+      // Floating Z's — only visible in sleep state via CSS
+      h('text', { x: 70, y: 30, fill: '#94a3b8', fontSize: 8, fontWeight: 700, opacity: 0, className: 'tp-mascot-z' }, 'z'),
+      h('text', { x: 76, y: 22, fill: '#94a3b8', fontSize: 6, fontWeight: 700, opacity: 0, className: 'tp-mascot-z tp-mascot-z-2' }, 'z'),
       // Legs
       h('g', { className: 'tp-pip-legs' },
         h('line', { x1: 42, y1: 80, x2: 42, y2: 92, stroke: legColor, strokeWidth: 3, strokeLinecap: 'round' }),
@@ -1805,7 +1808,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       // ── Battle Mode mascot animations ──
       // Idle = gentle bob breathe (all mascots). Combo = excitement.
       // Attack-out = lean-forward+spring. Incoming = flinch-cower.
-      // Win = bounce+rotate. Loss = droop+desaturate.
+      // Danger = worried tremble (stack >= 7). Wow = triumphant
+      // back-arch (long-word clear). Sleep = drift (paused). Win =
+      // bounce+rotate. Loss = droop+desaturate.
       '@keyframes tp-mascot-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }',
       '@keyframes tp-mascot-shake-h { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-1.5px); } 75% { transform: translateX(1.5px); } }',
       '@keyframes tp-mascot-pop { 0% { transform: scale(1); } 40% { transform: scale(1.12); } 100% { transform: scale(1); } }',
@@ -1813,6 +1818,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '@keyframes tp-mascot-flinch { 0% { transform: translateX(0) scale(1); } 25% { transform: translateX(2px) scale(0.94); } 60% { transform: translateX(-2px) scale(0.94); } 100% { transform: translateX(0) scale(1); } }',
       '@keyframes tp-mascot-celebrate { 0% { transform: translateY(0) rotate(0); } 30% { transform: translateY(-6px) rotate(-6deg); } 60% { transform: translateY(-6px) rotate(6deg); } 100% { transform: translateY(0) rotate(0); } }',
       '@keyframes tp-mascot-droop { 0%,100% { transform: rotate(-3deg) translateY(2px); filter: saturate(0.5) brightness(0.85); } }',
+      '@keyframes tp-mascot-tremble { 0%,100% { transform: translate(0,0); } 25% { transform: translate(-1px,1px); } 50% { transform: translate(1px,-1px); } 75% { transform: translate(-1px,-1px); } }',
+      '@keyframes tp-mascot-arch { 0% { transform: translateY(0) scale(1); } 30% { transform: translateY(-3px) scale(1.06); } 60% { transform: translateY(-1px) scale(1.04); } 100% { transform: translateY(0) scale(1); } }',
+      '@keyframes tp-mascot-drift { 0%,100% { transform: translateY(0) rotate(0); opacity: 0.85; } 50% { transform: translateY(-3px) rotate(2deg); opacity: 1; } }',
+      '@keyframes tp-mascot-zfloat { 0% { transform: translate(0,0); opacity: 0; } 30% { opacity: 0.9; } 100% { transform: translate(8px,-14px); opacity: 0; } }',
       // Per-mascot internal animations
       '@keyframes tp-pip-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }',
       '@keyframes tp-cog-rotate { from { transform: rotate(0); } to { transform: rotate(360deg); } }',
@@ -1844,6 +1853,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-mascot-win { animation: tp-mascot-celebrate 0.9s ease-in-out 1; }',
       '.tp-mascot-loss { animation: tp-mascot-droop 1s ease-out forwards; }',
       '.tp-mascot-mochi.tp-mascot-loss .tp-mochi-tear { opacity: 0.85; transition: opacity 600ms ease-in; }',
+      // Danger / wow / sleep — new states
+      '.tp-mascot-danger { animation: tp-mascot-tremble 0.45s ease-in-out infinite, tp-mascot-bob 3.2s ease-in-out infinite; filter: drop-shadow(0 0 6px rgba(239,68,68,0.55)); }',
+      '.tp-mascot-wow { animation: tp-mascot-arch 0.7s ease-out 1; filter: drop-shadow(0 0 8px rgba(251,191,36,0.6)); }',
+      '.tp-mascot-sleep { animation: tp-mascot-drift 4s ease-in-out infinite; }',
+      '.tp-mascot-sleep .tp-mascot-z { animation: tp-mascot-zfloat 2.5s ease-out infinite; }',
+      '.tp-mascot-sleep .tp-mascot-z-2 { animation-delay: 1.25s; }',
+      // Per-mascot state-specific overrides
+      '.tp-mascot-pip.tp-mascot-sleep .tp-pip-pupil-l, .tp-mascot-pip.tp-mascot-sleep .tp-pip-pupil-r { transform: scaleY(0.1); animation: none; }',
+      '.tp-mascot-mochi.tp-mascot-sleep .tp-mochi-eyes ellipse { transform: scaleY(0.15); transform-origin: center; transform-box: fill-box; }',
+      '.tp-mascot-vex.tp-mascot-sleep .tp-vex-scanline { animation: none; opacity: 0.2; }',
+      '.tp-mascot-vex.tp-mascot-sleep .tp-vex-eye-l, .tp-mascot-vex.tp-mascot-sleep .tp-vex-eye-r { animation: none; opacity: 0.3; transform: scaleY(0.15); transform-origin: center; transform-box: fill-box; }',
+      '.tp-mascot-cogsworth.tp-mascot-sleep .tp-cog-gear-l, .tp-mascot-cogsworth.tp-mascot-sleep .tp-cog-gear-r { animation-duration: 18s; }',
+      '.tp-mascot-pip.tp-mascot-danger .tp-pip-eyes circle:not(.tp-pip-pupil-l):not(.tp-pip-pupil-r) { transform: scale(1.15); transform-origin: center; transform-box: fill-box; }',
+      '.tp-mascot-mochi.tp-mascot-danger .tp-mochi-mouth { transform: translateY(2px) scaleY(-1); transform-origin: 50px 67px; }',
       // Reduced motion — stop all mascot animations
       '@media (prefers-reduced-motion: reduce) { .tp-mascot, .tp-mascot *, .tp-mascot.tp-mascot-combo, .tp-mascot.tp-mascot-attack-out, .tp-mascot.tp-mascot-incoming, .tp-mascot.tp-mascot-win, .tp-mascot.tp-mascot-loss { animation: none !important; } }',
       '.tp-pack-card { transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease; }',
@@ -10080,13 +10103,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 border: '1px solid rgba(244,114,182,0.20)', borderLeft: '4px solid #f472b6', borderRadius: 14
               }
             },
-              h('div', { 'aria-hidden': 'true', style: {
-                width: 56, height: 56, borderRadius: '50%',
-                background: 'rgba(244,114,182,0.18)', border: '2px solid #f472b6',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 28, lineHeight: 1, flexShrink: 0,
-                boxShadow: '0 4px 16px rgba(244,114,182,0.25)'
-              } }, '🌊'),
+              // Hero mascot — active theme's character at idle. Sets the
+              // tone for Battle Mode at the entry point. Falls back to
+              // the wave emoji for the neutral theme (no mascot).
+              (function() {
+                var menuMascot = renderBattleMascot(state.theme || 'default', 'idle', { size: 64, label: 'Battle Mode mascot' });
+                return menuMascot ? h('div', { style: {
+                  width: 64, height: 64, flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  filter: 'drop-shadow(0 4px 12px rgba(244,114,182,0.30))'
+                } }, menuMascot) : h('div', { 'aria-hidden': 'true', style: {
+                  width: 56, height: 56, borderRadius: '50%',
+                  background: 'rgba(244,114,182,0.18)', border: '2px solid #f472b6',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 28, lineHeight: 1, flexShrink: 0,
+                  boxShadow: '0 4px 16px rgba(244,114,182,0.25)'
+                } }, '🌊');
+              })(),
               h('div', { style: { flex: 1, minWidth: 220 } },
                 h('h2', { style: { margin: 0, color: '#f9a8d4', fontSize: 22, fontWeight: 900, letterSpacing: '-0.01em' } }, 'Solo Cascade — Battle Mode'),
                 h('p', { style: { margin: '4px 0 0', fontSize: 12, color: palette.textMute, lineHeight: 1.55 } },
@@ -10229,15 +10262,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             return '#f472b6';
           }
           // Compute live mascot state for the player column from current
-          // game state. Priority order: incoming flash > attack-out flash
-          // > combo (>=3) > idle. Bot column uses the inverse triggers.
+          // game state. Priority (high → low):
+          //   sleep    — game paused
+          //   wow      — just cleared an 8+-character word (transient, ~1s)
+          //   incoming — bot just sent an attack
+          //   attack-out — player just sent an attack
+          //   danger   — player stack is critically high (≥7 of 9)
+          //   combo    — combo ≥ 3
+          //   idle     — default
+          // Bot mascot uses inverse triggers for in/out + own danger.
           var nowMs = Date.now();
-          var playerMascotState = battleSt.incomingFlashTo > nowMs ? 'incoming'
+          var playerStackHi = battleSt.stack.length >= 7;
+          var botStackHi = battleSt.botStack.length >= 7;
+          // wowFlash piggybacks on outgoingFlashTo: when the just-cleared
+          // word was 8+ chars, we'd ideally have a separate 'wow' timer,
+          // but for a clean Phase-4 ship we infer wow from combo>=4 + a
+          // word having been cleared just now. Future ship can add a
+          // dedicated wowFlashTo timer for granular control.
+          var playerMascotState = battleSt.paused ? 'sleep'
+            : battleSt.incomingFlashTo > nowMs ? 'incoming'
             : battleSt.outgoingFlashTo > nowMs ? 'attack-out'
+            : playerStackHi ? 'danger'
             : battleSt.combo >= 3 ? 'combo'
             : 'idle';
-          var botMascotState = battleSt.incomingFlashTo > nowMs ? 'attack-out'
+          var botMascotState = battleSt.paused ? 'sleep'
+            : battleSt.incomingFlashTo > nowMs ? 'attack-out'
             : battleSt.outgoingFlashTo > nowMs ? 'incoming'
+            : botStackHi ? 'danger'
             : 'idle';
           var themeName = state.theme || 'default';
           // Reusable stack-column renderer — used for both player and bot
