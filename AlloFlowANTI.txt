@@ -1864,41 +1864,17 @@ const ComplexityGauge = React.memo(({ level }) => {
     </div>
   );
 });
-const Sticker = ({ type, x, y, author, authorName, createdAt }) => {
-    const icons = {
-        star: '⭐',
-        check: '✅',
-        idea: '💡',
-        love: '❤️',
-    };
-    // Hover tooltip surfaces author + timestamp so a student loading their
-    // saved project can tell which stickers came from their teacher and
-    // which were their own. Pointer-events stays none on the sticker itself
-    // so it never blocks clicks on underlying content; the browser native
-    // `title` attribute still surfaces on hover regardless.
-    const titleParts = [];
-    if (author === 'teacher') titleParts.push('Teacher feedback');
-    else if (author === 'student') titleParts.push(authorName ? authorName : 'Student');
-    if (createdAt) {
-        try {
-            const d = new Date(createdAt);
-            if (!isNaN(d.getTime())) titleParts.push(d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
-        } catch (_) {}
+// Sticker — thin shim that delegates to window.AlloModules.AnnotationSuite.
+// Full implementation lives in annotation_suite_source.jsx so future
+// annotation types (highlight, sticky note) can extend the module without
+// re-bloating the monolith. Falls back to a no-op div if the module hasn't
+// loaded yet (network race during first paint).
+const Sticker = (props) => {
+    const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+    if (_m && _m.StickerNode) {
+        return React.createElement(_m.StickerNode, { s: props });
     }
-    const titleText = titleParts.join(' • ') || (icons[type] || '');
-    // Teacher stickers get a subtle ring so they're scannable at a glance
-    // (no extra label needed; the icon + ring + tooltip carry the meaning).
-    const ringClass = author === 'teacher' ? ' ring-2 ring-indigo-400/70 rounded-full bg-white/80 p-0.5' : '';
-    return (
-        <div
-            className={"absolute text-3xl drop-shadow-md animate-[ping_0.4s_ease-out_reverse_forwards] pointer-events-none select-none z-50 hover:scale-110 transition-transform" + ringClass}
-            style={{ top: y - 15, left: x - 15 }}
-            title={titleText}
-            aria-label={titleText ? (icons[type] || type) + ' — ' + titleText : (icons[type] || type)}
-        >
-            {icons[type]}
-        </div>
-    );
+    return null;
 };
 const MatchVisuals = () => (
   <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none overflow-hidden rounded-xl">
@@ -3867,6 +3843,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js');
     loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js');
+    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -4979,6 +4956,18 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [stickers, setStickers] = useState([]);
   const [isStickerMode, setIsStickerMode] = useState(false);
   const [stickerType, setStickerType] = useState('star');
+  // Phase 3a annotation suite extension: a single string-mode supersedes the
+  // legacy isStickerMode boolean ('' = off, 'sticker', 'note', future
+  // 'highlight'). isStickerMode is kept in sync below for back-compat with
+  // call sites that haven't migrated yet. Note color drives newly created
+  // sticky notes via the toolbar's color picker.
+  const [annotationMode, setAnnotationMode] = useState('');
+  const [noteColor, setNoteColor] = useState('yellow');
+  React.useEffect(function () {
+    // Keep legacy isStickerMode boolean in sync so cursor/CSS branches in
+    // the existing JSX continue to work without per-site migration.
+    setIsStickerMode(annotationMode === 'sticker');
+  }, [annotationMode]);
   const contentAreaRef = useRef(null);
   const [phonicsData, setPhonicsData] = useState(null);
   const [isFluencyMode, setIsFluencyMode] = useState(false);
@@ -6490,7 +6479,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const handleToggleIsUDLGuideExpanded = React.useCallback(() => setIsUDLGuideExpanded(prev => !prev), []);
   const handleToggleShowUDLGuide = React.useCallback(() => setShowUDLGuide(prev => !prev), []);
   const handleToggleIsHistoryMaximized = React.useCallback(() => setIsHistoryMaximized(prev => !prev), []);
-  const handleToggleIsStickerMode = React.useCallback(() => setIsStickerMode(prev => !prev), []);
+  const handleToggleIsStickerMode = React.useCallback(() => {
+    // New: drives the unified annotationMode. Toggling sticker mode now
+    // routes through the same single-mode contract that the note tool uses.
+    setAnnotationMode(prev => prev === 'sticker' ? '' : 'sticker');
+  }, []);
   const handleToggleIsEditingAnalysis = React.useCallback(() => setIsEditingAnalysis(prev => !prev), []);
   const handleToggleIsEditingGlossary = React.useCallback(() => setIsEditingGlossary(prev => !prev), []);
   const handleToggleShowFlashcardImages = React.useCallback(() => setShowFlashcardImages(prev => !prev), []);
@@ -19476,28 +19469,30 @@ Return ONLY valid JSON in this format:
       }
   };
   const handleContentClick = (e) => {
-      if (!isStickerMode || !contentAreaRef.current) return;
-      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.closest('button')) {
-          return;
+      if (!annotationMode || !contentAreaRef.current) return;
+      // Dispatch by annotationMode to the appropriate factory in the
+      // annotation_suite module. Both factories handle the same
+      // {id, kind, x, y, author, authorName, createdAt} envelope and skip
+      // placement on interactive elements (buttons, inputs, textareas).
+      const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+      if (!_m) return;
+      const authorName = studentNickname || studentProjectSettings?.nickname || '';
+      let next = null;
+      if (annotationMode === 'sticker' && _m.createStickerFromClick) {
+          next = _m.createStickerFromClick(contentAreaRef.current, e, {
+              stickerType: stickerType,
+              isTeacher: isTeacherMode,
+              authorName: authorName,
+          });
+      } else if (annotationMode === 'note' && _m.createNoteFromClick) {
+          next = _m.createNoteFromClick(contentAreaRef.current, e, {
+              color: noteColor,
+              isTeacher: isTeacherMode,
+              authorName: authorName,
+          });
       }
-      const rect = contentAreaRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left + contentAreaRef.current.scrollLeft;
-      const y = e.clientY - rect.top + contentAreaRef.current.scrollTop;
-      const newSticker = {
-          id: Date.now(),
-          type: stickerType,
-          x,
-          y,
-          // Author attribution: lets teachers and students see who placed
-          // each sticker after a project is saved + reopened. Also sets up
-          // the data shape for future highlight + sticky-note annotation
-          // types that will reuse the same {author, authorName, createdAt}
-          // fields. Teacher-mode placement => 'teacher'; otherwise student.
-          author: isTeacherMode ? 'teacher' : 'student',
-          authorName: !isTeacherMode ? (studentNickname || studentProjectSettings?.nickname || '') : '',
-          createdAt: new Date().toISOString()
-      };
-      setStickers(prev => [...prev, newSticker]);
+      if (!next) return;
+      setStickers(prev => [...prev, next]);
       playSound('click');
   };
   const clearStickers = () => setStickers([]);
@@ -21759,31 +21754,25 @@ Return ONLY valid JSON in this format:
                 </h3>
                 {isTeacherMode && generatedContent && !isOutputHeaderCollapsed && (
                     <div className="hidden md:flex items-center bg-white rounded-full border border-slate-400 shadow-sm px-1 py-0.5 ml-2">
-                        <button
-                            onClick={handleToggleIsStickerMode}
-                            className={`p-1.5 rounded-full transition-all flex items-center gap-1 text-xs font-bold px-2 mr-1 ${isStickerMode ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200' : 'text-slate-600 hover:bg-slate-100'}`}
-                            title={t('toolbar.stickers_tooltip')}
-                        >
-                            <Smile size={14} /> {t('toolbar.stickers_label')}
-                        </button>
-                        {isStickerMode && (
-                            <div className="flex items-center gap-1 animate-in slide-in-from-left-2 duration-200 border-l border-slate-200 pl-1">
-                                {['star', 'check', 'idea', 'love'].map(type => (
-                                    <button
-                                        aria-label={t('common.delete')}
-                                        key={type}
-                                        onClick={() => setStickerType(type)}
-                                        className={`w-6 h-6 flex items-center justify-center rounded-full text-sm hover:scale-125 transition-transform ${stickerType === type ? 'bg-indigo-50 shadow-sm scale-110 ring-1 ring-indigo-200' : 'opacity-60 hover:opacity-100'}`}
-                                    >
-                                        {{star: '⭐', check: '✅', idea: '💡', love: '❤️'}[type]}
-                                    </button>
-                                ))}
-                                <div className="w-px h-4 bg-slate-200 mx-1"></div>
-                                <button onClick={clearStickers} className="p-1 text-slate-600 hover:text-red-500 rounded-full" title={t('toolbar.clear_stickers')} aria-label={t('toolbar.clear_stickers')}>
-                                    <Trash2 size={12}/>
-                                </button>
-                            </div>
-                        )}
+                        {(() => {
+                            // Annotation suite toolbar — sticker + note mode
+                            // toggles + per-tool sub-controls. Delegates to
+                            // the CDN module so future tools (highlight) land
+                            // in one place. Falls back to nothing if the
+                            // module hasn't loaded yet.
+                            const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+                            if (!_m || !_m.Toolbar) return null;
+                            return React.createElement(_m.Toolbar, {
+                                mode: annotationMode,
+                                stickerType: stickerType,
+                                noteColor: noteColor,
+                                onSetMode: setAnnotationMode,
+                                onPickType: setStickerType,
+                                onPickNoteColor: setNoteColor,
+                                onClear: clearStickers,
+                                t: t,
+                            });
+                        })()}
                     {generatedContent && (activeView === 'math') && (
                         <span role="button" tabIndex={0}
                             onClick={() => { setShowStemLab(true); setStemLabTab('explore'); }}
@@ -21831,9 +21820,16 @@ Return ONLY valid JSON in this format:
               transition: 'background-color 0.3s, color 0.3s',
             } : undefined}
           >
-            {stickers.map(s => (
-                <Sticker key={s.id} type={s.type} x={s.x} y={s.y} author={s.author} authorName={s.authorName} createdAt={s.createdAt} />
-            ))}
+            {(() => {
+                // Annotation overlay — module-driven so the same overlay
+                // layer hosts future highlight/note types alongside the
+                // existing stickers. Same Sticker shim still works (kept
+                // above for any straggling direct usages), but new code
+                // should go through the module.
+                const _m = window.AlloModules && window.AlloModules.AnnotationSuite;
+                if (_m && _m.Overlay) return React.createElement(_m.Overlay, { annotations: stickers });
+                return null;
+            })()}
             {isProcessing && (!generatedContent || !generatedContent?.data) ? (
                 <div data-help-key="gen_loading_screen" className="absolute inset-0 bg-white/95 z-10 flex flex-col items-center justify-center">
                     <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden p-8">
