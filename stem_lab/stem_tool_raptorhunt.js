@@ -608,7 +608,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       },
       {
         name: 'Eilat Spring Migration, Israel',
-        founded: 1980s,
+        founded: '1980s',
         founder: 'International Birding Centre Eilat',
         annualCount: '~1 million raptors per spring (Mar-May)',
         highlight: 'Sinai-Negev land bridge between Africa + Eurasia. Critical refueling stop. Reverse-direction kettles compared to fall sites.',
