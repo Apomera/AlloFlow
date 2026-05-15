@@ -141,7 +141,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       tactics: ['scavenge', 'slow-stalk'],
       weird: '"Living fossil" — body plan essentially unchanged for 500 million years. Has 90 tentacles (no suckers, sticky pads instead).',
       conservation: 'Threatened (CITES Appendix II); shell trade is the main pressure',
-      notes: 'The only living cephalopod with an external shell. Uses the chambered shell for buoyancy by pumping gas in/out. Pinhole eyes (no lens) means very poor vision compared to other cephalopods — they hunt mostly by smell. Mostly scavenger. Despite the dramatic difference, evolutionary studies show nautilids share ancestor with octopus + squid ~500M years ago.' }
+      notes: 'The only living cephalopod with an external shell. Uses the chambered shell for buoyancy by pumping gas in/out. Pinhole eyes (no lens) means very poor vision compared to other cephalopods — they hunt mostly by smell. Mostly scavenger. Despite the dramatic difference, evolutionary studies show nautilids share ancestor with octopus + squid ~500M years ago.' },
+    { id: 'giantSquid', name: 'Giant Squid', scientific: 'Architeuthis dux', emoji: '🦑', group: 'squid',
+      intelligence: 6, camouflageRank: 5, jetSpeed: 7,
+      size: '12-13 m mantle-to-tentacle (largest reliable measurements)', lifespan: '~5 years',
+      habitat: ['deep'], prey: ['fish', 'squid'],
+      tactics: ['ambush', 'jet-strike'],
+      weird: 'The original sea-monster myth. Never filmed alive until 2004 (still photographs) + 2012 (video). Tentacle suckers leave perfect circular scars on sperm whale skin.',
+      conservation: 'Least Concern; no targeted fishery (rarely caught alive)',
+      notes: 'Lives at 400-1200m depth in the mesopelagic zone. The eye is the largest in the animal kingdom (~25-30 cm diameter) — likely adapted to detect the bioluminescent halos of approaching sperm whales (the giant squid\'s main predator). Most specimens come from beachings or sperm whale stomach contents. Edmund Kean Ohio State + Tsunemi Kubodera (Japan) led the breakthrough live filming.' },
+    { id: 'colossal', name: 'Colossal Squid', scientific: 'Mesonychoteuthis hamiltoni', emoji: '🦑', group: 'squid',
+      intelligence: 5, camouflageRank: 4, jetSpeed: 6,
+      size: '~10 m total, up to 500 kg — heaviest invertebrate ever', lifespan: '~2-5 years',
+      habitat: ['deep'], prey: ['toothfish', 'fish', 'other squid'],
+      tactics: ['ambush', 'venom-strike'],
+      weird: 'Tentacles have rotating ARMORED HOOKS as well as suckers. Built differently from giant squid — shorter + heavier + more aggressive predator.',
+      conservation: 'Least Concern; limited bycatch from Antarctic toothfish fishery',
+      notes: 'Lives in the Antarctic Southern Ocean, 1000-2000m deep. Heavier than the giant squid by mass even though shorter. The hooked tentacles are a key adaptation: they grip prey + struggling competitors. Most known from sperm whale stomach contents + Antarctic toothfish (Patagonian toothfish) bycatch. New Zealand\'s Te Papa museum has the world\'s only intact adult specimen preserved.' },
+    { id: 'firefly', name: 'Firefly Squid', scientific: 'Watasenia scintillans', emoji: '✨', group: 'squid',
+      intelligence: 5, camouflageRank: 6, jetSpeed: 6,
+      size: '~7 cm mantle', lifespan: '~1 year',
+      habitat: ['deep', 'reef'], prey: ['copepod', 'small fish'],
+      tactics: ['ambush', 'group-hunt'],
+      weird: 'Has ~1000 light-producing organs (photophores) covering its body. Can flash patterns of blue light for communication, prey-luring, and counter-illumination camouflage.',
+      conservation: 'Least Concern; targeted seasonal fishery in Toyama Bay, Japan',
+      notes: 'Every spring (March-May), millions migrate to Toyama Bay shallow waters to spawn. Their synchronized bioluminescent display turns the sea blue at night — a major tourist + scientific attraction. The photophores are arranged in distinct patterns: ventral ones for counter-illumination (hiding from below), arm-tip clusters for prey luring, body patterns for communication.' },
+    { id: 'bobtail', name: 'Hawaiian Bobtail Squid', scientific: 'Euprymna scolopes', emoji: '🦑', group: 'cuttlefish',
+      intelligence: 6, camouflageRank: 8, jetSpeed: 5,
+      size: '~3 cm mantle', lifespan: '~3 months',
+      habitat: ['reef', 'sandy'], prey: ['shrimp', 'small fish'],
+      tactics: ['ambush', 'counter-illumination'],
+      weird: 'Hosts a SYMBIOTIC bacterial culture (Vibrio fischeri) in a special light organ. The bacteria produce light that matches moonlight, hiding the squid\'s shadow from below.',
+      conservation: 'Least Concern; major laboratory model organism',
+      notes: 'The classic symbiosis research model. Each squid hatches sterile, then recruits Vibrio fischeri from seawater into a specialized light organ within hours. The bacteria produce light at moonlight-equivalent brightness; the squid uses this to erase its silhouette against the moonlit surface (counter-illumination). Every dawn, the squid expels 95% of the bacterial population, then the remaining 5% repopulate during the day. This is one of the cleanest models of beneficial symbiosis in animals — Margaret McFall-Ngai\'s lab at U Hawaii has built decades of foundational work here.' },
+    { id: 'dayOcto', name: 'Day Octopus', scientific: 'Octopus cyanea', emoji: '🐙', group: 'octopus',
+      intelligence: 8, camouflageRank: 10, jetSpeed: 5,
+      size: '~60 cm arm-span', lifespan: '~1 year',
+      habitat: ['reef'], prey: ['crab', 'fish', 'shrimp'],
+      tactics: ['ambush', 'cooperative-hunt', 'stalk'],
+      weird: 'Hunts COOPERATIVELY with reef fish (especially grouper + goatfish). The octopus flushes prey from crevices; the fish ambush escapees. First documented interspecies coordinated hunting in invertebrates.',
+      conservation: 'Least Concern; targeted artisanal fishery in Indo-Pacific',
+      notes: 'Tropical Indo-Pacific reef specialist. Unlike most octopuses (nocturnal), this species hunts during the day — hence the name. The 2020 paper by Sampaio et al. in Ecology documented cooperative hunting with up to 8 fish species partnering with single octopuses. Reef fish wait for the octopus to enter a crevice + drive prey out; when the prey emerges, the fish catch it. Both species benefit. The octopus also punches partners that don\'t pull their weight — first documented inter-species punishment in fish-octopus cooperation.' }
   ];
 
   // ───────────────────────────────────────────────────────────
@@ -267,7 +307,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
     { id: 'grapple', name: 'Grapple', emoji: '💪',
       description: 'Strong-arm overpowers prey directly. Giant Pacific specialty.',
       bestFor: ['octopus'],
-      requires: 'large body + prey weaker than you' }
+      requires: 'large body + prey weaker than you' },
+    { id: 'counter-illumination', name: 'Counter-Illumination', emoji: '💡',
+      description: 'Generate light underneath to match downwelling moonlight/sunlight, erasing your shadow from below.',
+      bestFor: ['squid', 'cuttlefish'],
+      requires: 'photophores or symbiotic light organ' },
+    { id: 'cooperative-hunt', name: 'Cooperative Hunt', emoji: '🤝',
+      description: 'Hunt alongside another species. Day octopuses partner with reef fish to flush + ambush prey.',
+      bestFor: ['octopus'],
+      requires: 'reef environment + cooperating partner species' }
   ];
 
   // ───────────────────────────────────────────────────────────
@@ -379,6 +427,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       jetSiphonDiameter: 18,               // mm
       // Intelligence Lab state
       intelSelectedCase: 'otto',
+      // Research Methods Lab state
+      methodsSelected: 'ymaze',
       // Conservation & Welfare state
       conservationSection: 'overview',     // 'overview' | 'fisheries' | 'farming' | 'shell-trade' | 'welfare'
       // Resources state
@@ -477,6 +527,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           { id: 'time', label: 'Through Time', icon: '🕰️' },
           { id: 'jet', label: 'Jet Propulsion', icon: '🚀' },
           { id: 'intel', label: 'Intelligence', icon: '💡' },
+          { id: 'methods', label: 'Research Methods', icon: '🔬' },
           { id: 'conservation', label: 'Conservation & Welfare', icon: '🌍' },
           { id: 'resources', label: 'Resources', icon: '📚' }
         ];
@@ -492,7 +543,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: '#c7d2fe', letterSpacing: '-0.01em' } }, 'Cephalopod Lab'),
                 h('div', { style: { fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.12)',
                     border: '1px solid rgba(167,139,250,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                  '10 sections')),
+                  '11 sections')),
               h('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 4, lineHeight: 1.5 } },
                 'The biology of intelligent invertebrates. Octopuses + squid + cuttlefish + nautilus — chromatophore camouflage, distributed neural intelligence, hunting strategy, 500M-year evolution.'))));
       }
@@ -2114,7 +2165,123 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       }
 
       // ═══════════════════════════════════════════════════════
-      // SECTION 8 — CONSERVATION & WELFARE
+      // SECTION 8 — RESEARCH METHODS LAB
+      // ═══════════════════════════════════════════════════════
+      // How cephalopods are actually studied. Methodology section
+      // that complements Intelligence Lab's case-studies.
+      function renderResearchMethods() {
+        var METHODS = [
+          { id: 'ymaze', name: 'Y-Maze Learning', icon: '🔀', color: '#a78bfa',
+            era: 'Boyle + Wells, 1960s onward',
+            setup: 'Octopus enters a Y-shaped tank. One arm leads to food, the other to a mild shock or nothing. Researchers measure how many trials it takes to learn which arm to choose.',
+            findings: 'Octopuses learn associative tasks in 5-20 trials, comparable to rats. They retain the learning for weeks. They also generalize — once trained, they apply the rule to slight variations (different arm color, different visual cue).',
+            limits: 'Y-maze is a vertebrate-designed paradigm. Octopuses solve it but it doesn\'t reveal what they\'re uniquely good at (which is probably distributed-sensory tasks more than centralized rule-following).',
+            why: 'The foundational test that demonstrated cephalopods can learn. Before Boyle + Wells\'s work, cognitive scientists weren\'t sure invertebrates could form lasting associations.' },
+          { id: 'mirror', name: 'Mirror Self-Recognition', icon: '🪞', color: '#86efac',
+            era: 'Gallup 1970 (general); cephalopod tests 1990s-2020s',
+            setup: 'Mark the animal\'s body somewhere visible only via mirror (a colored dot). Watch whether the animal touches its own mark (suggesting recognition) or treats the mirror image as another animal.',
+            findings: 'Cephalopods show MIXED results. Some studies find octopuses ignore mirrors (no recognition). Other studies find investigative behavior but no mark-touching. Cuttlefish 2024 work suggests they may discriminate self from non-self via different criteria.',
+            limits: 'The mirror test was built around primates\' visual self-recognition. Cephalopods may have distributed self-models that don\'t map to a "look at the marked body part" response. Negative results don\'t mean no self-awareness — they mean this specific test doesn\'t reveal it.',
+            why: 'Forces the question: what would self-awareness LOOK LIKE in an animal with 8 arms that each have their own ganglion? The mirror test assumes one self, one mark, one motor response. Maybe cephalopods need a different test.' },
+          { id: 'tooluse', name: 'Tool Use Documentation', icon: '🥥', color: '#fb923c',
+            era: 'Finn, Tregenza & Norman 2009 paper onward',
+            setup: 'Underwater video observation over thousands of hours. Researchers scuba-dive in Indonesian coastal waters, follow individual coconut octopuses, document discarded-shell-carrying behavior + later shelter assembly.',
+            findings: 'Coconut octopuses (Amphioctopus marginatus) regularly collect + transport halved coconut shells across open sand — a behavior with no immediate benefit (they look awkward + slow while doing it) — then assemble paired shells as shelter when needed. First confirmed invertebrate tool use.',
+            limits: 'Field observation can\'t test cognitive intent. Maybe the octopus likes the texture of the shell + benefits from shelter as a side effect — but the SEPARATION between transport (cost) + assembly (later benefit) is the technical definition of tool use, regardless of subjective experience.',
+            why: 'Changed our understanding of invertebrate cognition. Tool use was previously thought to require vertebrate-level (specifically primate or corvid-level) brains. Cephalopods broke that assumption.' },
+          { id: 'retention', name: 'Long-Term Memory Tasks', icon: '📅', color: '#fbbf24',
+            era: 'Hochner + Glanzman + Sumbre labs, 2000s onward',
+            setup: 'Train octopus on a task (e.g., distinguish shapes for food). Wait 1 week, 4 weeks, 6 months. Test retention without re-training.',
+            findings: 'Octopuses retain learned discriminations for at least 4-6 weeks. Some studies show retention up to several months. This is significant given their short lifespan (1-2 years) — the memory window is a large fraction of their life.',
+            limits: 'Retention testing requires keeping the same individual alive + healthy in captivity for weeks/months. Octopus welfare in long captivity is genuinely difficult — most lab octopuses show signs of stress + reduced learning over time.',
+            why: 'Demonstrates that cephalopod learning isn\'t just transient conditioning. They form what researchers consider real memory traces, consistent with the architecture of their vertical lobe (a central-brain structure analogous in some ways to vertebrate hippocampus).' },
+          { id: 'pain', name: 'Pain + Nociception Research', icon: '⚠️', color: '#fca5a5',
+            era: 'Crook, Walters 2011 onward; Birch et al. 2021 LSE review',
+            setup: 'Multiple paradigms: (1) measure behavioral responses to noxious stimuli, (2) test for sensitization (does prior noxious stimulus increase response to later mild stimulus?), (3) check whether anesthetics block nociceptive responses, (4) look for self-protective behaviors after injury.',
+            findings: 'Cephalopods show ALL classic indicators of pain perception: location-specific protective responses, sensitization after injury, anesthetic-blockable nociception, behavioral changes that persist beyond the injury moment. The 2021 LSE review concluded "very strong evidence" of pain perception across cephalopods + decapod crustaceans.',
+            limits: 'You can\'t directly measure subjective suffering — we infer from behavioral + neurophysiological proxies. Strict philosophers note this is the same evidence we use for fish + other animals where pain is now widely accepted.',
+            why: 'Direct basis for the UK 2021 Animal Welfare (Sentience) Act amendment recognizing cephalopods + decapods as sentient. Has practical impact: governs research ethics review, aquaculture welfare standards, slaughter methods.' },
+          { id: 'personality', name: 'Personality Studies', icon: '🎭', color: '#38bdf8',
+            era: 'Mather + Anderson 1993 onward',
+            setup: 'Repeated behavioral observations of individual cephalopods. Score each on dimensions: bold vs shy, exploratory vs cautious, active vs passive, reactivity to novel objects. Test whether scores are consistent across time + situations.',
+            findings: 'Cephalopods show CONSISTENT individual personality differences across years (within their short lifespan). "Bold" octopuses are bold across tasks. "Shy" individuals are shy across tasks. This is the same definition + statistical structure used for vertebrate personality research.',
+            limits: 'Sample sizes are usually small (octopuses are individual + housed individually). Cross-species comparison is hard because each species has different baseline behaviors. The dimensions used may be vertebrate-biased.',
+            why: 'Suggests cephalopod minds aren\'t just "octopus does octopus things" — different individuals have different cognitive styles. Has implications for aquaculture (some individuals would suffer more from confinement) + research (effects of single-subject studies on dimension-defining experiments).' },
+          { id: 'physiology', name: 'Arm Ganglion Electrophysiology', icon: '⚡', color: '#0ea5e9',
+            era: 'Sumbre lab + Hochner lab, 2000s onward',
+            setup: 'Surgically isolate octopus arm ganglion in physiological saline. Stimulate sensory inputs (tactile, chemical) with controlled probes. Record motor neuron outputs + reflexes. Compare to intact-animal behavior.',
+            findings: 'Isolated arms perform location-specific responses to noxious stimuli, withdraw from threatening contact, can grasp + manipulate small objects. The ganglion contains complete circuits for simple decision-making — touch, evaluate, respond. Central brain isn\'t required for arm-level intelligence.',
+            limits: 'Arms separated from the body don\'t have full behavioral repertoire — they can\'t learn new tasks in isolation, just execute the pre-existing circuits. The full distributed cognition emerges from arm-ganglion + central-brain interaction.',
+            why: 'Direct neurophysiological evidence for the "9 brains" interpretation. The 2/3 of neurons in the arms aren\'t passive sensory — they\'re computing. This reframes what "an octopus thinks" means at the level of brain anatomy.' },
+          { id: 'genome', name: 'Genome Sequencing', icon: '🧬', color: '#a16207',
+            era: 'Albertin et al. 2015 (octopus); cuttlefish + squid 2017-2022',
+            setup: 'Extract DNA from cephalopod tissue. Sequence using next-generation methods. Annotate genes. Compare to other animal genomes.',
+            findings: 'The octopus genome has ~33,000 genes (more than humans). Massive expansion in protocadherin family (cell-cell signaling, especially in nervous tissue). Hundreds of genes are UNIQUE to cephalopods. RNA editing — modifying RNA after transcription — is unusually heavy in cephalopod neurons (10-fold higher than humans), suggesting a different mode of cognitive flexibility.',
+            limits: 'Reading a genome doesn\'t tell you what an animal\'s mind is like. The unique genes have to be functionally tested individually, which takes decades. Many functions are still inferred from sequence similarity rather than direct experiment.',
+            why: 'Confirms that cephalopod intelligence evolved via different genetic mechanisms than vertebrate intelligence. The RNA editing finding in particular suggests cephalopods use a fundamentally different strategy for nervous-system adaptability — editing protein behavior on the fly rather than purely via gene expression.' }
+        ];
+        var sel = METHODS.find(function(m) { return m.id === (d.methodsSelected || 'ymaze'); }) || METHODS[0];
+        return h('div', null,
+          panelHeader('🔬 Research Methods Lab',
+            'How we actually study cephalopods. Every claim in the Intelligence Lab + Conservation Lab is grounded in one or more of these methodological approaches. Each method has strengths + blind spots — the science is built from triangulating across multiple approaches.'),
+
+          // Method picker
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '🛠️ Methodologies'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 8 } },
+              METHODS.map(function(m) {
+                var active = m.id === (d.methodsSelected || 'ymaze');
+                return h('button', { key: m.id,
+                  onClick: function() { setCL({ methodsSelected: m.id }); awardXP(1); clAnnounce('Selected ' + m.name); },
+                  'aria-pressed': active ? 'true' : 'false',
+                  style: { padding: '10px 12px', textAlign: 'left',
+                    background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
+                    color: active ? '#c7d2fe' : '#cbd5e1',
+                    border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                    borderLeft: '3px solid ' + m.color,
+                    borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 6 } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 16 } }, m.icon),
+                  h('div', null,
+                    h('div', { style: { fontWeight: 800, fontSize: 12, color: active ? '#fde68a' : '#e2e8f0' } }, m.name)));
+              }))),
+
+          // Selected method detail
+          h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid ' + sel.color }) },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
+              h('span', { 'aria-hidden': 'true', style: { fontSize: 30, lineHeight: 1 } }, sel.icon),
+              h('div', { style: { flex: 1, minWidth: 240 } },
+                h('div', { style: { fontSize: 20, fontWeight: 900, color: sel.color, letterSpacing: '-0.01em' } }, sel.name),
+                h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, sel.era))),
+
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12, marginBottom: 14 } },
+              [
+                { lbl: '🧪 The setup', val: sel.setup, color: '#86efac' },
+                { lbl: '📊 What they\'ve found', val: sel.findings, color: '#fbbf24' },
+                { lbl: '⚠️ Limitations', val: sel.limits, color: '#fca5a5' },
+                { lbl: '💡 Why this matters', val: sel.why, color: '#a78bfa' }
+              ].map(function(box, i) {
+                return h('div', { key: i,
+                  style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + box.color, padding: '10px 12px', borderRadius: 8 } },
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: box.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, box.lbl),
+                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7 } }, box.val));
+              }))),
+
+          // Methodological framing
+          h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #a78bfa' }) },
+            h('div', { style: subheaderStyle() }, '🌐 The methodological landscape'),
+            h('div', { style: { color: '#e9d5ff', fontSize: 13, lineHeight: 1.75 } },
+              h('p', { style: { margin: '0 0 12px 0' } },
+                'Cephalopod research sits at an intersection of vertebrate-derived methods (Y-mazes, mirror tests, retention tasks) and methods that had to be DESIGNED FROM SCRATCH for cephalopods (arm-ganglion electrophysiology, RNA editing analysis, distributed-cognition behavioral assays).'),
+              h('p', { style: { margin: '0 0 12px 0' } },
+                'The vertebrate-derived methods work, but their results are often mixed — because they\'re measuring traits that may not be cephalopod-native. The mirror test\'s ambiguity is a feature: it tells us cephalopods don\'t self-recognize the way primates do, but doesn\'t tell us whether they self-recognize a different way.'),
+              h('p', { style: { margin: 0, padding: '12px 14px', background: 'rgba(167,139,250,0.1)', borderLeft: '3px solid #a78bfa', borderRadius: 6, fontStyle: 'italic' } },
+                'The biggest open question in the field: what would a TRULY cephalopod-native research methodology look like? One that\'s built around 8-armed embodied cognition rather than around centralized-brain assumptions?')))
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════
+      // SECTION 9 — CONSERVATION & WELFARE
       // ═══════════════════════════════════════════════════════
       function renderConservation() {
         var sub = d.conservationSection || 'overview';
@@ -2467,6 +2634,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       else if (section === 'time') content = renderThroughTime();
       else if (section === 'jet') content = renderJetLab();
       else if (section === 'intel') content = renderIntelLab();
+      else if (section === 'methods') content = renderResearchMethods();
       else if (section === 'conservation') content = renderConservation();
       else if (section === 'resources') content = renderResources();
       else content = renderHub();
