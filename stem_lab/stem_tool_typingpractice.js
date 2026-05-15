@@ -9492,7 +9492,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           // is used by the UI to flash a brief "INCOMING" notice.
           botClearedSinceSend: 0,
           incomingFlashTo: 0,    // ts until which to flash "incoming" indicator on player stack
-          outgoingFlashTo: 0     // ts for "sent" indicator after a player attack lands
+          outgoingFlashTo: 0,    // ts for "sent" indicator after a player attack lands
+          // Attack picker (Phase 3b) — opens on combo threshold reach.
+          // Pauses main game input; player picks 1 of 3 attack words OR
+          // auto-confirms first option after pickerTimeoutAt.
+          pickerOpen: false,
+          pickerOptions: [],     // 3 attack words to choose from
+          pickerTimeoutAt: 0     // ts at which auto-pick fires
         });
         var battleSt = battleStateRaw[0];
         var setBattleSt = battleStateRaw[1];
@@ -9523,7 +9529,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             botStack: botInitial, botTyped: '', botCleared: 0, botLastRiseAt: now,
             botNextKeyAt: isVsBot ? now + 1500 : 0,
             botClearedSinceSend: 0,
-            incomingFlashTo: 0, outgoingFlashTo: 0
+            incomingFlashTo: 0, outgoingFlashTo: 0,
+            pickerOpen: false, pickerOptions: [], pickerTimeoutAt: 0
           });
           updMulti({ battle: Object.assign({}, state.battle, { view: 'playing' }) });
         }
@@ -9546,8 +9553,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             var newBotTyped = battleSt.botTyped;
             var newBotCleared = battleSt.botCleared;
             var newBotNextKey = battleSt.botNextKeyAt;
-            // PLAYER stack rise
-            if (battleSt.pauseUntil <= now && now - battleSt.lastRiseAt >= diff.riseMs) {
+            // PICKER auto-timeout — if open and timer expired, auto-confirm
+            // the FIRST option so newer players still get attacks even if
+            // they don't engage with the picker.
+            if (battleSt.pickerOpen && now >= battleSt.pickerTimeoutAt && battleSt.pickerOptions.length > 0) {
+              newBotStack = newBotStack.concat([battleSt.pickerOptions[0]]);
+              patch.botStack = newBotStack;
+              patch.outgoingFlashTo = now + 1200;
+              patch.pickerOpen = false;
+              patch.pickerOptions = [];
+              patch.combo = 0; // reset after spending
+              didChange = true;
+            }
+            // While picker is open, freeze the player stack rise — feels
+            // unfair to lose to a rising stack while the player is choosing.
+            // Bot stack still rises (you're "saving up" your attack at a
+            // small cost; bot doesn't get free time too).
+            // PLAYER stack rise (skipped if picker open)
+            if (!battleSt.pickerOpen && battleSt.pauseUntil <= now && now - battleSt.lastRiseAt >= diff.riseMs) {
               newPlayerStack = battleSt.stack.concat([pickBattleWord(diff.lengthMix)]);
               patch.stack = newPlayerStack;
               patch.lastRiseAt = now;
@@ -9636,7 +9659,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             if (didChange) setBattleSt(Object.assign({}, battleSt, patch));
           }, 100);
           return function() { clearInterval(iv); };
-        }, [state.battle.view, state.battle.mode, state.battle.botSpeed, state.battle.difficulty, battleSt.ended, battleSt.paused, battleSt.lastRiseAt, battleSt.pauseUntil, battleSt.stack.length, battleSt.botLastRiseAt, battleSt.botStack.length, battleSt.botNextKeyAt, battleSt.botTyped]);
+        }, [state.battle.view, state.battle.mode, state.battle.botSpeed, state.battle.difficulty, battleSt.ended, battleSt.paused, battleSt.lastRiseAt, battleSt.pauseUntil, battleSt.stack.length, battleSt.botLastRiseAt, battleSt.botStack.length, battleSt.botNextKeyAt, battleSt.botTyped, battleSt.pickerOpen, battleSt.pickerTimeoutAt]);
 
         // Keystroke handler for Battle mode — separate from drill mode
         useEffect(function() {
@@ -9644,6 +9667,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           if (battleSt.ended) return;
           function onKey(e) {
             if (e.metaKey || e.ctrlKey || e.altKey) return;
+            // PICKER intercept — when the 3-option overlay is open, only
+            // 1/2/3 select an option; Esc skips (no attack sent). Other
+            // keys are blocked so they don't accidentally edit the typing
+            // queue while the player is choosing.
+            if (battleSt.pickerOpen) {
+              if (e.key === 'Escape') {
+                e.preventDefault();
+                setBattleSt(Object.assign({}, battleSt, { pickerOpen: false, pickerOptions: [], combo: 0 }));
+                return;
+              }
+              if (e.key === '1' || e.key === '2' || e.key === '3') {
+                e.preventDefault();
+                var idx = parseInt(e.key, 10) - 1;
+                if (idx >= 0 && idx < battleSt.pickerOptions.length) {
+                  var picked = battleSt.pickerOptions[idx];
+                  setBattleSt(Object.assign({}, battleSt, {
+                    botStack: battleSt.botStack.concat([picked]),
+                    outgoingFlashTo: Date.now() + 1200,
+                    pickerOpen: false, pickerOptions: [],
+                    combo: 0
+                  }));
+                }
+                return;
+              }
+              // Block all other keys during picker
+              e.preventDefault();
+              return;
+            }
             // Allow Esc to pause
             if (e.key === 'Escape') {
               setBattleSt(Object.assign({}, battleSt, { paused: !battleSt.paused }));
@@ -9671,21 +9722,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 var newCombo = battleSt.combo + 1;
                 var nowMs = Date.now();
                 // Combo-attack trigger — vs-bot only. Hit the threshold,
-                // pick an attack word and push to opponent's stack. Combo
-                // resets so each attack requires a fresh streak.
-                var attackPatch = {};
-                if (state.battle.mode === 'vs-bot' && newCombo >= COMBO_SEND_THRESHOLD && !battleSt.ended) {
-                  var atk = BATTLE_ATTACK_WORDS[Math.floor(Math.random() * BATTLE_ATTACK_WORDS.length)];
-                  attackPatch.botStack = battleSt.botStack.concat([atk]);
-                  attackPatch.outgoingFlashTo = nowMs + 1200;
-                  newCombo = 0; // reset after spending the slot
+                // open the 3-option picker overlay (pauses main game until
+                // player picks or auto-pick timer fires).
+                var pickerPatch = {};
+                if (state.battle.mode === 'vs-bot' && newCombo >= COMBO_SEND_THRESHOLD && !battleSt.ended && !battleSt.pickerOpen) {
+                  // Pick 3 distinct random attack words for the menu
+                  var pool = BATTLE_ATTACK_WORDS.slice();
+                  var options = [];
+                  for (var pp = 0; pp < 3 && pool.length > 0; pp++) {
+                    var idx = Math.floor(Math.random() * pool.length);
+                    options.push(pool.splice(idx, 1)[0]);
+                  }
+                  pickerPatch.pickerOpen = true;
+                  pickerPatch.pickerOptions = options;
+                  pickerPatch.pickerTimeoutAt = nowMs + 3000;
+                  // combo stays — gets reset when picker resolves
                 }
-                setBattleSt(Object.assign({}, battleSt, attackPatch, {
+                setBattleSt(Object.assign({}, battleSt, pickerPatch, {
                   stack: battleSt.stack.slice(1),
                   typed: '',
                   cleared: battleSt.cleared + 1,
                   combo: newCombo,
-                  bestCombo: Math.max(battleSt.bestCombo, newCombo, attackPatch.botStack ? COMBO_SEND_THRESHOLD : 0),
+                  bestCombo: Math.max(battleSt.bestCombo, newCombo),
                   pauseUntil: nowMs + diff.postClearPauseMs
                 }));
               } else {
@@ -9698,7 +9756,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           }
           window.addEventListener('keydown', onKey);
           return function() { window.removeEventListener('keydown', onKey); };
-        }, [state.battle.view, battleSt.ended, battleSt.paused, battleSt.stack, battleSt.typed, battleSt.combo, battleSt.bestCombo, battleSt.cleared, battleSt.errors]);
+        }, [state.battle.view, state.battle.mode, battleSt.ended, battleSt.paused, battleSt.stack, battleSt.typed, battleSt.combo, battleSt.bestCombo, battleSt.cleared, battleSt.errors, battleSt.pickerOpen, battleSt.pickerOptions, battleSt.botStack]);
 
         function renderBattleMenu() {
           var diff = state.battle.difficulty || 'mercy';
@@ -9733,7 +9791,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
                 [
                   { key: 'solo', label: '🌊 Solo Cascade', blurb: 'Survive as long as you can. No opponent. Personal best tracked.' },
-                  { key: 'vs-bot', label: '🤖 vs Bot', blurb: 'Race an NPC. Build a 4-clear combo to send a hard word to the bot. Bot does the same to you.' }
+                  { key: 'vs-bot', label: '🤖 vs Bot', blurb: 'Race an NPC. Build a 4-clear combo to open the attack picker — pick 1 of 3 hard words to send to the bot. Bot sends back automatically.' }
                 ].map(function(m) {
                   var active = (state.battle.mode || 'solo') === m.key;
                   return h('button', {
@@ -9994,6 +10052,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               bg: 'linear-gradient(180deg, rgba(244,114,182,0.06), rgba(15,23,42,0.4))',
               border: 'rgba(244,114,182,0.20)', headerColor: '#f9a8d4', large: true
             }),
+            // ATTACK PICKER OVERLAY — opens when combo hits threshold.
+            // 3 random attack words; pick one (1/2/3 keys or click) within
+            // 3 seconds or auto-pick option 1. Esc skips entirely.
+            battleSt.pickerOpen ? (function() {
+              var msLeft = Math.max(0, battleSt.pickerTimeoutAt - Date.now());
+              var secLeft = Math.ceil(msLeft / 1000);
+              return h('div', {
+                role: 'dialog',
+                'aria-modal': 'true',
+                'aria-label': 'Choose an attack word to send to the bot',
+                style: {
+                  marginTop: 12, padding: 16, borderRadius: 10,
+                  background: 'linear-gradient(135deg, rgba(244,114,182,0.12), rgba(167,139,250,0.10))',
+                  border: '2px solid #f472b6',
+                  boxShadow: '0 4px 20px rgba(244,114,182,0.25)'
+                }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 } },
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: '#f9a8d4' } }, '⚡ ATTACK READY — pick a word to send'),
+                  h('div', { style: { fontSize: 11, color: palette.textMute, fontFamily: 'ui-monospace, Menlo, monospace' } }, secLeft + 's · auto-pick option 1')
+                ),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 } },
+                  battleSt.pickerOptions.map(function(w, i) {
+                    return h('button', {
+                      key: 'pick-' + i,
+                      onClick: function() {
+                        setBattleSt(Object.assign({}, battleSt, {
+                          botStack: battleSt.botStack.concat([w]),
+                          outgoingFlashTo: Date.now() + 1200,
+                          pickerOpen: false, pickerOptions: [],
+                          combo: 0
+                        }));
+                      },
+                      style: {
+                        padding: '14px 12px', borderRadius: 8,
+                        background: '#0f172a', border: '2px solid #f472b6',
+                        color: '#fff', fontSize: 17, fontWeight: 700,
+                        fontFamily: 'ui-monospace, Menlo, monospace',
+                        cursor: 'pointer', letterSpacing: '0.06em',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
+                      }
+                    },
+                      h('div', { style: { fontSize: 9, color: '#f9a8d4', fontWeight: 800, marginBottom: 4, fontFamily: 'inherit' } }, '[' + (i + 1) + ']'),
+                      w
+                    );
+                  })
+                ),
+                h('div', { style: { fontSize: 10, color: palette.textMute, marginTop: 10, fontStyle: 'italic', textAlign: 'center' } },
+                  'Tap a card OR press 1 / 2 / 3 to send. Press Esc to skip and not send. Your stack is frozen while you choose.')
+              );
+            })() : null,
             // Pause overlay
             battleSt.paused ? h('div', {
               role: 'status',
