@@ -1864,17 +1864,37 @@ const ComplexityGauge = React.memo(({ level }) => {
     </div>
   );
 });
-const Sticker = ({ type, x, y }) => {
+const Sticker = ({ type, x, y, author, authorName, createdAt }) => {
     const icons = {
         star: '⭐',
         check: '✅',
         idea: '💡',
         love: '❤️',
     };
+    // Hover tooltip surfaces author + timestamp so a student loading their
+    // saved project can tell which stickers came from their teacher and
+    // which were their own. Pointer-events stays none on the sticker itself
+    // so it never blocks clicks on underlying content; the browser native
+    // `title` attribute still surfaces on hover regardless.
+    const titleParts = [];
+    if (author === 'teacher') titleParts.push('Teacher feedback');
+    else if (author === 'student') titleParts.push(authorName ? authorName : 'Student');
+    if (createdAt) {
+        try {
+            const d = new Date(createdAt);
+            if (!isNaN(d.getTime())) titleParts.push(d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
+        } catch (_) {}
+    }
+    const titleText = titleParts.join(' • ') || (icons[type] || '');
+    // Teacher stickers get a subtle ring so they're scannable at a glance
+    // (no extra label needed; the icon + ring + tooltip carry the meaning).
+    const ringClass = author === 'teacher' ? ' ring-2 ring-indigo-400/70 rounded-full bg-white/80 p-0.5' : '';
     return (
         <div
-            className="absolute text-3xl drop-shadow-md animate-[ping_0.4s_ease-out_reverse_forwards] pointer-events-none select-none z-50 hover:scale-110 transition-transform"
+            className={"absolute text-3xl drop-shadow-md animate-[ping_0.4s_ease-out_reverse_forwards] pointer-events-none select-none z-50 hover:scale-110 transition-transform" + ringClass}
             style={{ top: y - 15, left: x - 15 }}
+            title={titleText}
+            aria-label={titleText ? (icons[type] || type) + ' — ' + titleText : (icons[type] || type)}
         >
             {icons[type]}
         </div>
@@ -14708,6 +14728,7 @@ Return ONLY valid JSON in this format:
         calculateLocalFluencyMetrics,
         applyGlobalCitations,
         chunkText,
+        stickers,
       });
     throw new Error("[executeSaveFile] PhaseKHelpers module not loaded - reload the page");
   };
@@ -14780,6 +14801,7 @@ Return ONLY valid JSON in this format:
         addToast,
         warnLog,
         hydrateHistory,
+        setStickers,
       });
     throw new Error("[handleLoadProject] MiscHandlers module not loaded - reload the page");
   };
@@ -19465,7 +19487,15 @@ Return ONLY valid JSON in this format:
           id: Date.now(),
           type: stickerType,
           x,
-          y
+          y,
+          // Author attribution: lets teachers and students see who placed
+          // each sticker after a project is saved + reopened. Also sets up
+          // the data shape for future highlight + sticky-note annotation
+          // types that will reuse the same {author, authorName, createdAt}
+          // fields. Teacher-mode placement => 'teacher'; otherwise student.
+          author: isTeacherMode ? 'teacher' : 'student',
+          authorName: !isTeacherMode ? (studentNickname || studentProjectSettings?.nickname || '') : '',
+          createdAt: new Date().toISOString()
       };
       setStickers(prev => [...prev, newSticker]);
       playSound('click');
@@ -21802,7 +21832,7 @@ Return ONLY valid JSON in this format:
             } : undefined}
           >
             {stickers.map(s => (
-                <Sticker key={s.id} type={s.type} x={s.x} y={s.y} />
+                <Sticker key={s.id} type={s.type} x={s.x} y={s.y} author={s.author} authorName={s.authorName} createdAt={s.createdAt} />
             ))}
             {isProcessing && (!generatedContent || !generatedContent?.data) ? (
                 <div data-help-key="gen_loading_screen" className="absolute inset-0 bg-white/95 z-10 flex flex-col items-center justify-center">
