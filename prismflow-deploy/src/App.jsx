@@ -1708,6 +1708,13 @@ const SESSION_TIER1_LEAVES = new Set([
   'currentScene', 'sceneImage', 'xpToNextLevel', 'inventory',
   'currentResourceId', 'activeAdventureScene', 'activeAdventureState',
   'pushedBy', 'forceStatic', 'createdAt', 'expiresAt',
+  // Concept Pictionary: per-student role for the active round (drawer/guesser/null).
+  // Structurally enum-only, not student-typed; cleared at round end. Tier-1 safe.
+  'role',
+  // Concept Pictionary round metadata (host-managed): { roundId, conceptHidden,
+  // drawerUids[], status }. No student-typed content; concept text only travels
+  // over WebRTC to assigned drawers, never to Firestore.
+  'pictionaryRound',
 ]);
 const writeToSession = async (sessionRef, payload) => {
   if (!sessionRef || !payload || typeof payload !== 'object') {
