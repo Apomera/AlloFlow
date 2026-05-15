@@ -312,6 +312,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       huntFieldNotesUnlocked: [],  // IDs from FIELD_NOTES
       huntsAttempted: 0,
       huntsSuccessful: 0,
+      // Camouflage Lab state
+      camoScene: 'sand',                   // 'sand' | 'reef' | 'kelp' | 'rock' | 'disruptive-target'
+      camoChromatophore: 50,               // 0-100 (red/yellow/black pigment intensity)
+      camoIridophore: 30,                  // 0-100 (structural iridescence intensity)
+      camoLeucophore: 30,                  // 0-100 (white reflector intensity)
+      camoPattern: 'uniform',              // 'uniform' | 'mottled' | 'disruptive' | 'deimatic'
+      // Body Plan state
+      anatomyRegion: 'central-brain',      // currently highlighted region id
       lastUpdated: null
     };
   }
@@ -398,8 +406,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       function renderHeader() {
         var TABS = [
           { id: 'hub', label: 'Hub', icon: '🐙' },
-          { id: 'field', label: 'Species Field Guide', icon: '📖' },
+          { id: 'field', label: 'Field Guide', icon: '📖' },
           { id: 'hunt', label: 'Hunter Sim', icon: '🎯' },
+          { id: 'camo', label: 'Camouflage Lab', icon: '🎨' },
+          { id: 'anatomy', label: 'Body Plan', icon: '🧠' },
           { id: 'resources', label: 'Resources', icon: '📚' }
         ];
         return h('div', { style: { padding: '24px 20px 12px', borderBottom: '1px solid rgba(99,102,241,0.18)' } },
@@ -414,7 +424,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: '#c7d2fe', letterSpacing: '-0.01em' } }, 'Cephalopod Lab'),
                 h('div', { style: { fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.12)',
                     border: '1px solid rgba(167,139,250,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                  '4 sections')),
+                  '6 sections')),
               h('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 4, lineHeight: 1.5 } },
                 'The biology of intelligent invertebrates. Octopuses + squid + cuttlefish + nautilus — chromatophore camouflage, distributed neural intelligence, hunting strategy, 500M-year evolution.'))));
       }
@@ -1052,20 +1062,370 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       }
 
       // ═══════════════════════════════════════════════════════
-      // SECTION 4 — RESOURCES (stub for v0.2)
+      // SECTION 4 — CAMOUFLAGE LAB (chromatophore biology deep dive)
+      // ═══════════════════════════════════════════════════════
+      function renderCamouflageLab() {
+        var scene = d.camoScene || 'sand';
+        var chro = d.camoChromatophore != null ? d.camoChromatophore : 50;
+        var irid = d.camoIridophore != null ? d.camoIridophore : 30;
+        var leuc = d.camoLeucophore != null ? d.camoLeucophore : 30;
+        var pattern = d.camoPattern || 'uniform';
+        // Scene definitions — target appearance for each
+        var SCENES = {
+          sand: { name: 'Sandy bottom', emoji: '🏖️', target: { chro: 30, irid: 10, leuc: 70, pattern: 'uniform' }, bg: '#e6c884', desc: 'Light, smooth, uniform. Pale base + minimal pattern. Leucophores do the heavy lifting.' },
+          reef: { name: 'Coral reef', emoji: '🪸', target: { chro: 70, irid: 40, leuc: 30, pattern: 'mottled' }, bg: '#c97a48', desc: 'Warm, vibrant, complex. Chromatophores dominate; iridophores add subtle blue/green flashes.' },
+          kelp: { name: 'Kelp forest', emoji: '🌿', target: { chro: 55, irid: 60, leuc: 20, pattern: 'disruptive' }, bg: '#3d7a3d', desc: 'Dappled green light, vertical stripes of shadow. Iridophores reflect ambient green; disruptive pattern breaks outline.' },
+          rock: { name: 'Rocky substrate', emoji: '🪨', target: { chro: 60, irid: 25, leuc: 40, pattern: 'mottled' }, bg: '#6b6258', desc: 'Cool grays + browns, irregular pattern. Moderate everything — the chameleon of cephalopod scenes.' }
+        };
+        var current = SCENES[scene] || SCENES.sand;
+        var target = current.target;
+        // Compute match (how close our skin is to the target)
+        var chroDiff = Math.abs(chro - target.chro);
+        var iridDiff = Math.abs(irid - target.irid);
+        var leucDiff = Math.abs(leuc - target.leuc);
+        var avgDiff = (chroDiff + iridDiff + leucDiff) / 3;
+        var patternMatch = pattern === target.pattern;
+        var matchScore = Math.round(Math.max(0, 100 - avgDiff * 1.4) * (patternMatch ? 1 : 0.6));
+        var verdict = matchScore >= 85 ? { color: '#86efac', label: 'Invisible — exceptional match.' } :
+                      matchScore >= 70 ? { color: '#fbbf24', label: 'Close. A predator might miss you.' } :
+                      matchScore >= 50 ? { color: '#fb923c', label: 'Visible silhouette — risky.' } :
+                                         { color: '#fca5a5', label: 'Stands out. Try the target settings.' };
+        // Render a skin patch composing the 3 layers
+        function renderSkinPatch(c, i, l, pat, sceneBg) {
+          // chromatophore = base color saturation
+          // iridophore = blue/green sheen on top
+          // leucophore = white wash brightening
+          var baseR = 60 + (c / 100) * 140;
+          var baseG = 40 + (c / 100) * 80;
+          var baseB = 20 + (c / 100) * 50;
+          // Leucophore lightens everything
+          baseR += (l / 100) * 100;
+          baseG += (l / 100) * 100;
+          baseB += (l / 100) * 100;
+          baseR = Math.min(255, baseR); baseG = Math.min(255, baseG); baseB = Math.min(255, baseB);
+          var hex = '#' + [baseR, baseG, baseB].map(function(v) { var x = Math.round(v).toString(16); return x.length === 1 ? '0' + x : x; }).join('');
+          // Iridophore overlay color
+          var iridAlpha = (i / 100) * 0.4;
+          var patElements = null;
+          if (pat === 'mottled') {
+            patElements = h('g', null,
+              h('circle', { cx: 40, cy: 50, r: 15, fill: 'rgba(0,0,0,0.18)' }),
+              h('circle', { cx: 100, cy: 70, r: 12, fill: 'rgba(0,0,0,0.18)' }),
+              h('circle', { cx: 160, cy: 45, r: 14, fill: 'rgba(0,0,0,0.18)' }),
+              h('circle', { cx: 130, cy: 95, r: 10, fill: 'rgba(0,0,0,0.18)' }));
+          } else if (pat === 'disruptive') {
+            patElements = h('g', null,
+              h('rect', { x: 30, y: 0, width: 24, height: 130, fill: 'rgba(0,0,0,0.25)' }),
+              h('rect', { x: 90, y: 0, width: 30, height: 130, fill: 'rgba(0,0,0,0.25)' }),
+              h('rect', { x: 150, y: 0, width: 22, height: 130, fill: 'rgba(0,0,0,0.25)' }));
+          } else if (pat === 'deimatic') {
+            // Two large dramatic "eye spots" — startle display
+            patElements = h('g', null,
+              h('circle', { cx: 60, cy: 60, r: 18, fill: 'rgba(255,255,255,0.85)' }),
+              h('circle', { cx: 60, cy: 60, r: 10, fill: '#1c1410' }),
+              h('circle', { cx: 140, cy: 60, r: 18, fill: 'rgba(255,255,255,0.85)' }),
+              h('circle', { cx: 140, cy: 60, r: 10, fill: '#1c1410' }));
+          }
+          return h('svg', { width: 200, height: 130, viewBox: '0 0 200 130', 'aria-hidden': 'true',
+            style: { borderRadius: 10, border: '1px solid rgba(100,116,139,0.3)' } },
+            h('rect', { x: 0, y: 0, width: 200, height: 130, fill: hex }),
+            patElements,
+            iridAlpha > 0 ? h('rect', { x: 0, y: 0, width: 200, height: 130,
+              fill: 'url(#iridGradient' + Math.round(i) + ')', opacity: iridAlpha }) : null,
+            h('defs', null,
+              h('linearGradient', { id: 'iridGradient' + Math.round(i), x1: 0, y1: 0, x2: 1, y2: 1 },
+                h('stop', { offset: '0%', stopColor: '#0ea5e9' }),
+                h('stop', { offset: '50%', stopColor: '#a78bfa' }),
+                h('stop', { offset: '100%', stopColor: '#10b981' })))
+          );
+        }
+        return h('div', null,
+          panelHeader('🎨 Camouflage Lab',
+            'Cephalopod skin is the most sophisticated color-changing system in the animal kingdom. Three layers stacked: chromatophores (pigment sacs), iridophores (structural color reflectors), leucophores (white reflectors). They\'re mostly color-BLIND. Theory: they may sense color via skin opsins distributed across the body.'),
+
+          // Educational primer on the 3 layers
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '🔬 The three skin layers'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 } },
+              [
+                { name: 'Chromatophore', emoji: '🔴', color: '#dc2626',
+                  function: 'Pigment sac (red/yellow/black) surrounded by radial muscles. Muscles contract → sac expands → color shows. ~200 per square mm of skin.',
+                  speed: 'Fastest layer — visible color change in ~70 ms.' },
+                { name: 'Iridophore', emoji: '🌈', color: '#a78bfa',
+                  function: 'Stacked protein plates (reflectin) that produce structural color via thin-film interference. Wavelength changes based on plate spacing.',
+                  speed: 'Slower — seconds to minutes. Also produces polarized light cephalopods CAN see.' },
+                { name: 'Leucophore', emoji: '⚪', color: '#f3f4f6',
+                  function: 'Passive white reflector. Bounces ambient light back at whatever color the environment provides. Adapts color without needing nerves.',
+                  speed: 'Passive — no active control. Reflects environment.' }
+              ].map(function(layer, i) {
+                return h('div', { key: i,
+                  style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + layer.color, padding: '12px 14px', borderRadius: 8 } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                    h('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, layer.emoji),
+                    h('div', { style: { fontSize: 13, fontWeight: 800, color: layer.color } }, layer.name)),
+                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 4 } }, layer.function),
+                  h('div', { style: { fontSize: 10, color: '#94a3b8', lineHeight: 1.5, fontStyle: 'italic' } },
+                    h('b', null, '⏱️ '), layer.speed));
+              }))),
+
+          // Scene + target picker
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '🏞️ Match the scene'),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 } },
+              Object.keys(SCENES).map(function(sid) {
+                var s = SCENES[sid];
+                var active = scene === sid;
+                return h('button', { key: sid,
+                  onClick: function() { setCL({ camoScene: sid }); awardXP(1); },
+                  'aria-pressed': active ? 'true' : 'false',
+                  style: { padding: '10px 14px',
+                    background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
+                    color: active ? '#c7d2fe' : '#cbd5e1',
+                    border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                    borderLeft: '3px solid ' + s.bg,
+                    borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 6 } },
+                  h('span', { 'aria-hidden': 'true' }, s.emoji), s.name);
+              })),
+
+            // Side-by-side: target vs your skin
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginBottom: 14 } },
+              h('div', null,
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, '🎯 Target — ' + current.name),
+                renderSkinPatch(target.chro, target.irid, target.leuc, target.pattern, current.bg),
+                h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                  'C:' + target.chro + ' I:' + target.irid + ' L:' + target.leuc + ' · ' + target.pattern),
+                h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 6, lineHeight: 1.55, fontStyle: 'italic' } }, current.desc)),
+              h('div', null,
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, '🐙 Your skin'),
+                renderSkinPatch(chro, irid, leuc, pattern, current.bg),
+                h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                  'C:' + chro + ' I:' + irid + ' L:' + leuc + ' · ' + pattern),
+                h('div', { style: { fontSize: 10, color: verdict.color, marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800 } },
+                  'Match score: ' + matchScore + '%'))),
+
+            // Layer sliders
+            ['Chromatophore (pigment) — 0=relaxed → 100=fully expanded',
+             'Iridophore (iridescence) — 0=off → 100=maximum reflection',
+             'Leucophore (white) — 0=off → 100=full reflection'].map(function(lbl, idx) {
+              var val = [chro, irid, leuc][idx];
+              var key = ['camoChromatophore', 'camoIridophore', 'camoLeucophore'][idx];
+              var sliderColor = ['#dc2626', '#a78bfa', '#f3f4f6'][idx];
+              return h('div', { key: idx, style: { marginBottom: 10 } },
+                h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 4, fontWeight: 700 } },
+                  h('span', null, lbl),
+                  h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: sliderColor } }, val + ' / 100')),
+                h('input', { type: 'range', min: 0, max: 100, step: 1, value: val,
+                  onChange: function(e) { var p = {}; p[key] = parseInt(e.target.value, 10); setCL(p); },
+                  'aria-label': lbl,
+                  style: { width: '100%', accentColor: sliderColor } }));
+            }),
+
+            // Pattern picker
+            h('div', { style: { marginBottom: 12 } },
+              h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontWeight: 700 } }, 'Pattern type'),
+              h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                ['uniform', 'mottled', 'disruptive', 'deimatic'].map(function(p) {
+                  var active = pattern === p;
+                  var labels = { uniform: 'Uniform', mottled: 'Mottled', disruptive: 'Disruptive (stripes)', deimatic: 'Deimatic (startle)' };
+                  return h('button', { key: p,
+                    onClick: function() { setCL({ camoPattern: p }); },
+                    'aria-pressed': active ? 'true' : 'false',
+                    style: { padding: '6px 12px',
+                      background: active ? 'rgba(167,139,250,0.3)' : 'rgba(15,23,42,0.5)',
+                      color: active ? '#c7d2fe' : '#cbd5e1',
+                      border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                      borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer' } },
+                    labels[p]);
+                }))),
+
+            // Verdict
+            h('div', { style: { background: verdict.color + '15', border: '1px solid ' + verdict.color + '55',
+              borderLeft: '4px solid ' + verdict.color, padding: '10px 14px', borderRadius: 8 } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: verdict.color, marginBottom: 3 } },
+                matchScore + '% match'),
+              h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55 } }, verdict.label),
+              !patternMatch ? h('div', { style: { fontSize: 11, color: '#fb923c', marginTop: 6, lineHeight: 1.55 } },
+                '💡 Pattern mismatch — target wants "' + target.pattern + '", you\'re showing "' + pattern + '". Pattern matters as much as color.') : null)),
+
+          // Pattern reference card
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '📐 The 4 standard cephalopod display patterns (Hanlon, 2007)'),
+            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
+              'Roger Hanlon\'s 2007 paper classified all cephalopod skin displays into ~12 categories that collapse into 3 broad camouflage strategies + 1 startle category. Each works in different scenes.'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
+              [
+                { name: 'Uniform', emoji: '🟫', use: 'Open sand or smooth substrate. Blank canvas.', science: 'Single dominant color, no pattern. Easiest computationally but most visible against complex backgrounds.' },
+                { name: 'Mottled', emoji: '🟤', use: 'Coral, rock, mixed-texture substrate.', science: 'Light + dark patches at scale matching substrate features. The default for most octopuses on most surfaces.' },
+                { name: 'Disruptive', emoji: '⬛', use: 'Kelp, branching coral, vertical-structure habitats.', science: 'Bold stripes or geometric shapes that BREAK the body outline. Predator brain sees stripes, not octopus.' },
+                { name: 'Deimatic (startle)', emoji: '👀', use: 'Last-resort escape. NOT camouflage — opposite.', science: 'Sudden high-contrast flash + false eyespots. Triggers predator startle reflex, buys 0.5s for escape.' }
+              ].map(function(p, i) {
+                return h('div', { key: i,
+                  style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                    borderLeft: '3px solid #a78bfa', padding: '10px 12px', borderRadius: 8 } },
+                  h('div', { style: { fontSize: 12, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } },
+                    p.emoji + ' ' + p.name),
+                  h('div', { style: { fontSize: 11, color: '#fde68a', marginBottom: 4 } },
+                    h('b', null, 'Use: '), p.use),
+                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, p.science));
+              })))
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════
+      // SECTION 5 — BODY PLAN & 9 BRAINS
+      // ═══════════════════════════════════════════════════════
+      function renderBodyPlan() {
+        var ANATOMY = [
+          { id: 'central-brain', name: 'Central Brain', emoji: '🧠', cx: 200, cy: 100, r: 14,
+            color: '#a78bfa',
+            short: 'Donut-shaped, ~170M neurons. Esophagus passes THROUGH the middle.',
+            detail: 'The octopus central brain is a ring of nervous tissue surrounding the esophagus. Food literally passes through the middle of the brain on its way to the stomach. Total: ~170 million neurons (compared to a dog at ~530M or human at ~86 billion). About 1/3 of all octopus neurons are here — the other 2/3 are in the arms.' },
+          { id: 'arm-ganglion', name: 'Arm Ganglia (×8)', emoji: '🦑', cx: 200, cy: 200, r: 14,
+            color: '#86efac',
+            short: '~40M neurons per arm. Each arm solves simple problems autonomously.',
+            detail: 'Every octopus arm has its own ganglion (cluster of neurons) running its length. These 8 ganglia hold ~2/3 of all octopus neurons (40M per arm × 8 = 320M). Each arm can: locate prey by touch + taste, decide whether to reach for it, grab + manipulate it — all without central-brain involvement. The central brain receives a summary, not a direct sensory feed.' },
+          { id: 'eye', name: 'Eyes', emoji: '👁️', cx: 175, cy: 95, r: 8,
+            color: '#fbbf24',
+            short: 'Camera-style eye, like ours — but evolved separately. Color-blind but polarization-sensitive.',
+            detail: 'Cephalopod eyes are camera-style with a lens + retina, structurally similar to vertebrate eyes but evolved INDEPENDENTLY (convergent evolution). Key differences: their photoreceptors point TOWARD the light (vs ours pointing away → blind spot in humans). Most cephalopods are color-blind despite producing the most varied skin displays in nature. Theory: they detect polarized light (we can\'t) + may have skin-distributed color sensors (opsins in the skin itself).' },
+          { id: 'mantle', name: 'Mantle', emoji: '🫁', cx: 200, cy: 65, r: 22,
+            color: '#fb923c',
+            short: 'The "body" sac. Pumps water for jet propulsion + houses internal organs.',
+            detail: 'The mantle is the muscular body cavity that holds the gills, hearts, digestive organs, and reproductive organs. It also drives JET PROPULSION — water is drawn in around the head and expelled through the siphon at high pressure. Mantle contraction = jet thrust. The pattern is: relax (water in), contract (water out, jet pulse).' },
+          { id: 'siphon', name: 'Siphon (Funnel)', emoji: '💨', cx: 215, cy: 80, r: 8,
+            color: '#38bdf8',
+            short: 'Steerable jet nozzle. Direction = direction the octopus goes.',
+            detail: 'The siphon is the muscular tube that water exits during jet propulsion. It\'s STEERABLE — the octopus can point it forward, backward, up, down. Jet through siphon = thrust in opposite direction. Squid use this for explosive escape (up to 25 m/s in Humboldt squid). Octopuses use it gently for steering + as a secondary swim mode (primary mode is arm-crawling).' },
+          { id: 'beak', name: 'Beak', emoji: '⚙️', cx: 200, cy: 130, r: 8,
+            color: '#fca5a5',
+            short: 'Chitin beak — the only hard part in the body. Octopuses can squeeze through any hole bigger than their beak.',
+            detail: 'The beak is parrot-style — two interlocking pieces of chitin. It\'s the ONLY rigid part of an octopus body. This is why octopuses can squeeze through holes that look impossibly small — anywhere their beak fits, they fit. The beak delivers venomous bite (the saliva contains tetrodotoxin in blue-ringed octopuses; less potent neurotoxins in others). Behind the beak: a radula (file-like tongue) used for drilling shells.' },
+          { id: 'gills', name: 'Gills (×2)', emoji: '🌊', cx: 235, cy: 65, r: 8,
+            color: '#0ea5e9',
+            short: 'Two gills in the mantle. Two systemic hearts pump blood through them.',
+            detail: 'Two feathery gills sit inside the mantle cavity. Each has a BRANCHIAL HEART pumping deoxygenated blood through it. Water flowing in/out of the mantle (for breathing + jet propulsion) ventilates the gills automatically. Cephalopod gills extract oxygen efficiently in cold + low-oxygen water — better than most fish.' },
+          { id: 'hearts', name: 'Three Hearts', emoji: '❤️', cx: 195, cy: 75, r: 8,
+            color: '#dc2626',
+            short: 'Two branchial hearts pump through gills; one systemic heart pumps to body.',
+            detail: 'Cephalopods have THREE hearts: (1) Two branchial hearts (one per gill) push deoxygenated blood through the gills for oxygenation. (2) One systemic heart receives the now-oxygenated blood and pumps it to the rest of the body. The systemic heart STOPS during jet-propulsion swimming — blood circulation pauses during sustained jet swims, which is partly why octopuses prefer crawling for long distances.' },
+          { id: 'hectocotylus', name: 'Hectocotylus', emoji: '💕', cx: 175, cy: 220, r: 10,
+            color: '#f472b6',
+            short: 'Modified mating arm. Detaches + lives independently inside female after mating in some species.',
+            detail: 'In male octopuses, one arm (usually the third right arm) is modified for mating — it\'s called the hectocotylus. Some species: the male hands sperm packets across with this arm. Other species (Argonauta, paper nautilus): the entire hectocotylus DETACHES and crawls into the female on its own. The female then carries it around until she\'s ready to use the sperm. Early naturalists thought these detached arms were parasitic worms.' }
+        ];
+        var highlightedId = d.anatomyRegion || 'central-brain';
+        var highlighted = ANATOMY.find(function(a) { return a.id === highlightedId; }) || ANATOMY[0];
+        return h('div', null,
+          panelHeader('🧠 Body Plan & 9 Brains',
+            'Cephalopod anatomy is built around principles that look like a different evolutionary path entirely — distributed intelligence, multiple hearts, blue copper blood, a beak that\'s the only hard thing in the body, and a "mantle" that\'s both lung and engine. Click any labeled region.'),
+
+          h('div', { style: cardStyle() },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 } },
+              // Anatomical diagram
+              h('div', null,
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } },
+                  '🔍 Click a region'),
+                h('svg', { width: '100%', height: 320, viewBox: '60 30 280 260', 'aria-label': 'Octopus anatomy diagram',
+                  style: { background: 'rgba(15,23,42,0.5)', borderRadius: 12, border: '1px solid rgba(100,116,139,0.3)' } },
+                  // Mantle (large oval, top)
+                  h('ellipse', { cx: 200, cy: 65, rx: 50, ry: 38, fill: 'rgba(251,146,60,0.15)', stroke: '#fb923c', strokeWidth: 1.5 }),
+                  // Head + eyes
+                  h('ellipse', { cx: 200, cy: 110, rx: 32, ry: 22, fill: 'rgba(167,139,250,0.15)', stroke: '#a78bfa', strokeWidth: 1.5 }),
+                  h('circle', { cx: 175, cy: 105, r: 6, fill: '#fbbf24', stroke: '#ca8a04', strokeWidth: 1 }),
+                  h('circle', { cx: 175, cy: 105, r: 3, fill: '#1c1410' }),
+                  h('circle', { cx: 225, cy: 105, r: 6, fill: '#fbbf24', stroke: '#ca8a04', strokeWidth: 1 }),
+                  h('circle', { cx: 225, cy: 105, r: 3, fill: '#1c1410' }),
+                  // Arms (8 spreading)
+                  [-50, -32, -14, 4, 22, 40, 58, 76].map(function(deg, i) {
+                    var rad = deg * Math.PI / 180;
+                    var endX = 200 + Math.sin(rad) * 90;
+                    var endY = 200 + Math.cos(rad) * 90;
+                    var ctrlX = 200 + Math.sin(rad) * 50;
+                    var ctrlY = 175 + Math.cos(rad) * 30;
+                    return h('path', { key: i,
+                      d: 'M 200 145 Q ' + ctrlX + ' ' + ctrlY + ' ' + endX + ' ' + endY,
+                      fill: 'none', stroke: '#a78bfa', strokeWidth: 5, strokeLinecap: 'round', opacity: 0.6 });
+                  }),
+                  // Click targets (invisible larger circles for usability)
+                  ANATOMY.map(function(a) {
+                    var isHighlighted = a.id === highlightedId;
+                    return h('g', { key: a.id, style: { cursor: 'pointer' },
+                      onClick: function() { setCL({ anatomyRegion: a.id }); awardXP(1); clAnnounce('Selected ' + a.name); } },
+                      h('circle', { cx: a.cx, cy: a.cy, r: a.r + 8, fill: 'transparent' }),
+                      h('circle', { cx: a.cx, cy: a.cy, r: a.r,
+                        fill: isHighlighted ? a.color : 'rgba(15,23,42,0.7)',
+                        stroke: a.color, strokeWidth: 2.5,
+                        opacity: isHighlighted ? 1 : 0.8 }),
+                      h('text', { x: a.cx, y: a.cy + 4, textAnchor: 'middle', fontSize: 13, pointerEvents: 'none' },
+                        a.emoji));
+                  })
+                )),
+
+              // Detail panel
+              h('div', null,
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: highlighted.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } },
+                  '📋 Region detail'),
+                h('div', { style: { background: 'rgba(15,23,42,0.5)', borderLeft: '4px solid ' + highlighted.color, padding: '14px 16px', borderRadius: 10 } },
+                  h('div', { style: { fontSize: 16, fontWeight: 800, color: '#c7d2fe', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 } },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, highlighted.emoji),
+                    h('span', null, highlighted.name)),
+                  h('div', { style: { fontSize: 12, color: '#fde68a', lineHeight: 1.55, marginBottom: 10, fontStyle: 'italic' } },
+                    '"' + highlighted.short + '"'),
+                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.7 } }, highlighted.detail))))),
+
+          // Region quick-pick list
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '📌 All regions'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 6 } },
+              ANATOMY.map(function(a) {
+                var active = a.id === highlightedId;
+                return h('button', { key: a.id,
+                  onClick: function() { setCL({ anatomyRegion: a.id }); awardXP(1); },
+                  'aria-pressed': active ? 'true' : 'false',
+                  style: { padding: '8px 10px', textAlign: 'left',
+                    background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
+                    color: active ? '#c7d2fe' : '#cbd5e1',
+                    border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                    borderLeft: '3px solid ' + a.color,
+                    borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 6 } },
+                  h('span', { 'aria-hidden': 'true' }, a.emoji), a.name);
+              }))),
+
+          // The Distributed Intelligence panel
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '🧠 Distributed intelligence: octopus vs vertebrate'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 } },
+              h('div', { style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #fbbf24', padding: '12px 14px', borderRadius: 8 } },
+                h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 6 } }, '🧑 Vertebrate (us)'),
+                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+                  'Brain is centralized in the skull. Spinal cord carries signals to + from peripheral body. Limbs follow commands; they don\'t generate behavior independently. Vertebrate body plan: brain decides, body obeys.')),
+              h('div', { style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #86efac', padding: '12px 14px', borderRadius: 8 } },
+                h('div', { style: { fontSize: 12, fontWeight: 800, color: '#86efac', marginBottom: 6 } }, '🐙 Cephalopod'),
+                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+                  'Brain is distributed: ~1/3 in head, ~2/3 in 8 arm ganglia. Each arm has working memory + sensory autonomy + can decide-act locally. Central brain takes summaries + handles big picture. Cephalopod body plan: parallel processing, embodied cognition.'))),
+            h('div', { style: { marginTop: 12, padding: '12px 14px', background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 8 } },
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },
+                '🤯 Why this matters'),
+              h('div', { style: { fontSize: 12, color: '#e9d5ff', lineHeight: 1.7 } },
+                'A cut-off octopus arm can REACT — it will pull away from a noxious stimulus or grab a passing object for up to ~1 hour after separation. The arm contains everything it needs: sensors, motor control, basic decision-making. This is one of the most direct demonstrations of embodied/distributed cognition in any animal. It also raises deep questions: if 2/3 of "octopus mind" is in the arms, what does it FEEL LIKE to be an octopus making a decision?')))
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════
+      // SECTION 6 — RESOURCES (stub for v0.3)
       // ═══════════════════════════════════════════════════════
       function renderResources() {
         return h('div', null,
           panelHeader('📚 Resources & Glossary',
-            'Sources, glossary, conservation context, and deeper science for everything in Cephalopod Lab. Phase 2 (next ship) will expand this section with full chromatophore biology, jet propulsion physics, and the 9-brains anatomy explorer.'),
+            'Sources, glossary, conservation context, and deeper science for everything in Cephalopod Lab. v0.2 shipped Camouflage Lab + Body Plan. v0.3 will add Jet Propulsion physics + Intelligence Lab + Conservation deep-dive.'),
 
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '🚧 v0.2 will add'),
+            h('div', { style: subheaderStyle() }, '🚧 v0.3 will add'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#e2e8f0', fontSize: 12, lineHeight: 1.8 } },
-              h('li', null, 'Standalone Camouflage Lab — chromatophore + iridophore + leucophore mechanics with interactive layer sliders'),
-              h('li', null, 'Body Plan & 9 Brains — anatomy explorer with hover-to-learn body regions + the distributed-intelligence neural map'),
               h('li', null, 'Jet Propulsion physics — mantle dynamics + thrust calculations + escape vs sustained-swim comparison'),
-              h('li', null, 'Intelligence research — Otto vs Inky vs documented escape artists + the consciousness question'),
+              h('li', null, 'Intelligence Lab — Otto vs Inky vs documented escape artists + mirror tests + the consciousness question'),
               h('li', null, 'Conservation deep-dive — cephalopod fisheries + climate-change winners + the nautilus shell trade'))),
 
           h('div', { style: cardStyle() },
@@ -1109,6 +1469,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       var content;
       if (section === 'field') content = renderFieldGuide();
       else if (section === 'hunt') content = renderHuntSim();
+      else if (section === 'camo') content = renderCamouflageLab();
+      else if (section === 'anatomy') content = renderBodyPlan();
       else if (section === 'resources') content = renderResources();
       else content = renderHub();
 
