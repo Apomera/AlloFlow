@@ -1392,6 +1392,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       description: 'Don\'t abandon mid-cook. Complete the recipe on the first attempt.',
       bonus: 10, penalty: -30,
       check: function() { return { passed: true, value: 1, resultText: 'You stayed in the kitchen. +10 bonus.' }; }
+    },
+    {
+      id: 'misePlace',
+      label: '🗂️ Mise en Place',
+      description: 'All ingredients added in the first 50% of cook time. No last-minute scrambling.',
+      bonus: 20, penalty: -10,
+      check: function(state, rec) {
+        var elapsed = state.elapsedSec || 0;
+        var halfMark = (rec.targetTimeMin * 60 * 0.5) / (rec.simSpeedMultiplier || 1);
+        var addTimes = Object.values(state.itemAddTimes || {});
+        var startedAt = state.startedAt || (Date.now() - elapsed * 1000);
+        var lateAdds = addTimes.filter(function(t) { return (t - startedAt) / 1000 > halfMark; });
+        var passed = lateAdds.length === 0 && addTimes.length > 0;
+        return { passed: passed, value: lateAdds.length,
+          resultText: passed
+            ? 'Every ingredient prepped + added in the first half. Pro move. +20 bonus.'
+            : lateAdds.length + ' ingredient(s) added past the halfway mark. -10 penalty.' };
+      }
+    },
+    {
+      id: 'twoStepHeat',
+      label: '🌡️ Two-Step Heat',
+      description: 'Start the burner ≥6, then transition to ≤5 at some point. The classic "high sear → low finish" move.',
+      bonus: 18, penalty: -10,
+      check: function(state) {
+        var passed = !!state.twoStepHeatAchieved;
+        return { passed: passed, value: passed ? 1 : 0,
+          resultText: passed
+            ? 'Started hot, dropped to finish. Pro technique. +18 bonus.'
+            : 'No high → low transition. -10 penalty.' };
+      }
+    },
+    {
+      id: 'noSweat',
+      label: '🥵 No Sweat',
+      description: 'Pan never dips below 200°F once food is in. Maintain working heat.',
+      bonus: 15, penalty: -8,
+      check: function(state) {
+        var passed = !state.coldDipAfterFood;
+        return { passed: passed, value: passed ? 0 : 1,
+          resultText: passed
+            ? 'Pan held its heat — never dropped below 200°F with food in. +15 bonus.'
+            : 'Pan dropped below 200°F with food in (lost momentum). -8 penalty.' };
+      }
     }
   ];
 
@@ -1405,6 +1449,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     }
     return pool.slice(0, 2);
   }
+
+  // ───────────────────────────────────────────────────────────
+  // ACHIEVEMENTS — 20 unlockable badges
+  // ───────────────────────────────────────────────────────────
+  // Each has check(state, ctx) returning true if conditions met.
+  // ctx provides: { recipe, judgement, compResult, isCompetition, isTournament, tournamentResult }
+  // Achievements unlock on the results screen after a successful judge run.
+  var ACHIEVEMENTS = [
+    { id: 'firstCook', name: 'First Cook', icon: '🍳', tier: 'bronze',
+      description: 'Complete any recipe.',
+      check: function(s, c) { return !!c.judgement; } },
+    { id: 'aGrade', name: 'A-Grade Student', icon: '🌟', tier: 'silver',
+      description: 'Score an A grade on any recipe.',
+      check: function(s, c) { return c.judgement && c.judgement.grade === 'A'; } },
+    { id: 'masterChef', name: 'Master Chef', icon: '👨‍🍳', tier: 'gold',
+      description: 'Score an A on all 7 recipes.',
+      check: function(s, c) { return (s.aGradedRecipeIds || []).length >= 7; } },
+    { id: 'competitionDebut', name: 'Competition Debut', icon: '🎲', tier: 'bronze',
+      description: 'Complete one competition.',
+      check: function(s, c) { return c.isCompetition; } },
+    { id: 'highRoller', name: 'High Roller', icon: '🔥', tier: 'silver',
+      description: 'Score 130+ in a single competition.',
+      check: function(s, c) { return c.compResult && c.compResult.finalScore >= 130; } },
+    { id: 'perfectScore', name: 'Perfect Score', icon: '💯', tier: 'gold',
+      description: 'Score 150 (max) in a single competition.',
+      check: function(s, c) { return c.compResult && c.compResult.finalScore >= 150; } },
+    { id: 'tournamentDebut', name: 'Tournament Debut', icon: '🏅', tier: 'silver',
+      description: 'Complete a 3-round tournament.',
+      check: function(s, c) { return c.isTournament; } },
+    { id: 'tournamentGold', name: 'Tournament Gold', icon: '🥇', tier: 'gold',
+      description: 'Earn a Gold medal (400+ points) in a tournament.',
+      check: function(s, c) { return c.tournamentResult && c.tournamentResult.total >= 400; } },
+    { id: 'maillardMaster', name: 'Maillard Master', icon: '🥩', tier: 'silver',
+      description: 'Score A on Pan-Seared Chicken.',
+      check: function(s, c) { return c.recipe && c.recipe.id === 'panSeared' && c.judgement.grade === 'A'; } },
+    { id: 'wokHei', name: 'Wok Hei', icon: '🥦', tier: 'silver',
+      description: 'Pan reaches 450°F+ during a Stir-Fry.',
+      check: function(s, c) { return c.recipe && c.recipe.id === 'stirFry' && (s.recipeMaxPanTempF || 0) >= 450; } },
+    { id: 'carryoverKing', name: 'Carryover King', icon: '🍗', tier: 'silver',
+      description: 'Pan-seared chicken: pull at 150-160°F internal (let carryover finish it).',
+      check: function(s, c) { return c.recipe && c.recipe.id === 'panSeared' && c.judgement.grade === 'A' && (s.recipeFoodInternalF || 0) <= 165; } },
+    { id: 'patientCook', name: 'Patient Cook', icon: '⏳', tier: 'bronze',
+      description: 'Fully preheat the oven before adding food (sheet-pan).',
+      check: function(s, c) { return c.recipe && c.recipe.id === 'sheetPan' && (s.recipeMaxPanTempF || 0) >= 400; } },
+    { id: 'pastaWaterSaved', name: 'Pasta Water Saved', icon: '💧', tier: 'silver',
+      description: 'Reserve pasta water in Pasta + Pan Sauce.',
+      check: function(s, c) { return c.recipe && c.recipe.id === 'pastaSauce' && s.potWaterReserved; } },
+    { id: 'speedDemonBadge', name: 'Speed Demon', icon: '⚡', tier: 'silver',
+      description: 'Pass the Speed Demon constraint in competition.',
+      check: function(s, c) { return c.compResult && (c.compResult.constraints || []).some(function(x) { return x.id === 'speedDemon' && x.passed; }); } },
+    { id: 'noBurnBadge', name: 'Iron Discipline', icon: '🛡️', tier: 'silver',
+      description: 'Pass the Restraint Master constraint (no temp above 380°F).',
+      check: function(s, c) { return c.compResult && (c.compResult.constraints || []).some(function(x) { return x.id === 'noBurn' && x.passed; }); } },
+    { id: 'oneShotBadge', name: 'One Shot', icon: '🎯', tier: 'bronze',
+      description: 'Complete a competition without abandoning.',
+      check: function(s, c) { return c.isCompetition && c.judgement; } },
+    { id: 'tournamentVeteran', name: 'Tournament Veteran', icon: '📚', tier: 'gold',
+      description: 'Complete 5 tournaments.',
+      check: function(s, c) { return (s.tournamentsCompleted || 0) >= 5; } },
+    { id: 'aiCritiqued', name: 'Open to Feedback', icon: '👂', tier: 'bronze',
+      description: 'View an AI Chef\'s Notes critique.',
+      check: function(s, c) { return !!s.aiCritique; } },
+    { id: 'renaissanceCook', name: 'Renaissance Cook', icon: '🌍', tier: 'silver',
+      description: 'Try every unlocked recipe at least once.',
+      check: function(s, c) { return (s.recipeCompletedIds || []).length >= 7; } },
+    { id: 'misePlaceBadge', name: 'Mise en Place', icon: '🗂️', tier: 'silver',
+      description: 'Pass the Mise en Place constraint (all ingredients early).',
+      check: function(s, c) { return c.compResult && (c.compResult.constraints || []).some(function(x) { return x.id === 'misePlace' && x.passed; }); } }
+  ];
 
   // ───────────────────────────────────────────────────────────
   // RECIPE ENGINE HELPERS
@@ -1527,6 +1640,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       tournamentScores: [],                // [r1Score, r2Score, r3Score]
       tournamentBestTotal: 0,              // best-ever tournament total
       tournamentLastTotal: null,           // last completed tournament total
+      tournamentsCompleted: 0,             // count of completed tournaments
+      // Tracking for new constraints
+      twoStepHeatAchieved: false,          // burner went ≥6 then ≤5
+      coldDipAfterFood: false,             // pan dropped below 200°F with food in
+      hadHighBurner: false,                // ever set burner ≥6 this run
+      // Achievements
+      klUnlockedAchievements: [],          // list of unlocked achievement IDs
+      klNewAchievements: [],               // newly unlocked this run (for results banner)
+      aGradedRecipeIds: [],                // recipes ever A-graded
       // AI judge (Gemini-powered personalized critique)
       aiCritique: null,
       aiCritiqueLoading: false,
@@ -2293,6 +2415,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // Pot phase machine for multi-pot recipes
           var potPatch = tickPotPhase(prior, simSpeed);
           if (Object.keys(potPatch).length) Object.assign(patch, potPatch);
+          // No-sweat tracking: if food is in pan + new pan temp dipped below 200°F,
+          // mark coldDipAfterFood
+          if (hasFood && newTemp < 200 && !prior.coldDipAfterFood) {
+            patch.coldDipAfterFood = true;
+          }
           return patch;
         });
       }
@@ -2375,7 +2502,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           recipeJudgement: null,
           // Reset pot state for multi-pot recipes
           potState: 'cold', potStartedAt: null, potPastaInAt: null,
-          potPastaDoneAt: null, potDrainedAt: null, potWaterReserved: false
+          potPastaDoneAt: null, potDrainedAt: null, potWaterReserved: false,
+          // Reset constraint trackers
+          twoStepHeatAchieved: false, coldDipAfterFood: false, hadHighBurner: false,
+          klNewAchievements: []
         });
         klAnnounce('Started cooking ' + recipe.name + '. Step 1: ' + recipe.steps[0].title);
         awardXP(5);
@@ -2475,7 +2605,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             competitionBurnerLevelSum: 0,
             competitionBurnerLevelTicks: 0,
             tournamentRound: roundIdx,
-            aiCritique: null, aiCritiqueLoading: false, aiCritiqueRequestedFor: null
+            aiCritique: null, aiCritiqueLoading: false, aiCritiqueRequestedFor: null,
+            twoStepHeatAchieved: false, coldDipAfterFood: false, hadHighBurner: false,
+            klNewAchievements: []
           };
         });
         klAnnounce('Round ' + (roundIdx + 1) + ' of 3 begins.');
@@ -2484,16 +2616,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       function advanceTournament() {
         var next = (d.tournamentRound || 0) + 1;
         if (next >= 3) {
-          // Tournament complete — finalize
+          // Tournament complete — finalize + detect tournament achievements
           var total = (d.tournamentScores || []).reduce(function(a, b) { return a + b; }, 0);
           setKL(function(prior) {
             var newBest = Math.max(prior.tournamentBestTotal || 0, total);
+            var newCount = (prior.tournamentsCompleted || 0) + 1;
+            var stateForCheck = Object.assign({}, prior, { tournamentsCompleted: newCount });
+            var newAchievements = detectNewAchievements(stateForCheck, {
+              recipe: null, judgement: null, compResult: null,
+              isCompetition: false, isTournament: true,
+              tournamentResult: { total: total, scores: prior.tournamentScores }
+            });
+            var allUnlocked = (prior.klUnlockedAchievements || []).slice();
+            newAchievements.forEach(function(a) { if (allUnlocked.indexOf(a.id) === -1) allUnlocked.push(a.id); });
             return {
               recipePhase: 'tournament-done',
               tournamentLastTotal: total,
               tournamentBestTotal: newBest,
+              tournamentsCompleted: newCount,
               tournamentActive: false,
-              competitionActive: false
+              competitionActive: false,
+              klUnlockedAchievements: allUnlocked,
+              klNewAchievements: newAchievements.map(function(a) { return a.id; })
             };
           });
           awardXP(20);
@@ -2603,6 +2747,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           if (prior.competitionActive && (prior.recipeBurnerLevel || 0) !== level) {
             patch.competitionBurnerChanges = (prior.competitionBurnerChanges || 0) + 1;
           }
+          // Two-step heat tracking: mark when burner went ≥6 then dropped to ≤5
+          if (level >= 6) patch.hadHighBurner = true;
+          if (level <= 5 && prior.hadHighBurner && !prior.twoStepHeatAchieved) {
+            patch.twoStepHeatAchieved = true;
+          }
           return patch;
         });
       }
@@ -2639,7 +2788,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               // Competition context
               elapsedSec: elapsedSec,
               burnerChanges: prior.competitionBurnerChanges || 0,
-              avgBurnerLevel: avgBurner
+              avgBurnerLevel: avgBurner,
+              startedAt: prior.recipeStartedAt,
+              twoStepHeatAchieved: prior.twoStepHeatAchieved,
+              coldDipAfterFood: prior.coldDipAfterFood
             };
             var judgement = rec.judge(snapshot, prior);
             var compResult = null;
@@ -2680,6 +2832,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 tournamentScores = tournamentScores.slice();
                 tournamentScores[prior.tournamentRound || 0] = compScore;
               }
+              // Achievement detection for competition runs
+              var newCompleted = (prior.recipeCompletedIds || []).indexOf(rec.id) === -1
+                ? (prior.recipeCompletedIds || []).slice().concat([rec.id])
+                : (prior.recipeCompletedIds || []);
+              var newAGraded = (prior.aGradedRecipeIds || []).slice();
+              if (judgement.grade === 'A' && newAGraded.indexOf(rec.id) === -1) newAGraded.push(rec.id);
+              var stateForCheck = Object.assign({}, prior, { recipeCompletedIds: newCompleted, aGradedRecipeIds: newAGraded });
+              var newAchievements = detectNewAchievements(stateForCheck, {
+                recipe: rec, judgement: judgement, compResult: compResult,
+                isCompetition: true, isTournament: prior.tournamentActive, tournamentResult: null
+              });
+              var allUnlocked = (prior.klUnlockedAchievements || []).slice();
+              newAchievements.forEach(function(a) { if (allUnlocked.indexOf(a.id) === -1) allUnlocked.push(a.id); });
               // Persist new best
               return {
                 recipePhase: 'done',
@@ -2688,24 +2853,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 competitionBests: newBests,
                 competitionLastResult: compResult,
                 tournamentScores: tournamentScores,
-                recipeCompletedIds: (prior.recipeCompletedIds || []).indexOf(rec.id) === -1
-                  ? (prior.recipeCompletedIds || []).slice().concat([rec.id])
-                  : (prior.recipeCompletedIds || [])
+                recipeCompletedIds: newCompleted,
+                aGradedRecipeIds: newAGraded,
+                klUnlockedAchievements: allUnlocked,
+                klNewAchievements: newAchievements.map(function(a) { return a.id; })
               };
             }
             // Non-competition: persist completion as normal
             var completed = (prior.recipeCompletedIds || []).slice();
             if (completed.indexOf(rec.id) === -1) completed.push(rec.id);
+            // Detect newly-unlocked achievements
+            var aGraded = (prior.aGradedRecipeIds || []).slice();
+            if (judgement.grade === 'A' && aGraded.indexOf(rec.id) === -1) aGraded.push(rec.id);
+            var stateForCheck = Object.assign({}, prior, { recipeCompletedIds: completed, aGradedRecipeIds: aGraded });
+            var newAchievements = detectNewAchievements(stateForCheck, {
+              recipe: rec, judgement: judgement, compResult: null,
+              isCompetition: false, isTournament: false, tournamentResult: null
+            });
+            var allUnlocked = (prior.klUnlockedAchievements || []).slice();
+            newAchievements.forEach(function(a) { if (allUnlocked.indexOf(a.id) === -1) allUnlocked.push(a.id); });
             return {
               recipePhase: 'done',
               recipeJudgement: judgement,
               recipeCompletedIds: completed,
-              recipeCurrentStep: rec.steps.length - 1
+              recipeCurrentStep: rec.steps.length - 1,
+              aGradedRecipeIds: aGraded,
+              klUnlockedAchievements: allUnlocked,
+              klNewAchievements: newAchievements.map(function(a) { return a.id; })
             };
           }
           return { recipeCurrentStep: next, recipeStepStartedAt: Date.now() };
         });
         awardXP(3);
+      }
+
+      function detectNewAchievements(state, ctxObj) {
+        var already = state.klUnlockedAchievements || [];
+        var newly = [];
+        ACHIEVEMENTS.forEach(function(a) {
+          if (already.indexOf(a.id) !== -1) return;
+          try {
+            if (a.check(state, ctxObj)) newly.push(a);
+          } catch (e) { /* defensive */ }
+        });
+        return newly;
       }
       // Check if current step's completion criteria are met (for auto-advance)
       function maybeAutoAdvance() {
@@ -2870,6 +3061,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 800, color: '#86efac' } }, e[1]),
                     h('span', { style: { fontSize: 11, color: '#cbd5e1' } }, ridName));
                 }))) : null),
+          // ─── Achievements panel ───
+          (function() {
+            var unlocked = d.klUnlockedAchievements || [];
+            var byTier = { bronze: [], silver: [], gold: [] };
+            ACHIEVEMENTS.forEach(function(a) {
+              (byTier[a.tier] || byTier.bronze).push(Object.assign({}, a, { unlocked: unlocked.indexOf(a.id) !== -1 }));
+            });
+            return h('div', { style: cardStyle() },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 10, marginBottom: 12 } },
+                h('div', { style: subheaderStyle() }, '🏆 Achievements'),
+                h('div', { style: { fontSize: 12, color: '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 700 } },
+                  unlocked.length + ' / ' + ACHIEVEMENTS.length + ' unlocked')),
+              ['gold', 'silver', 'bronze'].map(function(tier) {
+                var color = tier === 'gold' ? '#fbbf24' : tier === 'silver' ? '#cbd5e1' : '#d97706';
+                return h('div', { key: tier, style: { marginBottom: 12 } },
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } }, tier),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 6 } },
+                    byTier[tier].map(function(a) {
+                      return h('div', { key: a.id, title: a.description,
+                        style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px',
+                          background: a.unlocked ? 'rgba(15,23,42,0.7)' : 'rgba(15,23,42,0.4)',
+                          border: '1px solid ' + (a.unlocked ? color + '60' : 'rgba(100,116,139,0.2)'),
+                          borderRadius: 6, opacity: a.unlocked ? 1 : 0.45 } },
+                        h('div', { 'aria-hidden': 'true', style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, a.unlocked ? a.icon : '🔒'),
+                        h('div', { style: { flex: 1, minWidth: 0 } },
+                          h('div', { style: { fontSize: 11, fontWeight: 700, color: a.unlocked ? '#fde68a' : '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, a.name)));
+                    })));
+              }));
+          })(),
+
           // ─── Tutorial progress ───
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '📖 Tutorial mode — recipes mastered'),
@@ -3339,6 +3560,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 return h('div', { key: i, style: { padding: '8px 12px', background: 'rgba(251,146,60,0.12)',
                   border: '1px solid rgba(251,146,60,0.3)', borderRadius: 8, fontSize: 12, color: '#fde68a', fontWeight: 600 } }, t);
               }))),
+
+          // ─── Newly unlocked achievements banner ───
+          (d.klNewAchievements && d.klNewAchievements.length > 0) ? h('div', { style: {
+            background: 'linear-gradient(135deg, rgba(251,191,36,0.18), rgba(167,139,250,0.12))',
+            border: '2px solid rgba(251,191,36,0.6)', borderRadius: 12, padding: '14px 18px', marginBottom: 16,
+            boxShadow: '0 4px 14px rgba(251,191,36,0.2)' } },
+            h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 } },
+              '🎉 ' + d.klNewAchievements.length + ' new achievement' + (d.klNewAchievements.length === 1 ? '' : 's') + ' unlocked'),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 10 } },
+              d.klNewAchievements.map(function(aid) {
+                var a = ACHIEVEMENTS.find(function(x) { return x.id === aid; });
+                if (!a) return null;
+                var tierColor = a.tier === 'gold' ? '#fbbf24' : a.tier === 'silver' ? '#cbd5e1' : '#d97706';
+                return h('div', { key: aid,
+                  style: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px',
+                    background: 'rgba(15,23,42,0.6)', border: '1px solid ' + tierColor + '60',
+                    borderRadius: 8, minWidth: 200 } },
+                  h('div', { 'aria-hidden': 'true', style: { fontSize: 26, lineHeight: 1, flexShrink: 0 } }, a.icon),
+                  h('div', { style: { flex: 1, minWidth: 0 } },
+                    h('div', { style: { fontSize: 12, fontWeight: 800, color: tierColor } }, a.name),
+                    h('div', { style: { fontSize: 10, color: '#cbd5e1', lineHeight: 1.4 } }, a.description)));
+              }))) : null,
 
           // ─── AI Chef's Notes (Gemini-powered critique) ───
           (ctx.callGemini) ? h('div', { style: Object.assign({}, cardStyle(), {
