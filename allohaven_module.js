@@ -434,6 +434,13 @@
     // regeneratable via the Refresh button. Saves Gemini quota.
     companionLetters: {},
 
+    // ── Phase L2 — daily career vignettes ──
+    // Keyed by ISO date (YYYY-MM-DD). Generated once per day when the
+    // companion has a career. Each entry: { text, generatedAt, source,
+    // careerId, claimed } — claimed flips true when the player opens
+    // the vignette card and accepts the 2-token career income.
+    companionVignettes: {},
+
     // Phase 2p.20 — gentle Pomodoro completion chime preference.
     // Web Audio sine-wave bell when a focus session ends. Default on
     // for new students; toggle in settings.
@@ -1485,7 +1492,7 @@
       dragon: '— roaring with you,\n  ' + (name || 'your buddy')
     };
     var lines = [];
-    lines.push(greetings[species] || 'Hey,');
+    lines.push(greetings[speciesAlias(species)] || 'Hey,');
     lines.push('');
     if (agg.daysActive >= 5) lines.push('You showed up ' + agg.daysActive + ' days this week. That\'s a lot.');
     else if (agg.daysActive >= 1) lines.push('You came by ' + agg.daysActive + ' day' + (agg.daysActive === 1 ? '' : 's') + ' this week.');
@@ -1517,9 +1524,9 @@
       turtle: 'Step by step. Always works.',
       dragon: 'YOU. ARE. AMAZING. Let\'s do another week!'
     };
-    lines.push(closingLines[species] || 'Proud of you.');
+    lines.push(closingLines[speciesAlias(species)] || 'Proud of you.');
     lines.push('');
-    lines.push(signoffs[species] || '— your buddy');
+    lines.push(signoffs[speciesAlias(species)] || '— your buddy');
     return lines.join('\n');
   }
 
@@ -1532,7 +1539,7 @@
       turtle: 'Patient, gentle, steady. "Step by step" fits.',
       dragon: 'Enthusiastic, big-energy, playful. Some exclamation points.'
     };
-    var voice = voiceHints[species] || 'Friendly, gentle, observational.';
+    var voice = voiceHints[speciesAlias(species)] || 'Friendly, gentle, observational.';
     var stats = [];
     stats.push('Days active this week: ' + agg.daysActive);
     if (agg.poms > 0) stats.push('Pomodoros: ' + agg.poms);
@@ -1830,38 +1837,66 @@
 
   // Companion species metadata. Each species has a distinct voice prefix
   // pattern that flavors the same observation.
+  // ─────────────────────────────────────────────────────────
+  // Phase L6 — Shared mascots from window.AlloMascots
+  // ─────────────────────────────────────────────────────────
+  // The 5 canonical AlloFlow mascots, defined as bespoke SVGs in
+  // stem_tool_typingpractice.js and lifted to window.AlloMascots.
+  // AlloHaven uses them for the player companion + procedural NPC
+  // dorm-mates so both tools share character identity.
+  //
+  // Legacy species ids (cat/fox/owl/turtle/dragon) still appear in
+  // COMPANION_PALETTES for backward-compat during the migration window
+  // — saved companions with legacy ids get auto-migrated in saveCompanion.
   var COMPANION_SPECIES = [
     {
-      id: 'cat',     emoji: '🐱', label: 'Cat',
-      blurb: 'Calm and observant. Notices things others miss.',
-      voicePrefix: 'Hmm. ',
-      affirm: 'You did well.'
+      id: 'pip',       emoji: '🐤', label: 'Pip',
+      blurb: 'The chick who never gives up. Round, fluffy, surprisingly fast on tiny legs.',
+      voicePrefix: 'Tap, tap! ',
+      affirm: 'Personal best!'
     },
     {
-      id: 'fox',     emoji: '🦊', label: 'Fox',
-      blurb: 'Curious and clever. Always asking what if.',
-      voicePrefix: 'What if you ',
-      affirm: 'Clever, very clever.'
+      id: 'cogsworth', emoji: '🦉', label: 'Cogsworth',
+      blurb: 'Wound at dawn, runs all day. A brass clockwork owl that ticks calmly while everything else burns.',
+      voicePrefix: 'Tick. ',
+      affirm: 'Properly engineered.'
     },
     {
-      id: 'owl',     emoji: '🦉', label: 'Owl',
-      blurb: 'Wise and deliberate. Likes steady study.',
-      voicePrefix: 'Considering... ',
-      affirm: 'Thoughtful work.'
+      id: 'vex',       emoji: '💠', label: 'Vex',
+      blurb: 'A face made of light. Neon hex-panel from a forgotten arcade. Glitches when excited.',
+      voicePrefix: 'Bzzt. ',
+      affirm: 'Signal acquired.'
     },
     {
-      id: 'turtle',  emoji: '🐢', label: 'Turtle',
-      blurb: 'Patient and gentle. Step by step is the way.',
-      voicePrefix: 'Step by step — ',
-      affirm: 'Slow is steady.'
+      id: 'mochi',     emoji: '🐱', label: 'Mochi',
+      blurb: 'Soft outside, steel inside. A pastel-pink kitten with a tiny bow and quiet courage.',
+      voicePrefix: 'Mm. ',
+      affirm: 'Steady paw.'
     },
     {
-      id: 'dragon',  emoji: '🐉', label: 'Baby dragon',
-      blurb: 'Enthusiastic and imaginative. Adventures await.',
-      voicePrefix: 'Whoa! ',
-      affirm: 'Epic move!'
+      id: 'inko',      emoji: '🐙', label: 'Inko',
+      blurb: 'A young cuttlefish who speaks in color, not in words. Chromatophores pulse cyan when calm.',
+      voicePrefix: '… ',
+      affirm: 'Bright signal.'
     }
   ];
+  // ── Species alias (Phase L6) ──
+  // For legacy-keyed text lookups (openers, thanks, fillers — keyed by
+  // 'cat'/'fox'/'owl'/'turtle'/'dragon'), map a mascot id to its closest
+  // legacy analog. Used by `(openers[speciesAlias(id)] || fallback)` so
+  // existing character-flavored copy keeps firing after migration.
+  var MASCOT_TO_LEGACY = {
+    pip:       'fox',     // plucky, eager — fox vibe
+    cogsworth: 'owl',     // wise, deliberate
+    vex:       'dragon',  // excited, sparky
+    mochi:     'cat',     // calm, observant
+    inko:      'turtle'   // patient, gentle
+  };
+  function speciesAlias(id) {
+    if (!id) return null;
+    return MASCOT_TO_LEGACY[id] || id;
+  }
+
   function getCompanionSpecies(id) {
     for (var i = 0; i < COMPANION_SPECIES.length; i++) {
       if (COMPANION_SPECIES[i].id === id) return COMPANION_SPECIES[i];
@@ -1903,7 +1938,32 @@
       cool:   { primary: '#5a7aaa', secondary: '#a0c0e0', accent: '#1a2a4a' },
       pastel: { primary: '#d8b8e8', secondary: '#f0e0f8', accent: '#7a4a8a' },
       dark:   { primary: '#2a1a3a', secondary: '#5a3a6a', accent: '#fbbf24' }
-    }
+    },
+    // ── Phase L6 — Shared mascot palettes ──
+    // Each mascot has its own canonical color identity, so all four
+    // "variants" point to the same palette here. The colorVariant field
+    // is preserved on saved companions but has no visual effect for
+    // mascots — the SVG render in window.AlloMascots ignores it.
+    pip: (function() {
+      var p = { primary: '#fde047', secondary: '#fef3c7', accent: '#a16207' };
+      return { warm: p, cool: p, pastel: p, dark: p };
+    })(),
+    cogsworth: (function() {
+      var p = { primary: '#a16207', secondary: '#ca8a04', accent: '#713f12' };
+      return { warm: p, cool: p, pastel: p, dark: p };
+    })(),
+    vex: (function() {
+      var p = { primary: '#06b6d4', secondary: '#67e8f9', accent: '#0e7490' };
+      return { warm: p, cool: p, pastel: p, dark: p };
+    })(),
+    mochi: (function() {
+      var p = { primary: '#f9a8d4', secondary: '#fce7f3', accent: '#be185d' };
+      return { warm: p, cool: p, pastel: p, dark: p };
+    })(),
+    inko: (function() {
+      var p = { primary: '#22d3ee', secondary: '#a5f3fc', accent: '#0e7490' };
+      return { warm: p, cool: p, pastel: p, dark: p };
+    })()
   };
   function getCompanionPalette(speciesId, variantId) {
     var sp = COMPANION_PALETTES[speciesId];
@@ -1916,6 +1976,295 @@
     { id: 'pastel', label: 'Pastel' },
     { id: 'dark',   label: 'Dark' }
   ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 4.5b: LIFE STAGES (Phase L1 — Tamagotchi Foundation)
+  // ─────────────────────────────────────────────────────────
+  // The companion grows up. Five stages; visual size + a small stage
+  // badge change as the companion ages. Stage advances ONLY when BOTH
+  // gates are met: real days the user opened AlloHaven (ageInDays) AND
+  // stories fed (knowledgeFed). Hybrid pacing prevents one-sitting
+  // power-leveling AND prevents pure-idle waiting. No backsliding.
+  //
+  // Each stage stores its threshold to reach the NEXT stage. The 'adult'
+  // stage is terminal in Phase 1; Phase 2 will add career-locked work.
+  var LIFE_STAGES = [
+    {
+      id: 'hatchling', label: 'Hatchling', badge: '🥚', scale: 0.6,
+      blurb: 'Just hatched. Curious about everything. Bring stories.',
+      nextStage: 'child',  reqDays: 3,  reqStories: 5,  reqTopics: 0
+    },
+    {
+      id: 'child',     label: 'Child',     badge: '🌱', scale: 0.78,
+      blurb: 'Growing. Forming a sense of what they like to learn about.',
+      nextStage: 'teen',   reqDays: 7,  reqStories: 15, reqTopics: 3
+    },
+    {
+      id: 'teen',      label: 'Teen',      badge: '📚', scale: 0.92,
+      blurb: 'Building real knowledge. Thinking about who they want to be.',
+      nextStage: 'young-adult', reqDays: 14, reqStories: 30, reqTopics: 5
+    },
+    {
+      id: 'young-adult', label: 'Young Adult', badge: '🎓', scale: 1.0,
+      blurb: 'About to graduate. A career is coming.',
+      // Advancement to adult also requires a chosen career + first week of work
+      nextStage: 'adult',  reqDays: 21, reqStories: 50, reqTopics: 7,
+      requiresCareer: true, reqCareerDays: 7
+    },
+    {
+      id: 'adult',     label: 'Adult',     badge: '✨', scale: 1.0,
+      blurb: 'Fully grown. Still learning, just differently now.',
+      nextStage: null,     reqDays: null, reqStories: null, reqTopics: null
+    }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 4.5c: CAREER VOCATIONS (Phase L2 — Growing Up)
+  // ─────────────────────────────────────────────────────────
+  // Six vocation paths derived from the RIASEC framework used by the
+  // Career Compass tool. Each vocation has 3 specific career picks.
+  // Companions pick one career when they reach the young-adult stage,
+  // which gates advancement to the adult stage and unlocks Phase 2
+  // surfaces (daily vignettes, career income, career-themed minigames).
+  //
+  // Career data here is intentionally simplified — light flavor for the
+  // sim. Real-world career exploration lives in the Career Compass SEL
+  // tool. Aaron's framing: this is "what does my buddy do all day?"
+  // not "this is your child's career test."
+  var CAREER_VOCATIONS = [
+    {
+      id: 'realistic', label: 'Realistic (Hands-on)', icon: '🔧',
+      blurb: 'Works with hands, tools, machines, plants, animals, the outdoors.',
+      careers: [
+        { id: 'mechanic',    label: 'Mechanic',           icon: '🔧', desc: 'Fixes engines, cars, machines. Diagnoses what\'s wrong by listening and testing.' },
+        { id: 'farmer',      label: 'Farmer',             icon: '🌾', desc: 'Grows food, cares for animals, manages land across the seasons.' },
+        { id: 'firefighter', label: 'Firefighter',        icon: '🚒', desc: 'Trains hard, responds to emergencies, helps neighbours when things go wrong.' }
+      ]
+    },
+    {
+      id: 'investigative', label: 'Investigative (Thinker)', icon: '🔬',
+      blurb: 'Asks questions, runs experiments, follows curiosity into hard problems.',
+      careers: [
+        { id: 'scientist',   label: 'Scientist',          icon: '🔬', desc: 'Designs experiments, reads research, slowly fills in the blanks of how the world works.' },
+        { id: 'doctor',      label: 'Doctor / Nurse',     icon: '🩺', desc: 'Listens carefully, learns the body, helps people heal and stay well.' },
+        { id: 'archaeologist', label: 'Archaeologist',    icon: '🏺', desc: 'Reads the past from the ground up — bones, pottery, soil layers, languages.' }
+      ]
+    },
+    {
+      id: 'artistic', label: 'Artistic (Creator)', icon: '🎨',
+      blurb: 'Makes things — pictures, music, stories, performances — to share with others.',
+      careers: [
+        { id: 'illustrator', label: 'Illustrator',        icon: '🎨', desc: 'Tells stories with pictures. Books, magazines, animation, games.' },
+        { id: 'musician',    label: 'Musician',           icon: '🎵', desc: 'Plays, writes, records, performs. Brings people together through sound.' },
+        { id: 'writer',      label: 'Writer',             icon: '✍️', desc: 'Notices things and puts them into words. Fiction, journalism, poetry, scripts.' }
+      ]
+    },
+    {
+      id: 'social', label: 'Social (Helper)', icon: '🫶',
+      blurb: 'Works with people — teaching, healing, caring, organising community.',
+      careers: [
+        { id: 'teacher',     label: 'Teacher',            icon: '🧑‍🏫', desc: 'Builds curriculum, listens to students, opens doors to new understanding.' },
+        { id: 'counselor',   label: 'Counselor',          icon: '🫂', desc: 'Listens deeply, helps people work through what\'s hard, holds confidentiality.' },
+        { id: 'organizer',   label: 'Community Organizer', icon: '📣', desc: 'Brings neighbours together around what they care about. Patient, persistent, public.' }
+      ]
+    },
+    {
+      id: 'enterprising', label: 'Enterprising (Leader)', icon: '🚀',
+      blurb: 'Starts things, persuades people, takes on calculated risks for a goal.',
+      careers: [
+        { id: 'founder',     label: 'Small-Business Founder', icon: '🛍️', desc: 'Spots a need, builds something, runs the shop. Decisions every day.' },
+        { id: 'lawyer',      label: 'Lawyer',             icon: '⚖️', desc: 'Knows the rules, argues cases, represents people who need a voice in the system.' },
+        { id: 'manager',     label: 'Project Manager',    icon: '📋', desc: 'Coordinates teams, keeps timelines moving, smooths out friction between groups.' }
+      ]
+    },
+    {
+      id: 'conventional', label: 'Conventional (Organizer)', icon: '📊',
+      blurb: 'Brings order to information, systems, records — the people who make things actually run.',
+      careers: [
+        { id: 'accountant',  label: 'Accountant',         icon: '🧮', desc: 'Keeps the books accurate. Honest accounting is load-bearing for every organisation.' },
+        { id: 'librarian',   label: 'Librarian',          icon: '📚', desc: 'Organises knowledge, helps people find what they need, protects intellectual freedom.' },
+        { id: 'data-analyst', label: 'Data Analyst',      icon: '📈', desc: 'Turns messy data into clear answers. Spreadsheets, queries, charts, captions.' }
+      ]
+    }
+  ];
+
+  function getVocation(vocationId) {
+    return CAREER_VOCATIONS.filter(function(v) { return v.id === vocationId; })[0] || null;
+  }
+  function getCareer(vocationId, careerId) {
+    var v = getVocation(vocationId);
+    if (!v) return null;
+    return v.careers.filter(function(c) { return c.id === careerId; })[0] || null;
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 4.5d: NPC PEERS + DORM VISITS (Phase L3 — Social)
+  // ─────────────────────────────────────────────────────────
+  // Single-player social: 3–5 procedurally generated dorm-mates that
+  // unlock when the companion reaches teen stage. Each peer has a name,
+  // species, color, career, personality trait, and a procedurally
+  // generated dorm seed. Player can visit peer dorms, leave gifts, and
+  // build relationship over time.
+  //
+  // Multiplayer is a future Phase. For now everything is local + seeded
+  // so peers feel persistent across reloads without any backend.
+  var PEER_NAMES = [
+    'Maya', 'Diego', 'Aria', 'Theo', 'Nova', 'Kai', 'Iris', 'Rafa',
+    'Sage', 'Juno', 'Wren', 'Felix', 'Luma', 'Oren', 'Mira', 'Asa',
+    'Bea', 'Cyrus', 'Linnea', 'Toma'
+  ];
+  var PEER_PERSONALITIES = [
+    { id: 'bookish',    label: 'bookish',    line: 'is always reading something' },
+    { id: 'outgoing',   label: 'outgoing',   line: 'says hi to everyone in the hall' },
+    { id: 'creative',   label: 'creative',   line: 'makes things constantly' },
+    { id: 'athletic',   label: 'athletic',   line: 'just got back from a run' },
+    { id: 'thoughtful', label: 'thoughtful', line: 'thinks before they speak' }
+  ];
+  // Decor emoji pool used to render peer dorm interiors as light
+  // emoji-tile rooms (no Imagen calls per peer). Categorized loosely so
+  // we can theme a dorm to the peer's personality.
+  var PEER_DECOR_POOL = {
+    bookish:    ['📚','🕯️','🪟','🖼️','☕','🪴','🧸','📒'],
+    outgoing:   ['🎉','🪩','🎈','📻','🪅','🍕','🛋️','🎸'],
+    creative:   ['🎨','🖌️','🧵','🎭','📷','🪞','🌈','🎹'],
+    athletic:   ['🏀','🥏','🎽','🏆','🚴','🥗','🧗','💪'],
+    thoughtful: ['🪴','🍵','🌿','🪟','📿','🪨','🌱','🕯️']
+  };
+  // Wall-tint hue rotation values (0–359) sampled by the dorm seed
+  var DORM_WALL_TINTS = [0, 28, 55, 95, 135, 180, 220, 265, 295, 325];
+
+  // ── Deterministic seeded RNG (mulberry32) ──
+  // Gives each peer a stable procedural-content rng so their dorm
+  // layout never changes between visits even though we re-render.
+  function makeSeededRng(seed) {
+    var a = (seed >>> 0) || 1;
+    return function() {
+      a = (a + 0x6D2B79F5) >>> 0;
+      var t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function rngPick(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
+  function rngInt(rng, max) { return Math.floor(rng() * max); }
+
+  // Generate one peer deterministically from a seed. Different seeds
+  // yield different (but stable) peers. Vocation prefers something
+  // distinct from the player's career; falls through to any vocation
+  // if uniqueness is impossible.
+  function generatePeer(seed, playerVocationId) {
+    var rng = makeSeededRng(seed);
+    var species = rngPick(rng, ['pip', 'cogsworth', 'vex', 'mochi', 'inko']);
+    var colorVariant = rngPick(rng, ['warm', 'cool', 'pastel', 'dark']);
+    var personality = rngPick(rng, PEER_PERSONALITIES);
+    var name = rngPick(rng, PEER_NAMES);
+    // Pick a vocation (avoid duplicating player's where possible)
+    var vocations = CAREER_VOCATIONS.slice();
+    var preferred = vocations.filter(function(v) { return v.id !== playerVocationId; });
+    var vocation = rngPick(rng, preferred.length > 0 ? preferred : vocations);
+    var career = rngPick(rng, vocation.careers);
+    // Stage: weighted slightly toward young-adult/adult so peers feel
+    // peer-ish for a teen/young-adult player
+    var stagePick = rng();
+    var stage = stagePick < 0.45 ? 'young-adult' : (stagePick < 0.85 ? 'adult' : 'teen');
+    return {
+      id: 'peer-' + seed,
+      seed: seed,
+      name: name,
+      species: species,
+      colorVariant: colorVariant,
+      personality: personality.id,
+      stage: stage,
+      career: { vocationType: vocation.id, careerId: career.id },
+      relationship: 0,
+      lastVisitedAt: null,
+      greetingCache: null
+    };
+  }
+
+  // Build a procedural dorm layout from the peer + their personality.
+  // Returns { wallHue, decor: [{ emoji, gridX, gridY }] }
+  // We use a 6×4 grid for the dorm view, 8–10 decor slots sampled by rng.
+  function buildPeerDormLayout(peer) {
+    var rng = makeSeededRng(peer.seed + 7919); // offset so dorm rng differs from peer rng
+    var hue = DORM_WALL_TINTS[rngInt(rng, DORM_WALL_TINTS.length)];
+    var pool = (PEER_DECOR_POOL[peer.personality] || PEER_DECOR_POOL.bookish).slice();
+    var cells = [];
+    var usedCells = {};
+    var GRID_W = 6, GRID_H = 4;
+    var decorCount = 6 + rngInt(rng, 4); // 6–9 items
+    var attempts = 0;
+    while (cells.length < decorCount && attempts < 60) {
+      attempts++;
+      var x = rngInt(rng, GRID_W);
+      var y = rngInt(rng, GRID_H);
+      var key = x + ',' + y;
+      if (usedCells[key]) continue;
+      usedCells[key] = true;
+      var emoji = pool[rngInt(rng, pool.length)];
+      cells.push({ emoji: emoji, gridX: x, gridY: y });
+    }
+    return { wallHue: hue, decor: cells, gridW: GRID_W, gridH: GRID_H };
+  }
+
+  function getLifeStage(stageId) {
+    var s = LIFE_STAGES.filter(function(x) { return x.id === stageId; })[0];
+    return s || LIFE_STAGES[0];
+  }
+
+  function getStageIndex(stageId) {
+    for (var i = 0; i < LIFE_STAGES.length; i++) {
+      if (LIFE_STAGES[i].id === stageId) return i;
+    }
+    return 0;
+  }
+
+  // Compute how many calendar days have elapsed since a given ISO date.
+  function daysSinceIso(iso) {
+    if (!iso) return 0;
+    var then = new Date(iso).getTime();
+    if (!isFinite(then)) return 0;
+    var ms = Date.now() - then;
+    return Math.max(0, Math.floor(ms / 86400000));
+  }
+
+  // Check whether companion meets both gates to advance to next stage.
+  // Returns { canAdvance: bool, nextStage: id|null, missing: [...] }
+  function checkStageProgress(companion) {
+    if (!companion) return { canAdvance: false, nextStage: null, missing: [] };
+    var current = getLifeStage(companion.stage || 'hatchling');
+    if (!current.nextStage) {
+      return { canAdvance: false, nextStage: null, missing: [] };
+    }
+    var days = companion.ageInDays || 0;
+    var fed = companion.knowledgeFed || 0;
+    var topics = (companion.knowledgeTopics || []).length;
+    var careerDays = (companion.career && companion.career.startedAt) ? daysSinceIso(companion.career.startedAt) : 0;
+    var missing = [];
+    if (days < current.reqDays) missing.push((current.reqDays - days) + ' more day(s) of visits');
+    if (fed < current.reqStories) missing.push((current.reqStories - fed) + ' more story(ies) fed');
+    if (topics < current.reqTopics) missing.push((current.reqTopics - topics) + ' more topic(s) explored');
+    // Phase L2 — career gate (young-adult → adult). Must have a career
+    // picked AND have spent at least reqCareerDays in it.
+    if (current.requiresCareer) {
+      if (!companion.career || !companion.career.careerId) {
+        missing.push('a chosen career');
+      } else if ((current.reqCareerDays || 0) > careerDays) {
+        missing.push((current.reqCareerDays - careerDays) + ' more day(s) at work');
+      }
+    }
+    return {
+      canAdvance: missing.length === 0,
+      nextStage: current.nextStage,
+      missing: missing,
+      thresholds: {
+        reqDays: current.reqDays, reqStories: current.reqStories, reqTopics: current.reqTopics,
+        requiresCareer: !!current.requiresCareer, reqCareerDays: current.reqCareerDays || 0
+      },
+      progress: { days: days, fed: fed, topics: topics, careerDays: careerDays, hasCareer: !!(companion.career && companion.career.careerId) }
+    };
+  }
 
   // ─────────────────────────────────────────────────────────
   // SECTION 4.6: ACHIEVEMENT MILESTONES (Phase 2p.5)
@@ -1933,6 +2282,64 @@
     { id: 'first-reflection', emoji: '📝', label: 'First reflection',
       desc: 'Wrote your first journal entry.',
       check: function(s) { return (s.journalEntries || []).length >= 1; } },
+    // ── Life-sim milestones (Phase L5) ──
+    { id: 'first-story-fed', emoji: '📖', label: 'First story fed',
+      desc: 'Told your buddy their first story.',
+      check: function(s) { return s.companion && (s.companion.knowledgeFed || 0) >= 1; } },
+    { id: 'full-bookshelf', emoji: '📚', label: 'Full bookshelf',
+      desc: 'Fed your buddy 20 stories. They\'re starting to think for themselves.',
+      check: function(s) { return s.companion && (s.companion.knowledgeFed || 0) >= 20; } },
+    { id: 'topic-expert', emoji: '🧠', label: 'Topic expert',
+      desc: 'Reinforced any single topic 5+ times.',
+      check: function(s) {
+        if (!s.companion) return false;
+        return (s.companion.knowledgeTopics || []).some(function(t) { return (t.reinforcedCount || 0) >= 5; });
+      } },
+    { id: 'first-growth', emoji: '🌿', label: 'First big day',
+      desc: 'Your buddy grew up to a new life stage.',
+      check: function(s) {
+        if (!s.companion) return false;
+        return (s.companion.stageHistory || []).length >= 2;
+      } },
+    { id: 'all-grown-up', emoji: '🎓', label: 'All grown up',
+      desc: 'Your buddy reached the young-adult stage.',
+      check: function(s) {
+        if (!s.companion) return false;
+        var stage = s.companion.stage;
+        return stage === 'young-adult' || stage === 'adult';
+      } },
+    { id: 'career-chosen', emoji: '💼', label: 'Working adult',
+      desc: 'Your buddy chose a career path.',
+      check: function(s) { return s.companion && s.companion.career && !!s.companion.career.careerId; } },
+    { id: 'hobby-found', emoji: '🌟', label: 'Hobby found',
+      desc: 'Your buddy picked up a hobby.',
+      check: function(s) { return s.companion && s.companion.hobby && !!s.companion.hobby.topic; } },
+    { id: 'first-friend', emoji: '🤝', label: 'First friend',
+      desc: 'Built a relationship with a dorm-mate.',
+      check: function(s) {
+        if (!s.companion) return false;
+        return (s.companion.peers || []).some(function(p) { return (p.relationship || 0) >= 1; });
+      } },
+    { id: 'close-friend', emoji: '💞', label: 'Close friends',
+      desc: 'Reached close-friend status (relationship 5+) with any peer.',
+      check: function(s) {
+        if (!s.companion) return false;
+        return (s.companion.peers || []).some(function(p) { return (p.relationship || 0) >= 5; });
+      } },
+    { id: 'whole-hall', emoji: '🏠', label: 'Whole hall',
+      desc: 'Built a relationship with every dorm-mate in the hall.',
+      check: function(s) {
+        if (!s.companion) return false;
+        var peers = s.companion.peers || [];
+        if (peers.length === 0) return false;
+        return peers.every(function(p) { return (p.relationship || 0) >= 1; });
+      } },
+    { id: 'life-story-page', emoji: '📔', label: 'Life Story begins',
+      desc: 'Captured your first Life Story page.',
+      check: function(s) { return s.companion && (s.companion.lifeMoments || []).length >= 1; } },
+    { id: 'life-story-three', emoji: '📓', label: 'Three pages in',
+      desc: 'Captured three Life Story moments.',
+      check: function(s) { return s.companion && (s.companion.lifeMoments || []).length >= 3; } },
     { id: 'first-pomodoro', emoji: '🍅', label: 'First Pomodoro',
       desc: 'Completed your first focus session.',
       check: function(s) { return (s.earnings || []).some(function(e) { return e.source === 'pomodoro' || e.source === 'cycle-bonus'; }); } },
@@ -2419,6 +2826,20 @@
   function getCompanionSvg(speciesId, palette, animState) {
     var React = window.React;
     var h = React.createElement;
+    // ── Phase L6 — Delegate to window.AlloMascots when the speciesId is
+    // one of the new mascot ids. Legacy critters (cat/fox/owl/turtle/
+    // dragon) fall through to the inline SVG renderer below so existing
+    // saved companions still render until they migrate.
+    if (window.AlloMascots && window.AlloMascots.render && window.AlloMascots.getBio &&
+        window.AlloMascots.getBio(speciesId)) {
+      var mascotOpts = {
+        state: (animState && animState.sleeping) ? 'sleep' : 'idle',
+        size: 100
+      };
+      // Optional aria-label passthrough
+      if (animState && animState.label) mascotOpts.label = animState.label;
+      return window.AlloMascots.render(speciesId, mascotOpts);
+    }
     var p = palette || { primary: '#888', secondary: '#ccc', accent: '#444' };
     var blinking = animState && animState.blinking;
     var sleeping = animState && animState.sleeping;
@@ -9657,15 +10078,113 @@
     // ── Visit log (Phase 2p.11) ──
     // Stamp today\'s date once per session if not already there. The
     // streak helpers compute current/longest from this list.
+    // Phase L1: also bumps companion.ageInDays once per calendar day.
     useEffect(function() {
       var todayStr = new Date().toISOString().slice(0, 10);
+      var isNewDay = !Array.isArray(state.visits) || state.visits.indexOf(todayStr) === -1;
       if (!Array.isArray(state.visits)) {
         setStateField('visits', [todayStr]);
-      } else if (state.visits.indexOf(todayStr) === -1) {
+      } else if (isNewDay) {
         setStateField('visits', state.visits.concat([todayStr]));
+      }
+      // Bump companion age once per new calendar day. Independent of stage
+      // (companion can age past stage-cap; advancing is gated separately).
+      if (isNewDay && state.companion && state.companion.species) {
+        saveCompanion({ ageInDays: (state.companion.ageInDays || 0) + 1 });
       }
       // eslint-disable-next-line
     }, []);
+
+    // ── Phase L3 — ensure peer roster at teen+ stage ──
+    // Fires whenever stage changes. Idempotent inside the function so
+    // we don't regenerate peers on every render.
+    useEffect(function() {
+      ensurePeerRoster();
+      // eslint-disable-next-line
+    }, [state.companion ? state.companion.stage : null]);
+
+    // ── Phase L3 — when visit modal opens, fetch the greeting ──
+    // Phase L4 — also kicks off portrait + dorm-scene generation (each
+    // lifetime-cached on the peer object) the first time we visit.
+    useEffect(function() {
+      if (state.activeModal !== 'peer-visit') return;
+      if (!visitingPeerId) return;
+      var c = state.companion;
+      if (!c || !Array.isArray(c.peers)) return;
+      var peer = c.peers.filter(function(p) { return p.id === visitingPeerId; })[0];
+      if (!peer) return;
+      var today = todayKey();
+
+      // ── Fire portrait + dorm scene generation if not yet cached ──
+      // Async + fire-and-forget. State refreshes when each finishes.
+      if (!peer.portraitDataUrl) {
+        generatePeerPortrait(peer, function() { /* updates peer state */ });
+      }
+      if (!peer.dormSceneDataUrl) {
+        generatePeerDormScene(peer, function() { /* updates peer state */ });
+      }
+
+      // Use cached greeting if available
+      if (peer.greetingCache && peer.greetingCache.text && peer.greetingCache.date === today) {
+        setPeerGreetingText(peer.greetingCache.text);
+        recordPeerVisit(peer.id, peer.greetingCache.text);
+        return;
+      }
+      setPeerGreetingBusy(true);
+      setPeerGreetingText('');
+      generatePeerGreeting(peer, function(text) {
+        setPeerGreetingText(text);
+        setPeerGreetingBusy(false);
+      });
+      // eslint-disable-next-line
+    }, [state.activeModal, visitingPeerId]);
+
+    // ── Phase L2 — daily vignette auto-fire ──
+    // Once per session-open, if the companion has a career and there
+    // is no vignette cached for today, generate one. The Gemini call
+    // is fire-and-forget — the cache lands when it resolves.
+    useEffect(function() {
+      var c = state.companion;
+      if (!c || !c.species) return;
+      if (!c.career || !c.career.careerId) return;
+      var key = todayKey();
+      var existing = (state.companionVignettes || {})[key];
+      if (existing && existing.text) return;
+      // Tiny settle so initial Gemini calls (letter, insights) don't
+      // collide with the vignette one.
+      var t = setTimeout(function() {
+        generateDailyVignette(false);
+      }, 800);
+      return function() { clearTimeout(t); };
+      // eslint-disable-next-line
+    }, [state.companion ? (state.companion.career && state.companion.career.careerId) : null]);
+
+    // ── Phase L2 — graduation auto-prompt ──
+    // When the companion is at young-adult stage with no career picked
+    // yet, and no other modal is open, fire the career picker once per
+    // session-load. The "Graduate" button stays in the header for
+    // anyone who dismisses the auto-prompt, so they can come back to it.
+    useEffect(function() {
+      var c = state.companion;
+      if (!c || !c.species) return;
+      if (c.stage !== 'young-adult') return;
+      if (c.career && c.career.careerId) return;
+      if (state.activeModal) return;
+      // Suppress on first visit (when onboarding/welcome still active)
+      if (!state.onboardingSeen) return;
+      // Fire after a brief settle so the page paints first
+      var t = setTimeout(function() {
+        // Re-check in case state changed during the delay
+        if (state.companion && state.companion.stage === 'young-adult' &&
+            !(state.companion.career && state.companion.career.careerId) &&
+            !state.activeModal) {
+          setStateField('activeModal', 'career-picker');
+        }
+      }, 1200);
+      return function() { clearTimeout(t); };
+      // eslint-disable-next-line
+    }, [state.companion ? state.companion.stage : null,
+        state.companion && state.companion.career ? state.companion.career.careerId : null]);
 
     // ── Daily-state rollover ──
     useEffect(function() {
@@ -10379,6 +10898,358 @@
       setStateField('journalEntries', newJournal);
     }
 
+    // ── Feed Story (Phase L1) ──
+    // The Tamagotchi knowledge-feeding loop. Student types or dictates a
+    // short story (2–6 sentences) with at least one key concept/vocab
+    // word. Gemini extracts a dominant topic, vocabulary words, and a
+    // reaction mood. Companion emits a reaction speech bubble, ages by
+    // one knowledge point, and may advance to the next life stage if
+    // both gates (days + stories) are met. Earns 1 token per feed.
+    //
+    // Failure-tolerant: if Gemini is unavailable, falls back to simple
+    // keyword extraction so the loop still works offline / mid-flight.
+    function openFeedStoryModal() {
+      setStateField('activeModal', 'feed-story');
+    }
+
+    function submitFeedStory(text, onDone) {
+      var trimmed = (text || '').trim();
+      if (trimmed.length < 12) {
+        if (onDone) onDone({ error: 'too-short' });
+        return;
+      }
+      if (!state.companion || !state.companion.species) {
+        if (onDone) onDone({ error: 'no-companion' });
+        return;
+      }
+      var callGeminiFn = props.callGemini;
+      var nowIso = new Date().toISOString();
+
+      // Apply the feeding result (whether AI-extracted or fallback-derived).
+      function applyFeeding(topic, vocab, reactionMood, reactionLine) {
+        var c = Object.assign({}, state.companion);
+        var topics = (c.knowledgeTopics || []).slice();
+        var normalizedTopic = (topic || 'general').toLowerCase().trim().slice(0, 40) || 'general';
+        var existing = null;
+        for (var i = 0; i < topics.length; i++) {
+          if (topics[i].topic === normalizedTopic) { existing = topics[i]; break; }
+        }
+        if (existing) {
+          var mergedVocab = (existing.vocab || []).slice();
+          (vocab || []).forEach(function(v) {
+            if (v && mergedVocab.indexOf(v) === -1) mergedVocab.push(v);
+          });
+          existing.vocab = mergedVocab.slice(0, 25);
+          existing.reinforcedCount = (existing.reinforcedCount || 0) + 1;
+        } else {
+          topics.push({
+            topic: normalizedTopic,
+            vocab: (vocab || []).slice(0, 25),
+            firstFedAt: nowIso,
+            reinforcedCount: 1
+          });
+        }
+        // Cap topics at 30 so the state doesn't grow unbounded
+        if (topics.length > 30) topics = topics.slice(topics.length - 30);
+
+        var feedings = (c.recentFeedings || []).slice();
+        feedings.push({
+          storyText: trimmed.slice(0, 600),
+          topic: normalizedTopic,
+          conceptsExtracted: (vocab || []).slice(0, 8),
+          reactionMood: reactionMood || 'curious',
+          fedAt: nowIso
+        });
+        // Keep last 20 feedings for AI reaction memory
+        if (feedings.length > 20) feedings = feedings.slice(feedings.length - 20);
+
+        // Compose reaction line (used in companion bubble)
+        var bubbleText = reactionLine || generateFallbackReaction(c.species, normalizedTopic, reactionMood);
+
+        // Build updated companion patch
+        var patch = {
+          knowledgeFed: (c.knowledgeFed || 0) + 1,
+          knowledgeTopics: topics,
+          recentFeedings: feedings,
+          lastBubbleAt: nowIso,
+          lastBubbleText: bubbleText,
+          lastBubbleTargetId: null
+        };
+
+        // Check stage advancement (both gates must be met). Use merged
+        // companion data — patch values supersede prior state.
+        var merged = Object.assign({}, c, patch);
+        var prog = checkStageProgress(merged);
+        var stageAdvanced = false;
+        if (prog.canAdvance && prog.nextStage) {
+          patch.stage = prog.nextStage;
+          patch.stageHistory = (c.stageHistory || []).concat([{ stage: prog.nextStage, enteredAt: nowIso }]);
+          stageAdvanced = true;
+        }
+
+        // Phase L2 — hobby auto-derivation. Promote dominant topic once
+        // it crosses 3 reinforcements. Sticky (only replaced by stronger
+        // topic, never cleared by this path).
+        var derivedHobby = deriveHobbyFromTopics(topics);
+        var hobbyUnlocked = false;
+        if (derivedHobby) {
+          var currentHobby = c.hobby && c.hobby.topic;
+          if (!currentHobby) {
+            patch.hobby = { topic: derivedHobby, unlockedAt: nowIso };
+            hobbyUnlocked = true;
+          } else if (currentHobby !== derivedHobby) {
+            // Only replace if the new topic is meaningfully stronger
+            // (avoid hobby thrash on tied counts). For now: replace only
+            // when the new topic has at least 2 more reinforcements.
+            var oldEntry = topics.filter(function(t) { return t.topic === currentHobby; })[0];
+            var newEntry = topics.filter(function(t) { return t.topic === derivedHobby; })[0];
+            if (oldEntry && newEntry && (newEntry.reinforcedCount - oldEntry.reinforcedCount) >= 2) {
+              patch.hobby = { topic: derivedHobby, unlockedAt: nowIso };
+              hobbyUnlocked = true;
+            }
+          }
+        }
+
+        saveCompanion(patch);
+
+        // Award 1 token for feeding (uncapped — daily limits would
+        // disincentivize sustained knowledge-feeding; we want the OPPOSITE).
+        var tokenUpdates = {
+          tokens: state.tokens + 1,
+          earnings: state.earnings.concat([{
+            source: 'feed-story',
+            tokens: 1,
+            date: nowIso,
+            metadata: { topic: normalizedTopic, vocabCount: (vocab || []).length, stageAdvanced: stageAdvanced }
+          }]),
+          activeModal: null
+        };
+        setStateMulti(tokenUpdates);
+
+        if (stageAdvanced) {
+          var stageObj = getLifeStage(prog.nextStage);
+          setTimeout(function() {
+            addToast('🎉 ' + (c.name || 'Your buddy') + ' grew up to ' + stageObj.label + '! ' + stageObj.badge);
+          }, 80);
+          // Phase L5 — capture a Life Story moment for this growth
+          captureLifeMoment('stage-up', 'Grew up to ' + stageObj.label, { stage: prog.nextStage });
+        } else if (hobbyUnlocked) {
+          setTimeout(function() {
+            addToast('🌟 ' + (c.name || 'Your buddy') + ' picked up a hobby: ' + derivedHobby + '!');
+          }, 80);
+          // Phase L5 — capture a Life Story moment for the first hobby
+          captureLifeMoment('hobby-unlocked', 'Found a hobby: ' + derivedHobby, { hobby: derivedHobby });
+          // ── Phase L4 — auto-generate a hobby-themed decoration ──
+          // Floor-placed small object the player keeps as a memory of
+          // when their buddy first got into this topic.
+          if (typeof props.callImagen === 'function') {
+            var hobbyName = derivedHobby;
+            var hobbyPrompt = [
+              'A small, charming still-life illustration of a single object that captures the hobby of "' + hobbyName + '".',
+              'Watercolor style, centered composition, gentle warm light. Cozy, intentional. No people, no text, no logos.',
+              'Square aspect ratio. PNG-friendly clean edges. Single object focal point.'
+            ].join(' ');
+            try {
+              var hp = props.callImagen(hobbyPrompt);
+              if (hp && typeof hp.then === 'function') {
+                hp.then(function(result) {
+                  var b64 = result;
+                  if (result && typeof result === 'object') {
+                    b64 = result.base64 || result.image || result.data || '';
+                  }
+                  if (!b64) return;
+                  placeAutoDecoration({
+                    templateId: 'hobby-token',
+                    templateLabel: '🌟 ' + hobbyName + ' keepsake',
+                    imageBase64: b64,
+                    surface: 'floor',
+                    reflectionText: (c.name || 'Your buddy') + ' picked up ' + hobbyName + ' as a hobby.',
+                    sourceTool: 'hobby-unlock',
+                    aiRationale: 'Generated when ' + hobbyName + ' became ' + (c.name || 'their') + ' first hobby.',
+                    toastMessage: '🌟 A ' + hobbyName + ' keepsake appeared in your room.'
+                  });
+                }).catch(function() { /* silent */ });
+              }
+            } catch (e) { /* silent */ }
+          }
+        } else {
+          setTimeout(function() {
+            addToast('🪙 +1 token. ' + (c.name || 'Your buddy') + ' is thinking about it...');
+          }, 40);
+        }
+
+        if (onDone) onDone({ ok: true, topic: normalizedTopic, stageAdvanced: stageAdvanced });
+      }
+
+      // Fallback extraction if Gemini is unavailable or fails — pulls
+      // a few content words as candidate vocab.
+      function fallbackExtract() {
+        var stopwords = { the: 1, and: 1, a: 1, an: 1, of: 1, to: 1, in: 1, on: 1,
+          is: 1, it: 1, that: 1, this: 1, with: 1, for: 1, as: 1, was: 1, were: 1,
+          are: 1, be: 1, by: 1, at: 1, from: 1, but: 1, or: 1, so: 1, if: 1 };
+        var words = trimmed.toLowerCase().replace(/[^a-z\s]/g, ' ').split(/\s+/);
+        var vocab = [];
+        var seen = {};
+        for (var i = 0; i < words.length && vocab.length < 5; i++) {
+          var w = words[i];
+          if (w.length >= 5 && !stopwords[w] && !seen[w]) {
+            seen[w] = 1;
+            vocab.push(w);
+          }
+        }
+        applyFeeding('general', vocab, 'curious', null);
+      }
+
+      if (typeof callGeminiFn !== 'function') {
+        fallbackExtract();
+        return;
+      }
+
+      // Ask Gemini for a structured extraction. Strict JSON contract so
+      // we don't have to parse prose. If it fails or returns garbage, we
+      // fall back gracefully.
+      var prompt = [
+        'You are helping a child feed a story to their growing pet companion.',
+        'The child shared this short story:',
+        '"""',
+        trimmed,
+        '"""',
+        '',
+        'Return STRICT JSON only (no markdown, no backticks, no commentary), shaped like:',
+        '{ "topic": "<1-3 word topic>", "vocab": ["<word>", "<word>", ...up to 6 words], ',
+        '  "reactionMood": "<one of: excited, curious, comforted, tickled, thoughtful>", ',
+        '  "reactionLine": "<one sentence in the voice of a small curious creature, 6-18 words, no quotes>" }',
+        '',
+        'Pick vocab the child likely just LEARNED from telling the story — concrete nouns, content verbs, or specialized terms. Avoid stopwords and pronouns.',
+        'reactionLine should be warm and curious; do not pretend to know facts you don\'t.'
+      ].join('\n');
+
+      Promise.resolve()
+        .then(function() { return callGeminiFn(prompt); })
+        .then(function(out) {
+          var raw = (typeof out === 'string' ? out : (out && out.text) || '').trim();
+          // Strip code fences if Gemini wrapped them despite instructions
+          raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+          var parsed = null;
+          try { parsed = JSON.parse(raw); } catch (e) { parsed = null; }
+          if (!parsed || typeof parsed !== 'object') {
+            fallbackExtract();
+            return;
+          }
+          var topic = (parsed.topic || 'general').toString().slice(0, 40);
+          var vocab = Array.isArray(parsed.vocab) ? parsed.vocab.filter(function(v) {
+            return typeof v === 'string' && v.length > 1 && v.length < 30;
+          }).map(function(v) { return v.toLowerCase().trim(); }).slice(0, 6) : [];
+          var mood = ['excited','curious','comforted','tickled','thoughtful'].indexOf(parsed.reactionMood) >= 0
+            ? parsed.reactionMood : 'curious';
+          var line = (parsed.reactionLine || '').toString().trim().slice(0, 140);
+          if (line.length < 10) line = null;
+          applyFeeding(topic, vocab, mood, line);
+        })
+        .catch(function() {
+          fallbackExtract();
+        });
+    }
+
+    // Simple species-flavored fallback line when Gemini doesn't produce one
+    function generateFallbackReaction(species, topic, mood) {
+      var openers = {
+        cat:    'Hmm. ',
+        fox:    'Oh! ',
+        owl:    'Interesting. ',
+        turtle: 'Mmm. ',
+        dragon: 'Wow! '
+      };
+      var moodTails = {
+        excited:    'Tell me more about ' + topic + '!',
+        curious:    'I wonder how ' + topic + ' works...',
+        comforted:  'Thank you. That was a nice ' + topic + ' story.',
+        tickled:    'Heh. ' + topic + ' is a funny thing.',
+        thoughtful: 'I\'ll think about ' + topic + ' later.'
+      };
+      return (openers[speciesAlias(species)] || 'Oh. ') + (moodTails[mood] || moodTails.curious);
+    }
+
+    // ── Career picker (Phase L2 — Growing Up) ──
+    // Opens the career picker modal. Visible only when companion is at
+    // young-adult stage with no career chosen, or via "Change career"
+    // affordance after the fact (Phase 2 deepens this).
+    function openCareerPickerModal() {
+      setStateField('activeModal', 'career-picker');
+    }
+
+    // Set the chosen career on the companion. Locks vocation + career,
+    // stamps startedAt. Fires a graduation toast + reaction bubble that
+    // references the new career. Tokens earned through career are
+    // delivered separately by the daily-vignette path (Phase 2 follow-up).
+    //
+    // Phase L4 — also auto-places a free generative graduation-gift
+    // decoration themed to the new career. This is the player's first
+    // tangible reminder that their buddy is now an adult with a path.
+    function chooseCareer(vocationId, careerId) {
+      if (!state.companion || !state.companion.species) return;
+      var vocation = getVocation(vocationId);
+      var career = getCareer(vocationId, careerId);
+      if (!vocation || !career) return;
+      var nowIso = new Date().toISOString();
+      var name = state.companion.name || (getCompanionSpecies(state.companion.species) || {}).label || 'your buddy';
+      saveCompanion({
+        career: {
+          vocationType: vocationId,
+          careerId: careerId,
+          startedAt: nowIso
+        },
+        lastBubbleAt: nowIso,
+        lastBubbleText: name + ': "' + career.label + '! I can\'t wait to get started."',
+        lastBubbleTargetId: null
+      });
+      setStateField('activeModal', null);
+      setTimeout(function() {
+        addToast('🎓 ' + name + ' is starting their career as a ' + career.label + '!');
+      }, 80);
+
+      // Phase L5 — capture a Life Story moment for the graduation
+      captureLifeMoment('career-chosen', 'Chose to be a ' + career.label, {
+        career: { vocationType: vocationId, careerId: careerId }
+      });
+
+      // ── Auto-generate graduation gift decoration ──
+      // Career-themed still-life object the player keeps on their wall.
+      // Free (tokensSpent: 0). Imagen fires async; gift lands when ready.
+      if (typeof props.callImagen === 'function') {
+        var giftPrompt = [
+          'A small, charming still-life illustration of a single career-themed object',
+          'representing a ' + career.label.toLowerCase() + ' (' + career.desc.toLowerCase() + ')',
+          'as a graduation gift. Soft watercolor style, centered composition, simple background.',
+          'Warm light, cozy, hopeful tone. Single object focal point — no people, no text, no logos.',
+          'Square aspect ratio. PNG-friendly clean edges.'
+        ].join(' ');
+        setTimeout(function() { addToast('🎁 A graduation gift is being prepared…'); }, 200);
+        try {
+          var p = props.callImagen(giftPrompt);
+          if (p && typeof p.then === 'function') {
+            p.then(function(result) {
+              var b64 = result;
+              if (result && typeof result === 'object') {
+                b64 = result.base64 || result.image || result.data || '';
+              }
+              if (!b64) return;
+              placeAutoDecoration({
+                templateId: 'graduation-gift',
+                templateLabel: career.icon + ' ' + career.label + ' starter',
+                imageBase64: b64,
+                surface: 'wall',
+                reflectionText: 'A keepsake from the day ' + name + ' decided to be a ' + career.label.toLowerCase() + '.',
+                sourceTool: 'career-graduation',
+                aiRationale: 'Generated when ' + name + ' chose the ' + career.label + ' path.',
+                toastMessage: '🎁 ' + career.icon + ' Graduation gift placed in your room!'
+              });
+            }).catch(function() { /* silent — the career is set regardless */ });
+          }
+        } catch (e) { /* silent */ }
+      }
+    }
+
     // ── Web Speech API for voice-to-text (Phase 3v.M migration) ──
     // Delegates to the shared window.AlloFlowVoice.initWebSpeechCapture
     // when available; falls back to inline construction otherwise so the
@@ -10884,10 +11755,89 @@
         skillCelebrations: { focus: 0, memory: 0, reflection: 0, storytelling: 0 }
       };
       var next = Object.assign({}, current, updates);
+
+      // ── Phase L6 — Legacy species migration ──
+      // Existing companions using the old cat/fox/owl/turtle/dragon ids
+      // are auto-mapped to the shared mascot system on first save. Cat
+      // and owl map directly (closest visual analog). Fox/turtle/dragon
+      // get Pip as a starter and a `mascotReselectPrompt` flag so the
+      // UI can offer a one-time "pick your buddy's new look" nudge.
+      var LEGACY_AUTO_MAP = { cat: 'mochi', owl: 'cogsworth' };
+      var LEGACY_RESELECT = { fox: true, turtle: true, dragon: true };
+      if (next.species && !next.legacySpeciesMigrated) {
+        if (LEGACY_AUTO_MAP[next.species]) {
+          next.legacySpeciesPrev = next.species;
+          next.species = LEGACY_AUTO_MAP[next.species];
+          next.legacySpeciesMigrated = true;
+        } else if (LEGACY_RESELECT[next.species]) {
+          next.legacySpeciesPrev = next.species;
+          next.species = 'pip';
+          next.legacySpeciesMigrated = true;
+          next.mascotReselectPrompt = true;
+        } else if (next.species === 'pip' || next.species === 'cogsworth' ||
+                   next.species === 'vex' || next.species === 'mochi' ||
+                   next.species === 'inko') {
+          // Already a mascot id — just flag migration as resolved
+          next.legacySpeciesMigrated = true;
+        }
+      }
+
       if (!next.createdAt) next.createdAt = new Date().toISOString();
       // Normalize skillCelebrations always present
       next.skillCelebrations = Object.assign({ focus: 0, memory: 0, reflection: 0, storytelling: 0 }, next.skillCelebrations || {});
+      // ── Life-stage fields (Phase L1) ──
+      // Backfill defaults so existing companions get hatchling stage on first
+      // load after this code ships. All additive; no migration needed.
+      if (!next.stage) next.stage = 'hatchling';
+      if (next.ageInDays == null) next.ageInDays = 0;
+      if (next.knowledgeFed == null) next.knowledgeFed = 0;
+      if (!Array.isArray(next.knowledgeTopics)) next.knowledgeTopics = [];
+      if (!Array.isArray(next.recentFeedings)) next.recentFeedings = [];
+      if (!Array.isArray(next.stageHistory)) {
+        next.stageHistory = [{ stage: next.stage, enteredAt: next.createdAt }];
+      }
+      // ── Phase L2 — career field (default null until picked) ──
+      if (typeof next.career === 'undefined') next.career = null;
+      // ── Phase L2 — hobby slot (default null until earned) ──
+      // Hobby is auto-derived from the companion's most-reinforced
+      // knowledge topic once that topic crosses 3 reinforcements.
+      // Stored as { topic, unlockedAt }.
+      if (typeof next.hobby === 'undefined') next.hobby = null;
+      // ── Phase L3 — peer roster (default empty until teen stage) ──
+      // Procedurally-generated NPC dorm-mates the player can visit.
+      if (!Array.isArray(next.peers)) next.peers = [];
+      // Phase L6 — migrate any legacy peer species ids forward.
+      var LEGACY_PEER_MAP = { cat: 'mochi', fox: 'pip', owl: 'cogsworth', turtle: 'inko', dragon: 'vex' };
+      next.peers = next.peers.map(function(pr) {
+        if (pr && pr.species && LEGACY_PEER_MAP[pr.species]) {
+          return Object.assign({}, pr, { species: LEGACY_PEER_MAP[pr.species] });
+        }
+        return pr;
+      });
+      // ── Phase L5 — Life Story moments (default empty) ──
+      // Chronological scrapbook of major life milestones, each with a
+      // generative watercolor image + narrative paragraph. Captured
+      // automatically when life-changing events happen (stage advance,
+      // career chosen, first hobby, first close friend, etc.).
+      if (!Array.isArray(next.lifeMoments)) next.lifeMoments = [];
       setStateField('companion', next);
+    }
+
+    // ── Hobby derivation (Phase L2) ──
+    // Pick the dominant knowledge topic that crosses the 3-reinforcement
+    // threshold. Null until a topic qualifies. Once set, the hobby field
+    // is sticky (it can be replaced by a stronger topic but it does not
+    // un-set on its own). Called from submitFeedStory after each feed.
+    function deriveHobbyFromTopics(topics) {
+      if (!Array.isArray(topics) || topics.length === 0) return null;
+      var qualified = topics.filter(function(t) {
+        return (t.reinforcedCount || 0) >= 3;
+      });
+      if (qualified.length === 0) return null;
+      qualified.sort(function(a, b) {
+        return (b.reinforcedCount || 0) - (a.reinforcedCount || 0);
+      });
+      return qualified[0].topic;
     }
 
     // Companion letter generation (Phase 2p.18)
@@ -10948,6 +11898,612 @@
         });
     }
 
+    // ── Daily career vignette (Phase L2) ──
+    // Once per calendar day, when the companion has a career, generate
+    // a short "today my buddy did..." vignette grounded in their career
+    // + recent feedings + season. Cached in state.companionVignettes
+    // keyed by YYYY-MM-DD. claimed=false until the player opens the
+    // card and accepts the 2-token career income.
+    function todayKey() { return new Date().toISOString().slice(0, 10); }
+    function currentSeasonLabel() {
+      var m = new Date().getMonth();
+      if (m === 11 || m <= 1) return 'winter';
+      if (m <= 4) return 'spring';
+      if (m <= 7) return 'summer';
+      return 'autumn';
+    }
+    function getTodaysVignette() {
+      var v = (state.companionVignettes || {})[todayKey()];
+      return v || null;
+    }
+    function composeFallbackVignette(career, recentFeedings, season, name) {
+      // Template fallback for when Gemini is unavailable. Light flavour,
+      // career-aware, mentions one recent topic if any.
+      var topic = null;
+      if (recentFeedings && recentFeedings.length > 0) {
+        topic = recentFeedings[recentFeedings.length - 1].topic;
+      }
+      var middle;
+      if (topic) {
+        middle = 'kept thinking about ' + topic + ' between tasks';
+      } else {
+        middle = 'noticed something small that felt important';
+      }
+      var prefix = name + ' worked as a ' + (career ? career.label.toLowerCase() : 'helper') + ' today, ';
+      var seasonal = season === 'winter' ? 'and walked home in the cold.' :
+                     season === 'spring' ? 'and stopped to look at the new buds on the way home.' :
+                     season === 'summer' ? 'and got home before the heat broke.' :
+                                            'and watched the leaves on the way home.';
+      return prefix + middle + ', ' + seasonal;
+    }
+    // ── Vignette image generation (Phase L4) ──
+    // Fires after a vignette text is in cache. Generates a single
+    // illustration of the moment described, attaches it to the cache
+    // entry, and triggers a re-render. Fire-and-forget; vignette card
+    // upgrades visually when it lands.
+    function generateVignetteImage(vignetteKey, vignetteText, career, name, season) {
+      if (typeof props.callImagen !== 'function') return;
+      var prompt = [
+        'A soft watercolor illustration capturing this small moment:',
+        '"' + vignetteText + '"',
+        '',
+        'The character is a small fictional ' + (state.companion ? state.companion.species : 'creature') + ' named ' + name +
+        (career ? ', working as a ' + career.label.toLowerCase() + '.' : '.'),
+        'Season: ' + season + '.',
+        'Wide landscape composition. No text, no logos, no signage.',
+        'Warm light, gentle ink line + watercolor, similar to a children\'s storybook page.'
+      ].join(' ');
+      try {
+        var p = props.callImagen(prompt);
+        if (!p || typeof p.then !== 'function') return;
+        p.then(function(result) {
+          var b64 = result;
+          if (result && typeof result === 'object') {
+            b64 = result.base64 || result.image || result.data || '';
+          }
+          if (!b64) return;
+          var dataUrl = (typeof b64 === 'string' && b64.indexOf('data:') === 0)
+            ? b64 : ('data:image/png;base64,' + b64);
+          // Re-read latest vignettes — state may have changed
+          var currentV = state.companionVignettes || {};
+          var entry = currentV[vignetteKey];
+          if (!entry) return;
+          var newV = Object.assign({}, currentV);
+          newV[vignetteKey] = Object.assign({}, entry, { imageDataUrl: dataUrl });
+          setStateField('companionVignettes', newV);
+        }).catch(function() { /* silent */ });
+      } catch (e) { /* silent */ }
+    }
+
+    function generateDailyVignette(force, onDone) {
+      var c = state.companion;
+      if (!c || !c.species) { if (onDone) onDone({ error: 'no-companion' }); return; }
+      if (!c.career || !c.career.careerId) { if (onDone) onDone({ error: 'no-career' }); return; }
+      var key = todayKey();
+      var existing = (state.companionVignettes || {})[key];
+      if (existing && existing.text && !force) {
+        if (onDone) onDone({ text: existing.text, fromCache: true });
+        // Backfill image if missing (e.g., upgraded mid-day)
+        if (!existing.imageDataUrl) {
+          var crBackfill = getCareer(c.career.vocationType, c.career.careerId);
+          var nmBackfill = c.name || (getCompanionSpecies(c.species) || {}).label || 'Buddy';
+          generateVignetteImage(key, existing.text, crBackfill, nmBackfill, currentSeasonLabel());
+        }
+        return;
+      }
+      var career = getCareer(c.career.vocationType, c.career.careerId);
+      var name = c.name || (getCompanionSpecies(c.species) || {}).label || 'Buddy';
+      var season = currentSeasonLabel();
+      var recent = (c.recentFeedings || []).slice(-5);
+      var fallback = composeFallbackVignette(career, recent, season, name);
+      var callGeminiFn = props.callGemini;
+      if (typeof callGeminiFn !== 'function') {
+        var fbEntry = {
+          text: fallback, generatedAt: new Date().toISOString(),
+          source: 'template', careerId: c.career.careerId, claimed: false
+        };
+        var newV = Object.assign({}, state.companionVignettes || {});
+        newV[key] = fbEntry;
+        setStateField('companionVignettes', newV);
+        generateVignetteImage(key, fallback, career, name, season);
+        if (onDone) onDone({ text: fallback, source: 'template' });
+        return;
+      }
+      var recentTopics = recent.map(function(f) { return f.topic; }).filter(function(t) { return !!t; });
+      var prompt = [
+        'You are narrating a short slice-of-life vignette about a fictional small creature companion who has a career.',
+        'Setting: the creature is named ' + name + ' (species: ' + c.species + '), working as a ' + (career ? career.label : 'helper') + '.',
+        'Recent things their human told them about: ' + (recentTopics.length ? recentTopics.join(', ') : '(nothing in particular)') + '.',
+        'Season: ' + season + '.',
+        '',
+        'Write ONE warm, observational sentence in third person — 18 to 32 words — about a small concrete moment in their work day. No magical realism, no quoting the creature, no exclamation marks. Light tone, not saccharine.',
+        'Output the sentence ONLY. No quotes, no markdown, no commentary.'
+      ].join('\n');
+      Promise.resolve()
+        .then(function() { return callGeminiFn(prompt); })
+        .then(function(out) {
+          var raw = (typeof out === 'string' ? out : (out && out.text) || '').trim();
+          // Strip wrapping quotes / code fences if Gemini added them
+          raw = raw.replace(/^```[a-z]*\s*/i, '').replace(/```\s*$/i, '').trim();
+          if ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith('“') && raw.endsWith('”'))) {
+            raw = raw.slice(1, -1).trim();
+          }
+          if (!raw || raw.length < 25) raw = fallback;
+          var entry = {
+            text: raw, generatedAt: new Date().toISOString(),
+            source: 'ai', careerId: c.career.careerId, claimed: false
+          };
+          var newV = Object.assign({}, state.companionVignettes || {});
+          newV[key] = entry;
+          setStateField('companionVignettes', newV);
+          // Kick off the illustration (fire-and-forget; lands later)
+          generateVignetteImage(key, raw, career, name, season);
+          if (onDone) onDone({ text: raw, source: 'ai' });
+        })
+        .catch(function() {
+          var entry = {
+            text: fallback, generatedAt: new Date().toISOString(),
+            source: 'template-fallback', careerId: c.career.careerId, claimed: false
+          };
+          var newV = Object.assign({}, state.companionVignettes || {});
+          newV[key] = entry;
+          setStateField('companionVignettes', newV);
+          generateVignetteImage(key, fallback, career, name, season);
+          if (onDone) onDone({ text: fallback, source: 'template-fallback' });
+        });
+    }
+
+    // ── Peer roster + dorm visiting (Phase L3) ──
+    // Ensures the companion has a peer roster once they reach teen stage.
+    // Idempotent: a roster of N peers seeded from the companion's
+    // createdAt + a salt, deterministic across reloads. Called from a
+    // useEffect that watches companion.stage. Doesn't run for hatchling
+    // or child — peers feel age-appropriate.
+    function ensurePeerRoster() {
+      var c = state.companion;
+      if (!c || !c.species) return;
+      if (Array.isArray(c.peers) && c.peers.length >= 3) return;
+      // Eligible at teen+ stage
+      var stageIdx = getStageIndex(c.stage || 'hatchling');
+      if (stageIdx < 2) return; // 0=hatchling, 1=child, 2=teen, ...
+      // Seed: hash of createdAt so peers are stable across reloads
+      var baseSeed = 0;
+      var src = (c.createdAt || c.species || 'allohaven') + '';
+      for (var i = 0; i < src.length; i++) {
+        baseSeed = ((baseSeed << 5) - baseSeed + src.charCodeAt(i)) >>> 0;
+      }
+      // Generate 4 peers (varied seeds + player's vocation for diversity)
+      var peers = [];
+      var playerVocationId = (c.career && c.career.vocationType) || null;
+      for (var k = 0; k < 4; k++) {
+        var seed = (baseSeed + 1009 * (k + 1)) >>> 0;
+        // Avoid duplicate names by retrying with a name-only offset
+        var p = generatePeer(seed, playerVocationId);
+        var attempt = 0;
+        while (peers.some(function(prev) { return prev.name === p.name; }) && attempt < 6) {
+          attempt++;
+          p = generatePeer(seed + 53 * attempt, playerVocationId);
+        }
+        peers.push(p);
+      }
+      saveCompanion({ peers: peers });
+    }
+
+    // Open the peer-visit modal for a given peer id
+    function openPeerVisit(peerId) {
+      setVisitingPeerId(peerId);
+      setStateField('activeModal', 'peer-visit');
+    }
+    function closePeerVisit() {
+      setVisitingPeerId(null);
+      setStateField('activeModal', null);
+    }
+
+    // Leave a gift at the peer's dorm: costs 3 tokens, bumps relationship
+    // by 1, and invalidates greetingCache so the next visit fires a fresh
+    // greeting (acknowledges the gift). Quietly no-ops if no tokens.
+    function giftPeer(peerId) {
+      if (state.tokens < 3) return;
+      var c = state.companion;
+      if (!c || !Array.isArray(c.peers)) return;
+      var nowIso = new Date().toISOString();
+      var oldPeer = c.peers.filter(function(p) { return p.id === peerId; })[0];
+      var oldRel = oldPeer ? (oldPeer.relationship || 0) : 0;
+      var newRel = oldRel + 1;
+      var newPeers = c.peers.map(function(p) {
+        if (p.id !== peerId) return p;
+        return Object.assign({}, p, {
+          relationship: newRel,
+          lastGiftedAt: nowIso,
+          greetingCache: null // force fresh greeting on next visit
+        });
+      });
+      saveCompanion({ peers: newPeers });
+      setStateMulti({
+        tokens: state.tokens - 3,
+        earnings: state.earnings.concat([{
+          source: 'peer-gift',
+          tokens: -3,
+          date: nowIso,
+          metadata: { peerId: peerId }
+        }])
+      });
+      setTimeout(function() {
+        addToast('🎁 -3 🪙. Their relationship grew warmer.');
+      }, 60);
+      // Phase L5 — capture a Life Story moment when crossing the
+      // close-friend threshold (relationship 5+) for the first time
+      // with this peer. The dedup check inside captureLifeMoment is
+      // type-specific, so we add our own per-peer dedup here.
+      if (oldRel < 5 && newRel >= 5 && oldPeer) {
+        var alreadyCaptured = (c.lifeMoments || []).some(function(m) {
+          return m.type === 'close-friend' && m.context && m.context.peer && m.context.peer.id === peerId;
+        });
+        if (!alreadyCaptured) {
+          captureLifeMoment('close-friend', 'Became close with ' + oldPeer.name, {
+            peer: { id: peerId, name: oldPeer.name }
+          });
+        }
+      }
+    }
+
+    // Stamp the visit: bumps relationship 1 the first time only per day
+    // per peer (you don't grind by re-opening). Also caches a greeting
+    // line if Gemini was used so we don't re-bill on close/reopen.
+    function recordPeerVisit(peerId, greetingText) {
+      var c = state.companion;
+      if (!c || !Array.isArray(c.peers)) return;
+      var today = todayKey();
+      var newPeers = c.peers.map(function(p) {
+        if (p.id !== peerId) return p;
+        var alreadyVisitedToday = (p.lastVisitedAt || '').slice(0, 10) === today;
+        return Object.assign({}, p, {
+          lastVisitedAt: new Date().toISOString(),
+          relationship: alreadyVisitedToday ? (p.relationship || 0) : (p.relationship || 0) + 1,
+          greetingCache: greetingText ? { text: greetingText, date: today } : p.greetingCache
+        });
+      });
+      saveCompanion({ peers: newPeers });
+    }
+
+    // ── Phase L4 — Generate a portrait image for a peer (Imagen) ──
+    // Fires once per peer, lifetime cached on peer.portraitDataUrl.
+    // Idempotent: returns cached portrait if present, otherwise calls
+    // Imagen and stores result on the peer object.
+    function generatePeerPortrait(peer, onDone) {
+      if (!peer) { if (onDone) onDone(null); return; }
+      if (peer.portraitDataUrl) {
+        if (onDone) onDone(peer.portraitDataUrl);
+        return;
+      }
+      var callImagenFn = props.callImagen;
+      if (typeof callImagenFn !== 'function') { if (onDone) onDone(null); return; }
+      var personality = PEER_PERSONALITIES.filter(function(p) { return p.id === peer.personality; })[0] || PEER_PERSONALITIES[0];
+      var career = getCareer(peer.career.vocationType, peer.career.careerId);
+      var swatch = getCompanionPalette(peer.species, peer.colorVariant);
+      var prompt = [
+        'A warm cartoon portrait illustration of a small fictional ' + peer.species,
+        'character named ' + peer.name + '.',
+        'Personality: ' + personality.label + ' (' + personality.line + ').',
+        'They are working as a ' + (career ? career.label.toLowerCase() : 'student') + '.',
+        'Soft watercolor + ink line style. Square head-and-shoulders framing.',
+        'Color palette around: ' + (swatch.primary || '#888') + ' and ' + (swatch.accent || '#444') + '.',
+        'Friendly, kid-friendly, expressive eyes. Plain pastel background. No text, no logos.'
+      ].join(' ');
+      try {
+        var p = callImagenFn(prompt);
+        if (!p || typeof p.then !== 'function') { if (onDone) onDone(null); return; }
+        p.then(function(result) {
+          var b64 = result;
+          if (result && typeof result === 'object') {
+            b64 = result.base64 || result.image || result.data || '';
+          }
+          if (!b64) { if (onDone) onDone(null); return; }
+          var dataUrl = (typeof b64 === 'string' && b64.indexOf('data:') === 0)
+            ? b64 : ('data:image/png;base64,' + b64);
+          // Persist on the peer object
+          var c = state.companion;
+          if (c && Array.isArray(c.peers)) {
+            var newPeers = c.peers.map(function(pp) {
+              return pp.id === peer.id ? Object.assign({}, pp, { portraitDataUrl: dataUrl }) : pp;
+            });
+            saveCompanion({ peers: newPeers });
+          }
+          if (onDone) onDone(dataUrl);
+        }).catch(function() { if (onDone) onDone(null); });
+      } catch (e) { if (onDone) onDone(null); }
+    }
+
+    // ── Phase L4 — Generate a dorm-scene illustration for a peer ──
+    // One image per peer, lifetime cached on peer.dormSceneDataUrl.
+    // Sits behind the emoji decor tiles in the visit modal so the dorm
+    // feels like a real lived-in space.
+    function generatePeerDormScene(peer, onDone) {
+      if (!peer) { if (onDone) onDone(null); return; }
+      if (peer.dormSceneDataUrl) {
+        if (onDone) onDone(peer.dormSceneDataUrl);
+        return;
+      }
+      var callImagenFn = props.callImagen;
+      if (typeof callImagenFn !== 'function') { if (onDone) onDone(null); return; }
+      var personality = PEER_PERSONALITIES.filter(function(p) { return p.id === peer.personality; })[0] || PEER_PERSONALITIES[0];
+      var career = getCareer(peer.career.vocationType, peer.career.careerId);
+      var roomType = peer.stage === 'adult' ? 'small apartment interior' : 'cozy college dorm room interior';
+      var prompt = [
+        'A wide, soft watercolor illustration of an empty ' + roomType + '.',
+        'No people, no characters. The room belongs to a ' + personality.label,
+        (career ? ('young ' + career.label.toLowerCase() + '. ') : 'student. '),
+        'Show the back wall + part of the floor. Warm light through a window.',
+        'Tasteful, lived-in, age-appropriate clutter. No text, no logos, no signs.',
+        'Wide landscape composition with empty mid-foreground space for objects to be placed.',
+        'Style: soft watercolor + gentle ink line, similar to a children\'s storybook page.'
+      ].join(' ');
+      try {
+        var p = callImagenFn(prompt);
+        if (!p || typeof p.then !== 'function') { if (onDone) onDone(null); return; }
+        p.then(function(result) {
+          var b64 = result;
+          if (result && typeof result === 'object') {
+            b64 = result.base64 || result.image || result.data || '';
+          }
+          if (!b64) { if (onDone) onDone(null); return; }
+          var dataUrl = (typeof b64 === 'string' && b64.indexOf('data:') === 0)
+            ? b64 : ('data:image/png;base64,' + b64);
+          var c = state.companion;
+          if (c && Array.isArray(c.peers)) {
+            var newPeers = c.peers.map(function(pp) {
+              return pp.id === peer.id ? Object.assign({}, pp, { dormSceneDataUrl: dataUrl }) : pp;
+            });
+            saveCompanion({ peers: newPeers });
+          }
+          if (onDone) onDone(dataUrl);
+        }).catch(function() { if (onDone) onDone(null); });
+      } catch (e) { if (onDone) onDone(null); }
+    }
+
+    // ── Phase L5 — Capture a Life Story moment ──
+    // Stamps a milestone into companion.lifeMoments with a Gemini-
+    // generated narrative + Imagen-generated scrapbook illustration.
+    // Both AI calls are fire-and-forget; the moment entry is created
+    // immediately with a 'generating' status so the UI can show a
+    // placeholder, and gets filled in as each piece returns.
+    //
+    // type: 'stage-up' | 'career-chosen' | 'hobby-unlocked' | 'close-friend' | 'custom'
+    // title: short label shown on the moment card
+    // context: free-form { stage, career, hobby, peer } used for prompting
+    function captureLifeMoment(type, title, context) {
+      var c = state.companion;
+      if (!c || !c.species) return;
+      var name = c.name || (getCompanionSpecies(c.species) || {}).label || 'Buddy';
+      var nowIso = new Date().toISOString();
+      var momentId = 'lm-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+
+      // Skip duplicate stage-up moments for the same stage (defensive)
+      if (type === 'stage-up' && context.stage) {
+        var existing = (c.lifeMoments || []).filter(function(m) {
+          return m.type === 'stage-up' && m.context && m.context.stage === context.stage;
+        });
+        if (existing.length > 0) return;
+      }
+
+      // Initial placeholder entry — UI shows "generating..." until AI fills in
+      var entry = {
+        id: momentId,
+        type: type,
+        title: title,
+        capturedAt: nowIso,
+        context: context || {},
+        description: null,        // Gemini fills in
+        imageDataUrl: null,        // Imagen fills in
+        narrativeStatus: 'generating',
+        imageStatus: 'generating'
+      };
+
+      // Append the placeholder immediately
+      var currentMoments = (c.lifeMoments || []).slice();
+      currentMoments.push(entry);
+      saveCompanion({ lifeMoments: currentMoments });
+
+      // Build prompt context strings
+      var stageBlurb = context && context.stage ? (' at the ' + getLifeStage(context.stage).label + ' stage') : '';
+      var careerBlurb = '';
+      if (context && context.career) {
+        var careerObj = getCareer(context.career.vocationType, context.career.careerId);
+        if (careerObj) careerBlurb = ' working as a ' + careerObj.label.toLowerCase();
+      }
+      var hobbyBlurb = context && context.hobby ? (' with a hobby of ' + context.hobby) : '';
+      var peerBlurb = '';
+      if (context && context.peer) peerBlurb = ' and their friend ' + context.peer.name;
+
+      // ── Gemini narrative ──
+      var callGeminiFn = props.callGemini;
+      function applyNarrative(text) {
+        // Re-read latest moments from state (may have grown since)
+        var latest = state.companion;
+        if (!latest) return;
+        var moments = (latest.lifeMoments || []).slice();
+        for (var i = 0; i < moments.length; i++) {
+          if (moments[i].id === momentId) {
+            moments[i] = Object.assign({}, moments[i], { description: text, narrativeStatus: 'ready' });
+            break;
+          }
+        }
+        saveCompanion({ lifeMoments: moments });
+      }
+      function fallbackNarrative() {
+        var fb;
+        if (type === 'stage-up') {
+          fb = name + ' grew up to the ' + getLifeStage(context.stage).label + ' stage. You and ' + name + ' have been on this journey together.';
+        } else if (type === 'career-chosen') {
+          var careerObj2 = getCareer(context.career.vocationType, context.career.careerId);
+          fb = 'On graduation day, ' + name + ' chose a path: ' + (careerObj2 ? careerObj2.label : 'their career') + '. They were nervous and excited at the same time.';
+        } else if (type === 'hobby-unlocked') {
+          fb = name + ' picked up ' + context.hobby + ' as a hobby. The first one. There will be others.';
+        } else if (type === 'close-friend') {
+          fb = name + ' and ' + (context.peer ? context.peer.name : 'their friend') + ' became close. Real friends. The kind that show up.';
+        } else {
+          fb = 'Something memorable happened today for ' + name + '.';
+        }
+        applyNarrative(fb);
+      }
+      if (typeof callGeminiFn !== 'function') {
+        fallbackNarrative();
+      } else {
+        var narrPrompt = [
+          'You are writing one short page of a scrapbook commemorating a milestone in a fictional small creature\'s life.',
+          'Creature name: ' + name + ' (species: ' + c.species + ').',
+          'Milestone: ' + title + '.',
+          'Context: this happened' + stageBlurb + careerBlurb + hobbyBlurb + peerBlurb + '.',
+          '',
+          'Write 2-3 warm sentences (35-65 words total) in past tense, third person, observational. No exclamation marks, no flowery language. Treat the moment with quiet dignity. Output the sentences ONLY — no headers, no quotes.'
+        ].join('\n');
+        Promise.resolve()
+          .then(function() { return callGeminiFn(narrPrompt); })
+          .then(function(out) {
+            var raw = (typeof out === 'string' ? out : (out && out.text) || '').trim();
+            raw = raw.replace(/^```[a-z]*\s*/i, '').replace(/```\s*$/i, '').trim();
+            if ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith('“') && raw.endsWith('”'))) {
+              raw = raw.slice(1, -1).trim();
+            }
+            if (!raw || raw.length < 30) {
+              fallbackNarrative();
+            } else {
+              applyNarrative(raw);
+            }
+          })
+          .catch(fallbackNarrative);
+      }
+
+      // ── Imagen scrapbook page ──
+      var callImagenFn = props.callImagen;
+      function applyImage(dataUrl) {
+        var latest = state.companion;
+        if (!latest) return;
+        var moments = (latest.lifeMoments || []).slice();
+        for (var j = 0; j < moments.length; j++) {
+          if (moments[j].id === momentId) {
+            moments[j] = Object.assign({}, moments[j], { imageDataUrl: dataUrl, imageStatus: 'ready' });
+            break;
+          }
+        }
+        saveCompanion({ lifeMoments: moments });
+      }
+      if (typeof callImagenFn !== 'function') {
+        applyImage(null);
+      } else {
+        var imgPrompt;
+        if (type === 'stage-up') {
+          imgPrompt = 'A soft watercolor scrapbook page illustration showing a small fictional ' + c.species +
+            ' growing up to the ' + getLifeStage(context.stage).label + ' stage. Quiet, dignified moment. ' +
+            'No text, no labels, no characters other than the creature. Warm light, gentle ink line + watercolor.';
+        } else if (type === 'career-chosen') {
+          var careerObj3 = getCareer(context.career.vocationType, context.career.careerId);
+          imgPrompt = 'A soft watercolor scrapbook page illustration of a small fictional ' + c.species +
+            ' on graduation day, holding or examining a tool or symbol related to ' +
+            (careerObj3 ? careerObj3.label.toLowerCase() : 'their new career') +
+            '. Hopeful, slightly nervous expression. Warm graduation-day light. No text, no labels.';
+        } else if (type === 'hobby-unlocked') {
+          imgPrompt = 'A soft watercolor scrapbook page illustration of a small fictional ' + c.species +
+            ' joyfully engaged with their new hobby of ' + (context.hobby || 'a new pastime') +
+            '. Intimate moment, late-afternoon light. No text, no labels.';
+        } else if (type === 'close-friend') {
+          imgPrompt = 'A soft watercolor scrapbook page illustration of two small fictional creatures sitting together — ' +
+            'a ' + c.species + ' and a friend. Quiet companionship, both looking at something off-page. ' +
+            'Warm, intimate, no exclamation. No text, no labels.';
+        } else {
+          imgPrompt = 'A soft watercolor scrapbook page illustration commemorating a meaningful moment for a small fictional ' + c.species + '. No text, no labels.';
+        }
+        imgPrompt += ' Square aspect ratio. Style: gentle storybook watercolor with ink line, like a memory page in a journal.';
+        try {
+          var p = callImagenFn(imgPrompt);
+          if (!p || typeof p.then !== 'function') { applyImage(null); }
+          else {
+            p.then(function(result) {
+              var b64 = result;
+              if (result && typeof result === 'object') {
+                b64 = result.base64 || result.image || result.data || '';
+              }
+              if (!b64) { applyImage(null); return; }
+              var dataUrl = (typeof b64 === 'string' && b64.indexOf('data:') === 0)
+                ? b64 : ('data:image/png;base64,' + b64);
+              applyImage(dataUrl);
+            }).catch(function() { applyImage(null); });
+          }
+        } catch (e) { applyImage(null); }
+      }
+
+      // Quiet toast — celebration without being loud
+      setTimeout(function() {
+        addToast('📔 A page was added to ' + name + '\'s Life Story.');
+      }, 200);
+    }
+
+    // Build a greeting line for a peer. AI when available, fallback
+    // otherwise. Caches per-day so reopening doesn't re-bill.
+    function generatePeerGreeting(peer, onDone) {
+      if (!peer) { if (onDone) onDone(''); return; }
+      var today = todayKey();
+      if (peer.greetingCache && peer.greetingCache.text && peer.greetingCache.date === today) {
+        if (onDone) onDone(peer.greetingCache.text);
+        return;
+      }
+      var career = getCareer(peer.career.vocationType, peer.career.careerId);
+      var personality = PEER_PERSONALITIES.filter(function(p) { return p.id === peer.personality; })[0] || PEER_PERSONALITIES[0];
+      var fallback = peer.name + ' looks up and ' + personality.line + '. ' +
+        (peer.relationship > 0
+          ? '"Hey — good to see you again."'
+          : '"Hi. You must be from down the hall."');
+      var callGeminiFn = props.callGemini;
+      if (typeof callGeminiFn !== 'function') {
+        recordPeerVisit(peer.id, fallback);
+        if (onDone) onDone(fallback);
+        return;
+      }
+      var prompt = [
+        'Generate a short, warm greeting from a fictional college dorm-mate to a visiting friend.',
+        'Dorm-mate: ' + peer.name + ', personality: ' + personality.label + ' (' + personality.line + '), career: ' + (career ? career.label : 'student') + '.',
+        'Their relationship with the visitor so far: ' + (peer.relationship || 0) + ' visits/gifts.',
+        '',
+        'Write 2 short sentences in the dorm-mate\'s voice (8–24 words total). One observation about what they\'re doing right now (tied to their personality), one greeting line. No exclamation marks, no quoting the visitor. Output the lines only.'
+      ].join('\n');
+      Promise.resolve()
+        .then(function() { return callGeminiFn(prompt); })
+        .then(function(out) {
+          var raw = (typeof out === 'string' ? out : (out && out.text) || '').trim();
+          raw = raw.replace(/^```[a-z]*\s*/i, '').replace(/```\s*$/i, '').trim();
+          if (!raw || raw.length < 15) raw = fallback;
+          recordPeerVisit(peer.id, raw);
+          if (onDone) onDone(raw);
+        })
+        .catch(function() {
+          recordPeerVisit(peer.id, fallback);
+          if (onDone) onDone(fallback);
+        });
+    }
+
+    // Claim today's vignette — flips the claimed flag + awards 2 career
+    // income tokens. One-shot per day. Quietly no-ops if nothing to claim.
+    function claimDailyVignette() {
+      var key = todayKey();
+      var v = (state.companionVignettes || {})[key];
+      if (!v || v.claimed) return;
+      var newV = Object.assign({}, state.companionVignettes || {});
+      newV[key] = Object.assign({}, v, { claimed: true });
+      setStateMulti({
+        companionVignettes: newV,
+        tokens: state.tokens + 2,
+        earnings: state.earnings.concat([{
+          source: 'career-vignette',
+          tokens: 2,
+          date: new Date().toISOString(),
+          metadata: { careerId: v.careerId, vignetteSource: v.source }
+        }])
+      });
+      setTimeout(function() {
+        addToast('🪙 +2 from a day of work.');
+      }, 60);
+    }
+
     // Daily treat (Phase 2p.16) — once per calendar day, students can
     // give the companion a treat. Bumps happiness by 2 (capped at 10),
     // fires excited bounce + species-flavored gratitude bubble. Sims-y
@@ -10978,7 +12534,7 @@
         happiness: nextHappiness,
         lastTreatAt: nowIso,
         lastBubbleAt: nowIso,
-        lastBubbleText: (thanks[c.species] || thanks.cat) + ' (+♥)'
+        lastBubbleText: (thanks[speciesAlias(c.species)] || thanks.cat) + ' (+♥)'
       });
       // Fire the same excited-bounce reaction the click handler uses.
       // The state.companion update propagates; the companion overlay
@@ -11063,7 +12619,7 @@
         dragon: ['Whoa! ', 'Big news: ', 'Yesss — ']
       };
       function pickOpener() {
-        var pool = openers[species] || openers.cat;
+        var pool = openers[speciesAlias(species)] || openers.cat;
         return pool[Math.floor(Math.random() * pool.length)];
       }
       var candidates = [];
@@ -11311,7 +12867,7 @@
         turtle: ['Slow and steady today.', 'I\'m here when you\'re ready.', 'No rush — small steps work.', 'Patience.'],
         dragon: ['Whoa! Ready when you are!', 'Whoa! What\'s next?', 'Adventure awaits!', 'Let\'s do something epic!']
       };
-      (fillers[species] || fillers.cat).forEach(function(f) { candidates.push(f); });
+      (fillers[speciesAlias(species)] || fillers.cat).forEach(function(f) { candidates.push(f); });
 
       // Pick first candidate that isn't the same as last (or first overall if all same).
       // If the picked candidate is the due-deck nudge (always at index 0
@@ -11765,6 +13321,37 @@
     var breatheStartedAtTuple = useState(0);
     var breatheStartedAt = breatheStartedAtTuple[0];
     var setBreatheStartedAt = breatheStartedAtTuple[1];
+
+    // Phase L1 — Feed Story modal state.
+    // Draft text is component-local (not persisted) so closing the modal
+    // discards the draft on purpose — encourages "tell a real fresh story"
+    // rather than refining one essay forever.
+    var feedStoryDraftTuple = useState('');
+    var feedStoryDraft = feedStoryDraftTuple[0];
+    var setFeedStoryDraft = feedStoryDraftTuple[1];
+    var feedStoryBusyTuple = useState(false);
+    var feedStoryBusy = feedStoryBusyTuple[0];
+    var setFeedStoryBusy = feedStoryBusyTuple[1];
+
+    // Phase L2 — Career picker selected-vocation cursor.
+    // null = vocation grid; non-null = career grid for that vocation.
+    // Cleared whenever the modal closes.
+    var careerPickVocationTuple = useState(null);
+    var careerPickVocation = careerPickVocationTuple[0];
+    var setCareerPickVocation = careerPickVocationTuple[1];
+
+    // Phase L3 — peer visit state.
+    // Which peer is currently being visited (null = no visit modal) +
+    // the latest greeting text the modal should show.
+    var visitingPeerIdTuple = useState(null);
+    var visitingPeerId = visitingPeerIdTuple[0];
+    var setVisitingPeerId = visitingPeerIdTuple[1];
+    var peerGreetingTextTuple = useState('');
+    var peerGreetingText = peerGreetingTextTuple[0];
+    var setPeerGreetingText = peerGreetingTextTuple[1];
+    var peerGreetingBusyTuple = useState(false);
+    var peerGreetingBusy = peerGreetingBusyTuple[0];
+    var setPeerGreetingBusy = peerGreetingBusyTuple[1];
 
     // Breathing pacer driver (Phase 2p.28). Resets on open and ticks
     // the phase machine ('inhale' → 'hold-in' → 'exhale' → 'hold-out')
@@ -12309,6 +13896,82 @@
         generateContext: null
       });
       addToast('🌿 ' + template.label.toLowerCase() + ' placed in your room.');
+    }
+
+    // ── Auto-placement helpers (Phase L4 — generative gifts) ──
+    // Find the first empty cellIndex on a given surface ('wall' | 'floor')
+    // in the currently active room. Returns -1 if no slot is free.
+    function findFreeSlot(surface) {
+      var activeRoomId = state.activeRoomId || 'main';
+      var room = (state.rooms || []).filter(function(r) { return r.id === activeRoomId; })[0]
+              || (state.rooms || [])[0]
+              || { id: 'main', wallSlots: 8, floorSlots: 12 };
+      var totalSlots = surface === 'wall' ? room.wallSlots : room.floorSlots;
+      var used = {};
+      (state.decorations || []).forEach(function(d) {
+        if (!d.placement) return;
+        if (d.placement.roomId !== room.id) return;
+        if (d.placement.surface !== surface) return;
+        used[d.placement.cellIndex] = true;
+      });
+      for (var i = 0; i < totalSlots; i++) {
+        if (!used[i]) return i;
+      }
+      return -1;
+    }
+
+    // Auto-place a generative-image decoration without going through the
+    // generate modal. Used by graduation gifts, hobby unlocks, etc. The
+    // sourceTool string tags the earnings + decoration metadata so the
+    // print packet can show provenance.
+    function placeAutoDecoration(opts) {
+      // opts: { templateId, templateLabel, imageBase64, surface, reflectionText,
+      //         sourceTool, subjects: [], aiRationale, toastMessage }
+      var surface = opts.surface || 'wall';
+      var cellIndex = findFreeSlot(surface);
+      if (cellIndex < 0) {
+        // No room — fall back to the other surface
+        var fallbackSurface = surface === 'wall' ? 'floor' : 'wall';
+        cellIndex = findFreeSlot(fallbackSurface);
+        if (cellIndex >= 0) surface = fallbackSurface;
+      }
+      if (cellIndex < 0) {
+        if (opts.toastMessage) addToast('Room is full. Save the gift for later by clearing a slot.');
+        return null;
+      }
+      var dataUrl = opts.imageBase64 || '';
+      if (dataUrl && dataUrl.indexOf('data:') !== 0) {
+        dataUrl = 'data:image/png;base64,' + dataUrl;
+      }
+      var entry = {
+        id: 'd-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        template: opts.templateId || 'auto-gift',
+        templateLabel: opts.templateLabel || 'Gift',
+        slots: opts.slots || {},
+        artStyle: opts.artStyleId || null,
+        imageBase64: dataUrl,
+        isStarter: false,
+        placement: {
+          roomId: state.activeRoomId || 'main',
+          surface: surface,
+          cellIndex: cellIndex
+        },
+        rotation: (Math.random() * 6) - 3,
+        earnedAt: new Date().toISOString(),
+        tokensSpent: 0,           // free gift
+        studentReflection: opts.reflectionText || '',
+        mood: null,
+        subjects: Array.isArray(opts.subjects) ? opts.subjects : [],
+        linkedContent: null,
+        sourceTool: opts.sourceTool || null,
+        aiRationale: opts.aiRationale || null,
+        isAutoPlaced: true
+      };
+      setStateField('decorations', state.decorations.concat([entry]));
+      if (opts.toastMessage) {
+        setTimeout(function() { addToast(opts.toastMessage); }, 60);
+      }
+      return entry;
     }
 
     // Update mood on an existing decoration (Phase 2m)
@@ -13046,6 +14709,266 @@
         ),
         // Skills panel — only renders when companion exists + has activity
         renderSkillsPanel(),
+        // ── Phase L6 — Legacy-species reselect prompt ──
+        // Companions migrated from fox/turtle/dragon → Pip get this
+        // one-time banner inviting them to pick a fresh mascot. Click
+        // opens the setup wizard; "Keep Pip" dismisses.
+        (state.companion && state.companion.mascotReselectPrompt) ? h('div', {
+          role: 'region',
+          'aria-label': 'Pick your buddy\'s new look',
+          style: {
+            margin: '12px auto 0',
+            maxWidth: '560px',
+            padding: '12px 14px',
+            background: 'linear-gradient(135deg, ' + palette.accent + '22, transparent)',
+            border: '1.5px solid ' + palette.accent,
+            borderRadius: '14px',
+            display: 'flex', gap: '10px', alignItems: 'center'
+          }
+        },
+          h('span', { style: { fontSize: '28px' } }, '✨'),
+          h('div', { style: { flex: 1 } },
+            h('div', {
+              style: { fontSize: '13px', fontWeight: 800, color: palette.text }
+            }, 'Your buddy has a fresh new look to pick'),
+            h('div', {
+              style: { fontSize: '11.5px', color: palette.textMute, marginTop: '2px', lineHeight: 1.5 }
+            }, 'AlloFlow now shares five mascots across all tools. ' +
+               (state.companion.legacySpeciesPrev ? 'Your ' + state.companion.legacySpeciesPrev + ' is currently showing as Pip. ' : '') +
+               'Pick the one that feels right — Pip, Cogsworth, Vex, Mochi, or Inko.')
+          ),
+          h('button', {
+            onClick: function() {
+              saveCompanion({ mascotReselectPrompt: false });
+              setStateField('activeModal', 'companion-setup');
+            },
+            style: Object.assign({}, primaryBtnStyle(palette), { fontSize: '12px', padding: '6px 12px' })
+          }, 'Pick'),
+          h('button', {
+            onClick: function() { saveCompanion({ mascotReselectPrompt: false }); },
+            'aria-label': 'Keep Pip',
+            style: {
+              background: 'transparent', border: '1px solid ' + palette.border,
+              color: palette.textMute, padding: '5px 10px', borderRadius: '8px',
+              fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit'
+            }
+          }, 'Keep Pip')
+        ) : null,
+        // ── Phase L2 — Today's career vignette card ──
+        // Renders just under the skills panel when the companion has a
+        // career AND today's vignette has been generated. The card
+        // surfaces the slice-of-life sentence + a single Claim button
+        // that hands over the 2-token career income. Once claimed, the
+        // text stays visible but the Claim button is replaced by a
+        // muted "Claimed" stamp so the day still feels documented.
+        (function() {
+          var c = state.companion;
+          if (!c || !c.species) return null;
+          if (!c.career || !c.career.careerId) return null;
+          var v = getTodaysVignette();
+          if (!v || !v.text) return null;
+          var career = getCareer(c.career.vocationType, c.career.careerId);
+          var name = c.name || (getCompanionSpecies(c.species) || {}).label || 'Buddy';
+          return h('div', {
+            role: 'region',
+            'aria-label': 'Today\'s career update',
+            style: {
+              margin: '12px auto 0',
+              maxWidth: '560px',
+              padding: '12px 14px',
+              background: palette.surface + 'cc',
+              border: '1.5px solid ' + palette.accent,
+              borderRadius: '14px',
+              display: 'flex', gap: '12px', alignItems: 'flex-start',
+              boxShadow: '0 4px 14px rgba(0,0,0,0.18)'
+            }
+          },
+            // Phase L4 — Imagen illustration when available; otherwise
+            // the career-icon emoji. Fade-in via CSS transition.
+            v.imageDataUrl ? h('div', {
+              style: {
+                width: '92px', height: '92px',
+                flex: '0 0 auto',
+                borderRadius: '10px',
+                backgroundImage: 'url(' + v.imageDataUrl + ')',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                border: '1px solid ' + palette.border,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+                marginTop: '2px',
+                animation: 'ah-fade-in 600ms ease'
+              }
+            }) : h('div', {
+              style: {
+                fontSize: '28px', lineHeight: 1,
+                flex: '0 0 auto',
+                marginTop: '2px'
+              }
+            }, career ? career.icon : '🎓'),
+            h('div', { style: { flex: 1, minWidth: 0 } },
+              h('div', {
+                style: {
+                  fontSize: '10.5px', color: palette.textMute,
+                  textTransform: 'uppercase', letterSpacing: '0.1em',
+                  fontWeight: 700, marginBottom: '3px'
+                }
+              }, 'Today · ' + (career ? career.label : 'work')),
+              h('p', {
+                style: {
+                  margin: 0,
+                  fontSize: '13px',
+                  lineHeight: '1.55',
+                  color: palette.text,
+                  fontStyle: 'italic'
+                }
+              }, v.text),
+              h('div', { style: { marginTop: '6px', display: 'flex', alignItems: 'center', gap: '8px' } },
+                v.claimed ? h('span', {
+                  style: {
+                    fontSize: '11px', color: palette.textMute, fontWeight: 700
+                  }
+                }, '✓ Claimed +2 🪙') : h('button', {
+                  onClick: claimDailyVignette,
+                  'aria-label': 'Claim today\'s career income',
+                  style: {
+                    padding: '4px 12px',
+                    background: palette.accent,
+                    color: palette.onAccent || '#000',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '11.5px', fontWeight: 800,
+                    cursor: 'pointer', fontFamily: 'inherit'
+                  }
+                }, 'Claim +2 🪙'),
+                h('button', {
+                  onClick: function() { generateDailyVignette(true); },
+                  title: 'Regenerate today\'s update',
+                  'aria-label': 'Regenerate today\'s update',
+                  style: {
+                    padding: '4px 8px',
+                    background: 'transparent',
+                    color: palette.textMute,
+                    border: '1px solid ' + palette.border,
+                    borderRadius: '8px',
+                    fontSize: '11px', fontWeight: 700,
+                    cursor: 'pointer', fontFamily: 'inherit'
+                  }
+                }, '↻')
+              )
+            )
+          );
+        })(),
+        // ── Phase L3 — Peer dorms roster panel ──
+        // Renders below the vignette card when the companion has any
+        // peers. Each peer card: small SVG avatar (using their species
+        // + colorVariant), name, career icon, relationship indicator,
+        // Visit button. Collapsible to keep the cozy room uncluttered.
+        (function() {
+          var c = state.companion;
+          if (!c || !c.species) return null;
+          if (!Array.isArray(c.peers) || c.peers.length === 0) return null;
+          return h('div', {
+            role: 'region',
+            'aria-label': 'Peer dorms',
+            style: {
+              margin: '12px auto 0',
+              maxWidth: '720px',
+              padding: '12px 14px',
+              background: palette.surface + '99',
+              border: '1px solid ' + palette.border,
+              borderRadius: '14px'
+            }
+          },
+            h('div', {
+              style: {
+                display: 'flex', alignItems: 'center', gap: '8px',
+                marginBottom: '10px'
+              }
+            },
+              h('span', { style: { fontSize: '18px' } }, '🏠'),
+              h('span', {
+                style: {
+                  fontSize: '12px', color: palette.textMute,
+                  textTransform: 'uppercase', letterSpacing: '0.1em',
+                  fontWeight: 700, flex: 1
+                }
+              }, 'Peers down the hall · ' + c.peers.length + ' dorm-mates'),
+              h('span', {
+                style: { fontSize: '11px', color: palette.textMute, fontStyle: 'italic' }
+              }, 'Visit to build relationships')
+            ),
+            h('div', {
+              style: {
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+                gap: '8px'
+              }
+            },
+              c.peers.map(function(peer) {
+                var peerCareer = getCareer(peer.career.vocationType, peer.career.careerId);
+                var peerSwatch = getCompanionPalette(peer.species, peer.colorVariant);
+                var rel = peer.relationship || 0;
+                var hearts = rel >= 5 ? '💞' : rel >= 3 ? '💗' : rel >= 1 ? '♡' : '·';
+                return h('button', {
+                  key: peer.id,
+                  onClick: function() { openPeerVisit(peer.id); },
+                  'aria-label': 'Visit ' + peer.name + '\'s dorm',
+                  title: 'Visit ' + peer.name,
+                  style: {
+                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    gap: '4px',
+                    padding: '10px 8px',
+                    background: palette.bg,
+                    border: '1.5px solid ' + palette.border,
+                    borderRadius: '12px',
+                    cursor: 'pointer', fontFamily: 'inherit',
+                    transition: 'border-color 200ms ease, transform 200ms ease'
+                  },
+                  onMouseEnter: function(e) {
+                    e.currentTarget.style.borderColor = palette.accent;
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  },
+                  onMouseLeave: function(e) {
+                    e.currentTarget.style.borderColor = palette.border;
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }
+                },
+                  peer.portraitDataUrl ? h('div', {
+                    style: {
+                      width: '52px', height: '52px',
+                      borderRadius: '50%',
+                      border: '2px solid ' + palette.accent,
+                      backgroundImage: 'url(' + peer.portraitDataUrl + ')',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.25)'
+                    }
+                  }) : h('div', {
+                    style: {
+                      width: '44px', height: '44px',
+                      background: palette.surface,
+                      borderRadius: '50%',
+                      border: '1px solid ' + palette.border,
+                      padding: '4px',
+                      boxSizing: 'border-box'
+                    }
+                  },
+                    getCompanionSvg(peer.species, peerSwatch, { blinking: false })
+                  ),
+                  h('div', {
+                    style: { fontSize: '13px', fontWeight: 800, color: palette.text, marginTop: '2px' }
+                  }, peer.name),
+                  h('div', {
+                    style: { fontSize: '10.5px', color: palette.textMute, display: 'flex', gap: '4px', alignItems: 'center' }
+                  },
+                    h('span', null, peerCareer ? peerCareer.icon + ' ' + peerCareer.label : 'student'),
+                    h('span', { style: { color: palette.accent, marginLeft: '4px' } }, hearts)
+                  )
+                );
+              })
+            )
+          );
+        })(),
         // Action buttons (Phase 1a placeholders — Phase 1b/c/d wire these up)
         h('div', {
           style: {
@@ -13066,6 +14989,41 @@
             onClick: openReflectionModal,
             style: secondaryBtnStyle(palette)
           }, '📝 Write reflection'),
+          // Phase L1 — Feed Story button. Visible only once the user has
+          // a companion (otherwise the action has no target). Surfaces
+          // current stage badge so the button feels alive.
+          // Phase L2 — When at young-adult stage with no career, the
+          // primary affordance becomes "Graduate" (pick a career) and
+          // the Feed Story button is rendered alongside.
+          (state.companion && state.companion.species) ? (function() {
+            var stage = getLifeStage(state.companion.stage || 'hatchling');
+            var fed = state.companion.knowledgeFed || 0;
+            var atGraduation = stage.id === 'young-adult' && !(state.companion.career && state.companion.career.careerId);
+            return h('span', { style: { display: 'inline-flex', gap: '8px' } },
+              atGraduation ? h('button', {
+                onClick: openCareerPickerModal,
+                'aria-label': 'Choose a career for ' + (state.companion.name || 'your buddy'),
+                title: 'It\'s graduation day! Pick a career path.',
+                style: Object.assign({}, primaryBtnStyle(palette), {
+                  animation: 'ah-token-tick 700ms ease'
+                })
+              }, '🎓 Graduate ' + (state.companion.name || 'your buddy')) : null,
+              h('button', {
+                onClick: openFeedStoryModal,
+                'aria-label': 'Feed a story to ' + (state.companion.name || 'your buddy'),
+                title: 'Tell your buddy a short story with vocabulary or concepts',
+                style: secondaryBtnStyle(palette)
+              }, stage.badge + ' Feed story' + (fed > 0 ? ' · ' + fed : '')),
+              // Phase L5 — Life Story button. Visible once the buddy
+              // has captured at least one life moment.
+              (Array.isArray(state.companion.lifeMoments) && state.companion.lifeMoments.length > 0) ? h('button', {
+                onClick: function() { setStateField('activeModal', 'life-story'); },
+                'aria-label': 'Open ' + (state.companion.name || 'your buddy') + '\'s Life Story',
+                title: 'View the scrapbook of major life moments',
+                style: secondaryBtnStyle(palette)
+              }, '📔 Life Story · ' + state.companion.lifeMoments.length) : null
+            );
+          })() : null,
           h('button', {
             onClick: function() { setStateField('activeModal', 'journal'); },
             style: secondaryBtnStyle(palette)
@@ -14054,7 +16012,7 @@
             happiness: nextHappiness,
             lastPettedAt: new Date().toISOString(),
             lastBubbleAt: new Date().toISOString(),
-            lastBubbleText: (happyLines[c.species] || happyLines.cat) + ' (♥)'
+            lastBubbleText: (happyLines[speciesAlias(c.species)] || happyLines.cat) + ' (♥)'
           });
           setReacting(true);
           setTimeout(function() { setReacting(false); }, 800);
@@ -14256,20 +16214,116 @@
             onMouseUp: function() { if (!sleeping) handlePetEnd(); },
             onTouchStart: function() { if (!sleeping) handlePetStart(); },
             onTouchEnd: function() { if (!sleeping) handlePetEnd(); },
-            style: {
-              position: 'relative',
-              width: '76px',
-              height: '76px',
-              background: palette.surface + 'aa',
-              border: '1px solid ' + palette.border,
-              borderRadius: '14px',
-              padding: '4px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-              pointerEvents: 'auto'
-            }
+            style: (function() {
+              // Phase L1 — life-stage scaling. Hatchlings render smaller;
+              // adults render at full size. Scale is applied to the
+              // sprite-container box itself so the companion appears to
+              // physically grow up over time.
+              var stageMeta = getLifeStage(companion.stage || 'hatchling');
+              var scale = stageMeta.scale || 1;
+              return {
+                position: 'relative',
+                width: Math.round(76 * scale) + 'px',
+                height: Math.round(76 * scale) + 'px',
+                background: palette.surface + 'aa',
+                border: '1px solid ' + palette.border,
+                borderRadius: '14px',
+                padding: '4px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                pointerEvents: 'auto',
+                transition: 'width 600ms ease, height 600ms ease'
+              };
+            })()
           },
             getCompanionSvg(companion.species, paletteColors,
               { blinking: blinking, pupilOffset: pupilOffset, sleeping: sleeping, accessory: companion.accessory }),
+            // Phase L1 — life-stage badge. Tiny emoji in the top-left
+            // corner showing current life stage (🥚/🌱/📚/🎓/✨). Helps
+            // students see the companion is growing up without opening
+            // any modal.
+            (function() {
+              var stageMeta = getLifeStage(companion.stage || 'hatchling');
+              if (!stageMeta || !stageMeta.badge) return null;
+              return h('span', {
+                'aria-label': stageMeta.label + ' stage',
+                title: stageMeta.label + ' — ' + stageMeta.blurb,
+                style: {
+                  position: 'absolute',
+                  top: '-6px',
+                  left: '-6px',
+                  fontSize: '13px',
+                  background: palette.bg,
+                  width: '20px',
+                  height: '20px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '2px solid ' + palette.accent,
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  pointerEvents: 'none',
+                  lineHeight: 1
+                }
+              }, stageMeta.badge);
+            })(),
+            // Phase L2 — career badge. Top-right corner emoji when the
+            // companion has chosen a career. Hover/title reveals the
+            // career label.
+            (function() {
+              var cr = companion.career;
+              if (!cr || !cr.careerId) return null;
+              var career = getCareer(cr.vocationType, cr.careerId);
+              if (!career) return null;
+              return h('span', {
+                'aria-label': career.label,
+                title: career.label,
+                style: {
+                  position: 'absolute',
+                  top: '-6px',
+                  right: '-6px',
+                  fontSize: '13px',
+                  background: palette.bg,
+                  width: '22px',
+                  height: '22px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '2px solid ' + palette.accent,
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  pointerEvents: 'none',
+                  lineHeight: 1
+                }
+              }, career.icon);
+            })(),
+            // Phase L2 — hobby badge. Bottom-right corner shows a star
+            // when the companion has earned a hobby. Hover/title reveals
+            // the hobby topic. Suppressed when the happiness ❤ is also
+            // bottom-right by shifting up slightly.
+            (function() {
+              if (!companion.hobby || !companion.hobby.topic) return null;
+              return h('span', {
+                'aria-label': 'Hobby: ' + companion.hobby.topic,
+                title: 'Hobby: ' + companion.hobby.topic,
+                style: {
+                  position: 'absolute',
+                  bottom: '-6px',
+                  right: '-6px',
+                  fontSize: '11px',
+                  background: palette.bg,
+                  width: '20px',
+                  height: '20px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '2px solid ' + (palette.warn || palette.accent),
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  pointerEvents: 'none',
+                  lineHeight: 1
+                }
+              }, '🌟');
+            })(),
             // Floating "Z" when sleeping — gentle visual signal, not "needs sleep" coded
             sleeping ? h('span', {
               className: 'ah-companion-z',
@@ -15025,6 +17079,791 @@
       'exhale':   'Through the mouth. Let it go.',
       'hold-out': 'Empty. Pause. You\'re here.'
     };
+    // ── Feed Story modal (Phase L1) ──
+    // Tamagotchi knowledge-feeding surface. User types a short story
+    // with at least one concept/vocab word; submits; companion reacts.
+    // Shows current stage + progress to next stage so the loop is
+    // legible. Submit is disabled until 12+ chars (sentence-ish minimum).
+    function renderFeedStoryModal() {
+      if (state.activeModal !== 'feed-story') return null;
+      var c = state.companion;
+      if (!c || !c.species) return null;
+      var sp = getCompanionSpecies(c.species);
+      var name = (c.name || (sp ? sp.label : 'your buddy')).trim();
+      var stage = getLifeStage(c.stage || 'hatchling');
+      var prog = checkStageProgress(c);
+      var feedingsSoFar = c.knowledgeFed || 0;
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Feed a story to ' + name,
+        onClick: function(e) {
+          if (e.target === e.currentTarget && !feedStoryBusy) setStateField('activeModal', null);
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.78)', zIndex: 200,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            backgroundColor: palette.bg,
+            border: '2px solid ' + palette.accent,
+            borderRadius: '20px',
+            padding: '24px 24px 20px',
+            maxWidth: '520px', width: '100%',
+            boxShadow: '0 30px 70px rgba(0,0,0,0.55)',
+            display: 'flex', flexDirection: 'column', gap: '14px'
+          }
+        },
+          // Header
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+            h('span', { style: { fontSize: '28px' } }, stage.badge),
+            h('div', { style: { flex: 1 } },
+              h('div', {
+                style: {
+                  fontSize: '11px', color: palette.textMute,
+                  textTransform: 'uppercase', letterSpacing: '0.12em',
+                  fontWeight: 700
+                }
+              }, 'Feed a story · ' + stage.label + ' stage'),
+              h('div', {
+                style: { fontSize: '17px', fontWeight: 800, color: palette.text, marginTop: '2px' }
+              }, 'Tell ' + name + ' something new')
+            ),
+            h('button', {
+              onClick: function() { if (!feedStoryBusy) setStateField('activeModal', null); },
+              'aria-label': 'Close',
+              disabled: feedStoryBusy,
+              style: {
+                background: 'transparent', border: 'none',
+                color: palette.textMute, fontSize: '18px',
+                cursor: feedStoryBusy ? 'wait' : 'pointer',
+                fontFamily: 'inherit', padding: '0 4px'
+              }
+            }, '✕')
+          ),
+          // Stage progress hint
+          h('div', {
+            style: {
+              padding: '8px 12px',
+              background: palette.surface + 'cc',
+              border: '1px solid ' + palette.border,
+              borderRadius: '10px',
+              fontSize: '11.5px',
+              color: palette.textMute,
+              lineHeight: '1.5'
+            }
+          },
+            stage.blurb,
+            // Phase L2 — surface career if set
+            (function() {
+              var cr = c.career;
+              if (!cr || !cr.careerId) return null;
+              var career = getCareer(cr.vocationType, cr.careerId);
+              if (!career) return null;
+              return h('div', { style: { marginTop: '4px', color: palette.text } },
+                h('strong', null, career.icon + ' Career: '), career.label
+              );
+            })(),
+            // Phase L2 — surface hobby if earned
+            (function() {
+              if (!c.hobby || !c.hobby.topic) return null;
+              return h('div', { style: { marginTop: '2px', color: palette.text } },
+                h('strong', null, '🌟 Hobby: '), c.hobby.topic
+              );
+            })(),
+            prog.nextStage ? h('div', { style: { marginTop: '6px', color: palette.text } },
+              h('strong', null, 'To grow up to ' + getLifeStage(prog.nextStage).label + ':'),
+              ' ',
+              prog.progress.fed + '/' + prog.thresholds.reqStories + ' stories · ',
+              prog.progress.days + '/' + prog.thresholds.reqDays + ' visit-days',
+              prog.thresholds.reqTopics > 0 ? (' · ' + prog.progress.topics + '/' + prog.thresholds.reqTopics + ' topics') : '',
+              prog.thresholds.requiresCareer ? (
+                prog.progress.hasCareer
+                  ? (' · ' + prog.progress.careerDays + '/' + prog.thresholds.reqCareerDays + ' work-days')
+                  : ' · career needed'
+              ) : ''
+            ) : h('div', { style: { marginTop: '6px', color: palette.text, fontStyle: 'italic' } },
+              'Fully grown. Keep feeding stories to deepen your topics.'
+            )
+          ),
+          // Story input
+          h('div', null,
+            h('label', {
+              htmlFor: 'ah-feed-story-text',
+              style: {
+                display: 'block', fontSize: '11px',
+                color: palette.textMute, marginBottom: '4px',
+                textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700
+              }
+            }, 'Your story (2–6 sentences)'),
+            h('textarea', {
+              id: 'ah-feed-story-text',
+              value: feedStoryDraft,
+              onChange: function(e) { setFeedStoryDraft(e.target.value); },
+              disabled: feedStoryBusy,
+              placeholder: 'Today I learned that octopuses have three hearts and blue blood. Two hearts pump blood through their gills and one pumps blood through the rest of their body...',
+              rows: 6,
+              style: {
+                width: '100%', padding: '10px 12px',
+                background: palette.surface, color: palette.text,
+                border: '1.5px solid ' + palette.border,
+                borderRadius: '10px',
+                fontSize: '13px', lineHeight: '1.5',
+                fontFamily: 'inherit', resize: 'vertical',
+                boxSizing: 'border-box',
+                opacity: feedStoryBusy ? 0.6 : 1
+              }
+            }),
+            h('div', {
+              style: {
+                fontSize: '10.5px', color: palette.textMute,
+                marginTop: '4px', display: 'flex', justifyContent: 'space-between'
+              }
+            },
+              h('span', null, feedStoryDraft.trim().length + ' characters'),
+              h('span', null, feedingsSoFar + ' stories fed so far')
+            )
+          ),
+          // Submit row
+          h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' } },
+            h('span', { style: { flex: 1, fontSize: '11px', color: palette.textMute, fontStyle: 'italic' } },
+              feedStoryBusy ? name + ' is reading…' : '+1 🪙 per story'
+            ),
+            h('button', {
+              onClick: function() {
+                if (feedStoryBusy) return;
+                if (feedStoryDraft.trim().length < 12) return;
+                setFeedStoryBusy(true);
+                submitFeedStory(feedStoryDraft, function() {
+                  setFeedStoryBusy(false);
+                  setFeedStoryDraft('');
+                });
+              },
+              disabled: feedStoryBusy || feedStoryDraft.trim().length < 12,
+              style: {
+                padding: '8px 18px',
+                background: (feedStoryBusy || feedStoryDraft.trim().length < 12) ? palette.surface : palette.accent,
+                color: (feedStoryBusy || feedStoryDraft.trim().length < 12) ? palette.textMute : (palette.onAccent || '#000'),
+                border: '1.5px solid ' + palette.accent,
+                borderRadius: '10px',
+                fontSize: '13px', fontWeight: 800,
+                cursor: (feedStoryBusy || feedStoryDraft.trim().length < 12) ? 'not-allowed' : 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, feedStoryBusy ? '…' : 'Feed ' + name + ' →')
+          )
+        )
+      );
+    }
+
+    // ── Career picker modal (Phase L2 — Growing Up) ──
+    // Two-step picker: 1) choose vocation card, 2) choose specific career
+    // within that vocation. Modal is dismissible — student can "wait" to
+    // decide. State for which vocation is selected lives in a local
+    // useState tuple at top-level component scope (careerPickVocation).
+    function renderCareerPickerModal() {
+      if (state.activeModal !== 'career-picker') return null;
+      var c = state.companion;
+      if (!c || !c.species) return null;
+      var sp = getCompanionSpecies(c.species);
+      var name = (c.name || (sp ? sp.label : 'your buddy')).trim();
+      var selVocation = careerPickVocation ? getVocation(careerPickVocation) : null;
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Career picker for ' + name,
+        onClick: function(e) {
+          if (e.target === e.currentTarget) {
+            setCareerPickVocation(null);
+            setStateField('activeModal', null);
+          }
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.78)', zIndex: 200,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px',
+          overflowY: 'auto'
+        }
+      },
+        h('div', {
+          style: {
+            backgroundColor: palette.bg,
+            border: '2px solid ' + palette.accent,
+            borderRadius: '20px',
+            padding: '24px',
+            maxWidth: '720px', width: '100%',
+            maxHeight: '90vh',
+            boxShadow: '0 30px 70px rgba(0,0,0,0.55)',
+            display: 'flex', flexDirection: 'column', gap: '14px',
+            overflow: 'auto'
+          }
+        },
+          // Header
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
+            h('span', { style: { fontSize: '32px' } }, '🎓'),
+            h('div', { style: { flex: 1 } },
+              h('div', {
+                style: {
+                  fontSize: '11px', color: palette.textMute,
+                  textTransform: 'uppercase', letterSpacing: '0.12em',
+                  fontWeight: 700
+                }
+              }, 'Graduation day'),
+              h('div', {
+                style: { fontSize: '18px', fontWeight: 800, color: palette.text, marginTop: '2px' }
+              }, name + ' is choosing a path')
+            ),
+            h('button', {
+              onClick: function() {
+                setCareerPickVocation(null);
+                setStateField('activeModal', null);
+              },
+              'aria-label': 'Decide later',
+              style: {
+                background: 'transparent', border: 'none',
+                color: palette.textMute, fontSize: '18px',
+                cursor: 'pointer', fontFamily: 'inherit', padding: '0 4px'
+              }
+            }, '✕')
+          ),
+
+          // Intro / breadcrumb
+          h('div', {
+            style: {
+              padding: '10px 14px',
+              background: palette.surface + 'cc',
+              border: '1px solid ' + palette.border,
+              borderRadius: '10px',
+              fontSize: '12px', color: palette.textMute, lineHeight: '1.55'
+            }
+          },
+            selVocation
+              ? h('div', null,
+                  h('button', {
+                    onClick: function() { setCareerPickVocation(null); },
+                    style: {
+                      background: 'transparent', border: 'none',
+                      color: palette.accent, fontSize: '12px',
+                      cursor: 'pointer', fontFamily: 'inherit', padding: 0,
+                      textDecoration: 'underline'
+                    }
+                  }, '← Back to paths'),
+                  h('span', { style: { margin: '0 8px', color: palette.textMute } }, '·'),
+                  h('strong', { style: { color: palette.text } }, selVocation.icon + ' ' + selVocation.label),
+                  h('div', { style: { marginTop: '4px', fontStyle: 'italic' } }, selVocation.blurb)
+                )
+              : h('span', null, 'Pick a path that feels right for ' + name + '. They\'ll spend their days doing this kind of work. You can change it later if it doesn\'t fit.')
+          ),
+
+          // ── Step 1: vocation grid (when no vocation selected) ──
+          !selVocation ? h('div', {
+            style: {
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+              gap: '10px'
+            }
+          },
+            CAREER_VOCATIONS.map(function(v) {
+              return h('button', {
+                key: v.id,
+                onClick: function() { setCareerPickVocation(v.id); },
+                'aria-label': 'Explore the ' + v.label + ' path',
+                style: {
+                  display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+                  gap: '6px',
+                  padding: '14px',
+                  background: palette.surface,
+                  border: '1.5px solid ' + palette.border,
+                  borderRadius: '12px',
+                  cursor: 'pointer', textAlign: 'left',
+                  fontFamily: 'inherit',
+                  transition: 'border-color 200ms ease, transform 200ms ease'
+                },
+                onMouseEnter: function(e) { e.currentTarget.style.borderColor = palette.accent; e.currentTarget.style.transform = 'translateY(-2px)'; },
+                onMouseLeave: function(e) { e.currentTarget.style.borderColor = palette.border; e.currentTarget.style.transform = 'translateY(0)'; }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                  h('span', { style: { fontSize: '24px' } }, v.icon),
+                  h('span', { style: { fontSize: '14px', fontWeight: 800, color: palette.text } }, v.label)
+                ),
+                h('span', { style: { fontSize: '11.5px', color: palette.textMute, lineHeight: '1.5' } }, v.blurb),
+                h('span', {
+                  style: {
+                    marginTop: '2px',
+                    fontSize: '10.5px', color: palette.accent,
+                    textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700
+                  }
+                }, v.careers.length + ' careers')
+              );
+            })
+          ) : null,
+
+          // ── Step 2: career grid (when vocation selected) ──
+          selVocation ? h('div', {
+            style: {
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+              gap: '10px'
+            }
+          },
+            selVocation.careers.map(function(career) {
+              return h('button', {
+                key: career.id,
+                onClick: function() { chooseCareer(selVocation.id, career.id); },
+                'aria-label': 'Choose ' + career.label + ' as ' + name + '\'s career',
+                style: {
+                  display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+                  gap: '6px',
+                  padding: '14px',
+                  background: palette.surface,
+                  border: '1.5px solid ' + palette.border,
+                  borderRadius: '12px',
+                  cursor: 'pointer', textAlign: 'left',
+                  fontFamily: 'inherit',
+                  transition: 'border-color 200ms ease, transform 200ms ease'
+                },
+                onMouseEnter: function(e) { e.currentTarget.style.borderColor = palette.accent; e.currentTarget.style.transform = 'translateY(-2px)'; },
+                onMouseLeave: function(e) { e.currentTarget.style.borderColor = palette.border; e.currentTarget.style.transform = 'translateY(0)'; }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+                  h('span', { style: { fontSize: '28px' } }, career.icon),
+                  h('span', { style: { fontSize: '15px', fontWeight: 800, color: palette.text } }, career.label)
+                ),
+                h('span', { style: { fontSize: '12px', color: palette.textMute, lineHeight: '1.5' } }, career.desc),
+                h('span', {
+                  style: {
+                    marginTop: '2px',
+                    fontSize: '11px', color: palette.accent,
+                    fontWeight: 700
+                  }
+                }, 'Choose ' + career.label + ' →')
+              );
+            })
+          ) : null,
+
+          // Footer
+          h('div', { style: { display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px', marginTop: '4px' } },
+            h('span', { style: { flex: 1, fontSize: '11px', color: palette.textMute, fontStyle: 'italic' } },
+              'You can change ' + name + '\'s career later.'
+            ),
+            h('button', {
+              onClick: function() {
+                setCareerPickVocation(null);
+                setStateField('activeModal', null);
+              },
+              style: {
+                padding: '7px 14px',
+                background: 'transparent',
+                color: palette.textMute,
+                border: '1px solid ' + palette.border,
+                borderRadius: '8px',
+                fontSize: '12px', fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit'
+              }
+            }, 'Decide later')
+          )
+        )
+      );
+    }
+
+    // ── Phase L3 — Visit peer dorm modal ──
+    // Procedural dorm view: tinted wall, emoji-tile decor grid, peer
+    // avatar with greeting bubble, gift button, close. Greeting is
+    // generated/cached per-day via generatePeerGreeting (Gemini with
+    // fallback). Layout is deterministic from peer.seed.
+    function renderPeerVisitModal() {
+      if (state.activeModal !== 'peer-visit') return null;
+      if (!visitingPeerId) return null;
+      var c = state.companion;
+      if (!c || !Array.isArray(c.peers)) return null;
+      var peer = c.peers.filter(function(p) { return p.id === visitingPeerId; })[0];
+      if (!peer) return null;
+      var peerCareer = getCareer(peer.career.vocationType, peer.career.careerId);
+      var peerSwatch = getCompanionPalette(peer.species, peer.colorVariant);
+      var personality = PEER_PERSONALITIES.filter(function(p) { return p.id === peer.personality; })[0] || PEER_PERSONALITIES[0];
+      var dorm = buildPeerDormLayout(peer);
+      var rel = peer.relationship || 0;
+      var canGift = state.tokens >= 3;
+
+      // Grid-cell pixel size (cells render with emoji at 22px)
+      var CELL_W = 56, CELL_H = 56;
+      // Phase L4 — when an Imagen dorm-scene illustration is cached on
+      // the peer, use it as backdrop; otherwise fall back to the HSL
+      // wall-tint + stripe pattern.
+      var dormBgImage = peer.dormSceneDataUrl
+        ? ('url(' + peer.dormSceneDataUrl + ') center / cover no-repeat, ' +
+           'linear-gradient(180deg, hsla(' + dorm.wallHue + ', 60%, 75%, 0.20) 0%, hsla(' + dorm.wallHue + ', 30%, 40%, 0.15) 100%)')
+        : ('linear-gradient(180deg, hsla(' + dorm.wallHue + ', 60%, 75%, 0.35) 0%, hsla(' + dorm.wallHue + ', 50%, 60%, 0.25) 70%, hsla(' + dorm.wallHue + ', 30%, 40%, 0.20) 100%), ' +
+           'repeating-linear-gradient(90deg, transparent 0px, transparent ' + (CELL_W - 1) + 'px, rgba(255,255,255,0.08) ' + (CELL_W - 1) + 'px, rgba(255,255,255,0.08) ' + CELL_W + 'px), ' +
+           'repeating-linear-gradient(0deg,  transparent 0px, transparent ' + (CELL_H - 1) + 'px, rgba(255,255,255,0.08) ' + (CELL_H - 1) + 'px, rgba(255,255,255,0.08) ' + CELL_H + 'px)');
+
+      var dormGridStyle = {
+        position: 'relative',
+        width: (dorm.gridW * CELL_W) + 'px',
+        height: (dorm.gridH * CELL_H) + 'px',
+        margin: '0 auto',
+        background: dormBgImage,
+        border: '2px solid ' + palette.border,
+        borderRadius: '12px',
+        overflow: 'hidden'
+      };
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Visiting ' + peer.name + '\'s dorm',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) closePeerVisit();
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.78)', zIndex: 200,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px', overflowY: 'auto'
+        }
+      },
+        h('div', {
+          style: {
+            backgroundColor: palette.bg,
+            border: '2px solid ' + palette.accent,
+            borderRadius: '20px',
+            padding: '20px',
+            maxWidth: '520px', width: '100%',
+            maxHeight: '92vh',
+            boxShadow: '0 30px 70px rgba(0,0,0,0.55)',
+            display: 'flex', flexDirection: 'column', gap: '12px',
+            overflow: 'auto'
+          }
+        },
+          // Header
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+            peer.portraitDataUrl ? h('div', {
+              style: {
+                width: '60px', height: '60px',
+                borderRadius: '50%',
+                border: '2px solid ' + palette.accent,
+                backgroundImage: 'url(' + peer.portraitDataUrl + ')',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.35)'
+              }
+            }) : h('div', { style: {
+              width: '44px', height: '44px',
+              background: palette.surface,
+              borderRadius: '50%',
+              border: '1.5px solid ' + palette.accent,
+              padding: '4px', boxSizing: 'border-box'
+            }},
+              getCompanionSvg(peer.species, peerSwatch, { blinking: false })
+            ),
+            h('div', { style: { flex: 1 } },
+              h('div', {
+                style: {
+                  fontSize: '11px', color: palette.textMute,
+                  textTransform: 'uppercase', letterSpacing: '0.12em',
+                  fontWeight: 700
+                }
+              }, 'Visiting ' + (peer.stage === 'adult' ? 'apartment' : 'dorm') + ' · ' + personality.label),
+              h('div', {
+                style: { fontSize: '17px', fontWeight: 800, color: palette.text, marginTop: '2px' }
+              }, peer.name),
+              h('div', { style: { fontSize: '11px', color: palette.textMute, marginTop: '2px' } },
+                peerCareer ? (peerCareer.icon + ' ' + peerCareer.label) : 'student',
+                ' · ',
+                rel >= 5 ? 'close friends 💞' : rel >= 3 ? 'getting closer 💗' : rel >= 1 ? 'acquainted ♡' : 'new connection'
+              )
+            ),
+            h('button', {
+              onClick: closePeerVisit,
+              'aria-label': 'Leave dorm',
+              style: {
+                background: 'transparent', border: 'none',
+                color: palette.textMute, fontSize: '18px',
+                cursor: 'pointer', fontFamily: 'inherit', padding: '0 4px'
+              }
+            }, '✕')
+          ),
+          // Dorm grid
+          h('div', { style: dormGridStyle },
+            // Decor tiles
+            dorm.decor.map(function(d, di) {
+              return h('span', {
+                key: 'd-' + di,
+                'aria-hidden': 'true',
+                style: {
+                  position: 'absolute',
+                  left: (d.gridX * CELL_W + CELL_W / 2 - 12) + 'px',
+                  top: (d.gridY * CELL_H + CELL_H / 2 - 12) + 'px',
+                  fontSize: '22px', lineHeight: 1,
+                  pointerEvents: 'none',
+                  filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))'
+                }
+              }, d.emoji);
+            })
+          ),
+          // Greeting bubble
+          h('div', {
+            style: {
+              padding: '10px 12px',
+              background: palette.surface + 'cc',
+              border: '1.5px solid ' + palette.border,
+              borderRadius: '10px',
+              borderLeftWidth: '3px',
+              borderLeftColor: palette.accent,
+              fontSize: '13px',
+              color: palette.text,
+              fontStyle: 'italic',
+              lineHeight: '1.55',
+              minHeight: '40px'
+            }
+          },
+            peerGreetingBusy
+              ? h('span', { style: { color: palette.textMute } }, peer.name + ' is looking up…')
+              : (peerGreetingText || '')
+          ),
+          // Actions row
+          h('div', {
+            style: {
+              display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap'
+            }
+          },
+            h('button', {
+              onClick: function() { giftPeer(peer.id); },
+              disabled: !canGift || peerGreetingBusy,
+              'aria-label': 'Leave a small gift (3 tokens)',
+              title: canGift ? 'Leave a small gift (-3 🪙)' : 'Need 3 🪙 to gift',
+              style: {
+                padding: '8px 14px',
+                background: canGift ? palette.accent : palette.surface,
+                color: canGift ? (palette.onAccent || '#000') : palette.textMute,
+                border: '1.5px solid ' + palette.accent,
+                borderRadius: '10px',
+                fontSize: '12px', fontWeight: 800,
+                cursor: canGift ? 'pointer' : 'not-allowed',
+                fontFamily: 'inherit'
+              }
+            }, '🎁 Leave a gift (-3 🪙)'),
+            h('button', {
+              onClick: function() {
+                // Refresh greeting (fresh Gemini call, ignores cache)
+                if (peerGreetingBusy) return;
+                setPeerGreetingBusy(true);
+                var freshPeer = Object.assign({}, peer, { greetingCache: null });
+                generatePeerGreeting(freshPeer, function(text) {
+                  setPeerGreetingText(text);
+                  setPeerGreetingBusy(false);
+                });
+              },
+              'aria-label': 'Ask another question',
+              disabled: peerGreetingBusy,
+              style: {
+                padding: '8px 14px',
+                background: 'transparent',
+                color: palette.text,
+                border: '1.5px solid ' + palette.border,
+                borderRadius: '10px',
+                fontSize: '12px', fontWeight: 700,
+                cursor: peerGreetingBusy ? 'wait' : 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, '💬 Ask again'),
+            h('span', { style: { flex: 1 } }),
+            h('button', {
+              onClick: closePeerVisit,
+              style: {
+                padding: '8px 14px',
+                background: 'transparent',
+                color: palette.textMute,
+                border: '1px solid ' + palette.border,
+                borderRadius: '10px',
+                fontSize: '12px', fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit'
+              }
+            }, '← Head back home')
+          )
+        )
+      );
+    }
+
+    // ── Phase L5 — Life Story scrapbook modal ──
+    // Chronological gallery of all captured life moments. Each moment
+    // renders as a scrapbook page: generative watercolor image (or
+    // "developing..." placeholder), title, date, narrative paragraph.
+    // Read-only — life moments are auto-captured, not user-authored.
+    function renderLifeStoryModal() {
+      if (state.activeModal !== 'life-story') return null;
+      var c = state.companion;
+      if (!c || !c.species) return null;
+      var name = (c.name || (getCompanionSpecies(c.species) || {}).label || 'your buddy').trim();
+      var moments = (c.lifeMoments || []).slice().reverse(); // newest first
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': name + '\'s Life Story',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', null);
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.78)', zIndex: 200,
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+          padding: '40px 20px', overflowY: 'auto'
+        }
+      },
+        h('div', {
+          style: {
+            backgroundColor: palette.bg,
+            border: '2px solid ' + palette.accent,
+            borderRadius: '20px',
+            padding: '24px',
+            maxWidth: '680px', width: '100%',
+            boxShadow: '0 30px 70px rgba(0,0,0,0.55)',
+            display: 'flex', flexDirection: 'column', gap: '14px'
+          }
+        },
+          // Header
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
+            h('span', { style: { fontSize: '32px' } }, '📔'),
+            h('div', { style: { flex: 1 } },
+              h('div', {
+                style: {
+                  fontSize: '11px', color: palette.textMute,
+                  textTransform: 'uppercase', letterSpacing: '0.12em',
+                  fontWeight: 700
+                }
+              }, 'Life story · ' + moments.length + ' page' + (moments.length === 1 ? '' : 's')),
+              h('div', {
+                style: { fontSize: '18px', fontWeight: 800, color: palette.text, marginTop: '2px' }
+              }, name + '\'s growing-up scrapbook')
+            ),
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              'aria-label': 'Close',
+              style: {
+                background: 'transparent', border: 'none',
+                color: palette.textMute, fontSize: '18px',
+                cursor: 'pointer', fontFamily: 'inherit', padding: '0 4px'
+              }
+            }, '✕')
+          ),
+          // Intro
+          h('div', {
+            style: {
+              padding: '10px 14px',
+              background: palette.surface + 'cc',
+              border: '1px solid ' + palette.border,
+              borderRadius: '10px',
+              fontSize: '12px', color: palette.textMute, lineHeight: '1.55', fontStyle: 'italic'
+            }
+          }, 'Every big moment in ' + name + '\'s life gets a page here. Growing up, picking a career, finding a hobby, becoming close friends. Generated quietly in the background; nothing to do but read.'),
+
+          // Empty state
+          moments.length === 0 ? h('div', {
+            style: {
+              padding: '32px 20px',
+              textAlign: 'center',
+              color: palette.textMute,
+              fontSize: '13px',
+              lineHeight: '1.6'
+            }
+          },
+            h('div', { style: { fontSize: '40px', marginBottom: '12px' } }, '🌱'),
+            h('div', null, 'No pages yet. Feed ' + name + ' a few stories and watch them grow up — the pages will fill in.')
+          ) : null,
+
+          // Moments gallery
+          moments.length > 0 ? h('div', {
+            style: { display: 'flex', flexDirection: 'column', gap: '14px' }
+          },
+            moments.map(function(m) {
+              var dateStr = '';
+              try {
+                var d = new Date(m.capturedAt);
+                dateStr = d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+              } catch (e) { dateStr = m.capturedAt; }
+              var typeIcon = m.type === 'stage-up' ? '🌱'
+                          : m.type === 'career-chosen' ? '🎓'
+                          : m.type === 'hobby-unlocked' ? '🌟'
+                          : m.type === 'close-friend' ? '💞'
+                          : '📔';
+              var imageReady = m.imageStatus === 'ready' && m.imageDataUrl;
+              var narrativeReady = m.narrativeStatus === 'ready' && m.description;
+              return h('div', {
+                key: m.id,
+                style: {
+                  padding: '14px',
+                  background: palette.surface,
+                  border: '1.5px solid ' + palette.border,
+                  borderRadius: '14px',
+                  display: 'flex', flexDirection: 'column', gap: '10px',
+                  animation: 'ah-fade-in 400ms ease'
+                }
+              },
+                // Page header
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                  h('span', { style: { fontSize: '20px' } }, typeIcon),
+                  h('div', { style: { flex: 1 } },
+                    h('div', { style: { fontSize: '14px', fontWeight: 800, color: palette.text } }, m.title),
+                    h('div', { style: { fontSize: '10.5px', color: palette.textMute, marginTop: '1px' } }, dateStr)
+                  )
+                ),
+                // Image area
+                imageReady ? h('div', {
+                  style: {
+                    width: '100%',
+                    aspectRatio: '1 / 1',
+                    maxHeight: '320px',
+                    borderRadius: '10px',
+                    backgroundImage: 'url(' + m.imageDataUrl + ')',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    border: '1px solid ' + palette.border,
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.2)'
+                  }
+                }) : h('div', {
+                  style: {
+                    width: '100%',
+                    aspectRatio: '1 / 1',
+                    maxHeight: '240px',
+                    borderRadius: '10px',
+                    background: palette.bg,
+                    border: '1px dashed ' + palette.border,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '11.5px', color: palette.textMute, fontStyle: 'italic'
+                  }
+                }, '🎨 Page developing…'),
+                // Narrative
+                narrativeReady ? h('p', {
+                  style: {
+                    margin: 0,
+                    padding: '10px 12px',
+                    background: palette.bg,
+                    border: '1px solid ' + palette.border,
+                    borderRadius: '8px',
+                    fontSize: '13px', lineHeight: '1.6',
+                    color: palette.text, fontStyle: 'italic'
+                  }
+                }, m.description) : h('div', {
+                  style: {
+                    padding: '8px 12px',
+                    fontSize: '11.5px', color: palette.textMute, fontStyle: 'italic'
+                  }
+                }, '✍ Narrative being written…')
+              );
+            })
+          ) : null
+        )
+      );
+    }
+
     function renderBreathingModal() {
       if (state.activeModal !== 'breathe') return null;
       var phase = breathePhase;
@@ -22567,6 +25406,10 @@
       renderSettingsModal(),
       renderBreathingModal(),
       renderGroundingModal(),
+      renderFeedStoryModal(),
+      renderCareerPickerModal(),
+      renderPeerVisitModal(),
+      renderLifeStoryModal(),
       renderCompanionPhrasesModal(),
       renderPrintOptionsModal(),
       renderArcadeHubModal(),
@@ -22594,6 +25437,759 @@
       })()
     );
   }
+
+  // ═════════════════════════════════════════════════════════
+  // SECTION 7.5 — CAREER-THEMED ARCADE MINIGAMES (Phase L2-C)
+  // ═════════════════════════════════════════════════════════
+  // Three short minigames registered via AlloHavenArcade plugin contract:
+  //   - concept-match     (bookish / cross-vocation)
+  //   - story-sketch      (artistic / creative)
+  //   - what-happens-next (investigative / scientific)
+  //
+  // Each respects the contract from line 73:
+  //   { id, label, icon, blurb, timeCost, render(ctx), ready }
+  //   ctx: { React, palette, tokens, minutesPerToken, onLaunch, onClose,
+  //          callGemini, callImagen, callTTS, addToast, toolData,
+  //          setStemLabTool }
+  //
+  // Each mode internally manages its own state via React.useState. Reward
+  // is delivered through ctx.onLaunch (deducts time) plus an addToast +
+  // direct earnings injection through a shared helper. None of these
+  // modes auto-deduct tokens — they reward AS earnings on success.
+  //
+  // The minigames are gated by companion stage (must be teen+) so they
+  // feel age-appropriate. Mode.ready is computed lazily inside render
+  // using state available at registration time.
+  // ═════════════════════════════════════════════════════════
+  (function registerArcadeMinigames() {
+    if (!window.AlloHavenArcade) return;
+    var React = window.React;
+    if (!React) return; // arcade not ready yet — host will re-register
+    var h = React.createElement;
+    var useState = React.useState;
+
+    // Shared helper: append an earnings record + bump tokens. Used by
+    // each minigame's success path so rewards show up in the ledger and
+    // dailyState rolls forward exactly like Pomodoro/reflection earnings.
+    function awardArcadeTokens(amount, source, metadata) {
+      if (!amount || amount <= 0) return;
+      var storeKey = 'alloflow_allohaven_v1';
+      var raw = null;
+      try { raw = localStorage.getItem(storeKey); } catch (e) { raw = null; }
+      if (!raw) return;
+      var data = null;
+      try { data = JSON.parse(raw); } catch (e) { data = null; }
+      if (!data) return;
+      data.tokens = (data.tokens || 0) + amount;
+      data.earnings = (data.earnings || []).concat([{
+        source: source,
+        tokens: amount,
+        date: new Date().toISOString(),
+        metadata: metadata || {}
+      }]);
+      try { localStorage.setItem(storeKey, JSON.stringify(data)); } catch (e) { /* quota */ }
+      // Trigger a state reload so the cozy room sees the new tokens
+      try { window.dispatchEvent(new Event('storage')); } catch (e) { /* IE */ }
+    }
+
+    // ── Read companion knowledge for prompt grounding ──
+    function readCompanion() {
+      try {
+        var raw = localStorage.getItem('alloflow_allohaven_v1');
+        if (!raw) return null;
+        var data = JSON.parse(raw);
+        return (data && data.companion) || null;
+      } catch (e) { return null; }
+    }
+
+    // Default modal/card shell shared by all 3 minigames so they look
+    // consistent. Uses ctx.palette for theme inheritance.
+    function modeShell(ctx, opts) {
+      var palette = ctx.palette || {};
+      return h('div', {
+        style: {
+          backgroundColor: palette.bg || '#1a1a2e',
+          color: palette.text || '#e0e0e0',
+          border: '2px solid ' + (palette.accent || '#fbbf24'),
+          borderRadius: '16px',
+          padding: '20px 22px',
+          maxWidth: '560px', width: '100%',
+          display: 'flex', flexDirection: 'column', gap: '12px',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+        }
+      },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+          h('span', { style: { fontSize: '28px' } }, opts.icon),
+          h('div', { style: { flex: 1 } },
+            h('div', {
+              style: {
+                fontSize: '11px',
+                color: palette.textMute || '#94a3b8',
+                textTransform: 'uppercase',
+                letterSpacing: '0.12em',
+                fontWeight: 700
+              }
+            }, opts.eyebrow || 'Arcade minigame'),
+            h('div', {
+              style: { fontSize: '16px', fontWeight: 800, color: palette.text || '#fff', marginTop: '2px' }
+            }, opts.title)
+          ),
+          h('button', {
+            onClick: ctx.onClose,
+            'aria-label': 'Close',
+            style: {
+              background: 'transparent', border: 'none',
+              color: palette.textMute || '#94a3b8',
+              fontSize: '18px', cursor: 'pointer', fontFamily: 'inherit', padding: '0 4px'
+            }
+          }, '✕')
+        ),
+        opts.children
+      );
+    }
+
+    // ═════════════════════════════════════════════════════════
+    // 1) CONCEPT MATCH — Match 4 vocab words to definitions
+    // ═════════════════════════════════════════════════════════
+    // Pulls from companion's knowledgeTopics if available (so the game
+    // reinforces THEIR vocabulary). Falls back to a generic word bank
+    // when the companion has fewer than 4 vocab words logged.
+    window.AlloHavenArcade.registerMode('concept-match', {
+      label: 'Concept Match',
+      icon: '🧩',
+      blurb: 'Match vocabulary your buddy has been learning to its definitions. +3 🪙 on a clean run.',
+      timeCost: 5,
+      render: function(ctx) {
+        var palette = ctx.palette || {};
+        var callGeminiFn = ctx.callGemini;
+        var companion = readCompanion();
+
+        // Round state: 4 pairs, user clicks word then definition to match
+        var pairsTuple = useState([]);
+        var pairs = pairsTuple[0], setPairs = pairsTuple[1];
+        var matchedTuple = useState({});
+        var matched = matchedTuple[0], setMatched = matchedTuple[1];
+        var selectedWordTuple = useState(null);
+        var selectedWord = selectedWordTuple[0], setSelectedWord = selectedWordTuple[1];
+        var wrongFlashTuple = useState(null);
+        var wrongFlash = wrongFlashTuple[0], setWrongFlash = wrongFlashTuple[1];
+        var loadingTuple = useState(false);
+        var loading = loadingTuple[0], setLoading = loadingTuple[1];
+        var statusTuple = useState('idle'); // 'idle' | 'playing' | 'won'
+        var status = statusTuple[0], setStatus = statusTuple[1];
+        var errorTuple = useState(null);
+        var error = errorTuple[0], setError = errorTuple[1];
+
+        // ── Build a 4-pair round ──
+        function buildRound() {
+          setLoading(true);
+          setError(null);
+          setMatched({});
+          setSelectedWord(null);
+          // Collect candidate vocab from companion's knowledge topics
+          var vocab = [];
+          if (companion && Array.isArray(companion.knowledgeTopics)) {
+            companion.knowledgeTopics.forEach(function(t) {
+              if (Array.isArray(t.vocab)) {
+                t.vocab.forEach(function(v) {
+                  if (vocab.indexOf(v) === -1) vocab.push(v);
+                });
+              }
+            });
+          }
+          // Shuffle + take top 4
+          for (var i = vocab.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var tmp = vocab[i]; vocab[i] = vocab[j]; vocab[j] = tmp;
+          }
+          var picks = vocab.slice(0, 4);
+          // Fallback word bank if companion hasn't learned 4 words yet
+          var fallback = ['gravity', 'metamorphosis', 'photosynthesis', 'erosion',
+                          'evaporation', 'fermentation', 'compass', 'translate'];
+          while (picks.length < 4) {
+            var f = fallback[Math.floor(Math.random() * fallback.length)];
+            if (picks.indexOf(f) === -1) picks.push(f);
+          }
+          // Get definitions: AI when available, simple stubs otherwise
+          if (typeof callGeminiFn !== 'function') {
+            var stubDefs = {
+              gravity: 'a force that pulls objects toward each other',
+              metamorphosis: 'a major change in form during an animal\'s life cycle',
+              photosynthesis: 'how plants turn sunlight into food',
+              erosion: 'the slow wearing-away of land by water or wind',
+              evaporation: 'liquid turning into a gas',
+              fermentation: 'a slow chemical change driven by tiny living things',
+              compass: 'a tool that always points north',
+              translate: 'turn words from one language into another'
+            };
+            var rows = picks.map(function(w, idx) {
+              return { id: 'p-' + idx, word: w, definition: stubDefs[w] || ('something to do with ' + w) };
+            });
+            setPairs(rows);
+            setStatus('playing');
+            setLoading(false);
+            return;
+          }
+          // Ask Gemini for a JSON array of {word, definition} for the 4 words
+          var prompt = [
+            'Provide a one-sentence kid-friendly definition for each of these words:',
+            picks.join(', '),
+            '',
+            'Output STRICT JSON only (no markdown, no commentary), shaped exactly like:',
+            '[{ "word": "<word>", "definition": "<10-18 word definition, no jargon, no using the word itself>" }, ...]'
+          ].join('\n');
+          Promise.resolve()
+            .then(function() { return callGeminiFn(prompt); })
+            .then(function(out) {
+              var raw = (typeof out === 'string' ? out : (out && out.text) || '').trim();
+              raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+              var parsed = null;
+              try { parsed = JSON.parse(raw); } catch (e) { parsed = null; }
+              if (!Array.isArray(parsed) || parsed.length < 4) {
+                throw new Error('bad-shape');
+              }
+              var rows = picks.map(function(w, idx) {
+                var match = parsed.filter(function(p) {
+                  return (p.word || '').toLowerCase() === w.toLowerCase();
+                })[0];
+                return {
+                  id: 'p-' + idx,
+                  word: w,
+                  definition: (match && typeof match.definition === 'string' && match.definition.length > 10)
+                    ? match.definition
+                    : ('a word your buddy has been learning about')
+                };
+              });
+              setPairs(rows);
+              setStatus('playing');
+              setLoading(false);
+            })
+            .catch(function() {
+              setError('Couldn\'t reach the AI. Try again, or close to come back later.');
+              setLoading(false);
+            });
+        }
+
+        function handleWordClick(pid) {
+          if (status !== 'playing') return;
+          if (matched[pid]) return;
+          setSelectedWord(pid);
+        }
+        function handleDefClick(pid) {
+          if (status !== 'playing') return;
+          if (!selectedWord) return;
+          if (matched[pid]) return;
+          if (selectedWord === pid) {
+            // Correct
+            var next = Object.assign({}, matched);
+            next[pid] = true;
+            setMatched(next);
+            setSelectedWord(null);
+            if (Object.keys(next).length >= pairs.length) {
+              setStatus('won');
+              // Reward
+              setTimeout(function() {
+                awardArcadeTokens(3, 'arcade-concept-match', { pairs: pairs.length });
+                if (ctx.addToast) ctx.addToast('🪙 +3 from Concept Match!');
+              }, 200);
+            }
+          } else {
+            // Wrong
+            setWrongFlash(pid);
+            setSelectedWord(null);
+            setTimeout(function() { setWrongFlash(null); }, 350);
+          }
+        }
+
+        // Build the shuffled-definition column once per round
+        var shuffledDefs = pairs.slice().sort(function(a, b) {
+          return ((a.id || '') < (b.id || '')) ? 1 : -1;
+        });
+
+        return modeShell(ctx, {
+          icon: '🧩',
+          eyebrow: 'Concept Match',
+          title: 'Match the word to its meaning',
+          children: h(React.Fragment, null,
+            status === 'idle' ? h('div', null,
+              h('p', { style: { margin: 0, fontSize: '13px', lineHeight: '1.55', color: palette.text || '#fff' } },
+                'Four words your buddy has been thinking about (or starter vocab if they\'re young). Match each to its definition. No timer. +3 🪙 on a clean board.'
+              ),
+              h('div', { style: { marginTop: '14px' } },
+                h('button', {
+                  onClick: buildRound,
+                  disabled: loading,
+                  style: {
+                    padding: '10px 18px',
+                    background: palette.accent || '#fbbf24',
+                    color: palette.onAccent || '#0a0a0a',
+                    border: 'none', borderRadius: '10px',
+                    fontSize: '13px', fontWeight: 800,
+                    cursor: loading ? 'wait' : 'pointer', fontFamily: 'inherit'
+                  }
+                }, loading ? 'Loading…' : 'Begin round →'),
+                error ? h('div', { style: { marginTop: '10px', fontSize: '11.5px', color: '#f87171' } }, error) : null
+              )
+            ) : null,
+            status === 'playing' || status === 'won' ? h('div', null,
+              h('div', {
+                style: {
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr', gap: '10px'
+                }
+              },
+                // Word column
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+                  pairs.map(function(p) {
+                    var isMatched = !!matched[p.id];
+                    var isSelected = selectedWord === p.id;
+                    return h('button', {
+                      key: p.id + '-w',
+                      onClick: function() { handleWordClick(p.id); },
+                      disabled: isMatched,
+                      style: {
+                        padding: '10px 12px',
+                        background: isMatched
+                          ? ((palette.accent || '#fbbf24') + '22')
+                          : isSelected ? (palette.accent || '#fbbf24') : (palette.surface || '#22223a'),
+                        color: isMatched ? (palette.textMute || '#94a3b8') : isSelected ? (palette.onAccent || '#0a0a0a') : (palette.text || '#fff'),
+                        border: '1.5px solid ' + ((isSelected || isMatched) ? (palette.accent || '#fbbf24') : (palette.border || '#3a3a55')),
+                        borderRadius: '10px',
+                        fontSize: '13.5px', fontWeight: 700,
+                        textAlign: 'left', cursor: isMatched ? 'default' : 'pointer',
+                        textDecoration: isMatched ? 'line-through' : 'none',
+                        fontFamily: 'inherit',
+                        transition: 'all 200ms ease'
+                      }
+                    }, isMatched ? '✓ ' + p.word : p.word);
+                  })
+                ),
+                // Definition column (shuffled)
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+                  shuffledDefs.map(function(p) {
+                    var isMatched = !!matched[p.id];
+                    var isWrong = wrongFlash === p.id;
+                    return h('button', {
+                      key: p.id + '-d',
+                      onClick: function() { handleDefClick(p.id); },
+                      disabled: isMatched,
+                      style: {
+                        padding: '8px 12px',
+                        background: isMatched ? ((palette.accent || '#fbbf24') + '11') : isWrong ? '#dc262622' : (palette.surface || '#22223a'),
+                        color: isMatched ? (palette.textMute || '#94a3b8') : (palette.text || '#fff'),
+                        border: '1.5px solid ' + (isMatched ? (palette.accent || '#fbbf24') : isWrong ? '#dc2626' : (palette.border || '#3a3a55')),
+                        borderRadius: '10px',
+                        fontSize: '12px', lineHeight: '1.45',
+                        textAlign: 'left', cursor: isMatched ? 'default' : 'pointer',
+                        fontFamily: 'inherit',
+                        transition: 'all 200ms ease',
+                        opacity: isMatched ? 0.6 : 1
+                      }
+                    }, p.definition);
+                  })
+                )
+              ),
+              status === 'won' ? h('div', {
+                style: {
+                  marginTop: '14px', padding: '10px 12px',
+                  background: ((palette.accent || '#fbbf24') + '22'),
+                  border: '1.5px solid ' + (palette.accent || '#fbbf24'),
+                  borderRadius: '10px',
+                  textAlign: 'center'
+                }
+              },
+                h('div', { style: { fontSize: '14px', fontWeight: 800, color: palette.text || '#fff' } },
+                  '🎉 Clean board! +3 🪙'),
+                h('button', {
+                  onClick: buildRound,
+                  style: {
+                    marginTop: '8px',
+                    padding: '6px 14px',
+                    background: 'transparent',
+                    color: palette.accent || '#fbbf24',
+                    border: '1px solid ' + (palette.accent || '#fbbf24'),
+                    borderRadius: '8px',
+                    fontSize: '12px', fontWeight: 700,
+                    cursor: 'pointer', fontFamily: 'inherit'
+                  }
+                }, '↻ New round')
+              ) : null
+            ) : null
+          )
+        });
+      }
+    });
+
+    // ═════════════════════════════════════════════════════════
+    // 2) STORY SKETCH — 3-emoji prompt → 1-sentence story → AI review
+    // ═════════════════════════════════════════════════════════
+    var EMOJI_BANK = [
+      ['🌙', '🐺', '🌲'], ['🚀', '🪐', '👩‍🔬'], ['🎂', '🐦', '🌧️'],
+      ['🗺️', '🧭', '🏔️'], ['📚', '🧙', '🦉'], ['🎻', '🌹', '🌉'],
+      ['🪟', '☕', '✉️'], ['⚓', '🌊', '🦀'], ['🌻', '🐝', '🌾'],
+      ['🪞', '🕰️', '🪐'], ['🚂', '🌧️', '🧳'], ['🎈', '🐠', '🏝️']
+    ];
+    window.AlloHavenArcade.registerMode('story-sketch', {
+      label: 'Story Sketch',
+      icon: '✍️',
+      blurb: 'See three emoji. Write one sentence using all three. The AI gives a kind review. +2 🪙 for an honest try.',
+      timeCost: 5,
+      render: function(ctx) {
+        var palette = ctx.palette || {};
+        var callGeminiFn = ctx.callGemini;
+
+        var promptTuple = useState(null);
+        var prompt = promptTuple[0], setPrompt = promptTuple[1];
+        var draftTuple = useState('');
+        var draft = draftTuple[0], setDraft = draftTuple[1];
+        var reviewTuple = useState(null);
+        var review = reviewTuple[0], setReview = reviewTuple[1];
+        var busyTuple = useState(false);
+        var busy = busyTuple[0], setBusy = busyTuple[1];
+
+        function newPrompt() {
+          var pick = EMOJI_BANK[Math.floor(Math.random() * EMOJI_BANK.length)];
+          setPrompt(pick);
+          setDraft('');
+          setReview(null);
+        }
+
+        function submit() {
+          if (busy) return;
+          var trimmed = draft.trim();
+          if (trimmed.length < 10) return;
+          setBusy(true);
+          // Always award; the AI review is the engagement, not a gate
+          awardArcadeTokens(2, 'arcade-story-sketch', { length: trimmed.length });
+          if (typeof callGeminiFn !== 'function') {
+            setReview({ ok: true, text: 'Nice — you used the prompt. ' + (trimmed.length > 40 ? 'You took your time. ' : '') + 'Try one more if you want.', source: 'template' });
+            setBusy(false);
+            if (ctx.addToast) ctx.addToast('🪙 +2 from Story Sketch!');
+            return;
+          }
+          var p = [
+            'A kid wrote a one-sentence story using these three emoji as prompts: ' + (prompt || []).join(' '),
+            '',
+            'The sentence:',
+            '"""',
+            trimmed,
+            '"""',
+            '',
+            'In 1-2 warm, encouraging sentences (15-35 words total), tell the kid what specifically worked in their sentence. Mention one concrete craft detail (image, verb choice, rhythm). NO grades, no rubric, no "consider" or "you could try" suggestions. Just appreciation of one real thing they did. Output only the appreciation sentences.'
+          ].join('\n');
+          Promise.resolve()
+            .then(function() { return callGeminiFn(p); })
+            .then(function(out) {
+              var raw = (typeof out === 'string' ? out : (out && out.text) || '').trim();
+              raw = raw.replace(/^```[a-z]*\s*/i, '').replace(/```\s*$/i, '').trim();
+              if ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith('“') && raw.endsWith('”'))) {
+                raw = raw.slice(1, -1).trim();
+              }
+              if (!raw || raw.length < 20) raw = 'Nice — you used all three prompts. Keep going.';
+              setReview({ ok: true, text: raw, source: 'ai' });
+              setBusy(false);
+              if (ctx.addToast) ctx.addToast('🪙 +2 from Story Sketch!');
+            })
+            .catch(function() {
+              setReview({ ok: true, text: 'Nice — you used the prompt. Your sentence is yours.', source: 'fallback' });
+              setBusy(false);
+              if (ctx.addToast) ctx.addToast('🪙 +2 from Story Sketch!');
+            });
+        }
+
+        return modeShell(ctx, {
+          icon: '✍️',
+          eyebrow: 'Story Sketch',
+          title: 'One sentence from three emoji',
+          children: h(React.Fragment, null,
+            !prompt ? h('div', null,
+              h('p', {
+                style: { margin: 0, fontSize: '13px', lineHeight: '1.55', color: palette.text || '#fff' }
+              }, 'Three emoji come up at random. Write one sentence that uses all three. The AI offers a kind, specific note in return. No grades. +2 🪙 for an honest try.'),
+              h('div', { style: { marginTop: '14px' } },
+                h('button', {
+                  onClick: newPrompt,
+                  style: {
+                    padding: '10px 18px',
+                    background: palette.accent || '#fbbf24',
+                    color: palette.onAccent || '#0a0a0a',
+                    border: 'none', borderRadius: '10px',
+                    fontSize: '13px', fontWeight: 800,
+                    cursor: 'pointer', fontFamily: 'inherit'
+                  }
+                }, 'Give me a prompt →')
+              )
+            ) : h('div', null,
+              h('div', {
+                'aria-label': 'Three emoji prompts',
+                style: {
+                  padding: '14px',
+                  background: palette.surface || '#22223a',
+                  border: '1.5px solid ' + (palette.border || '#3a3a55'),
+                  borderRadius: '12px',
+                  textAlign: 'center',
+                  fontSize: '36px', letterSpacing: '12px',
+                  lineHeight: 1
+                }
+              }, prompt.join(' ')),
+              h('textarea', {
+                value: draft,
+                onChange: function(e) { setDraft(e.target.value); },
+                disabled: busy,
+                placeholder: 'Write one sentence using all three…',
+                rows: 4,
+                style: {
+                  marginTop: '12px', width: '100%',
+                  padding: '10px 12px',
+                  background: palette.surface || '#22223a',
+                  color: palette.text || '#fff',
+                  border: '1.5px solid ' + (palette.border || '#3a3a55'),
+                  borderRadius: '10px',
+                  fontSize: '13.5px', lineHeight: '1.55',
+                  fontFamily: 'inherit', resize: 'vertical',
+                  boxSizing: 'border-box'
+                }
+              }),
+              review ? h('div', {
+                style: {
+                  marginTop: '12px',
+                  padding: '10px 12px',
+                  background: ((palette.accent || '#fbbf24') + '22'),
+                  border: '1.5px solid ' + (palette.accent || '#fbbf24'),
+                  borderRadius: '10px',
+                  fontSize: '13px', lineHeight: '1.55',
+                  color: palette.text || '#fff'
+                }
+              }, '🪙 +2. ' + review.text) : null,
+              h('div', { style: { marginTop: '12px', display: 'flex', gap: '8px' } },
+                review ? h('button', {
+                  onClick: newPrompt,
+                  style: {
+                    padding: '8px 14px',
+                    background: 'transparent',
+                    color: palette.accent || '#fbbf24',
+                    border: '1px solid ' + (palette.accent || '#fbbf24'),
+                    borderRadius: '8px',
+                    fontSize: '12px', fontWeight: 700,
+                    cursor: 'pointer', fontFamily: 'inherit'
+                  }
+                }, '↻ New prompt') : h('button', {
+                  onClick: submit,
+                  disabled: busy || draft.trim().length < 10,
+                  style: {
+                    padding: '8px 16px',
+                    background: (busy || draft.trim().length < 10) ? (palette.surface || '#22223a') : (palette.accent || '#fbbf24'),
+                    color: (busy || draft.trim().length < 10) ? (palette.textMute || '#94a3b8') : (palette.onAccent || '#0a0a0a'),
+                    border: '1.5px solid ' + (palette.accent || '#fbbf24'),
+                    borderRadius: '8px',
+                    fontSize: '12px', fontWeight: 800,
+                    cursor: (busy || draft.trim().length < 10) ? 'not-allowed' : 'pointer',
+                    fontFamily: 'inherit'
+                  }
+                }, busy ? 'Reading…' : 'Submit sentence →')
+              )
+            )
+          )
+        });
+      }
+    });
+
+    // ═════════════════════════════════════════════════════════
+    // 3) WHAT HAPPENS NEXT — Science scenario + 4 outcomes
+    // ═════════════════════════════════════════════════════════
+    var SCENARIOS = [
+      {
+        prompt: 'You leave an open glass of water on a sunny windowsill for three days.',
+        options: [
+          { id: 'a', label: 'The water gets warmer and stays the same volume.', correct: false },
+          { id: 'b', label: 'Some of the water disappears into the air.', correct: true },
+          { id: 'c', label: 'The water freezes from the bottom up.', correct: false },
+          { id: 'd', label: 'The water turns slowly into ice cubes.', correct: false }
+        ],
+        explain: 'Heat from the sun gives water molecules enough energy to escape into the air — that\'s evaporation. The water level drops a little every day. Same thing happens to puddles after rain.'
+      },
+      {
+        prompt: 'You plant a sunflower seed in a cup near a closed-off window with sun on only one side.',
+        options: [
+          { id: 'a', label: 'The stem grows straight up.', correct: false },
+          { id: 'b', label: 'The stem grows toward the sunlight.', correct: true },
+          { id: 'c', label: 'The seed never sprouts.', correct: false },
+          { id: 'd', label: 'The roots grow up out of the dirt.', correct: false }
+        ],
+        explain: 'Plants grow toward light — it\'s called phototropism. A hormone called auxin makes the shaded side stretch faster, so the stem bends toward the bright side.'
+      },
+      {
+        prompt: 'You drop a small stone and a crumpled-up paper ball off a low wall at the same time. (Ignore air for now.)',
+        options: [
+          { id: 'a', label: 'The stone lands first because it\'s heavier.', correct: false },
+          { id: 'b', label: 'They land at the same time.', correct: true },
+          { id: 'c', label: 'The paper ball lands first because it\'s lighter.', correct: false },
+          { id: 'd', label: 'Neither will fall — they need a push.', correct: false }
+        ],
+        explain: 'Gravity pulls every object at the same rate, regardless of weight. (Air resistance is what makes feathers fall slower than rocks in real life — but with a crumpled paper ball, the air effect is small.) Galileo first showed this.'
+      },
+      {
+        prompt: 'You stretch a rubber band, hold it tight against your forehead, and then let it relax for 10 seconds.',
+        options: [
+          { id: 'a', label: 'The rubber band feels hot when stretched.', correct: true },
+          { id: 'b', label: 'The rubber band feels cold when stretched.', correct: false },
+          { id: 'c', label: 'It feels the same the whole time.', correct: false },
+          { id: 'd', label: 'It only changes temperature if you cut it.', correct: false }
+        ],
+        explain: 'Stretching a rubber band makes its molecules align — they release a little heat. When you let it relax, it cools down again. This is one of the few cases where work changes temperature you can feel right on your skin.'
+      },
+      {
+        prompt: 'A piece of bread in a bag on the counter for 4 days in summer.',
+        options: [
+          { id: 'a', label: 'Stays exactly the same as day one.', correct: false },
+          { id: 'b', label: 'Turns into toast on its own.', correct: false },
+          { id: 'c', label: 'Grows fuzzy patches of mold.', correct: true },
+          { id: 'd', label: 'Becomes harder than a rock.', correct: false }
+        ],
+        explain: 'Mold spores are everywhere in the air. Warm + moist + sealed = a buffet for fungus. The fuzzy patches are colonies of mold growing on the bread.'
+      }
+    ];
+
+    window.AlloHavenArcade.registerMode('what-happens-next', {
+      label: 'What Happens Next?',
+      icon: '🔬',
+      blurb: 'A short science scenario. Pick what happens. See the why. +3 🪙 for the right pick.',
+      timeCost: 5,
+      render: function(ctx) {
+        var palette = ctx.palette || {};
+
+        var scenarioTuple = useState(null);
+        var scenario = scenarioTuple[0], setScenario = scenarioTuple[1];
+        var selectedTuple = useState(null);
+        var selected = selectedTuple[0], setSelected = selectedTuple[1];
+        var revealedTuple = useState(false);
+        var revealed = revealedTuple[0], setRevealed = revealedTuple[1];
+
+        function newScenario() {
+          var s = SCENARIOS[Math.floor(Math.random() * SCENARIOS.length)];
+          // Shuffle options so the correct one isn't always in the same slot
+          var opts = s.options.slice();
+          for (var i = opts.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var tmp = opts[i]; opts[i] = opts[j]; opts[j] = tmp;
+          }
+          setScenario({ prompt: s.prompt, options: opts, explain: s.explain });
+          setSelected(null);
+          setRevealed(false);
+        }
+
+        function pick(optId) {
+          if (revealed) return;
+          setSelected(optId);
+          setRevealed(true);
+          var opt = (scenario.options || []).filter(function(o) { return o.id === optId; })[0];
+          if (opt && opt.correct) {
+            awardArcadeTokens(3, 'arcade-what-happens-next', { optionId: optId });
+            if (ctx.addToast) ctx.addToast('🪙 +3 from What Happens Next!');
+          } else {
+            // Small consolation reward for honest engagement
+            awardArcadeTokens(1, 'arcade-what-happens-next', { optionId: optId, wrong: true });
+            if (ctx.addToast) ctx.addToast('🪙 +1 for taking the guess.');
+          }
+        }
+
+        return modeShell(ctx, {
+          icon: '🔬',
+          eyebrow: 'What Happens Next?',
+          title: scenario ? 'Pick the outcome' : 'A short science scenario',
+          children: h(React.Fragment, null,
+            !scenario ? h('div', null,
+              h('p', {
+                style: { margin: 0, fontSize: '13px', lineHeight: '1.55', color: palette.text || '#fff' }
+              }, 'You\'ll see a short everyday scenario and four possible outcomes. Pick the one you think actually happens. We\'ll show the reason either way. +3 🪙 for the right pick, +1 for trying.'),
+              h('div', { style: { marginTop: '14px' } },
+                h('button', {
+                  onClick: newScenario,
+                  style: {
+                    padding: '10px 18px',
+                    background: palette.accent || '#fbbf24',
+                    color: palette.onAccent || '#0a0a0a',
+                    border: 'none', borderRadius: '10px',
+                    fontSize: '13px', fontWeight: 800,
+                    cursor: 'pointer', fontFamily: 'inherit'
+                  }
+                }, 'Show me a scenario →')
+              )
+            ) : h('div', null,
+              h('div', {
+                style: {
+                  padding: '12px 14px',
+                  background: palette.surface || '#22223a',
+                  border: '1.5px solid ' + (palette.border || '#3a3a55'),
+                  borderRadius: '12px',
+                  fontSize: '13.5px', lineHeight: '1.55',
+                  color: palette.text || '#fff'
+                }
+              }, scenario.prompt),
+              h('div', { style: { marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' } },
+                scenario.options.map(function(opt) {
+                  var isSelected = selected === opt.id;
+                  var showCorrect = revealed && opt.correct;
+                  var showWrong = revealed && isSelected && !opt.correct;
+                  var bg = showCorrect ? '#16a34a22' : showWrong ? '#dc262622' : (isSelected ? ((palette.accent || '#fbbf24') + '22') : (palette.surface || '#22223a'));
+                  var border = showCorrect ? '#16a34a' : showWrong ? '#dc2626' : isSelected ? (palette.accent || '#fbbf24') : (palette.border || '#3a3a55');
+                  return h('button', {
+                    key: opt.id,
+                    onClick: function() { pick(opt.id); },
+                    disabled: revealed,
+                    style: {
+                      padding: '10px 12px',
+                      background: bg,
+                      color: palette.text || '#fff',
+                      border: '1.5px solid ' + border,
+                      borderRadius: '10px',
+                      fontSize: '12.5px', lineHeight: '1.5',
+                      textAlign: 'left',
+                      cursor: revealed ? 'default' : 'pointer',
+                      fontFamily: 'inherit',
+                      transition: 'all 200ms ease'
+                    }
+                  },
+                    (revealed && opt.correct ? '✓ ' : revealed && isSelected && !opt.correct ? '✗ ' : ''),
+                    opt.label
+                  );
+                })
+              ),
+              revealed ? h('div', { style: { marginTop: '12px' } },
+                h('div', {
+                  style: {
+                    padding: '10px 12px',
+                    background: ((palette.accent || '#fbbf24') + '15'),
+                    border: '1.5px solid ' + ((palette.accent || '#fbbf24') + '55'),
+                    borderRadius: '10px',
+                    fontSize: '12.5px', lineHeight: '1.6',
+                    color: palette.text || '#fff'
+                  }
+                },
+                  h('strong', null, 'Why: '),
+                  scenario.explain
+                ),
+                h('div', { style: { marginTop: '10px' } },
+                  h('button', {
+                    onClick: newScenario,
+                    style: {
+                      padding: '6px 14px',
+                      background: 'transparent',
+                      color: palette.accent || '#fbbf24',
+                      border: '1px solid ' + (palette.accent || '#fbbf24'),
+                      borderRadius: '8px',
+                      fontSize: '12px', fontWeight: 700,
+                      cursor: 'pointer', fontFamily: 'inherit'
+                    }
+                  }, '↻ Another scenario')
+                )
+              ) : null
+            )
+          )
+        });
+      }
+    });
+  })();
 
   // ─────────────────────────────────────────────────────────
   // SECTION 8: EXPORT

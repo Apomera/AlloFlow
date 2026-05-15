@@ -176,7 +176,7 @@ window.StemLab = window.StemLab || {
           var fdShowReps = _n.fdShowReps !== false;     // default ON (pie + grid + dots)
           var fdShowMoney = _n.fdShowMoney || false;
           var fdShowExpansion = _n.fdShowExpansion || false;
-          var fdSnap = _n.fdSnap !== false;             // default ON (snap clicks to denominator)
+          var fdSnap = !!_n.fdSnap;                     // default OFF — free placement; opt-in via checkbox
           var fdCompareOn = _n.fdCompareOn || false;
           var fdCompareValue = _n.fdCompareValue != null ? _n.fdCompareValue : 0.75;
           var fdLastLandmark = _n.fdLastLandmark != null ? _n.fdLastLandmark : null;
@@ -1061,14 +1061,25 @@ window.StemLab = window.StemLab || {
                 ));
               }
               var mx = PAD + ((fdValue - fdMin) / fdLen) * (W - 2 * PAD);
-              // During drag, suppress the slide-transition class so the marker
-              // tracks the cursor without the 420ms chase lag.
+              // ── Bugfix: stable slide class + inline transition control ──
+              // The marker animates from a leftmost-baseline flash if the slide
+              // class is toggled in the same React render that updates the
+              // inline transform — browsers race the class-mounted transition
+              // against the new transform value, falling back to translate(0,0)
+              // as the "before" state in some browsers.
+              //
+              // Fix: keep the slide class on the element ALWAYS so transitions
+              // are registered once and the browser keeps the prior computed
+              // transform as the "from" value. During drag, override with
+              // inline `transition: none` so cursor-tracking is real-time.
+              // Both transform and transition update in the same render pass,
+              // eliminating the class-vs-style timing race.
               var isDragging = typeof window !== 'undefined' && window._fdDragging === true;
-              var markerCls = 'allo-fd-marker' + (isDragging ? '' : ' allo-fd-marker-slide') + (fdCelebrate ? ' allo-fd-marker-celebrate' : '');
-              // Render the marker at x=0 in its inner geometry, then translate the
-              // whole group to mx with a CSS transition — smooth slide on value change.
+              var markerCls = 'allo-fd-marker allo-fd-marker-slide' + (fdCelebrate ? ' allo-fd-marker-celebrate' : '');
+              var markerStyle = { transform: 'translate(' + mx + 'px, 0px)' };
+              if (isDragging) markerStyle.transition = 'none';
               var markerEl = h('g', { key: 'fd-marker', className: markerCls,
-                style: { transform: 'translate(' + mx + 'px, 0px)' }
+                style: markerStyle
               },
                 h('line', { x1: 0, y1: 30, x2: 0, y2: 85, stroke: '#dc2626', strokeWidth: 2.5 }),
                 h('circle', { cx: 0, cy: 85, r: 9, fill: '#dc2626', stroke: '#fff', strokeWidth: 2 }),
@@ -1661,7 +1672,7 @@ window.StemLab = window.StemLab || {
                     sfxClick();
                     upd({
                       fdValue: 0.5, fdDen: 4, fdMin: 0, fdMax: 1,
-                      fdShowBar: true, fdShowReps: true, fdSnap: true,
+                      fdShowBar: true, fdShowReps: true, fdSnap: false,
                       fdShowMoney: false, fdShowExpansion: false,
                       fdCompareOn: false, fdCompareValue: 0.75,
                       fdLastLandmark: null, fdCelebrate: false,

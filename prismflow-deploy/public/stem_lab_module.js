@@ -224,6 +224,7 @@
         labToolData,
         setLabToolData,
         gradeLevel,
+        sourceTopic,
         callGemini,
         callTTS,
         callImagen,
@@ -265,6 +266,18 @@
       var [_xpPopupTick, _setXpPopupTick] = React.useState(0);
       // XP badge pulse state
       var [_xpBadgePulse, _setXpBadgePulse] = React.useState(false);
+      // Plugin-load progress tick — bumped by the allo-plugins-changed event the
+      // lazy-loader fires after each stem_tool_*.js script finishes registering.
+      // Forces the tile grid to re-render as plugins stream in on first hub-open.
+      var [_pluginProgressTick, _setPluginProgressTick] = React.useState(0);
+      React.useEffect(function() {
+        var handler = function(e) {
+          if (e && e.detail && e.detail.label !== 'Stem') return;
+          _setPluginProgressTick(function(t) { return t + 1; });
+        };
+        window.addEventListener('allo-plugins-changed', handler);
+        return function() { window.removeEventListener('allo-plugins-changed', handler); };
+      }, []);
 
       // Life Skills Lab Global State
       var [stemState, setStemState] = React.useState({});
@@ -2793,6 +2806,7 @@
               },
               {
                 id: 'fractionViz',
+                aliases: ['fractions'],
                 icon: '🍕',
                 label: t('stem.assessment.fraction_lab'),
                 desc: 'Compare fractions side-by-side (Compare tab) or practice with interactive challenges (Challenge tab).',
@@ -2945,6 +2959,11 @@
               {
                 id: 'climateExplorer', icon: '\uD83C\uDF0D', label: 'Climate Explorer',
                 desc: 'Carbon calculator, renewables impact simulator, climate justice map, and solutions spotlight. Understand your footprint, design clean energy futures, and discover real-world innovations.',
+                color: 'emerald', ready: true
+              },
+              {
+                id: 'stewardshipHub', icon: '\uD83C\uDF0D', label: 'Environmental Stewardship Campaigns',
+                desc: 'Fifteen environmental stewardship campaigns across eleven regions. Five deep multi-period Maine campaigns plus ten cross-region scenarios across all five mechanic families: fire (Yarralin Australia, Karuk Northern California), conservation (Yellowstone, Akagera Rwanda), public health (Mumbai dengue, Liberia 2014 Ebola), watershed (Klamath River, Murray\u2013Darling Basin), climate (Marshall Islands, Bangladesh delta). Family Pairing Insights unlock when you complete Maine + cross-region in the same mechanic family.',
                 color: 'emerald', ready: true
               },
               {
@@ -3101,6 +3120,11 @@
                 desc: 'Train a virtual mouse using operant conditioning! Learn ABA fundamentals: reinforcement, shaping, extinction, and schedules of reinforcement.',
                 color: 'amber', ready: true
               },
+              {
+                id: 'schoolBehaviorToolkit', icon: '\uD83C\uDFEB', label: 'School Behavior Toolkit',
+                desc: 'Applied K-12 behavior practice \u2014 what school psychs and educators actually do with the science. PBIS three-tier framework, replacement behaviors mapped to FBA functions, setting events (slow triggers most BIPs miss), Geoff Colvin\'s seven-phase Acting-Out Cycle, Restraint & Seclusion ethics anchored in Maine Chapter 33. Sister tool to BehaviorLab.',
+                color: 'teal', ready: true
+              },
 
               { id: '_cat_Economics', icon: '', label: '💰 Social Studies & Economics', desc: '', color: 'slate', category: true },
               {
@@ -3190,6 +3214,16 @@
                 color: 'green', ready: true
               },
               {
+                id: 'kitchenLab', icon: '🍳', label: 'Kitchen Lab',
+                desc: 'Cooking life skills + culinary science: USDA safe temps + bacteria danger zone, knife cuts (dice/julienne/chiffonade/brunoise), heat techniques (sauté/sear/simmer/braise/roast/fry/steam), Maillard chemistry, top-9 allergens, real-time recipe sim (coming next ship). Sister to NutritionLab + BakingScience.',
+                color: 'orange', ready: true
+              },
+              {
+                id: 'cephalopodLab', icon: '🐙', label: 'Cephalopod Lab',
+                desc: 'Marine biology + behavioral science of octopuses, squid, cuttlefish, nautilus. Headline: Hunter Sim — pick species + habitat + prey + tactic, run the camouflage minigame, time the strike. Unlocks field-note biology trivia (chromatophore mechanics, 9 brains, blue blood, jet propulsion). 10-species field guide with intelligence + camouflage + jet-speed stats.',
+                color: 'indigo', ready: true
+              },
+              {
                 id: 'evoLab', icon: '🧬', label: 'EvoLab: Evolution',
                 desc: 'Evolution + natural selection: Selection Sandbox, Galápagos Beak Lab, Phylogenetic Tree Builder, plus quick labs on Hardy-Weinberg, genetic drift, common ancestry, evolution misconceptions. Maine wildlife examples.',
                 color: 'emerald', ready: true
@@ -3224,10 +3258,12 @@
               { id: '_cat_Biology', icon: '', label: '🧬 Biology & Life Science', desc: '', color: 'slate', category: true },
               { id: 'dnaLab', icon: '🧬', label: 'DNA Lab', desc: 'Extract, sequence, and analyze DNA. Explore genetics through interactive experiments.', color: 'emerald', ready: true },
               { id: 'epidemicSim', icon: '\uD83E\uDDA0', label: 'Epidemic Simulator', desc: 'Model disease spread with SIR/SEIR models. Adjust R0, vaccination rates, and social distancing. Flatten the curve!', color: 'red', ready: true },
+              { id: 'microbiology', icon: '\uD83E\uDD7C', label: 'Microbiology Lab', desc: 'NGSS MS-LS1 + HS-LS1 + HS-LS3 + HS-LS4. The microbial world: bacteria (beneficial + pathogenic), viruses (COVID, flu, HIV, phages, measles), microscopy (light + phase + fluorescent + EM + AFM), antibiotic resistance evolution, the human + soil + ocean microbiome, vaccines + immune system, fermentation (sourdough, yogurt, kimchi, sauerkraut, kombucha, cheese), case studies (Snow, Fleming, MRSA, COVID/mRNA, FMT), quiz, printable lab safety + microbes reference.', color: 'emerald', ready: true },
 
               { id: '_cat_Geography', icon: '', label: '🌍 Geography & Earth Science', desc: '', color: 'slate', category: true },
               { id: 'geoQuiz', icon: '🗺️', label: 'Geography Quiz', desc: 'Test your world geography knowledge with interactive maps, flags, and capitals.', color: 'sky', ready: true },
               { id: 'plateTectonics', icon: '🌋', label: 'Plate Tectonics', desc: 'Explore tectonic plates, earthquakes, volcanoes, and continental drift.', color: 'orange', ready: true },
+              { id: 'astronomy', icon: '🔭', label: 'Night Sky & Astronomy', desc: 'Earth & Space Science: constellations (with Wabanaki + cross-cultural sky traditions), moon phases, planets, seasons, stars, galaxies, eclipses, observing practice, light-pollution awareness. NGSS MS-ESS1 + HS-ESS1. Place-based for Maine. Printable observing checklists.', color: 'indigo', ready: true },
 
               { id: '_cat_AdvancedMathLogic', icon: '', label: '📐 Advanced Math', desc: '', color: 'slate', category: true },
               { id: 'geometryProver', icon: '\uD83D\uDCD0', label: 'Geometry Prover', desc: 'Construct geometric proofs step-by-step with interactive diagrams.', color: 'violet', ready: true },
@@ -3241,6 +3277,7 @@
 
               { id: '_cat_HistoryEng', icon: '', label: '\uD83D\uDCDC History & Engineering', desc: '', color: 'slate', category: true },
               { id: 'printingPress', icon: '\uD83D\uDCDC', label: 'PrintingPress', desc: 'The Gutenberg-style screw press as a working simulation. Pull the bar, set your own type, see the impression. Plus the materials science (lead-tin-antimony alloy), economics (cost-per-book collapse), history (Reformation, scientific revolution), typography, and the people behind the press (including women printers history forgot). Built for interdisciplinary middle-school work.', color: 'amber', ready: true },
+              { id: 'bridgeLab', icon: '\uD83C\uDF09', label: 'Bridge Engineering Lab', desc: 'NGSS MS-ETS1 + HS-ETS1 + HS-PS2. Truss stress simulator with adjustable span/height/load/material, bridge type comparison (beam/truss/arch/suspension/cable-stayed), materials database, force types, real-world case studies (Tacoma Narrows, Hyatt Regency, Tay, Silver, plus Brooklyn/Golden Gate/Akashi/Millau), engineering design cycle, AP-style quiz, printable design specs.', color: 'amber', ready: true },
 
               { id: '_cat_Ecology', icon: '', label: '\uD83C\uDF0D Ecology & Migration', desc: '', color: 'slate', category: true },
               { id: 'birdLab', icon: '\uD83D\uDC26', label: 'BirdLab: I-Spy Ornithology', desc: 'Layered habitat I-Spy with animated birds whose movement signatures double as field marks. Field Marks Trainer, Beak & Feet Lab, Bird Calls, Maine Birds Spotlight, Migration, Citizen Science, Photo ID, and a Life List that persists across habitats. Pairs with Cornell Lab\u2019s Merlin Bird ID.', color: 'emerald', ready: true },
@@ -4366,7 +4403,11 @@
         // have inline render code above. Bridges hub-scope variables into
         // the plugin's ctx object format.
         // ════════════════════════════════════════════════════════════════════
-        stemLabTab === 'explore' && stemLabTool && window.StemLab && window.StemLab.isRegistered(stemLabTool) && (function _pluginFallback() {
+        // Outer guard previously required isRegistered(stemLabTool), which made
+        // the inner "plugin not yet loaded" skeleton (below) dead code. With
+        // lazy-loaded plugin scripts (May 11 2026), a user can click a tile
+        // before its plugin has registered; the skeleton handles that window.
+        stemLabTab === 'explore' && stemLabTool && window.StemLab && (function _pluginFallback() {
           // Only render if no inline IIFE already handled this tool.
           // We detect this by checking a known marker: inline tools set state
           // immediately via their IIFE returns. If the tool is in the registry
@@ -4384,18 +4425,18 @@
             anatomy: true, aquarium: true, brainAtlas: true, cell: true,
             chemBalance: true, climateExplorer: true, companionPlanting: true, renewablesLab: true, petsLab: true,
             dataPlot: true, dissection: true, dnaLab: true, ecosystem: true,
-            epidemicSim: true, fireEcology: true, molecule: true, opticsLab: true, punnett: true,
+            epidemicSim: true, fireEcology: true, microbiology: true, molecule: true, opticsLab: true, punnett: true,
             rocks: true, rockCycle: true, science: true, solarSystem: true,
             titrationLab: true, universe: true, unitConvert: true, waterCycle: true,
             // Engineering & CS
-            archStudio: true, circuit: true, codingPlayground: true,
+            archStudio: true, bridgeLab: true, circuit: true, codingPlayground: true,
             cyberDefense: true, semiconductor: true,
             // Art & Music
             artStudio: true, creative: true, gameStudio: true,
             // Earth & Space
-            galaxy: true, moonMission: true, plateTectonics: true, spaceColony: true, spaceExplorer: true,
+            astronomy: true, galaxy: true, moonMission: true, plateTectonics: true, spaceColony: true, spaceExplorer: true,
             // Data & Logic
-            behaviorLab: true, dataStudio: true, economicsLab: true, logicLab: true,
+            behaviorLab: true, schoolBehaviorToolkit: true, dataStudio: true, economicsLab: true, logicLab: true,
             // Geography
             geoQuiz: true, geometryProver: true, geometryWorld: true,
             // Applied
@@ -4420,6 +4461,8 @@
             weldLab: true,
             nutritionLab: true,
             evoLab: true,
+            kitchenLab: true,
+            cephalopodLab: true,
             statsLab: true,
             learningLab: true,
             llmLiteracy: true,
@@ -4516,24 +4559,57 @@
             setToolSnapshots: _safeSetToolSnapshots,
             // Wrap addToast so every plugin toast also announces to screen readers.
             // This gives all 57 STEM tools SR announcements without modifying each plugin.
-            addToast: function(msg, type) {
+            // _deferSafe wrap: addToast + the inner announceToSR both touch parent
+            // React state (toast list + a11y live-region useState). Plugins that
+            // toast during their initial render (e.g. funcgrapher canvasNarrate
+            // chain) trigger "Cannot update component while rendering" without it.
+            addToast: _deferSafe(function(msg, type) {
               if (addToast) addToast(msg, type);
               // Strip emoji from message for cleaner SR output
               if (typeof announceToSR === 'function' && msg) {
                 var srMsg = msg.replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27BF]|[\uFE00-\uFE0F]|[\u200D]/gu, '').trim();
                 if (srMsg) announceToSR(srMsg);
               }
-            },
-            awardXP: typeof awardStemXP === 'function' ? awardStemXP : function() {},
+            }),
+            // _deferSafe wrap: awardStemXP calls setStemXP (parent useState).
+            awardXP: typeof awardStemXP === 'function' ? _deferSafe(awardStemXP) : function() {},
             getXP: typeof getStemXP === 'function' ? getStemXP : function() { return 0; },
-            announceToSR: typeof announceToSR === 'function' ? announceToSR : function() {},
-            canvasNarrate: typeof canvasNarrate === 'function' ? canvasNarrate : function() {},
+            // _deferSafe wrap: announceToSR calls setA11yAnnouncement (parent useState)
+            // and canvasNarrate calls announceToSR. Without these wraps, plugins
+            // that call canvasNarrate('init', ...) during their first render \u2014 like
+            // funcgrapher at stem_tool_funcgrapher.js:123 \u2014 produce the React
+            // "Cannot update component while rendering" warning every modal open.
+            announceToSR: typeof announceToSR === 'function' ? _deferSafe(announceToSR) : function() {},
+            canvasNarrate: typeof canvasNarrate === 'function' ? _deferSafe(canvasNarrate) : function() {},
             setCanvasNarrateEnabled: typeof setCanvasNarrateEnabled === 'function' ? setCanvasNarrateEnabled : function() {},
-            celebrate: typeof stemCelebrate === 'function' ? stemCelebrate : function() {},
+            // _deferSafe wrap: stemCelebrate sets parent confetti/celebration state.
+            celebrate: typeof stemCelebrate === 'function' ? _deferSafe(stemCelebrate) : function() {},
             callGemini: typeof callGemini === 'function' ? callGemini : null,
+            // Callback-style AI helper. cyberdefense's AI coach was written to a
+            // callback API before the host standardized on promise-based callGemini.
+            // Adapter keeps both surfaces working.
+            aiChat: typeof callGemini === 'function' ? function(prompt, cb) {
+              try {
+                callGemini(prompt).then(function(resp) { try { cb && cb(resp); } catch(_) {} })
+                  .catch(function() { try { cb && cb(null); } catch(_) {} });
+              } catch (_) { try { cb && cb(null); } catch(_) {} }
+            } : null,
             sourceText: typeof inputText === 'string' ? inputText : (typeof sourceText === 'string' ? sourceText : ''),
             inputText: typeof inputText === 'string' ? inputText : '',
+            sourceTopic: typeof sourceTopic === 'string' ? sourceTopic : '',
             gradeLevel: typeof gradeLevel === 'string' ? gradeLevel : '',
+            // Coarse-grained grade banding for tools that target tiers rather than
+            // single grades (firstresponse, swimlab, etc. expect 'k2'|'g35'|'g68'|'g912').
+            gradeBand: (function() {
+              var g = (typeof gradeLevel === 'string' ? gradeLevel : '').toLowerCase();
+              if (g.indexOf('kindergarten') === 0 || /\b(1st|2nd)\b/.test(g)) return 'k2';
+              if (/\b(3rd|4th|5th)\b/.test(g)) return 'g35';
+              if (/\b(6th|7th|8th)\b/.test(g)) return 'g68';
+              if (/\b(9th|10th|11th|12th)\b/.test(g) || g.indexOf('college') !== -1 || g.indexOf('graduate') !== -1) return 'g912';
+              return 'g68';
+            })(),
+            // Coordinate grid range (passed from host useState — defaults to ±10).
+            gridRange: typeof gridRange !== 'undefined' && gridRange ? gridRange : { min: -10, max: 10 },
             t: typeof t === 'function' ? t : function(k) { return k; },
             icons: { ArrowLeft: ArrowLeft, Calculator: Calculator, Sparkles: Sparkles, X: X, GripVertical: GripVertical },
             _codingCanvasRef: typeof _codingCanvasRef !== 'undefined' ? _codingCanvasRef : null,
