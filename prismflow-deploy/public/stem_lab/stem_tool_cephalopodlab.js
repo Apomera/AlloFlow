@@ -320,6 +320,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       camoPattern: 'uniform',              // 'uniform' | 'mottled' | 'disruptive' | 'deimatic'
       // Body Plan state
       anatomyRegion: 'central-brain',      // currently highlighted region id
+      // Jet Propulsion Lab state
+      jetSpeciesId: 'humboldt',            // species for jet comparison
+      jetMantleVolume: 300,                // mL
+      jetContractionKPa: 60,               // kPa
+      jetSiphonDiameter: 18,               // mm
+      // Intelligence Lab state
+      intelSelectedCase: 'otto',
       lastUpdated: null
     };
   }
@@ -408,8 +415,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           { id: 'hub', label: 'Hub', icon: '🐙' },
           { id: 'field', label: 'Field Guide', icon: '📖' },
           { id: 'hunt', label: 'Hunter Sim', icon: '🎯' },
-          { id: 'camo', label: 'Camouflage Lab', icon: '🎨' },
+          { id: 'camo', label: 'Camouflage', icon: '🎨' },
           { id: 'anatomy', label: 'Body Plan', icon: '🧠' },
+          { id: 'jet', label: 'Jet Propulsion', icon: '🚀' },
+          { id: 'intel', label: 'Intelligence', icon: '💡' },
           { id: 'resources', label: 'Resources', icon: '📚' }
         ];
         return h('div', { style: { padding: '24px 20px 12px', borderBottom: '1px solid rgba(99,102,241,0.18)' } },
@@ -424,7 +433,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: '#c7d2fe', letterSpacing: '-0.01em' } }, 'Cephalopod Lab'),
                 h('div', { style: { fontSize: 10, fontWeight: 700, color: '#a78bfa', background: 'rgba(167,139,250,0.12)',
                     border: '1px solid rgba(167,139,250,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                  '6 sections')),
+                  '8 sections')),
               h('div', { style: { fontSize: 12, color: '#cbd5e1', marginTop: 4, lineHeight: 1.5 } },
                 'The biology of intelligent invertebrates. Octopuses + squid + cuttlefish + nautilus — chromatophore camouflage, distributed neural intelligence, hunting strategy, 500M-year evolution.'))));
       }
@@ -1414,19 +1423,278 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       }
 
       // ═══════════════════════════════════════════════════════
-      // SECTION 6 — RESOURCES (stub for v0.3)
+      // SECTION 6 — JET PROPULSION LAB
+      // ═══════════════════════════════════════════════════════
+      function renderJetLab() {
+        // Species reference data for jet propulsion
+        var JET_SPECIES = {
+          humboldt: { name: 'Humboldt Squid', emoji: '🦑', emojiTail: '🦑',
+            mantleVolume: 400, contractionKPa: 80, siphonDiameter: 22,
+            massKg: 6, topSpeed: 25,
+            notes: 'Top sprint speed of any cephalopod. Pack-hunts at speed. Mantle is essentially all muscle.' },
+          giantPac: { name: 'Giant Pacific Octopus', emoji: '🐙',
+            mantleVolume: 800, contractionKPa: 45, siphonDiameter: 28,
+            massKg: 25, topSpeed: 4,
+            notes: 'Big mantle BUT massive body to push around. Uses jet mostly to steer while crawling, not for travel.' },
+          commonOcto: { name: 'Common Octopus', emoji: '🐙',
+            mantleVolume: 200, contractionKPa: 50, siphonDiameter: 15,
+            massKg: 3, topSpeed: 6,
+            notes: 'Default octopus jet — strong enough for emergency escape, but inefficient for sustained swimming.' },
+          cuttle: { name: 'Common Cuttlefish', emoji: '🦑',
+            mantleVolume: 300, contractionKPa: 35, siphonDiameter: 18,
+            massKg: 2, topSpeed: 5,
+            notes: 'Uses fin undulation for normal swimming; jet reserved for escape. Cuttlebone gives neutral buoyancy so jet doesn\'t fight gravity.' },
+          nautilus: { name: 'Chambered Nautilus', emoji: '🐚',
+            mantleVolume: 250, contractionKPa: 30, siphonDiameter: 14,
+            massKg: 1.5, topSpeed: 3,
+            notes: 'Slowest jet. Uses buoyancy chambers in shell more than active swimming. The "slow-motion" cephalopod.' }
+        };
+        var speciesId = d.jetSpeciesId || 'humboldt';
+        var sp = JET_SPECIES[speciesId];
+        var vol = d.jetMantleVolume != null ? d.jetMantleVolume : sp.mantleVolume;
+        var kpa = d.jetContractionKPa != null ? d.jetContractionKPa : sp.contractionKPa;
+        var dia = d.jetSiphonDiameter != null ? d.jetSiphonDiameter : sp.siphonDiameter;
+        // Physics calculations
+        var rho = 1025; // seawater density kg/m³
+        var pressureP = kpa * 1000; // Pa
+        // Bernoulli: v_jet = sqrt(2P/ρ)
+        var vJet = Math.sqrt(2 * pressureP / rho); // m/s
+        // Siphon cross-sectional area
+        var area = Math.PI * Math.pow((dia / 2) / 1000, 2); // m²
+        // Mass expelled per unit time (assuming continuous flow during contraction)
+        var massFlow = rho * area * vJet; // kg/s
+        // Thrust (steady-state): F = ρ * A * v²
+        var thrustN = rho * area * Math.pow(vJet, 2); // Newtons
+        // Acceleration: a = F / m_body
+        var accel = thrustN / sp.massKg; // m/s²
+        // Energy per pulse (V/1000 m³ of water expelled at vJet velocity)
+        var pulseMass = rho * (vol / 1000) / 1000; // kg, fix m³ conversion: vol mL = vol/1e6 m³ → kg = rho * vol/1e6
+        pulseMass = rho * (vol / 1e6);
+        var pulseEnergy = 0.5 * pulseMass * Math.pow(vJet, 2); // Joules (kinetic energy imparted to water)
+        // Verdict — how this compares to species' real-world performance
+        var ratio = vJet / Math.max(1, sp.topSpeed);
+        var verdict = ratio > 1.4 ? { color: '#fca5a5', label: 'Above realistic top speed', note: 'These settings would exceed ' + sp.name + '\'s documented top speed. Cephalopod muscle limits + body drag cap real performance well below the theoretical Bernoulli velocity.' } :
+                      ratio > 0.8 ? { color: '#86efac', label: 'Realistic peak performance', note: 'These settings approach ' + sp.name + '\'s documented top sprint speed (' + sp.topSpeed + ' m/s).' } :
+                      ratio > 0.4 ? { color: '#fbbf24', label: 'Sustained-swim range', note: 'Typical of relaxed cruising speeds. Most cephalopod swimming happens here.' } :
+                                    { color: '#cbd5e1', label: 'Hovering / fine maneuver', note: 'Gentle steering jet. Octopuses spend most of their time at speeds in this range.' };
+        return h('div', null,
+          panelHeader('🚀 Jet Propulsion Lab',
+            'Cephalopod jet propulsion uses Newton\'s 3rd law directly: water gets pushed out, cephalopod gets pushed forward. Mantle = reservoir, siphon = nozzle. The physics is computable — set the variables and see what comes out.'),
+
+          // Science primer
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '⚗️ The physics'),
+            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.7, marginBottom: 14 } },
+              'Bernoulli\'s principle gives the exit velocity of water from the siphon: ',
+              h('code', { style: { background: 'rgba(167,139,250,0.15)', color: '#e9d5ff', padding: '2px 6px', borderRadius: 4, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                'v_jet = √(2·P/ρ)'),
+              ' where P is mantle pressure and ρ is seawater density (1025 kg/m³). Thrust scales with siphon area and jet velocity squared: ',
+              h('code', { style: { background: 'rgba(167,139,250,0.15)', color: '#e9d5ff', padding: '2px 6px', borderRadius: 4, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                'F = ρ·A·v²'),
+              '. Bigger siphon = more area = more thrust, but at the cost of slower jet velocity (Bernoulli is independent of A; thrust IS).')),
+
+          // Species selector
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '🦑 Pick a species'),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+              Object.keys(JET_SPECIES).map(function(sid) {
+                var jsp = JET_SPECIES[sid];
+                var active = speciesId === sid;
+                return h('button', { key: sid,
+                  onClick: function() {
+                    setCL({ jetSpeciesId: sid, jetMantleVolume: jsp.mantleVolume, jetContractionKPa: jsp.contractionKPa, jetSiphonDiameter: jsp.siphonDiameter });
+                    awardXP(1);
+                  },
+                  'aria-pressed': active ? 'true' : 'false',
+                  style: { padding: '10px 14px',
+                    background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
+                    color: active ? '#c7d2fe' : '#cbd5e1',
+                    border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                    borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 6 } },
+                  h('span', { 'aria-hidden': 'true' }, jsp.emoji), jsp.name);
+              }))),
+
+          // Variable inputs
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '🔧 Tune the variables'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 14 } },
+              [
+                { label: 'Mantle volume (mL)', key: 'jetMantleVolume', val: vol, min: 50, max: 1500, step: 25, color: '#fb923c',
+                  hint: 'How much water the mantle holds. Bigger = more thrust per pulse, but slower refill.' },
+                { label: 'Contraction pressure (kPa)', key: 'jetContractionKPa', val: kpa, min: 10, max: 150, step: 5, color: '#dc2626',
+                  hint: 'How hard the mantle muscles squeeze. Real cephalopods produce 20-100 kPa (humans cough ~10 kPa).' },
+                { label: 'Siphon diameter (mm)', key: 'jetSiphonDiameter', val: dia, min: 5, max: 50, step: 1, color: '#38bdf8',
+                  hint: 'Nozzle size. Bigger = more thrust but slower jet velocity. Tradeoff is real.' }
+              ].map(function(slider, i) {
+                return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', padding: '10px 12px', borderRadius: 8, borderLeft: '3px solid ' + slider.color } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 4, fontWeight: 700 } },
+                    h('span', null, slider.label),
+                    h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: slider.color } }, slider.val)),
+                  h('input', { type: 'range', min: slider.min, max: slider.max, step: slider.step, value: slider.val,
+                    onChange: function(e) { var p = {}; p[slider.key] = parseFloat(e.target.value); setCL(p); },
+                    'aria-label': slider.label,
+                    style: { width: '100%', accentColor: slider.color } }),
+                  h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 4, lineHeight: 1.45, fontStyle: 'italic' } }, slider.hint));
+              }))),
+
+          // Results panel — physics outputs
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '📊 Computed outputs'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 14 } },
+              [
+                { label: 'Jet velocity', val: vJet.toFixed(1), unit: 'm/s', color: '#fb923c', formula: 'v = √(2P/ρ)' },
+                { label: 'Thrust force', val: thrustN.toFixed(1), unit: 'N', color: '#dc2626', formula: 'F = ρAv²' },
+                { label: 'Body acceleration', val: accel.toFixed(2), unit: 'm/s²', color: '#a78bfa', formula: 'a = F / m_body' },
+                { label: 'Energy per pulse', val: pulseEnergy.toFixed(2), unit: 'J', color: '#fbbf24', formula: '½ρV·v²' }
+              ].map(function(stat, i) {
+                return h('div', { key: i,
+                  style: { background: 'rgba(15,23,42,0.6)', border: '1px solid ' + stat.color + '40',
+                    borderLeft: '3px solid ' + stat.color, padding: '10px 12px', borderRadius: 8 } },
+                  h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, stat.label),
+                  h('div', { style: { fontSize: 22, fontWeight: 900, color: stat.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.val),
+                  h('div', { style: { fontSize: 10, color: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.unit),
+                  h('div', { style: { fontSize: 9, color: '#64748b', marginTop: 3, fontFamily: 'ui-monospace, Menlo, monospace' } }, stat.formula));
+              })),
+            // Verdict
+            h('div', { style: { background: verdict.color + '15', border: '1px solid ' + verdict.color + '55',
+              borderLeft: '4px solid ' + verdict.color, padding: '10px 14px', borderRadius: 8 } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: verdict.color, marginBottom: 4 } },
+                'Reality check: ' + verdict.label),
+              h('div', { style: { fontSize: 11, color: '#e2e8f0', lineHeight: 1.55 } }, verdict.note),
+              h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                'Documented top speed for ' + sp.name + ': ' + sp.topSpeed + ' m/s'))),
+
+          // The systemic-heart-stops biology callout
+          h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #dc2626' }) },
+            h('div', { style: subheaderStyle() }, '❤️ The strange biology of jet swimming'),
+            h('div', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.7 } },
+              h('p', { style: { margin: '0 0 10px 0' } },
+                'Cephalopods have ',
+                h('b', { style: { color: '#dc2626' } }, 'three hearts'),
+                ' — two branchial hearts (one per gill) and one systemic heart that pumps blood to the body. Here\'s the weird part: ',
+                h('b', { style: { color: '#fde68a' } }, 'the systemic heart STOPS BEATING during sustained jet swimming'),
+                '. Blood circulation pauses.'),
+              h('p', { style: { margin: '0 0 10px 0' } },
+                'Why? Jet swimming generates enormous internal pressure during each mantle contraction — high enough to interrupt the systemic heart\'s pumping cycle. The cephalopod is essentially holding its circulatory breath while it sprints.'),
+              h('p', { style: { margin: 0 } },
+                'This is part of why octopuses prefer ',
+                h('b', null, 'crawling'),
+                ' (using their arms on the substrate) for any distance over a few body-lengths — their circulatory system can\'t sustain a long jet swim. Squid, with more streamlined bodies + denser muscle, manage longer jet phases but still pay the cost. Humboldt squid pack-hunts feature short sprint pulses interspersed with recovery glides.')))
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════
+      // SECTION 7 — INTELLIGENCE LAB
+      // ═══════════════════════════════════════════════════════
+      function renderIntelLab() {
+        var CASES = {
+          otto: { name: 'Otto', species: 'Common Octopus', where: 'Sea Star Aquarium, Coburg, Germany',
+            emoji: '💡', color: '#fbbf24',
+            story: 'In 2008, Otto repeatedly short-circuited the aquarium\'s lights by climbing to the rim of his tank, aiming his siphon at the bright overhead lamp, and shooting water at it. He did it deliberately, repeatedly, only when the aquarium was closed at night. Researchers eventually realized he was bothered by the lights AND figured out he could turn them off with water.',
+            takeaway: 'Cause-and-effect reasoning + tool-like use of a body part (the siphon) for a non-locomotor purpose. The lights weren\'t food. He was choosing comfort.' },
+          inky: { name: 'Inky', species: 'Common Octopus', where: 'National Aquarium of New Zealand',
+            emoji: '🌊', color: '#38bdf8',
+            story: 'In April 2016, Inky squeezed out of his tank during the night, crawled 3 meters across the floor, found a 15-cm-diameter drainpipe leading to the ocean, and escaped to sea. Aquarium staff found a slime trail and a small tank-mate (Blotchy) who hadn\'t left.',
+            takeaway: 'Spatial reasoning + sequential planning under time pressure + the body-knows-where-the-beak-goes physical intelligence. Inky knew the geography of the room.' },
+          heidi: { name: 'Heidi', species: 'Common Octopus', where: 'Alaska Pacific University, PBS documentary',
+            emoji: '🌈', color: '#a78bfa',
+            story: 'During a 2019 documentary, biologist David Scheel filmed Heidi sleeping. Her skin cycled through complex color changes — pale, mottled, dark, with patterns associated in waking life with hunting and camouflage. Many biologists interpret this as evidence she was DREAMING.',
+            takeaway: 'Active brain processing during sleep that produces meaningful skin patterns. If chromatophores follow inner state, and skin changes during sleep, then the inner state of dreaming is being expressed externally. Direct view of a non-human dream-state.' },
+          coconut: { name: 'Coconut Octopus tool use', species: 'Amphioctopus marginatus', where: 'Indonesia (Finn et al. 2009 paper)',
+            emoji: '🥥', color: '#fb923c',
+            story: 'Finn, Tregenza & Norman documented coconut octopuses collecting discarded coconut shell halves, "stilt-walking" them across open seafloor on rigid arms (looking awkward, like the shell was bothering them), then later assembling pairs of shells as a hideout when needed.',
+            takeaway: 'The first confirmed tool use in an invertebrate. The shells are useless during transport — only valuable for future shelter. That\'s the technical definition of tool use: planning for future utility, not immediate.' },
+          mirror: { name: 'Mirror self-recognition', species: 'Various', where: 'Aquariums + labs worldwide',
+            emoji: '🪞', color: '#86efac',
+            story: 'The mirror test (Gallup, 1970) checks if an animal recognizes its reflection as itself by marking the body somewhere only visible in the mirror — then watching whether the animal touches the mark. Octopuses have mixed results. Some studies show interest in mirrors without classic self-recognition; others find they ignore reflections entirely (suggesting they may not pass the test, OR may be using a different cognitive framework where self-recognition isn\'t their priority).',
+            takeaway: 'Maybe cephalopod consciousness doesn\'t work through the same self/other categories we use. Distributed intelligence in arm ganglia might have a completely different mental architecture — no central "I" to recognize.' },
+          opticgland: { name: 'Optic Gland + Programmed Death', species: 'Common Octopus', where: 'Wang Lab, U Chicago (2018, 2022)',
+            emoji: '⏳', color: '#fca5a5',
+            story: 'In 2018, Wang et al. identified the cholesterol-producing optic gland as the trigger of post-reproductive senescence in octopuses. After mating, the gland releases steroid hormones that cause the octopus to stop eating, self-mutilate, and die within weeks. Removing the gland in lab octopuses extended life dramatically — but the now-zombie octopuses also stopped brooding their eggs.',
+            takeaway: 'Octopus death isn\'t accidental — it\'s programmed. The same gland that triggers reproduction also triggers death. This is one of the cleanest examples of programmed senescence ("planned obsolescence") known in any animal.' },
+          consciousness: { name: 'The consciousness question', species: 'All cephalopods', where: 'Philosophy + neuroscience literature',
+            emoji: '🤔', color: '#c7d2fe',
+            story: 'The Cambridge Declaration on Consciousness (2012, signed at FCMConference) named cephalopods as one of the non-mammalian animals showing evidence of consciousness-correlated brain substrates. The UK recognized octopuses as sentient beings in 2021 (Animal Welfare (Sentience) Act, expanded after the LSE 2021 review by Birch et al.). In 2024, several countries are debating whether octopus farming should be banned outright on welfare grounds.',
+            takeaway: 'Cephalopods may experience subjective states. Their nervous system architecture is so different from ours that "what it is like" to be an octopus might be fundamentally alien — but the experiential dimension is increasingly hard to deny. This has direct implications for fisheries, aquaculture, and lab research ethics.' }
+        };
+        var caseId = d.intelSelectedCase || 'otto';
+        var c = CASES[caseId];
+        return h('div', null,
+          panelHeader('💡 Intelligence Lab',
+            'Seven case studies that built our current understanding of cephalopod cognition. Each is a documented research finding or famous individual that changed how biologists think about non-human minds.'),
+
+          // Case picker
+          h('div', { style: cardStyle() },
+            h('div', { style: subheaderStyle() }, '📚 Pick a case study'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 8 } },
+              Object.keys(CASES).map(function(cid) {
+                var c2 = CASES[cid];
+                var active = caseId === cid;
+                return h('button', { key: cid,
+                  onClick: function() { setCL({ intelSelectedCase: cid }); awardXP(1); clAnnounce('Selected ' + c2.name); },
+                  'aria-pressed': active ? 'true' : 'false',
+                  style: { padding: '10px 12px', textAlign: 'left',
+                    background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
+                    color: active ? '#c7d2fe' : '#cbd5e1',
+                    border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                    borderLeft: '3px solid ' + c2.color,
+                    borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer' } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 16 } }, c2.emoji),
+                    h('div', { style: { fontWeight: 800, fontSize: 12, color: active ? '#fde68a' : '#e2e8f0' } }, c2.name)));
+              }))),
+
+          // Selected case detail
+          h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid ' + c.color }) },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
+              h('span', { 'aria-hidden': 'true', style: { fontSize: 36, lineHeight: 1 } }, c.emoji),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('div', { style: { fontSize: 20, fontWeight: 900, color: c.color, letterSpacing: '-0.01em' } }, c.name),
+                h('div', { style: { fontSize: 11, color: '#a78bfa', marginTop: 2 } }, c.species + ' · ' + c.where))),
+            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.75, marginBottom: 14 } }, c.story),
+            h('div', { style: { background: c.color + '15', borderLeft: '3px solid ' + c.color,
+              padding: '12px 14px', borderRadius: 6 } },
+              h('div', { style: { fontSize: 10, fontWeight: 800, color: c.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },
+                '🎯 The takeaway'),
+              h('div', { style: { fontSize: 12, color: '#fde68a', lineHeight: 1.7, fontStyle: 'italic' } }, c.takeaway))),
+
+          // The big question panel
+          h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #a78bfa' }) },
+            h('div', { style: subheaderStyle() }, '🤔 The hard question'),
+            h('div', { style: { color: '#e9d5ff', fontSize: 13, lineHeight: 1.75 } },
+              h('p', { style: { margin: '0 0 12px 0' } },
+                'Octopuses last shared a common ancestor with vertebrates about ',
+                h('b', null, '600 million years ago'),
+                ' — at the level of a flatworm-like marine animal with no real brain. Everything cephalopods have built since (camera eyes, problem-solving cognition, possibly subjective experience) evolved ',
+                h('b', null, 'completely independently'),
+                ' from the path that led to mammals.'),
+              h('p', { style: { margin: '0 0 12px 0' } },
+                'If consciousness exists in octopuses, it isn\'t consciousness like ours derived from a shared ancestor. It would be a ',
+                h('b', { style: { color: '#fde68a' } }, 'second, independent evolutionary instance of consciousness on Earth'),
+                '. That has implications for how we study minds, treat animals, and even how we look for life elsewhere.'),
+              h('p', { style: { margin: 0, padding: '12px 14px', background: 'rgba(167,139,250,0.1)', borderRadius: 8, fontStyle: 'italic' } },
+                '"The octopus is the closest thing to an intelligent alien we may ever meet." — Peter Godfrey-Smith, ',
+                h('em', null, 'Other Minds'),
+                ' (2016)')))
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════
+      // SECTION 8 — RESOURCES (stub for v0.4)
       // ═══════════════════════════════════════════════════════
       function renderResources() {
         return h('div', null,
           panelHeader('📚 Resources & Glossary',
-            'Sources, glossary, conservation context, and deeper science for everything in Cephalopod Lab. v0.2 shipped Camouflage Lab + Body Plan. v0.3 will add Jet Propulsion physics + Intelligence Lab + Conservation deep-dive.'),
+            'Sources, glossary, conservation context, and deeper science for everything in Cephalopod Lab. v0.3 shipped Jet Propulsion physics + Intelligence Lab. v0.4 will add Conservation deep-dive + a fuller glossary + cephalopod welfare ethics module.'),
 
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, '🚧 v0.3 will add'),
+            h('div', { style: subheaderStyle() }, '🚧 v0.4 will add'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: '#e2e8f0', fontSize: 12, lineHeight: 1.8 } },
-              h('li', null, 'Jet Propulsion physics — mantle dynamics + thrust calculations + escape vs sustained-swim comparison'),
-              h('li', null, 'Intelligence Lab — Otto vs Inky vs documented escape artists + mirror tests + the consciousness question'),
-              h('li', null, 'Conservation deep-dive — cephalopod fisheries + climate-change winners + the nautilus shell trade'))),
+              h('li', null, 'Conservation deep-dive — cephalopod fisheries + climate-change winners + the nautilus shell trade'),
+              h('li', null, 'Full glossary — 40+ technical terms (radula, hectocotylus, ammoniacal flotation, reflectin, mesopelagic, etc.)'),
+              h('li', null, 'Welfare + ethics module — UK 2021 sentience recognition, octopus farming debate, lab + aquaculture standards'),
+              h('li', null, 'Citizen science integration — links to iNaturalist + CephResearch reporting'))),
 
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, '📜 Sources'),
@@ -1471,6 +1739,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       else if (section === 'hunt') content = renderHuntSim();
       else if (section === 'camo') content = renderCamouflageLab();
       else if (section === 'anatomy') content = renderBodyPlan();
+      else if (section === 'jet') content = renderJetLab();
+      else if (section === 'intel') content = renderIntelLab();
       else if (section === 'resources') content = renderResources();
       else content = renderHub();
 
